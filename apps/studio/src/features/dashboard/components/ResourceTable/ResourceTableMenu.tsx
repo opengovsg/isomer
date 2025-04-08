@@ -39,7 +39,7 @@ export const ResourceTableMenu = ({
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () =>
-    setMoveResource({ resourceId, title, permalink, parentId })
+    setMoveResource({ id: resourceId, title, permalink, parentId, type })
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
@@ -97,6 +97,7 @@ export const ResourceTableMenu = ({
                 as="button"
                 onClick={handleMoveResourceClick}
                 icon={<BiFolderOpen fontSize="1rem" />}
+                aria-label={`Move resource to another location for ${title}`}
               >
                 Move to...
               </MenuItem>

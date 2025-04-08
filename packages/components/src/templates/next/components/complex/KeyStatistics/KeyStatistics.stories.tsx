@@ -26,7 +26,7 @@ const meta: Meta<KeyStatisticsProps> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
       navBarItems: [],
@@ -113,7 +113,7 @@ export const WithLink: Story = {
         value: "4.0",
       },
     ],
-    url: "https://www.google.com",
+    url: "/",
   },
 }
 
@@ -132,7 +132,7 @@ export const WithLinkAndLabel: Story = {
         value: "4.0",
       },
     ],
-    url: "https://www.google.com",
+    url: "/",
     label: "We have no achievements",
   },
 }

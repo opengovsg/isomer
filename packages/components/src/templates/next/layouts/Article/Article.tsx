@@ -39,7 +39,7 @@ const ArticleLayout = ({
         />
 
         <div className="mx-auto w-full gap-10 pb-20">
-          <div className="w-full overflow-x-auto lg:max-w-[660px]">
+          <div className="w-full overflow-x-auto break-words lg:max-w-[660px]">
             {renderPageContent({
               site,
               layout,

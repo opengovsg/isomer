@@ -31,7 +31,7 @@ const meta: Meta<typeof DynamicDataBanner> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -76,7 +76,7 @@ const meta: Meta<typeof DynamicDataBanner> = {
     label: "View all dates",
     errorMessage: [
       {
-        text: "Couldn’t load prayer times. Try refreshing the page.",
+        text: "Couldn't load prayer times. Try refreshing the page.",
         type: "text",
       },
     ],
@@ -106,6 +106,19 @@ export const Default: Story = {
       ],
     },
   },
+  decorators: [
+    (Story) => (
+      <div
+        style={
+          {
+            "--color-brand-interaction-hover": "#00422C",
+          } as React.CSSProperties
+        }
+      >
+        <Story />
+      </div>
+    ),
+  ],
 }
 
 export const Loading: Story = {

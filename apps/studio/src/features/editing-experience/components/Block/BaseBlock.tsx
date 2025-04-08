@@ -59,8 +59,8 @@ export const BaseBlock = ({
           <Icon as={icon} fontSize="0.75rem" color="base.content.default" />
         </Flex>
       )}
-      <Stack align="start" gap="0.25rem">
-        <Text textStyle="subhead-2" noOfLines={1}>
+      <Stack align="start" gap="0.25rem" overflow="auto">
+        <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
           {label}
         </Text>
         {description && (

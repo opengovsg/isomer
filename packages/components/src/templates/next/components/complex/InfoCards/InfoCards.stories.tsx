@@ -27,7 +27,7 @@ const meta: Meta<InfoCardsProps> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
       navBarItems: [],
@@ -126,12 +126,7 @@ const generateArgs = ({
     maxColumns: maxColumns,
     variant: withoutImage ? "cardsWithoutImages" : "cardsWithImages",
     cards: cards,
-    ...(hasCTA
-      ? {
-          label: "This is a CTA",
-          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        }
-      : {}),
+    ...(hasCTA ? { label: "This is a CTA", url: "/" } : {}),
   } as InfoCardsProps
 }
 

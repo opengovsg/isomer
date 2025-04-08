@@ -7,27 +7,55 @@ import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 
-export const setupAdminPermissions = async ({
-  userId,
-  siteId,
-  isDeleted = false,
-}: {
+interface SetupPermissionsProps {
   userId?: string
   siteId: number
   isDeleted?: boolean
-}) => {
+  role: (typeof RoleType)[keyof typeof RoleType]
+  useCurrentTime?: boolean
+}
+
+const setupPermissions = async ({
+  userId,
+  siteId,
+  role,
+  isDeleted = false,
+  useCurrentTime = false,
+}: SetupPermissionsProps) => {
   if (!userId) throw new Error("userId is a required field")
 
-  await db
+  const time = useCurrentTime ? new Date() : MOCK_STORY_DATE
+  return await db
     .insertInto("ResourcePermission")
     .values({
       userId: String(userId),
       siteId,
-      role: RoleType.Admin,
+      role,
       resourceId: null,
-      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+      deletedAt: isDeleted ? time : null,
+      createdAt: time,
+      updatedAt: time,
     })
-    .execute()
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+export const setupPublisherPermissions = async (
+  props: Omit<SetupPermissionsProps, "role">,
+) => {
+  return await setupPermissions({ ...props, role: RoleType.Publisher })
+}
+
+export const setupEditorPermissions = async (
+  props: Omit<SetupPermissionsProps, "role">,
+) => {
+  return await setupPermissions({ ...props, role: RoleType.Editor })
+}
+
+export const setupAdminPermissions = async (
+  props: Omit<SetupPermissionsProps, "role">,
+) => {
+  return await setupPermissions({ ...props, role: RoleType.Admin })
 }
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
@@ -258,6 +286,12 @@ export const setupPageResource = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 
+  if (state === ResourceState.Published && !userId) {
+    throw new Error(
+      "Precondition failed, we need a valid `userId` in order to publish",
+    )
+  }
+
   if (state === ResourceState.Published && userId) {
     const version = await db
       .insertInto("Version")
@@ -336,7 +370,7 @@ export const setupCollection = async ({
   permalink?: string
   parentId?: string | null
   title?: string
-}) => {
+} = {}) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
 
   const collection = await db
@@ -452,12 +486,14 @@ export const setupUser = async ({
   email,
   phone = "",
   isDeleted,
+  hasLoggedIn = false,
 }: {
   name?: string
   userId?: string
   email: string
   phone?: string
-  isDeleted: boolean
+  isDeleted?: boolean
+  hasLoggedIn?: boolean
 }) => {
   return db
     .insertInto("User")
@@ -467,6 +503,7 @@ export const setupUser = async ({
       email,
       phone: phone,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+      lastLoginAt: hasLoggedIn ? MOCK_STORY_DATE : null,
     })
     .returningAll()
     .executeTakeFirstOrThrow()

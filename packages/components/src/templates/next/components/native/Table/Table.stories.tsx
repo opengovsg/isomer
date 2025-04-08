@@ -24,7 +24,7 @@ const meta: Meta<typeof Table> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -2015,6 +2015,128 @@ export const NestedColumns: Story = {
                       },
                     ],
                     text: "ABC co-funding will only be available at public ZXC centres and must be conducted as part of a TEST cycle to be eligible for co-funding.",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+
+export const ListInTable: Story = {
+  args: {
+    attrs: {
+      caption: "Resources for the scheme",
+    },
+    content: [
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Category" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Files for download" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Files for everyone" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "Here are some files you can download:",
+                  },
+                ],
+              },
+              {
+                type: "unorderedList",
+                content: [
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: "<a href='https://google.com'>A long file name that's available for download [PDF, 2MB]</a>",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: "<a href='https://google.com'>An even longer file name that's available for download [PDF, 2MB]</a>",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: "<a href='https://google.com'>A long file name that's available for download [PDF, 2MB]</a>",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: "<a href='https://google.com'>A very very very long file name that's available for download [PDF, 2MB]</a>",
+                          },
+                        ],
+                      },
+                    ],
                   },
                 ],
               },

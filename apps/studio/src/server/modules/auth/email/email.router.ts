@@ -1,20 +1,26 @@
 import { TRPCError } from "@trpc/server"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { formatInTimeZone } from "date-fns-tz"
+import pick from "lodash/pick"
 
 import { env } from "~/env.mjs"
 import { sendMail } from "~/lib/mail"
+import { SessionData } from "~/lib/types/session"
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
 } from "~/schemas/auth/email/sign-in"
 import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
-import { defaultMeSelect } from "../../me/me.select"
+import { logAuthEvent } from "../../audit/audit.service"
+import { db } from "../../database"
+import { defaultUserSelect } from "../../me/me.select"
 import { isUserDeleted } from "../../user/user.service"
 import { isEmailWhitelisted } from "../../whitelist/whitelist.service"
 import { VerificationError } from "../auth.error"
 import { verifyToken } from "../auth.service"
 import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util"
+import { upsertUser } from "./email.service"
 import { getOtpFingerPrint } from "./utils"
 
 export const emailSessionRouter = router({
@@ -42,6 +48,8 @@ export const emailSessionRouter = router({
       const hashedToken = createTokenHash(token, email)
 
       const url = new URL(getBaseUrl())
+
+      ctx.logger.info({ email, expires }, "Generated OTP for email sign in")
 
       // May have one of them fail,
       // so users may get an email but not have the token saved, but that should be fine.
@@ -79,6 +87,21 @@ export const emailSessionRouter = router({
     .input(emailVerifyOtpSchema)
     .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email, token } }) => {
+      const oldVerificationToken = await ctx.prisma.verificationToken.findFirst(
+        {
+          where: {
+            identifier: getOtpFingerPrint(email, ctx.req),
+          },
+        },
+      )
+
+      if (!oldVerificationToken) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please request for another OTP",
+        })
+      }
+
       try {
         await verifyToken(ctx.prisma, ctx.req, {
           token,
@@ -95,22 +118,27 @@ export const emailSessionRouter = router({
         throw e
       }
 
-      const emailName = email.split("@")[0] ?? "unknown"
-
-      const user = await ctx.prisma.user.upsert({
-        where: { email },
-        update: {},
-        create: {
+      return db.transaction().execute(async (tx) => {
+        const user = await upsertUser({
+          tx,
           email,
-          // TODO: add the phone in later, this is a wip
-          phone: "",
-          name: emailName,
-        },
-        select: defaultMeSelect,
-      })
+        })
 
-      ctx.session.userId = user.id
-      await ctx.session.save()
-      return user
+        await logAuthEvent(tx, {
+          by: user,
+          delta: {
+            before: {
+              ...oldVerificationToken,
+              attempts: oldVerificationToken.attempts + 1,
+            },
+            after: null,
+          },
+          eventType: AuditLogEvent.Login,
+        })
+
+        ctx.session.userId = user.id as SessionData["userId"]
+        await ctx.session.save()
+        return pick(user, defaultUserSelect)
+      })
     }),
 })

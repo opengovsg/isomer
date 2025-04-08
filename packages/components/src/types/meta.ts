@@ -29,7 +29,7 @@ const BasePageMetaSchema = Type.Composite([
         title: "Meta image",
         description:
           "This image may appear when the page is shared on social media such as LinkedIn or Facebook.",
-        format: "image",
+        format: "meta-image",
       }),
     ),
   }),
