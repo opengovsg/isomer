@@ -4,7 +4,7 @@ import { ImageClient } from "../Image"
 
 export const LogoCloud = ({
   images: baseImages,
-  title,
+  title = "With support from these agencies",
   site: { assetsBaseUrl },
   shouldLazyLoad = true,
 }: LogoCloudProps) => {
@@ -20,7 +20,7 @@ export const LogoCloud = ({
     <div className="px-10 py-12">
       <div className="flex flex-col gap-4">
         <p className="prose-headline-base-medium self-center text-base-content-light">
-          {title ?? "With support from these agencies"}
+          {title}
         </p>
         <div className="flex flex-wrap justify-center">
           {images.map((props) => (

@@ -49,7 +49,7 @@ export const isValidMapEmbedUrl = (url: string) => {
         isValidOneMapEmbedUrl(urlObject)) &&
       new RegExp(MAPS_EMBED_URL_PATTERN).test(url)
     )
-  } catch (_) {
+  } catch {
     return false
   }
 }
@@ -92,7 +92,7 @@ export const isValidVideoUrl = (url: string) => {
       allValidVideoDomains.includes(urlObject.hostname) &&
       new RegExp(VIDEO_EMBED_URL_PATTERN).test(url)
     )
-  } catch (_) {
+  } catch {
     return false
   }
 }
