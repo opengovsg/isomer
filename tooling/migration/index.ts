@@ -61,7 +61,7 @@ const migratePage = async ({ site, path }: PageMigrationParams) => {
     return;
   }
 
-  const conversionResponse = await getIsomerSchemaFromJekyll({ content });
+  const conversionResponse = await getIsomerSchemaFromJekyll({ content, path });
   return conversionResponse;
 };
 

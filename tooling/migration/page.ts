@@ -4,10 +4,11 @@ import {
   getIsHtmlContainingRedundantDivs,
 } from "./converter";
 import { getHtmlFromMarkdown } from "./markdown";
-import { getManualReviewItems } from "./utils";
+import { getManualReviewItems, getResourceRoomFileType } from "./utils";
 
 interface GetIsomerSchemaFromJekyllParams {
   content: string;
+  path: string;
 }
 
 type GetIsomerSchemaFromJekyllResponse =
@@ -31,6 +32,7 @@ type GetIsomerSchemaFromJekyllResponse =
 
 export const getIsomerSchemaFromJekyll = async ({
   content,
+  path,
 }: GetIsomerSchemaFromJekyllParams): Promise<GetIsomerSchemaFromJekyllResponse> => {
   const {
     variant,
@@ -68,8 +70,10 @@ export const getIsomerSchemaFromJekyll = async ({
 
   const status = reviewItems.length === 0 ? "converted" : "manual_review";
 
+  const fileType = getResourceRoomFileType(path);
+
   // Map to Isomer Schema
-  if (layout === "post") {
+  if (layout === "post" && fileType === "post") {
     return {
       status,
       permalink,
@@ -97,7 +101,12 @@ export const getIsomerSchemaFromJekyll = async ({
     };
   }
 
-  if (layout === "link" || layout === "file") {
+  if (
+    layout === "link" ||
+    fileType === "link" ||
+    layout === "file" ||
+    fileType === "file"
+  ) {
     const convertedDate = moment(date).format("DD/MM/YYYY");
 
     return {

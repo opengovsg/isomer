@@ -7,6 +7,7 @@ import {
   PLACEHOLDER_GOOGLE_SLIDES_TEXT,
   PLACEHOLDER_IMAGE_IN_TABLE_TEXT,
 } from "./constants";
+import path from "path";
 
 interface GetPathsToMigrateParams {
   octokit: Octokit;
@@ -57,7 +58,7 @@ export const getCollectionFolderName = async ({
 
   const frontmatter = fm(collectionIndex).attributes as any;
 
-  return frontmatter.title || path;
+  return frontmatter.breadcrumb || frontmatter.title || path;
 };
 
 interface GetResourceRoomTitleParams {
@@ -102,6 +103,25 @@ export const getLegalPermalink = (permalink: string) => {
 
   // Replace all hyphens with a single hyphen
   return cleanedPermalink.replace(/-+/g, "-");
+};
+
+export const getResourceRoomFileType = (filePath: string) => {
+  const fileName = path.basename(path.join("/", filePath));
+  // Check if the file name is in the format of YYYY-MM-DD-type-title
+  const regex = /^\d{4}-\d{2}-\d{2}-(.*)/;
+  const match = fileName.match(regex);
+
+  if (!match) {
+    return undefined;
+  }
+
+  const matchedPart = match[1];
+
+  if (!matchedPart) {
+    return undefined;
+  }
+
+  return matchedPart.split("-")[0];
 };
 
 export const getManualReviewItems = (
@@ -258,6 +278,11 @@ export const getManualReviewItems = (
   // For article pages, 250 characters
   if (description && layout && layout === "post" && description.length > 250) {
     reviewItems.push("Article summary is longer than 250 characters");
+  }
+
+  // Flag pages that have images that used to be links
+  if (stringifiedContent.includes('"text": "Image link"')) {
+    reviewItems.push("Contains images that were used as links");
   }
 
   return {
