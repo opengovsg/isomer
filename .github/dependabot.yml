@@ -59,3 +59,8 @@ updates:
         patterns:
           - "validator"
           - "@types/validator"
+      vitest:
+        applies-to: version-updates
+        patterns:
+          - "@vitest/*"
+          - "vitest"
