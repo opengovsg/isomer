@@ -1,5 +1,5 @@
 import { resetTables } from "tests/integration/helpers/db"
-import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
+import { setUpWhitelist } from "tests/integration/helpers/seed"
 import { describe, expect, it } from "vitest"
 
 import { prisma } from "~/server/prisma"
