@@ -82,7 +82,7 @@ describe("sortCollectionItems", () => {
     expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
   })
 
-  it("should place items without dates at the end", () => {
+  it("should place items without dates at the end, sorted alphabetically by title", () => {
     // Arrange
     const items = [
       createItem({ title: "No Date" }),
