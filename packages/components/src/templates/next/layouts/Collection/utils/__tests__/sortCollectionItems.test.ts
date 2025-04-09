@@ -4,6 +4,8 @@ import type { SortableCardProps } from "../sortCollectionItems"
 import { sortCollectionItems } from "../sortCollectionItems"
 
 describe("sortCollectionItems", () => {
+  let itemCounter = 0
+
   const createItem = ({
     title,
     date,
@@ -15,7 +17,9 @@ describe("sortCollectionItems", () => {
     variant?: "file" | "link" | "article"
     url?: string
   }): SortableCardProps => {
+    itemCounter++
     return {
+      id: `test-${itemCounter}`,
       title,
       rawDate: date,
       variant,
