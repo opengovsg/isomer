@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import {
@@ -28,13 +28,13 @@ import { SIGN_IN } from "~/lib/routes"
 import { trpc } from "~/utils/trpc"
 
 const SingpassSignInPage: NextPageWithLayout = () => {
-  const [isSingpassError, setIsSingpassError] = useState<boolean>()
   const {
     isOpen: isUnableToUseSingpassModalOpen,
     onOpen: openUnableToUseSingpassModal,
     onClose: closeUnableToUseSingpassModal,
   } = useDisclosure()
   const router = useRouter()
+  const isSingpassError = Boolean(router.query.error)
   const { data, isLoading, isError } =
     trpc.auth.singpass.getUserProps.useQuery()
 
@@ -44,15 +44,11 @@ const SingpassSignInPage: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (isError) {
-      void router.push(`${SIGN_IN}?error=Unable to retrieve user data`)
+      void router.push(
+        `${SIGN_IN}?error=${encodeURIComponent("Unable to retrieve user data")}`,
+      )
     }
   }, [isError, router])
-
-  useEffect(() => {
-    if (router.query.error) {
-      setIsSingpassError(true)
-    }
-  }, [router.query.error])
 
   if (isLoading || !data) {
     return <FullscreenSpinner />
