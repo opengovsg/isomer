@@ -11,7 +11,7 @@ const opts = {
 
 export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
-  testDir: "./playwright",
+  testDir: "./tests/e2e",
   timeout: 35e3,
   projects: [
     { name: "Setup db", testMatch: "setup/db.ts" },
