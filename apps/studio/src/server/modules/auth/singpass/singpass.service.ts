@@ -19,9 +19,6 @@ const singpassClient = new singpassIssuer.Client(
     response_types: ["code"],
     token_endpoint_auth_method: "private_key_jwt",
     id_token_signed_response_alg: "ES256",
-    // TODO: Figure out why Singpass is not sending the token in the encrypted form
-    // id_token_encrypted_response_alg: env.SINGPASS_ENCRYPTION_KEY_ALG,
-    // id_token_encrypted_response_enc: "A256CBC-HS512",
   },
   {
     keys: [SINGPASS_SIGNING_JWK, SINGPASS_ENCRYPTION_JWK],
