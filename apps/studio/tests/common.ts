@@ -1,8 +1,16 @@
-import type { StartedTestContainer } from "testcontainers"
+import { exec } from "child_process"
+import { dirname, join } from "path"
+import { fileURLToPath } from "url"
+import { promisify } from "util"
+import type {
+  Network,
+  StartedNetwork,
+  StartedTestContainer,
+} from "testcontainers"
 import { GenericContainer, Wait } from "testcontainers"
 import { z } from "zod"
 
-type ContainerType = "database"
+type ContainerType = "database" | "studio"
 export const CONTAINER_CONFIGURATIONS: {
   [key in ContainerType]: ContainerConfiguration
 } = {
@@ -16,42 +24,68 @@ export const CONTAINER_CONFIGURATIONS: {
       POSTGRES_DB: "test",
     },
     wait: { type: "PORT" },
+    type: "image",
+  },
+  studio: {
+    name: "studio",
+    ports: [3000],
+    buildArgs: {
+      NEXT_PUBLIC_APP_ENV: "test",
+      NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: "really-fake",
+      NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: "obviously-fake",
+      NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY: "blah-blah",
+      NEXT_PUBLIC_INTERCOM_APP_ID: "Isomer",
+    },
+    dockerfile: "./apps/studio/Dockerfile",
+    wait: { type: "PORT" },
+    type: "dockerfile",
   },
 }
+
+const baseContainerConfiguration = z.object({
+  name: z.string(),
+  ports: z
+    .array(
+      z.union([
+        z.number(),
+        z.object({ container: z.number(), host: z.number() }),
+      ]),
+    )
+    .optional(),
+  environment: z.record(z.string(), z.string()).optional(),
+  buildArgs: z.record(z.string(), z.string()).optional(),
+  wait: z
+    .union([
+      z.object({ type: z.literal("PORT"), timeout: z.number().optional() }),
+      z.object({
+        type: z.literal("LOG"),
+        message: z.string(),
+        times: z.number().optional(),
+        timeout: z.number().optional(),
+      }),
+      z.object({
+        type: z.literal("HEALTHCHECK"),
+        timeout: z.number().optional(),
+      }),
+    ])
+    .optional(),
+})
 
 export const CONTAINER_INFORMATION_SCHEMA = z.array(
   z.object({
     name: z.string(),
     host: z.string(),
     ports: z.map(z.number(), z.number()),
-    configuration: z.object({
-      name: z.string(),
-      image: z.string(),
-      ports: z
-        .array(
-          z.union([
-            z.number(),
-            z.object({ container: z.number(), host: z.number() }),
-          ]),
-        )
-        .optional(),
-      environment: z.record(z.string(), z.string()).optional(),
-      wait: z
-        .union([
-          z.object({ type: z.literal("PORT"), timeout: z.number().optional() }),
-          z.object({
-            type: z.literal("LOG"),
-            message: z.string(),
-            times: z.number().optional(),
-            timeout: z.number().optional(),
-          }),
-          z.object({
-            type: z.literal("HEALTHCHECK"),
-            timeout: z.number().optional(),
-          }),
-        ])
-        .optional(),
-    }),
+    configuration: z.discriminatedUnion("type", [
+      baseContainerConfiguration.extend({
+        image: z.string(),
+        type: z.literal("image"),
+      }),
+      baseContainerConfiguration.extend({
+        dockerfile: z.string(),
+        type: z.literal("dockerfile"),
+      }),
+    ]),
   }),
 )
 
@@ -61,49 +95,71 @@ export type ContainerInformation = z.infer<
 
 export type ContainerConfiguration = ContainerInformation["configuration"]
 
-export const setup = async (configurations: ContainerConfiguration[]) => {
-  const containerTemplates = configurations.map((configuration) => {
-    const { name, image, ports = [], environment, wait } = configuration
-    let container = new GenericContainer(image)
+export const setup = async (
+  configurations: ContainerConfiguration[],
+  network?: StartedNetwork,
+) => {
+  const containerTemplates = await Promise.all(
+    configurations.map(async (configuration) => {
+      const { name, ports = [], environment, wait, type } = configuration
+      const __filename = fileURLToPath(import.meta.url)
+      const __dirname = dirname(__filename)
 
-    if (ports.length) {
-      container = container.withExposedPorts(...ports)
-    }
+      const context = join(__dirname, "..", "..", "..")
 
-    if (environment) {
-      container = container.withEnvironment(environment)
-    }
+      let container =
+        type === "image"
+          ? new GenericContainer(configuration.image)
+          : await GenericContainer.fromDockerfile(
+              context,
+              configuration.dockerfile,
+            ).build(name)
 
-    if (wait) {
-      const { type, timeout = 60 * 1000 } = wait
-      switch (type) {
-        case "PORT":
-          container = container
-            .withStartupTimeout(timeout)
-            .withWaitStrategy(Wait.forListeningPorts())
-          break
-        case "LOG":
-          container = container
-            .withStartupTimeout(timeout)
-            .withWaitStrategy(Wait.forLogMessage(wait.message, wait.times ?? 1))
-          break
-        case "HEALTHCHECK":
-          container = container
-            .withStartupTimeout(timeout)
-            .withWaitStrategy(Wait.forHealthCheck())
-          break
+      if (ports.length) {
+        container = container.withExposedPorts(...ports)
       }
-    }
 
-    return {
-      name,
-      container,
-      ports: ports.map((port) =>
-        typeof port === "number" ? port : port.container,
-      ),
-      configuration,
-    }
-  })
+      if (environment) {
+        container = container.withEnvironment(environment)
+      }
+
+      if (network) {
+        container = container.withNetwork(network).withNetworkAliases(name)
+      }
+
+      if (wait) {
+        const { type, timeout = 60 * 1000 } = wait
+        switch (type) {
+          case "PORT":
+            container = container
+              .withStartupTimeout(timeout)
+              .withWaitStrategy(Wait.forListeningPorts())
+            break
+          case "LOG":
+            container = container
+              .withStartupTimeout(timeout)
+              .withWaitStrategy(
+                Wait.forLogMessage(wait.message, wait.times ?? 1),
+              )
+            break
+          case "HEALTHCHECK":
+            container = container
+              .withStartupTimeout(timeout)
+              .withWaitStrategy(Wait.forHealthCheck())
+            break
+        }
+      }
+
+      return {
+        name,
+        container,
+        ports: ports.map((port) =>
+          typeof port === "number" ? port : port.container,
+        ),
+        configuration,
+      }
+    }),
+  )
 
   const startedContainers = await Promise.all(
     containerTemplates.map(async (containerTemplate) => {
@@ -135,6 +191,35 @@ export const teardown = async (
   containers: { container: StartedTestContainer }[],
 ) => {
   await Promise.all(
-    containers.map((container) => container.container.stop({ remove: true })),
+    containers.map((container) => container.container.stop({ remove: false })),
   )
+}
+
+const execAsync = promisify(exec)
+export const applyMigrations = async ({
+  host,
+  port,
+  user,
+  password,
+  database,
+}: {
+  host: string
+  port: string
+  user: string
+  password: string
+  database: string
+}) => {
+  // NOTE: Not reusing the one from `mocks/db`
+  // because this should be as close to what we do as possible
+  // ie, we should exec the `npm migrate` command
+
+  const databaseUrl = `postgresql://${user}:${password}@${host}:${port}/${database}`
+
+  await execAsync(`npm migrate:dev`, {
+    env: {
+      ...process.env,
+      NODE_ENV: "test",
+      DATABASE_URL: databaseUrl,
+    },
+  })
 }
