@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import set from "lodash/set"
 
+import type { SessionData } from "~/lib/types/session"
 import { DASHBOARD } from "~/lib/routes"
 import {
   singpassCallbackSchema,
@@ -159,7 +160,7 @@ export const singpassRouter = router({
       })
 
       ctx.session.destroy()
-      ctx.session.userId = userId
+      ctx.session.userId = possibleUser.id as SessionData["userId"]
       await ctx.session.save()
 
       return {
