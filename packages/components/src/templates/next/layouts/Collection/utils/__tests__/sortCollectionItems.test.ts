@@ -103,37 +103,43 @@ describe("sortCollectionItems", () => {
     expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
   })
 
-  it("should place items without dates at the end, sorted alphabetically by title", () => {
-    // Arrange
-    const items = [
-      createItem({ title: "No Date" }),
-      createItem({ title: "Newest", date: new Date("2023-12-31") }),
-      createItem({ title: "Also No Date" }),
-      createItem({ title: "Oldest", date: new Date("2023-01-01") }),
-    ]
+  describe("should place items without dates at the end, sorted alphabetically by title:", () => {
+    let items: SortableCardProps[]
 
-    // Act
-    const sorted = sortCollectionItems({ items })
+    beforeAll(() => {
+      items = [
+        createItem({ title: "No Date" }),
+        createItem({ title: "Newest", date: new Date("2023-12-31") }),
+        createItem({ title: "Also No Date" }),
+        createItem({ title: "Oldest", date: new Date("2023-01-01") }),
+      ]
+    })
 
-    // Assert
-    const expectedTitles = ["Newest", "Oldest", "Also No Date", "No Date"]
-    expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-  })
+    it("sortBy is title", () => {
+      // Act
+      const sorted = sortCollectionItems({
+        items,
+        sortBy: "title",
+        sortDirection: "asc",
+      })
 
-  it("should sort items without dates by title", () => {
-    // Arrange
-    const items = [
-      createItem({ title: "Charlie" }),
-      createItem({ title: "Alice" }),
-      createItem({ title: "Bob" }),
-    ]
+      // Assert
+      const expectedTitles = ["Newest", "Oldest", "Also No Date", "No Date"]
+      expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
+    })
 
-    // Act
-    const sorted = sortCollectionItems({ items })
+    it("sortBy is date", () => {
+      // Act
+      const sorted = sortCollectionItems({
+        items,
+        sortBy: "date",
+        sortDirection: "desc",
+      })
 
-    // Assert
-    const expectedTitles = ["Alice", "Bob", "Charlie"]
-    expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
+      // Assert
+      const expectedTitles = ["Newest", "Oldest", "Also No Date", "No Date"]
+      expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
+    })
   })
 
   describe("should sort by title with date as tiebreaker (newest first) when sortBy is title and", () => {

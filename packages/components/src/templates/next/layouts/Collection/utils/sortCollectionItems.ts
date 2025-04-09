@@ -16,34 +16,32 @@ const sortCollectionItemsByDate = ({
   sortDirection = "desc",
 }: Omit<SortCollectionItemsProps, "sortBy">) => {
   return items.sort((a, b) => {
-    // If both items have no dates, sort by title ascending as a tiebreaker
-    if (a.rawDate === undefined && b.rawDate === undefined) {
+    const bothHaveDates = a.rawDate instanceof Date && b.rawDate instanceof Date
+    const bothSameDatetime = a.rawDate?.getTime() === b.rawDate?.getTime()
+
+    if (bothHaveDates && !bothSameDatetime) {
+      // Type assertion because TS control-flow narrowing only works when
+      // check is done inline and not when we define the variable
+      const aDate = a.rawDate as unknown as Date
+      const bDate = b.rawDate as unknown as Date
+
+      switch (sortDirection) {
+        case "asc":
+          return aDate.getTime() >= bDate.getTime() ? 1 : -1
+        case "desc":
+          return aDate.getTime() <= bDate.getTime() ? 1 : -1
+        default:
+          const exhaustiveCheck: never = sortDirection
+          return exhaustiveCheck
+      }
+    }
+
+    const bothNoDates = a.rawDate === undefined && b.rawDate === undefined
+    if ((bothHaveDates && bothSameDatetime) || bothNoDates) {
       return a.title.localeCompare(b.title, undefined, { numeric: true })
     }
 
-    // Rank items with no dates last
-    if (a.rawDate === undefined) {
-      return 1
-    }
-
-    if (b.rawDate === undefined) {
-      return -1
-    }
-
-    // If both items have same date, sort by title ascending as a tiebreaker
-    if (a.rawDate.getTime() === b.rawDate.getTime()) {
-      return a.title.localeCompare(b.title, undefined, { numeric: true })
-    }
-
-    switch (sortDirection) {
-      case "asc":
-        return a.rawDate.getTime() >= b.rawDate.getTime() ? 1 : -1
-      case "desc":
-        return a.rawDate.getTime() <= b.rawDate.getTime() ? 1 : -1
-      default:
-        const exhaustiveCheck: never = sortDirection
-        return exhaustiveCheck
-    }
+    return a.rawDate instanceof Date ? -1 : 1
   }) as AllCardProps[]
 }
 
@@ -53,29 +51,31 @@ const sortCollectionItemsByTitle = ({
   sortDirection = "asc",
 }: Omit<SortCollectionItemsProps, "sortBy">) => {
   return items.sort((a, b) => {
-    // Rank items with no dates last
-    if (a.rawDate === undefined) {
-      return 1
+    const bothHaveDates = a.rawDate instanceof Date && b.rawDate instanceof Date
+    const bothNoDates = a.rawDate === undefined && b.rawDate === undefined
+
+    if ((bothHaveDates && a.title !== b.title) || bothNoDates) {
+      switch (sortDirection) {
+        case "asc":
+          return a.title.localeCompare(b.title, undefined, { numeric: true })
+        case "desc":
+          return b.title.localeCompare(a.title, undefined, { numeric: true })
+        default:
+          const exhaustiveCheck: never = sortDirection
+          return exhaustiveCheck
+      }
     }
 
-    if (b.rawDate === undefined) {
-      return -1
+    if (bothHaveDates && a.title === b.title) {
+      // Type assertion because TS control-flow narrowing only works when
+      // check is done inline and not when we define the variable
+      const aDate = a.rawDate as unknown as Date
+      const bDate = b.rawDate as unknown as Date
+
+      return aDate.getTime() < bDate.getTime() ? 1 : -1
     }
 
-    // If titles are the same, sort by last updated date descending as a tiebreaker
-    if (a.title === b.title) {
-      return a.rawDate.getTime() < b.rawDate.getTime() ? 1 : -1
-    }
-
-    switch (sortDirection) {
-      case "asc":
-        return a.title.localeCompare(b.title, undefined, { numeric: true })
-      case "desc":
-        return b.title.localeCompare(a.title, undefined, { numeric: true })
-      default:
-        const exhaustiveCheck: never = sortDirection
-        return exhaustiveCheck
-    }
+    return a.rawDate instanceof Date ? -1 : 1
   }) as AllCardProps[]
 }
 
