@@ -22,7 +22,7 @@ export const InitialLoginStep = (): JSX.Element => {
           Welcome back to {title}
         </Text>
 
-        <Text colorScheme="base.content.default" textStyle="body-2">
+        <Text color="base.content.default" textStyle="body-2">
           {isSingpassEnabled
             ? "Use your email to log in. You will need to verify with Singpass after this step."
             : "Use your email to log in."}

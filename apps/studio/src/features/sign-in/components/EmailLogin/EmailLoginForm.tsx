@@ -2,7 +2,7 @@ import { useCallback } from "react"
 
 import type { VfnStepData } from "../SignInContext"
 import { useSignInContext } from "../SignInContext"
-import { EmailInput } from "./Emailnput"
+import { EmailInput } from "./EmailInput"
 
 export const EmailLoginForm = () => {
   const { setVfnStepData, proceedToVerification } = useSignInContext()
