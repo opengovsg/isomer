@@ -214,7 +214,7 @@ describe("sortCollectionItems", () => {
       })
 
       // Assert
-      const expectedTitles = ["Oldest", "Alice", "Bob", "Charlie", "Newest"]
+      const expectedTitles = ["Newest", "Alice", "Bob", "Charlie", "Oldest"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
     })
 
@@ -227,7 +227,7 @@ describe("sortCollectionItems", () => {
       })
 
       // Assert
-      const expectedTitles = ["Newest", "Alice", "Bob", "Charlie", "Oldest"]
+      const expectedTitles = ["Oldest", "Alice", "Bob", "Charlie", "Newest"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
     })
   })

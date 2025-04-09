@@ -37,9 +37,9 @@ const sortCollectionItemsByDate = ({
 
     switch (sortDirection) {
       case "asc":
-        return a.rawDate.getTime() < b.rawDate.getTime() ? 1 : -1
+        return a.rawDate.getTime() >= b.rawDate.getTime() ? 1 : -1
       case "desc":
-        return a.rawDate.getTime() > b.rawDate.getTime() ? 1 : -1
+        return a.rawDate.getTime() <= b.rawDate.getTime() ? 1 : -1
       default:
         const exhaustiveCheck: never = sortDirection
         return exhaustiveCheck
@@ -82,7 +82,7 @@ const sortCollectionItemsByTitle = ({
 export const sortCollectionItems = ({
   items,
   sortBy = "date",
-  sortDirection = "asc",
+  sortDirection = "desc",
 }: SortCollectionItemsProps): AllCardProps[] => {
   switch (sortBy) {
     case "date":
