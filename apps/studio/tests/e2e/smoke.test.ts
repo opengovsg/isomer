@@ -1,13 +1,11 @@
 import { expect, test } from "@playwright/test"
 
-import { env } from "~/env.mjs"
+test("go to /sign-in", async ({ page }) => {
+  await page.goto("/sign-in")
 
-test.setTimeout(35e3)
+  const text = page.getByText(`Isomer Studio`).first()
 
-test("go to /", async ({ page }) => {
-  await page.goto("/")
-
-  await page.waitForSelector(`text=${env.NEXT_PUBLIC_APP_NAME}`)
+  await expect(text).toBeVisible()
 })
 
 test("test 404", async ({ page }) => {
