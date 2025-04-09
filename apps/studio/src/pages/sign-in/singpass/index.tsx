@@ -58,6 +58,7 @@ const SingpassSignInPage: NextPageWithLayout = () => {
             borderColor="base.divider.medium"
             px="1.75rem"
             py="2rem"
+            minW="19.5rem"
           >
             <Flex w="100%" flexDir="column" alignItems="start" gap="1.75rem">
               <IsomerLogo />
@@ -75,16 +76,19 @@ const SingpassSignInPage: NextPageWithLayout = () => {
                     : "You’ll need your Singpass app or credentials"}
                 </Text>
 
-                <Text textStyle="body-2" color="base.content.default">
-                  <Button
-                    variant="link"
-                    colorScheme="neutral"
-                    textDecoration="underline"
-                    onClick={openUnableToUseSingpassModal}
-                  >
-                    Can’t use Singpass to authenticate?
-                  </Button>
-                </Text>
+                <Button
+                  variant="link"
+                  colorScheme="neutral"
+                  textDecoration="underline"
+                  onClick={openUnableToUseSingpassModal}
+                  textStyle="body-2"
+                  color="base.content.medium"
+                  w="full"
+                  justifyContent="start"
+                  textAlign="left"
+                >
+                  Can’t use Singpass to authenticate?
+                </Button>
               </Flex>
 
               <Flex w="100%" flexDir="column" gap="0.75rem">

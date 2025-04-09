@@ -41,7 +41,7 @@ export const SingpassLoginButton = (): JSX.Element | null => {
       onClick={handleSingpassLogin}
       aria-label="Authenticate with Singpass"
     >
-      <Flex align="center" flexDirection="row" aria-hidden>
+      <Flex align="center" flexDirection="row" flexWrap="wrap" aria-hidden>
         <Text fontWeight="700">Authenticate with </Text>
         {/* Negative margin so the svg sits on the same line as the text */}
         <Box mb="-3px">

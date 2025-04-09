@@ -70,6 +70,7 @@ export const SingpassCallback = (): JSX.Element => {
           borderColor="base.divider.medium"
           px="1.75rem"
           py="2rem"
+          minW="19.5rem"
         >
           <Flex w="100%" flexDir="column" alignItems="start" gap="1.75rem">
             <IsomerLogo />
