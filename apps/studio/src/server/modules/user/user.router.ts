@@ -56,6 +56,19 @@ export const userRouter = router({
         action: "manage",
       })
 
+      const possibleActor = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "User not found",
+            }),
+        )
+      const actorName = possibleActor.name || possibleActor.email
+
       const createdUsers = await db.transaction().execute(async (tx) => {
         return await Promise.all(
           users.map(async (user) => {
@@ -81,6 +94,7 @@ export const userRouter = router({
       await Promise.all(
         createdUsers.map((createdUser) =>
           sendInvitation({
+            inviterName: actorName,
             recipientEmail: createdUser.email,
             siteName,
             role: createdUser.role,
@@ -313,6 +327,19 @@ export const userRouter = router({
         action: "manage",
       })
 
+      const possibleActor = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "User not found",
+            }),
+        )
+      const actorName = possibleActor.name || possibleActor.email
+
       const user = await db
         .selectFrom("User")
         .where("id", "=", userId)
@@ -353,6 +380,7 @@ export const userRouter = router({
       // Send invite
       const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
       await sendInvitation({
+        inviterName: actorName,
         recipientEmail: user.email,
         siteName,
         role: userPermission[0]?.role ?? RoleType.Editor,
