@@ -18,7 +18,7 @@ const sortCollectionItemsByDate = ({
   return items.sort((a, b) => {
     // If both items have no dates, sort by title ascending as a tiebreaker
     if (a.rawDate === undefined && b.rawDate === undefined) {
-      return a.title.localeCompare(b.title)
+      return a.title.localeCompare(b.title, undefined, { numeric: true })
     }
 
     // Rank items with no dates last
@@ -32,7 +32,7 @@ const sortCollectionItemsByDate = ({
 
     // If both items have same date, sort by title ascending as a tiebreaker
     if (a.rawDate.getTime() === b.rawDate.getTime()) {
-      return a.title.localeCompare(b.title)
+      return a.title.localeCompare(b.title, undefined, { numeric: true })
     }
 
     switch (sortDirection) {
@@ -69,9 +69,9 @@ const sortCollectionItemsByTitle = ({
 
     switch (sortDirection) {
       case "asc":
-        return a.title.localeCompare(b.title)
+        return a.title.localeCompare(b.title, undefined, { numeric: true })
       case "desc":
-        return b.title.localeCompare(a.title)
+        return b.title.localeCompare(a.title, undefined, { numeric: true })
       default:
         const exhaustiveCheck: never = sortDirection
         return exhaustiveCheck

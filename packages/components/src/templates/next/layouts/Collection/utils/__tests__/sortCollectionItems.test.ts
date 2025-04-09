@@ -82,6 +82,27 @@ describe("sortCollectionItems", () => {
     expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
   })
 
+  it("should sort by title when dates are equal and take into account numbers in the title", () => {
+    // Arrange
+    const sameDate = new Date("2023-01-01")
+    const items = [
+      createItem({ title: "2 ogpeople", date: sameDate }),
+      createItem({ title: "1 ogpeople", date: sameDate }),
+      createItem({ title: "10 ogpeople", date: sameDate }),
+    ]
+
+    // Act
+    const sorted = sortCollectionItems({
+      items,
+      sortBy: "title",
+      sortDirection: "desc",
+    })
+
+    // Assert
+    const expectedTitles = ["10 ogpeople", "2 ogpeople", "1 ogpeople"]
+    expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
+  })
+
   it("should place items without dates at the end, sorted alphabetically by title", () => {
     // Arrange
     const items = [
