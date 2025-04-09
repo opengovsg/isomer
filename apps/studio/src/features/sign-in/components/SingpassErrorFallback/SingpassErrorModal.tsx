@@ -16,12 +16,10 @@ import { SIGN_IN } from "~/lib/routes"
 import { appendWithRedirect } from "~/utils/url"
 
 interface SingpassErrorModalProps {
-  message: string
   redirectUrl: string
 }
 
 export const SingpassErrorModal = ({
-  message,
   redirectUrl,
 }: SingpassErrorModalProps) => {
   const { onClose } = useDisclosure()
@@ -29,16 +27,6 @@ export const SingpassErrorModal = ({
     base: "mobile",
     md: "md",
   })
-
-  const modalText = useMemo(() => {
-    switch (message) {
-      default:
-        return {
-          header: "An unknown error has occurred",
-          body: "Please try logging in again.",
-        }
-    }
-  }, [message])
 
   const backToLoginLink = useMemo(() => {
     return appendWithRedirect(SIGN_IN, redirectUrl)
@@ -48,8 +36,8 @@ export const SingpassErrorModal = ({
     <Modal isOpen onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{modalText.header}</ModalHeader>
-        <ModalBody>{modalText.body}</ModalBody>
+        <ModalHeader>An unknown error has occurred</ModalHeader>
+        <ModalBody>Please try logging in again.</ModalBody>
         <ModalFooter>
           <Button as={Link} href={backToLoginLink}>
             Back to login
