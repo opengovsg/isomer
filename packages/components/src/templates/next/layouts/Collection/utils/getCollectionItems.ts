@@ -61,6 +61,7 @@ export const getCollectionItems = ({
 
       const baseItem = {
         type: "collectionCard" as const,
+        id: item.permalink,
         rawDate: date,
         lastUpdated: date?.toISOString(),
         category: item.category || CATEGORY_OTHERS,
