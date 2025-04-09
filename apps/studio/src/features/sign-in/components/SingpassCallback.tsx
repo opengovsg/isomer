@@ -6,7 +6,7 @@ import { RestrictedGovtMasthead } from "@opengovsg/design-system-react"
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
 import { IsomerLogo } from "~/components/Svg"
 import { useLoginState } from "~/features/auth"
-import { SIGN_IN } from "~/lib/routes"
+import { SIGN_IN_SINGPASS } from "~/lib/routes"
 import { callbackUrlSchema } from "~/schemas/url"
 import { trpc } from "~/utils/trpc"
 
@@ -36,11 +36,8 @@ export const SingpassCallback = (): JSX.Element => {
           void router.replace(callbackUrlSchema.parse(redirectUrl))
         }
       },
-      onError: (error) => {
-        console.error(error)
-        void router.replace(
-          `${SIGN_IN}?error=${encodeURIComponent(error.message)}`,
-        )
+      onError: (_) => {
+        void router.replace(`${SIGN_IN_SINGPASS}?error=true`)
       },
     },
   )
