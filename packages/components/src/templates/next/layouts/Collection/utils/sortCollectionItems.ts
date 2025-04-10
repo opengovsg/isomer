@@ -72,6 +72,10 @@ const sortCollectionItemsByTitle = ({
       const aDate = a.rawDate as unknown as Date
       const bDate = b.rawDate as unknown as Date
 
+      if (aDate.getTime() === bDate.getTime()) {
+        return 0
+      }
+
       return aDate.getTime() < bDate.getTime() ? 1 : -1
     }
 
