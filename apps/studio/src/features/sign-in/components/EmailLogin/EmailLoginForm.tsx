@@ -2,22 +2,18 @@ import { useCallback } from "react"
 
 import type { VfnStepData } from "../SignInContext"
 import { useSignInContext } from "../SignInContext"
-import { EmailInput } from "./Emailnput"
-import { VerificationInput } from "./VerificationInput"
+import { EmailInput } from "./EmailInput"
 
 export const EmailLoginForm = () => {
-  const { setVfnStepData, vfnStepData } = useSignInContext()
+  const { setVfnStepData, proceedToVerification } = useSignInContext()
 
   const handleOnSuccessEmail = useCallback(
     ({ email, otpPrefix }: VfnStepData) => {
       setVfnStepData({ email, otpPrefix })
+      proceedToVerification()
     },
-    [setVfnStepData],
+    [proceedToVerification, setVfnStepData],
   )
-
-  if (!!vfnStepData?.email) {
-    return <VerificationInput />
-  }
 
   return <EmailInput onSuccess={handleOnSuccessEmail} />
 }

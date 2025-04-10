@@ -1,9 +1,7 @@
 import type { TokenSet } from "openid-client"
 
 export const extractUuid = (tokens: TokenSet) => {
-  const { id_token: idToken } = tokens
-
-  if (!idToken) {
+  if (!tokens.id_token) {
     // No ID token happens when there is an error in communicating with Singpass
     return undefined
   }

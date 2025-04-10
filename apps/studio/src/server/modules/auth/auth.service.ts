@@ -3,6 +3,7 @@ import { type Prisma, type PrismaClient } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
 import type { DB, Transaction, VerificationToken } from "../database"
+import type { SessionData } from "~/lib/types/session"
 import { logAuthEvent } from "../audit/audit.service"
 import { AuditLogEvent } from "../database"
 import { VerificationError } from "./auth.error"
@@ -55,7 +56,7 @@ export const verifyToken = async (
 
 interface RecordUserLoginParams {
   tx: Transaction<DB>
-  userId: string
+  userId: NonNullable<SessionData["userId"]>
   verificationToken: VerificationToken
 }
 
@@ -64,7 +65,7 @@ export const recordUserLogin = async ({
   userId,
   verificationToken,
 }: RecordUserLoginParams) => {
-  const newUser = await tx
+  const updatedUser = await tx
     .updateTable("User")
     .set({
       // NOTE: We are not logging the UserUpdate event here, as that is already
@@ -83,7 +84,7 @@ export const recordUserLogin = async ({
 
   await logAuthEvent(tx, {
     eventType: AuditLogEvent.Login,
-    by: newUser,
+    by: updatedUser,
     delta: {
       before: {
         ...verificationToken,
