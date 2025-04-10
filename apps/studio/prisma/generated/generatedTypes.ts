@@ -109,7 +109,7 @@ export interface User {
   name: string
   email: string
   phone: string
-  uuid: string | null
+  singpassUuid: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
   deletedAt: Timestamp | null

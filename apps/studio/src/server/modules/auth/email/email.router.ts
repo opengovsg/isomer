@@ -118,22 +118,24 @@ export const emailSessionRouter = router({
         throw e
       }
 
-      const isSingpassActivated = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
+      const isSingpassEnabled = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
 
-      if (!isSingpassActivated) {
+      if (!isSingpassEnabled) {
         return db.transaction().execute(async (tx) => {
           const user = await upsertUser({
             tx,
             email,
           })
 
+          const userId = user.id as NonNullable<SessionData["userId"]>
+
           await recordUserLogin({
             tx,
-            userId: user.id,
+            userId,
             verificationToken: oldVerificationToken,
           })
 
-          ctx.session.userId = user.id as SessionData["userId"]
+          ctx.session.userId = userId
           await ctx.session.save()
           return pick(user, defaultUserSelect)
         })

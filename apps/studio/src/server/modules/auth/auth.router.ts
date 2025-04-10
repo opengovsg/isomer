@@ -5,19 +5,17 @@ import getIP from "~/utils/getClientIp"
 import { logAuthEvent } from "../audit/audit.service"
 import { db } from "../database"
 import { emailSessionRouter } from "./email/email.router"
-import { sgidRouter } from "./sgid/sgid.router"
 import { singpassRouter } from "./singpass/singpass.router"
 
 export const authRouter = router({
   email: emailSessionRouter,
-  sgid: sgidRouter,
   singpass: singpassRouter,
   logout: publicProcedure.mutation(async ({ ctx }) => {
+    const { userId } = ctx.session
     ctx.session.destroy()
-    const userId = ctx.session.userId
 
     if (!userId) {
-      throw new TRPCError({ code: "BAD_REQUEST" })
+      throw new TRPCError({ code: "BAD_REQUEST", message: "User not found" })
     }
 
     await db.transaction().execute(async (tx) => {
@@ -28,7 +26,7 @@ export const authRouter = router({
         .executeTakeFirst()
 
       if (!user) {
-        throw new TRPCError({ code: "BAD_REQUEST" })
+        throw new TRPCError({ code: "BAD_REQUEST", message: "User not found" })
       }
 
       const ip = getIP(ctx.req)

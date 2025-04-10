@@ -43,7 +43,7 @@ const IsomerFooter = ({ agencyName, siteNavItems }: FooterProps) => {
       <Footer.Bottom>
         <Footer.Bottom.Links>
           <a
-            href="https://tech.gov.sg/report_vulnerability"
+            href="https://go.gov.sg/report-vulnerability"
             target="_blank"
             rel="noopener noreferrer"
           >

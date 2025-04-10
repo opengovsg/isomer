@@ -30,7 +30,6 @@ const client = z
       "test",
       "uat",
     ]),
-    NEXT_PUBLIC_ENABLE_SGID: coerceBoolean.default("false"),
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_NAME: z.string().default("Isomer Studio"),
     NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
@@ -38,30 +37,6 @@ const client = z
     NEXT_PUBLIC_INTERCOM_APP_ID: z.string().optional(),
   })
   .merge(s3Schema)
-
-/** Feature flags */
-
-const baseSgidSchema = z.object({
-  SGID_CLIENT_ID: z.string().optional(),
-  SGID_CLIENT_SECRET: z.string().optional(),
-  // Remember to set SGID redirect URI in SGID dev portal.
-  SGID_REDIRECT_URI: z.union([z.string().url(), z.string()]).optional(),
-  SGID_PRIVATE_KEY: z.string().optional(),
-})
-
-const sgidServerSchema = z.discriminatedUnion("NEXT_PUBLIC_ENABLE_SGID", [
-  baseSgidSchema.extend({
-    NEXT_PUBLIC_ENABLE_SGID: z.literal(true),
-    // Add required keys if flag is enabled.
-    SGID_CLIENT_ID: z.string().min(1),
-    SGID_CLIENT_SECRET: z.string().min(1),
-    SGID_PRIVATE_KEY: z.string().min(1),
-    SGID_REDIRECT_URI: z.string().url(),
-  }),
-  baseSgidSchema.extend({
-    NEXT_PUBLIC_ENABLE_SGID: z.literal(false),
-  }),
-])
 
 const singpassSchema = z.object({
   SINGPASS_CLIENT_ID: z.string().min(1),
@@ -93,24 +68,7 @@ const server = z
   })
   .merge(s3Schema)
   .merge(singpassSchema)
-  // Add on schemas as needed that requires conditional validation.
-  .merge(baseSgidSchema)
   .merge(client)
-  // Add on refinements as needed for conditional environment variables
-  // .superRefine((val, ctx) => ...)
-  .superRefine((val, ctx) => {
-    const parse = sgidServerSchema.safeParse(val)
-    if (!parse.success) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["NEXT_PUBLIC_ENABLE_SGID"],
-        message: "SGID environment variables are missing",
-      })
-      parse.error.issues.forEach((issue) => {
-        ctx.addIssue(issue)
-      })
-    }
-  })
   .refine((val) => !(val.SENDGRID_API_KEY && !val.SENDGRID_FROM_ADDRESS), {
     message: "SENDGRID_FROM_ADDRESS is required when SENDGRID_API_KEY is set",
     path: ["SENDGRID_FROM_ADDRESS"],
@@ -145,17 +103,12 @@ const processEnv = {
   SINGPASS_ENCRYPTION_KEY_ALG: process.env.SINGPASS_ENCRYPTION_KEY_ALG,
   SINGPASS_SIGNING_PRIVATE_KEY: process.env.SINGPASS_SIGNING_PRIVATE_KEY,
   SINGPASS_SIGNING_KEY_ALG: process.env.SINGPASS_SIGNING_KEY_ALG,
-  SGID_CLIENT_ID: process.env.SGID_CLIENT_ID,
-  SGID_CLIENT_SECRET: process.env.SGID_CLIENT_SECRET,
-  SGID_PRIVATE_KEY: process.env.SGID_PRIVATE_KEY,
-  SGID_REDIRECT_URI: process.env.SGID_REDIRECT_URI,
   // Client-side env vars
   NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   NEXT_PUBLIC_APP_VERSION:
     process.env.NEXT_PUBLIC_APP_VERSION ??
     process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
-  NEXT_PUBLIC_ENABLE_SGID: process.env.NEXT_PUBLIC_ENABLE_SGID,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
     process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
