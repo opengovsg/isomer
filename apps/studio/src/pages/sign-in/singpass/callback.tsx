@@ -7,7 +7,6 @@ import { withSuspense } from "~/hocs/withSuspense"
 
 const SingpassCallbackPage = withErrorBoundary(
   withSuspense(SingpassCallback, <FullscreenSpinner />),
-  // TODO: Replace fallback component with Singpass-specific error fallback
   { FallbackComponent: SingpassErrorFallback },
 )
 
