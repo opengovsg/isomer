@@ -109,7 +109,6 @@ export const singpassRouter = router({
 
       const { codeVerifier, nonce, userId, verificationToken } =
         ctx.session.singpass.sessionState
-      ctx.session.destroy()
 
       if (!code || !codeVerifier || !nonce || !userId) {
         ctx.logger.error(
@@ -172,7 +171,9 @@ export const singpassRouter = router({
         })
       } else if (possibleUser.singpassUuid !== uuid) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
+          // NOTE: We use NOT_FOUND here as UNAUTHORIZED would cause the session
+          // state to be destroyed by the error handler middleware
+          code: "NOT_FOUND",
           message: "Singpass profile does not match user",
         })
       }

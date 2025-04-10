@@ -31,6 +31,24 @@ export const NewUser: Story = {
   },
 }
 
+export const NewUserWithError: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        meHandlers.unauthorized(),
+        authSingpassHandlers.getName.newUser(),
+      ],
+    },
+    nextjs: {
+      router: {
+        query: {
+          error: "true",
+        },
+      },
+    },
+  },
+}
+
 export const ExistingUser: Story = {
   parameters: {
     msw: {
@@ -49,6 +67,24 @@ export const ExistingUserWithName: Story = {
         meHandlers.unauthorized(),
         authSingpassHandlers.getUserProps.existingUserWithName(),
       ],
+    },
+  },
+}
+
+export const ExistingUserWithError: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        meHandlers.unauthorized(),
+        authSingpassHandlers.getName.existingUserWithName(),
+      ],
+    },
+    nextjs: {
+      router: {
+        query: {
+          error: "true",
+        },
+      },
     },
   },
 }
