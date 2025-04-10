@@ -98,6 +98,7 @@ export const folderRouter = router({
             })
 
           await logResourceEvent(tx, {
+            siteId,
             eventType: AuditLogEvent.ResourceCreate,
             delta: {
               before: null,
@@ -202,6 +203,7 @@ export const folderRouter = router({
             })
 
           await logResourceEvent(tx, {
+            siteId: Number(siteId),
             eventType: AuditLogEvent.ResourceUpdate,
             delta: {
               before: oldResource,
