@@ -15,7 +15,6 @@ export const defaultUser: User = {
   phone: MOCK_TEST_PHONE,
   createdAt: MOCK_STORY_DATE,
   updatedAt: MOCK_STORY_DATE,
-  deletedAt: null,
   lastLoginAt: null,
 }
 

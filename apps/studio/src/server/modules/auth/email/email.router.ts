@@ -3,9 +3,9 @@ import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { formatInTimeZone } from "date-fns-tz"
 import pick from "lodash/pick"
 
+import type { SessionData } from "~/lib/types/session"
 import { env } from "~/env.mjs"
 import { sendMail } from "~/lib/mail"
-import { SessionData } from "~/lib/types/session"
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
@@ -15,7 +15,6 @@ import { getBaseUrl } from "~/utils/getBaseUrl"
 import { logAuthEvent } from "../../audit/audit.service"
 import { db } from "../../database"
 import { defaultUserSelect } from "../../me/me.select"
-import { isUserDeleted } from "../../user/user.service"
 import { isEmailWhitelisted } from "../../whitelist/whitelist.service"
 import { VerificationError } from "../auth.error"
 import { verifyToken } from "../auth.service"
@@ -30,10 +29,7 @@ export const emailSessionRouter = router({
     .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email } }) => {
       const isWhitelisted = await isEmailWhitelisted(email)
-      const isDeleted = await isUserDeleted(email)
-
-      // Assert that the user is both whitelisted and not deleted
-      if (!isWhitelisted || isDeleted) {
+      if (!isWhitelisted) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Unauthorized. Contact Isomer support.",

@@ -106,7 +106,6 @@ export const createTestUser = () => ({
   createdAt: MOCK_STORY_DATE,
   updatedAt: MOCK_STORY_DATE,
   phone: MOCK_TEST_PHONE,
-  deletedAt: null,
   lastLoginAt: null,
 })
 
