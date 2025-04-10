@@ -101,13 +101,13 @@ export const applySession = () => {
   return session
 }
 
-export const createTestUser = () => ({
+export const createTestUser = (): Omit<User, "id"> => ({
   email: `test${nanoid()}@example.com`,
   name: MOCK_TEST_USER_NAME,
   createdAt: MOCK_STORY_DATE,
   updatedAt: MOCK_STORY_DATE,
   phone: MOCK_TEST_PHONE,
-  uuid: MOCK_TEST_UUID,
+  singpassUuid: MOCK_TEST_UUID,
   deletedAt: null,
   lastLoginAt: null,
 })

@@ -14,7 +14,7 @@ export const defaultUser: User = {
   email: "test@example.com",
   name: MOCK_TEST_USER_NAME,
   phone: MOCK_TEST_PHONE,
-  uuid: MOCK_TEST_UUID,
+  singpassUuid: MOCK_TEST_UUID,
   createdAt: MOCK_STORY_DATE,
   updatedAt: MOCK_STORY_DATE,
   deletedAt: null,
