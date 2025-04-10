@@ -36,7 +36,7 @@ export const NewUserWithError: Story = {
     msw: {
       handlers: [
         meHandlers.unauthorized(),
-        authSingpassHandlers.getName.newUser(),
+        authSingpassHandlers.getUserProps.newUser(),
       ],
     },
     nextjs: {
@@ -76,7 +76,7 @@ export const ExistingUserWithError: Story = {
     msw: {
       handlers: [
         meHandlers.unauthorized(),
-        authSingpassHandlers.getName.existingUserWithName(),
+        authSingpassHandlers.getUserProps.existingUserWithName(),
       ],
     },
     nextjs: {
