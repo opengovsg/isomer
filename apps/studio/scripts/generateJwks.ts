@@ -65,7 +65,7 @@ const OUTPUT_FOLDER = join(
 )
 
 async function generateSigningKey({ alg, crv }: { alg: string; crv: string }) {
-  const keyPair = await jose.generateKeyPair(alg, { crv })
+  const keyPair = await jose.generateKeyPair(alg, { crv, extractable: true })
   const privateKey = await jose.exportPKCS8(keyPair.privateKey)
   const publicKey = await jose.exportSPKI(keyPair.publicKey)
   const jwk = await jose.exportJWK(keyPair.publicKey)
@@ -81,7 +81,7 @@ async function generateEncryptionKey({
   alg: string
   crv: string
 }) {
-  const keyPair = await jose.generateKeyPair(alg, { crv })
+  const keyPair = await jose.generateKeyPair(alg, { crv, extractable: true })
   const privateKey = await jose.exportPKCS8(keyPair.privateKey)
   const publicKey = await jose.exportSPKI(keyPair.publicKey)
   const jwk = await jose.exportJWK(keyPair.publicKey)
