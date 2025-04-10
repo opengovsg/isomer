@@ -5,6 +5,7 @@ import { invitationTemplate } from "../templates"
 
 describe("invitationTemplate", () => {
   const mockData = {
+    inviterName: "Test User",
     recipientEmail: "test@example.com",
     siteName: "Test Site",
     role: RoleType.Admin,
