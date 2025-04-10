@@ -7,15 +7,17 @@ describe("sortCollectionItems", () => {
   let itemCounter = 0
 
   const createItem = ({
-    title,
+    title = "Test Item",
     date,
     variant = "article",
     url = "",
+    category = "Others",
   }: {
-    title: string
+    title?: string
     date?: Date
     variant?: "file" | "link" | "article"
     url?: string
+    category?: string
   }): SortableCardProps => {
     itemCounter++
     return {
@@ -25,7 +27,7 @@ describe("sortCollectionItems", () => {
       variant,
       url,
       description: "",
-      category: "Others",
+      category,
       site: {
         siteMap: {
           id: "root",
@@ -132,6 +134,19 @@ describe("sortCollectionItems", () => {
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
     })
 
+    it("sortBy is category", () => {
+      // Act
+      const sorted = sortCollectionItems({
+        items,
+        sortBy: "category",
+        sortDirection: "asc",
+      })
+
+      // Assert
+      const expectedTitles = ["Newest", "Oldest", "Also No Date", "No Date"]
+      expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
+    })
+
     it("sortBy is date", () => {
       // Act
       const sorted = sortCollectionItems({
@@ -197,6 +212,49 @@ describe("sortCollectionItems", () => {
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
       expect(sorted[2]?.url).toEqual("/charlie-2023-12-31")
       expect(sorted[3]?.url).toEqual("/charlie-2023-12-30")
+    })
+  })
+
+  describe("should sort by category with title as tiebreaker (alphabetically) when sortBy is category and", () => {
+    let items: SortableCardProps[]
+
+    beforeAll(() => {
+      items = [
+        createItem({ category: "2000" }),
+        createItem({ category: "2001", title: "Alice" }),
+        createItem({ category: "2001", title: "Bob" }),
+        createItem({ category: "2002" }),
+      ]
+    })
+
+    it("sortDirection is desc", () => {
+      // Act
+      const sorted = sortCollectionItems({
+        items,
+        sortBy: "category",
+        sortDirection: "desc",
+      })
+
+      // Assert
+      const expectedCategories = ["2002", "2001", "2001", "2000"]
+      expect(sorted.map((item) => item.category)).toEqual(expectedCategories)
+      expect(sorted[1]?.title).toEqual("Alice")
+      expect(sorted[2]?.title).toEqual("Bob")
+    })
+
+    it("sortDirection is asc", () => {
+      // Act
+      const sorted = sortCollectionItems({
+        items,
+        sortBy: "category",
+        sortDirection: "asc",
+      })
+
+      // Assert
+      const expectedCategories = ["2000", "2001", "2001", "2002"]
+      expect(sorted.map((item) => item.category)).toEqual(expectedCategories)
+      expect(sorted[1]?.title).toEqual("Alice")
+      expect(sorted[2]?.title).toEqual("Bob")
     })
   })
 

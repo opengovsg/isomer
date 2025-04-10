@@ -79,6 +79,39 @@ const sortCollectionItemsByTitle = ({
   }) as AllCardProps[]
 }
 
+// Sort by category, tiebreaker by title
+const sortCollectionItemsByCategory = ({
+  items,
+  sortDirection = "asc",
+}: Omit<SortCollectionItemsProps, "sortBy">) => {
+  return items.sort((a, b) => {
+    const bothHaveDates = a.rawDate instanceof Date && b.rawDate instanceof Date
+    const bothNoDates = a.rawDate === undefined && b.rawDate === undefined
+
+    if ((bothHaveDates && a.category !== b.category) || bothNoDates) {
+      switch (sortDirection) {
+        case "asc":
+          return a.category.localeCompare(b.category, undefined, {
+            numeric: true,
+          })
+        case "desc":
+          return b.category.localeCompare(a.category, undefined, {
+            numeric: true,
+          })
+        default:
+          const exhaustiveCheck: never = sortDirection
+          return exhaustiveCheck
+      }
+    }
+
+    if (bothHaveDates && a.category === b.category) {
+      return a.title.localeCompare(b.title, undefined, { numeric: true })
+    }
+
+    return a.rawDate instanceof Date ? -1 : 1
+  }) as AllCardProps[]
+}
+
 export const sortCollectionItems = ({
   items,
   sortBy = "date",
@@ -89,6 +122,8 @@ export const sortCollectionItems = ({
       return sortCollectionItemsByDate({ items, sortDirection })
     case "title":
       return sortCollectionItemsByTitle({ items, sortDirection })
+    case "category":
+      return sortCollectionItemsByCategory({ items, sortDirection })
     default:
       const exhaustiveCheck: never = sortBy
       return exhaustiveCheck
