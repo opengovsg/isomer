@@ -38,7 +38,9 @@ export const SingpassCallback = (): JSX.Element => {
       },
       onError: (error) => {
         console.error(error)
-        void router.replace(`${SIGN_IN}?error=${error.message}`)
+        void router.replace(
+          `${SIGN_IN}?error=${encodeURIComponent(error.message)}`,
+        )
       },
     },
   )

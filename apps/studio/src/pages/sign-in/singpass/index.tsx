@@ -19,7 +19,7 @@ const SingpassSignInPage: NextPageWithLayout = () => {
     onClose: closeUnableToUseSingpassModal,
   } = useDisclosure()
   const router = useRouter()
-  const { data, isLoading } = trpc.auth.singpass.getName.useQuery()
+  const { data, isLoading } = trpc.auth.singpass.getUserProps.useQuery()
 
   const handleBackToLogin = async () => {
     await router.push(SIGN_IN)

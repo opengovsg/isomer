@@ -55,7 +55,7 @@ export const singpassRouter = router({
       }
     }),
 
-  getName: publicProcedure.query(async ({ ctx }) => {
+  getUserProps: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.session.singpass?.sessionState) {
       ctx.logger.warn("No Singpass session state found")
 
@@ -77,7 +77,7 @@ export const singpassRouter = router({
 
     return {
       name: user.name || user.email,
-      isNewUser: !user.uuid,
+      isNewUser: !user.singpassUuid,
     }
   }),
 
@@ -146,11 +146,11 @@ export const singpassRouter = router({
           () => new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
         )
 
-      if (!possibleUser.uuid) {
+      if (!possibleUser.singpassUuid) {
         await ctx.db.transaction().execute(async (tx) => {
           const newUser = await tx
             .updateTable("User")
-            .set({ uuid })
+            .set({ singpassUuid: uuid })
             .where("id", "=", userId)
             .returningAll()
             .executeTakeFirstOrThrow(
@@ -170,27 +170,31 @@ export const singpassRouter = router({
             },
           })
         })
-      } else if (possibleUser.uuid !== uuid) {
+      } else if (possibleUser.singpassUuid !== uuid) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Singpass profile does not match user",
         })
       }
 
+      const verifiedUserId = possibleUser.id as NonNullable<
+        SessionData["userId"]
+      >
+
       await ctx.db.transaction().execute(async (tx) => {
         await recordUserLogin({
           tx,
-          userId,
+          userId: verifiedUserId,
           verificationToken,
         })
       })
 
       ctx.session.destroy()
-      ctx.session.userId = possibleUser.id as SessionData["userId"]
+      ctx.session.userId = verifiedUserId
       await ctx.session.save()
 
       return {
-        isNewUser: !possibleUser.uuid,
+        isNewUser: !possibleUser.singpassUuid,
         redirectUrl: DASHBOARD,
       }
     }),

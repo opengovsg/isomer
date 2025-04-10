@@ -25,7 +25,7 @@ export const NewUser: Story = {
     msw: {
       handlers: [
         meHandlers.unauthorized(),
-        authSingpassHandlers.getName.newUser(),
+        authSingpassHandlers.getUserProps.newUser(),
       ],
     },
   },
@@ -36,7 +36,7 @@ export const ExistingUser: Story = {
     msw: {
       handlers: [
         meHandlers.unauthorized(),
-        authSingpassHandlers.getName.existingUser(),
+        authSingpassHandlers.getUserProps.existingUser(),
       ],
     },
   },
@@ -47,7 +47,7 @@ export const ExistingUserWithName: Story = {
     msw: {
       handlers: [
         meHandlers.unauthorized(),
-        authSingpassHandlers.getName.existingUserWithName(),
+        authSingpassHandlers.getUserProps.existingUserWithName(),
       ],
     },
   },

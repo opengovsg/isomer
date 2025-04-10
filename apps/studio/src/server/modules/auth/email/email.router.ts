@@ -127,13 +127,15 @@ export const emailSessionRouter = router({
             email,
           })
 
+          const userId = user.id as NonNullable<SessionData["userId"]>
+
           await recordUserLogin({
             tx,
-            userId: user.id,
+            userId,
             verificationToken: oldVerificationToken,
           })
 
-          ctx.session.userId = user.id as SessionData["userId"]
+          ctx.session.userId = userId
           await ctx.session.save()
           return pick(user, defaultUserSelect)
         })
