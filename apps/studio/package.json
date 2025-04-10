@@ -33,6 +33,7 @@
     "test:unit": "dotenv -e .env.test vitest run",
     "test-ci:unit": "dotenv -e .env.test vitest run -- --coverage",
     "test:load:build": "webpack --config tests/load/webpack.config.js",
+    "dev:e2e": "dotenv -e .env.test next dev",
     "test:e2e": "dotenv -e .env.test npx playwright test",
     "test-dev": "start-server-and-test dev http://127.0.0.1:3000 test",
     "test-dev:unit": "dotenv -e .env.test vitest",
