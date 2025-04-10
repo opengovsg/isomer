@@ -69,7 +69,7 @@ export const singpassRouter = router({
 
     const user = await ctx.db
       .selectFrom("User")
-      .selectAll()
+      .select(["User.name", "User.email", "User.singpassUuid"])
       .where("User.id", "=", userId)
       .executeTakeFirstOrThrow(
         () => new TRPCError({ code: "NOT_FOUND", message: "User not found" }),

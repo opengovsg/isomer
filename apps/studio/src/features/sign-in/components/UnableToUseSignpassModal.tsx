@@ -1,4 +1,3 @@
-import NextLink from "next/link"
 import {
   Link,
   Modal,
@@ -38,11 +37,7 @@ export const UnableToUseSignpassModal = ({
             <br />
             <br />
             For any issues with Singpass, you may refer to{" "}
-            <Link
-              as={NextLink}
-              href="https://ask.gov.sg/singpass"
-              target="_blank"
-            >
+            <Link href="https://ask.gov.sg/singpass" target="_blank">
               Singpass FAQs
             </Link>
             .

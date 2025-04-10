@@ -14,6 +14,7 @@ const meta: Meta<typeof SignInPage> = {
   component: SignInPage,
   parameters: {
     loginState: false,
+    chromatic: withChromaticModes(["gsib", "mobile"]),
     msw: {
       handlers: [
         meHandlers.unauthorized(),
@@ -29,11 +30,7 @@ const meta: Meta<typeof SignInPage> = {
 export default meta
 type Story = StoryObj<typeof SignInPage>
 
-export const Default: Story = {
-  parameters: {
-    chromatic: withChromaticModes(["gsib", "mobile"]),
-  },
-}
+export const Default: Story = {}
 
 export const InputValidation: Story = {
   play: async ({ canvasElement, step }) => {

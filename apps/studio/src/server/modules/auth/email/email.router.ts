@@ -118,9 +118,9 @@ export const emailSessionRouter = router({
         throw e
       }
 
-      const isSingpassActivated = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
+      const isSingpassEnabled = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
 
-      if (!isSingpassActivated) {
+      if (!isSingpassEnabled) {
         return db.transaction().execute(async (tx) => {
           const user = await upsertUser({
             tx,

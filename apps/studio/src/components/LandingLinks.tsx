@@ -1,11 +1,9 @@
-import NextLink from "next/link"
 import { HStack, Link } from "@chakra-ui/react"
 
 export const LandingLinks = (): JSX.Element => {
   return (
     <HStack spacing="1.5rem">
       <Link
-        as={NextLink}
         title="View privacy statement"
         href="https://www.isomer.gov.sg/privacy"
         variant="standalone"
@@ -17,7 +15,6 @@ export const LandingLinks = (): JSX.Element => {
       </Link>
 
       <Link
-        as={NextLink}
         title="View terms of use"
         href="https://www.isomer.gov.sg/terms-of-use"
         variant="standalone"
@@ -29,9 +26,8 @@ export const LandingLinks = (): JSX.Element => {
       </Link>
 
       <Link
-        as={NextLink}
         title="Report vulnerability"
-        href="https://www.tech.gov.sg/report-vulnerability"
+        href="https://go.gov.sg/report-vulnerability"
         variant="standalone"
         colorScheme="neutral"
         textStyle="caption-2"

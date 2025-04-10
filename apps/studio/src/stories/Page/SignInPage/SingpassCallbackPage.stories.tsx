@@ -12,6 +12,7 @@ const meta: Meta<typeof SingpassCallbackPage> = {
   component: SingpassCallbackPage,
   parameters: {
     loginState: false,
+    chromatic: withChromaticModes(["gsib", "mobile"]),
     growthbook: [createSingpassEnabledGbParameters(true)],
     msw: {
       handlers: [
@@ -33,8 +34,4 @@ const meta: Meta<typeof SingpassCallbackPage> = {
 export default meta
 type Story = StoryObj<typeof SingpassCallbackPage>
 
-export const NewUser: Story = {
-  parameters: {
-    chromatic: withChromaticModes(["gsib", "mobile"]),
-  },
-}
+export const NewUser: Story = {}
