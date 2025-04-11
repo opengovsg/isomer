@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useState } from "react"
 import { useInterval } from "usehooks-ts"
 
 type SignInStateType = "initial" | "verification"
-type SignInErrorType = "unauthorized" | "blacklisted"
+type SignInErrorType = "unauthorized"
 
 interface SignInState {
   timer: number

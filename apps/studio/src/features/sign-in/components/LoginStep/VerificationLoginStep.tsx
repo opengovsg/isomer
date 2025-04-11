@@ -24,9 +24,8 @@ export const VerificationLoginStep = (): JSX.Element => {
           colorScheme="blue"
           textDecoration="underline"
           onClick={backToInitial}
-          textStyle="body-2"
         >
-          Use a different email
+          <Text textStyle="body-2">Use a different email</Text>
         </Button>
       </VStack>
 

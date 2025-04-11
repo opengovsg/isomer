@@ -1,11 +1,12 @@
 import { useEffect } from "react"
 import { useRouter } from "next/router"
-import { FormControl, Stack } from "@chakra-ui/react"
+import { FormControl, Stack, Text } from "@chakra-ui/react"
 import {
   Button,
   FormErrorMessage,
   FormLabel,
   Input,
+  Link,
 } from "@opengovsg/design-system-react"
 
 import type { VfnStepData } from "../SignInContext"
@@ -36,11 +37,9 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
     onError: (error) => {
       if (error.data?.code === "UNAUTHORIZED") {
         setErrorState("unauthorized")
-      } else if (error.data?.code === "INTERNAL_SERVER_ERROR") {
-        setErrorState("blacklisted")
       }
 
-      setError("email", { message: error.message })
+      setError("email", { type: error.data?.code, message: error.message })
     },
   })
 
@@ -69,7 +68,26 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
             autoFocus
             {...register("email")}
           />
-          <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
+          <FormErrorMessage>
+            {errors.email?.type === "UNAUTHORIZED" && (
+              <>{errors.email.message}</>
+            )}
+            {errors.email?.type === "INTERNAL_SERVER_ERROR" && (
+              <Text>
+                We are having trouble sending an OTP to this email address.{" "}
+                <Link
+                  href="mailto:support@isomer.gov.sg?subject=I can't receive OTP on Isomer Studio"
+                  color="utility.feedback.critical"
+                  _hover={{
+                    color: "unset",
+                  }}
+                >
+                  Contact Isomer Support
+                </Link>
+                .
+              </Text>
+            )}
+          </FormErrorMessage>
         </FormControl>
         <Button
           size="sm"
