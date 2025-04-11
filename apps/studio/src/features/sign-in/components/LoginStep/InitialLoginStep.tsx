@@ -19,8 +19,6 @@ export const InitialLoginStep = (): JSX.Element => {
     switch (errorState) {
       case "unauthorized":
         return "You don’t have access to Isomer Studio"
-      case "blacklisted":
-        return "We were not able to send you an email"
       default:
         const _: undefined = errorState
         return undefined
@@ -31,8 +29,6 @@ export const InitialLoginStep = (): JSX.Element => {
     switch (errorState) {
       case "unauthorized":
         return "If you think you should have access, ask the agency you are working with to whitelist your email address."
-      case "blacklisted":
-        return "Please contact Isomer Support for assistance."
       default:
         const _: undefined = errorState
         return undefined
