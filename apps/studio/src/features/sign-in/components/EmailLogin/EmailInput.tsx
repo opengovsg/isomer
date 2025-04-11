@@ -8,16 +8,18 @@ import {
   Input,
 } from "@opengovsg/design-system-react"
 
+import type { VfnStepData } from "../SignInContext"
 import { useZodForm } from "~/lib/form"
 import { emailSignInSchema } from "~/schemas/auth/email/sign-in"
 import { trpc } from "~/utils/trpc"
-import { type VfnStepData } from "../SignInContext"
+import { useSignInContext } from "../SignInContext"
 
 interface EmailInputProps {
   onSuccess: (props: VfnStepData) => void
 }
 
 export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
+  const { setErrorState } = useSignInContext()
   const {
     register,
     handleSubmit,
@@ -31,7 +33,15 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
 
   const loginMutation = trpc.auth.email.login.useMutation({
     onSuccess,
-    onError: (error) => setError("email", { message: error.message }),
+    onError: (error) => {
+      if (error.data?.code === "UNAUTHORIZED") {
+        setErrorState("unauthorized")
+      } else if (error.data?.code === "INTERNAL_SERVER_ERROR") {
+        setErrorState("blacklisted")
+      }
+
+      setError("email", { message: error.message })
+    },
   })
 
   useEffect(() => {

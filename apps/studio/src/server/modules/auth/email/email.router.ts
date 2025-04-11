@@ -36,7 +36,7 @@ export const emailSessionRouter = router({
       if (!isWhitelisted || isDeleted) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: "Unauthorized. Contact Isomer support.",
+          message: "Email address is not whitelisted",
         })
       }
 
@@ -53,34 +53,45 @@ export const emailSessionRouter = router({
 
       // May have one of them fail,
       // so users may get an email but not have the token saved, but that should be fine.
-      await Promise.all([
-        ctx.prisma.verificationToken.upsert({
-          where: {
-            identifier: getOtpFingerPrint(email, ctx.req),
-          },
-          update: {
-            token: hashedToken,
-            expires,
-            attempts: 0,
-          },
-          create: {
-            identifier: getOtpFingerPrint(email, ctx.req),
-            token: hashedToken,
-            expires,
-          },
-        }),
-        sendMail({
-          subject: `Sign in to ${url.host}`,
-          body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It will expire on ${formatInTimeZone(
-            expires,
-            "Asia/Singapore",
-            "dd MMM yyyy, hh:mmaaa",
-          )}.
+      try {
+        await Promise.all([
+          ctx.prisma.verificationToken.upsert({
+            where: {
+              identifier: getOtpFingerPrint(email, ctx.req),
+            },
+            update: {
+              token: hashedToken,
+              expires,
+              attempts: 0,
+            },
+            create: {
+              identifier: getOtpFingerPrint(email, ctx.req),
+              token: hashedToken,
+              expires,
+            },
+          }),
+          sendMail({
+            subject: `Sign in to ${url.host}`,
+            body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It will expire on ${formatInTimeZone(
+              expires,
+              "Asia/Singapore",
+              "dd MMM yyyy, hh:mmaaa",
+            )}.
       Please use this to login to your account.
       <p>If your OTP does not work, please request for a new one.</p>`,
-          recipient: email,
-        }),
-      ])
+            recipient: email,
+          }),
+        ])
+      } catch (e) {
+        ctx.logger.error(
+          { error: e },
+          "Failed to send OTP email for email sign in",
+        )
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to send OTP email",
+        })
+      }
       return { email, otpPrefix }
     }),
   verifyOtp: publicProcedure

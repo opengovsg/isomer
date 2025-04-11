@@ -3,11 +3,14 @@ import { createContext, useCallback, useContext, useState } from "react"
 import { useInterval } from "usehooks-ts"
 
 type SignInStateType = "initial" | "verification"
+type SignInErrorType = "unauthorized" | "blacklisted"
 
 interface SignInState {
   timer: number
   resetTimer: () => void
   state: SignInStateType
+  errorState: SignInErrorType | undefined
+  setErrorState: Dispatch<SetStateAction<SignInErrorType | undefined>>
   vfnStepData: VfnStepData | undefined
   setVfnStepData: Dispatch<SetStateAction<VfnStepData | undefined>>
   proceedToVerification: () => void
@@ -46,6 +49,7 @@ export const SignInContextProvider = ({
   delayForResendSeconds = 60,
 }: PropsWithChildren<SignInContextProviderProps>) => {
   const [state, setState] = useState<SignInStateType>("initial")
+  const [errorState, setErrorState] = useState<SignInErrorType>()
   const [vfnStepData, setVfnStepData] = useState<VfnStepData>()
   const [timer, setTimer] = useState(delayForResendSeconds)
 
@@ -56,11 +60,13 @@ export const SignInContextProvider = ({
 
   const proceedToVerification = useCallback(() => {
     setState("verification")
+    setErrorState(undefined)
   }, [])
 
   const backToInitial = useCallback(() => {
     setState("initial")
     setVfnStepData(undefined)
+    setErrorState(undefined)
   }, [])
 
   // Start the resend timer once in the vfn step.
@@ -80,6 +86,8 @@ export const SignInContextProvider = ({
         proceedToVerification,
         backToInitial,
         state,
+        errorState,
+        setErrorState,
       }}
     >
       {children}
