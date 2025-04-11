@@ -130,13 +130,12 @@ const SingpassSignInPage: NextPageWithLayout = () => {
                   colorScheme="neutral"
                   textDecoration="underline"
                   onClick={openUnableToUseSingpassModal}
-                  textStyle="body-2"
-                  color="base.content.medium"
-                  w="full"
                   justifyContent="start"
                   textAlign="left"
                 >
-                  Can’t use Singpass to authenticate?
+                  <Text textStyle="body-2" color="base.content.medium">
+                    Can’t use Singpass to authenticate?
+                  </Text>
                 </Button>
               </Flex>
 
