@@ -2,6 +2,7 @@ import NextLink from "next/link"
 import { Flex, Link, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 
+import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { LiftUnderRepair } from "../Svg"
 
 export const DefaultServerError = () => {
@@ -23,7 +24,7 @@ export const DefaultServerError = () => {
           It's not you, it's us. Please try refreshing this page.
           <br />
           If this issue persists,{" "}
-          <Link variant="inline" href="mailto:support@isomer.gov.sg">
+          <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
             contact Isomer Support
           </Link>
           .

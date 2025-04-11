@@ -36,7 +36,6 @@ jobs:
       app-url: "https://uat-studio.isomer.gov.sg"
       app-name: "Isomer Studio (UAT)"
       app-version: ${{ github.sha }}
-      app-enable-sgid: false
       app-s3-region: "ap-southeast-1"
       app-s3-assets-bucket-name: "isomer-next-infra-uat-assets-private-e728930"
       app-s3-assets-domain-name: "isomer-user-content-uat.by.gov.sg"

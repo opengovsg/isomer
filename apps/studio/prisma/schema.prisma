@@ -119,6 +119,8 @@ model User {
   email String
   phone String
 
+  singpassUuid  String? @db.Uuid // UUID of the user's Singpass account
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now()) @updatedAt
   deletedAt   DateTime?

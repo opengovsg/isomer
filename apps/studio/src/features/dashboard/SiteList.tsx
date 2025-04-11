@@ -14,6 +14,7 @@ import {
 import { Link } from "@opengovsg/design-system-react"
 
 import { NoResultIcon } from "~/components/Svg/NoResultIcon"
+import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { withSuspense } from "~/hocs/withSuspense"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
@@ -89,7 +90,7 @@ const SiteListSection = ({
     <Flex flexDirection="column" gap="1.5rem" marginTop="0.75rem">
       <Text textStyle="body-2">
         Don't see a site that you're supposed to have access to?{" "}
-        <Link variant="inline" href="mailto:support@isomer.gov.sg">
+        <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
           Let us know
         </Link>
         .
@@ -120,7 +121,7 @@ const SuspendableSiteList = (): JSX.Element => {
           <Text textStyle="body-2" textAlign="center">
             Speak to your System Owner to get access.<br></br>
             If you think there is an error,{" "}
-            <Link variant="inline" href="mailto:support@isomer.gov.sg">
+            <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
               let us know
             </Link>
             .
