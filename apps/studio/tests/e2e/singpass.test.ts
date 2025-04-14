@@ -88,9 +88,7 @@ test("logins should not succeed when the uuid is different", async ({
   await loginPage.mockpassLoginWith()
 
   // Assert
-  await expect(
-    page.getByText("Singpass profile does not match user"),
-  ).toBeVisible()
+  await expect(page.getByText("We couldn't authenticate you.")).toBeVisible()
 })
 
 test("subsequent login should succeed when the uuid matches", async ({
