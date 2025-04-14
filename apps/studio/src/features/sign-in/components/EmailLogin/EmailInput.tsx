@@ -1,3 +1,4 @@
+import type { FieldError } from "react-hook-form"
 import { useEffect } from "react"
 import { useRouter } from "next/router"
 import { FormControl, Stack, Text } from "@chakra-ui/react"
@@ -14,6 +15,30 @@ import { useZodForm } from "~/lib/form"
 import { emailSignInSchema } from "~/schemas/auth/email/sign-in"
 import { trpc } from "~/utils/trpc"
 import { useSignInContext } from "../SignInContext"
+
+const EmailInputErrorMessage = ({ type, message }: Partial<FieldError>) => {
+  switch (type) {
+    case "INTERNAL_SERVER_ERROR":
+      return (
+        <Text>
+          We are having trouble sending an OTP to this email address.{" "}
+          <Link
+            href="mailto:support@isomer.gov.sg?subject=I can't receive OTP on Isomer Studio"
+            color="utility.feedback.critical"
+            _hover={{
+              color: "unset",
+            }}
+          >
+            Contact Isomer Support
+          </Link>
+          .
+        </Text>
+      )
+    case "UNAUTHORIZED":
+    default:
+      return <>{message}</>
+  }
+}
 
 interface EmailInputProps {
   onSuccess: (props: VfnStepData) => void
@@ -69,24 +94,10 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
             {...register("email")}
           />
           <FormErrorMessage>
-            {errors.email?.type === "UNAUTHORIZED" && (
-              <>{errors.email.message}</>
-            )}
-            {errors.email?.type === "INTERNAL_SERVER_ERROR" && (
-              <Text>
-                We are having trouble sending an OTP to this email address.{" "}
-                <Link
-                  href="mailto:support@isomer.gov.sg?subject=I can't receive OTP on Isomer Studio"
-                  color="utility.feedback.critical"
-                  _hover={{
-                    color: "unset",
-                  }}
-                >
-                  Contact Isomer Support
-                </Link>
-                .
-              </Text>
-            )}
+            <EmailInputErrorMessage
+              type={errors.email?.type}
+              message={errors.email?.message}
+            />
           </FormErrorMessage>
         </FormControl>
         <Button
