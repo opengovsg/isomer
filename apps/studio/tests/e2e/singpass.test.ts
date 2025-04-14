@@ -1,40 +1,52 @@
-import { expect, test } from "@playwright/test"
+import crypto from "crypto"
+import { test as base, expect } from "@playwright/test"
 
-import { overwriteToken } from "./utils"
+import { db } from "~/server/modules/database"
+import { LoginPage } from "./fixtures/login"
 
-test.only("first login with singpass", async ({ page }) => {
+base.beforeEach(async () => {
+  await db
+    .updateTable("User")
+    .set({
+      name: "",
+      phone: "",
+      uuid: null,
+    })
+    .where((eb) =>
+      eb("name", "!=", "").or("phone", "!=", "").or("uuid", "is not", null),
+    )
+    .execute()
+})
+
+type LoginPageFixture = {
+  loginPage: LoginPage
+}
+const test = base.extend<LoginPageFixture>({
+  loginPage: async ({ page }, use) => {
+    const loginPage = new LoginPage(page)
+    await use(loginPage)
+  },
+})
+
+test("first login with singpass should succeed", async ({
+  page,
+  loginPage,
+}) => {
   // Arrange
   const editorEmail = "editor@open.gov.sg"
   await page.goto("/sign-in")
-  const emailInput = page.getByRole("textbox", { name: "email" })
-  const otpButton = page.getByRole("button", { name: "send one-time password" })
   const signinButton = page.getByRole("button", { name: "Sign in" })
 
   // Act
-  await emailInput.fill(editorEmail)
-  await otpButton.click()
+  await loginPage.fillEmail(editorEmail)
   await expect(page.getByText("Enter OTP").first()).toBeVisible()
 
   // NOTE: The function for verification of otp does a comparison between the hash of the submitted token
   // and the VerificationToken.token in db.
-  const token = await overwriteToken({
-    factory: () => "123456",
-    identifier: editorEmail,
-  })
-  const tokenInput = page.getByRole("textbox")
-  await tokenInput.fill(token)
+  await loginPage.fillToken(editorEmail)
   await signinButton.click()
-  const singpassButton = page.getByLabel("Authenticate with Singpass")
-  await singpassButton.click()
-  const singpassLoginButton = page.getByRole("button", { name: "Login" })
-  await singpassLoginButton.click()
-  // NOTE: There are 2 login buttons on mockpass -
-  // the first button, once clicked, brings you to a second profile selection component
-  // that also has a login button.
-  // Both of the buttons have the same `name` for `getByRole`, so we have to use a new locator
-  // that doesn't conflict with the original button's locator.
-  const secondaryLoginButton = page.locator("#sectionA").getByText("Login")
-  await secondaryLoginButton.click()
+
+  await loginPage.defaultMockpassLogin()
   const continueButton = page.getByRole("link", {
     name: "Continue to Isomer Studio",
   })
@@ -43,4 +55,107 @@ test.only("first login with singpass", async ({ page }) => {
   // Assert
   const modal = page.getByRole("dialog", { name: "Welcome to Studio" })
   await expect(modal).toBeVisible()
+})
+
+test("logins should not succeed when the uuid is different", async ({
+  page,
+  loginPage,
+}) => {
+  // Arrange
+  const editorEmail = "editor@open.gov.sg"
+  await db
+    .updateTable("User")
+    .set({
+      uuid: crypto.randomUUID(),
+    })
+    .where("email", "=", editorEmail)
+    .execute()
+  await page.goto("/sign-in")
+  const signinButton = page.getByRole("button", { name: "Sign in" })
+
+  // Act
+  await loginPage.fillEmail(editorEmail)
+  await expect(page.getByText("Enter OTP").first()).toBeVisible()
+
+  // NOTE: The function for verification of otp does a comparison between the hash of the submitted token
+  // and the VerificationToken.token in db.
+  await loginPage.fillToken(editorEmail)
+  await signinButton.click()
+
+  await loginPage.mockpassLoginWith()
+
+  // Assert
+  await expect(
+    page.getByText("Singpass profile does not match user"),
+  ).toBeVisible()
+})
+
+test("subsequent login should succeed when the uuid matches", async ({
+  page,
+  loginPage,
+}) => {
+  // Arrange
+  const uuid = crypto.randomUUID()
+  const editorEmail = "editor@open.gov.sg"
+  await db
+    .updateTable("User")
+    .set({
+      uuid,
+    })
+    .where("email", "=", editorEmail)
+    .execute()
+  await page.goto("/sign-in")
+  const signinButton = page.getByRole("button", { name: "Sign in" })
+
+  // Act
+  await loginPage.fillEmail(editorEmail)
+  await expect(page.getByText("Enter OTP").first()).toBeVisible()
+
+  // NOTE: The function for verification of otp does a comparison between the hash of the submitted token
+  // and the VerificationToken.token in db.
+  await loginPage.fillToken(editorEmail)
+  await signinButton.click()
+
+  await loginPage.mockpassLoginWith(uuid)
+
+  // Assert
+  const modal = page.getByRole("dialog", { name: "Welcome to Studio" })
+  await expect(modal).toBeVisible()
+})
+
+test("user should still be allowed to login even when there are no sites tied to them", async ({
+  page,
+  loginPage,
+}) => {
+  // Arrange
+  // NOTE: no site permissions - user is not tied to any site
+  const email = "e2e@open.gov.sg"
+  await db
+    .insertInto("User")
+    .values({ email, id: "e2e", name: "", phone: "" })
+    .execute()
+  await page.goto("/sign-in")
+  const signinButton = page.getByRole("button", { name: "Sign in" })
+
+  // Act
+  await loginPage.fillEmail(email)
+  await expect(page.getByText("Enter OTP").first()).toBeVisible()
+
+  // NOTE: The function for verification of otp does a comparison between the hash of the submitted token
+  // and the VerificationToken.token in db.
+  await loginPage.fillToken(email)
+  await signinButton.click()
+
+  await loginPage.defaultMockpassLogin()
+  const continueButton = page.getByRole("link", {
+    name: "Continue to Isomer Studio",
+  })
+  await continueButton.click()
+
+  // Assert
+  const modal = page.getByRole("dialog", { name: "Welcome to Studio" })
+  await expect(modal).toBeVisible()
+  await expect(
+    page.getByText("You don't have access to any sites yet."),
+  ).toBeInViewport()
 })
