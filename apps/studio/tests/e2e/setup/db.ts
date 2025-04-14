@@ -22,10 +22,7 @@ test("setup database", async () => {
   // const context = join(__dirname, "..", "..", "..", "..", "..")
   const network = await new Network().start()
 
-  const containers = await setup(
-    [CONTAINER_CONFIGURATIONS.database, CONTAINER_CONFIGURATIONS.studio],
-    network,
-  )
+  const containers = await setup([CONTAINER_CONFIGURATIONS.database], network)
 
   const databaseContainer = containers.find(({ name }) => name === "database")
   if (!databaseContainer) {
