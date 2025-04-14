@@ -9,11 +9,11 @@ const opts = {
 }
 
 export default defineConfig({
-  reporter: process.env.CI ? "github" : "list",
+  globalSetup: "./tests/e2e/setup/globalSetup.ts",
+  reporter: "list",
   testDir: "./tests/e2e",
   timeout: 35e3,
   projects: [
-    { name: "Setup dependencies", testMatch: "setup/*.ts" },
     {
       name: "e2e",
       outputDir: "./playwright/test-results",
@@ -25,7 +25,6 @@ export default defineConfig({
         headless: opts.headless,
         video: "on",
       },
-      dependencies: ["Setup dependencies"],
     },
   ],
 })

@@ -1,12 +1,8 @@
-import { exec } from "child_process"
 import { dirname, join } from "path"
 import { fileURLToPath } from "url"
-import { promisify } from "util"
 import type { StartedNetwork, StartedTestContainer } from "testcontainers"
 import { GenericContainer, Wait } from "testcontainers"
 import { z } from "zod"
-
-import { env } from "~/env.mjs"
 
 type ContainerType = "database" | "studio"
 export const CONTAINER_CONFIGURATIONS: {
@@ -189,27 +185,6 @@ export const teardown = async (
   containers: { container: StartedTestContainer }[],
 ) => {
   await Promise.all(
-    containers.map((container) => container.container.stop({ remove: false })),
+    containers.map((container) => container.container.stop({ remove: true })),
   )
-}
-
-const execAsync = promisify(exec)
-export const applyMigrations = async ({
-  host,
-  port,
-  user,
-  password,
-  database,
-}: {
-  host: string
-  port: string
-  user: string
-  password: string
-  database: string
-}) => {
-  // NOTE: Not reusing the one from `mocks/db`
-  // because this should be as close to what we do as possible
-  // ie, we should exec the `npm migrate` command
-
-  await execAsync(`npm migrate:dev`)
 }
