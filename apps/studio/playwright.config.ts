@@ -9,14 +9,13 @@ const opts = {
 }
 
 export default defineConfig({
-  globalSetup: "./tests/e2e/setup/globalSetup.ts",
-  reporter: "list",
+  reporter: process.env.CI ? "github" : "list",
   testDir: "./tests/e2e",
   timeout: 35e3,
   projects: [
     {
       name: "e2e",
-      outputDir: "./playwright/test-results",
+      outputDir: "./tests/e2e/test-results",
       // 'github' for GitHub Actions CI to generate annotations, plus a concise 'dot'
       // default 'list' when running locally
       use: {

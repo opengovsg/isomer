@@ -9,6 +9,9 @@
     "test-ci:e2e": {
       "outputs": ["e2e/test-results/**"]
     },
+    "test:e2e": {
+      "outputs": ["e2e/test-results/**"]
+    },
     "generate": {
       "dependsOn": ["@opengovsg/isomer-components#build"],
       "inputs": ["prisma/schema.prisma"],
@@ -26,6 +29,11 @@
     },
     "typecheck": {
       "dependsOn": ["generate"]
+    },
+    "dev:e2e": {
+      "dependsOn": ["services:setup"],
+      "cache": false,
+      "persistent": true
     },
     "build:theme": {},
     "build": {

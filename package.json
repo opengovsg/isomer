@@ -9,6 +9,7 @@
     "clean": "turbo clean",
     "dev": "dotenv -- turbo run dev",
     "dev:e2e": "dotenv -- turbo run dev:e2e",
+    "test:e2e": "dotenv -- turbo run test:e2e",
     "setup:test": "turbo setup:test",
     "storybook": "dotenv -- turbo run storybook --parallel",
     "storybook:build": "turbo run storybook:build --parallel",

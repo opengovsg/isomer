@@ -1,6 +1,7 @@
 import crypto from "crypto"
 import { test as base, expect } from "@playwright/test"
 
+import { env } from "~/env.mjs"
 import { db } from "~/server/modules/database"
 import { LoginPage } from "./fixtures/login"
 
@@ -10,10 +11,12 @@ base.beforeEach(async () => {
     .set({
       name: "",
       phone: "",
-      uuid: null,
+      singpassUuid: null,
     })
     .where((eb) =>
-      eb("name", "!=", "").or("phone", "!=", "").or("uuid", "is not", null),
+      eb("name", "!=", "")
+        .or("phone", "!=", "")
+        .or("singpassUuid", "is not", null),
     )
     .execute()
 })
@@ -66,7 +69,7 @@ test("logins should not succeed when the uuid is different", async ({
   await db
     .updateTable("User")
     .set({
-      uuid: crypto.randomUUID(),
+      singpassUuid: crypto.randomUUID(),
     })
     .where("email", "=", editorEmail)
     .execute()
@@ -100,7 +103,9 @@ test("subsequent login should succeed when the uuid matches", async ({
   await db
     .updateTable("User")
     .set({
-      uuid,
+      singpassUuid: uuid,
+      name: "test-e2e",
+      phone: "82345678",
     })
     .where("email", "=", editorEmail)
     .execute()
@@ -117,10 +122,11 @@ test("subsequent login should succeed when the uuid matches", async ({
   await signinButton.click()
 
   await loginPage.mockpassLoginWith(uuid)
+  await page.waitForURL(env.NEXT_PUBLIC_APP_URL!)
 
   // Assert
-  const modal = page.getByRole("dialog", { name: "Welcome to Studio" })
-  await expect(modal).toBeVisible()
+  const header = page.getByRole("heading", { name: "Your sites" })
+  await expect(header).toBeVisible()
 })
 
 test("user should still be allowed to login even when there are no sites tied to them", async ({
@@ -129,10 +135,15 @@ test("user should still be allowed to login even when there are no sites tied to
 }) => {
   // Arrange
   // NOTE: no site permissions - user is not tied to any site
-  const email = "e2e@open.gov.sg"
+  const email = `${crypto.randomUUID()}@open.gov.sg`
   await db
     .insertInto("User")
-    .values({ email, id: "e2e", name: "", phone: "" })
+    .values({
+      email,
+      id: crypto.randomBytes(10).toString(),
+      name: "",
+      phone: "",
+    })
     .execute()
   await page.goto("/sign-in")
   const signinButton = page.getByRole("button", { name: "Sign in" })
