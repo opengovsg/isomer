@@ -33,6 +33,11 @@ export const emailSessionRouter = router({
 
       // Assert that the user is both whitelisted and not deleted
       if (!isWhitelisted || isDeleted) {
+        ctx.logger.warn(
+          { email, isDeleted, isWhitelisted },
+          "User is not whitelisted or deleted",
+        )
+
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Email address is not whitelisted",
@@ -80,9 +85,10 @@ export const emailSessionRouter = router({
         ])
       } catch (e) {
         ctx.logger.error(
-          { error: e },
+          { error: e, email },
           "Failed to send OTP email for email sign in",
         )
+
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to send OTP email",
@@ -116,6 +122,11 @@ export const emailSessionRouter = router({
         })
       } catch (e) {
         if (e instanceof VerificationError) {
+          ctx.logger.warn(
+            { error: e, email },
+            "Failed to verify OTP for email sign in",
+          )
+
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: e.message,
