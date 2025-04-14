@@ -131,9 +131,8 @@ jobs:
       - name: Build Studio app
         # Loose env mode required for env vars to be passed to the run
         run: turbo build --filter=isomer-studio --env-mode=loose
-
       - name: Start test containers
-        run: npm run setup:test
+        run: dotenv apps/studio/.env.test npm run setup:test
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v2
         with:
