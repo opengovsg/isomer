@@ -1,5 +1,5 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
-import { useFeatureValue } from "@growthbook/growthbook-react"
+import { GrowthBook } from "@growthbook/growthbook"
 import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
@@ -226,18 +226,22 @@ export const updateUserSitewidePermission = async ({
   })
 }
 
+interface ValidateUserIsIsomerAdminProps {
+  userId: string
+  gb: GrowthBook
+}
+
 export const validateUserIsIsomerAdmin = async ({
   userId,
-}: {
-  userId: string
-}) => {
+  gb,
+}: ValidateUserIsIsomerAdminProps) => {
   const user = await db
     .selectFrom("User")
     .where("id", "=", userId)
     .select(["email"])
     .executeTakeFirstOrThrow()
 
-  const { users } = useFeatureValue<GrowthbookIsomerAdminFeature>(
+  const { users } = gb.getFeatureValue<GrowthbookIsomerAdminFeature>(
     ISOMER_ADMIN_FEATURE_KEY,
     { users: [] },
   )

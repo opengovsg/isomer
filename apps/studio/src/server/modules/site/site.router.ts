@@ -324,7 +324,7 @@ export const siteRouter = router({
   create: protectedProcedure
     .input(createSiteSchema)
     .mutation(async ({ ctx, input: { siteName } }) => {
-      await validateUserIsIsomerAdmin({ userId: ctx.user.id })
+      await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
 
       return createSite({ siteName })
     }),
