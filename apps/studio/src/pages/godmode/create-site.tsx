@@ -1,6 +1,7 @@
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import {
+  Box,
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -9,6 +10,8 @@ import {
   FormControl,
   FormErrorMessage,
   Input,
+  List,
+  ListItem,
   Text,
   VStack,
 } from "@chakra-ui/react"
@@ -85,6 +88,22 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
           Create a new site
         </Text>
       </Flex>
+
+      <Box mt={8} bg="white" borderRadius="md" p={4}>
+        <Text fontWeight="bold" mb={4}>
+          What happens when you create a site?
+        </Text>
+        <List spacing={3}>
+          <ListItem>
+            1. A new site will be created with basic setup including default
+            homepage, navbar and footer.
+          </ListItem>
+          <ListItem>
+            2. All Isomer team members will be added as site admins with full
+            access to manage the site.
+          </ListItem>
+        </List>
+      </Box>
 
       <VStack spacing={4} mt={8} align="stretch">
         <FormControl isRequired isInvalid={!!errors.siteName}>
