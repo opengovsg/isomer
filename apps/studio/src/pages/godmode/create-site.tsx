@@ -76,18 +76,22 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
 
   return (
     <Flex flexDir="column" py="2rem" maxW="57rem" mx="auto" width="100%">
-      <Flex flexDirection="column">
-        <Breadcrumb>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/godmode" as={NextLink}>
-              👁️ God Mode 👁️
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
-        <Text as="h3" size="lg" textStyle="h3">
-          Create a new site
-        </Text>
-      </Flex>
+      <Breadcrumb>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/" as={NextLink}>
+            Home
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/godmode" as={NextLink}>
+            👁️ God Mode 👁️
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+      </Breadcrumb>
+
+      <Text as="h3" size="lg" textStyle="h3">
+        Create a new site
+      </Text>
 
       <Box mt={8} bg="white" borderRadius="md" p={4}>
         <Text fontWeight="bold" mb={4}>
