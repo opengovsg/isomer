@@ -2,13 +2,11 @@ import { exec } from "child_process"
 import { dirname, join } from "path"
 import { fileURLToPath } from "url"
 import { promisify } from "util"
-import type {
-  Network,
-  StartedNetwork,
-  StartedTestContainer,
-} from "testcontainers"
+import type { StartedNetwork, StartedTestContainer } from "testcontainers"
 import { GenericContainer, Wait } from "testcontainers"
 import { z } from "zod"
+
+import { env } from "~/env.mjs"
 
 type ContainerType = "database" | "studio"
 export const CONTAINER_CONFIGURATIONS: {
@@ -213,13 +211,5 @@ export const applyMigrations = async ({
   // because this should be as close to what we do as possible
   // ie, we should exec the `npm migrate` command
 
-  const databaseUrl = `postgresql://${user}:${password}@${host}:${port}/${database}`
-
-  await execAsync(`npm migrate:dev`, {
-    env: {
-      ...process.env,
-      NODE_ENV: "test",
-      DATABASE_URL: databaseUrl,
-    },
-  })
+  await execAsync(`npm migrate:dev`)
 }

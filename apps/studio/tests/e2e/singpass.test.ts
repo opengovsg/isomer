@@ -18,13 +18,13 @@ base.beforeEach(async () => {
     .execute()
 })
 
-type LoginPageFixture = {
+interface LoginPageFixture {
   loginPage: LoginPage
 }
 const test = base.extend<LoginPageFixture>({
-  loginPage: async ({ page }, use) => {
+  loginPage: async ({ page }, useFixture) => {
     const loginPage = new LoginPage(page)
-    await use(loginPage)
+    await useFixture(loginPage)
   },
 })
 

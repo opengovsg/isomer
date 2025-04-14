@@ -60,7 +60,7 @@ export class LoginPage {
     // Both of the buttons have the same `name` for `getByRole`, so we have to use a new locator
     // that doesn't conflict with the original button's locator.
     const filledUuid = uuid || crypto.randomUUID()
-    this.uuidInput.fill(filledUuid)
+    await this.uuidInput.fill(filledUuid)
     await this.secondaryLoginButton.click()
   }
 }
