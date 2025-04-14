@@ -170,7 +170,7 @@ export const VerificationInput = (): JSX.Element | null => {
             Sign in
           </Button>
           {showOtpDelayMessage && (
-            <Infobox>
+            <Infobox size="sm">
               OTP might be delayed due to government email traffic. Try again
               later.
             </Infobox>
