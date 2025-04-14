@@ -1,7 +1,6 @@
 import { defineConfig, devices } from "@playwright/test"
 
 const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000"
-console.log(`ℹ️ Using base URL "${baseUrl}"`)
 
 const opts = {
   // launch headless on CI, in browser locally
@@ -14,7 +13,7 @@ export default defineConfig({
   testDir: "./tests/e2e",
   timeout: 35e3,
   projects: [
-    { name: "Setup db", testMatch: "setup/db.ts" },
+    { name: "Setup dependencies", testMatch: "setup/*.ts" },
     {
       name: "e2e",
       outputDir: "./playwright/test-results",
@@ -26,7 +25,7 @@ export default defineConfig({
         headless: opts.headless,
         video: "on",
       },
-      dependencies: ["Setup db"],
+      dependencies: ["Setup dependencies"],
     },
   ],
 })

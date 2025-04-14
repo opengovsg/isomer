@@ -20,16 +20,16 @@
     "build:template": {},
     "clean": {},
     "dev": {
-      "dependsOn": ["db:setup"],
+      "dependsOn": ["services:setup"],
       "cache": false,
       "persistent": true
     },
     "dev:e2e": {
-      "dependsOn": ["db:setup"],
+      "dependsOn": ["services:setup"],
       "cache": false,
       "persistent": true
     },
-    "db:setup": {
+    "services:setup": {
       "cache": false
     },
     "setup:test": {},
