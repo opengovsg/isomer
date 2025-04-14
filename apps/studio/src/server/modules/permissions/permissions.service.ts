@@ -1,4 +1,5 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
+import { useFeatureValue } from "@growthbook/growthbook-react"
 import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
@@ -9,6 +10,8 @@ import type {
   SiteAbility,
   UserManagementActions,
 } from "./permissions.type"
+import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
+import { ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
 import { logPermissionEvent } from "../audit/audit.service"
 import { db } from "../database"
 import { CRUD_ACTIONS } from "./permissions.type"
@@ -221,4 +224,28 @@ export const updateUserSitewidePermission = async ({
 
     return createdSitePermission
   })
+}
+
+export const validateUserIsIsomerAdmin = async ({
+  userId,
+}: {
+  userId: string
+}) => {
+  const user = await db
+    .selectFrom("User")
+    .where("id", "=", userId)
+    .select(["email"])
+    .executeTakeFirstOrThrow()
+
+  const { users } = useFeatureValue<GrowthbookIsomerAdminFeature>(
+    ISOMER_ADMIN_FEATURE_KEY,
+    { users: [] },
+  )
+
+  if (!users.includes(user.email)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have sufficient permissions to perform this action",
+    })
+  }
 }

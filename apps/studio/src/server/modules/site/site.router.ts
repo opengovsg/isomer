@@ -18,6 +18,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { logConfigEvent } from "../audit/audit.service"
 import { AuditLogEvent, db, jsonb } from "../database"
+import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
 import {
   getFooter,
   getLocalisedSitemap,
@@ -323,7 +324,7 @@ export const siteRouter = router({
   create: protectedProcedure
     .input(createSiteSchema)
     .mutation(async ({ ctx, input: { siteName } }) => {
-      // TODO: add validation for isomer admins
+      await validateUserIsIsomerAdmin({ userId: ctx.user.id })
 
       return createSite({ siteName })
     }),
