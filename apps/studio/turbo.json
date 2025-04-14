@@ -7,7 +7,7 @@
     },
     "test-ci:unit": {},
     "test-ci:e2e": {
-      "outputs": ["playwright/test-results/**"]
+      "outputs": ["e2e/test-results/**"]
     },
     "generate": {
       "dependsOn": ["@opengovsg/isomer-components#build"],
