@@ -1,3 +1,4 @@
+import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { Flex, Text } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
@@ -6,6 +7,13 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminLayout } from "~/templates/layouts/AdminLayout"
+
+const GODMODE_LINKS = [
+  {
+    href: "/godmode/create-site",
+    label: "Create a new site",
+  },
+] as const
 
 const GodModePage: NextPageWithLayout = () => {
   const toast = useToast()
@@ -27,6 +35,24 @@ const GodModePage: NextPageWithLayout = () => {
         <Text as="h3" size="lg" textStyle="h3">
           👁️ God Mode 👁️
         </Text>
+        <Flex flexDirection="column" mt="1.5rem" gap="1rem">
+          {GODMODE_LINKS.map((link) => (
+            <Flex
+              as={NextLink}
+              href={link.href}
+              p="1rem"
+              borderWidth="1px"
+              alignItems="center"
+              bg="base.canvas.default"
+              border="1px solid"
+              borderColor="base.divider.medium"
+              borderRadius="0.5rem"
+              _hover={{ background: "interaction.muted.main.hover" }}
+            >
+              <Text textStyle="subhead-2">{link.label}</Text>
+            </Flex>
+          ))}
+        </Flex>
       </Flex>
     </Flex>
   )
