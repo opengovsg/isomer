@@ -11,12 +11,14 @@ import {
   getLocalisedSitemapSchema,
   getNameSchema,
   getNotificationSchema,
+  publishOneSiteSchema,
   setNotificationSchema,
   setSiteConfigByAdminSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { logConfigEvent } from "../audit/audit.service"
+import { logConfigEvent, logPublishEvent } from "../audit/audit.service"
+import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db, jsonb } from "../database"
 import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
 import {
@@ -45,6 +47,15 @@ export const siteRouter = router({
       .where("ResourcePermission.userId", "=", ctx.user.id)
       .select(["Site.id", "Site.config"])
       .groupBy(["Site.id", "Site.config"])
+      .execute()
+  }),
+  listAllSites: protectedProcedure.query(async ({ ctx }) => {
+    await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+
+    return db
+      .selectFrom("Site")
+      .select(["Site.id", "Site.config", "Site.codeBuildId"])
+      .orderBy("Site.id", "asc")
       .execute()
   }),
   getSiteName: protectedProcedure
@@ -328,4 +339,66 @@ export const siteRouter = router({
 
       return createSite({ siteName })
     }),
+  publishOne: protectedProcedure
+    .input(publishOneSiteSchema)
+    .mutation(async ({ ctx, input: { siteId } }) => {
+      await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+
+      const byUser = await db
+        .selectFrom("User")
+        .selectAll()
+        .where("id", "=", ctx.user.id)
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "The user could not be found.",
+            }),
+        )
+
+      return db.transaction().execute(async (tx) => {
+        await logPublishEvent(tx, {
+          by: byUser,
+          eventType: AuditLogEvent.Publish,
+          delta: { before: null, after: null },
+          metadata: {},
+        })
+
+        await publishSite(ctx.logger, siteId)
+      })
+    }),
+  publishAll: protectedProcedure.mutation(async ({ ctx }) => {
+    await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+
+    const byUser = await db
+      .selectFrom("User")
+      .selectAll()
+      .where("id", "=", ctx.user.id)
+      .executeTakeFirstOrThrow(
+        () =>
+          new TRPCError({
+            code: "NOT_FOUND",
+            message: "The user could not be found.",
+          }),
+      )
+
+    const sites = await db
+      .selectFrom("Site")
+      .selectAll()
+      .where("codeBuildId", "is not", null)
+      .execute()
+
+    return db.transaction().execute(async (tx) => {
+      for (const site of sites) {
+        await logPublishEvent(tx, {
+          by: byUser,
+          eventType: AuditLogEvent.Publish,
+          delta: { before: null, after: null },
+          metadata: {},
+        })
+
+        await publishSite(ctx.logger, site.id)
+      }
+    })
+  }),
 })
