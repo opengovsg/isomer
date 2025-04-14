@@ -6,6 +6,7 @@ import type {
 import { TRPCError } from "@trpc/server"
 
 import {
+  createSiteSchema,
   getConfigSchema,
   getLocalisedSitemapSchema,
   getNameSchema,
@@ -25,6 +26,7 @@ import {
 } from "../resource/resource.service"
 import {
   clearSiteNotification,
+  createSite,
   getNotification,
   getSiteConfig,
   getSiteTheme,
@@ -317,5 +319,12 @@ export const siteRouter = router({
           ctx.logger,
         )
       })
+    }),
+  create: protectedProcedure
+    .input(createSiteSchema)
+    .mutation(async ({ ctx, input: { siteName } }) => {
+      // TODO: add validation for isomer admins
+
+      return createSite({ siteName })
     }),
 })
