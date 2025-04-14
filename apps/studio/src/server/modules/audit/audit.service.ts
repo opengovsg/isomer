@@ -161,7 +161,7 @@ type ConfigPublishEvent = { site: Site } & { navbar?: Navbar } & {
 interface PublishEventLogProps<
   Before,
   After,
-  Meta extends Record<string, unknown>,
+  Meta extends Record<string, unknown> | null,
 > {
   by: User
   delta: {
@@ -190,10 +190,17 @@ type ConfigPublishEventLogProps = PublishEventLogProps<
   ConfigPublishEvent
 >
 
+type RepublishEventLogProps = PublishEventLogProps<
+  null,
+  null,
+  Record<string, unknown>
+>
+
 export const logPublishEvent: AuditLogger<
   | BlobPublishEventLogProps
   | ResourcePublishEventLogProps
   | ConfigPublishEventLogProps
+  | RepublishEventLogProps
 > = async (tx, { by, delta, eventType, ip, metadata = {} }) => {
   await tx
     .insertInto("AuditLog")
