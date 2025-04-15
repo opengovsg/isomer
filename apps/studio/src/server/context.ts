@@ -5,8 +5,12 @@ import { type User } from "@prisma/client"
 import { getIronSession } from "iron-session"
 
 import { env } from "~/env.mjs"
+import {
+  IS_SINGPASS_ENABLED_FEATURE_KEY,
+  IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+} from "~/lib/growthbook"
 import { type Session, type SessionData } from "~/lib/types/session"
-import { sessionOptions } from "./modules/auth/session"
+import { generateSessionOptions } from "./modules/auth/session"
 import { db } from "./modules/database"
 import { type defaultUserSelect } from "./modules/me/me.select"
 import { prisma } from "./prisma"
@@ -33,6 +37,24 @@ export function createContextInner(opts: CreateContextOptions) {
  * @link https://trpc.io/docs/context
  */
 export const createContext = async (opts: CreateNextContextOptions) => {
+  const growthbookContext = new GrowthBook({
+    apiHost: "https://cdn.growthbook.io",
+    clientKey: env.GROWTHBOOK_CLIENT_KEY,
+    debug: false, // NOTE: do not put true unless local dev
+    disableCache: true,
+  })
+  await growthbookContext.init({ timeout: 2000 })
+
+  const isSingpassEnabled = growthbookContext.getFeatureValue(
+    IS_SINGPASS_ENABLED_FEATURE_KEY,
+    IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+  )
+
+  // Added security measure to limit session TTL to 1 hour when Singpass is disabled
+  const sessionOptions = isSingpassEnabled
+    ? generateSessionOptions({ ttlInHours: 12 })
+    : generateSessionOptions({ ttlInHours: 1 })
+
   const session = await getIronSession<SessionData>(
     opts.req,
     opts.res,
@@ -42,14 +64,6 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   const innerContext = createContextInner({
     session,
   })
-
-  const growthbookContext = new GrowthBook({
-    apiHost: "https://cdn.growthbook.io",
-    clientKey: env.GROWTHBOOK_CLIENT_KEY,
-    debug: false, // NOTE: do not put true unless local dev
-    disableCache: true,
-  })
-  await growthbookContext.init({ timeout: 2000 })
 
   return {
     ...innerContext,
