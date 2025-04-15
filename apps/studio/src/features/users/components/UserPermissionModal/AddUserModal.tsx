@@ -27,7 +27,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
+import { useIsSingpassEnabledForCriticalActions } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
 import { createUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
@@ -45,7 +45,7 @@ export const AddUserModal = () => {
   const { siteId, hasWhitelistError } = addUserModalState
   const setAddUserModalState = useSetAtom(addUserModalAtom)
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const isSingpassEnabled = useIsSingpassEnabledForCriticalActions()
 
   const {
     watch,

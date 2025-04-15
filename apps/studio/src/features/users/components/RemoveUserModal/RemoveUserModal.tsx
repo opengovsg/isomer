@@ -15,7 +15,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
+import { useIsSingpassEnabledForCriticalActions } from "~/hooks/useIsSingpassEnabled"
 import { trpc } from "~/utils/trpc"
 import {
   DEFAULT_REMOVE_USER_MODAL_STATE,
@@ -31,7 +31,7 @@ export const RemoveUserModal = () => {
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
   const onClose = () => setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE)
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const isSingpassEnabled = useIsSingpassEnabledForCriticalActions()
 
   const { mutate, isLoading } = trpc.user.delete.useMutation({
     onSettled: onClose,

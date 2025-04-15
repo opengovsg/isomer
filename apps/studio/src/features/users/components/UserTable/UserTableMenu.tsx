@@ -21,7 +21,7 @@ import { MenuItem } from "~/components/Menu"
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UserManagementContext } from "~/features/users"
-import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
+import { useIsSingpassEnabledForCriticalActions } from "~/hooks/useIsSingpassEnabled"
 import { trpc } from "~/utils/trpc"
 import { removeUserModalAtom, updateUserModalAtom } from "../../atoms"
 import { canResendInviteToUser } from "../../utils"
@@ -49,7 +49,7 @@ export const UserTableMenu = ({
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const isSingpassEnabled = useIsSingpassEnabledForCriticalActions()
 
   const { mutate: resendInvite, isLoading: isResendingInvite } =
     trpc.user.resendInvite.useMutation({

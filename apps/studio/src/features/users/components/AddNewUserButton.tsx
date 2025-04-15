@@ -10,7 +10,7 @@ import {
   addUserModalAtom,
   DEFAULT_ADD_USER_MODAL_STATE,
 } from "~/features/users/atoms"
-import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
+import { useIsSingpassEnabledForCriticalActions } from "~/hooks/useIsSingpassEnabled"
 
 interface AddNewUserButtonProps extends Omit<ButtonProps, "onClick"> {
   siteId: number
@@ -23,7 +23,7 @@ export const AddNewUserButton = ({
   const ability = useContext(UserManagementContext)
   const canManageUsers = ability.can("manage", "UserManagement")
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const isSingpassEnabled = useIsSingpassEnabledForCriticalActions()
 
   const setAddUserModalState = useSetAtom(addUserModalAtom)
 

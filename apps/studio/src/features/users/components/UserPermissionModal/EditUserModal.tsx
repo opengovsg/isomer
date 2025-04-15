@@ -22,7 +22,7 @@ import { z as zod } from "zod"
 
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
+import { useIsSingpassEnabledForCriticalActions } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
 import { updateUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
@@ -42,7 +42,7 @@ export const EditUserModal = () => {
   const { siteId, userId, email, role } = useAtomValue(updateUserModalAtom)
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const isSingpassEnabled = useIsSingpassEnabledForCriticalActions()
 
   const onClose = () => {
     reset()
