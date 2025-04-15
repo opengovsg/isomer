@@ -4,6 +4,7 @@ import type {
   BaseEmailTemplateData,
   EmailTemplate,
   InvitationEmailTemplateData,
+  PublishingNotificationEmailTemplateData,
 } from "./types"
 import { env } from "~/env.mjs"
 
@@ -50,6 +51,23 @@ export const invitationTemplate = (
   }
 }
 
+export const publishingNotificationTemplate = (
+  data: PublishingNotificationEmailTemplateData,
+): EmailTemplate => {
+  const { siteName, publishingDateTime, recipientEmail } = data
+  return {
+    subject: `[Isomer Studio] Publishing Notification for ${siteName}`,
+    body: `
+  <p>Hi ${recipientEmail},</p>
+  <p>You have successfully published ${siteName} at ${publishingDateTime}.</p>
+  <p>It will take 5-10 minutes for the changes to reflect on the live site.</p>
+  <p>If you did not initiate this publishing action, please contact support@isomer.gov.sg immediately.</p>
+  <p>Best,</p>
+  <p>Isomer team</p>
+    `,
+  }
+}
+
 type EmailTemplateFunction<
   T extends BaseEmailTemplateData = BaseEmailTemplateData,
 > = (data: T) => EmailTemplate
@@ -57,4 +75,6 @@ type EmailTemplateFunction<
 export const templates = {
   invitation:
     invitationTemplate satisfies EmailTemplateFunction<InvitationEmailTemplateData>,
+  publishingNotification:
+    publishingNotificationTemplate satisfies EmailTemplateFunction<PublishingNotificationEmailTemplateData>,
 } as const
