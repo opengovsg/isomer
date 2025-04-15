@@ -42,7 +42,7 @@ test("first login with singpass should succeed", async ({
 
   // Act
   await loginPage.fillEmail(editorEmail)
-  await expect(page.getByText("Enter OTP").first()).toBeVisible()
+  await expect(page.getByText("Enter OTP")).toBeVisible()
 
   // NOTE: The function for verification of otp does a comparison between the hash of the submitted token
   // and the VerificationToken.token in db.
@@ -78,7 +78,7 @@ test("logins should not succeed when the uuid is different", async ({
 
   // Act
   await loginPage.fillEmail(editorEmail)
-  await expect(page.getByText("Enter OTP").first()).toBeVisible()
+  await expect(page.getByText("Enter OTP")).toBeVisible()
 
   // NOTE: The function for verification of otp does a comparison between the hash of the submitted token
   // and the VerificationToken.token in db.
@@ -112,7 +112,7 @@ test("subsequent login should succeed when the uuid matches", async ({
 
   // Act
   await loginPage.fillEmail(editorEmail)
-  await expect(page.getByText("Enter OTP").first()).toBeVisible()
+  await expect(page.getByText("Enter OTP")).toBeVisible()
 
   // NOTE: The function for verification of otp does a comparison between the hash of the submitted token
   // and the VerificationToken.token in db.
@@ -148,7 +148,7 @@ test("user should still be allowed to login even when there are no sites tied to
 
   // Act
   await loginPage.fillEmail(email)
-  await expect(page.getByText("Enter OTP").first()).toBeVisible()
+  await expect(page.getByText("Enter OTP")).toBeVisible()
 
   // NOTE: The function for verification of otp does a comparison between the hash of the submitted token
   // and the VerificationToken.token in db.
