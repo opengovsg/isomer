@@ -14,7 +14,7 @@ export interface InvitationEmailTemplateData extends BaseEmailTemplateData {
 export interface PublishingNotificationEmailTemplateData
   extends BaseEmailTemplateData {
   siteName: string
-  publishingDateTime: string
+  publishingDate: Date
 }
 
 export interface EmailTemplate {

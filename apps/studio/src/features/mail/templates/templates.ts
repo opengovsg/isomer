@@ -54,7 +54,15 @@ export const invitationTemplate = (
 export const publishingNotificationTemplate = (
   data: PublishingNotificationEmailTemplateData,
 ): EmailTemplate => {
-  const { siteName, publishingDateTime, recipientEmail } = data
+  const { siteName, publishingDate, recipientEmail } = data
+
+  // e.g. "15 Apr 2025, 17:23"
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })
+  const publishingDateTime = formatter.format(publishingDate)
+
   return {
     subject: `[Isomer Studio] Publishing Notification for ${siteName}`,
     body: `
