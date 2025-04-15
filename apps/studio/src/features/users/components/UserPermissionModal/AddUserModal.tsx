@@ -13,6 +13,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
+  Tooltip,
   VStack,
 } from "@chakra-ui/react"
 import {
@@ -24,7 +25,9 @@ import { useDebounce } from "@uidotdev/usehooks"
 import { RoleType } from "~prisma/generated/generatedEnums"
 import { useAtomValue, useSetAtom } from "jotai"
 
+import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
 import { createUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
@@ -41,6 +44,8 @@ export const AddUserModal = () => {
   const addUserModalState = useAtomValue(addUserModalAtom)
   const { siteId, hasWhitelistError } = addUserModalState
   const setAddUserModalState = useSetAtom(addUserModalAtom)
+
+  const isSingpassEnabled = useIsSingpassEnabled()
 
   const {
     watch,
@@ -155,6 +160,34 @@ export const AddUserModal = () => {
     )
   })
 
+  const renderSendInviteButton = (): JSX.Element => {
+    const SendInviteButton = (
+      <Button
+        variant="solid"
+        onClick={onSendInvite}
+        isLoading={isLoading}
+        isDisabled={
+          Object.keys(errors).length > 0 ||
+          email === "" ||
+          additionalEmailError ||
+          email !== debouncedEmail || // check if email has changed
+          (watch("role") === RoleType.Admin && isNonGovEmailInput) ||
+          !isSingpassEnabled
+        }
+      >
+        Send invite
+      </Button>
+    )
+
+    return isSingpassEnabled ? (
+      SendInviteButton
+    ) : (
+      <Tooltip label={SINGPASS_DISABLED_ERROR_MESSAGE}>
+        {SendInviteButton}
+      </Tooltip>
+    )
+  }
+
   return (
     <Modal isOpen={!!siteId} onClose={handleOnClose}>
       <ModalOverlay />
@@ -237,20 +270,7 @@ export const AddUserModal = () => {
           >
             Cancel
           </Button>
-          <Button
-            variant="solid"
-            onClick={onSendInvite}
-            isLoading={isLoading}
-            isDisabled={
-              Object.keys(errors).length > 0 ||
-              email === "" ||
-              additionalEmailError ||
-              email !== debouncedEmail || // check if email has changed
-              (watch("role") === RoleType.Admin && isNonGovEmailInput)
-            }
-          >
-            Send invite
-          </Button>
+          {renderSendInviteButton()}
         </ModalFooter>
       </ModalContent>
     </Modal>

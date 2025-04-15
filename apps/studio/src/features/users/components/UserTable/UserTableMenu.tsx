@@ -18,8 +18,10 @@ import {
 import type { UserTableData } from "./types"
 import type { UserTableProps } from "./UserTable"
 import { MenuItem } from "~/components/Menu"
+import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UserManagementContext } from "~/features/users"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { trpc } from "~/utils/trpc"
 import { removeUserModalAtom, updateUserModalAtom } from "../../atoms"
 import { canResendInviteToUser } from "../../utils"
@@ -46,6 +48,8 @@ export const UserTableMenu = ({
 
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
+
+  const isSingpassEnabled = useIsSingpassEnabled()
 
   const { mutate: resendInvite, isLoading: isResendingInvite } =
     trpc.user.resendInvite.useMutation({
@@ -81,6 +85,12 @@ export const UserTableMenu = ({
                 }
                 icon={<BiPencil fontSize="1rem" />}
                 aria-label={`Edit user ${userName}`}
+                isDisabled={!isSingpassEnabled}
+                tooltip={
+                  isSingpassEnabled
+                    ? undefined
+                    : SINGPASS_DISABLED_ERROR_MESSAGE
+                }
               >
                 Edit user
               </MenuItem>
@@ -98,6 +108,12 @@ export const UserTableMenu = ({
                 colorScheme="critical"
                 icon={<BiTrash fontSize="1rem" />}
                 aria-label={`Remove user access for ${userName}`}
+                isDisabled={!isSingpassEnabled}
+                tooltip={
+                  isSingpassEnabled
+                    ? undefined
+                    : SINGPASS_DISABLED_ERROR_MESSAGE
+                }
               >
                 Remove user access
               </MenuItem>

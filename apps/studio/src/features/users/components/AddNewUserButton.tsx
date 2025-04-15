@@ -4,11 +4,13 @@ import { Button, Tooltip } from "@chakra-ui/react"
 import { useSetAtom } from "jotai"
 import { BiPlus } from "react-icons/bi"
 
+import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { UserManagementContext } from "~/features/users"
 import {
   addUserModalAtom,
   DEFAULT_ADD_USER_MODAL_STATE,
 } from "~/features/users/atoms"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 
 interface AddNewUserButtonProps extends Omit<ButtonProps, "onClick"> {
   siteId: number
@@ -21,7 +23,11 @@ export const AddNewUserButton = ({
   const ability = useContext(UserManagementContext)
   const canManageUsers = ability.can("manage", "UserManagement")
 
+  const isSingpassEnabled = useIsSingpassEnabled()
+
   const setAddUserModalState = useSetAtom(addUserModalAtom)
+
+  const isButtonDisabled = !canManageUsers || !isSingpassEnabled
 
   const button = (
     <Button
@@ -30,18 +36,25 @@ export const AddNewUserButton = ({
       onClick={() =>
         setAddUserModalState({ ...DEFAULT_ADD_USER_MODAL_STATE, siteId })
       }
-      isDisabled={!canManageUsers}
+      isDisabled={isButtonDisabled}
       {...buttonProps}
     >
       Add new user
     </Button>
   )
 
-  return canManageUsers ? (
-    button
-  ) : (
-    <Tooltip label="Only admins can add users." placement="bottom">
+  let tooltipLabel: string | undefined
+  if (!canManageUsers) {
+    tooltipLabel = "Only admins can add users."
+  } else if (!isSingpassEnabled) {
+    tooltipLabel = SINGPASS_DISABLED_ERROR_MESSAGE
+  }
+
+  return tooltipLabel ? (
+    <Tooltip label={tooltipLabel} placement="bottom">
       {button}
     </Tooltip>
+  ) : (
+    button
   )
 }
