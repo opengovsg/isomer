@@ -6,6 +6,7 @@ import type {
   InvitationEmailTemplateData,
   PublishingNotificationEmailTemplateData,
 } from "./types"
+import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
 
 export const invitationTemplate = (
@@ -69,7 +70,7 @@ export const publishingNotificationTemplate = (
   <p>Hi ${recipientEmail},</p>
   <p>You have successfully published ${siteName} at ${publishingDateTime}.</p>
   <p>It will take 5-10 minutes for the changes to reflect on the live site.</p>
-  <p>If you did not initiate this publishing action, please contact support@isomer.gov.sg immediately.</p>
+  <p>If you did not initiate this publishing action, please contact <a href="${ISOMER_SUPPORT_LINK}">support@isomer.gov.sg</a> immediately.</p>
   <p>Best,</p>
   <p>Isomer team</p>
     `,
