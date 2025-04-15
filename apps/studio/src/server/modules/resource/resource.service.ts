@@ -17,10 +17,12 @@ import type {
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { sendPublishingNotification } from "~/features/mail/service"
 import { getSitemapTree } from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType, sql } from "../database"
+import { getSiteName } from "../site/site.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
 
@@ -519,6 +521,14 @@ export const publishPageResource = async (
   // Step 2: Trigger a publish of the site
   await publishSite(logger, siteId)
 
+  // Step 3: Send a publishing notification
+  const siteName = await getSiteName(siteId)
+  await sendPublishingNotification({
+    recipientEmail: by.email,
+    siteName,
+    publishingDate: new Date(),
+  })
+
   return addedVersionResult
 }
 
@@ -542,7 +552,7 @@ export const publishResource = async (
         }),
     )
 
-  return db.transaction().execute(async (tx) => {
+  await db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
       by: byUser,
       delta: {
@@ -554,6 +564,14 @@ export const publishResource = async (
     })
 
     await publishSite(logger, resource.siteId)
+  })
+
+  // Send a publishing notification
+  const siteName = await getSiteName(resource.siteId)
+  await sendPublishingNotification({
+    recipientEmail: byUser.email,
+    siteName,
+    publishingDate: new Date(),
   })
 }
 
