@@ -16,6 +16,8 @@ services:
     build: https://github.com/isomerpages/mockpass.git
     ports:
       - "5156:5156"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - MOCKPASS_NRIC=S6005038D
       - MOCKPASS_UEN=123456789A
