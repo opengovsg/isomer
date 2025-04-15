@@ -122,7 +122,7 @@ const SiteAdminPage: NextPageWithLayout = () => {
     onError: () => {
       toast({
         title: "Error saving site config!",
-        description: `If this persists, please report this issue at ${ISOMER_SUPPORT_LINK}`,
+        description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
       })
