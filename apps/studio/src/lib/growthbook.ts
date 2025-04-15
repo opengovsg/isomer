@@ -6,10 +6,12 @@ export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 
-interface IsSingpassEnabledProps {
+interface GetIsSingpassEnabledProps {
   gb: GrowthBook
 }
-export const isSingpassEnabled = ({ gb }: IsSingpassEnabledProps): boolean => {
+export const getIsSingpassEnabled = ({
+  gb,
+}: GetIsSingpassEnabledProps): boolean => {
   return gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
