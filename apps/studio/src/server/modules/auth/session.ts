@@ -6,7 +6,7 @@ interface GenerateSessionOptionsProps {
   ttlInHours?: number
 }
 export const generateSessionOptions = ({
-  ttlInHours = 12,
+  ttlInHours = 12, // TODO: Change to 1 hour when Singpass has been officially launched
 }: GenerateSessionOptionsProps): SessionOptions => {
   const ONE_HOUR = 60 * 60
   return {
