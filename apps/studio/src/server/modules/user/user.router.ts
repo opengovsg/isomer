@@ -44,7 +44,7 @@ const throwSingpassDisabledError = () => {
   throw new TRPCError({
     code: "FORBIDDEN",
     message:
-      "Singpass 2FA is currently disabled as it is facing issues. Please wait for the issue to be resolved.",
+      "Singpass authentication is temporarily unavailable. For security purposes, you can only update collaborators when Singpass is working.",
   })
 }
 
