@@ -523,11 +523,7 @@ export const publishPageResource = async (
 
   // Step 3: Send a publishing notification
   const siteName = await getSiteName(siteId)
-  await sendPublishingNotification({
-    recipientEmail: by.email,
-    siteName,
-    publishingDate: new Date(),
-  })
+  await sendPublishingNotification({ recipientEmail: by.email, siteName })
 
   return addedVersionResult
 }
@@ -568,11 +564,7 @@ export const publishResource = async (
 
   // Send a publishing notification
   const siteName = await getSiteName(resource.siteId)
-  await sendPublishingNotification({
-    recipientEmail: byUser.email,
-    siteName,
-    publishingDate: new Date(),
-  })
+  await sendPublishingNotification({ recipientEmail: byUser.email, siteName })
 }
 
 export const publishSiteConfig = async (
