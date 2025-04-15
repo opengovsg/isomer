@@ -5,10 +5,7 @@ import { type User } from "@prisma/client"
 import { getIronSession } from "iron-session"
 
 import { env } from "~/env.mjs"
-import {
-  IS_SINGPASS_ENABLED_FEATURE_KEY,
-  IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
-} from "~/lib/growthbook"
+import { isSingpassEnabled } from "~/lib/growthbook"
 import { type Session, type SessionData } from "~/lib/types/session"
 import { generateSessionOptions } from "./modules/auth/session"
 import { db } from "./modules/database"
@@ -45,13 +42,8 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   })
   await growthbookContext.init({ timeout: 2000 })
 
-  const isSingpassEnabled = growthbookContext.getFeatureValue(
-    IS_SINGPASS_ENABLED_FEATURE_KEY,
-    IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
-  )
-
   // Added security measure to limit session TTL to 1 hour when Singpass is disabled
-  const sessionOptions = isSingpassEnabled
+  const sessionOptions = isSingpassEnabled({ gb: growthbookContext })
     ? generateSessionOptions({ ttlInHours: 12 })
     : generateSessionOptions({ ttlInHours: 1 })
 
