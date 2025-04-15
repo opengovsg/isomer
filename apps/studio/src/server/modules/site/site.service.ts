@@ -47,14 +47,24 @@ export const getSiteTheme = async (siteId: number) => {
 
   return theme
 }
-export const getSiteNameAndCodeBuildId = async (siteId: number) => {
-  return await db
+export const getCodeBuildId = async (siteId: number) => {
+  const result = await db
     .selectFrom("Site")
     .where("id", "=", siteId)
-    .select(["Site.codeBuildId", "Site.name"])
+    .select(["Site.codeBuildId"])
     .executeTakeFirstOrThrow()
-}
 
+  return result.codeBuildId
+}
+export const getSiteName = async (siteId: number) => {
+  const result = await db
+    .selectFrom("Site")
+    .where("id", "=", siteId)
+    .select(["Site.config"])
+    .executeTakeFirstOrThrow()
+
+  return result.config.siteName
+}
 export const getNotification = async (siteId: number) => {
   const result = await db
     .selectFrom("Site")

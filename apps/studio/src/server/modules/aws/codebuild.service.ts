@@ -8,7 +8,7 @@ import {
   StopBuildCommand,
 } from "@aws-sdk/client-codebuild"
 
-import { getSiteNameAndCodeBuildId } from "../site/site.service"
+import { getCodeBuildId } from "../site/site.service"
 
 const client = new CodeBuildClient({ region: "ap-southeast-1" })
 // This is the threshold for a build to be considered recent
@@ -22,8 +22,7 @@ export const publishSite = async (
   siteId: number,
 ): Promise<void> => {
   // Step 1: Get the CodeBuild ID associated with the site
-  const site = await getSiteNameAndCodeBuildId(siteId)
-  const { codeBuildId } = site
+  const codeBuildId = await getCodeBuildId(siteId)
   if (!codeBuildId) {
     // NOTE: Not all sites will have a CodeBuild project, as the site may not be
     // ready for a site launch yet. Only sites that are launched will have a

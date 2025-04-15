@@ -27,6 +27,7 @@ import {
   clearSiteNotification,
   getNotification,
   getSiteConfig,
+  getSiteName,
   getSiteTheme,
   setSiteNotification,
   validateUserPermissionsForSite,
@@ -53,13 +54,9 @@ export const siteRouter = router({
         action: "read",
       })
 
-      const { config } = await db
-        .selectFrom("Site")
-        .where("Site.id", "=", siteId)
-        .select("config")
-        .executeTakeFirstOrThrow()
+      const siteName = await getSiteName(siteId)
 
-      return { name: config.siteName }
+      return { name: siteName }
     }),
   getConfig: protectedProcedure
     .input(getConfigSchema)

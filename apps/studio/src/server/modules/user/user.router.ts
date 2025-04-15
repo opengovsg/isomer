@@ -31,7 +31,7 @@ import {
   updateUserSitewidePermission,
   validatePermissionsForManagingUsers,
 } from "../permissions/permissions.service"
-import { getSiteNameAndCodeBuildId } from "../site/site.service"
+import { getSiteName } from "../site/site.service"
 import {
   createUserWithPermission,
   deleteUserPermission,
@@ -92,7 +92,7 @@ export const userRouter = router({
       })
 
       // Send welcome email to users
-      const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
+      const siteName = await getSiteName(siteId)
       await Promise.all(
         createdUsers.map((createdUser) =>
           sendInvitation({
@@ -382,7 +382,7 @@ export const userRouter = router({
       }
 
       // Send invite
-      const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
+      const siteName = await getSiteName(siteId)
       await sendInvitation({
         isSingpassEnabled,
         inviterName: actorName,
