@@ -4,13 +4,13 @@ import type { UUID } from "crypto"
 import { overwriteToken } from "../utils"
 
 export class LoginPage {
-  private readonly emailInput: Locator
-  private readonly otpButton: Locator
-  private readonly tokenInput: Locator
-  private readonly singpassButton: Locator
-  private readonly singpassLoginButton: Locator
-  private readonly secondaryLoginButton: Locator
-  private readonly uuidInput: Locator
+  readonly emailInput: Locator
+  readonly otpButton: Locator
+  readonly tokenInput: Locator
+  readonly singpassButton: Locator
+  readonly singpassLoginButton: Locator
+  readonly secondaryLoginButton: Locator
+  readonly uuidInput: Locator
 
   constructor(public readonly page: Page) {
     this.emailInput = page.getByRole("textbox", { name: "email" })

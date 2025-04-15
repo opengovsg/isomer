@@ -25,9 +25,9 @@ interface LoginPageFixture {
   loginPage: LoginPage
 }
 const test = base.extend<LoginPageFixture>({
-  loginPage: async ({ page }, useFixture) => {
+  loginPage: async ({ page }, fixture) => {
     const loginPage = new LoginPage(page)
-    await useFixture(loginPage)
+    await fixture(loginPage)
   },
 })
 
@@ -88,7 +88,8 @@ test("logins should not succeed when the uuid is different", async ({
   await loginPage.mockpassLoginWith()
 
   // Assert
-  await expect(page.getByText("We couldn't authenticate you.")).toBeVisible()
+  await page.waitForURL("**/singpass?error=true")
+  await expect(loginPage.singpassButton).toBeVisible()
 })
 
 test("subsequent login should succeed when the uuid matches", async ({

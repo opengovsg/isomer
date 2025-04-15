@@ -1,11 +1,7 @@
 import { stringify } from "superjson"
 
-import {
-  CONTAINER_CONFIGURATIONS,
-  ContainerInformation,
-  setup,
-  teardown,
-} from "./common"
+import type { ContainerInformation } from "./common"
+import { CONTAINER_CONFIGURATIONS, setup, teardown } from "./common"
 
 export default async () => {
   const containers = await setup([CONTAINER_CONFIGURATIONS.database])
