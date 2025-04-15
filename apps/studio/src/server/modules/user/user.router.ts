@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 import { pick } from "lodash"
 
+import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { sendInvitation } from "~/features/mail/service"
 import { canResendInviteToUser } from "~/features/users/utils"
 import { getIsSingpassEnabled } from "~/lib/growthbook"
@@ -43,8 +44,7 @@ import {
 const throwSingpassDisabledError = () => {
   throw new TRPCError({
     code: "FORBIDDEN",
-    message:
-      "Singpass authentication is temporarily unavailable. For security purposes, you can only update collaborators when Singpass is working.",
+    message: SINGPASS_DISABLED_ERROR_MESSAGE,
   })
 }
 
