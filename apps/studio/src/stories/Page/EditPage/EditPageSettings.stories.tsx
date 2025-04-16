@@ -6,11 +6,9 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 
-import { env } from "~/env.mjs"
 import PageSettings from "~/pages/sites/[siteId]/pages/[pageId]/settings"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
-
-const assetsBaseUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
+import { generateAssetBaseUrl } from "~/utils/generateAssetUrl"
 
 const uploadHandler = {
   default: () =>
@@ -22,7 +20,7 @@ const uploadHandler = {
 
 const imageHandler = {
   default: (delayMs?: number | "infinite") =>
-    http.get(`${assetsBaseUrl}/MOCK_STORYBOOK_ASSET`, async () => {
+    http.get(`${generateAssetBaseUrl()}/MOCK_STORYBOOK_ASSET`, async () => {
       await delay(delayMs)
       return fetch(
         "https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_3x2.jpg",
