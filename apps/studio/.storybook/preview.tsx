@@ -43,13 +43,10 @@ initialize({
 const trpc = createTRPCReact<AppRouter>()
 
 const StorybookEnvDecorator: Decorator = (story) => {
-  const mockEnv: EnvContextReturn["env"] = merge(
-    {
-      NEXT_PUBLIC_APP_NAME: "Isomer Studio",
-      NEXT_PUBLIC_APP_VERSION: "Storybook",
-    },
-    env,
-  )
+  const mockEnv: EnvContextReturn["env"] = merge(env, {
+    NEXT_PUBLIC_APP_NAME: "Isomer Studio",
+    NEXT_PUBLIC_APP_VERSION: "Storybook",
+  })
   return <EnvProvider env={mockEnv}>{story()}</EnvProvider>
 }
 
