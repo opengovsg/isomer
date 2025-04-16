@@ -6,6 +6,7 @@ import type {
 import { TRPCError } from "@trpc/server"
 
 import {
+  createSiteSchema,
   getConfigSchema,
   getLocalisedSitemapSchema,
   getNameSchema,
@@ -17,6 +18,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { logConfigEvent } from "../audit/audit.service"
 import { AuditLogEvent, db, jsonb } from "../database"
+import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
 import {
   getFooter,
   getLocalisedSitemap,
@@ -25,6 +27,7 @@ import {
 } from "../resource/resource.service"
 import {
   clearSiteNotification,
+  createSite,
   getNotification,
   getSiteConfig,
   getSiteTheme,
@@ -317,5 +320,12 @@ export const siteRouter = router({
           ctx.logger,
         )
       })
+    }),
+  create: protectedProcedure
+    .input(createSiteSchema)
+    .mutation(async ({ ctx, input: { siteName } }) => {
+      await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+
+      return createSite({ siteName })
     }),
 })

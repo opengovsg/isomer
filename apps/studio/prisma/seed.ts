@@ -5,14 +5,14 @@
  */
 
 import { db, RoleType } from "../src/server/modules/database"
+import { createSite } from "../src/server/modules/site/site.service"
 import { addUsersToSite } from "./scripts/addUsersToSite"
-import { createSite } from "./scripts/createSite"
 
 const EDITOR_USER = "editor"
 const PUBLISHER_USER = "publisher"
 
 async function main() {
-  const siteId = await createSite({ siteName: "Isomer" })
+  const { siteId } = await createSite({ siteName: "Isomer" })
 
   await db
     .insertInto("Whitelist")

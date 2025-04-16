@@ -5,9 +5,12 @@ import { Button } from "@opengovsg/design-system-react"
 import { BiLinkExternal } from "react-icons/bi"
 
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { AvatarMenu } from "./AvatarMenu"
 
 export function AppNavbar(): JSX.Element {
+  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+
   return (
     <Flex flex="0 0 auto" gridColumn="1/-1" height={ADMIN_NAVBAR_HEIGHT}>
       <Flex
@@ -30,6 +33,7 @@ export function AppNavbar(): JSX.Element {
           mr="0.5rem"
           minH="2.75rem"
           minW="2.75rem"
+          gap="0.5rem"
         >
           <Image
             src="/assets/isomer-logo-color.svg"
@@ -38,6 +42,11 @@ export function AppNavbar(): JSX.Element {
             alt="Back to sites"
             priority
           />
+          {isUserIsomerAdmin && (
+            <Button variant="clear" size="xs" as={NextLink} href="/godmode">
+              👁️ God Mode 👁️
+            </Button>
+          )}
         </Flex>
         <HStack
           textStyle="subhead-1"
