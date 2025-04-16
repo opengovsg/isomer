@@ -309,7 +309,6 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
       )
       .executeTakeFirstOrThrow()
 
-    console.log(`Added site ${siteName} with id ${siteId} to database`)
     return siteId
   })
 

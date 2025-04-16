@@ -23,21 +23,30 @@ export const invitationTemplate = (
       roleAction = "edit content"
       break
     default:
-      const _exhaustiveCheck: never = data.role
+      const _: never = data.role
       throw new Error(`Unknown role. Please check the role type.`)
   }
 
+  const { inviterName, recipientEmail, siteName, role, isSingpassEnabled } =
+    data
+
+  const emailBodyParts = [
+    `<p>Hi ${recipientEmail},</p>
+<p>${inviterName} has invited you to edit ${siteName} on Isomer Studio as ${role}. As a ${role}, you can ${roleAction}.</p>
+<p></p>
+<p>To start editing, log in to Isomer Studio and activate your account: <a target="_blank" href="${env.NEXT_PUBLIC_APP_URL}">${env.NEXT_PUBLIC_APP_URL?.replace("https://", "")}</a></p>`,
+    ...(isSingpassEnabled
+      ? [
+          `<p>You will need to set up Two-Factor Authentication (2FA) using Singpass. Please have your Singpass ready to complete activation.</p>`,
+        ]
+      : []),
+    `<p>Best,</p>
+<p>Isomer team</p>`,
+  ]
+
   return {
-    subject: `[Isomer] Join your team to edit ${data.siteName} on Isomer Studio`,
-    body: `
-<p>Hi ${data.recipientEmail},</p>
-<p>You’re invited to edit ${data.siteName} on Isomer Studio as a ${data.role}. As a ${data.role}, you can ${roleAction}.</p>
-<p></p>
-<p><a target="_blank" href="${env.NEXT_PUBLIC_APP_URL}">Log in to Isomer Studio to confirm your email and view your Isomer site.</a></p>
-<p></p>
-<p>Best,</p>
-<p>Isomer team</p>
-`.trim(),
+    subject: "[Isomer Studio] Activate your account to edit Isomer sites",
+    body: emailBodyParts.join("<p></p>").trim(),
   }
 }
 
@@ -47,5 +56,5 @@ type EmailTemplateFunction<
 
 export const templates = {
   invitation:
-    invitationTemplate as EmailTemplateFunction<InvitationEmailTemplateData>,
+    invitationTemplate satisfies EmailTemplateFunction<InvitationEmailTemplateData>,
 } as const
