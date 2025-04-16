@@ -1,7 +1,7 @@
 import "@fontsource/ibm-plex-mono"
 import "inter-ui/inter.css"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useState } from "react"
 import { Box, Skeleton, Stack } from "@chakra-ui/react"
 import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
@@ -22,13 +22,12 @@ import mockdate from "mockdate"
 import { initialize, mswLoader } from "msw-storybook-addon"
 import { ErrorBoundary } from "react-error-boundary"
 import superjson from "superjson"
-import { z } from "zod"
 
 import { viewport, withChromaticModes } from "@isomer/storybook-config"
 
 import type { EnvContextReturn } from "~/components/AppProviders"
 import { AppBanner } from "~/components/AppBanner"
-import { EnvProvider, FeatureContext } from "~/components/AppProviders"
+import { EnvProvider } from "~/components/AppProviders"
 import { DefaultFallback } from "~/components/ErrorBoundary"
 import Suspense from "~/components/Suspense"
 import { env } from "~/env.mjs"
@@ -48,7 +47,6 @@ const StorybookEnvDecorator: Decorator = (story) => {
     {
       NEXT_PUBLIC_APP_NAME: "Isomer Studio",
       NEXT_PUBLIC_APP_VERSION: "Storybook",
-      NEXT_PUBLIC_ENABLE_SGID: false,
     },
     env,
   )
@@ -117,27 +115,6 @@ const WithLayoutDecorator: Decorator = (Story, { parameters }) => {
   return <>{parameters.getLayout(<Story />)}</>
 }
 
-export const MockFeatureFlagsDecorator: Decorator<Args> = (
-  story,
-  { parameters },
-) => {
-  const featureSchema = z
-    .object({
-      storage: z.boolean().default(false),
-      sgid: z.boolean().default(false),
-    })
-    .default({})
-  const features = useMemo(() => {
-    return featureSchema.parse(parameters.features)
-  }, [featureSchema, parameters.features])
-
-  return (
-    <FeatureContext.Provider value={features}>
-      {story()}
-    </FeatureContext.Provider>
-  )
-}
-
 const LoginStateDecorator: Decorator<Args> = (story, { parameters }) => {
   const [hasLoginStateFlag, setLoginStateFlag] = useState(
     Boolean(parameters.loginState ?? true),
@@ -199,7 +176,6 @@ export const MockDateDecorator: Decorator<Args> = (story, { parameters }) => {
 const decorators: Decorator[] = [
   WithLayoutDecorator,
   MockDateDecorator,
-  MockFeatureFlagsDecorator,
   SetupDecorator,
   StorybookEnvDecorator,
   withThemeFromJSXProvider<ReactRenderer>({
