@@ -363,7 +363,6 @@ export const siteRouter = router({
           delta: { before: null, after: null },
           metadata: {},
         })
-
         await publishSite(ctx.logger, siteId)
       })
     }),
@@ -388,17 +387,18 @@ export const siteRouter = router({
       .where("codeBuildId", "is not", null)
       .execute()
 
-    return db.transaction().execute(async (tx) => {
-      for (const site of sites) {
-        await logPublishEvent(tx, {
-          by: byUser,
-          eventType: AuditLogEvent.Publish,
-          delta: { before: null, after: null },
-          metadata: {},
-        })
-
-        await publishSite(ctx.logger, site.id)
-      }
-    })
+    await Promise.all(
+      sites.map((site) =>
+        db.transaction().execute(async (tx) => {
+          await logPublishEvent(tx, {
+            by: byUser,
+            eventType: AuditLogEvent.Publish,
+            delta: { before: null, after: null },
+            metadata: {},
+          })
+          await publishSite(ctx.logger, site.id)
+        }),
+      ),
+    )
   }),
 })
