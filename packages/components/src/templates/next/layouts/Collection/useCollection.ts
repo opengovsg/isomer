@@ -75,9 +75,10 @@ export const useCollection = ({
   )
 
   const handleClearFilter = useCallback(() => {
-    handleSearchValueChange("")
-    setAppliedFilters([])
-  }, [handleSearchValueChange, setAppliedFilters])
+    updateQueryParams({
+      newParams: { search: "", filters: "[]", page: "1" },
+    })
+  }, [updateQueryParams])
 
   return {
     paginatedItems,
