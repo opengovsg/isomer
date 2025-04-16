@@ -1,7 +1,7 @@
 name: Update release branch
 
 concurrency:
-  group: ${{ github.ref }}
+  group: update-release-branch-${{ github.ref }}
   cancel-in-progress: true
 
 on:

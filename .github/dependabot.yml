@@ -59,3 +59,8 @@ updates:
         patterns:
           - "validator"
           - "@types/validator"
+      jsonforms:
+        applies-to: version-updates
+        patterns:
+          - "@jsonforms/core"
+          - "@jsonforms/react"
