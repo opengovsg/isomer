@@ -192,6 +192,7 @@ export const singpassRouter = router({
 
       ctx.session.destroy()
       ctx.session.userId = verifiedUserId
+      ctx.session.isAuthenticatedWithSingpass = true
       await ctx.session.save()
 
       return {

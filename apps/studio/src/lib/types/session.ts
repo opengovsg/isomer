@@ -11,6 +11,7 @@ type PotentialUserId = Tagged<User["id"], "PotentialUserId">
 
 export interface SessionData {
   userId?: CurrentUserId
+  isAuthenticatedWithSingpass?: boolean
   singpass?: {
     sessionState?: {
       userId: PotentialUserId
