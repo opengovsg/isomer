@@ -5,8 +5,10 @@ export interface BaseEmailTemplateData {
 }
 
 export interface InvitationEmailTemplateData extends BaseEmailTemplateData {
+  inviterName: string
   siteName: string
   role: RoleType
+  isSingpassEnabled?: boolean
 }
 
 export interface EmailTemplate {

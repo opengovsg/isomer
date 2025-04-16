@@ -88,7 +88,7 @@ describe("auth.email", () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        "Unauthorized. Contact Isomer support.",
+        "Email address is not whitelisted",
       )
     })
   })

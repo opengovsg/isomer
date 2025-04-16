@@ -1,5 +1,6 @@
 import { Flex, Link, Text } from "@chakra-ui/react"
 
+import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { NoResultIcon } from "../Svg/NoResultIcon"
 
 export const DefaultNotFound = () => {
@@ -20,7 +21,7 @@ export const DefaultNotFound = () => {
         <Text textStyle="body-2" textAlign="center">
           Double check to ensure that the URL is correct. <br />
           If you think there's an error,{" "}
-          <Link variant="inline" href="mailto:support@isomer.gov.sg">
+          <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
             let us know
           </Link>
           .
