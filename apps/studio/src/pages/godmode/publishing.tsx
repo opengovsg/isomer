@@ -41,7 +41,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
   const { data: sites = [] } = trpc.site.listAllSites.useQuery()
 
   const { mutate: publishOneSite, isLoading: isPublishingOneSite } =
-    trpc.site.publishOne.useMutation({
+    trpc.site.publish.useMutation({
       onSuccess: () => {
         toast({
           title: "Site published successfully",

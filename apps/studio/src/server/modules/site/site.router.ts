@@ -11,7 +11,7 @@ import {
   getLocalisedSitemapSchema,
   getNameSchema,
   getNotificationSchema,
-  publishOneSiteSchema,
+  publishSiteSchema,
   setNotificationSchema,
   setSiteConfigByAdminSchema,
 } from "~/schemas/site"
@@ -339,8 +339,8 @@ export const siteRouter = router({
 
       return createSite({ siteName })
     }),
-  publishOne: protectedProcedure
-    .input(publishOneSiteSchema)
+  publish: protectedProcedure
+    .input(publishSiteSchema)
     .mutation(async ({ ctx, input: { siteId } }) => {
       await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
 
