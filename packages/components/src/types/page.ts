@@ -92,7 +92,11 @@ export const CollectionPagePageSchema = Type.Intersect([
   Type.Object({
     defaultSortBy: Type.Optional(
       Type.Union(
-        [Type.Literal("date"), Type.Literal("title"), Type.Literal("category")],
+        [
+          Type.Literal("date", { title: "Date" }),
+          Type.Literal("title", { title: "Title" }),
+          Type.Literal("category", { title: "Category" }),
+        ],
         {
           title: "Default sort by",
           description: "The default sort order of the collection",
@@ -103,13 +107,19 @@ export const CollectionPagePageSchema = Type.Intersect([
       ),
     ),
     defaultSortDirection: Type.Optional(
-      Type.Union([Type.Literal("asc"), Type.Literal("desc")], {
-        title: "Default sort direction",
-        description: "The default sort direction of the collection",
-        format: "hidden",
-        type: "string",
-        default: "desc",
-      }),
+      Type.Union(
+        [
+          Type.Literal("asc", { title: "Ascending" }),
+          Type.Literal("desc", { title: "Descending" }),
+        ],
+        {
+          title: "Default sort direction",
+          description: "The default sort direction of the collection",
+          format: "hidden",
+          type: "string",
+          default: "desc",
+        },
+      ),
     ),
   }),
 ])
