@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import { env } from "~/env.mjs"
+import { generateAssetBaseUrl } from "~/utils/generateAssetUrl"
 
 const waitFor = (baseTimeoutMs = 500) => {
   return new Promise((resolve) => setTimeout(resolve, baseTimeoutMs))
@@ -41,14 +41,13 @@ export const useImageUpload = ({
   retries = 3,
   baseTimeoutMs = 500,
 }: UseImageProps) => {
-  const assetsBaseUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
   const [isLoading, setIsLoading] = useState(false)
   const handleImageUpload = async (src: string) => {
     setIsLoading(true)
     try {
       const res = await retry(
         async () => {
-          const response = await fetch(`${assetsBaseUrl}${src}`)
+          const response = await fetch(`${generateAssetBaseUrl()}${src}`)
           if (!response.ok) {
             throw new Error(`Unable to read from ${src}`)
           }

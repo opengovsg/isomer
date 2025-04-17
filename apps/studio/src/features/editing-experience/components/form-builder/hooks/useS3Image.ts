@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-import { env } from "~/env.mjs"
+import { generateAssetBaseUrl } from "~/utils/generateAssetUrl"
 
 const getImageAsFile = async (imageUrl: string): Promise<File> => {
   const resp = await fetch(imageUrl)
@@ -11,7 +11,6 @@ const getImageAsFile = async (imageUrl: string): Promise<File> => {
   })
 }
 
-const assetsBaseUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
 export const useS3Image = (imagePath: string) => {
   const [image, setImage] = useState<File | undefined>()
 
@@ -20,7 +19,7 @@ export const useS3Image = (imagePath: string) => {
       setImage(undefined)
       return
     }
-    getImageAsFile(`${assetsBaseUrl}${imagePath}`)
+    getImageAsFile(`${generateAssetBaseUrl()}${imagePath}`)
       .then((image) => {
         setImage(image)
       })

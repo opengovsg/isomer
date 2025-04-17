@@ -44,7 +44,6 @@ const meta: Meta<InfopicProps> = {
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
-      assetsBaseUrl: "https://cms.isomer.gov.sg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
