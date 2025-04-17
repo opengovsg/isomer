@@ -1,5 +1,8 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { DYNAMIC_DATA_BANNER_TYPE } from "@opengovsg/isomer-components"
+import {
+  COLLECTION_WIDGET_TYPE,
+  DYNAMIC_DATA_BANNER_TYPE,
+} from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -217,6 +220,13 @@ export const DEFAULT_BLOCKS: Record<
     images: [],
     title: "With support from these agencies",
   },
+  [COLLECTION_WIDGET_TYPE]: {
+    type: `${COLLECTION_WIDGET_TYPE}`,
+    collectionId: "", // TODO: placeholder for now as we cannot select a collection beforehand but it's required by the schema
+    buttonLabel: "Read all latest news",
+    numberOfPages: "3",
+    displayThumbnail: true,
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -322,6 +332,12 @@ export const BLOCK_TO_META: Record<
     label: "Logo cloud",
     description: "Display logos of other agencies here",
     usageText: "Show an overview of related agencies",
+  },
+  [COLLECTION_WIDGET_TYPE]: {
+    label: "Collection widget",
+    description: "Automatically display recent pages from a collection",
+    // TODO: Add usage text after checking with Design
+    // TODO: Add image source
   },
 }
 
