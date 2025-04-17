@@ -19,6 +19,10 @@ const GODMODE_LINKS = [
     href: "/godmode/create-site",
     label: "Create a new site",
   },
+  {
+    href: "/godmode/publishing",
+    label: "Publishing",
+  },
 ] as const
 
 const GodModePage: NextPageWithLayout = () => {
