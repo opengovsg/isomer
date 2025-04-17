@@ -26,7 +26,7 @@ export const doesComponentHaveImage = ({
     case "iframe":
     case "map":
     case "video":
-      return true // assume yes for now
+      return true
     case "infocards":
       return component.cards.some((card) => "imageUrl" in card)
     case COLLECTION_WIDGET_TYPE:
