@@ -91,10 +91,31 @@ const createInfoCardsStyles = tv({
   },
   compoundVariants: [
     {
+      layout: "homepage",
+      maxColumns: "3",
+      class: {
+        cardImageContainer: "aspect-[3/2]",
+      },
+    },
+    {
+      layout: "homepage",
+      maxColumns: "2",
+      class: {
+        cardImageContainer: "aspect-[2/1]",
+      },
+    },
+    {
       layout: "default",
       maxColumns: "3",
       class: {
         cardImageContainer: "aspect-square",
+      },
+    },
+    {
+      layout: "default",
+      maxColumns: "2",
+      class: {
+        cardImageContainer: "aspect-[3/2]",
       },
     },
   ],
@@ -137,6 +158,7 @@ const InfoCardImage = ({
   imageUrl,
   imageAlt,
   imageFit,
+  maxColumns,
   url,
   layout,
   site,
@@ -145,6 +167,7 @@ const InfoCardImage = ({
   SingleCardWithImageProps,
   | "imageUrl"
   | "imageAlt"
+  | "maxColumns"
   | "url"
   | "imageFit"
   | "layout"
@@ -160,6 +183,7 @@ const InfoCardImage = ({
     <div
       className={compoundStyles.cardImageContainer({
         layout: getTailwindVariantLayout(layout),
+        maxColumns,
         isClickableCard: !!url,
       })}
     >
@@ -235,6 +259,7 @@ const InfoCardWithImage = ({
   imageAlt,
   imageFit,
   url,
+  maxColumns,
   layout,
   site,
   LinkComponent,
@@ -253,6 +278,7 @@ const InfoCardWithImage = ({
         imageUrl={imageUrl}
         imageAlt={imageAlt}
         url={url}
+        maxColumns={maxColumns}
         site={site}
         layout={layout}
         shouldLazyLoad={shouldLazyLoad}
@@ -292,6 +318,7 @@ const InfoCards = ({
               <InfoCardWithImage
                 key={idx}
                 {...card}
+                maxColumns={maxColumns}
                 layout={layout}
                 site={site}
                 LinkComponent={LinkComponent}
