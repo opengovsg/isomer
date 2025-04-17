@@ -6,9 +6,9 @@ import { PrismaClient } from "@prisma/client"
 import { Kysely, PostgresDialect } from "kysely"
 import { Client, Pool } from "pg"
 import { parse } from "superjson"
-import { CONTAINER_INFORMATION_SCHEMA } from "tests/global-setup"
 
 import type { DB } from "~/server/modules/database"
+import { CONTAINER_INFORMATION_SCHEMA } from "../common"
 
 const prismaMigrationDir = join(
   fileURLToPath(dirname(import.meta.url)),

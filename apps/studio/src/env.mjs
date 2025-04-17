@@ -55,6 +55,7 @@ const singpassSchema = z.object({
 const server = z
   .object({
     DATABASE_URL: z.string().url(),
+    CI: z.coerce.boolean().default(false),
     NODE_ENV: z.enum(["development", "test", "production"]),
     OTP_EXPIRY: z.coerce.number().positive().optional().default(600),
     POSTMAN_API_KEY: z.string().optional(),
@@ -84,6 +85,7 @@ const server = z
 const processEnv = {
   // Server-side env vars
   DATABASE_URL: process.env.DATABASE_URL,
+  CI: process.env.CI,
   NODE_ENV: process.env.NODE_ENV,
   OTP_EXPIRY: process.env.OTP_EXPIRY,
   POSTMAN_API_KEY: process.env.POSTMAN_API_KEY,

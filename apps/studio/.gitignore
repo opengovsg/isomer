@@ -39,7 +39,7 @@ yarn-error.log*
 
 
 # testing
-playwright/test-results
+test-results
 
 # env
 .env
