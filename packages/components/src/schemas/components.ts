@@ -5,6 +5,8 @@ import type { IsomerComponentTypes } from "~/types"
 import {
   AccordionSchema,
   CalloutSchema,
+  COLLECTION_WIDGET_TYPE,
+  CollectionWidgetSchema,
   ContentpicSchema,
   DividerSchema,
   DYNAMIC_DATA_BANNER_TYPE,
@@ -44,6 +46,7 @@ export const IsomerComplexComponentsMap = {
   video: VideoSchema,
   [DYNAMIC_DATA_BANNER_TYPE]: DynamicDataBannerSchema,
   logocloud: LogoCloudSchema,
+  [COLLECTION_WIDGET_TYPE]: CollectionWidgetSchema,
 }
 
 export const IsomerNativeComponentsMap = {

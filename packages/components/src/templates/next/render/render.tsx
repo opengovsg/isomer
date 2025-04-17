@@ -4,7 +4,7 @@ import type {
   IsomerSiteProps,
 } from "~/engine"
 import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
-import { DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
+import { COLLECTION_WIDGET_TYPE, DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
 import {
   Accordion,
   Callout,
@@ -88,6 +88,8 @@ export const renderComponent = ({
       return <Video key={elementKey} {...component} {...rest} />
     case DYNAMIC_DATA_BANNER_TYPE:
       return <DynamicDataBanner key={elementKey} {...component} {...rest} />
+    case COLLECTION_WIDGET_TYPE:
+      return <></> // TODO: Implement collection widget
     default:
       const _: never = component
       return <></>
