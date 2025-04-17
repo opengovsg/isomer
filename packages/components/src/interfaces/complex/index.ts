@@ -26,7 +26,7 @@ export { MapSchema, type MapProps } from "./Map"
 export { VideoSchema, type VideoProps } from "./Video"
 export {
   DYNAMIC_DATA_BANNER_TYPE,
-  NUMBER_OF_DATA,
+  DYNAMIC_DATA_BANNER_NUMBER_OF_DATA,
   DynamicDataBannerSchema,
   type DynamicDataBannerProps,
 } from "./DynamicDataBanner"

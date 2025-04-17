@@ -10,7 +10,7 @@ export const DYNAMIC_DATA_BANNER_TYPE = "dynamicdatabanner"
 // Hardcoded for now because
 // 1. MUIS is the only use case and there's always 6 prayer timeslots
 // 2. No other known use cases have been identified
-export const NUMBER_OF_DATA = 6
+export const DYNAMIC_DATA_BANNER_NUMBER_OF_DATA = 6
 
 export const DynamicDataBannerSchema = Type.Object(
   {
@@ -45,8 +45,8 @@ export const DynamicDataBannerSchema = Type.Object(
       }),
       {
         title: "Data",
-        minItems: NUMBER_OF_DATA,
-        maxItems: NUMBER_OF_DATA,
+        minItems: DYNAMIC_DATA_BANNER_NUMBER_OF_DATA,
+        maxItems: DYNAMIC_DATA_BANNER_NUMBER_OF_DATA,
       },
     ),
     errorMessage: Type.Array(TextSchema, {
