@@ -222,7 +222,7 @@ export const DEFAULT_BLOCKS: Record<
   },
   [COLLECTION_WIDGET_TYPE]: {
     type: `${COLLECTION_WIDGET_TYPE}`,
-    collectionId: "", // TODO: placeholder for now as we cannot select a collection beforehand but it's required by the schema
+    collectionReferenceLink: "", // TODO: placeholder for now as we cannot select a collection beforehand but it's required by the schema
     buttonLabel: "Read all latest news",
     numberOfPages: "3",
     displayThumbnail: true,

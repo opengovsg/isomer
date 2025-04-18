@@ -107,7 +107,7 @@ export function renderComponentPreviewText({
       return (
         component.customTitle ||
         component.customDescription ||
-        `Collection widget for ${component.collectionId}`
+        `Collection widget`
       )
     default:
       const _: never = component

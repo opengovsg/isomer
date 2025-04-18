@@ -12,9 +12,9 @@ export const CollectionWidgetSchema = Type.Object(
     type: Type.Literal(COLLECTION_WIDGET_TYPE, {
       default: COLLECTION_WIDGET_TYPE,
     }),
-    collectionId: Type.String({
-      title: "Collection ID",
-      description: "The ID of the collection to display",
+    collectionReferenceLink: Type.String({
+      title: "Collection",
+      description: "The collection to display pages from",
       format: "link",
       pattern: REF_INTERNAL_HREF_PATTERN,
     }),
