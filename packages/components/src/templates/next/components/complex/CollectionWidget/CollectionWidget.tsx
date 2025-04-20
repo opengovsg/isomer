@@ -76,6 +76,7 @@ const SingleCard = ({
             width="100%"
             className={compoundStyles.cardImage()}
             lazyLoading={shouldLazyLoad}
+            assetsBaseUrl={site.assetsBaseUrl}
           />
         </div>
       )}
