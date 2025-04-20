@@ -45,6 +45,10 @@ export const CollectionWidgetSchema = Type.Object(
       title: "Display thumbnail of all pages",
       default: true,
     }),
+    displayCategory: Type.Boolean({
+      title: "Display category",
+      default: true,
+    }),
     buttonLabel: Type.String({
       title: "Button text",
       maxLength: 50,
@@ -81,7 +85,8 @@ export type CollectionWidgetSingleCardProps = Pick<
   ProcessedCollectionCardProps,
   "title" | "description" | "image" | "referenceLinkHref"
 > &
-  Pick<
-    CollectionWidgetProps,
-    "displayThumbnail" | "site" | "LinkComponent" | "shouldLazyLoad"
-  >
+  Pick<CollectionWidgetProps, "displayThumbnail" | "displayCategory"> & {
+    site: IsomerSiteProps
+    LinkComponent?: LinkComponentType
+    shouldLazyLoad?: boolean
+  }

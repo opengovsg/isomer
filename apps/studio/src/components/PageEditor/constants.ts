@@ -227,6 +227,7 @@ export const DEFAULT_BLOCKS: Record<
     buttonLabel: "Read all latest news",
     numberOfPages: DEFAULT_COLLECTION_WIDGET_NUMBER_OF_PAGES,
     displayThumbnail: true,
+    displayCategory: true,
   },
 }
 

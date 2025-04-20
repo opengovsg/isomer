@@ -46,6 +46,7 @@ const SingleCard = ({
   image,
   referenceLinkHref,
   displayThumbnail,
+  displayCategory,
   site,
   LinkComponent,
   shouldLazyLoad,
@@ -89,6 +90,7 @@ const SingleCard = ({
           />
         </h3>
         <p className={compoundStyles.cardDescription()}>{description}</p>
+        {/* TODO: Add category */}
       </div>
     </Link>
   )
@@ -101,6 +103,7 @@ const CollectionWidget = ({
   customTitle,
   customDescription,
   displayThumbnail,
+  displayCategory,
   buttonLabel,
   numberOfPages,
   shouldLazyLoad,
@@ -120,9 +123,9 @@ const CollectionWidget = ({
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
         <h2 className={compoundStyles.headingTitle()}>
-          {customTitle ?? collectionParent?.title}
+          {customTitle ?? collectionParent.title}
         </h2>
-        <p>{customDescription ?? collectionParent?.summary}</p>
+        <p>{customDescription ?? collectionParent.summary}</p>
       </div>
 
       <div className={compoundStyles.grid()}>
@@ -130,6 +133,7 @@ const CollectionWidget = ({
           <SingleCard
             key={idx}
             displayThumbnail={displayThumbnail}
+            displayCategory={displayCategory}
             site={site}
             LinkComponent={LinkComponent}
             shouldLazyLoad={shouldLazyLoad}
