@@ -1,11 +1,10 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
-import type { IsomerSiteProps } from "~/types"
+import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { DEFAULT_COLLECTION_WIDGET_NUMBER_OF_PAGES } from "~/interfaces"
 import {
   COLLECTION_PAGE_DEFAULT_SORT_BY,
   COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
 } from "~/types"
-import { getResourceIdFromReferenceLink } from "~/utils"
 import {
   getCollectionItems,
   processCollectionItems,
@@ -13,25 +12,15 @@ import {
 
 interface GetCollectionPagesProps {
   site: IsomerSiteProps
-  collectionReferenceLink: string
+  collectionParent: IsomerSitemap
   numberOfPages?: number
 }
 
 export const getCollectionPages = ({
   site,
-  collectionReferenceLink,
+  collectionParent,
   numberOfPages = parseInt(DEFAULT_COLLECTION_WIDGET_NUMBER_OF_PAGES),
 }: GetCollectionPagesProps): ProcessedCollectionCardProps[] => {
-  const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
-
-  const collectionParent = site.siteMap.children?.find(
-    (child) => child.id === collectionId,
-  )
-
-  if (!collectionParent) {
-    return []
-  }
-
   const items = getCollectionItems({
     site,
     permalink: collectionParent.permalink,
@@ -42,6 +31,12 @@ export const getCollectionPages = ({
       collectionParent.collectionPagePageProps?.defaultSortDirection ??
       COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
   })
+
+  if (items.length === 0) {
+    throw new Error(
+      `CollectionWidget: No collection items found for reference link ${collectionParent.permalink}`,
+    )
+  }
 
   return processCollectionItems(items).slice(0, numberOfPages)
 }
