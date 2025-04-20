@@ -8,7 +8,7 @@ import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
 import { ImageClient } from "../Image"
-import { getCollectionPages } from "./utils"
+import { getCollectionPages, getCollectionParent } from "./utils"
 
 const createInfoCardsStyles = tv({
   slots: {
@@ -105,30 +105,25 @@ const CollectionWidget = ({
   numberOfPages,
   shouldLazyLoad,
 }: CollectionWidgetProps): JSX.Element => {
-  const title = customTitle ?? "Title" // TODO: Add title
-  const subtitle = customDescription ?? "Description" // TODO: Add subtitle
+  const collectionParent = getCollectionParent({
+    site,
+    collectionReferenceLink,
+  })
 
   const collectionPages = getCollectionPages({
     site,
-    collectionReferenceLink,
+    collectionParent,
     numberOfPages: parseInt(numberOfPages),
   })
 
-  if (collectionPages.length === 0) {
-    console.warn(
-      `CollectionWidget: No collection pages found for reference link ${collectionReferenceLink}`,
-    )
-    return <></>
-  }
-
   return (
     <section className={compoundStyles.container()}>
-      {(title || subtitle) && (
-        <div className={compoundStyles.headingContainer()}>
-          <h2 className={compoundStyles.headingTitle()}>{title}</h2>
-          <p>{subtitle}</p>
-        </div>
-      )}
+      <div className={compoundStyles.headingContainer()}>
+        <h2 className={compoundStyles.headingTitle()}>
+          {customTitle ?? collectionParent?.title}
+        </h2>
+        <p>{customDescription ?? collectionParent?.summary}</p>
+      </div>
 
       <div className={compoundStyles.grid()}>
         {collectionPages.map((card, idx) => (
