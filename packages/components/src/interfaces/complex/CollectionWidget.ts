@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { ProcessedCollectionCardProps } from "~/interfaces/internal/CollectionCard"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { ARRAY_RADIO_FORMAT } from "~/interfaces"
 import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
@@ -73,4 +74,14 @@ export const CollectionWidgetSchema = Type.Object(
 export type CollectionWidgetProps = Static<typeof CollectionWidgetSchema> & {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
+  shouldLazyLoad?: boolean
 }
+
+export type CollectionWidgetSingleCardProps = Pick<
+  ProcessedCollectionCardProps,
+  "title" | "description" | "image" | "referenceLinkHref"
+> &
+  Pick<
+    CollectionWidgetProps,
+    "displayThumbnail" | "site" | "LinkComponent" | "shouldLazyLoad"
+  >
