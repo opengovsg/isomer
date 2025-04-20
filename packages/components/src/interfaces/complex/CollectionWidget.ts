@@ -7,6 +7,14 @@ import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
 
 export const COLLECTION_WIDGET_TYPE = "collectionwidget"
 
+const COLLECTION_WIDGET_NUMBER_OF_PAGES = {
+  THREE: "3",
+  SIX: "6",
+} as const
+
+export const DEFAULT_COLLECTION_WIDGET_NUMBER_OF_PAGES =
+  COLLECTION_WIDGET_NUMBER_OF_PAGES.THREE
+
 export const CollectionWidgetSchema = Type.Object(
   {
     type: Type.Literal(COLLECTION_WIDGET_TYPE, {
@@ -43,12 +51,16 @@ export const CollectionWidgetSchema = Type.Object(
     }),
     numberOfPages: Type.Union(
       [
-        Type.Literal("3", { title: "3 pages" }),
-        Type.Literal("6", { title: "6 pages" }),
+        Type.Literal(COLLECTION_WIDGET_NUMBER_OF_PAGES.THREE, {
+          title: "3 pages",
+        }),
+        Type.Literal(COLLECTION_WIDGET_NUMBER_OF_PAGES.SIX, {
+          title: "6 pages",
+        }),
       ],
       {
         title: "Number of pages to display",
-        default: "3",
+        default: DEFAULT_COLLECTION_WIDGET_NUMBER_OF_PAGES,
         format: ARRAY_RADIO_FORMAT,
       },
     ),
