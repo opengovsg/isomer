@@ -59,7 +59,7 @@ describe("getCollectionPages", () => {
       permalink: collectionPermalink,
       layout: "collection",
       summary: "Collection 1 summary",
-      lastModified: "2021-01-01",
+      lastModified: new Date("2021-01-01").toISOString(),
       children: [],
     }
     site = {
@@ -82,7 +82,7 @@ describe("getCollectionPages", () => {
       permalink: collectionPermalink,
       layout: "collection",
       summary: "Collection 1 summary",
-      lastModified: "2021-01-01",
+      lastModified: new Date("2021-01-01").toISOString(),
       children: [
         createMockCollectionItem({
           id: `${collectionId}1`,
@@ -130,7 +130,7 @@ describe("getCollectionPages", () => {
       permalink: collectionPermalink,
       layout: "collection",
       summary: "Collection 1 summary",
-      lastModified: "2021-01-01",
+      lastModified: new Date("2021-01-01").toISOString(),
       children: [
         createMockCollectionItem({
           id: `${collectionId}1`,
@@ -170,7 +170,7 @@ describe("getCollectionPages", () => {
       permalink: collectionPermalink,
       layout: "collection",
       summary: "Collection 1 summary",
-      lastModified: "2021-01-01",
+      lastModified: new Date("2021-01-01").toISOString(),
       children: [
         createMockCollectionItem({
           id: `${collectionId}1`,

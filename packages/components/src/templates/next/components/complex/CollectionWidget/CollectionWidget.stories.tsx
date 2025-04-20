@@ -41,7 +41,7 @@ const meta: Meta<CollectionWidgetProps> = {
                 layout: "article",
                 summary: "",
                 date: "2021-01-03",
-                lastModified: "2021-01-03",
+                lastModified: new Date("2021-01-03").toISOString(),
                 children: [],
                 image: {
                   src: "https://placehold.co/600x400?text=image%201",
@@ -57,7 +57,7 @@ const meta: Meta<CollectionWidgetProps> = {
                 layout: "article",
                 summary: "",
                 date: "2021-01-02",
-                lastModified: "2021-01-02",
+                lastModified: new Date("2021-01-02").toISOString(),
                 children: [],
                 image: {
                   src: "https://placehold.co/600x400?text=image%202",
@@ -72,7 +72,7 @@ const meta: Meta<CollectionWidgetProps> = {
                 layout: "article",
                 summary: "",
                 date: "2021-01-01",
-                lastModified: "2021-01-01",
+                lastModified: new Date("2021-01-01").toISOString(),
                 children: [],
                 image: {
                   src: "https://placehold.co/600x400?text=image%203",
