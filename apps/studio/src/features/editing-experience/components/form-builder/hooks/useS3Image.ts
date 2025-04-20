@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-import { generateAssetBaseUrl } from "~/utils/generateAssetUrl"
+import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 const getImageAsFile = async (imageUrl: string): Promise<File> => {
   const resp = await fetch(imageUrl)
@@ -19,7 +19,7 @@ export const useS3Image = (imagePath: string) => {
       setImage(undefined)
       return
     }
-    getImageAsFile(`${generateAssetBaseUrl()}${imagePath}`)
+    getImageAsFile(`${ASSETS_BASE_URL}${imagePath}`)
       .then((image) => {
         setImage(image)
       })

@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import { generateAssetBaseUrl } from "~/utils/generateAssetUrl"
+import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 const waitFor = (baseTimeoutMs = 500) => {
   return new Promise((resolve) => setTimeout(resolve, baseTimeoutMs))
@@ -47,7 +47,7 @@ export const useImageUpload = ({
     try {
       const res = await retry(
         async () => {
-          const response = await fetch(`${generateAssetBaseUrl()}${src}`)
+          const response = await fetch(`${ASSETS_BASE_URL}${src}`)
           if (!response.ok) {
             throw new Error(`Unable to read from ${src}`)
           }

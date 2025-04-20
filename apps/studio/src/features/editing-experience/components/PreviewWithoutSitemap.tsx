@@ -12,7 +12,7 @@ import { RenderEngine } from "@opengovsg/isomer-components"
 import { merge } from "lodash"
 
 import { withSuspense } from "~/hocs/withSuspense"
-import { generateAssetBaseUrl } from "~/utils/generateAssetUrl"
+import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
 
 export type PreviewProps = IsomerSchema & {
@@ -66,7 +66,7 @@ function SuspendablePreview({
         ...siteConfig,
         navBarItems: navbar,
         footerItems: footer,
-        assetsBaseUrl: generateAssetBaseUrl(),
+        assetsBaseUrl: ASSETS_BASE_URL,
       }}
       LinkComponent={FakeLink}
       ScriptComponent={Script}

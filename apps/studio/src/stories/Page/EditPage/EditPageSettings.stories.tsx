@@ -8,7 +8,7 @@ import { resourceHandlers } from "tests/msw/handlers/resource"
 
 import PageSettings from "~/pages/sites/[siteId]/pages/[pageId]/settings"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
-import { generateAssetBaseUrl } from "~/utils/generateAssetUrl"
+import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 const uploadHandler = {
   default: () =>
@@ -20,7 +20,7 @@ const uploadHandler = {
 
 const imageHandler = {
   default: (delayMs?: number | "infinite") =>
-    http.get(`${generateAssetBaseUrl()}/MOCK_STORYBOOK_ASSET`, async () => {
+    http.get(`${ASSETS_BASE_URL}/MOCK_STORYBOOK_ASSET`, async () => {
       await delay(delayMs)
       return fetch(
         "https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_3x2.jpg",
