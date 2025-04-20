@@ -16,7 +16,7 @@ const createInfoCardsStyles = tv({
     headingContainer: "flex flex-col gap-2.5 pb-8 sm:pb-12 lg:max-w-3xl",
     headingTitle: "prose-display-md break-words text-base-content-strong",
     headingSubtitle: "prose-headline-lg-regular text-base-content",
-    grid: "grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-7 lg:grid-cols-3 lg:gap-x-16 lg:gap-y-12",
+    grid: "grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-7 lg:grid-cols-3 lg:gap-x-16 lg:gap-y-12",
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImageContainer:
       "h-[11.875rem] w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md md:h-60",
@@ -26,7 +26,6 @@ const createInfoCardsStyles = tv({
       "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-canvas-inverse",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
-    cardDescription: "prose-body-base text-base-content",
     urlButtonContainer: "mx-auto block pt-8 sm:pt-12", // temp: following headingContainer's mb
   },
   variants: {
@@ -89,7 +88,6 @@ const SingleCard = ({
             })}
           />
         </h3>
-        <p className={compoundStyles.cardDescription()}>{description}</p>
         {/* TODO: Add category */}
       </div>
     </Link>
