@@ -14,6 +14,8 @@ interface GetCollectionPagesProps {
   collectionParent: IsomerSitemap
 }
 
+const NUMBER_OF_PAGES_TO_DISPLAY = 3
+
 export const getCollectionPages = ({
   site,
   collectionParent,
@@ -35,5 +37,5 @@ export const getCollectionPages = ({
     )
   }
 
-  return processCollectionItems(items)
+  return processCollectionItems(items).slice(0, NUMBER_OF_PAGES_TO_DISPLAY)
 }
