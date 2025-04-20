@@ -4,6 +4,7 @@ import type { CollectionWidgetProps } from "~/interfaces"
 import type { CollectionWidgetSingleCardProps } from "~/interfaces/complex/CollectionWidget"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import { getFormattedDate } from "~/utils/getFormattedDate"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
@@ -22,11 +23,12 @@ const createInfoCardsStyles = tv({
       "h-[11.875rem] w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md md:h-60",
     cardImage: "h-full w-full object-cover object-center",
     cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
+    cardLastUpdated: "prose-body-base text-base-content-subtle", // TODO: Update after clarifying with Sehyun
     cardTitle:
       "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-canvas-inverse",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
-    cardCategory: "prose-body-base mb-3 text-base-content",
+    cardCategory: "prose-body-base mb-3 text-base-content", // TODO: Update after clarifying with Sehyun
     urlButtonContainer: "mx-auto block pt-8 sm:pt-12", // temp: following headingContainer's mb
   },
   variants: {
@@ -45,6 +47,7 @@ const SingleCard = ({
   image,
   category,
   referenceLinkHref,
+  lastUpdated,
   displayThumbnail,
   displayCategory,
   site,
@@ -82,6 +85,12 @@ const SingleCard = ({
       )}
 
       <div className={compoundStyles.cardTextContainer()}>
+        {lastUpdated && (
+          <p className={compoundStyles.cardLastUpdated()}>
+            {getFormattedDate(lastUpdated)}
+          </p>
+        )}
+
         <h3 className={compoundStyles.cardTitle()}>
           {title}
           <BiRightArrowAlt
@@ -92,7 +101,7 @@ const SingleCard = ({
           />
         </h3>
 
-        {displayCategory && (
+        {displayCategory && category && (
           <p className={compoundStyles.cardCategory()}>{category}</p>
         )}
       </div>
