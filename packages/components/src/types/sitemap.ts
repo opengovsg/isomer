@@ -1,6 +1,7 @@
 import type { IsomerPageLayoutType } from "./schema"
 import type { CollectionCardProps } from "~/interfaces"
 import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
+import type { CollectionPagePageProps } from "~/types"
 
 interface IsomerBaseSitemap {
   id: string
@@ -16,6 +17,11 @@ interface IsomerBaseSitemap {
   date?: CollectionCardProps["lastUpdated"]
   children?: IsomerSitemap[]
   tags?: CollectionCardProps["tags"]
+  // TODO: Reconsider how this is done as currently every item in the sitemap has the same props
+  collectionPagePageProps?: {
+    defaultSortBy?: CollectionPagePageProps["defaultSortBy"]
+    defaultSortDirection?: CollectionPagePageProps["defaultSortDirection"]
+  }
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {
