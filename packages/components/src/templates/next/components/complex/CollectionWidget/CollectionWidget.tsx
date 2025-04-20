@@ -58,11 +58,7 @@ const SingleCard = ({
 
   return (
     <Link
-      href={getReferenceLinkHref(
-        referenceLinkHref,
-        site.siteMap,
-        site.assetsBaseUrl,
-      )}
+      href={referenceLinkHref}
       className={compoundStyles.cardContainer()}
       LinkComponent={LinkComponent}
       isExternal={isExternalLink}
