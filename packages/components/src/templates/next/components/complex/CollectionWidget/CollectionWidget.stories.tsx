@@ -59,7 +59,7 @@ const generateArgs = ({
                 permalink: "/collection-1/item-1",
                 layout: "article",
                 summary: "",
-                date: isDateless ? "" : "2021-01-03",
+                date: isDateless ? undefined : "2021-01-03",
                 lastModified: isDateless
                   ? ""
                   : new Date("2021-01-03").toISOString(),
@@ -77,7 +77,7 @@ const generateArgs = ({
                 permalink: "/collection-1/item-2",
                 layout: "article",
                 summary: "",
-                date: isDateless ? "" : "2021-01-02",
+                date: isDateless ? undefined : "2021-01-02",
                 lastModified: isDateless
                   ? ""
                   : new Date("2021-01-02").toISOString(),
@@ -94,7 +94,7 @@ const generateArgs = ({
                 permalink: "/collection-1/item-3",
                 layout: "article",
                 summary: "",
-                date: isDateless ? "" : "2021-01-01",
+                date: isDateless ? undefined : "2021-01-01",
                 lastModified: isDateless
                   ? ""
                   : new Date("2021-01-01").toISOString(),
