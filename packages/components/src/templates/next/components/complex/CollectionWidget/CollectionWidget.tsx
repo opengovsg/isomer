@@ -26,6 +26,7 @@ const createInfoCardsStyles = tv({
       "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-canvas-inverse",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
+    cardCategory: "prose-body-base mb-3 text-base-content",
     urlButtonContainer: "mx-auto block pt-8 sm:pt-12", // temp: following headingContainer's mb
   },
   variants: {
@@ -41,8 +42,8 @@ const compoundStyles = createInfoCardsStyles()
 
 const SingleCard = ({
   title,
-  description,
   image,
+  category,
   referenceLinkHref,
   displayThumbnail,
   displayCategory,
@@ -90,7 +91,10 @@ const SingleCard = ({
             })}
           />
         </h3>
-        {/* TODO: Add category */}
+
+        {displayCategory && (
+          <p className={compoundStyles.cardCategory()}>{category}</p>
+        )}
       </div>
     </Link>
   )

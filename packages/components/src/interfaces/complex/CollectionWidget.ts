@@ -59,7 +59,7 @@ export type CollectionWidgetProps = Static<typeof CollectionWidgetSchema> & {
 
 export type CollectionWidgetSingleCardProps = Pick<
   ProcessedCollectionCardProps,
-  "title" | "description" | "image" | "referenceLinkHref"
+  "title" | "image" | "referenceLinkHref" | "category"
 > &
   Pick<CollectionWidgetProps, "displayThumbnail" | "displayCategory"> & {
     site: IsomerSiteProps
