@@ -338,7 +338,7 @@ export const BLOCK_TO_META: Record<
   [COLLECTION_WIDGET_TYPE]: {
     label: "Collection widget",
     description: "Automatically display recent pages from a collection",
-    // TODO: Add usage text after checking with Design
+    usageText: "Link recent articles from your newsroom, research, or blog.",
     // TODO: Add image source
   },
 }
