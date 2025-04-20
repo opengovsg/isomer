@@ -105,7 +105,6 @@ const CollectionWidget = ({
   displayThumbnail,
   displayCategory,
   buttonLabel,
-  numberOfPages,
   shouldLazyLoad,
 }: CollectionWidgetProps): JSX.Element => {
   const collectionParent = getCollectionParent({
@@ -116,7 +115,6 @@ const CollectionWidget = ({
   const collectionPages = getCollectionPages({
     site,
     collectionParent,
-    numberOfPages: parseInt(numberOfPages),
   })
 
   return (

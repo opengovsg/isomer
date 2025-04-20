@@ -1,6 +1,5 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
-import { DEFAULT_COLLECTION_WIDGET_NUMBER_OF_PAGES } from "~/interfaces"
 import {
   COLLECTION_PAGE_DEFAULT_SORT_BY,
   COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
@@ -13,13 +12,11 @@ import {
 interface GetCollectionPagesProps {
   site: IsomerSiteProps
   collectionParent: IsomerSitemap
-  numberOfPages?: number
 }
 
 export const getCollectionPages = ({
   site,
   collectionParent,
-  numberOfPages = parseInt(DEFAULT_COLLECTION_WIDGET_NUMBER_OF_PAGES),
 }: GetCollectionPagesProps): ProcessedCollectionCardProps[] => {
   const items = getCollectionItems({
     site,
@@ -38,5 +35,5 @@ export const getCollectionPages = ({
     )
   }
 
-  return processCollectionItems(items).slice(0, numberOfPages)
+  return processCollectionItems(items)
 }

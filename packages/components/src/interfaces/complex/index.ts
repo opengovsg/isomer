@@ -34,5 +34,4 @@ export {
   CollectionWidgetSchema,
   type CollectionWidgetProps,
   COLLECTION_WIDGET_TYPE,
-  DEFAULT_COLLECTION_WIDGET_NUMBER_OF_PAGES,
 } from "./CollectionWidget"

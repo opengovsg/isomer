@@ -1,7 +1,6 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
   COLLECTION_WIDGET_TYPE,
-  DEFAULT_COLLECTION_WIDGET_NUMBER_OF_PAGES,
   DYNAMIC_DATA_BANNER_TYPE,
 } from "@opengovsg/isomer-components"
 
@@ -225,7 +224,6 @@ export const DEFAULT_BLOCKS: Record<
     type: `${COLLECTION_WIDGET_TYPE}`,
     collectionReferenceLink: "", // TODO: placeholder for now as we cannot select a collection beforehand but it's required by the schema
     buttonLabel: "Read all latest news",
-    numberOfPages: DEFAULT_COLLECTION_WIDGET_NUMBER_OF_PAGES,
     displayThumbnail: true,
     displayCategory: true,
   },

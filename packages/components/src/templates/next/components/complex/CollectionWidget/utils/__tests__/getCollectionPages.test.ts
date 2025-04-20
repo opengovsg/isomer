@@ -31,7 +31,6 @@ describe("getCollectionPages", () => {
     search: { type: "localSearch", searchUrl: "/search" },
   }
   const collectionId = "111"
-  const collectionReferenceLink = `[resource:1:${collectionId}]`
   const collectionPermalink = `/this-is-a-test-collection`
 
   const createMockCollectionItem = ({
@@ -75,7 +74,7 @@ describe("getCollectionPages", () => {
     expect(() => getCollectionPages({ site, collectionParent })).toThrow()
   })
 
-  it("should return default number of items (3) when numberOfPages is undefined", () => {
+  it("should return 3 items", () => {
     // Arrange
     const collectionParent: IsomerSitemap = {
       id: collectionId,
@@ -116,49 +115,6 @@ describe("getCollectionPages", () => {
 
     // Assert
     expect(result).toHaveLength(3)
-    expect(result.map((item) => item.referenceLinkHref)).toEqual([
-      `${collectionPermalink}/1`,
-      `${collectionPermalink}/2`,
-      `${collectionPermalink}/3`,
-    ])
-  })
-
-  it("should return all items when numberOfPages is greater than or equal to total items", () => {
-    // Arrange
-    const collectionParent: IsomerSitemap = {
-      id: collectionId,
-      title: "Collection 1",
-      permalink: collectionPermalink,
-      layout: "collection",
-      summary: "Collection 1 summary",
-      lastModified: "2021-01-01",
-      children: [
-        createMockCollectionItem({
-          id: `${collectionId}1`,
-          permalink: `${collectionPermalink}/1`,
-        }),
-        createMockCollectionItem({
-          id: `${collectionId}2`,
-          permalink: `${collectionPermalink}/2`,
-        }),
-        createMockCollectionItem({
-          id: `${collectionId}3`,
-          permalink: `${collectionPermalink}/3`,
-        }),
-      ],
-    }
-    site = {
-      ...site,
-      siteMap: {
-        ...site.siteMap,
-        children: [collectionParent],
-      },
-    }
-
-    // Act
-    const result = getCollectionPages({ site, collectionParent })
-
-    // Assert
     expect(result.map((item) => item.referenceLinkHref)).toEqual([
       `${collectionPermalink}/1`,
       `${collectionPermalink}/2`,
