@@ -32,13 +32,6 @@ export const getCollectionPages = ({
     return []
   }
 
-  console.log(
-    1111,
-    collectionParent.permalink,
-    collectionParent.collectionPagePageProps?.defaultSortBy,
-    collectionParent.collectionPagePageProps?.defaultSortDirection,
-  )
-
   const items = getCollectionItems({
     site,
     permalink: collectionParent.permalink,
