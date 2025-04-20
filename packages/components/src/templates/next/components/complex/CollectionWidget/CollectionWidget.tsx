@@ -20,7 +20,7 @@ const createInfoCardsStyles = tv({
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImageContainer:
       "h-[11.875rem] w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md md:h-60",
-    cardImage: "h-full w-full object-center",
+    cardImage: "h-full w-full object-cover object-center",
     cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
     cardTitle:
       "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-canvas-inverse",
@@ -65,17 +65,19 @@ const SingleCard = ({
     >
       {/* TODO: Add fallback image if displayThumbnail but image is not present e.g. link variant */}
       {displayThumbnail && image && (
-        <ImageClient
-          src={
-            isExternalUrl(image.src) || site.assetsBaseUrl === undefined
-              ? image.src
-              : `${site.assetsBaseUrl}${image.src}`
-          }
-          alt={image.alt}
-          width="100%"
-          className={compoundStyles.cardImage()}
-          lazyLoading={shouldLazyLoad}
-        />
+        <div className={compoundStyles.cardImageContainer()}>
+          <ImageClient
+            src={
+              isExternalUrl(image.src) || site.assetsBaseUrl === undefined
+                ? image.src
+                : `${site.assetsBaseUrl}${image.src}`
+            }
+            alt={image.alt}
+            width="100%"
+            className={compoundStyles.cardImage()}
+            lazyLoading={shouldLazyLoad}
+          />
+        </div>
       )}
 
       <div className={compoundStyles.cardTextContainer()}>
