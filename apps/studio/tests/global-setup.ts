@@ -4,7 +4,10 @@ import type { ContainerInformation } from "./common"
 import { CONTAINER_CONFIGURATIONS, setup, teardown } from "./common"
 
 export default async () => {
-  const containers = await setup([CONTAINER_CONFIGURATIONS.database])
+  const containers = await setup([
+    CONTAINER_CONFIGURATIONS.database,
+    CONTAINER_CONFIGURATIONS.mockpass,
+  ])
 
   // eslint-disable-next-line no-restricted-properties
   Object.defineProperty(process.env, "testcontainers", {

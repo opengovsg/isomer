@@ -13,7 +13,7 @@ services:
       - postgres-volume:/var/lib/postgresql/data
 
   mockpass:
-    build: https://github.com/isomerpages/mockpass.git
+    image: opengovsg/mockpass:latest
     ports:
       - "5156:5156"
     extra_hosts:

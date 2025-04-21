@@ -4,7 +4,7 @@ import type { StartedNetwork, StartedTestContainer } from "testcontainers"
 import { GenericContainer, Wait } from "testcontainers"
 import { z } from "zod"
 
-type ContainerType = "database"
+type ContainerType = "database" | "mockpass"
 export const CONTAINER_CONFIGURATIONS: {
   [key in ContainerType]: ContainerConfiguration
 } = {
@@ -16,6 +16,20 @@ export const CONTAINER_CONFIGURATIONS: {
       POSTGRES_USER: "root",
       POSTGRES_PASSWORD: "root",
       POSTGRES_DB: "test",
+    },
+    wait: { type: "PORT" },
+    type: "image",
+  },
+  mockpass: {
+    name: "mockpass",
+    image: "opengovsg/mockpass:latest",
+    ports: [5156],
+    environment: {
+      MOCKPASS_NRIC: "S6005038D",
+      MOCKPASS_UEN: "123456789A",
+      SHOW_LOGIN_PAGE: "true",
+      SP_RP_JWKS_ENDPOINT:
+        "http://host.docker.internal:3000/api/sign-in/singpass/jwks",
     },
     wait: { type: "PORT" },
     type: "image",
