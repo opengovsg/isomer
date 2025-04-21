@@ -10,7 +10,7 @@ import type {
   SiteAbility,
   UserManagementActions,
 } from "./permissions.type"
-import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
+import type { GrowthbookIsomerUsersFeature } from "~/lib/growthbook"
 import { ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
 import { logPermissionEvent } from "../audit/audit.service"
 import { db } from "../database"
@@ -241,7 +241,7 @@ export const validateUserIsIsomerAdmin = async ({
     .select(["email"])
     .executeTakeFirstOrThrow()
 
-  const { users } = gb.getFeatureValue<GrowthbookIsomerAdminFeature>(
+  const { users } = gb.getFeatureValue<GrowthbookIsomerUsersFeature>(
     ISOMER_ADMIN_FEATURE_KEY,
     { users: [] },
   )

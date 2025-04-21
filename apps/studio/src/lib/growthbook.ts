@@ -7,6 +7,6 @@ export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 // of the object to be defined as a string instead of being specific to the keys
 // that we want. Hence, we have to define it as a type instead of an interface.
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export type GrowthbookIsomerAdminFeature = {
+export type GrowthbookIsomerUsersFeature = {
   users: string[]
 }
