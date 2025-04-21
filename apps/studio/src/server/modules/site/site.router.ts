@@ -5,6 +5,7 @@ import type {
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 
+import { ADMIN_ROLE } from "~/lib/growthbook"
 import {
   createSiteSchema,
   getConfigSchema,
@@ -50,7 +51,11 @@ export const siteRouter = router({
       .execute()
   }),
   listAllSites: protectedProcedure.query(async ({ ctx }) => {
-    await validateUserIsIsomerCoreAdmin({ userId: ctx.user.id, gb: ctx.gb })
+    await validateUserIsIsomerCoreAdmin({
+      userId: ctx.user.id,
+      gb: ctx.gb,
+      roles: [ADMIN_ROLE.CORE],
+    })
 
     return db
       .selectFrom("Site")
@@ -338,14 +343,22 @@ export const siteRouter = router({
   create: protectedProcedure
     .input(createSiteSchema)
     .mutation(async ({ ctx, input: { siteName } }) => {
-      await validateUserIsIsomerCoreAdmin({ userId: ctx.user.id, gb: ctx.gb })
+      await validateUserIsIsomerCoreAdmin({
+        userId: ctx.user.id,
+        gb: ctx.gb,
+        roles: [ADMIN_ROLE.CORE],
+      })
 
       return createSite({ siteName })
     }),
   publish: protectedProcedure
     .input(publishSiteSchema)
     .mutation(async ({ ctx, input: { siteId } }) => {
-      await validateUserIsIsomerCoreAdmin({ userId: ctx.user.id, gb: ctx.gb })
+      await validateUserIsIsomerCoreAdmin({
+        userId: ctx.user.id,
+        gb: ctx.gb,
+        roles: [ADMIN_ROLE.CORE],
+      })
 
       const byUser = await db
         .selectFrom("User")
@@ -371,7 +384,11 @@ export const siteRouter = router({
       })
     }),
   publishAll: protectedProcedure.mutation(async ({ ctx }) => {
-    await validateUserIsIsomerCoreAdmin({ userId: ctx.user.id, gb: ctx.gb })
+    await validateUserIsIsomerCoreAdmin({
+      userId: ctx.user.id,
+      gb: ctx.gb,
+      roles: [ADMIN_ROLE.CORE],
+    })
 
     const byUser = await db
       .selectFrom("User")
