@@ -23,6 +23,7 @@ import {
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useZodForm } from "~/lib/form"
+import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type NextPageWithLayout } from "~/lib/types"
 import { createSiteSchema } from "~/schemas/site"
 import { AdminLayout } from "~/templates/layouts/AdminLayout"
@@ -31,7 +32,9 @@ import { trpc } from "~/utils/trpc"
 const GodModeCreateSitePage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdmin = useIsUserIsomerAdmin({
+    roles: [ADMIN_ROLE.CORE],
+  })
 
   if (!isUserIsomerAdmin) {
     toast({

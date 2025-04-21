@@ -20,7 +20,7 @@ import { safeJsonParse } from "~/utils/safeJsonParse"
 import { logConfigEvent, logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db, jsonb } from "../database"
-import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
+import { validateUserIsIsomerCoreAdmin } from "../permissions/permissions.service"
 import {
   getFooter,
   getLocalisedSitemap,
@@ -50,7 +50,7 @@ export const siteRouter = router({
       .execute()
   }),
   listAllSites: protectedProcedure.query(async ({ ctx }) => {
-    await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+    await validateUserIsIsomerCoreAdmin({ userId: ctx.user.id, gb: ctx.gb })
 
     return db
       .selectFrom("Site")
@@ -338,14 +338,14 @@ export const siteRouter = router({
   create: protectedProcedure
     .input(createSiteSchema)
     .mutation(async ({ ctx, input: { siteName } }) => {
-      await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+      await validateUserIsIsomerCoreAdmin({ userId: ctx.user.id, gb: ctx.gb })
 
       return createSite({ siteName })
     }),
   publish: protectedProcedure
     .input(publishSiteSchema)
     .mutation(async ({ ctx, input: { siteId } }) => {
-      await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+      await validateUserIsIsomerCoreAdmin({ userId: ctx.user.id, gb: ctx.gb })
 
       const byUser = await db
         .selectFrom("User")
@@ -371,7 +371,7 @@ export const siteRouter = router({
       })
     }),
   publishAll: protectedProcedure.mutation(async ({ ctx }) => {
-    await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+    await validateUserIsIsomerCoreAdmin({ userId: ctx.user.id, gb: ctx.gb })
 
     const byUser = await db
       .selectFrom("User")

@@ -231,7 +231,7 @@ interface ValidateUserIsIsomerAdminProps {
   gb: GrowthBook
 }
 
-export const validateUserIsIsomerAdmin = async ({
+export const validateUserIsIsomerCoreAdmin = async ({
   userId,
   gb,
 }: ValidateUserIsIsomerAdminProps) => {
@@ -241,12 +241,12 @@ export const validateUserIsIsomerAdmin = async ({
     .select(["email"])
     .executeTakeFirstOrThrow()
 
-  const { users } = gb.getFeatureValue<GrowthbookIsomerAdminFeature>(
+  const { core } = gb.getFeatureValue<GrowthbookIsomerAdminFeature>(
     ISOMER_ADMIN_FEATURE_KEY,
-    { users: [] },
+    { core: [], migrators: [] },
   )
 
-  if (!users.includes(user.email)) {
+  if (!core.includes(user.email)) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "You do not have sufficient permissions to perform this action",
