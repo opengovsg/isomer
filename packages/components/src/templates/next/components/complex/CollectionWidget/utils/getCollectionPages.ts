@@ -1,6 +1,6 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
-import type { IsomerSitemap, IsomerSiteProps } from "~/types"
-import type { IsomerPageSitemap } from "~/types/sitemap"
+import type { IsomerSiteProps } from "~/types"
+import type { IsomerCollectionPageSitemap } from "~/types/sitemap"
 import {
   COLLECTION_PAGE_DEFAULT_SORT_BY,
   COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
@@ -12,7 +12,7 @@ import {
 
 interface GetCollectionPagesProps {
   site: IsomerSiteProps
-  collectionParent: IsomerSitemap
+  collectionParent: IsomerCollectionPageSitemap
 }
 
 const NUMBER_OF_PAGES_TO_DISPLAY = 3
@@ -25,11 +25,11 @@ export const getCollectionPages = ({
     site,
     permalink: collectionParent.permalink,
     sortBy:
-      (collectionParent as IsomerPageSitemap).collectionPagePageProps
-        ?.defaultSortBy ?? COLLECTION_PAGE_DEFAULT_SORT_BY,
+      collectionParent.collectionPagePageProps?.defaultSortBy ??
+      COLLECTION_PAGE_DEFAULT_SORT_BY,
     sortDirection:
-      (collectionParent as IsomerPageSitemap).collectionPagePageProps
-        ?.defaultSortDirection ?? COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+      collectionParent.collectionPagePageProps?.defaultSortDirection ??
+      COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
   })
 
   if (items.length === 0) {

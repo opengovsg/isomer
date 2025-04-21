@@ -19,14 +19,19 @@ interface IsomerBaseSitemap {
   tags?: CollectionCardProps["tags"]
 }
 
-export interface IsomerPageSitemap extends IsomerBaseSitemap {
-  layout: Exclude<IsomerPageLayoutType, "file" | "link">
+interface IsomerPageSitemap extends IsomerBaseSitemap {
+  layout: Exclude<IsomerPageLayoutType, "collection" | "file" | "link">
+}
+
+export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
+  layout: Extract<IsomerPageLayoutType, "collection">
   // TODO: Reconsider how this is done as currently every item in the sitemap has the same props
   collectionPagePageProps?: {
     defaultSortBy?: CollectionPagePageProps["defaultSortBy"]
     defaultSortDirection?: CollectionPagePageProps["defaultSortDirection"]
   }
 }
+
 interface IsomerFileSitemap extends IsomerBaseSitemap {
   layout: "file"
   ref: string
@@ -39,5 +44,6 @@ interface IsomerLinkSitemap extends IsomerBaseSitemap {
 
 export type IsomerSitemap =
   | IsomerPageSitemap
+  | IsomerCollectionPageSitemap
   | IsomerFileSitemap
   | IsomerLinkSitemap

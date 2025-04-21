@@ -1,5 +1,13 @@
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
+import type { IsomerCollectionPageSitemap } from "~/types/sitemap"
 import { getResourceIdFromReferenceLink } from "~/utils"
+
+const isCollectionParent = (
+  node: IsomerSitemap,
+  collectionId: string,
+): node is IsomerCollectionPageSitemap => {
+  return node.id === collectionId && node.layout === "collection"
+}
 
 interface GetCollectionParentProps {
   site: IsomerSiteProps
@@ -9,7 +17,7 @@ interface GetCollectionParentProps {
 export const getCollectionParent = ({
   site,
   collectionReferenceLink,
-}: GetCollectionParentProps): IsomerSitemap => {
+}: GetCollectionParentProps): IsomerCollectionPageSitemap => {
   const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
 
   // Iteratively search the siteMap tree for the collection node by ID
@@ -20,8 +28,7 @@ export const getCollectionParent = ({
     const currentNode = queue.shift()
     if (!currentNode) continue
 
-    // Parent node found
-    if (currentNode.id === collectionId) {
+    if (isCollectionParent(currentNode, collectionId)) {
       return currentNode
     }
 
