@@ -319,6 +319,7 @@ export const pageRouter = router({
           siteId,
         })
         await logResourceEvent(tx, {
+          siteId,
           eventType: "ResourceUpdate",
           delta: {
             before: {
@@ -383,6 +384,7 @@ export const pageRouter = router({
         const updatedBlob = await updateBlobById(tx, input)
 
         await logResourceEvent(tx, {
+          siteId: input.siteId,
           by,
           delta: {
             before: { blob: oldBlob, resource },
@@ -474,6 +476,7 @@ export const pageRouter = router({
               .executeTakeFirstOrThrow()
 
             await logResourceEvent(tx, {
+              siteId,
               by,
               delta: { before: null, after: { blob, resource: addedResource } },
               eventType: "ResourceCreate",
@@ -612,6 +615,7 @@ export const pageRouter = router({
         })
 
         await logResourceEvent(tx, {
+          siteId,
           by,
           delta: {
             before: { resource, blob: oldBlob },
@@ -695,6 +699,7 @@ export const pageRouter = router({
               })
 
             await logResourceEvent(tx, {
+              siteId,
               by,
               delta: { before: resource, after: updatedResource },
               eventType: "ResourceUpdate",
@@ -864,6 +869,7 @@ export const pageRouter = router({
           })
 
         await logResourceEvent(tx, {
+          siteId,
           by,
           delta: { before: null, after: addedResource },
           eventType: "ResourceCreate",
