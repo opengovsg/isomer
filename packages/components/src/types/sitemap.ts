@@ -17,15 +17,15 @@ interface IsomerBaseSitemap {
   date?: CollectionCardProps["lastUpdated"]
   children?: IsomerSitemap[]
   tags?: CollectionCardProps["tags"]
+}
+
+export interface IsomerPageSitemap extends IsomerBaseSitemap {
+  layout: Exclude<IsomerPageLayoutType, "file" | "link">
   // TODO: Reconsider how this is done as currently every item in the sitemap has the same props
   collectionPagePageProps?: {
     defaultSortBy?: CollectionPagePageProps["defaultSortBy"]
     defaultSortDirection?: CollectionPagePageProps["defaultSortDirection"]
   }
-}
-
-interface IsomerPageSitemap extends IsomerBaseSitemap {
-  layout: Exclude<IsomerPageLayoutType, "file" | "link">
 }
 interface IsomerFileSitemap extends IsomerBaseSitemap {
   layout: "file"
