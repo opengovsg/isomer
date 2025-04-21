@@ -101,8 +101,6 @@ const LinkEditorModalContent = ({
 
   const isEditingLink = !!linkText && !!linkHref
 
-  console.log("errors", errors)
-
   const onSubmit = handleSubmit(
     // TODO: Refactor to not have to check for !!linkHref
     // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
