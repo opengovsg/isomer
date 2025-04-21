@@ -65,7 +65,7 @@ const generateArgs = ({
                   : new Date("2021-01-03").toISOString(),
                 children: [],
                 image: {
-                  src: "https://placehold.co/600x400?text=image%201",
+                  src: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=3715&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                   alt: "Image 1",
                 },
               },
@@ -83,7 +83,7 @@ const generateArgs = ({
                   : new Date("2021-01-02").toISOString(),
                 children: [],
                 image: {
-                  src: "https://placehold.co/600x400?text=image%202",
+                  src: "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?q=80&w=3024&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                   alt: "Image 2",
                 },
               },
@@ -100,7 +100,7 @@ const generateArgs = ({
                   : new Date("2021-01-01").toISOString(),
                 children: [],
                 image: {
-                  src: "https://placehold.co/600x400?text=image%203",
+                  src: "https://images.unsplash.com/photo-1511044568932-338cba0ad803?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                   alt: "Image 3",
                 },
               },
