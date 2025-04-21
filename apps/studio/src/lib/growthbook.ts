@@ -1,5 +1,7 @@
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const ISOMER_ADMINS_FEATURE_KEY = "isomer_admins"
+export const ISOMER_ADMINS_AND_MIGRATORS_FEATURE_KEY =
+  "isomer_admins_and_migrators"
 export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 
