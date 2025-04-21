@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { CollectionWidgetProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types/sitemap"
-import CollectionWidget from "./CollectionWidget"
+import { CollectionWidget } from "./CollectionWidget"
 
 const meta: Meta<CollectionWidgetProps> = {
   title: "Next/Components/CollectionWidget",
