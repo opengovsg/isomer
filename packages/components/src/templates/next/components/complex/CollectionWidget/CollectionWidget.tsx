@@ -13,8 +13,8 @@ import { getCollectionPages, getCollectionParent } from "./utils"
 
 const createInfoCardsStyles = tv({
   slots: {
-    container: `${ComponentContent} flex flex-col py-12 first:pt-0 md:py-16`,
-    headingContainer: "flex flex-col gap-2.5 pb-8 sm:pb-12 lg:max-w-3xl",
+    container: `${ComponentContent} flex flex-col gap-8 py-12 first:pt-0 md:gap-12 md:py-16`,
+    headingContainer: "flex flex-col gap-2.5 lg:max-w-3xl",
     headingTitle: "prose-display-md break-words text-base-content-strong",
     headingSubtitle: "prose-headline-lg-regular text-base-content",
     grid: "grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-7 lg:grid-cols-3 lg:gap-x-16 lg:gap-y-12",
@@ -22,14 +22,14 @@ const createInfoCardsStyles = tv({
     cardImageContainer:
       "h-[11.875rem] w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md md:h-60",
     cardImage: "h-full w-full object-cover object-center",
-    cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
-    cardLastUpdated: "prose-body-base text-base-content-subtle", // TODO: Update after clarifying with Sehyun
+    cardTextContainer: "flex flex-col gap-1.5 sm:gap-2",
+    cardLastUpdated: "prose-label-sm-medium text-base-content",
     cardTitle:
       "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-canvas-inverse",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
-    cardCategory: "prose-body-base mb-3 text-base-content", // TODO: Update after clarifying with Sehyun
-    urlButtonContainer: "mx-auto block pt-8 sm:pt-12", // temp: following headingContainer's mb
+    cardCategory: "prose-label-sm-regular text-base-content-light",
+    urlButtonContainer: "mx-auto block",
   },
   variants: {
     isExternalLink: {
