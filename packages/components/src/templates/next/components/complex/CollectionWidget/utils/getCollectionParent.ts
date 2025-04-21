@@ -35,6 +35,6 @@ export const getCollectionParent = ({
   }
 
   throw new Error(
-    `CollectionWidget: No collection parent found for reference link ${collectionReferenceLink}`,
+    `CollectionWidget: No collection parent found for collection ID ${collectionId}`,
   )
 }
