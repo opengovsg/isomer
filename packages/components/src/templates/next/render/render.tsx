@@ -8,6 +8,7 @@ import { COLLECTION_WIDGET_TYPE, DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
 import {
   Accordion,
   Callout,
+  CollectionWidget,
   Contentpic,
   DynamicDataBanner,
   Hero,
@@ -18,11 +19,11 @@ import {
   InfoCols,
   Infopic,
   KeyStatistics,
+  LogoCloud,
   Map,
   Prose,
   Video,
 } from "../components"
-import { LogoCloud } from "../components/complex/LogoCloud"
 import {
   ArticleLayout,
   CollectionLayout,
@@ -89,7 +90,7 @@ export const renderComponent = ({
     case DYNAMIC_DATA_BANNER_TYPE:
       return <DynamicDataBanner key={elementKey} {...component} {...rest} />
     case COLLECTION_WIDGET_TYPE:
-      return <></> // TODO: Implement collection widget
+      return <CollectionWidget key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
       return <></>

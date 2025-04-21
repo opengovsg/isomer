@@ -124,7 +124,7 @@ const SingleCard = ({
   )
 }
 
-const CollectionWidget = ({
+export const CollectionWidget = ({
   site,
   LinkComponent,
   collectionReferenceLink,
@@ -194,5 +194,3 @@ const CollectionWidget = ({
     </section>
   )
 }
-
-export default CollectionWidget

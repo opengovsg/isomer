@@ -1,1 +1,1 @@
-export { default } from "./CollectionWidget"
+export { CollectionWidget } from "./CollectionWidget"
