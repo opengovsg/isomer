@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { CollectionWidgetProps } from "~/interfaces"
+import type { IsomerSitemap } from "~/types/sitemap"
 import CollectionWidget from "./CollectionWidget"
 
 const meta: Meta<CollectionWidgetProps> = {
@@ -23,9 +24,62 @@ const generateArgs = ({
   displayCategory,
   buttonLabel = "View all corrections",
   isDateless = false,
+  numberOfCards = 3,
 }: Partial<
-  Omit<CollectionWidgetProps, "site"> & { isDateless?: boolean }
+  Omit<CollectionWidgetProps, "site"> & {
+    isDateless?: boolean
+    numberOfCards?: number
+  }
 >): Partial<CollectionWidgetProps> => {
+  const cards: IsomerSitemap[] = [
+    {
+      id: "3",
+      title:
+        "Date of Government Gazette Notification on Dissolution of Parliament",
+      category: "yes i am a category",
+      permalink: "/collection-1/item-1",
+      layout: "article",
+      summary: "",
+      date: isDateless ? undefined : "2021-01-03",
+      lastModified: isDateless ? "" : new Date("2021-01-03").toISOString(),
+      children: [],
+      image: {
+        src: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=3715&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        alt: "Image 1",
+      },
+    },
+    {
+      id: "4",
+      title: "Impact of Foreign Professionals on our Economy and Society",
+      category: "yes i am a category",
+      permalink: "/collection-1/item-2",
+      layout: "article",
+      summary: "",
+      date: isDateless ? undefined : "2021-01-02",
+      lastModified: isDateless ? "" : new Date("2021-01-02").toISOString(),
+      children: [],
+      image: {
+        src: "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?q=80&w=3024&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        alt: "Image 2",
+      },
+    },
+    {
+      id: "5",
+      title: "Where does Government revenue come from?",
+      category: "yes i am a category",
+      permalink: "/collection-1/item-3",
+      layout: "article",
+      summary: "",
+      date: isDateless ? undefined : "2021-01-01",
+      lastModified: isDateless ? "" : new Date("2021-01-01").toISOString(),
+      children: [],
+      image: {
+        src: "https://images.unsplash.com/photo-1511044568932-338cba0ad803?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        alt: "Image 3",
+      },
+    },
+  ]
+
   return {
     type: "collectionwidget",
     collectionReferenceLink,
@@ -50,61 +104,7 @@ const generateArgs = ({
             summary:
               "Clarifying widespread or common misperceptions of Government policy, or inaccurate assertions on matters of public concern that can harm Singapore's social fabric.",
             lastModified: "2021-01-01",
-            children: [
-              {
-                id: "3",
-                title:
-                  "Date of Government Gazette Notification on Dissolution of Parliament",
-                category: "yes i am a category",
-                permalink: "/collection-1/item-1",
-                layout: "article",
-                summary: "",
-                date: isDateless ? undefined : "2021-01-03",
-                lastModified: isDateless
-                  ? ""
-                  : new Date("2021-01-03").toISOString(),
-                children: [],
-                image: {
-                  src: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=3715&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                  alt: "Image 1",
-                },
-              },
-              {
-                id: "4",
-                title:
-                  "Impact of Foreign Professionals on our Economy and Society",
-                category: "yes i am a category",
-                permalink: "/collection-1/item-2",
-                layout: "article",
-                summary: "",
-                date: isDateless ? undefined : "2021-01-02",
-                lastModified: isDateless
-                  ? ""
-                  : new Date("2021-01-02").toISOString(),
-                children: [],
-                image: {
-                  src: "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?q=80&w=3024&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                  alt: "Image 2",
-                },
-              },
-              {
-                id: "5",
-                title: "Where does Government revenue come from?",
-                category: "yes i am a category",
-                permalink: "/collection-1/item-3",
-                layout: "article",
-                summary: "",
-                date: isDateless ? undefined : "2021-01-01",
-                lastModified: isDateless
-                  ? ""
-                  : new Date("2021-01-01").toISOString(),
-                children: [],
-                image: {
-                  src: "https://images.unsplash.com/photo-1511044568932-338cba0ad803?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                  alt: "Image 3",
-                },
-              },
-            ],
+            children: cards.slice(0, numberOfCards),
           },
         ],
       },
@@ -148,5 +148,23 @@ export const DatelessVariant: Story = {
     displayThumbnail: true,
     displayCategory: true,
     isDateless: true,
+  }),
+}
+
+export const OneCard: Story = {
+  name: "One Card",
+  args: generateArgs({
+    displayThumbnail: true,
+    displayCategory: true,
+    numberOfCards: 1,
+  }),
+}
+
+export const TwoCards: Story = {
+  name: "Two Cards",
+  args: generateArgs({
+    displayThumbnail: true,
+    displayCategory: true,
+    numberOfCards: 2,
   }),
 }
