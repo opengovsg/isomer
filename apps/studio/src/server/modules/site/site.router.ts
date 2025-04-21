@@ -365,6 +365,7 @@ export const siteRouter = router({
           eventType: AuditLogEvent.Publish,
           delta: { before: null, after: null },
           metadata: {},
+          siteId,
         })
         await publishSite(ctx.logger, siteId)
       })
@@ -398,6 +399,7 @@ export const siteRouter = router({
             eventType: AuditLogEvent.Publish,
             delta: { before: null, after: null },
             metadata: {},
+            siteId: site.id,
           })
           await publishSite(ctx.logger, site.id)
         }),
