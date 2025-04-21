@@ -25,6 +25,7 @@ services:
         # NOTE: the mockpass container needs to communicate with our host machine over port 3000
         # so that it can fetch the
       - SP_RP_JWKS_ENDPOINT=http://host.docker.internal:3000/api/sign-in/singpass/jwks
+      - SINGPASS_CLIENT_PROFILE=direct,
 
 volumes:
   postgres-volume:

@@ -23,13 +23,15 @@ export const CONTAINER_CONFIGURATIONS: {
   mockpass: {
     name: "mockpass",
     image: "opengovsg/mockpass:latest",
-    ports: [5156],
+    ports: [{ container: 5156, host: 5156 }],
+    extraHosts: [{ host: "host.docker.internal", ipAddress: "host-gateway" }],
     environment: {
       MOCKPASS_NRIC: "S6005038D",
       MOCKPASS_UEN: "123456789A",
       SHOW_LOGIN_PAGE: "true",
       SP_RP_JWKS_ENDPOINT:
         "http://host.docker.internal:3000/api/sign-in/singpass/jwks",
+      SINGPASS_CLIENT_PROFILE: "direct",
     },
     wait: { type: "PORT" },
     type: "image",
@@ -48,6 +50,9 @@ const baseContainerConfiguration = z.object({
     .optional(),
   environment: z.record(z.string(), z.string()).optional(),
   buildArgs: z.record(z.string(), z.string()).optional(),
+  extraHosts: z
+    .array(z.object({ host: z.string(), ipAddress: z.string() }))
+    .optional(),
   wait: z
     .union([
       z.object({ type: z.literal("PORT"), timeout: z.number().optional() }),
@@ -95,7 +100,14 @@ export const setup = async (
 ) => {
   const containerTemplates = await Promise.all(
     configurations.map(async (configuration) => {
-      const { name, ports = [], environment, wait, type } = configuration
+      const {
+        name,
+        extraHosts,
+        ports = [],
+        environment,
+        wait,
+        type,
+      } = configuration
       const __filename = fileURLToPath(import.meta.url)
       const __dirname = dirname(__filename)
 
@@ -111,6 +123,10 @@ export const setup = async (
 
       if (ports.length) {
         container = container.withExposedPorts(...ports)
+      }
+
+      if (extraHosts) {
+        container = container.withExtraHosts(extraHosts)
       }
 
       if (environment) {
