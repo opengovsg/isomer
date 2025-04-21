@@ -11,7 +11,7 @@ import { z } from "zod"
 
 import type { CollectionLinkProps } from "../atoms"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useIsUserIsomerUsers } from "~/hooks/useIsUserIsomerUsers"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
@@ -48,11 +48,13 @@ const InnerDrawer = ({
   setDrawerState,
 }: LinkEditorDrawerStateProps) => {
   const { errors } = useBuilderErrors()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdminOrMigrator = useIsUserIsomerUsers({
+    includeMigrators: true,
+  })
 
   return (
     <Flex flexDir="column" position="relative" h="100%" w="100%">
-      {isUserIsomerAdmin && (
+      {isUserIsomerAdminOrMigrator && (
         <ActivateRawJsonEditorMode
           onActivate={() => setDrawerState("rawJsonEditor")}
         />

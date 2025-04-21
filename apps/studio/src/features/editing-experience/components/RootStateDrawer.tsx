@@ -8,7 +8,7 @@ import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useIsUserIsomerUsers } from "~/hooks/useIsUserIsomerUsers"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
@@ -44,7 +44,9 @@ export default function RootStateDrawer() {
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const utils = trpc.useUtils()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdminOrMigrator = useIsUserIsomerUsers({
+    includeMigrators: true,
+  })
   const toast = useToast({ status: "error" })
 
   const { mutate } = trpc.page.reorderBlock.useMutation({
@@ -123,7 +125,7 @@ export default function RootStateDrawer() {
 
   return (
     <VStack gap="1.5rem" p="1.5rem">
-      {isUserIsomerAdmin && (
+      {isUserIsomerAdminOrMigrator && (
         <ActivateRawJsonEditorMode
           onActivate={() => setDrawerState({ state: "rawJsonEditor" })}
         />

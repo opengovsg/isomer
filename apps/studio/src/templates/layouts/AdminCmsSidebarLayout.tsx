@@ -12,7 +12,7 @@ import { LayoutHead } from "~/components/LayoutHead"
 import { SearchableHeader } from "~/components/SearchableHeader"
 import { DirectorySidebar } from "~/features/dashboard/components/DirectorySidebar"
 import { useMe } from "~/features/me/api"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useIsUserIsomerUsers } from "~/hooks/useIsUserIsomerUsers"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
 
@@ -43,7 +43,9 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
   const { siteId } = useQueryParse(siteSchema)
 
   const { logout } = useMe()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdminOrMigrator = useIsUserIsomerUsers({
+    includeMigrators: true,
+  })
 
   const pageNavItems: CmsSidebarItem[] = [
     {
@@ -60,7 +62,7 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
       href: `/sites/${siteId}/users`,
     },
     { icon: BiCog, label: "Settings", href: `/sites/${siteId}/settings` },
-    ...(isUserIsomerAdmin
+    ...(isUserIsomerAdminOrMigrator
       ? [
           {
             icon: BiStar,

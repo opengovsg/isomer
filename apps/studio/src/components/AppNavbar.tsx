@@ -5,11 +5,11 @@ import { Button } from "@opengovsg/design-system-react"
 import { BiLinkExternal } from "react-icons/bi"
 
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useIsUserIsomerUsers } from "~/hooks/useIsUserIsomerUsers"
 import { AvatarMenu } from "./AvatarMenu"
 
 export function AppNavbar(): JSX.Element {
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdmin = useIsUserIsomerUsers({ includeMigrators: false })
 
   return (
     <Flex flex="0 0 auto" gridColumn="1/-1" height={ADMIN_NAVBAR_HEIGHT}>

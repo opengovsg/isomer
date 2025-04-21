@@ -19,7 +19,7 @@ import {
 import { useToast } from "@opengovsg/design-system-react"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useIsUserIsomerUsers } from "~/hooks/useIsUserIsomerUsers"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminLayout } from "~/templates/layouts/AdminLayout"
 import { trpc } from "~/utils/trpc"
@@ -27,7 +27,7 @@ import { trpc } from "~/utils/trpc"
 const GodModePublishingPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdmin = useIsUserIsomerUsers({ includeMigrators: false })
 
   if (!isUserIsomerAdmin) {
     toast({

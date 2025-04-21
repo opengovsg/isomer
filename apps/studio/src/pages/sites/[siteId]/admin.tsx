@@ -21,7 +21,7 @@ import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useIsUserIsomerUsers } from "~/hooks/useIsUserIsomerUsers"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
@@ -45,9 +45,11 @@ const SiteAdminPage: NextPageWithLayout = () => {
   const router = useRouter()
   const trpcUtils = trpc.useUtils()
   const { siteId } = useQueryParse(siteAdminSchema)
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdminOrMigrator = useIsUserIsomerUsers({
+    includeMigrators: true,
+  })
 
-  if (!isUserIsomerAdmin) {
+  if (!isUserIsomerAdminOrMigrator) {
     toast({
       title: "You do not have permission to access this page.",
       status: "error",
