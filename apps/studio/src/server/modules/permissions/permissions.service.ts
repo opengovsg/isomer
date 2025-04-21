@@ -1,5 +1,5 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
-import { GrowthBook } from "@growthbook/growthbook"
+import type { GrowthBook } from "@growthbook/growthbook"
 import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 

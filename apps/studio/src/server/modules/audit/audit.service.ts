@@ -45,7 +45,7 @@ export interface ResourceEventLogProps {
   delta: ResourceCreateDelta | ResourceDeleteDelta | ResourceUpdateDelta
   by: User
   ip?: string
-  siteId: number
+  siteId: Site["id"]
   metadata?: Record<string, unknown>
 }
 
@@ -94,7 +94,7 @@ interface FooterUpdateEventLogProps {
   delta: FooterUpdateDelta
   by: User
   ip?: string
-  siteId: number
+  siteId: Site["id"]
 }
 
 interface NavbarUpdateEventLogProps {
@@ -102,7 +102,7 @@ interface NavbarUpdateEventLogProps {
   delta: NavbarUpdateDelta
   by: User
   ip?: string
-  siteId: number
+  siteId: Site["id"]
 }
 
 interface SiteConfigUpdateEventLogProps {
@@ -110,7 +110,7 @@ interface SiteConfigUpdateEventLogProps {
   delta: SiteConfigUpdateDelta
   by: User
   ip?: string
-  siteId: number
+  siteId: Site["id"]
 }
 
 export const logConfigEvent: AuditLogger<ConfigEventLogProps> = async (
@@ -189,7 +189,7 @@ interface PublishEventLogProps<
   eventType: Extract<AuditLogEvent, "Publish">
   ip?: string
   metadata: Meta
-  siteId: number
+  siteId: Site["id"]
 }
 
 // NOTE: First publish of a blob will have no `versionId`
