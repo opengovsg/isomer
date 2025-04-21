@@ -18,12 +18,12 @@ export const useIsUserIsomerAdmin = ({ roles }: UseIsUserIsomerAdminProps) => {
     { core: [], migrators: [] },
   )
 
-  if (roles.includes(ADMIN_ROLE.CORE)) {
-    return core.includes(email)
+  if (roles.includes(ADMIN_ROLE.CORE) && core.includes(email)) {
+    return true
   }
 
-  if (roles.includes(ADMIN_ROLE.MIGRATORS)) {
-    return migrators.includes(email)
+  if (roles.includes(ADMIN_ROLE.MIGRATORS) && migrators.includes(email)) {
+    return true
   }
 
   return false
