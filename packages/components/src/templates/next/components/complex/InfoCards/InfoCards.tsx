@@ -76,6 +76,9 @@ const createInfoCardsStyles = tv({
       },
     },
     maxColumns: {
+      "1": {
+        grid: "",
+      },
       "2": {
         grid: "md:grid-cols-2",
       },
@@ -101,14 +104,14 @@ const createInfoCardsStyles = tv({
       layout: "homepage",
       maxColumns: "2",
       class: {
-        cardImageContainer: "aspect-[2/1]",
+        cardImageContainer: "aspect-[3/2] lg:aspect-[2/1]",
       },
     },
     {
       layout: "default",
       maxColumns: "3",
       class: {
-        cardImageContainer: "aspect-square",
+        cardImageContainer: "aspect-[3/2] lg:aspect-square",
       },
     },
     {

@@ -149,6 +149,16 @@ export const WithImage2ColumnsHomepage: Story = {
   args: generateArgs({ maxColumns: "2", layout: "homepage" }),
 }
 
+export const WithImage1Columns: Story = {
+  name: "With Image (1 Col)",
+  args: generateArgs({ maxColumns: "1" }),
+}
+
+export const WithImage1ColumnsHomepage: Story = {
+  name: "With Image (1 Col) Homepage",
+  args: generateArgs({ maxColumns: "1", layout: "homepage" }),
+}
+
 export const NoImage: Story = {
   args: generateArgs({ maxColumns: "3", withoutImage: true }),
 }

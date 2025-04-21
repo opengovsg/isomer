@@ -87,6 +87,7 @@ const InfoCardsBaseSchema = Type.Object({
   maxColumns: Type.Optional(
     Type.Union(
       [
+        Type.Literal("1", { title: "1 column" }),
         Type.Literal("2", { title: "2 columns" }),
         Type.Literal("3", { title: "3 columns" }),
       ],
