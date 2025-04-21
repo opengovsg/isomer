@@ -3,7 +3,11 @@ import { BiRightArrowAlt } from "react-icons/bi"
 import type { CollectionWidgetProps } from "~/interfaces"
 import type { CollectionWidgetSingleCardProps } from "~/interfaces/complex/CollectionWidget"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import {
+  getReferenceLinkHref,
+  getResourceIdFromReferenceLink,
+  isExternalUrl,
+} from "~/utils"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
@@ -135,10 +139,9 @@ export const CollectionWidget = ({
   buttonLabel,
   shouldLazyLoad,
 }: CollectionWidgetProps): JSX.Element => {
-  const collectionParent = getCollectionParent({
-    site,
-    collectionReferenceLink,
-  })
+  const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
+
+  const collectionParent = getCollectionParent({ site, collectionId })
 
   const collectionPages = getCollectionPages({
     site,

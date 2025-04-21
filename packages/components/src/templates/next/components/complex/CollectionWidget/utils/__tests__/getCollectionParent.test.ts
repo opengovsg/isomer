@@ -31,7 +31,6 @@ describe("getCollectionParent", () => {
     search: { type: "localSearch", searchUrl: "/search" },
   }
   const collectionId = "111"
-  const collectionReferenceLink = `[resource:1:${collectionId}]`
   const collectionPermalink = `/this-is-a-test-collection`
 
   const collectionNode: IsomerSitemap = {
@@ -44,9 +43,9 @@ describe("getCollectionParent", () => {
     children: [],
   }
 
-  it("should throw an error when collectionReferenceLink does not match any siteMap child", () => {
+  it("should throw an error when collectionId does not match any siteMap child", () => {
     // Arrange
-    const nonExistentCollectionReferenceLink = `[resource:1:${collectionId}9999999]`
+    const nonExistentCollectionId = `${collectionId}9999999`
     site = {
       ...site,
       siteMap: {
@@ -59,12 +58,12 @@ describe("getCollectionParent", () => {
     expect(() =>
       getCollectionParent({
         site,
-        collectionReferenceLink: nonExistentCollectionReferenceLink,
+        collectionId: nonExistentCollectionId,
       }),
     ).toThrow()
   })
 
-  it("should return the collection node when collectionReferenceLink matches a siteMap child", () => {
+  it("should return the collection node when collectionId matches a siteMap child", () => {
     // Arrange
     site = {
       ...site,
@@ -75,10 +74,7 @@ describe("getCollectionParent", () => {
     }
 
     // Act
-    const result = getCollectionParent({
-      site,
-      collectionReferenceLink,
-    })
+    const result = getCollectionParent({ site, collectionId })
 
     // Assert
     expect(result).toEqual(collectionNode)
@@ -95,12 +91,7 @@ describe("getCollectionParent", () => {
     }
 
     // Act + Assert
-    expect(() =>
-      getCollectionParent({
-        site,
-        collectionReferenceLink,
-      }),
-    ).toThrow()
+    expect(() => getCollectionParent({ site, collectionId })).toThrow()
   })
 
   it("should find the collection node even if nested", () => {
@@ -123,31 +114,9 @@ describe("getCollectionParent", () => {
     }
 
     // Act
-    const result = getCollectionParent({
-      site,
-      collectionReferenceLink,
-    })
+    const result = getCollectionParent({ site, collectionId })
 
     // Assert
     expect(result).toEqual(collectionNode)
-  })
-
-  it("should throw an error if the collectionReferenceLink is invalid", () => {
-    // Arrange
-    site = {
-      ...site,
-      siteMap: {
-        ...site.siteMap,
-        children: [collectionNode],
-      },
-    }
-
-    // Act + Assert
-    expect(() =>
-      getCollectionParent({
-        site,
-        collectionReferenceLink: "invalid-link-format",
-      }),
-    ).toThrow()
   })
 })
