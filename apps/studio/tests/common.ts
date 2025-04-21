@@ -4,7 +4,7 @@ import type { StartedNetwork, StartedTestContainer } from "testcontainers"
 import { GenericContainer, Wait } from "testcontainers"
 import { z } from "zod"
 
-type ContainerType = "database" | "studio"
+type ContainerType = "database"
 export const CONTAINER_CONFIGURATIONS: {
   [key in ContainerType]: ContainerConfiguration
 } = {
@@ -19,20 +19,6 @@ export const CONTAINER_CONFIGURATIONS: {
     },
     wait: { type: "PORT" },
     type: "image",
-  },
-  studio: {
-    name: "studio",
-    ports: [3000],
-    buildArgs: {
-      NEXT_PUBLIC_APP_ENV: "test",
-      NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: "really-fake",
-      NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: "obviously-fake",
-      NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY: "blah-blah",
-      NEXT_PUBLIC_INTERCOM_APP_ID: "Isomer",
-    },
-    dockerfile: "./apps/studio/Dockerfile",
-    wait: { type: "PORT" },
-    type: "dockerfile",
   },
 }
 
