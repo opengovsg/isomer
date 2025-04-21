@@ -9,7 +9,11 @@ import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
 import { ImageClient } from "../Image"
-import { getCollectionPages, getCollectionParent } from "./utils"
+import {
+  getCollectionPages,
+  getCollectionParent,
+  NUMBER_OF_PAGES_TO_DISPLAY,
+} from "./utils"
 
 const createInfoCardsStyles = tv({
   slots: {
@@ -17,7 +21,7 @@ const createInfoCardsStyles = tv({
     headingContainer: "flex flex-col gap-2.5 lg:max-w-3xl",
     headingTitle: "prose-display-md break-words text-base-content-strong",
     headingSubtitle: "prose-headline-lg-regular text-base-content",
-    grid: "grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-7 lg:grid-cols-3 lg:gap-x-16 lg:gap-y-12",
+    grid: "grid grid-cols-1 items-start gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImageContainer:
       "h-[11.875rem] w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md md:h-60",
@@ -37,6 +41,20 @@ const createInfoCardsStyles = tv({
         cardTitleArrow: "rotate-[-45deg]",
       },
     },
+    numberOfCards: {
+      1: {
+        grid: "",
+      },
+      2: {
+        grid: "md:grid-cols-2",
+      },
+      3: {
+        grid: "md:grid-cols-2 lg:grid-cols-3",
+      },
+    },
+  },
+  defaultVariants: {
+    numberOfCards: NUMBER_OF_PAGES_TO_DISPLAY,
   },
 })
 
@@ -127,6 +145,10 @@ const CollectionWidget = ({
     collectionParent,
   })
 
+  if (collectionPages.length === 0) {
+    return <></>
+  }
+
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
@@ -136,7 +158,11 @@ const CollectionWidget = ({
         <p>{customDescription ?? collectionParent.summary}</p>
       </div>
 
-      <div className={compoundStyles.grid()}>
+      <div
+        className={compoundStyles.grid({
+          numberOfCards: collectionPages.length as 1 | 2 | 3,
+        })}
+      >
         {collectionPages.map((card, idx) => (
           <SingleCard
             key={idx}
