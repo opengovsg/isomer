@@ -170,13 +170,14 @@ export type SingleCardNoImageProps = Static<typeof SingleCardNoImageSchema> & {
 }
 export type SingleCardWithImageProps = Static<
   typeof SingleCardWithImageSchema
-> & {
-  site: IsomerSiteProps
-  layout: IsomerPageLayoutType
-  isExternalLink?: boolean
-  LinkComponent?: LinkComponentType
-  shouldLazyLoad?: boolean
-}
+> &
+  Pick<Static<typeof InfoCardsBaseSchema>, "maxColumns"> & {
+    site: IsomerSiteProps
+    layout: IsomerPageLayoutType
+    isExternalLink?: boolean
+    LinkComponent?: LinkComponentType
+    shouldLazyLoad?: boolean
+  }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps

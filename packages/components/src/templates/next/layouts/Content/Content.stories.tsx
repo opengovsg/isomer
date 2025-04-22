@@ -1314,6 +1314,7 @@ export const Default: Story = {
       },
       {
         type: "infocards",
+        maxColumns: "3",
         title:
           "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
         subtitle:
