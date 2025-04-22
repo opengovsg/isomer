@@ -53,6 +53,7 @@ test("first login with singpass should succeed", async ({
   const continueButton = page.getByRole("link", {
     name: "Continue to Isomer Studio",
   })
+  await expect(continueButton).toBeVisible()
   await continueButton.click()
 
   // Assert
