@@ -14,6 +14,7 @@ import {
 } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
+import { IndexpageRow } from "~/features/dashboard/components/IndexpageRow/IndexpageRow"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
@@ -125,6 +126,7 @@ const FolderPage: NextPageWithLayout = () => {
           </>
         }
       >
+        <IndexpageRow siteId={Number(siteId)} resourceId={folderId} />
         <ResourceTable
           siteId={parseInt(siteId)}
           resourceId={parseInt(folderId)}
