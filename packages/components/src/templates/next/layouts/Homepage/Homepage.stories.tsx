@@ -293,6 +293,7 @@ export const Default: Story = {
       },
       {
         type: "infocards",
+        maxColumns: "3",
         title: "Section title ministry highlights",
         subtitle:
           "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",

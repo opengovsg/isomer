@@ -1314,6 +1314,7 @@ export const Default: Story = {
       },
       {
         type: "infocards",
+        maxColumns: "3",
         title:
           "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
         subtitle:
@@ -1506,7 +1507,6 @@ export const NoTable: Story = {
         type: "localSearch",
         searchUrl: "/search",
       },
-      assetsBaseUrl: "https://isomer-user-content.by.gov.sg",
     },
     meta: {
       description: "A Next.js starter for Isomer",

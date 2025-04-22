@@ -10,6 +10,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { ADMIN_ROLE } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
 import { editPageSchema } from "../schema"
@@ -44,7 +45,9 @@ export default function RootStateDrawer() {
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const utils = trpc.useUtils()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdmin = useIsUserIsomerAdmin({
+    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  })
   const toast = useToast({ status: "error" })
 
   const { mutate } = trpc.page.reorderBlock.useMutation({

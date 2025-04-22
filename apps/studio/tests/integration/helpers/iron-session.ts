@@ -2,7 +2,12 @@ import type { RequestOptions, ResponseOptions } from "node-mocks-http"
 import { type NextApiRequest, type NextApiResponse } from "next"
 import { nanoid } from "nanoid"
 import { createMocks } from "node-mocks-http"
-import { MOCK_STORY_DATE } from "tests/msw/constants"
+import {
+  MOCK_STORY_DATE,
+  MOCK_TEST_PHONE,
+  MOCK_TEST_USER_NAME,
+  MOCK_TEST_UUID,
+} from "tests/msw/constants"
 
 import type { Context } from "~/server/context"
 import type { User } from "~server/db"
@@ -96,13 +101,15 @@ export const applySession = () => {
   return session
 }
 
-export const createTestUser = () => ({
+export const createTestUser = (): Omit<User, "id"> => ({
   email: `test${nanoid()}@example.com`,
-  name: "Test User",
+  name: MOCK_TEST_USER_NAME,
   createdAt: MOCK_STORY_DATE,
   updatedAt: MOCK_STORY_DATE,
-  phone: "123456789",
+  phone: MOCK_TEST_PHONE,
+  singpassUuid: MOCK_TEST_UUID,
   deletedAt: null,
+  lastLoginAt: null,
 })
 
 // NOTE: The argument to this function was changed from
@@ -110,7 +117,7 @@ export const createTestUser = () => ({
 export const applyAuthedSession = async (user?: User) => {
   const authedUser = await auth(user ?? createTestUser())
   const session = applySession()
-  session.userId = authedUser.id
+  session.userId = authedUser.id as typeof session.userId
   await session.save()
   return session
 }

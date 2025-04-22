@@ -119,17 +119,22 @@ model User {
   email String
   phone String
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
-  deletedAt DateTime?
+  singpassUuid String? @db.Uuid // UUID of the user's Singpass account
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  deletedAt   DateTime?
+  lastLoginAt DateTime?
 
   ResourcePermission ResourcePermission[]
   versions           Version[]
+  AuditLog           AuditLog[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
   // This is required so prisma does not attempt to drop the custom index.
   @@unique([email, deletedAt])
+  @@index([lastLoginAt])
 }
 
 model Site {
@@ -153,6 +158,7 @@ model Site {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   ResourcePermission ResourcePermission[]
+  AuditLog           AuditLog[]
 }
 
 model Navbar {
@@ -220,4 +226,38 @@ model Whitelist {
   updatedAt DateTime  @default(now()) @updatedAt
 
   @@index([email])
+}
+
+enum AuditLogEvent {
+  ResourceCreate
+  ResourceUpdate
+  ResourceDelete
+  UserCreate
+  UserUpdate
+  UserDelete
+  Publish
+  Login
+  Logout
+  PermissionCreate
+  PermissionUpdate
+  PermissionDelete
+  SiteConfigUpdate
+  FooterUpdate
+  NavbarUpdate
+}
+
+model AuditLog {
+  id        BigInt        @id @default(autoincrement())
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+  site      Site?         @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  siteId    Int?
+  eventType AuditLogEvent
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
+  metadata  Json
+  /// @kyselyType(PrismaJson.AuditLogDeltaJsonContent)
+  /// [AuditLogDeltaJsonContent]
+  delta     Json
+  ipAddress String?       @db.Inet
 }

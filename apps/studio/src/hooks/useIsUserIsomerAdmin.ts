@@ -1,24 +1,30 @@
 import { useFeatureValue } from "@growthbook/growthbook-react"
 
+import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
 import { useMe } from "~/features/me/api"
-import { ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
+import { ADMIN_ROLE, ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
 
-// Growthbook has a constraint in the typings that requires the index signature
-// of the object to be defined as a string instead of being specific to the keys
-// that we want. Hence, we have to define it as a type instead of an interface.
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-type GrowthbookIsomerAdminFeature = {
-  users: string[]
+interface UseIsUserIsomerAdminProps {
+  roles: (typeof ADMIN_ROLE)[keyof typeof ADMIN_ROLE][]
 }
 
-export const useIsUserIsomerAdmin = () => {
+export const useIsUserIsomerAdmin = ({ roles }: UseIsUserIsomerAdminProps) => {
   const {
     me: { email },
   } = useMe()
-  const { users } = useFeatureValue<GrowthbookIsomerAdminFeature>(
+
+  const { core, migrators } = useFeatureValue<GrowthbookIsomerAdminFeature>(
     ISOMER_ADMIN_FEATURE_KEY,
-    { users: [] },
+    { core: [], migrators: [] },
   )
 
-  return users.includes(email)
+  if (roles.includes(ADMIN_ROLE.CORE) && core.includes(email)) {
+    return true
+  }
+
+  if (roles.includes(ADMIN_ROLE.MIGRATORS) && migrators.includes(email)) {
+    return true
+  }
+
+  return false
 }

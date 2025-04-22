@@ -104,4 +104,5 @@ export type HeroBackgroundImageProps = Static<typeof HeroBackgroundImageSchema>
 export type HeroProps = Static<typeof HeroSchema> & {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
+  theme?: "default" | "inverse"
 }

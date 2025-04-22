@@ -86,7 +86,7 @@ export const CollectionResults = ({
           {paginatedItems.map((item) =>
             variant === "collection" ? (
               <CollectionCard
-                key={`${item.title}-${item.category}`}
+                key={item.id}
                 {...item}
                 shouldShowDate={shouldShowDate}
                 siteAssetsBaseUrl={siteAssetsBaseUrl}
@@ -94,7 +94,7 @@ export const CollectionResults = ({
               />
             ) : (
               <BlogCard
-                key={`${item.title}-${item.category}`}
+                key={item.id}
                 {...item}
                 shouldShowDate={shouldShowDate}
                 siteAssetsBaseUrl={siteAssetsBaseUrl}

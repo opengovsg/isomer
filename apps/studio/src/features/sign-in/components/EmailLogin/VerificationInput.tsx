@@ -18,8 +18,10 @@ import { useInterval } from "usehooks-ts"
 
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { OTP_LENGTH } from "~/lib/auth"
 import { useZodForm } from "~/lib/form"
+import { SIGN_IN_SINGPASS } from "~/lib/routes"
 import { emailVerifyOtpSchema } from "~/schemas/auth/email/sign-in"
 import { callbackUrlSchema } from "~/schemas/url"
 import { trpc } from "~/utils/trpc"
@@ -30,9 +32,11 @@ export const VerificationInput = (): JSX.Element | null => {
   const [showOtpDelayMessage, setShowOtpDelayMessage] = useState(false)
   const { setHasLoginStateFlag } = useLoginState()
   const router = useRouter()
-  const utils = trpc.useContext()
+  const utils = trpc.useUtils()
 
   const { vfnStepData, timer, setVfnStepData, resetTimer } = useSignInContext()
+
+  const isSingpassEnabled = useIsSingpassEnabled()
 
   useInterval(
     () => setShowOtpDelayMessage(true),
@@ -43,7 +47,7 @@ export const VerificationInput = (): JSX.Element | null => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     resetField,
     setFocus,
     setError,
@@ -57,11 +61,17 @@ export const VerificationInput = (): JSX.Element | null => {
 
   const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation({
     onSuccess: async () => {
-      setHasLoginStateFlag()
-      await utils.me.get.invalidate()
-      // accessing router.query values returns decoded URI params automatically,
-      // so there's no need to call decodeURIComponent manually when accessing the callback url.
-      await router.push(callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]))
+      if (isSingpassEnabled) {
+        await router.push(SIGN_IN_SINGPASS)
+      } else {
+        setHasLoginStateFlag()
+        await utils.me.get.invalidate()
+        // accessing router.query values returns decoded URI params automatically,
+        // so there's no need to call decodeURIComponent manually when accessing the callback url.
+        await router.push(
+          callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]),
+        )
+      }
     },
     onError: (error) => {
       switch (error.message) {
@@ -118,15 +128,18 @@ export const VerificationInput = (): JSX.Element | null => {
           isReadOnly={verifyOtpMutation.isLoading}
           isRequired
         >
-          <FormLabel htmlFor="email">
-            Enter the OTP sent to {vfnStepData.email}
-          </FormLabel>
+          <FormLabel htmlFor="email">Enter OTP</FormLabel>
           <Controller
             control={control}
             name="token"
             render={({ field: { onChange, value, ...field } }) => (
               <InputGroup>
-                <InputLeftAddon>{vfnStepData.otpPrefix}-</InputLeftAddon>
+                <InputLeftAddon
+                  bgColor="interaction.support.disabled"
+                  color="interaction.support.disabled-content"
+                >
+                  {vfnStepData.otpPrefix}-
+                </InputLeftAddon>
                 <Input
                   autoFocus
                   autoCapitalize="true"
@@ -145,18 +158,19 @@ export const VerificationInput = (): JSX.Element | null => {
         </FormControl>
         <Stack direction="column" spacing="0.75rem">
           <Button
-            size="xs"
+            size="sm"
             height="2.75rem"
             type="submit"
             // Want to keep loading state until redirection is complete.
             isLoading={
               verifyOtpMutation.isLoading || verifyOtpMutation.isSuccess
             }
+            isDisabled={!isValid}
           >
             Sign in
           </Button>
           {showOtpDelayMessage && (
-            <Infobox>
+            <Infobox size="sm">
               OTP might be delayed due to government email traffic. Try again
               later.
             </Infobox>

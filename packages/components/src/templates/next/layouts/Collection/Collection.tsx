@@ -20,6 +20,7 @@ const processedCollectionItems = (
 ): ProcessedCollectionCardProps[] => {
   return items.map((item) => {
     const {
+      id,
       site,
       variant,
       lastUpdated,
@@ -32,6 +33,7 @@ const processedCollectionItems = (
     } = item
     const file = variant === "file" ? item.fileDetails : null
     return {
+      id,
       lastUpdated,
       category,
       title,
@@ -59,9 +61,14 @@ const CollectionLayout = ({
   LinkComponent,
   ScriptComponent,
 }: CollectionPageSchemaType) => {
-  const { permalink } = page
+  const { permalink, defaultSortBy, defaultSortDirection } = page
 
-  const items = getCollectionItems(site, permalink)
+  const items = getCollectionItems({
+    site,
+    permalink,
+    sortBy: defaultSortBy,
+    sortDirection: defaultSortDirection,
+  })
   const processedItems = processedCollectionItems(items)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,

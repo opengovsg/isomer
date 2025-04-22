@@ -1,13 +1,9 @@
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react"
+import { useCallback, useMemo } from "react"
+import isEmpty from "lodash/isEmpty"
 
 import type { AppliedFilter } from "../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
+import { useQueryParams } from "~/hooks/useQueryParams"
 import {
   getFilteredItems,
   getPaginatedItems,
@@ -21,54 +17,68 @@ export const useCollection = ({
 }: {
   items: ProcessedCollectionCardProps[]
 }) => {
-  const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([])
-  const [searchValue, _setSearchValue] = useState<string>("")
+  const [queryParams, updateQueryParams] = useQueryParams()
 
-  // Filter items based on applied filters and search value
-  const [filteredItems, setFilteredItems] = useState(
-    getFilteredItems(items, appliedFilters, searchValue),
+  const currPage = useMemo(
+    () => parseInt(queryParams.page || "1", 10),
+    [queryParams.page],
   )
-  const [currPage, setCurrPage] = useState<number>(1)
-
-  const handleSearchValueChange = useCallback(
-    (value: string) => {
-      _setSearchValue(value)
-      startTransition(() => {
-        setFilteredItems(getFilteredItems(items, appliedFilters, value))
-        setCurrPage(1)
+  const setCurrPage = useCallback(
+    (page: number) => {
+      updateQueryParams({
+        newParams: { page: page.toString() },
       })
     },
-    [appliedFilters, items],
+    [updateQueryParams],
+  )
+
+  const appliedFilters = useMemo(() => {
+    const filters = queryParams.filters
+    if (isEmpty(filters)) {
+      return []
+    }
+    return JSON.parse(filters || "[]") as AppliedFilter[]
+  }, [queryParams.filters])
+  const setAppliedFilters = useCallback(
+    (filters: AppliedFilter[]) => {
+      updateQueryParams({
+        newParams: { filters: JSON.stringify(filters), page: "1" },
+      })
+    },
+    [updateQueryParams],
+  )
+
+  const searchValue = useMemo(
+    () => queryParams.search || "",
+    [queryParams.search],
+  )
+  const handleSearchValueChange = useCallback(
+    (value: string) => {
+      updateQueryParams({
+        newParams: { search: value, page: "1" },
+      })
+    },
+    [updateQueryParams],
   )
 
   const handleFilterToggle = useCallback(
     (id: string, itemId: string) => {
       return updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
     },
-    [appliedFilters],
+    [appliedFilters, setAppliedFilters],
   )
 
-  // Update filtered items when applied filters change
-  useEffect(() => {
-    startTransition(() => {
-      setFilteredItems(getFilteredItems(items, appliedFilters, searchValue))
-    })
-  }, [appliedFilters, items, searchValue])
-
-  // Reset current page when filtered items change
-  useEffect(() => {
-    setCurrPage(1)
-  }, [filteredItems])
-
+  const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
   const paginatedItems = useMemo(
     () => getPaginatedItems(filteredItems, ITEMS_PER_PAGE, currPage),
     [currPage, filteredItems],
   )
 
   const handleClearFilter = useCallback(() => {
-    handleSearchValueChange("")
-    setAppliedFilters([])
-  }, [handleSearchValueChange])
+    updateQueryParams({
+      newParams: { search: "", filters: "[]", page: "1" },
+    })
+  }, [updateQueryParams])
 
   return {
     paginatedItems,
