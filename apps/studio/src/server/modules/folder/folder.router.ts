@@ -3,7 +3,7 @@ import { get } from "lodash"
 import pick from "lodash/pick"
 import { UnwrapTagged } from "type-fest"
 
-import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { INDEX_PAGE_PERMALINK, INDEX_PAGE_TITLE } from "~/constants/sitemap"
 import {
   createFolderSchema,
   editFolderSchema,
@@ -258,6 +258,9 @@ export const folderRouter = router({
               content: jsonb({
                 version: "0.1.0",
                 layout: "index",
+                // NOTE: cannot use placeholder values here
+                // because this are used for generation of breadcrumbs
+                // and the page title
                 page: {
                   title,
                   contentPageHeader: {
