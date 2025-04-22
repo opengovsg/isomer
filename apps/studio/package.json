@@ -55,7 +55,7 @@
     "@aws-sdk/s3-request-presigner": "3.782.0",
     "@casl/ability": "^6.7.1",
     "@casl/react": "^4.0.0",
-    "@chakra-ui/anatomy": "^2.2.2",
+    "@chakra-ui/anatomy": "^2.3.4",
     "@chakra-ui/react": "^2.8.2",
     "@chakra-ui/styled-system": "^2.9.2",
     "@chakra-ui/theme-tools": "^2.1.2",
