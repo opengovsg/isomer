@@ -77,10 +77,13 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
       ...previewPageState,
       content: updatedBlocks,
     }
+    // NOTE: We need to reset the drawer state before mutating the page state,
+    // as the mutation will cause the active index to point to an incorrect
+    // block, which causes the editor to crash
+    setDrawerState({ state: "root" })
     setSavedPageState(newPageState)
     setPreviewPageState(newPageState)
     onDeleteBlockModalClose()
-    setDrawerState({ state: "root" })
     setAddedBlockIndex(null)
     mutate({
       pageId,
