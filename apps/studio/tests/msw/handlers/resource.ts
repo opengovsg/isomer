@@ -32,6 +32,17 @@ export const resourceHandlers = {
     },
   },
   getParentOf: {
+    folder: () => {
+      return trpcMsw.resource.getParentOf.query(() => {
+        return {
+          type: "Folder",
+          id: "1",
+          parentId: null,
+          parent: null,
+          title: "a folder",
+        }
+      })
+    },
     collection: () => {
       return trpcMsw.resource.getParentOf.query(() => {
         return {
