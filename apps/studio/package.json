@@ -120,7 +120,7 @@
     "flat": "^6.0.1",
     "fuzzysort": "^2.0.4",
     "inter-ui": "^4.0.2",
-    "iron-session": "^8.0.1",
+    "iron-session": "^8.0.4",
     "isomorphic-dompurify": "^2.23.0",
     "jose": "^6.0.10",
     "jotai": "^2.9.1",
