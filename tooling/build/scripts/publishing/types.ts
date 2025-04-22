@@ -1,6 +1,5 @@
-import { Resource as DbResource } from "~generated/selectableTypes"
-
-import { PAGE_RESOURCE_TYPES } from "./constants"
+import type { PAGE_RESOURCE_TYPES } from "./constants"
+import type { Resource as DbResource } from "~generated/selectableTypes"
 
 // NOTE: this needs the `omit` because the `parentId`
 // we defined in studio

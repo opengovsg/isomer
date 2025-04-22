@@ -7,9 +7,7 @@ export const formatRelativeTime = (
 ) => {
   if (date === null || date === undefined) return
 
-  if (!baseDate) {
-    baseDate = new Date()
-  }
+  baseDate ??= new Date()
 
   let deltaSeconds = (date.getTime() - baseDate.getTime()) / 1000
   const isFuture = deltaSeconds > 0 ? true : false

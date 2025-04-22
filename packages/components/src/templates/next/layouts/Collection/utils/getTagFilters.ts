@@ -14,13 +14,8 @@ export const getTagFilters = (
     if (tags) {
       tags.forEach(({ selected: selectedLabels, category }) => {
         selectedLabels.forEach((label) => {
-          if (!tagCategories[category]) {
-            tagCategories[category] = {}
-          }
-          if (!tagCategories[category][label]) {
-            tagCategories[category][label] = 0
-          }
-
+          tagCategories[category] ??= {}
+          tagCategories[category][label] ??= 0
           tagCategories[category][label] += 1
         })
       })
