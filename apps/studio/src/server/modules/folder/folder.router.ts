@@ -3,7 +3,7 @@ import { get } from "lodash"
 import pick from "lodash/pick"
 import { UnwrapTagged } from "type-fest"
 
-import { INDEX_PAGE_PERMALINK, INDEX_PAGE_TITLE } from "~/constants/sitemap"
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createFolderSchema,
   editFolderSchema,
@@ -169,7 +169,7 @@ export const folderRouter = router({
           .executeTakeFirstOrThrow(() => new TRPCError({ code: "NOT_FOUND" }))
 
         const result = await db.transaction().execute(async (tx) => {
-          const oldResource = await db
+          const oldResource = await tx
             .selectFrom("Resource")
             .selectAll()
             .where("Resource.id", "=", resourceId)
@@ -187,7 +187,7 @@ export const folderRouter = router({
             })
           }
 
-          const newResource = await db
+          const newResource = await tx
             .updateTable("Resource")
             .where("Resource.id", "=", oldResource.id)
             .where("Resource.siteId", "=", oldResource.siteId)
@@ -210,6 +210,21 @@ export const folderRouter = router({
               }
               throw err
             })
+
+          // NOTE: update the index page's title so that they stay in sync
+          if (title) {
+            await tx
+              .updateTable("Resource")
+              .where("Resource.parentId", "=", oldResource.id)
+              .where("Resource.siteId", "=", oldResource.siteId)
+              .where("Resource.type", "=", ResourceType.IndexPage)
+              .set({
+                title,
+              })
+              // NOTE: we cannot throw here because
+              // it's entirely possible that the index page doesn't exist
+              .executeTakeFirst()
+          }
 
           await logResourceEvent(tx, {
             siteId: Number(siteId),
