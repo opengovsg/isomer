@@ -13,6 +13,7 @@ import type { CollectionLinkProps } from "../atoms"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { ADMIN_ROLE } from "~/lib/growthbook"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
 import { linkAtom, linkRefAtom } from "../atoms"
@@ -48,7 +49,9 @@ const InnerDrawer = ({
   setDrawerState,
 }: LinkEditorDrawerStateProps) => {
   const { errors } = useBuilderErrors()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdmin = useIsUserIsomerAdmin({
+    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  })
 
   return (
     <Flex flexDir="column" position="relative" h="100%" w="100%">
