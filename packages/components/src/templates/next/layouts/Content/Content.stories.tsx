@@ -323,7 +323,7 @@ export const Default: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -1308,12 +1308,13 @@ export const Default: Story = {
         title: "This is a place where you can put nice content",
         description: "About a sentence worth of description here",
         buttonLabel: "Primary CTA",
-        buttonUrl: "https://google.com",
+        buttonUrl: "/",
         secondaryButtonLabel: "Secondary CTA",
-        secondaryButtonUrl: "https://google.com",
+        secondaryButtonUrl: "/",
       },
       {
         type: "infocards",
+        maxColumns: "3",
         title:
           "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
         subtitle:
@@ -1494,7 +1495,7 @@ export const NoTable: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -1506,7 +1507,6 @@ export const NoTable: Story = {
         type: "localSearch",
         searchUrl: "/search",
       },
-      assetsBaseUrl: "https://isomer-user-content.by.gov.sg",
     },
     meta: {
       description: "A Next.js starter for Isomer",
@@ -1907,7 +1907,7 @@ export const SmallTable: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -2487,7 +2487,7 @@ export const FirstLevelPage: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -2879,7 +2879,7 @@ export const MultipleAccordions: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -3064,7 +3064,7 @@ export const MultipleInfobars: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",

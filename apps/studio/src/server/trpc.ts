@@ -18,10 +18,10 @@ import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 import getIP from "~/utils/getClientIp"
 import { type Context } from "./context"
-import { defaultMeSelect } from "./modules/me/me.select"
+import { db } from "./modules/database"
+import { defaultUserSelect } from "./modules/me/me.select"
 import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
 import { isEmailWhitelisted } from "./modules/whitelist/whitelist.service"
-import { prisma } from "./prisma"
 
 interface Meta {
   rateLimitOptions?: RateLimitMetaOptions
@@ -138,12 +138,14 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
 
   // with addition of soft deletes, we need to now check for deletedAt
   // this check is required in case of an already ongoing session to logout the user
-  const user = await prisma.user.findUnique({
-    where: { id: ctx.session.userId, deletedAt: null },
-    select: defaultMeSelect,
-  })
+  const user = await db
+    .selectFrom("User")
+    .select(defaultUserSelect)
+    .where("id", "=", ctx.session.userId)
+    .where("deletedAt", "is", null)
+    .executeTakeFirst()
 
-  if (user === null) {
+  if (!user) {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 

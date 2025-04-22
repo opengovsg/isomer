@@ -2,6 +2,7 @@ import { Flex } from "@chakra-ui/react"
 import { RestrictedGovtMasthead } from "@opengovsg/design-system-react"
 
 import { PublicPageWrapper } from "~/components/AuthWrappers"
+import { LandingLinks } from "~/components/LandingLinks"
 import { RestrictedMiniFooter } from "~/components/RestrictedMiniFooter"
 import {
   BaseGridLayout,
@@ -18,20 +19,25 @@ import { type NextPageWithLayout } from "~/lib/types"
 const SignIn: NextPageWithLayout = () => {
   return (
     <PublicPageWrapper strict>
-      <Flex flexDir="column" h="inherit" minH="$100vh">
+      <Flex w="100%" flexDir="column" h="inherit" minH="$100vh">
         <RestrictedGovtMasthead />
         <BaseGridLayout flex={1}>
           <NonMobileSidebarGridArea>
             <LoginImageSvgr aria-hidden />
           </NonMobileSidebarGridArea>
+
           <LoginGridArea>
             <SignInContextProvider>
               <CurrentLoginStep />
             </SignInContextProvider>
           </LoginGridArea>
-          <NonMobileFooterLeftGridArea />
-          <FooterGridArea>
+
+          <NonMobileFooterLeftGridArea>
             <RestrictedMiniFooter />
+          </NonMobileFooterLeftGridArea>
+
+          <FooterGridArea>
+            <LandingLinks />
           </FooterGridArea>
         </BaseGridLayout>
       </Flex>

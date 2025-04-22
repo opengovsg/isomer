@@ -1,15 +1,10 @@
 import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
-import { tv } from "~/lib/tv"
-import { focusVisibleHighlight, getFormattedDate } from "~/utils"
+import { getFormattedDate, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
 import { Tag } from "../Tag"
-
-const collectionCardLinkStyle = tv({
-  extend: focusVisibleHighlight,
-  base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 hover:underline",
-})
+import { Title } from "./Title"
 
 export const CollectionCard = ({
   LinkComponent,
@@ -28,23 +23,22 @@ export const CollectionCard = ({
   siteAssetsBaseUrl: string | undefined
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }): JSX.Element => {
+  const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
+
   return (
-    <div className="flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6">
+    <Link
+      LinkComponent={LinkComponent}
+      href={referenceLinkHref}
+      className="group flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t md:flex-row md:gap-6"
+      isExternal={isExternalLink}
+    >
       {shouldShowDate && (
         <p className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
           {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
         </p>
       )}
-      <div className="flex flex-grow flex-col gap-3 text-base-content lg:gap-2">
-        <h3 className="inline-block">
-          <Link
-            LinkComponent={LinkComponent}
-            href={referenceLinkHref}
-            className={collectionCardLinkStyle()}
-          >
-            <span title={itemTitle}>{itemTitle}</span>
-          </Link>
-        </h3>
+      <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
+        <Title title={itemTitle} isExternalLink={isExternalLink} />
         {tags && tags.length > 0 && (
           <>
             {tags.flatMap(({ category, selected: labels }) => {
@@ -59,18 +53,16 @@ export const CollectionCard = ({
             })}
           </>
         )}
-        {description && (
-          <p className="prose-body-base line-clamp-3 whitespace-pre-wrap">
+        {description && description.trim() !== "" && (
+          <p className="prose-body-base mb-3 line-clamp-3 whitespace-pre-wrap md:mb-2">
             {description}
           </p>
         )}
         {/* TODO: Feature enhancement? Filter by category when clicked */}
-        <p className="prose-label-md mt-3 text-base-content-subtle lg:mt-2">
-          {category}
-        </p>
+        <p className="prose-label-md text-base-content-subtle">{category}</p>
       </div>
       {image && (
-        <div className="relative mt-3 min-h-40 w-full shrink-0 lg:ml-4 lg:mt-0 lg:h-auto lg:w-1/4">
+        <div className="relative mt-3 h-[160px] w-[200px] shrink-0 md:ml-4 md:mt-0">
           <ImageClient
             src={imageSrc || ""}
             alt={image.alt}
@@ -80,6 +72,6 @@ export const CollectionCard = ({
           />
         </div>
       )}
-    </div>
+    </Link>
   )
 }

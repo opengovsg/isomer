@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { userEvent, waitFor, within } from "@storybook/test"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
@@ -15,6 +15,7 @@ import {
 const COMMON_HANDLERS = [
   meHandlers.me(),
   pageHandlers.getCategories.default(),
+  pageHandlers.updatePageBlob.default(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
   pageHandlers.countWithoutRoot.default(),
@@ -26,7 +27,8 @@ const COMMON_HANDLERS = [
   sitesHandlers.getLocalisedSitemap.default(),
   resourceHandlers.getRolesFor.default(),
   resourceHandlers.getWithFullPermalink.default(),
-  resourceHandlers.getAncestryOf.collectionLink(),
+  resourceHandlers.getAncestryStack.default(),
+  resourceHandlers.getBatchAncestryWithSelf.default(),
   resourceHandlers.getChildrenOf.default(),
   resourceHandlers.getMetadataById.article(),
   pageHandlers.readPageAndBlob.article(),
@@ -58,6 +60,21 @@ export default meta
 type Story = StoryObj<typeof EditPage>
 
 export const Default: Story = {}
+export const Wordbreak: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", {
+      name: /This is a prose block/i,
+    })
+    await userEvent.click(button)
+
+    const textbox = await canvas.findByRole("textbox")
+    await userEvent.type(
+      textbox,
+      "long words should be preserved: supercalifragilisticexpialidocious",
+    )
+  },
+}
 
 export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
@@ -66,6 +83,17 @@ export const EditFixedBlockState: Story = {
       name: /Article page header/i,
     })
     await userEvent.click(button)
+  },
+}
+
+export const SaveToast: Story = {
+  play: async ({ canvasElement, ...rest }) => {
+    await EditFixedBlockState.play?.({ canvasElement, ...rest })
+    const canvas = within(canvasElement)
+    const saveButton = await canvas.findByRole("button", {
+      name: /Save changes/i,
+    })
+    await userEvent.click(saveButton)
   },
 }
 
@@ -129,7 +157,11 @@ export const Dropdown: Story = {
   play: async ({ canvasElement, ...rest }) => {
     const canvas = within(canvasElement)
     await EditFixedBlockState.play?.({ canvasElement, ...rest })
-    const button = await canvas.findByRole("combobox")
+    // waitFor used as we can override the default timeout of findByRole (1000ms)
+    // this is needed as growthbook might take more than 1000ms to initialise
+    const button = await waitFor(() => canvas.findByRole("combobox"), {
+      timeout: 5000,
+    })
     await userEvent.click(button)
   },
 }

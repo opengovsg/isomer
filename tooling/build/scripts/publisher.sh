@@ -13,7 +13,15 @@ calculate_duration() {
 
 # Use the latest release tag unless one was provided in the env var
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
-  ISOMER_BUILD_REPO_BRANCH=$(curl https://api.github.com/repos/opengovsg/isomer/releases/latest | jq -r '.tag_name')
+  ##### This long command is used to get the latest release tag from the Isomer repository.
+  # git ls-remote: Lists references in a remote repository along with their commit hashes. 
+  # --tags: Lists all tags in the repository.
+  # --sort='v:refname': Sorts the tags by version number according to the semantic versioning scheme
+  # tail -n1: Gets the last line of the output.
+  # awk '{print $2}': Prints the second column of the last line, which is the tag name.
+  # sed 's/refs\/tags\///': Removes the 'refs/tags/' prefix from the tag name.
+  ISOMER_BUILD_REPO_BRANCH=$(git ls-remote --tags --sort='v:refname' https://github.com/opengovsg/isomer.git | tail -n1 | awk '{print $2}' | sed 's/refs\/tags\///')
+  IS_USING_RELEASE_TAG=true
 fi
 
 # Cloning the repository
@@ -35,9 +43,22 @@ calculate_duration $start_time
 # Perform a clean of npm cache
 npm cache clean --force
 
+### Create a cache key for the current build ###
+# Assumption: All production related builds are using release tags e.g. v0.2.1
+if [[ -z "$IS_USING_RELEASE_TAG" ]]; then
+  # If it's not a release tag, then it's a feature branch so we need to use a unique cache key
+  # We use a combination of branch name and commit hash E.g. feat-buildsupercoolfeature-1a2b3c4d
+  # This ensures that each unique feature branch and commit will have its own cache,
+  # reducing manual cache invalidation and human factor when testing on staging
+  UNIQUE_CACHE_KEY="$ISOMER_BUILD_REPO_BRANCH-$(git rev-parse --short HEAD)"
+  echo "Unique cache key: $UNIQUE_CACHE_KEY"
+else
+  UNIQUE_CACHE_KEY=$ISOMER_BUILD_REPO_BRANCH
+fi
+
 # Try to fetch cached node_modules from S3
 echo "Fetching cached node_modules..."
-NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$ISOMER_BUILD_REPO_BRANCH/isomer/node_modules.tar.gz"
+NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/isomer/node_modules.tar.gz"
 aws s3 cp $NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
 if [ -f "node_modules.tar.gz" ]; then
   echo "node_modules.tar.gz found in cache"
@@ -90,7 +111,7 @@ if [ ! -f "schema/not-found.json" ]; then
 fi
 echo $(pwd)
 echo "Fetching cached tooling-template node_modules..."
-TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$ISOMER_BUILD_REPO_BRANCH/isomer-tooling-template/node_modules.tar.gz"
+TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/isomer-tooling-template/node_modules.tar.gz"
 aws s3 cp $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
 if [ -f "node_modules.tar.gz" ]; then
   echo "node_modules.tar.gz found in cache"

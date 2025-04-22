@@ -1,5 +1,10 @@
 import type { IsomerSitemap } from "./sitemap"
-import type { NavbarProps, NotificationProps, VicaProps } from "~/interfaces"
+import type {
+  NavbarProps,
+  NotificationProps,
+  VicaProps,
+  WizgovProps,
+} from "~/interfaces"
 import type { SiteConfigFooterProps } from "~/interfaces/internal/Footer"
 
 export interface IsomerGeneratedSiteProps {
@@ -27,6 +32,7 @@ export interface IsomerSiteConfigProps {
   notification?: Omit<NotificationProps, "LinkComponent" | "site">
   siteGtmId?: string
   vica?: VicaProps
+  wizgov?: WizgovProps
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &

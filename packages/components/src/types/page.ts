@@ -20,18 +20,21 @@ const categorySchemaObject = Type.Object({
 })
 
 const dateSchemaObject = Type.Object({
-  date: Type.String({
-    title: "Article date",
-    format: "date",
-  }),
+  date: Type.Optional(
+    Type.String({
+      title: "Article date",
+      format: "date",
+    }),
+  ),
 })
 
 const imageSchemaObject = Type.Object({
   image: Type.Optional(
     Type.Object({
       src: generateImageSrcSchema({
+        title: "Thumbnail",
         description:
-          "Displayed at the top of the page and as a thumbnail in the collection view",
+          "Upload an image if you want to have a custom thumbnail for this item",
       }),
       alt: AltTextSchema,
     }),
@@ -86,6 +89,39 @@ export const CollectionPagePageSchema = Type.Intersect([
     }),
   }),
   TagsSchema,
+  Type.Object({
+    defaultSortBy: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("date", { title: "Date" }),
+          Type.Literal("title", { title: "Title" }),
+          Type.Literal("category", { title: "Category" }),
+        ],
+        {
+          title: "Default sort by",
+          description: "The default sort order of the collection",
+          format: "hidden",
+          type: "string",
+          default: "date",
+        },
+      ),
+    ),
+    defaultSortDirection: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("asc", { title: "Ascending" }),
+          Type.Literal("desc", { title: "Descending" }),
+        ],
+        {
+          title: "Default sort direction",
+          description: "The default sort direction of the collection",
+          format: "hidden",
+          type: "string",
+          default: "desc",
+        },
+      ),
+    ),
+  }),
 ])
 
 export const ContentPagePageSchema = Type.Object({

@@ -21,7 +21,9 @@ export const getCategoryFilter = (
       label: label.charAt(0).toUpperCase() + label.slice(1),
       count,
     }))
-    .sort((a, b) => a.label.localeCompare(b.label))
+    .sort((a, b) =>
+      a.label.localeCompare(b.label, undefined, { numeric: true }),
+    )
 
   return {
     id: FILTER_ID_CATEGORY,

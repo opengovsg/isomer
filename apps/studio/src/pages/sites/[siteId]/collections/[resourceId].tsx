@@ -9,14 +9,19 @@ import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { AdminCreateIndexPageButton } from "~/features/dashboard/components/AdminCreateIndexPageButton"
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
-import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
+import {
+  DashboardLayout,
+  getBreadcrumbsFromRoot,
+} from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { CreateCollectionPageModal } from "~/features/editing-experience/components/CreateCollectionPageModal"
+import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSearchableLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { getCollectionHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "../../../../../prisma/generated/generatedEnums"
 
@@ -34,6 +39,11 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   const { siteId, resourceId } = useQueryParse(sitePageSchema)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
 
+  const [resource] = trpc.resource.getParentOf.useSuspenseQuery({
+    siteId: Number(siteId),
+    resourceId: String(resourceId),
+  })
+
   // TODO: Handle not found error in error boundary
   const [metadata] = trpc.collection.getMetadata.useSuspenseQuery({
     siteId,
@@ -43,16 +53,10 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   return (
     <>
       <DashboardLayout
-        breadcrumbs={[
-          {
-            href: `/sites/${siteId}`,
-            label: "Home",
-          },
-          {
-            href: `/sites/${siteId}/collections/${resourceId}`,
-            label: metadata.title,
-          },
-        ]}
+        breadcrumbs={getBreadcrumbsFromRoot(resource, String(siteId)).concat({
+          href: getCollectionHref(String(siteId), String(resourceId)),
+          label: metadata.title,
+        })}
         icon={<BiData />}
         title={metadata.title}
         buttons={
@@ -87,6 +91,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
       <DeleteResourceModal siteId={siteId} />
       <FolderSettingsModal />
       <PageSettingsModal />
+      <MoveResourceModal />
     </>
   )
 }

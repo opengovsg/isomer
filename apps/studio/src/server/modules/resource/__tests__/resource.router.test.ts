@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server"
-import { pick } from "lodash"
+import _, { pick } from "lodash"
+import { auth } from "tests/integration/helpers/auth"
+import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
   applySession,
@@ -10,15 +12,20 @@ import {
   setupBlob,
   setupCollection,
   setupCollectionLink,
+  setupEditorPermissions,
   setupFolder,
   setupFolderMeta,
   setupPageResource,
   setupSite,
+  setupUser,
 } from "tests/integration/helpers/seed"
 
+import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
+import { getUserViewableResourceTypes } from "~/utils/resources"
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
+import { getFullPageById } from "../resource.service"
 
 const createCaller = createCallerFactory(resourceRouter)
 
@@ -28,6 +35,24 @@ describe("resource.router", async () => {
 
   beforeAll(() => {
     caller = createCaller(createMockRequest(session))
+  })
+
+  beforeEach(async () => {
+    await resetTables(
+      "Blob",
+      "AuditLog",
+      "Resource",
+      "Site",
+      "Version",
+      "User",
+      "ResourcePermission",
+    )
+    const user = await setupUser({
+      userId: session.userId,
+      email: "test@mock.com",
+      isDeleted: false,
+    })
+    await auth(user)
   })
 
   describe("getMetadataById", () => {
@@ -45,6 +70,13 @@ describe("resource.router", async () => {
     })
 
     it("should return 404 if resource does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
       // Act
       const result = caller.getMetadataById({
         resourceId: "1",
@@ -735,10 +767,148 @@ describe("resource.router", async () => {
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
   })
 
+  describe("getNestedFolderChildrenOf", () => {
+    const RESOURCE_FIELDS_TO_PICK = [
+      "title",
+      "permalink",
+      "type",
+      "id",
+      "parentId",
+    ] as const
+
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getNestedFolderChildrenOf({
+        resourceId: "1",
+        siteId: "1",
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 404 if resource does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getNestedFolderChildrenOf({
+        resourceId: "1",
+        siteId: String(site.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND" }),
+      )
+    })
+
+    it("should return 404 if resource is not a folder", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = caller.getNestedFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: page.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to site", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+
+      // Act
+      const result = caller.getNestedFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: folder.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+
+    it("should return nested folder children (e.g. folders within folders)", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { folder: parentFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: null,
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { folder: childFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        permalink: "child-folder",
+        title: "Child folder",
+      })
+      const { folder: grandChildFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: childFolder.id,
+        permalink: "grand-child-folder",
+        title: "Grand child folder",
+      })
+      const { folder: grandChildFolder2 } = await setupFolder({
+        siteId: site.id,
+        parentId: childFolder.id,
+        permalink: "grand-child-folder-2",
+        title: "Grand child folder 2",
+      })
+
+      // Act
+      const result = await caller.getNestedFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: parentFolder.id,
+      })
+
+      // Assert
+      const expected = {
+        items: [childFolder, grandChildFolder, grandChildFolder2].map(
+          (resource) => pick(resource, RESOURCE_FIELDS_TO_PICK),
+        ),
+      }
+      expect(result).toEqual(expected)
+    })
+  })
+
   describe("move", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const { site } = await setupSite()
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
       const result = unauthedCaller.move({
@@ -750,6 +920,7 @@ describe("resource.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
+      expect(auditSpy).not.toHaveBeenCalled()
     })
 
     it("should return 400 if moved resource does not exist", async () => {
@@ -760,6 +931,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
@@ -772,6 +944,7 @@ describe("resource.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "BAD_REQUEST" }),
       )
+      expect(auditSpy).not.toHaveBeenCalled()
     })
 
     it("should return 400 if destination resource does not exist", async () => {
@@ -782,6 +955,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
@@ -791,6 +965,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
@@ -814,6 +989,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
@@ -823,6 +999,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
@@ -832,8 +1009,80 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should return 400 if destination is the same as the origin", async () => {
+      // Arrange
+      const { folder: originFolder, site } = await setupFolder({
+        permalink: "origin-folder",
+      })
+      const { page: pageToMove } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: originFolder.id,
+      })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: pageToMove.siteId,
+      })
+
+      // Act
+      const result = caller.move({
+        siteId: pageToMove.siteId,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: pageToMove.parentId,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot move a resource to the same folder",
+        }),
+      )
+    })
+
+    it("should return 403 if destination is a root page but user is not an admin", async () => {
+      // Arrange
+      const { folder: originFolder, site } = await setupFolder({
+        permalink: "origin-folder",
+      })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      await setupPageResource({
+        resourceType: "RootPage",
+        siteId: site.id,
+      })
+      const { page: pageToMove } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: originFolder.id,
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: null,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Please ensure that you have the required permissions to perform a move!",
+        }),
+      )
+    })
+
     it("should return 403 if source and destination resources belong to different sites", async () => {
       // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { page: originPage, site: originSite } = await setupPageResource({
         resourceType: "Page",
       })
@@ -853,13 +1102,63 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "FORBIDDEN" }),
+        new TRPCError({
+          code: "FORBIDDEN",
+          message: "You cannot move a resource to a different site",
+        }),
       )
+    })
+
+    it("admin should be able to move resource to root page", async () => {
+      // Arrange
+      const { folder: originFolder, site } = await setupFolder({
+        permalink: "origin-folder",
+      })
+      await setupPageResource({
+        resourceType: "RootPage",
+        siteId: site.id,
+      })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { page: pageToMove } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: originFolder.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.move({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: null,
+      })
+
+      // Assert
+      const expected = {
+        ...pick(pageToMove, ["id", "type", "permalink", "title"]),
+        parentId: null,
+      }
+      expect(result).toMatchObject(expected)
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceUpdate")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.after!).toMatchObject(
+        _.omit(result, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
     })
 
     it("should move nested resource to destination folder", async () => {
       // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { folder: originFolder, site } = await setupFolder({
         permalink: "origin-folder",
       })
@@ -896,10 +1195,21 @@ describe("resource.router", async () => {
         .executeTakeFirstOrThrow()
       expect(actual.parentId).toEqual(destinationFolder.id)
       expect(result).toMatchObject(expected)
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceUpdate")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.after!).toMatchObject(
+        _.omit(result, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
     })
 
     it("should move root-level resource to destination folder", async () => {
       // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { page: pageToMove, site } = await setupPageResource({
         resourceType: "Page",
         parentId: null,
@@ -926,6 +1236,16 @@ describe("resource.router", async () => {
         parentId: destinationFolder.id,
       }
       expect(result).toMatchObject(expected)
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceUpdate")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.after!).toMatchObject(
+        _.omit(result, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
     })
 
     it.skip("should throw 403 if user does not have write access to destination resource", async () => {})
@@ -1333,12 +1653,14 @@ describe("resource.router", async () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       const result = unauthedCaller.delete({
         resourceId: "1",
         siteId: 1,
       })
 
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
@@ -1351,6 +1673,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.delete({
@@ -1359,6 +1682,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
       )
@@ -1369,8 +1693,13 @@ describe("resource.router", async () => {
       const { page, site } = await setupPageResource({
         resourceType: "Page",
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
+        siteId: site.id,
+      })
+      const fullPage = getFullPageById(db, {
+        resourceId: Number(page.id),
         siteId: site.id,
       })
 
@@ -1381,17 +1710,28 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceDelete")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.before!).toMatchObject(
+        _.omit(fullPage, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
       const actual = await db
         .selectFrom("Resource")
         .where("id", "=", page.id)
         .executeTakeFirst()
       expect(actual).toBeUndefined()
-      expect(result).toEqual(1)
+      expect(result).toEqual(page)
     })
 
     it("should delete a folder and all its children (recursively) successfully", async () => {
       // Arrange
       const { folder: folderToUse, site } = await setupFolder()
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -1450,7 +1790,18 @@ describe("resource.router", async () => {
         ])
         .execute()
       expect(actual).toHaveLength(0)
-      expect(result).toEqual(1)
+      expect(result).toEqual(folderToUse)
+      expect(auditSpy).toHaveBeenCalledTimes(1)
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceDelete")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.before!).toMatchObject(
+        _.omit(folderToUse, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
     })
 
     it("should return 400 if resource to delete is a root page", async () => {
@@ -1458,6 +1809,7 @@ describe("resource.router", async () => {
       const { page, site } = await setupPageResource({
         resourceType: "RootPage",
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -1470,6 +1822,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "BAD_REQUEST" }),
       )
@@ -1667,19 +2020,20 @@ describe("resource.router", async () => {
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
   })
 
-  describe("getAncestryOf", () => {
+  describe("getAncestryStack", () => {
     const RESOURCE_FIELDS_TO_PICK = [
       "id",
       "title",
       "parentId",
       "permalink",
+      "type",
     ] as const
 
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getAncestryOf({
+      const result = unauthedCaller.getAncestryStack({
         resourceId: "1",
         siteId: "1",
       })
@@ -1694,7 +2048,7 @@ describe("resource.router", async () => {
       const { site } = await setupSite()
 
       // Act
-      const result = await caller.getAncestryOf({
+      const result = await caller.getAncestryStack({
         siteId: String(site.id),
         resourceId: "99999",
       })
@@ -1710,7 +2064,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.getAncestryOf({
+      const result = await caller.getAncestryStack({
         resourceId: page.id,
         siteId: String(site.id),
       })
@@ -1724,7 +2078,7 @@ describe("resource.router", async () => {
       const { site } = await setupSite()
 
       // Act
-      const result = await caller.getAncestryOf({
+      const result = await caller.getAncestryStack({
         siteId: String(site.id),
       })
 
@@ -1732,9 +2086,12 @@ describe("resource.router", async () => {
       expect(result).toEqual([])
     })
 
-    it("should return the ancestry of a nested resource", async () => {
+    it("should return the ancestry (including self and excluding root page) of a nested resource", async () => {
       // Arrange
-      const { folder: parentFolder, site } = await setupFolder({
+      const { site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      const { folder: parentFolder } = await setupFolder({
         permalink: "parent-folder",
         title: "Parent folder",
       })
@@ -1751,33 +2108,71 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.getAncestryOf({
+      const result = await caller.getAncestryStack({
         resourceId: nestedPage.id,
         siteId: String(site.id),
+        includeSelf: true,
       })
 
       // Assert
       const expected = [
         pick(parentFolder, RESOURCE_FIELDS_TO_PICK),
         pick(nestedFolder, RESOURCE_FIELDS_TO_PICK),
+        pick(nestedPage, RESOURCE_FIELDS_TO_PICK),
       ]
       expect(result).toEqual(expected)
     })
 
-    it("should return empty array if resource is a root-level resource", async () => {
+    it("should return empty resource if resource is a root-level resource", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "Page",
       })
 
       // Act
-      const result = await caller.getAncestryOf({
+      const result = await caller.getAncestryStack({
         resourceId: page.id,
         siteId: String(site.id),
+        includeSelf: true,
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toEqual([pick(page, RESOURCE_FIELDS_TO_PICK)])
+    })
+
+    it("should return the ancestry (excluding self) of a nested resource", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      const { folder: parentFolder } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { folder: nestedFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        permalink: "nested-folder",
+        title: "Nested folder",
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: nestedFolder.id,
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await caller.getAncestryStack({
+        resourceId: nestedPage.id,
+        siteId: String(site.id),
+        includeSelf: false,
+      })
+
+      // Assert
+      expect(result).toEqual([
+        pick(parentFolder, RESOURCE_FIELDS_TO_PICK),
+        pick(nestedFolder, RESOURCE_FIELDS_TO_PICK),
+      ])
     })
 
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
@@ -2302,7 +2697,7 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
-    it("should only return user viewable resource types", async () => {
+    it("should only return user viewable resource types if specified", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
@@ -2332,6 +2727,7 @@ describe("resource.router", async () => {
       const result = await caller.search({
         siteId: String(site.id),
         query: "test",
+        resourceTypes: getUserViewableResourceTypes(),
       })
 
       // Assert

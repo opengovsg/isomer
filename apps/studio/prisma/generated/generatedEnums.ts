@@ -21,3 +21,21 @@ export const RoleType = {
   Publisher: "Publisher",
 } as const
 export type RoleType = (typeof RoleType)[keyof typeof RoleType]
+export const AuditLogEvent = {
+  ResourceCreate: "ResourceCreate",
+  ResourceUpdate: "ResourceUpdate",
+  ResourceDelete: "ResourceDelete",
+  UserCreate: "UserCreate",
+  UserUpdate: "UserUpdate",
+  UserDelete: "UserDelete",
+  Publish: "Publish",
+  Login: "Login",
+  Logout: "Logout",
+  PermissionCreate: "PermissionCreate",
+  PermissionUpdate: "PermissionUpdate",
+  PermissionDelete: "PermissionDelete",
+  SiteConfigUpdate: "SiteConfigUpdate",
+  FooterUpdate: "FooterUpdate",
+  NavbarUpdate: "NavbarUpdate",
+} as const
+export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent]

@@ -1,5 +1,6 @@
 import { type ArticlePageSchemaType } from "~/engine"
 import { getBreadcrumbFromSiteMap } from "~/utils"
+import { BackToTopLink } from "../../components/internal"
 import ArticlePageHeader from "../../components/internal/ArticlePageHeader"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
@@ -38,7 +39,7 @@ const ArticleLayout = ({
         />
 
         <div className="mx-auto w-full gap-10 pb-20">
-          <div className="w-full overflow-x-auto lg:max-w-[660px]">
+          <div className="w-full overflow-x-auto break-words lg:max-w-[660px]">
             {renderPageContent({
               site,
               layout,
@@ -46,6 +47,7 @@ const ArticleLayout = ({
               LinkComponent,
             })}
           </div>
+          <BackToTopLink />
         </div>
       </div>
     </Skeleton>

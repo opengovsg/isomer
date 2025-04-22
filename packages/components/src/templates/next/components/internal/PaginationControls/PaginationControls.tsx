@@ -46,7 +46,7 @@ export function PaginationControls({
             isDisabled={currPage === 1}
             onPress={() => {
               onPageChange?.()
-              setCurrPage((p) => Math.max(1, p - 1))
+              setCurrPage(Math.max(1, currPage - 1))
             }}
           />
         </PaginationItem>
@@ -72,7 +72,7 @@ export function PaginationControls({
             isDisabled={currPage >= totalPageCount}
             onPress={() => {
               onPageChange?.()
-              setCurrPage((p) => Math.min(totalPageCount, p + 1))
+              setCurrPage(Math.min(totalPageCount, currPage + 1))
             }}
           />
         </PaginationItem>

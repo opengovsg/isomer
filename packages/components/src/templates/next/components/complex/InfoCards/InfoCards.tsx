@@ -41,7 +41,7 @@ const createInfoCardsStyles = tv({
     grid: "grid grid-cols-1 gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImageContainer:
-      "w-full overflow-hidden rounded-lg border border-base-divider-subtle drop-shadow-none transition ease-in",
+      "aspect-[3/2] w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
     cardImage: "h-full w-full object-center",
     cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
     cardTitleArrow:
@@ -55,13 +55,11 @@ const createInfoCardsStyles = tv({
         container: "py-12 first:pt-0 md:py-16",
         headingContainer: "gap-2.5 lg:max-w-3xl",
         headingSubtitle: "prose-headline-lg-regular",
-        cardImageContainer: "h-[11.875rem] md:h-60",
       },
       default: {
         container: "mt-14 first:mt-0",
         headingContainer: "gap-6",
         headingSubtitle: "prose-body-base",
-        cardImageContainer: "h-[11.875rem] md:h-52",
       },
     },
     isClickableCard: {
@@ -94,6 +92,36 @@ const createInfoCardsStyles = tv({
       },
     },
   },
+  compoundVariants: [
+    {
+      layout: "homepage",
+      maxColumns: "3",
+      class: {
+        cardImageContainer: "aspect-[3/2]",
+      },
+    },
+    {
+      layout: "homepage",
+      maxColumns: "2",
+      class: {
+        cardImageContainer: "aspect-[3/2] lg:aspect-[2/1]",
+      },
+    },
+    {
+      layout: "default",
+      maxColumns: "3",
+      class: {
+        cardImageContainer: "aspect-[3/2] lg:aspect-square",
+      },
+    },
+    {
+      layout: "default",
+      maxColumns: "2",
+      class: {
+        cardImageContainer: "aspect-[3/2]",
+      },
+    },
+  ],
   defaultVariants: {
     layout: "default",
     maxColumns: "3",
@@ -133,6 +161,7 @@ const InfoCardImage = ({
   imageUrl,
   imageAlt,
   imageFit,
+  maxColumns,
   url,
   layout,
   site,
@@ -141,6 +170,7 @@ const InfoCardImage = ({
   SingleCardWithImageProps,
   | "imageUrl"
   | "imageAlt"
+  | "maxColumns"
   | "url"
   | "imageFit"
   | "layout"
@@ -156,6 +186,7 @@ const InfoCardImage = ({
     <div
       className={compoundStyles.cardImageContainer({
         layout: getTailwindVariantLayout(layout),
+        maxColumns,
         isClickableCard: !!url,
       })}
     >
@@ -231,6 +262,7 @@ const InfoCardWithImage = ({
   imageAlt,
   imageFit,
   url,
+  maxColumns,
   layout,
   site,
   LinkComponent,
@@ -249,6 +281,7 @@ const InfoCardWithImage = ({
         imageUrl={imageUrl}
         imageAlt={imageAlt}
         url={url}
+        maxColumns={maxColumns}
         site={site}
         layout={layout}
         shouldLazyLoad={shouldLazyLoad}
@@ -288,6 +321,7 @@ const InfoCards = ({
               <InfoCardWithImage
                 key={idx}
                 {...card}
+                maxColumns={maxColumns}
                 layout={layout}
                 site={site}
                 LinkComponent={LinkComponent}

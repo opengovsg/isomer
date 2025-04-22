@@ -34,3 +34,11 @@ export const setSiteConfigByAdminSchema = z.object({
   navbar: z.string(),
   footer: z.string(),
 })
+
+export const createSiteSchema = z.object({
+  siteName: z.string().min(1, { message: "Site name is required" }),
+})
+
+export const publishSiteSchema = z.object({
+  siteId: z.number().min(1),
+})

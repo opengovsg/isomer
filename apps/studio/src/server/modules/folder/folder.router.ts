@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { get } from "lodash"
+import pick from "lodash/pick"
 
 import {
   createFolderSchema,
@@ -7,10 +8,11 @@ import {
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
-import { publishSite } from "../aws/codebuild.service"
-import { db, ResourceState, ResourceType } from "../database"
+import { logResourceEvent } from "../audit/audit.service"
+import { AuditLogEvent, db, ResourceState, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
+import { publishResource } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
@@ -28,31 +30,90 @@ export const folderRouter = router({
           resourceId: !!parentFolderId ? String(parentFolderId) : null,
         })
 
-        const folder = await db
-          .insertInto("Resource")
-          .values({
-            permalink,
+        // Get user information
+        const user = await db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(() => new TRPCError({ code: "NOT_FOUND" }))
+
+        // Validate site is valid
+        const site = await db
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .select(["id"])
+          .executeTakeFirst()
+
+        if (!site) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Site does not exist",
+          })
+        }
+
+        // Validate parentFolderId is a folder
+        if (parentFolderId) {
+          const parentFolder = await db
+            .selectFrom("Resource")
+            .where("Resource.id", "=", String(parentFolderId))
+            .where("Resource.siteId", "=", siteId)
+            .select(["Resource.type", "Resource.id"])
+            .executeTakeFirst()
+
+          if (!parentFolder) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Parent folder does not exist",
+            })
+          }
+          if (parentFolder.type !== "Folder") {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Resource ID does not point to a folder",
+            })
+          }
+        }
+
+        const folder = await db.transaction().execute(async (tx) => {
+          const folder = await tx
+            .insertInto("Resource")
+            .values({
+              permalink,
+              siteId,
+              type: ResourceType.Folder,
+              title: folderTitle,
+              parentId: parentFolderId ? String(parentFolderId) : null,
+              state: ResourceState.Published,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
+
+          await logResourceEvent(tx, {
             siteId,
-            type: ResourceType.Folder,
-            title: folderTitle,
-            parentId: parentFolderId ? String(parentFolderId) : null,
-            state: ResourceState.Published,
+            eventType: AuditLogEvent.ResourceCreate,
+            delta: {
+              before: null,
+              after: folder,
+            },
+            by: user,
           })
-          .executeTakeFirstOrThrow()
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-              throw new TRPCError({
-                code: "CONFLICT",
-                message: "A resource with the same permalink already exists",
-              })
-            }
-            throw err
-          })
+
+          return folder
+        })
 
         // TODO: Create the index page for the folder and publish it
-        await publishSite(ctx.logger, siteId)
+        await publishResource(user.id, folder, ctx.logger)
 
-        return { folderId: folder.insertId }
+        return { folderId: folder.id }
       },
     ),
   getMetadata: protectedProcedure
@@ -67,11 +128,20 @@ export const folderRouter = router({
       // 1. Last Edited user and time
       // 2. Page status(draft, published)
 
-      return await ctx.db
+      const data = await db
         .selectFrom("Resource")
         .select(["Resource.title", "Resource.permalink", "Resource.parentId"])
         .where("id", "=", String(input.resourceId))
-        .executeTakeFirstOrThrow()
+        .executeTakeFirst()
+
+      if (!data) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "This folder does not exist",
+        })
+      }
+
+      return data
     }),
   editFolder: protectedProcedure
     .input(editFolderSchema)
@@ -83,33 +153,71 @@ export const folderRouter = router({
           userId: ctx.user.id,
         })
 
-        const result = await db
-          .updateTable("Resource")
-          .where("Resource.id", "=", resourceId)
-          .where("Resource.siteId", "=", Number(siteId))
-          .where("Resource.type", "in", [
-            ResourceType.Folder,
-            ResourceType.Collection,
-          ])
-          .set({
-            permalink,
-            title,
-          })
-          .returning(defaultFolderSelect)
-          .execute()
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-              throw new TRPCError({
-                code: "CONFLICT",
-                message: "A resource with the same permalink already exists",
-              })
-            }
-            throw err
+        const user = await db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(() => new TRPCError({ code: "NOT_FOUND" }))
+
+        const result = await db.transaction().execute(async (tx) => {
+          const oldResource = await db
+            .selectFrom("Resource")
+            .selectAll()
+            .where("Resource.id", "=", resourceId)
+            .where("Resource.siteId", "=", Number(siteId))
+            .where("Resource.type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+            ])
+            .executeTakeFirst()
+
+          if (!oldResource) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Resource does not exist",
+            })
+          }
+
+          const newResource = await db
+            .updateTable("Resource")
+            .where("Resource.id", "=", oldResource.id)
+            .where("Resource.siteId", "=", oldResource.siteId)
+            .where("Resource.type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+            ])
+            .set({
+              permalink,
+              title,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
+
+          await logResourceEvent(tx, {
+            siteId: Number(siteId),
+            eventType: AuditLogEvent.ResourceUpdate,
+            delta: {
+              before: oldResource,
+              after: newResource,
+            },
+            by: user,
           })
 
-        await publishSite(ctx.logger, Number(siteId))
+          return newResource
+        })
 
-        return result
+        await publishResource(user.id, result, ctx.logger)
+
+        return pick(result, defaultFolderSelect)
       },
     ),
 })

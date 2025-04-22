@@ -28,7 +28,7 @@ const meta: Meta<InfopicProps> = {
     imageSrc:
       "https://images.unsplash.com/photo-1527436826045-8805c615a6df?w=1280",
     buttonLabel: "Sign up",
-    buttonUrl: "https://open.gov.sg",
+    buttonUrl: "/",
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -42,9 +42,8 @@ const meta: Meta<InfopicProps> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
-      assetsBaseUrl: "https://cms.isomer.gov.sg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
