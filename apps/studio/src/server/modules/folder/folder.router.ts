@@ -1,15 +1,24 @@
 import { TRPCError } from "@trpc/server"
 import { get } from "lodash"
 import pick from "lodash/pick"
+import { UnwrapTagged } from "type-fest"
 
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createFolderSchema,
   editFolderSchema,
+  getIndexpageSchema,
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
-import { AuditLogEvent, db, ResourceState, ResourceType } from "../database"
+import {
+  AuditLogEvent,
+  db,
+  jsonb,
+  ResourceState,
+  ResourceType,
+} from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import { publishResource } from "../resource/resource.service"
@@ -220,4 +229,68 @@ export const folderRouter = router({
         return pick(result, defaultFolderSelect)
       },
     ),
+
+  getIndexpage: protectedProcedure
+    .input(getIndexpageSchema)
+    .query(async ({ input: { resourceId, siteId } }) => {
+      // TODO: add permissions checking
+
+      return db.transaction().execute(async (tx) => {
+        const { title } = await tx
+          .selectFrom("Resource")
+          .where("id", "=", resourceId)
+          .select("title")
+          .executeTakeFirstOrThrow()
+
+        let indexPage = await tx
+          .selectFrom("Resource")
+          .where("Resource.parentId", "=", resourceId)
+          .where("Resource.type", "=", "IndexPage")
+          .select(["id", "draftBlobId"])
+          .executeTakeFirst()
+
+        // NOTE: Might want to create on click in
+        // rather than via the view
+        if (!indexPage) {
+          const newBlob = await tx
+            .insertInto("Blob")
+            .values({
+              content: jsonb({
+                version: "0.1.0",
+                layout: "index",
+                page: {
+                  title,
+                  contentPageHeader: {
+                    summary: `Pages in ${title}`,
+                  },
+                },
+                content: [],
+              } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>),
+            })
+            .returning("id")
+            .executeTakeFirstOrThrow()
+
+          indexPage = await tx
+            .insertInto("Resource")
+            .values({
+              parentId: resourceId,
+              draftBlobId: newBlob.id,
+              title,
+              type: ResourceType.IndexPage,
+              permalink: INDEX_PAGE_PERMALINK,
+              siteId,
+            })
+            .returning(["id", "draftBlobId"])
+            .executeTakeFirstOrThrow()
+
+          await tx
+            .updateTable("Resource")
+            .where("id", "=", String(indexPage.id))
+            .set({ draftBlobId: newBlob.id })
+            .execute()
+        }
+
+        return { title, ...indexPage }
+      })
+    }),
 })
