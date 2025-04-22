@@ -1,7 +1,7 @@
 name: Deploy to staging
 
 concurrency:
-  group: ${{ github.ref }}
+  group: deploy-staging-${{ github.ref }}
   cancel-in-progress: true
 
 on:
@@ -35,7 +35,6 @@ jobs:
       app-url: "https://staging-studio.isomer.gov.sg"
       app-name: "Isomer Studio (Staging)"
       app-version: ${{ github.sha }}
-      app-enable-sgid: false
       app-s3-region: "ap-southeast-1"
       app-s3-assets-bucket-name: "isomer-next-infra-stg-assets-private-61710b8"
       app-s3-assets-domain-name: "isomer-user-content-stg.by.gov.sg"

@@ -502,6 +502,7 @@ export const publishPageResource = async (
         .executeTakeFirst()
 
       await logPublishEvent(tx, {
+        siteId,
         by,
         delta: {
           before: previousVersion?.id
@@ -544,6 +545,7 @@ export const publishResource = async (
 
   return db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
+      siteId: resource.siteId,
       by: byUser,
       delta: {
         before: null,
@@ -579,6 +581,7 @@ export const publishSiteConfig = async (
 
   return db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
+      siteId: site.id,
       by: byUser,
       delta: {
         before: null,

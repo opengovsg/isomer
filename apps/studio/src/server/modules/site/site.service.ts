@@ -1,13 +1,17 @@
 import { TRPCError } from "@trpc/server"
+import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
+import { addUsersToSite } from "~prisma/scripts/addUsersToSite"
 
 import type { DB, Transaction } from "../database"
 import type {
   CrudResourceActions,
   PermissionsProps,
 } from "../permissions/permissions.type"
+import { RoleType } from "~/server/modules/database"
 import { logConfigEvent } from "../audit/audit.service"
 import { AuditLogEvent, db, jsonb, sql } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
+import { FOOTER, NAV_BAR_ITEMS, PAGE_BLOB } from "./constants"
 
 export const validateUserPermissionsForSite = async ({
   siteId,
@@ -139,6 +143,7 @@ export const setSiteNotification = async ({
   }
 
   await logConfigEvent(tx, {
+    siteId,
     eventType: AuditLogEvent.SiteConfigUpdate,
     delta: {
       before: oldSite,
@@ -203,6 +208,7 @@ export const clearSiteNotification = async ({
   }
 
   await logConfigEvent(tx, {
+    siteId,
     eventType: AuditLogEvent.SiteConfigUpdate,
     delta: {
       before: oldSite,
@@ -212,4 +218,109 @@ export const clearSiteNotification = async ({
   })
 
   return newSite
+}
+
+interface CreateSiteProps {
+  siteName: string
+}
+export const createSite = async ({ siteName }: CreateSiteProps) => {
+  const siteId = await db.transaction().execute(async (tx) => {
+    const { id: siteId } = await tx
+      .insertInto("Site")
+      .values({
+        name: siteName,
+        theme: jsonb({
+          colors: {
+            brand: {
+              canvas: {
+                alt: "#bfcfd7",
+                default: "#e6ecef",
+                inverse: "#00405f",
+                backdrop: "#80a0af",
+              },
+              interaction: {
+                hover: "#002e44",
+                default: "#00405f",
+                pressed: "#00283b",
+              },
+            },
+          },
+        }),
+        config: jsonb({
+          theme: "isomer-next",
+          siteName,
+          logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+          search: undefined,
+          isGovernment: true,
+        }),
+      })
+      .onConflict((oc) =>
+        oc
+          .column("name")
+          .doUpdateSet((eb) => ({ name: eb.ref("excluded.name") })),
+      )
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    await tx
+      .insertInto("Footer")
+      .values({
+        siteId,
+        content: jsonb(FOOTER),
+      })
+      .onConflict((oc) =>
+        oc
+          .column("siteId")
+          .doUpdateSet((eb) => ({ siteId: eb.ref("excluded.siteId") })),
+      )
+      .execute()
+
+    await tx
+      .insertInto("Navbar")
+      .values({
+        siteId,
+        content: jsonb(NAV_BAR_ITEMS),
+      })
+      .onConflict((oc) =>
+        oc
+          .column("siteId")
+          .doUpdateSet((eb) => ({ siteId: eb.ref("excluded.siteId") })),
+      )
+      .execute()
+
+    const { id: blobId } = await tx
+      .insertInto("Blob")
+      .values({ content: jsonb(PAGE_BLOB) })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    await tx
+      .insertInto("Resource")
+      .values({
+        draftBlobId: String(blobId),
+        permalink: "",
+        siteId,
+        type: "RootPage",
+        title: "Home",
+      })
+
+      .onConflict((oc) =>
+        oc.column("draftBlobId").doUpdateSet((eb) => ({
+          draftBlobId: eb.ref("excluded.draftBlobId"),
+        })),
+      )
+      .executeTakeFirstOrThrow()
+
+    return siteId
+  })
+
+  await addUsersToSite({
+    siteId,
+    users: [...ISOMER_ADMINS, ...ISOMER_MIGRATORS].map((email) => ({
+      email: `${email}@open.gov.sg`,
+      role: RoleType.Admin,
+    })),
+  })
+
+  return { siteId, siteName }
 }

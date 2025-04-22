@@ -3,6 +3,7 @@ import type { BannerProps } from "@opengovsg/design-system-react"
 import {
   BANNER_FEATURE_KEY,
   CATEGORY_DROPDOWN_FEATURE_KEY,
+  IS_SINGPASS_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
 
 export const createBannerGbParameters = ({
@@ -14,6 +15,11 @@ export const createBannerGbParameters = ({
 }) => {
   return [BANNER_FEATURE_KEY, { variant, message }]
 }
+
 export const createDropdownGbParameters = (siteId: string) => {
   return [CATEGORY_DROPDOWN_FEATURE_KEY, { enabledSites: [siteId] }]
+}
+
+export const createSingpassEnabledGbParameters = (isEnabled: boolean) => {
+  return [IS_SINGPASS_ENABLED_FEATURE_KEY, isEnabled]
 }

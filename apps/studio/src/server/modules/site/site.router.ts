@@ -6,17 +6,21 @@ import type {
 import { TRPCError } from "@trpc/server"
 
 import {
+  createSiteSchema,
   getConfigSchema,
   getLocalisedSitemapSchema,
   getNameSchema,
   getNotificationSchema,
+  publishSiteSchema,
   setNotificationSchema,
   setSiteConfigByAdminSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { logConfigEvent } from "../audit/audit.service"
+import { logConfigEvent, logPublishEvent } from "../audit/audit.service"
+import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db, jsonb } from "../database"
+import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
 import {
   getFooter,
   getLocalisedSitemap,
@@ -25,6 +29,7 @@ import {
 } from "../resource/resource.service"
 import {
   clearSiteNotification,
+  createSite,
   getNotification,
   getSiteConfig,
   getSiteTheme,
@@ -42,6 +47,15 @@ export const siteRouter = router({
       .where("ResourcePermission.userId", "=", ctx.user.id)
       .select(["Site.id", "Site.config"])
       .groupBy(["Site.id", "Site.config"])
+      .execute()
+  }),
+  listAllSites: protectedProcedure.query(async ({ ctx }) => {
+    await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+
+    return db
+      .selectFrom("Site")
+      .select(["Site.id", "Site.config", "Site.codeBuildId"])
+      .orderBy("Site.id", "asc")
       .execute()
   }),
   getSiteName: protectedProcedure
@@ -217,6 +231,7 @@ export const siteRouter = router({
         }
 
         await logConfigEvent(tx, {
+          siteId,
           eventType: AuditLogEvent.SiteConfigUpdate,
           delta: {
             before: oldSite,
@@ -260,6 +275,7 @@ export const siteRouter = router({
         }
 
         await logConfigEvent(tx, {
+          siteId,
           eventType: AuditLogEvent.NavbarUpdate,
           delta: {
             before: oldNavbar,
@@ -303,6 +319,7 @@ export const siteRouter = router({
         }
 
         await logConfigEvent(tx, {
+          siteId,
           eventType: AuditLogEvent.FooterUpdate,
           delta: {
             before: oldFooter,
@@ -318,4 +335,75 @@ export const siteRouter = router({
         )
       })
     }),
+  create: protectedProcedure
+    .input(createSiteSchema)
+    .mutation(async ({ ctx, input: { siteName } }) => {
+      await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+
+      return createSite({ siteName })
+    }),
+  publish: protectedProcedure
+    .input(publishSiteSchema)
+    .mutation(async ({ ctx, input: { siteId } }) => {
+      await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+
+      const byUser = await db
+        .selectFrom("User")
+        .selectAll()
+        .where("id", "=", ctx.user.id)
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "The user could not be found.",
+            }),
+        )
+
+      return db.transaction().execute(async (tx) => {
+        await logPublishEvent(tx, {
+          by: byUser,
+          eventType: AuditLogEvent.Publish,
+          delta: { before: null, after: null },
+          metadata: {},
+          siteId,
+        })
+        await publishSite(ctx.logger, siteId)
+      })
+    }),
+  publishAll: protectedProcedure.mutation(async ({ ctx }) => {
+    await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+
+    const byUser = await db
+      .selectFrom("User")
+      .selectAll()
+      .where("id", "=", ctx.user.id)
+      .executeTakeFirstOrThrow(
+        () =>
+          new TRPCError({
+            code: "NOT_FOUND",
+            message: "The user could not be found.",
+          }),
+      )
+
+    const sites = await db
+      .selectFrom("Site")
+      .selectAll()
+      .where("codeBuildId", "is not", null)
+      .execute()
+
+    await Promise.all(
+      sites.map((site) =>
+        db.transaction().execute(async (tx) => {
+          await logPublishEvent(tx, {
+            by: byUser,
+            eventType: AuditLogEvent.Publish,
+            delta: { before: null, after: null },
+            metadata: {},
+            siteId: site.id,
+          })
+          await publishSite(ctx.logger, site.id)
+        }),
+      ),
+    )
+  }),
 })
