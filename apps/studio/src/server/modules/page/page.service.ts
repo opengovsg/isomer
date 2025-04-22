@@ -39,3 +39,20 @@ export const createDefaultPage = ({
     }
   }
 }
+
+export const createIndexPage = (title: string) => {
+  return {
+    version: "0.1.0",
+    layout: "index",
+    // NOTE: cannot use placeholder values here
+    // because this are used for generation of breadcrumbs
+    // and the page title
+    page: {
+      title,
+      contentPageHeader: {
+        summary: `Pages in ${title}`,
+      },
+    },
+    content: [],
+  } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
+}

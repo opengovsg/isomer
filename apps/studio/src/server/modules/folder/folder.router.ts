@@ -20,6 +20,7 @@ import {
   ResourceType,
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { createIndexPage } from "../page/page.service"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import { publishResource } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
@@ -105,6 +106,27 @@ export const folderRouter = router({
               }
               throw err
             })
+
+          const indexPageBlob = await tx
+            .insertInto("Blob")
+            .values({
+              content: jsonb(createIndexPage(folderTitle)),
+            })
+            .returning("id")
+            .executeTakeFirstOrThrow()
+
+          await tx
+            .insertInto("Resource")
+            .values({
+              parentId: folder.id,
+              draftBlobId: indexPageBlob.id,
+              title: folderTitle,
+              type: ResourceType.IndexPage,
+              permalink: INDEX_PAGE_PERMALINK,
+              siteId,
+            })
+            .returning(["id", "draftBlobId"])
+            .executeTakeFirstOrThrow()
 
           await logResourceEvent(tx, {
             siteId,
@@ -267,23 +289,10 @@ export const folderRouter = router({
         // NOTE: Might want to create on click in
         // rather than via the view
         if (!indexPage) {
-          const newBlob = await tx
+          const indexPageBlob = await tx
             .insertInto("Blob")
             .values({
-              content: jsonb({
-                version: "0.1.0",
-                layout: "index",
-                // NOTE: cannot use placeholder values here
-                // because this are used for generation of breadcrumbs
-                // and the page title
-                page: {
-                  title,
-                  contentPageHeader: {
-                    summary: `Pages in ${title}`,
-                  },
-                },
-                content: [],
-              } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>),
+              content: jsonb(createIndexPage(title)),
             })
             .returning("id")
             .executeTakeFirstOrThrow()
@@ -292,7 +301,7 @@ export const folderRouter = router({
             .insertInto("Resource")
             .values({
               parentId: resourceId,
-              draftBlobId: newBlob.id,
+              draftBlobId: indexPageBlob.id,
               title,
               type: ResourceType.IndexPage,
               permalink: INDEX_PAGE_PERMALINK,
@@ -304,7 +313,7 @@ export const folderRouter = router({
           await tx
             .updateTable("Resource")
             .where("id", "=", String(indexPage.id))
-            .set({ draftBlobId: newBlob.id })
+            .set({ draftBlobId: indexPageBlob.id })
             .execute()
         }
 
