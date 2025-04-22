@@ -7,7 +7,6 @@ import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
-import { AdminCreateIndexPageButton } from "~/features/dashboard/components/AdminCreateIndexPageButton"
 import {
   DashboardLayout,
   getBreadcrumbsFromRoot,
@@ -72,10 +71,6 @@ const FolderPage: NextPageWithLayout = () => {
         title={title}
         buttons={
           <>
-            <AdminCreateIndexPageButton
-              siteId={parseInt(siteId)}
-              parentId={parseInt(folderId)}
-            />
             <Button
               variant="outline"
               size="md"
