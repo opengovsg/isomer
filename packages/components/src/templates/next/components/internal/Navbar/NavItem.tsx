@@ -7,6 +7,7 @@ import { useScrollLock } from "usehooks-ts"
 
 import type {
   NavbarItem as BaseNavbarItemProps,
+  NavbarItem,
   NavbarProps,
 } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
@@ -86,6 +87,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
           <Megamenu
             name={name}
             description={description}
+            referenceLinkHref={referenceLinkHref}
             items={items}
             LinkComponent={LinkComponent}
             onCloseMegamenu={onCloseMegamenu}
@@ -99,17 +101,38 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
 const Megamenu = ({
   name,
   description,
+  referenceLinkHref,
   onCloseMegamenu,
   items,
   LinkComponent,
-}: {
-  name: string
-  description?: string
-  items: BaseNavbarItemProps[]
+}: Pick<NavbarItem, "name" | "description" | "referenceLinkHref" | "items"> & {
   LinkComponent: NavbarProps["LinkComponent"]
   onCloseMegamenu: () => void
 }) => {
   useScrollLock()
+
+  const renderTitleContent = () => {
+    if (!referenceLinkHref) {
+      return name
+    }
+
+    const isExternal = isExternalUrl(referenceLinkHref)
+    return (
+      <Link
+        LinkComponent={LinkComponent}
+        isExternal={isExternal}
+        showExternalIcon={isExternal}
+        isWithFocusVisibleHighlight
+        href={referenceLinkHref}
+        className="group inline-flex w-fit items-center gap-1 hover:text-brand-interaction-hover hover:no-underline"
+      >
+        {name}
+        {!isExternal && (
+          <BiRightArrowAlt className="text-[1.5rem] transition ease-in group-hover:translate-x-1" />
+        )}
+      </Link>
+    )
+  }
 
   return (
     <div className="absolute left-0 right-0 top-full z-50">
@@ -122,7 +145,9 @@ const Megamenu = ({
           <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
             <div className="flex w-full flex-row items-start">
               <div className="flex flex-col gap-1">
-                <h2 className="prose-display-sm text-base-content">{name}</h2>
+                <h2 className="prose-display-sm text-base-content">
+                  {renderTitleContent()}
+                </h2>
                 {description && (
                   <p className="prose-label-sm-regular text-base-content-subtle">
                     {description}
