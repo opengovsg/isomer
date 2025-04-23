@@ -31,13 +31,12 @@ export function JsonFormsChildPageLayoutControl({
             handleChange(path, value)
           }}
           value={data}
-          defaultValue="boxes"
         >
-          <Radio value="boxes">
+          <Radio value="boxes" allowDeselect={false}>
             Boxes
             <IconBoxes />
           </Radio>
-          <Radio value="rows">
+          <Radio value="rows" allowDeselect={false}>
             Rows
             <IconRows />
           </Radio>
