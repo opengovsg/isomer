@@ -567,3 +567,30 @@ export const TaggedArticle: Story = {
     ],
   },
 }
+
+// Placing this story here as it's due to the overflow-x-auto class on the parent div
+export const OrderedList100Items: Story = {
+  name: "100th Ordered Marker Not Truncated",
+  args: {
+    ...generateArgs({ summary: "" }),
+    content: [
+      {
+        type: "prose",
+        content: [
+          {
+            type: "orderedList",
+            content: Array.from({ length: 100 }, (_, i) => ({
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: `Item ${i + 1}` }],
+                },
+              ],
+            })),
+          },
+        ],
+      },
+    ],
+  },
+}
