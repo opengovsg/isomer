@@ -3,7 +3,7 @@ import { useCallback } from "react"
 import { Box, Button, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
-import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
+import { BiListUl, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -31,6 +31,10 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
   content: {
     label: "Content page header",
     description: "Summary, Button label, and Button destination",
+  },
+  index: {
+    label: "Header",
+    description: "Summary, Button label and Button URL",
   },
 }
 
@@ -119,10 +123,16 @@ export default function RootStateDrawer() {
 
   const pageLayout: string = savedPageState.layout
 
+  // NOTE: because we migrate from github -> studio
+  // and also becuase our underlying is just json,
+  // it's not guaranteed that our `rootpage` will always
+  // have a hero banner
   const isHeroFixedBlock =
     pageLayout === "homepage" &&
     savedPageState.content.length > 0 &&
     savedPageState.content[0]?.type === "hero"
+
+  const hasChildpagesBlock = pageLayout === "index"
 
   return (
     <VStack gap="1.5rem" p="1.5rem">
@@ -165,6 +175,17 @@ export default function RootStateDrawer() {
           />
         )}
       </VStack>
+
+      {hasChildpagesBlock && (
+        <BaseBlock
+          onClick={() => {
+            setDrawerState({ state: "childpagesEditor" })
+          }}
+          label={"Child pages"}
+          description={"Title, Description and Order of display"}
+          icon={BiListUl}
+        />
+      )}
 
       {pageLayout === "index" && savedPageState.content.length === 0 ? (
         <Infobox variant="warning" size="sm">
