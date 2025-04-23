@@ -168,7 +168,7 @@ const Megamenu = ({
             </div>
 
             <ul className="grid grid-cols-3 gap-x-16 gap-y-8">
-              {items.map((subItem) => {
+              {items?.map((subItem) => {
                 const isExternal = isExternalUrl(subItem.url)
                 return (
                   <li key={subItem.name}>
