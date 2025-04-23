@@ -37,7 +37,7 @@ const meta: Meta<NavbarProps> = {
       {
         name: "Max 70 chars",
         description: "This is a description of the item.",
-        url: "/item-one",
+        url: "",
         items: [
           {
             name: "Join us",
@@ -80,7 +80,7 @@ const meta: Meta<NavbarProps> = {
       {
         name: "On navbar",
         url: "/item-two",
-        description: "This is a description of the item.",
+        description: "This navbar item has a reference link",
         items: [
           {
             name: "A sub item",
@@ -216,6 +216,19 @@ export const ExpandFirstItem: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole("button", { name: /max 70 chars/i }))
+  },
+}
+
+export const ExpandNavbarItemWithLink: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: getViewportByMode("desktop"),
+    },
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole("button", { name: /on navbar/i }))
   },
 }
 
