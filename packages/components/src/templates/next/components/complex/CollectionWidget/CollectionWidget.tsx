@@ -83,6 +83,27 @@ const SingleCard = ({
 }: CollectionWidgetSingleCardProps): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
+  const renderImage = () => {
+    const imageSrc = image?.src ?? site.logoUrl
+    const imageAlt = image?.alt ?? `Site logo for ${site.siteName}`
+    return (
+      <div className={compoundStyles.cardImageContainer({ numberOfCards })}>
+        <ImageClient
+          src={
+            isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
+              ? imageSrc
+              : `${site.assetsBaseUrl}${imageSrc}`
+          }
+          alt={imageAlt}
+          width="100%"
+          className={compoundStyles.cardImage()}
+          lazyLoading={shouldLazyLoad}
+          assetsBaseUrl={site.assetsBaseUrl}
+        />
+      </div>
+    )
+  }
+
   return (
     <Link
       href={referenceLinkHref}
@@ -90,24 +111,7 @@ const SingleCard = ({
       LinkComponent={LinkComponent}
       isExternal={isExternalLink}
     >
-      {/* TODO: Add fallback image if displayThumbnail but image is not present e.g. link variant */}
-      {displayThumbnail && image && (
-        <div className={compoundStyles.cardImageContainer({ numberOfCards })}>
-          <ImageClient
-            src={
-              isExternalUrl(image.src) || site.assetsBaseUrl === undefined
-                ? image.src
-                : `${site.assetsBaseUrl}${image.src}`
-            }
-            alt={image.alt}
-            width="100%"
-            className={compoundStyles.cardImage()}
-            lazyLoading={shouldLazyLoad}
-            assetsBaseUrl={site.assetsBaseUrl}
-          />
-        </div>
-      )}
-
+      {displayThumbnail && renderImage()}
       <div className={compoundStyles.cardTextContainer()}>
         {lastUpdated && (
           <p className={compoundStyles.cardLastUpdated()}>
