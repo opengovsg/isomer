@@ -1,8 +1,10 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
+import { Box, Flex, FormControl } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import { Radio } from "@opengovsg/design-system-react"
+import { FormLabel, Radio } from "@opengovsg/design-system-react"
 
+import { IconBoxes, IconRows } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsChildPageLayoutControlTester: RankedTester = rankWith(
@@ -13,18 +15,35 @@ export const jsonFormsChildPageLayoutControlTester: RankedTester = rankWith(
 export function JsonFormsChildPageLayoutControl({
   data,
   label,
-  id,
-  enabled,
   handleChange,
-  errors,
   path,
   description,
-  schema,
 }: ControlProps): JSX.Element {
   return (
-    <Radio.RadioGroup>
-      <Radio></Radio>
-    </Radio.RadioGroup>
+    <Box>
+      <FormControl isRequired gap="0.5rem">
+        <FormLabel description={description}>{label || "Variant"}</FormLabel>
+        <Radio.RadioGroup
+          display="flex"
+          flexDir="row"
+          gap={2}
+          onChange={(value) => {
+            handleChange(path, value)
+          }}
+          value={data}
+          defaultValue="boxes"
+        >
+          <Radio value="boxes">
+            Boxes
+            <IconBoxes />
+          </Radio>
+          <Radio value="rows">
+            Rows
+            <IconRows />
+          </Radio>
+        </Radio.RadioGroup>
+      </FormControl>
+    </Box>
   )
 }
 
