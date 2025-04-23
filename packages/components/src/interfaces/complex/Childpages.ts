@@ -4,11 +4,12 @@ export const ChildpagesSchema = Type.Object({
   type: Type.Literal("childpages", { default: "childpages" }),
   layout: Type.Union([Type.Literal("boxes"), Type.Literal("rows")], {
     title: "Layout",
+    format: "childpages",
   }),
-  summary: Type.Union([Type.Literal("show"), Type.Literal("hide")], {
+  summary: Type.Boolean({
     title: "Show summary of all child pages",
   }),
-  thumbnail: Type.Union([Type.Literal("show"), Type.Literal("hide")], {
+  thumbnail: Type.Boolean({
     title: "Show thumbnail of all child pages",
     description:
       "We will use the child pages' feature images as their thumbnail.",
