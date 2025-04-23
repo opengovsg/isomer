@@ -6,21 +6,17 @@ import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useScrollLock } from "usehooks-ts"
 
 import type {
-  NavbarItem as BaseNavbarItemProps,
-  NavbarProps,
+  NavbarClientProps,
+  ProcessedNavbarItem as ProcessedNavbarItemProps,
 } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
-import {
-  focusVisibleHighlight,
-  groupFocusVisibleHighlight,
-  isExternalUrl,
-} from "~/utils"
+import { focusVisibleHighlight, groupFocusVisibleHighlight } from "~/utils"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 
 interface NavbarItemProps
-  extends BaseNavbarItemProps,
-    Pick<NavbarProps, "LinkComponent"> {
+  extends ProcessedNavbarItemProps,
+    Pick<NavbarClientProps, "LinkComponent"> {
   isOpen: boolean
   onClick: () => void
   onCloseMegamenu: () => void
@@ -51,8 +47,8 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
       items,
       LinkComponent,
       name,
-      url,
       referenceLinkHref,
+      isExternal,
       description,
       isOpen,
       onClick,
@@ -65,8 +61,8 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
         <li className={item({ isOpen })}>
           <Link
             LinkComponent={LinkComponent}
-            isExternal={isExternalUrl(url)}
-            showExternalIcon={isExternalUrl(url)}
+            isExternal={isExternal}
+            showExternalIcon={isExternal}
             href={referenceLinkHref}
             className={focusVisibleHighlight()}
           >
@@ -87,6 +83,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
             name={name}
             description={description}
             referenceLinkHref={referenceLinkHref}
+            isExternal={isExternal}
             items={items}
             LinkComponent={LinkComponent}
             onCloseMegamenu={onCloseMegamenu}
@@ -101,16 +98,11 @@ const Megamenu = ({
   name,
   description,
   referenceLinkHref,
-  onCloseMegamenu,
+  isExternal,
   items,
   LinkComponent,
-}: Pick<
-  BaseNavbarItemProps,
-  "name" | "description" | "referenceLinkHref" | "items"
-> & {
-  LinkComponent: NavbarProps["LinkComponent"]
-  onCloseMegamenu: () => void
-}) => {
+  onCloseMegamenu,
+}: Omit<NavbarItemProps, "isOpen" | "onClick">) => {
   useScrollLock()
 
   const renderTitleContent = () => {
@@ -118,7 +110,6 @@ const Megamenu = ({
       return name
     }
 
-    const isExternal = isExternalUrl(referenceLinkHref)
     return (
       <Link
         LinkComponent={LinkComponent}
@@ -169,14 +160,13 @@ const Megamenu = ({
 
             <ul className="grid grid-cols-3 gap-x-16 gap-y-8">
               {items?.map((subItem) => {
-                const isExternal = isExternalUrl(subItem.url)
                 return (
                   <li key={subItem.name}>
                     <div className="flex flex-col gap-1.5">
                       <Link
                         LinkComponent={LinkComponent}
-                        isExternal={isExternal}
-                        showExternalIcon={isExternal}
+                        isExternal={subItem.isExternal}
+                        showExternalIcon={subItem.isExternal}
                         isWithFocusVisibleHighlight
                         href={subItem.referenceLinkHref}
                         className="group prose-label-md-medium inline-flex w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"

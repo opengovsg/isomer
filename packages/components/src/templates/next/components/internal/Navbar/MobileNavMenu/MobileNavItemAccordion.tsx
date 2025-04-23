@@ -1,13 +1,16 @@
 import { BiChevronDown } from "react-icons/bi"
 
-import type { NavbarItem, NavbarProps } from "~/interfaces/internal/Navbar"
+import type {
+  NavbarClientProps,
+  ProcessedNavbarItem,
+} from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlight, isExternalUrl } from "~/utils"
+import { focusVisibleHighlight } from "~/utils"
 import { Link } from "../../Link"
 
 interface NavItemAccordionProps
-  extends NavbarItem,
-    Pick<NavbarProps, "LinkComponent"> {
+  extends ProcessedNavbarItem,
+    Pick<NavbarClientProps, "LinkComponent"> {
   isOpen: boolean
   onClick: () => void
   index: number
@@ -36,8 +39,8 @@ const { item, chevron, container, nestedItem, sublist } = mobileItemStyles()
 
 export const MobileNavItemAccordion = ({
   name,
-  url,
   referenceLinkHref,
+  isExternal,
   items,
   isOpen,
   onClick,
@@ -48,7 +51,7 @@ export const MobileNavItemAccordion = ({
     return (
       <div className={container()}>
         <Link
-          isExternal={isExternalUrl(url)}
+          isExternal={isExternal}
           LinkComponent={LinkComponent}
           className={item({
             className: focusVisibleHighlight(),
@@ -87,7 +90,6 @@ export const MobileNavItemAccordion = ({
       >
         <ul className={sublist()}>
           {items.map((subItem) => {
-            const isExternal = isExternalUrl(subItem.url)
             return (
               <li key={subItem.name}>
                 <div
@@ -98,7 +100,7 @@ export const MobileNavItemAccordion = ({
                   <Link
                     LinkComponent={LinkComponent}
                     href={subItem.referenceLinkHref}
-                    isExternal={isExternal}
+                    isExternal={subItem.isExternal}
                     className={nestedItem({
                       className: focusVisibleHighlight(),
                     })}

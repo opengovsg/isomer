@@ -1,5 +1,10 @@
+import { omit } from "lodash"
+
 import type { NavbarProps } from "~/interfaces"
-import type { NavbarItem } from "~/interfaces/internal/Navbar"
+import type {
+  NavbarItem,
+  ProcessedNavbarItem,
+} from "~/interfaces/internal/Navbar"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import NavbarClient from "./NavbarClient"
 
@@ -16,13 +21,14 @@ export const Navbar = ({
   LinkComponent,
 }: Omit<NavbarProps, "type">) => {
   // recursive function to process each navbar item
-  const processNavItem = (item: NavbarItem): NavbarItem => ({
-    ...item,
+  const processNavItem = (item: NavbarItem): ProcessedNavbarItem => ({
+    ...omit(item, "url"),
     referenceLinkHref: getReferenceLinkHref(
       item.url,
       site.siteMap,
       site.assetsBaseUrl,
     ),
+    isExternal: isExternalUrl(item.url),
     items: item.items?.map(processNavItem),
   })
 

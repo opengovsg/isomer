@@ -6,12 +6,12 @@ import { FocusScope } from "react-aria"
 import { Button } from "react-aria-components"
 import { useScrollLock } from "usehooks-ts"
 
-import type { NavbarProps } from "~/interfaces"
+import type { NavbarClientProps } from "~/interfaces"
 import { focusVisibleHighlight } from "~/utils"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
 
 interface MobileNavMenuProps
-  extends Pick<NavbarProps, "items" | "LinkComponent"> {
+  extends Pick<NavbarClientProps, "items" | "LinkComponent"> {
   top: number | undefined
   openNavItemIdx: number
   setOpenNavItemIdx: Dispatch<SetStateAction<number>>
