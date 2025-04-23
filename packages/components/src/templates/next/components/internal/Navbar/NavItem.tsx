@@ -7,7 +7,6 @@ import { useScrollLock } from "usehooks-ts"
 
 import type {
   NavbarItem as BaseNavbarItemProps,
-  NavbarItem,
   NavbarProps,
 } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
@@ -105,7 +104,10 @@ const Megamenu = ({
   onCloseMegamenu,
   items,
   LinkComponent,
-}: Pick<NavbarItem, "name" | "description" | "referenceLinkHref" | "items"> & {
+}: Pick<
+  BaseNavbarItemProps,
+  "name" | "description" | "referenceLinkHref" | "items"
+> & {
   LinkComponent: NavbarProps["LinkComponent"]
   onCloseMegamenu: () => void
 }) => {
