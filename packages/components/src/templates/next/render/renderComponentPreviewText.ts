@@ -70,6 +70,8 @@ export function renderComponentPreviewText({
       return component.summary
     case "callout":
       return getTextContentOfProse(component.content.content)
+    case "childpages":
+      return "" // should not show up in the sidebar as it is a fixed block
     case "hero":
       return "" // should not show up in the sidebar
     case "iframe":

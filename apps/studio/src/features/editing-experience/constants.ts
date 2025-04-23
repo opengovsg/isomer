@@ -36,6 +36,7 @@ export const TYPE_TO_ICON: Record<
   infocols: InfocolsIcon,
   accordion: BiChevronDown,
   hero: BiCrown,
+  childpages: BiListUl,
   iframe: FaYoutube,
   map: BiMap,
   video: BiMoviePlay,

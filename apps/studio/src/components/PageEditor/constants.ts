@@ -46,6 +46,7 @@ export const DEFAULT_BLOCKS: Record<
     },
   },
   hero: undefined,
+  childpages: undefined,
   iframe: {
     type: "iframe",
     title: "YouTube embed",
@@ -226,6 +227,10 @@ export const BLOCK_TO_META: Record<
   hero: {
     label: "Hero banner",
     description: "Title, summary, hero image, and Call-to-Action",
+  },
+  childpages: {
+    label: "Child pages",
+    description: "Title, Description and Order of display",
   },
   image: {
     label: "Image",

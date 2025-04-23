@@ -27,6 +27,7 @@ import {
   UnorderedListSchema,
   VideoSchema,
 } from "~/interfaces"
+import { ChildpagesSchema } from "~/interfaces/complex/Childpages"
 
 export const IsomerComplexComponentsMap = {
   accordion: AccordionSchema,
@@ -44,6 +45,7 @@ export const IsomerComplexComponentsMap = {
   video: VideoSchema,
   [DYNAMIC_DATA_BANNER_TYPE]: DynamicDataBannerSchema,
   logocloud: LogoCloudSchema,
+  childpages: ChildpagesSchema,
 }
 
 export const IsomerNativeComponentsMap = {

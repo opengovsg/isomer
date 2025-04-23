@@ -16,6 +16,7 @@ export const collectionHandlers = {
         parentId: "1",
         publishedVersionId: null,
         draftBlobId: "1",
+        pos: null,
       })),
   },
   readCollectionLink: {

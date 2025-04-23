@@ -23,6 +23,7 @@ import {
   Video,
 } from "../components"
 import { LogoCloud } from "../components/complex/LogoCloud"
+import { ChildrenPages } from "../components/internal"
 import {
   ArticleLayout,
   CollectionLayout,
@@ -84,6 +85,11 @@ export const renderComponent = ({
           shouldStripContentHtmlTags
         />
       )
+    case "childpages":
+      // TODO: Add in child pages component for rendering
+      // Right now, we're using `ChildrenPages`, but that
+      // requires knowledge of the parent's permalink
+      return <div />
     case "video":
       return <Video key={elementKey} {...component} {...rest} />
     case DYNAMIC_DATA_BANNER_TYPE:
