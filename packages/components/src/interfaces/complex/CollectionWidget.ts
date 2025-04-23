@@ -61,8 +61,13 @@ export type CollectionWidgetSingleCardProps = Pick<
   ProcessedCollectionCardProps,
   "title" | "image" | "category" | "referenceLinkHref" | "lastUpdated"
 > &
-  Pick<CollectionWidgetProps, "displayThumbnail" | "displayCategory"> & {
+  Pick<CollectionWidgetProps, "displayThumbnail" | "displayCategory"> &
+  CollectionWidgetNumberOfCards & {
     site: IsomerSiteProps
     LinkComponent?: LinkComponentType
     shouldLazyLoad?: boolean
   }
+
+export interface CollectionWidgetNumberOfCards {
+  numberOfCards: 1 | 2 | 3
+}

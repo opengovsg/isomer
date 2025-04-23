@@ -1,7 +1,10 @@
 import { BiRightArrowAlt } from "react-icons/bi"
 
 import type { CollectionWidgetProps } from "~/interfaces"
-import type { CollectionWidgetSingleCardProps } from "~/interfaces/complex/CollectionWidget"
+import type {
+  CollectionWidgetNumberOfCards,
+  CollectionWidgetSingleCardProps,
+} from "~/interfaces/complex/CollectionWidget"
 import { tv } from "~/lib/tv"
 import {
   getReferenceLinkHref,
@@ -77,9 +80,7 @@ const SingleCard = ({
   LinkComponent,
   shouldLazyLoad,
   numberOfCards,
-}: CollectionWidgetSingleCardProps & {
-  numberOfCards: 1 | 2 | 3
-}): JSX.Element => {
+}: CollectionWidgetSingleCardProps): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
   return (
@@ -156,7 +157,8 @@ export const CollectionWidget = ({
     return <></>
   }
 
-  const numberOfCards = collectionPages.length as 1 | 2 | 3
+  const numberOfCards =
+    collectionPages.length as CollectionWidgetNumberOfCards["numberOfCards"]
 
   return (
     <section className={compoundStyles.container()}>
