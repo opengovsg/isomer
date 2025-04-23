@@ -105,7 +105,7 @@
   },
   "dependencies": {
     "@datadog/browser-rum": "^5.29.1",
-    "@govtechsg/sgds": "^2.3.3",
+    "@govtechsg/sgds": "^2.3.6",
     "@govtechsg/sgds-react": "^2.5.1",
     "@headlessui/react": "^2.1.2",
     "@sinclair/typebox": "^0.33.12",
