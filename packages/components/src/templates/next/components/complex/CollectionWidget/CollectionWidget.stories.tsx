@@ -22,6 +22,7 @@ const generateArgs = ({
   collectionReferenceLink = "[resource:1:2]",
   displayThumbnail,
   displayCategory,
+  withImageFallback = false,
   buttonLabel = "View all corrections",
   isDateless = false,
   numberOfCards = 3,
@@ -29,6 +30,7 @@ const generateArgs = ({
   Omit<CollectionWidgetProps, "site"> & {
     isDateless?: boolean
     numberOfCards?: number
+    withImageFallback?: boolean
   }
 >): Partial<CollectionWidgetProps> => {
   const cards: IsomerSitemap[] = [
@@ -43,10 +45,14 @@ const generateArgs = ({
       date: isDateless ? undefined : "2021-01-03",
       lastModified: isDateless ? "" : new Date("2021-01-03").toISOString(),
       children: [],
-      image: {
-        src: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=3715&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        alt: "Image 1",
-      },
+      ...(withImageFallback
+        ? {}
+        : {
+            image: {
+              src: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=3715&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+              alt: "Image 1",
+            },
+          }),
     },
     {
       id: "4",
@@ -112,7 +118,6 @@ const generateArgs = ({
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
-      assetsBaseUrl: "https://cms.isomer.gov.sg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -130,6 +135,15 @@ const generateArgs = ({
 export const WithImage: Story = {
   name: "With Image",
   args: generateArgs({ displayThumbnail: true, displayCategory: true }),
+}
+
+export const WithImageFallback: Story = {
+  name: "With Image Fallback",
+  args: generateArgs({
+    displayThumbnail: true,
+    displayCategory: true,
+    withImageFallback: true,
+  }),
 }
 
 export const WithoutImage: Story = {
