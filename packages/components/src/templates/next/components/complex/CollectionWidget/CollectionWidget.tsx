@@ -32,7 +32,7 @@ const createInfoCardsStyles = tv({
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImageContainer:
       "aspect-[3/2] w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
-    cardImage: "h-full w-full object-cover object-center",
+    cardImage: "h-full w-full object-center",
     cardTextContainer: "flex flex-col gap-1.5 sm:gap-2",
     cardLastUpdated: "prose-label-sm-medium text-base-content",
     cardTitle:
@@ -60,9 +60,18 @@ const createInfoCardsStyles = tv({
         grid: "md:grid-cols-2 lg:grid-cols-3",
       },
     },
+    imageFit: {
+      cover: {
+        cardImage: "object-cover",
+      },
+      contain: {
+        cardImage: "object-contain",
+      },
+    },
   },
   defaultVariants: {
     numberOfCards: NUMBER_OF_PAGES_TO_DISPLAY,
+    imageFit: "cover",
   },
 })
 
@@ -84,8 +93,10 @@ const SingleCard = ({
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
   const renderImage = () => {
-    const imageSrc = image?.src ?? site.logoUrl
-    const imageAlt = image?.alt ?? `Site logo for ${site.siteName}`
+    const hasImage = image?.src !== undefined
+    const imageSrc = hasImage ? image.src : site.logoUrl
+    const imageAlt = hasImage ? image.alt : `Site logo for ${site.siteName}`
+
     return (
       <div className={compoundStyles.cardImageContainer({ numberOfCards })}>
         <ImageClient
@@ -96,7 +107,9 @@ const SingleCard = ({
           }
           alt={imageAlt}
           width="100%"
-          className={compoundStyles.cardImage()}
+          className={compoundStyles.cardImage({
+            imageFit: hasImage ? "cover" : "contain",
+          })}
           lazyLoading={shouldLazyLoad}
           assetsBaseUrl={site.assetsBaseUrl}
         />
