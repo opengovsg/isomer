@@ -1,8 +1,8 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { useCallback } from "react"
-import { Box, Flex, useDisclosure } from "@chakra-ui/react"
-import { Button, useToast } from "@opengovsg/design-system-react"
+import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
+import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
 import { getLayoutPageSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import isEmpty from "lodash/isEmpty"
@@ -22,6 +22,7 @@ import FormBuilder from "./form-builder/FormBuilder"
 const HEADER_LABELS: Record<string, string> = {
   article: "Edit article page header",
   content: "Edit content page header",
+  index: "Edit index page header",
 }
 
 const ajv = new Ajv({ strict: false, logger: false })
@@ -117,6 +118,22 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             HEADER_LABELS[savedPageState.layout] || "Edit header information"
           }
         />
+
+        {savedPageState.layout === "index" && (
+          <Box px="1.5rem" pt="1rem">
+            <Infobox
+              size="sm"
+              borderRadius="0.25rem"
+              border="1px solid"
+              borderColor="utility.feedback.info"
+            >
+              <Text textStyle="body-2">
+                To change the page title, go to the folder and click on "Folder
+                Settings"
+              </Text>
+            </Infobox>
+          </Box>
+        )}
 
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
