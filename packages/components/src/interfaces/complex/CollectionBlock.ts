@@ -43,7 +43,8 @@ export const CollectionBlockSchema = Type.Object(
     buttonLabel: Type.String({
       title: "Button text",
       maxLength: 50,
-      description: "Clicking this button will open the main collection",
+      description:
+        "Clicking this button will open the main collection. You can’t change its destination.",
     }),
   },
   {
