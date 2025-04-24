@@ -53,6 +53,9 @@ export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
         {/*   TODO: we require the last updated at and to display it */}
         {/* as a relative time. */}
         {/* we also need to give the user who did the update */}
+        <Text textStyle="caption-2" textColor="base.content.medium">
+          Customise the index page for this folder
+        </Text>
       </VStack>
       <Text
         textStyle="caption-2"
