@@ -70,6 +70,7 @@ function SuspendablePreview({
       }}
       LinkComponent={FakeLink}
       ScriptComponent={Script}
+      fromStudio
     />
   )
 }

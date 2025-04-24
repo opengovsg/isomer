@@ -23,6 +23,7 @@ const IndexPageLayout = ({
   content,
   LinkComponent,
   ScriptComponent,
+  fromStudio,
 }: IndexPageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
@@ -52,6 +53,7 @@ const IndexPageLayout = ({
             layout,
             site,
             LinkComponent,
+            fromStudio,
           })}
 
           <ChildrenPages

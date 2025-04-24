@@ -235,10 +235,11 @@ export type IsomerSchema = Static<typeof IsomerPageSchema>
 
 // These props are required by the render engine, but are not enforced by the
 // JSON schema, as the data should be provided by the template directly
-interface BasePageAdditionalProps {
+export interface BasePageAdditionalProps {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   ScriptComponent?: ScriptComponentType
+  fromStudio?: boolean
 }
 
 export interface NotFoundPageSchemaType extends BasePageAdditionalProps {

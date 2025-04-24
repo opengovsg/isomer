@@ -2,7 +2,11 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { ProcessedCollectionCardProps } from "~/interfaces/internal/CollectionCard"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type {
+  BasePageAdditionalProps,
+  IsomerSiteProps,
+  LinkComponentType,
+} from "~/types"
 import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
 
 export const COLLECTION_BLOCK_TYPE = "collectionblock"
@@ -52,11 +56,12 @@ export const CollectionBlockSchema = Type.Object(
   },
 )
 
-export type CollectionBlockProps = Static<typeof CollectionBlockSchema> & {
-  site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
-  shouldLazyLoad?: boolean
-}
+export type CollectionBlockProps = Static<typeof CollectionBlockSchema> &
+  Pick<BasePageAdditionalProps, "fromStudio"> & {
+    site: IsomerSiteProps
+    LinkComponent?: LinkComponentType
+    shouldLazyLoad?: boolean
+  }
 
 export type CollectionBlockSingleCardProps = Pick<
   ProcessedCollectionCardProps,

@@ -9,6 +9,7 @@ const HomepageLayout = ({
   content,
   LinkComponent,
   ScriptComponent,
+  fromStudio,
 }: HomePageSchemaType) => {
   return (
     <Skeleton
@@ -28,6 +29,7 @@ const HomepageLayout = ({
           layout,
           site,
           LinkComponent,
+          fromStudio,
         })}
       </div>
     </Skeleton>

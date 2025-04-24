@@ -1,9 +1,5 @@
-import type {
-  IsomerComponent,
-  IsomerPageSchemaType,
-  IsomerSiteProps,
-} from "~/engine"
-import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
+import type { IsomerComponent, IsomerPageSchemaType } from "~/engine"
+import type { BasePageAdditionalProps, IsomerPageLayoutType } from "~/types"
 import { COLLECTION_BLOCK_TYPE, DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
 import {
   Accordion,
@@ -35,12 +31,14 @@ import {
   SearchLayout,
 } from "../layouts"
 
-interface RenderComponentProps {
+interface RenderComponentProps
+  extends Pick<
+    BasePageAdditionalProps,
+    "site" | "LinkComponent" | "fromStudio"
+  > {
   elementKey?: number
   component: IsomerComponent
   layout: IsomerPageLayoutType
-  site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
   shouldLazyLoad?: boolean
 }
 
@@ -100,12 +98,14 @@ export const renderComponent = ({
 export const renderLayout = ({
   LinkComponent = "a",
   ScriptComponent = "script",
+  fromStudio = false,
   ...rest
 }: IsomerPageSchemaType) => {
   const props = {
     ...rest,
     LinkComponent,
     ScriptComponent,
+    fromStudio,
   }
 
   switch (props.layout) {

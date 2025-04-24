@@ -1,17 +1,18 @@
 import type {
+  BasePageAdditionalProps,
   IsomerComponent,
   IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
 } from "~/types"
 import { renderComponent } from "~/templates/next/render"
 import { doesComponentHaveImage } from "./doesComponentHaveImage"
 
-interface RenderPageContentParams {
+interface RenderPageContentParams
+  extends Pick<
+    BasePageAdditionalProps,
+    "site" | "LinkComponent" | "fromStudio"
+  > {
   content: IsomerComponent[]
   layout: IsomerPageLayoutType
-  site: IsomerSiteProps
-  LinkComponent: LinkComponentType
 }
 
 export const renderPageContent = ({

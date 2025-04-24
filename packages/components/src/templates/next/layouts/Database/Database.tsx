@@ -31,6 +31,7 @@ const DatabaseLayout = ({
   content,
   LinkComponent,
   ScriptComponent,
+  fromStudio,
 }: DatabasePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
@@ -71,6 +72,7 @@ const DatabaseLayout = ({
                 layout,
                 site,
                 LinkComponent,
+                fromStudio,
               })}
             </div>
           </div>

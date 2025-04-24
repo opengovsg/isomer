@@ -160,7 +160,13 @@ export const CollectionBlock = ({
   displayCategory,
   buttonLabel,
   shouldLazyLoad,
+  fromStudio,
 }: CollectionBlockProps): JSX.Element => {
+  if (fromStudio) {
+    // TODO: Implement Studio mode
+    return <></>
+  }
+
   const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
 
   const collectionParent = getCollectionParent({ site, collectionId })
