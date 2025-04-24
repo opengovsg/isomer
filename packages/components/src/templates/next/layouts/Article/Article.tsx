@@ -13,6 +13,7 @@ const ArticleLayout = ({
   LinkComponent,
   ScriptComponent,
   fromStudio,
+  studioProps,
 }: ArticlePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
@@ -47,6 +48,7 @@ const ArticleLayout = ({
               content,
               LinkComponent,
               fromStudio,
+              studioProps,
             })}
           </div>
           <BackToTopLink />

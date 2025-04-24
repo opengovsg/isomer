@@ -56,17 +56,49 @@ export const CollectionBlockSchema = Type.Object(
   },
 )
 
+export interface CollectionBlockStudioProps
+  extends Pick<BasePageAdditionalProps, "fromStudio"> {
+  studioProps?: {
+    title: string
+    description: string
+    card: {
+      title: string
+      category: string
+      image: SelectedCollectionCardProps["image"]
+      lastUpdated: string
+      referenceLinkHref: string
+    }
+  }
+}
+
 export type CollectionBlockProps = Static<typeof CollectionBlockSchema> &
-  Pick<BasePageAdditionalProps, "fromStudio"> & {
+  CollectionBlockStudioProps & {
     site: IsomerSiteProps
     LinkComponent?: LinkComponentType
     shouldLazyLoad?: boolean
   }
 
-export type CollectionBlockSingleCardProps = Pick<
+type SelectedCollectionCardProps = Pick<
   ProcessedCollectionCardProps,
   "title" | "image" | "category" | "referenceLinkHref" | "lastUpdated"
-> &
+>
+
+export type CollectionBlockDisplayProps = Pick<
+  CollectionBlockProps,
+  | "site"
+  | "LinkComponent"
+  | "collectionReferenceLink"
+  | "displayThumbnail"
+  | "displayCategory"
+  | "buttonLabel"
+  | "shouldLazyLoad"
+> & {
+  title: CollectionBlockProps["customTitle"]
+  description: CollectionBlockProps["customDescription"]
+  collectionCards: SelectedCollectionCardProps[]
+}
+
+export type CollectionBlockSingleCardProps = SelectedCollectionCardProps &
   Pick<CollectionBlockProps, "displayThumbnail" | "displayCategory"> &
   CollectionBlockNumberOfCards & {
     site: IsomerSiteProps

@@ -8,9 +8,13 @@ import type { PartialDeep } from "type-fest"
 import { forwardRef } from "react"
 import Script from "next/script"
 import { Skeleton } from "@chakra-ui/react"
-import { RenderEngine } from "@opengovsg/isomer-components"
+import {
+  COLLECTION_BLOCK_TYPE,
+  RenderEngine,
+} from "@opengovsg/isomer-components"
 import { merge } from "lodash"
 
+import { env } from "~/env.mjs"
 import { withSuspense } from "~/hocs/withSuspense"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
@@ -71,6 +75,23 @@ function SuspendablePreview({
       LinkComponent={FakeLink}
       ScriptComponent={Script}
       fromStudio
+      studioProps={{
+        [COLLECTION_BLOCK_TYPE]: {
+          title: "Title of collection will appear here after publishing",
+          description:
+            "Subtitle of collection will appear here after publishing",
+          card: {
+            title: "Article title",
+            category: "Category of article",
+            image: {
+              src: `${env.NEXT_PUBLIC_APP_URL}/assets/collectionblock_studio_preview.svg`,
+              alt: "Placeholder image for article's thumbnail",
+            },
+            lastUpdated: new Date().toISOString(),
+            referenceLinkHref: "/",
+          },
+        },
+      }}
     />
   )
 }

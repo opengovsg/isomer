@@ -2,6 +2,7 @@ import { BiRightArrowAlt } from "react-icons/bi"
 
 import type { CollectionBlockProps } from "~/interfaces"
 import type {
+  CollectionBlockDisplayProps,
   CollectionBlockNumberOfCards,
   CollectionBlockSingleCardProps,
 } from "~/interfaces/complex/CollectionBlock"
@@ -150,59 +151,39 @@ const SingleCard = ({
   )
 }
 
-export const CollectionBlock = ({
+const CollectionBlockDisplay = ({
   site,
   LinkComponent,
   collectionReferenceLink,
-  customTitle,
-  customDescription,
-  displayThumbnail,
-  displayCategory,
+  title,
+  description,
   buttonLabel,
-  shouldLazyLoad,
-  fromStudio,
-}: CollectionBlockProps): JSX.Element => {
-  if (fromStudio) {
-    // TODO: Implement Studio mode
-    return <></>
-  }
-
-  const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
-
-  const collectionParent = getCollectionParent({ site, collectionId })
-
-  const collectionPages = getCollectionPages({
-    site,
-    collectionParent,
-  })
-
-  if (collectionPages.length === 0) {
+  collectionCards,
+  ...restProps
+}: CollectionBlockDisplayProps): JSX.Element => {
+  if (collectionCards.length === 0) {
     return <></>
   }
 
   const numberOfCards =
-    collectionPages.length as CollectionBlockNumberOfCards["numberOfCards"]
+    collectionCards.length as CollectionBlockNumberOfCards["numberOfCards"]
 
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
-        <h2 className={compoundStyles.headingTitle()}>
-          {customTitle ?? collectionParent.title}
-        </h2>
-        <p>{customDescription ?? collectionParent.summary}</p>
+        <h2 className={compoundStyles.headingTitle()}>{title}</h2>
+        <p>{description}</p>
       </div>
 
       <div className={compoundStyles.grid({ numberOfCards })}>
-        {collectionPages.map((card, idx) => (
+        {collectionCards.map((card, idx) => (
           <SingleCard
             key={idx}
-            displayThumbnail={displayThumbnail}
-            displayCategory={displayCategory}
             site={site}
             LinkComponent={LinkComponent}
-            shouldLazyLoad={shouldLazyLoad}
             numberOfCards={numberOfCards}
             {...card}
+            {...restProps}
           />
         ))}
       </div>
@@ -223,5 +204,52 @@ export const CollectionBlock = ({
         </LinkButton>
       </div>
     </section>
+  )
+}
+
+export const CollectionBlock = ({
+  customTitle,
+  customDescription,
+  fromStudio,
+  studioProps,
+  ...restProps
+}: CollectionBlockProps): JSX.Element => {
+  // This is a temporary solution to display a collection block in Studio
+  // as currently there's no way to preview the collection block in Studio
+  // TODO: Update to pass in properties from the collection page,
+  // like how we do it with collectionParent below for the non-studio case
+  if (fromStudio) {
+    return (
+      <CollectionBlockDisplay
+        {...restProps}
+        title={customTitle ?? studioProps?.title}
+        description={customDescription ?? studioProps?.description}
+        collectionCards={
+          studioProps?.card
+            ? Array.from({ length: NUMBER_OF_PAGES_TO_DISPLAY }).map(
+                () => studioProps.card,
+              )
+            : []
+        }
+      />
+    )
+  }
+
+  const collectionParent = getCollectionParent({
+    site: restProps.site,
+    collectionId: getResourceIdFromReferenceLink(
+      restProps.collectionReferenceLink,
+    ),
+  })
+  return (
+    <CollectionBlockDisplay
+      {...restProps}
+      title={customTitle ?? collectionParent.title}
+      description={customDescription ?? collectionParent.summary}
+      collectionCards={getCollectionPages({
+        site: restProps.site,
+        collectionParent,
+      })}
+    />
   )
 }

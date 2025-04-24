@@ -1,3 +1,5 @@
+import { pick } from "lodash"
+
 import type { IsomerComponent, IsomerPageSchemaType } from "~/engine"
 import type { BasePageAdditionalProps, IsomerPageLayoutType } from "~/types"
 import { COLLECTION_BLOCK_TYPE, DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
@@ -34,7 +36,7 @@ import {
 interface RenderComponentProps
   extends Pick<
     BasePageAdditionalProps,
-    "site" | "LinkComponent" | "fromStudio"
+    "site" | "LinkComponent" | "fromStudio" | "studioProps"
   > {
   elementKey?: number
   component: IsomerComponent
@@ -45,6 +47,8 @@ interface RenderComponentProps
 export const renderComponent = ({
   elementKey,
   component,
+  fromStudio,
+  studioProps,
   ...rest
 }: RenderComponentProps) => {
   switch (component.type) {
@@ -88,7 +92,21 @@ export const renderComponent = ({
     case DYNAMIC_DATA_BANNER_TYPE:
       return <DynamicDataBanner key={elementKey} {...component} {...rest} />
     case COLLECTION_BLOCK_TYPE:
-      return <CollectionBlock key={elementKey} {...component} {...rest} />
+      console.log(
+        "33333",
+        studioProps,
+        studioProps?.collectionblock,
+        studioProps?.[COLLECTION_BLOCK_TYPE],
+      )
+      return (
+        <CollectionBlock
+          key={elementKey}
+          {...component}
+          {...rest}
+          fromStudio={fromStudio}
+          studioProps={studioProps?.[COLLECTION_BLOCK_TYPE]}
+        />
+      )
     default:
       const _: never = component
       return <></>
@@ -99,6 +117,7 @@ export const renderLayout = ({
   LinkComponent = "a",
   ScriptComponent = "script",
   fromStudio = false,
+  studioProps,
   ...rest
 }: IsomerPageSchemaType) => {
   const props = {
@@ -106,6 +125,7 @@ export const renderLayout = ({
     LinkComponent,
     ScriptComponent,
     fromStudio,
+    studioProps,
   }
 
   switch (props.layout) {

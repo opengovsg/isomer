@@ -4,6 +4,10 @@ import { Type } from "@sinclair/typebox"
 import type { NotFoundPageMetaProps, SearchPageMetaProps } from "./meta"
 import type { IsomerSiteProps } from "./site"
 import type {
+  COLLECTION_BLOCK_TYPE,
+  CollectionBlockStudioProps,
+} from "~/interfaces/complex/CollectionBlock"
+import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
   ContentPagePageProps,
@@ -233,13 +237,22 @@ export const IsomerPageSchema = Type.Composite([
 
 export type IsomerSchema = Static<typeof IsomerPageSchema>
 
+// These props are required by the render engine only for Studio preview
+// Currently there isn't enough case study of "dynamic" components in Studio
+// for us to decide (or worthy IMO) to design a better way to do this
+interface StudioPreviewProps {
+  fromStudio?: boolean
+  studioProps?: {
+    [COLLECTION_BLOCK_TYPE]?: CollectionBlockStudioProps["studioProps"]
+  }
+}
+
 // These props are required by the render engine, but are not enforced by the
 // JSON schema, as the data should be provided by the template directly
-export interface BasePageAdditionalProps {
+export interface BasePageAdditionalProps extends StudioPreviewProps {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   ScriptComponent?: ScriptComponentType
-  fromStudio?: boolean
 }
 
 export interface NotFoundPageSchemaType extends BasePageAdditionalProps {
