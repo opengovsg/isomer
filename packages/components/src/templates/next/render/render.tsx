@@ -1,5 +1,3 @@
-import { pick } from "lodash"
-
 import type { IsomerComponent, IsomerPageSchemaType } from "~/engine"
 import type { BasePageAdditionalProps, IsomerPageLayoutType } from "~/types"
 import { COLLECTION_BLOCK_TYPE, DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
@@ -92,12 +90,6 @@ export const renderComponent = ({
     case DYNAMIC_DATA_BANNER_TYPE:
       return <DynamicDataBanner key={elementKey} {...component} {...rest} />
     case COLLECTION_BLOCK_TYPE:
-      console.log(
-        "33333",
-        studioProps,
-        studioProps?.collectionblock,
-        studioProps?.[COLLECTION_BLOCK_TYPE],
-      )
       return (
         <CollectionBlock
           key={elementKey}
