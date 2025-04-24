@@ -74,7 +74,6 @@ function SuspendablePreview({
       }}
       LinkComponent={FakeLink}
       ScriptComponent={Script}
-      fromStudio
       studioProps={{
         [COLLECTION_BLOCK_TYPE]: {
           title: "Title of collection will appear here after publishing",

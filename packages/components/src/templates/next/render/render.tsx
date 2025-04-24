@@ -34,7 +34,7 @@ import {
 interface RenderComponentProps
   extends Pick<
     BasePageAdditionalProps,
-    "site" | "LinkComponent" | "fromStudio" | "studioProps"
+    "site" | "LinkComponent" | "studioProps"
   > {
   elementKey?: number
   component: IsomerComponent
@@ -45,7 +45,6 @@ interface RenderComponentProps
 export const renderComponent = ({
   elementKey,
   component,
-  fromStudio,
   studioProps,
   ...rest
 }: RenderComponentProps) => {
@@ -95,7 +94,6 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          fromStudio={fromStudio}
           studioProps={studioProps?.[COLLECTION_BLOCK_TYPE]}
         />
       )
@@ -108,17 +106,10 @@ export const renderComponent = ({
 export const renderLayout = ({
   LinkComponent = "a",
   ScriptComponent = "script",
-  fromStudio = false,
   studioProps,
   ...rest
 }: IsomerPageSchemaType) => {
-  const props = {
-    ...rest,
-    LinkComponent,
-    ScriptComponent,
-    fromStudio,
-    studioProps,
-  }
+  const props = { ...rest, LinkComponent, ScriptComponent, studioProps }
 
   switch (props.layout) {
     case "article":

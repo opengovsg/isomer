@@ -43,7 +43,6 @@ const ContentLayout = ({
   content,
   LinkComponent,
   ScriptComponent,
-  fromStudio,
   studioProps,
 }: ContentPageSchemaType) => {
   const isParentPageRoot = page.permalink.split("/").length === 2
@@ -92,7 +91,6 @@ const ContentLayout = ({
               layout,
               site,
               LinkComponent,
-              fromStudio,
               studioProps,
             })}
           </div>

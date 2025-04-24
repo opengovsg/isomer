@@ -210,7 +210,6 @@ const CollectionBlockDisplay = ({
 export const CollectionBlock = ({
   customTitle,
   customDescription,
-  fromStudio,
   studioProps,
   ...restProps
 }: CollectionBlockProps): JSX.Element => {
@@ -218,19 +217,15 @@ export const CollectionBlock = ({
   // as currently there's no way to preview the collection block in Studio
   // TODO: Update to pass in properties from the collection page,
   // like how we do it with collectionParent below for the non-studio case
-  if (fromStudio) {
+  if (studioProps) {
     return (
       <CollectionBlockDisplay
         {...restProps}
-        title={customTitle ?? studioProps?.title}
-        description={customDescription ?? studioProps?.description}
-        collectionCards={
-          studioProps?.card
-            ? Array.from({ length: NUMBER_OF_PAGES_TO_DISPLAY }).map(
-                () => studioProps.card,
-              )
-            : []
-        }
+        title={customTitle ?? studioProps.title}
+        description={customDescription ?? studioProps.description}
+        collectionCards={Array.from({ length: NUMBER_OF_PAGES_TO_DISPLAY }).map(
+          () => studioProps.card,
+        )}
       />
     )
   }

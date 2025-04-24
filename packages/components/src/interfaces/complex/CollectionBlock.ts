@@ -56,8 +56,7 @@ export const CollectionBlockSchema = Type.Object(
   },
 )
 
-export interface CollectionBlockStudioProps
-  extends Pick<BasePageAdditionalProps, "fromStudio"> {
+export interface CollectionBlockStudioProps {
   studioProps?: {
     title: string
     description: string

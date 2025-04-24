@@ -9,7 +9,7 @@ import { doesComponentHaveImage } from "./doesComponentHaveImage"
 interface RenderPageContentParams
   extends Pick<
     BasePageAdditionalProps,
-    "site" | "LinkComponent" | "fromStudio" | "studioProps"
+    "site" | "LinkComponent" | "studioProps"
   > {
   content: IsomerComponent[]
   layout: IsomerPageLayoutType

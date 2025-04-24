@@ -241,7 +241,6 @@ export type IsomerSchema = Static<typeof IsomerPageSchema>
 // Currently there isn't enough case study of "dynamic" components in Studio
 // for us to decide (or worthy IMO) to design a better way to do this
 interface StudioPreviewProps {
-  fromStudio?: boolean
   studioProps?: {
     [COLLECTION_BLOCK_TYPE]?: CollectionBlockStudioProps["studioProps"]
   }

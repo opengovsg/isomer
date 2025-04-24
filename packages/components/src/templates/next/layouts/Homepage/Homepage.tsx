@@ -9,7 +9,6 @@ const HomepageLayout = ({
   content,
   LinkComponent,
   ScriptComponent,
-  fromStudio,
   studioProps,
 }: HomePageSchemaType) => {
   return (
@@ -30,7 +29,6 @@ const HomepageLayout = ({
           layout,
           site,
           LinkComponent,
-          fromStudio,
           studioProps,
         })}
       </div>
