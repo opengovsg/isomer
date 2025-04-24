@@ -5,12 +5,12 @@ import type { ProcessedCollectionCardProps } from "~/interfaces/internal/Collect
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
 
-export const COLLECTION_WIDGET_TYPE = "collectionwidget"
+export const COLLECTION_BLOCK_TYPE = "collectionblock"
 
-export const CollectionWidgetSchema = Type.Object(
+export const CollectionBlockSchema = Type.Object(
   {
-    type: Type.Literal(COLLECTION_WIDGET_TYPE, {
-      default: COLLECTION_WIDGET_TYPE,
+    type: Type.Literal(COLLECTION_BLOCK_TYPE, {
+      default: COLLECTION_BLOCK_TYPE,
     }),
     collectionReferenceLink: Type.String({
       title: "Collection",
@@ -47,27 +47,27 @@ export const CollectionWidgetSchema = Type.Object(
     }),
   },
   {
-    title: "CollectionWidget component",
+    title: "CollectionBlock component",
   },
 )
 
-export type CollectionWidgetProps = Static<typeof CollectionWidgetSchema> & {
+export type CollectionBlockProps = Static<typeof CollectionBlockSchema> & {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   shouldLazyLoad?: boolean
 }
 
-export type CollectionWidgetSingleCardProps = Pick<
+export type CollectionBlockSingleCardProps = Pick<
   ProcessedCollectionCardProps,
   "title" | "image" | "category" | "referenceLinkHref" | "lastUpdated"
 > &
-  Pick<CollectionWidgetProps, "displayThumbnail" | "displayCategory"> &
-  CollectionWidgetNumberOfCards & {
+  Pick<CollectionBlockProps, "displayThumbnail" | "displayCategory"> &
+  CollectionBlockNumberOfCards & {
     site: IsomerSiteProps
     LinkComponent?: LinkComponentType
     shouldLazyLoad?: boolean
   }
 
-export interface CollectionWidgetNumberOfCards {
+export interface CollectionBlockNumberOfCards {
   numberOfCards: 1 | 2 | 3
 }

@@ -1,1 +1,0 @@
-export { CollectionWidget } from "./CollectionWidget"

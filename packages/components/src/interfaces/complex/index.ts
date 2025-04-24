@@ -31,7 +31,7 @@ export {
   type DynamicDataBannerProps,
 } from "./DynamicDataBanner"
 export {
-  CollectionWidgetSchema,
-  type CollectionWidgetProps,
-  COLLECTION_WIDGET_TYPE,
-} from "./CollectionWidget"
+  CollectionBlockSchema,
+  type CollectionBlockProps,
+  COLLECTION_BLOCK_TYPE,
+} from "./CollectionBlock"

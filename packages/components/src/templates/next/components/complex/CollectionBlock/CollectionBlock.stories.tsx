@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
-import type { CollectionWidgetProps } from "~/interfaces"
+import type { CollectionBlockProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types/sitemap"
-import { CollectionWidget } from "./CollectionWidget"
+import { CollectionBlock } from "./CollectionBlock"
 
-const meta: Meta<CollectionWidgetProps> = {
-  title: "Next/Components/CollectionWidget",
-  component: CollectionWidget,
+const meta: Meta<CollectionBlockProps> = {
+  title: "Next/Components/CollectionBlock",
+  component: CollectionBlock,
   argTypes: {},
   parameters: {
     themes: {
@@ -16,7 +16,7 @@ const meta: Meta<CollectionWidgetProps> = {
 }
 
 export default meta
-type Story = StoryObj<typeof CollectionWidget>
+type Story = StoryObj<typeof CollectionBlock>
 
 const generateArgs = ({
   collectionReferenceLink = "[resource:1:2]",
@@ -27,12 +27,12 @@ const generateArgs = ({
   isDateless = false,
   numberOfCards = 3,
 }: Partial<
-  Omit<CollectionWidgetProps, "site"> & {
+  Omit<CollectionBlockProps, "site"> & {
     isDateless?: boolean
     numberOfCards?: number
     withImageFallback?: boolean
   }
->): Partial<CollectionWidgetProps> => {
+>): Partial<CollectionBlockProps> => {
   const cards: IsomerSitemap[] = [
     {
       id: "3",
@@ -87,7 +87,7 @@ const generateArgs = ({
   ]
 
   return {
-    type: "collectionwidget",
+    type: "collectionblock",
     collectionReferenceLink,
     displayThumbnail,
     displayCategory,

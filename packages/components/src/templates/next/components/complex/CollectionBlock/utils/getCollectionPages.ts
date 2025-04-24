@@ -34,7 +34,7 @@ export const getCollectionPages = ({
 
   if (items.length === 0) {
     throw new Error(
-      `CollectionWidget: No collection items found for reference link ${collectionParent.permalink}`,
+      `CollectionBlock: No collection items found for reference link ${collectionParent.permalink}`,
     )
   }
 

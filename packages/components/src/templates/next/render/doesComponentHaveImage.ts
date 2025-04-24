@@ -1,5 +1,5 @@
 import type { IsomerSchema } from "~/types"
-import { COLLECTION_WIDGET_TYPE, DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
+import { COLLECTION_BLOCK_TYPE, DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
 
 export const doesComponentHaveImage = ({
   component,
@@ -29,7 +29,7 @@ export const doesComponentHaveImage = ({
       return true
     case "infocards":
       return component.cards.some((card) => "imageUrl" in card)
-    case COLLECTION_WIDGET_TYPE:
+    case COLLECTION_BLOCK_TYPE:
       return component.displayThumbnail
     default:
       const _: never = component

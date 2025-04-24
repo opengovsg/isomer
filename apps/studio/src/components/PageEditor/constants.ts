@@ -1,6 +1,6 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
-  COLLECTION_WIDGET_TYPE,
+  COLLECTION_BLOCK_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
 } from "@opengovsg/isomer-components"
 
@@ -220,8 +220,8 @@ export const DEFAULT_BLOCKS: Record<
     images: [],
     title: "With support from these agencies",
   },
-  [COLLECTION_WIDGET_TYPE]: {
-    type: `${COLLECTION_WIDGET_TYPE}`,
+  [COLLECTION_BLOCK_TYPE]: {
+    type: `${COLLECTION_BLOCK_TYPE}`,
     collectionReferenceLink: "", // TODO: placeholder for now as we cannot select a collection beforehand but it's required by the schema
     buttonLabel: "Read all latest news",
     displayThumbnail: true,
@@ -333,8 +333,8 @@ export const BLOCK_TO_META: Record<
     description: "Display logos of other agencies here",
     usageText: "Show an overview of related agencies",
   },
-  [COLLECTION_WIDGET_TYPE]: {
-    label: "Collection widget",
+  [COLLECTION_BLOCK_TYPE]: {
+    label: "Collection block",
     description: "Automatically display recent pages from a collection",
     usageText: "Link recent articles from your newsroom, research, or blog.",
     // TODO: Add image source

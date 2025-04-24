@@ -463,7 +463,7 @@ export const Default: Story = {
         ],
       },
       {
-        type: "collectionwidget",
+        type: "collectionblock",
         collectionReferenceLink: "[resource:1:2]",
         displayThumbnail: true,
         displayCategory: true,
