@@ -1,12 +1,10 @@
-import type {
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
+import { Static } from "@sinclair/typebox"
 
-export interface ChildrenPagesProps {
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { ChildpagesSchema } from "~/schemas/childpage"
+
+export interface ChildrenPagesProps extends Static<typeof ChildpagesSchema> {
   permalink: string
-  layout: IsomerPageLayoutType
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }

@@ -19,6 +19,7 @@ const compoundStyles = createIndexPageLayoutStyles()
 const IndexPageLayout = ({
   site,
   page,
+  childpages,
   layout,
   content,
   LinkComponent,
@@ -56,9 +57,9 @@ const IndexPageLayout = ({
 
           <ChildrenPages
             permalink={page.permalink}
-            layout={layout}
             site={site}
             LinkComponent={LinkComponent}
+            {...childpages}
           />
         </div>
       </div>

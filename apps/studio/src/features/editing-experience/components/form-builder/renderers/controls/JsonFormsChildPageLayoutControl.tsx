@@ -32,13 +32,13 @@ export function JsonFormsChildPageLayoutControl({
           }}
           value={data as string}
         >
-          <Radio value="boxes" allowDeselect={false}>
+          <Radio value="boxes" allowDeselect={false} size="sm">
             Boxes
-            <IconBoxes />
+            <IconBoxes mt="10px" />
           </Radio>
-          <Radio value="rows" allowDeselect={false}>
+          <Radio value="rows" allowDeselect={false} size="sm">
             Rows
-            <IconRows />
+            <IconRows mt="10px" />
           </Radio>
         </Radio.RadioGroup>
       </FormControl>

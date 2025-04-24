@@ -34,7 +34,11 @@ export function JsonFormsBooleanControl({
     <Box>
       <FormControl isRequired>
         <Flex justifyContent="space-between" alignItems="center">
-          <FormLabel description={description} htmlFor={id}>
+          <FormLabel
+            description={description}
+            htmlFor={id}
+            mb={!description ? "0px" : "0.75rem"}
+          >
             {label}
           </FormLabel>
           <Switch
