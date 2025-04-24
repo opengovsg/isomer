@@ -37,7 +37,7 @@ export const CollectionBlockSchema = Type.Object(
       default: true,
     }),
     displayCategory: Type.Boolean({
-      title: "Display category",
+      title: "Display category of all pages",
       default: true,
     }),
     buttonLabel: Type.String({
