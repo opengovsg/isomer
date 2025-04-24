@@ -75,7 +75,6 @@ export interface Resource {
   draftBlobId: string | null
   state: Generated<ResourceState | null>
   type: ResourceType
-  pos: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
