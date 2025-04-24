@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, Flex, FormControl } from "@chakra-ui/react"
+import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
@@ -30,7 +30,7 @@ export function JsonFormsChildPageLayoutControl({
           onChange={(value) => {
             handleChange(path, value)
           }}
-          value={data}
+          value={data as string}
         >
           <Radio value="boxes" allowDeselect={false}>
             Boxes

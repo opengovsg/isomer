@@ -14,7 +14,6 @@ import isEqual from "lodash/isEqual"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
@@ -62,44 +61,30 @@ export default function ChildPageEditorDrawer(): JSX.Element {
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const utils = trpc.useUtils()
-  const { mutate, isLoading: isSavingPage } =
-    trpc.page.updatePageBlob.useMutation({
-      onSuccess: async () => {
-        await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-        await utils.page.readPage.invalidate({ pageId, siteId })
-        toast({
-          title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-    })
-  const { mutateAsync: uploadAsset, isLoading: isUploadingAsset } =
-    useUploadAssetMutation({ siteId })
-  const { mutate: deleteAssets, isLoading: isDeletingAssets } =
-    trpc.asset.deleteAssets.useMutation()
+  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      await utils.page.readPage.invalidate({ pageId, siteId })
+      toast({
+        title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
+  })
 
-  const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
-
-  const handleSaveChanges = useCallback(async () => {
-    let newPageState = previewPageState
-
+  const handleSaveChanges = useCallback(() => {
     mutate(
       {
         pageId,
         siteId,
-        content: JSON.stringify(newPageState),
+        content: JSON.stringify(previewPageState),
       },
       {
-        onSuccess: () => {
-          setPreviewPageState(newPageState)
-          setSavedPageState(newPageState)
-          setDrawerState({ state: "root" })
-        },
+        onSuccess: () => setDrawerState({ state: "root" }),
       },
     )
   }, [
     currActiveIdx,
-    deleteAssets,
     mutate,
     pageId,
     previewPageState,
@@ -108,7 +93,6 @@ export default function ChildPageEditorDrawer(): JSX.Element {
     setSavedPageState,
     siteId,
     toast,
-    uploadAsset,
   ])
 
   const handleDiscardChanges = useCallback(() => {

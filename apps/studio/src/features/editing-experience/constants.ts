@@ -7,7 +7,6 @@ import {
   BiCrown,
   BiHash,
   BiImage,
-  BiListUl,
   BiMap,
   BiMoviePlay,
   BiPointer,
