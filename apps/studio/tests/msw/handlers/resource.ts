@@ -136,6 +136,15 @@ export const resourceHandlers = {
         }
       })
     },
+    index: () => {
+      return trpcMsw.resource.getWithFullPermalink.query(() => {
+        return {
+          id: "4",
+          title: "Index page",
+          fullPermalink: "parent/_index",
+        }
+      })
+    },
   },
   getMetadataById: {
     homepage: () =>
@@ -165,6 +174,16 @@ export const resourceHandlers = {
           type: "Page",
           title: "article layout",
           permalink: "article-layout",
+          parentId: null,
+        }
+      }),
+    index: () =>
+      trpcMsw.resource.getMetadataById.query(() => {
+        return {
+          id: "3",
+          type: "IndexPage",
+          title: "Index page",
+          permalink: "_index",
           parentId: null,
         }
       }),
