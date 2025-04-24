@@ -16,6 +16,7 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>
 export interface AuditLog {
   id: GeneratedAlways<string>
   userId: string
+  siteId: number | null
   eventType: AuditLogEvent
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>

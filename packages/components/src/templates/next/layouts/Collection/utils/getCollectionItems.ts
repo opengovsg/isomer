@@ -57,7 +57,9 @@ export const getCollectionItems = ({
     )
     .map((item) => {
       const date =
-        item.date !== undefined ? getParsedDate(item.date) : undefined
+        item.date !== undefined && item.date !== ""
+          ? getParsedDate(item.date)
+          : undefined
 
       const baseItem = {
         type: "collectionCard" as const,
