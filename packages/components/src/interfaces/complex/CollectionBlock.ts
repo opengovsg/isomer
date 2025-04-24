@@ -2,11 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { ProcessedCollectionCardProps } from "~/interfaces/internal/CollectionCard"
-import type {
-  BasePageAdditionalProps,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
 
 export const COLLECTION_BLOCK_TYPE = "collectionblock"
