@@ -12,5 +12,21 @@ services:
     volumes:
       - postgres-volume:/var/lib/postgresql/data
 
+  mockpass:
+    # image: opengovsg/mockpass:latest
+    build: https://github.com/isomerpages/mockpass.git
+    ports:
+      - "5156:5156"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - MOCKPASS_NRIC=S6005038D
+      - MOCKPASS_UEN=123456789A
+      - SHOW_LOGIN_PAGE=true
+        # NOTE: the mockpass container needs to communicate with our host machine over port 3000
+        # so that it can fetch the
+      - SP_RP_JWKS_ENDPOINT=http://host.docker.internal:3000/api/sign-in/singpass/jwks
+      - SINGPASS_CLIENT_PROFILE=direct
+
 volumes:
   postgres-volume:
