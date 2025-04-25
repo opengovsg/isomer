@@ -68,6 +68,7 @@ const ContentLayout = ({
     >
       <ContentPageHeader
         {...page.contentPageHeader}
+        image={page.image}
         title={page.title}
         breadcrumb={breadcrumb}
         site={site}

@@ -120,6 +120,7 @@ export const Default: Story = {
       title: "Index page",
       lastModified: "2024-05-02T14:12:57.160Z",
       contentPageHeader: {
+        showThumbnail: false,
         summary: "Pages in Index page",
       },
     },
@@ -227,6 +228,7 @@ export const Custom: Story = {
       title: "Index page",
       lastModified: "2024-05-02T14:12:57.160Z",
       contentPageHeader: {
+        showThumbnail: false,
         summary: "Pages in Index page",
       },
     },
