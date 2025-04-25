@@ -1,7 +1,7 @@
 import { Type } from "@sinclair/typebox"
 
 export const CHILDPAGE_LAYOUT_OPTIONS = { Boxes: "boxes", Rows: "rows" }
-export const ChildpagesSchema = Type.Object({
+export const ChildpageMetaSchema = Type.Object({
   layout: Type.Union(
     [
       Type.Literal(CHILDPAGE_LAYOUT_OPTIONS.Boxes),
@@ -10,7 +10,7 @@ export const ChildpagesSchema = Type.Object({
     {
       title: "Layout",
       format: "childpages",
-      default: CHILDPAGE_LAYOUT_OPTIONS.Boxes,
+      default: CHILDPAGE_LAYOUT_OPTIONS.Rows,
     },
   ),
   showSummary: Type.Boolean({
@@ -25,6 +25,6 @@ export const ChildpagesSchema = Type.Object({
   }),
 })
 
-export const getChildpageSchema = () => {
-  return ChildpagesSchema
+export const getChildpageMetaSchema = () => {
+  return ChildpageMetaSchema
 }

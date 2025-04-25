@@ -6,7 +6,7 @@ import type { Static } from "@sinclair/typebox"
 import { useCallback } from "react"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
-import { getChildpageSchema } from "@opengovsg/isomer-components"
+import { getChildpageMetaSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
@@ -56,7 +56,7 @@ export default function ChildPageEditorDrawer(): JSX.Element {
 
   const toast = useToast()
 
-  const schema = getChildpageSchema()
+  const schema = getChildpageMetaSchema()
   const validateFn = ajv.compile<Static<typeof schema>>(schema)
 
   const { pageId, siteId } = useQueryParse(editPageSchema)

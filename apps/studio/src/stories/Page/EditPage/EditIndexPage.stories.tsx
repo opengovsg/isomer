@@ -73,7 +73,7 @@ export const SaveToast: Story = {
     await EditFixedBlockState.play?.({ canvasElement, ...rest })
     const canvas = within(canvasElement)
 
-    const textbox = await canvas.findByPlaceholderText("Content page summary")
+    const textbox = await canvas.findByPlaceholderText("Page summary")
     await userEvent.type(textbox, "very cool summary")
 
     const saveButton = await canvas.findByRole("button", {

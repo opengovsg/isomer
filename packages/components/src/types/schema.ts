@@ -16,7 +16,7 @@ import type {
   ScriptComponentType,
   SearchPagePageProps,
 } from "~/types"
-import { ChildpagesSchema } from "~/schemas/childpage"
+import { ChildpageMetaSchema } from "~/schemas/childpage"
 import { IsomerComponentsSchemas } from "./components"
 import {
   ArticlePageMetaSchema,
@@ -147,7 +147,7 @@ export const IndexPageSchema = Type.Object(
     }),
     meta: Type.Optional(ContentPageMetaSchema),
     page: ContentPagePageSchema,
-    childpages: ChildpagesSchema,
+    childpages: ChildpageMetaSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),

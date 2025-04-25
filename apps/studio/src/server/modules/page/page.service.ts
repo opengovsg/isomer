@@ -1,5 +1,8 @@
 import type { UnwrapTagged } from "type-fest"
-import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
+import {
+  CHILDPAGE_LAYOUT_OPTIONS,
+  ISOMER_USABLE_PAGE_LAYOUTS,
+} from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
 export const createDefaultPage = ({
@@ -10,7 +13,7 @@ export const createDefaultPage = ({
   switch (layout) {
     case "content": {
       const contentDefaultPage = {
-        layout: "content",
+        layout: ISOMER_USABLE_PAGE_LAYOUTS.Content,
         page: {
           contentPageHeader: {
             summary: "This is the page summary",
@@ -24,7 +27,7 @@ export const createDefaultPage = ({
 
     case "article": {
       const articleDefaultPage = {
-        layout: "article",
+        layout: ISOMER_USABLE_PAGE_LAYOUTS.Article,
         page: {
           date: format(new Date(), "dd/MM/yyyy"),
           category: "Feature Articles",
@@ -56,9 +59,9 @@ export const createFolderIndexPage = (title: string) => {
       },
     },
     childpages: {
-      layout: "boxes",
-      summary: false,
-      thumbnail: false,
+      layout: CHILDPAGE_LAYOUT_OPTIONS.Rows,
+      showSummary: false,
+      showThumbnail: false,
     },
     content: [],
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
