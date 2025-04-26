@@ -13,11 +13,16 @@ import { AuditLogEvent, db, jsonb, sql } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
 import { FOOTER, NAV_BAR_ITEMS, PAGE_BLOB } from "./constants"
 
+export interface SitePermissionsProps
+  extends Omit<PermissionsProps, "resourceId"> {
+  action: CrudResourceActions
+}
+
 export const validateUserPermissionsForSite = async ({
   siteId,
   userId,
   action,
-}: Omit<PermissionsProps, "resourceId"> & { action: CrudResourceActions }) => {
+}: SitePermissionsProps) => {
   const perms = await definePermissionsForSite({
     siteId,
     userId,
