@@ -5,6 +5,7 @@ import pick from "lodash/pick"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createFolderSchema,
+  createIndexPageSchema,
   editFolderSchema,
   getIndexpageSchema,
   readFolderSchema,
@@ -114,7 +115,7 @@ export const folderRouter = router({
             .returning("id")
             .executeTakeFirstOrThrow()
 
-          await tx
+          const indexPage = await tx
             .insertInto("Resource")
             .values({
               parentId: folder.id,
@@ -124,7 +125,7 @@ export const folderRouter = router({
               permalink: INDEX_PAGE_PERMALINK,
               siteId,
             })
-            .returning(["id", "draftBlobId"])
+            .returningAll()
             .executeTakeFirstOrThrow()
 
           await logResourceEvent(tx, {
@@ -133,6 +134,16 @@ export const folderRouter = router({
             delta: {
               before: null,
               after: folder,
+            },
+            by: user,
+          })
+
+          await logResourceEvent(tx, {
+            siteId,
+            eventType: AuditLogEvent.ResourceCreate,
+            delta: {
+              before: null,
+              after: indexPage,
             },
             by: user,
           })
@@ -233,19 +244,17 @@ export const folderRouter = router({
             })
 
           // NOTE: update the index page's title so that they stay in sync
-          if (title) {
-            await tx
-              .updateTable("Resource")
-              .where("Resource.parentId", "=", oldResource.id)
-              .where("Resource.siteId", "=", oldResource.siteId)
-              .where("Resource.type", "=", ResourceType.IndexPage)
-              .set({
-                title,
-              })
-              // NOTE: we cannot throw here because
-              // it's entirely possible that the index page doesn't exist
-              .executeTakeFirst()
-          }
+          await tx
+            .updateTable("Resource")
+            .where("Resource.parentId", "=", oldResource.id)
+            .where("Resource.siteId", "=", oldResource.siteId)
+            .where("Resource.type", "=", ResourceType.IndexPage)
+            .set({
+              title,
+            })
+            // NOTE: we cannot throw here because
+            // it's entirely possible that the index page doesn't exist
+            .executeTakeFirst()
 
           await logResourceEvent(tx, {
             siteId: Number(siteId),
@@ -266,10 +275,88 @@ export const folderRouter = router({
       },
     ),
 
+  createIndexPage: protectedProcedure
+    .input(createIndexPageSchema)
+    .mutation(async ({ ctx, input: { resourceId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        siteId,
+        action: "create",
+        userId: ctx.user.id,
+        resourceId,
+      })
+
+      return await db.transaction().execute(async (tx) => {
+        const { title } = await tx
+          .selectFrom("Resource")
+          .where("Resource.type", "=", ResourceType.Folder)
+          .select("title")
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "NOT_FOUND",
+                message: "Could not find parent folder to create in",
+              }),
+          )
+
+        const indexPageBlob = await tx
+          .insertInto("Blob")
+          .values({
+            content: jsonb(createIndexPage(title)),
+          })
+          .returning("id")
+          .executeTakeFirstOrThrow()
+
+        const indexPage = await tx
+          .insertInto("Resource")
+          .values({
+            parentId: resourceId,
+            draftBlobId: indexPageBlob.id,
+            title,
+            type: ResourceType.IndexPage,
+            permalink: INDEX_PAGE_PERMALINK,
+            siteId,
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        const by = await tx
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "BAD_REQUEST",
+                message: "User could not be found",
+              }),
+          )
+
+        await tx
+          .updateTable("Resource")
+          .where("id", "=", String(indexPage.id))
+          .set({ draftBlobId: indexPageBlob.id })
+          .execute()
+
+        await logResourceEvent(tx, {
+          eventType: "ResourceCreate",
+          delta: { before: null, after: indexPage },
+          by,
+          siteId,
+        })
+
+        return indexPage
+      })
+    }),
+
   getIndexpage: protectedProcedure
     .input(getIndexpageSchema)
-    .query(async ({ input: { resourceId, siteId } }) => {
-      // TODO: add permissions checking
+    .query(async ({ ctx, input: { resourceId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+        resourceId,
+      })
 
       return db.transaction().execute(async (tx) => {
         const { title } = await tx
@@ -278,43 +365,18 @@ export const folderRouter = router({
           .select("title")
           .executeTakeFirstOrThrow()
 
-        let indexPage = await tx
+        const indexPage = await tx
           .selectFrom("Resource")
           .where("Resource.parentId", "=", resourceId)
           .where("Resource.type", "=", "IndexPage")
           .select(["id", "draftBlobId"])
-          .executeTakeFirst()
-
-        // NOTE: Might want to create on click in
-        // rather than via the view
-        if (!indexPage) {
-          const indexPageBlob = await tx
-            .insertInto("Blob")
-            .values({
-              content: jsonb(createIndexPage(title)),
-            })
-            .returning("id")
-            .executeTakeFirstOrThrow()
-
-          indexPage = await tx
-            .insertInto("Resource")
-            .values({
-              parentId: resourceId,
-              draftBlobId: indexPageBlob.id,
-              title,
-              type: ResourceType.IndexPage,
-              permalink: INDEX_PAGE_PERMALINK,
-              siteId,
-            })
-            .returning(["id", "draftBlobId"])
-            .executeTakeFirstOrThrow()
-
-          await tx
-            .updateTable("Resource")
-            .where("id", "=", String(indexPage.id))
-            .set({ draftBlobId: indexPageBlob.id })
-            .execute()
-        }
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "NOT_FOUND",
+                message: "No existing index page found",
+              }),
+          )
 
         return { title, ...indexPage }
       })
