@@ -9,6 +9,6 @@
     "generate-report": "bash generate_report.sh"
   },
   "dependencies": {
-    "@govtechsg/oobee": "^0.10.39"
+    "@govtechsg/oobee": "^0.10.42"
   }
 }
