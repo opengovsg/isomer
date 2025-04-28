@@ -126,7 +126,7 @@ const Megamenu = ({
         showExternalIcon={isExternal}
         isWithFocusVisibleHighlight
         href={referenceLinkHref}
-        className="group inline-flex w-fit items-center gap-1 hover:text-brand-interaction-hover hover:no-underline"
+        className="group inline-flex w-fit items-center gap-1.5 hover:text-brand-interaction-hover hover:no-underline"
       >
         {name}
         {!isExternal && (
