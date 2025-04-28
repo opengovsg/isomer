@@ -6,7 +6,7 @@ export default defineConfig({
   test: {
     retry: 0,
     globals: true,
-    exclude: [...configDefaults.exclude, "**/playwright/**", "tests/load/**"],
+    exclude: [...configDefaults.exclude, "**/tests/e2e/**", "tests/load/**"],
     setupFiles: ["tests/mocks/db.ts"],
     globalSetup: ["tests/global-setup.ts"],
     coverage: {
