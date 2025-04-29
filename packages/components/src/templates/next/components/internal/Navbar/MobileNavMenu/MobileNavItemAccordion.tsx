@@ -100,7 +100,10 @@ const ParentItemLink = ({
           <span className="prose-headline-base-medium flex flex-row items-center gap-1">
             {lastWord}
             {!isExternal && (
-              <BiRightArrowAlt className="text-[1rem] transition ease-in group-hover/parent-item:translate-x-1" />
+              <BiRightArrowAlt
+                aria-hidden
+                className="text-[1rem] transition ease-in group-hover/parent-item:translate-x-1"
+              />
             )}
           </span>
         </span>
