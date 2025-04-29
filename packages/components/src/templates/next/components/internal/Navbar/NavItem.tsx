@@ -130,7 +130,7 @@ const Megamenu = ({
       >
         {name}
         {!isExternal && (
-          <BiRightArrowAlt className="text-[1.5rem] transition ease-in group-hover:translate-x-1" />
+          <BiRightArrowAlt className="text-[1.5rem] transition ease-in group-hover:translate-x-2.5" />
         )}
       </Link>
     )
