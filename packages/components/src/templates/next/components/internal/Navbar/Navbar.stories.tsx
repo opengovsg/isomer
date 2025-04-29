@@ -78,7 +78,7 @@ const meta: Meta<NavbarProps> = {
         ],
       },
       {
-        name: "On navbar",
+        name: "Longer item with 30 characters",
         url: "/item-two",
         description: "This navbar item has a reference link",
         items: [
@@ -121,34 +121,6 @@ const meta: Meta<NavbarProps> = {
           {
             name: "Another sub item",
             url: "/item-four/another-sub-item",
-          },
-        ],
-      },
-      {
-        name: "Newsroom",
-        url: "/item-five",
-        items: [
-          {
-            name: "A sub item",
-            url: "/item-five/sub-item",
-          },
-          {
-            name: "Another sub item",
-            url: "/item-five/another-sub-item",
-          },
-        ],
-      },
-      {
-        name: "Research",
-        url: "/item-six",
-        items: [
-          {
-            name: "A sub item",
-            url: "/item-six/sub-item",
-          },
-          {
-            name: "Another sub item",
-            url: "/item-six/another-sub-item",
           },
         ],
       },
@@ -228,7 +200,9 @@ export const ExpandNavbarItemWithLink: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole("button", { name: /on navbar/i }))
+    await userEvent.click(
+      canvas.getByRole("button", { name: /Longer item with 30 characters/i }),
+    )
   },
 }
 
@@ -260,7 +234,7 @@ export const ExpandMobile: Story = {
 
 export const ExpandMobileWithLink: Story = {
   parameters: {
-    chromatic: withChromaticModes(["mobile"]),
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
     viewport: {
       defaultViewport: getViewportByMode("mobile"),
     },
@@ -270,6 +244,8 @@ export const ExpandMobileWithLink: Story = {
     await userEvent.click(
       canvas.getByRole("button", { name: /open navigation menu/i }),
     )
-    await userEvent.click(canvas.getByRole("button", { name: /on navbar/i }))
+    await userEvent.click(
+      canvas.getByRole("button", { name: /Longer item with 30 characters/i }),
+    )
   },
 }
