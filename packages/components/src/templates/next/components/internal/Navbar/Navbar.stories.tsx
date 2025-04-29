@@ -257,3 +257,19 @@ export const ExpandMobile: Story = {
     await userEvent.click(canvas.getByRole("button", { name: /max 70 chars/i }))
   },
 }
+
+export const ExpandMobileWithLink: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+    await userEvent.click(canvas.getByRole("button", { name: /on navbar/i }))
+  },
+}
