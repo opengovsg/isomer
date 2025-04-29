@@ -230,18 +230,6 @@ export const CallToAction: Story = {
   },
 }
 
-export const ExternalCallToAction: Story = {
-  args: generateNavbarArgs({
-    callToAction: {
-      label: "Login to Donation Portal",
-      url: "https://www.isomer.gov.sg",
-    },
-  }),
-  parameters: {
-    chromatic: withChromaticModes(["desktop"]),
-  },
-}
-
 export const ExpandFirstItem: Story = {
   args: generateNavbarArgs({}),
   parameters: {
@@ -299,24 +287,6 @@ export const MobileCallToAction: Story = {
     callToAction: {
       label: "Login to Donation Portal",
       url: "/call-to-action",
-    },
-  }),
-  parameters: {
-    chromatic: withChromaticModes(["mobile"]),
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
-    )
-  },
-}
-
-export const ExternalMobileCallToAction: Story = {
-  args: generateNavbarArgs({
-    callToAction: {
-      label: "Login to Donation Portal",
-      url: "https://www.isomer.gov.sg",
     },
   }),
   parameters: {
