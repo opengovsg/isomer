@@ -8,6 +8,7 @@ import type { NavbarClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { ImageClient } from "../../complex/Image"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
+import { LinkButton } from "../../internal/LinkButton/LinkButton"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
@@ -29,6 +30,7 @@ export const NavbarClient = ({
   layout,
   search,
   items,
+  callToAction,
   imageClientProps,
   LinkComponent,
 }: Omit<NavbarClientProps, "type">) => {
@@ -107,6 +109,19 @@ export const NavbarClient = ({
             ))}
           </ul>
 
+          {/* Call To Action button */}
+          {callToAction && (
+            <LinkButton
+              href={callToAction.referenceLinkHref}
+              isExternal={callToAction.isExternal}
+              className="align-content mx-5 hidden h-fit lg:flex"
+              isWithFocusVisibleHighlight
+              LinkComponent={LinkComponent}
+            >
+              {callToAction.label}
+            </LinkButton>
+          )}
+
           <div className="flex flex-row gap-1">
             {/* Search icon */}
             {search && !isHamburgerOpen && layout !== "search" && (
@@ -178,6 +193,7 @@ export const NavbarClient = ({
         <MobileNavMenu
           top={mobileNavbarTopPx}
           items={items}
+          callToAction={callToAction}
           openNavItemIdx={openNavItemIdx}
           setOpenNavItemIdx={setOpenNavItemIdx}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

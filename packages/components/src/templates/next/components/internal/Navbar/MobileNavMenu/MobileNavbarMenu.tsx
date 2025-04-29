@@ -6,12 +6,13 @@ import { FocusScope } from "react-aria"
 import { Button } from "react-aria-components"
 import { useScrollLock } from "usehooks-ts"
 
-import type { NavbarProps } from "~/interfaces"
+import type { NavbarClientProps } from "~/interfaces"
 import { focusVisibleHighlight } from "~/utils"
+import { LinkButton } from "../../LinkButton/LinkButton"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
 
 interface MobileNavMenuProps
-  extends Pick<NavbarProps, "items" | "LinkComponent"> {
+  extends Pick<NavbarClientProps, "items" | "callToAction" | "LinkComponent"> {
   top: number | undefined
   openNavItemIdx: number
   setOpenNavItemIdx: Dispatch<SetStateAction<number>>
@@ -23,6 +24,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     {
       top,
       items,
+      callToAction,
       LinkComponent,
       openNavItemIdx,
       setOpenNavItemIdx,
@@ -42,6 +44,19 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
       >
         <FocusScope contain restoreFocus>
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
+            {callToAction && (
+              <div className="border-y border-b-base-divider-subtle bg-brand-canvas px-6 py-3">
+                <LinkButton
+                  href={callToAction.referenceLinkHref}
+                  isExternal={callToAction.isExternal}
+                  className="h-fit w-full justify-center"
+                  isWithFocusVisibleHighlight
+                  LinkComponent={LinkComponent}
+                >
+                  {callToAction.label}
+                </LinkButton>
+              </div>
+            )}
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={`${item.name}-${index}`}

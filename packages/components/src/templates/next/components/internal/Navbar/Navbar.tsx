@@ -9,6 +9,7 @@ import NavbarClient from "./NavbarClient"
 export const Navbar = ({
   logoUrl,
   logoAlt,
+  callToAction,
   layout,
   search,
   items,
@@ -43,6 +44,19 @@ export const Navbar = ({
         assetsBaseUrl: site.assetsBaseUrl,
         lazyLoading: false, // will always be above the fold
       }}
+      callToAction={
+        callToAction
+          ? {
+              label: callToAction.label,
+              referenceLinkHref: getReferenceLinkHref(
+                callToAction.url,
+                site.siteMap,
+                site.assetsBaseUrl,
+              ),
+              isExternal: isExternalUrl(callToAction.url),
+            }
+          : undefined
+      }
       LinkComponent={LinkComponent}
     />
   )
