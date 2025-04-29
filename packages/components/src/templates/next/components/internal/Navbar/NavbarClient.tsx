@@ -19,8 +19,7 @@ const navbarStyles = tv({
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
       "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-2 pl-6 pr-3 md:px-10",
-    navItemContainer:
-      "hidden flex-1 flex-wrap items-center gap-x-4 pl-2 lg:flex",
+    navItemContainer: "hidden flex-1 items-center gap-x-4 pl-2 lg:flex",
   },
 })
 
