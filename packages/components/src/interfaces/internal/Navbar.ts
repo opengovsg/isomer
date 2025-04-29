@@ -8,6 +8,11 @@ import type {
   ScriptComponentType,
 } from "~/types"
 
+// TODO: add typebox schema and limit label to 30 characters
+interface NavbarCallToAction {
+  label: string
+}
+
 export interface NavbarItem {
   name: string
   url: string
@@ -27,9 +32,16 @@ export interface BaseNavbarProps {
 export interface NavbarProps extends BaseNavbarProps {
   logoUrl: string
   logoAlt: string
+  callToAction?: NavbarCallToAction & {
+    url: string
+  }
   site: IsomerSiteProps
 }
 
 export interface NavbarClientProps extends BaseNavbarProps {
+  callToAction?: NavbarCallToAction & {
+    referenceLinkHref?: string
+    isExternal: boolean
+  }
   imageClientProps: ImageClientProps
 }
