@@ -13,6 +13,14 @@ interface NavItemAccordionProps
   index: number
 }
 
+interface ParentItemLinkProps
+  extends Pick<
+    NavItemAccordionProps,
+    "name" | "referenceLinkHref" | "LinkComponent"
+  > {
+  isExternal: boolean
+}
+
 const mobileItemStyles = tv({
   slots: {
     container: "flex flex-col gap-3 border-b border-b-base-divider-subtle",
@@ -56,6 +64,50 @@ const mobileItemStyles = tv({
 
 const { item, chevron, container, nestedItem, sublist, menuItemsContainer } =
   mobileItemStyles()
+
+const ParentItemLink = ({
+  name,
+  referenceLinkHref,
+  isExternal,
+  LinkComponent,
+}: ParentItemLinkProps) => {
+  // This is a hack to ensure that the rightArrow is always at the end of the last word even on smaller screens
+  const words = name.trim().split(" ")
+  const allButLastWord = words.slice(0, -1).join(" ")
+  const lastWord = words[words.length - 1]
+
+  return (
+    <div
+      className={item({
+        itemType: "parentItem",
+        withVerticalPadding: true,
+      })}
+    >
+      <Link
+        LinkComponent={LinkComponent}
+        isExternal={isExternalUrl(referenceLinkHref)}
+        showExternalIcon={isExternalUrl(referenceLinkHref)}
+        isWithFocusVisibleHighlight
+        href={referenceLinkHref}
+        className={nestedItem({
+          className: `group/parent-item ${focusVisibleHighlight()}`,
+          itemType: "parentItem",
+        })}
+      >
+        <span className="row-gap-0 flex flex-row flex-wrap items-baseline gap-1">
+          Pages in
+          <span className="prose-headline-base-medium">{allButLastWord}</span>
+          <span className="prose-headline-base-medium flex flex-row items-center gap-1">
+            {lastWord}
+            {!isExternal && (
+              <BiRightArrowAlt className="text-[1rem] transition ease-in group-hover/parent-item:translate-x-1" />
+            )}
+          </span>
+        </span>
+      </Link>
+    </div>
+  )
+}
 
 export const MobileNavItemAccordion = ({
   name,
@@ -130,32 +182,12 @@ export const MobileNavItemAccordion = ({
           })}
         </ul>
         {referenceLinkHref && (
-          <div
-            className={item({
-              itemType: "parentItem",
-              withVerticalPadding: true,
-            })}
-          >
-            <Link
-              LinkComponent={LinkComponent}
-              isExternal={isExternalUrl(referenceLinkHref)}
-              showExternalIcon={isExternalUrl(referenceLinkHref)}
-              isWithFocusVisibleHighlight
-              href={referenceLinkHref}
-              className={nestedItem({
-                className: `group/parent-item ${focusVisibleHighlight()}`,
-                itemType: "parentItem",
-              })}
-            >
-              <span>
-                Pages in{" "}
-                <span className="prose-headline-base-medium">{name}</span>
-              </span>
-              {!isExternalUrl(referenceLinkHref) && (
-                <BiRightArrowAlt className="text-[1rem] transition ease-in group-hover/parent-item:translate-x-1" />
-              )}
-            </Link>
-          </div>
+          <ParentItemLink
+            name={name}
+            referenceLinkHref={referenceLinkHref}
+            isExternal={isExternalUrl(referenceLinkHref)}
+            LinkComponent={LinkComponent}
+          />
         )}
       </div>
     </section>
