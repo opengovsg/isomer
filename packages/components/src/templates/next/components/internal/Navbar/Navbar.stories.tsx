@@ -26,7 +26,28 @@ const Renderer = (props: NavbarProps) => {
 const meta: Meta<NavbarProps> = {
   title: "Next/Internal Components/Navbar",
   component: Renderer,
-  args: {
+  parameters: {
+    layout: "fullscreen",
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+    chromatic: {
+      prefersReducedMotion: "reduce",
+    },
+  },
+}
+export default meta
+type Story = StoryObj<typeof Navbar>
+
+const generateNavbarArgs = ({
+  callToAction = undefined,
+}: {
+  callToAction?: {
+    label: string
+    url: string
+  }
+}): Partial<NavbarProps> => {
+  return {
     logoUrl: "/isomer-logo.svg",
     logoAlt: "Isomer logo",
     search: {
@@ -157,6 +178,7 @@ const meta: Meta<NavbarProps> = {
         url: "/single-item",
       },
     ],
+    callToAction,
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -183,22 +205,12 @@ const meta: Meta<NavbarProps> = {
         searchUrl: "/search",
       },
     },
-  },
-  parameters: {
-    layout: "fullscreen",
-    themes: {
-      themeOverride: "Isomer Next",
-    },
-    chromatic: {
-      prefersReducedMotion: "reduce",
-    },
-  },
+  }
 }
-export default meta
-type Story = StoryObj<typeof Navbar>
 
 // Default scenario
 export const Default: Story = {
+  args: generateNavbarArgs({}),
   parameters: {
     chromatic: {
       ...withChromaticModes(["desktop", "mobile"]),
@@ -206,7 +218,32 @@ export const Default: Story = {
   },
 }
 
+export const CallToAction: Story = {
+  args: generateNavbarArgs({
+    callToAction: {
+      label: "Login to Donation Portal",
+      url: "/call-to-action",
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+}
+
+export const ExternalCallToAction: Story = {
+  args: generateNavbarArgs({
+    callToAction: {
+      label: "Login to Donation Portal",
+      url: "https://www.isomer.gov.sg",
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+}
+
 export const ExpandFirstItem: Story = {
+  args: generateNavbarArgs({}),
   parameters: {
     viewport: {
       defaultViewport: getViewportByMode("desktop"),
@@ -220,6 +257,7 @@ export const ExpandFirstItem: Story = {
 }
 
 export const ExpandSearch: Story = {
+  args: generateNavbarArgs({}),
   parameters: Default.parameters,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -229,7 +267,18 @@ export const ExpandSearch: Story = {
   },
 }
 
+export const Mobile: Story = {
+  args: generateNavbarArgs({}),
+  parameters: {
+    chromatic: withChromaticModes(["mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+}
+
 export const ExpandMobile: Story = {
+  args: generateNavbarArgs({}),
   parameters: {
     chromatic: withChromaticModes(["mobile"]),
     viewport: {
@@ -242,5 +291,41 @@ export const ExpandMobile: Story = {
       canvas.getByRole("button", { name: /open navigation menu/i }),
     )
     await userEvent.click(canvas.getByRole("button", { name: /max 70 chars/i }))
+  },
+}
+
+export const MobileCallToAction: Story = {
+  args: generateNavbarArgs({
+    callToAction: {
+      label: "Login to Donation Portal",
+      url: "/call-to-action",
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["mobile"]),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+  },
+}
+
+export const ExternalMobileCallToAction: Story = {
+  args: generateNavbarArgs({
+    callToAction: {
+      label: "Login to Donation Portal",
+      url: "https://www.isomer.gov.sg",
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["mobile"]),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
   },
 }
