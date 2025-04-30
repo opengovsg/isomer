@@ -44,9 +44,7 @@ export default function ChildPageEditorDrawer(): JSX.Element {
   const {
     setDrawerState,
     savedPageState,
-    setSavedPageState,
     previewPageState,
-    currActiveIdx,
     setPreviewPageState,
   } = useEditorDrawerContext()
 
@@ -85,17 +83,7 @@ export default function ChildPageEditorDrawer(): JSX.Element {
         onSuccess: () => setDrawerState({ state: "root" }),
       },
     )
-  }, [
-    currActiveIdx,
-    mutate,
-    pageId,
-    previewPageState,
-    setDrawerState,
-    setPreviewPageState,
-    setSavedPageState,
-    siteId,
-    toast,
-  ])
+  }, [mutate, pageId, previewPageState, setDrawerState, siteId])
 
   const handleDiscardChanges = useCallback(() => {
     setPreviewPageState(savedPageState)
@@ -116,7 +104,7 @@ export default function ChildPageEditorDrawer(): JSX.Element {
       }
       setPreviewPageState(newPageState as IsomerSchema)
     },
-    [currActiveIdx, previewPageState, setPreviewPageState],
+    [previewPageState, setPreviewPageState],
   )
 
   return (
