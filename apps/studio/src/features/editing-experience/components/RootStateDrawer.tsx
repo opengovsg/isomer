@@ -2,7 +2,7 @@ import type { DropResult } from "@hello-pangea/dnd"
 import { useCallback } from "react"
 import { Box, Button, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
-import { Infobox, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { BiListUl, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
