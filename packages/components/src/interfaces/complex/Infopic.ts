@@ -42,7 +42,7 @@ export const InfopicSchema = Type.Object(
       }),
     ),
     imageSrc: ImageSrcSchema,
-    imageAlt: Type.Optional(AltTextSchema),
+    imageAlt: AltTextSchema,
   },
   {
     title: "Infopic component",
