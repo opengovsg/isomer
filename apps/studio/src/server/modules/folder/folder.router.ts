@@ -5,7 +5,6 @@ import pick from "lodash/pick"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createFolderSchema,
-  createIndexPageSchema,
   editFolderSchema,
   getIndexpageSchema,
   readFolderSchema,
@@ -20,7 +19,7 @@ import {
   ResourceType,
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { createIndexPage } from "../page/page.service"
+import { createFolderIndexPage } from "../page/page.service"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import { publishResource } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
@@ -110,7 +109,7 @@ export const folderRouter = router({
           const indexPageBlob = await tx
             .insertInto("Blob")
             .values({
-              content: jsonb(createIndexPage(folderTitle)),
+              content: jsonb(createFolderIndexPage(folderTitle)),
             })
             .returning("id")
             .executeTakeFirstOrThrow()
@@ -274,79 +273,6 @@ export const folderRouter = router({
         return pick(result, defaultFolderSelect)
       },
     ),
-
-  createIndexPage: protectedProcedure
-    .input(createIndexPageSchema)
-    .mutation(async ({ ctx, input: { resourceId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        siteId,
-        action: "create",
-        userId: ctx.user.id,
-        resourceId,
-      })
-
-      return await db.transaction().execute(async (tx) => {
-        const { title } = await tx
-          .selectFrom("Resource")
-          .where("Resource.type", "=", ResourceType.Folder)
-          .select("title")
-          .executeTakeFirstOrThrow(
-            () =>
-              new TRPCError({
-                code: "NOT_FOUND",
-                message: "Could not find parent folder to create in",
-              }),
-          )
-
-        const indexPageBlob = await tx
-          .insertInto("Blob")
-          .values({
-            content: jsonb(createIndexPage(title)),
-          })
-          .returning("id")
-          .executeTakeFirstOrThrow()
-
-        const indexPage = await tx
-          .insertInto("Resource")
-          .values({
-            parentId: resourceId,
-            draftBlobId: indexPageBlob.id,
-            title,
-            type: ResourceType.IndexPage,
-            permalink: INDEX_PAGE_PERMALINK,
-            siteId,
-          })
-          .returningAll()
-          .executeTakeFirstOrThrow()
-
-        const by = await tx
-          .selectFrom("User")
-          .where("id", "=", ctx.user.id)
-          .selectAll()
-          .executeTakeFirstOrThrow(
-            () =>
-              new TRPCError({
-                code: "BAD_REQUEST",
-                message: "User could not be found",
-              }),
-          )
-
-        await tx
-          .updateTable("Resource")
-          .where("id", "=", String(indexPage.id))
-          .set({ draftBlobId: indexPageBlob.id })
-          .execute()
-
-        await logResourceEvent(tx, {
-          eventType: "ResourceCreate",
-          delta: { before: null, after: indexPage },
-          by,
-          siteId,
-        })
-
-        return indexPage
-      })
-    }),
 
   getIndexpage: protectedProcedure
     .input(getIndexpageSchema)

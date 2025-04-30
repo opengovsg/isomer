@@ -52,11 +52,9 @@ export const editFolderSchema = baseEditFolderSchema.superRefine(
   },
 )
 
-export const baseIndexPageSchema = z.object({
+const baseIndexPageSchema = z.object({
   resourceId: z.string(),
   siteId: z.number().min(1),
 })
-
-export const createIndexPageSchema = baseIndexPageSchema
 
 export const getIndexpageSchema = baseIndexPageSchema
