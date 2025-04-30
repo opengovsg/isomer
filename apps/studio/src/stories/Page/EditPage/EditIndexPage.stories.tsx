@@ -23,7 +23,7 @@ const COMMON_HANDLERS = [
   resourceHandlers.getAncestryStack.default(),
   resourceHandlers.getBatchAncestryWithSelf.default(),
   resourceHandlers.getRolesFor.default(),
-
+  // NOTE: Handlers that return custom data for this story
   sitesHandlers.getLocalisedSitemap.index(),
   resourceHandlers.getWithFullPermalink.index(),
   resourceHandlers.getMetadataById.index(),
