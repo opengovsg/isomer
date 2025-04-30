@@ -12,7 +12,8 @@ type IndexpageRowProps = z.infer<typeof getIndexpageSchema>
 
 export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
   const trpcUtils = trpc.useUtils()
-  const { mutateAsync, isLoading } = trpc.page.createIndexPage.useMutation()
+  const { mutate: createIndexPage, isLoading } =
+    trpc.page.createIndexPage.useMutation()
 
   const { data } = trpc.folder.getIndexpage.useQuery(
     {
@@ -22,8 +23,9 @@ export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
     {
       onError: (err) => {
         if (err.data?.code === "NOT_FOUND") {
-          void mutateAsync({ siteId, parentId: resourceId })
+          void createIndexPage({ siteId, parentId: resourceId })
           void trpcUtils.folder.getIndexpage.refetch()
+          void trpcUtils.resource.getChildrenOf.invalidate()
         }
       },
     },
