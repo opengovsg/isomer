@@ -3,6 +3,7 @@ import { useCallback } from "react"
 import { Box, Button, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
+import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { BiListUl, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
@@ -132,7 +133,7 @@ export default function RootStateDrawer() {
     savedPageState.content.length > 0 &&
     savedPageState.content[0]?.type === "hero"
 
-  const hasChildpagesBlock = pageLayout === "index"
+  const hasChildpagesBlock = pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Index
 
   return (
     <VStack gap="1.5rem" p="1.5rem">

@@ -3,7 +3,10 @@ import type { Static } from "@sinclair/typebox"
 import { useCallback } from "react"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
-import { getLayoutPageSchema } from "@opengovsg/isomer-components"
+import {
+  getLayoutPageSchema,
+  ISOMER_USABLE_PAGE_LAYOUTS,
+} from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
@@ -119,7 +122,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
           }
         />
 
-        {savedPageState.layout === "index" && (
+        {savedPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Index && (
           <Box px="1.5rem" pt="1rem">
             <Infobox
               size="sm"
