@@ -1,0 +1,1 @@
+export { generateAriaLabel } from "./generateAriaLabel"
