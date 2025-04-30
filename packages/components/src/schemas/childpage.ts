@@ -1,11 +1,18 @@
 import { Type } from "@sinclair/typebox"
 
+export const CHILDPAGE_LAYOUT_OPTIONS = { Boxes: "boxes", Rows: "rows" }
 export const ChildpagesSchema = Type.Object({
-  layout: Type.Union([Type.Literal("boxes"), Type.Literal("rows")], {
-    title: "Layout",
-    format: "childpages",
-    default: "boxes",
-  }),
+  layout: Type.Union(
+    [
+      Type.Literal(CHILDPAGE_LAYOUT_OPTIONS.Boxes),
+      Type.Literal(CHILDPAGE_LAYOUT_OPTIONS.Rows),
+    ],
+    {
+      title: "Layout",
+      format: "childpages",
+      default: CHILDPAGE_LAYOUT_OPTIONS.Boxes,
+    },
+  ),
   summary: Type.Boolean({
     title: "Show summary of all child pages",
     default: false,

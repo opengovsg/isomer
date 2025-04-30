@@ -51,7 +51,9 @@ export default function ChildPageEditorDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   if (!narrowToIndex(previewPageState)) {
-    throw new Error()
+    throw new Error(
+      "Expected to find an index page, but this page does not have the required layout!",
+    )
   }
 
   const toast = useToast()
