@@ -1,7 +1,6 @@
-import { tv } from "tailwind-variants"
-
 import type { ChildrenPagesProps } from "~/interfaces"
 import { CARDS_WITHOUT_IMAGES } from "~/interfaces/complex/InfoCards"
+import { tv } from "~/lib/tv"
 import { IsomerSitemap } from "~/types"
 import {
   getNodeFromSiteMap,
