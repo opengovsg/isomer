@@ -284,27 +284,25 @@ export const folderRouter = router({
         resourceId,
       })
 
-      return db.transaction().execute(async (tx) => {
-        const { title } = await tx
-          .selectFrom("Resource")
-          .where("id", "=", resourceId)
-          .select("title")
-          .executeTakeFirstOrThrow()
+      const { title } = await db
+        .selectFrom("Resource")
+        .where("id", "=", resourceId)
+        .select("title")
+        .executeTakeFirstOrThrow()
 
-        const indexPage = await tx
-          .selectFrom("Resource")
-          .where("Resource.parentId", "=", resourceId)
-          .where("Resource.type", "=", "IndexPage")
-          .select(["id", "draftBlobId"])
-          .executeTakeFirstOrThrow(
-            () =>
-              new TRPCError({
-                code: "NOT_FOUND",
-                message: "No existing index page found",
-              }),
-          )
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("Resource.parentId", "=", resourceId)
+        .where("Resource.type", "=", ResourceType.IndexPage)
+        .select(["id", "draftBlobId"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "No existing index page found",
+            }),
+        )
 
-        return { title, ...indexPage }
-      })
+      return { title, ...indexPage }
     }),
 })

@@ -3,17 +3,16 @@ import { HStack, IconButton, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 import { BiChevronRight, BiFile, BiSolidCircle } from "react-icons/bi"
+import { z } from "zod"
 
+import { getIndexpageSchema } from "~/schemas/folder"
 import { trpc } from "~/utils/trpc"
 
-interface IndexpageRowProps {
-  siteId: number
-  resourceId: string
-}
+type IndexpageRowProps = z.infer<typeof getIndexpageSchema>
 
 export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
   const trpcUtils = trpc.useUtils()
-  const { mutateAsync, isLoading } = trpc.folder.createIndexPage.useMutation()
+  const { mutateAsync, isLoading } = trpc.page.createIndexPage.useMutation()
 
   const { data } = trpc.folder.getIndexpage.useQuery(
     {
@@ -23,7 +22,7 @@ export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
     {
       onError: (err) => {
         if (err.data?.code === "NOT_FOUND") {
-          void mutateAsync({ siteId, resourceId })
+          void mutateAsync({ siteId, parentId: resourceId })
           void trpcUtils.folder.getIndexpage.refetch()
         }
       },
@@ -31,7 +30,7 @@ export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
   )
 
   return (
-    <Skeleton w="full" isLoaded={!isLoading}>
+    <Skeleton w="full" isLoaded={!isLoading && !!data}>
       <HStack
         as={Link}
         href={`/sites/${siteId}/pages/${data?.id}`}
