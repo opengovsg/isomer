@@ -120,6 +120,7 @@ export const DEFAULT_BLOCKS: Record<
     title: "This is an infopic",
     description: "This is the description for the infopic component",
     imageSrc: "/placeholder_no_image.png",
+    imageAlt: "This is the alt text for the image",
   },
   contentpic: {
     type: "contentpic",
