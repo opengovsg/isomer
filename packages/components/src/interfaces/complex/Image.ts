@@ -20,15 +20,17 @@ export const generateImageSrcSchema = ({
 
 export const ImageSrcSchema = generateImageSrcSchema({})
 
+// Note: ajv pattern does not support the use of patternFlag like "i" for case-insensitive
+// Thus, we manually add the case-insensitive flag to the regex pattern
+export const ALT_TEXT_REGEX_PATTERN =
+  "^(?=.*\\S)(?!(?:[Ii][Mm][Aa][Gg][Ee]|[Pp][Ii][Cc][Tt][Uu][Rr][Ee]|[Pp][Hh][Oo][Tt][Oo]|[Ll][Oo][Gg][Oo]|[Ss][Cc][Rr][Ee][Ee][Nn][Ss][Hh][Oo][Tt]|[Gg][Rr][Aa][Pp][Hh]|[Cc][Hh][Aa][Rr][Tt]|[Dd][Ii][Aa][Gg][Rr][Aa][Mm]|[Ii][Cc][Oo][Nn])$).*$"
+
 export const AltTextSchema = Type.String({
   title: "Alternate text",
   maxLength: 120,
   description:
     "Add a descriptive text so that visually impaired users can understand your image",
-  pattern:
-    // Note: ajv pattern does not support the use of patternFlag like "i" for case-insensitive
-    // Thus, we manually add the case-insensitive flag to the regex pattern
-    "^(?=.*\\S)(?!(?:[Ii][Mm][Aa][Gg][Ee]|[Pp][Ii][Cc][Tt][Uu][Rr][Ee]|[Pp][Hh][Oo][Tt][Oo]|[Ll][Oo][Gg][Oo]|[Ss][Cc][Rr][Ee][Ee][Nn][Ss][Hh][Oo][Tt]|[Gg][Rr][Aa][Pp][Hh]|[Cc][Hh][Aa][Rr][Tt]|[Dd][Ii][Aa][Gg][Rr][Aa][Mm]|[Ii][Cc][Oo][Nn])$).*$",
+  pattern: ALT_TEXT_REGEX_PATTERN,
   errorMessage: {
     pattern:
       "must be descriptive. It cannot be empty, contain only spaces, or use generic terms like 'image', 'logo', 'graph', etc.",
