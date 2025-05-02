@@ -80,7 +80,8 @@ export const Skeleton = ({
           logoAlt={site.siteName}
           layout={layout}
           search={site.search}
-          items={site.navBarItems}
+          items={site.navbar.items}
+          callToAction={site.navbar.callToAction}
           site={site}
           LinkComponent={LinkComponent}
         />

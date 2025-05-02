@@ -70,22 +70,24 @@ const generateArgs = ({
       theme: "isomer-next",
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
-      navBarItems: [
-        {
-          name: "Home",
-          url: "/",
-        },
-        {
-          name: "Newsroom",
-          url: "/newsroom",
-          items: [
-            {
-              name: "News",
-              url: "/newsroom/news",
-            },
-          ],
-        },
-      ],
+      navbar: {
+        items: [
+          {
+            name: "Home",
+            url: "/",
+          },
+          {
+            name: "Newsroom",
+            url: "/newsroom",
+            items: [
+              {
+                name: "News",
+                url: "/newsroom/news",
+              },
+            ],
+          },
+        ],
+      },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",
@@ -208,22 +210,24 @@ export const Default: Story = {
       theme: "isomer-next",
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
-      navBarItems: [
-        {
-          name: "Home",
-          url: "/",
-        },
-        {
-          name: "Newsroom",
-          url: "/newsroom",
-          items: [
-            {
-              name: "News",
-              url: "/newsroom/news",
-            },
-          ],
-        },
-      ],
+      navbar: {
+        items: [
+          {
+            name: "Home",
+            url: "/",
+          },
+          {
+            name: "Newsroom",
+            url: "/newsroom",
+            items: [
+              {
+                name: "News",
+                url: "/newsroom/news",
+              },
+            ],
+          },
+        ],
+      },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",
@@ -339,22 +343,24 @@ export const NoImage: Story = {
       theme: "isomer-next",
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
-      navBarItems: [
-        {
-          name: "Home",
-          url: "/",
-        },
-        {
-          name: "Newsroom",
-          url: "/newsroom",
-          items: [
-            {
-              name: "News",
-              url: "/newsroom/news",
-            },
-          ],
-        },
-      ],
+      navbar: {
+        items: [
+          {
+            name: "Home",
+            url: "/",
+          },
+          {
+            name: "Newsroom",
+            url: "/newsroom",
+            items: [
+              {
+                name: "News",
+                url: "/newsroom/news",
+              },
+            ],
+          },
+        ],
+      },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",
@@ -480,22 +486,24 @@ export const TaggedArticle: Story = {
       theme: "isomer-next",
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
-      navBarItems: [
-        {
-          name: "Home",
-          url: "/",
-        },
-        {
-          name: "Newsroom",
-          url: "/newsroom",
-          items: [
-            {
-              name: "News",
-              url: "/newsroom/news",
-            },
-          ],
-        },
-      ],
+      navbar: {
+        items: [
+          {
+            name: "Home",
+            url: "/",
+          },
+          {
+            name: "Newsroom",
+            url: "/newsroom",
+            items: [
+              {
+                name: "News",
+                url: "/newsroom/news",
+              },
+            ],
+          },
+        ],
+      },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",

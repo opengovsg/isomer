@@ -194,7 +194,7 @@ const generateNavbarArgs = ({
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
-      navBarItems: [],
+      navbar: { items: [] },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",
