@@ -21,7 +21,7 @@ const OrderedList = ({
 }: OrderedListProps) => {
   return (
     <ol
-      className={`mt-6 ps-8 ${getOrderedListType(level)}`}
+      className={`mt-6 ps-9 ${getOrderedListType(level)}`}
       start={attrs?.start}
     >
       {content.map((item, index) => (

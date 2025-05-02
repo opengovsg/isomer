@@ -433,6 +433,7 @@ export const resourceRouter = router({
             }
 
             await logResourceEvent(tx, {
+              siteId,
               eventType: "ResourceUpdate",
               delta: { before: toMove, after: moved },
               by: user,
@@ -548,6 +549,7 @@ export const resourceRouter = router({
         }
 
         await logResourceEvent(tx, {
+          siteId,
           delta: {
             after: null,
             before,

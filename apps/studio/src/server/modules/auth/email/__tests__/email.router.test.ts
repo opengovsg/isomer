@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   applySession,
@@ -28,29 +29,24 @@ describe("auth.email", () => {
   })
 
   describe("login", () => {
-    it("should throw if email is not provided", async () => {
+    it("should throw 400 if email is not provided", async () => {
       // Act
       const result = caller.login({ email: "" })
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrowError(
+        "Please sign in with a valid email address.",
+      )
     })
 
-    it("should throw if email is invalid", async () => {
+    it("should throw 400 if email is invalid", async () => {
       // Act
       const result = caller.login({ email: "not-an-email" })
 
       // Assert
-      await expect(result).rejects.toThrowError()
-    })
-
-    // skipping as we need to allow vendor emails as well
-    it.skip("should throw if email is not a government email address", async () => {
-      // Act
-      const result = caller.login({ email: "validbutnotgovt@example.com" })
-
-      // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrowError(
+        "Please sign in with a valid email address.",
+      )
     })
 
     it("should return email and a prefix if OTP is sent successfully", async () => {
@@ -153,7 +149,7 @@ describe("auth.email", () => {
       expect(auditLogs[0]?.delta.before!.attempts).toBe(2)
     })
 
-    it("should throw if OTP is not found", async () => {
+    it("should throw 400 if OTP is not found", async () => {
       // Act
       const result = caller.verifyOtp({
         email: TEST_VALID_EMAIL,
@@ -163,14 +159,17 @@ describe("auth.email", () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        "Please request for another OTP",
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please request for another OTP",
+        }),
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
     })
 
-    it("should throw if OTP is invalid", async () => {
+    it("should throw 400 if OTP is invalid", async () => {
       // Arrange
       await prisma.verificationToken.create({
         data: {
@@ -189,14 +188,17 @@ describe("auth.email", () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        "Token is invalid or has expired",
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Token is invalid or has expired",
+        }),
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
     })
 
-    it("should throw if OTP is expired", async () => {
+    it("should throw 400 if OTP is expired", async () => {
       // Arrange
       await prisma.verificationToken.create({
         data: {
@@ -214,14 +216,17 @@ describe("auth.email", () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        "Token is invalid or has expired",
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Token is invalid or has expired",
+        }),
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
     })
 
-    it("should throw if max verification attempts has been reached", async () => {
+    it("should throw 400 if max verification attempts has been reached", async () => {
       // Arrange
       await prisma.verificationToken.create({
         data: {
@@ -239,7 +244,12 @@ describe("auth.email", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError("Too many attempts")
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Too many attempts",
+        }),
+      )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)

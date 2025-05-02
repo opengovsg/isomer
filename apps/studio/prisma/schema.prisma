@@ -119,6 +119,8 @@ model User {
   email String @unique
   phone String
 
+  singpassUuid String? @db.Uuid // UUID of the user's Singpass account
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now()) @updatedAt
   lastLoginAt DateTime?
@@ -151,6 +153,7 @@ model Site {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   ResourcePermission ResourcePermission[]
+  AuditLog           AuditLog[]
 }
 
 model Navbar {
@@ -241,6 +244,8 @@ model AuditLog {
   id        BigInt        @id @default(autoincrement())
   user      User          @relation(fields: [userId], references: [id])
   userId    String
+  site      Site?         @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  siteId    Int?
   eventType AuditLogEvent
   createdAt DateTime      @default(now())
   updatedAt DateTime      @default(now()) @updatedAt

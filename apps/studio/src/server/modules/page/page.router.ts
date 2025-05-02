@@ -1,4 +1,7 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type {
+  CollectionPagePageProps,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import {
   getLayoutMetadataSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
@@ -314,6 +317,7 @@ export const pageRouter = router({
           siteId,
         })
         await logResourceEvent(tx, {
+          siteId,
           eventType: "ResourceUpdate",
           delta: {
             before: {
@@ -378,6 +382,7 @@ export const pageRouter = router({
         const updatedBlob = await updateBlobById(tx, input)
 
         await logResourceEvent(tx, {
+          siteId: input.siteId,
           by,
           delta: {
             before: { blob: oldBlob, resource },
@@ -469,6 +474,7 @@ export const pageRouter = router({
               .executeTakeFirstOrThrow()
 
             await logResourceEvent(tx, {
+              siteId,
               by,
               delta: { before: null, after: { blob, resource: addedResource } },
               eventType: "ResourceCreate",
@@ -607,6 +613,7 @@ export const pageRouter = router({
         })
 
         await logResourceEvent(tx, {
+          siteId,
           by,
           delta: {
             before: { resource, blob: oldBlob },
@@ -690,6 +697,7 @@ export const pageRouter = router({
               })
 
             await logResourceEvent(tx, {
+              siteId,
               by,
               delta: { before: resource, after: updatedResource },
               eventType: "ResourceUpdate",
@@ -809,8 +817,8 @@ export const pageRouter = router({
                 title: parent.title,
                 subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
                 defaultSortBy: "date",
-                defaultSortDirection: "asc",
-              },
+                defaultSortDirection: "desc",
+              } as CollectionPagePageProps,
               content: [],
               version: "0.1.0",
             }
@@ -859,6 +867,7 @@ export const pageRouter = router({
           })
 
         await logResourceEvent(tx, {
+          siteId,
           by,
           delta: { before: null, after: addedResource },
           eventType: "ResourceCreate",

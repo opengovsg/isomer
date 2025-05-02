@@ -4,6 +4,7 @@ import { pick } from "lodash"
 
 import { sendInvitation } from "~/features/mail/service"
 import { canResendInviteToUser } from "~/features/users/utils"
+import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   countUsersInputSchema,
   countUsersOutputSchema,
@@ -56,6 +57,20 @@ export const userRouter = router({
         action: "manage",
       })
 
+      const possibleActor = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "User not found",
+            }),
+        )
+      const actorName = possibleActor.name || possibleActor.email
+      const isSingpassEnabled = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
+
       const createdUsers = await db.transaction().execute(async (tx) => {
         return await Promise.all(
           users.map(async (user) => {
@@ -81,6 +96,8 @@ export const userRouter = router({
       await Promise.all(
         createdUsers.map((createdUser) =>
           sendInvitation({
+            isSingpassEnabled,
+            inviterName: actorName,
             recipientEmail: createdUser.email,
             siteName,
             role: createdUser.role,
@@ -311,6 +328,20 @@ export const userRouter = router({
         action: "manage",
       })
 
+      const possibleActor = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "User not found",
+            }),
+        )
+      const actorName = possibleActor.name || possibleActor.email
+      const isSingpassEnabled = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
+
       const user = await db
         .selectFrom("User")
         .where("id", "=", userId)
@@ -351,6 +382,8 @@ export const userRouter = router({
       // Send invite
       const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
       await sendInvitation({
+        isSingpassEnabled,
+        inviterName: actorName,
         recipientEmail: user.email,
         siteName,
         role: userPermission[0]?.role ?? RoleType.Editor,

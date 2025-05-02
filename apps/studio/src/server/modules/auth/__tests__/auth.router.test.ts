@@ -40,7 +40,7 @@ describe("auth.email", () => {
       // Assert
       expect(spy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
       )
     })
     it("should log the user out and have an audit log of the change", async () => {

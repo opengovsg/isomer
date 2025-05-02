@@ -89,6 +89,39 @@ export const CollectionPagePageSchema = Type.Intersect([
     }),
   }),
   TagsSchema,
+  Type.Object({
+    defaultSortBy: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("date", { title: "Date" }),
+          Type.Literal("title", { title: "Title" }),
+          Type.Literal("category", { title: "Category" }),
+        ],
+        {
+          title: "Default sort by",
+          description: "The default sort order of the collection",
+          format: "hidden",
+          type: "string",
+          default: "date",
+        },
+      ),
+    ),
+    defaultSortDirection: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("asc", { title: "Ascending" }),
+          Type.Literal("desc", { title: "Descending" }),
+        ],
+        {
+          title: "Default sort direction",
+          description: "The default sort direction of the collection",
+          format: "hidden",
+          type: "string",
+          default: "desc",
+        },
+      ),
+    ),
+  }),
 ])
 
 export const ContentPagePageSchema = Type.Object({

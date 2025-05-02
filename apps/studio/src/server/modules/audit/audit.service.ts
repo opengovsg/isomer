@@ -45,6 +45,7 @@ export interface ResourceEventLogProps {
   delta: ResourceCreateDelta | ResourceDeleteDelta | ResourceUpdateDelta
   by: User
   ip?: string
+  siteId: Site["id"]
   metadata?: Record<string, unknown>
 }
 
@@ -53,11 +54,18 @@ export type AuditLogger<T> = (tx: Transaction<DB>, props: T) => Promise<void>
 
 export const logResourceEvent: AuditLogger<ResourceEventLogProps> = async (
   tx,
-  { eventType, delta, by, ip, metadata = {} },
+  { eventType, delta, by, ip, siteId, metadata = {} },
 ) => {
   await tx
     .insertInto("AuditLog")
-    .values({ eventType, delta, userId: by.id, ipAddress: ip, metadata })
+    .values({
+      eventType,
+      delta,
+      userId: by.id,
+      ipAddress: ip,
+      metadata,
+      siteId,
+    })
     .execute()
 }
 
@@ -86,6 +94,7 @@ interface FooterUpdateEventLogProps {
   delta: FooterUpdateDelta
   by: User
   ip?: string
+  siteId: Site["id"]
 }
 
 interface NavbarUpdateEventLogProps {
@@ -93,6 +102,7 @@ interface NavbarUpdateEventLogProps {
   delta: NavbarUpdateDelta
   by: User
   ip?: string
+  siteId: Site["id"]
 }
 
 interface SiteConfigUpdateEventLogProps {
@@ -100,15 +110,17 @@ interface SiteConfigUpdateEventLogProps {
   delta: SiteConfigUpdateDelta
   by: User
   ip?: string
+  siteId: Site["id"]
 }
 
 export const logConfigEvent: AuditLogger<ConfigEventLogProps> = async (
   tx,
-  { eventType, delta, by, ip },
+  { eventType, delta, by, ip, siteId },
 ) => {
   await tx
     .insertInto("AuditLog")
     .values({
+      siteId,
       eventType,
       delta,
       userId: by.id,
@@ -124,7 +136,7 @@ interface LoginDelta {
 }
 
 // NOTE: logout just calls `session.destroy` and we only have
-// `userId` or sgid info in session.
+// `userId` info in session.
 interface LogoutDelta {
   before: User
   after: null
@@ -142,7 +154,13 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
 ) => {
   await tx
     .insertInto("AuditLog")
-    .values({ eventType, delta, userId: by.id, ipAddress: ip, metadata: {} })
+    .values({
+      eventType,
+      delta,
+      userId: by.id,
+      ipAddress: ip,
+      metadata: {},
+    })
     .execute()
 }
 
@@ -161,7 +179,7 @@ type ConfigPublishEvent = { site: Site } & { navbar?: Navbar } & {
 interface PublishEventLogProps<
   Before,
   After,
-  Meta extends Record<string, unknown>,
+  Meta extends Record<string, unknown> | null,
 > {
   by: User
   delta: {
@@ -171,6 +189,7 @@ interface PublishEventLogProps<
   eventType: Extract<AuditLogEvent, "Publish">
   ip?: string
   metadata: Meta
+  siteId: Site["id"]
 }
 
 // NOTE: First publish of a blob will have no `versionId`
@@ -190,11 +209,18 @@ type ConfigPublishEventLogProps = PublishEventLogProps<
   ConfigPublishEvent
 >
 
+type RepublishEventLogProps = PublishEventLogProps<
+  null,
+  null,
+  Record<string, unknown>
+>
+
 export const logPublishEvent: AuditLogger<
   | BlobPublishEventLogProps
   | ResourcePublishEventLogProps
   | ConfigPublishEventLogProps
-> = async (tx, { by, delta, eventType, ip, metadata = {} }) => {
+  | RepublishEventLogProps
+> = async (tx, { by, delta, eventType, ip, siteId, metadata = {} }) => {
   await tx
     .insertInto("AuditLog")
     .values({
@@ -203,6 +229,7 @@ export const logPublishEvent: AuditLogger<
       userId: by.id,
       ipAddress: ip,
       metadata,
+      siteId,
     })
     .execute()
 }

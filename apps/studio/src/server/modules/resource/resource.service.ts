@@ -57,23 +57,6 @@ const defaultFooterSelect = [
   "Footer.content",
 ] satisfies SelectExpression<DB, "Footer">[]
 
-export const getPages = () => {
-  // TODO: write a test to verify this query behaviour
-  return db
-    .selectFrom("Resource")
-    .where("type", "is", ResourceType.Page)
-    .select(defaultResourceSelect)
-    .execute()
-}
-
-export const getFolders = () =>
-  // TODO: write a test to verify this query behaviour
-  db
-    .selectFrom("Resource")
-    .where("type", "is", ResourceType.Folder)
-    .select(defaultResourceSelect)
-    .execute()
-
 export const getSiteResourceById = ({
   siteId,
   resourceId,
@@ -303,19 +286,6 @@ export const getFooter = async (siteId: number) => {
   return { ...rest, content }
 }
 
-export const moveResource = async (
-  siteId: number,
-  resourceId: number,
-  newParentId: number | null,
-) => {
-  return db
-    .updateTable("Resource")
-    .set({ parentId: !!newParentId ? String(newParentId) : null })
-    .where("siteId", "=", siteId)
-    .where("id", "=", String(resourceId))
-    .executeTakeFirstOrThrow()
-}
-
 // Returns a sparse IsomerSitemap object that revolves around the given
 // resourceId, which includes:
 // - The full path from root to the actual resource
@@ -502,6 +472,7 @@ export const publishPageResource = async (
         .executeTakeFirst()
 
       await logPublishEvent(tx, {
+        siteId,
         by,
         delta: {
           before: previousVersion?.id
@@ -544,6 +515,7 @@ export const publishResource = async (
 
   return db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
+      siteId: resource.siteId,
       by: byUser,
       delta: {
         before: null,
@@ -579,6 +551,7 @@ export const publishSiteConfig = async (
 
   return db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
+      siteId: site.id,
       by: byUser,
       delta: {
         before: null,
