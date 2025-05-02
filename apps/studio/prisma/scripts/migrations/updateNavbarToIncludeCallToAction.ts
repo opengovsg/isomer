@@ -1,7 +1,11 @@
-import type { Kysely } from "~/server/modules/database/types"
+// This migration is to update the Navbar.content to include the callToAction field
+// It is a one-time migration to update the existing Navbar records
+// It is not reversible
+
+import { db } from "~/server/modules/database"
 import { jsonb } from "~/server/modules/database/utils"
 
-export const updateNavbarToIncludeCallToAction = async (db: Kysely<any>) => {
+export const updateNavbarToIncludeCallToAction = async () => {
   try {
     // Fetch all navbar records outside the main update transaction
     const navbars = await db.selectFrom("Navbar").selectAll().execute()
@@ -10,6 +14,8 @@ export const updateNavbarToIncludeCallToAction = async (db: Kysely<any>) => {
       for (const navbar of navbars) {
         const originalContent = navbar.content
 
+        // It should not be but this is runtime type checking, in case any Navbar record is corrupted
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!originalContent) {
           continue
         }
@@ -18,9 +24,7 @@ export const updateNavbarToIncludeCallToAction = async (db: Kysely<any>) => {
         const originalNavbarClone = structuredClone(navbar)
 
         const newContentValue =
-          originalContent &&
-          typeof originalContent === "object" &&
-          "items" in originalContent
+          typeof originalContent === "object" && "items" in originalContent
             ? originalContent
             : { items: originalContent }
 

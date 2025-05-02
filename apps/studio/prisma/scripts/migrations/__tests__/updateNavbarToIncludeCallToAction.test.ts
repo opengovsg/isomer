@@ -17,13 +17,15 @@ describe("Migration: updateNavbarToIncludeCallToAction", () => {
     const { site, navbar } = await setupSite()
     await db
       .updateTable("Navbar")
-      .set({ content: jsonb(NAVBAR_CONTENT.items) as unknown as any }) // any needed to bypass type checking for old type
+      // any needed to bypass type checking for old type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .set({ content: jsonb(NAVBAR_CONTENT.items) as unknown as any })
       .where("siteId", "=", site.id)
       .returningAll()
       .executeTakeFirstOrThrow()
 
     // Act
-    await updateNavbarToIncludeCallToAction(db)
+    await updateNavbarToIncludeCallToAction()
 
     // Assert
     const updatedNavbar = await db
@@ -45,7 +47,7 @@ describe("Migration: updateNavbarToIncludeCallToAction", () => {
       .executeTakeFirstOrThrow()
 
     // Act
-    await updateNavbarToIncludeCallToAction(db)
+    await updateNavbarToIncludeCallToAction()
 
     // Assert
     const queriedNavbar = await db
@@ -61,13 +63,15 @@ describe("Migration: updateNavbarToIncludeCallToAction", () => {
     const { site } = await setupSite()
     const navbar = await db
       .updateTable("Navbar")
-      .set({ content: jsonb(null) as any })
+      // any needed to bypass type checking for old type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .set({ content: jsonb(null) as unknown as any })
       .where("siteId", "=", site.id)
       .returningAll()
       .executeTakeFirstOrThrow()
 
     // Act
-    await updateNavbarToIncludeCallToAction(db)
+    await updateNavbarToIncludeCallToAction()
 
     // Assert
     const updatedNavbar = await db
