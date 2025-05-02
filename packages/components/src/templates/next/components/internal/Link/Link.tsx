@@ -2,6 +2,7 @@ import type { LinkProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusRing, focusVisibleHighlight } from "~/utils"
+import { getReactNodeText } from "./utils"
 import { generateAriaLabel } from "./utils/generateAriaLabel"
 
 const linkStyles = tv({
@@ -53,7 +54,11 @@ export const Link = ({
       {...rest}
       href={href}
       className={cssStyles}
-      aria-label={generateAriaLabel({ label, isExternal })}
+      aria-label={generateAriaLabel({
+        label,
+        textContent: getReactNodeText(rest.children),
+        isExternal,
+      })}
       aria-current={current}
       data-current={!!current || undefined}
       disabled={isDisabled}

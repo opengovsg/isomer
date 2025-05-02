@@ -1,19 +1,21 @@
 import type { LinkProps } from "~/interfaces/internal/Link"
 
-type GenerateAriaLabelProps = Pick<LinkProps, "isExternal" | "label">
+type GenerateAriaLabelProps = Pick<LinkProps, "isExternal" | "label"> & {
+  textContent?: string
+}
 
-const getDomainFromUrl = (url: LinkProps["href"]) => {
+const getDomainFromUrl = (url: string) => {
   if (!url) return ""
 
   const urlObj = new URL(url)
   return urlObj.hostname
 }
 
-const isUrl = (label: LinkProps["label"]) => {
-  if (!label) return false
+const isUrl = (textContent: string) => {
+  if (!textContent) return false
 
   try {
-    new URL(label)
+    new URL(textContent)
     return true
   } catch {
     return false
@@ -22,15 +24,18 @@ const isUrl = (label: LinkProps["label"]) => {
 
 export const generateAriaLabel = ({
   label,
+  textContent,
   isExternal = false,
-}: GenerateAriaLabelProps) => {
-  if (isUrl(label) && isExternal) {
-    return `Link to ${getDomainFromUrl(label)} (opens in new tab)`
+}: GenerateAriaLabelProps): string | undefined => {
+  if (label) return label
+
+  if (!textContent) return undefined
+
+  if (isUrl(textContent) && isExternal) {
+    return `Link to ${getDomainFromUrl(textContent)} (opens in new tab)`
   }
 
-  if (isUrl(label)) {
-    return `Link to ${getDomainFromUrl(label)}`
+  if (isUrl(textContent)) {
+    return `Link to ${getDomainFromUrl(textContent)}`
   }
-
-  return label
 }
