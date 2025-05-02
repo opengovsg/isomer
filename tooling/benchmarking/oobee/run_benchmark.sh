@@ -73,8 +73,10 @@ while IFS=, read -r SITE_NAME SITE_URL || [ -n "$SITE_NAME" ]; do
 	SITE_URL=$(echo "$SITE_URL" | xargs)
 	
 	# Construct the full command with maxpages parameter
-  # Also set an arbitrarily large maxpages to ensure all pages are scanned (default is 100)
-	CMD="npm run cli -- --scanner intelligent --url ${SITE_URL} --zip ${SITE_NAME}.zip --nameEmail isomer:admin@isomer.gov.sg --generateJsonFiles yes --maxpages 100000"
+  	# Also set an arbitrarily large maxpages to ensure all pages are scanned (default is 100)
+	# Using Mobile device as it can catch more issues
+	# Using same-hostname strategy to remove other subdomains from the scan
+	CMD="npm run cli -- --scanner intelligent --url ${SITE_URL} --zip ${SITE_NAME}.zip --nameEmail isomer:admin@isomer.gov.sg --generateJsonFiles yes --maxpages 100000 --customDevice Mobile --strategy same-hostname"
 	
 	echo "Executing: $CMD"
 	echo "----------------------------------------"
