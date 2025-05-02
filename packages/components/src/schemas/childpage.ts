@@ -13,11 +13,11 @@ export const ChildpagesSchema = Type.Object({
       default: CHILDPAGE_LAYOUT_OPTIONS.Boxes,
     },
   ),
-  summary: Type.Boolean({
+  showSummary: Type.Boolean({
     title: "Show summary of all child pages",
     default: false,
   }),
-  thumbnail: Type.Boolean({
+  showThumbnail: Type.Boolean({
     title: "Show thumbnail of all child pages",
     description:
       "We will use the child pages' feature images as their thumbnail.",
