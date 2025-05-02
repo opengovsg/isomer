@@ -1,5 +1,16 @@
 #!/bin/bash
 
+SKIP_DEPS=false
+for arg in "$@"
+do
+    case $arg in
+        --skip-deps)
+        SKIP_DEPS=true
+        shift # Remove --skip-deps from processing
+        ;;
+    esac
+done
+
 # Get the directory where the script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SITES_CSV="$SCRIPT_DIR/sites.csv"
@@ -17,8 +28,12 @@ if [ ! -d "$RESULTS_DIR" ]; then
   mkdir -p "$RESULTS_DIR"
 fi
 
-echo "Installing dependencies..."
-npm ci
+if [ "$SKIP_DEPS" = false ] ; then
+  echo "Installing dependencies..."
+  npm ci
+else
+  echo "Skipping dependency installation..."
+fi
 
 echo "Starting Oobee benchmark..."
 
