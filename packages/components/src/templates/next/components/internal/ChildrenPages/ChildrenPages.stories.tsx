@@ -373,7 +373,7 @@ export const RowsWithDescription: Story = {
     site,
     permalink: "/parent",
     LinkComponent: "a",
-    summary: true,
+    showSummary: true,
   },
 }
 
@@ -383,7 +383,7 @@ export const RowsWithThumbnail: Story = {
     site,
     permalink: "/parent",
     LinkComponent: "a",
-    summary: true,
-    thumbnail: true,
+    showSummary: true,
+    showThumbnail: true,
   },
 }
