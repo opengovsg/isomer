@@ -27,7 +27,7 @@ declare global {
     >
     type BlobJsonContent = Tagged<_IsomerSchema, "JSONB">
     type NavbarJsonContent = Tagged<
-      _IsomerSiteWideComponentsProps["navBarItems"],
+      _IsomerSiteWideComponentsProps["navbar"],
       "JSONB"
     >
     type FooterJsonContent = Tagged<
