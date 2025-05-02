@@ -133,8 +133,8 @@ const ChildrenPages = ({
   site,
   LinkComponent,
   layout,
-  summary,
-  thumbnail,
+  showSummary,
+  showThumbnail,
 }: ChildrenPagesProps) => {
   const currentPageNode = getNodeFromSiteMap(site.siteMap, permalink)
 
@@ -155,8 +155,8 @@ const ChildrenPages = ({
         LinkComponent={LinkComponent}
         assetsBaseUrl={site.assetsBaseUrl}
         childpages={children}
-        showSummary={summary}
-        showThumbnail={thumbnail}
+        showSummary={showSummary}
+        showThumbnail={showThumbnail}
         fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
       />
     )
