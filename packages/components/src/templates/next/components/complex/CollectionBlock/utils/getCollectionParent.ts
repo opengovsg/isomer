@@ -1,12 +1,6 @@
-import type { IsomerSitemap, IsomerSiteProps } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import type { IsomerCollectionPageSitemap } from "~/types/sitemap"
-
-const isCollectionParent = (
-  node: IsomerSitemap,
-  collectionId: string,
-): node is IsomerCollectionPageSitemap => {
-  return node.id === collectionId && node.layout === "collection"
-}
+import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
 interface GetCollectionParentProps {
   site: IsomerSiteProps
@@ -17,21 +11,16 @@ export const getCollectionParent = ({
   site,
   collectionId,
 }: GetCollectionParentProps): IsomerCollectionPageSitemap => {
-  // Iteratively search the siteMap tree for the collection node by ID
-  // Using BFS to find the collection parent, starting from the root
-  const queue: IsomerSitemap[] = [site.siteMap]
+  const items = site.siteMap.children?.flatMap((child) =>
+    getSitemapAsArray(child),
+  )
 
-  while (queue.length > 0) {
-    const currentNode = queue.shift()
-    if (!currentNode) continue
+  const collectionParent = items?.find(
+    (item) => item.id === collectionId && item.layout === "collection",
+  )
 
-    if (isCollectionParent(currentNode, collectionId)) {
-      return currentNode
-    }
-
-    if (currentNode.children && currentNode.children.length > 0) {
-      queue.push(...currentNode.children)
-    }
+  if (collectionParent) {
+    return collectionParent as IsomerCollectionPageSitemap
   }
 
   throw new Error(
