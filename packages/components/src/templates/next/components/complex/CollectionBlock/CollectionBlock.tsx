@@ -187,9 +187,9 @@ export const CollectionBlock = ({
       </div>
 
       <div className={compoundStyles.grid({ numberOfCards })}>
-        {collectionPages.map((card, idx) => (
+        {collectionPages.map((card) => (
           <SingleCard
-            key={idx}
+            key={card.id}
             displayThumbnail={displayThumbnail}
             displayCategory={displayCategory}
             site={site}
