@@ -19,7 +19,7 @@ export const LINK_HREF_PATTERN =
 export const REF_HREF_PATTERN =
   `(${ALLOWED_URL_REGEXES.external})|(${ALLOWED_URL_REGEXES.internal})|(${ALLOWED_URL_REGEXES.files})|(${ALLOWED_URL_REGEXES.legacy})` as const
 export const REF_INTERNAL_HREF_PATTERN =
-  `(${ALLOWED_URL_REGEXES.internal})` as const
+  `(${ALLOWED_URL_REGEXES.internal})|(${ALLOWED_URL_REGEXES.legacy})` as const
 
 // Validation for map-related embed URLs
 const isValidGoogleMapsEmbedUrl = (urlObject: URL) => {

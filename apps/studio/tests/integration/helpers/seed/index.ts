@@ -429,6 +429,35 @@ export const setupCollectionLink = async ({
   }
 }
 
+export const setupCollectionMeta = async ({
+  siteId: siteIdProp,
+  collectionId,
+}: {
+  siteId?: number
+  collectionId: string
+}) => {
+  const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
+
+  const collectionMeta = await db
+    .insertInto("Resource")
+    .values({
+      siteId: site.id,
+      parentId: collectionId,
+      title: "collection meta",
+      permalink: "collection-meta",
+      type: ResourceType.CollectionMeta,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  return {
+    site,
+    navbar,
+    footer,
+    collectionMeta,
+  }
+}
+
 export const setupFolderMeta = async ({
   siteId: siteIdProp,
   folderId,
@@ -485,12 +514,12 @@ export const setupUser = async ({
   userId = nanoid(),
   email,
   phone = "",
-  isDeleted,
+  isDeleted = false,
   hasLoggedIn = false,
 }: {
   name?: string
   userId?: string
-  email: string
+  email?: string
   phone?: string
   isDeleted?: boolean
   hasLoggedIn?: boolean
@@ -500,11 +529,56 @@ export const setupUser = async ({
     .values({
       id: userId,
       name,
-      email,
+      email: email ?? `${nanoid()}@test.com`,
       phone: phone,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
       lastLoginAt: hasLoggedIn ? MOCK_STORY_DATE : null,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
+}
+
+export const setupFullSite = async () => {
+  const { site, folder: parentFolder } = await setupFolder({})
+  const { page: rootPage } = await setupPageResource({
+    resourceType: "RootPage",
+    siteId: site.id,
+  })
+  const { page: childPage } = await setupPageResource({
+    resourceType: "Page",
+    parentId: parentFolder.id,
+    siteId: site.id,
+  })
+  const { folder } = await setupFolder({
+    siteId: site.id,
+    parentId: parentFolder.id,
+  })
+  const { collection } = await setupCollection({
+    siteId: site.id,
+  })
+
+  const { page: collectionPage } = await setupPageResource({
+    resourceType: "CollectionPage",
+    parentId: collection.id,
+  })
+  const { page: collectionLink } = await setupPageResource({
+    resourceType: "CollectionLink",
+    parentId: collection.id,
+  })
+  const { page: collectionIndex } = await setupPageResource({
+    resourceType: "IndexPage",
+    parentId: collection.id,
+  })
+
+  return {
+    site,
+    rootPage,
+    rootFolder: parentFolder,
+    childPage,
+    childFolder: folder,
+    rootCollection: collection,
+    collectionPage,
+    collectionLink,
+    collectionIndex,
+  }
 }

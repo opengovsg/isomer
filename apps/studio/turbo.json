@@ -2,12 +2,16 @@
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
   "tasks": {
+    "db:seed": {},
     "test:unit": {
       "dependsOn": ["generate"]
     },
     "test-ci:unit": {},
     "test-ci:e2e": {
-      "outputs": ["playwright/test-results/**"]
+      "outputs": ["e2e/test-results/**"]
+    },
+    "test:e2e": {
+      "outputs": ["e2e/test-results/**"]
     },
     "generate": {
       "dependsOn": ["@opengovsg/isomer-components#build"],
@@ -26,6 +30,11 @@
     },
     "typecheck": {
       "dependsOn": ["generate"]
+    },
+    "dev:e2e": {
+      "dependsOn": ["services:setup"],
+      "cache": false,
+      "persistent": true
     },
     "build:theme": {},
     "build": {

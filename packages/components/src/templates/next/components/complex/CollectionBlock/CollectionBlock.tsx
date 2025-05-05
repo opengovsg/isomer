@@ -176,9 +176,9 @@ const CollectionBlockDisplay = ({
       </div>
 
       <div className={compoundStyles.grid({ numberOfCards })}>
-        {collectionCards.map((card, idx) => (
+        {collectionCards.map((card) => (
           <SingleCard
-            key={idx}
+            key={card.id}
             site={site}
             LinkComponent={LinkComponent}
             numberOfCards={numberOfCards}
@@ -224,7 +224,10 @@ export const CollectionBlock = ({
         title={customTitle ?? studioProps.title}
         description={customDescription ?? studioProps.description}
         collectionCards={Array.from({ length: NUMBER_OF_PAGES_TO_DISPLAY }).map(
-          () => studioProps.card,
+          (_, idx) => ({
+            id: `collection-card-${idx}`,
+            ...studioProps.card,
+          }),
         )}
       />
     )

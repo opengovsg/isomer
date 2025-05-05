@@ -40,7 +40,6 @@ describe("getCollectionParent", () => {
     layout: "collection",
     summary: "Collection 1 summary",
     lastModified: new Date("2021-01-01").toISOString(),
-    children: [],
   }
 
   it("should throw an error when collectionId does not match any siteMap child", () => {

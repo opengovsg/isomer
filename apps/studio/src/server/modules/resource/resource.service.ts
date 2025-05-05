@@ -57,23 +57,6 @@ const defaultFooterSelect = [
   "Footer.content",
 ] satisfies SelectExpression<DB, "Footer">[]
 
-export const getPages = () => {
-  // TODO: write a test to verify this query behaviour
-  return db
-    .selectFrom("Resource")
-    .where("type", "is", ResourceType.Page)
-    .select(defaultResourceSelect)
-    .execute()
-}
-
-export const getFolders = () =>
-  // TODO: write a test to verify this query behaviour
-  db
-    .selectFrom("Resource")
-    .where("type", "is", ResourceType.Folder)
-    .select(defaultResourceSelect)
-    .execute()
-
 export const getSiteResourceById = ({
   siteId,
   resourceId,
@@ -301,19 +284,6 @@ export const getFooter = async (siteId: number) => {
     .executeTakeFirstOrThrow()
 
   return { ...rest, content }
-}
-
-export const moveResource = async (
-  siteId: number,
-  resourceId: number,
-  newParentId: number | null,
-) => {
-  return db
-    .updateTable("Resource")
-    .set({ parentId: !!newParentId ? String(newParentId) : null })
-    .where("siteId", "=", siteId)
-    .where("id", "=", String(resourceId))
-    .executeTakeFirstOrThrow()
 }
 
 // Returns a sparse IsomerSitemap object that revolves around the given
