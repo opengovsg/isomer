@@ -12,7 +12,8 @@ const createContentPageHeaderStyles = tv({
     contentContainer: "grid-rows-[1fr fit-content] grid gap-10 lg:grid-cols-12",
     textContainer: "max-w-[54rem] flex-col px-6 md:px-10",
     textPadding: "mt-8 flex flex-col gap-5 md:mt-6",
-    image: "row-span-1 mr-1 h-full object-cover md:col-span-1 lg:col-span-5",
+    image:
+      "row-span-1 h-full object-cover md:col-span-1 lg:col-span-5 lg:pr-10",
     lastUpdated: "prose-body-sm mt-8",
     title: "prose-display-lg break-words",
     summary: "prose-title-lg-regular mt-5",

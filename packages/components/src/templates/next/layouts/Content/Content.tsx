@@ -91,6 +91,7 @@ const ContentLayout = ({
               layout,
               site,
               LinkComponent,
+              permalink: page.permalink,
             })}
           </div>
         </div>

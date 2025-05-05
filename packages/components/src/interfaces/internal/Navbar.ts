@@ -1,12 +1,12 @@
 import type { LocalSearchProps } from "./LocalSearchInputBox"
 import type { SearchSGInputBoxProps } from "./SearchSGInputBox"
-import type { ImageClientProps } from "~/templates/next/components/complex/Image"
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
   ScriptComponentType,
 } from "~/types"
+import { ImageClientProps } from "./Image"
 
 export interface NavbarItem {
   name: string

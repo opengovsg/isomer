@@ -194,41 +194,53 @@ export const Custom: Story = {
 
 export const Rows: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
-    childpages: {
-      layout: "rows",
-      showSummary: false,
-      showThumbnail: false,
-    },
+    content: [
+      {
+        type: "childrenpages",
+        variant: "rows",
+        showSummary: false,
+        showThumbnail: false,
+      },
+    ],
   }),
 }
 
 export const RowsWithImageOnly: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
-    childpages: {
-      layout: "rows",
-      showSummary: false,
-      showThumbnail: true,
-    },
+    content: [
+      {
+        type: "childrenpages",
+        variant: "rows",
+        showSummary: false,
+        showThumbnail: true,
+      },
+    ],
   }),
 }
 
 export const RowsWithDescriptionOnly: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
-    childpages: {
-      layout: "rows",
-      showSummary: true,
-      showThumbnail: false,
-    },
+    content: [
+      {
+        type: "childrenpages",
+        variant: "rows",
+        showSummary: true,
+        showThumbnail: false,
+      },
+    ],
   }),
 }
 
 export const RowsWithImageAndDescription: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
-    childpages: {
-      layout: "rows",
-      showSummary: true,
-      showThumbnail: true,
-    },
+    content: [
+      {
+        type: "childrenpages",
+        variant: "rows",
+        showSummary: true,
+        showThumbnail: true,
+      },
+    ],
   }),
 }
 
@@ -250,52 +262,65 @@ export const RowsWithImageAndDescriptionAndContent: Story = {
           },
         ],
       },
+      {
+        type: "childrenpages",
+        variant: "rows",
+        showSummary: true,
+        showThumbnail: true,
+      },
     ],
-    childpages: {
-      layout: "rows",
-      showSummary: true,
-      showThumbnail: true,
-    },
   }),
 }
 
 export const Boxes: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
-    childpages: {
-      layout: "boxes",
-      showSummary: false,
-      showThumbnail: false,
-    },
+    content: [
+      {
+        type: "childrenpages",
+        variant: "boxes",
+        showSummary: false,
+        showThumbnail: false,
+      },
+    ],
   }),
 }
 
 export const BoxesWithImageOnly: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
-    childpages: {
-      layout: "boxes",
-      showSummary: false,
-      showThumbnail: true,
-    },
+    content: [
+      {
+        type: "childrenpages",
+        variant: "boxes",
+        showSummary: false,
+        showThumbnail: true,
+      },
+    ],
   }),
 }
 
 export const BoxesWithDescriptionOnly: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
-    childpages: {
-      layout: "boxes",
-      showSummary: true,
-      showThumbnail: false,
-    },
+    content: [
+      {
+        type: "childrenpages",
+        variant: "boxes",
+        showSummary: true,
+        showThumbnail: false,
+      },
+    ],
   }),
 }
 
 export const BoxesWithImageAndDescription: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
-    childpages: {
-      layout: "boxes",
-      showSummary: true,
-      showThumbnail: true,
-    },
+    content: [
+      {
+        type: "childrenpages",
+        variant: "boxes",
+        showSummary: true,
+        showThumbnail: true,
+      },
+    ],
   }),
 }
 
@@ -317,11 +342,12 @@ export const BoxesWithImageAndDescriptionAndContent: Story = {
           },
         ],
       },
+      {
+        type: "childrenpages",
+        variant: "boxes",
+        showSummary: true,
+        showThumbnail: true,
+      },
     ],
-    childpages: {
-      layout: "boxes",
-      showSummary: true,
-      showThumbnail: true,
-    },
   }),
 }

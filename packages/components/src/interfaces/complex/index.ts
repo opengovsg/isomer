@@ -30,3 +30,9 @@ export {
   DynamicDataBannerSchema,
   type DynamicDataBannerProps,
 } from "./DynamicDataBanner"
+export {
+  ChildrenPagesSchema as ChildrenPagesSchema,
+  DEFAULT_CHILDREN_PAGES_BLOCK,
+  CHILDREN_PAGES_LAYOUT_OPTIONS,
+  type ChildrenPagesProps,
+} from "./ChildrenPages"

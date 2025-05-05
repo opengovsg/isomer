@@ -868,18 +868,6 @@ export const pageRouter = router({
         return { pageId: addedResource.id }
       })
 
-      // NOTE: Because we are inserting index pages automatically,
-      // we should publish them so that we avoid
-      // using the default index pages as the fallback prior to user
-      // publishing the changes.
-      // This is because for folder index pages, the default fallback
-      // when an index page cannot be found
-      // is deprecated and should not be shown.
-      // We cannot publish inside the tx above because
-      // this also calls into a tx,
-      // so it cannot see that the resources are inserted
-      await publishPageResource(ctx.logger, siteId, page.pageId, ctx.user.id)
-
       return page
     }),
 })

@@ -7,6 +7,7 @@ import {
   BiCrown,
   BiHash,
   BiImage,
+  BiListUl,
   BiMap,
   BiMoviePlay,
   BiPointer,
@@ -41,6 +42,7 @@ export const TYPE_TO_ICON: Record<
   video: BiMoviePlay,
   logocloud: BiCloud,
   [DYNAMIC_DATA_BANNER_TYPE]: TbApi,
+  childrenpages: BiListUl,
   // TODO: Add in these new block types
   // table: BiTable,
   // divider: DividerIcon,

@@ -8,7 +8,6 @@ export type {
   CollectionCardProps,
   ProcessedCollectionCardProps,
 } from "./CollectionCard"
-export type { ChildrenPagesProps } from "./ChildrenPages"
 export type { ContentProps } from "./Content"
 export {
   ContentPageHeaderSchema,
@@ -48,3 +47,4 @@ export type {
 } from "./GoogleTagManager"
 export type { AttrsDirProps } from "./AttrsDir"
 export type { WizgovWidgetProps, WizgovProps } from "./Wizgov"
+export type { ImageClientProps } from "./Image"

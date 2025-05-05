@@ -5,7 +5,6 @@ import Ajv from "ajv"
 
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import ChildPageEditorDrawer from "./ChildPageEditorDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import HeroEditorDrawer from "./HeroEditorDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
@@ -56,8 +55,6 @@ export function EditPageDrawer(): JSX.Element {
       return <MetadataEditorStateDrawer />
     case "heroEditor":
       return <HeroEditorDrawer />
-    case "childpagesEditor":
-      return <ChildPageEditorDrawer />
     default:
       const _: never = currState
       return <h1>Edit Page Drawer</h1>

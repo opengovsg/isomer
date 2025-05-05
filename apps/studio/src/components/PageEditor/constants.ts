@@ -1,5 +1,8 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { DYNAMIC_DATA_BANNER_TYPE } from "@opengovsg/isomer-components"
+import {
+  DEFAULT_CHILDREN_PAGES_BLOCK,
+  DYNAMIC_DATA_BANNER_TYPE,
+} from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -20,6 +23,7 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
+  childrenpages: DEFAULT_CHILDREN_PAGES_BLOCK,
   accordion: {
     type: "accordion",
     summary: "Title for the accordion item",
@@ -226,6 +230,10 @@ export const BLOCK_TO_META: Record<
   hero: {
     label: "Hero banner",
     description: "Title, summary, hero image, and Call-to-Action",
+  },
+  childrenpages: {
+    label: "Child pages",
+    description: "Edit how users see the child page of this folder here",
   },
   image: {
     label: "Image",
