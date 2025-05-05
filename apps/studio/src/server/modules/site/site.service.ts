@@ -7,11 +7,11 @@ import type {
   CrudResourceActions,
   PermissionsProps,
 } from "../permissions/permissions.type"
-import { RoleType } from "~/server/modules/database"
+import { ResourceType, RoleType } from "~/server/modules/database"
 import { logConfigEvent } from "../audit/audit.service"
 import { AuditLogEvent, db, jsonb, sql } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
-import { FOOTER, NAV_BAR_ITEMS, PAGE_BLOB } from "./constants"
+import { FOOTER, NAV_BAR_ITEMS, PAGE_BLOB, SEARCH_PAGE_BLOB } from "./constants"
 
 export const validateUserPermissionsForSite = async ({
   siteId,
@@ -224,7 +224,7 @@ interface CreateSiteProps {
   siteName: string
 }
 export const createSite = async ({ siteName }: CreateSiteProps) => {
-  const siteId = await db.transaction().execute(async (tx) => {
+  const createSiteRecord = async (tx: Transaction<DB>): Promise<number> => {
     const { id: siteId } = await tx
       .insertInto("Site")
       .values({
@@ -262,6 +262,10 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
       .returning("id")
       .executeTakeFirstOrThrow()
 
+    return siteId
+  }
+
+  const createFooter = async (tx: Transaction<DB>, siteId: number) => {
     await tx
       .insertInto("Footer")
       .values({
@@ -274,7 +278,9 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
           .doUpdateSet((eb) => ({ siteId: eb.ref("excluded.siteId") })),
       )
       .execute()
+  }
 
+  const createNavbar = async (tx: Transaction<DB>, siteId: number) => {
     await tx
       .insertInto("Navbar")
       .values({
@@ -287,7 +293,9 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
           .doUpdateSet((eb) => ({ siteId: eb.ref("excluded.siteId") })),
       )
       .execute()
+  }
 
+  const createRootPage = async (tx: Transaction<DB>, siteId: number) => {
     const { id: blobId } = await tx
       .insertInto("Blob")
       .values({ content: jsonb(PAGE_BLOB) })
@@ -303,14 +311,44 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
         type: "RootPage",
         title: "Home",
       })
-
       .onConflict((oc) =>
         oc.column("draftBlobId").doUpdateSet((eb) => ({
           draftBlobId: eb.ref("excluded.draftBlobId"),
         })),
       )
       .executeTakeFirstOrThrow()
+  }
 
+  const createSearchPage = async (tx: Transaction<DB>, siteId: number) => {
+    const { id: blobId } = await tx
+      .insertInto("Blob")
+      .values({ content: jsonb(SEARCH_PAGE_BLOB) })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    await tx
+      .insertInto("Resource")
+      .values({
+        draftBlobId: String(blobId),
+        permalink: "search",
+        siteId,
+        type: ResourceType.Page,
+        title: "Search",
+      })
+      .onConflict((oc) =>
+        oc.column("draftBlobId").doUpdateSet((eb) => ({
+          draftBlobId: eb.ref("excluded.draftBlobId"),
+        })),
+      )
+      .executeTakeFirstOrThrow()
+  }
+
+  const siteId = await db.transaction().execute(async (tx) => {
+    const siteId = await createSiteRecord(tx)
+    await createFooter(tx, siteId)
+    await createNavbar(tx, siteId)
+    await createRootPage(tx, siteId)
+    await createSearchPage(tx, siteId)
     return siteId
   })
 
