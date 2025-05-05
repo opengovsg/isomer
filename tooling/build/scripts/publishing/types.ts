@@ -15,6 +15,11 @@ interface Tag {
   category: string
 }
 
+interface CollectionPagePageProps {
+  defaultSortBy?: string
+  defaultSortDirection?: string
+}
+
 export type SitemapEntry = Pick<
   Resource,
   "id" | "title" | "permalink" | "type"
@@ -31,6 +36,7 @@ export type SitemapEntry = Pick<
   ref?: string
   children?: SitemapEntry[]
   tags?: Tag[]
+  collectionPagePageProps?: CollectionPagePageProps
 }
 
 export type PageOnlySitemapEntry = Omit<SitemapEntry, "children"> & {
