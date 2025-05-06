@@ -94,6 +94,15 @@ export const DefaultNoCTA: Story = {
   },
 }
 
+// Should not have dark mode on non-homepage, but putting this here as a test against regression
+export const DefaultDark: Story = {
+  name: "Default/Dark",
+  args: {
+    ...Default.args,
+    variant: "dark",
+  },
+}
+
 export const Homepage: Story = {
   name: "Homepage",
   args: {
@@ -129,5 +138,13 @@ export const HomepageNoCTA: Story = {
       "Longer title here that spans multiple lines and is quite long and verbose and takes up a lot of space",
     description:
       "About a sentence worth of description here About a sentence worth of description here About a sentence worth of description here",
+  },
+}
+
+export const HomepageDark: Story = {
+  name: "Homepage/Dark",
+  args: {
+    ...Homepage.args,
+    variant: "dark",
   },
 }
