@@ -9,6 +9,7 @@ import {
   BiImage,
   BiListUl,
   BiMap,
+  BiMessageDots,
   BiMoviePlay,
   BiPointer,
   BiSolidQuoteAltLeft,
@@ -41,6 +42,7 @@ export const TYPE_TO_ICON: Record<
   map: BiMap,
   video: BiMoviePlay,
   logocloud: BiCloud,
+  blockquote: BiMessageDots,
   [DYNAMIC_DATA_BANNER_TYPE]: TbApi,
   childrenpages: BiListUl,
   // TODO: Add in these new block types

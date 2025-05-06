@@ -4,6 +4,7 @@ import { Type } from "@sinclair/typebox"
 import type { IsomerComponentTypes } from "~/types"
 import {
   AccordionSchema,
+  BlockquoteSchema,
   CalloutSchema,
   ChildrenPagesSchema,
   ContentpicSchema,
@@ -31,6 +32,7 @@ import {
 
 export const IsomerComplexComponentsMap = {
   accordion: AccordionSchema,
+  blockquote: BlockquoteSchema,
   callout: CalloutSchema,
   hero: HeroSchema,
   iframe: IframeSchema,

@@ -30,6 +30,8 @@ export const doesComponentHaveImage = ({
       return true
     case "infocards":
       return component.cards.some((card) => "imageUrl" in card)
+    case "blockquote":
+      return component.imageSrc !== undefined
     default:
       const _: never = component
       return false

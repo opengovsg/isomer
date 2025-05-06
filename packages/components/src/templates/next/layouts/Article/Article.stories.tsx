@@ -286,6 +286,15 @@ export const Default: Story = {
           },
         ],
       },
+      {
+        type: "blockquote",
+        quote:
+          "When I was a rookie, I had trouble overcoming the low rope at first. But when it came to my turn, my buddies knew being there would help spur me to prevail.",
+        source:
+          "ME2 Jenny Teng, Recipient of SAF Polytechnic Sponsorship, Army Medical Services",
+        imageSrc: "https://placehold.co/600x600",
+        imageAlt: "This is the alt text",
+      },
     ],
   },
 }
