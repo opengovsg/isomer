@@ -17,7 +17,10 @@ import type {
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { getSitemapTree } from "~/utils/sitemap"
+import {
+  getSitemapTree,
+  overwriteCollectionChildrenForCollectionBlock,
+} from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType, sql } from "../database"
@@ -56,6 +59,13 @@ const defaultFooterSelect = [
   "Footer.siteId",
   "Footer.content",
 ] satisfies SelectExpression<DB, "Footer">[]
+
+const sitemapResourceWithContentSelect = [
+  ...defaultResourceSelect,
+  sql<
+    UnwrapTagged<PrismaJson.BlobJsonContent>
+  >`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`.as("content"),
+] satisfies SelectExpression<DB, "Resource" | "Blob" | "Version">[]
 
 export const getSiteResourceById = ({
   siteId,
@@ -295,22 +305,29 @@ export const getLocalisedSitemap = async (
   resourceId: number,
 ) => {
   // Get the actual resource first
-  const resource = await getById(db, {
-    resourceId,
-    siteId,
-  })
-    .select(defaultResourceSelect)
+  const resource = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.id", "=", String(resourceId))
+    .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+    .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+    .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+    .select(sitemapResourceWithContentSelect)
     .executeTakeFirstOrThrow()
 
   const allResources = await db
-    // Step 1: Get all the ancestors of the resource
+    // Step 1: Get all the ancestors of the resource, including the resource itself.
+    // The recursion starts with the resource and works upwards via its parentId.
     .withRecursive("ancestors", (eb) =>
       eb
         // Base case: Get the actual resource
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", String(resourceId))
-        .select(defaultResourceSelect)
+        .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+        .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+        .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+        .select(sitemapResourceWithContentSelect)
         .unionAll((fb) =>
           fb
             // Recursive case: Get all the ancestors of the resource
@@ -321,10 +338,23 @@ export const getLocalisedSitemap = async (
               ResourceType.Collection,
             ])
             .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
-            .select(defaultResourceSelect),
+            .leftJoin(
+              "Blob as DraftBlob",
+              "Resource.draftBlobId",
+              "DraftBlob.id",
+            )
+            .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+            .leftJoin(
+              "Blob as PublishedBlob",
+              "Version.blobId",
+              "PublishedBlob.id",
+            )
+            .select(sitemapResourceWithContentSelect),
         ),
     )
-    // Step 2: Get the immediate siblings of the resource
+    // Step 2: Get the immediate siblings of the resource.
+    // These are resources sharing the same parentId, excluding the resource itself
+    // and FolderMeta/CollectionMeta types.
     .with("immediateSiblings", (eb) =>
       eb
         .selectFrom("Resource")
@@ -338,24 +368,82 @@ export const getLocalisedSitemap = async (
         })
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
-        .select(defaultResourceSelect),
+        .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+        .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+        .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+        .select(sitemapResourceWithContentSelect),
     )
-    // Step 3: Combine all the resources in a single array
-    .selectFrom("ancestors as Resource")
-    .union((eb) =>
-      eb
-        .selectFrom("immediateSiblings as Resource")
-        .select(defaultResourceSelect),
-    )
-    .select(defaultResourceSelect)
+    // Step 3: Get all nested children (descendants) of the resource.
+    // This CTE recursively finds all children, grandchildren, etc., without including the initial resource itself.
+    // - If the initial resource (resourceId) is a RootPage, its "direct children" for starting
+    //   this search are top-level Folders and Collections (parentId is null).
+    // - Otherwise, direct children are those whose parentId is the initial resource's ID.
+    // - Only Folder or Collection types are included (not necessary, but helps with performance)
+    .withRecursive("nestedChildren", (eb) => {
+      // Define the selection for direct children, which forms the non-recursive base of the CTE.
+      return eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("type", "in", [
+          ResourceType.Folder,
+          ResourceType.Collection,
+          ResourceType.IndexPage,
+        ])
+        .where((fb) => {
+          if (resource.type === ResourceType.RootPage) {
+            return fb("Resource.parentId", "is", null)
+          }
+          return fb("Resource.parentId", "=", String(resource.id))
+        })
+        .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+        .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+        .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+        .select(sitemapResourceWithContentSelect)
+        .unionAll((fb) =>
+          // Recursive term: children of already found children in the CTE
+          fb
+            .selectFrom("Resource")
+            .innerJoin(
+              "nestedChildren",
+              "nestedChildren.id",
+              "Resource.parentId",
+            )
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+              ResourceType.IndexPage,
+            ])
+            .leftJoin(
+              "Blob as DraftBlob",
+              "Resource.draftBlobId",
+              "DraftBlob.id",
+            )
+            .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+            .leftJoin(
+              "Blob as PublishedBlob",
+              "Version.blobId",
+              "PublishedBlob.id",
+            )
+            .select(sitemapResourceWithContentSelect),
+        )
+    })
+    // Step 4: Combine all the resources in a single array
+    .selectFrom("ancestors")
+    .selectAll()
+    .union((eb) => eb.selectFrom("immediateSiblings").selectAll())
+    .union((eb) => eb.selectFrom("nestedChildren").selectAll())
     .execute()
 
-  // Step 4: Construct the localised sitemap object
+  // Step 5: Construct the localised sitemap object
   const rootResource = await db
     .selectFrom("Resource")
     .where("Resource.siteId", "=", siteId)
     .where("Resource.type", "=", ResourceType.RootPage)
-    .select(defaultResourceSelect)
+    .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+    .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+    .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+    .select(sitemapResourceWithContentSelect)
     .executeTakeFirst()
 
   if (rootResource === undefined) {
@@ -364,7 +452,16 @@ export const getLocalisedSitemap = async (
     throw new Error("Root item not found")
   }
 
-  return getSitemapTree(rootResource, allResources)
+  const sitemapTree = getSitemapTree(rootResource, allResources)
+
+  // We do this because collectionblock renders based on the children of the collection
+  // and we want to overwrite what's being shown on studio
+  // Assumption: Collection Block is only being used on the root page
+  if (resource.type === ResourceType.RootPage) {
+    return overwriteCollectionChildrenForCollectionBlock(sitemapTree)
+  }
+
+  return sitemapTree
 }
 
 export const getResourcePermalinkTree = async (
