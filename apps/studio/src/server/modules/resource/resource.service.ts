@@ -303,7 +303,8 @@ export const getLocalisedSitemap = async (
     .executeTakeFirstOrThrow()
 
   const allResources = await db
-    // Step 1: Get all the ancestors of the resource
+    // Step 1: Get all the ancestors of the resource, including the resource itself.
+    // The recursion starts with the resource and works upwards via its parentId.
     .withRecursive("ancestors", (eb) =>
       eb
         // Base case: Get the actual resource
@@ -324,7 +325,9 @@ export const getLocalisedSitemap = async (
             .select(defaultResourceSelect),
         ),
     )
-    // Step 2: Get the immediate siblings of the resource
+    // Step 2: Get the immediate siblings of the resource.
+    // These are resources sharing the same parentId, excluding the resource itself
+    // and FolderMeta/CollectionMeta types.
     .with("immediateSiblings", (eb) =>
       eb
         .selectFrom("Resource")
@@ -340,17 +343,58 @@ export const getLocalisedSitemap = async (
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .select(defaultResourceSelect),
     )
-    // Step 3: Combine all the resources in a single array
+    // Step 3: Get all nested children (descendants) of the resource.
+    // This CTE recursively finds all children, grandchildren, etc., without including the initial resource itself.
+    // - If the initial resource (resourceId) is a RootPage, its "direct children" for starting
+    //   this search are top-level Folders and Collections (parentId is null).
+    // - Otherwise, direct children are those whose parentId is the initial resource's ID.
+    // - Only Folder or Collection types are included (not necessary, but helps with performance)
+    .withRecursive("nestedChildren", (eb) => {
+      // Define the selection for direct children, which forms the non-recursive base of the CTE.
+      return eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("type", "in", [ResourceType.Folder, ResourceType.Collection])
+        .where((fb) => {
+          if (resource.type === ResourceType.RootPage) {
+            return fb("Resource.parentId", "is", null)
+          }
+          return fb("Resource.parentId", "=", String(resource.id))
+        })
+        .select(defaultResourceSelect)
+        .unionAll((fb) =>
+          // Recursive term: children of already found children in the CTE
+          fb
+            .selectFrom("Resource")
+            .innerJoin(
+              "nestedChildren",
+              "nestedChildren.id",
+              "Resource.parentId",
+            )
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+            ])
+            .select(defaultResourceSelect),
+        )
+    })
+    // Step 4: Combine all the resources in a single array
     .selectFrom("ancestors as Resource")
     .union((eb) =>
       eb
         .selectFrom("immediateSiblings as Resource")
         .select(defaultResourceSelect),
     )
+    .union((eb) =>
+      eb
+        .selectFrom("nestedChildren as Resource") // Use the modified nestedChildren CTE
+        .select(defaultResourceSelect),
+    )
     .select(defaultResourceSelect)
     .execute()
 
-  // Step 4: Construct the localised sitemap object
+  // Step 5: Construct the localised sitemap object
   const rootResource = await db
     .selectFrom("Resource")
     .where("Resource.siteId", "=", siteId)
