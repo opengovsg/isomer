@@ -19,7 +19,11 @@ export {
   CARDS_WITH_IMAGES,
 } from "./InfoCards"
 export { InfoColsSchema, type InfoColsProps } from "./InfoCols"
-export { InfobarSchema, type InfobarProps } from "./Infobar"
+export {
+  InfobarSchema,
+  type InfobarProps,
+  DEFAULT_INFOBAR_VARIANT,
+} from "./Infobar"
 export { InfopicSchema, type InfopicProps } from "./Infopic"
 export { KeyStatisticsSchema, type KeyStatisticsProps } from "./KeyStatistics"
 export { MapSchema, type MapProps } from "./Map"
