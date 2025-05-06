@@ -1,5 +1,6 @@
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { createContext, useCallback, useContext, useState } from "react"
+import { useGrowthBook } from "@growthbook/growthbook-react"
 import { useInterval } from "usehooks-ts"
 
 type SignInStateType = "initial" | "verification"
@@ -53,6 +54,8 @@ export const SignInContextProvider = ({
   const [vfnStepData, setVfnStepData] = useState<VfnStepData>()
   const [timer, setTimer] = useState(delayForResendSeconds)
 
+  const gb = useGrowthBook()
+
   const resetTimer = useCallback(
     () => setTimer(delayForResendSeconds),
     [delayForResendSeconds],
@@ -67,7 +70,8 @@ export const SignInContextProvider = ({
     setState("initial")
     setVfnStepData(undefined)
     setErrorState(undefined)
-  }, [])
+    void gb.setAttributes({})
+  }, [gb])
 
   // Start the resend timer once in the vfn step.
   useInterval(
