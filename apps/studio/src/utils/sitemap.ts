@@ -62,7 +62,7 @@ const getSitemapTreeFromArray = (
 
     const indexPage = resources.find(
       (child) =>
-        // NOTE: This child is the index page of this resource
+        child.type === ResourceType.IndexPage &&
         child.permalink === INDEX_PAGE_PERMALINK &&
         child.parentId === resource.id,
     )
