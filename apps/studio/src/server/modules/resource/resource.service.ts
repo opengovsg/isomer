@@ -17,7 +17,10 @@ import type {
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { getSitemapTree } from "~/utils/sitemap"
+import {
+  getSitemapTree,
+  overwriteCollectionChildrenForCollectionBlock,
+} from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType, sql } from "../database"
@@ -408,7 +411,16 @@ export const getLocalisedSitemap = async (
     throw new Error("Root item not found")
   }
 
-  return getSitemapTree(rootResource, allResources)
+  const sitemapTree = getSitemapTree(rootResource, allResources)
+
+  // We do this because collectionblock renders based on the children of the collection
+  // and we want to overwrite what's being shown on studio
+  // Assumption: Collection Block is only being used on the root page
+  if (resource.type === ResourceType.RootPage) {
+    return overwriteCollectionChildrenForCollectionBlock(sitemapTree)
+  }
+
+  return sitemapTree
 }
 
 export const getResourcePermalinkTree = async (

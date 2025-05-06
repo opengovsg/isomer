@@ -4,6 +4,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { Resource } from "~prisma/generated/selectableTypes"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { env } from "~/env.mjs"
 
 type ResourceDto = Omit<
   Resource,
@@ -100,5 +101,46 @@ export const getSitemapTree = (
     // NOTE: This permalink is unused in the preview
     permalink: "/",
     children: getSitemapTreeFromArray(resources, null, "/"),
+  }
+}
+
+export const overwriteCollectionChildrenForCollectionBlock = (
+  sitemap: IsomerSitemap,
+): IsomerSitemap => {
+  // If the current node is a collection, overwrite its children and return
+  if (sitemap.layout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
+    return {
+      ...sitemap,
+      children: Array.from({ length: 3 }).map((_, idx) => ({
+        id: `collection-card-${idx}`,
+        title: "Article title",
+        summary: "Article summary",
+        permalink: "/",
+        layout: ISOMER_USABLE_PAGE_LAYOUTS.Article,
+        lastModified: new Date().toISOString(),
+        category: "Category of article",
+        children: [],
+        ref: "https://www.google.com",
+        image: {
+          src: `${env.NEXT_PUBLIC_APP_URL}/assets/collectionblock_studio_preview.svg`,
+          alt: "Placeholder image for article's thumbnail",
+        },
+      })),
+    }
+  }
+
+  let processedChildren = sitemap.children
+
+  // If the node is not a collection, process its children (if any)
+  if (sitemap.children) {
+    processedChildren = sitemap.children.map((child) =>
+      overwriteCollectionChildrenForCollectionBlock(child),
+    )
+  }
+
+  // Return the non-collection node with potentially updated children
+  return {
+    ...sitemap,
+    children: processedChildren,
   }
 }
