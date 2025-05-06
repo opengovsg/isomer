@@ -4,6 +4,7 @@
   "description": "Script to run Unlighthouse CI with specified parameters",
   "scripts": {
     "run-benchmark": "bash run_benchmark.sh",
+    "run-benchmark:local": "cp ../sites.csv . && npm run run-benchmark",
     "upload-result": "bash upload_result.sh",
     "generate-report": "bash generate_report.sh"
   },
