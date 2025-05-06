@@ -1,4 +1,5 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
+import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { Resource } from "~prisma/generated/selectableTypes"
@@ -65,7 +66,10 @@ const getSitemapTreeFromArray = (
 
     return {
       id: String(resource.id),
-      layout: "content", // Note: We are not using the layout field in our previews
+      layout:
+        resource.type === ResourceType.Collection
+          ? ISOMER_USABLE_PAGE_LAYOUTS.Collection // Needed for collectionblock component to fetch the correct collection
+          : ISOMER_USABLE_PAGE_LAYOUTS.Content, // Note: We are not using the layout field in our previews
       title: titleOfPage || resource.title,
       summary: "", // Note: We are not using the summary field in our previews
       lastModified: new Date() // TODO: Update this to the updated_at field in DB
