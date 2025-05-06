@@ -60,6 +60,13 @@ const defaultFooterSelect = [
   "Footer.content",
 ] satisfies SelectExpression<DB, "Footer">[]
 
+const sitemapResourceWithContentSelect = [
+  ...defaultResourceSelect,
+  sql<
+    UnwrapTagged<PrismaJson.BlobJsonContent>
+  >`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`.as("content"),
+] satisfies SelectExpression<DB, "Resource" | "Blob" | "Version">[]
+
 export const getSiteResourceById = ({
   siteId,
   resourceId,
@@ -298,11 +305,14 @@ export const getLocalisedSitemap = async (
   resourceId: number,
 ) => {
   // Get the actual resource first
-  const resource = await getById(db, {
-    resourceId,
-    siteId,
-  })
-    .select(defaultResourceSelect)
+  const resource = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.id", "=", String(resourceId))
+    .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+    .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+    .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+    .select(sitemapResourceWithContentSelect)
     .executeTakeFirstOrThrow()
 
   const allResources = await db
@@ -314,7 +324,10 @@ export const getLocalisedSitemap = async (
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", String(resourceId))
-        .select(defaultResourceSelect)
+        .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+        .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+        .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+        .select(sitemapResourceWithContentSelect)
         .unionAll((fb) =>
           fb
             // Recursive case: Get all the ancestors of the resource
@@ -325,7 +338,18 @@ export const getLocalisedSitemap = async (
               ResourceType.Collection,
             ])
             .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
-            .select(defaultResourceSelect),
+            .leftJoin(
+              "Blob as DraftBlob",
+              "Resource.draftBlobId",
+              "DraftBlob.id",
+            )
+            .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+            .leftJoin(
+              "Blob as PublishedBlob",
+              "Version.blobId",
+              "PublishedBlob.id",
+            )
+            .select(sitemapResourceWithContentSelect),
         ),
     )
     // Step 2: Get the immediate siblings of the resource.
@@ -344,7 +368,10 @@ export const getLocalisedSitemap = async (
         })
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
-        .select(defaultResourceSelect),
+        .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+        .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+        .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+        .select(sitemapResourceWithContentSelect),
     )
     // Step 3: Get all nested children (descendants) of the resource.
     // This CTE recursively finds all children, grandchildren, etc., without including the initial resource itself.
@@ -357,14 +384,21 @@ export const getLocalisedSitemap = async (
       return eb
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
-        .where("type", "in", [ResourceType.Folder, ResourceType.Collection])
+        .where("type", "in", [
+          ResourceType.Folder,
+          ResourceType.Collection,
+          ResourceType.IndexPage,
+        ])
         .where((fb) => {
           if (resource.type === ResourceType.RootPage) {
             return fb("Resource.parentId", "is", null)
           }
           return fb("Resource.parentId", "=", String(resource.id))
         })
-        .select(defaultResourceSelect)
+        .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+        .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+        .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+        .select(sitemapResourceWithContentSelect)
         .unionAll((fb) =>
           // Recursive term: children of already found children in the CTE
           fb
@@ -378,23 +412,27 @@ export const getLocalisedSitemap = async (
             .where("Resource.type", "in", [
               ResourceType.Folder,
               ResourceType.Collection,
+              ResourceType.IndexPage,
             ])
-            .select(defaultResourceSelect),
+            .leftJoin(
+              "Blob as DraftBlob",
+              "Resource.draftBlobId",
+              "DraftBlob.id",
+            )
+            .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+            .leftJoin(
+              "Blob as PublishedBlob",
+              "Version.blobId",
+              "PublishedBlob.id",
+            )
+            .select(sitemapResourceWithContentSelect),
         )
     })
     // Step 4: Combine all the resources in a single array
-    .selectFrom("ancestors as Resource")
-    .union((eb) =>
-      eb
-        .selectFrom("immediateSiblings as Resource")
-        .select(defaultResourceSelect),
-    )
-    .union((eb) =>
-      eb
-        .selectFrom("nestedChildren as Resource") // Use the modified nestedChildren CTE
-        .select(defaultResourceSelect),
-    )
-    .select(defaultResourceSelect)
+    .selectFrom("ancestors")
+    .selectAll()
+    .union((eb) => eb.selectFrom("immediateSiblings").selectAll())
+    .union((eb) => eb.selectFrom("nestedChildren").selectAll())
     .execute()
 
   // Step 5: Construct the localised sitemap object
@@ -402,7 +440,10 @@ export const getLocalisedSitemap = async (
     .selectFrom("Resource")
     .where("Resource.siteId", "=", siteId)
     .where("Resource.type", "=", ResourceType.RootPage)
-    .select(defaultResourceSelect)
+    .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+    .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+    .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+    .select(sitemapResourceWithContentSelect)
     .executeTakeFirst()
 
   if (rootResource === undefined) {
