@@ -1,5 +1,4 @@
 import type { Static } from "@sinclair/typebox"
-import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
 import { Type } from "@sinclair/typebox"
 
 import type {
@@ -8,6 +7,7 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { ARRAY_RADIO_FORMAT } from "../format"
 
 const INFOBAR_VARIANT = {
   light: "light",
