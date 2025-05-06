@@ -1,4 +1,5 @@
 import type { Static } from "@sinclair/typebox"
+import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
 import { Type } from "@sinclair/typebox"
 
 import type {
@@ -41,6 +42,8 @@ export const InfobarSchema = Type.Object(
         {
           default: DEFAULT_INFOBAR_VARIANT,
           title: "Call-to-Action style",
+          format: ARRAY_RADIO_FORMAT,
+          type: "string",
         },
       ),
     ),
