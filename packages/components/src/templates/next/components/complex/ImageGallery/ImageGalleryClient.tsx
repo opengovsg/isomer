@@ -11,7 +11,7 @@ import { getPreviewIndices } from "./utils"
 const createImagePreviewStyles = tv({
   slots: {
     container:
-      "relative aspect-[1/1] flex-1 flex-shrink-0 overflow-hidden border-[1px] focus:outline focus:outline-[0.75rem] focus:outline-offset-[-0.75rem] focus:outline-utility-highlight",
+      "relative aspect-[1/1] flex-1 flex-shrink-0 overflow-hidden border-[1px] focus-visible:outline focus-visible:outline-[0.75rem] focus-visible:outline-offset-[-0.75rem] focus-visible:outline-utility-highlight",
   },
   variants: {
     isSelected: {
@@ -107,7 +107,7 @@ export const ImageGalleryClient = ({
 
         {/* Navigation Controls - Accessible via keyboard tab navigation */}
         <button
-          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus:border-utility-highlight focus:bg-base-canvas-inverse-overlay focus:outline-none focus:ring-[0.375rem] focus:ring-utility-highlight"
+          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           onClick={() => navigate("prev")}
           aria-label="Previous image"
         >
@@ -115,7 +115,7 @@ export const ImageGalleryClient = ({
         </button>
 
         <button
-          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus:border-utility-highlight focus:bg-base-canvas-inverse-overlay focus:outline-none focus:ring-[0.375rem] focus:ring-utility-highlight"
+          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           onClick={() => navigate("next")}
           aria-label="Next image"
         >
