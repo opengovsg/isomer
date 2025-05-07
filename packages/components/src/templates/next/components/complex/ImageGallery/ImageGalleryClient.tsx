@@ -80,7 +80,11 @@ export const ImageGalleryClient = ({
   })
 
   return (
-    <section className="w-full" role="region" aria-label="Image gallery">
+    <section
+      className="mt-12 w-full first:mt-0"
+      role="region"
+      aria-label="Image gallery"
+    >
       {/* Main Slideshow */}
       <div className="relative h-[17rem] w-full border bg-white sm:h-[28.5rem]">
         <div className="relative h-full w-full">
