@@ -30,3 +30,7 @@ export type ImageGalleryProps = Static<typeof ImageGallerySchema> & {
   site: IsomerSiteProps
   shouldLazyLoad?: boolean
 }
+
+export type ImageGalleryClientProps = Omit<ImageGalleryProps, "site"> & {
+  assetsBaseUrl: IsomerSiteProps["assetsBaseUrl"]
+}
