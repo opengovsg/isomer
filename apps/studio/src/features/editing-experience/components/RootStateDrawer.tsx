@@ -167,7 +167,7 @@ export default function RootStateDrawer() {
     // NOTE: This layout needs to be outside, otherwise it is treated as a
     // string type rather than the array of layout consts
     newPageState.layout = "index"
-    newPageState.content = [DEFAULT_BLOCKS.childpage]
+    newPageState.content = [...savedPageState.content, DEFAULT_BLOCKS.childpage]
     setPreviewPageState(newPageState)
     setIsPreviewingIndexPage(true)
   }, [savedPageState, setPreviewPageState])

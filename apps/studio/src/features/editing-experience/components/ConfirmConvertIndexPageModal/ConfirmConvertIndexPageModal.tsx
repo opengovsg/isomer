@@ -32,7 +32,7 @@ export const ConfirmConvertIndexPageModal = ({
         <ModalCloseButton size="lg" />
 
         <ModalBody>
-          <Text textStyle="body-2">All your custom content will be lost.</Text>
+          <Text textStyle="body-2">This cannot be undone.</Text>
         </ModalBody>
 
         <ModalFooter>
