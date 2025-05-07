@@ -349,7 +349,7 @@ export const siteRouter = router({
         roles: [ADMIN_ROLE.CORE],
       })
 
-      return createSite({ siteName })
+      return createSite({ siteName, userId: ctx.user.id })
     }),
   publish: protectedProcedure
     .input(publishSiteSchema)
