@@ -28,4 +28,5 @@ export const ImageGallerySchema = Type.Object(
 
 export type ImageGalleryProps = Static<typeof ImageGallerySchema> & {
   site: IsomerSiteProps
+  shouldLazyLoad?: boolean
 }
