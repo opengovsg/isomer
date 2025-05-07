@@ -45,6 +45,37 @@ const createImagePreviewStyles = tv({
 
 const compoundStyles = createImagePreviewStyles()
 
+const ImageWithCaption = ({
+  image,
+  assetsBaseUrl,
+  shouldLazyLoad,
+}: Pick<ImageGalleryClientProps, "assetsBaseUrl" | "shouldLazyLoad"> & {
+  image: ImageGalleryClientProps["images"][0]
+}) => {
+  const [visible, setVisible] = useState(false)
+
+  return (
+    <div className="relative h-full w-full">
+      <ImageClient
+        src={image.src}
+        alt={image.alt}
+        width="100%"
+        className={`h-full w-full object-contain transition-opacity motion-safe:duration-300 motion-safe:ease-out ${
+          visible ? "opacity-100" : "opacity-0"
+        }`}
+        onLoad={() => setVisible(true)}
+        assetsBaseUrl={assetsBaseUrl}
+        lazyLoading={shouldLazyLoad}
+      />
+      {image.caption && (
+        <div className="prose-label-sm-medium absolute bottom-0 left-0 right-0 bg-base-canvas-inverse-overlay/90 p-3 text-white">
+          {image.caption}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export const ImageGalleryClient = ({
   images,
   assetsBaseUrl,
@@ -87,23 +118,12 @@ export const ImageGalleryClient = ({
     >
       {/* Main Slideshow */}
       <div className="relative h-[17rem] w-full border bg-white sm:h-[28.5rem]">
-        <div className="relative h-full w-full">
-          <div className="h-full w-full motion-safe:transition motion-safe:duration-300 motion-safe:ease-out">
-            <ImageClient
-              src={currentImage.src}
-              alt={currentImage.alt}
-              width="100%"
-              className="h-full w-full object-contain"
-              assetsBaseUrl={assetsBaseUrl}
-              lazyLoading={shouldLazyLoad}
-            />
-            {currentImage.caption && (
-              <div className="prose-label-sm-medium absolute bottom-0 left-0 right-0 bg-base-canvas-inverse-overlay/90 p-3 text-white">
-                {currentImage.caption}
-              </div>
-            )}
-          </div>
-        </div>
+        <ImageWithCaption
+          key={currentImage.src + currentIndex}
+          image={currentImage}
+          assetsBaseUrl={assetsBaseUrl}
+          shouldLazyLoad={shouldLazyLoad}
+        />
 
         {/* Navigation Controls - Accessible via keyboard tab navigation */}
         <button
@@ -147,6 +167,7 @@ export const ImageGalleryClient = ({
               disabled={currentIndex === index}
             >
               <ImageClient
+                key={previewImage.src + index} // in case of same src, use index as key
                 src={previewImage.src}
                 alt={previewImage.alt}
                 width="100%"

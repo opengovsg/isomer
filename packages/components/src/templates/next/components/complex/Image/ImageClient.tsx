@@ -7,6 +7,7 @@ export interface ImageClientProps {
   className: string
   assetsBaseUrl?: string
   lazyLoading?: boolean
+  onLoad?: React.ReactEventHandler<HTMLImageElement>
 }
 
 export const ImageClient = ({
@@ -16,6 +17,7 @@ export const ImageClient = ({
   className,
   assetsBaseUrl,
   lazyLoading = true, // next/image defaults to lazy loading true too
+  onLoad,
 }: ImageClientProps) => {
   return (
     <img
@@ -24,6 +26,7 @@ export const ImageClient = ({
       width={width}
       height="auto"
       className={className}
+      onLoad={onLoad}
       onError={({ currentTarget }) => {
         currentTarget.onerror = null
         currentTarget.src = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
