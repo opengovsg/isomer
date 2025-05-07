@@ -45,12 +45,15 @@ const ArticlePageHeader = ({
             {title}
           </h1>
           {tags.length > 0 &&
-            tags.flatMap(({ selected: labels }) => {
+            tags.flatMap(({ category, selected: labels }) => {
               return (
-                <div className="flex w-full flex-wrap items-center gap-2">
-                  {labels.map((label) => {
-                    return <Tag key={label}>{label}</Tag>
-                  })}
+                <div className="flex w-full flex-col gap-4">
+                  <div className="prose-label-sm flex flex-row items-center gap-2">
+                    {category}
+                    {labels.map((label) => {
+                      return <Tag key={label}>{label}</Tag>
+                    })}
+                  </div>
                 </div>
               )
             })}
