@@ -30,9 +30,7 @@ export const ImageGalleryClient = ({
     return null
   }
 
-  // Ensure currentIndex is within bounds
-  const safeCurrentIndex = Math.min(currentIndex, images.length - 1)
-  const currentImage = images[safeCurrentIndex]
+  const currentImage = images[currentIndex]
 
   if (!currentImage) {
     return null
@@ -91,13 +89,13 @@ export const ImageGalleryClient = ({
             <button
               key={index}
               className={`relative h-20 w-20 flex-shrink-0 overflow-hidden border-2 ${
-                index === safeCurrentIndex
+                index === currentIndex
                   ? "border-blue-500"
                   : "border-transparent hover:opacity-80"
               } focus:opacity-80 focus:outline-none focus:ring-2 focus:ring-blue-500`}
               onClick={() => setCurrentIndex(index)}
               aria-label={`View image ${index + 1} of ${images.length}`}
-              aria-current={index === safeCurrentIndex}
+              aria-current={index === currentIndex}
               disabled={currentIndex === index}
             >
               <ImageClient
