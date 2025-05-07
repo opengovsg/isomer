@@ -102,7 +102,7 @@ export const ImageGallery = ({
             >
               <ImageClient
                 src={previewImage.src}
-                alt=""
+                alt={previewImage.alt}
                 width="100%"
                 className="h-full w-full object-cover"
                 assetsBaseUrl={site.assetsBaseUrl}
