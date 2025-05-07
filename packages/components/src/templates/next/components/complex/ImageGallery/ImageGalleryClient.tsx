@@ -3,9 +3,47 @@
 import { useCallback, useState } from "react"
 
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
+import { tv } from "~/lib/tv"
 import { ImageClient } from "../Image/ImageClient"
 import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./constants"
 import { getPreviewIndices } from "./utils"
+
+const createImagePreviewStyles = tv({
+  slots: {
+    container:
+      "relative aspect-[1/1] flex-1 flex-shrink-0 overflow-hidden border-[1px] focus:outline focus:outline-[0.75rem] focus:outline-offset-[-0.75rem] focus:outline-utility-highlight",
+  },
+  variants: {
+    isSelected: {
+      true: {
+        container:
+          "border-base-content outline outline-[0.25rem] outline-offset-[-0.25rem] outline-base-content",
+      },
+      false: {
+        container: "border-base-divider-subtle hover:opacity-80",
+      },
+    },
+    numberOfImages: {
+      "1": {
+        container: "h-[7.375rem]",
+      },
+      "2": {
+        container: "h-[7.375rem]",
+      },
+      "3": {
+        container: "h-[7.375rem]",
+      },
+      "4": {
+        container: "h-[5.375rem]",
+      },
+      "5": {
+        container: "h-[5.375rem]",
+      },
+    },
+  },
+})
+
+const compoundStyles = createImagePreviewStyles()
 
 export const ImageGalleryClient = ({
   images,
@@ -36,6 +74,11 @@ export const ImageGalleryClient = ({
     return null
   }
 
+  const previewIndices = getPreviewIndices({
+    numberOfImages: images.length,
+    currentIndex,
+  })
+
   return (
     <section className="w-full" role="region" aria-label="Image gallery">
       {/* Main Slideshow */}
@@ -60,7 +103,7 @@ export const ImageGalleryClient = ({
 
         {/* Navigation Controls - Accessible via keyboard tab navigation */}
         <button
-          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus:border-utility-highlight focus:bg-base-canvas-inverse-overlay focus:outline-none focus:ring-4 focus:ring-utility-highlight"
+          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus:border-utility-highlight focus:bg-base-canvas-inverse-overlay focus:outline-none focus:ring-[0.375rem] focus:ring-utility-highlight"
           onClick={() => navigate("prev")}
           aria-label="Previous image"
         >
@@ -68,7 +111,7 @@ export const ImageGalleryClient = ({
         </button>
 
         <button
-          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus:border-utility-highlight focus:bg-base-canvas-inverse-overlay focus:outline-none focus:ring-4 focus:ring-utility-highlight"
+          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus:border-utility-highlight focus:bg-base-canvas-inverse-overlay focus:outline-none focus:ring-[0.375rem] focus:ring-utility-highlight"
           onClick={() => navigate("next")}
           aria-label="Next image"
         >
@@ -78,21 +121,22 @@ export const ImageGalleryClient = ({
 
       {/* Preview Sequence - Hidden on Mobile */}
       <div className="mt-6 hidden w-full justify-center gap-3 sm:flex">
-        {getPreviewIndices({
-          numberOfImages: images.length,
-          currentIndex,
-        }).map((index) => {
+        {previewIndices.map((index) => {
           const previewImage = images[index]
           if (!previewImage) return null
 
           return (
             <button
               key={index}
-              className={`relative h-20 w-20 flex-shrink-0 overflow-hidden border-2 ${
-                index === currentIndex
-                  ? "border-blue-500"
-                  : "border-transparent hover:opacity-80"
-              } focus:opacity-80 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              className={compoundStyles.container({
+                isSelected: index === currentIndex,
+                numberOfImages: previewIndices.length.toString() as
+                  | "1"
+                  | "2"
+                  | "3"
+                  | "4"
+                  | "5",
+              })}
               onClick={() => setCurrentIndex(index)}
               aria-label={`View image ${index + 1} of ${images.length}`}
               aria-current={index === currentIndex}
@@ -102,7 +146,7 @@ export const ImageGalleryClient = ({
                 src={previewImage.src}
                 alt={previewImage.alt}
                 width="100%"
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
                 assetsBaseUrl={assetsBaseUrl}
                 lazyLoading={shouldLazyLoad}
               />
