@@ -7,7 +7,7 @@ import { LinkButton } from "../../internal/LinkButton"
 
 export const createInfobarStyles = tv({
   slots: {
-    screenWideOuterContainer: "",
+    screenWideOuterContainer: "first:mt-0",
     outerContainer: `${ComponentContent}`,
     innerContainer: "mx-auto flex flex-col items-start",
     headingContainer: "flex flex-col gap-6",
@@ -26,7 +26,7 @@ export const createInfobarStyles = tv({
         buttonContainer: "items-center",
       },
       default: {
-        outerContainer: "mt-12 rounded-lg first:mt-0",
+        outerContainer: "mt-12 rounded-lg",
         innerContainer: "items-start gap-7 p-8",
         headingContainer: "gap-4",
         title: "prose-display-sm",
