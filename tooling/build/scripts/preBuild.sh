@@ -20,7 +20,7 @@ if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   # tail -n1: Gets the last line of the output.
   # awk '{print $2}': Prints the second column of the last line, which is the tag name.
   # sed 's/refs\/tags\///': Removes the 'refs/tags/' prefix from the tag name.
-  ISOMER_BUILD_REPO_BRANCH=$(git ls-remote --tags --sort='v:refname' https://github.com/opengovsg/isomer.git | tail -n1 | awk '{print $2}' | sed 's/refs\/tags\///')
+  ISOMER_BUILD_REPO_BRANCH=adriangohjw/isom-1901-add-an-optional-button-to-navigation-bar-migration-stagingtest
 fi
 
 # Store the current directory
