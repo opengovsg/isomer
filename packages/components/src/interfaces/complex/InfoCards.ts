@@ -6,6 +6,7 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { NON_EMPTY_STRING_REGEX } from "~/utils"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
@@ -77,6 +78,10 @@ const InfoCardsBaseSchema = Type.Object({
   title: Type.String({
     title: "Title",
     maxLength: 100,
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
   }),
   subtitle: Type.Optional(
     Type.String({
@@ -126,6 +131,7 @@ const InfoCardsWithImageSchema = Type.Object(
     variant: Type.Literal(CARDS_WITH_IMAGES, { default: CARDS_WITH_IMAGES }),
     cards: Type.Array(SingleCardWithImageSchema, {
       title: "Cards",
+      minItems: 1,
       maxItems: 12,
       default: [],
     }),
@@ -142,6 +148,7 @@ const InfoCardsNoImageSchema = Type.Object(
     }),
     cards: Type.Array(SingleCardNoImageSchema, {
       title: "Cards",
+      minItems: 1,
       maxItems: 12,
       default: [],
     }),
