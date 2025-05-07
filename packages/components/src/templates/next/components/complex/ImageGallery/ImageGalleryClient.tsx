@@ -81,7 +81,7 @@ export const ImageGalleryClient = ({
 
   return (
     <section
-      className="mt-12 w-full first:mt-0"
+      className="mt-6 w-full first:mt-0"
       role="region"
       aria-label="Image gallery"
     >
