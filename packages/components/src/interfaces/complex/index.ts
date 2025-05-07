@@ -30,3 +30,8 @@ export {
   DynamicDataBannerSchema,
   type DynamicDataBannerProps,
 } from "./DynamicDataBanner"
+export {
+  IMAGE_GALLERY_TYPE,
+  ImageGallerySchema,
+  type ImageGalleryProps,
+} from "./ImageGallery"
