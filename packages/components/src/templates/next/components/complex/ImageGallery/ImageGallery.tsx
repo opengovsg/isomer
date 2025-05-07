@@ -4,11 +4,8 @@ import { useCallback, useState } from "react"
 
 import type { ImageGalleryProps } from "~/interfaces/complex/ImageGallery"
 import { ImageClient } from "../../complex/Image/ImageClient"
-import {
-  LEFT_ARROW_SVG,
-  MAXIMUM_NUMBER_OF_IMAGES_IN_PREVIEW,
-  RIGHT_ARROW_SVG,
-} from "./constants"
+import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./constants"
+import { getPreviewIndices } from "./utils"
 
 export const ImageGallery = ({
   images,
@@ -16,31 +13,6 @@ export const ImageGallery = ({
   shouldLazyLoad,
 }: ImageGalleryProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
-
-  // Calculate which images should be shown in preview
-  const getPreviewIndices = () => {
-    // If there are less than or equal to 5 images, show all of them
-    if (images.length <= MAXIMUM_NUMBER_OF_IMAGES_IN_PREVIEW) {
-      return Array.from({ length: images.length }, (_, i) => i)
-    }
-
-    const numberOfImagesBeforeCurrent = 2
-
-    // Calculate the center position for the current image in preview
-    const idealStart = Math.max(0, currentIndex - numberOfImagesBeforeCurrent)
-
-    // Ensure we don't go past the end when displaying the maximum number of previews
-    const maxStartPosition = images.length - MAXIMUM_NUMBER_OF_IMAGES_IN_PREVIEW
-
-    // Get the final starting position
-    const start = Math.min(idealStart, maxStartPosition)
-
-    // Create and return the array of indices
-    return Array.from(
-      { length: MAXIMUM_NUMBER_OF_IMAGES_IN_PREVIEW },
-      (_, i) => start + i,
-    )
-  }
 
   const navigate = useCallback(
     (direction: "prev" | "next") => {
@@ -109,7 +81,10 @@ export const ImageGallery = ({
 
       {/* Preview Sequence - Hidden on Mobile */}
       <div className="mt-4 hidden w-full justify-center gap-2 sm:flex">
-        {getPreviewIndices().map((index) => {
+        {getPreviewIndices({
+          numberOfImages: images.length,
+          currentIndex,
+        }).map((index) => {
           const previewImage = images[index]
           if (!previewImage) return null
 
