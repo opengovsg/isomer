@@ -524,6 +524,10 @@ export const TaggedArticle: Story = {
           category: "Tags",
           selected: ["NParks Happenings", "Wild dinosaur"],
         },
+        {
+          category: "Brand",
+          selected: ["Daikin", "TP Link", "Asus"],
+        },
       ],
     },
     content: [
