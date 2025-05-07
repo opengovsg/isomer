@@ -77,7 +77,7 @@ export const ImageGalleryClient = ({
       </div>
 
       {/* Preview Sequence - Hidden on Mobile */}
-      <div className="mt-4 hidden w-full justify-center gap-2 sm:flex">
+      <div className="mt-6 hidden w-full justify-center gap-3 sm:flex">
         {getPreviewIndices({
           numberOfImages: images.length,
           currentIndex,
