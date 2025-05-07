@@ -41,7 +41,7 @@ export const ImageGallery = ({
   return (
     <section className="w-full" role="region" aria-label="Image gallery">
       {/* Main Slideshow */}
-      <div className="relative h-[17rem] w-full border border-gray-100 bg-white sm:h-[28.5rem]">
+      <div className="relative h-[17rem] w-full border bg-white sm:h-[28.5rem]">
         <div className="relative h-full w-full">
           <div className="h-full w-full motion-safe:transition motion-safe:duration-300 motion-safe:ease-out">
             <ImageClient
@@ -52,10 +52,9 @@ export const ImageGallery = ({
               assetsBaseUrl={site.assetsBaseUrl}
               lazyLoading={shouldLazyLoad}
             />
-
             {currentImage.caption && (
-              <div className="absolute bottom-0 left-0 right-0 bg-black/90 p-4 text-white">
-                <p>{currentImage.caption}</p>
+              <div className="prose-label-sm-medium absolute bottom-0 left-0 right-0 bg-base-canvas-inverse-overlay/90 p-3 text-white">
+                {currentImage.caption}
               </div>
             )}
           </div>
@@ -63,7 +62,7 @@ export const ImageGallery = ({
 
         {/* Navigation Controls - Accessible via keyboard tab navigation */}
         <button
-          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-black/50 p-2 text-white hover:bg-black/70 focus:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white"
+          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus:border-utility-highlight focus:bg-base-canvas-inverse-overlay focus:outline-none focus:ring-4 focus:ring-utility-highlight"
           onClick={() => navigate("prev")}
           aria-label="Previous image"
         >
@@ -71,7 +70,7 @@ export const ImageGallery = ({
         </button>
 
         <button
-          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-black/50 p-2 text-white hover:bg-black/70 focus:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white"
+          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus:border-utility-highlight focus:bg-base-canvas-inverse-overlay focus:outline-none focus:ring-4 focus:ring-utility-highlight"
           onClick={() => navigate("next")}
           aria-label="Next image"
         >

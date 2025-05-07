@@ -2,7 +2,7 @@ export const MAXIMUM_NUMBER_OF_IMAGES_IN_PREVIEW = 5
 
 export const LEFT_ARROW_SVG = (
   <svg
-    className="h-6 w-6"
+    className="h-8 w-8"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -18,7 +18,7 @@ export const LEFT_ARROW_SVG = (
 
 export const RIGHT_ARROW_SVG = (
   <svg
-    className="h-6 w-6"
+    className="h-8 w-8"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
