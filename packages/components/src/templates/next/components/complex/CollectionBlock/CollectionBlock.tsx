@@ -94,6 +94,8 @@ const SingleCard = ({
 
   const renderImage = () => {
     const hasImage = image?.src !== undefined
+
+    // Fallback to site logo if user want to display thumbnail but no image is provided
     const imageSrc = hasImage ? image.src : site.logoUrl
     const imageAlt = hasImage ? image.alt : `Site logo for ${site.siteName}`
 
