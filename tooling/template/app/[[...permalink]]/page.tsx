@@ -98,7 +98,7 @@ export const generateMetadata = async (
     // TODO: fixup all the typing errors
     // @ts-ignore to fix when types are proper
     siteMap: sitemap,
-    navBarItems: navbar,
+    navbar: navbar,
     // TODO: fixup all the typing errors
     // @ts-ignore to fix when types are proper
     footerItems: footer,
@@ -122,7 +122,7 @@ const Page = async (props: DynamicPageProps) => {
         // TODO: fixup all the typing errors
         // @ts-ignore to fix when types are proper
         siteMap: sitemap,
-        navBarItems: navbar,
+        navbar: navbar,
         // TODO: fixup all the typing errors
         // @ts-ignore to fix when types are proper
         footerItems: footer,

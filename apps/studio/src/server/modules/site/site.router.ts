@@ -263,9 +263,7 @@ export const siteRouter = router({
           .updateTable("Navbar")
           .set({
             content: jsonb(
-              safeJsonParse(
-                navbar,
-              ) as IsomerSiteWideComponentsProps["navBarItems"],
+              safeJsonParse(navbar) as IsomerSiteWideComponentsProps["navbar"],
             ),
           })
           .where("siteId", "=", siteId)

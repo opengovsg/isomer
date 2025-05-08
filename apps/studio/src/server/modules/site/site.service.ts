@@ -15,7 +15,12 @@ import {
 import { logConfigEvent } from "../audit/audit.service"
 import { AuditLogEvent, db, jsonb, sql } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
-import { FOOTER, NAV_BAR_ITEMS, PAGE_BLOB, SEARCH_PAGE_BLOB } from "./constants"
+import {
+  FOOTER,
+  NAVBAR_CONTENT,
+  PAGE_BLOB,
+  SEARCH_PAGE_BLOB,
+} from "./constants"
 
 export const validateUserPermissionsForSite = async ({
   siteId,
@@ -296,7 +301,7 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
       .insertInto("Navbar")
       .values({
         siteId,
-        content: jsonb(NAV_BAR_ITEMS),
+        content: jsonb(NAVBAR_CONTENT),
       })
       .onConflict((oc) =>
         oc

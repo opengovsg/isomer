@@ -12,9 +12,7 @@ export type PageContent = Omit<
 
 export type Page = Resource
 
-export interface Navbar {
-  items: IsomerSiteProps["navBarItems"]
-}
+export type Navbar = Pick<IsomerSiteProps["navbar"], "items" | "callToAction">
 
 export type Footer = IsomerSiteProps["footerItems"]
 

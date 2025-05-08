@@ -64,7 +64,7 @@ function SuspendablePreview({
         siteMap,
         environment: "production",
         ...siteConfig,
-        navBarItems: navbar,
+        navbar: navbar,
         footerItems: footer,
         assetsBaseUrl: ASSETS_BASE_URL,
       }}

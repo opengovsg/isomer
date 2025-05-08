@@ -44,7 +44,7 @@ describe("sortCollectionItems", () => {
           type: "localSearch",
           searchUrl: "/search",
         },
-        navBarItems: [],
+        navbar: { items: [] },
         footerItems: {
           siteNavItems: [],
           privacyStatementLink: "/privacy",
