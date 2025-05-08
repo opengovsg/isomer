@@ -3,6 +3,7 @@ import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
+import { CHILDPAGE_LAYOUT_OPTIONS } from "@opengovsg/isomer-components"
 
 import { IconBoxes, IconRows } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -32,13 +33,21 @@ export function JsonFormsChildPageLayoutControl({
           }}
           value={data as string}
         >
-          <Radio value="boxes" allowDeselect={false}>
+          <Radio
+            value={CHILDPAGE_LAYOUT_OPTIONS.Boxes}
+            allowDeselect={false}
+            size="sm"
+          >
             Boxes
-            <IconBoxes />
+            <IconBoxes mt="10px" />
           </Radio>
-          <Radio value="rows" allowDeselect={false}>
+          <Radio
+            value={CHILDPAGE_LAYOUT_OPTIONS.Rows}
+            allowDeselect={false}
+            size="sm"
+          >
             Rows
-            <IconRows />
+            <IconRows mt="10px" />
           </Radio>
         </Radio.RadioGroup>
       </FormControl>

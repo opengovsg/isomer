@@ -2,7 +2,7 @@ import type { DropResult } from "@hello-pangea/dnd"
 import { useCallback } from "react"
 import { Box, Button, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
-import { Infobox, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { BiListUl, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
@@ -185,24 +185,14 @@ export default function RootStateDrawer() {
           label={"Child pages"}
           description={"Title, Description and Order of display"}
           icon={BiListUl}
+          // NOTE: we have an inbuilt gap due to the outer `Stack`
+          // hence, we need a negative margin here
+          // so that it will fit the desired design
+          containerProps={{ mt: "-0.5rem" }}
         />
       )}
 
-      {pageLayout === "index" && savedPageState.content.length === 0 ? (
-        <Infobox variant="warning" size="sm">
-          <Box>
-            <Text textStyle="subhead-2" mb="0.25rem">
-              Why can’t I add anything else to this page?
-            </Text>
-
-            <Text textStyle="body-2">
-              Content for this page is auto-generated. We’re introducing editing
-              for this page type soon, so that you can add custom content
-              alongside the page links.
-            </Text>
-          </Box>
-        </Infobox>
-      ) : (
+      {(pageLayout !== "index" || savedPageState.content.length > 0) && (
         <VStack w="100%" h="100%" gap="1rem">
           {/* Custom Blocks Section */}
           <Flex flexDirection="row" w="100%">
