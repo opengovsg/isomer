@@ -7,6 +7,8 @@ import {
   BlockquoteSchema,
   CalloutSchema,
   ChildrenPagesSchema,
+  COLLECTION_BLOCK_TYPE,
+  CollectionBlockSchema,
   ContentpicSchema,
   DividerSchema,
   DYNAMIC_DATA_BANNER_TYPE,
@@ -48,6 +50,7 @@ export const IsomerComplexComponentsMap = {
   childrenpages: ChildrenPagesSchema,
   [DYNAMIC_DATA_BANNER_TYPE]: DynamicDataBannerSchema,
   logocloud: LogoCloudSchema,
+  [COLLECTION_BLOCK_TYPE]: CollectionBlockSchema,
 }
 
 export const IsomerNativeComponentsMap = {
