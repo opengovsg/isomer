@@ -7,4 +7,5 @@ export interface BreadcrumbLink {
 export interface BreadcrumbProps {
   links: BreadcrumbLink[]
   LinkComponent?: LinkComponentType
+  colorScheme?: "default" | "inverse"
 }

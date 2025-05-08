@@ -7,13 +7,13 @@ import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
-import { AdminCreateIndexPageButton } from "~/features/dashboard/components/AdminCreateIndexPageButton"
 import {
   DashboardLayout,
   getBreadcrumbsFromRoot,
 } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
+import { IndexpageRow } from "~/features/dashboard/components/IndexpageRow/IndexpageRow"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
@@ -71,10 +71,6 @@ const FolderPage: NextPageWithLayout = () => {
         title={title}
         buttons={
           <>
-            <AdminCreateIndexPageButton
-              siteId={parseInt(siteId)}
-              parentId={parseInt(folderId)}
-            />
             <Button
               variant="outline"
               size="md"
@@ -125,6 +121,7 @@ const FolderPage: NextPageWithLayout = () => {
           </>
         }
       >
+        <IndexpageRow siteId={Number(siteId)} resourceId={folderId} />
         <ResourceTable
           siteId={parseInt(siteId)}
           resourceId={parseInt(folderId)}

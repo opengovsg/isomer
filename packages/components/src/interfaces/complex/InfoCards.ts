@@ -132,7 +132,7 @@ const InfoCardsWithImageSchema = Type.Object(
     cards: Type.Array(SingleCardWithImageSchema, {
       title: "Cards",
       minItems: 1,
-      maxItems: 12,
+      maxItems: 30,
       default: [],
     }),
   },
@@ -149,7 +149,7 @@ const InfoCardsNoImageSchema = Type.Object(
     cards: Type.Array(SingleCardNoImageSchema, {
       title: "Cards",
       minItems: 1,
-      maxItems: 12,
+      maxItems: 30,
       default: [],
     }),
   },
