@@ -86,7 +86,6 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
           <Megamenu
             name={name}
             description={description}
-            referenceLinkHref={referenceLinkHref}
             items={items}
             LinkComponent={LinkComponent}
             onCloseMegamenu={onCloseMegamenu}
@@ -100,41 +99,17 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
 const Megamenu = ({
   name,
   description,
-  referenceLinkHref,
   onCloseMegamenu,
   items,
   LinkComponent,
-}: Pick<
-  BaseNavbarItemProps,
-  "name" | "description" | "referenceLinkHref" | "items"
-> & {
+}: {
+  name: string
+  description?: string
+  items: BaseNavbarItemProps[]
   LinkComponent: NavbarProps["LinkComponent"]
   onCloseMegamenu: () => void
 }) => {
   useScrollLock()
-
-  const renderTitleContent = () => {
-    if (!referenceLinkHref) {
-      return name
-    }
-
-    const isExternal = isExternalUrl(referenceLinkHref)
-    return (
-      <Link
-        LinkComponent={LinkComponent}
-        isExternal={isExternal}
-        showExternalIcon={isExternal}
-        isWithFocusVisibleHighlight
-        href={referenceLinkHref}
-        className="group inline-flex w-fit items-center gap-1.5 hover:text-brand-interaction-hover hover:no-underline"
-      >
-        {name}
-        {!isExternal && (
-          <BiRightArrowAlt className="text-[1.5rem] transition ease-in group-hover:translate-x-2.5" />
-        )}
-      </Link>
-    )
-  }
 
   return (
     <div className="absolute left-0 right-0 top-full z-50">
@@ -147,9 +122,7 @@ const Megamenu = ({
           <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
             <div className="flex w-full flex-row items-start">
               <div className="flex flex-col gap-1">
-                <h2 className="prose-display-sm text-base-content">
-                  {renderTitleContent()}
-                </h2>
+                <h2 className="prose-display-sm text-base-content">{name}</h2>
                 {description && (
                   <p className="prose-label-sm-regular text-base-content-subtle">
                     {description}
@@ -168,7 +141,7 @@ const Megamenu = ({
             </div>
 
             <ul className="grid grid-cols-3 gap-x-16 gap-y-8">
-              {items?.map((subItem) => {
+              {items.map((subItem) => {
                 const isExternal = isExternalUrl(subItem.url)
                 return (
                   <li key={subItem.name}>
