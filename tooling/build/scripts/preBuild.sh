@@ -19,8 +19,9 @@ if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   # --sort='v:refname': Sorts the tags by version number according to the semantic versioning scheme
   # tail -n1: Gets the last line of the output.
   # awk '{print $2}': Prints the second column of the last line, which is the tag name.
-  # sed 's/refs\/tags\///': Removes the 'refs/tags/' prefix from the tag name.
-  ISOMER_BUILD_REPO_BRANCH=$(git ls-remote --tags --sort='v:refname' https://github.com/opengovsg/isomer.git | tail -n1 | awk '{print $2}' | sed 's/refs\/tags\///')
+  # sed -E 's|refs/tags/||; s/\^\{\}$//': Removes the 'refs/tags/' prefix from the tag name.
+  # - If tag is annotated due to signing, the tag name will have a caret (^) and curly braces ({}) and this removes them too.
+  ISOMER_BUILD_REPO_BRANCH=$(git ls-remote --tags --sort='v:refname' https://github.com/opengovsg/isomer.git | tail -n1 | awk '{print $2}' | sed -E 's|refs/tags/||; s/\^\{\}$//')
 fi
 
 # Store the current directory
