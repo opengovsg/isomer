@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, FormControl } from "@chakra-ui/react"
+import { Box, Flex, FormControl } from "@chakra-ui/react"
 import { isBooleanControl, rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
@@ -33,16 +33,18 @@ export function JsonFormsBooleanControl({
   return (
     <Box>
       <FormControl isRequired>
-        <FormLabel description={description} htmlFor={id}>
-          {label}
-        </FormLabel>
-        <Switch
-          id={id}
-          isDisabled={!enabled}
-          isChecked={!!data}
-          onChange={(e) => handleChange(path, e.target.checked)}
-        />
-        <FormErrorMessage>{errors}</FormErrorMessage>
+        <Flex justifyContent="space-between" alignItems="center">
+          <FormLabel description={description} htmlFor={id}>
+            {label}
+          </FormLabel>
+          <Switch
+            id={id}
+            isDisabled={!enabled}
+            isChecked={!!data}
+            onChange={(e) => handleChange(path, e.target.checked)}
+          />
+          <FormErrorMessage>{errors}</FormErrorMessage>
+        </Flex>
       </FormControl>
     </Box>
   )

@@ -1,12 +1,12 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type {
+  IndexPageSchema,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { useCallback } from "react"
-import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
-import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
-import {
-  getLayoutPageSchema,
-  ISOMER_USABLE_PAGE_LAYOUTS,
-} from "@opengovsg/isomer-components"
+import { Box, Flex, useDisclosure } from "@chakra-ui/react"
+import { Button, useToast } from "@opengovsg/design-system-react"
+import { getChildpageSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
@@ -22,15 +22,20 @@ import { DrawerHeader } from "./Drawer/DrawerHeader"
 import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
 
-const HEADER_LABELS: Record<string, string> = {
-  article: "Edit article page header",
-  content: "Edit content page header",
-  index: "Edit index page header",
-}
-
 const ajv = new Ajv({ strict: false, logger: false })
 
-export default function MetadataEditorStateDrawer(): JSX.Element {
+// NOTE: by the time we display this drawer,
+// the only allowed `layout` type shold be `index`.
+// This invariant is upheld in `RootStateDrawer`,
+// where we only show the fixed block that triggers this drawer
+// when the `layout` of the `page` is `index`
+const narrowToIndex = (
+  page: Omit<IsomerSchema, "version">,
+): page is Static<typeof IndexPageSchema> => {
+  return page.layout === "index"
+}
+
+export default function ChildPageEditorDrawer(): JSX.Element {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -39,19 +44,27 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const {
     setDrawerState,
     savedPageState,
-    setSavedPageState,
     previewPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
 
-  const { pageId, siteId } = useQueryParse(editPageSchema)
+  if (!narrowToIndex(previewPageState)) {
+    throw new Error(
+      "Expected to find an index page, but this page does not have the required layout!",
+    )
+  }
+
   const toast = useToast()
+
+  const schema = getChildpageSchema()
+  const validateFn = ajv.compile<Static<typeof schema>>(schema)
+
+  const { pageId, siteId } = useQueryParse(editPageSchema)
   const utils = trpc.useUtils()
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
       toast({
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
         ...BRIEF_TOAST_SETTINGS,
@@ -59,11 +72,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     },
   })
 
-  const metadataSchema = getLayoutPageSchema(previewPageState.layout)
-  const validateFn = ajv.compile<Static<typeof metadataSchema>>(metadataSchema)
-
   const handleSaveChanges = useCallback(() => {
-    setSavedPageState(previewPageState)
     mutate(
       {
         pageId,
@@ -74,30 +83,29 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
         onSuccess: () => setDrawerState({ state: "root" }),
       },
     )
-  }, [
-    mutate,
-    pageId,
-    previewPageState,
-    setDrawerState,
-    setSavedPageState,
-    siteId,
-  ])
+  }, [mutate, pageId, previewPageState, setDrawerState, siteId])
 
-  const handleChange = (data: unknown) => {
-    // TODO: Perform actual validation on the data
-    const newPageState = {
-      ...previewPageState,
-      page: data,
-    } as IsomerSchema
-
-    setPreviewPageState(newPageState)
-  }
-
-  const handleDiscardChanges = () => {
+  const handleDiscardChanges = useCallback(() => {
     setPreviewPageState(savedPageState)
     onDiscardChangesModalClose()
     setDrawerState({ state: "root" })
-  }
+  }, [
+    onDiscardChangesModalClose,
+    savedPageState,
+    setDrawerState,
+    setPreviewPageState,
+  ])
+
+  const handleChange = useCallback(
+    (data: unknown) => {
+      const newPageState = {
+        ...previewPageState,
+        childpages: data,
+      }
+      setPreviewPageState(newPageState as IsomerSchema)
+    },
+    [previewPageState, setPreviewPageState],
+  )
 
   return (
     <>
@@ -117,34 +125,16 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               handleDiscardChanges()
             }
           }}
-          label={
-            HEADER_LABELS[savedPageState.layout] || "Edit header information"
-          }
+          label="Edit child pages block"
         />
-
-        {savedPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Index && (
-          <Box px="1.5rem" pt="1rem">
-            <Infobox
-              size="sm"
-              borderRadius="0.25rem"
-              border="1px solid"
-              borderColor="utility.feedback.info"
-            >
-              <Text textStyle="body-2">
-                To change the page title, go to the folder and click on "Folder
-                Settings"
-              </Text>
-            </Infobox>
-          </Box>
-        )}
 
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
-            <FormBuilder<Static<typeof metadataSchema>>
-              schema={metadataSchema}
+            <FormBuilder<Static<typeof schema>>
+              schema={schema}
               validateFn={validateFn}
-              data={previewPageState.page}
-              handleChange={(data) => handleChange(data)}
+              data={previewPageState.childpages}
+              handleChange={handleChange}
             />
           </Box>
           <Box
@@ -153,7 +143,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             py="1.5rem"
             px="2rem"
           >
-            <SaveButton isLoading={isLoading} onClick={handleSaveChanges} />
+            <SaveButton onClick={handleSaveChanges} isLoading={isLoading} />
           </Box>
         </ErrorProvider>
       </Flex>
