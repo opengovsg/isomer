@@ -45,17 +45,15 @@ export const Navbar = ({
         lazyLoading: false, // will always be above the fold
       }}
       callToAction={
-        callToAction
-          ? {
-              label: callToAction.label,
-              referenceLinkHref: getReferenceLinkHref(
-                callToAction.url,
-                site.siteMap,
-                site.assetsBaseUrl,
-              ),
-              isExternal: isExternalUrl(callToAction.url),
-            }
-          : undefined
+        callToAction && {
+          label: callToAction.label,
+          referenceLinkHref: getReferenceLinkHref(
+            callToAction.url,
+            site.siteMap,
+            site.assetsBaseUrl,
+          ),
+          isExternal: isExternalUrl(callToAction.url),
+        }
       }
       LinkComponent={LinkComponent}
     />
