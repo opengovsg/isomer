@@ -26,6 +26,7 @@ import { type Page } from "./resource.types"
 
 // Specify the default columns to return from the Resource table
 export const defaultResourceSelect = [
+  "Resource.pos",
   "Resource.id",
   "Resource.title",
   "Resource.permalink",

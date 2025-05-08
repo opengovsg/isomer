@@ -55,6 +55,11 @@ export const createFolderIndexPage = (title: string) => {
         summary: `Pages in ${title}`,
       },
     },
+    childpages: {
+      layout: "boxes",
+      summary: false,
+      thumbnail: false,
+    },
     content: [],
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }

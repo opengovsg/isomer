@@ -25,6 +25,9 @@ export interface MetadataEditorState {
 export interface HeroEditorState {
   state: "heroEditor"
 }
+export interface ChildpagesEditorState {
+  state: "childpagesEditor"
+}
 
 export type DrawerState =
   | RootDrawerState
@@ -34,3 +37,4 @@ export type DrawerState =
   | ComplexEditorState
   | MetadataEditorState
   | HeroEditorState
+  | ChildpagesEditorState
