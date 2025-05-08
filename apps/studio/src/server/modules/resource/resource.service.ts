@@ -594,6 +594,7 @@ export const getBatchAncestryWithSelfQuery = async ({
         .where("Resource.siteId", "=", Number(siteId))
         .where("Resource.id", "in", resourceIds)
         .where("Resource.type", "!=", ResourceType.RootPage)
+        .where("Resource.type", "!=", ResourceType.IndexPage)
         .unionAll(
           eb
             .selectFrom("Resource")

@@ -2,15 +2,24 @@ import { TRPCError } from "@trpc/server"
 import { get } from "lodash"
 import pick from "lodash/pick"
 
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createFolderSchema,
   editFolderSchema,
+  getIndexpageSchema,
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
-import { AuditLogEvent, db, ResourceState, ResourceType } from "../database"
+import {
+  AuditLogEvent,
+  db,
+  jsonb,
+  ResourceState,
+  ResourceType,
+} from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { createFolderIndexPage } from "../page/page.service"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import { publishResource } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
@@ -97,12 +106,43 @@ export const folderRouter = router({
               throw err
             })
 
+          const indexPageBlob = await tx
+            .insertInto("Blob")
+            .values({
+              content: jsonb(createFolderIndexPage(folderTitle)),
+            })
+            .returning("id")
+            .executeTakeFirstOrThrow()
+
+          const indexPage = await tx
+            .insertInto("Resource")
+            .values({
+              parentId: folder.id,
+              draftBlobId: indexPageBlob.id,
+              title: folderTitle,
+              type: ResourceType.IndexPage,
+              permalink: INDEX_PAGE_PERMALINK,
+              siteId,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+
           await logResourceEvent(tx, {
             siteId,
             eventType: AuditLogEvent.ResourceCreate,
             delta: {
               before: null,
               after: folder,
+            },
+            by: user,
+          })
+
+          await logResourceEvent(tx, {
+            siteId,
+            eventType: AuditLogEvent.ResourceCreate,
+            delta: {
+              before: null,
+              after: indexPage,
             },
             by: user,
           })
@@ -160,7 +200,7 @@ export const folderRouter = router({
           .executeTakeFirstOrThrow(() => new TRPCError({ code: "NOT_FOUND" }))
 
         const result = await db.transaction().execute(async (tx) => {
-          const oldResource = await db
+          const oldResource = await tx
             .selectFrom("Resource")
             .selectAll()
             .where("Resource.id", "=", resourceId)
@@ -178,7 +218,7 @@ export const folderRouter = router({
             })
           }
 
-          const newResource = await db
+          const newResource = await tx
             .updateTable("Resource")
             .where("Resource.id", "=", oldResource.id)
             .where("Resource.siteId", "=", oldResource.siteId)
@@ -202,6 +242,19 @@ export const folderRouter = router({
               throw err
             })
 
+          // NOTE: update the index page's title so that they stay in sync
+          await tx
+            .updateTable("Resource")
+            .where("Resource.parentId", "=", oldResource.id)
+            .where("Resource.siteId", "=", oldResource.siteId)
+            .where("Resource.type", "=", ResourceType.IndexPage)
+            .set({
+              title,
+            })
+            // NOTE: we cannot throw here because
+            // it's entirely possible that the index page doesn't exist
+            .executeTakeFirst()
+
           await logResourceEvent(tx, {
             siteId: Number(siteId),
             eventType: AuditLogEvent.ResourceUpdate,
@@ -220,4 +273,36 @@ export const folderRouter = router({
         return pick(result, defaultFolderSelect)
       },
     ),
+
+  getIndexpage: protectedProcedure
+    .input(getIndexpageSchema)
+    .query(async ({ ctx, input: { resourceId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+        resourceId,
+      })
+
+      const { title } = await db
+        .selectFrom("Resource")
+        .where("id", "=", resourceId)
+        .select("title")
+        .executeTakeFirstOrThrow()
+
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("Resource.parentId", "=", resourceId)
+        .where("Resource.type", "=", ResourceType.IndexPage)
+        .select(["id", "draftBlobId"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "No existing index page found",
+            }),
+        )
+
+      return { title, ...indexPage }
+    }),
 })
