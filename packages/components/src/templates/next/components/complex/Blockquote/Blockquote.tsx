@@ -46,8 +46,6 @@ const createBlockquoteStyles = tv({
   },
 })
 
-const compoundStyles = createBlockquoteStyles()
-
 export const Blockquote = ({
   quote,
   source,
@@ -61,23 +59,22 @@ export const Blockquote = ({
   const variants = {
     layout: simplifiedLayout,
   } as const
+  const compoundStyles = createBlockquoteStyles(variants)
 
   return (
-    <section className={compoundStyles.outerContainer(variants)}>
-      <div className={compoundStyles.innerContainer(variants)}>
-        <div className={compoundStyles.quoteContainer(variants)}>
-          <div className={compoundStyles.openApostrophe(variants)} aria-hidden>
+    <section className={compoundStyles.outerContainer()}>
+      <div className={compoundStyles.innerContainer()}>
+        <div className={compoundStyles.quoteContainer()}>
+          <div className={compoundStyles.openApostrophe()} aria-hidden>
             <BiSolidQuoteAltLeft />
           </div>
 
-          <div className={compoundStyles.textContainer(variants)}>
-            <blockquote className={compoundStyles.blockquote(variants)}>
+          <div className={compoundStyles.textContainer()}>
+            <blockquote className={compoundStyles.blockquote()}>
               {quote}
             </blockquote>
 
-            <cite className={compoundStyles.citation(variants)}>
-              — {source}
-            </cite>
+            <cite className={compoundStyles.citation()}>— {source}</cite>
           </div>
         </div>
 
@@ -86,7 +83,7 @@ export const Blockquote = ({
             src={imageSrc}
             alt={imageAlt}
             width="100%"
-            className={compoundStyles.image(variants)}
+            className={compoundStyles.image()}
             assetsBaseUrl={site.assetsBaseUrl}
             lazyLoading={shouldLazyLoad}
           />
