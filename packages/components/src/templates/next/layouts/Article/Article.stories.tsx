@@ -526,7 +526,13 @@ export const TaggedArticle: Story = {
         },
         {
           category: "Brand",
-          selected: ["Daikin", "TP Link", "Asus"],
+          selected: [
+            "Daikin",
+            "TP Link",
+            "Asus",
+            "Something slightly longer like this",
+            "Something really long like this, a whole essay in a tag, although you should be avoiding this",
+          ],
         },
       ],
     },
