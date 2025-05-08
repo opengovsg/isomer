@@ -10,7 +10,7 @@ const createIndexPageLayoutStyles = tv({
     container:
       "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
     siderailContainer: "relative col-span-3 hidden lg:block",
-    content: "col-span-12 max-w-[54rem] break-words",
+    content: "col-span-12 break-words",
   },
 })
 
@@ -40,6 +40,7 @@ const IndexPageLayout = ({
     >
       <ContentPageHeader
         {...page.contentPageHeader}
+        colorScheme="inverse"
         title={page.title}
         breadcrumb={breadcrumb}
         site={site}

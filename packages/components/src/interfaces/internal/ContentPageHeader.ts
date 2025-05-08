@@ -49,4 +49,5 @@ export type ContentPageHeaderProps = Static<typeof ContentPageHeaderSchema> &
     breadcrumb: BreadcrumbProps
     site: IsomerSiteProps
     LinkComponent?: LinkComponentType
+    colorScheme?: "default" | "inverse"
   }

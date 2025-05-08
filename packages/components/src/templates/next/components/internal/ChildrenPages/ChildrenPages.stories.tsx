@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { ChildrenPagesProps } from "~/interfaces"
-import { IsomerSiteProps } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import ChildrenPages from "./ChildrenPages"
 
 const meta: Meta<ChildrenPagesProps> = {
@@ -377,9 +377,58 @@ export const RowsWithDescription: Story = {
   },
 }
 
-export const RowsWithThumbnail: Story = {
+export const RowsWithThumbnailOnly: Story = {
   args: {
     layout: "rows",
+    site,
+    permalink: "/parent",
+    LinkComponent: "a",
+    showThumbnail: true,
+  },
+}
+
+export const RowsWithThumbnailAndDescription: Story = {
+  args: {
+    layout: "rows",
+    site,
+    permalink: "/parent",
+    LinkComponent: "a",
+    showSummary: true,
+    showThumbnail: true,
+  },
+}
+
+export const Boxes: Story = {
+  args: {
+    layout: "boxes",
+    site,
+    permalink: "/parent",
+    LinkComponent: "a",
+  },
+}
+
+export const BoxesWithDescription: Story = {
+  args: {
+    layout: "boxes",
+    site,
+    permalink: "/parent",
+    LinkComponent: "a",
+    showSummary: true,
+  },
+}
+
+export const BoxesWithThumbnailOnly: Story = {
+  args: {
+    layout: "boxes",
+    site,
+    permalink: "/parent",
+    LinkComponent: "a",
+    showThumbnail: true,
+  },
+}
+export const BoxesWithThumbnailAndDescription: Story = {
+  args: {
+    layout: "boxes",
     site,
     permalink: "/parent",
     LinkComponent: "a",

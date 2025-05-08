@@ -8,7 +8,11 @@ import {
   schema,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  AuditLogEvent,
+  ResourceState,
+  ResourceType,
+} from "~prisma/generated/generatedEnums"
 import _, { get, isEmpty, isEqual } from "lodash"
 import { z } from "zod"
 
@@ -824,7 +828,7 @@ export const pageRouter = router({
             }
           : createFolderIndexPage(parent.title)
 
-      return db.transaction().execute(async (tx) => {
+      const page = await db.transaction().execute(async (tx) => {
         const blob = await tx
           .insertInto("Blob")
           .values({ content: jsonb(blobContent) })
@@ -858,10 +862,24 @@ export const pageRouter = router({
           siteId,
           by,
           delta: { before: null, after: addedResource },
-          eventType: "ResourceCreate",
+          eventType: AuditLogEvent.ResourceCreate,
         })
 
         return { pageId: addedResource.id }
       })
+
+      // NOTE: Because we are inserting index pages automatically,
+      // we should publish them so that we avoid
+      // using the default index pages as the fallback prior to user
+      // publishing the changes.
+      // This is because for folder index pages, the default fallback
+      // when an index page cannot be found
+      // is deprecated and should not be shown.
+      // We cannot publish inside the tx above because
+      // this also calls into a tx,
+      // so it cannot see that the resources are inserted
+      await publishPageResource(ctx.logger, siteId, page.pageId, ctx.user.id)
+
+      return page
     }),
 })

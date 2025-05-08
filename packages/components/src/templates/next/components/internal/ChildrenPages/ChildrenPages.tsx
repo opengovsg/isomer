@@ -1,14 +1,16 @@
+import type { ImageClientProps } from "../../complex"
 import type { ChildrenPagesProps } from "~/interfaces"
-import { CARDS_WITHOUT_IMAGES } from "~/interfaces/complex/InfoCards"
+import type { IsomerSitemap } from "~/types"
 import { tv } from "~/lib/tv"
-import { IsomerSitemap } from "~/types"
 import {
   getNodeFromSiteMap,
+  getReferenceLinkHref,
   groupFocusVisibleHighlight,
   isExternalUrl,
 } from "~/utils"
-import { ImageClient, ImageClientProps, InfoCards } from "../../complex"
+import { ImageClient } from "../../complex"
 import { ComponentContent } from "../customCssClass"
+import { Link } from "../Link"
 
 const ChildpageImage = ({
   src,
@@ -39,7 +41,8 @@ interface Childpage {
   image?: IsomerSitemap["image"]
 }
 
-interface RowLayoutProps extends Pick<ChildrenPagesProps, "LinkComponent"> {
+interface ChildpageLayoutProps
+  extends Pick<ChildrenPagesProps, "LinkComponent" | "site"> {
   childpages: Childpage[]
   showSummary: boolean
   showThumbnail: boolean
@@ -47,20 +50,104 @@ interface RowLayoutProps extends Pick<ChildrenPagesProps, "LinkComponent"> {
   fallback: Required<NonNullable<IsomerSitemap["image"]>>
 }
 
-const createRowStyles = tv({
+const createBoxStyles = tv({
   slots: {
-    container: `${ComponentContent} grid grid-cols-3 gap-10 md:grid-cols-6 lg:grid-cols-12`,
-    image:
-      "aspect-[3/2] object-cover max-md:col-span-full max-md:row-span-1 md:col-span-2 lg:col-span-3",
-    textContainer: "max-md:col-span-full max-md:row-span-1",
+    container: `${ComponentContent} grid grid-cols-3 gap-10 md:grid-cols-6 md:gap-x-10 lg:grid-cols-12 [&:not(:first-child)]:mt-7`,
+    imageContainer:
+      "align-center col-span-full row-span-1 flex aspect-[3/2] h-full w-full justify-center border-b border-b-base-divider-subtle",
+    image: "bg-white",
+    textContainer:
+      "col-span-full row-span-1 flex flex-col gap-2 break-words px-5 pb-5",
     contentContainer:
-      // NOTE: Our `rounded-sm` compiles down to `0.125 rem` rather than `0.25 rem`, necessitating this
-      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid rounded-[0.25rem] border border-base-divider-medium p-5 max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
+      "grid-rows-[1fr fit-content] group grid cursor-pointer grid-cols-subgrid content-start items-start gap-y-5 rounded-[0.25rem] border border-base-divider-medium max-md:col-span-full md:col-span-3 lg:col-span-4",
     title: [
       groupFocusVisibleHighlight(),
       "prose-title-md-medium text-base-content-strong group-hover:text-brand-canvas-inverse group-hover:underline",
     ],
-    description: "gray prose-body-base text-gray-700",
+    description: "gray prose-body-base text-base-content",
+  },
+  variants: {
+    layout: {
+      default: {},
+    },
+    hasThumbnail: {
+      true: {},
+      false: { textContainer: "pt-5" },
+    },
+    hasFallbackImage: {
+      true: { image: "w-[50%]" },
+      false: { image: "object-cover" },
+    },
+  },
+
+  defaultVariants: {
+    layout: "default",
+  },
+})
+
+const BoxLayout = ({
+  childpages,
+  showSummary,
+  showThumbnail,
+  assetsBaseUrl,
+  fallback,
+  LinkComponent,
+  site,
+}: ChildpageLayoutProps) => {
+  const styles = createBoxStyles()
+
+  return (
+    <div className={styles.container()}>
+      {childpages.map(({ title, description, url, image }, idx) => {
+        const renderedImage = image?.src ? image : fallback
+
+        return (
+          <Link
+            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            key={`${title}-${idx}`}
+            LinkComponent={LinkComponent}
+            className={styles.contentContainer()}
+          >
+            {showThumbnail && (
+              <div className={styles.imageContainer()}>
+                <ChildpageImage
+                  assetsBaseUrl={assetsBaseUrl}
+                  {...renderedImage}
+                  className={styles.image({ hasFallbackImage: !image?.src })}
+                />
+              </div>
+            )}
+            <div
+              className={styles.textContainer({ hasThumbnail: showThumbnail })}
+            >
+              <p className={styles.title()}>{title}</p>
+              {showSummary && (
+                <p className={styles.description()}> {description}</p>
+              )}
+            </div>
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
+
+const createRowStyles = tv({
+  slots: {
+    container: `${ComponentContent} grid grid-cols-3 gap-10 md:grid-cols-6 lg:grid-cols-12 [&:not(:first-child)]:mt-7`,
+    image: "bg-white",
+    imageContainer:
+      "align-center flex aspect-[3/2] h-full w-full justify-center border-r border-r-base-divider-subtle max-md:col-span-full max-md:row-span-1 md:col-span-2 lg:col-span-3",
+    textContainer:
+      "flex flex-col gap-2 break-words max-md:col-span-full max-md:row-span-1",
+    contentContainer:
+      // NOTE: Our `rounded-sm` compiles down to `0.125 rem` rather than `0.25 rem`, necessitating this
+      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid rounded-[0.25rem] border border-base-divider-medium p-5 max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-8",
+    title: [
+      groupFocusVisibleHighlight(),
+      "prose-title-md-medium text-base-content-strong group-hover:text-brand-canvas-inverse group-hover:underline",
+    ],
+    description: "prose-body-base text-base-content",
   },
   variants: {
     layout: {
@@ -69,10 +156,14 @@ const createRowStyles = tv({
     hasThumbnail: {
       true: {
         textContainer:
-          "pb-5 max-md:px-5 md:col-span-4 md:py-5 md:pr-5 lg:col-span-9",
+          "ml-[-1.25rem] pb-5 max-md:px-5 md:col-span-4 md:py-5 md:pr-5 lg:col-span-9",
         contentContainer: "p-0",
       },
       false: { textContainer: "md:col-span-6 lg:col-span-12" },
+    },
+    hasFallbackImage: {
+      true: { image: "w-[50%]" },
+      false: { image: "object-cover" },
     },
   },
 
@@ -88,40 +179,44 @@ const RowLayout = ({
   assetsBaseUrl,
   fallback,
   LinkComponent,
-}: RowLayoutProps): JSX.Element => {
+  site,
+}: ChildpageLayoutProps): JSX.Element => {
   const styles = createRowStyles()
 
   return (
     <div className={styles.container()}>
-      {childpages.map(({ title, description, url, image }) => {
+      {childpages.map(({ title, description, url, image }, idx) => {
         const renderedImage = image?.src ? image : fallback
 
         return (
-          <div
+          <Link
+            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            key={`${title}-${idx}`}
+            LinkComponent={LinkComponent}
             className={styles.contentContainer({
               hasThumbnail: !!showThumbnail,
             })}
           >
             {showThumbnail && (
-              <ChildpageImage
-                assetsBaseUrl={assetsBaseUrl}
-                {...renderedImage}
-                className={styles.image()}
-              />
+              <div className={styles.imageContainer()}>
+                <ChildpageImage
+                  assetsBaseUrl={assetsBaseUrl}
+                  {...renderedImage}
+                  className={styles.image({ hasFallbackImage: !image?.src })}
+                />
+              </div>
             )}
             <div
               className={styles.textContainer({
                 hasThumbnail: !!showThumbnail,
               })}
             >
-              <LinkComponent href={url} className={styles.title()}>
-                {title}
-              </LinkComponent>
+              <p className={styles.title()}>{title}</p>
               {showSummary && (
                 <p className={styles.description()}>{description}</p>
               )}
             </div>
-          </div>
+          </Link>
         )
       })}
     </div>
@@ -149,31 +244,33 @@ const ChildrenPages = ({
     image: child.image,
   }))
 
-  if (layout === "rows") {
+  if (layout === "boxes") {
     return (
-      <RowLayout
+      <BoxLayout
         LinkComponent={LinkComponent}
         assetsBaseUrl={site.assetsBaseUrl}
         childpages={children}
         showSummary={showSummary}
         showThumbnail={showThumbnail}
         fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
+        site={site}
       />
     )
   }
 
+  // NOTE: There are only 2 layouts (and 1 autogenerated).
+  // If the user does not have a layout specified,
+  // they were using the autogenerated layout before.
+  // Hence, we will default to `row` for them
   return (
-    <InfoCards
-      type="infocards"
-      // NOTE: We are bypassing the validation here as we are reusing the
-      // InfoCards component but we do not need a title here
-      title=""
-      variant={CARDS_WITHOUT_IMAGES}
-      cards={children}
-      maxColumns="1"
-      layout={"index"}
-      site={site}
+    <RowLayout
       LinkComponent={LinkComponent}
+      assetsBaseUrl={site.assetsBaseUrl}
+      childpages={children}
+      showSummary={showSummary}
+      showThumbnail={showThumbnail}
+      fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
+      site={site}
     />
   )
 }

@@ -294,6 +294,19 @@ export const getLocalisedSitemap = async (
   siteId: number,
   resourceId: number,
 ) => {
+  const headerSql = sql<string>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('index','content')
+      THEN (published.content -> 'page' -> 'contentPageHeader' ->> 'summary')
+      WHEN (published.content ->> 'layout') = 'collection' 
+      THEN (published.content -> 'page' ->> 'subtitle')
+      ELSE (published.content -> 'page' -> 'articlePageHeader' ->> 'summary')
+    END
+`.as("summary")
+  const thumbnailSql = sql<string>`
+        published.content->'page'->'image'->> 'src'
+    `.as("thumbnail")
+
   // Get the actual resource first
   const resource = await getById(db, {
     resourceId,
@@ -310,7 +323,9 @@ export const getLocalisedSitemap = async (
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", String(resourceId))
-        .select(defaultResourceSelect)
+        .leftJoin("Version", "Version.id", "publishedVersionId")
+        .leftJoin("Blob as published", "Version.blobId", "published.id")
+        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
         .unionAll((fb) =>
           fb
             // Recursive case: Get all the ancestors of the resource
@@ -321,7 +336,11 @@ export const getLocalisedSitemap = async (
               ResourceType.Collection,
             ])
             .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
-            .select(defaultResourceSelect),
+            .select(({ eb }) => [
+              eb.cast<string>(eb.val(""), "text").as("summary"),
+              eb.cast<string>(eb.val(""), "text").as("thumbnail"),
+              ...defaultResourceSelect,
+            ]),
         ),
     )
     // Step 2: Get the immediate siblings of the resource
@@ -338,16 +357,43 @@ export const getLocalisedSitemap = async (
         })
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
-        .select(defaultResourceSelect),
+        .where("state", "=", "Published")
+        .leftJoin("Version", "Version.id", "publishedVersionId")
+        .leftJoin("Blob as published", "Version.blobId", "published.id")
+        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect]),
     )
+    .with("childCousinIndexPages", (eb) => {
+      return eb
+        .selectFrom("Resource")
+        .where("parentId", "in", (qb) =>
+          qb
+            .selectFrom("immediateSiblings")
+            .select("id")
+            .where("type", "in", [
+              ResourceType.Collection,
+              ResourceType.Folder,
+            ]),
+        )
+        .where("type", "=", ResourceType.IndexPage)
+        .where("state", "=", "Published")
+        .leftJoin("Version", "Version.id", "publishedVersionId")
+        .leftJoin("Blob as published", "Version.blobId", "published.id")
+        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
+    })
     // Step 3: Combine all the resources in a single array
     .selectFrom("ancestors as Resource")
+    .select(["summary", "thumbnail", ...defaultResourceSelect])
     .union((eb) =>
       eb
         .selectFrom("immediateSiblings as Resource")
-        .select(defaultResourceSelect),
+        .select(["summary", "thumbnail", ...defaultResourceSelect]),
     )
-    .select(defaultResourceSelect)
+    .union((eb) =>
+      eb
+        .selectFrom("childCousinIndexPages as Resource")
+        .select(["summary", "thumbnail", ...defaultResourceSelect]),
+    )
+    .orderBy("title asc")
     .execute()
 
   // Step 4: Construct the localised sitemap object

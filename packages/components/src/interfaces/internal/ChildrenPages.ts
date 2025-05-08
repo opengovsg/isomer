@@ -1,9 +1,9 @@
-import { Static } from "@sinclair/typebox"
+import type { Static } from "@sinclair/typebox"
 
+import type { ChildpageMetaSchema } from "~/schemas/childpage"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { ChildpagesSchema } from "~/schemas/childpage"
 
-export interface ChildrenPagesProps extends Static<typeof ChildpagesSchema> {
+export interface ChildrenPagesProps extends Static<typeof ChildpageMetaSchema> {
   permalink: string
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
