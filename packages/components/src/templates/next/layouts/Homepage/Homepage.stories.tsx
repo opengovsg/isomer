@@ -407,6 +407,14 @@ const generateArgs = ({
           { label: "Industrial Production, Dec 2023 (YoY)", value: "-2.5%" },
         ],
       },
+      {
+        type: "blockquote",
+        quote:
+          "I managed to experience new things: saw a dead fish in a plastic bag for the first time, which was an eye-opener because I never thought I would actually get to see something like this ever.",
+        source: "Hannah Teo, Greenies ambassador",
+        imageSrc: "https://placehold.co/600x600",
+        imageAlt: "This is the alt text",
+      },
     ],
   }
 }
