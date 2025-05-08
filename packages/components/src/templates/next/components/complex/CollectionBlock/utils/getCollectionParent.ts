@@ -11,11 +11,9 @@ export const getCollectionParent = ({
   site,
   collectionId,
 }: GetCollectionParentProps): IsomerCollectionPageSitemap => {
-  const items = site.siteMap.children?.flatMap((child) =>
-    getSitemapAsArray(child),
-  )
+  const sitemapArray = getSitemapAsArray(site.siteMap)
 
-  const collectionParent = items?.find(
+  const collectionParent = sitemapArray.find(
     (item) => item.id === collectionId && item.layout === "collection",
   )
 
