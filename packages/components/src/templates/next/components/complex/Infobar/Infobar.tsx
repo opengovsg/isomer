@@ -104,11 +104,9 @@ const Infobar = ({
 
   // NOTE: Should not have dark mode on non-homepage for now
   const buttonColorScheme =
-    simplifiedLayout === "default"
-      ? "default"
-      : variant === "dark"
-        ? "inverse"
-        : "default"
+    simplifiedLayout === "homepage" && variant === "dark"
+      ? "inverse"
+      : "default"
 
   return (
     <section className={styles.screenWideOuterContainer()}>
