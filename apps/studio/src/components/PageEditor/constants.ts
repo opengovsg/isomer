@@ -32,6 +32,12 @@ export const DEFAULT_BLOCKS: Record<
       content: [],
     },
   },
+  blockquote: {
+    type: "blockquote",
+    quote: "This is a quote",
+    source: "This is the source of the quote",
+    imageAlt: "This is the alt text for the image",
+  },
   callout: {
     type: "callout",
     content: {
@@ -331,6 +337,12 @@ export const BLOCK_TO_META: Record<
     description: "Display logos of other agencies here",
     usageText: "Show an overview of related agencies",
   },
+  blockquote: {
+    label: "Quote",
+    description: "Display a quote or testimonial",
+    usageText: "Highlight an important quote. You can add an optional image.",
+    imageSrc: "/assets/block-images/Blockquote.png",
+  },
 }
 
 type AllowedBlockSections = {
@@ -341,7 +353,7 @@ type AllowedBlockSections = {
 export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Basic content blocks",
-    types: ["prose", "image", "accordion", "callout"],
+    types: ["prose", "image", "accordion", "callout", "blockquote"],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
@@ -349,7 +361,15 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
 export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Basic content blocks",
-    types: ["prose", "image", "accordion", "callout", "contentpic", "infobar"],
+    types: [
+      "prose",
+      "image",
+      "accordion",
+      "callout",
+      "blockquote",
+      "contentpic",
+      "infobar",
+    ],
   },
   {
     label: "Add a new section",
@@ -361,6 +381,13 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Add a new section",
     // TODO(ISOM-1552): Add back iframe component when implemented
-    types: ["infocards", "keystatistics", "infocols", "infopic", "infobar"],
+    types: [
+      "infocards",
+      "keystatistics",
+      "infocols",
+      "infopic",
+      "infobar",
+      "blockquote",
+    ],
   },
 ]

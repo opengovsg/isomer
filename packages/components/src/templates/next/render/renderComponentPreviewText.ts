@@ -68,6 +68,8 @@ export function renderComponentPreviewText({
   switch (component.type) {
     case "accordion":
       return component.summary
+    case "blockquote":
+      return component.quote
     case "callout":
       return getTextContentOfProse(component.content.content)
     case "hero":

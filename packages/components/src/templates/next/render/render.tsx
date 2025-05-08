@@ -7,6 +7,7 @@ import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
 import { DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
 import {
   Accordion,
+  Blockquote,
   Callout,
   ChildrenPages,
   Contentpic,
@@ -55,6 +56,8 @@ export const renderComponent = ({
       return <LogoCloud key={elementKey} {...component} {...rest} />
     case "accordion":
       return <Accordion key={elementKey} {...component} {...rest} />
+    case "blockquote":
+      return <Blockquote key={elementKey} {...component} {...rest} />
     case "callout":
       return <Callout key={elementKey} {...component} {...rest} />
     case "contentpic":
