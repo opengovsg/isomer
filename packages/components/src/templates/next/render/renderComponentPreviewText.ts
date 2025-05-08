@@ -68,6 +68,8 @@ export function renderComponentPreviewText({
   switch (component.type) {
     case "accordion":
       return component.summary
+    case "blockquote":
+      return component.quote
     case "callout":
       return getTextContentOfProse(component.content.content)
     case "hero":
@@ -101,6 +103,8 @@ export function renderComponentPreviewText({
       return getTextContentOfProse(component.content)
     case "video":
       return component.title || "Video embed"
+    case "childrenpages":
+      return "Child pages"
     case DYNAMIC_DATA_BANNER_TYPE:
       return component.apiEndpoint
     case COLLECTION_BLOCK_TYPE:

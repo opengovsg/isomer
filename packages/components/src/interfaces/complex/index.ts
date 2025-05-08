@@ -1,4 +1,5 @@
 export { AccordionSchema, type AccordionProps } from "./Accordion"
+export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export { CalloutSchema, type CalloutProps } from "./Callout"
 export { type CardsProps } from "./Cards"
@@ -35,3 +36,9 @@ export {
   type CollectionBlockProps,
   COLLECTION_BLOCK_TYPE,
 } from "./CollectionBlock"
+export {
+  ChildrenPagesSchema,
+  DEFAULT_CHILDREN_PAGES_BLOCK,
+  CHILDREN_PAGES_LAYOUT_OPTIONS,
+  type ChildrenPagesProps,
+} from "./ChildrenPages"

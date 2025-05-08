@@ -1,6 +1,7 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
   COLLECTION_BLOCK_TYPE,
+  DEFAULT_CHILDREN_PAGES_BLOCK,
   DYNAMIC_DATA_BANNER_TYPE,
 } from "@opengovsg/isomer-components"
 
@@ -23,6 +24,7 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
+  childrenpages: DEFAULT_CHILDREN_PAGES_BLOCK,
   accordion: {
     type: "accordion",
     summary: "Title for the accordion item",
@@ -30,6 +32,12 @@ export const DEFAULT_BLOCKS: Record<
       type: "prose",
       content: [],
     },
+  },
+  blockquote: {
+    type: "blockquote",
+    quote: "This is a quote",
+    source: "This is the source of the quote",
+    imageAlt: "This is the alt text for the image",
   },
   callout: {
     type: "callout",
@@ -237,6 +245,10 @@ export const BLOCK_TO_META: Record<
     label: "Hero banner",
     description: "Title, summary, hero image, and Call-to-Action",
   },
+  childrenpages: {
+    label: "Child pages",
+    description: "Edit how users see the child page of this folder here",
+  },
   image: {
     label: "Image",
     description: "Add an image with caption",
@@ -339,6 +351,12 @@ export const BLOCK_TO_META: Record<
     usageText: "Link recent articles from your newsroom, research, or blog.",
     // TODO: Add image source
   },
+  blockquote: {
+    label: "Quote",
+    description: "Display a quote or testimonial",
+    usageText: "Highlight an important quote. You can add an optional image.",
+    imageSrc: "/assets/block-images/Blockquote.png",
+  },
 }
 
 type AllowedBlockSections = {
@@ -349,7 +367,7 @@ type AllowedBlockSections = {
 export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Basic content blocks",
-    types: ["prose", "image", "accordion", "callout"],
+    types: ["prose", "image", "accordion", "callout", "blockquote"],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
@@ -357,7 +375,15 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
 export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Basic content blocks",
-    types: ["prose", "image", "accordion", "callout", "contentpic", "infobar"],
+    types: [
+      "prose",
+      "image",
+      "accordion",
+      "callout",
+      "blockquote",
+      "contentpic",
+      "infobar",
+    ],
   },
   {
     label: "Add a new section",
@@ -369,6 +395,13 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Add a new section",
     // TODO(ISOM-1552): Add back iframe component when implemented
-    types: ["infocards", "keystatistics", "infocols", "infopic", "infobar"],
+    types: [
+      "infocards",
+      "keystatistics",
+      "infocols",
+      "infopic",
+      "infobar",
+      "blockquote",
+    ],
   },
 ]

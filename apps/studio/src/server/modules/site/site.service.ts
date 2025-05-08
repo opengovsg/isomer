@@ -2,16 +2,20 @@ import { TRPCError } from "@trpc/server"
 import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
 import { addUsersToSite } from "~prisma/scripts/addUsersToSite"
 
-import type { DB, Transaction } from "../database"
+import type { DB, Resource, Transaction, Version } from "../database"
 import type {
   CrudResourceActions,
   PermissionsProps,
 } from "../permissions/permissions.type"
-import { RoleType } from "~/server/modules/database"
+import {
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "~/server/modules/database"
 import { logConfigEvent } from "../audit/audit.service"
 import { AuditLogEvent, db, jsonb, sql } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
-import { FOOTER, NAV_BAR_ITEMS, PAGE_BLOB } from "./constants"
+import { FOOTER, NAV_BAR_ITEMS, PAGE_BLOB, SEARCH_PAGE_BLOB } from "./constants"
 
 export const validateUserPermissionsForSite = async ({
   siteId,
@@ -222,9 +226,16 @@ export const clearSiteNotification = async ({
 
 interface CreateSiteProps {
   siteName: string
+  userId: Version["publishedBy"]
 }
-export const createSite = async ({ siteName }: CreateSiteProps) => {
-  const siteId = await db.transaction().execute(async (tx) => {
+interface CreateResourceProps {
+  tx: Transaction<DB>
+  siteId: Resource["siteId"]
+  userId: Version["publishedBy"]
+}
+
+export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
+  const createSiteRecord = async (tx: Transaction<DB>): Promise<number> => {
     const { id: siteId } = await tx
       .insertInto("Site")
       .values({
@@ -262,6 +273,10 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
       .returning("id")
       .executeTakeFirstOrThrow()
 
+    return siteId
+  }
+
+  const createFooter = async (tx: Transaction<DB>, siteId: number) => {
     await tx
       .insertInto("Footer")
       .values({
@@ -274,7 +289,9 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
           .doUpdateSet((eb) => ({ siteId: eb.ref("excluded.siteId") })),
       )
       .execute()
+  }
 
+  const createNavbar = async (tx: Transaction<DB>, siteId: number) => {
     await tx
       .insertInto("Navbar")
       .values({
@@ -287,30 +304,114 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
           .doUpdateSet((eb) => ({ siteId: eb.ref("excluded.siteId") })),
       )
       .execute()
+  }
 
+  const createRootPage = async ({
+    tx,
+    siteId,
+    userId,
+  }: CreateResourceProps) => {
     const { id: blobId } = await tx
       .insertInto("Blob")
       .values({ content: jsonb(PAGE_BLOB) })
       .returning("id")
       .executeTakeFirstOrThrow()
 
-    await tx
+    const { id: resourceId } = await tx
       .insertInto("Resource")
       .values({
-        draftBlobId: String(blobId),
         permalink: "",
         siteId,
-        type: "RootPage",
+        type: ResourceType.RootPage,
+        state: ResourceState.Published,
         title: "Home",
       })
-
       .onConflict((oc) =>
         oc.column("draftBlobId").doUpdateSet((eb) => ({
           draftBlobId: eb.ref("excluded.draftBlobId"),
         })),
       )
+      .returning("id")
       .executeTakeFirstOrThrow()
 
+    const { id: versionId } = await tx
+      .insertInto("Version")
+      .values({
+        resourceId,
+        blobId,
+        publishedBy: userId,
+        versionNum: 1,
+      })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    await tx
+      .updateTable("Resource")
+      .set({
+        draftBlobId: null,
+        publishedVersionId: versionId,
+        state: ResourceState.Published,
+      })
+      .where("id", "=", resourceId)
+      .executeTakeFirstOrThrow()
+  }
+
+  const createSearchPage = async ({
+    tx,
+    siteId,
+    userId,
+  }: CreateResourceProps) => {
+    const { id: blobId } = await tx
+      .insertInto("Blob")
+      .values({ content: jsonb(SEARCH_PAGE_BLOB) })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    const { id: resourceId } = await tx
+      .insertInto("Resource")
+      .values({
+        draftBlobId: String(blobId),
+        permalink: "search",
+        siteId,
+        type: ResourceType.Page,
+        title: "Search",
+      })
+      .onConflict((oc) =>
+        oc.column("draftBlobId").doUpdateSet((eb) => ({
+          draftBlobId: eb.ref("excluded.draftBlobId"),
+        })),
+      )
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    const { id: versionId } = await tx
+      .insertInto("Version")
+      .values({
+        resourceId,
+        blobId,
+        publishedBy: userId,
+        versionNum: 1,
+      })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    await tx
+      .updateTable("Resource")
+      .set({
+        draftBlobId: null,
+        publishedVersionId: versionId,
+        state: ResourceState.Published,
+      })
+      .where("id", "=", resourceId)
+      .executeTakeFirstOrThrow()
+  }
+
+  const siteId = await db.transaction().execute(async (tx) => {
+    const siteId = await createSiteRecord(tx)
+    await createFooter(tx, siteId)
+    await createNavbar(tx, siteId)
+    await createRootPage({ tx, siteId, userId })
+    await createSearchPage({ tx, siteId, userId })
     return siteId
   })
 
