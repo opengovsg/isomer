@@ -122,24 +122,24 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
           }
         />
 
-        {savedPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Index && (
-          <Box px="1.5rem" pt="1rem">
-            <Infobox
-              size="sm"
-              borderRadius="0.25rem"
-              border="1px solid"
-              borderColor="utility.feedback.info"
-            >
-              <Text textStyle="body-2">
-                To change the page title, go to the folder and click on "Folder
-                Settings"
-              </Text>
-            </Infobox>
-          </Box>
-        )}
-
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
+            {savedPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Index && (
+              <Box pb="1rem">
+                <Infobox
+                  size="sm"
+                  borderRadius="0.25rem"
+                  border="1px solid"
+                  borderColor="utility.feedback.info"
+                >
+                  <Text textStyle="body-2">
+                    To change the page title, go to the folder and click on
+                    "Folder Settings"
+                  </Text>
+                </Infobox>
+              </Box>
+            )}
+
             <FormBuilder<Static<typeof metadataSchema>>
               schema={metadataSchema}
               validateFn={validateFn}
