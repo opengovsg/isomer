@@ -6,6 +6,7 @@ import { type TSchema } from "@sinclair/typebox"
 import Ajv from "ajv"
 import { groupBy } from "lodash"
 
+import type { UsableLayout } from "./renderers/withLayoutFilter"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useBuilderErrors } from "./ErrorProvider"
 import {
@@ -121,6 +122,7 @@ interface FormBuilderProps<T> {
   validateFn: ValidateFunction<T>
   data: unknown
   handleChange: (data: T) => void
+  layout?: UsableLayout
 }
 
 export default function FormBuilder<T>({
@@ -128,6 +130,7 @@ export default function FormBuilder<T>({
   validateFn,
   data,
   handleChange,
+  layout,
 }: FormBuilderProps<T>): JSX.Element {
   const { setErrors } = useBuilderErrors()
 
@@ -143,6 +146,7 @@ export default function FormBuilder<T>({
         setErrors(groupBy(errors, "instancePath"))
       }}
       ajv={ajv}
+      config={{ layout }}
     />
   )
 }

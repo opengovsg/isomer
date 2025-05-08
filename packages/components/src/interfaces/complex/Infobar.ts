@@ -44,6 +44,7 @@ export const InfobarSchema = Type.Object(
           title: "Call-to-Action style",
           format: ARRAY_RADIO_FORMAT,
           type: "string",
+          layouts: ["homepage"],
         },
       ),
     ),

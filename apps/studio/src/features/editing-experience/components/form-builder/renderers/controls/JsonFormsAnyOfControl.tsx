@@ -12,6 +12,7 @@ import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { withLayoutFilter } from "../withLayoutFilter"
 
 export const jsonFormsAnyOfControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.AnyOfControl,
@@ -129,4 +130,4 @@ export function JsonFormsAnyOfControl({
   )
 }
 
-export default withJsonFormsAnyOfProps(JsonFormsAnyOfControl)
+export default withJsonFormsAnyOfProps(withLayoutFilter(JsonFormsAnyOfControl))

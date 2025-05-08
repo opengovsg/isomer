@@ -291,6 +291,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               validateFn={validateFn}
               data={component}
               handleChange={handleChange}
+              layout={previewPageState.layout}
             />
           </Box>
           <Box
