@@ -217,6 +217,7 @@ export const ExpandFirstItem: Story = {
 }
 
 export const ExpandNavbarItemWithLink: Story = {
+  args: generateNavbarArgs({}),
   parameters: {
     viewport: {
       defaultViewport: getViewportByMode("desktop"),
@@ -285,6 +286,7 @@ export const MobileCallToAction: Story = {
 }
 
 export const ExpandMobileWithLink: Story = {
+  args: generateNavbarArgs({}),
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
     viewport: {
