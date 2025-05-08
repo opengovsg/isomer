@@ -3,7 +3,6 @@ import { Box, chakra, Grid, GridItem, Text, VStack } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import Ajv from "ajv"
 import { Controller } from "react-hook-form"
 import { z } from "zod"
 
@@ -18,10 +17,10 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { updatePageMetaSchema } from "~/schemas/page"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
+import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
 const SUCCESS_TOAST_ID = "save-page-settings-success"
-const ajv = new Ajv({ strict: false, logger: false })
 
 const PageSettings: NextPageWithLayout = () => {
   const { pageId, siteId } = useQueryParse(editPageSchema)

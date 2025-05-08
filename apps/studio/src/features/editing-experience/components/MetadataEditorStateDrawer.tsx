@@ -4,13 +4,13 @@ import { useCallback } from "react"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { getLayoutPageSchema } from "@opengovsg/isomer-components"
-import Ajv from "ajv"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
@@ -23,8 +23,6 @@ const HEADER_LABELS: Record<string, string> = {
   article: "Edit article page header",
   content: "Edit content page header",
 }
-
-const ajv = new Ajv({ strict: false, logger: false })
 
 export default function MetadataEditorStateDrawer(): JSX.Element {
   const {
