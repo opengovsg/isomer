@@ -2,7 +2,7 @@ import { BiSolidQuoteAltLeft } from "react-icons/bi"
 
 import type { BlockquoteProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getTailwindVariantLayout } from "~/utils"
+import { getTailwindVariantLayout, isExternalUrl } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../Image"
 
@@ -80,7 +80,11 @@ export const Blockquote = ({
 
         {imageSrc && imageAlt && (
           <ImageClient
-            src={imageSrc}
+            src={
+              isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
+                ? imageSrc
+                : `${site.assetsBaseUrl}${imageSrc}`
+            }
             alt={imageAlt}
             width="100%"
             className={compoundStyles.image()}
