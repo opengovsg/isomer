@@ -3,17 +3,22 @@ import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
-import { CHILDPAGE_LAYOUT_OPTIONS } from "@opengovsg/isomer-components"
+import {
+  CHILDREN_PAGES_LAYOUT_OPTIONS,
+  DEFAULT_CHILDREN_PAGES_BLOCK,
+} from "@opengovsg/isomer-components"
 
 import { IconBoxes, IconRows } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-export const jsonFormsChildPageLayoutControlTester: RankedTester = rankWith(
-  JSON_FORMS_RANKING.ChildpageControl,
-  schemaMatches((schema) => schema.format === "childpages"),
+export const jsonFormsChildrenPagesLayoutControlTester: RankedTester = rankWith(
+  JSON_FORMS_RANKING.ChildrenPagesControl,
+  schemaMatches(
+    (schema) => schema.format === DEFAULT_CHILDREN_PAGES_BLOCK.type,
+  ),
 )
 
-export function JsonFormsChildPageLayoutControl({
+export function JsonFormsChildrenPagesLayoutControl({
   data,
   label,
   handleChange,
@@ -34,7 +39,7 @@ export function JsonFormsChildPageLayoutControl({
           value={data as string}
         >
           <Radio
-            value={CHILDPAGE_LAYOUT_OPTIONS.Boxes}
+            value={CHILDREN_PAGES_LAYOUT_OPTIONS.Boxes}
             allowDeselect={false}
             size="sm"
           >
@@ -42,7 +47,7 @@ export function JsonFormsChildPageLayoutControl({
             <IconBoxes mt="10px" />
           </Radio>
           <Radio
-            value={CHILDPAGE_LAYOUT_OPTIONS.Rows}
+            value={CHILDREN_PAGES_LAYOUT_OPTIONS.Rows}
             allowDeselect={false}
             size="sm"
           >
@@ -55,4 +60,4 @@ export function JsonFormsChildPageLayoutControl({
   )
 }
 
-export default withJsonFormsControlProps(JsonFormsChildPageLayoutControl)
+export default withJsonFormsControlProps(JsonFormsChildrenPagesLayoutControl)

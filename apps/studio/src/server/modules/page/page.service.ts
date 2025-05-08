@@ -1,6 +1,6 @@
 import type { UnwrapTagged } from "type-fest"
 import {
-  CHILDPAGE_LAYOUT_OPTIONS,
+  DEFAULT_CHILDREN_PAGES_BLOCK,
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
@@ -58,11 +58,6 @@ export const createFolderIndexPage = (title: string) => {
         summary: `Pages in ${title}`,
       },
     },
-    childpages: {
-      layout: CHILDPAGE_LAYOUT_OPTIONS.Rows,
-      showSummary: false,
-      showThumbnail: false,
-    },
-    content: [],
+    content: [DEFAULT_CHILDREN_PAGES_BLOCK],
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }

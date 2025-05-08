@@ -75,6 +75,6 @@ export {
   jsonFormsMetaImageControlTester,
 } from "./JsonFormsMetaImageControl"
 export {
-  default as JsonFormsChildPageLayoutControl,
-  jsonFormsChildPageLayoutControlTester,
+  default as JsonFormsChildrenPagesLayoutControl,
+  jsonFormsChildrenPagesLayoutControlTester,
 } from "./JsonFormsChildPageLayoutControl"

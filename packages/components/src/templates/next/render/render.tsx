@@ -8,6 +8,7 @@ import { DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
 import {
   Accordion,
   Callout,
+  ChildrenPages,
   Contentpic,
   DynamicDataBanner,
   Hero,
@@ -18,11 +19,11 @@ import {
   InfoCols,
   Infopic,
   KeyStatistics,
+  LogoCloud,
   Map,
   Prose,
   Video,
 } from "../components"
-import { LogoCloud } from "../components/complex/LogoCloud"
 import {
   ArticleLayout,
   CollectionLayout,
@@ -41,6 +42,7 @@ interface RenderComponentProps {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   shouldLazyLoad?: boolean
+  permalink: string
 }
 
 export const renderComponent = ({
@@ -75,6 +77,8 @@ export const renderComponent = ({
       return <KeyStatistics key={elementKey} {...component} {...rest} />
     case "map":
       return <Map key={elementKey} {...component} {...rest} />
+    case "childrenpages":
+      return <ChildrenPages key={elementKey} {...component} {...rest} />
     case "prose":
       return (
         <Prose

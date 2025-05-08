@@ -360,7 +360,7 @@ export const Default: Story = {
 
 export const BaseRows: Story = {
   args: {
-    layout: "rows",
+    variant: "rows",
     site,
     permalink: "/parent",
     LinkComponent: "a",
@@ -369,7 +369,7 @@ export const BaseRows: Story = {
 
 export const RowsWithDescription: Story = {
   args: {
-    layout: "rows",
+    variant: "rows",
     site,
     permalink: "/parent",
     LinkComponent: "a",
@@ -379,7 +379,7 @@ export const RowsWithDescription: Story = {
 
 export const RowsWithThumbnailOnly: Story = {
   args: {
-    layout: "rows",
+    variant: "rows",
     site,
     permalink: "/parent",
     LinkComponent: "a",
@@ -389,7 +389,7 @@ export const RowsWithThumbnailOnly: Story = {
 
 export const RowsWithThumbnailAndDescription: Story = {
   args: {
-    layout: "rows",
+    variant: "rows",
     site,
     permalink: "/parent",
     LinkComponent: "a",
@@ -400,7 +400,7 @@ export const RowsWithThumbnailAndDescription: Story = {
 
 export const Boxes: Story = {
   args: {
-    layout: "boxes",
+    variant: "boxes",
     site,
     permalink: "/parent",
     LinkComponent: "a",
@@ -409,7 +409,7 @@ export const Boxes: Story = {
 
 export const BoxesWithDescription: Story = {
   args: {
-    layout: "boxes",
+    variant: "boxes",
     site,
     permalink: "/parent",
     LinkComponent: "a",
@@ -419,7 +419,7 @@ export const BoxesWithDescription: Story = {
 
 export const BoxesWithThumbnailOnly: Story = {
   args: {
-    layout: "boxes",
+    variant: "boxes",
     site,
     permalink: "/parent",
     LinkComponent: "a",
@@ -428,7 +428,7 @@ export const BoxesWithThumbnailOnly: Story = {
 }
 export const BoxesWithThumbnailAndDescription: Story = {
   args: {
-    layout: "boxes",
+    variant: "boxes",
     site,
     permalink: "/parent",
     LinkComponent: "a",

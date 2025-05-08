@@ -16,7 +16,6 @@ import type {
   ScriptComponentType,
   SearchPagePageProps,
 } from "~/types"
-import { ChildpageMetaSchema } from "~/schemas/childpage"
 import { IsomerComponentsSchemas } from "./components"
 import {
   ArticlePageMetaSchema,
@@ -68,7 +67,6 @@ export const ArticlePageSchema = Type.Object(
     }),
     meta: Type.Optional(ArticlePageMetaSchema),
     page: ArticlePagePageSchema,
-    childpages: Type.Optional(Type.Unknown()),
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),
@@ -87,7 +85,6 @@ export const CollectionPageSchema = Type.Object(
     }),
     meta: Type.Optional(CollectionPageMetaSchema),
     page: CollectionPagePageSchema,
-    childpages: Type.Optional(Type.Unknown()),
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
       description:
@@ -111,7 +108,6 @@ export const ContentPageSchema = Type.Object(
     }),
     meta: Type.Optional(ContentPageMetaSchema),
     page: ContentPagePageSchema,
-    childpages: Type.Optional(Type.Unknown()),
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),
@@ -129,7 +125,6 @@ export const HomePageSchema = Type.Object(
     }),
     meta: Type.Optional(HomePageMetaSchema),
     page: HomePagePageSchema,
-    childpages: Type.Optional(Type.Unknown()),
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),
@@ -147,7 +142,6 @@ export const IndexPageSchema = Type.Object(
     }),
     meta: Type.Optional(ContentPageMetaSchema),
     page: ContentPagePageSchema,
-    childpages: ChildpageMetaSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),
@@ -166,7 +160,6 @@ export const DatabasePageSchema = Type.Object(
     }),
     meta: Type.Optional(DatabasePageMetaSchema),
     page: DatabasePagePageSchema,
-    childpages: Type.Optional(Type.Unknown()),
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),
@@ -184,7 +177,6 @@ export const FileRefSchema = Type.Object(
       default: ISOMER_PAGE_LAYOUTS.File,
     }),
     meta: Type.Optional(FileRefMetaSchema),
-    childpages: Type.Optional(Type.Unknown()),
     page: FileRefPageSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
@@ -209,7 +201,6 @@ export const LinkRefSchema = Type.Object(
     }),
     meta: Type.Optional(LinkRefMetaSchema),
     page: LinkRefPageSchema,
-    childpages: Type.Optional(Type.Unknown()),
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
       description:

@@ -101,6 +101,8 @@ export function renderComponentPreviewText({
       return getTextContentOfProse(component.content)
     case "video":
       return component.title || "Video embed"
+    case "childrenpages":
+      return "Child pages"
     case DYNAMIC_DATA_BANNER_TYPE:
       return component.apiEndpoint
     default:

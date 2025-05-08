@@ -19,8 +19,8 @@ import {
   jsonFormsBooleanControlTester,
   JsonFormsCategoryControl,
   jsonFormsCategoryControlTester,
-  JsonFormsChildPageLayoutControl,
-  jsonFormsChildPageLayoutControlTester,
+  JsonFormsChildrenPagesLayoutControl,
+  jsonFormsChildrenPagesLayoutControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
@@ -95,8 +95,8 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsMetaImageControl,
   },
   {
-    tester: jsonFormsChildPageLayoutControlTester,
-    renderer: JsonFormsChildPageLayoutControl,
+    tester: jsonFormsChildrenPagesLayoutControlTester,
+    renderer: JsonFormsChildrenPagesLayoutControl,
   },
   {
     // NOTE: If we fall through all our previous testers,

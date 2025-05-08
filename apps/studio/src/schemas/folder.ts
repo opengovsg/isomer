@@ -58,3 +58,13 @@ const baseIndexPageSchema = z.object({
 })
 
 export const getIndexpageSchema = baseIndexPageSchema
+
+export const insertChildpageblockSchema = baseIndexPageSchema.extend({
+  blocks: z.array(
+    z
+      .object({
+        type: z.string(),
+      })
+      .passthrough(),
+  ),
+})

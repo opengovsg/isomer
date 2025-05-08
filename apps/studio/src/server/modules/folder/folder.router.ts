@@ -21,10 +21,7 @@ import {
 import { PG_ERROR_CODES } from "../database/constants"
 import { createFolderIndexPage } from "../page/page.service"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
-import {
-  publishPageResource,
-  publishResource,
-} from "../resource/resource.service"
+import { publishResource } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
@@ -156,12 +153,7 @@ export const folderRouter = router({
         // NOTE: We cannot publish inside the tx above because
         // this also calls into a tx,
         // so it cannot see that the resources are inserted
-        await publishPageResource(
-          ctx.logger,
-          siteId,
-          folder.indexPage.id,
-          ctx.user.id,
-        )
+        await publishResource(ctx.user.id, folder, ctx.logger)
 
         return { folderId: folder.id }
       },

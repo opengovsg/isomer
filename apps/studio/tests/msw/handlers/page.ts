@@ -733,13 +733,15 @@ export const pageHandlers = {
               category: "Feature Articles",
               articlePageHeader: { summary: "" },
             },
-            childpages: {
-              layout: "boxes",
-              summary: false,
-              thumbnail: false,
-            },
             layout: "index",
-            content: [],
+            content: [
+              {
+                type: "childpage",
+                variant: "boxes",
+                summary: false,
+                thumbnail: false,
+              },
+            ],
             version: "0.1.0",
           },
           type: "IndexPage",
