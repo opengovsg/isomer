@@ -55,6 +55,13 @@ export const PAGE_BLOB: IsomerSchema = {
   ],
 }
 
+export const SEARCH_PAGE_BLOB: IsomerSchema = {
+  page: { title: "Search", description: "Search results" },
+  layout: "search",
+  content: [],
+  version: "0.1.0",
+}
+
 export const NAV_BAR_ITEMS: Navbar["items"] = [
   {
     name: "Expandable nav item",

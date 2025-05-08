@@ -10,6 +10,8 @@ type ResourceDto = Omit<
 > & {
   id: string
   parentId: string | null
+  summary?: string
+  thumbnail?: string
 }
 
 const getSitemapTreeFromArray = (
@@ -49,29 +51,39 @@ const getSitemapTreeFromArray = (
         id: String(resource.id),
         layout: "content", // Note: We are not using the layout field in our sitemap for preview
         title: resource.title,
-        summary: "", // Note: We are not using the summary field in our previews
+        summary: resource.summary ?? "",
         lastModified: new Date() // TODO: Update this to the updated_at field in DB
           .toISOString(),
         permalink,
+        image: {
+          src: resource.thumbnail ?? "",
+          alt: "",
+        },
       }
     }
 
-    const titleOfPage = resources.find(
+    const indexPage = resources.find(
       (child) =>
         // NOTE: This child is the index page of this resource
         child.permalink === INDEX_PAGE_PERMALINK &&
         child.parentId === resource.id,
-    )?.title
+    )
+
+    const titleOfPage = indexPage?.title
+    const summaryOfPage = indexPage?.summary
 
     return {
       id: String(resource.id),
       layout: "content", // Note: We are not using the layout field in our previews
       title: titleOfPage || resource.title,
-      summary: "", // Note: We are not using the summary field in our previews
+      summary: summaryOfPage ?? `Pages in ${resource.title}`,
       lastModified: new Date() // TODO: Update this to the updated_at field in DB
         .toISOString(),
       // NOTE: This permalink is unused in the preview
       permalink,
+      image: !!indexPage?.thumbnail
+        ? { src: indexPage.thumbnail, alt: "" }
+        : undefined,
       children: getSitemapTreeFromArray(
         resources,
         resource.id,

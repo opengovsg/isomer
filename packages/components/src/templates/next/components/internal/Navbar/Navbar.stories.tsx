@@ -58,7 +58,7 @@ const generateNavbarArgs = ({
       {
         name: "Max 70 chars",
         description: "This is a description of the item.",
-        url: "/item-one",
+        url: "",
         items: [
           {
             name: "Join us",
@@ -99,9 +99,9 @@ const generateNavbarArgs = ({
         ],
       },
       {
-        name: "On navbar",
+        name: "Longer item with 30 characters",
         url: "/item-two",
-        description: "This is a description of the item.",
+        description: "This navbar item has a reference link",
         items: [
           {
             name: "A sub item",
@@ -142,34 +142,6 @@ const generateNavbarArgs = ({
           {
             name: "Another sub item",
             url: "/item-four/another-sub-item",
-          },
-        ],
-      },
-      {
-        name: "Newsroom",
-        url: "/item-five",
-        items: [
-          {
-            name: "A sub item",
-            url: "/item-five/sub-item",
-          },
-          {
-            name: "Another sub item",
-            url: "/item-five/another-sub-item",
-          },
-        ],
-      },
-      {
-        name: "Research",
-        url: "/item-six",
-        items: [
-          {
-            name: "A sub item",
-            url: "/item-six/sub-item",
-          },
-          {
-            name: "Another sub item",
-            url: "/item-six/another-sub-item",
           },
         ],
       },
@@ -244,6 +216,21 @@ export const ExpandFirstItem: Story = {
   },
 }
 
+export const ExpandNavbarItemWithLink: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: getViewportByMode("desktop"),
+    },
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /Longer item with 30 characters/i }),
+    )
+  },
+}
+
 export const ExpandSearch: Story = {
   args: generateNavbarArgs({}),
   parameters: Default.parameters,
@@ -291,11 +278,26 @@ export const MobileCallToAction: Story = {
   }),
   parameters: {
     chromatic: withChromaticModes(["mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+}
+
+export const ExpandMobileWithLink: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
       canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+    await userEvent.click(
+      canvas.getByRole("button", { name: /Longer item with 30 characters/i }),
     )
   },
 }
