@@ -124,6 +124,9 @@ const SuspendableModalContent = ({
       await utils.folder.getMetadata.invalidate({
         resourceId: Number(folderId),
       })
+      await utils.folder.getIndexpage.invalidate({
+        resourceId: folderId,
+      })
       await utils.collection.getMetadata.invalidate({
         resourceId: Number(folderId),
       })

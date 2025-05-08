@@ -2,7 +2,8 @@ import type { DropResult } from "@hello-pangea/dnd"
 import { useCallback } from "react"
 import { Box, Button, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
-import { Infobox, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
+import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
@@ -31,6 +32,10 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
   content: {
     label: "Content page header",
     description: "Summary, Button label, and Button destination",
+  },
+  index: {
+    label: "Header",
+    description: "Summary, Button label and Button URL",
   },
 }
 
@@ -119,6 +124,10 @@ export default function RootStateDrawer() {
 
   const pageLayout: string = savedPageState.layout
 
+  // NOTE: because we migrate from github -> studio
+  // and also becuase our underlying is just json,
+  // it's not guaranteed that our `rootpage` will always
+  // have a hero banner
   const isHeroFixedBlock =
     pageLayout === "homepage" &&
     savedPageState.content.length > 0 &&
@@ -166,30 +175,16 @@ export default function RootStateDrawer() {
         )}
       </VStack>
 
-      {pageLayout === "index" && savedPageState.content.length === 0 ? (
-        <Infobox variant="warning" size="sm">
-          <Box>
-            <Text textStyle="subhead-2" mb="0.25rem">
-              Why can’t I add anything else to this page?
+      <VStack w="100%" h="100%" gap="1rem">
+        {/* Custom Blocks Section */}
+        <Flex flexDirection="row" w="100%">
+          <VStack gap="0.25rem" align="start" flex={1}>
+            <Text textStyle="subhead-1">Custom blocks</Text>
+            <Text textStyle="caption-2" color="base.content.medium">
+              Use blocks to display your content in various ways
             </Text>
-
-            <Text textStyle="body-2">
-              Content for this page is auto-generated. We’re introducing editing
-              for this page type soon, so that you can add custom content
-              alongside the page links.
-            </Text>
-          </Box>
-        </Infobox>
-      ) : (
-        <VStack w="100%" h="100%" gap="1rem">
-          {/* Custom Blocks Section */}
-          <Flex flexDirection="row" w="100%">
-            <VStack gap="0.25rem" align="start" flex={1}>
-              <Text textStyle="subhead-1">Custom blocks</Text>
-              <Text textStyle="caption-2" color="base.content.medium">
-                Use blocks to display your content in various ways
-              </Text>
-            </VStack>
+          </VStack>
+          {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Index && (
             <Button
               size="xs"
               flexShrink={0}
@@ -199,91 +194,91 @@ export default function RootStateDrawer() {
             >
               Add block
             </Button>
-          </Flex>
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="blocks">
-              {(provided) => (
-                <VStack
-                  {...provided.droppableProps}
-                  w="100%"
-                  ref={provided.innerRef}
-                >
-                  <Box w="100%">
-                    {((isHeroFixedBlock &&
-                      savedPageState.content.length === 1) ||
-                      savedPageState.content.length === 0) && (
-                      <>
-                        <VStack
-                          justifyContent="center"
-                          spacing={0}
-                          mt="2.75rem"
-                          mb="1.5rem"
+          )}
+        </Flex>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="blocks">
+            {(provided) => (
+              <VStack
+                {...provided.droppableProps}
+                w="100%"
+                ref={provided.innerRef}
+              >
+                <Box w="100%">
+                  {((isHeroFixedBlock && savedPageState.content.length === 1) ||
+                    (savedPageState.content.length === 0 &&
+                      pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Index)) && (
+                    <>
+                      <VStack
+                        justifyContent="center"
+                        spacing={0}
+                        mt="2.75rem"
+                        mb="1.5rem"
+                      >
+                        <BlockEditingPlaceholder />
+                        <Text
+                          mt="0.75rem"
+                          textStyle="subhead-1"
+                          color="base.content.default"
                         >
-                          <BlockEditingPlaceholder />
-                          <Text
-                            mt="0.75rem"
-                            textStyle="subhead-1"
-                            color="base.content.default"
-                          >
-                            Blocks you add will appear here
-                          </Text>
-                          <Text
-                            mt="0.25rem"
-                            textStyle="caption-2"
-                            color="base.content.medium"
-                          >
-                            Click the ‘Add block’ button above to add blocks to
-                            this page
-                          </Text>
-                        </VStack>
-
-                        <Button
-                          variant="outline"
-                          w="100%"
-                          onClick={() => setDrawerState({ state: "addBlock" })}
-                          leftIcon={<Icon as={BiPlus} fontSize="1.25rem" />}
+                          Blocks you add will appear here
+                        </Text>
+                        <Text
+                          mt="0.25rem"
+                          textStyle="caption-2"
+                          color="base.content.medium"
                         >
-                          Add a new block
-                        </Button>
-                      </>
-                    )}
+                          Click the ‘Add block’ button above to add blocks to
+                          this page
+                        </Text>
+                      </VStack>
 
-                    <Flex flexDirection="column" mt="-0.25rem">
-                      {savedPageState.content.map((block, index) => {
-                        if (isHeroFixedBlock && index === 0) {
-                          return <></>
-                        }
+                      <Button
+                        variant="outline"
+                        w="100%"
+                        onClick={() => setDrawerState({ state: "addBlock" })}
+                        leftIcon={<Icon as={BiPlus} fontSize="1.25rem" />}
+                      >
+                        Add a new block
+                      </Button>
+                    </>
+                  )}
 
-                        return (
-                          <DraggableBlock
-                            block={block}
-                            // TODO: Generate a block ID instead of index
-                            key={`${block.type}-${index}`}
-                            // TODO: Use block ID when instead of index for uniquely identifying blocks
-                            draggableId={`${block.type}-${index}`}
-                            index={index}
-                            onClick={() => {
-                              setCurrActiveIdx(index)
-                              // TODO: we should automatically do this probably?
-                              const nextState =
-                                savedPageState.content[index]?.type === "prose"
-                                  ? "nativeEditor"
-                                  : "complexEditor"
-                              // NOTE: SNAPSHOT
-                              setDrawerState({ state: nextState })
-                            }}
-                          />
-                        )
-                      })}
-                    </Flex>
-                  </Box>
-                  {provided.placeholder}
-                </VStack>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </VStack>
-      )}
+                  <Flex flexDirection="column" mt="-0.25rem">
+                    {savedPageState.content.map((block, index) => {
+                      if (isHeroFixedBlock && index === 0) {
+                        return <></>
+                      }
+
+                      return (
+                        <DraggableBlock
+                          block={block}
+                          // TODO: Generate a block ID instead of index
+                          key={`${block.type}-${index}`}
+                          // TODO: Use block ID when instead of index for uniquely identifying blocks
+                          draggableId={`${block.type}-${index}`}
+                          index={index}
+                          onClick={() => {
+                            setCurrActiveIdx(index)
+                            // TODO: we should automatically do this probably?
+                            const nextState =
+                              savedPageState.content[index]?.type === "prose"
+                                ? "nativeEditor"
+                                : "complexEditor"
+                            // NOTE: SNAPSHOT
+                            setDrawerState({ state: nextState })
+                          }}
+                        />
+                      )
+                    })}
+                  </Flex>
+                </Box>
+                {provided.placeholder}
+              </VStack>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </VStack>
     </VStack>
   )
 }

@@ -239,5 +239,83 @@ export const sitesHandlers = {
         }
       })
     },
+
+    index: () => {
+      return trpcMsw.site.getLocalisedSitemap.query(() => {
+        return {
+          id: "1",
+          layout: "homepage",
+          title: "Home",
+          summary: "",
+          lastModified: "2025-04-24T08:08:01.349Z",
+          permalink: "/",
+          children: [
+            {
+              id: "2",
+              layout: "content",
+              title: "test",
+              summary: "",
+              lastModified: "2025-04-24T08:08:01.349Z",
+              permalink: "/parent",
+              children: [
+                {
+                  id: "5",
+                  layout: "content",
+                  title: "sibling1",
+                  summary: "",
+                  lastModified: "2025-04-24T08:08:01.349Z",
+                  permalink: "/parent/sibling1",
+                  children: [],
+                },
+                {
+                  id: "4",
+                  layout: "content",
+                  title: "sibling2",
+                  summary: "",
+                  lastModified: "2025-04-24T08:08:01.349Z",
+                  permalink: "/parent/sibling2",
+                },
+              ],
+            },
+          ],
+        }
+        return {
+          id: "1",
+          layout: "content",
+          title: "Home",
+          summary: "",
+          lastModified: "2024-09-16T04:34:54.838Z",
+          permalink: "/",
+          children: [
+            {
+              id: "4",
+              layout: "index",
+              title: "Index page",
+              summary: "",
+              lastModified: "2024-09-16T04:34:54.838Z",
+              permalink: "/parent",
+              children: [
+                {
+                  id: "5",
+                  layout: "content",
+                  title: "Page title here",
+                  summary: "",
+                  lastModified: "2024-09-16T04:34:54.838Z",
+                  permalink: "/parent/child",
+                },
+              ],
+            },
+            {
+              id: "3",
+              layout: "content",
+              title: "Page title here",
+              summary: "",
+              lastModified: "2024-09-16T04:34:54.838Z",
+              permalink: "/page-title-here",
+            },
+          ],
+        }
+      })
+    },
   },
 }

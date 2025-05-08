@@ -97,6 +97,13 @@ export const NAVBAR_CONTENT: Navbar = {
   ],
 }
 
+export const SEARCH_PAGE_BLOB: IsomerSchema = {
+  page: { title: "Search", description: "Search results" },
+  layout: "search",
+  content: [],
+  version: "0.1.0",
+}
+
 const FOOTER_ITEMS = [
   {
     title: "About us",
