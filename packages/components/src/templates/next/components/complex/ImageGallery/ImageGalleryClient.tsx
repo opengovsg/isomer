@@ -73,7 +73,6 @@ export const ImageGalleryClient = ({
 
   const isDesktop = useBreakpoint("lg")
   const maxPreviewImages = isDesktop ? 5 : 3
-  const visibleRange = isDesktop ? 2 : 1
 
   const previewIndices = getPreviewIndices({
     numberOfImages: images.length,
