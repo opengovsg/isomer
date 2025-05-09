@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { expect, userEvent, within } from "@storybook/test"
 import { omit } from "lodash"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { ImageGalleryProps } from "~/interfaces/complex/ImageGallery"
+import { TRANSITION_DURATION } from "./constants"
 import { ImageGallery } from "./ImageGallery"
 
 const meta: Meta<ImageGalleryProps> = {
@@ -158,5 +160,127 @@ export const FourImages: Story = {
   },
   args: {
     images: IMAGES.slice(0, 4),
+  },
+}
+
+export const NavigateByClickingPreview: Story = {
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  args: {
+    images: IMAGES.slice(0, 3),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const nextButton = canvas.getByRole("button", { name: "View image 2 of 3" })
+    await userEvent.click(nextButton)
+
+    // Wait for transition to complete
+    await new Promise((resolve) =>
+      setTimeout(resolve, TRANSITION_DURATION + 100),
+    )
+
+    expect(
+      canvas.getByText("I hate hairballs, but you're my favorite furball."),
+    ).toBeVisible()
+  },
+}
+
+export const NavigateByRightArrow: Story = {
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  args: {
+    images: IMAGES.slice(0, 3),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const nextButton = canvas.getByRole("button", { name: "Next image" })
+    await userEvent.click(nextButton)
+
+    // Wait for transition to complete
+    await new Promise((resolve) =>
+      setTimeout(resolve, TRANSITION_DURATION + 100),
+    )
+
+    expect(
+      canvas.getByText("I hate hairballs, but you're my favorite furball."),
+    ).toBeVisible()
+  },
+}
+
+export const NavigateByLeftArrow: Story = {
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  args: {
+    images: IMAGES.slice(0, 3),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const nextButton = canvas.getByRole("button", { name: "Previous image" })
+    await userEvent.click(nextButton)
+
+    // Wait for transition to complete
+    await new Promise((resolve) =>
+      setTimeout(resolve, TRANSITION_DURATION + 100),
+    )
+
+    expect(
+      canvas.getByText("Let's curl up to shoegaze until we fall asleep."),
+    ).toBeVisible()
+  },
+}
+
+export const NavigateByRightArrowKeyboard: Story = {
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  args: {
+    images: IMAGES.slice(0, 3),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const nextButton = canvas.getByRole("button", { name: "Next image" })
+    nextButton.focus()
+    await userEvent.keyboard("{Enter}")
+
+    // Wait for transition to complete
+    await new Promise((resolve) =>
+      setTimeout(resolve, TRANSITION_DURATION + 100),
+    )
+
+    expect(
+      canvas.getByText("I hate hairballs, but you're my favorite furball."),
+    ).toBeVisible()
+  },
+}
+
+export const NavigateByLeftArrowKeyboard: Story = {
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  args: {
+    images: IMAGES.slice(0, 3),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const nextButton = canvas.getByRole("button", { name: "Previous image" })
+    nextButton.focus()
+    await userEvent.keyboard("{Enter}")
+
+    // Wait for transition to complete
+    await new Promise((resolve) =>
+      setTimeout(resolve, TRANSITION_DURATION + 100),
+    )
+
+    expect(
+      canvas.getByText("Let's curl up to shoegaze until we fall asleep."),
+    ).toBeVisible()
   },
 }
