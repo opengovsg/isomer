@@ -5,6 +5,7 @@ import type {
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 
+import { ADMIN_ROLE } from "~/lib/growthbook"
 import {
   createSiteSchema,
   getConfigSchema,
@@ -20,7 +21,7 @@ import { safeJsonParse } from "~/utils/safeJsonParse"
 import { logConfigEvent, logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db, jsonb } from "../database"
-import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
+import { validateUserIsIsomerCoreAdmin } from "../permissions/permissions.service"
 import {
   getFooter,
   getLocalisedSitemap,
@@ -50,7 +51,11 @@ export const siteRouter = router({
       .execute()
   }),
   listAllSites: protectedProcedure.query(async ({ ctx }) => {
-    await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+    await validateUserIsIsomerCoreAdmin({
+      userId: ctx.user.id,
+      gb: ctx.gb,
+      roles: [ADMIN_ROLE.CORE],
+    })
 
     return db
       .selectFrom("Site")
@@ -231,6 +236,7 @@ export const siteRouter = router({
         }
 
         await logConfigEvent(tx, {
+          siteId,
           eventType: AuditLogEvent.SiteConfigUpdate,
           delta: {
             before: oldSite,
@@ -274,6 +280,7 @@ export const siteRouter = router({
         }
 
         await logConfigEvent(tx, {
+          siteId,
           eventType: AuditLogEvent.NavbarUpdate,
           delta: {
             before: oldNavbar,
@@ -317,6 +324,7 @@ export const siteRouter = router({
         }
 
         await logConfigEvent(tx, {
+          siteId,
           eventType: AuditLogEvent.FooterUpdate,
           delta: {
             before: oldFooter,
@@ -335,14 +343,22 @@ export const siteRouter = router({
   create: protectedProcedure
     .input(createSiteSchema)
     .mutation(async ({ ctx, input: { siteName } }) => {
-      await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+      await validateUserIsIsomerCoreAdmin({
+        userId: ctx.user.id,
+        gb: ctx.gb,
+        roles: [ADMIN_ROLE.CORE],
+      })
 
-      return createSite({ siteName })
+      return createSite({ siteName, userId: ctx.user.id })
     }),
   publish: protectedProcedure
     .input(publishSiteSchema)
     .mutation(async ({ ctx, input: { siteId } }) => {
-      await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+      await validateUserIsIsomerCoreAdmin({
+        userId: ctx.user.id,
+        gb: ctx.gb,
+        roles: [ADMIN_ROLE.CORE],
+      })
 
       const byUser = await db
         .selectFrom("User")
@@ -362,12 +378,17 @@ export const siteRouter = router({
           eventType: AuditLogEvent.Publish,
           delta: { before: null, after: null },
           metadata: {},
+          siteId,
         })
         await publishSite(ctx.logger, siteId)
       })
     }),
   publishAll: protectedProcedure.mutation(async ({ ctx }) => {
-    await validateUserIsIsomerAdmin({ userId: ctx.user.id, gb: ctx.gb })
+    await validateUserIsIsomerCoreAdmin({
+      userId: ctx.user.id,
+      gb: ctx.gb,
+      roles: [ADMIN_ROLE.CORE],
+    })
 
     const byUser = await db
       .selectFrom("User")
@@ -395,6 +416,7 @@ export const siteRouter = router({
             eventType: AuditLogEvent.Publish,
             delta: { before: null, after: null },
             metadata: {},
+            siteId: site.id,
           })
           await publishSite(ctx.logger, site.id)
         }),

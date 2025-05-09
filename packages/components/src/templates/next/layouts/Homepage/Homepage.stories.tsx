@@ -293,6 +293,7 @@ export const Default: Story = {
       },
       {
         type: "infocards",
+        maxColumns: "3",
         title: "Section title ministry highlights",
         subtitle:
           "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
@@ -401,6 +402,14 @@ export const Default: Story = {
           { label: "Total Merchandise Trade, Dec 2023 (YoY)", value: "-6.8%" },
           { label: "Industrial Production, Dec 2023 (YoY)", value: "-2.5%" },
         ],
+      },
+      {
+        type: "blockquote",
+        quote:
+          "I managed to experience new things: saw a dead fish in a plastic bag for the first time, which was an eye-opener because I never thought I would actually get to see something like this ever.",
+        source: "Hannah Teo, Greenies ambassador",
+        imageSrc: "https://placehold.co/600x600",
+        imageAlt: "This is the alt text",
       },
     ],
   },

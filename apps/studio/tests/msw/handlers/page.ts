@@ -652,6 +652,204 @@ export const pageHandlers = {
         }
       })
     },
+    index: () => {
+      // @ts-expect-error incomplete types
+      return trpcMsw.page.readPageAndBlob.query(() => {
+        return {
+          title: "Index page",
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+          permalink: "_index",
+          navbar: {
+            id: 1,
+            siteId: 1,
+            content: [
+              {
+                url: "/item-one",
+                name: "Expandable nav item",
+                items: [
+                  {
+                    url: "/item-one/pa-network-one",
+                    name: "PA's network one",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                  {
+                    url: "/item-one/pa-network-two",
+                    name: "PA's network two",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                  {
+                    url: "/item-one/pa-network-three",
+                    name: "PA's network three",
+                  },
+                  {
+                    url: "/item-one/pa-network-four",
+                    name: "PA's network four",
+                    description:
+                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                  },
+                  {
+                    url: "/item-one/pa-network-five",
+                    name: "PA's network five",
+                    description:
+                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                  },
+                  {
+                    url: "/item-one/pa-network-six",
+                    name: "PA's network six",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                ],
+              },
+            ],
+          },
+          footer: {
+            id: 1,
+            siteId: 1,
+            content: {
+              siteNavItems: [
+                { url: "/about", title: "About us" },
+                { url: "/partners", title: "Our partners" },
+                {
+                  url: "/grants-and-programmes",
+                  title: "Grants and programmes",
+                },
+                { url: "/contact-us", title: "Contact us" },
+                { url: "/something-else", title: "Something else" },
+                { url: "/resources", title: "Resources" },
+              ],
+              contactUsLink: "/contact-us",
+              termsOfUseLink: "/terms-of-use",
+              feedbackFormLink: "https://www.form.gov.sg",
+              privacyStatementLink: "/privacy",
+            },
+          },
+          content: {
+            page: {
+              date: "11-09-2024",
+              title: "article layout",
+              category: "Feature Articles",
+              articlePageHeader: { summary: "" },
+            },
+            layout: "index",
+            content: [
+              {
+                type: "childpage",
+                variant: "boxes",
+                summary: false,
+                thumbnail: false,
+              },
+            ],
+            version: "0.1.0",
+          },
+          type: "IndexPage",
+          theme: "isomer-next",
+          logoUrl: "",
+          siteName: "MTI",
+          isGovernment: true,
+        }
+      })
+    },
+    customIndex: () => {
+      // @ts-expect-error incomplete types
+      return trpcMsw.page.readPageAndBlob.query(() => {
+        return {
+          title: "Index page",
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+          permalink: "_index",
+          navbar: {
+            id: 1,
+            siteId: 1,
+            content: [
+              {
+                url: "/item-one",
+                name: "Expandable nav item",
+                items: [
+                  {
+                    url: "/item-one/pa-network-one",
+                    name: "PA's network one",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                  {
+                    url: "/item-one/pa-network-two",
+                    name: "PA's network two",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                  {
+                    url: "/item-one/pa-network-three",
+                    name: "PA's network three",
+                  },
+                  {
+                    url: "/item-one/pa-network-four",
+                    name: "PA's network four",
+                    description:
+                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                  },
+                  {
+                    url: "/item-one/pa-network-five",
+                    name: "PA's network five",
+                    description:
+                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                  },
+                  {
+                    url: "/item-one/pa-network-six",
+                    name: "PA's network six",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                ],
+              },
+            ],
+          },
+          footer: {
+            id: 1,
+            siteId: 1,
+            content: {
+              siteNavItems: [
+                { url: "/about", title: "About us" },
+                { url: "/partners", title: "Our partners" },
+                {
+                  url: "/grants-and-programmes",
+                  title: "Grants and programmes",
+                },
+                { url: "/contact-us", title: "Contact us" },
+                { url: "/something-else", title: "Something else" },
+                { url: "/resources", title: "Resources" },
+              ],
+              contactUsLink: "/contact-us",
+              termsOfUseLink: "/terms-of-use",
+              feedbackFormLink: "https://www.form.gov.sg",
+              privacyStatementLink: "/privacy",
+            },
+          },
+          content: {
+            page: {
+              date: "11-09-2024",
+              title: "article layout",
+              category: "Feature Articles",
+              articlePageHeader: { summary: "" },
+            },
+            childpages: {
+              layout: "boxes",
+              summary: false,
+              thumbnail: false,
+            },
+            layout: "content",
+            content: [],
+            version: "0.1.0",
+          },
+          type: "IndexPage",
+          theme: "isomer-next",
+          logoUrl: "",
+          siteName: "MTI",
+          isGovernment: true,
+        }
+      })
+    },
   },
   readPage: {
     homepage: (
@@ -716,6 +914,27 @@ export const pageHandlers = {
         }
       })
     },
+    index: (
+      overrides: Partial<Awaited<ReturnType<typeof getPageById>>> = {},
+    ) => {
+      return trpcMsw.page.readPage.query(() => {
+        return {
+          id: "4",
+          title: "index layout",
+          permalink: "_index",
+          siteId: 1,
+          parentId: "2",
+          publishedVersionId: null,
+          draftBlobId: "3",
+          type: "IndexPage",
+          state: "Draft",
+
+          createdAt: new Date("2024-09-12T07:00:00.000Z"),
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+          ...overrides,
+        }
+      })
+    },
   },
   getFullPermalink: {
     homepage: () =>
@@ -729,6 +948,10 @@ export const pageHandlers = {
     article: () =>
       trpcMsw.page.getFullPermalink.query(() => {
         return "/article-layout"
+      }),
+    index: () =>
+      trpcMsw.page.getFullPermalink.query(() => {
+        return "parent"
       }),
   },
   getPermalinkTree: {

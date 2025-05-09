@@ -28,6 +28,7 @@ const HomepageLayout = ({
           layout,
           site,
           LinkComponent,
+          permalink: page.permalink,
         })}
       </div>
     </Skeleton>

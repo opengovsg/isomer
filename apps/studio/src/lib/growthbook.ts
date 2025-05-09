@@ -8,5 +8,11 @@ export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 // that we want. Hence, we have to define it as a type instead of an interface.
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type GrowthbookIsomerAdminFeature = {
-  users: string[]
+  [ADMIN_ROLE.CORE]: string[]
+  [ADMIN_ROLE.MIGRATORS]: string[]
 }
+
+export const ADMIN_ROLE = {
+  CORE: "core",
+  MIGRATORS: "migrators",
+} as const

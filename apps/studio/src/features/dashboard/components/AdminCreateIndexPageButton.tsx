@@ -4,6 +4,7 @@ import { BiLogoDevTo } from "react-icons/bi"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { ADMIN_ROLE } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
 
 interface AdminCreateIndexPageButtonProps {
@@ -16,7 +17,9 @@ export const AdminCreateIndexPageButton = ({
 }: AdminCreateIndexPageButtonProps) => {
   const toast = useToast()
   const utils = trpc.useUtils()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdmin = useIsUserIsomerAdmin({
+    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  })
 
   const { data: indexPage } = trpc.resource.getIndexPage.useQuery({
     siteId,

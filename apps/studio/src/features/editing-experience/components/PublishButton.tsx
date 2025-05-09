@@ -41,6 +41,10 @@ const SuspendablePublishButton = ({
       })
       await utils.page.readPage.invalidate({ pageId, siteId })
       await utils.page.getCategories.invalidate({ pageId, siteId })
+      await utils.site.getLocalisedSitemap.invalidate({
+        resourceId: pageId,
+        siteId,
+      })
     },
     onError: async (error) => {
       console.error(`Error occurred when publishing page: ${error.message}`)

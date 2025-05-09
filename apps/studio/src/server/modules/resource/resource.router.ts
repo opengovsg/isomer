@@ -195,7 +195,6 @@ export const resourceRouter = router({
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id", "parentId"])
         .where("Resource.type", "!=", ResourceType.RootPage)
-        .where("Resource.type", "!=", ResourceType.IndexPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .where("Resource.siteId", "=", Number(siteId))
@@ -433,6 +432,7 @@ export const resourceRouter = router({
             }
 
             await logResourceEvent(tx, {
+              siteId,
               eventType: "ResourceUpdate",
               delta: { before: toMove, after: moved },
               by: user,
@@ -463,6 +463,7 @@ export const resourceRouter = router({
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", ResourceType.RootPage)
+        .where("Resource.type", "!=", ResourceType.IndexPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .select((eb) => [eb.fn.countAll().as("totalCount")])
@@ -484,6 +485,7 @@ export const resourceRouter = router({
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", ResourceType.RootPage)
+        .where("Resource.type", "!=", ResourceType.IndexPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .orderBy("Resource.updatedAt", "desc")
@@ -548,6 +550,7 @@ export const resourceRouter = router({
         }
 
         await logResourceEvent(tx, {
+          siteId,
           delta: {
             after: null,
             before,

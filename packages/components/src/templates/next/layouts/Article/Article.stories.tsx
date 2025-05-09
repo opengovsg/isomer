@@ -286,6 +286,15 @@ export const Default: Story = {
           },
         ],
       },
+      {
+        type: "blockquote",
+        quote:
+          "When I was a rookie, I had trouble overcoming the low rope at first. But when it came to my turn, my buddies knew being there would help spur me to prevail.",
+        source:
+          "ME2 Jenny Teng, Recipient of SAF Polytechnic Sponsorship, Army Medical Services",
+        imageSrc: "https://placehold.co/600x600",
+        imageAlt: "This is the alt text",
+      },
     ],
   },
 }
@@ -524,6 +533,16 @@ export const TaggedArticle: Story = {
           category: "Tags",
           selected: ["NParks Happenings", "Wild dinosaur"],
         },
+        {
+          category: "Brand",
+          selected: [
+            "Daikin",
+            "TP Link",
+            "Asus",
+            "Something slightly longer like this",
+            "Something really long like this, a whole essay in a tag, although you should be avoiding this",
+          ],
+        },
       ],
     },
     content: [
@@ -561,6 +580,33 @@ export const TaggedArticle: Story = {
                 text: "This is a Chat-GPT4 generated article for visual testing purposes.",
               },
             ],
+          },
+        ],
+      },
+    ],
+  },
+}
+
+// Placing this story here as it's due to the overflow-x-auto class on the parent div
+export const OrderedList100Items: Story = {
+  name: "100th Ordered Marker Not Truncated",
+  args: {
+    ...generateArgs({ summary: "" }),
+    content: [
+      {
+        type: "prose",
+        content: [
+          {
+            type: "orderedList",
+            content: Array.from({ length: 100 }, (_, i) => ({
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: `Item ${i + 1}` }],
+                },
+              ],
+            })),
           },
         ],
       },
