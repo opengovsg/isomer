@@ -10,7 +10,7 @@ import { getPreviewIndices } from "./utils"
 
 // Constant for controlling how many images are rendered at once
 const VISIBLE_RANGE = 2
-const TRANSITION_DURATION = 300
+const TRANSITION_DURATION = 150
 
 const createImagePreviewStyles = tv({
   slots: {
