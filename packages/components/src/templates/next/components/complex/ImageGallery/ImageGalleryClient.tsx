@@ -94,6 +94,8 @@ export const ImageGalleryClient = ({
       <div className="relative h-[17rem] w-full overflow-hidden border bg-white sm:h-[28.5rem]">
         <div className="relative h-full w-full">
           {images.map((image, index) => {
+            const isCurrentImage = index === currentIndex
+
             // Ensure all images that can be navigated to are rendered to ensure smooth transitions
             const shouldPreload =
               // Preload the image if it is in the preview thumbnail sequence
@@ -112,11 +114,9 @@ export const ImageGalleryClient = ({
                   className={`absolute inset-0 h-full w-full transition-opacity duration-${TRANSITION_DURATION} ease-out ${
                     // z-index ensures the current image always appears on top,
                     // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
-                    index === currentIndex
-                      ? "z-10 opacity-100"
-                      : "z-0 opacity-0"
+                    isCurrentImage ? "z-10 opacity-100" : "z-0 opacity-0"
                   }`}
-                  aria-hidden={index !== currentIndex}
+                  aria-hidden={!isCurrentImage}
                 >
                   <div className="relative h-full w-full">
                     <ImageClient
@@ -125,7 +125,12 @@ export const ImageGalleryClient = ({
                       width="100%"
                       className="h-full w-full object-contain"
                       assetsBaseUrl={assetsBaseUrl}
-                      lazyLoading={shouldLazyLoad}
+                      lazyLoading={
+                        shouldLazyLoad &&
+                        // only the current image is visible and should be lazy loaded (if lazy loading is enabled)
+                        // the other images aren't visible so they can be lazily loaded to not fight for loading priority
+                        isCurrentImage
+                      }
                     />
                     {image.caption && (
                       <div className="prose-label-sm-medium absolute bottom-0 left-0 right-0 bg-base-canvas-inverse-overlay/90 p-3 text-white">
