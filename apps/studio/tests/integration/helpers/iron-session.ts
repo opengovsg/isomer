@@ -108,7 +108,6 @@ export const createTestUser = (): Omit<User, "id"> => ({
   updatedAt: MOCK_STORY_DATE,
   phone: MOCK_TEST_PHONE,
   singpassUuid: MOCK_TEST_UUID,
-  deletedAt: null,
   lastLoginAt: null,
 })
 

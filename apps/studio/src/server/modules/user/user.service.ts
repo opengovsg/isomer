@@ -1,6 +1,7 @@
 import cuid2 from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import isEmail from "validator/lib/isEmail"
 
 import type { DB, Transaction } from "../database"
@@ -11,18 +12,6 @@ import { isGovEmail } from "~/utils/email"
 import { logPermissionEvent, logUserEvent } from "../audit/audit.service"
 import { db, RoleType } from "../database"
 import { isEmailWhitelisted } from "../whitelist/whitelist.service"
-
-export const isUserDeleted = async (email: string) => {
-  const lowercaseEmail = email.toLowerCase()
-  const user = await db
-    .selectFrom("User")
-    .where("email", "=", lowercaseEmail)
-    .select(["deletedAt"])
-    // Email is a unique field in User table
-    .executeTakeFirst()
-
-  return user?.deletedAt ? true : false
-}
 
 export const validateEmailRoleCombination = ({
   email,
@@ -91,14 +80,14 @@ export const createUserWithPermission = async ({
         name: name || email.split("@")[0] || "",
         phone,
       })
-      .onConflict((oc) => oc.columns(["email", "deletedAt"]).doNothing())
+      .onConflict((oc) => oc.columns(["email"]).doNothing())
       .returningAll()
       .executeTakeFirst()
 
     // if user is defined, it means it's newly created and there's no conflict
     if (user) {
       await logUserEvent(tx, {
-        eventType: "UserCreate",
+        eventType: AuditLogEvent.UserCreate,
         by: byUser,
         delta: { before: null, after: user },
       })
@@ -110,7 +99,6 @@ export const createUserWithPermission = async ({
     return await tx
       .selectFrom("User")
       .where("email", "=", email)
-      .where("deletedAt", "is", null)
       .selectAll()
       .executeTakeFirstOrThrow()
   }
@@ -124,7 +112,7 @@ export const createUserWithPermission = async ({
         role,
       })
       .onConflict((oc) =>
-        oc.columns(["userId", "siteId", "resourceId", "deletedAt"]).doNothing(),
+        oc.columns(["userId", "siteId", "resourceId"]).doNothing(),
       )
       .returningAll()
       .executeTakeFirst()
@@ -137,7 +125,7 @@ export const createUserWithPermission = async ({
     }
 
     await logPermissionEvent(tx, {
-      eventType: "PermissionCreate",
+      eventType: AuditLogEvent.PermissionCreate,
       by: byUser,
       delta: { before: null, after: resourcePermission },
     })
@@ -160,7 +148,6 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
     .with("ActiveResourcePermission", (qb) =>
       qb
         .selectFrom("ResourcePermission")
-        .where("deletedAt", "is", null)
         .where("siteId", "=", siteId)
         .selectAll(),
     )
@@ -168,7 +155,6 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
       qb
         .selectFrom("User")
         .selectAll()
-        .where("deletedAt", "is", null)
         .where(
           "email",
           adminType === "isomer" ? "in" : "not in",
@@ -205,61 +191,25 @@ export const deleteUserPermission = async ({
     .executeTakeFirstOrThrow()
 
   await db.transaction().execute(async (tx) => {
-    const userPermissionsToDelete = await tx
-      .selectFrom("ResourcePermission")
+    const deletedUserPermissions = await tx
+      .deleteFrom("ResourcePermission")
       .where("userId", "=", userId)
       .where("siteId", "=", siteId)
-      .where("deletedAt", "is", null)
-      .selectAll()
+      .returningAll()
       .execute()
 
-    if (userPermissionsToDelete.length === 0) {
+    if (deletedUserPermissions.length === 0) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "User permissions not found",
       })
     }
 
-    const deletedUserPermissions = await tx
-      .updateTable("ResourcePermission")
-      .where(
-        "id",
-        "in",
-        userPermissionsToDelete.map((p) => p.id),
-      )
-      .set({ deletedAt: new Date() })
-      .returningAll()
-      .execute()
-
-    // NOTE: this is technically impossible because we're executing
-    // inside a tx and this is the same resource which was fetched earlier
-    if (deletedUserPermissions.length !== userPermissionsToDelete.length) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message:
-          "Something went wrong while attempting to move your resource, please try again later",
-      })
-    }
-
     for (const deletedUserPermission of deletedUserPermissions) {
-      const before = userPermissionsToDelete.find(
-        (p) => p.id === deletedUserPermission.id,
-      )
-
-      // Note: this is technically impossible because we're executing
-      // inside a tx and we have checked previously that the user permission existed
-      if (!before) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            "Something went wrong while attempting to move your resource, please try again later",
-        })
-      }
-
       await logPermissionEvent(tx, {
-        eventType: "PermissionDelete",
+        eventType: AuditLogEvent.PermissionDelete,
         by: byUser,
-        delta: { before, after: deletedUserPermission },
+        delta: { before: deletedUserPermission, after: null },
       })
     }
   })
@@ -298,7 +248,7 @@ export const updateUserDetails = async ({
       .executeTakeFirstOrThrow()
 
     await logUserEvent(tx, {
-      eventType: "UserUpdate",
+      eventType: AuditLogEvent.UserUpdate,
       by: user,
       delta: { before: user, after: updatedUser },
     })
