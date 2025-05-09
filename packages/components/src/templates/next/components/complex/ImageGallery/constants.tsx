@@ -1,3 +1,5 @@
+export const TRANSITION_DURATION = 150
+
 export const LEFT_ARROW_SVG = (
   <svg
     className="h-8 w-8"
