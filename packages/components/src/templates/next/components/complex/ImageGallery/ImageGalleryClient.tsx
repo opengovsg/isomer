@@ -36,6 +36,14 @@ const createImagePreviewStyles = tv({
         container: "h-[5.375rem]",
       },
     },
+    isVisible: {
+      true: {
+        container: "block",
+      },
+      false: {
+        container: "hidden",
+      },
+    },
   },
 })
 
@@ -167,14 +175,17 @@ export const ImageGalleryClient = ({
       {/* Preview Sequence - Using grid for fixed columns */}
       <div className="mt-6 hidden w-full gap-3 sm:grid md:grid-cols-3 lg:grid-cols-5">
         {images.map((image, index) => {
-          if (!previewIndices.includes(index)) return null
-
+          // We render all images, but hide the ones that are not in the preview sequence
+          // This is avoid reloading images that have been loaded (e.g. when navigating back to an already loaded image)
+          // Given that current total image count is capped at 30, this have minimal performance impact (as they are basic DOM elements)
+          const isVisible = previewIndices.includes(index)
           return (
             <button
               key={image.src + index} // in case of same src, use index as key
               className={compoundStyles.container({
                 isSelected: index === currentIndex,
                 numberOfImages: maxPreviewImages.toString() as "3" | "5",
+                isVisible,
               })}
               onClick={() => navigateToImageByIndex(index)}
               aria-label={`View image ${index + 1} of ${images.length}`}
@@ -187,7 +198,12 @@ export const ImageGalleryClient = ({
                 width="100%"
                 className="h-full w-full object-contain"
                 assetsBaseUrl={assetsBaseUrl}
-                lazyLoading={shouldLazyLoad}
+                lazyLoading={
+                  shouldLazyLoad &&
+                  // only the images in preview sequence are visible and should be lazy loaded (if lazy loading is enabled)
+                  // the other images aren't visible so they can be lazily loaded to not fight for loading priority
+                  isVisible
+                }
               />
             </button>
           )
