@@ -10,10 +10,6 @@ const meta: Meta<ImageGalleryProps> = {
   title: "Next/Components/ImageGallery",
   component: ImageGallery,
   argTypes: {},
-  parameters: {
-    layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
-  },
   args: {
     site: {
       siteName: "Isomer Next",
@@ -100,12 +96,20 @@ const IMAGES = [
 ]
 
 export const Default: Story = {
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+  },
   args: {
     images: IMAGES,
   },
 }
 
 export const NoCaption: Story = {
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+  },
   args: {
     images: IMAGES.map((image, index) => {
       // Remove caption for the first image
@@ -118,24 +122,40 @@ export const NoCaption: Story = {
 }
 
 export const OneImage: Story = {
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["tablet", "desktop"]),
+  },
   args: {
     images: IMAGES.slice(0, 1),
   },
 }
 
 export const TwoImages: Story = {
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["tablet", "desktop"]),
+  },
   args: {
     images: IMAGES.slice(0, 2),
   },
 }
 
 export const ThreeImages: Story = {
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["tablet", "desktop"]),
+  },
   args: {
     images: IMAGES.slice(0, 3),
   },
 }
 
 export const FourImages: Story = {
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["tablet", "desktop"]),
+  },
   args: {
     images: IMAGES.slice(0, 4),
   },
