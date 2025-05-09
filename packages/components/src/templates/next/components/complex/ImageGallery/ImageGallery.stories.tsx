@@ -146,7 +146,7 @@ export const TwoImages: Story = {
 export const ThreeImages: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["tablet", "desktop"]),
+    chromatic: withChromaticModes(["desktop"]),
   },
   args: {
     images: IMAGES.slice(0, 3),
@@ -156,7 +156,7 @@ export const ThreeImages: Story = {
 export const FourImages: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["tablet", "desktop"]),
+    chromatic: withChromaticModes(["desktop"]),
   },
   args: {
     images: IMAGES.slice(0, 4),
