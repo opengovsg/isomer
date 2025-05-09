@@ -60,7 +60,7 @@ const ImageWithCaption = ({
         src={image.src}
         alt={image.alt}
         width="100%"
-        className={`h-full w-full object-contain transition-opacity motion-safe:duration-300 motion-safe:ease-out ${
+        className={`h-full w-full object-contain transition-opacity motion-safe:duration-150 motion-safe:ease-out ${
           visible ? "opacity-100" : "opacity-0"
         }`}
         onLoad={() => setVisible(true)}
