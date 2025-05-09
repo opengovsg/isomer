@@ -1,5 +1,3 @@
-export const MAXIMUM_NUMBER_OF_IMAGES_IN_PREVIEW = 5
-
 export const LEFT_ARROW_SVG = (
   <svg
     className="h-8 w-8"
