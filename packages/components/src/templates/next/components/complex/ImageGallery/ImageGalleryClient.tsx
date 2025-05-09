@@ -10,6 +10,7 @@ import { getPreviewIndices } from "./utils"
 
 // Constant for controlling how many images are rendered at once
 const VISIBLE_RANGE = 2
+const TRANSITION_DURATION = 300
 
 const createImagePreviewStyles = tv({
   slots: {
@@ -73,7 +74,7 @@ export const ImageGalleryClient = ({
         // Reset transition state after the animation completes
         setTimeout(() => {
           setIsTransitioning(false)
-        }, 300)
+        }, TRANSITION_DURATION)
       }, 50)
     },
     [images.length, isTransitioning],
@@ -109,7 +110,7 @@ export const ImageGalleryClient = ({
             return (
               <div
                 key={index}
-                className={`absolute inset-0 h-full w-full transition-opacity duration-300 ease-out ${
+                className={`absolute inset-0 h-full w-full transition-opacity duration-${TRANSITION_DURATION} ease-out ${
                   isCurrent ? "z-10 opacity-100" : "z-0 opacity-0"
                 }`}
                 aria-hidden={!isCurrent}
@@ -188,7 +189,7 @@ export const ImageGalleryClient = ({
                   setCurrentIndex(index)
                   setTimeout(() => {
                     setIsTransitioning(false)
-                  }, 300)
+                  }, TRANSITION_DURATION)
                 }
               }}
               aria-label={`View image ${index + 1} of ${images.length}`}
