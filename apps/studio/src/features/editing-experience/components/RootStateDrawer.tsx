@@ -159,7 +159,7 @@ export default function RootStateDrawer() {
     // NOTE: This is defined but we just do the assertion here
     // because the type for `DEFAULT_BLOCKS` is possibly undefined
     // so `ts` cannot infer
-    if (!DEFAULT_BLOCKS.childpage) return
+    if (!DEFAULT_BLOCKS.childrenpages) return
 
     const newPageState = {
       ...savedPageState,
@@ -167,7 +167,10 @@ export default function RootStateDrawer() {
     // NOTE: This layout needs to be outside, otherwise it is treated as a
     // string type rather than the array of layout consts
     newPageState.layout = "index"
-    newPageState.content = [...savedPageState.content, DEFAULT_BLOCKS.childpage]
+    newPageState.content = [
+      ...savedPageState.content,
+      DEFAULT_BLOCKS.childrenpages,
+    ]
     setPreviewPageState(newPageState)
     setIsPreviewingIndexPage(true)
   }, [savedPageState, setPreviewPageState])
