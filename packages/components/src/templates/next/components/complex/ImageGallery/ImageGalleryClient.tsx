@@ -161,9 +161,8 @@ export const ImageGalleryClient = ({
 
       {/* Preview Sequence - Using grid for fixed columns */}
       <div className="mt-6 hidden w-full gap-3 sm:grid md:grid-cols-3 lg:grid-cols-5">
-        {previewIndices.map((index) => {
-          const previewImage = images[index]
-          if (!previewImage) return null
+        {images.map((image, index) => {
+          if (!previewIndices.includes(index)) return null
 
           return (
             <button
@@ -178,9 +177,9 @@ export const ImageGalleryClient = ({
               disabled={currentIndex === index || isTransitioning}
             >
               <ImageClient
-                key={previewImage.src + index} // in case of same src, use index as key
-                src={previewImage.src}
-                alt={previewImage.alt}
+                key={image.src + index} // in case of same src, use index as key
+                src={image.src}
+                alt={image.alt}
                 width="100%"
                 className="h-full w-full object-contain"
                 assetsBaseUrl={assetsBaseUrl}
