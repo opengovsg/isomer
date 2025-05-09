@@ -7,7 +7,7 @@ import {
   ContentPageHeaderSchema,
   SearchableTableSchema,
 } from "~/interfaces"
-import { AltTextSchema, generateImageSrcSchema } from "~/interfaces/complex"
+import { imageSchemaObject } from "~/schemas/internal"
 import { REF_HREF_PATTERN } from "~/utils/validation"
 
 const categorySchemaObject = Type.Object({
@@ -24,19 +24,6 @@ const dateSchemaObject = Type.Object({
     Type.String({
       title: "Article date",
       format: "date",
-    }),
-  ),
-})
-
-const imageSchemaObject = Type.Object({
-  image: Type.Optional(
-    Type.Object({
-      src: generateImageSrcSchema({
-        title: "Thumbnail",
-        description:
-          "Upload an image if you want to have a custom thumbnail for this item",
-      }),
-      alt: AltTextSchema,
     }),
   ),
 })
@@ -124,9 +111,12 @@ export const CollectionPagePageSchema = Type.Intersect([
   }),
 ])
 
-export const ContentPagePageSchema = Type.Object({
-  contentPageHeader: ContentPageHeaderSchema,
-})
+export const ContentPagePageSchema = Type.Composite([
+  Type.Object({
+    contentPageHeader: ContentPageHeaderSchema,
+  }),
+  imageSchemaObject,
+])
 
 export const DatabasePagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,

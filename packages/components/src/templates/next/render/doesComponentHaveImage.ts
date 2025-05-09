@@ -27,9 +27,12 @@ export const doesComponentHaveImage = ({
     case "map":
     case "video":
     case IMAGE_GALLERY_TYPE:
+    case "childrenpages":
       return true
     case "infocards":
       return component.cards.some((card) => "imageUrl" in card)
+    case "blockquote":
+      return component.imageSrc !== undefined
     default:
       const _: never = component
       return false

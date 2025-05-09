@@ -71,6 +71,7 @@ const DatabaseLayout = ({
                 layout,
                 site,
                 LinkComponent,
+                permalink: page.permalink,
               })}
             </div>
           </div>

@@ -1,14 +1,6 @@
 "use client"
 
-export interface ImageClientProps {
-  src: string
-  alt: string
-  width: string
-  className: string
-  assetsBaseUrl?: string
-  lazyLoading?: boolean
-  onLoad?: React.ReactEventHandler<HTMLImageElement>
-}
+import { ImageClientProps } from "~/interfaces"
 
 export const ImageClient = ({
   src,

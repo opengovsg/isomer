@@ -7,7 +7,9 @@ import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
 import { DYNAMIC_DATA_BANNER_TYPE, IMAGE_GALLERY_TYPE } from "~/interfaces"
 import {
   Accordion,
+  Blockquote,
   Callout,
+  ChildrenPages,
   Contentpic,
   DynamicDataBanner,
   Hero,
@@ -19,11 +21,11 @@ import {
   InfoCols,
   Infopic,
   KeyStatistics,
+  LogoCloud,
   Map,
   Prose,
   Video,
 } from "../components"
-import { LogoCloud } from "../components/complex/LogoCloud"
 import {
   ArticleLayout,
   CollectionLayout,
@@ -42,6 +44,7 @@ interface RenderComponentProps {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   shouldLazyLoad?: boolean
+  permalink: string
 }
 
 export const renderComponent = ({
@@ -54,6 +57,8 @@ export const renderComponent = ({
       return <LogoCloud key={elementKey} {...component} {...rest} />
     case "accordion":
       return <Accordion key={elementKey} {...component} {...rest} />
+    case "blockquote":
+      return <Blockquote key={elementKey} {...component} {...rest} />
     case "callout":
       return <Callout key={elementKey} {...component} {...rest} />
     case "contentpic":
@@ -76,6 +81,8 @@ export const renderComponent = ({
       return <KeyStatistics key={elementKey} {...component} {...rest} />
     case "map":
       return <Map key={elementKey} {...component} {...rest} />
+    case "childrenpages":
+      return <ChildrenPages key={elementKey} {...component} {...rest} />
     case "prose":
       return (
         <Prose
