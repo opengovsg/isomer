@@ -55,19 +55,13 @@ export const ImageGalleryClient = ({
 
       setIsTransitioning(true)
 
-      // Set a brief timeout to ensure transition animation works smoothly
-      setTimeout(() => {
-        setCurrentIndex((current) =>
-          direction === "next"
-            ? (current + 1) % images.length
-            : (current - 1 + images.length) % images.length,
-        )
+      setCurrentIndex((current) =>
+        direction === "next"
+          ? (current + 1) % images.length
+          : (current - 1 + images.length) % images.length,
+      )
 
-        // Reset transition state after the animation completes
-        setTimeout(() => {
-          setIsTransitioning(false)
-        }, TRANSITION_DURATION)
-      }, 50)
+      setTimeout(() => setIsTransitioning(false), TRANSITION_DURATION)
     },
     [images.length, isTransitioning],
   )
@@ -178,9 +172,10 @@ export const ImageGalleryClient = ({
                 if (!isTransitioning) {
                   setIsTransitioning(true)
                   setCurrentIndex(index)
-                  setTimeout(() => {
-                    setIsTransitioning(false)
-                  }, TRANSITION_DURATION)
+                  setTimeout(
+                    () => setIsTransitioning(false),
+                    TRANSITION_DURATION,
+                  )
                 }
               }}
               aria-label={`View image ${index + 1} of ${images.length}`}
