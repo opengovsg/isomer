@@ -27,7 +27,8 @@ const getResourcesWithFullPermalink = (
   const children = resources
     .filter((resources) => {
       return parent.type === ResourceType.RootPage
-        ? resources.parentId === null
+        ? resources.parentId === null &&
+            resources.type !== ResourceType.RootPage
         : resources.parentId === parent.id
     })
     .map((child) => {
@@ -68,7 +69,10 @@ const getSitemapTreeFromArray = (
       )
     })
     .filter((resource) => {
-      return resource.parentId === parentId
+      return (
+        resource.parentId === parentId &&
+        resource.type !== ResourceType.IndexPage
+      )
     })
 
   // TODO: Sort the children by the page ordering if the FolderMeta resource exists
