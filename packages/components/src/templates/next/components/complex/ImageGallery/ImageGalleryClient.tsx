@@ -92,22 +92,31 @@ export const ImageGalleryClient = ({
     >
       {/* Main Slideshow */}
       <div className="relative h-[17rem] w-full overflow-hidden border bg-white sm:h-[28.5rem]">
-        {/* Container for all images */}
         <div className="relative h-full w-full">
           {images.map((image, index) => {
-            const isCurrent = index === currentIndex
-            const isVisible = previewIndices.includes(index)
+            // Ensure all images that can be navigated to are rendered to ensure smooth transitions
+            const shouldPreload =
+              // Preload the image if it is in the preview thumbnail sequence
+              previewIndices.includes(index) ||
+              // Preload the last image if currently displaying the first image
+              // to ensure smooth transition when navigating to the last image from the first
+              (currentIndex === 0 && index === images.length - 1) ||
+              // Preload the first image if currently displaying the last image
+              // to ensure smooth transition when navigating to the first image from the last
+              (currentIndex === images.length - 1 && index === 0)
 
             return (
-              isVisible && (
+              shouldPreload && (
                 <div
                   key={index}
                   className={`absolute inset-0 h-full w-full transition-opacity duration-${TRANSITION_DURATION} ease-out ${
                     // z-index ensures the current image always appears on top,
                     // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
-                    isCurrent ? "z-10 opacity-100" : "z-0 opacity-0"
+                    index === currentIndex
+                      ? "z-10 opacity-100"
+                      : "z-0 opacity-0"
                   }`}
-                  aria-hidden={!isCurrent}
+                  aria-hidden={index !== currentIndex}
                 >
                   <div className="relative h-full w-full">
                     <ImageClient
