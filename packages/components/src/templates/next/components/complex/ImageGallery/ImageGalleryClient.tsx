@@ -110,7 +110,7 @@ export const ImageGalleryClient = ({
             return (
               shouldPreload && (
                 <div
-                  key={index}
+                  key={image.src + index} // in case of same src, use index as key
                   className={`absolute inset-0 h-full w-full transition-opacity duration-${TRANSITION_DURATION} ease-out ${
                     // z-index ensures the current image always appears on top,
                     // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
@@ -171,7 +171,7 @@ export const ImageGalleryClient = ({
 
           return (
             <button
-              key={index}
+              key={image.src + index} // in case of same src, use index as key
               className={compoundStyles.container({
                 isSelected: index === currentIndex,
                 numberOfImages: maxPreviewImages.toString() as "3" | "5",
@@ -182,7 +182,6 @@ export const ImageGalleryClient = ({
               disabled={currentIndex === index || isTransitioning}
             >
               <ImageClient
-                key={image.src + index} // in case of same src, use index as key
                 src={image.src}
                 alt={image.alt}
                 width="100%"
