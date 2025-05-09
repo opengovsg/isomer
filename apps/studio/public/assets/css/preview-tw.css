@@ -1180,8 +1180,16 @@ video {
   z-index: -50;
 }
 
+.z-0 {
+  z-index: 0;
+}
+
 .z-10 {
   z-index: 10;
+}
+
+.z-20 {
+  z-index: 20;
 }
 
 .z-40 {
@@ -2371,10 +2379,6 @@ video {
   border-left-width: 4px;
 }
 
-.border-r {
-  border-right-width: 1px;
-}
-
 .border-t {
   border-top-width: 1px;
 }
@@ -2472,11 +2476,6 @@ video {
 .border-b-divider-medium {
   --tw-border-opacity: 1;
   border-bottom-color: rgb(208 208 208 / var(--tw-border-opacity));
-}
-
-.border-r-base-divider-subtle {
-  --tw-border-opacity: 1;
-  border-right-color: rgb(226 232 240 / var(--tw-border-opacity));
 }
 
 .border-t-base-divider-subtle {
@@ -5011,16 +5010,6 @@ video {
   color: rgb(156 163 175 / var(--tw-text-opacity));
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .motion-safe\:duration-300 {
-    transition-duration: 300ms;
-  }
-
-  .motion-safe\:ease-out {
-    transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .motion-reduce\:transition-none {
     transition-property: none;
@@ -5042,6 +5031,15 @@ video {
 
   .max-md\:gap-y-5 {
     row-gap: 1.25rem;
+  }
+
+  .max-md\:border-b {
+    border-bottom-width: 1px;
+  }
+
+  .max-md\:border-b-base-divider-subtle {
+    --tw-border-opacity: 1;
+    border-bottom-color: rgb(226 232 240 / var(--tw-border-opacity));
   }
 
   .max-md\:px-5 {
@@ -5082,6 +5080,10 @@ video {
 
   .sm\:flex {
     display: flex;
+  }
+
+  .sm\:grid {
+    display: grid;
   }
 
   .sm\:hidden {
@@ -5320,6 +5322,10 @@ video {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .md\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .md\:grid-cols-6 {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
@@ -5388,6 +5394,15 @@ video {
 
   .md\:gap-y-5 {
     row-gap: 1.25rem;
+  }
+
+  .md\:border-r {
+    border-right-width: 1px;
+  }
+
+  .md\:border-r-base-divider-subtle {
+    --tw-border-opacity: 1;
+    border-right-color: rgb(226 232 240 / var(--tw-border-opacity));
   }
 
   .md\:p-16 {
@@ -5481,20 +5496,12 @@ video {
     grid-column: span 3 / span 3;
   }
 
-  .lg\:col-span-4 {
-    grid-column: span 4 / span 4;
-  }
-
   .lg\:col-span-5 {
     grid-column: span 5 / span 5;
   }
 
   .lg\:col-span-7 {
     grid-column: span 7 / span 7;
-  }
-
-  .lg\:col-span-8 {
-    grid-column: span 8 / span 8;
   }
 
   .lg\:col-span-9 {
@@ -5649,6 +5656,10 @@ video {
 
   .lg\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lg\:grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .lg\:grid-cols-\[repeat\(auto-fit\2c _minmax\(300px\2c 1fr\)\)\] {
