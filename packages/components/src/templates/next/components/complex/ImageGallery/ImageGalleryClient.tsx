@@ -49,22 +49,26 @@ export const ImageGalleryClient = ({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
-  const navigate = useCallback(
+  const navigateToImageByDirection = useCallback(
     (direction: "prev" | "next") => {
       if (isTransitioning) return
-
       setIsTransitioning(true)
-
       setCurrentIndex((current) =>
         direction === "next"
           ? (current + 1) % images.length
           : (current - 1 + images.length) % images.length,
       )
-
       setTimeout(() => setIsTransitioning(false), TRANSITION_DURATION)
     },
     [images.length, isTransitioning],
   )
+
+  const navigateToImageByIndex = (index: number) => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentIndex(index)
+    setTimeout(() => setIsTransitioning(false), TRANSITION_DURATION)
+  }
 
   // Defensive programming: Guard against empty images array
   if (images.length === 0) {
@@ -129,7 +133,7 @@ export const ImageGalleryClient = ({
         {/* Navigation Controls - Accessible via keyboard tab navigation */}
         <button
           className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
-          onClick={() => navigate("prev")}
+          onClick={() => navigateToImageByDirection("prev")}
           aria-label="Previous image"
           disabled={isTransitioning}
         >
@@ -138,7 +142,7 @@ export const ImageGalleryClient = ({
 
         <button
           className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
-          onClick={() => navigate("next")}
+          onClick={() => navigateToImageByDirection("next")}
           aria-label="Next image"
           disabled={isTransitioning}
         >
@@ -159,16 +163,7 @@ export const ImageGalleryClient = ({
                 isSelected: index === currentIndex,
                 numberOfImages: maxPreviewImages.toString() as "3" | "5",
               })}
-              onClick={() => {
-                if (!isTransitioning) {
-                  setIsTransitioning(true)
-                  setCurrentIndex(index)
-                  setTimeout(
-                    () => setIsTransitioning(false),
-                    TRANSITION_DURATION,
-                  )
-                }
-              }}
+              onClick={() => navigateToImageByIndex(index)}
               aria-label={`View image ${index + 1} of ${images.length}`}
               aria-current={index === currentIndex}
               disabled={currentIndex === index || isTransitioning}
