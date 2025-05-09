@@ -56,29 +56,19 @@ const getSitemapTreeFromArray = (
   // Get the immediate children of the resource with the given parent ID
   const children = resources
     .filter((resource) => {
-      const hasPageChildren = resources.some((possibleChild) => {
+      const hasPageDescendants = resources.some((possibleChild) => {
         return (
           possibleChild.permalink.startsWith(resource.permalink) &&
           PAGE_RESOURCE_TYPES.find((t) => t === possibleChild.type)
         )
       })
       return (
-        PAGE_RESOURCE_TYPES.find((t) => t === resource.type) || hasPageChildren
+        PAGE_RESOURCE_TYPES.find((t) => t === resource.type) ||
+        hasPageDescendants
       )
     })
     .filter((resource) => {
-      if (parentId === null) {
-        return (
-          resource.parentId === null &&
-          resource.type !== ResourceType.RootPage &&
-          resource.type !== ResourceType.FolderMeta &&
-          resource.type !== ResourceType.CollectionMeta
-        )
-      }
-      return (
-        resource.parentId === parentId &&
-        resource.type !== ResourceType.IndexPage
-      )
+      return resource.parentId === parentId
     })
 
   // TODO: Sort the children by the page ordering if the FolderMeta resource exists
@@ -92,8 +82,7 @@ const getSitemapTreeFromArray = (
         layout: "content", // Note: We are not using the layout field in our sitemap for preview
         title: resource.title,
         summary: resource.summary ?? "",
-        lastModified: new Date() // TODO: Update this to the updated_at field in DB
-          .toISOString(),
+        lastModified: resource.updatedAt.toISOString(),
         permalink: resource.permalink,
         image: {
           src: resource.thumbnail ?? "",
