@@ -8,6 +8,7 @@ import type { NavbarClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { ImageClient } from "../../complex/Image"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
+import { LinkButton } from "../../internal/LinkButton"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
@@ -18,8 +19,7 @@ const navbarStyles = tv({
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
       "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-2 pl-6 pr-3 md:px-10",
-    navItemContainer:
-      "hidden flex-1 flex-wrap items-center gap-x-4 pl-2 lg:flex",
+    navItemContainer: "hidden flex-1 items-center gap-x-4 pl-2 lg:flex",
   },
 })
 
@@ -29,6 +29,7 @@ export const NavbarClient = ({
   layout,
   search,
   items,
+  callToAction,
   imageClientProps,
   LinkComponent,
 }: Omit<NavbarClientProps, "type">) => {
@@ -107,6 +108,19 @@ export const NavbarClient = ({
             ))}
           </ul>
 
+          {/* Call To Action button */}
+          {callToAction && (
+            <LinkButton
+              href={callToAction.referenceLinkHref}
+              isExternal={callToAction.isExternal}
+              className="align-content mx-5 hidden h-fit lg:flex"
+              isWithFocusVisibleHighlight
+              LinkComponent={LinkComponent}
+            >
+              {callToAction.label}
+            </LinkButton>
+          )}
+
           <div className="flex flex-row gap-1">
             {/* Search icon */}
             {search && !isHamburgerOpen && layout !== "search" && (
@@ -178,6 +192,7 @@ export const NavbarClient = ({
         <MobileNavMenu
           top={mobileNavbarTopPx}
           items={items}
+          callToAction={callToAction}
           openNavItemIdx={openNavItemIdx}
           setOpenNavItemIdx={setOpenNavItemIdx}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
