@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react"
 
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
+import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
 import { ImageClient } from "../Image/ImageClient"
 import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./constants"
@@ -15,7 +16,7 @@ const TRANSITION_DURATION = 150
 const createImagePreviewStyles = tv({
   slots: {
     container:
-      "relative aspect-[1/1] flex-1 flex-shrink-0 overflow-hidden border-[1px] focus-visible:outline focus-visible:outline-[0.75rem] focus-visible:outline-offset-[-0.75rem] focus-visible:outline-utility-highlight",
+      "relative aspect-[1/1] w-full flex-1 flex-shrink-0 overflow-hidden border-[1px] focus-visible:outline focus-visible:outline-[0.75rem] focus-visible:outline-offset-[-0.75rem] focus-visible:outline-utility-highlight",
   },
   variants: {
     isSelected: {
@@ -28,17 +29,8 @@ const createImagePreviewStyles = tv({
       },
     },
     numberOfImages: {
-      "1": {
-        container: "h-[7.375rem]",
-      },
-      "2": {
-        container: "h-[7.375rem]",
-      },
       "3": {
         container: "h-[7.375rem]",
-      },
-      "4": {
-        container: "h-[5.375rem]",
       },
       "5": {
         container: "h-[5.375rem]",
@@ -85,9 +77,13 @@ export const ImageGalleryClient = ({
     return null
   }
 
+  const isDesktop = useBreakpoint("lg")
+  const maxPreviewImages = isDesktop ? 5 : 3
+
   const previewIndices = getPreviewIndices({
     numberOfImages: images.length,
     currentIndex,
+    maxPreviewImages,
   })
 
   return (
@@ -165,8 +161,8 @@ export const ImageGalleryClient = ({
         </div>
       </div>
 
-      {/* Preview Sequence - Hidden on Mobile */}
-      <div className="mt-6 hidden w-full justify-center gap-3 sm:flex">
+      {/* Preview Sequence - Using grid for fixed columns */}
+      <div className="mt-6 hidden w-full gap-3 sm:grid md:grid-cols-3 lg:grid-cols-5">
         {previewIndices.map((index) => {
           const previewImage = images[index]
           if (!previewImage) return null
@@ -176,12 +172,7 @@ export const ImageGalleryClient = ({
               key={index}
               className={compoundStyles.container({
                 isSelected: index === currentIndex,
-                numberOfImages: previewIndices.length.toString() as
-                  | "1"
-                  | "2"
-                  | "3"
-                  | "4"
-                  | "5",
+                numberOfImages: maxPreviewImages.toString() as "3" | "5",
               })}
               onClick={() => {
                 if (!isTransitioning) {
