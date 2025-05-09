@@ -7,6 +7,14 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { ARRAY_RADIO_FORMAT } from "../format"
+
+const INFOBAR_VARIANT = {
+  light: "light",
+  dark: "dark",
+} as const
+
+export const DEFAULT_INFOBAR_VARIANT = INFOBAR_VARIANT.light
 
 export const InfobarSchema = Type.Object(
   {
@@ -20,6 +28,24 @@ export const InfobarSchema = Type.Object(
         title: "Description",
         maxLength: 100,
       }),
+    ),
+    variant: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal(INFOBAR_VARIANT.light, {
+            title: "Light (Default)",
+          }),
+          Type.Literal(INFOBAR_VARIANT.dark, {
+            title: "Dark",
+          }),
+        ],
+        {
+          default: DEFAULT_INFOBAR_VARIANT,
+          title: "Call-to-Action style",
+          format: ARRAY_RADIO_FORMAT,
+          type: "string",
+        },
+      ),
     ),
     buttonLabel: Type.Optional(
       Type.String({
