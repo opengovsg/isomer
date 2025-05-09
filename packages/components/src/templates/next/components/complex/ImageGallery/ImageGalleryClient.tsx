@@ -13,9 +13,6 @@ import {
 } from "./constants"
 import { getPreviewIndices } from "./utils"
 
-// Constant for controlling how many images are rendered at once
-const VISIBLE_RANGE = 2
-
 const createImagePreviewStyles = tv({
   slots: {
     container:
@@ -82,6 +79,7 @@ export const ImageGalleryClient = ({
 
   const isDesktop = useBreakpoint("lg")
   const maxPreviewImages = isDesktop ? 5 : 3
+  const visibleRange = isDesktop ? 2 : 1
 
   const previewIndices = getPreviewIndices({
     numberOfImages: images.length,
@@ -100,21 +98,20 @@ export const ImageGalleryClient = ({
         {/* Container for all images */}
         <div className="relative h-full w-full">
           {images.map((image, index) => {
-            const isVisible =
-              index >= currentIndex - VISIBLE_RANGE &&
-              index <= currentIndex + VISIBLE_RANGE
-
             const isCurrent = index === currentIndex
+            const isVisible = previewIndices.includes(index)
 
             return (
-              <div
-                key={index}
-                className={`absolute inset-0 h-full w-full transition-opacity duration-${TRANSITION_DURATION} ease-out ${
-                  isCurrent ? "z-10 opacity-100" : "z-0 opacity-0"
-                }`}
-                aria-hidden={!isCurrent}
-              >
-                {isVisible && (
+              isVisible && (
+                <div
+                  key={index}
+                  className={`absolute inset-0 h-full w-full transition-opacity duration-${TRANSITION_DURATION} ease-out ${
+                    // z-index ensures the current image always appears on top,
+                    // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
+                    isCurrent ? "z-10 opacity-100" : "z-0 opacity-0"
+                  }`}
+                  aria-hidden={!isCurrent}
+                >
                   <div className="relative h-full w-full">
                     <ImageClient
                       src={image.src}
@@ -130,8 +127,8 @@ export const ImageGalleryClient = ({
                       </div>
                     )}
                   </div>
-                )}
-              </div>
+                </div>
+              )
             )
           })}
         </div>
