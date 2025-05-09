@@ -144,14 +144,6 @@ export const ImageGalleryClient = ({
         >
           {RIGHT_ARROW_SVG}
         </button>
-
-        {/* Screen reader status */}
-        <div className="sr-only" aria-live="polite">
-          Image {currentIndex + 1} of {images.length}
-          {images[currentIndex]?.caption
-            ? `: ${images[currentIndex].caption}`
-            : ""}
-        </div>
       </div>
 
       {/* Preview Sequence - Using grid for fixed columns */}
