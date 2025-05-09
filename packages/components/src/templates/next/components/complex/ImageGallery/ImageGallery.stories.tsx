@@ -181,7 +181,7 @@ export const NavigateByClickingPreview: Story = {
       setTimeout(resolve, TRANSITION_DURATION + 100),
     )
 
-    expect(
+    await expect(
       canvas.getByText("I hate hairballs, but you're my favorite furball."),
     ).toBeVisible()
   },
@@ -205,7 +205,7 @@ export const NavigateByRightArrow: Story = {
       setTimeout(resolve, TRANSITION_DURATION + 100),
     )
 
-    expect(
+    await expect(
       canvas.getByText("I hate hairballs, but you're my favorite furball."),
     ).toBeVisible()
   },
@@ -229,7 +229,7 @@ export const NavigateByLeftArrow: Story = {
       setTimeout(resolve, TRANSITION_DURATION + 100),
     )
 
-    expect(
+    await expect(
       canvas.getByText("Let's curl up to shoegaze until we fall asleep."),
     ).toBeVisible()
   },
@@ -254,7 +254,7 @@ export const NavigateByRightArrowKeyboard: Story = {
       setTimeout(resolve, TRANSITION_DURATION + 100),
     )
 
-    expect(
+    await expect(
       canvas.getByText("I hate hairballs, but you're my favorite furball."),
     ).toBeVisible()
   },
@@ -279,7 +279,7 @@ export const NavigateByLeftArrowKeyboard: Story = {
       setTimeout(resolve, TRANSITION_DURATION + 100),
     )
 
-    expect(
+    await expect(
       canvas.getByText("Let's curl up to shoegaze until we fall asleep."),
     ).toBeVisible()
   },
