@@ -49,6 +49,9 @@ export const ImageGalleryClient = ({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
+  const isDesktop = useBreakpoint("lg")
+  const maxPreviewImages = useMemo(() => (isDesktop ? 5 : 3), [isDesktop])
+
   const navigateToImageByDirection = useCallback(
     (direction: "prev" | "next") => {
       if (isTransitioning) return
@@ -74,9 +77,6 @@ export const ImageGalleryClient = ({
   if (images.length === 0) {
     return null
   }
-
-  const isDesktop = useBreakpoint("lg")
-  const maxPreviewImages = useMemo(() => (isDesktop ? 5 : 3), [isDesktop])
 
   const previewIndices = getPreviewIndices({
     numberOfImages: images.length,
