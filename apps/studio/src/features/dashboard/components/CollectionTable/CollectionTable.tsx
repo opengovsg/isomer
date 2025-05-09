@@ -5,6 +5,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { CollectionTableData } from "./types"
 import { TableHeader } from "~/components/Datatable"
@@ -26,7 +27,11 @@ const getColumns = ({ siteId }: CollectionTableProps) => [
         siteId={siteId}
         id={row.original.id}
         title={row.original.title}
-        permalink={`/${row.original.permalink}`}
+        permalink={
+          row.original.type === ResourceType.CollectionLink
+            ? ""
+            : `/${row.original.permalink}`
+        }
         type={row.original.type}
       />
     ),
