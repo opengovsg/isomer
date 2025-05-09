@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
@@ -72,7 +72,7 @@ export const ImageGalleryClient = ({
   }
 
   const isDesktop = useBreakpoint("lg")
-  const maxPreviewImages = isDesktop ? 5 : 3
+  const maxPreviewImages = useMemo(() => (isDesktop ? 5 : 3), [isDesktop])
 
   const previewIndices = getPreviewIndices({
     numberOfImages: images.length,
