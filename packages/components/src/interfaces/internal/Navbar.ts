@@ -1,3 +1,4 @@
+import type { ImageClientProps } from "./Image"
 import type { LocalSearchProps } from "./LocalSearchInputBox"
 import type { SearchSGInputBoxProps } from "./SearchSGInputBox"
 import type {
@@ -6,7 +7,16 @@ import type {
   LinkComponentType,
   ScriptComponentType,
 } from "~/types"
-import { ImageClientProps } from "./Image"
+
+// TODO: add typebox schema and limit label to 30 characters
+interface NavbarCallToAction {
+  label: string
+}
+
+// TODO: add typebox schema and limit label to 30 characters
+interface NavbarCallToAction {
+  label: string
+}
 
 export interface NavbarItem {
   name: string
@@ -27,9 +37,16 @@ export interface BaseNavbarProps {
 export interface NavbarProps extends BaseNavbarProps {
   logoUrl: string
   logoAlt: string
+  callToAction?: NavbarCallToAction & {
+    url: string
+  }
   site: IsomerSiteProps
 }
 
 export interface NavbarClientProps extends BaseNavbarProps {
+  callToAction?: NavbarCallToAction & {
+    referenceLinkHref?: string
+    isExternal: boolean
+  }
   imageClientProps: ImageClientProps
 }
