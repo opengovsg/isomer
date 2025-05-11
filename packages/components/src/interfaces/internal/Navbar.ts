@@ -13,6 +13,11 @@ interface NavbarCallToAction {
   label: string
 }
 
+// TODO: add typebox schema and limit label to 30 characters
+interface NavbarCallToAction {
+  label: string
+}
+
 export interface NavbarItem {
   name: string
   url: string
