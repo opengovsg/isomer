@@ -61,9 +61,12 @@ type Story = StoryObj<typeof Homepage>
 
 const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
 
-export const Default: Story = {
-  name: "Homepage",
-  args: {
+const generateArgs = ({
+  isDarkVariant = false,
+}: {
+  isDarkVariant?: boolean
+}): HomePageSchemaType => {
+  return {
     layout: "homepage",
     site: {
       siteName: "Isomer Next",
@@ -275,6 +278,7 @@ export const Default: Story = {
       },
       {
         type: "infobar",
+        variant: isDarkVariant ? "dark" : "light",
         title: "This is a place where you can put nice content",
         description: "About a sentence worth of description here",
         buttonLabel: "Primary CTA",
@@ -414,5 +418,13 @@ export const Default: Story = {
         imageAlt: "This is the alt text",
       },
     ],
-  },
+  }
+}
+
+export const Default: Story = {
+  args: generateArgs({}),
+}
+
+export const Dark: Story = {
+  args: generateArgs({ isDarkVariant: true }),
 }

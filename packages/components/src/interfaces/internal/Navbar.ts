@@ -1,3 +1,4 @@
+import type { ImageClientProps } from "./Image"
 import type { LocalSearchProps } from "./LocalSearchInputBox"
 import type { SearchSGInputBoxProps } from "./SearchSGInputBox"
 import type {
@@ -6,7 +7,11 @@ import type {
   LinkComponentType,
   ScriptComponentType,
 } from "~/types"
-import { ImageClientProps } from "./Image"
+
+// TODO: add typebox schema and limit label to 30 characters
+interface NavbarCallToAction {
+  label: string
+}
 
 // TODO: add typebox schema and limit label to 30 characters
 interface NavbarCallToAction {

@@ -117,3 +117,14 @@ export const EditChildBlockState: Story = {
     await userEvent.click(button)
   },
 }
+
+export const CustomIndexPage: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        pageHandlers.readPageAndBlob.customIndex(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+}

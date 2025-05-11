@@ -17,7 +17,7 @@ import type {
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { getSitemapTree } from "~/utils/sitemap"
+import { getSitemapTree, PAGE_RESOURCE_TYPES } from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType, sql } from "../database"
@@ -362,7 +362,7 @@ export const getLocalisedSitemap = async (
         .leftJoin("Blob as published", "Version.blobId", "published.id")
         .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect]),
     )
-    .with("childCousinIndexPages", (eb) => {
+    .with("childCousinPages", (eb) => {
       return eb
         .selectFrom("Resource")
         .where("parentId", "in", (qb) =>
@@ -374,7 +374,7 @@ export const getLocalisedSitemap = async (
               ResourceType.Folder,
             ]),
         )
-        .where("type", "=", ResourceType.IndexPage)
+        .where("type", "in", PAGE_RESOURCE_TYPES)
         .where("state", "=", "Published")
         .leftJoin("Version", "Version.id", "publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
@@ -390,7 +390,7 @@ export const getLocalisedSitemap = async (
     )
     .union((eb) =>
       eb
-        .selectFrom("childCousinIndexPages as Resource")
+        .selectFrom("childCousinPages as Resource")
         .select(["summary", "thumbnail", ...defaultResourceSelect]),
     )
     .orderBy("title asc")

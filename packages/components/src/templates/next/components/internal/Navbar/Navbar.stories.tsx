@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { expect, userEvent, within } from "@storybook/test"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
@@ -213,6 +213,9 @@ export const ExpandFirstItem: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole("button", { name: /max 70 chars/i }))
+
+    const text = await canvas.findByText("This is a description of the item.")
+    await expect(text).toBeVisible()
   },
 }
 
@@ -229,6 +232,11 @@ export const ExpandNavbarItemWithLink: Story = {
     await userEvent.click(
       canvas.getByRole("button", { name: /Longer item with 30 characters/i }),
     )
+
+    const text = await canvas.findByText(
+      "This navbar item has a reference link",
+    )
+    await expect(text).toBeVisible()
   },
 }
 
@@ -239,6 +247,25 @@ export const ExpandSearch: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(
       canvas.getByRole("button", { name: /open search bar/i }),
+    )
+
+    const text = await canvas.findByPlaceholderText("Search this site")
+    await expect(text).toBeVisible()
+  },
+}
+
+export const Mobile: Story = {
+  args: generateNavbarArgs({}),
+  parameters: {
+    chromatic: withChromaticModes(["mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
     )
   },
 }
@@ -282,6 +309,12 @@ export const MobileCallToAction: Story = {
     viewport: {
       defaultViewport: getViewportByMode("mobile"),
     },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
   },
 }
 
