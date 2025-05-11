@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { expect, userEvent, within } from "@storybook/test"
+import { expect, userEvent, waitFor, within } from "@storybook/test"
 import { omit } from "lodash"
 
 import { withChromaticModes } from "@isomer/storybook-config"
@@ -177,12 +177,15 @@ export const NavigateByClickingPreview: Story = {
     })
     await userEvent.click(previewImageButton)
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     const text = await screen.findByText(
       "I hate hairballs, but you're my favorite furball.",
     )
-    await expect(text).toBeVisible()
+    await waitFor(
+      async () => {
+        await expect(text).toBeVisible()
+      },
+      { timeout: 3000 },
+    )
   },
 }
 
@@ -199,12 +202,15 @@ export const NavigateByRightArrow: Story = {
     const nextButton = screen.getByRole("button", { name: "Next image" })
     await userEvent.click(nextButton)
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     const text = await screen.findByText(
       "I hate hairballs, but you're my favorite furball.",
     )
-    await expect(text).toBeVisible()
+    await waitFor(
+      async () => {
+        await expect(text).toBeVisible()
+      },
+      { timeout: 3000 },
+    )
   },
 }
 
@@ -223,12 +229,15 @@ export const NavigateByLeftArrow: Story = {
     })
     await userEvent.click(previousButton)
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     const text = await screen.findByText(
       "Let's curl up to shoegaze until we fall asleep.",
     )
-    await expect(text).toBeVisible()
+    await waitFor(
+      async () => {
+        await expect(text).toBeVisible()
+      },
+      { timeout: 3000 },
+    )
   },
 }
 
@@ -246,12 +255,15 @@ export const NavigateByRightArrowKeyboard: Story = {
     nextButton.focus()
     await userEvent.keyboard("{Enter}")
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     const text = await screen.findByText(
       "I hate hairballs, but you're my favorite furball.",
     )
-    await expect(text).toBeVisible()
+    await waitFor(
+      async () => {
+        await expect(text).toBeVisible()
+      },
+      { timeout: 3000 },
+    )
   },
 }
 
@@ -271,11 +283,14 @@ export const NavigateByLeftArrowKeyboard: Story = {
     previousButton.focus()
     await userEvent.keyboard("{Enter}")
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     const text = await screen.findByText(
       "Let's curl up to shoegaze until we fall asleep.",
     )
-    await expect(text).toBeVisible()
+    await waitFor(
+      async () => {
+        await expect(text).toBeVisible()
+      },
+      { timeout: 3000 },
+    )
   },
 }
