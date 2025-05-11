@@ -125,6 +125,37 @@ export const ImageGalleryClient = ({
     setTimeout(() => setIsTransitioning(false), TRANSITION_DURATION)
   }
 
+  const handlePreviewButtonEngagement = () => {
+    // By design, all preview images have been loaded
+    // Except when we are on the first image and the last few images have not been loaded yet
+    if (currentIndex !== 0) return
+
+    // In which case we need to preload the last few images in the preview sequence
+    void Promise.all(
+      getEndingPreviewIndices({
+        numberOfImages: images.length,
+        maxPreviewImages,
+      }).map((index: number) => preloadImage(index)),
+    )
+  }
+
+  const handlePreviewImageEngagement = (index: number) => {
+    if (index === currentIndex) return
+
+    switch (maxPreviewImages) {
+      case 3: // At most 1 non-preloaded image can be loaded
+        preloadImage(index + 1)
+        break
+      case 5: // At most 2 non-preloaded images can be loaded
+        preloadImage(index + 1)
+        preloadImage(index + 2)
+        break
+      default:
+        const _exhaustiveCheck: never = maxPreviewImages
+        return _exhaustiveCheck
+    }
+  }
+
   // Defensive programming: Guard against empty images array
   if (images.length === 0) {
     return null
@@ -193,33 +224,24 @@ export const ImageGalleryClient = ({
         {/* Navigation Controls - Accessible via keyboard tab navigation */}
         <button
           className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
-          onClick={() => navigateToImageByDirection("prev")}
           aria-label="Previous image"
           disabled={isTransitioning}
-          onMouseEnter={() => {
-            // By design, all preview images have been loaded
-            // Except when we are on the first image and the last few images have not been loaded yet
-            if (currentIndex !== 0) return
-
-            // In which case we need to preload the last few images in the preview sequence
-            void Promise.all(
-              getEndingPreviewIndices({
-                numberOfImages: images.length,
-                maxPreviewImages,
-              }).map((index: number) => preloadImage(index)),
-            )
-          }}
+          onMouseEnter={() => handlePreviewButtonEngagement()}
+          onTouchStart={() => handlePreviewButtonEngagement()}
+          onFocus={() => handlePreviewButtonEngagement()}
+          onClick={() => navigateToImageByDirection("prev")}
         >
           {LEFT_ARROW_SVG}
         </button>
 
         <button
           className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
-          onTouchStart={() => preloadNextImage()}
-          onMouseEnter={() => preloadNextImage()}
-          onClick={() => navigateToImageByDirection("next")}
           aria-label="Next image"
           disabled={isTransitioning}
+          onTouchStart={() => preloadNextImage()}
+          onMouseEnter={() => preloadNextImage()}
+          onFocus={() => preloadNextImage()}
+          onClick={() => navigateToImageByDirection("next")}
         >
           {RIGHT_ARROW_SVG}
         </button>
@@ -247,22 +269,9 @@ export const ImageGalleryClient = ({
               aria-label={`View image ${index + 1} of ${images.length}`}
               aria-current={index === currentIndex}
               disabled={currentIndex === index || isTransitioning}
-              onMouseEnter={() => {
-                if (index === currentIndex) return
-
-                switch (maxPreviewImages) {
-                  case 3: // At most 1 non-preloaded image can be loaded
-                    preloadImage(index + 1)
-                    break
-                  case 5: // At most 2 non-preloaded images can be loaded
-                    preloadImage(index + 1)
-                    preloadImage(index + 2)
-                    break
-                  default:
-                    const _exhaustiveCheck: never = maxPreviewImages
-                    return _exhaustiveCheck
-                }
-              }}
+              onMouseEnter={() => handlePreviewImageEngagement(index)}
+              onTouchStart={() => handlePreviewImageEngagement(index)}
+              onFocus={() => handlePreviewImageEngagement(index)}
             >
               <ImageClient
                 src={image.src}
