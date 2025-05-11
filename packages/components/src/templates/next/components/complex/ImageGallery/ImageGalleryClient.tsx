@@ -6,12 +6,10 @@ import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
 import { ImageClient } from "../Image/ImageClient"
-import {
-  LEFT_ARROW_SVG,
-  RIGHT_ARROW_SVG,
-  TRANSITION_DURATION,
-} from "./constants"
+import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./constants"
 import { getEndingPreviewIndices, getPreviewIndices } from "./utils"
+
+const TRANSITION_DURATION = 150
 
 const createImagePreviewStyles = tv({
   slots: {

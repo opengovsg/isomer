@@ -5,7 +5,6 @@ import { omit } from "lodash"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { ImageGalleryProps } from "~/interfaces/complex/ImageGallery"
-import { TRANSITION_DURATION } from "./constants"
 import { ImageGallery } from "./ImageGallery"
 
 const meta: Meta<ImageGalleryProps> = {
@@ -172,18 +171,14 @@ export const NavigateByClickingPreview: Story = {
     images: IMAGES.slice(0, 3),
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const nextButton = canvas.getByRole("button", { name: "View image 2 of 3" })
+    const screen = within(canvasElement)
+    const nextButton = screen.getByRole("button", { name: "View image 2 of 3" })
     await userEvent.click(nextButton)
 
-    // Wait for transition to complete
-    await new Promise((resolve) =>
-      setTimeout(resolve, TRANSITION_DURATION + 100),
+    const text = await screen.findByText(
+      "I hate hairballs, but you're my favorite furball.",
     )
-
-    await expect(
-      canvas.getByText("I hate hairballs, but you're my favorite furball."),
-    ).toBeVisible()
+    await expect(text).toBeVisible()
   },
 }
 
@@ -196,18 +191,14 @@ export const NavigateByRightArrow: Story = {
     images: IMAGES.slice(0, 3),
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const nextButton = canvas.getByRole("button", { name: "Next image" })
+    const screen = within(canvasElement)
+    const nextButton = screen.getByRole("button", { name: "Next image" })
     await userEvent.click(nextButton)
 
-    // Wait for transition to complete
-    await new Promise((resolve) =>
-      setTimeout(resolve, TRANSITION_DURATION + 100),
+    const text = await screen.findByText(
+      "I hate hairballs, but you're my favorite furball.",
     )
-
-    await expect(
-      canvas.getByText("I hate hairballs, but you're my favorite furball."),
-    ).toBeVisible()
+    await expect(text).toBeVisible()
   },
 }
 
@@ -220,18 +211,14 @@ export const NavigateByLeftArrow: Story = {
     images: IMAGES.slice(0, 3),
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const nextButton = canvas.getByRole("button", { name: "Previous image" })
+    const screen = within(canvasElement)
+    const nextButton = screen.getByRole("button", { name: "Previous image" })
     await userEvent.click(nextButton)
 
-    // Wait for transition to complete
-    await new Promise((resolve) =>
-      setTimeout(resolve, TRANSITION_DURATION + 100),
+    const text = await screen.findByText(
+      "Let's curl up to shoegaze until we fall asleep.",
     )
-
-    await expect(
-      canvas.getByText("Let's curl up to shoegaze until we fall asleep."),
-    ).toBeVisible()
+    await expect(text).toBeVisible()
   },
 }
 
@@ -244,19 +231,15 @@ export const NavigateByRightArrowKeyboard: Story = {
     images: IMAGES.slice(0, 3),
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const nextButton = canvas.getByRole("button", { name: "Next image" })
+    const screen = within(canvasElement)
+    const nextButton = screen.getByRole("button", { name: "Next image" })
     nextButton.focus()
     await userEvent.keyboard("{Enter}")
 
-    // Wait for transition to complete
-    await new Promise((resolve) =>
-      setTimeout(resolve, TRANSITION_DURATION + 100),
+    const text = await screen.findByText(
+      "I hate hairballs, but you're my favorite furball.",
     )
-
-    await expect(
-      canvas.getByText("I hate hairballs, but you're my favorite furball."),
-    ).toBeVisible()
+    await expect(text).toBeVisible()
   },
 }
 
@@ -269,18 +252,14 @@ export const NavigateByLeftArrowKeyboard: Story = {
     images: IMAGES.slice(0, 3),
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const nextButton = canvas.getByRole("button", { name: "Previous image" })
+    const screen = within(canvasElement)
+    const nextButton = screen.getByRole("button", { name: "Previous image" })
     nextButton.focus()
     await userEvent.keyboard("{Enter}")
 
-    // Wait for transition to complete
-    await new Promise((resolve) =>
-      setTimeout(resolve, TRANSITION_DURATION + 100),
+    const text = await screen.findByText(
+      "Let's curl up to shoegaze until we fall asleep.",
     )
-
-    await expect(
-      canvas.getByText("Let's curl up to shoegaze until we fall asleep."),
-    ).toBeVisible()
+    await expect(text).toBeVisible()
   },
 }
