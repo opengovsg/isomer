@@ -7,7 +7,6 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
-import { ARRAY_RADIO_FORMAT } from "../format"
 
 const INFOBAR_VARIANT = {
   light: "light",
@@ -42,7 +41,7 @@ export const InfobarSchema = Type.Object(
         {
           default: DEFAULT_INFOBAR_VARIANT,
           title: "Call-to-Action style",
-          format: ARRAY_RADIO_FORMAT,
+          format: "hidden",
           type: "string",
         },
       ),
