@@ -172,11 +172,12 @@ export const NavigateByClickingPreview: Story = {
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const nextButton = screen.getByRole("button", { name: "View image 2 of 3" })
-    await userEvent.click(nextButton)
+    const previewImageButton = screen.getByRole("button", {
+      name: "View image 2 of 3",
+    })
+    await userEvent.click(previewImageButton)
 
-    // Wait for the transition to complete (150ms) plus a small buffer
-    await new Promise((resolve) => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     const text = await screen.findByText(
       "I hate hairballs, but you're my favorite furball.",
@@ -198,8 +199,7 @@ export const NavigateByRightArrow: Story = {
     const nextButton = screen.getByRole("button", { name: "Next image" })
     await userEvent.click(nextButton)
 
-    // Wait for the transition to complete plus a small buffer
-    await new Promise((resolve) => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     const text = await screen.findByText(
       "I hate hairballs, but you're my favorite furball.",
@@ -218,11 +218,12 @@ export const NavigateByLeftArrow: Story = {
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const nextButton = screen.getByRole("button", { name: "Previous image" })
-    await userEvent.click(nextButton)
+    const previousButton = screen.getByRole("button", {
+      name: "Previous image",
+    })
+    await userEvent.click(previousButton)
 
-    // Wait for the transition to complete plus a small buffer
-    await new Promise((resolve) => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     const text = await screen.findByText(
       "Let's curl up to shoegaze until we fall asleep.",
@@ -245,8 +246,7 @@ export const NavigateByRightArrowKeyboard: Story = {
     nextButton.focus()
     await userEvent.keyboard("{Enter}")
 
-    // Wait for the transition to complete plus a small buffer
-    await new Promise((resolve) => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     const text = await screen.findByText(
       "I hate hairballs, but you're my favorite furball.",
@@ -265,12 +265,13 @@ export const NavigateByLeftArrowKeyboard: Story = {
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const nextButton = screen.getByRole("button", { name: "Previous image" })
-    nextButton.focus()
+    const previousButton = screen.getByRole("button", {
+      name: "Previous image",
+    })
+    previousButton.focus()
     await userEvent.keyboard("{Enter}")
 
-    // Wait for the transition to complete plus a small buffer
-    await new Promise((resolve) => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     const text = await screen.findByText(
       "Let's curl up to shoegaze until we fall asleep.",
