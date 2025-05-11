@@ -270,16 +270,6 @@ export const Mobile: Story = {
   },
 }
 
-export const Mobile: Story = {
-  args: generateNavbarArgs({}),
-  parameters: {
-    chromatic: withChromaticModes(["mobile"]),
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
-  },
-}
-
 export const ExpandMobile: Story = {
   args: generateNavbarArgs({}),
   parameters: {
