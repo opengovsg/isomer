@@ -7,7 +7,7 @@ import { LinkButton } from "../../internal/LinkButton"
 
 export const createInfobarStyles = tv({
   slots: {
-    screenWideOuterContainer: "mt-12 first:mt-0",
+    screenWideOuterContainer: "",
     outerContainer: `${ComponentContent}`,
     innerContainer: "mx-auto flex flex-col items-start",
     headingContainer: "flex flex-col gap-6",
@@ -26,6 +26,7 @@ export const createInfobarStyles = tv({
         buttonContainer: "items-center",
       },
       default: {
+        screenWideOuterContainer: "mt-12 first:mt-0",
         outerContainer: "rounded-lg",
         innerContainer: "items-start gap-7 p-8",
         headingContainer: "gap-4",
@@ -103,11 +104,9 @@ const Infobar = ({
 
   // NOTE: Should not have dark mode on non-homepage for now
   const buttonColorScheme =
-    simplifiedLayout === "default"
-      ? "default"
-      : variant === "dark"
-        ? "inverse"
-        : "default"
+    simplifiedLayout === "homepage" && variant === "dark"
+      ? "inverse"
+      : "default"
 
   return (
     <section className={styles.screenWideOuterContainer()}>

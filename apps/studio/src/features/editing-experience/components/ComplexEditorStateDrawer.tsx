@@ -301,13 +301,15 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             px="2rem"
           >
             <HStack spacing="0.75rem">
-              <IconButton
-                icon={<BiTrash fontSize="1.25rem" />}
-                variant="outline"
-                colorScheme="critical"
-                aria-label="Delete block"
-                onClick={onDeleteBlockModalOpen}
-              />
+              {component.type !== "childrenpages" && (
+                <IconButton
+                  icon={<BiTrash fontSize="1.25rem" />}
+                  variant="outline"
+                  colorScheme="critical"
+                  aria-label="Delete block"
+                  onClick={onDeleteBlockModalOpen}
+                />
+              )}
               <Box w="100%">
                 <SaveButton onClick={handleSave} isLoading={isLoading} />
               </Box>

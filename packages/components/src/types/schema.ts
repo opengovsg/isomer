@@ -25,6 +25,7 @@ import {
   FileRefMetaSchema,
   HomePageMetaSchema,
   LinkRefMetaSchema,
+  SearchPageMetaSchema,
 } from "./meta"
 import {
   ArticlePagePageSchema,
@@ -34,6 +35,7 @@ import {
   FileRefPageSchema,
   HomePagePageSchema,
   LinkRefPageSchema,
+  SearchPagePageSchema,
 } from "./page"
 
 export const ISOMER_USABLE_PAGE_LAYOUTS = {
@@ -135,6 +137,23 @@ export const HomePageSchema = Type.Object(
   },
 )
 
+export const SearchPageSchema = Type.Object(
+  {
+    layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Search, {
+      default: ISOMER_PAGE_LAYOUTS.Search,
+    }),
+    meta: Type.Optional(SearchPageMetaSchema),
+    page: SearchPagePageSchema,
+    content: Type.Array(IsomerComponentsSchemas, {
+      title: "Page content",
+    }),
+  },
+  {
+    title: "Search",
+    description: "This is the search page for your site.",
+  },
+)
+
 export const IndexPageSchema = Type.Object(
   {
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Index, {
@@ -225,6 +244,7 @@ export const IsomerPageSchema = Type.Composite([
     ContentPageSchema,
     DatabasePageSchema,
     HomePageSchema,
+    SearchPageSchema,
     IndexPageSchema,
     FileRefSchema,
     LinkRefSchema,
