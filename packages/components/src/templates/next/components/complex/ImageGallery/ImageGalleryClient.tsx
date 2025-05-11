@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
@@ -11,7 +11,7 @@ import {
   RIGHT_ARROW_SVG,
   TRANSITION_DURATION,
 } from "./constants"
-import { getPreviewIndices } from "./utils"
+import { getEndingPreviewIndices, getPreviewIndices } from "./utils"
 
 const createImagePreviewStyles = tv({
   slots: {
@@ -60,6 +60,48 @@ export const ImageGalleryClient = ({
   const isDesktop = useBreakpoint("lg")
   const maxPreviewImages = useMemo(() => (isDesktop ? 5 : 3), [isDesktop])
 
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const previewIndices = getPreviewIndices({
+    numberOfImages: images.length,
+    currentIndex,
+    maxPreviewImages,
+  })
+
+  const preloadImage = useCallback(
+    (index: number) => {
+      // Out of bounds
+      if (index < 0 || index >= images.length) return
+
+      // If the image is the current image, we don't need to preload it
+      if (index === currentIndex) return
+
+      const image = containerRef.current?.querySelectorAll("img")[index]
+      if (!image) return // should never happen since we render all images
+
+      // Image has already been loaded
+      if (image.complete) return
+
+      // Image not loaded yet, force load it!
+      if (image.getAttribute("loading") === "lazy") {
+        image.removeAttribute("loading")
+        const src = image.src
+        image.src = ""
+        image.src = src
+      }
+    },
+    [images, currentIndex],
+  )
+
+  const preloadNextImage = useCallback(
+    (numberOfImagesAheadOfCurrentPreview = 1) => {
+      const lastIndexInPreview = previewIndices[previewIndices.length - 1]
+      if (!lastIndexInPreview) return // should never happen since there's always at least one image in the preview sequence
+      preloadImage(lastIndexInPreview + numberOfImagesAheadOfCurrentPreview)
+    },
+    [preloadImage, previewIndices],
+  )
+
   const navigateToImageByDirection = useCallback(
     (direction: "prev" | "next") => {
       if (isTransitioning) return
@@ -70,8 +112,12 @@ export const ImageGalleryClient = ({
           : (current - 1 + images.length) % images.length,
       )
       setTimeout(() => setIsTransitioning(false), TRANSITION_DURATION)
+
+      if (direction === "next") {
+        preloadNextImage(2) // the new currentIndex + 1
+      }
     },
-    [images.length, isTransitioning],
+    [images.length, isTransitioning, preloadNextImage],
   )
 
   const navigateToImageByIndex = (index: number) => {
@@ -85,12 +131,6 @@ export const ImageGalleryClient = ({
   if (images.length === 0) {
     return null
   }
-
-  const previewIndices = getPreviewIndices({
-    numberOfImages: images.length,
-    currentIndex,
-    maxPreviewImages,
-  })
 
   return (
     <section
@@ -109,10 +149,10 @@ export const ImageGalleryClient = ({
               // Preload the image if it is in the preview thumbnail sequence
               previewIndices.includes(index) ||
               // Preload the last image if currently displaying the first image
-              // to ensure smooth transition when navigating to the last image from the first
+              // to ensure smooth transitioning when navigating to the last image from the first
               (currentIndex === 0 && index === images.length - 1) ||
               // Preload the first image if currently displaying the last image
-              // to ensure smooth transition when navigating to the first image from the last
+              // to ensure smooth transitioning when navigating to the first image from the last
               (currentIndex === images.length - 1 && index === 0)
 
             return (
@@ -158,12 +198,27 @@ export const ImageGalleryClient = ({
           onClick={() => navigateToImageByDirection("prev")}
           aria-label="Previous image"
           disabled={isTransitioning}
+          onMouseEnter={() => {
+            // By design, all preview images have been loaded
+            // Except when we are on the first image and the last few images have not been loaded yet
+            if (currentIndex !== 0) return
+
+            // In which case we need to preload the last few images in the preview sequence
+            void Promise.all(
+              getEndingPreviewIndices({
+                numberOfImages: images.length,
+                maxPreviewImages,
+              }).map((index: number) => preloadImage(index)),
+            )
+          }}
         >
           {LEFT_ARROW_SVG}
         </button>
 
         <button
           className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
+          onTouchStart={() => preloadNextImage()}
+          onMouseEnter={() => preloadNextImage()}
           onClick={() => navigateToImageByDirection("next")}
           aria-label="Next image"
           disabled={isTransitioning}
@@ -173,7 +228,10 @@ export const ImageGalleryClient = ({
       </div>
 
       {/* Preview Sequence - Using grid for fixed columns */}
-      <div className="mt-6 hidden w-full gap-3 sm:grid md:grid-cols-3 lg:grid-cols-5">
+      <div
+        ref={containerRef}
+        className="mt-6 hidden w-full gap-3 sm:grid md:grid-cols-3 lg:grid-cols-5"
+      >
         {images.map((image, index) => {
           // We render all images, but hide the ones that are not in the preview sequence
           // This is avoid reloading images that have been loaded (e.g. when navigating back to an already loaded image)
@@ -191,6 +249,22 @@ export const ImageGalleryClient = ({
               aria-label={`View image ${index + 1} of ${images.length}`}
               aria-current={index === currentIndex}
               disabled={currentIndex === index || isTransitioning}
+              onMouseEnter={() => {
+                if (index === currentIndex) return
+
+                switch (maxPreviewImages) {
+                  case 3: // At most 1 non-preloaded image can be loaded
+                    preloadImage(index + 1)
+                    break
+                  case 5: // At most 2 non-preloaded images can be loaded
+                    preloadImage(index + 1)
+                    preloadImage(index + 2)
+                    break
+                  default:
+                    const _exhaustiveCheck: never = maxPreviewImages
+                    return _exhaustiveCheck
+                }
+              }}
             >
               <ImageClient
                 src={image.src}
