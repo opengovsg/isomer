@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import type { HeroProps } from "~/interfaces/complex/Hero"
 import Hero from "./Hero"
 
@@ -37,6 +39,7 @@ const meta: Meta<typeof Hero> = {
   component: Hero,
   argTypes: {},
   parameters: {
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
