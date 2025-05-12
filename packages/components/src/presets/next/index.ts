@@ -20,6 +20,15 @@ const config: Config = {
       screens: {
         xl: "1240px",
       },
+      keyframes: {
+        buttonPulse: {
+          "0%, 100%": { backgroundColor: "rgba(0, 0, 0, 0.65)" },
+          "50%": { backgroundColor: "rgba(0, 0, 0, 0.4)" },
+        },
+      },
+      animation: {
+        "button-pulse": "buttonPulse 2s ease-in infinite",
+      },
       boxShadow: {
         sm: "0 0px 10px 0px rgba(191, 191, 191, 0.5)",
         "focus-visible": `0px -2px ${colors.utility.highlight}, 0 2px ${colors.base.content.strong}`,

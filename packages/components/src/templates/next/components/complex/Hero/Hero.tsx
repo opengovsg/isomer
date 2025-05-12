@@ -3,7 +3,7 @@ import { HERO_STYLE } from "~/interfaces/complex/Hero"
 import { HeroBlock } from "./HeroBlock"
 import { HeroFloating } from "./HeroFloating"
 import { HeroGradient } from "./HeroGradient"
-import { HeroLargeImage } from "./HeroLargeImage"
+import { HeroLargeImage } from "./HeroLargeImage/HeroLargeImage"
 
 const Hero = (props: HeroProps) => {
   switch (props.variant) {

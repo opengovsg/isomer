@@ -1,8 +1,8 @@
 import type { HeroProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
-import { ComponentContent } from "../../internal/customCssClass"
-import { LinkButton } from "../../internal/LinkButton/LinkButton"
-import { ImageClient } from "../Image"
+import { ComponentContent } from "../../../internal/customCssClass"
+import { LinkButton } from "../../../internal/LinkButton/LinkButton"
+import { ImageContainer } from "./ImageContainer"
 
 export const HeroLargeImage = ({
   title,
@@ -66,13 +66,7 @@ export const HeroLargeImage = ({
           </div>
         )}
       </div>
-      <ImageClient
-        src={backgroundSrc}
-        alt={title}
-        width="100%"
-        className="aspect-square max-h-[60rem] w-full object-center md:aspect-[2/1]"
-        lazyLoading={false}
-      />
+      <ImageContainer imageSrc={backgroundSrc} imageAlt={title} />
     </section>
   )
 }
