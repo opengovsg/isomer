@@ -4,6 +4,13 @@ import { Type } from "@sinclair/typebox"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
+const HERO_STYLE = {
+  gradient: "gradient",
+  block: "block",
+  largeImage: "largeImage",
+  floating: "floating",
+} as const
+
 const HeroHeadingSchema = Type.Object({
   title: Type.String({
     title: "Hero text",
@@ -69,11 +76,13 @@ export const HeroSchema = Type.Composite(
       type: Type.Literal("hero", { default: "hero" }),
       variant: Type.Union(
         [
-          Type.Literal("gradient", { title: "Gradient" }),
-          Type.Literal("block", { title: "Block" }),
+          Type.Literal(HERO_STYLE.gradient, { title: "Gradient (Default)" }),
+          Type.Literal(HERO_STYLE.block, { title: "Block" }),
+          Type.Literal(HERO_STYLE.largeImage, { title: "Large image" }),
+          Type.Literal(HERO_STYLE.floating, { title: "Floating" }),
         ],
         {
-          default: "gradient",
+          default: HERO_STYLE.gradient,
           title: "Hero banner style",
         },
       ),
