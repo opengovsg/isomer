@@ -66,12 +66,9 @@ export const ColourBlock: Story = {
     ...SITE_ARGS,
     backgroundUrl:
       "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-
     title: "Your hero title goes here, please keep it short and sweet",
-
     subtitle:
       "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
-
     buttonLabel: "Main CTA",
     buttonUrl: "/",
     secondaryButtonLabel: "Sub CTA",
@@ -86,17 +83,63 @@ export const ColourBlockInverse: Story = {
     ...SITE_ARGS,
     backgroundUrl:
       "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-
     title: "Your hero title goes here, please keep it short and sweet",
-
     subtitle:
       "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
-
     buttonLabel: "Main CTA",
     buttonUrl: "/",
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
     variant: "block",
+    theme: "inverse",
+  },
+}
+
+export const LargeImage: Story = {
+  args: {
+    ...SITE_ARGS,
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Your hero title goes here, please keep it short and sweet",
+    subtitle:
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
+    buttonLabel: "Main CTA",
+    buttonUrl: "/",
+    secondaryButtonLabel: "Sub CTA",
+    secondaryButtonUrl: "/",
+    variant: "largeImage",
+  },
+}
+
+export const Floating: Story = {
+  args: {
+    ...SITE_ARGS,
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Your hero title goes here, please keep it short and sweet",
+    subtitle:
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
+    buttonLabel: "Main CTA",
+    buttonUrl: "/",
+    secondaryButtonLabel: "Sub CTA",
+    secondaryButtonUrl: "/",
+    variant: "floating",
+  },
+}
+
+export const FloatingInverse: Story = {
+  args: {
+    ...SITE_ARGS,
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Your hero title goes here, please keep it short and sweet",
+    subtitle:
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
+    buttonLabel: "Main CTA",
+    buttonUrl: "/",
+    secondaryButtonLabel: "Sub CTA",
+    secondaryButtonUrl: "/",
+    variant: "floating",
     theme: "inverse",
   },
 }
