@@ -463,3 +463,20 @@ export const HeroLargeImage: Story = {
     },
   }),
 }
+
+export const HeroFloating: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "floating",
+      backgroundUrl: "/hero-banner.png",
+      title: "Youths, the future of our nation",
+      subtitle:
+        "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
+      buttonLabel: "Explore now",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Explore now",
+      secondaryButtonUrl: "/",
+    },
+  }),
+}

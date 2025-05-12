@@ -1,6 +1,27 @@
 import type { HeroProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
+import { ImageClient } from "../Image"
+
+const HERO_THEME_MAPPINGS = {
+  hero: {
+    default: "bg-brand-canvas-inverse",
+    inverse: "bg-brand-canvas",
+  },
+  title: {
+    default: "text-base-content-inverse",
+    inverse: "text-base-content-strong",
+  },
+  subtitle: {
+    default: "text-base-content-inverse",
+    inverse: "text-base-content",
+  },
+  button: {
+    default: "inverse",
+    inverse: "default",
+  },
+} as const
 
 export const HeroFloating = ({
   title,
@@ -19,24 +40,43 @@ export const HeroFloating = ({
       ? backgroundUrl
       : `${site.assetsBaseUrl}${backgroundUrl}`
 
+  const heroColour = HERO_THEME_MAPPINGS.hero[theme]
+  const heroTitleColour = HERO_THEME_MAPPINGS.title[theme]
+  const heroSubtitleColour = HERO_THEME_MAPPINGS.subtitle[theme]
+  const heroButton = HERO_THEME_MAPPINGS.button[theme]
+
   return (
-    <section className="flex w-full flex-col items-center">
+    <section
+      className={`${ComponentContent} flex w-full flex-col items-center pb-12 pt-6 md:pb-24 md:pt-16 lg:items-start`}
+    >
       {/* Image with aspect ratio and max height */}
-      <div
-        className="aspect-square max-h-[960px] w-full bg-cover bg-center sm:aspect-[2/1]"
-        style={{ backgroundImage: `url('${backgroundSrc}')` }}
-      />
-      {/* Text container */}
-      <div className="relative z-10 mx-auto -mt-16 w-full max-w-[896px] px-6 sm:-mt-24 md:px-10">
+      <div className="lg:flex lg:w-full lg:justify-end">
+        <ImageClient
+          src={backgroundSrc}
+          alt={title}
+          width="100%"
+          className="aspect-[3/2] w-full object-center lg:w-[66.67%]"
+          lazyLoading={false}
+        />
+      </div>
+      {/* Floating container */}
+      <div className="mx-6 -mt-[1.5rem] md:mx-10 md:-mt-[10rem] lg:mx-0 lg:-mt-[17.85rem]">
         <div
-          className={`flex flex-col items-center gap-6 rounded-xl bg-white/90 py-12 shadow-lg backdrop-blur-sm sm:py-16`}
+          className={`flex w-full flex-col gap-9 px-4 py-6 md:gap-[38px] md:p-12 lg:max-w-[66.67%] ${heroColour}`}
         >
-          <h1 className="prose-display-xl break-words text-center">{title}</h1>
-          {subtitle && (
-            <p className="prose-title-lg-regular text-center">{subtitle}</p>
-          )}
+          {/* Text container */}
+          <div className={`flex flex-col gap-6 text-start ${heroTitleColour}`}>
+            <h1 className={`prose-display-xl ${heroTitleColour}`}>{title}</h1>
+            {subtitle && (
+              <p className={`prose-title-lg-regular ${heroSubtitleColour}`}>
+                {subtitle}
+              </p>
+            )}
+          </div>
+
+          {/* Button container */}
           {buttonLabel && buttonUrl && (
-            <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
+            <div className="flex flex-col justify-start gap-x-5 gap-y-4 md:flex-row">
               <LinkButton
                 href={getReferenceLinkHref(
                   buttonUrl,
@@ -44,6 +84,8 @@ export const HeroFloating = ({
                   site.assetsBaseUrl,
                 )}
                 size="lg"
+                variant="solid"
+                colorScheme={heroButton}
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
               >
@@ -51,13 +93,14 @@ export const HeroFloating = ({
               </LinkButton>
               {secondaryButtonLabel && secondaryButtonUrl && (
                 <LinkButton
-                  variant="outline"
-                  size="lg"
                   href={getReferenceLinkHref(
                     secondaryButtonUrl,
                     site.siteMap,
                     site.assetsBaseUrl,
                   )}
+                  variant="outline"
+                  size="lg"
+                  colorScheme={heroButton}
                   LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
                 >

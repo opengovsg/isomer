@@ -116,12 +116,12 @@ export const Floating: Story = {
     ...SITE_ARGS,
     backgroundUrl:
       "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Your hero title goes here, please keep it short and sweet",
+    title: "Youths, the future of our nation",
     subtitle:
-      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
-    buttonLabel: "Main CTA",
+      "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
+    buttonLabel: "Explore now",
     buttonUrl: "/",
-    secondaryButtonLabel: "Sub CTA",
+    secondaryButtonLabel: "Explore now",
     secondaryButtonUrl: "/",
     variant: "floating",
   },
@@ -132,12 +132,12 @@ export const FloatingInverse: Story = {
     ...SITE_ARGS,
     backgroundUrl:
       "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Your hero title goes here, please keep it short and sweet",
+    title: "Youths, the future of our nation",
     subtitle:
-      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
-    buttonLabel: "Main CTA",
+      "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
+    buttonLabel: "Explore now",
     buttonUrl: "/",
-    secondaryButtonLabel: "Sub CTA",
+    secondaryButtonLabel: "Explore now",
     secondaryButtonUrl: "/",
     variant: "floating",
     theme: "inverse",
