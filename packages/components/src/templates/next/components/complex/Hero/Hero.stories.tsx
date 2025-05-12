@@ -1,6 +1,36 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import type { HeroProps } from "~/interfaces/complex/Hero"
 import Hero from "./Hero"
+
+const SITE_ARGS: Partial<HeroProps> = {
+  site: {
+    siteName: "Isomer Next",
+    siteMap: {
+      id: "1",
+      title: "Home",
+      permalink: "/",
+      lastModified: "",
+      layout: "homepage",
+      summary: "",
+      children: [],
+    },
+    theme: "isomer-next",
+    isGovernment: true,
+    logoUrl: "/isomer-logo.svg",
+    lastUpdated: "2021-10-01",
+    navbar: { items: [] },
+    footerItems: {
+      privacyStatementLink: "https://www.isomer.gov.sg/privacy",
+      termsOfUseLink: "https://www.isomer.gov.sg/terms",
+      siteNavItems: [],
+    },
+    search: {
+      type: "localSearch",
+      searchUrl: "/search",
+    },
+  },
+}
 
 const meta: Meta<typeof Hero> = {
   title: "Next/Components/Hero",
@@ -11,34 +41,6 @@ const meta: Meta<typeof Hero> = {
       themeOverride: "Isomer Next",
     },
   },
-  args: {
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      logoUrl: "/isomer-logo.svg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
-  },
 }
 
 export default meta
@@ -46,6 +48,7 @@ type Story = StoryObj<typeof Hero>
 
 export const Gradient: Story = {
   args: {
+    ...SITE_ARGS,
     backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
     title: "Ministry of Trade and Industry",
     subtitle:
@@ -60,6 +63,7 @@ export const Gradient: Story = {
 
 export const ColourBlock: Story = {
   args: {
+    ...SITE_ARGS,
     backgroundUrl:
       "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 
@@ -74,41 +78,12 @@ export const ColourBlock: Story = {
     secondaryButtonUrl: "/",
     variant: "block",
     theme: "default",
-
-    site: {
-      siteName: "Isomer Next",
-
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-
-      theme: "isomer-next",
-      isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
   },
 }
 
 export const ColourBlockInverse: Story = {
   args: {
+    ...SITE_ARGS,
     backgroundUrl:
       "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 
@@ -123,35 +98,5 @@ export const ColourBlockInverse: Story = {
     secondaryButtonUrl: "/",
     variant: "block",
     theme: "inverse",
-
-    site: {
-      siteName: "Isomer Next",
-
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-
-      theme: "isomer-next",
-      isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
   },
 }
