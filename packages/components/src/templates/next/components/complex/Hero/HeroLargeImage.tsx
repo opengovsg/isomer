@@ -70,7 +70,7 @@ export const HeroLargeImage = ({
         src={backgroundSrc}
         alt={title}
         width="100%"
-        className="aspect-square max-h-[60rem] w-full object-fill md:aspect-[2/1]"
+        className="aspect-square max-h-[60rem] w-full object-center md:aspect-[2/1]"
         lazyLoading={false}
       />
     </section>
