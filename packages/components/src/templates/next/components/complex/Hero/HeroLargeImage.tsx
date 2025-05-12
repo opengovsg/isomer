@@ -71,6 +71,7 @@ export const HeroLargeImage = ({
         alt={title}
         width="100%"
         className="aspect-square max-h-[60rem] w-full object-fill md:aspect-[2/1]"
+        lazyLoading={false}
       />
     </section>
   )
