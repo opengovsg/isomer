@@ -4,7 +4,7 @@ import { Type } from "@sinclair/typebox"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
-const HERO_STYLE = {
+export const HERO_STYLE = {
   gradient: "gradient",
   block: "block",
   largeImage: "largeImage",
