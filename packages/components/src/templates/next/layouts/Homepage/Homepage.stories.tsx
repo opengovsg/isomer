@@ -5,6 +5,7 @@ import { http, HttpResponse } from "msw"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { HomePageSchemaType } from "~/engine"
+import type { HeroProps } from "~/interfaces/complex/Hero"
 import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import Homepage from "./Homepage"
 
@@ -62,8 +63,10 @@ type Story = StoryObj<typeof Homepage>
 const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
 
 const generateArgs = ({
+  heroProps,
   isDarkVariant = false,
 }: {
+  heroProps: Partial<HeroProps>
   isDarkVariant?: boolean
 }): HomePageSchemaType => {
   return {
@@ -264,18 +267,7 @@ const generateArgs = ({
           },
         ],
       },
-      {
-        type: "hero",
-        variant: "gradient",
-        backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
-        title: "Ministry of Trade and Industry",
-        subtitle:
-          "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
-        buttonLabel: "Main CTA",
-        buttonUrl: "/",
-        secondaryButtonLabel: "Sub CTA",
-        secondaryButtonUrl: "/",
-      },
+      heroProps as HeroProps,
       {
         type: "infobar",
         variant: isDarkVariant ? "dark" : "light",
@@ -422,9 +414,52 @@ const generateArgs = ({
 }
 
 export const Default: Story = {
-  args: generateArgs({}),
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
+      title: "Ministry of Trade and Industry",
+      subtitle:
+        "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+      buttonLabel: "Main CTA",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Sub CTA",
+      secondaryButtonUrl: "/",
+    },
+  }),
 }
 
 export const Dark: Story = {
-  args: generateArgs({ isDarkVariant: true }),
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
+      title: "Ministry of Trade and Industry",
+      subtitle:
+        "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+      buttonLabel: "Main CTA",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Sub CTA",
+      secondaryButtonUrl: "/",
+    },
+  }),
+}
+
+export const HeroLargeImage: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "largeImage",
+      backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
+      title: "Hi I am a ministry’s title keep it under 50 please",
+      subtitle:
+        "Max 250 chars please. A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity. A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity. A leading global city of enterprise",
+      buttonLabel: "Learn more about us",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Learn more about us",
+      secondaryButtonUrl: "/",
+    },
+  }),
 }
