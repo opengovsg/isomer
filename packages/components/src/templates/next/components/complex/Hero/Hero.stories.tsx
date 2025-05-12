@@ -49,7 +49,7 @@ type Story = StoryObj<typeof Hero>
 export const Gradient: Story = {
   args: {
     ...SITE_ARGS,
-    backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
+    backgroundUrl: "/hero-banner.png",
     title: "Ministry of Trade and Industry",
     subtitle:
       "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",

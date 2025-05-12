@@ -418,7 +418,7 @@ export const Default: Story = {
     heroProps: {
       type: "hero",
       variant: "gradient",
-      backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
+      backgroundUrl: "/hero-banner.png",
       title: "Ministry of Trade and Industry",
       subtitle:
         "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
@@ -435,7 +435,7 @@ export const Dark: Story = {
     heroProps: {
       type: "hero",
       variant: "gradient",
-      backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
+      backgroundUrl: "/hero-banner.png",
       title: "Ministry of Trade and Industry",
       subtitle:
         "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
@@ -452,7 +452,7 @@ export const HeroLargeImage: Story = {
     heroProps: {
       type: "hero",
       variant: "largeImage",
-      backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
+      backgroundUrl: "/hero-banner.png",
       title: "Hi I am a ministry’s title keep it under 50 please",
       subtitle:
         "Max 250 chars please. A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity. A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity. A leading global city of enterprise",
