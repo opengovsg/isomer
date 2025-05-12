@@ -22,11 +22,12 @@ export const HeroLargeImage = ({
 
   return (
     <section className="flex w-full flex-col">
+      {/* Text and button container */}
       <div
-        className={`mx-auto flex w-full flex-col gap-5 px-6 pb-12 pt-10 md:gap-9 lg:pb-16 lg:pt-12 ${ComponentContent}`}
+        className={`mx-auto flex w-full flex-col gap-6 px-6 pb-12 pt-10 md:gap-9 lg:pb-16 lg:pt-12 ${ComponentContent}`}
       >
         {/* Text container */}
-        <div className="m:gap-6 flex flex-col items-center gap-5 text-base-content-strong sm:items-start md:text-center lg:mx-auto lg:max-w-[66.67%]">
+        <div className="flex flex-col items-center gap-5 text-base-content-strong sm:items-start md:gap-6 md:text-center lg:mx-auto lg:max-w-[66.67%]">
           <h1 className="prose-display-xl w-full">{title}</h1>
           {subtitle && (
             <p className="prose-title-lg-regular w-full">{subtitle}</p>
