@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
@@ -7,6 +8,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupEditorPermissions,
+  setupPageResource,
   setupSite,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
@@ -130,6 +132,7 @@ describe("asset.router", async () => {
       // Act
       const result = unauthedCaller.deleteAssets({
         siteId: 1,
+        resourceId: "1",
         fileKeys: ["test.png"],
       })
 
@@ -141,8 +144,12 @@ describe("asset.router", async () => {
 
     it("should throw 403 if site does not exist", async () => {
       // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
       const result = caller.deleteAssets({
-        siteId: 99999,
+        siteId: site.id + 1,
+        resourceId: page.id,
         fileKeys: ["test.png"],
       })
 
@@ -156,13 +163,16 @@ describe("asset.router", async () => {
       )
     })
 
-    it("should throw 403 if user does not have permission to read site", async () => {
+    it("should throw 403 if user does not have permission to read resource", async () => {
       // Arrange
-      const { site } = await setupSite()
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
 
       // Act
       const result = caller.deleteAssets({
         siteId: site.id,
+        resourceId: page.id,
         fileKeys: ["test.png"],
       })
 
@@ -176,9 +186,11 @@ describe("asset.router", async () => {
       )
     })
 
-    it("should return success if user has permission to read site", async () => {
+    it("should return success if user has permission to read resource", async () => {
       // Arrange
-      const { site } = await setupSite()
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
       await setupEditorPermissions({
         siteId: site.id,
         userId: session.userId,
@@ -187,6 +199,7 @@ describe("asset.router", async () => {
       // Act
       const result = caller.deleteAssets({
         siteId: site.id,
+        resourceId: page.id,
         fileKeys: ["test.png"],
       })
 

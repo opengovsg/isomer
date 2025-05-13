@@ -6,10 +6,10 @@ import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { env } from "~/env.mjs"
 import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
+import { validateUserPermissionsForSite } from "../site/site.service"
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
-// Reusing resource permissions since all users can create assets
 // Creating a wrapper as a reminder to update if we will to introduce a READ-only role
 export const validateUserPermissionsForAsset = async ({
   resourceId,
@@ -17,6 +17,19 @@ export const validateUserPermissionsForAsset = async ({
   userId,
   siteId,
 }: UserPermissionsProps) => {
+  // We're using site permissions for create action
+  // If user can read site, they can create assets
+  if (action === "create") {
+    return await validateUserPermissionsForSite({
+      siteId,
+      userId,
+      action: "read",
+    })
+  }
+
+  // Permissions for assets share the same permissions as resources
+  // because the underlying assumption is that the asset is tied to the resource
+  if (!resourceId) return false
   await validateUserPermissionsForResource({
     resourceId,
     action,

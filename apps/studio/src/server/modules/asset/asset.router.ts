@@ -15,7 +15,7 @@ export const assetRouter = router({
     .mutation(async ({ ctx, input: { siteId, fileName } }) => {
       await validateUserPermissionsForAsset({
         siteId,
-        action: "read",
+        action: "create",
         userId: ctx.user.id,
       })
 
@@ -46,9 +46,10 @@ export const assetRouter = router({
 
   deleteAssets: protectedProcedure
     .input(deleteAssetsSchema)
-    .mutation(async ({ ctx, input: { siteId, fileKeys } }) => {
+    .mutation(async ({ ctx, input: { siteId, resourceId, fileKeys } }) => {
       await validateUserPermissionsForAsset({
         siteId,
+        resourceId,
         action: "read",
         userId: ctx.user.id,
       })
