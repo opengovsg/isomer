@@ -3,6 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { ARRAY_RADIO_FORMAT } from "../format"
 
 export const HERO_STYLE = {
   gradient: "gradient",
@@ -84,6 +85,8 @@ export const HeroSchema = Type.Composite(
         {
           default: HERO_STYLE.gradient,
           title: "Hero banner style",
+          format: ARRAY_RADIO_FORMAT,
+          type: "string",
         },
       ),
     }),
