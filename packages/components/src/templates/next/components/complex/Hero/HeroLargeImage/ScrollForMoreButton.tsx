@@ -6,8 +6,8 @@ export const ScrollForMoreButton = ({ isFixed }: ScrollForMoreButtonProps) => {
   return (
     <div
       className={`${
-        isFixed ? "animate-button-pulse fixed" : "absolute"
-      } animate-slide-up-fade-in bottom-16 left-1/2 z-20 flex -translate-x-1/2 flex-row items-center gap-0.5 rounded-full bg-black/65 px-3 py-2 text-base`}
+        isFixed ? "fixed animate-button-pulse" : "absolute"
+      } bottom-16 left-1/2 z-20 flex -translate-x-1/2 animate-slide-up-fade-in flex-row items-center gap-0.5 rounded-full bg-black/65 px-3 py-2 text-base`}
     >
       <span className="prose-headline-base-medium whitespace-nowrap text-white">
         Scroll for more
