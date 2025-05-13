@@ -16,7 +16,7 @@ const SCROLL_THRESHOLD = 120
 
 export const ImageContainer = ({ imageSrc, imageAlt }: ImageContainerProps) => {
   const imageRef = useRef<HTMLImageElement>(null)
-  const [isFixed, setIsFixed] = useState(true)
+  const [isFixed, setIsFixed] = useState(false)
   const [shouldShowButton, setShouldShowButton] = useState(false)
 
   const handleScroll = () => {
