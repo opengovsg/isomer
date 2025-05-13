@@ -47,7 +47,8 @@ export const HeroFloating = ({
 
   return (
     <section
-      className={`${ComponentContent} flex w-full flex-col items-center pb-12 pt-6 md:pb-24 md:pt-16 lg:items-start`}
+      // we have !px-0, sm:!px-0 and md:!px-0 to override the default px from ComponentContent
+      className={`${ComponentContent} flex w-full flex-col items-center !px-0 pb-12 pt-6 sm:!px-0 md:!px-0 md:pb-24 md:pt-16 lg:items-start`}
     >
       {/* Image with aspect ratio and max height */}
       <div className="lg:flex lg:w-full lg:justify-end">

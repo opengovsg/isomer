@@ -2725,6 +2725,11 @@ video {
   padding: 2rem;
 }
 
+.\!px-0 {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+}
+
 .px-0 {
   padding-left: 0px;
   padding-right: 0px;
@@ -5045,6 +5050,11 @@ video {
     border-radius: 0.375rem;
   }
 
+  .sm\:\!px-0 {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+  }
+
   .sm\:px-0 {
     padding-left: 0px;
     padding-right: 0px;
@@ -5316,6 +5326,11 @@ video {
 
   .md\:p-16 {
     padding: 4rem;
+  }
+
+  .md\:\!px-0 {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
   }
 
   .md\:px-10 {
