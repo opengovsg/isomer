@@ -3,10 +3,7 @@ import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
 import { addUsersToSite } from "~prisma/scripts/addUsersToSite"
 
 import type { DB, Resource, Transaction, Version } from "../database"
-import type {
-  CrudResourceActions,
-  PermissionsProps,
-} from "../permissions/permissions.type"
+import type { UserPermissionsProps } from "../permissions/permissions.type"
 import {
   ResourceState,
   ResourceType,
@@ -22,16 +19,11 @@ import {
   SEARCH_PAGE_BLOB,
 } from "./constants"
 
-export interface SitePermissionsProps
-  extends Omit<PermissionsProps, "resourceId"> {
-  action: CrudResourceActions
-}
-
 export const validateUserPermissionsForSite = async ({
   siteId,
   userId,
   action,
-}: SitePermissionsProps) => {
+}: Omit<UserPermissionsProps, "resourceId">) => {
   const perms = await definePermissionsForSite({
     siteId,
     userId,
