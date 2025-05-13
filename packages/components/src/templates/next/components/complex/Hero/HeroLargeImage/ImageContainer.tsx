@@ -16,13 +16,12 @@ const SCROLL_THRESHOLD = 120
 
 export const ImageContainer = ({ imageSrc, imageAlt }: ImageContainerProps) => {
   const imageRef = useRef<HTMLImageElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
   const [isFixed, setIsFixed] = useState(true)
   const [shouldShowButton, setShouldShowButton] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!imageRef.current || !containerRef.current) return
+      if (!imageRef.current) return
 
       const imageRect = imageRef.current.getBoundingClientRect()
 
@@ -49,7 +48,7 @@ export const ImageContainer = ({ imageSrc, imageAlt }: ImageContainerProps) => {
   }, [])
 
   return (
-    <div className="relative w-full" ref={containerRef}>
+    <div className="relative w-full">
       <ImageClient
         ref={imageRef}
         src={imageSrc}
