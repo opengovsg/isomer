@@ -23,11 +23,16 @@ const config: Config = {
       keyframes: {
         buttonPulse: {
           "0%, 100%": { backgroundColor: "rgba(0, 0, 0, 0.65)" },
-          "50%": { backgroundColor: "rgba(0, 0, 0, 0.4)" },
+          "50%": { backgroundColor: "rgba(0, 0, 0, 0.325)" },
+        },
+        slideUpFadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
         },
       },
       animation: {
         "button-pulse": "buttonPulse 2s ease-in infinite",
+        "slide-up-fade-in": "slideUpFadeIn 0.3s ease-in-out",
       },
       boxShadow: {
         sm: "0 0px 10px 0px rgba(191, 191, 191, 0.5)",

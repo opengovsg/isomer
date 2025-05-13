@@ -1953,7 +1953,7 @@ video {
   }
 
   50% {
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.325);
   }
 }
 
@@ -1969,6 +1969,20 @@ video {
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes slideUpFadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-slide-up-fade-in {
+  animation: slideUpFadeIn 0.3s ease-in-out;
 }
 
 .cursor-not-allowed {
