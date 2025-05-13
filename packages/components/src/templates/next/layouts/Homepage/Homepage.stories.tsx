@@ -444,6 +444,7 @@ export const Dark: Story = {
       secondaryButtonLabel: "Sub CTA",
       secondaryButtonUrl: "/",
     },
+    isDarkVariant: true,
   }),
 }
 
