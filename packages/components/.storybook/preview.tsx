@@ -2,6 +2,7 @@
 import type { Decorator, Preview } from "@storybook/react"
 import { withThemeByDataAttribute } from "@storybook/addon-themes"
 import { MINIMAL_VIEWPORTS } from "@storybook/addon-viewport"
+import mockdate from "mockdate"
 import { initialize, mswLoader } from "msw-storybook-addon"
 
 import "bootstrap-icons/font/bootstrap-icons.css"
@@ -115,6 +116,14 @@ const LayoutDecorator: Decorator = (storyFn) => (
   <div className="antialiased">{storyFn()}</div>
 )
 
+const MockDateDecorator: Decorator = (storyFn) => {
+  mockdate.reset()
+  const defaultDate = "2025-08-09T12:00:00.000Z"
+  mockdate.set(defaultDate)
+
+  return storyFn()
+}
+
 export const decorators: Decorator[] = [
   withThemeByDataAttribute({
     themes: {
@@ -124,6 +133,7 @@ export const decorators: Decorator[] = [
     defaultTheme: "Isomer Next",
   }),
   LayoutDecorator,
+  MockDateDecorator,
 ]
 
 export default preview
