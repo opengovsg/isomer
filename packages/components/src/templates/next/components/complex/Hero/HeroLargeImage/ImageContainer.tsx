@@ -19,23 +19,26 @@ export const ImageContainer = ({ imageSrc, imageAlt }: ImageContainerProps) => {
   const [isFixed, setIsFixed] = useState(true)
   const [shouldShowButton, setShouldShowButton] = useState(false)
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!imageRef.current) return
+  const handleScroll = () => {
+    if (!imageRef.current) return
 
-      const imageRect = imageRef.current.getBoundingClientRect()
+    const imageRect = imageRef.current.getBoundingClientRect()
 
-      if (imageRect.top + SCROLL_THRESHOLD >= window.innerHeight) {
-        setShouldShowButton(false)
-        return
-      } else {
-        setShouldShowButton(true)
-      }
-
-      const imageBottom = imageRect.bottom
-      const viewportHeight = window.innerHeight
-      setIsFixed(imageBottom > viewportHeight + 1)
+    if (imageRect.top + SCROLL_THRESHOLD >= window.innerHeight) {
+      setShouldShowButton(false)
+      return
+    } else {
+      setShouldShowButton(true)
     }
+
+    const imageBottom = imageRect.bottom
+    const viewportHeight = window.innerHeight
+    setIsFixed(imageBottom > viewportHeight + 1)
+  }
+
+  useEffect(() => {
+    // to not render during static site generation on the server
+    if (typeof window === "undefined") return
 
     window.addEventListener("scroll", handleScroll)
     window.addEventListener("resize", handleScroll)
