@@ -1,3 +1,4 @@
+import type { GrowthBook } from "@growthbook/growthbook"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
@@ -9,6 +10,8 @@ import type {
   SiteAbility,
   UserManagementActions,
 } from "./permissions.type"
+import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
+import { ADMIN_ROLE, ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
 import { logPermissionEvent } from "../audit/audit.service"
 import { db } from "../database"
 import { CRUD_ACTIONS } from "./permissions.type"
@@ -220,5 +223,41 @@ export const updateUserSitewidePermission = async ({
     })
 
     return createdSitePermission
+  })
+}
+
+interface ValidateUserIsIsomerAdminProps {
+  userId: string
+  gb: GrowthBook
+  roles: (typeof ADMIN_ROLE)[keyof typeof ADMIN_ROLE][]
+}
+
+export const validateUserIsIsomerCoreAdmin = async ({
+  userId,
+  gb,
+  roles,
+}: ValidateUserIsIsomerAdminProps) => {
+  const user = await db
+    .selectFrom("User")
+    .where("id", "=", userId)
+    .select(["email"])
+    .executeTakeFirstOrThrow()
+
+  const { core, migrators } = gb.getFeatureValue<GrowthbookIsomerAdminFeature>(
+    ISOMER_ADMIN_FEATURE_KEY,
+    { core: [], migrators: [] },
+  )
+
+  if (roles.includes(ADMIN_ROLE.CORE) && core.includes(user.email)) {
+    return
+  }
+
+  if (roles.includes(ADMIN_ROLE.MIGRATORS) && migrators.includes(user.email)) {
+    return
+  }
+
+  throw new TRPCError({
+    code: "FORBIDDEN",
+    message: "You do not have sufficient permissions to perform this action",
   })
 }

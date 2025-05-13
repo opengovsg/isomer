@@ -1,14 +1,20 @@
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { createContext, useCallback, useContext, useState } from "react"
+import { useGrowthBook } from "@growthbook/growthbook-react"
 import { useInterval } from "usehooks-ts"
+
+type SignInStateType = "initial" | "verification"
+type SignInErrorType = "unauthorized"
 
 interface SignInState {
   timer: number
   resetTimer: () => void
-  state: "initial" | "email"
+  state: SignInStateType
+  errorState: SignInErrorType | undefined
+  setErrorState: Dispatch<SetStateAction<SignInErrorType | undefined>>
   vfnStepData: VfnStepData | undefined
   setVfnStepData: Dispatch<SetStateAction<VfnStepData | undefined>>
-  proceedToEmail: () => void
+  proceedToVerification: () => void
   backToInitial: () => void
 }
 
@@ -43,23 +49,29 @@ export const SignInContextProvider = ({
   children,
   delayForResendSeconds = 60,
 }: PropsWithChildren<SignInContextProviderProps>) => {
-  const [state, setState] = useState<"initial" | "email">("initial")
+  const [state, setState] = useState<SignInStateType>("initial")
+  const [errorState, setErrorState] = useState<SignInErrorType>()
   const [vfnStepData, setVfnStepData] = useState<VfnStepData>()
   const [timer, setTimer] = useState(delayForResendSeconds)
+
+  const gb = useGrowthBook()
 
   const resetTimer = useCallback(
     () => setTimer(delayForResendSeconds),
     [delayForResendSeconds],
   )
 
-  const proceedToEmail = useCallback(() => {
-    setState("email")
+  const proceedToVerification = useCallback(() => {
+    setState("verification")
+    setErrorState(undefined)
   }, [])
 
   const backToInitial = useCallback(() => {
     setState("initial")
     setVfnStepData(undefined)
-  }, [])
+    setErrorState(undefined)
+    void gb.setAttributes({})
+  }, [gb])
 
   // Start the resend timer once in the vfn step.
   useInterval(
@@ -75,9 +87,11 @@ export const SignInContextProvider = ({
         setVfnStepData,
         timer,
         resetTimer,
-        proceedToEmail,
+        proceedToVerification,
         backToInitial,
         state,
+        errorState,
+        setErrorState,
       }}
     >
       {children}

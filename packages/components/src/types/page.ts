@@ -7,7 +7,7 @@ import {
   ContentPageHeaderSchema,
   SearchableTableSchema,
 } from "~/interfaces"
-import { AltTextSchema, generateImageSrcSchema } from "~/interfaces/complex"
+import { imageSchemaObject } from "~/schemas/internal"
 import { REF_HREF_PATTERN } from "~/utils/validation"
 
 const categorySchemaObject = Type.Object({
@@ -24,19 +24,6 @@ const dateSchemaObject = Type.Object({
     Type.String({
       title: "Article date",
       format: "date",
-    }),
-  ),
-})
-
-const imageSchemaObject = Type.Object({
-  image: Type.Optional(
-    Type.Object({
-      src: generateImageSrcSchema({
-        title: "Thumbnail",
-        description:
-          "Upload an image if you want to have a custom thumbnail for this item",
-      }),
-      alt: AltTextSchema,
     }),
   ),
 })
@@ -89,11 +76,47 @@ export const CollectionPagePageSchema = Type.Intersect([
     }),
   }),
   TagsSchema,
+  Type.Object({
+    defaultSortBy: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("date", { title: "Date" }),
+          Type.Literal("title", { title: "Title" }),
+          Type.Literal("category", { title: "Category" }),
+        ],
+        {
+          title: "Default sort by",
+          description: "The default sort order of the collection",
+          format: "hidden",
+          type: "string",
+          default: "date",
+        },
+      ),
+    ),
+    defaultSortDirection: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("asc", { title: "Ascending" }),
+          Type.Literal("desc", { title: "Descending" }),
+        ],
+        {
+          title: "Default sort direction",
+          description: "The default sort direction of the collection",
+          format: "hidden",
+          type: "string",
+          default: "desc",
+        },
+      ),
+    ),
+  }),
 ])
 
-export const ContentPagePageSchema = Type.Object({
-  contentPageHeader: ContentPageHeaderSchema,
-})
+export const ContentPagePageSchema = Type.Composite([
+  Type.Object({
+    contentPageHeader: ContentPageHeaderSchema,
+  }),
+  imageSchemaObject,
+])
 
 export const DatabasePagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,

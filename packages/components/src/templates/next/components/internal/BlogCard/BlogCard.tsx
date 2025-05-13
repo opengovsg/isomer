@@ -68,7 +68,7 @@ export const BlogCard = ({
             })}
           </div>
         )}
-        {description && (
+        {description && description.trim() !== "" && (
           <p className="prose-body-base line-clamp-3 whitespace-pre-wrap">
             {description}
           </p>

@@ -61,9 +61,14 @@ const CollectionLayout = ({
   LinkComponent,
   ScriptComponent,
 }: CollectionPageSchemaType) => {
-  const { permalink } = page
+  const { permalink, defaultSortBy, defaultSortDirection } = page
 
-  const items = getCollectionItems(site, permalink)
+  const items = getCollectionItems({
+    site,
+    permalink,
+    sortBy: defaultSortBy,
+    sortDirection: defaultSortDirection,
+  })
   const processedItems = processedCollectionItems(items)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,

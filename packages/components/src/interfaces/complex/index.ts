@@ -1,4 +1,5 @@
 export { AccordionSchema, type AccordionProps } from "./Accordion"
+export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export { CalloutSchema, type CalloutProps } from "./Callout"
 export { type CardsProps } from "./Cards"
@@ -19,7 +20,11 @@ export {
   CARDS_WITH_IMAGES,
 } from "./InfoCards"
 export { InfoColsSchema, type InfoColsProps } from "./InfoCols"
-export { InfobarSchema, type InfobarProps } from "./Infobar"
+export {
+  InfobarSchema,
+  type InfobarProps,
+  DEFAULT_INFOBAR_VARIANT,
+} from "./Infobar"
 export { InfopicSchema, type InfopicProps } from "./Infopic"
 export { KeyStatisticsSchema, type KeyStatisticsProps } from "./KeyStatistics"
 export { MapSchema, type MapProps } from "./Map"
@@ -30,3 +35,9 @@ export {
   DynamicDataBannerSchema,
   type DynamicDataBannerProps,
 } from "./DynamicDataBanner"
+export {
+  ChildrenPagesSchema as ChildrenPagesSchema,
+  DEFAULT_CHILDREN_PAGES_BLOCK,
+  CHILDREN_PAGES_LAYOUT_OPTIONS,
+  type ChildrenPagesProps,
+} from "./ChildrenPages"

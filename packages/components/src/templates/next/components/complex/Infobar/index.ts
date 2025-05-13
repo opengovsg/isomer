@@ -1,1 +1,1 @@
-export { default, compoundStyles } from "./Infobar"
+export { default, createInfobarStyles } from "./Infobar"
