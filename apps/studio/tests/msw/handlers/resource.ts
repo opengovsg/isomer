@@ -188,6 +188,7 @@ export const resourceHandlers = {
           title: "Index page",
           permalink: "_index",
           parentId: null,
+          siteId: 1,
         }
       }),
   },
