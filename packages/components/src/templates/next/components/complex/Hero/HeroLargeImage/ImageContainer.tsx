@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react"
 
+import type { ImageClientProps } from "~/interfaces"
 import { ImageClient } from "../../Image"
 import { ScrollForMoreButton } from "./ScrollForMoreButton"
 
 interface ImageContainerProps {
-  imageSrc: string
-  imageAlt: string
+  imageSrc: ImageClientProps["src"]
+  imageAlt: ImageClientProps["alt"]
 }
 
 // Arbitrary threshold to prevent the button from showing too early
