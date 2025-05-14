@@ -8,4 +8,5 @@ export {
   VIDEO_EMBED_URL_REGEXES,
   getResourceIdFromReferenceLink,
   REFERENCE_LINK_REGEX,
+  NON_EMPTY_STRING_REGEX,
 } from "./utils"
