@@ -40,7 +40,7 @@ export const IsomerComplexComponentsMap = {
   hero: HeroSchema,
   iframe: IframeSchema,
   image: ImageSchema,
-  infobar: InfobarDefaultSchema,
+  infobar: InfobarHomepageSchema,
   infocards: InfoCardsSchema,
   infocols: InfoColsSchema,
   infopic: InfopicSchema,
