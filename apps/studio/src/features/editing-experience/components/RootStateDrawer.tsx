@@ -238,6 +238,7 @@ export default function RootStateDrawer() {
         <VStack w="100%" h="100%" gap="1rem">
           {isCustomContentIndexPage && (
             <Infobox
+              width="100%"
               size="sm"
               border="1px solid"
               borderColor="utility.feedback.info"
@@ -449,7 +450,7 @@ export default function RootStateDrawer() {
           mt="auto"
         >
           <VStack spacing="1.25rem">
-            <Infobox size="sm" variant="warning">
+            <Infobox width="100%" size="sm" variant="warning">
               <Text textStyle="body-2">
                 All custom content that was previously on this page will be lost
                 once you press ‘Accept this change’.
