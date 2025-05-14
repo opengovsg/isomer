@@ -4913,6 +4913,10 @@ video {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .motion-reduce\:animate-none {
+    animation: none;
+  }
+
   .motion-reduce\:transition-none {
     transition-property: none;
   }
