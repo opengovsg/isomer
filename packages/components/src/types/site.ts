@@ -16,7 +16,7 @@ export interface IsomerGeneratedSiteProps {
 }
 
 export interface IsomerSiteWideComponentsProps {
-  navBarItems: NavbarProps["items"]
+  navbar: Pick<NavbarProps, "items" | "callToAction">
   footerItems: SiteConfigFooterProps
 }
 

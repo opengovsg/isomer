@@ -45,6 +45,7 @@ const ArticleLayout = ({
               layout,
               content,
               LinkComponent,
+              permalink: page.permalink,
             })}
           </div>
           <BackToTopLink />
