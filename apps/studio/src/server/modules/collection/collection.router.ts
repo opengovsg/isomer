@@ -217,52 +217,6 @@ export const collectionRouter = router({
       })
       return { pageId: resource.id }
     }),
-  // TODO: change this schema
-  getSiblingsOf: protectedProcedure
-    .input(readFolderSchema)
-    .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {
-      // Things that aren't working yet:
-      // 0. Perm checking
-      // 1. Last Edited user and time
-      // 2. Page status(draft, published)
-      return await ctx.db.transaction().execute(async (tx) => {
-        const resource = await tx
-          .selectFrom("Resource")
-          .where("Resource.id", "=", String(resourceId))
-          .where((eb) => {
-            return eb.or([
-              eb("Resource.type", "=", ResourceType.CollectionPage),
-              eb("Resource.type", "=", ResourceType.CollectionLink),
-            ])
-          })
-          .select("Resource.parentId")
-          .executeTakeFirst()
-
-        if (!resource) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Please ensure that you have requested for a collection",
-          })
-        }
-
-        return tx
-          .selectFrom("Resource")
-          .where("Resource.parentId", "=", resource.parentId)
-          .where("Resource.siteId", "=", siteId)
-          .where((eb) => {
-            return eb.or([
-              eb("Resource.type", "=", ResourceType.CollectionPage),
-              eb("Resource.type", "=", ResourceType.CollectionLink),
-            ])
-          })
-          .orderBy("Resource.type", "asc")
-          .orderBy("Resource.title", "asc")
-          .limit(limit)
-          .offset(offset)
-          .select(defaultResourceSelect)
-          .execute()
-      })
-    }),
   list: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {

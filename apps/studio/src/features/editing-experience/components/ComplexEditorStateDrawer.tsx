@@ -81,8 +81,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       ...previewPageState,
       content: updatedBlocks,
     }
-    setSavedPageState(newPageState)
-    setPreviewPageState(newPageState)
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
     setAddedBlockIndex(null)
@@ -91,6 +89,15 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       siteId,
       content: JSON.stringify(newPageState),
     })
+    // NOTE: This chunk needs to be AFTER `setDrawerState`.
+    // This is because we set the state of the drawer and then
+    // use `flushSync` to force a re-render.
+    // As this state is also read by `FormBuilder`,
+    // setting the state here will lead to a crash
+    // as the component will then re-render with an invalid
+    // state being fed to `FormBuilder`.
+    setSavedPageState(newPageState)
+    setPreviewPageState(newPageState)
   }, [
     currActiveIdx,
     onDeleteBlockModalClose,
@@ -252,7 +259,10 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     return <></>
   }
 
-  const subSchema = getComponentSchema(component.type)
+  const subSchema = getComponentSchema({
+    component: component.type,
+    layout: previewPageState.layout,
+  })
   const { title } = subSchema
   const validateFn = ajv.compile<IsomerComponent>(subSchema)
   const componentName = title || "component"
