@@ -259,7 +259,10 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     return <></>
   }
 
-  const subSchema = getComponentSchema(component.type)
+  const subSchema = getComponentSchema({
+    component: component.type,
+    layout: previewPageState.layout,
+  })
   const { title } = subSchema
   const validateFn = ajv.compile<IsomerComponent>(subSchema)
   const componentName = title || "component"

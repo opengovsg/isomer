@@ -21,7 +21,8 @@ export {
 } from "./InfoCards"
 export { InfoColsSchema, type InfoColsProps } from "./InfoCols"
 export {
-  InfobarSchema,
+  InfobarDefaultSchema,
+  InfobarHomepageSchema,
   type InfobarProps,
   DEFAULT_INFOBAR_VARIANT,
 } from "./Infobar"
