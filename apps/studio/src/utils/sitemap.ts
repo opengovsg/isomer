@@ -3,12 +3,11 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { Resource } from "~prisma/generated/selectableTypes"
 
-export const PAGE_RESOURCE_TYPES = [
+export const CHILD_PAGE_RESOURCE_TYPES = [
   ResourceType.Page,
   ResourceType.CollectionPage,
   ResourceType.CollectionLink,
   ResourceType.IndexPage,
-  ResourceType.RootPage,
 ] as const
 type ResourceDto = Omit<
   Resource,
@@ -60,11 +59,11 @@ const getSitemapTreeFromArray = (
       const hasPageDescendants = resources.some((possibleChild) => {
         return (
           possibleChild.permalink.startsWith(resource.permalink) &&
-          PAGE_RESOURCE_TYPES.find((t) => t === possibleChild.type)
+          CHILD_PAGE_RESOURCE_TYPES.find((t) => t === possibleChild.type)
         )
       })
       return (
-        PAGE_RESOURCE_TYPES.find((t) => t === resource.type) ||
+        CHILD_PAGE_RESOURCE_TYPES.find((t) => t === resource.type) ||
         hasPageDescendants
       )
     })
