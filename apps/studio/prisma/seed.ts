@@ -26,7 +26,7 @@ async function main() {
         })
         .onConflict((oc) =>
           oc
-            .columns(["email", "deletedAt"])
+            .columns(["email"])
             .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
         )
         .returning(["id", "name", "email"])
