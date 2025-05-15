@@ -238,6 +238,7 @@ export default function RootStateDrawer() {
         <VStack w="100%" h="100%" gap="1rem">
           {isCustomContentIndexPage && (
             <Infobox
+              width="100%"
               size="sm"
               border="1px solid"
               borderColor="utility.feedback.info"
@@ -352,51 +353,51 @@ export default function RootStateDrawer() {
                           ref={provided.innerRef}
                         >
                           <Box w="100%">
-                            {((isHeroFixedBlock &&
-                              savedPageState.content.length === 1) ||
-                              (savedPageState.content.length === 0 &&
-                                pageLayout !==
-                                  ISOMER_USABLE_PAGE_LAYOUTS.Index) ||
-                              !isPreviewingIndexPage) && (
-                              <>
-                                <VStack
-                                  justifyContent="center"
-                                  spacing={0}
-                                  mt="2.75rem"
-                                  mb="1.5rem"
-                                >
-                                  <BlockEditingPlaceholder />
-                                  <Text
-                                    mt="0.75rem"
-                                    textStyle="subhead-1"
-                                    color="base.content.default"
+                            {!isPreviewingIndexPage &&
+                              ((isHeroFixedBlock &&
+                                savedPageState.content.length === 1) ||
+                                (savedPageState.content.length === 0 &&
+                                  pageLayout !==
+                                    ISOMER_USABLE_PAGE_LAYOUTS.Index)) && (
+                                <>
+                                  <VStack
+                                    justifyContent="center"
+                                    spacing={0}
+                                    mt="2.75rem"
+                                    mb="1.5rem"
                                   >
-                                    Blocks you add will appear here
-                                  </Text>
-                                  <Text
-                                    mt="0.25rem"
-                                    textStyle="caption-2"
-                                    color="base.content.medium"
-                                  >
-                                    Click the ‘Add block’ button above to add
-                                    blocks to this page
-                                  </Text>
-                                </VStack>
+                                    <BlockEditingPlaceholder />
+                                    <Text
+                                      mt="0.75rem"
+                                      textStyle="subhead-1"
+                                      color="base.content.default"
+                                    >
+                                      Blocks you add will appear here
+                                    </Text>
+                                    <Text
+                                      mt="0.25rem"
+                                      textStyle="caption-2"
+                                      color="base.content.medium"
+                                    >
+                                      Click the ‘Add block’ button above to add
+                                      blocks to this page
+                                    </Text>
+                                  </VStack>
 
-                                <Button
-                                  variant="outline"
-                                  w="100%"
-                                  onClick={() =>
-                                    setDrawerState({ state: "addBlock" })
-                                  }
-                                  leftIcon={
-                                    <Icon as={BiPlus} fontSize="1.25rem" />
-                                  }
-                                >
-                                  Add a new block
-                                </Button>
-                              </>
-                            )}
+                                  <Button
+                                    variant="outline"
+                                    w="100%"
+                                    onClick={() =>
+                                      setDrawerState({ state: "addBlock" })
+                                    }
+                                    leftIcon={
+                                      <Icon as={BiPlus} fontSize="1.25rem" />
+                                    }
+                                  >
+                                    Add a new block
+                                  </Button>
+                                </>
+                              )}
 
                             <Flex flexDirection="column" mt="-0.25rem">
                               {previewPageState.content.map((block, index) => {
@@ -449,7 +450,7 @@ export default function RootStateDrawer() {
           mt="auto"
         >
           <VStack spacing="1.25rem">
-            <Infobox size="sm" variant="warning">
+            <Infobox width="100%" size="sm" variant="warning">
               <Text textStyle="body-2">
                 All custom content that was previously on this page will be lost
                 once you press ‘Accept this change’.
