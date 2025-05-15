@@ -57,7 +57,8 @@ export const generateAriaLabel = ({
 }: GenerateAriaLabelProps): string | undefined => {
   if (label) return label
 
-  if (!textContent) return undefined
+  if (textContent === undefined) return undefined
+  if (textContent.trim() === "") return undefined
 
   const MAILTO_TEXT = "mailto:"
   if (textContent.startsWith(MAILTO_TEXT)) {
