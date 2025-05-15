@@ -188,7 +188,7 @@ export const ImageGalleryClient = ({
               shouldPreload && (
                 <div
                   key={image.src + index} // in case of same src, use index as key
-                  className={`absolute inset-0 h-full w-full transition-opacity duration-150 ease-out ${
+                  className={`absolute inset-0 h-full w-full transition-opacity duration-150 ease-out motion-reduce:transition-none ${
                     // z-index ensures the current image always appears on top,
                     // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
                     isCurrentImage ? "z-10 opacity-100" : "z-0 opacity-0"
