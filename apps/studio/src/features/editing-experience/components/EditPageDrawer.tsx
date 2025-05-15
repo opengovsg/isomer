@@ -12,7 +12,7 @@ import RawJsonEditorModeStateDrawer from "./RawJsonEditorModeStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
 import TipTapProseComponent from "./TipTapProseComponent"
 
-const proseSchema = getComponentSchema("prose")
+const proseSchema = getComponentSchema({ component: "prose" })
 
 const validate = ajv.compile<ProseProps>(proseSchema)
 

@@ -27,7 +27,6 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
       borderColor="base.divider.medium"
       borderRadius="8px"
       layerStyle="focusRing"
-      _active={{}}
       _hover={{ background: "interaction.muted.main.hover" }}
       data-group
     >

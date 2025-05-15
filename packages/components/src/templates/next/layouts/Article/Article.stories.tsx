@@ -70,22 +70,24 @@ const generateArgs = ({
       theme: "isomer-next",
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
-      navBarItems: [
-        {
-          name: "Home",
-          url: "/",
-        },
-        {
-          name: "Newsroom",
-          url: "/newsroom",
-          items: [
-            {
-              name: "News",
-              url: "/newsroom/news",
-            },
-          ],
-        },
-      ],
+      navbar: {
+        items: [
+          {
+            name: "Home",
+            url: "/",
+          },
+          {
+            name: "Newsroom",
+            url: "/newsroom",
+            items: [
+              {
+                name: "News",
+                url: "/newsroom/news",
+              },
+            ],
+          },
+        ],
+      },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",
@@ -208,22 +210,24 @@ export const Default: Story = {
       theme: "isomer-next",
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
-      navBarItems: [
-        {
-          name: "Home",
-          url: "/",
-        },
-        {
-          name: "Newsroom",
-          url: "/newsroom",
-          items: [
-            {
-              name: "News",
-              url: "/newsroom/news",
-            },
-          ],
-        },
-      ],
+      navbar: {
+        items: [
+          {
+            name: "Home",
+            url: "/",
+          },
+          {
+            name: "Newsroom",
+            url: "/newsroom",
+            items: [
+              {
+                name: "News",
+                url: "/newsroom/news",
+              },
+            ],
+          },
+        ],
+      },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",
@@ -286,6 +290,15 @@ export const Default: Story = {
           },
         ],
       },
+      {
+        type: "blockquote",
+        quote:
+          "When I was a rookie, I had trouble overcoming the low rope at first. But when it came to my turn, my buddies knew being there would help spur me to prevail.",
+        source:
+          "ME2 Jenny Teng, Recipient of SAF Polytechnic Sponsorship, Army Medical Services",
+        imageSrc: "https://placehold.co/600x600",
+        imageAlt: "This is the alt text",
+      },
     ],
   },
 }
@@ -339,22 +352,24 @@ export const NoImage: Story = {
       theme: "isomer-next",
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
-      navBarItems: [
-        {
-          name: "Home",
-          url: "/",
-        },
-        {
-          name: "Newsroom",
-          url: "/newsroom",
-          items: [
-            {
-              name: "News",
-              url: "/newsroom/news",
-            },
-          ],
-        },
-      ],
+      navbar: {
+        items: [
+          {
+            name: "Home",
+            url: "/",
+          },
+          {
+            name: "Newsroom",
+            url: "/newsroom",
+            items: [
+              {
+                name: "News",
+                url: "/newsroom/news",
+              },
+            ],
+          },
+        ],
+      },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",
@@ -480,22 +495,24 @@ export const TaggedArticle: Story = {
       theme: "isomer-next",
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
-      navBarItems: [
-        {
-          name: "Home",
-          url: "/",
-        },
-        {
-          name: "Newsroom",
-          url: "/newsroom",
-          items: [
-            {
-              name: "News",
-              url: "/newsroom/news",
-            },
-          ],
-        },
-      ],
+      navbar: {
+        items: [
+          {
+            name: "Home",
+            url: "/",
+          },
+          {
+            name: "Newsroom",
+            url: "/newsroom",
+            items: [
+              {
+                name: "News",
+                url: "/newsroom/news",
+              },
+            ],
+          },
+        ],
+      },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",
@@ -523,6 +540,16 @@ export const TaggedArticle: Story = {
         {
           category: "Tags",
           selected: ["NParks Happenings", "Wild dinosaur"],
+        },
+        {
+          category: "Brand",
+          selected: [
+            "Daikin",
+            "TP Link",
+            "Asus",
+            "Something slightly longer like this",
+            "Something really long like this, a whole essay in a tag, although you should be avoiding this",
+          ],
         },
       ],
     },

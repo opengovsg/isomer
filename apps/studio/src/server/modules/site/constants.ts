@@ -56,45 +56,54 @@ export const PAGE_BLOB: IsomerSchema = {
   ],
 }
 
-export const NAV_BAR_ITEMS: Navbar["items"] = [
-  {
-    name: "Expandable nav item",
-    url: "/item-one",
-    items: [
-      {
-        name: "PA's network one",
-        url: "/item-one/pa-network-one",
-        description: "Click here and brace yourself for mild disappointment.",
-      },
-      {
-        name: "PA's network two",
-        url: "/item-one/pa-network-two",
-        description: "Click here and brace yourself for mild disappointment.",
-      },
-      {
-        name: "PA's network three",
-        url: "/item-one/pa-network-three",
-      },
-      {
-        name: "PA's network four",
-        url: "/item-one/pa-network-four",
-        description:
-          "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-      },
-      {
-        name: "PA's network five",
-        url: "/item-one/pa-network-five",
-        description:
-          "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-      },
-      {
-        name: "PA's network six",
-        url: "/item-one/pa-network-six",
-        description: "Click here and brace yourself for mild disappointment.",
-      },
-    ],
-  },
-]
+export const NAVBAR_CONTENT: Navbar = {
+  items: [
+    {
+      name: "Expandable nav item",
+      url: "/item-one",
+      items: [
+        {
+          name: "PA's network one",
+          url: "/item-one/pa-network-one",
+          description: "Click here and brace yourself for mild disappointment.",
+        },
+        {
+          name: "PA's network two",
+          url: "/item-one/pa-network-two",
+          description: "Click here and brace yourself for mild disappointment.",
+        },
+        {
+          name: "PA's network three",
+          url: "/item-one/pa-network-three",
+        },
+        {
+          name: "PA's network four",
+          url: "/item-one/pa-network-four",
+          description:
+            "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+        },
+        {
+          name: "PA's network five",
+          url: "/item-one/pa-network-five",
+          description:
+            "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+        },
+        {
+          name: "PA's network six",
+          url: "/item-one/pa-network-six",
+          description: "Click here and brace yourself for mild disappointment.",
+        },
+      ],
+    },
+  ],
+}
+
+export const SEARCH_PAGE_BLOB: IsomerSchema = {
+  page: { title: "Search", description: "Search results" },
+  layout: "search",
+  content: [],
+  version: "0.1.0",
+}
 
 const FOOTER_ITEMS = [
   {

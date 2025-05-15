@@ -43,7 +43,7 @@ export default function HeroEditorDrawer(): JSX.Element {
   } = useEditorDrawerContext()
   const toast = useToast()
 
-  const subSchema = getComponentSchema("hero")
+  const subSchema = getComponentSchema({ component: "hero" })
   const validateFn = ajv.compile<IsomerComponent>(subSchema)
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
@@ -204,7 +204,7 @@ export default function HeroEditorDrawer(): JSX.Element {
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
             <FormBuilder<IsomerComponent>
-              schema={getComponentSchema("hero")}
+              schema={subSchema}
               validateFn={validateFn}
               data={previewPageState.content[0]}
               handleChange={handleChange}
