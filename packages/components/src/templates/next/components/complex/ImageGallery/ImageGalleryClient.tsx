@@ -100,8 +100,6 @@ export const ImageGalleryClient = ({
 
   const navigateToImageByDirection = useCallback(
     (direction: "prev" | "next") => {
-      if (isPending) return
-
       startTransition(() => {
         setCurrentIndex((current) =>
           direction === "next"
@@ -114,12 +112,10 @@ export const ImageGalleryClient = ({
         preloadNextImage(2) // the new currentIndex + 1
       }
     },
-    [images.length, isPending, preloadNextImage, startTransition],
+    [images.length, preloadNextImage, startTransition],
   )
 
   const navigateToImageByIndex = (index: number) => {
-    if (isPending) return
-
     startTransition(() => {
       setCurrentIndex(index)
     })
