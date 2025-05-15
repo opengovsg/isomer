@@ -1,5 +1,5 @@
 import type { IsomerSchema } from "~/types"
-import { DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
+import { DYNAMIC_DATA_BANNER_TYPE, IMAGE_GALLERY_TYPE } from "~/interfaces"
 
 export const doesComponentHaveImage = ({
   component,
@@ -26,6 +26,7 @@ export const doesComponentHaveImage = ({
     case "iframe":
     case "map":
     case "video":
+    case IMAGE_GALLERY_TYPE:
     case "childrenpages":
       return true
     case "infocards":

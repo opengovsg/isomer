@@ -37,6 +37,11 @@ export {
   type DynamicDataBannerProps,
 } from "./DynamicDataBanner"
 export {
+  IMAGE_GALLERY_TYPE,
+  ImageGallerySchema,
+  type ImageGalleryProps,
+} from "./ImageGallery"
+export {
   ChildrenPagesSchema as ChildrenPagesSchema,
   DEFAULT_CHILDREN_PAGES_BLOCK,
   CHILDREN_PAGES_LAYOUT_OPTIONS,
