@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useRef, useState, useTransition } from "react"
 
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
@@ -9,7 +9,7 @@ import { ImageClient } from "../Image/ImageClient"
 import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./constants"
 import { getEndingPreviewIndices, getPreviewIndices } from "./utils"
 
-const TRANSITION_DURATION = 150
+const TRANSITION_DURATION = 2000
 
 const createImagePreviewStyles = tv({
   slots: {
@@ -53,7 +53,7 @@ export const ImageGalleryClient = ({
   shouldLazyLoad,
 }: ImageGalleryClientProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   const isDesktop = useBreakpoint("lg")
   const maxPreviewImages = useMemo(() => (isDesktop ? 5 : 3), [isDesktop])
@@ -102,27 +102,29 @@ export const ImageGalleryClient = ({
 
   const navigateToImageByDirection = useCallback(
     (direction: "prev" | "next") => {
-      if (isTransitioning) return
-      setIsTransitioning(true)
-      setCurrentIndex((current) =>
-        direction === "next"
-          ? (current + 1) % images.length
-          : (current - 1 + images.length) % images.length,
-      )
-      setTimeout(() => setIsTransitioning(false), TRANSITION_DURATION)
+      if (isPending) return
+
+      startTransition(() => {
+        setCurrentIndex((current) =>
+          direction === "next"
+            ? (current + 1) % images.length
+            : (current - 1 + images.length) % images.length,
+        )
+      })
 
       if (direction === "next") {
         preloadNextImage(2) // the new currentIndex + 1
       }
     },
-    [images.length, isTransitioning, preloadNextImage],
+    [images.length, isPending, preloadNextImage, startTransition],
   )
 
   const navigateToImageByIndex = (index: number) => {
-    if (isTransitioning) return
-    setIsTransitioning(true)
-    setCurrentIndex(index)
-    setTimeout(() => setIsTransitioning(false), TRANSITION_DURATION)
+    if (isPending) return
+
+    startTransition(() => {
+      setCurrentIndex(index)
+    })
   }
 
   const handlePreviewButtonEngagement = () => {
@@ -225,7 +227,7 @@ export const ImageGalleryClient = ({
         <button
           className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           aria-label="Previous image"
-          disabled={isTransitioning}
+          disabled={isPending}
           onMouseEnter={() => handlePreviewButtonEngagement()}
           onTouchStart={() => handlePreviewButtonEngagement()}
           onFocus={() => handlePreviewButtonEngagement()}
@@ -237,7 +239,7 @@ export const ImageGalleryClient = ({
         <button
           className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           aria-label="Next image"
-          disabled={isTransitioning}
+          disabled={isPending}
           onTouchStart={() => preloadNextImage()}
           onMouseEnter={() => preloadNextImage()}
           onFocus={() => preloadNextImage()}
@@ -268,7 +270,7 @@ export const ImageGalleryClient = ({
               onClick={() => navigateToImageByIndex(index)}
               aria-label={`View image ${index + 1} of ${images.length}`}
               aria-current={index === currentIndex}
-              disabled={currentIndex === index || isTransitioning}
+              disabled={currentIndex === index || isPending}
               onMouseEnter={() => handlePreviewImageEngagement(index)}
               onTouchStart={() => handlePreviewImageEngagement(index)}
               onFocus={() => handlePreviewImageEngagement(index)}
