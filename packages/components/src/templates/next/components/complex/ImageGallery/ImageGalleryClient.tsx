@@ -6,7 +6,7 @@ import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
 import { ImageClient } from "../Image/ImageClient"
-import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./constants"
+import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./assets"
 import { getEndingPreviewIndices, getPreviewIndices } from "./utils"
 
 const createImagePreviewStyles = tv({
