@@ -4,6 +4,20 @@ type GenerateAriaLabelProps = Pick<LinkProps, "isExternal" | "label"> & {
   textContent?: string
 }
 
+const patchUrlTextContent = (textContent: string): string => {
+  if (!textContent) return textContent
+
+  // Check if the URL already has any protocol (not just http)
+  if (!/^[a-z]+:\/\//i.test(textContent)) {
+    // Only prepend https:// if the string looks URL-like
+    if (textContent.includes(".") || textContent.startsWith("www.")) {
+      return `https://${textContent.startsWith("www.") ? "" : "www."}${textContent}`
+    }
+  }
+
+  return textContent
+}
+
 const getDomainFromUrl = (url: string) => {
   if (!url) return ""
 
@@ -31,11 +45,13 @@ export const generateAriaLabel = ({
 
   if (!textContent) return undefined
 
-  if (isUrl(textContent) && isExternal) {
-    return `Link to ${getDomainFromUrl(textContent)} (opens in new tab)`
+  const patchedTextContent = patchUrlTextContent(textContent)
+
+  if (isUrl(patchedTextContent) && isExternal) {
+    return `Link to ${getDomainFromUrl(patchedTextContent)} (opens in new tab)`
   }
 
-  if (isUrl(textContent)) {
-    return `Link to ${getDomainFromUrl(textContent)}`
+  if (isUrl(patchedTextContent)) {
+    return `Link to ${getDomainFromUrl(patchedTextContent)}`
   }
 }
