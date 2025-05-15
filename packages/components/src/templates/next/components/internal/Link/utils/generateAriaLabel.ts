@@ -4,15 +4,29 @@ type GenerateAriaLabelProps = Pick<LinkProps, "isExternal" | "label"> & {
   textContent?: string
 }
 
+const doesNotHaveProtocol = (textContent: string) => {
+  return (
+    !textContent.startsWith("http://") &&
+    !textContent.startsWith("https://") &&
+    !textContent.includes("://")
+  )
+}
+
+// The only common and known URL pattern is:
+// 1. subdomain with www.
+// 2. domain with .com
+// While there's no guarantee that this text is a website, it's a good guess
+// This is unlikely other patterns like "isomer.xyz"
+const doesLookLikeUrl = (textContent: string) => {
+  return textContent.startsWith("www.") || textContent.endsWith(".com")
+}
+
 const patchUrlTextContent = (textContent: string): string => {
   if (!textContent) return textContent
 
-  // Check if the URL already has any protocol (not just http)
-  if (!/^[a-z]+:\/\//i.test(textContent)) {
-    // Only prepend https:// if the string looks URL-like
-    if (textContent.includes(".") || textContent.startsWith("www.")) {
-      return `https://${textContent.startsWith("www.") ? "" : "www."}${textContent}`
-    }
+  // Only prepend https:// if the string looks URL-like
+  if (doesNotHaveProtocol(textContent) && doesLookLikeUrl(textContent)) {
+    return `https://${textContent}` // Adding HTTPS as this is only used for checks against new URL() method
   }
 
   return textContent

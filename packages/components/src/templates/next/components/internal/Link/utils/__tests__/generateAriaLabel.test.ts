@@ -71,4 +71,25 @@ describe("generateAriaLabel", () => {
     })
     expect(result).toBe("Link to www.example.com")
   })
+
+  it("should return the label if the href is a half-url (no subdomain but ends with .com)", () => {
+    const result = generateAriaLabel({
+      textContent: "example.com",
+    })
+    expect(result).toBe("Link to example.com")
+  })
+
+  it("should return undefined if the href is a half-url (no subdomain but ends with non-.com)", () => {
+    const result = generateAriaLabel({
+      textContent: "example.xyz",
+    })
+    expect(result).toBeUndefined()
+  })
+
+  it("should return the label if the href is a half-url (starts with www. but ends with non-.com)", () => {
+    const result = generateAriaLabel({
+      textContent: "www.example.xyz",
+    })
+    expect(result).toBe("Link to www.example.xyz")
+  })
 })
