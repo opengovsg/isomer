@@ -22,6 +22,7 @@ export const ImageSrcSchema = generateImageSrcSchema({})
 
 // Note: ajv pattern does not support the use of patternFlag like "i" for case-insensitive
 // Thus, we manually add the case-insensitive flag to the regex pattern
+// Refer to "/altTextRegexPattern.test.ts" for the explanation of the regex pattern
 export const ALT_TEXT_REGEX_PATTERN =
   "^(?=.*\\S)(?!(?:[Ii][Mm][Aa][Gg][Ee]|[Pp][Ii][Cc][Tt][Uu][Rr][Ee]|[Pp][Hh][Oo][Tt][Oo]|[Ll][Oo][Gg][Oo]|[Ss][Cc][Rr][Ee][Ee][Nn][Ss][Hh][Oo][Tt]|[Gg][Rr][Aa][Pp][Hh]|[Cc][Hh][Aa][Rr][Tt]|[Dd][Ii][Aa][Gg][Rr][Aa][Mm]|[Ii][Cc][Oo][Nn])$).*$"
 
