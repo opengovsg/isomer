@@ -9,8 +9,6 @@ import { ImageClient } from "../Image/ImageClient"
 import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./constants"
 import { getEndingPreviewIndices, getPreviewIndices } from "./utils"
 
-const TRANSITION_DURATION = 2000
-
 const createImagePreviewStyles = tv({
   slots: {
     container:
@@ -190,7 +188,7 @@ export const ImageGalleryClient = ({
               shouldPreload && (
                 <div
                   key={image.src + index} // in case of same src, use index as key
-                  className={`absolute inset-0 h-full w-full transition-opacity duration-${TRANSITION_DURATION} ease-out ${
+                  className={`absolute inset-0 h-full w-full transition-opacity duration-150 ease-out ${
                     // z-index ensures the current image always appears on top,
                     // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
                     isCurrentImage ? "z-10 opacity-100" : "z-0 opacity-0"
