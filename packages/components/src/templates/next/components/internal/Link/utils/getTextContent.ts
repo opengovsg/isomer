@@ -1,7 +1,7 @@
 import React from "react"
 
 export const getReactNodeText = (node: React.ReactNode): string => {
-  let text = ""
+  const text: string[] = []
 
   React.Children.forEach(node, (child) => {
     if (child === null) return
@@ -9,13 +9,13 @@ export const getReactNodeText = (node: React.ReactNode): string => {
     if (typeof child === "undefined") return
 
     if (typeof child === "string" || typeof child === "number") {
-      text += child.toString()
+      text.push(child.toString())
     } else if (React.isValidElement(child)) {
       if (child.props && "children" in child.props) {
-        text += getReactNodeText(child.props.children)
+        text.push(getReactNodeText(child.props.children))
       }
     }
   })
 
-  return text
+  return text.join(" ")
 }
