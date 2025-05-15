@@ -59,6 +59,11 @@ export const generateAriaLabel = ({
 
   if (!textContent) return undefined
 
+  const MAILTO_TEXT = "mailto:"
+  if (textContent.startsWith(MAILTO_TEXT)) {
+    return `Send an email to ${textContent.slice(MAILTO_TEXT.length)}`
+  }
+
   const patchedTextContent = patchUrlTextContent(textContent)
 
   if (isUrl(patchedTextContent) && isExternal) {
