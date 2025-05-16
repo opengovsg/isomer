@@ -3,10 +3,10 @@ import type { ValidateFunction } from "ajv"
 import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"
-import Ajv from "ajv"
 import { groupBy } from "lodash"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { ajv } from "~/utils/ajv"
 import { useBuilderErrors } from "./ErrorProvider"
 import {
   JsonFormsAllOfControl,
@@ -109,12 +109,6 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsCategoryControl,
   },
 ]
-const ajv = new Ajv({
-  useDefaults: true,
-  allErrors: true,
-  strict: false,
-  logger: false,
-})
 
 interface FormBuilderProps<T> {
   schema: TSchema
