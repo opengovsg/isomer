@@ -135,7 +135,7 @@
     "pg": "^8.15.1",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
-    "prisma": "6.8.0",
+    "prisma": "6.8.1",
     "prisma-json-types-generator": "^3.0.4",
     "prisma-kysely": "^1.8.0",
     "rate-limiter-flexible": "^5.0.3",
