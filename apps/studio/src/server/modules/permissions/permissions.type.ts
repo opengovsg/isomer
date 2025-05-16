@@ -28,3 +28,7 @@ export interface PermissionsProps {
   siteId: number
   resourceId?: string | null
 }
+
+export interface UserPermissionsProps extends PermissionsProps {
+  action: CrudResourceActions
+}
