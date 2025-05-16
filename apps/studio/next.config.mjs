@@ -134,6 +134,7 @@ const config = {
   publicRuntimeConfig: {
     NODE_ENV: env.NODE_ENV,
   },
+  transpilePackages: ["@sinclair/typebox"],
   /** We run eslint as a separate task in CI */
   eslint: { ignoreDuringBuilds: true },
   images: {

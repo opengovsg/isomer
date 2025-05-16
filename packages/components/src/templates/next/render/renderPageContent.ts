@@ -12,6 +12,7 @@ interface RenderPageContentParams {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
   LinkComponent: LinkComponentType
+  permalink: string
 }
 
 export const renderPageContent = ({

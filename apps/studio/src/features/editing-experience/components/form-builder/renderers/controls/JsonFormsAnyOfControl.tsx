@@ -42,14 +42,22 @@ export function JsonFormsAnyOfControl({
     uischemas,
   )
 
-  const options = anyOfRenderInfos.map((anyOfRenderInfo) => {
-    const option = String(anyOfRenderInfo.label || anyOfRenderInfo.schema.const)
+  const options = anyOfRenderInfos
+    .map((anyOfRenderInfo) => {
+      if (anyOfRenderInfo.schema.format === "hidden") {
+        return null
+      }
 
-    return {
-      label: option.charAt(0).toUpperCase() + option.slice(1),
-      value: option,
-    }
-  })
+      const option = String(
+        anyOfRenderInfo.label || anyOfRenderInfo.schema.const,
+      )
+
+      return {
+        label: option.charAt(0).toUpperCase() + option.slice(1),
+        value: option,
+      }
+    })
+    .filter((option) => option !== null)
 
   const onChange = (value: string) => {
     setVariant(value)

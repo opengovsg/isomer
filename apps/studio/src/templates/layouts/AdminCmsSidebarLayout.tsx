@@ -14,6 +14,7 @@ import { DirectorySidebar } from "~/features/dashboard/components/DirectorySideb
 import { useMe } from "~/features/me/api"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type GetLayout } from "~/lib/types"
 
 export const AdminCmsSearchableLayout: GetLayout = (page) => {
@@ -43,7 +44,9 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
   const { siteId } = useQueryParse(siteSchema)
 
   const { logout } = useMe()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdmin = useIsUserIsomerAdmin({
+    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  })
 
   const pageNavItems: CmsSidebarItem[] = [
     {
