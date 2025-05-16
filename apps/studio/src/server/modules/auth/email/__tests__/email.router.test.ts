@@ -68,28 +68,6 @@ describe("auth.email", () => {
       })
       expect(result).toEqual(expectedReturn)
     })
-
-    it("should throw 401 if user is deleted", async () => {
-      // Arrange
-      await setupUser({
-        name: "Deleted",
-        userId: "deleted123",
-        email: TEST_VALID_EMAIL,
-        phone: "123",
-        isDeleted: true,
-      })
-
-      // Act
-      const result = caller.login({ email: TEST_VALID_EMAIL })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Email address is not whitelisted",
-        }),
-      )
-    })
   })
 
   describe("verifyOtp", () => {

@@ -17,7 +17,6 @@ export const defaultUser: User = {
   singpassUuid: MOCK_TEST_UUID,
   createdAt: MOCK_STORY_DATE,
   updatedAt: MOCK_STORY_DATE,
-  deletedAt: null,
   lastLoginAt: null,
 }
 

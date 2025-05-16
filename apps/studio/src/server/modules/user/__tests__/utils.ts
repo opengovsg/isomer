@@ -17,7 +17,7 @@ export const setupIsomerAdmins = async ({
   hasLoggedIn?: boolean
 }) => {
   for (const email of ISOMER_ADMINS_AND_MIGRATORS_EMAILS) {
-    const user = await setupUser({ email, isDeleted: false, hasLoggedIn })
+    const user = await setupUser({ email, hasLoggedIn })
     await setupAdminPermissions({ userId: user.id, siteId })
   }
 }
