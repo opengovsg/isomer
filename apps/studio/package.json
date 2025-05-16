@@ -51,9 +51,9 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-codebuild": "^3.787.0",
-    "@aws-sdk/client-s3": "3.787.0",
-    "@aws-sdk/s3-request-presigner": "3.787.0",
+    "@aws-sdk/client-codebuild": "^3.811.0",
+    "@aws-sdk/client-s3": "3.810.0",
+    "@aws-sdk/s3-request-presigner": "3.810.0",
     "@casl/ability": "^6.7.1",
     "@casl/react": "^5.0.0",
     "@chakra-ui/anatomy": "^2.3.4",
