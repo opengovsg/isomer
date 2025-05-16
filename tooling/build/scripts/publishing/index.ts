@@ -5,12 +5,9 @@ import { ResourceType } from "~generated/generatedEnums"
 import * as dotenv from "dotenv"
 import { Client } from "pg"
 
+import type { PageResourceType } from "./constants"
 import type { PageOnlySitemapEntry, Resource, SitemapEntry } from "./types"
-import {
-  FOLDER_RESOURCE_TYPES,
-  PAGE_RESOURCE_TYPES,
-  PageResourceType,
-} from "./constants"
+import { FOLDER_RESOURCE_TYPES, PAGE_RESOURCE_TYPES } from "./constants"
 import {
   GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
   GET_CONFIG,
@@ -106,7 +103,7 @@ async function main() {
           title: resource.title,
         }
 
-        await writeContentToFile(
+        writeContentToFile(
           resource.fullPermalink,
           resource.content,
           resource.parentId,
@@ -157,7 +154,7 @@ async function main() {
 
     const rootPage = sitemapEntries.find(
       (entry) => entry.type === ResourceType.RootPage,
-    ) || {
+    ) ?? {
       id: "0",
       title: "Home",
       permalink: "/",
@@ -428,7 +425,7 @@ async function getAllResourcesWithFullPermalinks(
   }
 }
 
-async function writeContentToFile(
+function writeContentToFile(
   fullPermalink: string | undefined,
   content: any,
   parentId: number | null,
@@ -481,13 +478,13 @@ async function fetchAndWriteSiteData(client: Client) {
     // Fetch navbar.json
     const navbarResult = await client.query(GET_NAVBAR, [SITE_ID])
     if (navbarResult.rows.length > 0) {
-      await writeJsonToFile(navbarResult.rows[0].content, "navbar.json")
+      writeJsonToFile(navbarResult.rows[0].content, "navbar.json")
     }
 
     // Fetch footer.json
     const footerResult = await client.query(GET_FOOTER, [SITE_ID])
     if (footerResult.rows.length > 0) {
-      await writeJsonToFile(footerResult.rows[0].content, "footer.json")
+      writeJsonToFile(footerResult.rows[0].content, "footer.json")
     }
 
     // Fetch config.json
@@ -500,14 +497,14 @@ async function fetchAndWriteSiteData(client: Client) {
         ...configResult.rows[0].theme,
       }
 
-      await writeJsonToFile(config, "config.json")
+      writeJsonToFile(config, "config.json")
     }
   } catch (err) {
     console.error("Error fetching site data:", err)
   }
 }
 
-async function writeJsonToFile(content: any, filename: string) {
+function writeJsonToFile(content: any, filename: string) {
   const directoryPath = path.join(__dirname, "data")
 
   try {

@@ -5,9 +5,10 @@ import { GenericContainer, Wait } from "testcontainers"
 import { z } from "zod"
 
 type ContainerType = "database" | "mockpass"
-export const CONTAINER_CONFIGURATIONS: {
-  [key in ContainerType]: ContainerConfiguration
-} = {
+export const CONTAINER_CONFIGURATIONS: Record<
+  ContainerType,
+  ContainerConfiguration
+> = {
   database: {
     name: "database",
     image: "postgres:15-alpine",
