@@ -17,7 +17,11 @@ export const BlockInfopic = ({
   LinkComponent,
   variant,
 }: InfopicProps) => {
-  const compoundStyles = infopicStyles({ isTextOnRight, variant })
+  const compoundStyles = infopicStyles({
+    isTextOnRight,
+    variant,
+    colorScheme: "default",
+  })
   const hasLinkButton = !!buttonLabel && !!buttonUrl
 
   return (
