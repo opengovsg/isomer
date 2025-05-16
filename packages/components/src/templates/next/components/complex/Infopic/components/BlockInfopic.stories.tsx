@@ -3,10 +3,10 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { InfopicProps } from "~/interfaces"
-import { Infopic } from "./Infopic"
+import { Infopic } from "../Infopic"
 
 const meta: Meta<InfopicProps> = {
-  title: "Next/Components/Infopic",
+  title: "Next/Components/Infopic/Block",
   component: Infopic,
   argTypes: {},
   parameters: {
