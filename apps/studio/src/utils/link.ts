@@ -1,5 +1,3 @@
-import { REFERENCE_LINK_REGEX } from "~/features/editing-experience/constants"
-
 interface GetReferenceLinkParams {
   siteId: string
   resourceId: string
@@ -16,14 +14,4 @@ export const getReferenceLink = ({
   }
 
   return `[resource:${siteId}:${resourceId}]`
-}
-
-export const getResourceIdFromReferenceLink = (
-  referenceLink: string,
-): string => {
-  const match = REFERENCE_LINK_REGEX.exec(referenceLink)
-  if (!match) {
-    return ""
-  }
-  return match[2] || ""
 }

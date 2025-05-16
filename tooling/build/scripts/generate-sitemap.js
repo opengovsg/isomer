@@ -90,6 +90,16 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     tags: schemaData.page.tags,
   }
 
+  if (schemaData.layout === "collection") {
+    const collectionProps = schemaData.page.collectionPagePageProps
+    if (collectionProps) {
+      siteMapEntry.collectionPagePageProps = {
+        defaultSortBy: collectionProps.defaultSortBy,
+        defaultSortDirection: collectionProps.defaultSortDirection,
+      }
+    }
+  }
+
   if (schemaData.layout === "file") {
     const refFilePath = path.join(__dirname, "../public", schemaData.page.ref)
     const refFileStats = await getDirectoryItemStats(refFilePath)

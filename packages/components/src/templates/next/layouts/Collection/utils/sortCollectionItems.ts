@@ -1,5 +1,9 @@
 import type { GetCollectionItemsProps } from "./getCollectionItems"
 import type { AllCardProps } from "~/interfaces"
+import {
+  COLLECTION_PAGE_DEFAULT_SORT_BY,
+  COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+} from "~/types"
 
 export type SortableCardProps = AllCardProps & {
   rawDate?: Date
@@ -118,8 +122,8 @@ const sortCollectionItemsByCategory = ({
 
 export const sortCollectionItems = ({
   items,
-  sortBy = "date",
-  sortDirection = "desc",
+  sortBy = COLLECTION_PAGE_DEFAULT_SORT_BY,
+  sortDirection = COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
 }: SortCollectionItemsProps): AllCardProps[] => {
   switch (sortBy) {
     case "date":

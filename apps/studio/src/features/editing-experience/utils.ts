@@ -1,4 +1,4 @@
-import { REFERENCE_LINK_REGEX } from "./constants"
+import { REFERENCE_LINK_REGEX } from "@opengovsg/isomer-components"
 
 export const dataAttr = (value: unknown) => (!!value ? true : undefined)
 
