@@ -11,6 +11,11 @@ export interface InvitationEmailTemplateData extends BaseEmailTemplateData {
   isSingpassEnabled?: boolean
 }
 
+export interface PublishingNotificationEmailTemplateData
+  extends BaseEmailTemplateData {
+  siteName: string
+}
+
 export interface EmailTemplate {
   subject: string
   body: string
