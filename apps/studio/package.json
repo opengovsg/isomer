@@ -156,10 +156,10 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@babel/plugin-transform-class-properties": "^7.25.9",
-    "@babel/plugin-transform-object-rest-spread": "^7.25.9",
-    "@babel/preset-env": "^7.26.9",
-    "@babel/preset-typescript": "^7.27.0",
+    "@babel/plugin-transform-class-properties": "^7.27.1",
+    "@babel/plugin-transform-object-rest-spread": "^7.27.2",
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-typescript": "^7.27.1",
     "@chakra-ui/cli": "^2.4.1",
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
