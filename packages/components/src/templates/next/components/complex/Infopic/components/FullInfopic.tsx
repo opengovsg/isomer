@@ -1,6 +1,5 @@
 import { getReferenceLinkHref } from "~/utils"
 import { LinkButton } from "../../../internal/LinkButton"
-import { ImageClient } from "../../Image"
 import { infopicStyles } from "../common"
 import { InfopicProps } from "../types"
 
@@ -25,34 +24,35 @@ export const FullInfopic = ({
 
   return (
     <section
-      id={id}
-      className={compoundStyles.container()}
       style={{
         backgroundImage: `url('${imageSrc}')`,
+        objectFit: "cover",
       }}
+      id={id}
     >
-      {/* set the outer opacity here */}
       <div className={compoundStyles.overlay()}>
-        {/* tint here */}
-        <div className={compoundStyles.content()}>
-          <h2 className={compoundStyles.title()}>{title}</h2>
-          <p className={compoundStyles.description()}>{description}</p>
-          {hasLinkButton && (
-            <div className={compoundStyles.button()}>
-              <LinkButton
-                LinkComponent={LinkComponent}
-                href={getReferenceLinkHref(
-                  buttonUrl,
-                  site.siteMap,
-                  site.assetsBaseUrl,
-                )}
-                isWithFocusVisibleHighlight
-                colorScheme="inverse"
-              >
-                {buttonLabel}
-              </LinkButton>
-            </div>
-          )}
+        <div className={compoundStyles.container()}>
+          <div className={compoundStyles.content()}>
+            <h2 className={compoundStyles.title()}>{title}</h2>
+            <p className={compoundStyles.description()}>{description}</p>
+            {hasLinkButton && (
+              <div className={compoundStyles.button()}>
+                <LinkButton
+                  LinkComponent={LinkComponent}
+                  href={getReferenceLinkHref(
+                    buttonUrl,
+                    site.siteMap,
+                    site.assetsBaseUrl,
+                  )}
+                  isWithFocusVisibleHighlight
+                  colorScheme="inverse"
+                >
+                  {buttonLabel}
+                </LinkButton>
+              </div>
+            )}
+            <div className=""></div>
+          </div>
         </div>
       </div>
     </section>

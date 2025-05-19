@@ -43,14 +43,12 @@ export const infopicStyles = tv({
     },
     variant: {
       [InfopicVariants.Block.value]: {
-        container: "",
-        image: "",
         imageContainer: "[grid-area:img]",
         content: "md:max-w-[760px] lg:max-w-[620px]",
       },
       [InfopicVariants.Full.value]: {
-        overlay: "bg-base-canvas-inverse-overlay/65 [grid-area:1/1/-1/-1]",
-        content: "bg-brand-canvas-inverse/35 w-full bg-blend-overlay",
+        content: "md:max-w-[760px] lg:max-w-[620px]",
+        overlay: "bg-brand-canvas-inverse/35 bg-base-canvas-inverse-overlay/65",
       },
     },
   },

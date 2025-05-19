@@ -5,10 +5,10 @@ import { FullInfopic } from "./components/FullInfopic"
 import { InfopicProps } from "./types"
 
 export const Infopic = ({
-  // NOTE: We need to set a default value here for back-compat
-  variant = "block",
   imageSrc,
   site,
+  // NOTE: We need to set a default value here for back-compat
+  variant = "block",
   ...rest
 }: InfopicProps): JSX.Element => {
   const imgSrc =
