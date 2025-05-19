@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@eslint/compat": "^1.2.8",
+    "@eslint/compat": "^1.1.0",
     "@eslint/js": "^9.10.0",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
@@ -27,7 +27,7 @@
     "eslint-plugin-react-hooks": "beta",
     "prettier": "^3.3.3",
     "typescript": "5.6.2",
-    "typescript-eslint": "^8.15.0"
+    "typescript-eslint": "^8.6.0"
   },
   "prettier": "@isomer/prettier-config",
   "devDependencies": {

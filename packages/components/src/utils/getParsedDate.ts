@@ -32,7 +32,7 @@ export const getParsedDate = (dateString: string) => {
           }
           return parse(offsetDate, format, new Date())
         }
-      } catch {
+      } catch (e) {
         return new Date()
       }
 

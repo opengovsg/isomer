@@ -85,7 +85,7 @@ export const getTextAsHtml = ({
       previousNodeLinkMark = currentNodeLinkMark
 
       // Sort such that the link mark is the first item
-      node.marks.sort((a, _b) => {
+      node.marks.sort((a, b) => {
         if (a.type === "link") {
           return -1
         }
