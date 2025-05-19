@@ -4,13 +4,7 @@ import type { Resource as RawResource } from "../database"
 
 type Resource = Pick<RawResource, "parentId">
 
-export const CRUD_ACTIONS = [
-  "create",
-  "read",
-  "update",
-  "delete",
-  "publish",
-] as const
+export const CRUD_ACTIONS = ["create", "read", "update", "delete"] as const
 type AllowedResourceActions = (typeof ALL_ACTIONS)[number]
 export type CrudResourceActions = (typeof CRUD_ACTIONS)[number]
 type Subjects = "Resource" | Resource
