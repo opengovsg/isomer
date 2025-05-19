@@ -298,6 +298,41 @@ const generateArgs = ({
         buttonUrl: "/",
       },
       {
+        type: "infopic",
+        title:
+          "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+        description:
+          "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+        imageAlt: "alt",
+        imageSrc: "https://placehold.co/200x200",
+        buttonLabel: "Primary CTA",
+        buttonUrl: "[resource:1:1]",
+      },
+      {
+        variant: "full",
+        type: "infopic",
+        title:
+          "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+        description:
+          "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+        imageAlt: "alt",
+        imageSrc: "https://placehold.co/200x200",
+        buttonLabel: "Primary CTA",
+        buttonUrl: "/",
+      },
+      {
+        variant: "full",
+        type: "infopic",
+        title:
+          "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+        description:
+          "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+        imageAlt: "alt",
+        imageSrc: "https://placehold.co/200x200",
+        buttonLabel: "Primary CTA",
+        buttonUrl: "/",
+      },
+      {
         type: "infocards",
         maxColumns: "3",
         title: "Section title ministry highlights",
