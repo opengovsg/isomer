@@ -136,5 +136,8 @@
   ],
   "msw": {
     "workerDirectory": "public"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.41.0"
   }
 }

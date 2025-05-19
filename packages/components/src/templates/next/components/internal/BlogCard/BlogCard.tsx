@@ -54,7 +54,7 @@ export const BlogCard = ({
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
-        {tags && tags.length > 0 && (
+        {tags.length > 0 && (
           <div className="-mt-1 flex flex-col gap-2">
             {tags.flatMap(({ category, selected: labels }) => {
               return (
