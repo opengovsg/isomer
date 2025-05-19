@@ -52,16 +52,18 @@ export const InfopicSchema = Type.Object(
         pattern: LINK_HREF_PATTERN,
       }),
     ),
-    variant: Type.Union(
-      [
-        Type.Literal(InfopicVariants.Block.value, {
-          title: InfopicVariants.Block.label,
-        }),
-        Type.Literal(InfopicVariants.Full.value, {
-          title: InfopicVariants.Full.label,
-        }),
-      ],
-      { title: "Infopic style", default: InfopicVariants.Block.value },
+    variant: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal(InfopicVariants.Block.value, {
+            title: InfopicVariants.Block.label,
+          }),
+          Type.Literal(InfopicVariants.Full.value, {
+            title: InfopicVariants.Full.label,
+          }),
+        ],
+        { title: "Infopic style", default: InfopicVariants.Block.value },
+      ),
     ),
     imageSrc: ImageSrcSchema,
     imageAlt: Type.Optional(AltTextSchema),
