@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Set npm config to use engine-strict
+# This is to prevent the build from using a different node version in CodeBuild
+npm config set engine-strict true
+export npm_config_user_agent="npm/10.2.3"
+
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
