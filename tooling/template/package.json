@@ -2,7 +2,6 @@
   "name": "isomer-base-template",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "npm@10.2.3",
   "scripts": {
     "dev": "PORT=3001 next",
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && npm run build",

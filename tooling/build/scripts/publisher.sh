@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Set npm config to use engine-strict
-# This is to prevent the build from using a different node version in CodeBuild
-npm config set engine-strict true
+# Explicitly disable yarn using corepack
+# This is to prevent codebuild setting from overriding and using yarn to install dependencies
+corepack disable yarn
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
