@@ -25,7 +25,8 @@ interface LoggerOptions {
 export class PinoLogger {
   private static instance?: pino.Logger<string>
   private static getInstance() {
-    PinoLogger.instance ??= PinoLogger.createBaseLogger()
+    if (!PinoLogger.instance)
+      PinoLogger.instance = PinoLogger.createBaseLogger()
     return PinoLogger.instance
   }
   private static createBaseLogger = (): pino.Logger<string> => {

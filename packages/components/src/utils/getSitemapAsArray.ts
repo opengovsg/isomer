@@ -5,7 +5,7 @@ export const getSitemapAsArray = (sitemap: IsomerSitemap) => {
 
   const traverse = (node: IsomerSitemap) => {
     if (node.permalink) {
-      const { children: _, ...rest } = node
+      const { children, ...rest } = node
       result.push(rest)
     }
     if (node.children && node.children.length > 0) {
