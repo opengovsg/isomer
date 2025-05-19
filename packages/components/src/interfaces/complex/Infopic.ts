@@ -62,7 +62,11 @@ export const InfopicSchema = Type.Object(
             title: InfopicVariants.Full.label,
           }),
         ],
-        { title: "Infopic style", default: InfopicVariants.Block.value },
+        {
+          title: "Infopic style",
+          default: InfopicVariants.Block.value,
+          format: "hidden",
+        },
       ),
     ),
     imageSrc: ImageSrcSchema,
