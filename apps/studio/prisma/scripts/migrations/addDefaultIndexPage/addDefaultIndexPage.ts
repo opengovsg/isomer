@@ -26,6 +26,10 @@ export const createDefaultFolderIndexPage = async () => {
       .select(["id", "title", "siteId"])
       .execute()
 
+    if (danglingFolders.length === 0) {
+      return
+    }
+
     const defaultBlobs = danglingFolders.map((folder) => ({
       content: jsonb(createFolderIndexPage(folder.title)),
     }))
@@ -35,6 +39,8 @@ export const createDefaultFolderIndexPage = async () => {
         .insertInto("Blob")
         .values(defaultBlobs)
         .returning("id")
+        // .compile().sql
+        // .explain()
         .execute()
 
       await tx
@@ -65,6 +71,3 @@ export const createDefaultFolderIndexPage = async () => {
     throw error
   }
 }
-
-// Uncomment to run the migration
-// createDefaultFolderIndexPage()
