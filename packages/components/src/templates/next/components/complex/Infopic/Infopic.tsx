@@ -23,8 +23,6 @@ export const Infopic = ({
       return <FullInfopic {...rest} site={site} imageSrc={imgSrc} />
     default:
       const missingVariant: never = variant
-      throw new Error(
-        `Expected all variants to be covered for Infopic, missing: ${missingVariant}`,
-      )
+      return missingVariant
   }
 }

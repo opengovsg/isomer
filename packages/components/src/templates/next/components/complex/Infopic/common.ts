@@ -1,6 +1,5 @@
-import { tv } from "tailwind-variants"
-
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
+import { tv } from "~/lib/tv"
 
 export const infopicStyles = tv({
   slots: {
