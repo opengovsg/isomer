@@ -1,7 +1,8 @@
+import type { InfopicProps } from "../types"
+import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { getReferenceLinkHref } from "~/utils"
 import { LinkButton } from "../../../internal/LinkButton"
 import { infopicStyles } from "../common"
-import { InfopicProps } from "../types"
 
 export const FullInfopic = ({
   id,
@@ -13,11 +14,10 @@ export const FullInfopic = ({
   isTextOnRight,
   site,
   LinkComponent,
-  variant,
-}: InfopicProps) => {
+}: Omit<InfopicProps, "variant">) => {
   const compoundStyles = infopicStyles({
     isTextOnRight,
-    variant,
+    variant: InfopicVariants.Full.value,
     colorScheme: "inverse",
   })
   const hasLinkButton = !!buttonLabel && !!buttonUrl

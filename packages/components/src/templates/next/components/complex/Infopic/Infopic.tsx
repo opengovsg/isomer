@@ -1,14 +1,14 @@
+import type { InfopicProps } from "./types"
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { isExternalUrl } from "~/utils"
 import { BlockInfopic } from "./components/BlockInfopic"
 import { FullInfopic } from "./components/FullInfopic"
-import { InfopicProps } from "./types"
 
 export const Infopic = ({
   imageSrc,
   site,
   // NOTE: We need to set a default value here for back-compat
-  variant = "block",
+  variant = InfopicVariants.Block.value,
   ...rest
 }: InfopicProps): JSX.Element => {
   const imgSrc =
@@ -16,9 +16,15 @@ export const Infopic = ({
       ? imageSrc
       : `${site.assetsBaseUrl}${imageSrc}`
 
-  return variant === InfopicVariants.Block.value ? (
-    <BlockInfopic {...rest} variant={variant} site={site} imageSrc={imgSrc} />
-  ) : (
-    <FullInfopic {...rest} variant={variant} site={site} imageSrc={imgSrc} />
-  )
+  switch (variant) {
+    case InfopicVariants.Block.value:
+      return <BlockInfopic {...rest} site={site} imageSrc={imgSrc} />
+    case InfopicVariants.Full.value:
+      return <FullInfopic {...rest} site={site} imageSrc={imgSrc} />
+    default:
+      const missingVariant: never = variant
+      throw new Error(
+        `Expected all variants to be covered for Infopic, missing: ${missingVariant}`,
+      )
+  }
 }
