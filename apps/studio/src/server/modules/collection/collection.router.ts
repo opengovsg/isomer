@@ -272,7 +272,13 @@ export const collectionRouter = router({
         .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
         .innerJoin("Blob", "Blob.id", "Version.blobId")
         .select(["Blob.content", "Resource.title"])
-        .executeTakeFirstOrThrow()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "Unable to find the requested collection link",
+            }),
+        )
     }),
 
   updateCollectionLink: protectedProcedure
