@@ -8,29 +8,28 @@ export const getTagFilters = (
   // associated set of values as well as the selected value.
   // Hence, we store a map here of the category (eg: Body parts)
   // to the number of occurences of each value (eg: { Brain: 3, Leg: 2})
-  const tagCategories: Record<string, Record<string, number>> = {}
+  const tagCategories: Map<string, Map<string, number>> = new Map();
 
   items.forEach(({ tags }) => {
     if (tags) {
       tags.forEach(({ selected: selectedLabels, category }) => {
+        if (!tagCategories.has(category)) {
+          tagCategories.set(category, new Map());
+        }
+        const categoryMap = tagCategories.get(category)!;
         selectedLabels.forEach((label) => {
-          if (!tagCategories[category]) {
-            tagCategories[category] = {}
+          if (!categoryMap.has(label)) {
+            categoryMap.set(label, 0);
           }
-          if (!tagCategories[category][label]) {
-            tagCategories[category][label] = 0
-          }
-
-          tagCategories[category][label] += 1
-        })
-      })
+          categoryMap.set(label, categoryMap.get(label)! + 1);
+        });
+      });
     }
-  })
+  });
 
-  return Object.entries(tagCategories)
-    .reduce((acc: Filter[], curValue) => {
-      const [category, values] = curValue
-      const items: FilterItem[] = Object.entries(values)
+  return Array.from(tagCategories.entries())
+    .reduce((acc: Filter[], [category, values]) => {
+      const items: FilterItem[] = Array.from(values.entries())
         .map(([label, count]) => ({
           label,
           count,
@@ -38,7 +37,7 @@ export const getTagFilters = (
         }))
         .sort((a, b) =>
           a.label.localeCompare(b.label, undefined, { numeric: true }),
-        )
+        );
 
       const filters: Filter[] = [
         ...acc,
@@ -47,11 +46,11 @@ export const getTagFilters = (
           id: category,
           label: category,
         },
-      ]
+      ];
 
-      return filters
+      return filters;
     }, [])
     .sort((a, b) =>
       a.label.localeCompare(b.label, undefined, { numeric: true }),
-    )
+    );
 }
