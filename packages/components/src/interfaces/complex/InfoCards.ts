@@ -13,6 +13,7 @@ import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
 export const CARDS_WITH_IMAGES = "cardsWithImages"
+export const CARDS_WITH_FULL_IMAGES = "cardsWithFullImages"
 
 const IMAGE_FIT = {
   Cover: "cover",
@@ -128,7 +129,15 @@ const InfoCardsBaseSchema = Type.Object({
 
 const InfoCardsWithImageSchema = Type.Object(
   {
-    variant: Type.Literal(CARDS_WITH_IMAGES, { default: CARDS_WITH_IMAGES }),
+    variant: Type.Union(
+      [
+        Type.Literal(CARDS_WITH_FULL_IMAGES, {
+          default: CARDS_WITH_FULL_IMAGES,
+        }),
+        Type.Literal(CARDS_WITH_IMAGES, { default: CARDS_WITH_IMAGES }),
+      ],
+      { format: "hidden", default: CARDS_WITH_IMAGES },
+    ),
     cards: Type.Array(SingleCardWithImageSchema, {
       title: "Cards",
       minItems: 1,
