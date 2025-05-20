@@ -249,7 +249,13 @@ export const collectionRouter = router({
     }),
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
-    .query(async ({ input: { linkId, siteId } }) => {
+    .query(async ({ ctx, input: { linkId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
       const baseQuery = db
         .selectFrom("Resource")
         .where("Resource.id", "=", String(linkId))
@@ -266,7 +272,13 @@ export const collectionRouter = router({
         .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
         .innerJoin("Blob", "Blob.id", "Version.blobId")
         .select(["Blob.content", "Resource.title"])
-        .executeTakeFirstOrThrow()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "Unable to find the requested collection link",
+            }),
+        )
     }),
 
   updateCollectionLink: protectedProcedure
