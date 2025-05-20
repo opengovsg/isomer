@@ -6,23 +6,17 @@
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { resetTables } from "tests/integration/helpers/db"
 import {
-  setupAdminPermissions,
-  setupBlob,
   setupCollection,
-  setupCollectionLink,
-  setupEditorPermissions,
   setupFolder,
-  setupFolderMeta,
   setupPageResource,
   setupSite,
-  setupUser,
 } from "tests/integration/helpers/seed"
 
 import { db, jsonb } from "~/server/modules/database"
 import { createFolderIndexPage } from "~/server/modules/page/page.service"
 import { createDefaultFolderIndexPage } from "../addDefaultIndexPage"
 
-describe("createDefaultFolderIndexPage", async () => {
+describe("createDefaultFolderIndexPage", () => {
   let site: Awaited<ReturnType<typeof setupSite>>["site"]
 
   beforeEach(async () => {
@@ -122,7 +116,7 @@ describe("createDefaultFolderIndexPage", async () => {
     const indexPage = await getIndexPageOf(collection.id)
     expect(indexPage?.draftBlobId).toBeDefined()
     const draftBlob = await getBlob(indexPage?.draftBlobId ?? "")
-    expect(draftBlob?.content.content).toEqual(blob?.content.content)
+    expect(draftBlob?.content.content).toEqual(blob.content.content)
     const possiblyUpdatedIndexPage = await db
       .selectFrom("Resource")
       .where("id", "=", page.id)

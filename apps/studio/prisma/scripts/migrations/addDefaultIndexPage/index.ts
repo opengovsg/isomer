@@ -1,4 +1,4 @@
 import { createDefaultFolderIndexPage } from "./addDefaultIndexPage"
 
-// Uncomment to run the migration
-// createDefaultFolderIndexPage()
+// NOTE: did this to stop lint errors...
+export const runMigration = createDefaultFolderIndexPage

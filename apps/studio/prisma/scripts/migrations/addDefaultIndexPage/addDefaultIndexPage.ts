@@ -56,7 +56,7 @@ export const createDefaultFolderIndexPage = async () => {
               // we create the blobs based off `danglingFolders`
               // and this is also generated off `danglingFolders`
               // so the blob will always be defined
-              draftBlobId: blobs[index]!.id,
+              draftBlobId: blobs[index]?.id,
               siteId: folder.siteId,
             }
           }),
