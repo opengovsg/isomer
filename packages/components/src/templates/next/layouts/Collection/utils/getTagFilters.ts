@@ -8,24 +8,24 @@ export const getTagFilters = (
   // associated set of values as well as the selected value.
   // Hence, we store a map here of the category (eg: Body parts)
   // to the number of occurences of each value (eg: { Brain: 3, Leg: 2})
-  const tagCategories: Map<string, Map<string, number>> = new Map();
+  const tagCategories = new Map<string, Map<string, number>>()
 
   items.forEach(({ tags }) => {
     if (tags) {
       tags.forEach(({ selected: selectedLabels, category }) => {
         if (!tagCategories.has(category)) {
-          tagCategories.set(category, new Map());
+          tagCategories.set(category, new Map())
         }
-        const categoryMap = tagCategories.get(category)!;
+        const categoryMap = tagCategories.get(category) ?? new Map()
         selectedLabels.forEach((label) => {
           if (!categoryMap.has(label)) {
-            categoryMap.set(label, 0);
+            categoryMap.set(label, 0)
           }
-          categoryMap.set(label, categoryMap.get(label)! + 1);
-        });
-      });
+          categoryMap.set(label, (categoryMap.get(label) ?? 0) + 1)
+        })
+      })
     }
-  });
+  })
 
   return Array.from(tagCategories.entries())
     .reduce((acc: Filter[], [category, values]) => {
@@ -37,7 +37,7 @@ export const getTagFilters = (
         }))
         .sort((a, b) =>
           a.label.localeCompare(b.label, undefined, { numeric: true }),
-        );
+        )
 
       const filters: Filter[] = [
         ...acc,
@@ -46,11 +46,11 @@ export const getTagFilters = (
           id: category,
           label: category,
         },
-      ];
+      ]
 
-      return filters;
+      return filters
     }, [])
     .sort((a, b) =>
       a.label.localeCompare(b.label, undefined, { numeric: true }),
-    );
+    )
 }
