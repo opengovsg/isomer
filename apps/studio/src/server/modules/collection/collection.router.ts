@@ -249,7 +249,13 @@ export const collectionRouter = router({
     }),
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
-    .query(async ({ input: { linkId, siteId } }) => {
+    .query(async ({ ctx, input: { linkId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
       const baseQuery = db
         .selectFrom("Resource")
         .where("Resource.id", "=", String(linkId))
