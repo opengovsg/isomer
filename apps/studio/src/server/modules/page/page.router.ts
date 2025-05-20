@@ -538,7 +538,7 @@ export const pageRouter = router({
       await validateUserPermissionsForResource({
         userId: ctx.user.id,
         siteId,
-        action: "update",
+        action: "publish",
       })
       return publishPageResource(
         ctx.logger,
