@@ -7,13 +7,13 @@ import {
   getLayoutPageSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
-import Ajv from "ajv"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
@@ -27,8 +27,6 @@ const HEADER_LABELS: Record<string, string> = {
   content: "Edit content page header",
   index: "Edit index page header",
 }
-
-const ajv = new Ajv({ strict: false, logger: false })
 
 export default function MetadataEditorStateDrawer(): JSX.Element {
   const {

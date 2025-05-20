@@ -1,15 +1,8 @@
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"
-import Ajv from "ajv"
 
 import { renderers } from "~/features/editing-experience/components/form-builder/FormBuilder"
-
-const ajv = new Ajv({
-  useDefaults: true,
-  allErrors: true,
-  strict: false,
-  logger: false,
-})
+import { ajv } from "~/utils/ajv"
 
 interface FormBuilderProps {
   schema: TSchema

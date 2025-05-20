@@ -1,10 +1,10 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { ProseProps } from "@opengovsg/isomer-components/dist/cjs/interfaces"
 import { getComponentSchema } from "@opengovsg/isomer-components"
-import Ajv from "ajv"
 
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { ajv } from "~/utils/ajv"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import HeroEditorDrawer from "./HeroEditorDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
@@ -13,7 +13,7 @@ import RootStateDrawer from "./RootStateDrawer"
 import TipTapProseComponent from "./TipTapProseComponent"
 
 const proseSchema = getComponentSchema({ component: "prose" })
-const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
+
 const validate = ajv.compile<ProseProps>(proseSchema)
 
 export function EditPageDrawer(): JSX.Element {
