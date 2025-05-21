@@ -3,6 +3,7 @@ import {
   CARDS_WITH_FULL_IMAGES,
   CARDS_WITH_IMAGES,
   CARDS_WITHOUT_IMAGES,
+  INFOCARD_VARIANT,
 } from "~/interfaces/complex/InfoCards"
 import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { LinkButton } from "../../internal/LinkButton"
@@ -28,6 +29,10 @@ const InfoCards = ({
   LinkComponent,
 }: InfoCardsProps): JSX.Element => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
+  const cardVariant =
+    variant === CARDS_WITH_FULL_IMAGES
+      ? INFOCARD_VARIANT.bold
+      : INFOCARD_VARIANT.default
 
   const InfoCardtoRender = () => {
     switch (variant) {
@@ -92,6 +97,7 @@ const InfoCards = ({
         <div
           className={compoundStyles.headingContainer({
             layout: simplifiedLayout,
+            imageStyle: cardVariant,
           })}
         >
           <h2 className={compoundStyles.headingTitle()}>{title}</h2>
@@ -108,7 +114,9 @@ const InfoCards = ({
         </div>
       )}
 
-      <div className={compoundStyles.grid({ maxColumns })}>
+      <div
+        className={compoundStyles.grid({ maxColumns, variant: cardVariant })}
+      >
         <InfoCardtoRender />
       </div>
 

@@ -1,15 +1,32 @@
+import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { tv } from "~/lib/tv"
 import { groupFocusVisibleHighlight } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 
 export const infoCardTitleStyle = tv({
   extend: groupFocusVisibleHighlight,
-  base: "prose-headline-lg-semibold text-base-content-strong",
+  base: "prose-headline-lg-semibold relative text-base-content-strong",
   variants: {
     isClickableCard: {
-      true: "group-hover:text-brand-canvas-inverse",
+      true: "",
+    },
+    variant: {
+      [INFOCARD_VARIANT.default]: "",
+      [INFOCARD_VARIANT.bold]:
+        // NOTE: Need to always reserve 24px (pr-6) for the icon
+        // as it is 24px wide.
+        // This is to ensure that we text truncate properly
+        // yet show the icon at the end of the line for visual cues
+        "line-clamp-1 h-full pr-6 text-base-content-inverse",
     },
   },
+  compoundVariants: [
+    {
+      variant: INFOCARD_VARIANT.default,
+      isClickableCard: true,
+      className: "group-hover:text-brand-canvas-inverse",
+    },
+  ],
 })
 
 export const singleInfoCardStyle = tv({
@@ -22,9 +39,21 @@ export const singleInfoCardStyle = tv({
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
     cardImageContainer:
-      "w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
+      "w-full overflow-hidden border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
   },
   variants: {
+    variant: {
+      [INFOCARD_VARIANT.default]: {
+        cardImageContainer: "rounded-lg",
+        cardTitleArrow:
+          "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
+      },
+      [INFOCARD_VARIANT.bold]: {
+        cardTextContainer: "text-base-content-inverse",
+        cardImageContainer: "h-full",
+        cardTitleArrow: "absolute right-0 top-0",
+      },
+    },
     isClickableCard: {
       true: {
         cardImageContainer: "group-hover:drop-shadow-md",
@@ -47,7 +76,7 @@ export const singleInfoCardStyle = tv({
 
   defaultVariants: {
     imageFit: "cover",
-    imageStyle: "partial",
+    variant: INFOCARD_VARIANT.default,
   },
 })
 
@@ -58,11 +87,17 @@ export const createInfoCardsStyles = tv({
     headingContainer: "flex flex-col",
     headingTitle: "prose-display-md break-words text-base-content-strong",
     headingSubtitle: "text-base-content",
-    grid: "grid grid-cols-1 gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
+    grid: "grid grid-cols-1",
     urlButtonContainer: "mx-auto block pt-8 sm:pt-12", // temp: following headingContainer's mb
     cardImageContainer: "aspect-[3/2]",
   },
   variants: {
+    variant: {
+      [INFOCARD_VARIANT.default]: {
+        grid: "gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
+      },
+      [INFOCARD_VARIANT.bold]: { grid: "gap-1" },
+    },
     layout: {
       homepage: {
         container: "py-12 first:pt-0 md:py-16",
@@ -95,10 +130,10 @@ export const createInfoCardsStyles = tv({
       },
     },
     imageStyle: {
-      full: {
+      [INFOCARD_VARIANT.bold]: {
         headingContainer: "pb-12",
       },
-      partial: {
+      [INFOCARD_VARIANT.default]: {
         headingContainer: "pb-8 md:pb-12",
       },
     },
@@ -124,7 +159,7 @@ export const createInfoCardsStyles = tv({
     layout: "default",
     maxColumns: "3",
     imageFit: "cover",
-    imageStyle: "partial",
+    imageStyle: INFOCARD_VARIANT.bold,
   },
 })
 
