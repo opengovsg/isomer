@@ -15,6 +15,11 @@ export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
 export const CARDS_WITH_IMAGES = "cardsWithImages"
 export const CARDS_WITH_FULL_IMAGES = "cardsWithFullImages"
 
+export const INFOCARD_VARIANT = {
+  bold: "bold",
+  default: "default",
+} as const
+
 const IMAGE_FIT = {
   Cover: "cover",
   Content: "contain",
@@ -210,6 +215,7 @@ export type SingleCardWithImageProps = Static<
     isExternalLink?: boolean
     LinkComponent?: LinkComponentType
     shouldLazyLoad?: boolean
+    variant?: keyof typeof INFOCARD_VARIANT
   }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   layout: IsomerPageLayoutType
