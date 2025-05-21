@@ -1,8 +1,12 @@
-import { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
+import {
+  INFOCARD_VARIANT,
+  SingleCardWithImageProps,
+} from "~/interfaces/complex/InfoCards"
 import { isExternalUrl } from "~/utils"
 import { InfoCardContainer } from "./InfoCardContainer"
 import { InfoCardImage } from "./InfoCardImage"
 import { InfoCardText } from "./InfoCardText"
+import { With4Cols } from "./types"
 
 export const InfoCardWithFullImage = ({
   title,
@@ -15,10 +19,12 @@ export const InfoCardWithFullImage = ({
   site,
   LinkComponent,
   shouldLazyLoad = true,
-}: SingleCardWithImageProps): JSX.Element => {
+}: With4Cols<SingleCardWithImageProps>): JSX.Element => {
   const isExternalLink = isExternalUrl(url)
+
   return (
     <InfoCardContainer
+      variant={INFOCARD_VARIANT.bold}
       url={url}
       site={site}
       isExternalLink={isExternalLink}
@@ -33,8 +39,16 @@ export const InfoCardWithFullImage = ({
         site={site}
         layout={layout}
         shouldLazyLoad={shouldLazyLoad}
+        variant={INFOCARD_VARIANT.bold}
       />
-      <InfoCardText title={title} url={url} isExternalLink={isExternalLink} />
+      <div className="absolute bottom-0 w-full bg-[rgba(38,38,38,0.8)] p-5">
+        <InfoCardText
+          title={title}
+          url={url}
+          isExternalLink={isExternalLink}
+          variant={INFOCARD_VARIANT.bold}
+        />
+      </div>
     </InfoCardContainer>
   )
 }

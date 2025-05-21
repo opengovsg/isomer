@@ -5,6 +5,7 @@ import {
 import { getTailwindVariantLayout, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../Image"
 import { compoundStyles } from "../common"
+import { With4Cols } from "./types"
 
 export const InfoCardImage = ({
   imageUrl,
@@ -17,7 +18,7 @@ export const InfoCardImage = ({
   shouldLazyLoad,
   variant = INFOCARD_VARIANT.default,
 }: Pick<
-  SingleCardWithImageProps,
+  With4Cols<SingleCardWithImageProps>,
   | "imageUrl"
   | "imageAlt"
   | "maxColumns"

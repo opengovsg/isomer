@@ -31,7 +31,6 @@ export const infoCardTitleStyle = tv({
 
 export const singleInfoCardStyle = tv({
   slots: {
-    // single card only
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImage: "h-full w-full object-center",
     cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
@@ -51,6 +50,7 @@ export const singleInfoCardStyle = tv({
       [INFOCARD_VARIANT.bold]: {
         cardTextContainer: "text-base-content-inverse",
         cardImageContainer: "h-full",
+        cardContainer: "relative aspect-square lg:aspect-[2/3]",
         cardTitleArrow: "absolute right-0 top-0",
       },
     },
@@ -89,12 +89,13 @@ export const createInfoCardsStyles = tv({
     headingSubtitle: "text-base-content",
     grid: "grid grid-cols-1",
     urlButtonContainer: "mx-auto block pt-8 sm:pt-12", // temp: following headingContainer's mb
-    cardImageContainer: "aspect-[3/2]",
+    cardImageContainer: "",
   },
   variants: {
     variant: {
       [INFOCARD_VARIANT.default]: {
         grid: "gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
+        cardImageContainer: "aspect-[3/2]",
       },
       [INFOCARD_VARIANT.bold]: { grid: "gap-1" },
     },
