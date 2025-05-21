@@ -48,15 +48,15 @@ type Story = StoryObj<typeof InfoCards>
 const generateArgs = ({
   layout = "content",
   maxColumns,
-  withoutImage = false,
   isImageFitContain = false,
   hasCTA = false,
+  variant = "cardsWithImages",
 }: {
   layout?: IsomerPageLayoutType
   maxColumns: "1" | "2" | "3"
-  withoutImage?: boolean
   isImageFitContain?: boolean
   hasCTA?: boolean
+  variant?: InfoCardsProps["variant"]
 }): InfoCardsProps => {
   const cards = [
     {
@@ -104,6 +104,8 @@ const generateArgs = ({
     },
   ]
 
+  const withoutImage = variant === "cardsWithoutImages"
+
   if (withoutImage) {
     cards.forEach((card) => {
       delete (card as any).imageAlt
@@ -123,7 +125,7 @@ const generateArgs = ({
     subtitle:
       "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
     maxColumns: maxColumns,
-    variant: withoutImage ? "cardsWithoutImages" : "cardsWithImages",
+    variant,
     cards: cards,
     ...(hasCTA ? { label: "This is a CTA", url: "/" } : {}),
   } as InfoCardsProps
@@ -160,7 +162,7 @@ export const WithImage1ColumnsHomepage: Story = {
 }
 
 export const NoImage: Story = {
-  args: generateArgs({ maxColumns: "3", withoutImage: true }),
+  args: generateArgs({ maxColumns: "3", variant: "cardsWithoutImages" }),
 }
 
 export const WithContainImageFit: Story = {
@@ -168,5 +170,9 @@ export const WithContainImageFit: Story = {
 }
 
 export const WithLink: Story = {
-  args: generateArgs({ maxColumns: "3", withoutImage: true, hasCTA: true }),
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithoutImages",
+    hasCTA: true,
+  }),
 }

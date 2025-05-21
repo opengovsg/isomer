@@ -129,15 +129,7 @@ const InfoCardsBaseSchema = Type.Object({
 
 const InfoCardsWithImageSchema = Type.Object(
   {
-    variant: Type.Union(
-      [
-        Type.Literal(CARDS_WITH_FULL_IMAGES, {
-          default: CARDS_WITH_FULL_IMAGES,
-        }),
-        Type.Literal(CARDS_WITH_IMAGES, { default: CARDS_WITH_IMAGES }),
-      ],
-      { format: "hidden", default: CARDS_WITH_IMAGES },
-    ),
+    variant: Type.Literal(CARDS_WITH_IMAGES, { default: CARDS_WITH_IMAGES }),
     cards: Type.Array(SingleCardWithImageSchema, {
       title: "Cards",
       minItems: 1,
@@ -147,6 +139,23 @@ const InfoCardsWithImageSchema = Type.Object(
   },
   {
     title: "Cards with images",
+  },
+)
+
+const InfoCardsWithFullImageSchema = Type.Object(
+  {
+    variant: Type.Literal(CARDS_WITH_FULL_IMAGES, {
+      default: CARDS_WITH_FULL_IMAGES,
+    }),
+    cards: Type.Array(Type.Omit(SingleCardWithImageSchema, ["description"]), {
+      title: "Cards",
+      minItems: 1,
+      maxItems: 30,
+      default: [],
+    }),
+  },
+  {
+    title: "Cards with full images",
   },
 )
 
@@ -170,9 +179,17 @@ const InfoCardsNoImageSchema = Type.Object(
 export const InfoCardsSchema = Type.Intersect(
   [
     InfoCardsBaseSchema,
-    Type.Union([InfoCardsWithImageSchema, InfoCardsNoImageSchema], {
-      format: ARRAY_RADIO_FORMAT,
-    }),
+    Type.Union(
+      [
+        InfoCardsWithImageSchema,
+        InfoCardsNoImageSchema,
+        InfoCardsWithFullImageSchema,
+      ],
+      {
+        format: ARRAY_RADIO_FORMAT,
+        title: "Infocards style",
+      },
+    ),
   ],
   {
     title: "Cards component",
