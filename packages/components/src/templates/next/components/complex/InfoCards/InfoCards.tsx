@@ -13,6 +13,7 @@ import {
   InfoCardWithFullImage,
   InfoCardWithImage,
 } from "./components"
+import { calculateGridDimensions } from "./utils"
 
 const InfoCards = ({
   id,
@@ -34,7 +35,10 @@ const InfoCards = ({
       ? INFOCARD_VARIANT.bold
       : INFOCARD_VARIANT.default
 
-  const InfoCardtoRender = () => {
+  const { cols, requiresResizingLastRow } = calculateGridDimensions(cards)
+  const computedMaxCols = variant === CARDS_WITH_FULL_IMAGES ? cols : maxColumns
+
+  const InfoCardsToRender = () => {
     switch (variant) {
       case CARDS_WITH_IMAGES:
         return (
@@ -65,14 +69,18 @@ const InfoCards = ({
             ))}
           </>
         )
-      case CARDS_WITH_FULL_IMAGES:
+      case CARDS_WITH_FULL_IMAGES: {
+        const cardsToRender = requiresResizingLastRow
+          ? cards.slice(0, 3)
+          : cards
+
         return (
           <>
-            {cards.map((card, idx) => (
+            {cardsToRender.map((card, idx) => (
               <InfoCardWithFullImage
                 key={idx}
                 {...card}
-                maxColumns={maxColumns}
+                maxColumns={computedMaxCols}
                 layout={layout}
                 site={site}
                 LinkComponent={LinkComponent}
@@ -81,6 +89,7 @@ const InfoCards = ({
             ))}
           </>
         )
+      }
 
       default:
         const _: never = variant
@@ -115,10 +124,35 @@ const InfoCards = ({
       )}
 
       <div
-        className={compoundStyles.grid({ maxColumns, variant: cardVariant })}
+        className={compoundStyles.grid({
+          maxColumns: computedMaxCols,
+          variant: cardVariant,
+        })}
       >
-        <InfoCardtoRender />
+        <InfoCardsToRender />
       </div>
+
+      {requiresResizingLastRow && variant === CARDS_WITH_FULL_IMAGES && (
+        <div
+          className={compoundStyles.grid({
+            maxColumns: "2",
+            variant: INFOCARD_VARIANT.bold,
+            isResizedLastRow: true,
+          })}
+        >
+          {cards.slice(3).map((card, idx) => (
+            <InfoCardWithFullImage
+              key={idx}
+              {...card}
+              maxColumns="2"
+              layout={layout}
+              site={site}
+              LinkComponent={LinkComponent}
+              shouldLazyLoad={shouldLazyLoad}
+            />
+          ))}
+        </div>
+      )}
 
       {!!url && !!label && (
         <div className={compoundStyles.urlButtonContainer()}>

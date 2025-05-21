@@ -116,6 +116,7 @@ export const createInfoCardsStyles = tv({
         cardImageContainer: "group-hover:drop-shadow-md",
       },
     },
+    isResizedLastRow: { true: { grid: "mt-1" } },
     maxColumns: {
       "1": {
         grid: "",
