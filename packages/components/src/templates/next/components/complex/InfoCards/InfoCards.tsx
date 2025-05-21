@@ -7,7 +7,11 @@ import {
 import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { LinkButton } from "../../internal/LinkButton"
 import { compoundStyles } from "./common"
-import { InfoCardNoImage, InfoCardWithImage } from "./components"
+import {
+  InfoCardNoImage,
+  InfoCardWithFullImage,
+  InfoCardWithImage,
+} from "./components"
 
 const InfoCards = ({
   id,
@@ -57,7 +61,21 @@ const InfoCards = ({
           </>
         )
       case CARDS_WITH_FULL_IMAGES:
-        return <div></div>
+        return (
+          <>
+            {cards.map((card, idx) => (
+              <InfoCardWithFullImage
+                key={idx}
+                {...card}
+                maxColumns={maxColumns}
+                layout={layout}
+                site={site}
+                LinkComponent={LinkComponent}
+                shouldLazyLoad={shouldLazyLoad}
+              />
+            ))}
+          </>
+        )
 
       default:
         const _: never = variant
