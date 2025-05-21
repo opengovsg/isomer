@@ -8,23 +8,25 @@ export const InfoCardText = ({
   description,
   url,
   isExternalLink,
+  variant = "default",
 }: Pick<
   SingleCardWithImageProps,
-  "title" | "description" | "url" | "isExternalLink"
+  "variant" | "title" | "description" | "url" | "isExternalLink"
 >): JSX.Element => (
-  <div className={compoundStyles.cardTextContainer()}>
-    <h3 className={infoCardTitleStyle({ isClickableCard: !!url })}>
+  <div className={compoundStyles.cardTextContainer({ variant })}>
+    <h3 className={infoCardTitleStyle({ isClickableCard: !!url, variant })}>
       {title}
-
       {url && (
         <BiRightArrowAlt
           aria-hidden
           className={compoundStyles.cardTitleArrow({
             isExternalLink,
+            variant,
           })}
         />
       )}
     </h3>
+
     <p className={compoundStyles.cardDescription()}>{description}</p>
   </div>
 )

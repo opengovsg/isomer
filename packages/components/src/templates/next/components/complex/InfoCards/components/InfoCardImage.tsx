@@ -1,4 +1,7 @@
-import { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
+import {
+  INFOCARD_VARIANT,
+  SingleCardWithImageProps,
+} from "~/interfaces/complex/InfoCards"
 import { getTailwindVariantLayout, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../Image"
 import { compoundStyles } from "../common"
@@ -12,6 +15,7 @@ export const InfoCardImage = ({
   layout,
   site,
   shouldLazyLoad,
+  variant = INFOCARD_VARIANT.default,
 }: Pick<
   SingleCardWithImageProps,
   | "imageUrl"
@@ -22,6 +26,7 @@ export const InfoCardImage = ({
   | "layout"
   | "site"
   | "shouldLazyLoad"
+  | "variant"
 >): JSX.Element => {
   const imgSrc =
     isExternalUrl(imageUrl) || site.assetsBaseUrl === undefined
@@ -34,6 +39,7 @@ export const InfoCardImage = ({
         layout: getTailwindVariantLayout(layout),
         maxColumns,
         isClickableCard: !!url,
+        variant,
       })}
     >
       <ImageClient
