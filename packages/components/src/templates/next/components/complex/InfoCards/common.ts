@@ -12,22 +12,55 @@ export const infoCardTitleStyle = tv({
   },
 })
 
-export const createInfoCardsStyles = tv({
+export const singleInfoCardStyle = tv({
   slots: {
-    container: `${ComponentContent} flex flex-col`,
-    headingContainer: "flex flex-col pb-8 sm:pb-12",
-    headingTitle: "prose-display-md break-words text-base-content-strong",
-    headingSubtitle: "text-base-content",
-    grid: "grid grid-cols-1 gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
+    // single card only
     cardContainer: "group flex flex-col gap-5 outline-0",
-    cardImageContainer:
-      "aspect-[3/2] w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
     cardImage: "h-full w-full object-center",
     cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
+    cardImageContainer:
+      "w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
+  },
+  variants: {
+    isClickableCard: {
+      true: {
+        cardImageContainer: "group-hover:drop-shadow-md",
+      },
+    },
+    imageFit: {
+      cover: {
+        cardImage: "object-cover",
+      },
+      contain: {
+        cardImage: "object-contain",
+      },
+    },
+    isExternalLink: {
+      true: {
+        cardTitleArrow: "rotate-[-45deg]",
+      },
+    },
+  },
+
+  defaultVariants: {
+    imageFit: "cover",
+    imageStyle: "partial",
+  },
+})
+
+export const createInfoCardsStyles = tv({
+  extend: singleInfoCardStyle,
+  slots: {
+    container: `${ComponentContent} flex flex-col`,
+    headingContainer: "flex flex-col",
+    headingTitle: "prose-display-md break-words text-base-content-strong",
+    headingSubtitle: "text-base-content",
+    grid: "grid grid-cols-1 gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
     urlButtonContainer: "mx-auto block pt-8 sm:pt-12", // temp: following headingContainer's mb
+    cardImageContainer: "aspect-[3/2]",
   },
   variants: {
     layout: {
@@ -47,14 +80,6 @@ export const createInfoCardsStyles = tv({
         cardImageContainer: "group-hover:drop-shadow-md",
       },
     },
-    imageFit: {
-      cover: {
-        cardImage: "object-cover",
-      },
-      contain: {
-        cardImage: "object-contain",
-      },
-    },
     maxColumns: {
       "1": {
         grid: "",
@@ -65,40 +90,33 @@ export const createInfoCardsStyles = tv({
       "3": {
         grid: "md:grid-cols-2 lg:grid-cols-3",
       },
+      "4": {
+        grid: "md:grid-cols-2 lg:grid-cols-4",
+      },
     },
-    isExternalLink: {
-      true: {
-        cardTitleArrow: "rotate-[-45deg]",
+    imageStyle: {
+      full: {
+        headingContainer: "pb-12",
+      },
+      partial: {
+        headingContainer: "pb-8 md:pb-12",
       },
     },
   },
+
   compoundVariants: [
     {
       layout: "homepage",
-      maxColumns: "3",
-      class: {
-        cardImageContainer: "aspect-[3/2]",
-      },
-    },
-    {
-      layout: "homepage",
       maxColumns: "2",
       class: {
-        cardImageContainer: "aspect-[3/2] lg:aspect-[2/1]",
+        cardImageContainer: "lg:aspect-[2/1]",
       },
     },
     {
       layout: "default",
       maxColumns: "3",
       class: {
-        cardImageContainer: "aspect-[3/2] lg:aspect-square",
-      },
-    },
-    {
-      layout: "default",
-      maxColumns: "2",
-      class: {
-        cardImageContainer: "aspect-[3/2]",
+        cardImageContainer: "lg:aspect-square",
       },
     },
   ],
@@ -106,6 +124,7 @@ export const createInfoCardsStyles = tv({
     layout: "default",
     maxColumns: "3",
     imageFit: "cover",
+    imageStyle: "partial",
   },
 })
 
