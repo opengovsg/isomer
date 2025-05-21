@@ -6,7 +6,6 @@ import { InfoCardText } from "./InfoCardText"
 
 export const InfoCardWithFullImage = ({
   title,
-  description,
   imageUrl,
   imageAlt,
   imageFit,
@@ -35,12 +34,7 @@ export const InfoCardWithFullImage = ({
         layout={layout}
         shouldLazyLoad={shouldLazyLoad}
       />
-      <InfoCardText
-        title={title}
-        description={description}
-        url={url}
-        isExternalLink={isExternalLink}
-      />
+      <InfoCardText title={title} url={url} isExternalLink={isExternalLink} />
     </InfoCardContainer>
   )
 }

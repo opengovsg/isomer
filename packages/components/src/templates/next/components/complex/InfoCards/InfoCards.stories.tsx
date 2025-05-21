@@ -176,3 +176,8 @@ export const WithLink: Story = {
     hasCTA: true,
   }),
 }
+
+export const FullImage: Story = {
+  name: "Full Image",
+  args: generateArgs({ maxColumns: "3", variant: "cardsWithFullImages" }),
+}
