@@ -20,6 +20,8 @@ export const INFOCARD_VARIANT = {
   default: "default",
 } as const
 
+export type InfoCardVariants = keyof typeof INFOCARD_VARIANT
+
 const IMAGE_FIT = {
   Cover: "cover",
   Content: "contain",
@@ -215,7 +217,7 @@ export type SingleCardWithImageProps = Static<
     isExternalLink?: boolean
     LinkComponent?: LinkComponentType
     shouldLazyLoad?: boolean
-    variant?: keyof typeof INFOCARD_VARIANT
+    variant?: InfoCardVariants
   }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   layout: IsomerPageLayoutType
