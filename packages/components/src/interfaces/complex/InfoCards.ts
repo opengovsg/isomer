@@ -13,6 +13,14 @@ import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
 export const CARDS_WITH_IMAGES = "cardsWithImages"
+export const CARDS_WITH_FULL_IMAGES = "cardsWithFullImages"
+
+export const INFOCARD_VARIANT = {
+  bold: "bold",
+  default: "default",
+} as const
+
+export type InfoCardVariants = keyof typeof INFOCARD_VARIANT
 
 const IMAGE_FIT = {
   Cover: "cover",
@@ -141,6 +149,24 @@ const InfoCardsWithImageSchema = Type.Object(
   },
 )
 
+const InfoCardsWithFullImageSchema = Type.Object(
+  {
+    variant: Type.Literal(CARDS_WITH_FULL_IMAGES, {
+      default: CARDS_WITH_FULL_IMAGES,
+    }),
+    cards: Type.Array(Type.Omit(SingleCardWithImageSchema, ["description"]), {
+      title: "Cards",
+      minItems: 1,
+      maxItems: 30,
+      default: [],
+    }),
+  },
+  {
+    title: "Cards with full images",
+    format: "hidden",
+  },
+)
+
 const InfoCardsNoImageSchema = Type.Object(
   {
     variant: Type.Literal(CARDS_WITHOUT_IMAGES, {
@@ -161,9 +187,17 @@ const InfoCardsNoImageSchema = Type.Object(
 export const InfoCardsSchema = Type.Intersect(
   [
     InfoCardsBaseSchema,
-    Type.Union([InfoCardsWithImageSchema, InfoCardsNoImageSchema], {
-      format: ARRAY_RADIO_FORMAT,
-    }),
+    Type.Union(
+      [
+        InfoCardsWithImageSchema,
+        InfoCardsNoImageSchema,
+        InfoCardsWithFullImageSchema,
+      ],
+      {
+        format: ARRAY_RADIO_FORMAT,
+        title: "Infocards style",
+      },
+    ),
   ],
   {
     title: "Cards component",
@@ -184,6 +218,7 @@ export type SingleCardWithImageProps = Static<
     isExternalLink?: boolean
     LinkComponent?: LinkComponentType
     shouldLazyLoad?: boolean
+    variant?: InfoCardVariants
   }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   layout: IsomerPageLayoutType
