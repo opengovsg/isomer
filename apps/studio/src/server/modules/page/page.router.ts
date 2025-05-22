@@ -694,6 +694,7 @@ export const pageRouter = router({
               .where("Resource.type", "in", [
                 ResourceType.Page,
                 ResourceType.CollectionPage,
+                ResourceType.CollectionLink,
                 ResourceType.RootPage,
               ])
               .set({ title, ...settings })
