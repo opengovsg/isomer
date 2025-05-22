@@ -1,7 +1,7 @@
 import cuid2 from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 
-import type { DB, Resource, Transaction, User } from "../../database"
+import type { DB, Transaction, User } from "../../database"
 import {
   sendPublishAlertContentPublisherEmail,
   sendPublishAlertSiteAdminEmail,
