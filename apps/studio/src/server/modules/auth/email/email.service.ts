@@ -101,18 +101,19 @@ export const alertPublishWhenSingpassDisabled = async ({
     .select("User.email")
     .execute()
 
-  await sendPublishAlertContentPublisherEmail({
-    recipientEmail: publisherEmail,
-    siteName: site.name,
-    resource,
-  })
-
-  for (const admin of allSiteAdminsMinusCurrentUser) {
-    await sendPublishAlertSiteAdminEmail({
-      recipientEmail: admin.email,
-      publisherEmail,
+  await Promise.all([
+    sendPublishAlertContentPublisherEmail({
+      recipientEmail: publisherEmail,
       siteName: site.name,
       resource,
-    })
-  }
+    }),
+    ...allSiteAdminsMinusCurrentUser.map((admin) =>
+      sendPublishAlertSiteAdminEmail({
+        recipientEmail: admin.email,
+        publisherEmail,
+        siteName: site.name,
+        resource,
+      }),
+    ),
+  ])
 }
