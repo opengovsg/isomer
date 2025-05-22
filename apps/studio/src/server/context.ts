@@ -6,10 +6,7 @@ import { getIronSession } from "iron-session"
 
 import { env } from "~/env.mjs"
 import { type Session, type SessionData } from "~/lib/types/session"
-import {
-  AUTH_SESSION_COOKIE_NAME,
-  generateSessionOptions,
-} from "./modules/auth/session"
+import { generateSessionOptions } from "./modules/auth/session"
 import { db } from "./modules/database"
 import { type defaultUserSelect } from "./modules/me/me.select"
 import { prisma } from "./prisma"
@@ -36,18 +33,10 @@ export function createContextInner(opts: CreateContextOptions) {
  * @link https://trpc.io/docs/context
  */
 export const createContext = async (opts: CreateNextContextOptions) => {
-  // Check if user is authenticated with Singpass from the request
-  const sessionAuthCookie = opts.req.cookies[AUTH_SESSION_COOKIE_NAME]
-  const isAuthenticatedWithSingpass = sessionAuthCookie?.includes(
-    "isAuthenticatedWithSingpass",
-  )
-
   const session = await getIronSession<SessionData>(
     opts.req,
     opts.res,
-    generateSessionOptions({
-      ttlInHours: isAuthenticatedWithSingpass ? 12 : 1,
-    }),
+    generateSessionOptions({}),
   )
 
   const innerContext = createContextInner({
