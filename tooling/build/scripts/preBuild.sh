@@ -11,9 +11,17 @@ calculate_duration() {
   echo "Time taken: $duration seconds"
 }
 
-# Use the release branch unless one was provided in the env var
+# Use the latest release tag unless one was provided in the env var
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
-  ISOMER_BUILD_REPO_BRANCH="release"
+  ##### This long command is used to get the latest release tag from the Isomer repository.
+  # git ls-remote: Lists references in a remote repository along with their commit hashes. 
+  # --tags: Lists all tags in the repository.
+  # --sort='v:refname': Sorts the tags by version number according to the semantic versioning scheme
+  # tail -n1: Gets the last line of the output.
+  # awk '{print $2}': Prints the second column of the last line, which is the tag name.
+  # sed -E 's|refs/tags/||; s/\^.*$//': Removes the 'refs/tags/' prefix from the tag name.
+  # - If tag is annotated (maybe due to signing), the tag name will have a caret (^) and optional text after it.
+  ISOMER_BUILD_REPO_BRANCH=$(git ls-remote --tags --sort='v:refname' https://github.com/opengovsg/isomer.git | tail -n1 | awk '{print $2}' | sed -E 's|refs/tags/||; s/\^.*$//')
 fi
 
 # Store the current directory

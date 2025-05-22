@@ -1,13 +1,26 @@
 import { TRPCError } from "@trpc/server"
+import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
+import { addUsersToSite } from "~prisma/scripts/addUsersToSite"
 
-import type { DB, Transaction } from "../database"
+import type { DB, Resource, Transaction, Version } from "../database"
 import type {
   CrudResourceActions,
   PermissionsProps,
 } from "../permissions/permissions.type"
+import {
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "~/server/modules/database"
 import { logConfigEvent } from "../audit/audit.service"
 import { AuditLogEvent, db, jsonb, sql } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
+import {
+  FOOTER,
+  NAVBAR_CONTENT,
+  PAGE_BLOB,
+  SEARCH_PAGE_BLOB,
+} from "./constants"
 
 export const validateUserPermissionsForSite = async ({
   siteId,
@@ -139,6 +152,7 @@ export const setSiteNotification = async ({
   }
 
   await logConfigEvent(tx, {
+    siteId,
     eventType: AuditLogEvent.SiteConfigUpdate,
     delta: {
       before: oldSite,
@@ -203,6 +217,7 @@ export const clearSiteNotification = async ({
   }
 
   await logConfigEvent(tx, {
+    siteId,
     eventType: AuditLogEvent.SiteConfigUpdate,
     delta: {
       before: oldSite,
@@ -212,4 +227,206 @@ export const clearSiteNotification = async ({
   })
 
   return newSite
+}
+
+interface CreateSiteProps {
+  siteName: string
+  userId: Version["publishedBy"]
+}
+interface CreateResourceProps {
+  tx: Transaction<DB>
+  siteId: Resource["siteId"]
+  userId: Version["publishedBy"]
+}
+
+export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
+  const createSiteRecord = async (tx: Transaction<DB>): Promise<number> => {
+    const { id: siteId } = await tx
+      .insertInto("Site")
+      .values({
+        name: siteName,
+        theme: jsonb({
+          colors: {
+            brand: {
+              canvas: {
+                alt: "#bfcfd7",
+                default: "#e6ecef",
+                inverse: "#00405f",
+                backdrop: "#80a0af",
+              },
+              interaction: {
+                hover: "#002e44",
+                default: "#00405f",
+                pressed: "#00283b",
+              },
+            },
+          },
+        }),
+        config: jsonb({
+          theme: "isomer-next",
+          siteName,
+          logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+          search: undefined,
+          isGovernment: true,
+        }),
+      })
+      .onConflict((oc) =>
+        oc
+          .column("name")
+          .doUpdateSet((eb) => ({ name: eb.ref("excluded.name") })),
+      )
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    return siteId
+  }
+
+  const createFooter = async (tx: Transaction<DB>, siteId: number) => {
+    await tx
+      .insertInto("Footer")
+      .values({
+        siteId,
+        content: jsonb(FOOTER),
+      })
+      .onConflict((oc) =>
+        oc
+          .column("siteId")
+          .doUpdateSet((eb) => ({ siteId: eb.ref("excluded.siteId") })),
+      )
+      .execute()
+  }
+
+  const createNavbar = async (tx: Transaction<DB>, siteId: number) => {
+    await tx
+      .insertInto("Navbar")
+      .values({
+        siteId,
+        content: jsonb(NAVBAR_CONTENT),
+      })
+      .onConflict((oc) =>
+        oc
+          .column("siteId")
+          .doUpdateSet((eb) => ({ siteId: eb.ref("excluded.siteId") })),
+      )
+      .execute()
+  }
+
+  const createRootPage = async ({
+    tx,
+    siteId,
+    userId,
+  }: CreateResourceProps) => {
+    const { id: blobId } = await tx
+      .insertInto("Blob")
+      .values({ content: jsonb(PAGE_BLOB) })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    const { id: resourceId } = await tx
+      .insertInto("Resource")
+      .values({
+        permalink: "",
+        siteId,
+        type: ResourceType.RootPage,
+        state: ResourceState.Published,
+        title: "Home",
+      })
+      .onConflict((oc) =>
+        oc.column("draftBlobId").doUpdateSet((eb) => ({
+          draftBlobId: eb.ref("excluded.draftBlobId"),
+        })),
+      )
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    const { id: versionId } = await tx
+      .insertInto("Version")
+      .values({
+        resourceId,
+        blobId,
+        publishedBy: userId,
+        versionNum: 1,
+      })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    await tx
+      .updateTable("Resource")
+      .set({
+        draftBlobId: null,
+        publishedVersionId: versionId,
+        state: ResourceState.Published,
+      })
+      .where("id", "=", resourceId)
+      .executeTakeFirstOrThrow()
+  }
+
+  const createSearchPage = async ({
+    tx,
+    siteId,
+    userId,
+  }: CreateResourceProps) => {
+    const { id: blobId } = await tx
+      .insertInto("Blob")
+      .values({ content: jsonb(SEARCH_PAGE_BLOB) })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    const { id: resourceId } = await tx
+      .insertInto("Resource")
+      .values({
+        draftBlobId: String(blobId),
+        permalink: "search",
+        siteId,
+        type: ResourceType.Page,
+        title: "Search",
+      })
+      .onConflict((oc) =>
+        oc.column("draftBlobId").doUpdateSet((eb) => ({
+          draftBlobId: eb.ref("excluded.draftBlobId"),
+        })),
+      )
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    const { id: versionId } = await tx
+      .insertInto("Version")
+      .values({
+        resourceId,
+        blobId,
+        publishedBy: userId,
+        versionNum: 1,
+      })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    await tx
+      .updateTable("Resource")
+      .set({
+        draftBlobId: null,
+        publishedVersionId: versionId,
+        state: ResourceState.Published,
+      })
+      .where("id", "=", resourceId)
+      .executeTakeFirstOrThrow()
+  }
+
+  const siteId = await db.transaction().execute(async (tx) => {
+    const siteId = await createSiteRecord(tx)
+    await createFooter(tx, siteId)
+    await createNavbar(tx, siteId)
+    await createRootPage({ tx, siteId, userId })
+    await createSearchPage({ tx, siteId, userId })
+    return siteId
+  })
+
+  await addUsersToSite({
+    siteId,
+    users: [...ISOMER_ADMINS, ...ISOMER_MIGRATORS].map((email) => ({
+      email: `${email}@open.gov.sg`,
+      role: RoleType.Admin,
+    })),
+  })
+
+  return { siteId, siteName }
 }

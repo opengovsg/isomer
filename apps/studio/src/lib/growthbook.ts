@@ -42,3 +42,17 @@ export const getIsSingpassEnabledForCriticalActions = ({
     IS_SINGPASS_ENABLED_FOR_CRITICAL_ACTIONS_FEATURE_KEY_FALLBACK_VALUE,
   )
 }
+
+// Growthbook has a constraint in the typings that requires the index signature
+// of the object to be defined as a string instead of being specific to the keys
+// that we want. Hence, we have to define it as a type instead of an interface.
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type GrowthbookIsomerAdminFeature = {
+  [ADMIN_ROLE.CORE]: string[]
+  [ADMIN_ROLE.MIGRATORS]: string[]
+}
+
+export const ADMIN_ROLE = {
+  CORE: "core",
+  MIGRATORS: "migrators",
+} as const
