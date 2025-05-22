@@ -1,3 +1,3 @@
-const mockFeatureFlags = new Map<string, unknown>()
+const mockFeatureFlags = new Map<string, unknown>([])
 
 export { mockFeatureFlags }
