@@ -64,37 +64,37 @@ updates:
         patterns:
           - "@jsonforms/core"
           - "@jsonforms/react"
-ignore:
-  # Currently dependabot doesn't support ignoring by group so we have to ignore each dependency individually
-  # Ignore major version updates for react, react-query, trpc, next as they rely on React 19
-  ### React 19
-  - dependency-name: "react"
-    update-types: ["version-update:semver-major"]
-  - dependency-name: "react-dom"
-    update-types: ["version-update:semver-major"]
-  - dependency-name: "@types/react"
-    update-types: ["version-update:semver-major"]
-  ### TRPC 11
-  - dependency-name: "@trpc/client"
-    update-types: ["version-update:semver-major"]
-  - dependency-name: "@trpc/next"
-    update-types: ["version-update:semver-major"]
-  - dependency-name: "@trpc/react-query"
-    update-types: ["version-update:semver-major"]
-  - dependency-name: "@trpc/server"
-    update-types: ["version-update:semver-major"]
-  ### Tanstack React Query 5
-  - dependency-name: "@tanstack/react-query"
-    update-types: ["version-update:semver-major"]
-  - dependency-name: "@tanstack/react-query-devtools"
-    update-types: ["version-update:semver-major"]
-  ### Next 15
-  - dependency-name: "next"
-    update-types: ["version-update:semver-major"]
-  # Ignore major version updates for Prisma 6 due to installation issues
-  ### Could not resolve @prisma/client despite the installation that we just tried.
-  ### Please try to install it by hand with npm i @prisma/client and rerun npx "prisma generate" 🙏.
-  - dependency-name: "prisma"
-    update-types: ["version-update:semver-major"]
-  - dependency-name: "@prisma/client"
-    update-types: ["version-update:semver-major"]
+    ignore:
+      # Currently dependabot doesn't support ignoring by group so we have to ignore each dependency individually
+      # Ignore major version updates for react, react-query, trpc, next as they rely on React 19
+      ### React 19
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major"]
+      ### TRPC 11
+      - dependency-name: "@trpc/client"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@trpc/next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@trpc/react-query"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@trpc/server"
+        update-types: ["version-update:semver-major"]
+      ### Tanstack React Query 5
+      - dependency-name: "@tanstack/react-query"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@tanstack/react-query-devtools"
+        update-types: ["version-update:semver-major"]
+      ### Next 15
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      # Ignore major version updates for Prisma 6 due to installation issues
+      ### Could not resolve @prisma/client despite the installation that we just tried.
+      ### Please try to install it by hand with npm i @prisma/client and rerun npx "prisma generate" 🙏.
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@prisma/client"
+        update-types: ["version-update:semver-major"]
