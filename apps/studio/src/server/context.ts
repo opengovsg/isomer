@@ -36,7 +36,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   const session = await getIronSession<SessionData>(
     opts.req,
     opts.res,
-    generateSessionOptions({}),
+    generateSessionOptions({}), // Note: this wouldn't overwrite the cookie (e.g. TTL) if it already exists
   )
 
   const innerContext = createContextInner({
