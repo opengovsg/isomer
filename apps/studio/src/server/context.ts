@@ -33,14 +33,6 @@ export function createContextInner(opts: CreateContextOptions) {
  * @link https://trpc.io/docs/context
  */
 export const createContext = async (opts: CreateNextContextOptions) => {
-  const growthbookContext = new GrowthBook({
-    apiHost: "https://cdn.growthbook.io",
-    clientKey: env.GROWTHBOOK_CLIENT_KEY,
-    debug: false, // NOTE: do not put true unless local dev
-    disableCache: true,
-  })
-  await growthbookContext.init({ timeout: 2000 })
-
   const session = await getIronSession<SessionData>(
     opts.req,
     opts.res,
@@ -54,6 +46,14 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   const innerContext = createContextInner({
     session,
   })
+
+  const growthbookContext = new GrowthBook({
+    apiHost: "https://cdn.growthbook.io",
+    clientKey: env.GROWTHBOOK_CLIENT_KEY,
+    debug: false, // NOTE: do not put true unless local dev
+    disableCache: true,
+  })
+  await growthbookContext.init({ timeout: 2000 })
 
   return {
     ...innerContext,
