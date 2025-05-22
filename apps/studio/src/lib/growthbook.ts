@@ -1,5 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook-react"
 
+import { env } from "~/env.mjs"
+
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const ISOMER_ADMIN_FEATURE_KEY = "isomer_admins"
 export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
@@ -19,28 +21,17 @@ export const getIsSingpassEnabled = ({
   )
 }
 
-/**
- * TODO: Remove this once we officially launched Singpass login
- * Replace it to only use IS_SINGPASS_ENABLED_FEATURE_KEY
- *
- * This TEMPORARY feature flag is used to enable Singpass login for critical actions
- * such as adding, editing or removing users.
- *
- * This is to ensure that these actions are still accessible even if the
- * the changes have been deployed to production but we have not yet launched
- * Singpass login.
- */
-export const IS_SINGPASS_ENABLED_FOR_CRITICAL_ACTIONS_FEATURE_KEY =
-  "is-singpass-enabled-for-critical-actions"
-export const IS_SINGPASS_ENABLED_FOR_CRITICAL_ACTIONS_FEATURE_KEY_FALLBACK_VALUE =
-  true
 export const getIsSingpassEnabledForCriticalActions = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
-  return gb.getFeatureValue(
-    IS_SINGPASS_ENABLED_FOR_CRITICAL_ACTIONS_FEATURE_KEY,
-    IS_SINGPASS_ENABLED_FOR_CRITICAL_ACTIONS_FEATURE_KEY_FALLBACK_VALUE,
-  )
+  // Temporary as Singpass is live for VAPT
+  // Once VAPT is done and we are releasing to other environments,
+  // we can remove this check and use getIsSingpassEnabled directly
+  if (env.NEXT_PUBLIC_APP_ENV !== "vapt") {
+    return true
+  }
+
+  return getIsSingpassEnabled({ gb })
 }
 
 // Growthbook has a constraint in the typings that requires the index signature
