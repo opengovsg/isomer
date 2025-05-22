@@ -96,6 +96,9 @@ export const applySession = () => {
     destroy() {
       store.clear()
     },
+    updateConfig() {
+      // No-op in tests since we don't need to actually update config for tests
+    },
   } as unknown as Session
 
   return session

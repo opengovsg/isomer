@@ -13,6 +13,7 @@ import { publicProcedure, router } from "~/server/trpc"
 import { safeSchemaJsonParse } from "~/utils/zod"
 import { logUserEvent } from "../../audit/audit.service"
 import { recordUserLogin } from "../auth.service"
+import { generateSessionOptions } from "../session"
 import { getAuthorizationUrl, login } from "./singpass.service"
 
 export const singpassRouter = router({
@@ -197,7 +198,7 @@ export const singpassRouter = router({
 
       ctx.session.destroy()
       ctx.session.userId = verifiedUserId
-      ctx.session.isAuthenticatedWithSingpass = true
+      ctx.session.updateConfig(generateSessionOptions({ ttlInHours: 12 }))
       await ctx.session.save()
 
       return {

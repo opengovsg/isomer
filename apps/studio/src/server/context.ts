@@ -33,6 +33,21 @@ export function createContextInner(opts: CreateContextOptions) {
  * @link https://trpc.io/docs/context
  */
 export const createContext = async (opts: CreateNextContextOptions) => {
+  const session = await getIronSession<SessionData>(
+    opts.req,
+    opts.res,
+    generateSessionOptions({
+      // Temporary as Singpass is live for VAPT
+      // Once VAPT is done and we are releasing to other environments,
+      // we do not need to specify and can let it fallback to default 1 hour
+      ttlInHours: env.NEXT_PUBLIC_APP_ENV === "vapt" ? 1 : 12,
+    }), // Note: this wouldn't overwrite the cookie (e.g. TTL) if it already exists
+  )
+
+  const innerContext = createContextInner({
+    session,
+  })
+
   const growthbookContext = new GrowthBook({
     apiHost: "https://cdn.growthbook.io",
     clientKey: env.GROWTHBOOK_CLIENT_KEY,
@@ -40,20 +55,6 @@ export const createContext = async (opts: CreateNextContextOptions) => {
     disableCache: true,
   })
   await growthbookContext.init({ timeout: 2000 })
-
-  const session = await getIronSession<SessionData>(
-    opts.req,
-    opts.res,
-    generateSessionOptions({ ttlInHours: 1 }),
-  )
-  if (session.isAuthenticatedWithSingpass) {
-    session.updateConfig(generateSessionOptions({ ttlInHours: 12 }))
-    await session.save()
-  }
-
-  const innerContext = createContextInner({
-    session,
-  })
 
   return {
     ...innerContext,
