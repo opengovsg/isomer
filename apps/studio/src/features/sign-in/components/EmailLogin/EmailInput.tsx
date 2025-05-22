@@ -11,6 +11,7 @@ import {
 } from "@opengovsg/design-system-react"
 
 import type { VfnStepData } from "../SignInContext"
+import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { useZodForm } from "~/lib/form"
 import { emailSignInSchema } from "~/schemas/auth/email/sign-in"
 import { trpc } from "~/utils/trpc"
@@ -23,7 +24,7 @@ const EmailInputErrorMessage = ({ type, message }: Partial<FieldError>) => {
         <Text>
           We are having trouble sending an OTP to this email address.{" "}
           <Link
-            href="mailto:support@isomer.gov.sg?subject=I can't receive OTP on Isomer Studio"
+            href={`${ISOMER_SUPPORT_LINK}?subject=I can't receive OTP on Isomer Studio`}
             color="utility.feedback.critical"
             _hover={{
               color: "unset",
