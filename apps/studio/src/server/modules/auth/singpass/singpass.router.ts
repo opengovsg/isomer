@@ -130,6 +130,11 @@ export const singpassRouter = router({
       })
 
       if (!uuid) {
+        ctx.logger.error(
+          { code, codeVerifier, nonce, state: parsedState.data },
+          "Failed to login to Singpass",
+        )
+
         throw new TRPCError({
           // TODO: Change to SERVICE_UNAVAILABLE when TRPC is upgraded to 11.x
           code: "INTERNAL_SERVER_ERROR",

@@ -5,6 +5,7 @@
   "globalEnv": [
     "NODE_ENV",
     "DATABASE_URL",
+    "CI",
     "SESSION_SECRET",
     "NEXT_PUBLIC_S3_REGION",
     "NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME",
@@ -19,11 +20,11 @@
     "build:template": {},
     "clean": {},
     "dev": {
-      "dependsOn": ["db:setup"],
+      "dependsOn": ["services:setup"],
       "cache": false,
       "persistent": true
     },
-    "db:setup": {
+    "services:setup": {
       "cache": false
     },
     "setup:test": {},

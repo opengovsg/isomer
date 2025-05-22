@@ -19,7 +19,7 @@ const UnorderedList = ({
   site,
 }: UnorderedListProps) => {
   return (
-    <ul className={`mt-6 ps-8 ${getUnorderedListType(level)}`}>
+    <ul className={`mt-6 ps-9 ${getUnorderedListType(level)}`}>
       {content.map((item, index) => (
         <ListItem
           key={index}

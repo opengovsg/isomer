@@ -28,8 +28,7 @@ const meta: Meta<ImageProps> = {
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
-      assetsBaseUrl: "https://cms.isomer.gov.sg",
-      navBarItems: [],
+      navbar: { items: [] },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",

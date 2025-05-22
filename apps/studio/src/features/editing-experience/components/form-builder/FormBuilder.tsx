@@ -3,10 +3,10 @@ import type { ValidateFunction } from "ajv"
 import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"
-import Ajv from "ajv"
 import { groupBy } from "lodash"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { ajv } from "~/utils/ajv"
 import { useBuilderErrors } from "./ErrorProvider"
 import {
   JsonFormsAllOfControl,
@@ -19,6 +19,8 @@ import {
   jsonFormsBooleanControlTester,
   JsonFormsCategoryControl,
   jsonFormsCategoryControlTester,
+  JsonFormsChildrenPagesLayoutControl,
+  jsonFormsChildrenPagesLayoutControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
@@ -93,6 +95,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsMetaImageControl,
   },
   {
+    tester: jsonFormsChildrenPagesLayoutControlTester,
+    renderer: JsonFormsChildrenPagesLayoutControl,
+  },
+  {
     // NOTE: If we fall through all our previous testers,
     // we render null so that the users don't get visual noise
     tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
@@ -103,12 +109,6 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsCategoryControl,
   },
 ]
-const ajv = new Ajv({
-  useDefaults: true,
-  allErrors: true,
-  strict: false,
-  logger: false,
-})
 
 interface FormBuilderProps<T> {
   schema: TSchema

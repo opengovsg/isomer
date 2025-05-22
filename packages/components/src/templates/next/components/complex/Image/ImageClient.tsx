@@ -1,34 +1,38 @@
 "use client"
 
-export interface ImageClientProps {
-  src: string
-  alt: string
-  width: string
-  className: string
-  assetsBaseUrl?: string
-  lazyLoading?: boolean
-}
+import { forwardRef } from "react"
 
-export const ImageClient = ({
-  src,
-  alt,
-  width,
-  className,
-  assetsBaseUrl,
-  lazyLoading = true, // next/image defaults to lazy loading true too
-}: ImageClientProps) => {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      width={width}
-      height="auto"
-      className={className}
-      onError={({ currentTarget }) => {
-        currentTarget.onerror = null
-        currentTarget.src = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
-      }}
-      loading={lazyLoading ? "lazy" : "eager"}
-    />
-  )
-}
+import type { ImageClientProps } from "~/interfaces"
+
+export const ImageClient = forwardRef<
+  HTMLImageElement,
+  Omit<ImageClientProps, "ref">
+>(
+  (
+    {
+      src,
+      alt,
+      width,
+      className,
+      assetsBaseUrl,
+      lazyLoading = true, // next/image defaults to lazy loading true too
+    },
+    ref,
+  ) => {
+    return (
+      <img
+        ref={ref}
+        src={src}
+        alt={alt}
+        width={width}
+        height="auto"
+        className={className}
+        onError={({ currentTarget }) => {
+          currentTarget.onerror = null
+          currentTarget.src = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
+        }}
+        loading={lazyLoading ? "lazy" : "eager"}
+      />
+    )
+  },
+)

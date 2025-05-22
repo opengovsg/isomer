@@ -118,6 +118,7 @@ export const collectionRouter = router({
             })
 
           await logResourceEvent(tx, {
+            siteId,
             eventType: "ResourceCreate",
             delta: { before: null, after: collection },
             by: user,
@@ -203,6 +204,7 @@ export const collectionRouter = router({
           })
 
         await logResourceEvent(tx, {
+          siteId,
           eventType: "ResourceCreate",
           by: user,
           delta: {
@@ -214,52 +216,6 @@ export const collectionRouter = router({
         return addedResource
       })
       return { pageId: resource.id }
-    }),
-  // TODO: change this schema
-  getSiblingsOf: protectedProcedure
-    .input(readFolderSchema)
-    .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {
-      // Things that aren't working yet:
-      // 0. Perm checking
-      // 1. Last Edited user and time
-      // 2. Page status(draft, published)
-      return await ctx.db.transaction().execute(async (tx) => {
-        const resource = await tx
-          .selectFrom("Resource")
-          .where("Resource.id", "=", String(resourceId))
-          .where((eb) => {
-            return eb.or([
-              eb("Resource.type", "=", ResourceType.CollectionPage),
-              eb("Resource.type", "=", ResourceType.CollectionLink),
-            ])
-          })
-          .select("Resource.parentId")
-          .executeTakeFirst()
-
-        if (!resource) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Please ensure that you have requested for a collection",
-          })
-        }
-
-        return tx
-          .selectFrom("Resource")
-          .where("Resource.parentId", "=", resource.parentId)
-          .where("Resource.siteId", "=", siteId)
-          .where((eb) => {
-            return eb.or([
-              eb("Resource.type", "=", ResourceType.CollectionPage),
-              eb("Resource.type", "=", ResourceType.CollectionLink),
-            ])
-          })
-          .orderBy("Resource.type", "asc")
-          .orderBy("Resource.title", "asc")
-          .limit(limit)
-          .offset(offset)
-          .select(defaultResourceSelect)
-          .execute()
-      })
     }),
   list: protectedProcedure
     .input(readFolderSchema)
@@ -293,7 +249,13 @@ export const collectionRouter = router({
     }),
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
-    .query(async ({ input: { linkId, siteId } }) => {
+    .query(async ({ ctx, input: { linkId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
       const baseQuery = db
         .selectFrom("Resource")
         .where("Resource.id", "=", String(linkId))
@@ -310,7 +272,13 @@ export const collectionRouter = router({
         .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
         .innerJoin("Blob", "Blob.id", "Version.blobId")
         .select(["Blob.content", "Resource.title"])
-        .executeTakeFirstOrThrow()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "Unable to find the requested collection link",
+            }),
+        )
     }),
 
   updateCollectionLink: protectedProcedure
@@ -369,6 +337,7 @@ export const collectionRouter = router({
           })
 
           await logResourceEvent(tx, {
+            siteId,
             eventType: "ResourceUpdate",
             delta: {
               before: { blob: oldBlob, resource },
