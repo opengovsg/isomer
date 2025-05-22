@@ -10,7 +10,7 @@ import {
   BiSort,
 } from "react-icons/bi"
 
-import type { Resource } from "~prisma/generated/generatedTypes"
+import type { Resource } from "~/server/modules/database"
 import { env } from "~/env.mjs"
 
 export const isAllowedToHaveChildren = (
