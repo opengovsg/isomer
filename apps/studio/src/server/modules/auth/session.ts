@@ -3,10 +3,10 @@ import { type SessionOptions } from "iron-session"
 import { env } from "~/env.mjs"
 
 interface GenerateSessionOptionsProps {
-  ttlInHours?: number
+  ttlInHours: number
 }
 export const generateSessionOptions = ({
-  ttlInHours = 12, // TODO: Change to 1 hour when Singpass has been officially launched
+  ttlInHours,
 }: GenerateSessionOptionsProps): SessionOptions => {
   const ONE_HOUR = 60 * 60
   return {
