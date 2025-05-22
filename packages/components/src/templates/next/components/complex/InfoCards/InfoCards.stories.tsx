@@ -177,7 +177,19 @@ export const WithLink: Story = {
   }),
 }
 
-export const FullImage: Story = {
-  name: "Full Image",
-  args: generateArgs({ maxColumns: "3", variant: "cardsWithFullImages" }),
+export const HomepageFullImage: Story = {
+  name: "Homepage Full Image",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    layout: "homepage",
+  }),
+}
+
+export const ContentFullImage: Story = {
+  name: "Default Full Image",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+  }),
 }

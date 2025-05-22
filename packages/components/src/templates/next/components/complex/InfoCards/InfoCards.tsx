@@ -107,6 +107,7 @@ const InfoCards = ({
           className={compoundStyles.headingContainer({
             layout: simplifiedLayout,
             imageStyle: cardVariant,
+            variant: cardVariant,
           })}
         >
           <h2 className={compoundStyles.headingTitle()}>{title}</h2>

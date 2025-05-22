@@ -156,6 +156,13 @@ export const createInfoCardsStyles = tv({
         cardImageContainer: "lg:aspect-square",
       },
     },
+    {
+      layout: "homepage",
+      variant: INFOCARD_VARIANT.bold,
+      class: {
+        headingContainer: "self-center",
+      },
+    },
   ],
   defaultVariants: {
     layout: "default",
