@@ -10,7 +10,6 @@ import { validateUserPermissionsForSite } from "../site/site.service"
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
-// Creating a wrapper as a reminder to update if we will to introduce a READ-only role
 export const validateUserPermissionsForAsset = async ({
   resourceId,
   action,
