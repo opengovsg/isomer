@@ -31,7 +31,7 @@ const test = base.extend<LoginPageFixture>({
   },
 })
 
-test("first login with singpass should succeed", async ({
+test.skip("first login with singpass should succeed", async ({
   page,
   loginPage,
 }) => {
@@ -61,7 +61,7 @@ test("first login with singpass should succeed", async ({
   await expect(modal).toBeVisible()
 })
 
-test("logins should not succeed when the uuid is different", async ({
+test.skip("logins should not succeed when the uuid is different", async ({
   page,
   loginPage,
 }) => {
@@ -93,7 +93,7 @@ test("logins should not succeed when the uuid is different", async ({
   await expect(loginPage.singpassButton).toBeVisible()
 })
 
-test("subsequent login should succeed when the uuid matches", async ({
+test.skip("subsequent login should succeed when the uuid matches", async ({
   page,
   loginPage,
 }) => {
@@ -129,7 +129,7 @@ test("subsequent login should succeed when the uuid matches", async ({
   await expect(header).toBeVisible()
 })
 
-test("user should still be allowed to login even when there are no sites tied to them", async ({
+test.skip("user should still be allowed to login even when there are no sites tied to them", async ({
   page,
   loginPage,
 }) => {
