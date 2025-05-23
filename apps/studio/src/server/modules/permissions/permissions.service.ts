@@ -4,11 +4,11 @@ import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
 import type {
+  CrudResourceActions,
   PermissionsProps,
   ResourceAbility,
   SiteAbility,
   UserManagementActions,
-  UserPermissionsProps,
 } from "./permissions.type"
 import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
 import { ADMIN_ROLE, ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
@@ -81,7 +81,7 @@ export const validateUserPermissionsForResource = async ({
   action,
   resourceId = null,
   ...rest
-}: UserPermissionsProps) => {
+}: PermissionsProps & { action: CrudResourceActions | "publish" }) => {
   // TODO: this is using site wide permissions for now
   // we should fetch the oldest `parent` of this resource eventually
   const hasCustomParentId = resourceId === null || action === "create"

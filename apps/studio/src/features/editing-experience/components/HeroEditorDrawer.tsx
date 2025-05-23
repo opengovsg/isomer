@@ -3,7 +3,6 @@ import { useCallback } from "react"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
-import Ajv from "ajv"
 import cloneDeep from "lodash/cloneDeep"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
@@ -13,6 +12,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
+import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import {
@@ -24,8 +24,6 @@ import { DrawerHeader } from "./Drawer/DrawerHeader"
 import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
 import { uploadModifiedAssets } from "./utils"
-
-const ajv = new Ajv({ strict: false, logger: false })
 
 export default function HeroEditorDrawer(): JSX.Element {
   const {
@@ -45,7 +43,7 @@ export default function HeroEditorDrawer(): JSX.Element {
   } = useEditorDrawerContext()
   const toast = useToast()
 
-  const subSchema = getComponentSchema("hero")
+  const subSchema = getComponentSchema({ component: "hero" })
   const validateFn = ajv.compile<IsomerComponent>(subSchema)
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
@@ -210,7 +208,7 @@ export default function HeroEditorDrawer(): JSX.Element {
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
             <FormBuilder<IsomerComponent>
-              schema={getComponentSchema("hero")}
+              schema={subSchema}
               validateFn={validateFn}
               data={previewPageState.content[0]}
               handleChange={handleChange}

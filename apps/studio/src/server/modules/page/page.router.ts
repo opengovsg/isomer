@@ -534,9 +534,19 @@ export const pageRouter = router({
 
   publishPage: protectedProcedure
     .input(publishPageSchema)
-    .mutation(async ({ ctx, input: { siteId, pageId } }) =>
-      publishPageResource(ctx.logger, siteId, String(pageId), ctx.user.id),
-    ),
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "publish",
+      })
+      return publishPageResource(
+        ctx.logger,
+        siteId,
+        String(pageId),
+        ctx.user.id,
+      )
+    }),
 
   updateMeta: protectedProcedure
     .input(updatePageMetaSchema)
