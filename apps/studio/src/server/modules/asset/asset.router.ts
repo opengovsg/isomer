@@ -50,7 +50,7 @@ export const assetRouter = router({
       await validateUserPermissionsForAsset({
         siteId,
         resourceId,
-        action: "read",
+        action: "delete",
         userId: ctx.user.id,
       })
 

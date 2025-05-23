@@ -7,8 +7,11 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import {
+  setupAdminPermissions,
   setupEditorPermissions,
+  setupFolder,
   setupPageResource,
+  setupPublisherPermissions,
   setupSite,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
@@ -165,8 +168,14 @@ describe("asset.router", async () => {
 
     it("should throw 403 if user does not have permission to read resource", async () => {
       // Arrange
-      const { site, page } = await setupPageResource({
+      const { site } = await setupSite()
+      const { folder } = await setupFolder({
+        siteId: site.id,
+      })
+      const { page } = await setupPageResource({
         resourceType: ResourceType.Page,
+        parentId: folder.id,
+        siteId: site.id,
       })
 
       // Act
@@ -186,12 +195,126 @@ describe("asset.router", async () => {
       )
     })
 
-    it("should return success if user has permission to read resource", async () => {
+    it("should return success if user does only has Editor permission to read non-root resource", async () => {
       // Arrange
-      const { site, page } = await setupPageResource({
+      const { site } = await setupSite()
+      const { folder } = await setupFolder({
+        siteId: site.id,
+      })
+      const { page } = await setupPageResource({
         resourceType: ResourceType.Page,
+        parentId: folder.id,
+        siteId: site.id,
       })
       await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.deleteAssets({
+        siteId: site.id,
+        resourceId: page.id,
+        fileKeys: ["test.png"],
+      })
+
+      // Assert
+      await expect(result).resolves.not.toThrow()
+    })
+
+    it("should throw 403 if user does only has Editor permission to read root resource", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.deleteAssets({
+        siteId: site.id,
+        resourceId: page.id,
+        fileKeys: ["test.png"],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return success if user does only has Publisher permission to read non-root resource", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { folder } = await setupFolder({
+        siteId: site.id,
+      })
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        siteId: site.id,
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.deleteAssets({
+        siteId: site.id,
+        resourceId: page.id,
+        fileKeys: ["test.png"],
+      })
+
+      // Assert
+      await expect(result).resolves.not.toThrow()
+    })
+
+    it("should throw 403 if user does only has Publisher permission to read root resource", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+      })
+      await setupPublisherPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.deleteAssets({
+        siteId: site.id,
+        resourceId: page.id,
+        fileKeys: ["test.png"],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return success if user does only has Admin permission to read root resource", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+      })
+      await setupAdminPermissions({
         siteId: site.id,
         userId: session.userId,
       })
