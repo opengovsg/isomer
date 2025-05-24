@@ -32,8 +32,8 @@ import { logResourceEvent } from "../audit/audit.service"
 import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
+  bulkValidateUserPermissionsForResources,
   definePermissionsForResource,
-  validateUserPermissionsForResource,
 } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
@@ -118,11 +118,11 @@ export const resourceRouter = router({
         })
       }
 
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         action: "read",
+        resourceIds: [resourceId],
         userId: ctx.user.id,
         siteId: resource.siteId,
-        resourceId,
       })
 
       return resource
@@ -133,11 +133,11 @@ export const resourceRouter = router({
     .output(getChildrenOutputSchema)
     .query(
       async ({ ctx, input: { siteId, resourceId, cursor: offset, limit } }) => {
-        await validateUserPermissionsForResource({
+        await bulkValidateUserPermissionsForResources({
           action: "read",
-          siteId: Number(siteId),
+          resourceIds: [resourceId],
           userId: ctx.user.id,
-          resourceId,
+          siteId: Number(siteId),
         })
 
         // Validate site and resourceId exists and is a Folder
@@ -196,11 +196,11 @@ export const resourceRouter = router({
     .output(getChildrenOutputSchema)
     .query(
       async ({ ctx, input: { resourceId, siteId, cursor: offset, limit } }) => {
-        await validateUserPermissionsForResource({
+        await bulkValidateUserPermissionsForResources({
           action: "read",
-          siteId: Number(siteId),
+          resourceIds: [resourceId],
           userId: ctx.user.id,
-          resourceId,
+          siteId: Number(siteId),
         })
 
         // Validate site and resourceId exists and is a folder
@@ -266,11 +266,11 @@ export const resourceRouter = router({
     .input(getNestedFolderChildrenSchema)
     .output(getNestedFolderChildrenOutputSchema)
     .query(async ({ ctx, input: { resourceId, siteId } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         action: "read",
+        resourceIds: [resourceId],
         userId: ctx.user.id,
         siteId: Number(siteId),
-        resourceId,
       })
 
       const resource = await db
@@ -490,11 +490,11 @@ export const resourceRouter = router({
   countWithoutRoot: protectedProcedure
     .input(countResourceSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         action: "read",
+        resourceIds: [resourceId ? String(resourceId) : null],
         userId: ctx.user.id,
-        siteId,
-        resourceId: resourceId ? String(resourceId) : null,
+        siteId: Number(siteId),
       })
 
       // TODO(perf): If too slow, consider caching this count, but 4-5 million rows should be fine
@@ -520,11 +520,11 @@ export const resourceRouter = router({
   listWithoutRoot: protectedProcedure
     .input(listResourceSchema)
     .query(async ({ ctx, input: { siteId, resourceId, offset, limit } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         action: "read",
+        resourceIds: [resourceId ? String(resourceId) : null],
         userId: ctx.user.id,
-        siteId,
-        resourceId: resourceId ? String(resourceId) : null,
+        siteId: Number(siteId),
       })
 
       let query = db
@@ -563,11 +563,11 @@ export const resourceRouter = router({
   delete: protectedProcedure
     .input(deleteResourceSchema)
     .mutation(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         action: "delete",
+        resourceIds: [resourceId],
         userId: ctx.user.id,
-        siteId,
-        resourceId,
+        siteId: Number(siteId),
       })
 
       const user = await db
@@ -629,11 +629,11 @@ export const resourceRouter = router({
   getParentOf: protectedProcedure
     .input(getParentSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         action: "read",
+        resourceIds: [resourceId],
         userId: ctx.user.id,
-        siteId,
-        resourceId,
+        siteId: Number(siteId),
       })
 
       const resource = await db
@@ -681,11 +681,11 @@ export const resourceRouter = router({
         })
       }
 
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         action: "read",
+        resourceIds: [resource.id],
         userId: ctx.user.id,
         siteId: resource.siteId,
-        resourceId: resource.id,
       })
 
       const result = await getWithFullPermalink({ resourceId })
@@ -722,11 +722,11 @@ export const resourceRouter = router({
     .input(getAncestryStackSchema)
     .output(getAncestryStackOutputSchema)
     .query(async ({ ctx, input: { siteId, resourceId, includeSelf } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         action: "read",
+        resourceIds: [resourceId ? String(resourceId) : null],
         userId: ctx.user.id,
         siteId: Number(siteId),
-        resourceId: resourceId ? String(resourceId) : null,
       })
 
       if (!resourceId) {
@@ -745,18 +745,14 @@ export const resourceRouter = router({
     .input(getBatchAncestryWithSelfSchema)
     .output(getBatchAncestryWithSelfOutputSchema)
     .query(async ({ ctx, input: { siteId, resourceIds } }) => {
-      // Validate permissions concurrently for all resourceIds
-      // Note: might want to refactor this if performance becomes an issue
-      await Promise.all(
-        resourceIds.map((resourceId) =>
-          validateUserPermissionsForResource({
-            action: "read",
-            userId: ctx.user.id,
-            siteId: Number(siteId),
-            resourceId: resourceId ? String(resourceId) : null,
-          }),
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        resourceIds: resourceIds.map((resourceId) =>
+          resourceId ? String(resourceId) : null,
         ),
-      )
+        userId: ctx.user.id,
+        siteId: Number(siteId),
+      })
 
       if (resourceIds.length === 0) {
         return []
@@ -810,18 +806,14 @@ export const resourceRouter = router({
     .input(searchWithResourceIdsSchema)
     .output(searchWithResourceIdsOutputSchema)
     .query(async ({ ctx, input: { siteId, resourceIds } }) => {
-      // Validate permissions concurrently for all resourceIds
-      // Note: might want to refactor this if performance becomes an issue
-      await Promise.all(
-        resourceIds.map((resourceId) =>
-          validateUserPermissionsForResource({
-            userId: ctx.user.id,
-            siteId: Number(siteId),
-            resourceId: resourceId ? String(resourceId) : null,
-            action: "read",
-          }),
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        resourceIds: resourceIds.map((resourceId) =>
+          resourceId ? String(resourceId) : null,
         ),
-      )
+        userId: ctx.user.id,
+        siteId: Number(siteId),
+      })
 
       if (resourceIds.length === 0) {
         return []
@@ -841,11 +833,11 @@ export const resourceRouter = router({
     .input(getIndexPageSchema)
     .output(getIndexPageOutputSchema)
     .query(async ({ ctx, input: { siteId, parentId } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         action: "read",
+        resourceIds: [parentId],
         userId: ctx.user.id,
         siteId: Number(siteId),
-        resourceId: parentId,
       })
 
       const parent = await db

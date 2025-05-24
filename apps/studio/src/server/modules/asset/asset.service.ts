@@ -5,7 +5,7 @@ import type { UserPermissionsProps } from "../permissions/permissions.type"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { env } from "~/env.mjs"
 import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
-import { validateUserPermissionsForResource } from "../permissions/permissions.service"
+import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
@@ -29,8 +29,8 @@ export const validateUserPermissionsForAsset = async ({
   // Permissions for assets share the same permissions as resources
   // because the underlying assumption is that the asset is tied to the resource
   if (!resourceId) return false
-  await validateUserPermissionsForResource({
-    resourceId,
+  await bulkValidateUserPermissionsForResources({
+    resourceIds: [resourceId],
     action,
     userId,
     siteId,

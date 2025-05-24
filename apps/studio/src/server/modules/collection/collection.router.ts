@@ -13,7 +13,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
 import { db, jsonb, ResourceState, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { validateUserPermissionsForResource } from "../permissions/permissions.service"
+import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
   defaultResourceSelect,
   getBlobOfResource,
@@ -31,7 +31,7 @@ export const collectionRouter = router({
   getMetadata: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
         userId: ctx.user.id,
@@ -57,11 +57,11 @@ export const collectionRouter = router({
         ctx,
         input: { collectionTitle, permalink, siteId, parentFolderId },
       }) => {
-        await validateUserPermissionsForResource({
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "create",
           userId: ctx.user.id,
-          resourceId: !!parentFolderId ? String(parentFolderId) : null,
+          resourceIds: [!!parentFolderId ? String(parentFolderId) : null],
         })
 
         const user = await db
@@ -136,11 +136,11 @@ export const collectionRouter = router({
   createCollectionPage: protectedProcedure
     .input(createCollectionPageSchema)
     .mutation(async ({ ctx, input }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId: input.siteId,
         action: "create",
         userId: ctx.user.id,
-        resourceId: !!input.collectionId ? String(input.collectionId) : null,
+        resourceIds: [!!input.collectionId ? String(input.collectionId) : null],
       })
 
       const user = await db
@@ -220,7 +220,7 @@ export const collectionRouter = router({
   list: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
         userId: ctx.user.id,
@@ -250,10 +250,10 @@ export const collectionRouter = router({
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
     .query(async ({ ctx, input: { linkId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const baseQuery = db
@@ -291,10 +291,10 @@ export const collectionRouter = router({
         // Things that aren't working yet:
         // 1. Last Edited user and time
         // 2. Page status(draft, published)
-        await validateUserPermissionsForResource({
-          userId: ctx.user.id,
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "update",
+          userId: ctx.user.id,
         })
 
         const content = createCollectionLinkJson({

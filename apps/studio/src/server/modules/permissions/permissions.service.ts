@@ -2,8 +2,10 @@ import type { GrowthBook } from "@growthbook/growthbook"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
+import _ from "lodash"
 
 import type {
+  BulkPermissionsProps,
   CrudResourceActions,
   PermissionsProps,
   ResourceAbility,
@@ -77,45 +79,70 @@ export const definePermissionsForSite = async ({
   return builder.build({ detectSubjectType: () => "Site" })
 }
 
-export const validateUserPermissionsForResource = async ({
+// TODO: this is using site wide permissions for now
+// we should fetch the oldest `parent` of this resource eventually
+export const bulkValidateUserPermissionsForResources = async ({
   action,
-  resourceId = null,
+  resourceIds,
   ...rest
-}: PermissionsProps & { action: CrudResourceActions | "publish" }) => {
-  // TODO: this is using site wide permissions for now
-  // we should fetch the oldest `parent` of this resource eventually
-  const hasCustomParentId = resourceId === null || action === "create"
-  const resource = hasCustomParentId
-    ? // NOTE: If this is at root, we will always use `null` as the parent
+}: BulkPermissionsProps & { action: CrudResourceActions | "publish" }) => {
+  const generateResources = async (
+    resourceIds: NonNullable<BulkPermissionsProps["resourceIds"]>,
+  ): Promise<{ parentId: string | null }[]> => {
+    if (resourceIds.length === 0) {
+      return [{ parentId: null }]
+    }
+
+    if (action === "create") {
+      // NOTE: If this is at root, we will always use `null` as the parent
       // otherwise, this is a `create` action and the parent of the resource that
       // we want to create is the resource passed in.
       // However, because we don't have root level permissions for now,
       // we will pass in `null` to signify the site level permissions
-      { parentId: resourceId ?? null }
-    : await db
-        .selectFrom("Resource")
-        .where("Resource.id", "=", resourceId)
-        .select(["Resource.parentId"])
-        .executeTakeFirst()
+      return resourceIds.map((resourceId) => ({ parentId: resourceId }))
+    }
 
-  if (!resource) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Resource not found",
-    })
+    const [nullResourceIds, nonNullResourceIds] = _.partition(
+      resourceIds,
+      (resourceId) => resourceId === null,
+    )
+
+    let resources: { parentId: string | null }[] = []
+
+    if (nonNullResourceIds.length > 0) {
+      resources = await db
+        .selectFrom("Resource")
+        .where("id", "in", nonNullResourceIds)
+        .select(["Resource.parentId"])
+        .execute()
+
+      if (nonNullResourceIds.length !== resources.length) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            resourceIds.length === 1
+              ? "Resource not found"
+              : "Resources not found",
+        })
+      }
+    }
+
+    return resources.concat(nullResourceIds.map(() => ({ parentId: null })))
   }
 
   const perms = await definePermissionsForResource({
     ...rest,
   })
-
-  // TODO: create should check against the current resource id
-  if (perms.cannot(action, resource)) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "You do not have sufficient permissions to perform this action",
-    })
-  }
+  const resources = await generateResources(resourceIds ?? [])
+  resources.forEach((resource) => {
+    if (perms.cannot(action, resource)) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message:
+          "You do not have sufficient permissions to perform this action",
+      })
+    }
+  })
 }
 
 export const getSitePermissions = async ({
