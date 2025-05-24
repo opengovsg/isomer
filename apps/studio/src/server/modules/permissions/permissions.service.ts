@@ -130,9 +130,7 @@ export const bulkValidateUserPermissionsForResources = async ({
     return resources.concat(nullResourceIds.map(() => ({ parentId: null })))
   }
 
-  const perms = await definePermissionsForResource({
-    ...rest,
-  })
+  const perms = await definePermissionsForResource({ ...rest })
   const resources = await generateResources(resourceIds ?? [])
   resources.forEach((resource) => {
     if (perms.cannot(action, resource)) {
