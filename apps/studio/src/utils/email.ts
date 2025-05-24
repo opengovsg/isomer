@@ -10,7 +10,8 @@ export const isGovEmail = (value: unknown) => {
   if (
     env.NEXT_PUBLIC_APP_ENV === "vapt" &&
     typeof value === "string" &&
-    ["marta@cure53.de", "rupp@cure53.de", "dennis@cure53.de"].includes(value)
+    isEmail(value) &&
+    value.endsWith("@cure53.de")
   ) {
     return true
   }
