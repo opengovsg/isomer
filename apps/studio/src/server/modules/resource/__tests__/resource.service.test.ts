@@ -989,7 +989,7 @@ describe("resource.service", () => {
       expect(child?.summary).toBe("Hello im the index page") // should be from the index page
     })
 
-    it.only("should include children resources when resourceId is a IndexPage (PUBLISHED)", async () => {
+    it("should include children resources when resourceId is a IndexPage (PUBLISHED)", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
