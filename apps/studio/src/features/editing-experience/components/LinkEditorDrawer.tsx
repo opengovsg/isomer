@@ -3,7 +3,6 @@ import { useMemo, useState } from "react"
 import { Box, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { LAYOUT_PAGE_MAP } from "@opengovsg/isomer-components"
-import Ajv from "ajv"
 import { useAtom, useSetAtom } from "jotai"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
@@ -14,6 +13,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ADMIN_ROLE } from "~/lib/growthbook"
+import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
 import { linkAtom, linkRefAtom } from "../atoms"
@@ -22,7 +22,6 @@ import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
 import { RawJsonEditor } from "./RawJsonEditor"
 
-const ajv = new Ajv({ strict: false, logger: false })
 const schema = LAYOUT_PAGE_MAP.link
 type IsomerLinkSchema = Static<typeof schema>
 const validateFn = ajv.compile<IsomerLinkSchema>(schema)

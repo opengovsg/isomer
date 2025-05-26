@@ -21,7 +21,10 @@ export const BlockquoteSchema = Type.Object(
     // because the schema does not support having dependent properties. If no
     // image is provided, the alt text will be ignored
     imageSrc: Type.Optional(ImageSrcSchema),
-    imageAlt: AltTextSchema,
+    // Setting as optional because the image is optional.
+    // If no image is provided and this is required, the schema will throw an error,
+    // making it impossible to create a blockquote without an image on Studio
+    imageAlt: Type.Optional(AltTextSchema),
   },
   {
     title: "Blockquote component",
