@@ -5,6 +5,7 @@ import {
 } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
+import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 
 interface SetupPermissionsProps {
@@ -248,7 +249,7 @@ const getFallbackPermalink = (resourceType: ResourceType) => {
     case ResourceType.CollectionPage:
       return "test-collection-page"
     case ResourceType.IndexPage:
-      return "test-index-page"
+      return INDEX_PAGE_PERMALINK
     default:
       return "test-page"
   }
@@ -334,11 +335,13 @@ export const setupFolder = async ({
   permalink = "test-folder",
   parentId = null,
   title = "test folder",
+  state = ResourceState.Draft,
 }: {
   siteId?: number
   permalink?: string
   parentId?: string | null
   title?: string
+  state?: ResourceState
 } = {}) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
 
@@ -350,7 +353,7 @@ export const setupFolder = async ({
       parentId,
       title,
       draftBlobId: null,
-      state: ResourceState.Draft,
+      state,
       type: ResourceType.Folder,
       publishedVersionId: null,
     })
@@ -370,11 +373,13 @@ export const setupCollection = async ({
   permalink = "test-collection",
   parentId = null,
   title = "test collection",
+  state = ResourceState.Draft,
 }: {
   siteId?: number
   permalink?: string
   parentId?: string | null
   title?: string
+  state?: ResourceState
 } = {}) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
 
@@ -386,7 +391,7 @@ export const setupCollection = async ({
       parentId,
       title,
       draftBlobId: null,
-      state: ResourceState.Draft,
+      state,
       type: ResourceType.Collection,
       publishedVersionId: null,
     })
