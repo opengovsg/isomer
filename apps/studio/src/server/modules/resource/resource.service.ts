@@ -318,19 +318,15 @@ export const getLocalisedSitemap = async (
     `.as("thumbnail")
 
   // Get the actual resource first
-  const resource = await db
-    .selectFrom("Resource")
-    .where("Resource.siteId", "=", siteId)
-    .where("Resource.id", "=", String(resourceId))
-    .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
-    .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
-    .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
-    .select(sitemapResourceWithContentSelect)
+  const resource = await getById(db, {
+    resourceId,
+    siteId,
+  })
+    .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
 
   const allResources = await db
-    // Step 1: Get all the ancestors of the resource, including the resource itself.
-    // The recursion starts with the resource and works upwards via its parentId.
+    // Step 1: Get all the ancestors of the resource
     .withRecursive("ancestors", (eb) =>
       eb
         // Base case: Get the actual resource
@@ -357,9 +353,7 @@ export const getLocalisedSitemap = async (
             ]),
         ),
     )
-    // Step 2: Get the immediate siblings of the resource.
-    // These are resources sharing the same parentId, excluding the resource itself
-    // and FolderMeta/CollectionMeta types.
+    // Step 2: Get the immediate siblings of the resource
     .with("immediateSiblings", (eb) =>
       eb
         .selectFrom("Resource")
@@ -412,15 +406,12 @@ export const getLocalisedSitemap = async (
     .orderBy("title asc")
     .execute()
 
-  // Step 5: Construct the localised sitemap object
+  // Step 4: Construct the localised sitemap object
   const rootResource = await db
     .selectFrom("Resource")
     .where("Resource.siteId", "=", siteId)
     .where("Resource.type", "=", ResourceType.RootPage)
-    .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
-    .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
-    .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
-    .select(sitemapResourceWithContentSelect)
+    .select(defaultResourceSelect)
     .executeTakeFirst()
 
   if (rootResource === undefined) {
