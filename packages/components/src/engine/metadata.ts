@@ -60,9 +60,13 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
 
 export const getMetadata = (props: IsomerPageSchemaType) => {
   const faviconUrl = `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`
-  const canonicalUrl = props.site.url
-    ? new URL(props.page.permalink, props.site.url).toString()
-    : props.page.permalink
+  const canonicalUrl = (() => {
+    try {
+      return new URL(props.page.permalink, props.site.url).toString()
+    } catch {
+      return props.page.permalink
+    }
+  })()
   const metaImage = getMetaImage(props)
   const metaImageUrl = `${props.site.assetsBaseUrl ?? ""}${metaImage ?? props.site.logoUrl}`
 
