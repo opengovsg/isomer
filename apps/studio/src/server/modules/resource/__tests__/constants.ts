@@ -27,6 +27,7 @@ export const PAGE_BLOB: IsomerSchema = {
       title: "This is an infopic",
       description: "This is the description for the infopic component",
       imageSrc: "https://placehold.co/600x400",
+      imageAlt: "This is the alt text for the infopic component",
     },
     {
       type: "keystatistics",

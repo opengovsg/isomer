@@ -527,6 +527,7 @@ export const resourceRouter = router({
       const user = await db
         .selectFrom("User")
         .selectAll()
+        .where("id", "=", ctx.user.id)
         .executeTakeFirstOrThrow(
           () =>
             new TRPCError({

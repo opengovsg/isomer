@@ -21,7 +21,7 @@ import {
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
-import { db } from "../../database"
+import { db, ResourceType } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
 import { collectionRouter } from "../collection.router"
 import {
@@ -752,6 +752,131 @@ describe("collection.router", async () => {
     })
   })
 
+  describe("readCollectionLink", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Act
+      const { site } = await setupCollection()
+      const result = unauthedCaller.readCollectionLink({
+        siteId: site.id,
+        linkId: 999,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+      expect(auditSpy).not.toHaveBeenCalled()
+    })
+
+    it("should throw 404 if reading a non-existent `linkId`", async () => {
+      // Arrange
+      const { site } = await setupCollection()
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const expected = caller.readCollectionLink({
+        siteId: site.id,
+        linkId: 999,
+      })
+
+      // Assert
+      await expect(expected).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Unable to find the requested collection link",
+        }),
+      )
+      expect(auditSpy).not.toHaveBeenCalled()
+    })
+
+    it("should throw 404 if the resource type is not a `CollectionLink`", async () => {
+      // Arrange
+      const { site, collection } = await setupCollection()
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const expected = caller.readCollectionLink({
+        siteId: site.id,
+        linkId: Number(collection.id),
+      })
+
+      // Assert
+      await expect(expected).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Unable to find the requested collection link",
+        }),
+      )
+      expect(auditSpy).not.toHaveBeenCalled()
+    })
+
+    it("should throw 403 if the site does not exist", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+
+      // Act
+      const expected = caller.readCollectionLink({
+        siteId: 999,
+        linkId: Number(page.id),
+      })
+
+      // Assert
+      await expect(expected).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      expect(auditSpy).not.toHaveBeenCalled()
+    })
+
+    it("should throw 403 if the user does not have `read` permissions", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+
+      // Act
+      const expected = caller.readCollectionLink({
+        siteId: site.id,
+        linkId: Number(page.id),
+      })
+
+      // Assert
+      await expect(expected).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      expect(auditSpy).not.toHaveBeenCalled()
+    })
+    it("should read the link successfully", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page, blob } = await setupPageResource({
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionLink,
+        siteId: site.id,
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const expected = await caller.readCollectionLink({
+        siteId: site.id,
+        linkId: Number(page.id),
+      })
+
+      // Assert
+      expect(expected.title).toEqual(page.title)
+      expect(expected.content).toEqual(blob.content)
+    })
+  })
+
   describe("updateCollectionLink", () => {
     it("should throw 401 if not logged in", async () => {
       // Act
@@ -916,7 +1041,7 @@ describe("collection.router", async () => {
 
     it("should update the collection link successfully", async () => {
       // Arrange
-      const { page, site } = await setupPageResource({
+      const { blob, page, site } = await setupPageResource({
         resourceType: "CollectionLink",
       })
       const originalBlob = await db
@@ -949,8 +1074,12 @@ describe("collection.router", async () => {
         resource: _.omit(page, ["createdAt", "updatedAt"]),
       })
       expect(auditEntry.userId).toBe(session.userId)
-      const actual = getCollectionItemByPermalink(page.permalink, page.parentId)
-      expect(expected).toMatchObject(actual)
+      // NOTE: For collection links, they have no content.
+      // During our update, we only update the `page` property
+      // and make the content the default collection link content
+      // which is an empty array
+      expect(expected.content.content).toEqual([])
+      expect(expected.id).toEqual(blob.id)
     })
 
     it.skip("should throw when trying to update to a deleted `ref`")

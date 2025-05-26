@@ -4,7 +4,7 @@ export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export { CalloutSchema, type CalloutProps } from "./Callout"
 export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
-export { HeroSchema, type HeroProps } from "./Hero"
+export { HERO_STYLE, HeroSchema, type HeroProps } from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"
 export {
   generateImageSrcSchema,
