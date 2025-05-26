@@ -1,15 +1,17 @@
 import type { MenuItemProps as ChakraMenuItemProps } from "@chakra-ui/react"
 import { useMemo } from "react"
-import { MenuItem as ChakraMenuItem, cssVar } from "@chakra-ui/react"
+import { MenuItem as ChakraMenuItem, cssVar, Tooltip } from "@chakra-ui/react"
 
 const $bg = cssVar("menu-bg")
 
 export interface MenuItemProps extends ChakraMenuItemProps {
   colorScheme?: "critical"
+  tooltip?: string
 }
 
 export const MenuItem = ({
   colorScheme,
+  tooltip,
   ...menuItemProps
 }: MenuItemProps): JSX.Element => {
   // Unable to use useMultiStyleConfig here because Menu parent still controls
@@ -39,5 +41,13 @@ export const MenuItem = ({
     }
   }, [colorScheme])
 
-  return <ChakraMenuItem {...menuItemProps} sx={extraStyles} />
+  const menuItem = <ChakraMenuItem {...menuItemProps} sx={extraStyles} />
+
+  return tooltip ? (
+    <Tooltip label={tooltip} placement="right">
+      {menuItem}
+    </Tooltip>
+  ) : (
+    menuItem
+  )
 }
