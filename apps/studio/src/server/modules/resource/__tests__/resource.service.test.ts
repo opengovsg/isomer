@@ -1,5 +1,6 @@
 import { ResourceType } from "@prisma/client"
 import { pick } from "lodash"
+import { resetTables } from "tests/integration/helpers/db"
 import {
   setupBlob,
   setupCollectionMeta,
@@ -776,6 +777,10 @@ describe("resource.service", () => {
   })
 
   describe("getLocalisedSitemap", () => {
+    beforeEach(async () => {
+      await resetTables("Site", "Resource", "Blob", "Version", "User")
+    })
+
     it("should throw an error if `siteId` is not found", async () => {
       // Arrange
       const { page } = await setupPageResource({ resourceType: "Page" })
