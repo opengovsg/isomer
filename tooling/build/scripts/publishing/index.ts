@@ -221,13 +221,18 @@ function generateSitemapTree(
     return undefined
   }
 
-  // Get the immediate children of the current path
+  // NOTE: Get the immediate children of the current path
   const childrenPaths = Array.from(
     new Set(
       entriesWithPathPrefix.map(
         (entry) =>
           entry.permalink
             .slice(
+              // NOTE: This is either one or two based on whether it is the root.
+              // This is because at this point, the path prefix would either be
+              // `/`if root, or `/a/b/` if not root.
+              // Hence, we have to remove the whole prefix based on whether it has
+              // just a single `/`(the single `/` is both leading and trailing) or both leading and trailing `/`
               pathPrefixWithoutLeadingSlash.length +
                 (pathPrefix.length === 1 ? 1 : 2),
             )

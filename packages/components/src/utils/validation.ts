@@ -112,3 +112,10 @@ export const VIDEO_EMBED_URL_REGEXES = {
 export const VIDEO_EMBED_URL_PATTERN = Object.values(VIDEO_EMBED_URL_REGEXES)
   .map((re) => `(${re})`)
   .join("|")
+
+// ✅ "hello"
+// ✅ " hello " (has non-whitespace in the middle)
+// ✅ " a " (one letter surrounded by spaces)
+// ❌ "" (empty string)
+// ❌ " " (only whitespace)
+export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"

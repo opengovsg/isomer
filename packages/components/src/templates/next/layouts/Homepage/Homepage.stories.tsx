@@ -5,6 +5,7 @@ import { http, HttpResponse } from "msw"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { HomePageSchemaType } from "~/engine"
+import type { HeroProps } from "~/interfaces/complex/Hero"
 import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import Homepage from "./Homepage"
 
@@ -61,9 +62,14 @@ type Story = StoryObj<typeof Homepage>
 
 const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
 
-export const Default: Story = {
-  name: "Homepage",
-  args: {
+const generateArgs = ({
+  heroProps,
+  isDarkVariant = false,
+}: {
+  heroProps: Partial<HeroProps>
+  isDarkVariant?: boolean
+}): HomePageSchemaType => {
+  return {
     layout: "homepage",
     site: {
       siteName: "Isomer Next",
@@ -138,127 +144,129 @@ export const Default: Story = {
       theme: "isomer-next",
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
-      navBarItems: [
-        {
-          name: "About us",
-          url: "/item-one",
-          items: [
-            {
-              name: "PA's network one",
-              url: "/item-one/pa-network-one",
-              description:
-                "Click here and brace yourself for mild disappointment.",
-            },
-            {
-              name: "PA's network two",
-              url: "/item-one/pa-network-two",
-              description:
-                "Click here and brace yourself for mild disappointment.",
-            },
-            {
-              name: "PA's network three",
-              url: "/item-one/pa-network-three",
-            },
-            {
-              name: "PA's network four",
-              url: "/item-one/pa-network-four",
-              description:
-                "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-            },
-            {
-              name: "PA's network five",
-              url: "/item-one/pa-network-five",
-              description:
-                "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-            },
-            {
-              name: "PA's network six",
-              url: "/item-one/pa-network-six",
-              description:
-                "Click here and brace yourself for mild disappointment.",
-            },
-          ],
-        },
-        {
-          name: "Industries",
-          url: "/item-two",
-          description: "This is a description of the item.",
-          items: [
-            {
-              name: "A sub item",
-              url: "/item-two/sub-item",
-              description:
-                "Click here and brace yourself for mild disappointment.",
-            },
-            {
-              name: "Another sub item",
-              url: "/item-two/another-sub-item",
-            },
-          ],
-        },
-        {
-          name: "Media",
-          url: "/item-three",
-          items: [
-            {
-              name: "A sub item",
-              url: "/item-three/sub-item",
-            },
-            {
-              name: "Another sub item",
-              url: "/item-three/another-sub-item",
-              description:
-                "Click here and brace yourself for mild disappointment.",
-            },
-          ],
-        },
-        {
-          name: "Careers",
-          url: "/item-four",
-          items: [
-            {
-              name: "A sub item",
-              url: "/item-four/sub-item",
-            },
-            {
-              name: "Another sub item",
-              url: "/item-four/another-sub-item",
-            },
-          ],
-        },
-        {
-          name: "Publications",
-          url: "/item-five",
-          items: [
-            {
-              name: "A sub item",
-              url: "/item-five/sub-item",
-            },
-            {
-              name: "Another sub item",
-              url: "/item-five/another-sub-item",
-            },
-          ],
-        },
-        {
-          name: "Newsroom",
-          url: "/item-six",
-          items: [
-            {
-              name: "A sub item",
-              url: "/item-six/sub-item",
-            },
-            {
-              name: "Another sub item",
-              url: "/item-six/another-sub-item",
-            },
-          ],
-        },
-        {
-          name: "Contact us",
-          url: "/single-item",
-        },
-      ],
+      navbar: {
+        items: [
+          {
+            name: "About us",
+            url: "/item-one",
+            items: [
+              {
+                name: "PA's network one",
+                url: "/item-one/pa-network-one",
+                description:
+                  "Click here and brace yourself for mild disappointment.",
+              },
+              {
+                name: "PA's network two",
+                url: "/item-one/pa-network-two",
+                description:
+                  "Click here and brace yourself for mild disappointment.",
+              },
+              {
+                name: "PA's network three",
+                url: "/item-one/pa-network-three",
+              },
+              {
+                name: "PA's network four",
+                url: "/item-one/pa-network-four",
+                description:
+                  "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+              },
+              {
+                name: "PA's network five",
+                url: "/item-one/pa-network-five",
+                description:
+                  "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+              },
+              {
+                name: "PA's network six",
+                url: "/item-one/pa-network-six",
+                description:
+                  "Click here and brace yourself for mild disappointment.",
+              },
+            ],
+          },
+          {
+            name: "Industries",
+            url: "/item-two",
+            description: "This is a description of the item.",
+            items: [
+              {
+                name: "A sub item",
+                url: "/item-two/sub-item",
+                description:
+                  "Click here and brace yourself for mild disappointment.",
+              },
+              {
+                name: "Another sub item",
+                url: "/item-two/another-sub-item",
+              },
+            ],
+          },
+          {
+            name: "Media",
+            url: "/item-three",
+            items: [
+              {
+                name: "A sub item",
+                url: "/item-three/sub-item",
+              },
+              {
+                name: "Another sub item",
+                url: "/item-three/another-sub-item",
+                description:
+                  "Click here and brace yourself for mild disappointment.",
+              },
+            ],
+          },
+          {
+            name: "Careers",
+            url: "/item-four",
+            items: [
+              {
+                name: "A sub item",
+                url: "/item-four/sub-item",
+              },
+              {
+                name: "Another sub item",
+                url: "/item-four/another-sub-item",
+              },
+            ],
+          },
+          {
+            name: "Publications",
+            url: "/item-five",
+            items: [
+              {
+                name: "A sub item",
+                url: "/item-five/sub-item",
+              },
+              {
+                name: "Another sub item",
+                url: "/item-five/another-sub-item",
+              },
+            ],
+          },
+          {
+            name: "Newsroom",
+            url: "/item-six",
+            items: [
+              {
+                name: "A sub item",
+                url: "/item-six/sub-item",
+              },
+              {
+                name: "Another sub item",
+                url: "/item-six/another-sub-item",
+              },
+            ],
+          },
+          {
+            name: "Contact us",
+            url: "/single-item",
+          },
+        ],
+      },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",
@@ -318,20 +326,10 @@ export const Default: Story = {
           },
         ],
       },
-      {
-        type: "hero",
-        variant: "gradient",
-        backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
-        title: "Ministry of Trade and Industry",
-        subtitle:
-          "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
-        buttonLabel: "Main CTA",
-        buttonUrl: "/",
-        secondaryButtonLabel: "Sub CTA",
-        secondaryButtonUrl: "/",
-      },
+      heroProps as HeroProps,
       {
         type: "infobar",
+        variant: isDarkVariant ? "dark" : "light",
         title: "This is a place where you can put nice content",
         description: "About a sentence worth of description here",
         buttonLabel: "Primary CTA",
@@ -340,6 +338,41 @@ export const Default: Story = {
         secondaryButtonUrl: "/",
       },
       {
+        type: "infopic",
+        title:
+          "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+        description:
+          "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+        imageAlt: "alt",
+        imageSrc: "https://placehold.co/200x200",
+        buttonLabel: "Primary CTA",
+        buttonUrl: "/",
+      },
+      {
+        type: "infopic",
+        title:
+          "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+        description:
+          "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+        imageAlt: "alt",
+        imageSrc: "https://placehold.co/200x200",
+        buttonLabel: "Primary CTA",
+        buttonUrl: "[resource:1:1]",
+      },
+      {
+        variant: "full",
+        type: "infopic",
+        title:
+          "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+        description:
+          "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+        imageAlt: "alt",
+        imageSrc: "https://placehold.co/200x200",
+        buttonLabel: "Primary CTA",
+        buttonUrl: "/",
+      },
+      {
+        variant: "full",
         type: "infopic",
         title:
           "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
@@ -469,6 +502,83 @@ export const Default: Story = {
         displayCategory: true,
         buttonLabel: "View all corrections",
       },
+      {
+        type: "blockquote",
+        quote:
+          "I managed to experience new things: saw a dead fish in a plastic bag for the first time, which was an eye-opener because I never thought I would actually get to see something like this ever.",
+        source: "Hannah Teo, Greenies ambassador",
+        imageSrc: "https://placehold.co/600x600",
+        imageAlt: "This is the alt text",
+      },
     ],
-  },
+  }
+}
+
+export const Default: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Ministry of Trade and Industry",
+      subtitle:
+        "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+      buttonLabel: "Main CTA",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Sub CTA",
+      secondaryButtonUrl: "/",
+    },
+  }),
+}
+
+export const Dark: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Ministry of Trade and Industry",
+      subtitle:
+        "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+      buttonLabel: "Main CTA",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Sub CTA",
+      secondaryButtonUrl: "/",
+    },
+    isDarkVariant: true,
+  }),
+}
+
+export const HeroLargeImage: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "largeImage",
+      backgroundUrl: "/hero-banner.png",
+      title: "Hi I am a ministry’s title keep it under 50 please",
+      subtitle:
+        "Max 250 chars please. A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity. A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity. A leading global city of enterprise",
+      buttonLabel: "Learn more about us",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Learn more about us",
+      secondaryButtonUrl: "/",
+    },
+  }),
+}
+
+export const HeroFloating: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "floating",
+      backgroundUrl: "/hero-banner.png",
+      title: "Youths, the future of our nation",
+      subtitle:
+        "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
+      buttonLabel: "Explore now",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Explore now",
+      secondaryButtonUrl: "/",
+    },
+  }),
 }

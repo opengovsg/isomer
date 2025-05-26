@@ -26,11 +26,14 @@ export const doesComponentHaveImage = ({
     case "iframe":
     case "map":
     case "video":
+    case "childrenpages":
       return true
     case "infocards":
       return component.cards.some((card) => "imageUrl" in card)
     case COLLECTION_BLOCK_TYPE:
       return component.displayThumbnail
+    case "blockquote":
+      return component.imageSrc !== undefined
     default:
       const _: never = component
       return false

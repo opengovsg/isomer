@@ -158,48 +158,50 @@ export const sitesHandlers = {
         return {
           id: 1,
           siteId: 1,
-          content: [
-            {
-              url: "/item-one",
-              name: "Expandable nav item",
-              items: [
-                {
-                  url: "/item-one/pa-network-one",
-                  name: "PA's network one",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-                {
-                  url: "/item-one/pa-network-two",
-                  name: "PA's network two",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-                {
-                  url: "/item-one/pa-network-three",
-                  name: "PA's network three",
-                },
-                {
-                  url: "/item-one/pa-network-four",
-                  name: "PA's network four",
-                  description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                },
-                {
-                  url: "/item-one/pa-network-five",
-                  name: "PA's network five",
-                  description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                },
-                {
-                  url: "/item-one/pa-network-six",
-                  name: "PA's network six",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-              ],
-            },
-          ] as PrismaJson.NavbarJsonContent,
+          content: {
+            items: [
+              {
+                url: "/item-one",
+                name: "Expandable nav item",
+                items: [
+                  {
+                    url: "/item-one/pa-network-one",
+                    name: "PA's network one",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                  {
+                    url: "/item-one/pa-network-two",
+                    name: "PA's network two",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                  {
+                    url: "/item-one/pa-network-three",
+                    name: "PA's network three",
+                  },
+                  {
+                    url: "/item-one/pa-network-four",
+                    name: "PA's network four",
+                    description:
+                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                  },
+                  {
+                    url: "/item-one/pa-network-five",
+                    name: "PA's network five",
+                    description:
+                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                  },
+                  {
+                    url: "/item-one/pa-network-six",
+                    name: "PA's network six",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                ],
+              },
+            ],
+          } as PrismaJson.NavbarJsonContent,
           createdAt: MOCK_STORY_DATE,
           updatedAt: MOCK_STORY_DATE,
         }
@@ -224,6 +226,84 @@ export const sitesHandlers = {
               summary: "",
               lastModified: "2024-09-16T04:34:54.838Z",
               permalink: "/article-layout",
+            },
+            {
+              id: "3",
+              layout: "content",
+              title: "Page title here",
+              summary: "",
+              lastModified: "2024-09-16T04:34:54.838Z",
+              permalink: "/page-title-here",
+            },
+          ],
+        }
+      })
+    },
+
+    index: () => {
+      return trpcMsw.site.getLocalisedSitemap.query(() => {
+        return {
+          id: "1",
+          layout: "homepage",
+          title: "Home",
+          summary: "",
+          lastModified: "2025-04-24T08:08:01.349Z",
+          permalink: "/",
+          children: [
+            {
+              id: "2",
+              layout: "content",
+              title: "test",
+              summary: "",
+              lastModified: "2025-04-24T08:08:01.349Z",
+              permalink: "/parent",
+              children: [
+                {
+                  id: "5",
+                  layout: "content",
+                  title: "sibling1",
+                  summary: "",
+                  lastModified: "2025-04-24T08:08:01.349Z",
+                  permalink: "/parent/sibling1",
+                  children: [],
+                },
+                {
+                  id: "4",
+                  layout: "content",
+                  title: "sibling2",
+                  summary: "",
+                  lastModified: "2025-04-24T08:08:01.349Z",
+                  permalink: "/parent/sibling2",
+                },
+              ],
+            },
+          ],
+        }
+        return {
+          id: "1",
+          layout: "content",
+          title: "Home",
+          summary: "",
+          lastModified: "2024-09-16T04:34:54.838Z",
+          permalink: "/",
+          children: [
+            {
+              id: "4",
+              layout: "index",
+              title: "Index page",
+              summary: "",
+              lastModified: "2024-09-16T04:34:54.838Z",
+              permalink: "/parent",
+              children: [
+                {
+                  id: "5",
+                  layout: "content",
+                  title: "Page title here",
+                  summary: "",
+                  lastModified: "2024-09-16T04:34:54.838Z",
+                  permalink: "/parent/child",
+                },
+              ],
             },
             {
               id: "3",

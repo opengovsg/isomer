@@ -3,6 +3,7 @@ import pick from "lodash/pick"
 import set from "lodash/set"
 
 import type { SessionData } from "~/lib/types/session"
+import type { GrowthbookAttributes } from "~/types/growthbook"
 import { env } from "~/env.mjs"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { sendMail } from "~/lib/mail"
@@ -135,6 +136,12 @@ export const emailSessionRouter = router({
         }
         throw e
       }
+
+      const newAttributes: Partial<GrowthbookAttributes> = {
+        email,
+      }
+
+      await ctx.gb.setAttributes(newAttributes)
 
       const isSingpassEnabled = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
 

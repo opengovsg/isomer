@@ -304,6 +304,19 @@ export const getLocalisedSitemap = async (
   siteId: number,
   resourceId: number,
 ) => {
+  const headerSql = sql<string>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('index','content')
+      THEN (published.content -> 'page' -> 'contentPageHeader' ->> 'summary')
+      WHEN (published.content ->> 'layout') = 'collection' 
+      THEN (published.content -> 'page' ->> 'subtitle')
+      ELSE (published.content -> 'page' -> 'articlePageHeader' ->> 'summary')
+    END
+`.as("summary")
+  const thumbnailSql = sql<string>`
+        published.content->'page'->'image'->> 'src'
+    `.as("thumbnail")
+
   // Get the actual resource first
   const resource = await db
     .selectFrom("Resource")
@@ -324,10 +337,9 @@ export const getLocalisedSitemap = async (
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", String(resourceId))
-        .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
-        .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
-        .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
-        .select(sitemapResourceWithContentSelect)
+        .leftJoin("Version", "Version.id", "publishedVersionId")
+        .leftJoin("Blob as published", "Version.blobId", "published.id")
+        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
         .unionAll((fb) =>
           fb
             // Recursive case: Get all the ancestors of the resource
@@ -338,18 +350,11 @@ export const getLocalisedSitemap = async (
               ResourceType.Collection,
             ])
             .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
-            .leftJoin(
-              "Blob as DraftBlob",
-              "Resource.draftBlobId",
-              "DraftBlob.id",
-            )
-            .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
-            .leftJoin(
-              "Blob as PublishedBlob",
-              "Version.blobId",
-              "PublishedBlob.id",
-            )
-            .select(sitemapResourceWithContentSelect),
+            .select(({ eb }) => [
+              eb.cast<string>(eb.val(""), "text").as("summary"),
+              eb.cast<string>(eb.val(""), "text").as("thumbnail"),
+              ...defaultResourceSelect,
+            ]),
         ),
     )
     // Step 2: Get the immediate siblings of the resource.
@@ -368,71 +373,43 @@ export const getLocalisedSitemap = async (
         })
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
-        .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
-        .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
-        .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
-        .select(sitemapResourceWithContentSelect),
+        .where("state", "=", "Published")
+        .leftJoin("Version", "Version.id", "publishedVersionId")
+        .leftJoin("Blob as published", "Version.blobId", "published.id")
+        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect]),
     )
-    // Step 3: Get all nested children (descendants) of the resource.
-    // This CTE recursively finds all children, grandchildren, etc., without including the initial resource itself.
-    // - If the initial resource (resourceId) is a RootPage, its "direct children" for starting
-    //   this search are top-level Folders and Collections (parentId is null).
-    // - Otherwise, direct children are those whose parentId is the initial resource's ID.
-    // - Only Folder or Collection types are included (not necessary, but helps with performance)
-    .withRecursive("nestedChildren", (eb) => {
-      // Define the selection for direct children, which forms the non-recursive base of the CTE.
+    .with("childCousinIndexPages", (eb) => {
       return eb
         .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("type", "in", [
-          ResourceType.Folder,
-          ResourceType.Collection,
-          ResourceType.IndexPage,
-        ])
-        .where((fb) => {
-          if (resource.type === ResourceType.RootPage) {
-            return fb("Resource.parentId", "is", null)
-          }
-          return fb("Resource.parentId", "=", String(resource.id))
-        })
-        .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
-        .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
-        .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
-        .select(sitemapResourceWithContentSelect)
-        .unionAll((fb) =>
-          // Recursive term: children of already found children in the CTE
-          fb
-            .selectFrom("Resource")
-            .innerJoin(
-              "nestedChildren",
-              "nestedChildren.id",
-              "Resource.parentId",
-            )
-            .where("Resource.siteId", "=", siteId)
-            .where("Resource.type", "in", [
-              ResourceType.Folder,
+        .where("parentId", "in", (qb) =>
+          qb
+            .selectFrom("immediateSiblings")
+            .select("id")
+            .where("type", "in", [
               ResourceType.Collection,
-              ResourceType.IndexPage,
-            ])
-            .leftJoin(
-              "Blob as DraftBlob",
-              "Resource.draftBlobId",
-              "DraftBlob.id",
-            )
-            .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
-            .leftJoin(
-              "Blob as PublishedBlob",
-              "Version.blobId",
-              "PublishedBlob.id",
-            )
-            .select(sitemapResourceWithContentSelect),
+              ResourceType.Folder,
+            ]),
         )
+        .where("type", "=", ResourceType.IndexPage)
+        .where("state", "=", "Published")
+        .leftJoin("Version", "Version.id", "publishedVersionId")
+        .leftJoin("Blob as published", "Version.blobId", "published.id")
+        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
     })
-    // Step 4: Combine all the resources in a single array
-    .selectFrom("ancestors")
-    .selectAll()
-    .union((eb) => eb.selectFrom("immediateSiblings").selectAll())
-    .union((eb) => eb.selectFrom("nestedChildren").selectAll())
+    // Step 3: Combine all the resources in a single array
+    .selectFrom("ancestors as Resource")
+    .select(["summary", "thumbnail", ...defaultResourceSelect])
+    .union((eb) =>
+      eb
+        .selectFrom("immediateSiblings as Resource")
+        .select(["summary", "thumbnail", ...defaultResourceSelect]),
+    )
+    .union((eb) =>
+      eb
+        .selectFrom("childCousinIndexPages as Resource")
+        .select(["summary", "thumbnail", ...defaultResourceSelect]),
+    )
+    .orderBy("title asc")
     .execute()
 
   // Step 5: Construct the localised sitemap object
@@ -691,6 +668,7 @@ export const getBatchAncestryWithSelfQuery = async ({
         .where("Resource.siteId", "=", Number(siteId))
         .where("Resource.id", "in", resourceIds)
         .where("Resource.type", "!=", ResourceType.RootPage)
+        .where("Resource.type", "!=", ResourceType.IndexPage)
         .unionAll(
           eb
             .selectFrom("Resource")

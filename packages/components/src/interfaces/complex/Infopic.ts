@@ -5,6 +5,17 @@ import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
+export const InfopicVariants = {
+  Block: {
+    value: "block",
+    label: "Block (Default)",
+  },
+  Full: {
+    value: "full",
+    label: "Full-image",
+  },
+} as const
+
 export const InfopicSchema = Type.Object(
   {
     type: Type.Literal("infopic", { default: "infopic" }),
@@ -41,8 +52,25 @@ export const InfopicSchema = Type.Object(
         pattern: LINK_HREF_PATTERN,
       }),
     ),
+    variant: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal(InfopicVariants.Block.value, {
+            title: InfopicVariants.Block.label,
+          }),
+          Type.Literal(InfopicVariants.Full.value, {
+            title: InfopicVariants.Full.label,
+          }),
+        ],
+        {
+          title: "Infopic style",
+          default: InfopicVariants.Block.value,
+          format: "hidden",
+        },
+      ),
+    ),
     imageSrc: ImageSrcSchema,
-    imageAlt: Type.Optional(AltTextSchema),
+    imageAlt: AltTextSchema,
   },
   {
     title: "Infopic component",

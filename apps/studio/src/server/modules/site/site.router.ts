@@ -263,9 +263,7 @@ export const siteRouter = router({
           .updateTable("Navbar")
           .set({
             content: jsonb(
-              safeJsonParse(
-                navbar,
-              ) as IsomerSiteWideComponentsProps["navBarItems"],
+              safeJsonParse(navbar) as IsomerSiteWideComponentsProps["navbar"],
             ),
           })
           .where("siteId", "=", siteId)
@@ -349,7 +347,7 @@ export const siteRouter = router({
         roles: [ADMIN_ROLE.CORE],
       })
 
-      return createSite({ siteName })
+      return createSite({ siteName, userId: ctx.user.id })
     }),
   publish: protectedProcedure
     .input(publishSiteSchema)
