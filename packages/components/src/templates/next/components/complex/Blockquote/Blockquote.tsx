@@ -8,7 +8,7 @@ import { ImageClient } from "../Image"
 
 const createBlockquoteStyles = tv({
   slots: {
-    outerContainer: "mt-6 bg-base-canvas-alt first:mt-0",
+    outerContainer: "bg-base-canvas-alt",
     innerContainer: `${ComponentContent} flex`,
     quoteContainer: "flex w-full flex-col gap-3",
     openApostrophe: "text-brand-canvas-inverse",
@@ -30,7 +30,8 @@ const createBlockquoteStyles = tv({
         image: "h-60 min-h-60 w-60 min-w-60",
       },
       default: {
-        outerContainer: "border-l-4 border-brand-canvas-inverse",
+        outerContainer:
+          "mt-6 border-l-4 border-brand-canvas-inverse first:mt-0",
         innerContainer: "flex-col gap-6 px-5 py-4 sm:flex-row sm:gap-10",
         quoteContainer: "sm:flex-row",
         openApostrophe: "text-[32px]",
