@@ -61,8 +61,14 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
 export const getMetadata = (props: IsomerPageSchemaType) => {
   const faviconUrl = `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`
   const canonicalUrl = (() => {
+    if (!props.site.url) return props.page.permalink
     try {
-      return new URL(props.page.permalink, props.site.url).toString()
+      const siteUrl =
+        props.site.url.startsWith("http://") ||
+        props.site.url.startsWith("https://")
+          ? props.site.url
+          : `https://${props.site.url}`
+      return new URL(props.page.permalink, siteUrl).toString()
     } catch {
       return props.page.permalink
     }
