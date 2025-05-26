@@ -1,3 +1,4 @@
+import type { Resource } from "~/server/modules/database"
 import type { RoleType } from "~prisma/generated/generatedEnums"
 
 export interface BaseEmailTemplateData {
@@ -9,6 +10,18 @@ export interface InvitationEmailTemplateData extends BaseEmailTemplateData {
   siteName: string
   role: RoleType
   isSingpassEnabled?: boolean
+}
+export interface PublishAlertContentPublisherEmailTemplateData
+  extends BaseEmailTemplateData {
+  siteName: string
+  resource: Resource
+}
+
+export interface PublishAlertSiteAdminEmailTemplateData
+  extends BaseEmailTemplateData {
+  publisherEmail: string
+  siteName: string
+  resource: Resource
 }
 
 export interface EmailTemplate {

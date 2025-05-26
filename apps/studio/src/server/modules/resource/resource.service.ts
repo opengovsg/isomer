@@ -1,3 +1,4 @@
+import type { GrowthBook } from "@growthbook/growthbook-react"
 import type { SelectExpression } from "kysely"
 import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
@@ -17,8 +18,10 @@ import type {
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { getIsSingpassEnabledForCriticalActions } from "~/lib/growthbook"
 import { getSitemapTree } from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
+import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType, sql } from "../database"
 import { incrementVersion } from "../version/version.service"
@@ -469,6 +472,7 @@ export const getResourceFullPermalink = async (
 
 export const publishPageResource = async (
   logger: Logger<string>,
+  growthbook: GrowthBook,
   siteId: number,
   resourceId: string,
   userId: string,
@@ -535,6 +539,20 @@ export const publishPageResource = async (
 
   // Step 2: Trigger a publish of the site
   await publishSite(logger, siteId)
+
+  // Step 3: Send publish alert emails to all site admins minus the current user
+  // if Singpass has been disabled
+  const isSingpassEnabled = getIsSingpassEnabledForCriticalActions({
+    gb: growthbook,
+  })
+  if (!isSingpassEnabled) {
+    await alertPublishWhenSingpassDisabled({
+      siteId,
+      resourceId,
+      publisherId: by.id,
+      publisherEmail: by.email,
+    })
+  }
 
   return addedVersionResult
 }

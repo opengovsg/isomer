@@ -542,6 +542,7 @@ export const pageRouter = router({
       })
       return publishPageResource(
         ctx.logger,
+        ctx.gb,
         siteId,
         String(pageId),
         ctx.user.id,
