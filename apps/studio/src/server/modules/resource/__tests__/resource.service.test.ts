@@ -1202,6 +1202,91 @@ describe("resource.service", () => {
       expect(collectionNode?.summary).toBe(`Pages in ${collection.title}`)
       expect(collectionNode?.image?.src).toBeUndefined()
     })
+
+    it("should include any nested collections if resourceId is a RootPage", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      const { page: rootPage } = await setupPageResource({
+        resourceType: ResourceType.RootPage, // Pre-requisite
+        siteId: site.id,
+      })
+
+      const { folder: parentFolder } = await setupFolder({
+        permalink: "parent-folder",
+        siteId: site.id,
+        state: ResourceState.Published,
+      })
+
+      const { folder: childFolder } = await setupFolder({
+        permalink: "child-folder",
+        siteId: site.id,
+        parentId: parentFolder.id,
+        state: ResourceState.Published,
+      })
+
+      // Arrange: Create Child Collection without index page
+      const { collection: collection1 } = await setupCollection({
+        permalink: "collection",
+        siteId: site.id,
+        title: "Without Index Page",
+        parentId: childFolder.id,
+        state: ResourceState.Published,
+      })
+
+      // Arrange: Create Child Collection with index page
+      const { collection: collection2 } = await setupCollection({
+        permalink: "collection-with-index-page",
+        siteId: site.id,
+        title: "With Index Page",
+        parentId: childFolder.id,
+        state: ResourceState.Published,
+      })
+      const { blob: collection2IndexPageBlob } = await setupPageResource({
+        title: "Collection 2 Index Page",
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: collection2.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", collection2IndexPageBlob.id)
+        .set({
+          content: {
+            ...collection2IndexPageBlob.content,
+            page: {
+              contentPageHeader: {
+                summary: "Hello im the index page",
+              },
+            },
+          },
+        })
+        .execute()
+
+      // Act
+      const result = await getLocalisedSitemap(site.id, Number(rootPage.id))
+
+      // Assert
+      const parentFolderNode = result.children?.at(0)
+      const childFolderChildren = parentFolderNode?.children?.at(0)?.children
+      expect(childFolderChildren?.length).toBe(2)
+
+      // Assert: Find Child Collection (Without Index Page) in the sitemap
+      const collection1Node = childFolderChildren?.find(
+        (child) => child.id === collection1.id,
+      )
+      expect(collection1Node?.title).toBe(collection1.title)
+      expect(collection1Node?.summary).toBe(`Pages in ${collection1.title}`)
+
+      // Assert: Find Child Collection (With Index Page) in the sitemap
+      const collection2Node = childFolderChildren?.find(
+        (child) => child.id === collection2.id,
+      )
+      expect(collection2Node?.title).toBe("Collection 2 Index Page")
+      expect(collection2Node?.summary).toBe("Hello im the index page")
+    })
   })
   describe.skip("getResourcePermalinkTree", () => {})
   describe.skip("getResourceFullPermalink", () => {})
