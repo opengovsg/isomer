@@ -777,7 +777,7 @@ describe("resource.service", () => {
     })
   })
 
-  describe.only("getLocalisedSitemap", () => {
+  describe("getLocalisedSitemap", () => {
     beforeEach(async () => {
       await resetTables("Site", "Resource", "Blob", "Version", "User")
     })
