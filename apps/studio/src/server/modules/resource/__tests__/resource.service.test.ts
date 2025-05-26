@@ -1199,7 +1199,7 @@ describe("resource.service", () => {
         ?.at(0)
         ?.children?.find((child) => child.id === collection.id)
       expect(collectionNode?.title).toBe(collection.title)
-      expect(collectionNode?.summary).toBe("me is collection index page")
+      expect(collectionNode?.summary).toBe(`Pages in ${collection.title}`)
       expect(collectionNode?.image?.src).toBeUndefined()
     })
   })
