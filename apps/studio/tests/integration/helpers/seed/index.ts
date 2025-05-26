@@ -373,11 +373,13 @@ export const setupCollection = async ({
   permalink = "test-collection",
   parentId = null,
   title = "test collection",
+  state = ResourceState.Draft,
 }: {
   siteId?: number
   permalink?: string
   parentId?: string | null
   title?: string
+  state?: ResourceState
 } = {}) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
 
@@ -389,7 +391,7 @@ export const setupCollection = async ({
       parentId,
       title,
       draftBlobId: null,
-      state: ResourceState.Draft,
+      state,
       type: ResourceType.Collection,
       publishedVersionId: null,
     })
