@@ -60,13 +60,6 @@ const defaultFooterSelect = [
   "Footer.content",
 ] satisfies SelectExpression<DB, "Footer">[]
 
-const sitemapResourceWithContentSelect = [
-  ...defaultResourceSelect,
-  sql<
-    UnwrapTagged<PrismaJson.BlobJsonContent>
-  >`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`.as("content"),
-] satisfies SelectExpression<DB, "Resource" | "Blob" | "Version">[]
-
 export const getSiteResourceById = ({
   siteId,
   resourceId,
