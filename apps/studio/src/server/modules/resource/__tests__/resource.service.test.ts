@@ -1012,14 +1012,7 @@ describe("resource.service", () => {
         userId: (await setupUser({})).id,
       })
 
-      const { folder } = await setupFolder({
-        permalink: "folder-a",
-        siteId: site.id,
-        parentId: parentFolder.id,
-        state: ResourceState.Published,
-      })
-
-      const { page } = await setupPageResource({
+      const { page, blob: pageBlob } = await setupPageResource({
         permalink: "page-a",
         resourceType: ResourceType.Page,
         siteId: site.id,
@@ -1027,6 +1020,56 @@ describe("resource.service", () => {
         state: ResourceState.Published,
         userId: (await setupUser({})).id,
       })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", pageBlob.id)
+        .set({
+          content: {
+            ...pageBlob.content,
+            page: {
+              image: {
+                src: "https://pageblob.com",
+                alt: "im a page blob image alt text",
+              },
+            },
+          },
+        })
+        .execute()
+
+      const { folder } = await setupFolder({
+        title: "Folder A",
+        permalink: "folder-a",
+        siteId: site.id,
+        parentId: parentFolder.id,
+        state: ResourceState.Published,
+      })
+
+      const { blob: folderAIndexPageBlob } = await setupPageResource({
+        title: "Folder A",
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", folderAIndexPageBlob.id)
+        .set({
+          content: {
+            ...folderAIndexPageBlob.content,
+            page: {
+              contentPageHeader: {
+                summary: "Hello im the index page",
+              },
+              image: {
+                src: "https://indexpageblob.com",
+                alt: "im a index page blob image alt text",
+              },
+            },
+          },
+        })
+        .execute()
 
       // Act
       const result = await getLocalisedSitemap(site.id, Number(indexPage.id))
@@ -1035,17 +1078,20 @@ describe("resource.service", () => {
       const children = result.children?.at(0)?.children
       expect(children?.length).toBe(2)
 
-      // Assert: Find Folder in the sitemap
-      const folderNode = result.children
-        ?.at(0)
-        ?.children?.find((child) => child.id === folder.id)
-      expect(folderNode?.title).toBe(folder.title)
-
       // Assert: Find Page in the sitemap
       const pageNode = result.children
         ?.at(0)
         ?.children?.find((child) => child.id === page.id)
       expect(pageNode?.title).toBe(page.title)
+      expect(pageNode?.image?.src).toBe("https://pageblob.com")
+
+      // Assert: Find Folder in the sitemap
+      const folderNode = result.children
+        ?.at(0)
+        ?.children?.find((child) => child.id === folder.id)
+      expect(folderNode?.title).toBe(folder.title)
+      expect(folderNode?.summary).toBe("Hello im the index page")
+      expect(folderNode?.image?.src).toBe("https://indexpageblob.com")
     })
   })
   describe.skip("getResourcePermalinkTree", () => {})
