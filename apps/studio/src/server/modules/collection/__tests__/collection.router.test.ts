@@ -11,6 +11,7 @@ import {
 import {
   setupAdminPermissions,
   setupCollection,
+  setupCollectionLink,
   setupEditorPermissions,
   setupFolder,
   setupPageResource,
@@ -21,7 +22,7 @@ import {
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
-import { db, ResourceType } from "../../database"
+import { db, ResourceState, ResourceType } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
 import { collectionRouter } from "../collection.router"
 import {
@@ -695,6 +696,65 @@ describe("collection.router", async () => {
 
       // Assert
       expect(result).toEqual(expect.any(Array))
+    })
+  })
+
+  describe("readCollectionLink", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Act
+      const result = unauthedCaller.readCollectionLink({
+        siteId: 1,
+        linkId: 999,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+
+      // Act
+      const result = caller.readCollectionLink({
+        siteId: site.id,
+        linkId: Number(collection.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { collectionLink, blob } = await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.readCollectionLink({
+        siteId: site.id,
+        linkId: Number(collectionLink.id),
+      })
+
+      // Assert
+      expect(result).toMatchObject({
+        title: collectionLink.title,
+        content: blob.content,
+      })
     })
   })
 
