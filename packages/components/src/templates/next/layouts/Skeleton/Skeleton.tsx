@@ -1,5 +1,6 @@
 import type { IsomerPageSchemaType } from "~/engine"
 import {
+  AskgovWidget,
   DatadogRum,
   FontPreload,
   Footer,
@@ -116,6 +117,9 @@ export const Skeleton = ({
       {site.vica && <VicaWidget site={site} {...site.vica} />}
       {site.wizgov && (
         <WizgovWidget environment={site.environment} {...site.wizgov} />
+      )}
+      {site.askgov && (
+        <AskgovWidget environment={site.environment} {...site.askgov} />
       )}
     </>
   )
