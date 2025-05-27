@@ -648,6 +648,56 @@ describe("collection.router", async () => {
     it.skip("should throw 403 if user does not have write access to the parent collection", async () => {})
   })
 
+  describe("list", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Act
+      const result = unauthedCaller.list({
+        siteId: 1,
+        resourceId: -1,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+
+      // Act
+      const result = caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+      })
+
+      // Assert
+      expect(result).toEqual(expect.any(Array))
+    })
+  })
+
   describe("getMetadata", () => {
     it("should throw 401 if not logged in", async () => {
       // Act
