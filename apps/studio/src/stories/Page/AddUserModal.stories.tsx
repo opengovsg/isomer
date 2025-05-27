@@ -12,10 +12,9 @@ import { ResetAddUserModalDecorator } from "../decorators/resetModalState"
 const EMAIL = "chillguy@isomer.gov.sg"
 const COMMON_HANDLERS = [
   meHandlers.me(),
-  resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getRolesFor.admin(),
   sitesHandlers.getSiteName.default(),
   userHandlers.count.default(),
-  userHandlers.getPermissions.admin(),
 ]
 
 const meta: Meta<typeof UsersPage> = {

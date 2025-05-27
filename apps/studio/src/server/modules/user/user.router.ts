@@ -12,7 +12,6 @@ import {
   createUserOutputSchema,
   deleteUserInputSchema,
   deleteUserOutputSchema,
-  getPermissionsInputSchema,
   getUserInputSchema,
   getUserOutputSchema,
   listUsersInputSchema,
@@ -27,7 +26,7 @@ import {
 import { protectedProcedure, router } from "../../trpc"
 import { db, RoleType, sql } from "../database"
 import {
-  getSitePermissions,
+  getResourcePermission,
   updateUserSitewidePermission,
   validatePermissionsForManagingUsers,
 } from "../permissions/permissions.service"
@@ -41,12 +40,6 @@ import {
 } from "./user.service"
 
 export const userRouter = router({
-  getPermissions: protectedProcedure
-    .input(getPermissionsInputSchema)
-    .query(async ({ ctx, input: { siteId } }) => {
-      return await getSitePermissions({ userId: ctx.user.id, siteId })
-    }),
-
   create: protectedProcedure
     .input(createUserInputSchema)
     .output(createUserOutputSchema)
@@ -370,7 +363,7 @@ export const userRouter = router({
       }
 
       // Defensive programming to check if the user has permissions to receive invite
-      const userPermission = await getSitePermissions({
+      const userPermission = await getResourcePermission({
         userId: user.id,
         siteId,
       })
