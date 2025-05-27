@@ -22,6 +22,7 @@ import {
   createIndexPageSchema,
   createPageSchema,
   getRootPageSchema,
+  listPagesSchema,
   pageSettingsSchema,
   publishPageSchema,
   readPageOutputSchema,
@@ -83,12 +84,7 @@ const validatedPageProcedure = protectedProcedure.use(
 
 export const pageRouter = router({
   list: protectedProcedure
-    .input(
-      z.object({
-        siteId: z.number(),
-        resourceId: z.number().optional(),
-      }),
-    )
+    .input(listPagesSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
       await validateUserPermissionsForResource({
         userId: ctx.user.id,
