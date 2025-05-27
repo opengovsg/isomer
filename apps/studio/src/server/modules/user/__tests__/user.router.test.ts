@@ -48,6 +48,36 @@ describe("user.router", () => {
     caller = createCaller(createMockRequest(session))
   })
 
+  describe("getPermissions", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.getPermissions({ siteId })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return permissions for the site", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+
+      // Act
+      const result = await caller.getPermissions({ siteId })
+
+      // Assert
+      expect(result).toEqual([
+        expect.objectContaining({
+          role: RoleType.Editor,
+        }),
+      ])
+    })
+  })
+
   describe("create", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
