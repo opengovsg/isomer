@@ -25,7 +25,7 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 
-import type { Site, User } from "../../database"
+import type { User } from "../../database"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
