@@ -8,7 +8,6 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
-  setupEditorPermissions,
   setupPublisherPermissions,
   setupSite,
   setupUser,
@@ -16,7 +15,6 @@ import {
 } from "tests/integration/helpers/seed"
 
 import { createCallerFactory } from "~/server/trpc"
-import { db } from "../../database"
 import { whitelistRouter } from "../whitelist.router"
 
 const createCaller = createCallerFactory(whitelistRouter)
