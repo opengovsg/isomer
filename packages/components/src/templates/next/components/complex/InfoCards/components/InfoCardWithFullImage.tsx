@@ -41,7 +41,8 @@ export const InfoCardWithFullImage = ({
         shouldLazyLoad={shouldLazyLoad}
         variant={INFOCARD_VARIANT.bold}
       />
-      <div className="absolute bottom-0 w-full bg-[rgba(38,38,38,0.8)] p-5">
+      {/* NOTE: This is kept separate from styling because this is a one-off style that is only applied here */}
+      <div className="absolute bottom-0 flex h-[50%] w-full items-end bg-gradient-to-t from-[rgba(38,38,38,100%)] to-[rgba(38,38,38,0%)] p-5">
         <InfoCardText
           title={title}
           url={url}

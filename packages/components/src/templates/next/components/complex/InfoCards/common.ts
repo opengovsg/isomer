@@ -17,7 +17,7 @@ export const infoCardTitleStyle = tv({
         // as it is 24px wide.
         // This is to ensure that we text truncate properly
         // yet show the icon at the end of the line for visual cues
-        "line-clamp-1 h-full pr-6 text-base-content-inverse",
+        "h-full pr-6 text-base-content-inverse",
     },
   },
   compoundVariants: [
@@ -33,7 +33,7 @@ export const singleInfoCardStyle = tv({
   slots: {
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImage: "h-full w-full object-center",
-    cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
+    cardTextContainer: "flex flex-col gap-2.5",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
@@ -46,9 +46,10 @@ export const singleInfoCardStyle = tv({
         cardImageContainer: "rounded-lg",
         cardTitleArrow:
           "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
+        cardTextContainer: "gap-3",
       },
       [INFOCARD_VARIANT.bold]: {
-        cardTextContainer: "text-base-content-inverse",
+        cardTextContainer: "align-self-bottom text-base-content-inverse",
         cardImageContainer: "h-full",
         cardContainer: "relative aspect-square lg:aspect-[2/3]",
         cardTitleArrow: "absolute right-0 top-0",
