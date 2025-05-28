@@ -1,5 +1,6 @@
 import type { IsomerSitemap } from "./sitemap"
 import type {
+  AskgovProps,
   NavbarProps,
   NotificationProps,
   VicaProps,
@@ -33,6 +34,7 @@ export interface IsomerSiteConfigProps {
   siteGtmId?: string
   vica?: VicaProps
   wizgov?: WizgovProps
+  askgov?: AskgovProps
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &
