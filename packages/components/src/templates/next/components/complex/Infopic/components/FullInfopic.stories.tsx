@@ -3,10 +3,10 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { InfopicProps } from "~/interfaces"
-import { Infopic } from "./Infopic"
+import { Infopic } from "../Infopic"
 
 const meta: Meta<InfopicProps> = {
-  title: "Next/Components/Infopic",
+  title: "Next/Components/Infopic/Full",
   component: Infopic,
   argTypes: {},
   parameters: {
@@ -19,6 +19,7 @@ const meta: Meta<InfopicProps> = {
     },
   },
   args: {
+    variant: "full",
     title:
       "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
     description:
@@ -44,7 +45,7 @@ const meta: Meta<InfopicProps> = {
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
-      navBarItems: [],
+      navbar: { items: [] },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",
@@ -97,6 +98,16 @@ export const LongImage: Story = {
 export const LongImageWithDesc: Story = {
   args: {
     title: "Don't put all your baskets in one egg",
+    imageSrc:
+      "https://images.unsplash.com/photo-1713098372674-cbf10e8c2bba?q=80&w=3869&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+}
+
+export const LongTitleAndDesc: Story = {
+  args: {
+    title: "Supercalifraagelisticexpalidocioussdffwhyishtislolong",
+    description:
+      "SupercalifraagelisticexpalidocioussdffwhSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolong",
     imageSrc:
       "https://images.unsplash.com/photo-1713098372674-cbf10e8c2bba?q=80&w=3869&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },

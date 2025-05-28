@@ -81,7 +81,7 @@ export const validateUserPermissionsForResource = async ({
   action,
   resourceId = null,
   ...rest
-}: PermissionsProps & { action: CrudResourceActions }) => {
+}: PermissionsProps & { action: CrudResourceActions | "publish" }) => {
   // TODO: this is using site wide permissions for now
   // we should fetch the oldest `parent` of this resource eventually
   const hasCustomParentId = resourceId === null || action === "create"

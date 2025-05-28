@@ -263,9 +263,7 @@ export const siteRouter = router({
           .updateTable("Navbar")
           .set({
             content: jsonb(
-              safeJsonParse(
-                navbar,
-              ) as IsomerSiteWideComponentsProps["navBarItems"],
+              safeJsonParse(navbar) as IsomerSiteWideComponentsProps["navbar"],
             ),
           })
           .where("siteId", "=", siteId)
@@ -408,19 +406,31 @@ export const siteRouter = router({
       .where("codeBuildId", "is not", null)
       .execute()
 
-    await Promise.all(
-      sites.map((site) =>
-        db.transaction().execute(async (tx) => {
-          await logPublishEvent(tx, {
-            by: byUser,
-            eventType: AuditLogEvent.Publish,
-            delta: { before: null, after: null },
-            metadata: {},
-            siteId: site.id,
+    // Start background processing to not block the main thread and avoid timeouts
+    void (async () => {
+      // Looping intsead of Promise.all to avoid maxing out Prisma's connection pool
+      for (const site of sites) {
+        try {
+          await db.transaction().execute(async (tx) => {
+            await logPublishEvent(tx, {
+              by: byUser,
+              eventType: AuditLogEvent.Publish,
+              delta: { before: null, after: null },
+              metadata: {},
+              siteId: site.id,
+            })
+            await publishSite(ctx.logger, site.id)
           })
-          await publishSite(ctx.logger, site.id)
-        }),
-      ),
-    )
+        } catch (error) {
+          ctx.logger.error({
+            msg: "Failed to publish site",
+            siteId: site.id,
+            error,
+          })
+        }
+      }
+    })()
+
+    return { siteCount: sites.length }
   }),
 })
