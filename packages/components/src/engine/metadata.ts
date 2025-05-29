@@ -58,21 +58,25 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
   }
 }
 
+const getCanonicalUrl = (props: IsomerPageSchemaType) => {
+  if (!props.site.url) return props.page.permalink
+
+  if (!props.site.url.startsWith("https://")) {
+    throw new Error(
+      "Invalid site.url. Must be a valid URL starting with https://",
+    )
+  }
+
+  try {
+    return new URL(props.page.permalink, props.site.url).toString()
+  } catch {
+    throw new Error("Invalid site URL or permalink.")
+  }
+}
+
 export const getMetadata = (props: IsomerPageSchemaType) => {
   const faviconUrl = `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`
-  const canonicalUrl = (() => {
-    if (!props.site.url) return props.page.permalink
-    try {
-      const siteUrl =
-        props.site.url.startsWith("http://") ||
-        props.site.url.startsWith("https://")
-          ? props.site.url
-          : `https://${props.site.url}`
-      return new URL(props.page.permalink, siteUrl).toString()
-    } catch {
-      return props.page.permalink
-    }
-  })()
+  const canonicalUrl = getCanonicalUrl(props)
   const metaImage = getMetaImage(props)
   const metaImageUrl = `${props.site.assetsBaseUrl ?? ""}${metaImage ?? props.site.logoUrl}`
 
