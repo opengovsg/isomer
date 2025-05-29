@@ -516,3 +516,19 @@ export const HeroFloating: Story = {
     },
   }),
 }
+
+export const HeroFloatingShortText: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "floating",
+      backgroundUrl: "/hero-banner.png",
+      title: "Short",
+      subtitle: "Is Still Full Width",
+      buttonLabel: "Explore now",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Explore now",
+      secondaryButtonUrl: "/",
+    },
+  }),
+}
