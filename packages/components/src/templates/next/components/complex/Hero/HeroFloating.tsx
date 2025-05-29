@@ -61,7 +61,7 @@ export const HeroFloating = ({
         />
       </div>
       {/* Floating container */}
-      <div className="mx-6 -mt-[1.5rem] w-full max-w-[calc(100%-3rem)] md:mx-10 md:-mt-[10rem] md:max-w-[calc(100%-5rem)] lg:mx-0 lg:-mt-[17.85rem] lg:max-w-none">
+      <div className="-mt-[1.5rem] w-full max-w-[calc(100%-3rem)] md:-mt-[10rem] md:max-w-[calc(100%-5rem)] lg:-mt-[17.85rem] lg:max-w-none">
         <div
           className={`flex w-full flex-col gap-9 px-4 py-6 md:gap-[38px] md:p-12 lg:max-w-[66.67%] ${heroColour}`}
         >
