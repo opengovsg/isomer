@@ -31,7 +31,7 @@ describe("createDefaultFolderIndexPage", () => {
   it("should not impact folders with existing index pages", async () => {
     // Arrange
     const { folder } = await setupFolder({ siteId: site.id })
-    const { page } = await setupPageResource({
+    await setupPageResource({
       parentId: folder.id,
       siteId: site.id,
       resourceType: ResourceType.IndexPage,
@@ -41,8 +41,14 @@ describe("createDefaultFolderIndexPage", () => {
     await createDefaultFolderIndexPage()
 
     // Assert
-    const indexPage = await getIndexPageOf(folder.id)
-    expect(indexPage).toEqual(page)
+    const indexPages = await db
+      .selectFrom("Resource")
+      .where("parentId", "=", folder.id)
+      .where("type", "=", ResourceType.IndexPage)
+      .selectAll()
+      .execute()
+
+    expect(indexPages.length).toEqual(1)
   })
   it("should create index pages for folders at root that do not have index pages ", async () => {
     // Arrange
