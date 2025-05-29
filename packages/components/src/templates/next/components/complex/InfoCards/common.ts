@@ -12,12 +12,7 @@ export const infoCardTitleStyle = tv({
     },
     variant: {
       [INFOCARD_VARIANT.default]: "",
-      [INFOCARD_VARIANT.bold]:
-        // NOTE: Need to always reserve 24px (pr-6) for the icon
-        // as it is 24px wide.
-        // This is to ensure that we text truncate properly
-        // yet show the icon at the end of the line for visual cues
-        "h-full pr-6 text-base-content-inverse",
+      [INFOCARD_VARIANT.bold]: "h-full text-base-content-inverse",
     },
   },
   compoundVariants: [
@@ -52,7 +47,6 @@ export const singleInfoCardStyle = tv({
         cardTextContainer: "align-self-bottom text-base-content-inverse",
         cardImageContainer: "h-full",
         cardContainer: "relative aspect-square lg:aspect-[2/3]",
-        cardTitleArrow: "absolute right-0 top-0",
       },
     },
     isClickableCard: {
