@@ -7,6 +7,7 @@ import {
   createFolderSchema,
   editFolderSchema,
   getIndexpageSchema,
+  listSchema,
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
@@ -306,5 +307,36 @@ export const folderRouter = router({
         )
 
       return { title, ...indexPage }
+    }),
+
+  listChildPages: protectedProcedure
+    .input(listSchema)
+    .query(async ({ input: { indexPageId, siteId } }) => {
+      // NOTE: The `resourceId` passed here is the id of the index page
+      // of the folder, not the actual folder itself
+      const { parentId } = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPageId)
+        .select("parentId")
+        .executeTakeFirstOrThrow()
+
+      // NOTE: This is not a general `resource.list`
+      // but reimplemented here because it makes certain assumptions about what should be shown
+      const childPages = await db
+        .selectFrom("Resource")
+        .where("parentId", "=", parentId)
+        .where("siteId", "=", Number(siteId))
+        .where("type", "in", [
+          ResourceType.Folder,
+          ResourceType.Page,
+          ResourceType.Collection,
+        ])
+        .select("title")
+        .execute()
+
+      // TODO: there are a few things we need to do:
+      // 1. retrieve the published blob of the `Page` resources
+      // 2. map the collections and folders into their respective index pages
+      return { childPages }
     }),
 })
