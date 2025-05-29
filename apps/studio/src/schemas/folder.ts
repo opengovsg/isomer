@@ -33,11 +33,14 @@ export const readFolderSchema = z
   })
   .merge(offsetPaginationSchema)
 
-export const baseEditFolderSchema = z.object({
+const baseFolderSchema = z.object({
   resourceId: z.string(),
+  siteId: z.string(),
+})
+
+export const baseEditFolderSchema = baseFolderSchema.extend({
   permalink: permalinkSchema,
   title: z.string().min(1, { message: "Enter a title for this folder" }),
-  siteId: z.string(),
 })
 
 export const editFolderSchema = baseEditFolderSchema.superRefine(
@@ -68,3 +71,7 @@ export const insertChildpageblockSchema = baseIndexPageSchema.extend({
       .passthrough(),
   ),
 })
+
+export const listSchema = baseFolderSchema
+  .omit({ resourceId: true })
+  .extend({ indexPageId: z.string() })
