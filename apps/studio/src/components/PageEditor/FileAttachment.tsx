@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
 
-import { useImageUpload } from "~/features/editing-experience/components/form-builder/hooks/useImage"
+import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { ONE_MB_IN_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
@@ -14,6 +14,7 @@ interface FileAttachmentProps {
   value?: File
   maxSizeInBytes: number
   acceptedFileTypes: Record<string, string>
+  shouldFetchResource?: boolean
 }
 
 type FileRejections = AttachmentProps<false>["rejections"]
@@ -23,13 +24,14 @@ export const FileAttachment = ({
   siteId,
   maxSizeInBytes,
   acceptedFileTypes,
+  shouldFetchResource = true,
 }: FileAttachmentProps) => {
   const [rejections, setRejections] = useState<FileRejections>([])
   // TODO: Add a mutation for deletion next time of s3 resources
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
   })
-  const { handleImageUpload, isLoading } = useImageUpload({})
+  const { handleAssetUpload, isLoading } = useAssetUpload({})
 
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button
@@ -56,7 +58,9 @@ export const FileAttachment = ({
               { file },
               {
                 onSuccess: ({ path }) => {
-                  void handleImageUpload(path).then((src) => setHref(src))
+                  if (shouldFetchResource) {
+                    void handleAssetUpload(path).then((src) => setHref(src))
+                  } else setHref(path)
                 },
               },
             )
