@@ -28,7 +28,7 @@ export const singleInfoCardStyle = tv({
   slots: {
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImage: "h-full w-full object-center",
-    cardTextContainer: "flex flex-col gap-2.5",
+    cardTextContainer: "flex flex-col",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
@@ -92,12 +92,14 @@ export const createInfoCardsStyles = tv({
         grid: "gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
         cardImageContainer: "aspect-[3/2]",
       },
-      [INFOCARD_VARIANT.bold]: { grid: "gap-1" },
+      [INFOCARD_VARIANT.bold]: {
+        grid: "gap-1",
+      },
     },
     layout: {
       homepage: {
         container: "py-12 first:pt-0 md:py-16",
-        headingContainer: "gap-2.5 lg:max-w-3xl",
+        headingContainer: "gap-2.5 md:max-w-3xl",
         headingSubtitle: "prose-headline-lg-regular",
       },
       default: {
@@ -155,7 +157,7 @@ export const createInfoCardsStyles = tv({
       layout: "homepage",
       variant: INFOCARD_VARIANT.bold,
       class: {
-        headingContainer: "self-center",
+        headingContainer: "self-center text-center",
       },
     },
   ],

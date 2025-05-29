@@ -27,6 +27,8 @@ export const InfoCardText = ({
       )}
     </h3>
 
-    <p className={compoundStyles.cardDescription()}>{description}</p>
+    {description && (
+      <p className={compoundStyles.cardDescription()}>{description}</p>
+    )}
   </div>
 )
