@@ -191,7 +191,7 @@
     "eslint": "^9.10.0",
     "k6-trpc": "^1.0.0",
     "mockdate": "^3.0.5",
-    "msw": "^2.7.0",
+    "msw": "^2.8.6",
     "msw-storybook-addon": "^2.0.4",
     "msw-trpc": "^2.0.0-beta.1",
     "node-mocks-http": "^1.16.2",
