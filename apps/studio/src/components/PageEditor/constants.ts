@@ -2,6 +2,7 @@ import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
   DEFAULT_CHILDREN_PAGES_BLOCK,
   DYNAMIC_DATA_BANNER_TYPE,
+  IMAGE_GALLERY_TYPE,
 } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
@@ -228,6 +229,26 @@ export const DEFAULT_BLOCKS: Record<
     images: [],
     title: "With support from these agencies",
   },
+  [IMAGE_GALLERY_TYPE]: {
+    type: `${IMAGE_GALLERY_TYPE}`,
+    images: [
+      {
+        caption: "This is the first image",
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
+      {
+        caption: "This is the second image",
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
+      {
+        caption: "This is the third image",
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
+    ],
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -338,6 +359,12 @@ export const BLOCK_TO_META: Record<
     description: "Display logos of other agencies here",
     usageText: "Show an overview of related agencies",
   },
+  [IMAGE_GALLERY_TYPE]: {
+    // TODO: Add image source
+    label: "Image gallery",
+    description: "Display up to 30 images in a slideshow",
+    usageText: "Showcase images from an event.",
+  },
   blockquote: {
     label: "Quote",
     description: "Display a quote or testimonial",
@@ -374,7 +401,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics"],
+    types: ["infocards", "infocols", "keystatistics", IMAGE_GALLERY_TYPE],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
