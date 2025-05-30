@@ -58,6 +58,9 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
   }
 }
 
+// NOTE: We throw an error for malformed site URLs to ensure data integrity.
+// The schema serves as our contract - when inputs don't match expectations,
+// we should fail fast rather than accommodate inconsistent data formats.
 const getCanonicalUrl = (props: IsomerPageSchemaType) => {
   if (!props.site.url) return props.page.permalink
 
