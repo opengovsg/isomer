@@ -5907,6 +5907,11 @@ video {
     justify-self: end;
   }
 
+  .lg\:\!px-10 {
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
+  }
+
   .lg\:px-10 {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
