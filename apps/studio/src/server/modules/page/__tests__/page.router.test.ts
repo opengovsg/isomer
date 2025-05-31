@@ -1,8 +1,13 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import { TRPCError } from "@trpc/server"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+import {
+  AuditLogEvent,
+  ResourceState,
+  ResourceType,
+} from "~prisma/generated/generatedEnums"
 import { omit, pick } from "lodash"
+import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
@@ -11,11 +16,16 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
+  setupCollection,
+  setupEditorPermissions,
   setupFolder,
   setupPageResource,
+  setupPublisherPermissions,
   setupSite,
+  setupUser,
 } from "tests/integration/helpers/seed"
 
+import type { User } from "../../database"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
@@ -29,16 +39,138 @@ const createCaller = createCallerFactory(pageRouter)
 describe("page.router", async () => {
   let caller: ReturnType<typeof createCaller>
   const session = await applyAuthedSession()
+  let user: User
 
-  beforeAll(() => {
+  beforeEach(async () => {
+    await resetTables(
+      "AuditLog",
+      "ResourcePermission",
+      "Blob",
+      "Version",
+      "Resource",
+      "Site",
+      "User",
+    )
     caller = createCaller(createMockRequest(session))
+    user = await setupUser({
+      userId: session.userId ?? undefined,
+      email: "test@mock.com",
+      isDeleted: false,
+    })
+    await auth(user)
+  })
+
+  describe("list", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.list({
+        siteId: 1,
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      const result = caller.list({
+        siteId: site.id,
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual([])
+    })
+  })
+
+  describe("getCategories", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getCategories({
+        siteId: 1,
+        pageId: 1,
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.CollectionPage,
+      })
+
+      // Act
+      const result = caller.getCategories({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategories({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+    })
   })
 
   describe("readPage", () => {
-    beforeEach(async () => {
-      await resetTables("Site")
-    })
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -77,7 +209,7 @@ describe("page.router", async () => {
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
       })
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
@@ -99,7 +231,7 @@ describe("page.router", async () => {
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "CollectionPage",
       })
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
@@ -121,7 +253,7 @@ describe("page.router", async () => {
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "RootPage",
       })
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
@@ -141,7 +273,7 @@ describe("page.router", async () => {
     it("should return 404 if resource type is not a page", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
@@ -155,6 +287,28 @@ describe("page.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the page", async () => {
+      // Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "CollectionPage",
+      })
+
+      // Act
+      const result = caller.readPage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
       )
     })
   })
@@ -174,13 +328,35 @@ describe("page.router", async () => {
       )
     })
 
+    it("should throw 403 if user does not have read access to the page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+
+      // Act
+      const result = caller.readPageAndBlob({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
     it("should return 404 if page does not exist", async () => {
       const mockSite = {
         siteId: 1,
         pageId: 1,
       }
       const site = await setupSite(mockSite.siteId)
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.site.id,
       })
@@ -199,7 +375,7 @@ describe("page.router", async () => {
       const { site, page, blob, navbar, footer } = await setupPageResource({
         resourceType: "Page",
       })
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
@@ -226,7 +402,7 @@ describe("page.router", async () => {
       const { site, page, blob, navbar, footer } = await setupPageResource({
         resourceType: "RootPage",
       })
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
@@ -253,7 +429,7 @@ describe("page.router", async () => {
       const { site, page, blob, navbar, footer } = await setupPageResource({
         resourceType: "CollectionPage",
       })
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
@@ -280,7 +456,7 @@ describe("page.router", async () => {
       const { site, page, blob, navbar, footer } = await setupPageResource({
         resourceType: "FolderMeta",
       })
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
@@ -305,7 +481,7 @@ describe("page.router", async () => {
     it("should return 404 if resource type is not a page", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
@@ -348,10 +524,36 @@ describe("page.router", async () => {
       await assertAuditLogRows()
     })
 
-    it("should return 404 if page does not exist", async () => {
+    it("should throw 403 if user does not have update access to the page", async () => {
       // Act
       const result = caller.reorderBlock({
-        siteId: 1,
+        siteId: pageToReorder.site.id,
+        pageId: Number(pageToReorder.page.id),
+        from: 0,
+        to: 1,
+        blocks: pageToReorder.blob.content.content,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 404 if page does not exist", async () => {
+      //Arrange
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToReorder.site.id,
+      })
+
+      // Act
+      const result = caller.reorderBlock({
+        siteId: pageToReorder.site.id,
         pageId: 999999, // should not exist
         from: 0,
         to: 1,
@@ -609,7 +811,6 @@ describe("page.router", async () => {
     }
 
     beforeEach(async () => {
-      await resetTables("Site", "AuditLog")
       const { page } = await setupPageResource({ resourceType: "Page" })
       pageToUpdate = page
     })
@@ -628,6 +829,23 @@ describe("page.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await assertAuditLogRows()
+    })
+
+    it("should throw 403 if user does not have update access to the page", async () => {
+      // Arrange
+      const pageUpdateArgs = createPageUpdateArgs(pageToUpdate)
+
+      // Act
+      const result = caller.updatePageBlob(pageUpdateArgs)
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
     })
 
     it("should return 404 if page does not exist", async () => {
@@ -769,9 +987,6 @@ describe("page.router", async () => {
   })
 
   describe("createPage", () => {
-    beforeEach(async () => {
-      await resetTables("Site", "AuditLog")
-    })
     it("should throw 401 if not logged in create", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -790,6 +1005,31 @@ describe("page.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await assertAuditLogRows()
+    })
+
+    it("should throw 403 if user does not have create access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const expectedPageArgs = {
+        siteId: site.id,
+        title: "Test Page",
+        permalink: "test-page",
+      }
+
+      // Act
+      const result = caller.createPage({
+        ...expectedPageArgs,
+        layout: "content",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
     })
 
     it("should return 404 if site does not exist", async () => {
@@ -1069,10 +1309,7 @@ describe("page.router", async () => {
     })
 
     // TODO: Implement tests when permissions are implemented
-    it.skip("should throw 403 if user does not have access to site", async () => {})
-
     it.skip("should throw 403 if user does not have write access to folder", async () => {})
-
     it.skip("should throw 403 if user does not have write access to root", async () => {})
   })
 
@@ -1111,7 +1348,7 @@ describe("page.router", async () => {
       const { site, page } = await setupPageResource({
         resourceType: "RootPage",
       })
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
@@ -1125,7 +1362,7 @@ describe("page.router", async () => {
       expect(result).toMatchObject(pick(page, ["id", "title", "draftBlobId"]))
     })
 
-    it("should return 404 if root page does not exist", async () => {
+    it("should return 403 if user does not have read access to root", async () => {
       // Arrange
       const { site } = await setupSite()
 
@@ -1147,6 +1384,160 @@ describe("page.router", async () => {
     it.skip("should throw 403 if user does not have access to site", async () => {})
 
     it.skip("should throw 403 if user does not have read access to root", async () => {})
+  })
+
+  describe("publishPage", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.publishPage({
+        siteId: 1,
+        pageId: 1,
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have publish access to the page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.publishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200 if page is published successfully", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.publishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toEqual({
+        versionId: expect.any(String),
+        versionNum: expect.any(Number),
+      })
+
+      // Assert - DB (Version)
+      const versions = await db
+        .selectFrom("Version")
+        .where("id", "=", result.versionId)
+        .selectAll()
+        .execute()
+      expect(versions.length).toEqual(1)
+
+      // Assert - DB (AuditLog)
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Publish)
+        .selectAll()
+        .execute()
+      expect(auditLogs.length).toEqual(1)
+    })
+  })
+
+  describe("updateMeta", () => {
+    it("should throw 401 if not logged in update", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.updateMeta({
+        siteId: 1,
+        resourceId: "1",
+        meta: "Test Meta",
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have update access to the page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+
+      // Act
+      const result = caller.updateMeta({
+        siteId: site.id,
+        resourceId: page.id,
+        meta: JSON.stringify({
+          description: "Test Meta",
+        }),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200 if page is updated successfully", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateMeta({
+        siteId: site.id,
+        resourceId: page.id,
+        meta: JSON.stringify({
+          description: "Test Meta",
+        }),
+      })
+
+      // Assert
+      expect(result).toBeUndefined() // not returning anything
+
+      // Assert - DB (AuditLog)
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.ResourceUpdate)
+        .selectAll()
+        .execute()
+      expect(auditLogs.length).toEqual(1)
+    })
   })
 
   describe("updateSettings", () => {
@@ -1306,7 +1697,33 @@ describe("page.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have access to site", async () => {})
+    it("should throw 403 if user does not have access to site", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+      const expectedSettings = {
+        title: "New Title",
+        permalink: "new-permalink",
+      }
+
+      // Act
+      const result = caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        ...expectedSettings,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
 
     it.skip("should throw 403 if user does not have write access to page", async () => {})
   })
@@ -1409,7 +1826,26 @@ describe("page.router", async () => {
       expect(result).toEqual(`/${folder.permalink}/${page.permalink}`)
     })
 
-    it.skip("should throw 403 if user does not have access to site", async () => {})
+    it("should throw 403 if user does not have access to site", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      // Act
+      const result = caller.getFullPermalink({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
 
     it.skip("should throw 403 if user does not have read access to page", async () => {})
   })
@@ -1507,8 +1943,82 @@ describe("page.router", async () => {
       expect(result).toEqual([folder.permalink, page.permalink])
     })
 
-    it.skip("should throw 403 if user does not have access to site", async () => {})
+    it("should throw 403 if user does not have access to site", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+
+      // Act
+      const result = caller.getPermalinkTree({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
 
     it.skip("should throw 403 if user does not have read access to root", async () => {})
+  })
+
+  describe("createIndexPage", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.createIndexPage({
+        siteId: 1,
+        parentId: "1",
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have create access to site", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+
+      // Act
+      const result = caller.createIndexPage({
+        siteId: site.id,
+        parentId: folder.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200 if index page is created successfully", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.createIndexPage({
+        siteId: site.id,
+        parentId: folder.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        pageId: expect.any(String),
+      })
+    })
   })
 })

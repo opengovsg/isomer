@@ -233,13 +233,11 @@ export const collectionRouter = router({
         .selectFrom("Resource")
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
-        .where((eb) => {
-          return eb.or([
-            eb("Resource.type", "=", ResourceType.CollectionPage),
-            eb("Resource.type", "=", ResourceType.CollectionLink),
-            eb("Resource.type", "=", ResourceType.IndexPage),
-          ])
-        })
+        .where("Resource.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+          ResourceType.IndexPage,
+        ])
         .orderBy("Resource.type", "asc")
         .orderBy("Resource.title", "asc")
         .limit(limit)
@@ -259,6 +257,7 @@ export const collectionRouter = router({
       const baseQuery = db
         .selectFrom("Resource")
         .where("Resource.id", "=", String(linkId))
+        .where("Resource.type", "=", ResourceType.CollectionLink)
         .where("Resource.siteId", "=", siteId)
 
       const draft = await baseQuery
