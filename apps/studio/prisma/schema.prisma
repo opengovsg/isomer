@@ -68,6 +68,13 @@ model Resource {
   state ResourceState? @default(Draft)
   type  ResourceType
 
+  // NOTE: refer to the postgres docs here 
+  // https://www.postgresql.org/docs/current/datatype-numeric.html#DATATYPE-NUMERIC-TABLE
+  // this creates a numeric type that has a scale of 1000 (can store up to 1000 digits)
+  // of which 96 are after the decimal point.
+  // This means that our users can create up to 10e5 pages (probably way more than required)
+  pos Decimal? @db.Decimal(1000, 95)
+
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   ResourcePermission ResourcePermission[]
