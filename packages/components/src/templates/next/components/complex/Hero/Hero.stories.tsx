@@ -146,3 +146,18 @@ export const FloatingInverse: Story = {
     theme: "inverse",
   },
 }
+
+export const FloatingShortText: Story = {
+  args: {
+    ...SITE_ARGS,
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Short",
+    subtitle: "Is Still Full Width",
+    buttonLabel: "Explore now",
+    buttonUrl: "/",
+    secondaryButtonLabel: "Explore now",
+    secondaryButtonUrl: "/",
+    variant: "floating",
+  },
+}
