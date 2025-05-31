@@ -1,7 +1,9 @@
 import { ResourceType } from "@prisma/client"
 import { pick } from "lodash"
+import { resetTables } from "tests/integration/helpers/db"
 import {
   setupBlob,
+  setupCollection,
   setupCollectionMeta,
   setupFolder,
   setupFolderMeta,
@@ -774,7 +776,12 @@ describe("resource.service", () => {
       await expect(result).rejects.toThrowError()
     })
   })
+
   describe("getLocalisedSitemap", () => {
+    beforeEach(async () => {
+      await resetTables("Site", "Resource", "Blob", "Version", "User")
+    })
+
     it("should throw an error if `siteId` is not found", async () => {
       // Arrange
       const { page } = await setupPageResource({ resourceType: "Page" })
@@ -795,7 +802,7 @@ describe("resource.service", () => {
       await expect(result).rejects.toThrowError()
     })
 
-    it("should return the path from ancestor to the page, together with its siblings", async () => {
+    it("should return the path from ancestor to the page (DRAFT), together with its siblings", async () => {
       // Arrange
       const { site, folder: parentFolder } = await setupFolder({})
       const { page: rootPage } = await setupPageResource({
@@ -805,6 +812,33 @@ describe("resource.service", () => {
       const { page: childPage } = await setupPageResource({
         resourceType: "Page",
         parentId: parentFolder.id,
+        state: ResourceState.Draft, // explicitly set to draft
+        siteId: site.id,
+      })
+      // Act
+      const result = await getLocalisedSitemap(site.id, Number(childPage.id))
+
+      // Assert
+      expect(result).toBeDefined()
+      expect(result.id).toBe(rootPage.id)
+      const actualParent = result.children?.at(0)
+      expect(actualParent?.id).toBe(parentFolder.id)
+      const actualChildPage = actualParent?.children?.at(0)
+      expect(actualChildPage?.id).toBe(childPage.id)
+    })
+
+    it("should return the path from ancestor to the page (PUBLISHED), together with its siblings", async () => {
+      // Arrange
+      const { site, folder: parentFolder } = await setupFolder({})
+      const { page: rootPage } = await setupPageResource({
+        resourceType: "RootPage",
+        siteId: site.id,
+      })
+      const { page: childPage } = await setupPageResource({
+        resourceType: "Page",
+        parentId: parentFolder.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
         siteId: site.id,
       })
       // Act
@@ -855,6 +889,318 @@ describe("resource.service", () => {
           expect(permalink).toBeDefined()
           expect(permalink).not.toMatch(collectionMeta.permalink)
         })
+    })
+
+    it("should return a valid sitemap when resourceId is a RootPage", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page: rootPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.RootPage,
+      })
+
+      // Act
+      const result = await getLocalisedSitemap(site.id, Number(rootPage.id))
+
+      // Assert
+      expect(result).toBeDefined()
+      expect(result.id).toBe(rootPage.id)
+      expect(result.permalink).toBe("/")
+    })
+
+    it("should not return folder indexpage's title when resourceId is a IndexPage (DRAFT)", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        resourceType: ResourceType.RootPage, // Pre-requisite
+        siteId: site.id,
+      })
+      const { folder } = await setupFolder({
+        title: "HelloWorld",
+        siteId: site.id,
+      })
+      const { page: indexPage, blob } = await setupPageResource({
+        title: "HelloWorld",
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Draft,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", blob.id)
+        .set({
+          content: {
+            ...blob.content,
+            page: {
+              contentPageHeader: {
+                summary: "Hello im the index page",
+              },
+            },
+          },
+        })
+        .execute()
+
+      // Act
+      const result = await getLocalisedSitemap(site.id, Number(indexPage.id))
+
+      // Assert
+      const child = result.children?.at(0)
+      expect(child?.id).toBe(folder.id)
+      expect(child?.permalink).toBe(`/${folder.permalink}`)
+      expect(child?.title).toBe(folder.title) // should be from the folder
+      expect(child?.summary).toBe(`Pages in ${folder.title}`) // should not be from the index page
+    })
+
+    it("should return folder indexpage's title when resourceId is a IndexPage (PUBLISHED)", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        resourceType: ResourceType.RootPage, // Pre-requisite
+        siteId: site.id,
+      })
+      const { folder } = await setupFolder({
+        siteId: site.id,
+      })
+      const { page: indexPage, blob } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", blob.id)
+        .set({
+          content: {
+            ...blob.content,
+            page: {
+              contentPageHeader: {
+                summary: "Hello im the index page",
+              },
+            },
+          },
+        })
+        .execute()
+
+      // Act
+      const result = await getLocalisedSitemap(site.id, Number(indexPage.id))
+
+      // Assert
+      const child = result.children?.at(0)
+      expect(child?.id).toBe(folder.id)
+      expect(child?.permalink).toBe(`/${folder.permalink}`)
+      expect(child?.title).toBe(indexPage.title) // should be from the index page
+      expect(child?.summary).toBe("Hello im the index page") // should be from the index page
+    })
+
+    it("should not return collection indexpage's title when resourceId is a IndexPage (DRAFT)", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        resourceType: ResourceType.RootPage, // Pre-requisite
+        siteId: site.id,
+      })
+      const { collection } = await setupCollection({
+        title: "HelloWorld",
+        siteId: site.id,
+      })
+      const { page: indexPage, blob } = await setupPageResource({
+        title: "HelloWorld",
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: collection.id,
+        state: ResourceState.Draft,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", blob.id)
+        .set({
+          content: {
+            ...blob.content,
+            page: {
+              contentPageHeader: {
+                summary: "Hello im the index page",
+              },
+            },
+          },
+        })
+        .execute()
+
+      // Act
+      const result = await getLocalisedSitemap(site.id, Number(indexPage.id))
+
+      // Assert
+      const child = result.children?.at(0)
+      expect(child?.id).toBe(collection.id)
+      expect(child?.permalink).toBe(`/${collection.permalink}`)
+      expect(child?.title).toBe(collection.title) // should be from the folder
+      expect(child?.summary).toBe(`Pages in ${collection.title}`) // should not be from the index page
+    })
+
+    it("should return collection indexpage's title when resourceId is a IndexPage (PUBLISHED)", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        resourceType: ResourceType.RootPage, // Pre-requisite
+        siteId: site.id,
+      })
+      const { collection } = await setupCollection({
+        siteId: site.id,
+      })
+      const { page: indexPage, blob } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: collection.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", blob.id)
+        .set({
+          content: {
+            ...blob.content,
+            page: {
+              contentPageHeader: {
+                summary: "Hello im the index page",
+              },
+            },
+          },
+        })
+        .execute()
+
+      // Act
+      const result = await getLocalisedSitemap(site.id, Number(indexPage.id))
+
+      // Assert
+      const child = result.children?.at(0)
+      expect(child?.id).toBe(collection.id)
+      expect(child?.permalink).toBe(`/${collection.permalink}`)
+      expect(child?.title).toBe(indexPage.title) // should be from the index page
+      expect(child?.summary).toBe("Hello im the index page") // should be from the index page
+    })
+
+    it("should include children resources when resourceId is a IndexPage (PUBLISHED)", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        resourceType: ResourceType.RootPage, // Pre-requisite
+        siteId: site.id,
+      })
+
+      const { folder: parentFolder } = await setupFolder({
+        permalink: "parent-folder",
+        siteId: site.id,
+        title: "Parent Folder",
+      })
+
+      const { page: indexPage } = await setupPageResource({
+        title: "Parent Folder",
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: parentFolder.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
+
+      const { page, blob: pageBlob } = await setupPageResource({
+        permalink: "page-a",
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: parentFolder.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", pageBlob.id)
+        .set({
+          content: {
+            ...pageBlob.content,
+            page: {
+              image: {
+                src: "https://pageblob.com",
+                alt: "im a page blob image alt text",
+              },
+            },
+          },
+        })
+        .execute()
+
+      const { folder } = await setupFolder({
+        title: "Folder A",
+        permalink: "folder-a",
+        siteId: site.id,
+        parentId: parentFolder.id,
+        state: ResourceState.Published,
+      })
+
+      const { blob: folderAIndexPageBlob } = await setupPageResource({
+        title: "Folder A",
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", folderAIndexPageBlob.id)
+        .set({
+          content: {
+            ...folderAIndexPageBlob.content,
+            page: {
+              contentPageHeader: {
+                summary: "Hello im the index page",
+              },
+              image: {
+                src: "https://indexpageblob.com",
+                alt: "im a index page blob image alt text",
+              },
+            },
+          },
+        })
+        .execute()
+
+      const { collection } = await setupCollection({
+        title: "Collection A",
+        permalink: "collection-a",
+        siteId: site.id,
+        parentId: parentFolder.id,
+        state: ResourceState.Published,
+      })
+
+      // Act
+      const result = await getLocalisedSitemap(site.id, Number(indexPage.id))
+
+      // Assert
+      const children = result.children?.at(0)?.children
+      expect(children?.length).toBe(3)
+
+      // Assert: Find Page in the sitemap
+      const pageNode = result.children
+        ?.at(0)
+        ?.children?.find((child) => child.id === page.id)
+      expect(pageNode?.title).toBe(page.title)
+      expect(pageNode?.image?.src).toBe("https://pageblob.com")
+
+      // Assert: Find Folder in the sitemap
+      const folderNode = result.children
+        ?.at(0)
+        ?.children?.find((child) => child.id === folder.id)
+      expect(folderNode?.title).toBe(folder.title)
+      expect(folderNode?.summary).toBe("Hello im the index page")
+      expect(folderNode?.image?.src).toBe("https://indexpageblob.com")
+
+      // Assert: Find Collection in the sitemap
+      const collectionNode = result.children
+        ?.at(0)
+        ?.children?.find((child) => child.id === collection.id)
+      expect(collectionNode?.title).toBe(collection.title)
+      expect(collectionNode?.summary).toBe(`Pages in ${collection.title}`)
+      expect(collectionNode?.image?.src).toBeUndefined()
     })
   })
   describe.skip("getResourcePermalinkTree", () => {})
