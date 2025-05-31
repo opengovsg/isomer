@@ -19,6 +19,8 @@ export const getPresignedPutUrlSchema = z.object({
 })
 
 export const deleteAssetsSchema = z.object({
+  siteId: z.number().min(1),
+  resourceId: z.string(),
   fileKeys: z.array(
     z.string({
       required_error: "Missing file keys",

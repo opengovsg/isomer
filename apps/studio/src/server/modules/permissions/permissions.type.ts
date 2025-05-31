@@ -28,3 +28,13 @@ export interface PermissionsProps {
   siteId: number
   resourceId?: string | null
 }
+
+export interface BulkPermissionsProps
+  extends Omit<PermissionsProps, "resourceId"> {
+  action: CrudResourceActions | "publish"
+  resourceIds?: (string | null)[]
+}
+
+export interface UserPermissionsProps extends PermissionsProps {
+  action: CrudResourceActions
+}

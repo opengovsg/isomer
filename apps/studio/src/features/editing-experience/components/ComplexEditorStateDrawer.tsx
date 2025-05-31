@@ -209,7 +209,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           return acc
         }, [])
 
-      deleteAssets({ fileKeys: assetsToDelete })
+      deleteAssets({
+        siteId,
+        resourceId: String(pageId),
+        fileKeys: assetsToDelete,
+      })
     }
 
     savePage(
