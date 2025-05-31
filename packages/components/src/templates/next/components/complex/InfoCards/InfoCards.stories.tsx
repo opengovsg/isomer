@@ -48,15 +48,17 @@ type Story = StoryObj<typeof InfoCards>
 const generateArgs = ({
   layout = "content",
   maxColumns,
-  withoutImage = false,
   isImageFitContain = false,
   hasCTA = false,
+  variant = "cardsWithImages",
+  numCards = 5,
 }: {
   layout?: IsomerPageLayoutType
   maxColumns: "1" | "2" | "3"
-  withoutImage?: boolean
   isImageFitContain?: boolean
   hasCTA?: boolean
+  variant?: InfoCardsProps["variant"]
+  numCards?: number
 }): InfoCardsProps => {
   const cards = [
     {
@@ -104,6 +106,16 @@ const generateArgs = ({
     },
   ]
 
+  const cardsLength = cards.length
+  const remainder = numCards % cardsLength
+  const quotient = Math.floor(numCards / cardsLength)
+
+  const quotientCards = Array(quotient).fill(cards).flat()
+  const remainderCards = cards.slice(0, remainder)
+  const allCards = [...quotientCards, ...remainderCards]
+
+  const withoutImage = variant === "cardsWithoutImages"
+
   if (withoutImage) {
     cards.forEach((card) => {
       delete (card as any).imageAlt
@@ -123,8 +135,8 @@ const generateArgs = ({
     subtitle:
       "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
     maxColumns: maxColumns,
-    variant: withoutImage ? "cardsWithoutImages" : "cardsWithImages",
-    cards: cards,
+    variant,
+    cards: allCards,
     ...(hasCTA ? { label: "This is a CTA", url: "/" } : {}),
   } as InfoCardsProps
 }
@@ -160,7 +172,7 @@ export const WithImage1ColumnsHomepage: Story = {
 }
 
 export const NoImage: Story = {
-  args: generateArgs({ maxColumns: "3", withoutImage: true }),
+  args: generateArgs({ maxColumns: "3", variant: "cardsWithoutImages" }),
 }
 
 export const WithContainImageFit: Story = {
@@ -168,5 +180,100 @@ export const WithContainImageFit: Story = {
 }
 
 export const WithLink: Story = {
-  args: generateArgs({ maxColumns: "3", withoutImage: true, hasCTA: true }),
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithoutImages",
+    hasCTA: true,
+  }),
+}
+
+export const HomepageFullImage: Story = {
+  name: "Homepage Full Image",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    layout: "homepage",
+  }),
+}
+
+export const ContentFullImage: Story = {
+  name: "Default Full Image",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+  }),
+}
+
+export const Homepage30CardsWithFullImage: Story = {
+  name: "Homepage with 30 Full Image cards",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    layout: "homepage",
+    numCards: 30,
+  }),
+}
+
+export const Content30CardsWithFullImage: Story = {
+  name: "30 Default cards with Full Image ",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    numCards: 30,
+  }),
+}
+
+export const Homepage3CardsWithFullImage: Story = {
+  name: "Homepage with 3 Full Image cards",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    layout: "homepage",
+    numCards: 3,
+  }),
+}
+
+export const Content3CardsWithFullImage: Story = {
+  name: "3 Default cards with Full Image ",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    numCards: 3,
+  }),
+}
+export const Homepage4CardsWithFullImage: Story = {
+  name: "Homepage with 4 Full Image cards",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    layout: "homepage",
+    numCards: 4,
+  }),
+}
+
+export const Content4CardsWithFullImage: Story = {
+  name: "4 Default cards with Full Image ",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    numCards: 4,
+  }),
+}
+export const Homepage6CardsWithFullImage: Story = {
+  name: "Homepage with 6 Full Image cards",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    layout: "homepage",
+    numCards: 6,
+  }),
+}
+
+export const Content6CardsWithFullImage: Story = {
+  name: "6 Default cards with Full Image ",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    numCards: 6,
+  }),
 }
