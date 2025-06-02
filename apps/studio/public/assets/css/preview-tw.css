@@ -1859,6 +1859,10 @@ video {
   max-width: 72.5rem;
 }
 
+.max-w-\[calc\(100\%-3rem\)\] {
+  max-width: calc(100% - 3rem);
+}
+
 .max-w-full {
   max-width: 100%;
 }
@@ -5420,6 +5424,10 @@ video {
     max-width: 760px;
   }
 
+  .md\:max-w-\[calc\(100\%-5rem\)\] {
+    max-width: calc(100% - 5rem);
+  }
+
   .md\:basis-\[calc\(\(100\%-2\.5rem\)\/2\)\] {
     flex-basis: calc((100% - 2.5rem) / 2);
   }
@@ -5897,6 +5905,11 @@ video {
 
   .lg\:justify-self-end {
     justify-self: end;
+  }
+
+  .lg\:\!px-10 {
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
   }
 
   .lg\:px-10 {
