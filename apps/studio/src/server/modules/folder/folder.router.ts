@@ -7,8 +7,9 @@ import {
   createFolderSchema,
   editFolderSchema,
   getIndexpageSchema,
-  listSchema,
+  listChildPagesSchema,
   readFolderSchema,
+  reorderChildPageSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
@@ -24,6 +25,7 @@ import { createFolderIndexPage } from "../page/page.service"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import { publishResource } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
+import { orderPagesBy, retrieveFolderOrder } from "./folder.service"
 
 export const folderRouter = router({
   create: protectedProcedure
@@ -310,8 +312,8 @@ export const folderRouter = router({
     }),
 
   listChildPages: protectedProcedure
-    .input(listSchema)
-    .query(async ({ input: { indexPageId, siteId } }) => {
+    .input(listChildPagesSchema)
+    .query(async ({ ctx, input: { indexPageId, siteId } }) => {
       await validateUserPermissionsForResource({
         siteId: Number(siteId),
         action: "read",
@@ -326,34 +328,6 @@ export const folderRouter = router({
         .where("id", "=", indexPageId)
         .select(["parentId"])
         .executeTakeFirstOrThrow()
-
-      let order: Resource["id"][] | undefined
-
-      const meta = await db
-        .selectFrom("Resource as r")
-        .leftJoin("Version as v", "v.resourceId", "r.id")
-        .innerJoin("Blob as pb", "v.blobId", "pb.id")
-        // NOTE: this is a left join because
-        // the resource might not have a a draft blob
-        // if it is newly published
-        .leftJoin("Blob as db", "r.draftBlobId", "db.id")
-        .where("type", "=", "FolderMeta")
-        .where("r.parentId", "=", parentId)
-        .select((eb) =>
-          eb.fn
-            // NOTE: if the user has updated the ordering since the last publish,
-            // use that ordering rather than the previously published one
-            .coalesce(
-              sql<string[]>`db.content->'meta'->>'order'`,
-              sql<string[]>`pb.content->'meta'->>'order'`,
-            )
-            .as("order"),
-        )
-        .executeTakeFirst()
-
-      if (meta) {
-        order = meta.order
-      }
 
       // NOTE: This is not a general `resource.list`
       // but reimplemented here because it makes certain assumptions about what should be shown
@@ -393,29 +367,23 @@ export const folderRouter = router({
         .unionAll((eb) => eb.selectFrom("directChildPages").selectAll())
         .execute()
 
-      // NOTE: taken from the publishing side
-      childPages.sort((a, b) => {
-        if (
-          order === undefined ||
-          order.indexOf(a.id) === order.indexOf(b.id)
-        ) {
-          return a.title.localeCompare(b.title, undefined, { numeric: true })
-        }
-
-        if (order.indexOf(a.id) === -1) {
-          return 1
-        }
-
-        if (order.indexOf(b.id) === -1) {
-          return -1
-        }
-
-        return order.indexOf(a.id) - order.indexOf(b.id)
-      })
+      const order = await retrieveFolderOrder(parentId)
+      const sortedPages = orderPagesBy(childPages, order)
 
       // TODO: there are a few things we need to do:
       // 1. Think about how to handle cases where 2 people are editing the order
       // 2. map the collections and folders into their respective index pages
-      return { childPages }
+      return { childPages: sortedPages }
+    }),
+
+  reorderChildPages: protectedProcedure
+    .input(reorderChildPageSchema)
+    .mutation(async ({ ctx, input: { from, to, resourceId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        siteId: Number(siteId),
+        action: "update",
+        userId: ctx.user.id,
+        resourceId,
+      })
     }),
 })
