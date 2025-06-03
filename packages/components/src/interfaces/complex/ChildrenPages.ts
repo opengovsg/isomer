@@ -29,8 +29,8 @@ export const ChildrenPagesSchema = Type.Object(
         "We will use the child pages' feature images as their thumbnail.",
       default: false,
     }),
-    childrenPagesOrdering: Type.Literal("childrenPagesOrdering", {
-      default: "childrenPagesOrdering",
+    childrenPagesOrdering: Type.Array(Type.String(), {
+      default: [],
       format: "childrenPagesOrdering",
       title: "Ordering of Child pages",
       description: "Drag and drop pages to reorder them",

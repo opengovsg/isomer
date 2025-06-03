@@ -223,6 +223,7 @@ const RowLayout = ({
 }
 
 const ChildrenPages = ({
+  childrenPagesOrdering,
   permalink,
   site,
   LinkComponent,
@@ -236,12 +237,34 @@ const ChildrenPages = ({
     return <></>
   }
 
-  const children = currentPageNode.children.map((child) => ({
-    title: child.title,
-    url: child.permalink,
-    description: child.summary,
-    image: child.image,
-  }))
+  const children = currentPageNode.children
+    .map((child) => ({
+      id: child.id,
+      title: child.title,
+      url: child.permalink,
+      description: child.summary,
+      image: child.image,
+    }))
+    .sort((a, b) => {
+      const [aIndex, bIndex] = [
+        childrenPagesOrdering.indexOf(a.id),
+        childrenPagesOrdering.indexOf(b.id),
+      ]
+
+      if (aIndex === bIndex) {
+        return a.title.localeCompare(b.title, undefined, { numeric: true })
+      }
+
+      if (aIndex === -1) {
+        return 1
+      }
+
+      if (bIndex === -1) {
+        return -1
+      }
+
+      return aIndex - bIndex
+    })
 
   if (variant === "boxes") {
     return (
