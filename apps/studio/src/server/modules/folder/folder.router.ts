@@ -312,30 +312,109 @@ export const folderRouter = router({
   listChildPages: protectedProcedure
     .input(listSchema)
     .query(async ({ input: { indexPageId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        siteId: Number(siteId),
+        action: "read",
+        userId: ctx.user.id,
+        resourceId: indexPageId,
+      })
+
       // NOTE: The `resourceId` passed here is the id of the index page
       // of the folder, not the actual folder itself
       const { parentId } = await db
         .selectFrom("Resource")
         .where("id", "=", indexPageId)
-        .select("parentId")
+        .select(["parentId"])
         .executeTakeFirstOrThrow()
+
+      let order: Resource["id"][] | undefined
+
+      const meta = await db
+        .selectFrom("Resource as r")
+        .leftJoin("Version as v", "v.resourceId", "r.id")
+        .innerJoin("Blob as pb", "v.blobId", "pb.id")
+        // NOTE: this is a left join because
+        // the resource might not have a a draft blob
+        // if it is newly published
+        .leftJoin("Blob as db", "r.draftBlobId", "db.id")
+        .where("type", "=", "FolderMeta")
+        .where("r.parentId", "=", parentId)
+        .select((eb) =>
+          eb.fn
+            // NOTE: if the user has updated the ordering since the last publish,
+            // use that ordering rather than the previously published one
+            .coalesce(
+              sql<string[]>`db.content->'meta'->>'order'`,
+              sql<string[]>`pb.content->'meta'->>'order'`,
+            )
+            .as("order"),
+        )
+        .executeTakeFirst()
+
+      if (meta) {
+        order = meta.order
+      }
 
       // NOTE: This is not a general `resource.list`
       // but reimplemented here because it makes certain assumptions about what should be shown
+
       const childPages = await db
+        .with("directChildPages", (eb) => {
+          return (
+            eb
+              .selectFrom("Resource")
+              // NOTE: Keeping to only published blobs because our preview also only shows published blobs
+              .leftJoin("Version as v", "v.resourceId", "Resource.id")
+              .innerJoin("Blob as pb", "v.blobId", "pb.id")
+              .where("parentId", "=", parentId)
+              .where("siteId", "=", Number(siteId))
+              .where("type", "=", ResourceType.Page)
+              .select(["Resource.id", "title"])
+          )
+        })
+        .with("childFoldersAndCollections", (eb) => {
+          return eb
+            .selectFrom("Resource")
+            .where("parentId", "=", parentId)
+            .where("siteId", "=", Number(siteId))
+            .where("type", "in", [ResourceType.Folder, ResourceType.Collection])
+            .select(["Resource.id"])
+        })
         .selectFrom("Resource")
-        .where("parentId", "=", parentId)
+        // NOTE: Keeping to only published blobs because our preview also only shows published blobs
+        .leftJoin("Version as v", "v.resourceId", "Resource.id")
+        .innerJoin("Blob as pb", "v.blobId", "pb.id")
+        .where("parentId", "in", (qb) =>
+          qb.selectFrom("childFoldersAndCollections").select("id"),
+        )
         .where("siteId", "=", Number(siteId))
-        .where("type", "in", [
-          ResourceType.Folder,
-          ResourceType.Page,
-          ResourceType.Collection,
-        ])
-        .select("title")
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["Resource.id", "title"])
+        .unionAll((eb) => eb.selectFrom("directChildPages").selectAll())
         .execute()
 
+      // NOTE: taken from the publishing side
+      childPages.sort((a, b) => {
+        if (
+          order === undefined ||
+          order.indexOf(a.id) === order.indexOf(b.id)
+        ) {
+          return a.title.localeCompare(b.title, undefined, { numeric: true })
+        }
+
+        if (order.indexOf(a.id) === -1) {
+          return 1
+        }
+
+        if (order.indexOf(b.id) === -1) {
+          return -1
+        }
+
+        return order.indexOf(a.id) - order.indexOf(b.id)
+      })
+
       // TODO: there are a few things we need to do:
-      // 1. retrieve the published blob of the `Page` resources
+      // 1. Think about how to handle cases where 2 people are editing the order
       // 2. map the collections and folders into their respective index pages
       return { childPages }
     }),
