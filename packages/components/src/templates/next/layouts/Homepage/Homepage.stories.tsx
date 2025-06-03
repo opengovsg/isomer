@@ -385,6 +385,41 @@ const generateArgs = ({
       },
       {
         type: "infocards",
+        variant: "cardsWithFullImages",
+        title: "Section title ministry highlights",
+        subtitle:
+          "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
+        label: "This is a CTA",
+        url: "/",
+        cards: [
+          {
+            title: "Card with short title",
+            url: "https://www.google.com",
+            imageUrl: "https://placehold.co/200x300",
+            imageAlt: "alt text",
+          },
+          {
+            title: "Hover on me to see me change colors",
+            url: "https://www.google.com",
+            imageUrl:
+              "https://images.unsplash.com/photo-1722260613137-f8f5ac432d69?q=80&w=3570&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            imageAlt: "alt text",
+          },
+          {
+            title: "A yummy, tipsy evening at Duxton",
+            url: "https://www.google.com",
+            imageUrl: "https://placehold.co/200x300",
+            imageAlt: "alt text",
+          },
+          {
+            title: "Testing a card with a larger image and no description",
+            imageUrl: "https://placehold.co/500x500",
+            imageAlt: "alt text",
+          },
+        ],
+      },
+      {
+        type: "infocards",
         maxColumns: "3",
         title: "Section title ministry highlights",
         subtitle:
@@ -433,6 +468,14 @@ const generateArgs = ({
         imageSrc: "https://placehold.co/200x200",
         buttonLabel: "Primary CTA",
         buttonUrl: "[resource:1:1]",
+      },
+      {
+        type: "blockquote",
+        quote:
+          "I managed to experience new things: saw a dead fish in a plastic bag for the first time, which was an eye-opener because I never thought I would actually get to see something like this ever.",
+        source: "Hannah Teo, Greenies ambassador",
+        imageSrc: "https://placehold.co/600x600",
+        imageAlt: "This is the alt text",
       },
       {
         type: "infocols",
@@ -575,6 +618,22 @@ export const HeroFloating: Story = {
       title: "Youths, the future of our nation",
       subtitle:
         "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
+      buttonLabel: "Explore now",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Explore now",
+      secondaryButtonUrl: "/",
+    },
+  }),
+}
+
+export const HeroFloatingShortText: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "floating",
+      backgroundUrl: "/hero-banner.png",
+      title: "Short",
+      subtitle: "Is Still Full Width",
       buttonLabel: "Explore now",
       buttonUrl: "/",
       secondaryButtonLabel: "Explore now",

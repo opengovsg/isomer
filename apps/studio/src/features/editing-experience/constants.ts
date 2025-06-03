@@ -3,6 +3,7 @@ import type { IconType } from "react-icons"
 import {
   COLLECTION_BLOCK_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
+  IMAGE_GALLERY_TYPE,
 } from "@opengovsg/isomer-components"
 import {
   BiChevronDown,
@@ -10,6 +11,7 @@ import {
   BiCrown,
   BiHash,
   BiImage,
+  BiImages,
   BiListUl,
   BiMap,
   BiMessageDots,
@@ -48,6 +50,7 @@ export const TYPE_TO_ICON: Record<
   blockquote: BiMessageDots,
   [DYNAMIC_DATA_BANNER_TYPE]: TbApi,
   [COLLECTION_BLOCK_TYPE]: TbDatabase,
+  [IMAGE_GALLERY_TYPE]: BiImages,
   childrenpages: BiListUl,
   // TODO: Add in these new block types
   // table: BiTable,

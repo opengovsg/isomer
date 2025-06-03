@@ -16,6 +16,8 @@ import {
   HeadingSchema,
   HeroSchema,
   IframeSchema,
+  IMAGE_GALLERY_TYPE,
+  ImageGallerySchema,
   ImageSchema,
   InfobarDefaultSchema,
   InfobarHomepageSchema,
@@ -52,6 +54,7 @@ export const IsomerComplexComponentsMap = {
   [DYNAMIC_DATA_BANNER_TYPE]: DynamicDataBannerSchema,
   logocloud: LogoCloudSchema,
   [COLLECTION_BLOCK_TYPE]: CollectionBlockSchema,
+  [IMAGE_GALLERY_TYPE]: ImageGallerySchema,
 }
 
 export const IsomerNativeComponentsMap = {

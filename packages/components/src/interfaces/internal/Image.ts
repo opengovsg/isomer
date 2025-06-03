@@ -5,4 +5,5 @@ export interface ImageClientProps {
   className: string
   assetsBaseUrl?: string
   lazyLoading?: boolean
+  onLoad?: React.ReactEventHandler<HTMLImageElement>
 }
