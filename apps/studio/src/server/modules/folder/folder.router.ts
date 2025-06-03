@@ -9,7 +9,6 @@ import {
   getIndexpageSchema,
   listChildPagesSchema,
   readFolderSchema,
-  reorderChildPageSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
@@ -331,40 +330,17 @@ export const folderRouter = router({
 
       // NOTE: This is not a general `resource.list`
       // but reimplemented here because it makes certain assumptions about what should be shown
-
       const childPages = await db
-        .with("directChildPages", (eb) => {
-          return (
-            eb
-              .selectFrom("Resource")
-              // NOTE: Keeping to only published blobs because our preview also only shows published blobs
-              .leftJoin("Version as v", "v.resourceId", "Resource.id")
-              .innerJoin("Blob as pb", "v.blobId", "pb.id")
-              .where("parentId", "=", parentId)
-              .where("siteId", "=", Number(siteId))
-              .where("type", "=", ResourceType.Page)
-              .select(["Resource.id", "title"])
-          )
-        })
-        .with("childFoldersAndCollections", (eb) => {
-          return eb
-            .selectFrom("Resource")
-            .where("parentId", "=", parentId)
-            .where("siteId", "=", Number(siteId))
-            .where("type", "in", [ResourceType.Folder, ResourceType.Collection])
-            .select(["Resource.id"])
-        })
         .selectFrom("Resource")
-        // NOTE: Keeping to only published blobs because our preview also only shows published blobs
-        .leftJoin("Version as v", "v.resourceId", "Resource.id")
-        .innerJoin("Blob as pb", "v.blobId", "pb.id")
-        .where("parentId", "in", (qb) =>
-          qb.selectFrom("childFoldersAndCollections").select("id"),
-        )
+        .where("parentId", "=", parentId)
         .where("siteId", "=", Number(siteId))
-        .where("type", "=", ResourceType.IndexPage)
+        .where("type", "in", [
+          ResourceType.Folder,
+          ResourceType.Collection,
+          ResourceType.Page,
+        ])
+        .select(["Resource.id"])
         .select(["Resource.id", "title"])
-        .unionAll((eb) => eb.selectFrom("directChildPages").selectAll())
         .execute()
 
       const order = await retrieveFolderOrder(parentId)
@@ -374,16 +350,5 @@ export const folderRouter = router({
       // 1. Think about how to handle cases where 2 people are editing the order
       // 2. map the collections and folders into their respective index pages
       return { childPages: sortedPages }
-    }),
-
-  reorderChildPages: protectedProcedure
-    .input(reorderChildPageSchema)
-    .mutation(async ({ ctx, input: { from, to, resourceId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        siteId: Number(siteId),
-        action: "update",
-        userId: ctx.user.id,
-        resourceId,
-      })
     }),
 })

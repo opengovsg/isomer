@@ -72,6 +72,6 @@ export const insertChildpageblockSchema = baseIndexPageSchema.extend({
   ),
 })
 
-export const listSchema = baseFolderSchema
+export const listChildPagesSchema = baseFolderSchema
   .omit({ resourceId: true })
   .extend({ indexPageId: z.string() })
