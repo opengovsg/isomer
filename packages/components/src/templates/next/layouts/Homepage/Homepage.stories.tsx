@@ -80,7 +80,66 @@ const generateArgs = ({
         lastModified: "",
         layout: "homepage",
         summary: "",
-        children: [],
+        children: [
+          {
+            id: "2",
+            title: "Corrections and Clarifications",
+            permalink: "/collection",
+            layout: "collection",
+            summary:
+              "Clarifying widespread or common misperceptions of Government policy, or inaccurate assertions on matters of public concern that can harm Singapore's social fabric.",
+            lastModified: "2021-01-01",
+            children: [
+              {
+                id: "3",
+                title:
+                  "Date of Government Gazette Notification on Dissolution of Parliament",
+                category: "yes i am a category",
+                permalink: "/collection-1/item-1",
+                layout: "article",
+                summary: "",
+                date: "2021-01-03",
+                lastModified: "2021-01-03",
+                children: [],
+                image: {
+                  src: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=3715&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                  alt: "Image 1",
+                },
+              },
+              {
+                id: "4",
+                title:
+                  "Impact of Foreign Professionals on our Economy and Society",
+                category: "yes i am a category",
+                permalink: "/collection-1/item-2",
+                layout: "article",
+                summary: "",
+                date: "2021-01-02",
+                lastModified: "2021-01-02",
+                children: [],
+                image: {
+                  src: "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?q=80&w=3024&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                  alt: "Image 2",
+                },
+              },
+              {
+                id: "5",
+                title: "Where does Government revenue come from?",
+                category: "yes i am a category",
+                permalink: "/collection-1/item-3",
+                layout: "article",
+                summary: "",
+                date: "2021-01-01",
+                lastModified: "2021-01-01",
+                children: [],
+                image: {
+                  src: "https://images.unsplash.com/photo-1511044568932-338cba0ad803?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                  alt: "Image 3",
+                },
+              },
+            ],
+          },
+        ],
       },
       theme: "isomer-next",
       isGovernment: true,
@@ -478,6 +537,21 @@ const generateArgs = ({
           { label: "Total Merchandise Trade, Dec 2023 (YoY)", value: "-6.8%" },
           { label: "Industrial Production, Dec 2023 (YoY)", value: "-2.5%" },
         ],
+      },
+      {
+        type: "collectionblock",
+        collectionReferenceLink: "[resource:1:2]",
+        displayThumbnail: true,
+        displayCategory: true,
+        buttonLabel: "View all corrections",
+      },
+      {
+        type: "blockquote",
+        quote:
+          "I managed to experience new things: saw a dead fish in a plastic bag for the first time, which was an eye-opener because I never thought I would actually get to see something like this ever.",
+        source: "Hannah Teo, Greenies ambassador",
+        imageSrc: "https://placehold.co/600x600",
+        imageAlt: "This is the alt text",
       },
     ],
   }

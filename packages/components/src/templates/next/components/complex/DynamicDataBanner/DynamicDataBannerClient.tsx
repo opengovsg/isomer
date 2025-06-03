@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { BiError } from "react-icons/bi"
 
 import type { DynamicDataBannerProps } from "~/interfaces"
-import { NUMBER_OF_DATA } from "~/interfaces"
+import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { ComponentContent } from "../../internal/customCssClass"
@@ -102,20 +102,24 @@ const DynamicDataBannerUI = ({
           </div>
         </div>
         <div className={compoundStyles.dataInfoContainer()}>
-          {data.slice(0, NUMBER_OF_DATA).map((singleData) => (
-            <div className={compoundStyles.individualDataContainer()}>
-              <div className={compoundStyles.individualDataLabel()}>
-                {singleData.label}
-              </div>
-              {singleData.value ? (
-                <div className={compoundStyles.individualDataValue()}>
-                  {singleData.value}
+          {data
+            .slice(0, DYNAMIC_DATA_BANNER_NUMBER_OF_DATA)
+            .map((singleData) => (
+              <div className={compoundStyles.individualDataContainer()}>
+                <div className={compoundStyles.individualDataLabel()}>
+                  {singleData.label}
                 </div>
-              ) : (
-                <div className={compoundStyles.individualDataValueLoading()} />
-              )}
-            </div>
-          ))}
+                {singleData.value ? (
+                  <div className={compoundStyles.individualDataValue()}>
+                    {singleData.value}
+                  </div>
+                ) : (
+                  <div
+                    className={compoundStyles.individualDataValueLoading()}
+                  />
+                )}
+              </div>
+            ))}
         </div>
         {shouldRenderUrl &&
           renderUrl({ className: compoundStyles.urlShowOnMobileOnly() })}
@@ -171,7 +175,7 @@ export const DynamicDataBannerClient = ({
     )
   }
 
-  if (data.length !== NUMBER_OF_DATA)
+  if (data.length !== DYNAMIC_DATA_BANNER_NUMBER_OF_DATA)
     return <DynamicDataBannerUI data={[]} url={url} label={label} />
 
   return (

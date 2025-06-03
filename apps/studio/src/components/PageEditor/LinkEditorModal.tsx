@@ -16,6 +16,7 @@ import {
   Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
+import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { isEmpty } from "lodash"
 import { z } from "zod"
 
@@ -33,7 +34,7 @@ import {
 import { getLinkHrefType } from "~/features/editing-experience/components/LinkEditor/utils"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
-import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
+import { getReferenceLink } from "~/utils/link"
 import { AttachmentData } from "../AttachmentData"
 import { ResourceSelector } from "../ResourceSelector"
 import { FileAttachment } from "./FileAttachment"

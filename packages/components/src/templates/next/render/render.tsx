@@ -4,12 +4,17 @@ import type {
   IsomerSiteProps,
 } from "~/engine"
 import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
-import { DYNAMIC_DATA_BANNER_TYPE, IMAGE_GALLERY_TYPE } from "~/interfaces"
+import {
+  COLLECTION_BLOCK_TYPE,
+  DYNAMIC_DATA_BANNER_TYPE,
+  IMAGE_GALLERY_TYPE,
+} from "~/interfaces"
 import {
   Accordion,
   Blockquote,
   Callout,
   ChildrenPages,
+  CollectionBlock,
   Contentpic,
   DynamicDataBanner,
   Hero,
@@ -96,6 +101,8 @@ export const renderComponent = ({
       return <Video key={elementKey} {...component} {...rest} />
     case DYNAMIC_DATA_BANNER_TYPE:
       return <DynamicDataBanner key={elementKey} {...component} {...rest} />
+    case COLLECTION_BLOCK_TYPE:
+      return <CollectionBlock key={elementKey} {...component} {...rest} />
     case IMAGE_GALLERY_TYPE:
       return <ImageGallery key={elementKey} {...component} {...rest} />
     default:
