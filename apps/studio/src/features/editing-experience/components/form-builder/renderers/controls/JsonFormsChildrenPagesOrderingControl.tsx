@@ -23,7 +23,11 @@ export const jsonFormsChildrenPagesOrderingControlTester: RankedTester =
     schemaMatches((schema) => schema.format === "childrenPagesOrdering"),
   )
 
-const merge = (base: string[], all: string[]): string[] => {
+const merge = (
+  base: string[],
+  all: string[],
+  mappings: Map<string, string>,
+): string[] => {
   const baseSet = new Set(base)
   const allSet = new Set(all)
 
@@ -37,7 +41,16 @@ const merge = (base: string[], all: string[]): string[] => {
 
   return base
     .filter((resourceId) => !toRemoveFromBase.has(resourceId))
-    .concat(Array.from(toAdd))
+    .concat(
+      // NOTE: We have to assume default sort order (alphabetical)
+      // when we shift in new items
+      Array.from(toAdd).toSorted((a, b) => {
+        const aTitle = mappings.get(a) ?? ""
+        const bTitle = mappings.get(b) ?? ""
+
+        return aTitle.localeCompare(bTitle, undefined)
+      }),
+    )
 }
 
 type ReorderingControlProps<T = string> = Omit<ControlProps, "data"> & {
@@ -138,6 +151,7 @@ const SuspendableBlocks = ({
   const resources = merge(
     data,
     childPages.map(({ id }) => id),
+    mappings,
   ).map((resourceId) => {
     return {
       title: mappings.get(resourceId) ?? "Unknown page",

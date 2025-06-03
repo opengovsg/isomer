@@ -24,7 +24,6 @@ import { createFolderIndexPage } from "../page/page.service"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import { publishResource } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
-import { orderPagesBy, retrieveFolderOrder } from "./folder.service"
 
 export const folderRouter = router({
   create: protectedProcedure
@@ -331,24 +330,42 @@ export const folderRouter = router({
       // NOTE: This is not a general `resource.list`
       // but reimplemented here because it makes certain assumptions about what should be shown
       const childPages = await db
+        .with("directChildren", (eb) => {
+          return eb
+            .selectFrom("Resource")
+            .where("parentId", "=", parentId)
+            .where("siteId", "=", Number(siteId))
+            .where("state", "=", "Published")
+            .where("type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+              ResourceType.Page,
+            ])
+            .select(["Resource.id", "title", "type"])
+        })
         .selectFrom("Resource")
-        .where("parentId", "=", parentId)
-        .where("siteId", "=", Number(siteId))
-        .where("type", "in", [
-          ResourceType.Folder,
-          ResourceType.Collection,
-          ResourceType.Page,
-        ])
-        .select(["Resource.id"])
+        .where("parentId", "in", (qb) =>
+          qb
+            .selectFrom("directChildren")
+            .where("type", "in", [ResourceType.Folder, ResourceType.Collection])
+            .select("id"),
+        )
+        // NOTE: Keeping in line with how we select resources for sitemap,
+        // we will only select published index pages here
+        .where("state", "=", "Published")
+        .where("type", "=", ResourceType.IndexPage)
         .select(["Resource.id", "title"])
+        .unionAll((qb) => {
+          return qb
+            .selectFrom("directChildren")
+            .where("type", "=", ResourceType.Page)
+            .select(["id", "title"])
+        })
         .execute()
-
-      const order = await retrieveFolderOrder(parentId)
-      const sortedPages = orderPagesBy(childPages, order)
 
       // TODO: there are a few things we need to do:
       // 1. Think about how to handle cases where 2 people are editing the order
       // 2. map the collections and folders into their respective index pages
-      return { childPages: sortedPages }
+      return { childPages }
     }),
 })
