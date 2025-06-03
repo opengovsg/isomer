@@ -1,6 +1,11 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl, VStack } from "@chakra-ui/react"
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import {
+  DragDropContext,
+  Draggable,
+  Droppable,
+  DropResult,
+} from "@hello-pangea/dnd"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
@@ -18,9 +23,12 @@ export const jsonFormsChildrenPagesOrderingControlTester: RankedTester =
   )
 
 export function JsonFormsChildrenPagesLayoutControl({
+  data,
   label,
   description,
-}: ControlProps): JSX.Element {
+  handleChange,
+  path,
+}: Omit<ControlProps, "data"> & { data: string[] }): JSX.Element {
   const { pageId: indexPageId, siteId } = useQueryParse(editPageSchema)
 
   const [{ childPages }] = trpc.folder.listChildPages.useSuspenseQuery({
@@ -28,10 +36,26 @@ export function JsonFormsChildrenPagesLayoutControl({
     indexPageId: String(indexPageId),
   })
 
-  const onDragEnd = console.log
+  const onDragEnd = ({ source, destination }: DropResult) => {
+    if (!destination) return
+
+    const from = source.index
+    const to = destination.index
+
+    if (from >= data.length || to >= data.length || from < 0 || to < 0) return
+
+    const updatedBlocks = Array.from(data)
+    const [movedBlock] = updatedBlocks.splice(from, 1)
+
+    if (!movedBlock) return
+
+    updatedBlocks.splice(to, 0, movedBlock)
+
+    handleChange(path, updatedBlocks)
+  }
 
   return (
-    <Box>
+    <Box h="full">
       <FormControl isRequired gap="0.5rem">
         <FormLabel mb="1rem" description={description}>
           {label || "Variant"}
@@ -45,20 +69,20 @@ export function JsonFormsChildrenPagesLayoutControl({
                   {...provided.droppableProps}
                   w="100%"
                   ref={provided.innerRef}
+                  h="full"
                 >
-                  {childPages.map(({ title }, index) => {
+                  {data.map((resourceId: string, index) => {
                     return (
                       <Draggable
+                        key={resourceId}
                         disableInteractiveElementBlocking
-                        draggableId={title}
+                        draggableId={resourceId}
                         index={index}
                       >
                         {(provided, snapshot) => {
                           const isDragging =
                             snapshot.isDragging || snapshot.isDropAnimating
                           return (
-                            // TODO: Add image per block, extra menu for block
-                            // according to design
                             <VStack
                               my="0.25rem"
                               w="100%"
@@ -72,7 +96,10 @@ export function JsonFormsChildrenPagesLayoutControl({
                                     {...provided.dragHandleProps}
                                   />
                                 }
-                                label={title}
+                                label={
+                                  childPages.find(({ id }) => id === resourceId)
+                                    ?.title ?? ""
+                                }
                               />
                             </VStack>
                           )
@@ -80,6 +107,7 @@ export function JsonFormsChildrenPagesLayoutControl({
                       </Draggable>
                     )
                   })}
+                  {provided.placeholder}
                 </VStack>
               )
             }}
