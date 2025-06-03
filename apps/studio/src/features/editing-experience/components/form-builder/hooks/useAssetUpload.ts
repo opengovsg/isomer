@@ -8,7 +8,7 @@ interface UseAssetUploadProps {
   baseTimeoutMs?: number
 }
 export const useAssetUpload = ({
-  numOfAttempts = 3,
+  numOfAttempts = 5,
   baseTimeoutMs = 500,
 }: UseAssetUploadProps) => {
   const [isLoading, setIsLoading] = useState(false)
