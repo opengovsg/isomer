@@ -114,12 +114,10 @@ const DraggableBlocks = ({
                       >
                         <BaseBlock
                           dragHandle={
-                            <BaseBlockDragHandle
-                              isDragging={isDragging}
-                              {...provided.dragHandleProps}
-                            />
+                            <BaseBlockDragHandle isDragging={isDragging} />
                           }
                           label={resource.title}
+                          draggableProps={provided.dragHandleProps}
                         />
                       </VStack>
                     )
