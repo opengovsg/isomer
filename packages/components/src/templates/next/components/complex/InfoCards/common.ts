@@ -82,7 +82,7 @@ export const createInfoCardsStyles = tv({
     headingContainer: "flex flex-col",
     headingTitle: "prose-display-md break-words text-base-content-strong",
     headingSubtitle: "text-base-content",
-    grid: "grid grid-cols-1",
+    grid: "grid grid-cols-1 [grid-template-rows:max-content]",
     urlButtonContainer: "mx-auto block pt-8 sm:pt-12", // temp: following headingContainer's mb
     cardImageContainer: "",
   },
