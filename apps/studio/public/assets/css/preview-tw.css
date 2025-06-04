@@ -3973,6 +3973,10 @@ video {
   grid-template-rows: auto 1fr;
 }
 
+.\[grid-template-rows\:max-content\] {
+  grid-template-rows: max-content;
+}
+
 .\[resource\:some-resource\] {
   resource: some-resource;
 }
