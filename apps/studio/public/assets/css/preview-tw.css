@@ -2082,6 +2082,10 @@ video {
   list-style-type: none;
 }
 
+.auto-rows-max {
+  grid-auto-rows: max-content;
+}
+
 .grid-cols-1 {
   grid-template-columns: repeat(1, minmax(0, 1fr));
 }
