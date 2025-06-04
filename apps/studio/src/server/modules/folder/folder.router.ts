@@ -363,9 +363,7 @@ export const folderRouter = router({
         })
         .execute()
 
-      // TODO: there are a few things we need to do:
-      // 1. Think about how to handle cases where 2 people are editing the order
-      // 2. map the collections and folders into their respective index pages
+      // TODO: Think about how to handle cases where 2 people are editing the order
       return { childPages }
     }),
 })
