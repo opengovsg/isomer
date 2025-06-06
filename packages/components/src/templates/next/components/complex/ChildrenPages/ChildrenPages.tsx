@@ -223,7 +223,7 @@ const RowLayout = ({
 }
 
 const ChildrenPages = ({
-  childrenPagesOrdering,
+  childrenPagesOrdering = [],
   permalink,
   site,
   LinkComponent,
