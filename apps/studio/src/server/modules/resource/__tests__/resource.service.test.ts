@@ -946,7 +946,7 @@ describe("resource.service", () => {
 
       // Assert
       const child = result.children?.at(0)
-      expect(child?.id).toBe(folder.id)
+      expect(child?.id).toBe(indexPage.id)
       expect(child?.permalink).toBe(`/${folder.permalink}`)
       expect(child?.title).toBe(folder.title) // should be from the folder
       expect(child?.summary).toBe(`Pages in ${folder.title}`) // should not be from the index page
@@ -989,7 +989,7 @@ describe("resource.service", () => {
 
       // Assert
       const child = result.children?.at(0)
-      expect(child?.id).toBe(folder.id)
+      expect(child?.id).toBe(indexPage.id)
       expect(child?.permalink).toBe(`/${folder.permalink}`)
       expect(child?.title).toBe(indexPage.title) // should be from the index page
       expect(child?.summary).toBe("Hello im the index page") // should be from the index page
@@ -1033,7 +1033,7 @@ describe("resource.service", () => {
 
       // Assert
       const child = result.children?.at(0)
-      expect(child?.id).toBe(collection.id)
+      expect(child?.id).toBe(indexPage.id)
       expect(child?.permalink).toBe(`/${collection.permalink}`)
       expect(child?.title).toBe(collection.title) // should be from the folder
       expect(child?.summary).toBe(`Pages in ${collection.title}`) // should not be from the index page
@@ -1076,7 +1076,7 @@ describe("resource.service", () => {
 
       // Assert
       const child = result.children?.at(0)
-      expect(child?.id).toBe(collection.id)
+      expect(child?.id).toBe(indexPage.id)
       expect(child?.permalink).toBe(`/${collection.permalink}`)
       expect(child?.title).toBe(indexPage.title) // should be from the index page
       expect(child?.summary).toBe("Hello im the index page") // should be from the index page
@@ -1137,14 +1137,15 @@ describe("resource.service", () => {
         state: ResourceState.Published,
       })
 
-      const { blob: folderAIndexPageBlob } = await setupPageResource({
-        title: "Folder A",
-        resourceType: ResourceType.IndexPage,
-        siteId: site.id,
-        parentId: folder.id,
-        state: ResourceState.Published,
-        userId: (await setupUser({})).id,
-      })
+      const { blob: folderAIndexPageBlob, page: folderAIndexPage } =
+        await setupPageResource({
+          title: "Folder A",
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: folder.id,
+          state: ResourceState.Published,
+          userId: (await setupUser({})).id,
+        })
       await db
         .updateTable("Blob")
         .where("id", "=", folderAIndexPageBlob.id)
@@ -1189,7 +1190,7 @@ describe("resource.service", () => {
       // Assert: Find Folder in the sitemap
       const folderNode = result.children
         ?.at(0)
-        ?.children?.find((child) => child.id === folder.id)
+        ?.children?.find((child) => child.id === folderAIndexPage.id)
       expect(folderNode?.title).toBe(folder.title)
       expect(folderNode?.summary).toBe("Hello im the index page")
       expect(folderNode?.image?.src).toBe("https://indexpageblob.com")
@@ -1242,14 +1243,15 @@ describe("resource.service", () => {
         parentId: childFolder.id,
         state: ResourceState.Published,
       })
-      const { blob: collection2IndexPageBlob } = await setupPageResource({
-        title: "Collection 2 Index Page",
-        resourceType: ResourceType.IndexPage,
-        siteId: site.id,
-        parentId: collection2.id,
-        state: ResourceState.Published,
-        userId: (await setupUser({})).id,
-      })
+      const { blob: collection2IndexPageBlob, page: collection2IndexPage } =
+        await setupPageResource({
+          title: "Collection 2 Index Page",
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: collection2.id,
+          state: ResourceState.Published,
+          userId: (await setupUser({})).id,
+        })
       await db
         .updateTable("Blob")
         .where("id", "=", collection2IndexPageBlob.id)
@@ -1282,7 +1284,7 @@ describe("resource.service", () => {
 
       // Assert: Find Child Collection (With Index Page) in the sitemap
       const collection2Node = childFolderChildren?.find(
-        (child) => child.id === collection2.id,
+        (child) => child.id === collection2IndexPage.id,
       )
       expect(collection2Node?.title).toBe("Collection 2 Index Page")
       expect(collection2Node?.summary).toBe("Hello im the index page")

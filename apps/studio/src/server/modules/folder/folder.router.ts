@@ -7,6 +7,7 @@ import {
   createFolderSchema,
   editFolderSchema,
   getIndexpageSchema,
+  listChildPagesSchema,
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
@@ -306,5 +307,63 @@ export const folderRouter = router({
         )
 
       return { title, ...indexPage }
+    }),
+
+  listChildPages: protectedProcedure
+    .input(listChildPagesSchema)
+    .query(async ({ ctx, input: { indexPageId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        siteId: Number(siteId),
+        action: "read",
+        userId: ctx.user.id,
+        resourceId: indexPageId,
+      })
+
+      // NOTE: The `resourceId` passed here is the id of the index page
+      // of the folder, not the actual folder itself
+      const { parentId } = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPageId)
+        .select(["parentId"])
+        .executeTakeFirstOrThrow()
+
+      // NOTE: This is not a general `resource.list`
+      // but reimplemented here because it makes certain assumptions about what should be shown
+      const childPages = await db
+        .with("directChildren", (eb) => {
+          return eb
+            .selectFrom("Resource")
+            .where("parentId", "=", parentId)
+            .where("siteId", "=", Number(siteId))
+            .where("state", "=", "Published")
+            .where("type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+              ResourceType.Page,
+            ])
+            .select(["Resource.id", "title", "type"])
+        })
+        .selectFrom("Resource")
+        .where("parentId", "in", (qb) =>
+          qb
+            .selectFrom("directChildren")
+            .where("type", "in", [ResourceType.Folder, ResourceType.Collection])
+            .select("id"),
+        )
+        // NOTE: Keeping in line with how we select resources for sitemap,
+        // we will only select published index pages here
+        .where("state", "=", "Published")
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["Resource.id", "title"])
+        .unionAll((qb) => {
+          return qb
+            .selectFrom("directChildren")
+            .where("type", "=", ResourceType.Page)
+            .select(["id", "title"])
+        })
+        .execute()
+
+      // TODO: Think about how to handle cases where 2 people are editing the order
+      return { childPages }
     }),
 })

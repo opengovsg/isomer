@@ -355,6 +355,7 @@ export const Default: Story = {
     permalink: "/parent",
     LinkComponent: "a",
     site,
+    childrenPagesOrdering: [],
   },
 }
 
@@ -364,6 +365,7 @@ export const BaseRows: Story = {
     site,
     permalink: "/parent",
     LinkComponent: "a",
+    childrenPagesOrdering: [],
   },
 }
 
@@ -374,6 +376,7 @@ export const RowsWithDescription: Story = {
     permalink: "/parent",
     LinkComponent: "a",
     showSummary: true,
+    childrenPagesOrdering: [],
   },
 }
 
@@ -384,6 +387,7 @@ export const RowsWithThumbnailOnly: Story = {
     permalink: "/parent",
     LinkComponent: "a",
     showThumbnail: true,
+    childrenPagesOrdering: [],
   },
 }
 
@@ -395,6 +399,7 @@ export const RowsWithThumbnailAndDescription: Story = {
     LinkComponent: "a",
     showSummary: true,
     showThumbnail: true,
+    childrenPagesOrdering: [],
   },
 }
 
@@ -404,6 +409,7 @@ export const Boxes: Story = {
     site,
     permalink: "/parent",
     LinkComponent: "a",
+    childrenPagesOrdering: [],
   },
 }
 
@@ -414,6 +420,7 @@ export const BoxesWithDescription: Story = {
     permalink: "/parent",
     LinkComponent: "a",
     showSummary: true,
+    childrenPagesOrdering: [],
   },
 }
 
@@ -424,6 +431,7 @@ export const BoxesWithThumbnailOnly: Story = {
     permalink: "/parent",
     LinkComponent: "a",
     showThumbnail: true,
+    childrenPagesOrdering: [],
   },
 }
 export const BoxesWithThumbnailAndDescription: Story = {
@@ -434,5 +442,6 @@ export const BoxesWithThumbnailAndDescription: Story = {
     LinkComponent: "a",
     showSummary: true,
     showThumbnail: true,
+    childrenPagesOrdering: [],
   },
 }

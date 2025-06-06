@@ -200,6 +200,7 @@ export const Rows: Story = {
         variant: "rows",
         showSummary: false,
         showThumbnail: false,
+        childrenPagesOrdering: [],
       },
     ],
   }),
@@ -209,6 +210,7 @@ export const RowsWithImageOnly: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
+        childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "rows",
         showSummary: false,
@@ -222,6 +224,7 @@ export const RowsWithDescriptionOnly: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
+        childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "rows",
         showSummary: true,
@@ -235,6 +238,7 @@ export const RowsWithImageAndDescription: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
+        childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "rows",
         showSummary: true,
@@ -263,6 +267,7 @@ export const RowsWithImageAndDescriptionAndContent: Story = {
         ],
       },
       {
+        childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "rows",
         showSummary: true,
@@ -276,6 +281,7 @@ export const Boxes: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
+        childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "boxes",
         showSummary: false,
@@ -289,6 +295,7 @@ export const BoxesWithImageOnly: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
+        childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "boxes",
         showSummary: false,
@@ -302,6 +309,7 @@ export const BoxesWithDescriptionOnly: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
+        childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "boxes",
         showSummary: true,
@@ -315,6 +323,7 @@ export const BoxesWithImageAndDescription: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
+        childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "boxes",
         showSummary: true,
@@ -343,6 +352,7 @@ export const BoxesWithImageAndDescriptionAndContent: Story = {
         ],
       },
       {
+        childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "boxes",
         showSummary: true,
