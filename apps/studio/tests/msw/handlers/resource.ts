@@ -1,5 +1,5 @@
 import { trpcMsw } from "../mockTrpc"
-import { DEFAULT_PAGE_ITEMS } from "./page"
+import { DEFAULT_COLLECTION_ITEMS, DEFAULT_PAGE_ITEMS } from "./page"
 
 export const resourceHandlers = {
   getChildrenOf: {
@@ -16,6 +16,27 @@ export const resourceHandlers = {
           // ID must be unique so infinite loop won't occur
           id: `${resourceId}-${item.title}-${item.id}`,
           parentId: item.parentId,
+        }))
+        return {
+          items,
+          nextOffset: null,
+        }
+      })
+    },
+    collection: () => {
+      return trpcMsw.resource.getChildrenOf.query(({ resourceId }) => {
+        const items = DEFAULT_COLLECTION_ITEMS.map((item) => ({
+          title: item.title,
+          permalink: item.permalink,
+          parentId: item.parentId,
+          type: item.type as
+            | "Page"
+            | "Folder"
+            | "Collection"
+            | "CollectionLink"
+            | "CollectionPage",
+          // ID must be unique so infinite loop won't occur
+          id: `${resourceId}-${item.title}-${item.id}`,
         }))
         return {
           items,
