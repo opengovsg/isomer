@@ -6,7 +6,7 @@ import { getIronSession } from "iron-session"
 
 import { env } from "~/env.mjs"
 import { type Session, type SessionData } from "~/lib/types/session"
-import { sessionOptions } from "./modules/auth/session"
+import { generateSessionOptions } from "./modules/auth/session"
 import { db } from "./modules/database"
 import { type defaultUserSelect } from "./modules/me/me.select"
 import { prisma } from "./prisma"
@@ -36,7 +36,12 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   const session = await getIronSession<SessionData>(
     opts.req,
     opts.res,
-    sessionOptions,
+    generateSessionOptions({
+      // Temporary as Singpass is live for VAPT
+      // Once VAPT is done and we are releasing to other environments,
+      // we do not need to specify and can let it fallback to default 1 hour
+      ttlInHours: env.NEXT_PUBLIC_APP_ENV === "vapt" ? 1 : 12,
+    }), // Note: this wouldn't overwrite the cookie (e.g. TTL) if it already exists
   )
 
   const innerContext = createContextInner({
