@@ -288,12 +288,14 @@ export const folderRouter = router({
 
       const { title } = await db
         .selectFrom("Resource")
-        .where("id", "=", resourceId)
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", resourceId)
         .select("title")
         .executeTakeFirstOrThrow()
 
       const indexPage = await db
         .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
         .where("Resource.parentId", "=", resourceId)
         .where("Resource.type", "=", ResourceType.IndexPage)
         .select(["id", "draftBlobId"])

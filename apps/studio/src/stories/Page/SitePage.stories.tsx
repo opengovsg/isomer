@@ -24,7 +24,7 @@ const meta: Meta<typeof SitePage> = {
         pageHandlers.getPermalinkTree.withParent(),
         sitesHandlers.getSiteName.default(),
         resourceHandlers.getChildrenOf.default(),
-        resourceHandlers.getRolesFor.default(),
+        resourceHandlers.getRolesFor.admin(),
       ],
     },
     nextjs: {
