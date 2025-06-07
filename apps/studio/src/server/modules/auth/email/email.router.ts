@@ -15,7 +15,6 @@ import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
 import { db } from "../../database"
 import { defaultUserSelect } from "../../me/me.select"
-import { isUserDeleted } from "../../user/user.service"
 import { isEmailWhitelisted } from "../../whitelist/whitelist.service"
 import { VerificationError } from "../auth.error"
 import { recordUserLogin, verifyToken } from "../auth.service"
@@ -30,14 +29,8 @@ export const emailSessionRouter = router({
     .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email } }) => {
       const isWhitelisted = await isEmailWhitelisted(email)
-      const isDeleted = await isUserDeleted(email)
-
-      // Assert that the user is both whitelisted and not deleted
-      if (!isWhitelisted || isDeleted) {
-        ctx.logger.warn(
-          { email, isDeleted, isWhitelisted },
-          "User is not whitelisted or deleted",
-        )
+      if (!isWhitelisted) {
+        ctx.logger.warn({ email, isWhitelisted }, "User is not whitelisted")
 
         throw new TRPCError({
           code: "UNAUTHORIZED",
