@@ -58,11 +58,28 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
   }
 }
 
+// NOTE: We throw an error for malformed site URLs to ensure data integrity.
+// The schema serves as our contract - when inputs don't match expectations,
+// we should fail fast rather than accommodate inconsistent data formats.
+const getCanonicalUrl = (props: IsomerPageSchemaType) => {
+  if (!props.site.url) return props.page.permalink
+
+  if (!props.site.url.startsWith("https://")) {
+    throw new Error(
+      "Invalid site.url. Must be a valid URL starting with https://",
+    )
+  }
+
+  try {
+    return new URL(props.page.permalink, props.site.url).toString()
+  } catch {
+    throw new Error("Invalid site URL or permalink.")
+  }
+}
+
 export const getMetadata = (props: IsomerPageSchemaType) => {
   const faviconUrl = `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`
-  const canonicalUrl = props.site.url
-    ? new URL(props.page.permalink, props.site.url).toString()
-    : props.page.permalink
+  const canonicalUrl = getCanonicalUrl(props)
   const metaImage = getMetaImage(props)
   const metaImageUrl = `${props.site.assetsBaseUrl ?? ""}${metaImage ?? props.site.logoUrl}`
 

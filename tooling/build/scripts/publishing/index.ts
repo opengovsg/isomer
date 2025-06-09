@@ -143,6 +143,10 @@ async function main() {
           date: resource.content.page.date,
           image: getResourceImage(resource),
           ref: resource.content.page.ref, // For file and link layouts
+          collectionPagePageProps: {
+            defaultSortBy: resource.content.page?.defaultSortBy,
+            defaultSortDirection: resource.content.page?.defaultSortDirection,
+          },
         }
 
         sitemapEntries.push(sitemapEntry)

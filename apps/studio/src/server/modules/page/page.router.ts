@@ -3,6 +3,8 @@ import type {
   IsomerSchema,
 } from "@opengovsg/isomer-components"
 import {
+  COLLECTION_PAGE_DEFAULT_SORT_BY,
+  COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
   getLayoutMetadataSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
@@ -825,8 +827,8 @@ export const pageRouter = router({
               page: {
                 title: parent.title,
                 subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
-                defaultSortBy: "date",
-                defaultSortDirection: "desc",
+                defaultSortBy: COLLECTION_PAGE_DEFAULT_SORT_BY,
+                defaultSortDirection: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
               } as CollectionPagePageProps,
               content: [],
               version: "0.1.0",

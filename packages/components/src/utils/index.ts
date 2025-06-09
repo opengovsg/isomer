@@ -17,6 +17,10 @@ export * from "./tailwind"
 export { unorderedListSchemaBuilder } from "./unorderedListSchemaBuilder"
 export { getWordsFromPermalink } from "./getWordsFromPermalink"
 export {
+  getResourceIdFromReferenceLink,
+  REFERENCE_LINK_REGEX,
+} from "./getResourceIdFromReferenceLink"
+export {
   MAPS_EMBED_URL_REGEXES,
   VIDEO_EMBED_URL_REGEXES,
   NON_EMPTY_STRING_REGEX,

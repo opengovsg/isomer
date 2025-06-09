@@ -32,12 +32,22 @@ export { MapSchema, type MapProps } from "./Map"
 export { VideoSchema, type VideoProps } from "./Video"
 export {
   DYNAMIC_DATA_BANNER_TYPE,
-  NUMBER_OF_DATA,
+  DYNAMIC_DATA_BANNER_NUMBER_OF_DATA,
   DynamicDataBannerSchema,
   type DynamicDataBannerProps,
 } from "./DynamicDataBanner"
 export {
-  ChildrenPagesSchema as ChildrenPagesSchema,
+  CollectionBlockSchema,
+  type CollectionBlockProps,
+  COLLECTION_BLOCK_TYPE,
+} from "./CollectionBlock"
+export {
+  IMAGE_GALLERY_TYPE,
+  ImageGallerySchema,
+  type ImageGalleryProps,
+} from "./ImageGallery"
+export {
+  ChildrenPagesSchema,
   DEFAULT_CHILDREN_PAGES_BLOCK,
   CHILDREN_PAGES_LAYOUT_OPTIONS,
   type ChildrenPagesProps,
