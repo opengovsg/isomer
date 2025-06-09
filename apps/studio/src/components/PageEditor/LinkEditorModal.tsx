@@ -16,6 +16,7 @@ import {
   Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
+import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { isEmpty } from "lodash"
 import { z } from "zod"
 
@@ -25,13 +26,16 @@ import {
   MAX_FILE_SIZE_BYTES,
 } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
+import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
 import {
   LinkEditorContextProvider,
   useLinkEditor,
 } from "~/features/editing-experience/components/LinkEditor/LinkEditorContext"
+import { getLinkHrefType } from "~/features/editing-experience/components/LinkEditor/utils"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
-import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
+import { getReferenceLink } from "~/utils/link"
+import { AttachmentData } from "../AttachmentData"
 import { ResourceSelector } from "../ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
 
@@ -138,13 +142,15 @@ const LinkEditorModalContent = ({
             <LinkEditorContextProvider
               linkTypes={linkTypes}
               linkHref={linkHref ?? ""}
-              onChange={(href) => setValue("linkHref", href)}
+              onChange={(href) =>
+                setValue("linkHref", href, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
               error={errors.linkHref?.message}
             >
-              <ModalLinkEditor
-                onChange={(value) => setValue("linkHref", value)}
-              />
-
+              <ModalLinkEditor />
               {errors.linkHref?.message && (
                 <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
               )}
@@ -211,17 +217,9 @@ export const LinkEditorModal = ({
   </Modal>
 )
 
-const ModalLinkEditor = ({
-  onChange,
-}: {
-  onChange: (value: string) => void
-}) => {
+const ModalLinkEditor = () => {
   const { error, curHref, setHref } = useLinkEditor()
   const { siteId } = useQueryParse(editSiteSchema)
-  const handleChange = (value: string) => {
-    onChange(value)
-    setHref(value)
-  }
 
   return (
     <LinkHrefEditor
@@ -229,16 +227,19 @@ const ModalLinkEditor = ({
       description="When this is clicked, open:"
       isRequired
       isInvalid={!!error}
-      pageLinkElement={
-        <PageLinkElement value={curHref} onChange={handleChange} />
-      }
+      pageLinkElement={<PageLinkElement value={curHref} onChange={setHref} />}
       fileLinkElement={
-        <FileAttachment
-          maxSizeInBytes={MAX_FILE_SIZE_BYTES}
-          acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
-          siteId={siteId}
-          setHref={(href) => handleChange(href ?? "")}
-        />
+        getLinkHrefType(curHref) === LINK_TYPES.File ? (
+          <AttachmentData data={curHref} onClick={() => setHref("")} />
+        ) : (
+          <FileAttachment
+            maxSizeInBytes={MAX_FILE_SIZE_BYTES}
+            acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
+            siteId={siteId}
+            setHref={(href) => setHref(href ?? "")}
+            shouldFetchResource={false}
+          />
+        )
       }
     />
   )

@@ -10,12 +10,12 @@ import {
   useDisclosure,
 } from "@chakra-ui/react"
 import { Button, FormLabel } from "@opengovsg/design-system-react"
+import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { BiTrash } from "react-icons/bi"
 
 import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import type { LinkEditorModalProps } from "~/components/PageEditor/LinkEditorModal"
 import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
-import { getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
