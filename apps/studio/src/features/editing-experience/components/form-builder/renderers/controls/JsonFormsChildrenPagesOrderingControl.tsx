@@ -1,11 +1,7 @@
+import type { DropResult } from "@hello-pangea/dnd"
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl, Skeleton, VStack } from "@chakra-ui/react"
-import {
-  DragDropContext,
-  Draggable,
-  Droppable,
-  DropResult,
-} from "@hello-pangea/dnd"
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
@@ -16,7 +12,7 @@ import { editPageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { BaseBlock, BaseBlockDragHandle } from "../../../Block/BaseBlock"
-import { merge } from "./utils/merge"
+import { mergeResourcesWithOrdering } from "./utils/mergeResourcesWithOrdering"
 
 export const jsonFormsChildrenPagesOrderingControlTester: RankedTester =
   rankWith(
@@ -117,7 +113,7 @@ const SuspendableBlocks = ({
   })
 
   const mappings = new Map(childPages.map(({ title, id }) => [id, title]))
-  const resources = merge(
+  const resources = mergeResourcesWithOrdering(
     data,
     childPages.map(({ id }) => id),
     mappings,

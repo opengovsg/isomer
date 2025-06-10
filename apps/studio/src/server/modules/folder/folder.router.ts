@@ -335,7 +335,7 @@ export const folderRouter = router({
             .selectFrom("Resource")
             .where("parentId", "=", parentId)
             .where("siteId", "=", Number(siteId))
-            .where("state", "=", "Published")
+            .where("state", "=", ResourceState.Published)
             .where("type", "in", [
               ResourceType.Folder,
               ResourceType.Collection,
@@ -352,7 +352,7 @@ export const folderRouter = router({
         )
         // NOTE: Keeping in line with how we select resources for sitemap,
         // we will only select published index pages here
-        .where("state", "=", "Published")
+        .where("state", "=", ResourceState.Published)
         .where("type", "=", ResourceType.IndexPage)
         .select(["Resource.id", "title"])
         .unionAll((qb) => {

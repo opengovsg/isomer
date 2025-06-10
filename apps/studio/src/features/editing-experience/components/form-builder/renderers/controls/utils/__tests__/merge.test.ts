@@ -1,4 +1,4 @@
-import { merge } from "../merge"
+import { mergeResourcesWithOrdering } from "../mergeResourcesWithOrdering"
 
 describe("merge", () => {
   it("should put strings that are not in base at the back and sorted by title", () => {
@@ -18,7 +18,7 @@ describe("merge", () => {
     const expected = ["2", "1", "53", "5", "12", "4"]
 
     // Assert
-    const actual = merge(base, all, mappings)
+    const actual = mergeResourcesWithOrdering(base, all, mappings)
     expect(actual).toStrictEqual(expected)
   })
 
@@ -36,7 +36,7 @@ describe("merge", () => {
     const expected = ["5", "12", "4"]
 
     // Assert
-    const actual = merge(base, all, mappings)
+    const actual = mergeResourcesWithOrdering(base, all, mappings)
     expect(actual).toStrictEqual(expected)
   })
 
@@ -57,7 +57,7 @@ describe("merge", () => {
     const expected = ["2", "1", "53", "4", "12", "5"]
 
     // Assert
-    const actual = merge(base, all, mappings)
+    const actual = mergeResourcesWithOrdering(base, all, mappings)
     expect(actual).toStrictEqual(expected)
   })
 })
