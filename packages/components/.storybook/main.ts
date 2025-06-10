@@ -26,10 +26,6 @@ const config: StorybookConfig = {
     options: {},
   },
 
-  docs: {
-    autodocs: true,
-  },
-
   staticDirs: ["../public", "./assets"],
 }
 
