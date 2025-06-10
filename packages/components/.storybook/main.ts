@@ -3,14 +3,7 @@ import { mergeConfig } from "vite"
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.stories.tsx"],
-  addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-essentials",
-    "@storybook/addon-themes",
-    "@storybook/addon-a11y",
-    "@storybook/addon-interactions",
-    "storybook-addon-pseudo-states",
-  ],
+  addons: ["@storybook/addon-themes", "storybook-addon-pseudo-states"],
   viteFinal(config) {
     // Merge custom configuration into the default config
     return mergeConfig(config, {
