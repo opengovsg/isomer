@@ -132,8 +132,5 @@
   ],
   "msw": {
     "workerDirectory": "public"
-  },
-  "overrides": {
-    "storybook": "$storybook"
   }
 }
