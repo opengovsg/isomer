@@ -207,7 +207,7 @@
     "vite": "^5.4.19",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^2.1.1",
-    "webpack-cli": "^5.1.4",
+    "webpack-cli": "^6.0.1",
     "webpack-glob-entries": "^1.0.1"
   },
   "publishConfig": {
