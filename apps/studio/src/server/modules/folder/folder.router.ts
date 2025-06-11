@@ -312,20 +312,32 @@ export const folderRouter = router({
   listChildPages: protectedProcedure
     .input(listChildPagesSchema)
     .query(async ({ ctx, input: { indexPageId, siteId } }) => {
+      // NOTE: The `resourceId` passed here is the id of the index page
+      // of the folder, not the actual folder itself
+      const { parentId, type } = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPageId)
+        .select(["parentId", "type"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "No index page with the specified id could be found",
+            }),
+        )
+
       await validateUserPermissionsForResource({
         siteId: Number(siteId),
         action: "read",
         userId: ctx.user.id,
-        resourceId: indexPageId,
       })
 
-      // NOTE: The `resourceId` passed here is the id of the index page
-      // of the folder, not the actual folder itself
-      const { parentId } = await db
-        .selectFrom("Resource")
-        .where("id", "=", indexPageId)
-        .select(["parentId"])
-        .executeTakeFirstOrThrow()
+      if (type !== ResourceType.IndexPage) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No index page with the specified id could be found",
+        })
+      }
 
       // NOTE: This is not a general `resource.list`
       // but reimplemented here because it makes certain assumptions about what should be shown
