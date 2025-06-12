@@ -5,7 +5,7 @@ import { pick } from "lodash"
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { sendInvitation } from "~/features/mail/service"
 import { canResendInviteToUser } from "~/features/users/utils"
-import { getIsSingpassEnabledForCriticalActions } from "~/lib/growthbook"
+import { getIsSingpassEnabled } from "~/lib/growthbook"
 import {
   countUsersInputSchema,
   countUsersOutputSchema,
@@ -65,7 +65,7 @@ export const userRouter = router({
         action: "manage",
       })
 
-      const isSingpassEnabled = getIsSingpassEnabledForCriticalActions({
+      const isSingpassEnabled = getIsSingpassEnabled({
         gb: ctx.gb,
       })
       if (!isSingpassEnabled) {
@@ -132,7 +132,7 @@ export const userRouter = router({
         action: "manage",
       })
 
-      const isSingpassEnabled = getIsSingpassEnabledForCriticalActions({
+      const isSingpassEnabled = getIsSingpassEnabled({
         gb: ctx.gb,
       })
       if (!isSingpassEnabled) {
@@ -285,7 +285,7 @@ export const userRouter = router({
         action: "manage",
       })
 
-      const isSingpassEnabled = getIsSingpassEnabledForCriticalActions({
+      const isSingpassEnabled = getIsSingpassEnabled({
         gb: ctx.gb,
       })
       if (!isSingpassEnabled) {
@@ -358,6 +358,13 @@ export const userRouter = router({
         action: "manage",
       })
 
+      const isSingpassEnabled = getIsSingpassEnabled({
+        gb: ctx.gb,
+      })
+      if (!isSingpassEnabled) {
+        throwSingpassDisabledError()
+      }
+
       const possibleActor = await db
         .selectFrom("User")
         .where("id", "=", ctx.user.id)
@@ -409,9 +416,6 @@ export const userRouter = router({
       }
 
       // Send invite
-      const isSingpassEnabled = getIsSingpassEnabledForCriticalActions({
-        gb: ctx.gb,
-      })
       const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
       await sendInvitation({
         isSingpassEnabled,

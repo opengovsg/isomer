@@ -21,7 +21,7 @@ import { MenuItem } from "~/components/Menu"
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UserManagementContext } from "~/features/users"
-import { useIsSingpassEnabledForCriticalActions } from "~/hooks/useIsSingpassEnabled"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { trpc } from "~/utils/trpc"
 import { removeUserModalAtom, updateUserModalAtom } from "../../atoms"
 import { canResendInviteToUser } from "../../utils"
@@ -49,7 +49,7 @@ export const UserTableMenu = ({
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
 
-  const isSingpassEnabled = useIsSingpassEnabledForCriticalActions()
+  const isSingpassEnabled = useIsSingpassEnabled()
 
   const { mutate: resendInvite, isLoading: isResendingInvite } =
     trpc.user.resendInvite.useMutation({
@@ -97,8 +97,13 @@ export const UserTableMenu = ({
               {canResendInviteToUser({ createdAt, lastLoginAt }) && (
                 <MenuItem
                   onClick={() => resendInvite({ siteId, userId })}
-                  isDisabled={isResendingInvite}
+                  isDisabled={isResendingInvite || !isSingpassEnabled}
                   icon={<BiMailSend fontSize="1rem" />}
+                  tooltip={
+                    isSingpassEnabled
+                      ? undefined
+                      : SINGPASS_DISABLED_ERROR_MESSAGE
+                  }
                 >
                   Resend invite
                 </MenuItem>

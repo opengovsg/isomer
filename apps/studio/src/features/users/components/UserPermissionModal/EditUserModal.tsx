@@ -12,7 +12,6 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
-  Tooltip,
   VStack,
 } from "@chakra-ui/react"
 import { FormLabel, useToast } from "@opengovsg/design-system-react"
@@ -20,9 +19,8 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { useAtomValue, useSetAtom } from "jotai"
 import { z as zod } from "zod"
 
-import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useIsSingpassEnabledForCriticalActions } from "~/hooks/useIsSingpassEnabled"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
 import { updateUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
@@ -31,6 +29,7 @@ import {
   DEFAULT_UPDATE_USER_MODAL_STATE,
   updateUserModalAtom,
 } from "../../atoms"
+import { SingpassConditionalTooltip } from "../SingpassConditionalTooltip"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
@@ -42,7 +41,7 @@ export const EditUserModal = () => {
   const { siteId, userId, email, role } = useAtomValue(updateUserModalAtom)
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
 
-  const isSingpassEnabled = useIsSingpassEnabledForCriticalActions()
+  const isSingpassEnabled = useIsSingpassEnabled()
 
   const onClose = () => {
     reset()
@@ -95,27 +94,6 @@ export const EditUserModal = () => {
   const selectedRole = watch("role")
 
   const isNonGovEmailInput = useMemo(() => !isGovEmail(email), [email])
-
-  const renderSaveChangesButton = () => {
-    const SaveChangesButton = (
-      <Button
-        variant="solid"
-        onClick={onUpdateUser}
-        isLoading={isLoading}
-        isDisabled={!isSingpassEnabled}
-      >
-        Save changes
-      </Button>
-    )
-
-    return isSingpassEnabled ? (
-      SaveChangesButton
-    ) : (
-      <Tooltip label={SINGPASS_DISABLED_ERROR_MESSAGE}>
-        {SaveChangesButton}
-      </Tooltip>
-    )
-  }
 
   return (
     <Modal isOpen={!!siteId && !!userId} onClose={onClose}>
@@ -177,7 +155,16 @@ export const EditUserModal = () => {
           >
             Cancel
           </Button>
-          {renderSaveChangesButton()}
+          <SingpassConditionalTooltip>
+            <Button
+              variant="solid"
+              onClick={onUpdateUser}
+              isLoading={isLoading}
+              isDisabled={!isSingpassEnabled}
+            >
+              Save changes
+            </Button>
+          </SingpassConditionalTooltip>
         </ModalFooter>
       </ModalContent>
     </Modal>

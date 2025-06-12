@@ -7,20 +7,19 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
-  Tooltip,
   VStack,
 } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
 
-import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useIsSingpassEnabledForCriticalActions } from "~/hooks/useIsSingpassEnabled"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { trpc } from "~/utils/trpc"
 import {
   DEFAULT_REMOVE_USER_MODAL_STATE,
   removeUserModalAtom,
 } from "../../atoms"
+import { SingpassConditionalTooltip } from "../SingpassConditionalTooltip"
 import { UserInfoContent } from "./UserInfoContent"
 
 export const RemoveUserModal = () => {
@@ -31,7 +30,7 @@ export const RemoveUserModal = () => {
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
   const onClose = () => setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE)
 
-  const isSingpassEnabled = useIsSingpassEnabledForCriticalActions()
+  const isSingpassEnabled = useIsSingpassEnabled()
 
   const { mutate, isLoading } = trpc.user.delete.useMutation({
     onSettled: onClose,
@@ -58,28 +57,6 @@ export const RemoveUserModal = () => {
     mutate({ siteId, userId })
   }
 
-  const renderRemoveUserButton = () => {
-    const RemoveUserButton = (
-      <Button
-        colorScheme="critical"
-        variant="solid"
-        onClick={onRemoveUser}
-        isLoading={isLoading}
-        isDisabled={!isSingpassEnabled}
-      >
-        Remove user
-      </Button>
-    )
-
-    return isSingpassEnabled ? (
-      RemoveUserButton
-    ) : (
-      <Tooltip label={SINGPASS_DISABLED_ERROR_MESSAGE}>
-        {RemoveUserButton}
-      </Tooltip>
-    )
-  }
-
   return (
     <Modal isOpen={!!siteId && !!userId} onClose={onClose}>
       <ModalOverlay>
@@ -104,7 +81,17 @@ export const RemoveUserModal = () => {
             >
               No, cancel
             </Button>
-            {renderRemoveUserButton()}
+            <SingpassConditionalTooltip>
+              <Button
+                colorScheme="critical"
+                variant="solid"
+                onClick={onRemoveUser}
+                isLoading={isLoading}
+                isDisabled={!isSingpassEnabled}
+              >
+                Remove user
+              </Button>
+            </SingpassConditionalTooltip>
           </ModalFooter>
         </ModalContent>
       </ModalOverlay>
