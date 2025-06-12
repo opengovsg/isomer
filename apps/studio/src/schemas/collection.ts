@@ -34,6 +34,12 @@ export const editLinkSchema = z.object({
   siteId: z.number().min(1),
   description: z.string().optional(),
   ref: z.string().min(1),
+  image: z
+    .object({
+      src: z.string(),
+      alt: z.string().max(120),
+    })
+    .optional(),
 })
 
 export const readLinkSchema = z.object({

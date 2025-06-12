@@ -16,6 +16,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
     title,
     category,
     ref,
+    image,
   } = useAtomValue(linkAtom)
   const { linkId, siteId } = useQueryParse(editLinkSchema)
   const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
@@ -53,6 +54,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
           {
             id: "9999999",
             title,
+            image,
             date,
             ref,
             summary: summary ?? "",
