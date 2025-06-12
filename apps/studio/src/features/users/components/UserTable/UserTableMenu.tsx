@@ -99,6 +99,11 @@ export const UserTableMenu = ({
                   onClick={() => resendInvite({ siteId, userId })}
                   isDisabled={isResendingInvite}
                   icon={<BiMailSend fontSize="1rem" />}
+                  tooltip={
+                    isSingpassEnabled
+                      ? undefined
+                      : SINGPASS_DISABLED_ERROR_MESSAGE
+                  }
                 >
                   Resend invite
                 </MenuItem>
