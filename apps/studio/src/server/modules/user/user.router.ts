@@ -358,6 +358,13 @@ export const userRouter = router({
         action: "manage",
       })
 
+      const isSingpassEnabled = getIsSingpassEnabled({
+        gb: ctx.gb,
+      })
+      if (!isSingpassEnabled) {
+        throwSingpassDisabledError()
+      }
+
       const possibleActor = await db
         .selectFrom("User")
         .where("id", "=", ctx.user.id)
@@ -409,9 +416,6 @@ export const userRouter = router({
       }
 
       // Send invite
-      const isSingpassEnabled = getIsSingpassEnabled({
-        gb: ctx.gb,
-      })
       const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
       await sendInvitation({
         isSingpassEnabled,
