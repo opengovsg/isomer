@@ -150,7 +150,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
           ENV: ${{ inputs.environment }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{github.ref}}/${{ github.sha }}
         with:
           context: .
           file: "./apps/studio/Dockerfile"
