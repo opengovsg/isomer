@@ -48,6 +48,7 @@ export async function sendLoginAlertEmail(
       error: "Invalid email format",
       email: data.recipientEmail,
     })
+    throw new Error("Invalid email format")
   }
 
   const template = templates.loginAlert(data)
