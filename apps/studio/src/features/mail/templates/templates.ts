@@ -4,8 +4,13 @@ import type {
   BaseEmailTemplateData,
   EmailTemplate,
   InvitationEmailTemplateData,
+  LoginAlertEmailTemplateData,
+  PublishAlertContentPublisherEmailTemplateData,
+  PublishAlertSiteAdminEmailTemplateData,
 } from "./types"
+import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
+import { getStudioResourceUrl } from "~/utils/resources"
 
 export const invitationTemplate = (
   data: InvitationEmailTemplateData,
@@ -50,6 +55,54 @@ export const invitationTemplate = (
   }
 }
 
+// FYI: Currently, we only send this email to users when Singpass has been disabled.
+export const loginAlertTemplate = (
+  data: LoginAlertEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail } = data
+  return {
+    subject: `[Isomer Studio] Successful Login to Your Account`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>We wanted to let you know that your account was accessed successfully.</p>
+<p>If this was you, no action is needed.</p>
+<p><strong>Note:</strong> You're receiving this notification because your account was logged into during a Singpass authentication outage. If you are not the one who logged in, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
+export const publishAlertContentPublisherTemplate = (
+  data: PublishAlertContentPublisherEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, siteName, resource } = data
+  const studioResourceUrl = getStudioResourceUrl(resource)
+
+  return {
+    subject: `[Isomer Studio] ${resource.title} has been published`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>You have successfully published "${resource.title}" on ${siteName}. You can access your published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
+<p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. If you didn't authorize this publication, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
+export const publishAlertSiteAdminTemplate = (
+  data: PublishAlertSiteAdminEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, publisherEmail, siteName, resource } = data
+  const studioResourceUrl = getStudioResourceUrl(resource)
+
+  return {
+    subject: `[Isomer Studio] ${resource.title} has been published`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>${publisherEmail} has published "${resource.title}" on ${siteName}. You can view the published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
+<p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. As a site admin, we want to keep you informed of all publishing activities. If you have any concerns, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
 type EmailTemplateFunction<
   T extends BaseEmailTemplateData = BaseEmailTemplateData,
 > = (data: T) => EmailTemplate
@@ -57,4 +110,10 @@ type EmailTemplateFunction<
 export const templates = {
   invitation:
     invitationTemplate satisfies EmailTemplateFunction<InvitationEmailTemplateData>,
+  loginAlert:
+    loginAlertTemplate satisfies EmailTemplateFunction<LoginAlertEmailTemplateData>,
+  publishAlertContentPublisher:
+    publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
+  publishAlertSiteAdmin:
+    publishAlertSiteAdminTemplate satisfies EmailTemplateFunction<PublishAlertSiteAdminEmailTemplateData>,
 } as const
