@@ -97,7 +97,7 @@ export const UserTableMenu = ({
               {canResendInviteToUser({ createdAt, lastLoginAt }) && (
                 <MenuItem
                   onClick={() => resendInvite({ siteId, userId })}
-                  isDisabled={isResendingInvite}
+                  isDisabled={isResendingInvite || !isSingpassEnabled}
                   icon={<BiMailSend fontSize="1rem" />}
                   tooltip={
                     isSingpassEnabled
