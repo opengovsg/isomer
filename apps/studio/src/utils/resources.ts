@@ -68,7 +68,7 @@ export const getUserViewableResourceTypes = (): ResourceType[] => {
   ]
 }
 
-export const getResourceStudioUrl = (resource: Resource): string => {
+export const getStudioResourceUrl = (resource: Resource): string => {
   const siteUrlPrefix = `${env.NEXT_PUBLIC_APP_URL}/sites/${resource.siteId}`
 
   switch (resource.type) {

@@ -9,7 +9,7 @@ import type {
 } from "./types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
-import { getResourceStudioUrl } from "~/utils/resources"
+import { getStudioResourceUrl } from "~/utils/resources"
 
 export const invitationTemplate = (
   data: InvitationEmailTemplateData,
@@ -58,12 +58,12 @@ export const publishAlertContentPublisherTemplate = (
   data: PublishAlertContentPublisherEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, siteName, resource } = data
-  const resourceStudioUrl = getResourceStudioUrl(resource)
+  const studioResourceUrl = getStudioResourceUrl(resource)
 
   return {
     subject: `[Isomer Studio] ${resource.title} has been published`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You have successfully published "${resource.title}" on ${siteName}. You can access your published content on Isomer Studio at <a href="${resourceStudioUrl}">${resourceStudioUrl}</a>.</p>
+<p>You have successfully published "${resource.title}" on ${siteName}. You can access your published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
 <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. If you didn't authorize this publication, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
@@ -74,12 +74,12 @@ export const publishAlertSiteAdminTemplate = (
   data: PublishAlertSiteAdminEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, publisherEmail, siteName, resource } = data
-  const resourceStudioUrl = getResourceStudioUrl(resource)
+  const studioResourceUrl = getStudioResourceUrl(resource)
 
   return {
     subject: `[Isomer Studio] ${resource.title} has been published`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>${publisherEmail} has published "${resource.title}" on ${siteName}. You can view the published content on Isomer Studio at <a href="${resourceStudioUrl}">${resourceStudioUrl}</a>.</p>
+<p>${publisherEmail} has published "${resource.title}" on ${siteName}. You can view the published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
 <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. As a site admin, we want to keep you informed of all publishing activities. If you have any concerns, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
