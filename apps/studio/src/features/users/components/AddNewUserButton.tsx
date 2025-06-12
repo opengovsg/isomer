@@ -52,10 +52,7 @@ export const AddNewUserButton = ({
   }
 
   return (
-    <SingpassConditionalTooltip
-      isSingpassEnabled={isSingpassEnabled}
-      placement="bottom"
-    >
+    <SingpassConditionalTooltip placement="bottom">
       {button}
     </SingpassConditionalTooltip>
   )
