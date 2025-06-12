@@ -155,7 +155,7 @@ export const EditUserModal = () => {
           >
             Cancel
           </Button>
-          <SingpassConditionalTooltip isSingpassEnabled={isSingpassEnabled}>
+          <SingpassConditionalTooltip>
             <Button
               variant="solid"
               onClick={onUpdateUser}

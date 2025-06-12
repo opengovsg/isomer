@@ -241,7 +241,7 @@ export const AddUserModal = () => {
           >
             Cancel
           </Button>
-          <SingpassConditionalTooltip isSingpassEnabled={isSingpassEnabled}>
+          <SingpassConditionalTooltip>
             <Button
               variant="solid"
               onClick={onSendInvite}

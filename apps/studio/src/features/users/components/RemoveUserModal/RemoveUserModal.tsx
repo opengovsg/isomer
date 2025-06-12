@@ -81,7 +81,7 @@ export const RemoveUserModal = () => {
             >
               No, cancel
             </Button>
-            <SingpassConditionalTooltip isSingpassEnabled={isSingpassEnabled}>
+            <SingpassConditionalTooltip>
               <Button
                 colorScheme="critical"
                 variant="solid"

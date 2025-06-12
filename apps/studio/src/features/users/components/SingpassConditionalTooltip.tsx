@@ -2,18 +2,17 @@ import type { TooltipProps } from "@chakra-ui/react"
 import { Tooltip } from "@chakra-ui/react"
 
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 
 interface SingpassConditionalTooltipProps extends Omit<TooltipProps, "label"> {
-  isSingpassEnabled: boolean
   children: React.ReactNode
 }
 
 export const SingpassConditionalTooltip = ({
   children,
-  isSingpassEnabled,
   ...tooltipProps
 }: SingpassConditionalTooltipProps) => {
-  if (isSingpassEnabled) {
+  if (useIsSingpassEnabled()) {
     return children
   }
 
