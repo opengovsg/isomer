@@ -12,7 +12,9 @@ export const SingpassConditionalTooltip = ({
   children,
   ...tooltipProps
 }: SingpassConditionalTooltipProps) => {
-  if (useIsSingpassEnabled()) {
+  const isSingpassEnabled = useIsSingpassEnabled()
+
+  if (isSingpassEnabled) {
     return children
   }
 
