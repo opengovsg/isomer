@@ -147,7 +147,7 @@ export const emailSessionRouter = router({
       const isSingpassEnabled = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
 
       if (!isSingpassEnabled) {
-        return db.transaction().execute(async (tx) => {
+        const user = await db.transaction().execute(async (tx) => {
           const user = await upsertUser({
             tx,
             email,
@@ -161,14 +161,14 @@ export const emailSessionRouter = router({
             verificationToken: oldVerificationToken,
           })
 
-          await sendLoginAlertEmail({
-            recipientEmail: email,
-          })
-
           ctx.session.userId = userId
           await ctx.session.save()
           return pick(user, defaultUserSelect)
         })
+
+        await sendLoginAlertEmail({ recipientEmail: email })
+
+        return user
       }
 
       return db.transaction().execute(async (tx) => {
