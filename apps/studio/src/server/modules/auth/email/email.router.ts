@@ -5,6 +5,7 @@ import set from "lodash/set"
 import type { SessionData } from "~/lib/types/session"
 import type { GrowthbookAttributes } from "~/types/growthbook"
 import { env } from "~/env.mjs"
+import { sendLoginAlertEmail } from "~/features/mail/service"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { sendMail } from "~/lib/mail"
 import {
@@ -158,6 +159,10 @@ export const emailSessionRouter = router({
             tx,
             userId,
             verificationToken: oldVerificationToken,
+          })
+
+          await sendLoginAlertEmail({
+            recipientEmail: email,
           })
 
           ctx.session.userId = userId

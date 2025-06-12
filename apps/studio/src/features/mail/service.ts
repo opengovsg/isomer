@@ -1,5 +1,6 @@
 import type {
   InvitationEmailTemplateData,
+  LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
 } from "./templates"
@@ -32,6 +33,34 @@ export async function sendInvitation(
   } catch (error) {
     logger.error({
       error: "Failed to send invitation email",
+      email: data.recipientEmail,
+      originalError: error,
+    })
+    throw error
+  }
+}
+
+export async function sendLoginAlertEmail(
+  data: LoginAlertEmailTemplateData,
+): Promise<void> {
+  if (!isValidEmail(data.recipientEmail)) {
+    logger.error({
+      error: "Invalid email format",
+      email: data.recipientEmail,
+    })
+  }
+
+  const template = templates.loginAlert(data)
+
+  try {
+    await sendMail({
+      recipient: data.recipientEmail,
+      subject: template.subject,
+      body: template.body,
+    })
+  } catch (error) {
+    logger.error({
+      error: "Failed to send login alert email",
       email: data.recipientEmail,
       originalError: error,
     })

@@ -11,6 +11,9 @@ export interface InvitationEmailTemplateData extends BaseEmailTemplateData {
   role: RoleType
   isSingpassEnabled?: boolean
 }
+
+export type LoginAlertEmailTemplateData = BaseEmailTemplateData
+
 export interface PublishAlertContentPublisherEmailTemplateData
   extends BaseEmailTemplateData {
   siteName: string

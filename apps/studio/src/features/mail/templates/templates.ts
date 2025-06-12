@@ -4,6 +4,7 @@ import type {
   BaseEmailTemplateData,
   EmailTemplate,
   InvitationEmailTemplateData,
+  LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
 } from "./types"
@@ -54,6 +55,22 @@ export const invitationTemplate = (
   }
 }
 
+// FYI: Currently, we only send this email to users when Singpass has been disabled.
+export const loginAlertTemplate = (
+  data: LoginAlertEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail } = data
+  return {
+    subject: `[Isomer Studio] Successful Login to Your Account`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>We wanted to let you know that your account was accessed successfully.</p>
+<p>If this was you, no action is needed.</p>
+<p><strong>Note:</strong> You're receiving this notification because your account was logged into during a Singpass authentication outage. If you are not the one who logged in, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
 export const publishAlertContentPublisherTemplate = (
   data: PublishAlertContentPublisherEmailTemplateData,
 ): EmailTemplate => {
@@ -93,6 +110,8 @@ type EmailTemplateFunction<
 export const templates = {
   invitation:
     invitationTemplate satisfies EmailTemplateFunction<InvitationEmailTemplateData>,
+  loginAlert:
+    loginAlertTemplate satisfies EmailTemplateFunction<LoginAlertEmailTemplateData>,
   publishAlertContentPublisher:
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
   publishAlertSiteAdmin:
