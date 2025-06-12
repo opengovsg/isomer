@@ -29,9 +29,7 @@ class MockIronStore {
   }
 
   static getOrCreateStore(): MockIronStore {
-    if (!MockIronStore.instance) {
-      MockIronStore.instance = new MockIronStore()
-    }
+    MockIronStore.instance ??= new MockIronStore()
     return MockIronStore.instance
   }
 
