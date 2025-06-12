@@ -216,8 +216,5 @@
   "msw": {
     "workerDirectory": "public"
   },
-  "prettier": "@isomer/prettier-config",
-  "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.42.0"
-  }
+  "prettier": "@isomer/prettier-config"
 }
