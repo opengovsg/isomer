@@ -86,7 +86,7 @@ export const getStudioResourceUrl = (resource: Resource): string => {
       return `${siteUrlPrefix}/collections/${String(resource.id)}`
     case ResourceType.FolderMeta:
     case ResourceType.CollectionMeta:
-      return "" // they aren't accessible by users
+      return siteUrlPrefix // they aren't accessible by users but we should return a valid url
     default:
       const exhaustiveCheck: never = resource.type
       return exhaustiveCheck
