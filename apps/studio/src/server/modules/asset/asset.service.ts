@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto"
 import type { z } from "zod"
+import { TRPCError } from "@trpc/server"
 
 import type { UserPermissionsProps } from "../permissions/permissions.type"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
@@ -28,7 +29,12 @@ export const validateUserPermissionsForAsset = async ({
 
   // Permissions for assets share the same permissions as resources
   // because the underlying assumption is that the asset is tied to the resource
-  if (!resourceId) return false
+  if (!resourceId) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Resource ID is required to validate asset permissions",
+    })
+  }
   await bulkValidateUserPermissionsForResources({
     resourceIds: [resourceId],
     action,
