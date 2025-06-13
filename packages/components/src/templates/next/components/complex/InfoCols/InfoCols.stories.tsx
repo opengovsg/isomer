@@ -71,8 +71,9 @@ export const Default: Story = {
       {
         title: "Partnerships",
         description:
+          "Multilateral collaborations to strengthen regional cooperation and build capabilities. Multilateral collaborations to strengthen regional cooperation and build capabilities.",
+        buttonLabel:
           "Multilateral collaborations to strengthen regional cooperation and build capabilities.",
-        buttonLabel: "Read article",
         buttonUrl: "/faq",
         icon: "users",
       },
