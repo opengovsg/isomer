@@ -276,13 +276,6 @@ export const updateUserDetails = async ({
   name,
   phone,
 }: UpdateUserDetailsProps) => {
-  if (userId !== userId) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "You are not allowed to update this user's details",
-    })
-  }
-
   return await db.transaction().execute(async (tx) => {
     const user = await tx
       .selectFrom("User")
