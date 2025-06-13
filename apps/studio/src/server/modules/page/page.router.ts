@@ -37,7 +37,7 @@ import { safeJsonParse } from "~/utils/safeJsonParse"
 import { logResourceEvent } from "../audit/audit.service"
 import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { validateUserPermissionsForResource } from "../permissions/permissions.service"
+import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
   getBlobOfResource,
   getFooter,
@@ -92,10 +92,10 @@ export const pageRouter = router({
       }),
     )
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       let query = db
@@ -120,10 +120,10 @@ export const pageRouter = router({
   getCategories: protectedProcedure
     .input(basePageSchema)
     .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const { parentId } = await db
@@ -162,10 +162,10 @@ export const pageRouter = router({
     .input(basePageSchema)
     .output(readPageOutputSchema)
     .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const retrievedPage = await getPageById(db, {
@@ -186,11 +186,12 @@ export const pageRouter = router({
   readPageAndBlob: protectedProcedure
     .input(basePageSchema)
     .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
+
       // TODO: Return blob last modified so the renderer can show last modified
       return db.transaction().execute(async (tx) => {
         const page = await getFullPageById(tx, { resourceId: pageId, siteId })
@@ -239,10 +240,10 @@ export const pageRouter = router({
   reorderBlock: protectedProcedure
     .input(reorderBlobSchema)
     .mutation(async ({ ctx, input: { pageId, from, to, blocks, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "update",
+        userId: ctx.user.id,
       })
 
       if (!ctx.session?.userId) {
@@ -343,10 +344,10 @@ export const pageRouter = router({
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId: input.siteId,
         action: "update",
+        userId: ctx.user.id,
       })
 
       if (!ctx.session?.userId) {
@@ -409,12 +410,13 @@ export const pageRouter = router({
         ctx,
         input: { permalink, siteId, folderId, title, layout },
       }) => {
-        await validateUserPermissionsForResource({
-          userId: ctx.user.id,
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "create",
-          resourceId: !!folderId ? String(folderId) : null,
+          userId: ctx.user.id,
+          resourceIds: [!!folderId ? String(folderId) : null],
         })
+
         const newPage = createDefaultPage({ layout })
 
         if (!ctx.session?.userId) {
@@ -512,11 +514,12 @@ export const pageRouter = router({
   getRootPage: protectedProcedure
     .input(getRootPageSchema)
     .query(async ({ ctx, input: { siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
+
       const rootPage = await db
         .selectFrom("Resource")
         // TODO: Only return sites that the user has access to
@@ -537,11 +540,12 @@ export const pageRouter = router({
   publishPage: protectedProcedure
     .input(publishPageSchema)
     .mutation(async ({ ctx, input: { siteId, pageId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "publish",
+        userId: ctx.user.id,
       })
+
       return publishPageResource(
         ctx.logger,
         siteId,
@@ -553,10 +557,10 @@ export const pageRouter = router({
   updateMeta: protectedProcedure
     .input(updatePageMetaSchema)
     .mutation(async ({ ctx, input: { meta, siteId, resourceId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "update",
+        userId: ctx.user.id,
       })
 
       const by = await db
@@ -644,10 +648,10 @@ export const pageRouter = router({
     .input(pageSettingsSchema)
     .mutation(
       async ({ ctx, input: { pageId, siteId, title, ...settings } }) => {
-        await validateUserPermissionsForResource({
-          userId: ctx.user.id,
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "update",
+          userId: ctx.user.id,
         })
 
         const by = await db
@@ -746,12 +750,11 @@ export const pageRouter = router({
     ),
   getFullPermalink: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ ctx, input }) => {
-      const { pageId, siteId } = input
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const permalink = await getResourceFullPermalink(siteId, pageId)
@@ -766,12 +769,11 @@ export const pageRouter = router({
     }),
   getPermalinkTree: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ ctx, input }) => {
-      const { pageId, siteId } = input
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const permalinkTree = await getResourcePermalinkTree(siteId, pageId)
@@ -787,11 +789,11 @@ export const pageRouter = router({
   createIndexPage: protectedProcedure
     .input(createIndexPageSchema)
     .mutation(async ({ ctx, input: { siteId, parentId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
-        siteId: siteId,
+      await bulkValidateUserPermissionsForResources({
+        siteId,
         action: "create",
-        resourceId: parentId,
+        userId: ctx.user.id,
+        resourceIds: [String(parentId)],
       })
 
       const by = await db

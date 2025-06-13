@@ -20,7 +20,7 @@ import {
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { createFolderIndexPage } from "../page/page.service"
-import { validateUserPermissionsForResource } from "../permissions/permissions.service"
+import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { publishResource } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
 
@@ -32,11 +32,11 @@ export const folderRouter = router({
         ctx,
         input: { siteId, folderTitle, parentFolderId, permalink },
       }) => {
-        await validateUserPermissionsForResource({
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "create",
           userId: ctx.user.id,
-          resourceId: !!parentFolderId ? String(parentFolderId) : null,
+          resourceIds: [!!parentFolderId ? String(parentFolderId) : null],
         })
 
         // Get user information
@@ -161,7 +161,7 @@ export const folderRouter = router({
   getMetadata: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId: input.siteId,
         action: "read",
         userId: ctx.user.id,
@@ -189,7 +189,7 @@ export const folderRouter = router({
     .input(editFolderSchema)
     .mutation(
       async ({ ctx, input: { resourceId, permalink, title, siteId } }) => {
-        await validateUserPermissionsForResource({
+        await bulkValidateUserPermissionsForResources({
           siteId: Number(siteId),
           action: "update",
           userId: ctx.user.id,
@@ -279,11 +279,11 @@ export const folderRouter = router({
   getIndexpage: protectedProcedure
     .input(getIndexpageSchema)
     .query(async ({ ctx, input: { resourceId, siteId } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
         userId: ctx.user.id,
-        resourceId,
+        resourceIds: [resourceId],
       })
 
       const { title } = await db
