@@ -10,6 +10,7 @@ import {
 import {
   setupAdminPermissions,
   setupEditorPermissions,
+  setupPublisherPermissions,
   setupSite,
   setupUser,
   setUpWhitelist,
@@ -2194,7 +2195,10 @@ describe("user.router", () => {
       )
     })
 
-    it("should throw 403 if user does not have any permissions to the site", async () => {
+    it("should throw 403 if user does not have admin permissions", async () => {
+      // Arrange
+      await setupPublisherPermissions({ userId: session.userId, siteId })
+
       // Act
       const result = caller.resendInvite({ siteId, userId: "123" })
 

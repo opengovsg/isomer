@@ -737,6 +737,70 @@ describe("folder.router", async () => {
       expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
     })
   })
+
+  describe("getIndexpage", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Act
+      const result = unauthedCaller.getIndexpage({
+        siteId: 1,
+        resourceId: "1",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+      })
+
+      // Act
+      const result = caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page, blob } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        title: folder.title,
+        id: page.id,
+        draftBlobId: blob.id,
+      })
+    })
+  })
 })
 
 // Test util functions

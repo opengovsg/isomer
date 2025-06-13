@@ -25,9 +25,19 @@ export const resourceHandlers = {
     },
   },
   getRolesFor: {
-    default: () => {
+    admin: () => {
       return trpcMsw.resource.getRolesFor.query(() => {
         return [{ role: "Admin" }]
+      })
+    },
+    publisher: () => {
+      return trpcMsw.resource.getRolesFor.query(() => {
+        return [{ role: "Publisher" }]
+      })
+    },
+    editor: () => {
+      return trpcMsw.resource.getRolesFor.query(() => {
+        return [{ role: "Editor" }]
       })
     },
   },

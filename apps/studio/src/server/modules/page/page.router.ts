@@ -16,7 +16,6 @@ import {
   ResourceType,
 } from "~prisma/generated/generatedEnums"
 import _, { get, isEmpty, isEqual } from "lodash"
-import { z } from "zod"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
@@ -24,6 +23,7 @@ import {
   createIndexPageSchema,
   createPageSchema,
   getRootPageSchema,
+  listPagesSchema,
   pageSettingsSchema,
   publishPageSchema,
   readPageOutputSchema,
@@ -85,12 +85,7 @@ const validatedPageProcedure = protectedProcedure.use(
 
 export const pageRouter = router({
   list: protectedProcedure
-    .input(
-      z.object({
-        siteId: z.number(),
-        resourceId: z.number().optional(),
-      }),
-    )
+    .input(listPagesSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
       await validateUserPermissionsForResource({
         userId: ctx.user.id,

@@ -27,7 +27,7 @@ const meta: Meta<typeof FolderPage> = {
         folderHandlers.getIndexpage.default(),
         sitesHandlers.getSiteName.default(),
         resourceHandlers.getChildrenOf.default(),
-        resourceHandlers.getRolesFor.default(),
+        resourceHandlers.getRolesFor.admin(),
         resourceHandlers.getParentOf.folder(),
       ],
     },
