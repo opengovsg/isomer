@@ -28,7 +28,7 @@ export const up = async () => {
           "type" = 'IndexPage'
       ) AS "indexContent"
     WHERE
-      ("content"->'content')::text NOT ILIKE '%"type": "childrenpages"%';
+      ("content"->'content')::text NOT ILIKE '%"type": "childrenpages"%' and "content" ->> 'layout' = 'index';
 `
 
   const result = await sqlQuery.execute(db)
