@@ -316,16 +316,45 @@ export const folderRouter = router({
         siteId: Number(siteId),
         action: "read",
         userId: ctx.user.id,
-        resourceId: indexPageId,
+        resourceId: String(indexPageId),
       })
 
+      // Validate site is valid
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", Number(siteId))
+        .select(["id"])
+        .executeTakeFirst()
+
+      if (!site) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Site does not exist",
+        })
+      }
       // NOTE: The `resourceId` passed here is the id of the index page
       // of the folder, not the actual folder itself
-      const { parentId } = await db
+      const { parentId, type } = await db
         .selectFrom("Resource")
         .where("id", "=", indexPageId)
-        .select(["parentId"])
-        .executeTakeFirstOrThrow()
+        .select(["parentId", "type"])
+        // NOTE: Technically we'll already throw
+        // inside the permissions check,
+        // but just putting it here again for future proofing
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "No index page with the specified id could be found",
+            }),
+        )
+
+      if (type !== ResourceType.IndexPage) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No index page with the specified id could be found",
+        })
+      }
 
       // NOTE: This is not a general `resource.list`
       // but reimplemented here because it makes certain assumptions about what should be shown
