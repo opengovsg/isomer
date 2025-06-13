@@ -136,13 +136,11 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
-  // with addition of soft deletes, we need to now check for deletedAt
   // this check is required in case of an already ongoing session to logout the user
   const user = await db
     .selectFrom("User")
     .select(defaultUserSelect)
     .where("id", "=", ctx.session.userId)
-    .where("deletedAt", "is", null)
     .executeTakeFirst()
 
   if (!user) {
