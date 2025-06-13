@@ -74,7 +74,7 @@ const getCustomIndexPage = (title: string, layout: "content" | "index") => {
       },
     ],
     version: "0.1.0",
-  } satisfies PrismaJson.BlobJsonContent
+  } as any
 }
 
 const getEmptyIndexPage = (title: string) => {
@@ -92,7 +92,7 @@ const getEmptyIndexPage = (title: string) => {
       },
     },
     content: [],
-  } satisfies PrismaJson.BlobJsonContent
+  } as any
 }
 
 describe("addChildrenBlock", () => {
