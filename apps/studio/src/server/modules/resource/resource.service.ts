@@ -169,13 +169,13 @@ export const updatePageById = (
 }
 
 export const getBlobOfResource = async ({
-  tx,
+  db,
   resourceId,
 }: {
-  tx: Transaction<DB>
+  db: SafeKysely
   resourceId: string
 }) => {
-  const { draftBlobId, publishedVersionId } = await tx
+  const { draftBlobId, publishedVersionId } = await db
     .selectFrom("Resource")
     .where("id", "=", resourceId)
     .select(["draftBlobId", "publishedVersionId"])
@@ -189,7 +189,7 @@ export const getBlobOfResource = async ({
 
   if (draftBlobId) {
     return (
-      tx
+      db
         .selectFrom("Blob")
         .where("id", "=", draftBlobId)
         .selectAll()
@@ -198,7 +198,7 @@ export const getBlobOfResource = async ({
     )
   }
 
-  return tx
+  return db
     .selectFrom("Blob")
     .selectAll()
     .where("Blob.id", "=", (eb) =>
