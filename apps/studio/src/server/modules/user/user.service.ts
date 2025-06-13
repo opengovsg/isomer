@@ -285,7 +285,7 @@ export const updateUserDetails = async ({
   return await db.transaction().execute(async (tx) => {
     const updatedUser = await tx
       .updateTable("User")
-      .where("id", "=", userId)
+      .where("id", "=", user.id)
       .set({ name, phone })
       .returningAll()
       .executeTakeFirstOrThrow()
