@@ -53,7 +53,8 @@ export const CollectionTableMenu = ({
       />
       <Portal>
         <MenuList>
-          {resourceType === ResourceType.CollectionPage && (
+          {(resourceType === ResourceType.CollectionPage ||
+            resourceType === ResourceType.CollectionLink) && (
             <MenuItem
               icon={<BiCog fontSize="1rem" />}
               onClick={() =>
@@ -63,7 +64,7 @@ export const CollectionTableMenu = ({
                 })
               }
             >
-              Edit page settings
+              Edit settings
             </MenuItem>
           )}
           <MenuItem
