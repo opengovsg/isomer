@@ -772,7 +772,7 @@ describe("folder.router", async () => {
       // Arrange
       const invalidSiteId = 999
       const { site, folder } = await setupFolder()
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId,
         siteId: site.id,
       })
@@ -830,14 +830,13 @@ describe("folder.router", async () => {
     it("should throw 404 if the page specified by `indexPageId` is not an `IndexPage`", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
-      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       const { page } = await setupPageResource({
         resourceType: "Page",
         parentId: folder.id,
       })
 
       // Act
-
       const result = caller.listChildPages({
         siteId: String(site.id),
         indexPageId: page.id,
@@ -858,7 +857,7 @@ describe("folder.router", async () => {
     it("should throw 404 if the `indexPageId` does not exist", async () => {
       // Arrange
       const { site } = await setupFolder()
-      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = caller.listChildPages({
@@ -870,7 +869,7 @@ describe("folder.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "No index page with the specified id could be found",
+          message: "Resource not found",
         }),
       )
       await expect(
@@ -881,7 +880,7 @@ describe("folder.router", async () => {
     it("should return only the published pages of the parent folder", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
-      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       const { page: indexPage } = await setupPageResource({
         parentId: folder.id,
         siteId: site.id,

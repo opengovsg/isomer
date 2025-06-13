@@ -312,12 +312,35 @@ export const folderRouter = router({
   listChildPages: protectedProcedure
     .input(listChildPagesSchema)
     .query(async ({ ctx, input: { indexPageId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        siteId: Number(siteId),
+        action: "read",
+        userId: ctx.user.id,
+        resourceId: String(indexPageId),
+      })
+
+      // Validate site is valid
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", Number(siteId))
+        .select(["id"])
+        .executeTakeFirst()
+
+      if (!site) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Site does not exist",
+        })
+      }
       // NOTE: The `resourceId` passed here is the id of the index page
       // of the folder, not the actual folder itself
       const { parentId, type } = await db
         .selectFrom("Resource")
         .where("id", "=", indexPageId)
         .select(["parentId", "type"])
+        // NOTE: Technically we'll already throw
+        // inside the permissions check,
+        // but just putting it here again for future proofing
         .executeTakeFirstOrThrow(
           () =>
             new TRPCError({
@@ -325,12 +348,6 @@ export const folderRouter = router({
               message: "No index page with the specified id could be found",
             }),
         )
-
-      await validateUserPermissionsForResource({
-        siteId: Number(siteId),
-        action: "read",
-        userId: ctx.user.id,
-      })
 
       if (type !== ResourceType.IndexPage) {
         throw new TRPCError({
