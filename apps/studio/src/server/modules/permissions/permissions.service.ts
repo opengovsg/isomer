@@ -2,7 +2,7 @@ import type { GrowthBook } from "@growthbook/growthbook"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
-import { get } from "lodash"
+import get from "lodash/get"
 
 import type {
   CrudResourceActions,

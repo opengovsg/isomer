@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { get } from "lodash"
+import get from "lodash/get"
 import pick from "lodash/pick"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
