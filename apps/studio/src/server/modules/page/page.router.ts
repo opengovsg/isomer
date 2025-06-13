@@ -478,6 +478,16 @@ export const pageRouter = router({
               })
               .returningAll()
               .executeTakeFirstOrThrow()
+              .catch((err) => {
+                if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                  throw new TRPCError({
+                    code: "CONFLICT",
+                    message:
+                      "A resource with the same permalink already exists",
+                  })
+                }
+                throw err
+              })
 
             await logResourceEvent(tx, {
               siteId,

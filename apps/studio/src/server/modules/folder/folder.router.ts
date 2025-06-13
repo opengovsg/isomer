@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { get } from "lodash"
+import get from "lodash/get"
 import pick from "lodash/pick"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -126,6 +126,15 @@ export const folderRouter = router({
             })
             .returningAll()
             .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
 
           await logResourceEvent(tx, {
             siteId,
