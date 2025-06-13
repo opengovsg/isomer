@@ -1009,7 +1009,7 @@ describe("collection.router", async () => {
       // Act
       const originalBlob = await db
         .transaction()
-        .execute((tx) => getBlobOfResource({ tx, resourceId: page.id }))
+        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
 
       // Assert
       const expected = await caller.updateCollectionLink({
@@ -1046,7 +1046,7 @@ describe("collection.router", async () => {
       })
       const originalBlob = await db
         .transaction()
-        .execute((tx) => getBlobOfResource({ tx, resourceId: page.id }))
+        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
