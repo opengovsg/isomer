@@ -276,13 +276,13 @@ export const updateUserDetails = async ({
   name,
   phone,
 }: UpdateUserDetailsProps) => {
-  return await db.transaction().execute(async (tx) => {
-    const user = await tx
-      .selectFrom("User")
-      .where("id", "=", userId)
-      .selectAll()
-      .executeTakeFirstOrThrow()
+  const user = await db
+    .selectFrom("User")
+    .where("id", "=", userId)
+    .selectAll()
+    .executeTakeFirstOrThrow()
 
+  return await db.transaction().execute(async (tx) => {
     const updatedUser = await tx
       .updateTable("User")
       .where("id", "=", userId)
