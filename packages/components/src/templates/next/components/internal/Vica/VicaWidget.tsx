@@ -22,6 +22,7 @@ export const VicaWidget = (props: VicaWidgetProps) => {
       app-color="var(--color-brand-canvas-inverse)"
       app-button-border-color="var(--color-brand-canvas-inverse)"
       app-canvas-background-color="var(--color-brand-canvas-default)"
+      app-quick-reply-button-background-color="#FFFFFF" // hardcoded to be white for all agencies
       app-auto-complete-background-color="var(--color-brand-canvas-default)"
       app-auto-complete-hover-color="var(--color-brand-canvas-alt)"
       app-auto-complete-foreground-color={twColors.gray["900"]}
