@@ -129,14 +129,14 @@ const InfoBoxes = ({
               )}
 
               {buttonLabel && hasLink && (
-                <h3 className={compoundStyles.infoBoxButton()}>
+                <div className={compoundStyles.infoBoxButton()}>
                   {buttonLabel}
                   <BiRightArrowAlt
                     className={compoundStyles.infoBoxButtonIcon({
                       isExternalLink,
                     })}
                   />
-                </h3>
+                </div>
               )}
             </Link>
           )
