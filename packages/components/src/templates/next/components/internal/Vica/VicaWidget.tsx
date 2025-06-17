@@ -1,6 +1,5 @@
-import twColors from "tailwindcss/colors"
-
 import type { VicaWidgetProps } from "~/interfaces"
+import { colors } from "~/presets/next/colors"
 import { getReferenceLinkHref } from "~/utils"
 import { VicaWidgetClient } from "./VicaWidgetClient"
 
@@ -25,11 +24,11 @@ export const VicaWidget = (props: VicaWidgetProps) => {
       app-quick-reply-button-background-color="#FFFFFF" // hardcoded to be white for all agencies
       app-auto-complete-background-color="var(--color-brand-canvas-default)"
       app-auto-complete-hover-color="var(--color-brand-canvas-alt)"
-      app-auto-complete-foreground-color={twColors.gray["900"]}
-      app-auto-complete-divider-color={twColors.gray["500"]}
+      app-auto-complete-foreground-color={colors.base.content.strong}
+      app-auto-complete-divider-color={colors.base.divider.medium}
       app-recommendations-background-color="var(--color-brand-canvas-default)"
       app-recommendations-hover-color="var(--color-brand-canvas-alt)"
-      app-recommendations-foreground-color={twColors.gray["900"]}
+      app-recommendations-foreground-color={colors.base.content.strong}
     />
   )
 }
