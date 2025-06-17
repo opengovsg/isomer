@@ -17,11 +17,11 @@ export const VicaWidget = (props: VicaWidgetProps) => {
       // We ignore config passed in from DB and manually overwrite
       // the following attributes to ensure consistency and best brand appearance
       app-font-family="Inter, system-ui, sans-serif"
-      app-foreground-color="#FFFFFF" // hardcoded to be white for all agencies
+      app-foreground-color={colors.base.content.DEFAULT}
       app-color="var(--color-brand-canvas-inverse)"
       app-button-border-color="var(--color-brand-canvas-inverse)"
       app-canvas-background-color="var(--color-brand-canvas-default)"
-      app-quick-reply-button-background-color="#FFFFFF" // hardcoded to be white for all agencies
+      app-quick-reply-button-background-color={colors.base.content.DEFAULT}
       app-auto-complete-background-color="var(--color-brand-canvas-default)"
       app-auto-complete-hover-color="var(--color-brand-canvas-alt)"
       app-auto-complete-foreground-color={colors.base.content.strong}
