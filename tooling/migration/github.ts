@@ -127,20 +127,26 @@ export const getFileContents = async ({
   octokit,
 }: GetRepoPathContentsParams) => {
   // Get the file contents of the page
-  const { data } = await octokit.repos.getContent({
-    owner: "isomerpages",
-    repo: site,
-    path,
-    ref: "master",
-  });
+  try {
+    const { data } = await octokit.repos.getContent({
+      owner: "isomerpages",
+      repo: site,
+      path,
+      ref: "master",
+    });
 
-  if (Array.isArray(data) || data.type !== "file") {
-    console.error(
-      "Unexpected data returned from GitHub API in getFileContents"
-    );
+    if (Array.isArray(data) || data.type !== "file") {
+      console.error(
+        "Unexpected data returned from GitHub API in getFileContents"
+      );
+      return null;
+    }
+
+    // Parse the content of the file
+    return Buffer.from(data.content, "base64").toString("utf-8");
+  } catch (error) {
+    // Likely missing file or path
+    console.error(`Error reading file contents at ${path}:`, error);
     return null;
   }
-
-  // Parse the content of the file
-  return Buffer.from(data.content, "base64").toString("utf-8");
 };
