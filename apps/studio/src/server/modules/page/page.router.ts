@@ -314,7 +314,7 @@ export const pageRouter = router({
         actualBlocks.splice(to, 0, movedBlock)
 
         const oldBlob = await getBlobOfResource({
-          tx,
+          db: tx,
           resourceId: String(pageId),
         })
         const updatedBlob = await updateBlobById(tx, {
@@ -382,7 +382,7 @@ export const pageRouter = router({
 
       await db.transaction().execute(async (tx) => {
         const oldBlob = await getBlobOfResource({
-          tx,
+          db: tx,
           resourceId: String(input.pageId),
         })
         const updatedBlob = await updateBlobById(tx, input)
@@ -621,7 +621,7 @@ export const pageRouter = router({
           ? rest
           : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
 
-        const oldBlob = await getBlobOfResource({ tx, resourceId })
+        const oldBlob = await getBlobOfResource({ db: tx, resourceId })
         const newBlob = await updateBlobById(tx, {
           pageId: Number(resourceId),
           content: newContent,
