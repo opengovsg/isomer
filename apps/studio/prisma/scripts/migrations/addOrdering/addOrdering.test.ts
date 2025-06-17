@@ -166,5 +166,38 @@ describe("addOrdering", () => {
     expect(actual).toEqual(blob)
   })
 
-  it("should not publish the page")
+  it("should not publish the page", async () => {
+    // Arrange
+    const { folder, site } = await setupFolder()
+    const blobContent = createFolderIndexPage(folder.title)
+    // Remove the childrenPagesOrdering to trigger the migration
+    const lastBlock = blobContent.content[blobContent.content.length - 1]
+    if (lastBlock?.type === "childrenpages") {
+      delete lastBlock.childrenPagesOrdering
+    }
+
+    const blob = await db
+      .insertInto("Blob")
+      .values({ content: jsonb(blobContent) })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+    
+    const { page } = await setupPageResource({
+      siteId: site.id,
+      resourceType: ResourceType.IndexPage,
+      parentId: folder.id,
+      blobId: blob.id,
+    })
+
+    const pageBeforeMigration = await getPageById({ db, pageId: page.id })
+
+    // Act
+    await addOrdering()
+
+    // Assert
+    const pageAfterMigration = await getPageById({ db, pageId: page.id })
+    expect(pageAfterMigration.publishedVersionId).toEqual(
+      pageBeforeMigration.publishedVersionId
+    )
+  })
 })
