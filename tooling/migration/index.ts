@@ -307,7 +307,9 @@ const migrate = async ({
   }
 
   // Save the migrated pages information into a CSV file
-  console.log("Saving migrated pages information into a CSV file");
+  console.log(
+    `Saving migrated pages information into a CSV file (migrated-pages-${site}.csv)`
+  );
   const csvHeaders = "Permalink,Status,Review items\n";
   const csvRows = [...finishedPages, ...finishedResourceRoomPages]
     .filter((pages) => pages?.permalink !== undefined)
@@ -319,7 +321,7 @@ const migrate = async ({
   const csvString = csvHeaders + csvRows.join("");
 
   await fs.promises.writeFile(
-    path.join(__dirname, "migrated-pages.csv"),
+    path.join(__dirname, `migrated-pages-${site}.csv`),
     csvString
   );
 };
