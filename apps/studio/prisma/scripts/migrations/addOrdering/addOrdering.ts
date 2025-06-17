@@ -35,32 +35,50 @@ export const up = async () => {
 
   for (const r of result.rows) {
     const last = r.content.content.at(-1)
-    // NOTE: We only care if it is `undefined`,
-    // empty array is acceptable
-    if (last?.type !== "childrenpages" || !last.childrenPagesOrdering) {
+
+    // Skip if the last block is not a childrenpages block
+    if (last?.type !== "childrenpages") {
       console.log(
-        `Found block that did not have type: childrenpages on Resource: ${r.id}`,
+        `Skipping Resource ${r.id}: last block is not childrenpages (type: ${last?.type})`,
+      )
+      continue
+    }
+
+    // Skip if childrenPagesOrdering already exists
+    if (last.childrenPagesOrdering !== undefined) {
+      console.log(
+        `Skipping Resource ${r.id}: childrenPagesOrdering already exists`,
+      )
+      continue
+    }
+
+    console.log(
+      `Updating Resource ${r.id}: adding childrenPagesOrdering to childrenpages block`,
+    )
+
+    try {
+      const updated = [
+        ...r.content.content.slice(0, -1),
+        { ...last, childrenPagesOrdering: [] },
+      ]
+      const newContent = {
+        ...r.content,
+        content: updated,
+      }
+
+      await db.transaction().execute((tx) =>
+        updateBlobById(tx, {
+          pageId: Number(r.id),
+          content: newContent as any,
+          siteId: Number(r.siteId),
+        }),
       )
 
-      return
+      console.log(`Successfully updated Resource ${r.id}`)
+    } catch (error) {
+      console.error(`Failed to update Resource ${r.id}:`, error)
+      // NOTE: don't throw here so we can reconcile manually
     }
-
-    const updated = [
-      ...r.content.content.slice(0, -1),
-      { ...last, childrenPagesOrdering: [] },
-    ]
-    const newContent = {
-      ...r.content,
-      content: updated,
-    }
-
-    await db.transaction().execute((tx) =>
-      updateBlobById(tx, {
-        pageId: Number(r.id),
-        content: newContent as any,
-        siteId: Number(r.siteId),
-      }),
-    )
   }
 }
 
