@@ -148,7 +148,7 @@ export const NotFoundPagePageSchema = Type.Object({})
 export const SearchPagePageSchema = Type.Object({})
 
 export const FileRefPageSchema = BaseRefPageSchema
-export const LinkRefPageSchema = Type.Omit(BaseRefPageSchema, ["image"])
+export const LinkRefPageSchema = BaseRefPageSchema
 
 // These are props that are required by the render engine, but not enforced by
 // the JSON schema (as the data is being stored outside of the page JSON)

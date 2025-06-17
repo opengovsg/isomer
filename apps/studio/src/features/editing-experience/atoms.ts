@@ -1,3 +1,5 @@
+import type { LinkRefPageSchema } from "@opengovsg/isomer-components"
+import type { Static } from "@sinclair/typebox"
 import { format } from "date-fns"
 import { atom } from "jotai"
 
@@ -5,13 +7,10 @@ import type { ResourceItemContent } from "~/schemas/resource"
 
 export const moveResourceAtom = atom<null | ResourceItemContent>(null)
 
-export interface CollectionLinkProps {
-  ref: string
-  description?: string
-  date: string
-  category: string
+export type CollectionLinkProps = Static<typeof LinkRefPageSchema> & {
   title: string
 }
+
 export const linkAtom = atom<CollectionLinkProps>({
   ref: "",
   description: "",
