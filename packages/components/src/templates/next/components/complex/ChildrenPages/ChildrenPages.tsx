@@ -10,6 +10,7 @@ import {
 } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
+import { mergeChildrenPages } from "./utils"
 
 const ChildpageImage = ({
   src,
@@ -245,26 +246,7 @@ const ChildrenPages = ({
       description: child.summary,
       image: child.image,
     }))
-    .sort((a, b) => {
-      const [aIndex, bIndex] = [
-        childrenPagesOrdering.indexOf(a.id),
-        childrenPagesOrdering.indexOf(b.id),
-      ]
-
-      if (aIndex === bIndex) {
-        return a.title.localeCompare(b.title, undefined, { numeric: true })
-      }
-
-      if (aIndex === -1) {
-        return 1
-      }
-
-      if (bIndex === -1) {
-        return -1
-      }
-
-      return aIndex - bIndex
-    })
+    .sort((a, b) => mergeChildrenPages(a, b, childrenPagesOrdering))
 
   if (variant === "boxes") {
     return (
