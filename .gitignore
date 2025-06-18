@@ -49,3 +49,5 @@ dist/
 
 # Compiled components package
 **/*.tgz
+
+.aider*

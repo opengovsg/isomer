@@ -27,6 +27,7 @@ export const FullInfopic = ({
       style={{
         backgroundImage: `url('${imageSrc}')`,
         backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
       id={id}
     >
