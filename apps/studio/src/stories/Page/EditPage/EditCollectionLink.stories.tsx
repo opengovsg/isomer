@@ -79,6 +79,17 @@ export const Dropdown: Story = {
   },
 }
 
+export const WithThumbnail: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        collectionHandlers.readCollectionLink.thumbnail(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+}
+
 export const PublishedState: Story = {
   parameters: {
     msw: {
