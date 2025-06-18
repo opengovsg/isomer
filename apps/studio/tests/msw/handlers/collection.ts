@@ -1,7 +1,41 @@
+import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
+const DEFAULT_COLLECTION_ITEMS = [
+  {
+    id: "8",
+    permalink: "mock-link",
+    title: "Test link 1",
+    publishedVersionId: null,
+    draftBlobId: null,
+    type: ResourceType.CollectionLink,
+    parentId: "2",
+    updatedAt: new Date("2024-09-12T07:00:30.000Z"),
+    state: ResourceState.Draft,
+    siteId: 1,
+    createdAt: new Date("2024-09-12T07:00:30.000Z"),
+  },
+  {
+    id: "5",
+    permalink: "test-page-1",
+    title: "Test page 1",
+    publishedVersionId: null,
+    draftBlobId: "4",
+    type: ResourceType.CollectionPage,
+    parentId: "2",
+    updatedAt: new Date("2024-09-12T07:00:20.000Z"),
+    state: ResourceState.Draft,
+    siteId: 1,
+    createdAt: new Date("2024-09-12T07:00:30.000Z"),
+  },
+]
 export const collectionHandlers = {
+  list: {
+    default: () =>
+      trpcMsw.collection.list.query(() => DEFAULT_COLLECTION_ITEMS),
+  },
   getMetadata: {
     default: () =>
       trpcMsw.collection.getMetadata.query(() => ({
