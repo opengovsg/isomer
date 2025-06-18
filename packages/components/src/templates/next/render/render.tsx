@@ -4,25 +4,33 @@ import type {
   IsomerSiteProps,
 } from "~/engine"
 import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
-import { DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
+import {
+  COLLECTION_BLOCK_TYPE,
+  DYNAMIC_DATA_BANNER_TYPE,
+  IMAGE_GALLERY_TYPE,
+} from "~/interfaces"
 import {
   Accordion,
+  Blockquote,
   Callout,
+  ChildrenPages,
+  CollectionBlock,
   Contentpic,
   DynamicDataBanner,
   Hero,
   Iframe,
   Image,
+  ImageGallery,
   Infobar,
   InfoCards,
   InfoCols,
   Infopic,
   KeyStatistics,
+  LogoCloud,
   Map,
   Prose,
   Video,
 } from "../components"
-import { LogoCloud } from "../components/complex/LogoCloud"
 import {
   ArticleLayout,
   CollectionLayout,
@@ -41,6 +49,7 @@ interface RenderComponentProps {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   shouldLazyLoad?: boolean
+  permalink: string
 }
 
 export const renderComponent = ({
@@ -53,6 +62,8 @@ export const renderComponent = ({
       return <LogoCloud key={elementKey} {...component} {...rest} />
     case "accordion":
       return <Accordion key={elementKey} {...component} {...rest} />
+    case "blockquote":
+      return <Blockquote key={elementKey} {...component} {...rest} />
     case "callout":
       return <Callout key={elementKey} {...component} {...rest} />
     case "contentpic":
@@ -75,6 +86,8 @@ export const renderComponent = ({
       return <KeyStatistics key={elementKey} {...component} {...rest} />
     case "map":
       return <Map key={elementKey} {...component} {...rest} />
+    case "childrenpages":
+      return <ChildrenPages key={elementKey} {...component} {...rest} />
     case "prose":
       return (
         <Prose
@@ -88,6 +101,10 @@ export const renderComponent = ({
       return <Video key={elementKey} {...component} {...rest} />
     case DYNAMIC_DATA_BANNER_TYPE:
       return <DynamicDataBanner key={elementKey} {...component} {...rest} />
+    case COLLECTION_BLOCK_TYPE:
+      return <CollectionBlock key={elementKey} {...component} {...rest} />
+    case IMAGE_GALLERY_TYPE:
+      return <ImageGallery key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
       return <></>

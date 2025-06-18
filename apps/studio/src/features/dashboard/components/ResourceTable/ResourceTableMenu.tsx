@@ -39,7 +39,7 @@ export const ResourceTableMenu = ({
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () =>
-    setMoveResource({ resourceId, title, permalink, parentId })
+    setMoveResource({ id: resourceId, title, permalink, parentId, type })
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
@@ -56,7 +56,7 @@ export const ResourceTableMenu = ({
       <Portal>
         <MenuList>
           {/* TODO: Open edit modal depending on resource  */}
-          {type === ResourceType.Page ? (
+          {type === ResourceType.Page && (
             <>
               <MenuItem
                 onClick={() =>
@@ -67,7 +67,7 @@ export const ResourceTableMenu = ({
                 }
                 icon={<BiCog fontSize="1rem" />}
               >
-                Edit page settings
+                Edit settings
               </MenuItem>
 
               {/* TODO(ISOM-1552): Add back duplicate page functionality when implemented */}
@@ -77,7 +77,8 @@ export const ResourceTableMenu = ({
                 </MenuItem>
               </Can>
             </>
-          ) : (
+          )}
+          {type === ResourceType.Folder && (
             <MenuItem
               onClick={() =>
                 setFolderSettingsModalState({
@@ -96,6 +97,7 @@ export const ResourceTableMenu = ({
                 as="button"
                 onClick={handleMoveResourceClick}
                 icon={<BiFolderOpen fontSize="1rem" />}
+                aria-label={`Move resource to another location for ${title}`}
               >
                 Move to...
               </MenuItem>

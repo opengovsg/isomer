@@ -158,7 +158,6 @@ export function JsonFormsArrayControl({
   cells,
   uischemas,
   uischema,
-  translations,
 }: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const [selectedIndex, setSelectedIndex] = useState<number>()
@@ -317,7 +316,7 @@ export function JsonFormsArrayControl({
                         key={index}
                         uischema={childUiSchema}
                         childLabelProp={undefined}
-                        translations={translations}
+                        translations={{}}
                         setSelectedIndex={setSelectedIndex}
                       />
                     )}

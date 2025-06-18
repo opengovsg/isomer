@@ -1,6 +1,11 @@
 import type { ColumnType, GeneratedAlways } from "kysely"
 
-import type { ResourceState, ResourceType, RoleType } from "./generatedEnums"
+import type {
+  AuditLogEvent,
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "./generatedEnums"
 
 export type Generated<T> =
   T extends ColumnType<infer S, infer I, infer U>
@@ -8,6 +13,21 @@ export type Generated<T> =
     : ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
+export interface AuditLog {
+  id: GeneratedAlways<string>
+  userId: string
+  siteId: number | null
+  eventType: AuditLogEvent
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+  metadata: unknown
+  /**
+   * @kyselyType(PrismaJson.AuditLogDeltaJsonContent)
+   * [AuditLogDeltaJsonContent]
+   */
+  delta: PrismaJson.AuditLogDeltaJsonContent
+  ipAddress: string | null
+}
 export interface Blob {
   id: GeneratedAlways<string>
   /**
@@ -90,9 +110,11 @@ export interface User {
   name: string
   email: string
   phone: string
+  singpassUuid: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
   deletedAt: Timestamp | null
+  lastLoginAt: Timestamp | null
 }
 export interface VerificationToken {
   identifier: string
@@ -117,6 +139,7 @@ export interface Whitelist {
   updatedAt: Generated<Timestamp>
 }
 export interface DB {
+  AuditLog: AuditLog
   Blob: Blob
   Footer: Footer
   Navbar: Navbar

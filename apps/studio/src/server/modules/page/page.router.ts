@@ -1,12 +1,21 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type {
+  CollectionPagePageProps,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import {
+  COLLECTION_PAGE_DEFAULT_SORT_BY,
+  COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
   getLayoutMetadataSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
-import { get, isEmpty, isEqual } from "lodash"
+import {
+  AuditLogEvent,
+  ResourceState,
+  ResourceType,
+} from "~prisma/generated/generatedEnums"
+import _, { get, isEmpty, isEqual } from "lodash"
 import { z } from "zod"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -25,22 +34,24 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { publishSite } from "../aws/codebuild.service"
+import { logResourceEvent } from "../audit/audit.service"
 import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
+  getBlobOfResource,
   getFooter,
   getFullPageById,
   getNavBar,
   getPageById,
   getResourceFullPermalink,
   getResourcePermalinkTree,
+  publishPageResource,
   publishResource,
   updateBlobById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage } from "./page.service"
+import { createDefaultPage, createFolderIndexPage } from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -234,6 +245,25 @@ export const pageRouter = router({
         action: "update",
       })
 
+      if (!ctx.session?.userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please ensure that you are authenticated",
+        })
+      }
+
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.session.userId)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Please ensure that you are authenticated",
+            }),
+        )
+
       // NOTE: we have to check against the page's content that we retrieve from db
       // we adopt a strict check such that we allow the update iff the checksum is the same
       return db.transaction().execute(async (tx) => {
@@ -283,10 +313,26 @@ export const pageRouter = router({
         // Insert at destination index
         actualBlocks.splice(to, 0, movedBlock)
 
-        await updateBlobById(tx, {
+        const oldBlob = await getBlobOfResource({
+          tx,
+          resourceId: String(pageId),
+        })
+        const updatedBlob = await updateBlobById(tx, {
           pageId,
           content: { ...fullPage.content, content: actualBlocks },
           siteId,
+        })
+        await logResourceEvent(tx, {
+          siteId,
+          eventType: "ResourceUpdate",
+          delta: {
+            before: {
+              blob: oldBlob,
+              resource: fullPage,
+            },
+            after: { blob: updatedBlob, resource: fullPage },
+          },
+          by,
         })
 
         // NOTE: user given content and db state is the same at this point
@@ -302,8 +348,55 @@ export const pageRouter = router({
         siteId: input.siteId,
         action: "update",
       })
+
+      if (!ctx.session?.userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please ensure that you are authenticated",
+        })
+      }
+
+      const resource = await getPageById(db, {
+        resourceId: input.pageId,
+        siteId: input.siteId,
+      })
+
+      if (!resource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.session.userId)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Please ensure that you are authenticated",
+            }),
+        )
+
       await db.transaction().execute(async (tx) => {
-        return updateBlobById(tx, input)
+        const oldBlob = await getBlobOfResource({
+          tx,
+          resourceId: String(input.pageId),
+        })
+        const updatedBlob = await updateBlobById(tx, input)
+
+        await logResourceEvent(tx, {
+          siteId: input.siteId,
+          by,
+          delta: {
+            before: { blob: oldBlob, resource },
+            after: { blob: updatedBlob, resource },
+          },
+          eventType: "ResourceUpdate",
+        })
+        return updatedBlob
       })
 
       return input
@@ -323,6 +416,25 @@ export const pageRouter = router({
           resourceId: !!folderId ? String(folderId) : null,
         })
         const newPage = createDefaultPage({ layout })
+
+        if (!ctx.session?.userId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Please ensure that you are authenticated",
+          })
+        }
+
+        const by = await db
+          .selectFrom("User")
+          .where("id", "=", ctx.session.userId)
+          .selectAll()
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Please ensure that you are authenticated",
+              }),
+          )
 
         // TODO: Validate whether siteId is a valid site
         // TODO: Validate user has write-access to the site
@@ -351,7 +463,7 @@ export const pageRouter = router({
               .values({
                 content: jsonb(newPage),
               })
-              .returning("Blob.id")
+              .returningAll()
               .executeTakeFirstOrThrow()
 
             const addedResource = await tx
@@ -364,8 +476,26 @@ export const pageRouter = router({
                 draftBlobId: blob.id,
                 type: ResourceType.Page,
               })
-              .returning("Resource.id")
+              .returningAll()
               .executeTakeFirstOrThrow()
+              .catch((err) => {
+                if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                  throw new TRPCError({
+                    code: "CONFLICT",
+                    message:
+                      "A resource with the same permalink already exists",
+                  })
+                }
+                throw err
+              })
+
+            await logResourceEvent(tx, {
+              siteId,
+              by,
+              delta: { before: null, after: { blob, resource: addedResource } },
+              eventType: "ResourceCreate",
+            })
+
             return addedResource
           })
           .catch((err) => {
@@ -384,6 +514,7 @@ export const pageRouter = router({
             }
             throw err
           })
+
         return { pageId: resource.id }
       },
     ),
@@ -415,9 +546,19 @@ export const pageRouter = router({
 
   publishPage: protectedProcedure
     .input(publishPageSchema)
-    .mutation(async ({ ctx, input: { siteId, pageId } }) =>
-      publishResource(ctx.logger, siteId, String(pageId), ctx.user.id),
-    ),
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "publish",
+      })
+      return publishPageResource(
+        ctx.logger,
+        siteId,
+        String(pageId),
+        ctx.user.id,
+      )
+    }),
 
   updateMeta: protectedProcedure
     .input(updatePageMetaSchema)
@@ -427,6 +568,19 @@ export const pageRouter = router({
         siteId,
         action: "update",
       })
+
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Please ensure that you are authenticated",
+            }),
+        )
+
       return db.transaction().execute(async (tx) => {
         const fullPage = await getFullPageById(tx, {
           resourceId: Number(resourceId),
@@ -438,6 +592,20 @@ export const pageRouter = router({
             code: "NOT_FOUND",
             message:
               "Unable to load content for the requested page, please contact Isomer Support",
+          })
+        }
+
+        const resource = await getPageById(tx, {
+          siteId,
+          resourceId: Number(resourceId),
+        })
+
+        if (!resource) {
+          //  NOTE: This is technically impossible since
+          // we use the same resource as previously fetched
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Unable to find the resource to update",
           })
         }
 
@@ -463,10 +631,21 @@ export const pageRouter = router({
           ? rest
           : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
 
-        await updateBlobById(tx, {
+        const oldBlob = await getBlobOfResource({ tx, resourceId })
+        const newBlob = await updateBlobById(tx, {
           pageId: Number(resourceId),
           content: newContent,
           siteId,
+        })
+
+        await logResourceEvent(tx, {
+          siteId,
+          by,
+          delta: {
+            before: { resource, blob: oldBlob },
+            after: { resource, blob: newBlob },
+          },
+          eventType: "ResourceUpdate",
         })
       })
     }),
@@ -480,6 +659,19 @@ export const pageRouter = router({
           siteId,
           action: "update",
         })
+
+        const by = await db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Please ensure that you are logged in!",
+              }),
+          )
+
         return db.transaction().execute(async (tx) => {
           const fullPage = await getFullPageById(tx, {
             resourceId: pageId,
@@ -487,6 +679,18 @@ export const pageRouter = router({
           })
 
           if (!fullPage?.content) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message:
+                "Unable to load content for the requested page, please contact Isomer Support",
+            })
+          }
+
+          const resource = await getPageById(tx, { resourceId: pageId, siteId })
+
+          // NOTE: This is technically impossible since
+          // we already load the `fullPage` above
+          if (!resource) {
             throw new TRPCError({
               code: "NOT_FOUND",
               message:
@@ -506,13 +710,7 @@ export const pageRouter = router({
                 ResourceType.RootPage,
               ])
               .set({ title, ...settings })
-              .returning([
-                "Resource.id",
-                "Resource.type",
-                "Resource.title",
-                "Resource.permalink",
-                "Resource.draftBlobId",
-              ])
+              .returningAll()
               .executeTakeFirstOrThrow()
               .catch((err) => {
                 if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
@@ -525,11 +723,24 @@ export const pageRouter = router({
                 throw err
               })
 
+            await logResourceEvent(tx, {
+              siteId,
+              by,
+              delta: { before: resource, after: updatedResource },
+              eventType: "ResourceUpdate",
+            })
+
             // We do an implicit publish so that we can make the changes to the
             // page settings immediately visible on the end site
-            await publishSite(ctx.logger, siteId)
+            await publishResource(ctx.user.id, updatedResource, ctx.logger)
 
-            return updatedResource
+            return _.pick(updatedResource, [
+              "id",
+              "type",
+              "title",
+              "permalink",
+              "draftBlobId",
+            ])
           } catch (err) {
             if (err instanceof TRPCError) {
               throw err
@@ -594,6 +805,18 @@ export const pageRouter = router({
         resourceId: parentId,
       })
 
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Please ensure that you are logged in",
+            }),
+        )
+
       // Validate whether parentId exists and is a Folder or Collection
       const parent = await db
         .selectFrom("Resource")
@@ -603,7 +826,7 @@ export const pageRouter = router({
           ResourceType.Folder,
           ResourceType.Collection,
         ])
-        .select(["title", "permalink", "type"])
+        .select(["title", "type"])
         .executeTakeFirst()
 
       if (!parent) {
@@ -620,27 +843,15 @@ export const pageRouter = router({
               page: {
                 title: parent.title,
                 subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
-                defaultSortBy: "date",
-                defaultSortDirection: "asc",
-              },
+                defaultSortBy: COLLECTION_PAGE_DEFAULT_SORT_BY,
+                defaultSortDirection: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+              } as CollectionPagePageProps,
               content: [],
               version: "0.1.0",
             }
-          : {
-              layout: ISOMER_USABLE_PAGE_LAYOUTS.Index,
-              page: {
-                title: parent.title,
-                lastModified: new Date().toISOString(),
-                contentPageHeader: {
-                  // follow the same format as autogenerated index pages
-                  summary: `Pages in ${parent.title}`,
-                },
-              },
-              content: [],
-              version: "0.1.0",
-            }
+          : createFolderIndexPage(parent.title)
 
-      return db.transaction().execute(async (tx) => {
+      const page = await db.transaction().execute(async (tx) => {
         const blob = await tx
           .insertInto("Blob")
           .values({ content: jsonb(blobContent) })
@@ -658,7 +869,7 @@ export const pageRouter = router({
             type: ResourceType.IndexPage,
             state: ResourceState.Draft,
           })
-          .returning("Resource.id")
+          .returningAll()
           .executeTakeFirstOrThrow()
           .catch((err) => {
             if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
@@ -670,7 +881,16 @@ export const pageRouter = router({
             throw err
           })
 
+        await logResourceEvent(tx, {
+          siteId,
+          by,
+          delta: { before: null, after: addedResource },
+          eventType: AuditLogEvent.ResourceCreate,
+        })
+
         return { pageId: addedResource.id }
       })
+
+      return page
     }),
 })

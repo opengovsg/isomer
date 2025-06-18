@@ -16,4 +16,12 @@ export { orderedListSchemaBuilder } from "./orderedListSchemaBuilder"
 export * from "./tailwind"
 export { unorderedListSchemaBuilder } from "./unorderedListSchemaBuilder"
 export { getWordsFromPermalink } from "./getWordsFromPermalink"
-export { MAPS_EMBED_URL_REGEXES, VIDEO_EMBED_URL_REGEXES } from "./validation"
+export {
+  getResourceIdFromReferenceLink,
+  REFERENCE_LINK_REGEX,
+} from "./getResourceIdFromReferenceLink"
+export {
+  MAPS_EMBED_URL_REGEXES,
+  VIDEO_EMBED_URL_REGEXES,
+  NON_EMPTY_STRING_REGEX,
+} from "./validation"

@@ -45,6 +45,9 @@ dist/
 
 # env file
 .env
+.env.local.*
 
 # Compiled components package
 **/*.tgz
+
+.aider*

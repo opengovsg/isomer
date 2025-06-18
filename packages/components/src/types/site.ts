@@ -1,8 +1,10 @@
 import type { IsomerSitemap } from "./sitemap"
 import type {
+  AskgovProps,
   NavbarProps,
   NotificationProps,
-  VicaWidgetProps,
+  VicaProps,
+  WizgovProps,
 } from "~/interfaces"
 import type { SiteConfigFooterProps } from "~/interfaces/internal/Footer"
 
@@ -15,7 +17,7 @@ export interface IsomerGeneratedSiteProps {
 }
 
 export interface IsomerSiteWideComponentsProps {
-  navBarItems: NavbarProps["items"]
+  navbar: Pick<NavbarProps, "items" | "callToAction">
   footerItems: SiteConfigFooterProps
 }
 
@@ -30,7 +32,9 @@ export interface IsomerSiteConfigProps {
   search: NavbarProps["search"]
   notification?: Omit<NotificationProps, "LinkComponent" | "site">
   siteGtmId?: string
-  vica?: VicaWidgetProps
+  vica?: VicaProps
+  wizgov?: WizgovProps
+  askgov?: AskgovProps
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &

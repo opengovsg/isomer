@@ -17,7 +17,7 @@ const createDatabaseLayoutStyles = tv({
   slots: {
     container:
       "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
-    content: "col-span-12 flex max-w-[54rem] flex-col gap-16",
+    content: "col-span-12 flex max-w-[54rem] flex-col gap-16 break-words",
     table: "col-span-12 [&:not(:first-child)]:mt-14",
   },
 })
@@ -71,6 +71,7 @@ const DatabaseLayout = ({
                 layout,
                 site,
                 LinkComponent,
+                permalink: page.permalink,
               })}
             </div>
           </div>

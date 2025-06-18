@@ -4,33 +4,38 @@ import { useEffect, useState } from "react"
 import { BiError } from "react-icons/bi"
 
 import type { DynamicDataBannerProps } from "~/interfaces"
-import { NUMBER_OF_DATA } from "~/interfaces"
+import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { twMerge } from "~/lib/twMerge"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"
 
 const createDynamicDataBannerStyles = tv({
   slots: {
-    screenWideOuterContainer: "bg-brand-canvas",
-    outerContainer: `${ComponentContent} md:gap-auto flex flex-col gap-4 px-6 py-3 md:flex-row md:items-center md:justify-between`,
+    // hardcoded bg color for now since MUIS is the only use case
+    // consider moving into site config if used by other sites
+    screenWideOuterContainer: "bg-[#E1EAE6]",
+    outerContainer: `${ComponentContent} md:gap-auto flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between md:px-10 md:py-5`,
     basicInfoContainer:
-      "flex flex-col items-start gap-2 lg:flex-row lg:items-center lg:gap-5",
-    titleAndDateContainer:
-      "prose-label-sm-medium flex flex-row items-center gap-2 whitespace-nowrap",
-    divider: "h-4 w-[1px] bg-[#9CA3AF]",
-    url: "prose-label-sm-medium text-link visited:text-link-visited hover:text-link-hover",
+      "flex flex-col items-center gap-0.5 md:items-start md:gap-1",
+    title: "prose-headline-lg-semibold whitespace-nowrap text-base-content",
+    dateAndUrlContainer: "align-center flex justify-center gap-2",
+    date: "prose-body-sm whitespace-nowrap text-base-content-medium",
+    url: "prose-label-md-regular text-link underline-offset-4 visited:text-link-visited hover:text-link-hover hover:underline",
     dataInfoContainer:
-      "md:col-gap-10 grid grid-cols-[repeat(3,1fr)] gap-y-4 md:grid-cols-[repeat(3,minmax(9rem,1fr))] md:justify-items-end md:gap-y-2 lg:flex lg:gap-8",
+      "md:max-lg:col-gap-10 grid grid-cols-3 justify-items-center gap-y-4 md:justify-items-end md:gap-y-2 md:max-lg:grid-cols-[auto,auto,auto] md:max-lg:gap-x-6 lg:flex lg:gap-11",
     errorMessageContainer: `${ComponentContent} flex flex-row gap-2 px-6 py-3 md:items-center md:gap-1`,
     errorIcon: "h-full min-h-4 min-w-4",
-    individualDataContainer: "flex w-fit flex-col gap-0.5 md:flex-row md:gap-1",
-    individualDataLabel: "prose-label-sm-regular",
-    individualDataValue: "prose-label-sm-regular font-semibold",
+    individualDataContainer:
+      "flex w-fit flex-col items-center justify-center gap-0.5 md:flex-row md:gap-1.5 lg:flex-col lg:items-end",
+    individualDataLabel: "prose-headline-base-medium text-base-content",
+    individualDataValue:
+      "prose-headline-lg-semibold text-brand-interaction-hover md:max-lg:w-[70px] md:max-lg:text-right",
     individualDataValueLoading:
       "md:h-4.5 h-4 w-11 animate-pulse rounded-sm bg-[#0000001a]",
-    showOnMobileOnly: "block md:hidden",
-    hideOnMobile: "hidden md:block",
+    urlShowOnMobileOnly: "block text-center md:hidden",
+    urlHideOnMobile: "hidden md:block",
   },
 })
 const compoundStyles = createDynamicDataBannerStyles()
@@ -65,7 +70,7 @@ const DynamicDataBannerUI = ({
       <Link
         LinkComponent={LinkComponent}
         href={url}
-        className={`${compoundStyles.url()} ${className}`}
+        className={twMerge(compoundStyles.url(), className)}
       >
         {label}
       </Link>
@@ -87,35 +92,37 @@ const DynamicDataBannerUI = ({
     <div className={compoundStyles.screenWideOuterContainer()}>
       <div className={compoundStyles.outerContainer()}>
         <div className={compoundStyles.basicInfoContainer()}>
-          <div className={compoundStyles.titleAndDateContainer()}>
-            {title && (
-              <>
-                {title} <div className={compoundStyles.divider()} />
-              </>
-            )}
-            {getSingaporeDateLong()}
+          {!!title && <div className={compoundStyles.title()}>{title}</div>}
+          <div className={compoundStyles.dateAndUrlContainer()}>
+            <span className={compoundStyles.date()}>
+              {getSingaporeDateLong()}
+            </span>
+            {shouldRenderUrl &&
+              renderUrl({ className: compoundStyles.urlHideOnMobile() })}
           </div>
-          {shouldRenderUrl &&
-            renderUrl({ className: compoundStyles.hideOnMobile() })}
         </div>
         <div className={compoundStyles.dataInfoContainer()}>
-          {data.slice(0, NUMBER_OF_DATA).map((singleData) => (
-            <div className={compoundStyles.individualDataContainer()}>
-              <div className={compoundStyles.individualDataLabel()}>
-                {singleData.label}
-              </div>
-              {singleData.value ? (
-                <div className={compoundStyles.individualDataValue()}>
-                  {singleData.value}
+          {data
+            .slice(0, DYNAMIC_DATA_BANNER_NUMBER_OF_DATA)
+            .map((singleData) => (
+              <div className={compoundStyles.individualDataContainer()}>
+                <div className={compoundStyles.individualDataLabel()}>
+                  {singleData.label}
                 </div>
-              ) : (
-                <div className={compoundStyles.individualDataValueLoading()} />
-              )}
-            </div>
-          ))}
+                {singleData.value ? (
+                  <div className={compoundStyles.individualDataValue()}>
+                    {singleData.value}
+                  </div>
+                ) : (
+                  <div
+                    className={compoundStyles.individualDataValueLoading()}
+                  />
+                )}
+              </div>
+            ))}
         </div>
         {shouldRenderUrl &&
-          renderUrl({ className: compoundStyles.showOnMobileOnly() })}
+          renderUrl({ className: compoundStyles.urlShowOnMobileOnly() })}
       </div>
     </div>
   )
@@ -168,7 +175,7 @@ export const DynamicDataBannerClient = ({
     )
   }
 
-  if (data.length !== NUMBER_OF_DATA)
+  if (data.length !== DYNAMIC_DATA_BANNER_NUMBER_OF_DATA)
     return <DynamicDataBannerUI data={[]} url={url} label={label} />
 
   return (

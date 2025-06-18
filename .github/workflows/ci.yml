@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Optimize CI
         id: check_skip
-        uses: withgraphite/graphite-ci-action@main
+        uses: withgraphite/graphite-ci-action@9bc969adfd43bb790da3b64b543c78c75cef9689
         with:
           graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
   build:
@@ -112,7 +112,7 @@ jobs:
       - name: Install Playwright (Chromium)
         run: npx playwright install chromium
       - name: Load .env file
-        uses: xom9ikk/dotenv@v2
+        uses: opengovsg/dotenv@v2
         with:
           path: apps/studio
           mode: test
@@ -131,7 +131,6 @@ jobs:
       - name: Build Studio app
         # Loose env mode required for env vars to be passed to the run
         run: turbo build --filter=isomer-studio --env-mode=loose
-
       - name: Start test containers
         run: npm run setup:test
       - name: Configure Datadog Test Visibility
@@ -140,6 +139,8 @@ jobs:
           languages: js
           service: isomer-studio
           api_key: ${{ secrets.DD_API_KEY }}
+      - name: Seed testing db
+        run: turbo db:seed
       - name: Run Playwright tests
         run: turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
         env:
@@ -154,5 +155,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test results
-          path: apps/studio/playwright/test-results
+          path: apps/studio/tests/e2e/test-results
           retention-days: 7

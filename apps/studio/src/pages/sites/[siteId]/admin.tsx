@@ -24,6 +24,7 @@ import { UnsavedSettingModal } from "~/features/editing-experience/components/Un
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
+import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type NextPageWithLayout } from "~/lib/types"
 import { setSiteConfigByAdminSchema } from "~/schemas/site"
 import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
@@ -45,7 +46,9 @@ const SiteAdminPage: NextPageWithLayout = () => {
   const router = useRouter()
   const trpcUtils = trpc.useUtils()
   const { siteId } = useQueryParse(siteAdminSchema)
-  const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const isUserIsomerAdmin = useIsUserIsomerAdmin({
+    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  })
 
   if (!isUserIsomerAdmin) {
     toast({

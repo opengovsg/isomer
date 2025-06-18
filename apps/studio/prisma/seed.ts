@@ -3,17 +3,42 @@
  *
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
+
 import cuid2 from "@paralleldrive/cuid2"
 
-import { normalizeEmail } from "~/utils/email"
 import { db, RoleType } from "../src/server/modules/database"
-import { createSite } from "./scripts/createSite"
+import { createSite } from "../src/server/modules/site/site.service"
+import { addUsersToSite } from "./scripts/addUsersToSite"
 
 const EDITOR_USER = "editor"
 const PUBLISHER_USER = "publisher"
 
 async function main() {
-  const siteId = await createSite({ siteName: "Isomer" })
+  const users = await Promise.all(
+    [EDITOR_USER, PUBLISHER_USER].map(async (email) => {
+      return await db
+        .insertInto("User")
+        .values({
+          id: cuid2.createId(),
+          email: `${email}@open.gov.sg`,
+          name: "",
+          phone: "",
+        })
+        .onConflict((oc) =>
+          oc
+            .columns(["email", "deletedAt"])
+            .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+        )
+        .returning(["id", "name", "email"])
+        .executeTakeFirstOrThrow()
+    }),
+  )
+
+  const { siteId } = await createSite({
+    siteName: "Isomer",
+    // @ts-expect-error - We know that the first user is always created
+    userId: users[0]?.id,
+  })
 
   await db
     .insertInto("Whitelist")
@@ -27,37 +52,19 @@ async function main() {
     )
     .executeTakeFirstOrThrow()
 
-  await Promise.all(
-    [EDITOR_USER, PUBLISHER_USER].map(async (name) => {
-      const user = await db
-        .insertInto("User")
-        .values({
-          id: cuid2.createId(),
-          name,
-          email: normalizeEmail(`${name}@open.gov.sg`),
-          phone: "",
-        })
-        .onConflict((oc) =>
-          oc
-            .column("email")
-            .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
-        )
-        .returning(["id", "name"])
-        .executeTakeFirstOrThrow()
-
-      const role =
-        user.name === EDITOR_USER ? RoleType.Editor : RoleType.Publisher
-
-      await db
-        .insertInto("ResourcePermission")
-        .values({
-          userId: user.id,
-          siteId,
-          role,
-        })
-        .execute()
-    }),
-  )
+  await addUsersToSite({
+    siteId,
+    users: [
+      {
+        email: `${EDITOR_USER}@open.gov.sg`,
+        role: RoleType.Editor,
+      },
+      {
+        email: `${PUBLISHER_USER}@open.gov.sg`,
+        role: RoleType.Publisher,
+      },
+    ],
+  })
 }
 
 main()

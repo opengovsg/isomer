@@ -15,6 +15,7 @@ export const resourceHandlers = {
             | "CollectionPage",
           // ID must be unique so infinite loop won't occur
           id: `${resourceId}-${item.title}-${item.id}`,
+          parentId: item.parentId,
         }))
         return {
           items,
@@ -52,6 +53,17 @@ export const resourceHandlers = {
     },
   },
   getParentOf: {
+    folder: () => {
+      return trpcMsw.resource.getParentOf.query(() => {
+        return {
+          type: "Folder",
+          id: "1",
+          parentId: null,
+          parent: null,
+          title: "a folder",
+        }
+      })
+    },
     collection: () => {
       return trpcMsw.resource.getParentOf.query(() => {
         return {
@@ -64,17 +76,74 @@ export const resourceHandlers = {
       })
     },
   },
-  getAncestryOf: {
-    collectionLink: () => {
-      return trpcMsw.resource.getAncestryOf.query(() => {
+  getAncestryStack: {
+    default: () => {
+      return trpcMsw.resource.getAncestryStack.query(() => {
+        return []
+      })
+    },
+  },
+  getBatchAncestryWithSelf: {
+    default: () => {
+      return trpcMsw.resource.getBatchAncestryWithSelf.query(() => {
         return [
-          {
-            parentId: null,
-            id: "1",
-            title: "Homepage",
-            permalink: "/",
-          },
+          [
+            {
+              parentId: null,
+              id: "1",
+              title: "Collection 1",
+              permalink: "collection-1",
+              type: "Collection",
+            },
+          ],
+          [
+            {
+              parentId: null,
+              id: "2",
+              title: "Folder 1",
+              permalink: "folder-1",
+              type: "Folder",
+            },
+          ],
+          [
+            {
+              parentId: null,
+              id: "3",
+              title: "Page 1",
+              permalink: "page-1",
+              type: "Page",
+            },
+          ],
         ]
+      })
+    },
+    foldersOnly: () => {
+      return trpcMsw.resource.getBatchAncestryWithSelf.query(() => {
+        return [
+          [
+            {
+              parentId: null,
+              id: "1",
+              title: "Folder 1",
+              permalink: "folder-1",
+              type: "Folder",
+            },
+          ],
+          [
+            {
+              parentId: null,
+              id: "2",
+              title: "Folder 2",
+              permalink: "folder-2",
+              type: "Folder",
+            },
+          ],
+        ]
+      })
+    },
+    noResults: () => {
+      return trpcMsw.resource.getBatchAncestryWithSelf.query(() => {
+        return []
       })
     },
   },
@@ -85,6 +154,15 @@ export const resourceHandlers = {
           id: "1",
           title: "Homepage",
           fullPermalink: "folder/page",
+        }
+      })
+    },
+    index: () => {
+      return trpcMsw.resource.getWithFullPermalink.query(() => {
+        return {
+          id: "4",
+          title: "Index page",
+          fullPermalink: "parent/_index",
         }
       })
     },
@@ -117,6 +195,16 @@ export const resourceHandlers = {
           type: "Page",
           title: "article layout",
           permalink: "article-layout",
+          parentId: null,
+        }
+      }),
+    index: () =>
+      trpcMsw.resource.getMetadataById.query(() => {
+        return {
+          id: "3",
+          type: "IndexPage",
+          title: "Index page",
+          permalink: "_index",
           parentId: null,
         }
       }),

@@ -107,8 +107,8 @@ const generateArgs = ({
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
-      navBarItems: [],
+      logoUrl: "/isomer-logo.svg",
+      navbar: { items: [] },
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
         termsOfUseLink: "https://www.isomer.gov.sg/terms",
@@ -119,7 +119,6 @@ const generateArgs = ({
         type: "localSearch",
         searchUrl: "/search",
       },
-      assetsBaseUrl: "https://isomer-user-content.by.gov.sg",
     },
     meta: {
       description: "A Next.js starter for Isomer",
@@ -129,6 +128,7 @@ const generateArgs = ({
       title: "Irrationality",
       lastModified: "2024-05-02T14:12:57.160Z",
       contentPageHeader: {
+        showThumbnail: false,
         summary:
           "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",
         buttonLabel: "Submit a proposal",

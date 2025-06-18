@@ -5,7 +5,7 @@ export const Navbar = {
       id: "Navbar",
       props: {
         logo: {
-          url: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+          url: "/isomer-logo.svg",
           alt: "Isomer logo",
         },
         search: { isEnabled: true, searchUrl: "/search" },

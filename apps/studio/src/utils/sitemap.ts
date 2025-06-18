@@ -1,8 +1,10 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
+import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { Resource } from "~prisma/generated/selectableTypes"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { env } from "~/env.mjs"
 
 type ResourceDto = Omit<
   Resource,
@@ -10,6 +12,8 @@ type ResourceDto = Omit<
 > & {
   id: string
   parentId: string | null
+  summary?: string
+  thumbnail?: string
 }
 
 const getSitemapTreeFromArray = (
@@ -49,29 +53,42 @@ const getSitemapTreeFromArray = (
         id: String(resource.id),
         layout: "content", // Note: We are not using the layout field in our sitemap for preview
         title: resource.title,
-        summary: "", // Note: We are not using the summary field in our previews
+        summary: resource.summary ?? "",
         lastModified: new Date() // TODO: Update this to the updated_at field in DB
           .toISOString(),
         permalink,
+        image: {
+          src: resource.thumbnail ?? "",
+          alt: "",
+        },
       }
     }
 
-    const titleOfPage = resources.find(
+    const indexPage = resources.find(
       (child) =>
-        // NOTE: This child is the index page of this resource
+        child.type === ResourceType.IndexPage &&
         child.permalink === INDEX_PAGE_PERMALINK &&
         child.parentId === resource.id,
-    )?.title
+    )
+
+    const titleOfPage = indexPage?.title
+    const summaryOfPage = indexPage?.summary
 
     return {
       id: String(resource.id),
-      layout: "content", // Note: We are not using the layout field in our previews
+      layout:
+        resource.type === ResourceType.Collection
+          ? ISOMER_USABLE_PAGE_LAYOUTS.Collection // Needed for collectionblock component to fetch the correct collection
+          : ISOMER_USABLE_PAGE_LAYOUTS.Content, // Note: We are not using the layout field in our previews
       title: titleOfPage || resource.title,
-      summary: "", // Note: We are not using the summary field in our previews
+      summary: summaryOfPage ?? `Pages in ${resource.title}`,
       lastModified: new Date() // TODO: Update this to the updated_at field in DB
         .toISOString(),
       // NOTE: This permalink is unused in the preview
       permalink,
+      image: !!indexPage?.thumbnail
+        ? { src: indexPage.thumbnail, alt: "" }
+        : undefined,
       children: getSitemapTreeFromArray(
         resources,
         resource.id,
@@ -96,5 +113,48 @@ export const getSitemapTree = (
     // NOTE: This permalink is unused in the preview
     permalink: "/",
     children: getSitemapTreeFromArray(resources, null, "/"),
+  }
+}
+
+const NUMBER_OF_CARDS_IN_COLLECTION_BLOCK = 3
+export const overwriteCollectionChildrenForCollectionBlock = (
+  sitemap: IsomerSitemap,
+): IsomerSitemap => {
+  // If the current node is a collection, overwrite its children and return
+  if (sitemap.layout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
+    return {
+      ...sitemap,
+      children: Array.from({ length: NUMBER_OF_CARDS_IN_COLLECTION_BLOCK }).map(
+        (_, idx) => ({
+          id: `collection-card-${idx}`,
+          title: "Article title",
+          summary: "Article summary",
+          permalink: "/",
+          layout: ISOMER_USABLE_PAGE_LAYOUTS.Article,
+          lastModified: new Date().toISOString(),
+          category: "Category of article",
+          ref: "/",
+          image: {
+            src: `${env.NEXT_PUBLIC_APP_URL}/assets/collectionblock_studio_preview.svg`,
+            alt: "Placeholder image for article's thumbnail",
+          },
+        }),
+      ),
+    }
+  }
+
+  let processedChildren = sitemap.children
+
+  // If the node is not a collection, process its children (if any)
+  if (sitemap.children) {
+    processedChildren = sitemap.children.map((child) =>
+      overwriteCollectionChildrenForCollectionBlock(child),
+    )
+  }
+
+  // Return the non-collection node with potentially updated children
+  return {
+    ...sitemap,
+    children: processedChildren,
   }
 }

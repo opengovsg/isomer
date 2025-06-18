@@ -38,8 +38,8 @@ const DefaultHeadings = () => {
                 },
                 theme: "isomer-next",
                 isGovernment: true,
-                logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
-                navBarItems: [],
+                logoUrl: "/isomer-logo.svg",
+                navbar: { items: [] },
                 footerItems: {
                   privacyStatementLink: "https://www.isomer.gov.sg/privacy",
                   termsOfUseLink: "https://www.isomer.gov.sg/terms",
@@ -85,8 +85,8 @@ const HeadingsWithDirection = () => {
                 },
                 theme: "isomer-next",
                 isGovernment: true,
-                logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
-                navBarItems: [],
+                logoUrl: "/isomer-logo.svg",
+                navbar: { items: [] },
                 footerItems: {
                   privacyStatementLink: "https://www.isomer.gov.sg/privacy",
                   termsOfUseLink: "https://www.isomer.gov.sg/terms",

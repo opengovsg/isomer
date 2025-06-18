@@ -8,6 +8,9 @@
     "build:template": "dotenv -- turbo build:template",
     "clean": "turbo clean",
     "dev": "dotenv -- turbo run dev",
+    "watch:packages": "dotenv -- turbo watch build --filter='./packages/*'",
+    "dev:e2e": "dotenv -- turbo run dev:e2e",
+    "test:e2e": "dotenv -- turbo run test:e2e",
     "setup:test": "turbo setup:test",
     "storybook": "dotenv -- turbo run storybook --parallel",
     "storybook:build": "turbo run storybook:build --parallel",
@@ -30,7 +33,7 @@
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
-    "turbo": "^2.1.2"
+    "turbo": "^2.5.4"
   },
   "packageManager": "npm@10.2.3"
 }

@@ -2,28 +2,36 @@
 
 import { useEffect } from "react"
 
-import type { VicaWidgetProps } from "~/interfaces"
+import type { VicaWidgetClientProps } from "~/interfaces"
 
-// Next.js pre-fetching caused widget to disappear on page navigation
-// Doing this forces the widget to load in between page navigation
-const reloadVicaScript = () => {
-  const scriptId = "isomer-vica-script"
+export const VicaWidgetClient = ({
+  environment,
+  ...vicaProps
+}: VicaWidgetClientProps) => {
+  const scriptUrl =
+    environment === "production"
+      ? "https://webchat.vica.gov.sg/static/js/chat.js"
+      : "https://webchat.mol-vica.com/static/js/chat.js"
 
-  const existingScriptTag = document.getElementById(scriptId)
-  if (existingScriptTag) {
-    existingScriptTag.remove()
+  // Next.js pre-fetching caused widget to disappear on page navigation
+  // Doing this forces the widget to load in between page navigation
+  const reloadVicaScript = () => {
+    const scriptId = "isomer-vica-script"
+
+    const existingScriptTag = document.getElementById(scriptId)
+    if (existingScriptTag) {
+      existingScriptTag.remove()
+    }
+
+    const scriptTag = document.createElement("script")
+    scriptTag.id = scriptId
+    scriptTag.async = true
+    scriptTag.type = "text/javascript"
+    scriptTag.src = scriptUrl
+    scriptTag.referrerPolicy = "origin"
+    document.body.appendChild(scriptTag)
   }
 
-  const scriptTag = document.createElement("script")
-  scriptTag.id = scriptId
-  scriptTag.async = true
-  scriptTag.type = "text/javascript"
-  scriptTag.src = "https://webchat.vica.gov.sg/static/js/chat.js"
-  scriptTag.referrerPolicy = "origin"
-  document.body.appendChild(scriptTag)
-}
-
-export const VicaWidgetClient = (vica: VicaWidgetProps) => {
   useEffect(() => {
     // to not render during static site generation on the server
     if (typeof window === "undefined") return
@@ -38,17 +46,5 @@ export const VicaWidgetClient = (vica: VicaWidgetProps) => {
     }
   }, [])
 
-  return (
-    <div
-      id="webchat"
-      {...vica}
-      // We ignore config passed in from DB and manually overwrite
-      // the following attributes to ensure consistency and best brand appearance
-      app-font-family="Inter, system-ui, sans-serif"
-      app-foreground-color="#FFFFFF" // hardcoded to be white for all agencies
-      app-color="var(--color-brand-canvas-inverse)"
-      app-button-border-color="var(--color-brand-canvas-inverse)"
-      app-canvas-background-color="var(--color-brand-canvas-default)"
-    />
-  )
+  return <div id="webchat" {...vicaProps} />
 }

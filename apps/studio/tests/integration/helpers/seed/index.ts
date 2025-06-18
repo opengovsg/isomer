@@ -5,29 +5,58 @@ import {
 } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
+import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 
-export const setupAdminPermissions = async ({
-  userId,
-  siteId,
-  isDeleted = false,
-}: {
+interface SetupPermissionsProps {
   userId?: string
   siteId: number
   isDeleted?: boolean
-}) => {
+  role: (typeof RoleType)[keyof typeof RoleType]
+  useCurrentTime?: boolean
+}
+
+const setupPermissions = async ({
+  userId,
+  siteId,
+  role,
+  isDeleted = false,
+  useCurrentTime = false,
+}: SetupPermissionsProps) => {
   if (!userId) throw new Error("userId is a required field")
 
-  await db
+  const time = useCurrentTime ? new Date() : MOCK_STORY_DATE
+  return await db
     .insertInto("ResourcePermission")
     .values({
       userId: String(userId),
       siteId,
-      role: RoleType.Admin,
+      role,
       resourceId: null,
-      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+      deletedAt: isDeleted ? time : null,
+      createdAt: time,
+      updatedAt: time,
     })
-    .execute()
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+export const setupPublisherPermissions = async (
+  props: Omit<SetupPermissionsProps, "role">,
+) => {
+  return await setupPermissions({ ...props, role: RoleType.Publisher })
+}
+
+export const setupEditorPermissions = async (
+  props: Omit<SetupPermissionsProps, "role">,
+) => {
+  return await setupPermissions({ ...props, role: RoleType.Editor })
+}
+
+export const setupAdminPermissions = async (
+  props: Omit<SetupPermissionsProps, "role">,
+) => {
+  return await setupPermissions({ ...props, role: RoleType.Admin })
 }
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
@@ -78,45 +107,50 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
     const navbar = await tx
       .insertInto("Navbar")
       .values({
-        content: jsonb([
-          {
-            url: "/item-one",
-            name: "Expandable nav item",
-            items: [
-              {
-                url: "/item-one/pa-network-one",
-                name: "PA's network one",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
-              },
-              {
-                url: "/item-one/pa-network-two",
-                name: "PA's network two",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
-              },
-              { url: "/item-one/pa-network-three", name: "PA's network three" },
-              {
-                url: "/item-one/pa-network-four",
-                name: "PA's network four",
-                description:
-                  "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-              },
-              {
-                url: "/item-one/pa-network-five",
-                name: "PA's network five",
-                description:
-                  "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-              },
-              {
-                url: "/item-one/pa-network-six",
-                name: "PA's network six",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
-              },
-            ],
-          },
-        ]),
+        content: jsonb({
+          items: [
+            {
+              url: "/item-one",
+              name: "Expandable nav item",
+              items: [
+                {
+                  url: "/item-one/pa-network-one",
+                  name: "PA's network one",
+                  description:
+                    "Click here and brace yourself for mild disappointment.",
+                },
+                {
+                  url: "/item-one/pa-network-two",
+                  name: "PA's network two",
+                  description:
+                    "Click here and brace yourself for mild disappointment.",
+                },
+                {
+                  url: "/item-one/pa-network-three",
+                  name: "PA's network three",
+                },
+                {
+                  url: "/item-one/pa-network-four",
+                  name: "PA's network four",
+                  description:
+                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                },
+                {
+                  url: "/item-one/pa-network-five",
+                  name: "PA's network five",
+                  description:
+                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                },
+                {
+                  url: "/item-one/pa-network-six",
+                  name: "PA's network six",
+                  description:
+                    "Click here and brace yourself for mild disappointment.",
+                },
+              ],
+            },
+          ],
+        }),
         siteId: site.id,
       })
       .returningAll()
@@ -215,7 +249,7 @@ const getFallbackPermalink = (resourceType: ResourceType) => {
     case ResourceType.CollectionPage:
       return "test-collection-page"
     case ResourceType.IndexPage:
-      return "test-index-page"
+      return INDEX_PAGE_PERMALINK
     default:
       return "test-page"
   }
@@ -258,6 +292,12 @@ export const setupPageResource = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 
+  if (state === ResourceState.Published && !userId) {
+    throw new Error(
+      "Precondition failed, we need a valid `userId` in order to publish",
+    )
+  }
+
   if (state === ResourceState.Published && userId) {
     const version = await db
       .insertInto("Version")
@@ -295,11 +335,13 @@ export const setupFolder = async ({
   permalink = "test-folder",
   parentId = null,
   title = "test folder",
+  state = ResourceState.Draft,
 }: {
   siteId?: number
   permalink?: string
   parentId?: string | null
   title?: string
+  state?: ResourceState
 } = {}) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
 
@@ -311,7 +353,7 @@ export const setupFolder = async ({
       parentId,
       title,
       draftBlobId: null,
-      state: ResourceState.Draft,
+      state,
       type: ResourceType.Folder,
       publishedVersionId: null,
     })
@@ -331,12 +373,14 @@ export const setupCollection = async ({
   permalink = "test-collection",
   parentId = null,
   title = "test collection",
+  state = ResourceState.Draft,
 }: {
   siteId?: number
   permalink?: string
   parentId?: string | null
   title?: string
-}) => {
+  state?: ResourceState
+} = {}) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
 
   const collection = await db
@@ -347,7 +391,7 @@ export const setupCollection = async ({
       parentId,
       title,
       draftBlobId: null,
-      state: ResourceState.Draft,
+      state,
       type: ResourceType.Collection,
       publishedVersionId: null,
     })
@@ -392,6 +436,35 @@ export const setupCollectionLink = async ({
     navbar,
     footer,
     collectionLink,
+  }
+}
+
+export const setupCollectionMeta = async ({
+  siteId: siteIdProp,
+  collectionId,
+}: {
+  siteId?: number
+  collectionId: string
+}) => {
+  const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
+
+  const collectionMeta = await db
+    .insertInto("Resource")
+    .values({
+      siteId: site.id,
+      parentId: collectionId,
+      title: "collection meta",
+      permalink: "collection-meta",
+      type: ResourceType.CollectionMeta,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  return {
+    site,
+    navbar,
+    footer,
+    collectionMeta,
   }
 }
 
@@ -451,23 +524,71 @@ export const setupUser = async ({
   userId = nanoid(),
   email,
   phone = "",
-  isDeleted,
+  isDeleted = false,
+  hasLoggedIn = false,
 }: {
   name?: string
   userId?: string
-  email: string
+  email?: string
   phone?: string
-  isDeleted: boolean
+  isDeleted?: boolean
+  hasLoggedIn?: boolean
 }) => {
   return db
     .insertInto("User")
     .values({
       id: userId,
       name,
-      email,
+      email: email ?? `${nanoid()}@test.com`,
       phone: phone,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+      lastLoginAt: hasLoggedIn ? MOCK_STORY_DATE : null,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
+}
+
+export const setupFullSite = async () => {
+  const { site, folder: parentFolder } = await setupFolder({})
+  const { page: rootPage } = await setupPageResource({
+    resourceType: "RootPage",
+    siteId: site.id,
+  })
+  const { page: childPage } = await setupPageResource({
+    resourceType: "Page",
+    parentId: parentFolder.id,
+    siteId: site.id,
+  })
+  const { folder } = await setupFolder({
+    siteId: site.id,
+    parentId: parentFolder.id,
+  })
+  const { collection } = await setupCollection({
+    siteId: site.id,
+  })
+
+  const { page: collectionPage } = await setupPageResource({
+    resourceType: "CollectionPage",
+    parentId: collection.id,
+  })
+  const { page: collectionLink } = await setupPageResource({
+    resourceType: "CollectionLink",
+    parentId: collection.id,
+  })
+  const { page: collectionIndex } = await setupPageResource({
+    resourceType: "IndexPage",
+    parentId: collection.id,
+  })
+
+  return {
+    site,
+    rootPage,
+    rootFolder: parentFolder,
+    childPage,
+    childFolder: folder,
+    rootCollection: collection,
+    collectionPage,
+    collectionLink,
+    collectionIndex,
+  }
 }

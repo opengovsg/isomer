@@ -7,7 +7,7 @@ import {
   ContentPageHeaderSchema,
   SearchableTableSchema,
 } from "~/interfaces"
-import { AltTextSchema, generateImageSrcSchema } from "~/interfaces/complex"
+import { imageSchemaObject } from "~/schemas/internal"
 import { REF_HREF_PATTERN } from "~/utils/validation"
 
 const categorySchemaObject = Type.Object({
@@ -20,21 +20,10 @@ const categorySchemaObject = Type.Object({
 })
 
 const dateSchemaObject = Type.Object({
-  date: Type.String({
-    title: "Article date",
-    format: "date",
-  }),
-})
-
-const imageSchemaObject = Type.Object({
-  image: Type.Optional(
-    Type.Object({
-      src: generateImageSrcSchema({
-        title: "Thumbnail",
-        description:
-          "Upload an image if you want to have a custom thumbnail for this item",
-      }),
-      alt: AltTextSchema,
+  date: Type.Optional(
+    Type.String({
+      title: "Article date",
+      format: "date",
     }),
   ),
 })
@@ -80,6 +69,22 @@ export const ArticlePagePageSchema = Type.Composite([
   imageSchemaObject,
 ])
 
+const COLLECTION_PAGE_SORT_BY = {
+  date: "date",
+  title: "title",
+  category: "category",
+} as const
+
+export const COLLECTION_PAGE_DEFAULT_SORT_BY = COLLECTION_PAGE_SORT_BY.date
+
+const COLLECTION_PAGE_SORT_DIRECTION = {
+  asc: "asc",
+  desc: "desc",
+} as const
+
+export const COLLECTION_PAGE_DEFAULT_SORT_DIRECTION =
+  COLLECTION_PAGE_SORT_DIRECTION.desc
+
 export const CollectionPagePageSchema = Type.Intersect([
   Type.Object({
     subtitle: Type.String({
@@ -87,11 +92,51 @@ export const CollectionPagePageSchema = Type.Intersect([
     }),
   }),
   TagsSchema,
+  Type.Object({
+    defaultSortBy: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal(COLLECTION_PAGE_SORT_BY.date, { title: "Date" }),
+          Type.Literal(COLLECTION_PAGE_SORT_BY.title, { title: "Title" }),
+          Type.Literal(COLLECTION_PAGE_SORT_BY.category, { title: "Category" }),
+        ],
+        {
+          title: "Default sort by",
+          description: "The default sort order of the collection",
+          format: "hidden",
+          type: "string",
+          default: COLLECTION_PAGE_DEFAULT_SORT_BY,
+        },
+      ),
+    ),
+    defaultSortDirection: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal(COLLECTION_PAGE_SORT_DIRECTION.asc, {
+            title: "Ascending",
+          }),
+          Type.Literal(COLLECTION_PAGE_SORT_DIRECTION.desc, {
+            title: "Descending",
+          }),
+        ],
+        {
+          title: "Default sort direction",
+          description: "The default sort direction of the collection",
+          format: "hidden",
+          type: "string",
+          default: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+        },
+      ),
+    ),
+  }),
 ])
 
-export const ContentPagePageSchema = Type.Object({
-  contentPageHeader: ContentPageHeaderSchema,
-})
+export const ContentPagePageSchema = Type.Composite([
+  Type.Object({
+    contentPageHeader: ContentPageHeaderSchema,
+  }),
+  imageSchemaObject,
+])
 
 export const DatabasePagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,
@@ -103,7 +148,7 @@ export const NotFoundPagePageSchema = Type.Object({})
 export const SearchPagePageSchema = Type.Object({})
 
 export const FileRefPageSchema = BaseRefPageSchema
-export const LinkRefPageSchema = Type.Omit(BaseRefPageSchema, ["image"])
+export const LinkRefPageSchema = BaseRefPageSchema
 
 // These are props that are required by the render engine, but not enforced by
 // the JSON schema (as the data is being stored outside of the page JSON)

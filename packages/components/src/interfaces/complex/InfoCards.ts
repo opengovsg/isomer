@@ -6,12 +6,21 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { NON_EMPTY_STRING_REGEX } from "~/utils"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
 export const CARDS_WITH_IMAGES = "cardsWithImages"
+export const CARDS_WITH_FULL_IMAGES = "cardsWithFullImages"
+
+export const INFOCARD_VARIANT = {
+  bold: "bold",
+  default: "default",
+} as const
+
+export type InfoCardVariants = keyof typeof INFOCARD_VARIANT
 
 const IMAGE_FIT = {
   Cover: "cover",
@@ -77,6 +86,10 @@ const InfoCardsBaseSchema = Type.Object({
   title: Type.String({
     title: "Title",
     maxLength: 100,
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
   }),
   subtitle: Type.Optional(
     Type.String({
@@ -126,12 +139,31 @@ const InfoCardsWithImageSchema = Type.Object(
     variant: Type.Literal(CARDS_WITH_IMAGES, { default: CARDS_WITH_IMAGES }),
     cards: Type.Array(SingleCardWithImageSchema, {
       title: "Cards",
-      maxItems: 12,
+      minItems: 1,
+      maxItems: 30,
       default: [],
     }),
   },
   {
     title: "Cards with images",
+  },
+)
+
+const InfoCardsWithFullImageSchema = Type.Object(
+  {
+    variant: Type.Literal(CARDS_WITH_FULL_IMAGES, {
+      default: CARDS_WITH_FULL_IMAGES,
+    }),
+    cards: Type.Array(Type.Omit(SingleCardWithImageSchema, ["description"]), {
+      title: "Cards",
+      minItems: 1,
+      maxItems: 30,
+      default: [],
+    }),
+  },
+  {
+    title: "Cards with full images",
+    format: "hidden",
   },
 )
 
@@ -142,7 +174,8 @@ const InfoCardsNoImageSchema = Type.Object(
     }),
     cards: Type.Array(SingleCardNoImageSchema, {
       title: "Cards",
-      maxItems: 12,
+      minItems: 1,
+      maxItems: 30,
       default: [],
     }),
   },
@@ -154,9 +187,17 @@ const InfoCardsNoImageSchema = Type.Object(
 export const InfoCardsSchema = Type.Intersect(
   [
     InfoCardsBaseSchema,
-    Type.Union([InfoCardsWithImageSchema, InfoCardsNoImageSchema], {
-      format: ARRAY_RADIO_FORMAT,
-    }),
+    Type.Union(
+      [
+        InfoCardsWithImageSchema,
+        InfoCardsNoImageSchema,
+        InfoCardsWithFullImageSchema,
+      ],
+      {
+        format: ARRAY_RADIO_FORMAT,
+        title: "Infocards style",
+      },
+    ),
   ],
   {
     title: "Cards component",
@@ -170,13 +211,15 @@ export type SingleCardNoImageProps = Static<typeof SingleCardNoImageSchema> & {
 }
 export type SingleCardWithImageProps = Static<
   typeof SingleCardWithImageSchema
-> & {
-  site: IsomerSiteProps
-  layout: IsomerPageLayoutType
-  isExternalLink?: boolean
-  LinkComponent?: LinkComponentType
-  shouldLazyLoad?: boolean
-}
+> &
+  Pick<Static<typeof InfoCardsBaseSchema>, "maxColumns"> & {
+    site: IsomerSiteProps
+    layout: IsomerPageLayoutType
+    isExternalLink?: boolean
+    LinkComponent?: LinkComponentType
+    shouldLazyLoad?: boolean
+    variant?: InfoCardVariants
+  }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps

@@ -1,7 +1,8 @@
 import type { IndexPageSchemaType } from "~/engine"
+import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils"
-import { ChildrenPages, ContentPageHeader } from "../../components/internal"
+import { ContentPageHeader } from "../../components/internal"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
@@ -10,7 +11,7 @@ const createIndexPageLayoutStyles = tv({
     container:
       "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
     siderailContainer: "relative col-span-3 hidden lg:block",
-    content: "col-span-12 max-w-[54rem]",
+    content: "col-span-12 break-words lg:col-span-9",
   },
 })
 
@@ -29,6 +30,11 @@ const IndexPageLayout = ({
     page.permalink.split("/").slice(1),
   )
 
+  const hasChildpageBlock = content.some(({ type }) => type === "childrenpages")
+  const pageContent: IndexPageSchemaType["content"] = hasChildpageBlock
+    ? content
+    : [...content, DEFAULT_CHILDREN_PAGES_BLOCK]
+
   return (
     <Skeleton
       site={site}
@@ -39,6 +45,7 @@ const IndexPageLayout = ({
     >
       <ContentPageHeader
         {...page.contentPageHeader}
+        colorScheme="inverse"
         title={page.title}
         breadcrumb={breadcrumb}
         site={site}
@@ -48,18 +55,12 @@ const IndexPageLayout = ({
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.content()}>
           {renderPageContent({
-            content,
+            content: pageContent,
             layout,
             site,
             LinkComponent,
+            permalink: page.permalink,
           })}
-
-          <ChildrenPages
-            permalink={page.permalink}
-            layout={layout}
-            site={site}
-            LinkComponent={LinkComponent}
-          />
         </div>
       </div>
     </Skeleton>

@@ -82,11 +82,6 @@ on:
         required: false
         default: "0.0.0"
         type: string
-      app-enable-sgid:
-        description: "Enable SGID login"
-        required: false
-        default: false
-        type: boolean
       app-s3-region:
         description: "S3 region for the assets bucket"
         required: false
@@ -155,7 +150,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
           ENV: ${{ inputs.environment }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.ref_name }}_${{ github.sha }}
         with:
           context: .
           file: "./apps/studio/Dockerfile"
@@ -167,7 +162,6 @@ jobs:
             NEXT_PUBLIC_APP_URL=${{ inputs.app-url }}
             NEXT_PUBLIC_APP_NAME=${{ inputs.app-name }}
             NEXT_PUBLIC_APP_VERSION=${{ inputs.app-version }}
-            NEXT_PUBLIC_ENABLE_SGID=${{ inputs.app-enable-sgid }}
             NEXT_PUBLIC_S3_REGION=${{ inputs.app-s3-region }}
             NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME=${{ inputs.app-s3-assets-domain-name }}
             NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME=${{ inputs.app-s3-assets-bucket-name }}
@@ -229,7 +223,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
           ENV: ${{ inputs.environment }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.ref_name }}_${{ github.sha }}
         with:
           task-definition: ${{ inputs.ecs-task-definition-path }}
           container-name: ${{ inputs.ecs-container-name }}

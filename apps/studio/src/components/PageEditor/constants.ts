@@ -1,5 +1,10 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { DYNAMIC_DATA_BANNER_TYPE } from "@opengovsg/isomer-components"
+import {
+  COLLECTION_BLOCK_TYPE,
+  DEFAULT_CHILDREN_PAGES_BLOCK,
+  DYNAMIC_DATA_BANNER_TYPE,
+  IMAGE_GALLERY_TYPE,
+} from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -20,6 +25,7 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
+  childrenpages: DEFAULT_CHILDREN_PAGES_BLOCK,
   accordion: {
     type: "accordion",
     summary: "Title for the accordion item",
@@ -27,6 +33,12 @@ export const DEFAULT_BLOCKS: Record<
       type: "prose",
       content: [],
     },
+  },
+  blockquote: {
+    type: "blockquote",
+    quote: "This is a quote",
+    source: "This is the source of the quote",
+    imageAlt: "This is the alt text for the image",
   },
   callout: {
     type: "callout",
@@ -120,6 +132,7 @@ export const DEFAULT_BLOCKS: Record<
     title: "This is an infopic",
     description: "This is the description for the infopic component",
     imageSrc: "/placeholder_no_image.png",
+    imageAlt: "This is the alt text for the image",
   },
   contentpic: {
     type: "contentpic",
@@ -217,6 +230,33 @@ export const DEFAULT_BLOCKS: Record<
     images: [],
     title: "With support from these agencies",
   },
+  [COLLECTION_BLOCK_TYPE]: {
+    type: `${COLLECTION_BLOCK_TYPE}`,
+    collectionReferenceLink: "", // TODO: placeholder for now as we cannot select a collection beforehand but it's required by the schema
+    buttonLabel: "Read all latest news",
+    displayThumbnail: true,
+    displayCategory: true,
+  },
+  [IMAGE_GALLERY_TYPE]: {
+    type: `${IMAGE_GALLERY_TYPE}`,
+    images: [
+      {
+        caption: "This is the first image",
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
+      {
+        caption: "This is the second image",
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
+      {
+        caption: "This is the third image",
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
+    ],
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -226,6 +266,10 @@ export const BLOCK_TO_META: Record<
   hero: {
     label: "Hero banner",
     description: "Title, summary, hero image, and Call-to-Action",
+  },
+  childrenpages: {
+    label: "Child pages",
+    description: "Edit how users see the child page of this folder here",
   },
   image: {
     label: "Image",
@@ -323,6 +367,24 @@ export const BLOCK_TO_META: Record<
     description: "Display logos of other agencies here",
     usageText: "Show an overview of related agencies",
   },
+  [COLLECTION_BLOCK_TYPE]: {
+    // TODO: Add image source
+    label: "Collection block",
+    description: "Automatically display recent pages from a collection",
+    usageText: "Link recent articles from your newsroom, research, or blog.",
+  },
+  [IMAGE_GALLERY_TYPE]: {
+    // TODO: Add image source
+    label: "Image gallery",
+    description: "Display up to 30 images in a slideshow",
+    usageText: "Showcase images from an event.",
+  },
+  blockquote: {
+    label: "Quote",
+    description: "Display a quote or testimonial",
+    usageText: "Highlight an important quote. You can add an optional image.",
+    imageSrc: "/assets/block-images/Blockquote.png",
+  },
 }
 
 type AllowedBlockSections = {
@@ -333,7 +395,7 @@ type AllowedBlockSections = {
 export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Basic content blocks",
-    types: ["prose", "image", "accordion", "callout"],
+    types: ["prose", "image", "accordion", "callout", "blockquote"],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
@@ -341,11 +403,19 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
 export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Basic content blocks",
-    types: ["prose", "image", "accordion", "callout", "contentpic", "infobar"],
+    types: [
+      "prose",
+      "image",
+      "accordion",
+      "callout",
+      "blockquote",
+      "contentpic",
+      "infobar",
+    ],
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics"],
+    types: ["infocards", "infocols", "keystatistics", IMAGE_GALLERY_TYPE],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
@@ -353,6 +423,13 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Add a new section",
     // TODO(ISOM-1552): Add back iframe component when implemented
-    types: ["infocards", "keystatistics", "infocols", "infopic", "infobar"],
+    types: [
+      "infocards",
+      "keystatistics",
+      "infocols",
+      "infopic",
+      "infobar",
+      "blockquote",
+    ],
   },
 ]

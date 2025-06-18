@@ -10,15 +10,16 @@ import {
   useDisclosure,
 } from "@chakra-ui/react"
 import { Button, FormLabel } from "@opengovsg/design-system-react"
+import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { BiTrash } from "react-icons/bi"
 
 import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import type { LinkEditorModalProps } from "~/components/PageEditor/LinkEditorModal"
 import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
-import { getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
+import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"
 
 const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
   switch (pageType) {
@@ -71,50 +72,52 @@ export function BaseLinkControl({
     <>
       <Box as={FormControl} isRequired={required}>
         <FormLabel>{label}</FormLabel>
-        <Flex
-          px="1rem"
-          py="0.75rem"
-          flexDir="row"
-          background="brand.primary.100"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          {!!data ? (
-            <>
-              {pageType !== LINK_TYPES.Page && (
-                <Text overflow="auto">{displayedHref}</Text>
-              )}
-              {pageType === LINK_TYPES.Page && dataString.length > 0 && (
-                <Suspense fallback={<Skeleton w="100%" h="100%" />}>
-                  <SuspendableLabel
-                    resourceId={getResourceIdFromReferenceLink(dataString)}
-                  />
-                </Suspense>
-              )}
-              <IconButton
-                size="xs"
-                variant="clear"
-                colorScheme="critical"
-                aria-label="Remove file"
-                icon={<BiTrash />}
-                onClick={() => handleChange(path, undefined)}
-              />
-            </>
-          ) : (
-            <>
-              <Text>{description}</Text>
-              <Button
-                onClick={onOpen}
-                variant="link"
-                aria-labelledby="button-label"
-              >
-                <Text id="button-label" textStyle="subhead-2">
-                  Link something...
-                </Text>
-              </Button>
-            </>
-          )}
-        </Flex>
+        <LinkErrorBoundary resetLink={() => handleChange(path, undefined)}>
+          <Flex
+            px="1rem"
+            py="0.75rem"
+            flexDir="row"
+            background="brand.primary.100"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            {!!data ? (
+              <>
+                {pageType !== LINK_TYPES.Page && (
+                  <Text overflow="auto">{displayedHref}</Text>
+                )}
+                {pageType === LINK_TYPES.Page && dataString.length > 0 && (
+                  <Suspense fallback={<Skeleton w="100%" h="100%" />}>
+                    <SuspendableLabel
+                      resourceId={getResourceIdFromReferenceLink(dataString)}
+                    />
+                  </Suspense>
+                )}
+                <IconButton
+                  size="xs"
+                  variant="clear"
+                  colorScheme="critical"
+                  aria-label="Remove file"
+                  icon={<BiTrash />}
+                  onClick={() => handleChange(path, undefined)}
+                />
+              </>
+            ) : (
+              <>
+                <Text>{description}</Text>
+                <Button
+                  onClick={onOpen}
+                  variant="link"
+                  aria-labelledby="button-label"
+                >
+                  <Text id="button-label" textStyle="subhead-2">
+                    Link something...
+                  </Text>
+                </Button>
+              </>
+            )}
+          </Flex>
+        </LinkErrorBoundary>
       </Box>
       <LinkEditorModal
         linkTypes={linkTypes}

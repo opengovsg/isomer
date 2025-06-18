@@ -1,23 +1,28 @@
 import { useCallback } from "react"
+import { useGrowthBook } from "@growthbook/growthbook-react"
 
 import type { VfnStepData } from "../SignInContext"
+import type { GrowthbookAttributes } from "~/types/growthbook"
 import { useSignInContext } from "../SignInContext"
-import { EmailInput } from "./Emailnput"
-import { VerificationInput } from "./VerificationInput"
+import { EmailInput } from "./EmailInput"
 
 export const EmailLoginForm = () => {
-  const { setVfnStepData, vfnStepData } = useSignInContext()
+  const { setVfnStepData, proceedToVerification } = useSignInContext()
+  const gb = useGrowthBook()
 
   const handleOnSuccessEmail = useCallback(
     ({ email, otpPrefix }: VfnStepData) => {
       setVfnStepData({ email, otpPrefix })
-    },
-    [setVfnStepData],
-  )
 
-  if (!!vfnStepData?.email) {
-    return <VerificationInput />
-  }
+      const newAttributes: Partial<GrowthbookAttributes> = {
+        email,
+      }
+
+      void gb.updateAttributes(newAttributes)
+      proceedToVerification()
+    },
+    [gb, proceedToVerification, setVfnStepData],
+  )
 
   return <EmailInput onSuccess={handleOnSuccessEmail} />
 }

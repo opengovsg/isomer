@@ -27,12 +27,33 @@ declare global {
     >
     type BlobJsonContent = Tagged<_IsomerSchema, "JSONB">
     type NavbarJsonContent = Tagged<
-      _IsomerSiteWideComponentsProps["navBarItems"],
+      _IsomerSiteWideComponentsProps["navbar"],
       "JSONB"
     >
     type FooterJsonContent = Tagged<
       _IsomerSiteWideComponentsProps["footerItems"],
       "JSONB"
     >
+    interface CreateLogEvent {
+      before: null
+      after: Record<string, unknown>
+    }
+    interface DeleteLogEvent {
+      before: Record<string, unknown>
+      after: null
+    }
+    interface FullLogEvent {
+      before: Record<string, unknown>
+      after: Record<string, unknown>
+    }
+    interface PublishLogEvent {
+      before: Record<string, unknown> | null
+      after: Record<string, unknown> | null
+    }
+    type AuditLogDeltaJsonContent =
+      | FullLogEvent
+      | CreateLogEvent
+      | DeleteLogEvent
+      | PublishLogEvent
   }
 }

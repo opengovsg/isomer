@@ -1,16 +1,26 @@
+import type { GrowthBook } from "@growthbook/growthbook"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
+import get from "lodash/get"
 
 import type {
   CrudResourceActions,
   PermissionsProps,
   ResourceAbility,
   SiteAbility,
+  UserManagementActions,
 } from "./permissions.type"
+import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
+import { ADMIN_ROLE, ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
+import { logPermissionEvent } from "../audit/audit.service"
 import { db } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
 import { CRUD_ACTIONS } from "./permissions.type"
-import { buildPermissionsForResource } from "./permissions.util"
+import {
+  buildPermissionsForResource,
+  buildUserManagementPermissions,
+} from "./permissions.util"
 
 // NOTE: Fetches roles for the given resource
 // and returns the permissions wihch the user has for the given resource.
@@ -56,7 +66,7 @@ export const definePermissionsForSite = async ({
     .execute()
 
   // NOTE: Any role should be able to read site
-  if (roles.length > 0) {
+  if (roles.length === 1) {
     builder.can("read", "Site")
   }
 
@@ -73,7 +83,7 @@ export const validateUserPermissionsForResource = async ({
   action,
   resourceId = null,
   ...rest
-}: PermissionsProps & { action: CrudResourceActions }) => {
+}: PermissionsProps & { action: CrudResourceActions | "publish" }) => {
   // TODO: this is using site wide permissions for now
   // we should fetch the oldest `parent` of this resource eventually
   const hasCustomParentId = resourceId === null || action === "create"
@@ -108,4 +118,157 @@ export const validateUserPermissionsForResource = async ({
       message: "You do not have sufficient permissions to perform this action",
     })
   }
+}
+
+export const getSitePermissions = async ({
+  userId,
+  siteId,
+}: Omit<PermissionsProps, "resourceId">) => {
+  return await db
+    .selectFrom("ResourcePermission")
+    .where("userId", "=", userId)
+    .where("siteId", "=", siteId)
+    .where("resourceId", "is", null)
+    .where("deletedAt", "is", null)
+    .select("role")
+    .execute()
+}
+
+export const validatePermissionsForManagingUsers = async ({
+  siteId,
+  userId,
+  action,
+}: Omit<PermissionsProps, "resourceId"> & {
+  action: UserManagementActions
+}) => {
+  const roles = await getSitePermissions({ userId, siteId })
+  const perms = buildUserManagementPermissions(roles)
+
+  if (perms.cannot(action, "UserManagement")) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have sufficient permissions to perform this action",
+    })
+  }
+}
+
+interface UpdateUserSitewidePermissionProps {
+  byUserId: string
+  userId: string
+  siteId: number
+  role: RoleType
+}
+
+export const updateUserSitewidePermission = async ({
+  byUserId,
+  userId,
+  siteId,
+  role,
+}: UpdateUserSitewidePermissionProps) => {
+  // Putting outside the tx to reduce unnecessary extended DB locks
+  const byUser = await db
+    .selectFrom("User")
+    .where("id", "=", byUserId)
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
+  return await db.transaction().execute(async (tx) => {
+    const sitePermissionToRemove = await tx
+      .selectFrom("ResourcePermission")
+      .where("userId", "=", userId)
+      .where("siteId", "=", siteId)
+      .where("resourceId", "is", null) // because we are updating site-wide permissions
+      .where("deletedAt", "is", null) // ensure deleted persmission deletedAt is not overwritten
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!sitePermissionToRemove) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User permission not found",
+      })
+    }
+
+    const deletedSitePermission = await tx
+      .updateTable("ResourcePermission")
+      .where("id", "=", sitePermissionToRemove.id)
+      .set({ deletedAt: new Date() }) // soft delete the old permission
+      .returningAll()
+      .executeTakeFirst()
+
+    // NOTE: this is technically impossible because we're executing
+    // inside a tx and this is the same resource which was fetched earlier
+    if (!deletedSitePermission) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message:
+          "Something went wrong while updating user permissions, please try again later",
+      })
+    }
+
+    await logPermissionEvent(tx, {
+      eventType: "PermissionDelete",
+      by: byUser,
+      delta: { before: sitePermissionToRemove, after: deletedSitePermission },
+    })
+
+    const createdSitePermission = await tx
+      .insertInto("ResourcePermission")
+      .values({ userId, siteId, role, resourceId: null }) // because we are updating site-wide permissions
+      .returningAll()
+      .executeTakeFirstOrThrow()
+      .catch((err) => {
+        if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Permission already exists",
+          })
+        }
+        throw err
+      })
+
+    await logPermissionEvent(tx, {
+      eventType: "PermissionCreate",
+      by: byUser,
+      delta: { before: null, after: createdSitePermission },
+    })
+
+    return createdSitePermission
+  })
+}
+
+interface ValidateUserIsIsomerAdminProps {
+  userId: string
+  gb: GrowthBook
+  roles: (typeof ADMIN_ROLE)[keyof typeof ADMIN_ROLE][]
+}
+
+export const validateUserIsIsomerCoreAdmin = async ({
+  userId,
+  gb,
+  roles,
+}: ValidateUserIsIsomerAdminProps) => {
+  const user = await db
+    .selectFrom("User")
+    .where("id", "=", userId)
+    .select(["email"])
+    .executeTakeFirstOrThrow()
+
+  const { core, migrators } = gb.getFeatureValue<GrowthbookIsomerAdminFeature>(
+    ISOMER_ADMIN_FEATURE_KEY,
+    { core: [], migrators: [] },
+  )
+
+  if (roles.includes(ADMIN_ROLE.CORE) && core.includes(user.email)) {
+    return
+  }
+
+  if (roles.includes(ADMIN_ROLE.MIGRATORS) && migrators.includes(user.email)) {
+    return
+  }
+
+  throw new TRPCError({
+    code: "FORBIDDEN",
+    message: "You do not have sufficient permissions to perform this action",
+  })
 }

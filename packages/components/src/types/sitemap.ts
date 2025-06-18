@@ -1,6 +1,7 @@
 import type { IsomerPageLayoutType } from "./schema"
 import type { CollectionCardProps } from "~/interfaces"
 import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
+import type { CollectionPagePageProps } from "~/types"
 
 interface IsomerBaseSitemap {
   id: string
@@ -19,8 +20,18 @@ interface IsomerBaseSitemap {
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {
-  layout: Exclude<IsomerPageLayoutType, "file" | "link">
+  layout: Exclude<IsomerPageLayoutType, "collection" | "file" | "link">
 }
+
+export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
+  layout: Extract<IsomerPageLayoutType, "collection">
+  // TODO: Reconsider how this is done as currently every item in the sitemap has the same props
+  collectionPagePageProps?: {
+    defaultSortBy?: CollectionPagePageProps["defaultSortBy"]
+    defaultSortDirection?: CollectionPagePageProps["defaultSortDirection"]
+  }
+}
+
 interface IsomerFileSitemap extends IsomerBaseSitemap {
   layout: "file"
   ref: string
@@ -33,5 +44,6 @@ interface IsomerLinkSitemap extends IsomerBaseSitemap {
 
 export type IsomerSitemap =
   | IsomerPageSitemap
+  | IsomerCollectionPageSitemap
   | IsomerFileSitemap
   | IsomerLinkSitemap
