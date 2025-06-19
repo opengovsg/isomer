@@ -47,7 +47,8 @@
     "jump:vapt": "source .ssh/.env.vapt && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/studio-vapt-bastion.pem",
     "migrate:staging": "source .ssh/.env.staging && npx prisma migrate deploy",
     "migrate:uat": "source .ssh/.env.uat && npx prisma migrate deploy",
-    "migrate:vapt": "source .ssh/.env.vapt && npx prisma migrate deploy"
+    "migrate:vapt": "source .ssh/.env.vapt && npx prisma migrate deploy",
+    "test:watch": "dotenv -e .env.test npx vitest watch"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
