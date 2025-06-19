@@ -324,7 +324,9 @@ function generateSitemapTree(
             ? INDEX_PAGE_PERMALINK
             : `${pathPrefixWithoutLeadingSlash}/${INDEX_PAGE_PERMALINK}`),
     )
-    ?.content?.content?.at(-1)
+    ?.content?.content?.find(
+      ({ type }: { type: string }) => type === "childrenpages",
+    )
     ?.childrenPagesOrdering.map((id: string) => {
       const child = children.find(({ id: childId }) => {
         return id === childId
