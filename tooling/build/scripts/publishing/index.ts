@@ -327,7 +327,7 @@ function generateSitemapTree(
     ?.content?.content?.find(
       ({ type }: { type: string }) => type === "childrenpages",
     )
-    ?.childrenPagesOrdering.map((id: string) => {
+    ?.childrenPagesOrdering?.map((id: string) => {
       const child = children.find(({ id: childId }) => {
         return id === childId
       })
