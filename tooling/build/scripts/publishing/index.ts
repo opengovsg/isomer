@@ -304,6 +304,8 @@ function generateSitemapTree(
   const children = [...existingChildren, ...danglingDirectories]
 
   // Get the page sorting order from the FolderMeta resource
+  // TODO: delete this once `FolderMeta` is removed
+  /** @deprecated use `pageOrderFromIndex` instead; we should remove this once `FolderMeta` is removed from db */
   const pageOrderFromMeta = resources.find(
     (resource) =>
       resource.type === "FolderMeta" &&
