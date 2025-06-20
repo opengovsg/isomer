@@ -5,11 +5,13 @@ import type { BaseParagraphProps } from "~/interfaces/native/Paragraph"
 import { twMerge } from "~/lib/twMerge"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { Link } from "../Link"
-import { initializeSSRPolyfill } from "./ssrPolyfill"
 
-// NOTE: We need this polyfill as interweave uses a DOM to perform the
-// conversion of HTML to React components
-initializeSSRPolyfill().catch(console.error)
+// This will be tree-shaken out of client bundles
+if (typeof window === "undefined") {
+  void import("interweave-ssr").then(({ polyfill }) => {
+    polyfill()
+  })
+}
 
 export const BaseParagraph = ({
   content,
