@@ -6,6 +6,7 @@
   "version": "0.0.13",
   "description": "Isomer component library",
   "type": "module",
+  "sideEffects": false,
   "scripts": {
     "rollup": "rollup -c",
     "test:watch": "npx vitest watch",
