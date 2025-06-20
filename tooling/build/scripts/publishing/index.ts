@@ -332,7 +332,7 @@ function generateSitemapTree(
         return id === childId
       })
 
-      return child?.permalink
+      return child?.permalink.split("/").pop()
     })
     .filter((permalink: string | undefined) => !!permalink)
 
