@@ -50,7 +50,7 @@ export const FileAttachment = ({
           onRejection={setRejections}
           onChange={(file) => {
             if (!file) {
-              setHref()
+              setHref(undefined)
               return
             }
 
