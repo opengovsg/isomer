@@ -83,7 +83,7 @@ jobs:
         with:
           languages: js
           service: isomer-studio
-          api_key: ${{ secrets.DD_API_KEY }}
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Studio
         # Loose env mode required for env vars to be passed to the run
         run: turbo test-ci:unit --filter=isomer-studio --env-mode=loose
@@ -138,7 +138,7 @@ jobs:
         with:
           languages: js
           service: isomer-studio
-          api_key: ${{ secrets.DD_API_KEY }}
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Seed testing db
         run: turbo db:seed
       - name: Run Playwright tests
