@@ -11,7 +11,7 @@ export const infopicStyles = tv({
     // since content is half of screen width in desktop.
     content:
       "px-6 pb-16 pt-10 text-base-content [grid-area:content] md:max-w-[760px] md:px-10 md:pb-20 md:pt-16 lg:max-w-[620px] lg:content-center lg:py-24 lg:pl-10",
-    title: "prose-display-md items-stretch break-words",
+    title: "prose-display-md break-words",
     description: "prose-body-base mt-4 break-words md:mt-6",
     button: "mt-9",
     overlay: "",
