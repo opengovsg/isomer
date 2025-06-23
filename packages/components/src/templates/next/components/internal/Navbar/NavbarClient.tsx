@@ -9,6 +9,7 @@ import { tv } from "~/lib/tv"
 import { ImageClient } from "../../complex/Image"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 import { LinkButton } from "../../internal/LinkButton"
+import { Button } from "../Button"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
@@ -113,6 +114,7 @@ export const NavbarClient = ({
             <LinkButton
               href={callToAction.referenceLinkHref}
               isExternal={callToAction.isExternal}
+              size={"sm"}
               className="align-content mx-5 hidden h-fit lg:flex"
               isWithFocusVisibleHighlight
               LinkComponent={LinkComponent}
