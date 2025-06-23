@@ -31,7 +31,7 @@ const generateInfobarSchema = ({
       description: Type.Optional(
         Type.String({
           title: "Description",
-          maxLength: 100,
+          maxLength: 200,
         }),
       ),
       variant: Type.Optional(
