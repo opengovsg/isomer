@@ -75,11 +75,16 @@ const getSitemapTreeFromArray = (
     const summaryOfPage = indexPage?.summary
 
     return {
-      // NOTE: this is done for compat reasons as
-      // our publishing script uses the index page id
-      // if it can find one and if it cannot,
-      // then uses the base `resourceId`
-      id: indexPage?.id ?? resource.id,
+      id:
+        resource.type === ResourceType.Collection
+          ? // Note: Current publishing script still use collection id
+            // as the id even if there is an index page
+            resource.id
+          : // NOTE: this is done for compat reasons as
+            // our publishing script uses the index page id
+            // if it can find one and if it cannot,
+            // then uses the base `resourceId`
+            (indexPage?.id ?? resource.id),
       layout:
         resource.type === ResourceType.Collection
           ? ISOMER_USABLE_PAGE_LAYOUTS.Collection // Needed for collectionblock component to fetch the correct collection
