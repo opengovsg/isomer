@@ -1033,9 +1033,9 @@ describe("resource.service", () => {
 
       // Assert
       const child = result.children?.at(0)
-      expect(child?.id).toBe(indexPage.id)
+      expect(child?.id).toBe(collection.id) // should be from the collection regardless
       expect(child?.permalink).toBe(`/${collection.permalink}`)
-      expect(child?.title).toBe(collection.title) // should be from the folder
+      expect(child?.title).toBe(collection.title) // should be from the collection
       expect(child?.summary).toBe(`Pages in ${collection.title}`) // should not be from the index page
     })
 
@@ -1076,7 +1076,7 @@ describe("resource.service", () => {
 
       // Assert
       const child = result.children?.at(0)
-      expect(child?.id).toBe(indexPage.id)
+      expect(child?.id).toBe(collection.id) // should be from the collection regardless
       expect(child?.permalink).toBe(`/${collection.permalink}`)
       expect(child?.title).toBe(indexPage.title) // should be from the index page
       expect(child?.summary).toBe("Hello im the index page") // should be from the index page
@@ -1284,7 +1284,7 @@ describe("resource.service", () => {
 
       // Assert: Find Child Collection (With Index Page) in the sitemap
       const collection2Node = childFolderChildren?.find(
-        (child) => child.id === collection2IndexPage.id,
+        (child) => child.id === collection2.id,
       )
       expect(collection2Node?.title).toBe("Collection 2 Index Page")
       expect(collection2Node?.summary).toBe("Hello im the index page")
