@@ -76,6 +76,10 @@ export const CreateCollectionPageDetailsScreen = () => {
     if (!permalinkFieldState.isDirty) {
       setValue(
         "permalink",
+        // NOTE: We generate a random `uuid` for `CollectionLink.permalink`
+        // because this field is never used and discarded at publishing.
+        // This is because the `CollectionLink` will point to the actual resource
+        // at compile time rather than the permalink given here.
         type === ResourceType.CollectionPage
           ? generatePageUrl(title)
           : crypto.randomUUID(),
