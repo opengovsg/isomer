@@ -10,7 +10,7 @@ import CollectionPage from "~/pages/sites/[siteId]/collections/[resourceId]"
 import { createBannerGbParameters } from "../utils/growthbook"
 
 const meta: Meta<typeof CollectionPage> = {
-  title: "Pages/Site Management/Collection Page",
+  title: "Pages/Collection Management/Collection Page",
   component: CollectionPage,
   parameters: {
     getLayout: CollectionPage.getLayout,

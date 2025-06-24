@@ -21,6 +21,8 @@ import {
   jsonFormsCategoryControlTester,
   JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
+  JsonFormsChildrenPagesOrderingControl,
+  jsonFormsChildrenPagesOrderingControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
@@ -56,6 +58,10 @@ import {
 } from "./renderers"
 
 export const renderers: JsonFormsRendererRegistryEntry[] = [
+  {
+    renderer: JsonFormsChildrenPagesOrderingControl,
+    tester: jsonFormsChildrenPagesOrderingControlTester,
+  },
   {
     tester: jsonFormsProseControlTester,
     renderer: JsonFormsProseControl,
