@@ -911,20 +911,10 @@ describe("folder.router", async () => {
 
       // Assert
       expect(result.childPages).toHaveLength(7)
-      const indexPagesOfFolders = await db
-        .selectFrom("Resource")
-        .where(
-          "parentId",
-          "in",
-          folders.map(({ id }) => id),
-        )
-        .where("type", "=", "IndexPage")
-        .select("id")
-        .execute()
-      const indexPagesId = indexPagesOfFolders.map(({ id }) => id)
+      const folderPagesId = folders.map(({ id }) => id)
       const pagesId = pages.map(({ id }) => id)
       expect(result.childPages.map(({ id }) => id).toSorted()).toStrictEqual(
-        [...pagesId, ...indexPagesId].toSorted(),
+        [...pagesId, ...folderPagesId].toSorted(),
       )
     })
   })
