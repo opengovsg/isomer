@@ -14,7 +14,7 @@ calculate_duration() {
 # Use the latest release tag unless one was provided in the env var
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   ##### This long command is used to get the latest release tag from the Isomer repository.
-  # git ls-remote: Lists references in a remote repository along with their commit hashes. 
+  # git ls-remote: Lists references in a remote repository along with their commit hashes.
   # --tags: Lists all tags in the repository.
   # --sort='v:refname': Sorts the tags by version number according to the semantic versioning scheme
   # tail -n1: Gets the last line of the output.
@@ -60,7 +60,7 @@ fi
 # Try to fetch cached node_modules from S3
 echo "Fetching cached node_modules..."
 NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/isomer/node_modules.tar.gz"
-aws s3 cp $NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
+aws s3 cp --only-show-errors $NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
 if [ -f "node_modules.tar.gz" ]; then
   echo "node_modules.tar.gz found in cache"
 
@@ -80,7 +80,7 @@ else
   echo "Caching node_modules..."
   start_time=$(date +%s)
   tar -czf node_modules.tar.gz node_modules/
-  aws s3 cp node_modules.tar.gz $NODE_MODULES_CACHE_PATH
+  aws s3 cp --only-show-errors node_modules.tar.gz $NODE_MODULES_CACHE_PATH
   rm node_modules.tar.gz
   echo "Cached node_modules"
   calculate_duration $start_time
@@ -113,7 +113,7 @@ fi
 echo $(pwd)
 echo "Fetching cached tooling-template node_modules..."
 TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/isomer-tooling-template/node_modules.tar.gz"
-aws s3 cp $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
+aws s3 cp --only-show-errors $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
 if [ -f "node_modules.tar.gz" ]; then
   echo "node_modules.tar.gz found in cache"
 
@@ -150,7 +150,7 @@ else
   echo "Caching node_modules..."
   start_time=$(date +%s)
   tar -czf node_modules.tar.gz node_modules/
-  aws s3 cp node_modules.tar.gz $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH
+  aws s3 cp --only-show-errors node_modules.tar.gz $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH
   rm node_modules.tar.gz
   echo "Cached node_modules"
   calculate_duration $start_time
@@ -190,11 +190,11 @@ echo "S3 sync concurrency: $S3_SYNC_CONCURRENCY"
 aws configure set default.s3.max_concurrent_requests $S3_SYNC_CONCURRENCY
 
 # Set all files to have 10 minutes of cache, except for those in the _next folder
-aws s3 sync . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress --cache-control "max-age=600" --exclude "_next/*"
+aws s3 sync --only-show-errors . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress --cache-control "max-age=600" --exclude "_next/*"
 
 # Set all files in the _next folder to be cached indefinitely (1 year) on users' browsers
 # Next.js uses unique content hashes in filenames, allowing updated content to have different filenames and invalidate the cache on new builds.
-aws s3 sync _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=31536000, public"
+aws s3 sync --only-show-errors _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=31536000, public"
 
 calculate_duration $start_time
 
