@@ -392,7 +392,7 @@ export const folderRouter = router({
         // we will only select published index pages here
         .where("state", "=", ResourceState.Published)
         .where("type", "=", ResourceType.IndexPage)
-        .select(["Resource.id", "title"])
+        .select(["Resource.parentId as id", "title"])
         .unionAll((qb) => {
           return qb
             .selectFrom("directChildren")
