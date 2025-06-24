@@ -16,6 +16,7 @@ import {
   AuditLogEvent,
   db,
   jsonb,
+  Resource,
   ResourceState,
   ResourceType,
 } from "../database"
@@ -381,18 +382,31 @@ export const folderRouter = router({
             ])
             .select(["Resource.id", "title", "type"])
         })
+        .with("publishedCousinIndexPages", (eb) => {
+          return (
+            eb
+              .selectFrom("Resource")
+              .where("parentId", "in", (qb) =>
+                qb
+                  .selectFrom("directChildren")
+                  .where("type", "in", [
+                    ResourceType.Folder,
+                    ResourceType.Collection,
+                  ])
+                  .select("id"),
+              )
+              // NOTE: Keeping in line with how we select resources for sitemap,
+              // we will only select published index pages here
+              .where("state", "=", ResourceState.Published)
+              .where("type", "=", ResourceType.IndexPage)
+              .select(["Resource.parentId"])
+          )
+        })
         .selectFrom("Resource")
-        .where("parentId", "in", (qb) =>
-          qb
-            .selectFrom("directChildren")
-            .where("type", "in", [ResourceType.Folder, ResourceType.Collection])
-            .select("id"),
+        .where("id", "in", (qb) =>
+          qb.selectFrom("publishedCousinIndexPages").select("parentId"),
         )
-        // NOTE: Keeping in line with how we select resources for sitemap,
-        // we will only select published index pages here
-        .where("state", "=", ResourceState.Published)
-        .where("type", "=", ResourceType.IndexPage)
-        .select(["Resource.parentId as id", "title"])
+        .select(["id", "title"])
         .unionAll((qb) => {
           return qb
             .selectFrom("directChildren")
