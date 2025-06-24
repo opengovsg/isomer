@@ -304,7 +304,9 @@ function generateSitemapTree(
   const children = [...existingChildren, ...danglingDirectories]
 
   // Get the page sorting order from the FolderMeta resource
-  const pageOrder = resources.find(
+  // TODO: delete this once `FolderMeta` is removed
+  /** @deprecated use `pageOrderFromIndex` instead; we should remove this once `FolderMeta` is removed from db */
+  const pageOrderFromMeta = resources.find(
     (resource) =>
       resource.type === "FolderMeta" &&
       resource.fullPermalink ===
@@ -312,6 +314,29 @@ function generateSitemapTree(
           ? META_PERMALINK
           : `${pathPrefixWithoutLeadingSlash}/${META_PERMALINK}`),
   )?.content?.order
+
+  const pageOrderFromIndex = resources
+    .find(
+      (resource) =>
+        resource.type === "IndexPage" &&
+        resource.fullPermalink ===
+          (pathPrefixWithoutLeadingSlash.length === 0
+            ? INDEX_PAGE_PERMALINK
+            : `${pathPrefixWithoutLeadingSlash}/${INDEX_PAGE_PERMALINK}`),
+    )
+    ?.content?.content?.find(
+      ({ type }: { type: string }) => type === "childrenpages",
+    )
+    ?.childrenPagesOrdering?.map((id: string) => {
+      const child = children.find(({ id: childId }) => {
+        return id === childId
+      })
+
+      return child?.permalink.split("/").pop()
+    })
+    .filter((permalink: string | undefined) => !!permalink)
+
+  const pageOrder = pageOrderFromIndex ?? pageOrderFromMeta
 
   children.sort((a, b) => {
     const aPermalink = a.permalink.split("/").pop()

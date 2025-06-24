@@ -41,6 +41,3 @@ jobs:
       app-s3-assets-domain-name: "isomer-user-content-uat.by.gov.sg"
       app-growthbook-client-key: "sdk-JCHWTUKA5qK7GAZA"
       app-intercom-app-id: "jv2tjc3g"
-
-    secrets:
-      DD_API_KEY: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}

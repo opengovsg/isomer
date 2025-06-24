@@ -2,6 +2,7 @@ import type { GrowthBook } from "@growthbook/growthbook"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
+import get from "lodash/get"
 
 import type {
   CrudResourceActions,
@@ -14,6 +15,7 @@ import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
 import { ADMIN_ROLE, ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
 import { logPermissionEvent } from "../audit/audit.service"
 import { db } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
 import { CRUD_ACTIONS } from "./permissions.type"
 import {
   buildPermissionsForResource,
@@ -200,7 +202,7 @@ export const updateUserSitewidePermission = async ({
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message:
-          "Something went wrong while attempting to move your resource, please try again later",
+          "Something went wrong while updating user permissions, please try again later",
       })
     }
 
@@ -215,6 +217,15 @@ export const updateUserSitewidePermission = async ({
       .values({ userId, siteId, role, resourceId: null }) // because we are updating site-wide permissions
       .returningAll()
       .executeTakeFirstOrThrow()
+      .catch((err) => {
+        if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Permission already exists",
+          })
+        }
+        throw err
+      })
 
     await logPermissionEvent(tx, {
       eventType: "PermissionCreate",

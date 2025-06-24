@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { get } from "lodash"
+import get from "lodash/get"
 import pick from "lodash/pick"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -7,6 +7,7 @@ import {
   createFolderSchema,
   editFolderSchema,
   getIndexpageSchema,
+  listChildPagesSchema,
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
@@ -126,6 +127,15 @@ export const folderRouter = router({
             })
             .returningAll()
             .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
 
           await logResourceEvent(tx, {
             siteId,
@@ -306,5 +316,92 @@ export const folderRouter = router({
         )
 
       return { title, ...indexPage }
+    }),
+
+  listChildPages: protectedProcedure
+    .input(listChildPagesSchema)
+    .query(async ({ ctx, input: { indexPageId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        siteId: Number(siteId),
+        action: "read",
+        userId: ctx.user.id,
+        resourceId: String(indexPageId),
+      })
+
+      // Validate site is valid
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", Number(siteId))
+        .select(["id"])
+        .executeTakeFirst()
+
+      if (!site) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Site does not exist",
+        })
+      }
+      // NOTE: The `resourceId` passed here is the id of the index page
+      // of the folder, not the actual folder itself
+      const { parentId, type } = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPageId)
+        .select(["parentId", "type"])
+        // NOTE: Technically we'll already throw
+        // inside the permissions check,
+        // but just putting it here again for future proofing
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "No index page with the specified id could be found",
+            }),
+        )
+
+      if (type !== ResourceType.IndexPage) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No index page with the specified id could be found",
+        })
+      }
+
+      // NOTE: This is not a general `resource.list`
+      // but reimplemented here because it makes certain assumptions about what should be shown
+      const childPages = await db
+        .with("directChildren", (eb) => {
+          return eb
+            .selectFrom("Resource")
+            .where("parentId", "=", parentId)
+            .where("siteId", "=", Number(siteId))
+            .where("state", "=", ResourceState.Published)
+            .where("type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+              ResourceType.Page,
+            ])
+            .select(["Resource.id", "title", "type"])
+        })
+        .selectFrom("Resource")
+        .where("parentId", "in", (qb) =>
+          qb
+            .selectFrom("directChildren")
+            .where("type", "in", [ResourceType.Folder, ResourceType.Collection])
+            .select("id"),
+        )
+        // NOTE: Keeping in line with how we select resources for sitemap,
+        // we will only select published index pages here
+        .where("state", "=", ResourceState.Published)
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["Resource.id", "title"])
+        .unionAll((qb) => {
+          return qb
+            .selectFrom("directChildren")
+            .where("type", "=", ResourceType.Page)
+            .select(["id", "title"])
+        })
+        .execute()
+
+      // TODO: Think about how to handle cases where 2 people are editing the order
+      return { childPages }
     }),
 })

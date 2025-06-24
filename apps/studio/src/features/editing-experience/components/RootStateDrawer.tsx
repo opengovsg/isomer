@@ -218,7 +218,9 @@ export default function RootStateDrawer() {
     savedPageState.content[0]?.type === "hero"
 
   const isCustomContentIndexPage =
-    type === ResourceType.IndexPage && pageLayout !== "index"
+    type === ResourceType.IndexPage &&
+    pageLayout !== "index" &&
+    pageLayout !== "collection"
 
   return (
     <Flex direction="column" h="full">

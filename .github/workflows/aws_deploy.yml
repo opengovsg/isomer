@@ -105,10 +105,6 @@ on:
         description: "Intercom app ID"
         required: false
         type: string
-    secrets:
-      DD_API_KEY:
-        description: "Datadog API key for uploading sourcemaps"
-        required: false
 
 permissions:
   id-token: write
@@ -150,7 +146,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
           ENV: ${{ inputs.environment }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.ref_name }}_${{ github.sha }}
         with:
           context: .
           file: "./apps/studio/Dockerfile"
@@ -173,8 +169,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     environment: ${{ inputs.environment }}
-    env:
-      DD_API_KEY: ${{ secrets.DD_API_KEY }}
 
     steps:
       - name: Set up QEMU
@@ -207,7 +201,6 @@ jobs:
           sed -i 's/<DD_COMMIT_SHA>/${{ github.sha }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<ECS_TASK_ROLE>/${{ inputs.ecs-task-role }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<ECS_TASK_EXEC_ROLE>/${{ inputs.ecs-task-exec-role }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<DD_API_KEY>/${{ secrets.DD_API_KEY }}/g' ${{ inputs.ecs-task-definition-path }}
 
       - name: Replace variables in appspec
         run: |
@@ -223,7 +216,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
           ENV: ${{ inputs.environment }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.ref_name }}_${{ github.sha }}
         with:
           task-definition: ${{ inputs.ecs-task-definition-path }}
           container-name: ${{ inputs.ecs-container-name }}

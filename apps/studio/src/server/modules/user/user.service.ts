@@ -276,23 +276,16 @@ export const updateUserDetails = async ({
   name,
   phone,
 }: UpdateUserDetailsProps) => {
-  if (userId !== userId) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "You are not allowed to update this user's details",
-    })
-  }
+  const user = await db
+    .selectFrom("User")
+    .where("id", "=", userId)
+    .selectAll()
+    .executeTakeFirstOrThrow()
 
   return await db.transaction().execute(async (tx) => {
-    const user = await tx
-      .selectFrom("User")
-      .where("id", "=", userId)
-      .selectAll()
-      .executeTakeFirstOrThrow()
-
     const updatedUser = await tx
       .updateTable("User")
-      .where("id", "=", userId)
+      .where("id", "=", user.id)
       .set({ name, phone })
       .returningAll()
       .executeTakeFirstOrThrow()
