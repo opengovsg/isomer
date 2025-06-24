@@ -8,6 +8,8 @@ import { Link } from "../Link"
 
 // This will be tree-shaken out of client bundles
 if (typeof window === "undefined") {
+  // NOTE: We need this polyfill as interweave uses a DOM to perform the
+  // conversion of HTML to React components
   void import("interweave-ssr").then(({ polyfill }) => {
     polyfill()
   })
