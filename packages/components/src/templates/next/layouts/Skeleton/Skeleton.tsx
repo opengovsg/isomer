@@ -1,7 +1,6 @@
 import type { IsomerPageSchemaType } from "~/engine"
 import {
   AskgovWidget,
-  DatadogRum,
   FontPreload,
   Footer,
   GoogleTagManagerBody,
@@ -54,8 +53,6 @@ export const Skeleton = ({
       )}
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
-
-      {!isStaging && <DatadogRum />}
 
       {site.vica && <VicaStylesheet environment={site.environment} />}
 

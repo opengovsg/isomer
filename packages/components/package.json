@@ -6,6 +6,7 @@
   "version": "0.0.13",
   "description": "Isomer component library",
   "type": "module",
+  "sideEffects": false,
   "scripts": {
     "rollup": "rollup -c",
     "test:watch": "npx vitest watch",
@@ -106,7 +107,6 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
-    "@datadog/browser-rum": "^5.29.1",
     "@govtechsg/sgds": "^2.3.6",
     "@govtechsg/sgds-react": "^2.7.6",
     "@headlessui/react": "^2.1.2",
