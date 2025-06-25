@@ -1835,10 +1835,6 @@ video {
   max-width: 80rem;
 }
 
-.max-w-\[100ch\] {
-  max-width: 100ch;
-}
-
 .max-w-\[128px\] {
   max-width: 128px;
 }
@@ -1857,6 +1853,10 @@ video {
 
 .max-w-\[54rem\] {
   max-width: 54rem;
+}
+
+.max-w-\[70ch\] {
+  max-width: 70ch;
 }
 
 .max-w-\[72\.5rem\] {
