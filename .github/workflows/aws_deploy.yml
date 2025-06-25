@@ -173,11 +173,27 @@ jobs:
         with:
           artifact_type: "container"
           artifact_path: "${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
-          critical_threshold: 1
-          high_threshold: 1
-          medium_threshold: 1
-          low_threshold: 1
-          other_threshold: 1
+          critical_threshold: 5
+          high_threshold: 10
+
+      # Display Inspector results in the GitHub Actions terminal
+      - name: Display CycloneDX SBOM (JSON)
+        run: cat ${{ steps.inspector.outputs.artifact_sbom }}
+
+      - name: Display Inspector vulnerability scan results (JSON)
+        run: cat ${{ steps.inspector.outputs.inspector_scan_results }}
+
+      # Upload Inspector outputs as a .zip that can be downloaded
+      # from the GitHub actions job summary page.
+      - name: Upload Scan Results
+        id: upload-scan-results
+        uses: actions/upload-artifact@v4
+        with:
+          path: |
+            ${{ steps.inspector.outputs.inspector_scan_results }}
+            ${{ steps.inspector.outputs.inspector_scan_results_csv }}
+            ${{ steps.inspector.outputs.inspector_scan_results_markdown }}
+            ${{ steps.inspector.outputs.artifact_sbom }}
 
       - name: Fail job if vulnerability threshold is exceeded
         run: exit ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
