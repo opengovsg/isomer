@@ -2,6 +2,13 @@ import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
 import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import { getSitemapAsArray } from "~/utils"
 
+const getMetaTitle = (props: IsomerPageSchemaType) => {
+  // NOTE: We show the site name as the title for the homepage, as places like
+  // WhatsApp do not use the site_name property of the OpenGraph metadata when
+  // displaying the page preview, which can be confusing for users
+  return props.page.permalink === "/" ? props.site.siteName : props.page.title
+}
+
 const getMetaDescription = (props: IsomerPageSchemaType) => {
   if (props.meta?.description) {
     return props.meta.description
@@ -85,6 +92,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
 
   const metadata = {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
+    title: getMetaTitle(props),
     description: getMetaDescription(props),
     robots: {
       index:
@@ -99,7 +107,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
       shortcut: faviconUrl,
     },
     openGraph: {
-      title: props.page.title,
+      title: getMetaTitle(props),
       description: getMetaDescription(props),
       url: canonicalUrl,
       siteName: props.site.siteName,
@@ -118,14 +126,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
     },
   }
 
-  if (props.page.permalink === "/") {
-    return metadata
-  }
-
-  return {
-    ...metadata,
-    title: props.page.title,
-  }
+  return metadata
 }
 
 export const shouldBlockIndexing = (
