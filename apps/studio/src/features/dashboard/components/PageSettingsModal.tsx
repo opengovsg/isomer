@@ -223,8 +223,8 @@ const PageSettingsModalContent = ({
           )}
 
           <Infobox variant="warning">
-            Changes to your title and URL will get published immediately. If you
-            don't want to publish them, make this change later.
+            {`Changes to your title${type === ResourceType.CollectionLink ? "" : " and URL"} will get published immediately. If you
+            don't want to publish ${type === ResourceType.CollectionLink ? "it" : "them"}, make this change later.`}
           </Infobox>
         </VStack>
       </ModalBody>
