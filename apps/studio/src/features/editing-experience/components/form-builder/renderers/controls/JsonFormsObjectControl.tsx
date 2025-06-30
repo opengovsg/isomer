@@ -1,4 +1,5 @@
 import type {
+  ControlWithDetailProps,
   RankedTester,
   StatePropsOfControlWithDetail,
 } from "@jsonforms/core"
@@ -9,7 +10,12 @@ import {
   isObjectControl,
   rankWith,
 } from "@jsonforms/core"
-import { JsonFormsDispatch, withJsonFormsDetailProps } from "@jsonforms/react"
+import {
+  JsonFormsDispatch,
+  withJsonFormsControlProps,
+  withJsonFormsDetailProps,
+} from "@jsonforms/react"
+import isEmpty from "lodash/isEmpty"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
@@ -19,6 +25,7 @@ export const jsonFormsObjectControlTester: RankedTester = rankWith(
 )
 
 export function JsonFormsObjectControl({
+  data,
   path,
   visible,
   renderers,
@@ -28,7 +35,8 @@ export function JsonFormsObjectControl({
   uischema,
   uischemas,
   rootSchema,
-}: StatePropsOfControlWithDetail) {
+  handleChange,
+}: ControlWithDetailProps) {
   const detailUiSchema = useMemo(
     () =>
       findUISchema(
@@ -43,6 +51,10 @@ export function JsonFormsObjectControl({
       ),
     [uischemas, schema, uischema, path, rootSchema],
   )
+
+  if (isEmpty(data)) {
+    handleChange(path, undefined)
+  }
 
   if (!visible) {
     return null
@@ -61,4 +73,4 @@ export function JsonFormsObjectControl({
   )
 }
 
-export default withJsonFormsDetailProps(JsonFormsObjectControl)
+export default withJsonFormsControlProps(JsonFormsObjectControl)
