@@ -28,6 +28,7 @@ export const buttonStyles = tv({
       true: "cursor-not-allowed",
     },
     size: {
+      sm: "prose-label-md-medium px-4 py-2.5",
       base: "prose-headline-base-medium min-h-12 px-5 py-3",
       lg: "prose-headline-lg-medium min-h-[3.25rem] px-6 py-3.5",
     },

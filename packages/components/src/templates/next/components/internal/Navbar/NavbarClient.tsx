@@ -113,6 +113,7 @@ export const NavbarClient = ({
             <LinkButton
               href={callToAction.referenceLinkHref}
               isExternal={callToAction.isExternal}
+              size={"sm"}
               className="align-content mx-5 hidden h-fit lg:flex"
               isWithFocusVisibleHighlight
               LinkComponent={LinkComponent}
