@@ -321,11 +321,11 @@ export const folderRouter = router({
   listChildPages: protectedProcedure
     .input(listChildPagesSchema)
     .query(async ({ ctx, input: { indexPageId, siteId } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId: Number(siteId),
         action: "read",
         userId: ctx.user.id,
-        resourceId: String(indexPageId),
+        resourceIds: [indexPageId],
       })
 
       // Validate site is valid
