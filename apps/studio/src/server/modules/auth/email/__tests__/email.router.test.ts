@@ -106,11 +106,11 @@ describe("auth.email", () => {
       beforeEach(() => {
         // Mock the GrowthBook isOn method to return false for the singpass feature
         const ctx = createMockRequest(session)
-        const originalIsOn = ctx.gb.isOn.bind(ctx.gb)
+        const originalIsOn = ctx.gb.isOn
         vi.spyOn(ctx.gb, "isOn").mockImplementation((featureKey: string) => {
           return featureKey === IS_SINGPASS_ENABLED_FEATURE_KEY
             ? false
-            : originalIsOn(featureKey) // call original for other features
+            : originalIsOn.call(ctx.gb, featureKey) // call original for other features
         })
         caller = createCaller(ctx)
       })
@@ -262,11 +262,11 @@ describe("auth.email", () => {
       beforeEach(() => {
         // Mock the GrowthBook isOn method to return true for the singpass feature
         const ctx = createMockRequest(session)
-        const originalIsOn = ctx.gb.isOn.bind(ctx.gb)
+        const originalIsOn = ctx.gb.isOn
         vi.spyOn(ctx.gb, "isOn").mockImplementation((featureKey: string) => {
           return featureKey === IS_SINGPASS_ENABLED_FEATURE_KEY
             ? true
-            : originalIsOn(featureKey) // call original for other features
+            : originalIsOn.call(ctx.gb, featureKey) // call original for other features
         })
         caller = createCaller(ctx)
       })
