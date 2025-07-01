@@ -17,6 +17,7 @@ import {
 } from "tests/integration/helpers/seed"
 import { vi } from "vitest"
 
+import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import { assetRouter } from "../asset.router"
 
@@ -123,6 +124,28 @@ describe("asset.router", async () => {
 
       // Assert
       await expect(result).resolves.not.toThrow()
+    })
+
+    it("should call generateSignedPutUrl with correct parameters", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+      const fileName = "test-image.png"
+
+      // Act
+      await caller.getPresignedPutUrl({
+        siteId: site.id,
+        fileName,
+      })
+
+      // Assert
+      expect(generateSignedPutUrl).toHaveBeenCalledWith({
+        Bucket: expect.any(String),
+        Key: expect.any(String),
+      })
     })
   })
 
@@ -328,6 +351,36 @@ describe("asset.router", async () => {
 
       // Assert
       await expect(result).resolves.not.toThrow()
+    })
+
+    it("should call deleteFile with correct parameters for each file key", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+      })
+      await setupAdminPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+      const fileKeys = ["file1.png", "file2.jpg", "file3.pdf"]
+
+      // Act
+      await caller.deleteAssets({
+        siteId: site.id,
+        resourceId: page.id,
+        fileKeys,
+      })
+
+      // Assert
+      expect(deleteFile).toHaveBeenCalledTimes(fileKeys.length)
+      fileKeys.forEach((fileKey) => {
+        expect(deleteFile).toHaveBeenCalledWith({
+          Bucket: expect.any(String),
+          Key: fileKey,
+        })
+      })
     })
   })
 })
