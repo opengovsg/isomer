@@ -1,5 +1,3 @@
-import { DEFAULT_CHILDREN_PAGES_BLOCK } from "@opengovsg/isomer-components"
-
 import { db, sql } from "~/server/modules/database"
 import { updateBlobById } from "~/server/modules/resource/resource.service"
 
