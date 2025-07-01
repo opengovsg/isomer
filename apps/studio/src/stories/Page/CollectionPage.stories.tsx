@@ -1,18 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { userEvent, within } from "@storybook/test"
+import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
-import SitePage from "~/pages/sites/[siteId]"
+import CollectionPage from "~/pages/sites/[siteId]/collections/[resourceId]"
 import { createBannerGbParameters } from "../utils/growthbook"
 
-const meta: Meta<typeof SitePage> = {
-  title: "Pages/Site Management/Site Page",
-  component: SitePage,
+const meta: Meta<typeof CollectionPage> = {
+  title: "Pages/Collection Management/Collection Page",
+  component: CollectionPage,
   parameters: {
-    getLayout: SitePage.getLayout,
+    getLayout: CollectionPage.getLayout,
     msw: {
       handlers: [
         meHandlers.me(),
@@ -25,12 +26,16 @@ const meta: Meta<typeof SitePage> = {
         sitesHandlers.getSiteName.default(),
         resourceHandlers.getChildrenOf.default(),
         resourceHandlers.getRolesFor.default(),
+        resourceHandlers.getParentOf.collection(),
+        collectionHandlers.getMetadata.default(),
+        collectionHandlers.list.default(),
       ],
     },
     nextjs: {
       router: {
         query: {
           siteId: "1",
+          resourceId: "1",
         },
       },
     },
@@ -55,13 +60,13 @@ export const PageResourceMenu: Story = {
   },
 }
 
-export const FolderResourceMenu: Story = {
+export const LinkResourceMenu: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const folderMenuButton = await screen.findByRole("button", {
-      name: "Options for Test folder 1",
+    const linkMenuButton = await screen.findByRole("button", {
+      name: "Options for Test link 1",
     })
-    await userEvent.click(folderMenuButton)
+    await userEvent.click(linkMenuButton)
   },
 }
 
@@ -85,6 +90,19 @@ export const PageSettings: Story = {
     const pageSettingsButton = screen.getByText("Edit settings")
 
     await userEvent.click(pageSettingsButton, {
+      pointerEventsCheck: 0,
+    })
+  },
+}
+
+export const LinkSettings: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    await LinkResourceMenu.play?.(context)
+    const screen = within(canvasElement.ownerDocument.body)
+    const linkSettingsButton = screen.getByText("Edit settings")
+
+    await userEvent.click(linkSettingsButton, {
       pointerEventsCheck: 0,
     })
   },

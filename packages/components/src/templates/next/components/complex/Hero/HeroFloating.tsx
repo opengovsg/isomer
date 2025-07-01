@@ -56,7 +56,7 @@ export const HeroFloating = ({
           src={backgroundSrc}
           alt={title}
           width="100%"
-          className="aspect-[3/2] w-full object-center lg:w-[66.67%]"
+          className="aspect-[3/2] w-full object-cover object-center lg:w-[66.67%]"
           lazyLoading={false}
         />
       </div>

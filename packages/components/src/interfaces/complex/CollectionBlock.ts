@@ -29,7 +29,7 @@ export const CollectionBlockSchema = Type.Object(
     customDescription: Type.Optional(
       Type.String({
         title: "Custom description",
-        maxLength: 150,
+        maxLength: 200,
       }),
     ),
     displayThumbnail: Type.Boolean({

@@ -160,7 +160,7 @@ const SuspendableModalContent = ({
         <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.5rem">
-            <FormControl isInvalid={!!errors.title}>
+            <FormControl isRequired isInvalid={!!errors.title}>
               <FormLabel color="base.content.strong">
                 Folder name
                 <FormHelperText color="base.content.default">
@@ -182,7 +182,7 @@ const SuspendableModalContent = ({
                 </FormHelperText>
               )}
             </FormControl>
-            <FormControl isInvalid={!!errors.permalink}>
+            <FormControl isRequired isInvalid={!!errors.permalink}>
               <FormLabel color="base.content.strong">
                 Folder URL
                 <FormHelperText color="base.content.default">

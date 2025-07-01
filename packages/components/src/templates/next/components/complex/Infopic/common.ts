@@ -24,7 +24,7 @@ export const infopicStyles = tv({
       },
       false: {
         container: "lg:[grid-template-areas:'content_img']",
-        content: "lg:justify-self-end lg:pr-24",
+        content: "lg:w-full lg:justify-self-end lg:pr-24",
       },
     },
     colorScheme: {
