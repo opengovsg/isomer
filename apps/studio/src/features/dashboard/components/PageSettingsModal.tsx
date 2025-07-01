@@ -22,6 +22,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useAtom } from "jotai"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
@@ -121,14 +122,14 @@ const PageSettingsModalContent = ({
       await utils.collection.invalidate()
 
       toast({
-        title: "Saved and published page settings",
+        title: "Saved and published settings",
         description: "Check your site in 5-10 minutes to view it live.",
         status: "success",
       })
     },
     onError: (error) => {
       toast({
-        title: "Failed to save page settings",
+        title: "Failed to save settings",
         description: error.message,
         status: "error",
       })
@@ -155,14 +156,14 @@ const PageSettingsModalContent = ({
 
   return (
     <ModalContent key={pageId}>
-      <ModalHeader>Page settings</ModalHeader>
+      <ModalHeader>Settings</ModalHeader>
       <ModalCloseButton />
       <ModalBody>
         {/* NOTE: doing this because typescript doesn't infer that the property has to exist from the assertion on modal */}
         <VStack w="100%" gap="1rem" alignItems="flex-start">
           <FormControl isRequired isInvalid={!!errors.title}>
             <FormLabel description="Title should be descriptive">
-              Page title
+              Title
             </FormLabel>
             <Input
               w="100%"
@@ -177,51 +178,53 @@ const PageSettingsModalContent = ({
             <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isRequired isInvalid={!!errors.permalink}>
-            <FormLabel>Page URL</FormLabel>
-            <Controller
-              control={control}
-              name="permalink"
-              render={({ field: { onChange, ...field } }) => (
-                <Input
-                  placeholder={"URL will be autopopulated if left untouched"}
-                  noOfLines={1}
-                  mt="0.5rem"
-                  w="100%"
-                  {...field}
-                  onChange={(e) => {
-                    onChange(
-                      generateResourceUrl(e.target.value).slice(
-                        0,
-                        MAX_PAGE_URL_LENGTH,
-                      ),
-                    )
-                  }}
-                />
-              )}
-            />
-            <Infobox
-              my="0.5rem"
-              icon={<BiLink />}
-              variant="info-secondary"
-              size="sm"
-            >
-              <Text textStyle="subhead-2" overflow="hidden">
-                <chakra.span color="base.content.medium">
-                  {permalinksToRender.parentPermalinks}
-                </chakra.span>
-                {permalinksToRender.permalink}
-              </Text>
-            </Infobox>
-            <FormHelperText>
-              {MAX_PAGE_URL_LENGTH - permalink.length} characters left
-            </FormHelperText>
-            <FormErrorMessage>{errors.permalink?.message}</FormErrorMessage>
-          </FormControl>
+          {type !== ResourceType.CollectionLink && (
+            <FormControl isRequired isInvalid={!!errors.permalink}>
+              <FormLabel>URL</FormLabel>
+              <Controller
+                control={control}
+                name="permalink"
+                render={({ field: { onChange, ...field } }) => (
+                  <Input
+                    placeholder={"URL will be autopopulated if left untouched"}
+                    noOfLines={1}
+                    mt="0.5rem"
+                    w="100%"
+                    {...field}
+                    onChange={(e) => {
+                      onChange(
+                        generateResourceUrl(e.target.value).slice(
+                          0,
+                          MAX_PAGE_URL_LENGTH,
+                        ),
+                      )
+                    }}
+                  />
+                )}
+              />
+              <Infobox
+                my="0.5rem"
+                icon={<BiLink />}
+                variant="info-secondary"
+                size="sm"
+              >
+                <Text textStyle="subhead-2" overflow="hidden">
+                  <chakra.span color="base.content.medium">
+                    {permalinksToRender.parentPermalinks}
+                  </chakra.span>
+                  {permalinksToRender.permalink}
+                </Text>
+              </Infobox>
+              <FormHelperText>
+                {MAX_PAGE_URL_LENGTH - permalink.length} characters left
+              </FormHelperText>
+              <FormErrorMessage>{errors.permalink?.message}</FormErrorMessage>
+            </FormControl>
+          )}
 
           <Infobox variant="warning">
-            Changes to your page title and URL will get published immediately.
-            If you don't want to publish them, make this change later.
+            {`Changes to your title${type === ResourceType.CollectionLink ? "" : " and URL"} will get published immediately. If you
+            don't want to publish ${type === ResourceType.CollectionLink ? "it" : "them"}, make this change later.`}
           </Infobox>
         </VStack>
       </ModalBody>

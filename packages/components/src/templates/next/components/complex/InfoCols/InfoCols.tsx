@@ -31,9 +31,9 @@ const createInfoColsStyles = tv({
     ],
     infoBoxDescription: "prose-body-base text-base-content",
     infoBoxButton:
-      "prose-headline-base-medium inline-flex items-center gap-1 text-base-content-strong",
+      "prose-headline-base-medium items-center gap-1 text-base-content-strong",
     infoBoxButtonIcon:
-      "text-[1.375rem] transition ease-in group-hover:translate-x-1",
+      "mb-0.5 ml-1 inline text-[1.375rem] transition ease-in group-hover:translate-x-1",
   },
   variants: {
     layout: {

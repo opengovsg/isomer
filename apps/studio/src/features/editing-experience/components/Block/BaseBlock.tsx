@@ -1,6 +1,7 @@
 import type { ButtonProps, StackProps } from "@chakra-ui/react"
 import type { IconType } from "react-icons"
 import { chakra, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
+import { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd"
 import { BiGridVertical } from "react-icons/bi"
 
 interface BaseBlockProps {
@@ -10,6 +11,7 @@ interface BaseBlockProps {
   description?: string
   containerProps?: StackProps
   onClick?: () => void
+  draggableProps?: DraggableProvidedDragHandleProps | null
 }
 
 export const BaseBlock = ({
@@ -17,9 +19,12 @@ export const BaseBlock = ({
   dragHandle,
   label,
   description,
+  draggableProps,
   containerProps,
   onClick,
 }: BaseBlockProps): JSX.Element => {
+  const actualDraggableProps = draggableProps ?? {}
+
   return (
     <HStack
       as="button"
@@ -46,6 +51,7 @@ export const BaseBlock = ({
       align="center"
       textAlign="start"
       onClick={onClick}
+      {...actualDraggableProps}
       {...containerProps}
     >
       {dragHandle}

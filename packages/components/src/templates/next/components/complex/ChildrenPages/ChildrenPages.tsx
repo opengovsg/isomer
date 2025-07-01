@@ -10,6 +10,7 @@ import {
 } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
+import { mergeChildrenPages } from "./utils"
 
 const ChildpageImage = ({
   src,
@@ -223,6 +224,7 @@ const RowLayout = ({
 }
 
 const ChildrenPages = ({
+  childrenPagesOrdering = [],
   permalink,
   site,
   LinkComponent,
@@ -236,12 +238,15 @@ const ChildrenPages = ({
     return <></>
   }
 
-  const children = currentPageNode.children.map((child) => ({
-    title: child.title,
-    url: child.permalink,
-    description: child.summary,
-    image: child.image,
-  }))
+  const children = currentPageNode.children
+    .map((child) => ({
+      id: child.id,
+      title: child.title,
+      url: child.permalink,
+      description: child.summary,
+      image: child.image,
+    }))
+    .sort((a, b) => mergeChildrenPages(a, b, childrenPagesOrdering))
 
   if (variant === "boxes") {
     return (

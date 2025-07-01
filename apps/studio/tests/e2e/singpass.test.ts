@@ -140,7 +140,7 @@ test.skip("user should still be allowed to login even when there are no sites ti
     .insertInto("User")
     .values({
       email,
-      id: crypto.randomBytes(10).toString(),
+      id: crypto.randomUUID().toString(),
       name: "",
       phone: "",
     })

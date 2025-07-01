@@ -2,6 +2,13 @@ import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
 import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import { getSitemapAsArray } from "~/utils"
 
+const getMetaTitle = (props: IsomerPageSchemaType) => {
+  // NOTE: We show the site name as the title for the homepage, as places like
+  // WhatsApp do not use the site_name property of the OpenGraph metadata when
+  // displaying the page preview, which can be confusing for users
+  return props.page.permalink === "/" ? props.site.siteName : props.page.title
+}
+
 const getMetaDescription = (props: IsomerPageSchemaType) => {
   if (props.meta?.description) {
     return props.meta.description
@@ -58,16 +65,34 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
   }
 }
 
+// NOTE: We throw an error for malformed site URLs to ensure data integrity.
+// The schema serves as our contract - when inputs don't match expectations,
+// we should fail fast rather than accommodate inconsistent data formats.
+const getCanonicalUrl = (props: IsomerPageSchemaType) => {
+  if (!props.site.url) return props.page.permalink
+
+  if (!props.site.url.startsWith("https://")) {
+    throw new Error(
+      "Invalid site.url. Must be a valid URL starting with https://",
+    )
+  }
+
+  try {
+    return new URL(props.page.permalink, props.site.url).toString()
+  } catch {
+    throw new Error("Invalid site URL or permalink.")
+  }
+}
+
 export const getMetadata = (props: IsomerPageSchemaType) => {
   const faviconUrl = `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`
-  const canonicalUrl = props.site.url
-    ? new URL(props.page.permalink, props.site.url).toString()
-    : props.page.permalink
+  const canonicalUrl = getCanonicalUrl(props)
   const metaImage = getMetaImage(props)
   const metaImageUrl = `${props.site.assetsBaseUrl ?? ""}${metaImage ?? props.site.logoUrl}`
 
   const metadata = {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
+    title: getMetaTitle(props),
     description: getMetaDescription(props),
     robots: {
       index:
@@ -82,7 +107,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
       shortcut: faviconUrl,
     },
     openGraph: {
-      title: props.page.title,
+      title: getMetaTitle(props),
       description: getMetaDescription(props),
       url: canonicalUrl,
       siteName: props.site.siteName,
@@ -101,14 +126,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
     },
   }
 
-  if (props.page.permalink === "/") {
-    return metadata
-  }
-
-  return {
-    ...metadata,
-    title: props.page.title,
-  }
+  return metadata
 }
 
 export const shouldBlockIndexing = (

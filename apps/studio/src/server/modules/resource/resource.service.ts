@@ -18,11 +18,14 @@ import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE } from "~/lib/growthbook"
-import { getSitemapTree } from "~/utils/sitemap"
+import {
+  getSitemapTree,
+  overwriteCollectionChildrenForCollectionBlock,
+} from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
 import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { publishSite } from "../aws/codebuild.service"
-import { db, jsonb, ResourceType, sql } from "../database"
+import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
 
@@ -364,25 +367,40 @@ export const getLocalisedSitemap = async (
         .leftJoin("Blob as published", "Version.blobId", "published.id")
         .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect]),
     )
-    .with("childCousinIndexPages", (eb) => {
-      return eb
+    // Step 3: Get all nested folders and collections
+    .withRecursive("nestedResources", (eb) =>
+      eb
         .selectFrom("Resource")
-        .where("parentId", "in", (qb) =>
-          qb
-            .selectFrom("immediateSiblings")
-            .select("id")
-            .where("type", "in", [
-              ResourceType.Collection,
-              ResourceType.Folder,
-            ]),
-        )
-        .where("type", "=", ResourceType.IndexPage)
-        .where("state", "=", "Published")
-        .leftJoin("Version", "Version.id", "publishedVersionId")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "in", [
+          ResourceType.Folder,
+          ResourceType.Collection,
+          ResourceType.IndexPage,
+        ])
+        .where("Resource.state", "=", ResourceState.Published)
+        .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
         .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
-    })
-    // Step 3: Combine all the resources in a single array
+        .unionAll((fb) =>
+          fb
+            .selectFrom("Resource")
+            .innerJoin(
+              "nestedResources",
+              "nestedResources.id",
+              "Resource.parentId",
+            )
+            .where("Resource.type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+              ResourceType.IndexPage,
+            ])
+            .where("Resource.state", "=", ResourceState.Published)
+            .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
+            .leftJoin("Blob as published", "Version.blobId", "published.id")
+            .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect]),
+        ),
+    )
+    // Step 4: Combine all the resources in a single array
     .selectFrom("ancestors as Resource")
     .select(["summary", "thumbnail", ...defaultResourceSelect])
     .union((eb) =>
@@ -392,13 +410,13 @@ export const getLocalisedSitemap = async (
     )
     .union((eb) =>
       eb
-        .selectFrom("childCousinIndexPages as Resource")
+        .selectFrom("nestedResources as Resource")
         .select(["summary", "thumbnail", ...defaultResourceSelect]),
     )
     .orderBy("title asc")
     .execute()
 
-  // Step 4: Construct the localised sitemap object
+  // Step 5: Construct the localised sitemap object
   const rootResource = await db
     .selectFrom("Resource")
     .where("Resource.siteId", "=", siteId)
@@ -412,7 +430,16 @@ export const getLocalisedSitemap = async (
     throw new Error("Root item not found")
   }
 
-  return getSitemapTree(rootResource, allResources)
+  const sitemapTree = getSitemapTree(rootResource, allResources)
+
+  // We do this because collectionblock renders based on the children of the collection
+  // and we want to overwrite what's being shown on studio
+  // Assumption: Collection Block is only being used on the root page
+  if (resource.type === ResourceType.RootPage) {
+    return overwriteCollectionChildrenForCollectionBlock(sitemapTree)
+  }
+
+  return sitemapTree
 }
 
 export const getResourcePermalinkTree = async (

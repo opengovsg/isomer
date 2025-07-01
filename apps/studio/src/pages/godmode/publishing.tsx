@@ -64,9 +64,9 @@ const GodModePublishingPage: NextPageWithLayout = () => {
 
   const { mutate: publishAllSite, isLoading: isPublishingAllSite } =
     trpc.site.publishAll.useMutation({
-      onSuccess: () => {
+      onSuccess: ({ siteCount }) => {
         toast({
-          title: "All sites published successfully",
+          title: `Starting to publish ${siteCount} sites in the background...`,
           status: "success",
           ...BRIEF_TOAST_SETTINGS,
         })

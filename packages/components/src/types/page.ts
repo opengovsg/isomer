@@ -69,6 +69,22 @@ export const ArticlePagePageSchema = Type.Composite([
   imageSchemaObject,
 ])
 
+const COLLECTION_PAGE_SORT_BY = {
+  date: "date",
+  title: "title",
+  category: "category",
+} as const
+
+export const COLLECTION_PAGE_DEFAULT_SORT_BY = COLLECTION_PAGE_SORT_BY.date
+
+const COLLECTION_PAGE_SORT_DIRECTION = {
+  asc: "asc",
+  desc: "desc",
+} as const
+
+export const COLLECTION_PAGE_DEFAULT_SORT_DIRECTION =
+  COLLECTION_PAGE_SORT_DIRECTION.desc
+
 export const CollectionPagePageSchema = Type.Intersect([
   Type.Object({
     subtitle: Type.String({
@@ -80,31 +96,35 @@ export const CollectionPagePageSchema = Type.Intersect([
     defaultSortBy: Type.Optional(
       Type.Union(
         [
-          Type.Literal("date", { title: "Date" }),
-          Type.Literal("title", { title: "Title" }),
-          Type.Literal("category", { title: "Category" }),
+          Type.Literal(COLLECTION_PAGE_SORT_BY.date, { title: "Date" }),
+          Type.Literal(COLLECTION_PAGE_SORT_BY.title, { title: "Title" }),
+          Type.Literal(COLLECTION_PAGE_SORT_BY.category, { title: "Category" }),
         ],
         {
           title: "Default sort by",
           description: "The default sort order of the collection",
           format: "hidden",
           type: "string",
-          default: "date",
+          default: COLLECTION_PAGE_DEFAULT_SORT_BY,
         },
       ),
     ),
     defaultSortDirection: Type.Optional(
       Type.Union(
         [
-          Type.Literal("asc", { title: "Ascending" }),
-          Type.Literal("desc", { title: "Descending" }),
+          Type.Literal(COLLECTION_PAGE_SORT_DIRECTION.asc, {
+            title: "Ascending",
+          }),
+          Type.Literal(COLLECTION_PAGE_SORT_DIRECTION.desc, {
+            title: "Descending",
+          }),
         ],
         {
           title: "Default sort direction",
           description: "The default sort direction of the collection",
           format: "hidden",
           type: "string",
-          default: "desc",
+          default: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
         },
       ),
     ),
@@ -128,7 +148,7 @@ export const NotFoundPagePageSchema = Type.Object({})
 export const SearchPagePageSchema = Type.Object({})
 
 export const FileRefPageSchema = BaseRefPageSchema
-export const LinkRefPageSchema = Type.Omit(BaseRefPageSchema, ["image"])
+export const LinkRefPageSchema = BaseRefPageSchema
 
 // These are props that are required by the render engine, but not enforced by
 // the JSON schema (as the data is being stored outside of the page JSON)

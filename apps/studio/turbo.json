@@ -3,6 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "db:seed": {},
+    "test:watch": {},
     "test:unit": {
       "dependsOn": ["generate"]
     },
