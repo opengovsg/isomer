@@ -682,7 +682,9 @@ describe("page.router", async () => {
       })
       const oldBlob = await db
         .transaction()
-        .execute((tx) => getBlobOfResource({ tx, resourceId: pageToUpdate.id }))
+        .execute((tx) =>
+          getBlobOfResource({ db: tx, resourceId: pageToUpdate.id }),
+        )
 
       // Act
       const result = await caller.updatePageBlob(pageUpdateArgs)
@@ -728,7 +730,7 @@ describe("page.router", async () => {
       const oldBlob = await db
         .transaction()
         .execute((tx) =>
-          getBlobOfResource({ tx, resourceId: publishedPageToUpdate.id }),
+          getBlobOfResource({ db: tx, resourceId: publishedPageToUpdate.id }),
         )
 
       // Act
