@@ -87,7 +87,7 @@ export const PageSettings: Story = {
     const { canvasElement } = context
     await PageResourceMenu.play?.(context)
     const screen = within(canvasElement.ownerDocument.body)
-    const pageSettingsButton = screen.getByText("Edit page settings")
+    const pageSettingsButton = screen.getByText("Edit settings")
 
     await userEvent.click(pageSettingsButton, {
       pointerEventsCheck: 0,

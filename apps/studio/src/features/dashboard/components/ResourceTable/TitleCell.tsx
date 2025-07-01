@@ -48,14 +48,16 @@ export const TitleCell = ({
         >
           {title}
         </Link>
-        <Text
-          title={permalink}
-          noOfLines={1}
-          textStyle="caption-2"
-          color="base.content.medium"
-        >
-          {permalink}
-        </Text>
+        {permalink && (
+          <Text
+            title={permalink}
+            noOfLines={1}
+            textStyle="caption-2"
+            color="base.content.medium"
+          >
+            {permalink}
+          </Text>
+        )}
       </VStack>
     </HStack>
   )

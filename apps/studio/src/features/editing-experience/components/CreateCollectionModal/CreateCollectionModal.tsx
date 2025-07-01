@@ -136,7 +136,7 @@ const CreateCollectionModalContent = ({
         <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.5rem">
-            <FormControl isInvalid={!!errors.collectionTitle}>
+            <FormControl isRequired isInvalid={!!errors.collectionTitle}>
               <FormLabel color="base.content.strong">
                 Collection name
                 <FormHelperText color="base.content.default">
@@ -159,7 +159,7 @@ const CreateCollectionModalContent = ({
                 </FormHelperText>
               )}
             </FormControl>
-            <FormControl isInvalid={!!errors.permalink}>
+            <FormControl isRequired isInvalid={!!errors.permalink}>
               <FormLabel color="base.content.strong">
                 Collection URL
                 <FormHelperText color="base.content.default">

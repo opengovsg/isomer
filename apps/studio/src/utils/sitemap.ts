@@ -1,8 +1,10 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
+import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { Resource } from "~prisma/generated/selectableTypes"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { env } from "~/env.mjs"
 
 type ResourceDto = Omit<
   Resource,
@@ -48,7 +50,7 @@ const getSitemapTreeFromArray = (
       resource.type === ResourceType.CollectionPage
     ) {
       return {
-        id: String(resource.id),
+        id: resource.id,
         layout: "content", // Note: We are not using the layout field in our sitemap for preview
         title: resource.title,
         summary: resource.summary ?? "",
@@ -64,7 +66,7 @@ const getSitemapTreeFromArray = (
 
     const indexPage = resources.find(
       (child) =>
-        // NOTE: This child is the index page of this resource
+        child.type === ResourceType.IndexPage &&
         child.permalink === INDEX_PAGE_PERMALINK &&
         child.parentId === resource.id,
     )
@@ -73,8 +75,11 @@ const getSitemapTreeFromArray = (
     const summaryOfPage = indexPage?.summary
 
     return {
-      id: String(resource.id),
-      layout: "content", // Note: We are not using the layout field in our previews
+      id: resource.id,
+      layout:
+        resource.type === ResourceType.Collection
+          ? ISOMER_USABLE_PAGE_LAYOUTS.Collection // Needed for collectionblock component to fetch the correct collection
+          : ISOMER_USABLE_PAGE_LAYOUTS.Content, // Note: We are not using the layout field in our previews
       title: titleOfPage || resource.title,
       summary: summaryOfPage ?? `Pages in ${resource.title}`,
       lastModified: new Date() // TODO: Update this to the updated_at field in DB
@@ -108,5 +113,48 @@ export const getSitemapTree = (
     // NOTE: This permalink is unused in the preview
     permalink: "/",
     children: getSitemapTreeFromArray(resources, null, "/"),
+  }
+}
+
+const NUMBER_OF_CARDS_IN_COLLECTION_BLOCK = 3
+export const overwriteCollectionChildrenForCollectionBlock = (
+  sitemap: IsomerSitemap,
+): IsomerSitemap => {
+  // If the current node is a collection, overwrite its children and return
+  if (sitemap.layout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
+    return {
+      ...sitemap,
+      children: Array.from({ length: NUMBER_OF_CARDS_IN_COLLECTION_BLOCK }).map(
+        (_, idx) => ({
+          id: `collection-card-${idx}`,
+          title: "Article title",
+          summary: "Article summary",
+          permalink: "/",
+          layout: ISOMER_USABLE_PAGE_LAYOUTS.Article,
+          lastModified: new Date().toISOString(),
+          category: "Category of article",
+          ref: "/",
+          image: {
+            src: `${env.NEXT_PUBLIC_APP_URL}/assets/collectionblock_studio_preview.svg`,
+            alt: "Placeholder image for article's thumbnail",
+          },
+        }),
+      ),
+    }
+  }
+
+  let processedChildren = sitemap.children
+
+  // If the node is not a collection, process its children (if any)
+  if (sitemap.children) {
+    processedChildren = sitemap.children.map((child) =>
+      overwriteCollectionChildrenForCollectionBlock(child),
+    )
+  }
+
+  // Return the non-collection node with potentially updated children
+  return {
+    ...sitemap,
+    children: processedChildren,
   }
 }

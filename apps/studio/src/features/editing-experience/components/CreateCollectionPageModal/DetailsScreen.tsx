@@ -74,9 +74,19 @@ export const CreateCollectionPageDetailsScreen = () => {
     // Dirty means user has changed the value AND the value is not the same as the default value of "".
     // Once the value has been cleared, dirty state will reset.
     if (!permalinkFieldState.isDirty) {
-      setValue("permalink", generatePageUrl(title), {
-        shouldValidate: !!title,
-      })
+      setValue(
+        "permalink",
+        // NOTE: We generate a random `uuid` for `CollectionLink.permalink`
+        // because this field is never used and discarded at publishing.
+        // This is because the `CollectionLink` will point to the actual resource
+        // at compile time rather than the permalink given here.
+        type === ResourceType.CollectionPage
+          ? generatePageUrl(title)
+          : crypto.randomUUID(),
+        {
+          shouldValidate: !!title,
+        },
+      )
     }
   }, [getFieldState, setValue, title])
 
@@ -151,7 +161,7 @@ export const CreateCollectionPageDetailsScreen = () => {
             </Stack>
             <Stack gap="1.5rem">
               {/* Section 1: Page Title */}
-              <FormControl isInvalid={!!errors.title}>
+              <FormControl isRequired isInvalid={!!errors.title}>
                 <FormLabel color="base.content.strong">
                   {type === ResourceType.CollectionPage ? "Page" : "Item"} title
                   <FormHelperText color="base.content.default">
@@ -175,6 +185,7 @@ export const CreateCollectionPageDetailsScreen = () => {
 
               {/* Section 2: Page URL */}
               <FormControl
+                isRequired
                 isInvalid={!!errors.permalink}
                 display={type === ResourceType.CollectionLink ? "none" : "auto"}
               >

@@ -29,6 +29,17 @@ export const ChildrenPagesSchema = Type.Object(
         "We will use the child pages' feature images as their thumbnail.",
       default: false,
     }),
+    // NOTE: We set this to `Optional` for now due to backcompat
+    // TODO: Remove this chunk after we run the forward migration to
+    // add this property to all index pages
+    childrenPagesOrdering: Type.Optional(
+      Type.Array(Type.String(), {
+        default: [],
+        format: "childrenPagesOrdering",
+        title: "Ordering of Child pages",
+        description: "Drag and drop pages to reorder them",
+      }),
+    ),
   },
   {
     title: "Child pages",
