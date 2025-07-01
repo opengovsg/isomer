@@ -144,8 +144,10 @@ describe("auth.email", () => {
         }
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
+
         // Session should have been set with logged in user.
         expect(session.userId).toEqual(expectedUser.id)
+
         // Audit log should have been created.
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
         expect(auditLogs).toHaveLength(1)
@@ -282,13 +284,13 @@ describe("auth.email", () => {
         }
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
-        // Session should have been set with logged in user.
-        expect(session.userId).toEqual(expectedUser.id)
-        // Audit log should have been created.
+
+        // Session (singpass) should have been set with logged in user.
+        expect(session.singpass?.sessionState?.userId).toEqual(expectedUser.id)
+
+        // Audit log should not have been created yet
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
-        expect(auditLogs).toHaveLength(1)
-        expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
-        expect(auditLogs[0]?.delta.before!.attempts).toBe(1)
+        expect(auditLogs).toHaveLength(0)
       })
 
       it("should successfully set session on a subsequent valid OTP", async () => {
@@ -322,18 +324,18 @@ describe("auth.email", () => {
         }
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
-        // Session should have been set with logged in user.
-        expect(session.userId).toEqual(expectedUser.id)
-        // Audit log should have been created.
+
+        // Session (singpass) should have been set with logged in user.
+        expect(session.singpass?.sessionState?.userId).toEqual(expectedUser.id)
+
+        // Audit log should not have been created yet
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
-        expect(auditLogs).toHaveLength(1)
-        expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
-        expect(auditLogs[0]?.delta.before!.attempts).toBe(2)
+        expect(auditLogs).toHaveLength(0)
       })
 
-      it("should set lastLoginAt when creating a new user", async () => {
+      // Note: It's updated in Singpass's callback.
+      it("should not set lastLoginAt when creating a new user", async () => {
         // Arrange
-        const beforeLogin = new Date()
         await prisma.verificationToken.create({
           data: {
             expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
@@ -352,15 +354,12 @@ describe("auth.email", () => {
         const user = await prisma.user.findFirst({
           where: { email: TEST_VALID_EMAIL },
         })
-        expect(user?.lastLoginAt).toBeInstanceOf(Date)
-        expect(user?.lastLoginAt!.getTime()).toBeGreaterThan(
-          beforeLogin.getTime(),
-        )
+        expect(user?.lastLoginAt).toBeNull()
       })
 
-      it("should update lastLoginAt when user logs in", async () => {
+      // Note: It's updated in Singpass's callback.
+      it("should not update lastLoginAt when user logs in", async () => {
         // Arrange
-        const beforeLogin = new Date()
         await prisma.verificationToken.create({
           data: {
             expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
@@ -388,10 +387,7 @@ describe("auth.email", () => {
         const user = await prisma.user.findFirst({
           where: { email: TEST_VALID_EMAIL },
         })
-        expect(user?.lastLoginAt).toBeInstanceOf(Date)
-        expect(user?.lastLoginAt!.getTime()).toBeGreaterThan(
-          beforeLogin.getTime(),
-        )
+        expect(user?.lastLoginAt).toBeNull()
       })
     })
 
