@@ -218,7 +218,7 @@ describe("asset.router", async () => {
       )
     })
 
-    it("should return success if user does only has Editor permission to read non-root resource", async () => {
+    it("should return success if user only has Editor permission to read non-root resource", async () => {
       // Arrange
       const { site } = await setupSite()
       const { folder } = await setupFolder({
@@ -274,7 +274,7 @@ describe("asset.router", async () => {
       )
     })
 
-    it("should return success if user does only has Publisher permission to read non-root resource", async () => {
+    it("should return success if user only has Publisher permission to read non-root resource", async () => {
       // Arrange
       const { site } = await setupSite()
       const { folder } = await setupFolder({
@@ -330,7 +330,7 @@ describe("asset.router", async () => {
       )
     })
 
-    it("should return success if user does only has Admin permission to read root resource", async () => {
+    it("should return success if user only has Admin permission to read root resource", async () => {
       // Arrange
       const { site } = await setupSite()
       const { page } = await setupPageResource({
