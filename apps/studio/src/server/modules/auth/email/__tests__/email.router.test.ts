@@ -103,21 +103,20 @@ describe("auth.email", () => {
     const TEST_OTP_FINGERPRINT = getIpFingerprint(TEST_VALID_EMAIL, LOCALHOST)
 
     describe("when singpass is not enabled", () => {
-      beforeAll(() => {
+      beforeEach(() => {
         // Mock the GrowthBook isOn method to return false for the singpass feature
         const ctx = createMockRequest(session)
+        const originalIsOn = ctx.gb.isOn.bind(ctx.gb)
         vi.spyOn(ctx.gb, "isOn").mockImplementation((featureKey: string) => {
           return featureKey === IS_SINGPASS_ENABLED_FEATURE_KEY
             ? false
-            : ctx.gb.isOn(featureKey) // call original for other features
+            : originalIsOn(featureKey) // call original for other features
         })
         caller = createCaller(ctx)
       })
 
-      afterAll(() => {
+      afterEach(() => {
         vi.restoreAllMocks()
-        const ctx = createMockRequest(session)
-        caller = createCaller(ctx)
       })
 
       it("should successfully set session on first valid OTP", async () => {
@@ -260,6 +259,22 @@ describe("auth.email", () => {
     })
 
     describe("when singpass is enabled", () => {
+      beforeEach(() => {
+        // Mock the GrowthBook isOn method to return true for the singpass feature
+        const ctx = createMockRequest(session)
+        const originalIsOn = ctx.gb.isOn.bind(ctx.gb)
+        vi.spyOn(ctx.gb, "isOn").mockImplementation((featureKey: string) => {
+          return featureKey === IS_SINGPASS_ENABLED_FEATURE_KEY
+            ? true
+            : originalIsOn(featureKey) // call original for other features
+        })
+        caller = createCaller(ctx)
+      })
+
+      afterEach(() => {
+        vi.restoreAllMocks()
+      })
+
       it("should successfully set session on first valid OTP", async () => {
         // Arrange
         await setupUser({ email: TEST_VALID_EMAIL })
