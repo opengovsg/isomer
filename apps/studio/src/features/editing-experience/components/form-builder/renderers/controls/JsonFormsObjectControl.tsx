@@ -1,8 +1,4 @@
-import type {
-  ControlWithDetailProps,
-  RankedTester,
-  StatePropsOfControlWithDetail,
-} from "@jsonforms/core"
+import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
 import { useMemo } from "react"
 import {
   findUISchema,
@@ -10,11 +6,7 @@ import {
   isObjectControl,
   rankWith,
 } from "@jsonforms/core"
-import {
-  JsonFormsDispatch,
-  withJsonFormsControlProps,
-  withJsonFormsDetailProps,
-} from "@jsonforms/react"
+import { JsonFormsDispatch, withJsonFormsControlProps } from "@jsonforms/react"
 import isEmpty from "lodash/isEmpty"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
