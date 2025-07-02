@@ -76,6 +76,19 @@ describe("asset.service", () => {
       expect(result).toMatch(/^303\/[0-9a-f-]{36}\/ملف\.pdf$/)
     })
 
+    it("should handle all special characters that might need sanitization even when the characters are not consecutive", () => {
+      // Arrange
+      const siteId = 404
+      const fileName = '<fi:l|e<>:"|?*.txt'
+
+      // Act
+      const result = getFileKey({ siteId, fileName })
+
+      // Assert
+      // NOTE: Special characters in consecutive runs are compressed to single character
+      expect(result).toMatch(/^404\/[0-9a-f-]{36}\/-fi-l-e-\.txt$/)
+    })
+
     it("should handle special characters that might need sanitization", () => {
       // Arrange
       const siteId = 404
