@@ -44,6 +44,12 @@ jobs:
       - name: Lint
         run: npm run lint && npm run lint:ws
 
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@d292784f8f3eacda47060b259a580467b0ba410c
+        with:
+          dockerfile: "./apps/studio/Dockerfile"
+          failure-threshold: "error"
+
   format:
     runs-on: ubuntu-latest
     steps:
