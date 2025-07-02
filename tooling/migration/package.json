@@ -13,6 +13,7 @@
   "dependencies": {
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
+    "@octokit/plugin-throttling": "^11.0.1",
     "@octokit/rest": "^21.1.1",
     "@tiptap/core": "^2.11.7",
     "@tiptap/extension-blockquote": "^2.11.7",

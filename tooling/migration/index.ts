@@ -1,4 +1,5 @@
 import { Octokit } from "@octokit/rest";
+import { throttling, type ThrottlingOptions } from "@octokit/plugin-throttling";
 import {
   getAllFolders,
   getFileContents,
@@ -27,8 +28,32 @@ const EXCLUDED_PATHS = [
   "contact-us.md", // Contact us page
 ];
 
-const octokit = new Octokit({
+const CustomOctokit = Octokit.plugin(throttling);
+
+const octokitThrottlingOptions: ThrottlingOptions = {
+  onRateLimit: (retryAfter, options) => {
+    console.warn(
+      `Request quota exhausted for request ${options.method} ${options.url}`
+    );
+    console.warn(`Retrying after ${retryAfter} seconds!`);
+
+    // NOTE: We retry indefinitely
+    return true; // Retry the request
+  },
+  onSecondaryRateLimit: (retryAfter, options) => {
+    console.warn(
+      `Secondary rate limit hit for request ${options.method} ${options.url}`
+    );
+    console.warn(`Retrying after ${retryAfter} seconds!`);
+
+    // NOTE: We retry indefinitely
+    return true; // Retry the request
+  },
+};
+
+const octokit = new CustomOctokit({
   auth: process.env.GITHUB_TOKEN,
+  throttle: octokitThrottlingOptions,
 });
 
 const getStatusName = (
