@@ -124,6 +124,9 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
     twitter: {
       card: "summary_large_image" as const,
     },
+    alternates: {
+      canonical: canonicalUrl,
+    },
   }
 
   return metadata
