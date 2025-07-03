@@ -37,6 +37,7 @@ export const getInactiveUsers = async ({
       ]),
     )
     .selectAll(["User"])
+    .distinct()
     .execute()
 }
 

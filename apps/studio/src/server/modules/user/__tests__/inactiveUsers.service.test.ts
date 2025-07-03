@@ -309,6 +309,34 @@ describe("inactiveUsers.service", () => {
       expect(inactiveUsers[0]?.id).toBe(user.id)
     })
 
+    it("should only return one instance of a user even if they have multiple resource permissions", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+      // Add a non-deleted resource permission for the user on another site
+      const { site: otherSite } = await setupSite()
+      await setupAdminPermissions({
+        siteId: otherSite.id,
+        userId: user.id,
+        isDeleted: false,
+      })
+
+      // Act
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
+
+      // Assert
+      expect(inactiveUsers).toHaveLength(1)
+      expect(inactiveUsers[0]?.id).toBe(user.id)
+    })
+
     it("should NOT select isomer admins and migrators", async () => {
       // Arrange
       await Promise.all(
