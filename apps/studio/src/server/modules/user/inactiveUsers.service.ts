@@ -123,10 +123,14 @@ export const deactivateUser = async ({
   }
 }
 
-export const deactiveInactiveUsers = async (): Promise<User[]> => {
+export const deactiveInactiveUsers = async (): Promise<void> => {
   const inactiveUsers = await getInactiveUsers({
     daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
   })
 
-  return inactiveUsers
+  const userIdsToDeactivate = inactiveUsers.map((user) => user.id)
+
+  for (const user of inactiveUsers) {
+    await deactivateUser({ user, userIdsToDeactivate })
+  }
 }
