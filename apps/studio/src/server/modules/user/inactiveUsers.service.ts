@@ -1,6 +1,6 @@
 import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 
-import type { DB, Transaction, User } from "../database"
+import type { User } from "../database"
 import type { AccountDeactivationEmailTemplateData } from "~/features/mail/templates/types"
 import { sendAccountDeactivationEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
@@ -15,16 +15,14 @@ const logger = createBaseLogger({
 })
 
 interface GetInactiveUsersProps {
-  tx: Transaction<DB>
   daysFromLastLogin: number
 }
 export const getInactiveUsers = async ({
-  tx,
   daysFromLastLogin,
 }: GetInactiveUsersProps): Promise<User[]> => {
   const dateThreshold = new Date(Date.now() - daysFromLastLogin * DAYS_IN_MS)
 
-  return tx
+  return db
     .selectFrom("User")
     .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
     .where("User.deletedAt", "is", null)
@@ -126,17 +124,9 @@ export const deactivateUser = async ({
 }
 
 export const deactiveInactiveUsers = async (): Promise<User[]> => {
-  const inactiveUsers = await db
-    .transaction()
-    .setIsolationLevel("serializable")
-    .execute(async (tx) => {
-      const inactiveUsers = await getInactiveUsers({
-        tx,
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-      })
-
-      return inactiveUsers
-    })
+  const inactiveUsers = await getInactiveUsers({
+    daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+  })
 
   return inactiveUsers
 }

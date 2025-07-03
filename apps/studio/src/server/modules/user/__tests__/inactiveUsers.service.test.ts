@@ -392,11 +392,8 @@ describe("inactiveUsers.service", () => {
 
     it("should return an empty array when there are no users", async () => {
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -422,11 +419,8 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -442,11 +436,8 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -463,11 +454,8 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -483,11 +471,8 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -504,11 +489,8 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -544,11 +526,8 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -577,11 +556,8 @@ describe("inactiveUsers.service", () => {
       }
 
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -596,11 +572,8 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -623,11 +596,8 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -651,11 +621,8 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -677,11 +644,8 @@ describe("inactiveUsers.service", () => {
       )
 
       // Act
-      const inactiveUsers = await db.transaction().execute(async (tx) => {
-        return getInactiveUsers({
-          tx,
-          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
-        })
+      const inactiveUsers = await getInactiveUsers({
+        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
