@@ -10,7 +10,7 @@ interface GetInactiveUsersProps {
   tx: Transaction<DB>
   daysFromLastLogin: number
 }
-const getInactiveUsers = async ({
+export const getInactiveUsers = async ({
   tx,
   daysFromLastLogin,
 }: GetInactiveUsersProps): Promise<User[]> => {

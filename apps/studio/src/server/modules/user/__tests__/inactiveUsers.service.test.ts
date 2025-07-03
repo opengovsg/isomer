@@ -9,7 +9,11 @@ import { beforeEach, describe, expect, it } from "vitest"
 
 import type { Site, User } from "~/server/modules/database"
 import { db } from "~/server/modules/database"
-import { DAYS_IN_MS, deactiveInactiveUsers } from "../inactiveUsers.service"
+import {
+  DAYS_FROM_LAST_LOGIN,
+  DAYS_IN_MS,
+  getInactiveUsers,
+} from "../inactiveUsers.service"
 
 interface SetupUserWrapperProps {
   siteId?: number
@@ -48,7 +52,7 @@ const setupUserWrapper = async ({
 }
 
 describe("inactiveUsers.service", () => {
-  describe("deactiveInactiveUsers", () => {
+  describe("getInactiveUsers", () => {
     let site: Site
 
     beforeAll(async () => {
@@ -62,7 +66,12 @@ describe("inactiveUsers.service", () => {
 
     it("should return an empty array when there are no users", async () => {
       // Act
-      const inactiveUsers = await deactiveInactiveUsers()
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -87,7 +96,12 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await deactiveInactiveUsers()
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -102,7 +116,12 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await deactiveInactiveUsers()
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
 
       // Assert
       expect(inactiveUsers).toHaveLength(1)
@@ -118,7 +137,12 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await deactiveInactiveUsers()
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -133,7 +157,12 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await deactiveInactiveUsers()
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
 
       // Assert
       expect(inactiveUsers).toHaveLength(1)
@@ -149,7 +178,12 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await deactiveInactiveUsers()
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -184,7 +218,12 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await deactiveInactiveUsers()
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
 
       // Assert
       expect(inactiveUsers).toHaveLength(2)
@@ -212,7 +251,12 @@ describe("inactiveUsers.service", () => {
       }
 
       // Act
-      const inactiveUsers = await deactiveInactiveUsers()
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -226,7 +270,12 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await deactiveInactiveUsers()
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -248,7 +297,12 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await deactiveInactiveUsers()
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
 
       // Assert
       expect(inactiveUsers).toHaveLength(1)
@@ -269,7 +323,12 @@ describe("inactiveUsers.service", () => {
       )
 
       // Act
-      const inactiveUsers = await deactiveInactiveUsers()
+      const inactiveUsers = await db.transaction().execute(async (tx) => {
+        return getInactiveUsers({
+          tx,
+          daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        })
+      })
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
