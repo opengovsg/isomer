@@ -6,6 +6,7 @@
   "version": "0.0.13",
   "description": "Isomer component library",
   "type": "module",
+  "sideEffects": false,
   "scripts": {
     "rollup": "rollup -c",
     "test:watch": "npx vitest watch",
@@ -106,7 +107,6 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
-    "@datadog/browser-rum": "^5.29.1",
     "@govtechsg/sgds": "^2.3.6",
     "@govtechsg/sgds-react": "^2.7.6",
     "@headlessui/react": "^2.1.2",
@@ -114,11 +114,11 @@
     "date-fns": "^4.1.0",
     "interweave": "^13.1.0",
     "interweave-ssr": "^2.0.0",
-    "isomorphic-dompurify": "^2.23.0",
+    "isomorphic-dompurify": "^2.25.0",
     "js-base64": "^3.7.7",
     "js-md5": "^0.8.3",
     "lodash": "^4.17.21",
-    "markdown-to-jsx": "^7.7.6",
+    "markdown-to-jsx": "^7.7.8",
     "minisearch": "^7.1.2",
     "react-aria": "^3.41.1",
     "react-aria-components": "^1.6.0",

@@ -381,18 +381,36 @@ export const folderRouter = router({
             ])
             .select(["Resource.id", "title", "type"])
         })
+        // NOTE: we need to select the `Folder/Collection`.`id`
+        // rather than the `IndexPage` as our publishing script
+        // uses the actual `id` of the containing `Folder/Collection`.
+        // However, we will use the `IndexPage` as a filter as we should only
+        // show the preview for published `IndexPages` (draft pages won't show on end site)
+        .with("publishedCousinIndexPages", (eb) => {
+          return (
+            eb
+              .selectFrom("Resource")
+              .where("parentId", "in", (qb) =>
+                qb
+                  .selectFrom("directChildren")
+                  .where("type", "in", [
+                    ResourceType.Folder,
+                    ResourceType.Collection,
+                  ])
+                  .select("id"),
+              )
+              // NOTE: Keeping in line with how we select resources for sitemap,
+              // we will only select published index pages here
+              .where("state", "=", ResourceState.Published)
+              .where("type", "=", ResourceType.IndexPage)
+              .select(["Resource.parentId"])
+          )
+        })
         .selectFrom("Resource")
-        .where("parentId", "in", (qb) =>
-          qb
-            .selectFrom("directChildren")
-            .where("type", "in", [ResourceType.Folder, ResourceType.Collection])
-            .select("id"),
+        .where("id", "in", (qb) =>
+          qb.selectFrom("publishedCousinIndexPages").select("parentId"),
         )
-        // NOTE: Keeping in line with how we select resources for sitemap,
-        // we will only select published index pages here
-        .where("state", "=", ResourceState.Published)
-        .where("type", "=", ResourceType.IndexPage)
-        .select(["Resource.id", "title"])
+        .select(["id", "title"])
         .unionAll((qb) => {
           return qb
             .selectFrom("directChildren")

@@ -21,7 +21,7 @@ const createImagePreviewStyles = tv({
           "border-base-content outline outline-[0.25rem] outline-offset-[-0.25rem] outline-base-content",
       },
       false: {
-        container: "border-base-divider-subtle hover:opacity-80",
+        container: "border-base-divider-medium hover:opacity-80",
       },
     },
     numberOfImages: {
@@ -207,7 +207,7 @@ export const ImageGalleryClient = ({
                     />
                     {image.caption && (
                       <div className="prose-label-sm-medium absolute bottom-0 left-0 right-0 bg-base-canvas-inverse-overlay/90 p-3 text-white">
-                        {image.caption}
+                        <div className="line-clamp-3">{image.caption}</div>
                       </div>
                     )}
                   </div>

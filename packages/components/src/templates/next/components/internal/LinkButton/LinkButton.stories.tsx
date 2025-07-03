@@ -8,7 +8,7 @@ const meta: Meta<typeof LinkButton> = {
   render: (args) => {
     // Define matrices for link types and sizes
     const links = ["/", "https://www.google.com"] as const
-    const sizes = ["base", "lg"] as const
+    const sizes = ["sm", "base", "lg"] as const
 
     // Generate all combinations
     const combinations = sizes.flatMap((size) =>

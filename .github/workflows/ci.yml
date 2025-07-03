@@ -44,6 +44,12 @@ jobs:
       - name: Lint
         run: npm run lint && npm run lint:ws
 
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@d292784f8f3eacda47060b259a580467b0ba410c
+        with:
+          dockerfile: "./apps/studio/Dockerfile"
+          failure-threshold: "error"
+
   format:
     runs-on: ubuntu-latest
     steps:
@@ -83,7 +89,7 @@ jobs:
         with:
           languages: js
           service: isomer-studio
-          api_key: ${{ secrets.DD_API_KEY }}
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Studio
         # Loose env mode required for env vars to be passed to the run
         run: turbo test-ci:unit --filter=isomer-studio --env-mode=loose
@@ -138,7 +144,7 @@ jobs:
         with:
           languages: js
           service: isomer-studio
-          api_key: ${{ secrets.DD_API_KEY }}
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Seed testing db
         run: turbo db:seed
       - name: Run Playwright tests

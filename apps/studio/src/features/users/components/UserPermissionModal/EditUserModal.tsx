@@ -20,6 +20,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { z as zod } from "zod"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
 import { updateUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
@@ -28,6 +29,7 @@ import {
   DEFAULT_UPDATE_USER_MODAL_STATE,
   updateUserModalAtom,
 } from "../../atoms"
+import { SingpassConditionalTooltip } from "../SingpassConditionalTooltip"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
@@ -38,6 +40,9 @@ export const EditUserModal = () => {
 
   const { siteId, userId, email, role } = useAtomValue(updateUserModalAtom)
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
+
+  const isSingpassEnabled = useIsSingpassEnabled()
+
   const onClose = () => {
     reset()
     setUpdateUserModalState(DEFAULT_UPDATE_USER_MODAL_STATE)
@@ -150,9 +155,16 @@ export const EditUserModal = () => {
           >
             Cancel
           </Button>
-          <Button variant="solid" onClick={onUpdateUser} isLoading={isLoading}>
-            Save changes
-          </Button>
+          <SingpassConditionalTooltip>
+            <Button
+              variant="solid"
+              onClick={onUpdateUser}
+              isLoading={isLoading}
+              isDisabled={!isSingpassEnabled}
+            >
+              Save changes
+            </Button>
+          </SingpassConditionalTooltip>
         </ModalFooter>
       </ModalContent>
     </Modal>

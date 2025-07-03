@@ -1,5 +1,6 @@
 import { trpcMsw } from "../mockTrpc"
-import { DEFAULT_COLLECTION_ITEMS, DEFAULT_PAGE_ITEMS } from "./page"
+import { DEFAULT_COLLECTION_ITEMS } from "./collection"
+import { DEFAULT_PAGE_ITEMS } from "./page"
 
 export const resourceHandlers = {
   getChildrenOf: {
@@ -29,12 +30,7 @@ export const resourceHandlers = {
           title: item.title,
           permalink: item.permalink,
           parentId: item.parentId,
-          type: item.type as
-            | "Page"
-            | "Folder"
-            | "Collection"
-            | "CollectionLink"
-            | "CollectionPage",
+          type: item.type as "Page" | "CollectionLink" | "CollectionPage",
           // ID must be unique so infinite loop won't occur
           id: `${resourceId}-${item.title}-${item.id}`,
         }))

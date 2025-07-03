@@ -57,50 +57,6 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
   },
 ]
 
-export const DEFAULT_COLLECTION_ITEMS: RouterOutput["resource"]["listWithoutRoot"] =
-  [
-    {
-      id: "4",
-      permalink: "test-page-1",
-      title: "Test page 1",
-      publishedVersionId: null,
-      draftBlobId: "3",
-      type: "Page",
-      parentId: null,
-      updatedAt: new Date("2024-09-12T07:00:10.000Z"),
-    },
-    {
-      id: "5",
-      permalink: "test-page-2",
-      title: "Test page 2",
-      publishedVersionId: null,
-      draftBlobId: "4",
-      type: "Page",
-      parentId: null,
-      updatedAt: new Date("2024-09-12T07:00:20.000Z"),
-    },
-    {
-      id: "6",
-      permalink: "folder",
-      title: "Test folder 1",
-      publishedVersionId: null,
-      draftBlobId: null,
-      type: "Folder",
-      parentId: null,
-      updatedAt: new Date("2024-09-12T07:00:30.000Z"),
-    },
-    {
-      id: "7",
-      permalink: "link",
-      title: "Test link 1",
-      publishedVersionId: null,
-      draftBlobId: null,
-      type: "CollectionLink",
-      parentId: null,
-      updatedAt: new Date("2024-09-12T07:00:30.000Z"),
-    },
-  ]
-
 const pageListQuery = (wait?: DelayMode | number) => {
   return trpcMsw.resource.listWithoutRoot.query(async () => {
     if (wait !== undefined) {
