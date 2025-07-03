@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 
 import type { Site, User } from "~/server/modules/database"
 import { db, RoleType } from "~/server/modules/database"
-import { DAYS_IN_MS, removeInactiveUsers } from "../inactiveUsers.service"
+import { DAYS_IN_MS, deactiveInactiveUsers } from "../inactiveUsers.service"
 
 interface SetupUserWrapperProps {
   siteId?: number
@@ -48,7 +48,7 @@ const setupUserWrapper = async ({
 }
 
 describe("inactiveUsers.service", () => {
-  describe("removeInactiveUsers", () => {
+  describe("deactiveInactiveUsers", () => {
     let site: Site
 
     beforeAll(async () => {
@@ -62,7 +62,7 @@ describe("inactiveUsers.service", () => {
 
     it("should return an empty array when there are no users", async () => {
       // Act
-      const inactiveUsers = await removeInactiveUsers()
+      const inactiveUsers = await deactiveInactiveUsers()
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -87,7 +87,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await removeInactiveUsers()
+      const inactiveUsers = await deactiveInactiveUsers()
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -102,7 +102,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await removeInactiveUsers()
+      const inactiveUsers = await deactiveInactiveUsers()
 
       // Assert
       expect(inactiveUsers).toHaveLength(1)
@@ -118,7 +118,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await removeInactiveUsers()
+      const inactiveUsers = await deactiveInactiveUsers()
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -133,7 +133,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await removeInactiveUsers()
+      const inactiveUsers = await deactiveInactiveUsers()
 
       // Assert
       expect(inactiveUsers).toHaveLength(1)
@@ -149,7 +149,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await removeInactiveUsers()
+      const inactiveUsers = await deactiveInactiveUsers()
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -184,7 +184,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await removeInactiveUsers()
+      const inactiveUsers = await deactiveInactiveUsers()
 
       // Assert
       expect(inactiveUsers).toHaveLength(2)
@@ -212,7 +212,7 @@ describe("inactiveUsers.service", () => {
       }
 
       // Act
-      const inactiveUsers = await removeInactiveUsers()
+      const inactiveUsers = await deactiveInactiveUsers()
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -226,7 +226,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await removeInactiveUsers()
+      const inactiveUsers = await deactiveInactiveUsers()
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
@@ -248,7 +248,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      const inactiveUsers = await removeInactiveUsers()
+      const inactiveUsers = await deactiveInactiveUsers()
 
       // Assert
       expect(inactiveUsers).toHaveLength(1)
@@ -269,7 +269,7 @@ describe("inactiveUsers.service", () => {
       )
 
       // Act
-      const inactiveUsers = await removeInactiveUsers()
+      const inactiveUsers = await deactiveInactiveUsers()
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)

@@ -40,7 +40,7 @@ const getInactiveUsers = async ({
     .execute()
 }
 
-export const removeInactiveUsers = async (): Promise<User[]> => {
+export const deactiveInactiveUsers = async (): Promise<User[]> => {
   const inactiveUsers = await db
     .transaction()
     .setIsolationLevel("serializable")
