@@ -8,7 +8,7 @@ import {
 import { beforeEach, describe, expect, it } from "vitest"
 
 import type { Site, User } from "~/server/modules/database"
-import { db, RoleType } from "~/server/modules/database"
+import { db } from "~/server/modules/database"
 import { DAYS_IN_MS, deactiveInactiveUsers } from "../inactiveUsers.service"
 
 interface SetupUserWrapperProps {
