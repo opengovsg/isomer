@@ -17,11 +17,13 @@ import type {
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE } from "~/lib/growthbook"
 import {
   getSitemapTree,
   overwriteCollectionChildrenForCollectionBlock,
 } from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
+import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { incrementVersion } from "../version/version.service"
@@ -494,12 +496,21 @@ export const getResourceFullPermalink = async (
   return `/${permalinkTree.join("/")}`
 }
 
-export const publishPageResource = async (
-  logger: Logger<string>,
-  siteId: number,
-  resourceId: string,
-  userId: string,
-) => {
+interface PublishPageResourceArgs {
+  logger: Logger<string>
+  siteId: number
+  resourceId: string
+  userId: string
+  isSingpassEnabled?: boolean
+}
+
+export const publishPageResource = async ({
+  logger,
+  siteId,
+  resourceId,
+  userId,
+  isSingpassEnabled = IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+}: PublishPageResourceArgs) => {
   // Step 1: Create a new version
   const by = await db
     .selectFrom("User")
@@ -562,6 +573,17 @@ export const publishPageResource = async (
 
   // Step 2: Trigger a publish of the site
   await publishSite(logger, siteId)
+
+  // Step 3: Send publish alert emails to all site admins minus the current user
+  // if Singpass has been disabled
+  if (!isSingpassEnabled) {
+    await alertPublishWhenSingpassDisabled({
+      siteId,
+      resourceId,
+      publisherId: by.id,
+      publisherEmail: by.email,
+    })
+  }
 
   return addedVersionResult
 }

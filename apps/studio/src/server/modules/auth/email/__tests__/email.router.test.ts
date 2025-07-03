@@ -5,9 +5,10 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { env } from "~/env.mjs"
+import * as mailService from "~/features/mail/service"
 import * as growthbookLib from "~/lib/growthbook"
 import * as mailLib from "~/lib/mail"
 import { AuditLogEvent, db } from "~/server/modules/database"
@@ -249,6 +250,32 @@ describe("auth.email", () => {
           beforeLogin.getTime(),
         )
       })
+
+      it("should send login alert email", async () => {
+        // Arrange
+        const alertSpy = vi
+          .spyOn(mailService, "sendLoginAlertEmail")
+          .mockResolvedValue()
+        await setupUser({ email: TEST_VALID_EMAIL })
+        await prisma.verificationToken.create({
+          data: {
+            expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
+            identifier: TEST_OTP_FINGERPRINT,
+            token: VALID_TOKEN_HASH,
+          },
+        })
+
+        // Act
+        await caller.verifyOtp({
+          email: TEST_VALID_EMAIL,
+          token: VALID_OTP,
+        })
+
+        // Assert
+        expect(alertSpy).toHaveBeenCalledWith({
+          recipientEmail: TEST_VALID_EMAIL,
+        })
+      })
     })
 
     describe("when singpass is enabled", () => {
@@ -380,6 +407,31 @@ describe("auth.email", () => {
           where: { email: TEST_VALID_EMAIL },
         })
         expect(user?.lastLoginAt).toBeNull()
+      })
+
+      // Note: it's only sent in singpass downtime
+      it("should not send login alert email", async () => {
+        // Arrange
+        const alertSpy = vi
+          .spyOn(mailService, "sendLoginAlertEmail")
+          .mockResolvedValue()
+        await setupUser({ email: TEST_VALID_EMAIL })
+        await prisma.verificationToken.create({
+          data: {
+            expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
+            identifier: TEST_OTP_FINGERPRINT,
+            token: VALID_TOKEN_HASH,
+          },
+        })
+
+        // Act
+        await caller.verifyOtp({
+          email: TEST_VALID_EMAIL,
+          token: VALID_OTP,
+        })
+
+        // Assert
+        expect(alertSpy).not.toHaveBeenCalled()
       })
     })
 
