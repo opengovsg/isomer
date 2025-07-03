@@ -2,6 +2,7 @@ import type { DB, Transaction, User } from "../database"
 import { db } from "../database"
 
 export const DAYS_IN_MS = 24 * 60 * 60 * 1000
+export const DAYS_FROM_LAST_LOGIN = 90 // hardcoded to 90 as per IM8 requirement
 
 interface GetInactiveUsersProps {
   tx: Transaction<DB>
@@ -35,8 +36,6 @@ const getInactiveUsers = async ({
 }
 
 export const removeInactiveUsers = async (): Promise<User[]> => {
-  const DAYS_FROM_LAST_LOGIN = 90 // hardcoded to 90 as per IM8 requirement
-
   const inactiveUsers = await db
     .transaction()
     .setIsolationLevel("serializable")
