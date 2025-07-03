@@ -18,23 +18,25 @@ const getInactiveUsers = async ({
 
   return tx
     .selectFrom("User")
-    .where("deletedAt", "is", null)
-    .where("email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // needed to provide support for agencies
+    .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
+    .where("User.deletedAt", "is", null)
+    .where("ResourcePermission.deletedAt", "is", null)
+    .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // needed to provide support for agencies
     .where((eb) =>
       eb.or([
         // Users who have never logged in
         eb.and([
-          eb("lastLoginAt", "is", null),
-          eb("createdAt", "<", dateThreshold),
+          eb("User.lastLoginAt", "is", null),
+          eb("User.createdAt", "<", dateThreshold),
         ]),
         // Users who have logged in but haven't logged in for a while
         eb.and([
-          eb("lastLoginAt", "is not", null),
-          eb("lastLoginAt", "<", dateThreshold),
+          eb("User.lastLoginAt", "is not", null),
+          eb("User.lastLoginAt", "<", dateThreshold),
         ]),
       ]),
     )
-    .selectAll()
+    .selectAll(["User"])
     .execute()
 }
 
