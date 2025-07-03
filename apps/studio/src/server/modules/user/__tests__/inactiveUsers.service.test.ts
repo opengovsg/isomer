@@ -1,3 +1,4 @@
+import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 import { resetTables } from "tests/integration/helpers/db"
 import { setupUser } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it } from "vitest"
@@ -7,17 +8,19 @@ import { db } from "~/server/modules/database"
 import { DAYS_IN_MS, removeInactiveUsers } from "../inactiveUsers.service"
 
 interface SetupUserWrapperProps {
+  email?: string
   createdDaysAgo: number | null
   lastLoginDaysAgo: number | null
   isDeleted?: boolean
 }
 const setupUserWrapper = async ({
+  email,
   createdDaysAgo = null,
   lastLoginDaysAgo = null,
   isDeleted = false,
 }: SetupUserWrapperProps): Promise<User> => {
   const user = await setupUser({
-    email: crypto.randomUUID() + "@user.com",
+    email: email ?? crypto.randomUUID() + "@user.com",
     lastLoginAt: lastLoginDaysAgo
       ? new Date(Date.now() - lastLoginDaysAgo * DAYS_IN_MS)
       : null,
@@ -177,6 +180,25 @@ describe("inactiveUsers.service", () => {
           isDeleted: true,
         })
       }
+
+      // Act
+      const inactiveUsers = await removeInactiveUsers()
+
+      // Assert
+      expect(inactiveUsers).toHaveLength(0)
+    })
+
+    it("should NOT select isomer admins and migrators", async () => {
+      // Arrange
+      await Promise.all(
+        ISOMER_ADMINS_AND_MIGRATORS_EMAILS.map((email) =>
+          setupUserWrapper({
+            email,
+            createdDaysAgo: 91,
+            lastLoginDaysAgo: null,
+          }),
+        ),
+      )
 
       // Act
       const inactiveUsers = await removeInactiveUsers()

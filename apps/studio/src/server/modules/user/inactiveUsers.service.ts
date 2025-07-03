@@ -1,3 +1,5 @@
+import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+
 import type { DB, Transaction, User } from "../database"
 import { db } from "../database"
 
@@ -17,6 +19,7 @@ const getInactiveUsers = async ({
   return tx
     .selectFrom("User")
     .where("deletedAt", "is", null)
+    .where("email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // needed to provide support for agencies
     .where((eb) =>
       eb.or([
         // Users who have never logged in
