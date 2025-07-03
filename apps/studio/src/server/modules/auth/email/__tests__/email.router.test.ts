@@ -8,7 +8,7 @@ import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
 import { describe, expect, it } from "vitest"
 
 import { env } from "~/env.mjs"
-import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import * as growthbookLib from "~/lib/growthbook"
 import * as mailLib from "~/lib/mail"
 import { AuditLogEvent, db } from "~/server/modules/database"
 import { prisma } from "~/server/prisma"
@@ -104,15 +104,8 @@ describe("auth.email", () => {
 
     describe("when singpass is not enabled", () => {
       beforeEach(() => {
-        // Mock the GrowthBook isOn method to return false for the singpass feature
-        const ctx = createMockRequest(session)
-        const originalIsOn = ctx.gb.isOn
-        vi.spyOn(ctx.gb, "isOn").mockImplementation((featureKey: string) => {
-          return featureKey === IS_SINGPASS_ENABLED_FEATURE_KEY
-            ? false
-            : originalIsOn.call(ctx.gb, featureKey) // call original for other features
-        })
-        caller = createCaller(ctx)
+        vi.spyOn(growthbookLib, "getIsSingpassEnabled").mockReturnValue(false)
+        caller = createCaller(createMockRequest(session))
       })
 
       afterEach(() => {
@@ -259,22 +252,6 @@ describe("auth.email", () => {
     })
 
     describe("when singpass is enabled", () => {
-      beforeEach(() => {
-        // Mock the GrowthBook isOn method to return true for the singpass feature
-        const ctx = createMockRequest(session)
-        const originalIsOn = ctx.gb.isOn
-        vi.spyOn(ctx.gb, "isOn").mockImplementation((featureKey: string) => {
-          return featureKey === IS_SINGPASS_ENABLED_FEATURE_KEY
-            ? true
-            : originalIsOn.call(ctx.gb, featureKey) // call original for other features
-        })
-        caller = createCaller(ctx)
-      })
-
-      afterEach(() => {
-        vi.restoreAllMocks()
-      })
-
       it("should successfully set session on first valid OTP", async () => {
         // Arrange
         await setupUser({ email: TEST_VALID_EMAIL })
