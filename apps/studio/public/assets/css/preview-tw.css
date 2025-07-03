@@ -1523,6 +1523,11 @@ video {
   aspect-ratio: 1 / 1;
 }
 
+.size-1\/2 {
+  width: 50%;
+  height: 50%;
+}
+
 .size-5 {
   width: 1.25rem;
   height: 1.25rem;
@@ -2422,6 +2427,16 @@ video {
 
 .rounded-sm {
   border-radius: 0.125rem;
+}
+
+.rounded-l-lg {
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+}
+
+.rounded-t-lg {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
 }
 
 .border {
