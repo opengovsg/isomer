@@ -3,7 +3,7 @@ import type { z } from "zod"
 import { TRPCError } from "@trpc/server"
 import filenamify from "filenamify"
 
-import type { UserPermissionsProps } from "../permissions/permissions.type"
+import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { env } from "~/env.mjs"
 import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
@@ -17,7 +17,7 @@ export const validateUserPermissionsForAsset = async ({
   action,
   userId,
   siteId,
-}: UserPermissionsProps) => {
+}: AssetPermissionsProps) => {
   // We're using site permissions for create action
   // If user can read site, they can create assets
   if (action === "create") {

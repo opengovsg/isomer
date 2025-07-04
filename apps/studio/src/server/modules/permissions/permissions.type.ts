@@ -39,3 +39,7 @@ export interface BulkPermissionsProps
 export interface UserPermissionsProps extends PermissionsProps {
   action: CrudResourceActions
 }
+
+export interface AssetPermissionsProps extends PermissionsProps {
+  action: "create" | "delete"
+}
