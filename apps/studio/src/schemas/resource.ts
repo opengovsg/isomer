@@ -26,6 +26,7 @@ export const bigIntSchema = z
   .refine((v) => v.at(0) !== "0")
 
 export const getMetadataSchema = z.object({
+  siteId: z.number(),
   resourceId: bigIntSchema,
 })
 
@@ -79,6 +80,7 @@ export const listResourceSchema = z
   .merge(offsetPaginationSchema)
 
 export const getFullPermalinkSchema = z.object({
+  siteId: z.number(),
   resourceId: bigIntSchema,
 })
 

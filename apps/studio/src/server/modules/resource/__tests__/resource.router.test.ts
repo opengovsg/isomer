@@ -67,6 +67,7 @@ describe("resource.router", async () => {
 
       // Act
       const result = unauthedCaller.getMetadataById({
+        siteId: 1,
         resourceId: "1",
       })
 
@@ -86,6 +87,7 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getMetadataById({
+        siteId: site.id,
         resourceId: "1",
       })
 
@@ -110,6 +112,7 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getMetadataById({
+        siteId: site.id,
         resourceId: page.id,
       })
 
@@ -126,12 +129,13 @@ describe("resource.router", async () => {
 
     it("should throw 403 if user does not have read access to site", async () => {
       // Arrange
-      const { page } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: "Page",
       })
 
       // Act
       const result = caller.getMetadataById({
+        siteId: site.id,
         resourceId: page.id,
       })
 
@@ -2296,6 +2300,7 @@ describe("resource.router", async () => {
 
       // Act
       const result = unauthedCaller.getWithFullPermalink({
+        siteId: 1,
         resourceId: "1",
       })
 
@@ -2308,6 +2313,7 @@ describe("resource.router", async () => {
     it("should return 404 if resource does not exist", async () => {
       // Act
       const result = caller.getWithFullPermalink({
+        siteId: 1,
         resourceId: "99999",
       })
 
@@ -2329,6 +2335,7 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getWithFullPermalink({
+        siteId: site.id,
         resourceId: page.id,
       })
 
@@ -2364,6 +2371,7 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getWithFullPermalink({
+        siteId: site.id,
         resourceId: nestedPage.id,
       })
 
@@ -2377,12 +2385,13 @@ describe("resource.router", async () => {
 
     it("should throw 403 if user does not have read access to the site", async () => {
       // Arrange
-      const { page } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: "Page",
       })
 
       // Act
       const result = caller.getWithFullPermalink({
+        siteId: site.id,
         resourceId: page.id,
       })
 

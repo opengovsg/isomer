@@ -97,9 +97,10 @@ const validateUserPermissionsForMove = async ({
 export const resourceRouter = router({
   getMetadataById: protectedProcedure
     .input(getMetadataSchema)
-    .query(async ({ ctx, input: { resourceId } }) => {
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
       const resource = await db
         .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", String(resourceId))
         .select([
           "Resource.id",
@@ -122,7 +123,7 @@ export const resourceRouter = router({
         action: "read",
         resourceIds: [resourceId],
         userId: ctx.user.id,
-        siteId: resource.siteId,
+        siteId: Number(siteId),
       })
 
       return resource
@@ -670,9 +671,10 @@ export const resourceRouter = router({
 
   getWithFullPermalink: protectedProcedure
     .input(getFullPermalinkSchema)
-    .query(async ({ ctx, input: { resourceId } }) => {
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
       const resource = await db
         .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", resourceId)
         .select(["siteId", "id"])
         .executeTakeFirst()
@@ -688,7 +690,7 @@ export const resourceRouter = router({
         action: "read",
         resourceIds: [resource.id],
         userId: ctx.user.id,
-        siteId: resource.siteId,
+        siteId: Number(siteId),
       })
 
       const result = await getWithFullPermalink({ resourceId })

@@ -44,15 +44,18 @@ import {
 } from "../../atoms"
 
 interface SuspendablePermalinkProps {
+  siteId: number
   folderId: string
   permalink: string
 }
 const SuspendablePermalink = ({
+  siteId,
   folderId,
   permalink,
 }: SuspendablePermalinkProps) => {
   const [{ fullPermalink }] =
     trpc.resource.getWithFullPermalink.useSuspenseQuery({
+      siteId,
       resourceId: folderId ? String(folderId) : "",
     })
 
@@ -217,6 +220,7 @@ const SuspendableModalContent = ({
                   >
                     <Icon mr="0.5rem" as={BiLink} />
                     <SuspendablePermalink
+                      siteId={siteId}
                       folderId={folderId}
                       permalink={permalink}
                     />
