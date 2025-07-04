@@ -77,6 +77,10 @@ export const deactivateUser = async ({
         // For idempotency purposes since multiple nodes may run this function at the same time
         if (deletedPermissions.length === 0) return []
 
+        const siteIdsUserHasPermissionsFor = deletedPermissions.map(
+          (p) => p.siteId,
+        )
+
         return await tx
           .selectFrom("Site")
           .leftJoin(
@@ -85,6 +89,7 @@ export const deactivateUser = async ({
             "Site.id",
           )
           .innerJoin("User", "User.id", "ResourcePermission.userId")
+          .where("Site.id", "in", siteIdsUserHasPermissionsFor)
           .where("ResourcePermission.userId", "!=", user.id) // don't want to ask users to ask themselves for permissions
           .where("ResourcePermission.userId", "not in", userIdsToDeactivate)
           .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators

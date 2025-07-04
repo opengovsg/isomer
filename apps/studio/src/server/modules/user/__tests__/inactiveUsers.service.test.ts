@@ -231,6 +231,54 @@ describe("inactiveUsers.service", () => {
       expect(sitesAndAdmins?.[0]?.adminEmails).toContain(adminUser2.email)
     })
 
+    it("should only include admins from sites the deactivated user had permissions for", async () => {
+      // Arrange
+      // Create Site 1 with User A (to be deactivated) and User C (admin)
+      const userToDeactivate = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+      const adminOnSite1 = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null,
+      })
+
+      // Create Site 2 with User B (admin) - User A never had permissions here
+      const { site: site2 } = await setupSite()
+      const adminOnSite2 = await setupUserWrapper({
+        siteId: site2.id,
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      await deactivateUser({
+        user: userToDeactivate,
+        userIdsToDeactivate: [userToDeactivate.id],
+      })
+
+      // Assert
+      const emailCall = vi.mocked(sendAccountDeactivationEmail).mock.calls[0]
+      const sitesAndAdmins = emailCall?.[0]?.sitesAndAdmins
+      expect(sitesAndAdmins).toBeDefined()
+      expect(sitesAndAdmins).toHaveLength(1)
+      expect(sitesAndAdmins?.map((s) => s.siteName)).toContain(site.name)
+      expect(sitesAndAdmins?.map((s) => s.siteName)).not.toContain(site2.name)
+
+      // Should only include admin from Site 1 (where user had permissions)
+      expect(sitesAndAdmins?.[0]?.adminEmails).toContain(adminOnSite1.email)
+
+      // Should NOT include admin from Site 2 (where user never had permissions)
+      expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(adminOnSite2.email)
+
+      // Should NOT include the deactivated user themselves
+      expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(
+        userToDeactivate.email,
+      )
+    })
+
     it("should handle sites with no remaining admins", async () => {
       // Arrange
       const onlyAdmin = await setupUserWrapper({
