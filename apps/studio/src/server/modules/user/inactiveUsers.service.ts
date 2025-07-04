@@ -77,7 +77,7 @@ export const deactivateUser = async ({
         // For idempotency purposes since multiple nodes may run this function at the same time
         if (deletedPermissions.length === 0) return []
 
-        return await db
+        return await tx
           .selectFrom("Site")
           .leftJoin(
             "ResourcePermission",
