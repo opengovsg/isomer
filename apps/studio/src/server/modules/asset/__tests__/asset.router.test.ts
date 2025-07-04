@@ -285,7 +285,7 @@ describe("asset.router", async () => {
         parentId: folder.id,
         siteId: site.id,
       })
-      await setupEditorPermissions({
+      await setupPublisherPermissions({
         siteId: site.id,
         userId: session.userId,
       })
