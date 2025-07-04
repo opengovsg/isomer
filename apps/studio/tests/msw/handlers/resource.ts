@@ -172,6 +172,7 @@ export const resourceHandlers = {
           title: "Home",
           permalink: "home",
           parentId: null,
+          siteId: 1,
         }
       }),
     content: () =>
@@ -182,6 +183,7 @@ export const resourceHandlers = {
           title: "Page title here",
           permalink: "page-title-here",
           parentId: null,
+          siteId: 1,
         }
       }),
     article: () =>
@@ -192,6 +194,7 @@ export const resourceHandlers = {
           title: "article layout",
           permalink: "article-layout",
           parentId: null,
+          siteId: 1,
         }
       }),
     index: () =>
@@ -202,6 +205,7 @@ export const resourceHandlers = {
           title: "Index page",
           permalink: "_index",
           parentId: null,
+          siteId: 1,
         }
       }),
   },

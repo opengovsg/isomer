@@ -65,6 +65,7 @@ export const deleteCollectionById = async ({
       const collection = await tx
         .selectFrom("Resource")
         .select(["draftBlobId", "publishedVersionId"])
+        .where("siteId", "=", siteId)
         .where("id", "=", collectionId)
         .executeTakeFirst()
 
