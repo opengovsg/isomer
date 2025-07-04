@@ -85,6 +85,7 @@ export const definePermissionsForSite = async ({
 // we should fetch the oldest `parent` of this resource eventually
 export const bulkValidateUserPermissionsForResources = async ({
   action,
+  siteId,
   resourceIds,
   ...rest
 }: BulkPermissionsProps & { action: CrudResourceActions | "publish" }) => {
@@ -114,6 +115,7 @@ export const bulkValidateUserPermissionsForResources = async ({
     if (nonNullResourceIds.length > 0) {
       resources = await db
         .selectFrom("Resource")
+        .where("siteId", "=", siteId)
         .where("id", "in", nonNullResourceIds)
         .select(["Resource.parentId"])
         .execute()
@@ -132,7 +134,7 @@ export const bulkValidateUserPermissionsForResources = async ({
     return resources.concat(nullResourceIds.map(() => ({ parentId: null })))
   }
 
-  const perms = await definePermissionsForResource({ ...rest })
+  const perms = await definePermissionsForResource({ siteId, ...rest })
   const resources = await generateResources(resourceIds ?? [])
   await Promise.all(
     resources.map((resource) => {

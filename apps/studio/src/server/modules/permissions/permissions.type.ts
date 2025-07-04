@@ -1,6 +1,6 @@
 import type { PureAbility } from "@casl/ability"
 
-import type { Resource as RawResource } from "../database"
+import type { Resource as RawResource, Site } from "../database"
 
 type Resource = Pick<RawResource, "parentId">
 
@@ -32,6 +32,7 @@ export interface PermissionsProps {
 export interface BulkPermissionsProps
   extends Omit<PermissionsProps, "resourceId"> {
   action: CrudResourceActions | "publish"
+  siteId: Site["id"]
   resourceIds?: (string | null)[]
 }
 
