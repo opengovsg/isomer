@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto"
 import type { z } from "zod"
 import { TRPCError } from "@trpc/server"
+import filenamify from "filenamify"
 
 import type { UserPermissionsProps } from "../permissions/permissions.type"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
@@ -49,8 +50,9 @@ export const getFileKey = ({
 }: z.infer<typeof getPresignedPutUrlSchema>) => {
   // NOTE: We're using a random folder name to prevent collisions
   const folderName = randomUUID()
+  const sanitizedFileName = filenamify(fileName, { replacement: "-" })
 
-  return `${siteId}/${folderName}/${fileName}`
+  return `${siteId}/${folderName}/${sanitizedFileName}`
 }
 
 export const getPresignedPutUrl = async ({ key }: { key: string }) => {

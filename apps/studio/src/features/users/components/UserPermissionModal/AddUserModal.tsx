@@ -25,11 +25,13 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { useAtomValue, useSetAtom } from "jotai"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
 import { createUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
 import { addUserModalAtom, DEFAULT_ADD_USER_MODAL_STATE } from "../../atoms"
+import { SingpassConditionalTooltip } from "../SingpassConditionalTooltip"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
@@ -41,6 +43,8 @@ export const AddUserModal = () => {
   const addUserModalState = useAtomValue(addUserModalAtom)
   const { siteId, hasWhitelistError } = addUserModalState
   const setAddUserModalState = useSetAtom(addUserModalAtom)
+
+  const isSingpassEnabled = useIsSingpassEnabled()
 
   const {
     watch,
@@ -237,20 +241,23 @@ export const AddUserModal = () => {
           >
             Cancel
           </Button>
-          <Button
-            variant="solid"
-            onClick={onSendInvite}
-            isLoading={isLoading}
-            isDisabled={
-              Object.keys(errors).length > 0 ||
-              email === "" ||
-              additionalEmailError ||
-              email !== debouncedEmail || // check if email has changed
-              (watch("role") === RoleType.Admin && isNonGovEmailInput)
-            }
-          >
-            Send invite
-          </Button>
+          <SingpassConditionalTooltip>
+            <Button
+              variant="solid"
+              onClick={onSendInvite}
+              isLoading={isLoading}
+              isDisabled={
+                Object.keys(errors).length > 0 ||
+                email === "" ||
+                additionalEmailError ||
+                email !== debouncedEmail || // check if email has changed
+                (watch("role") === RoleType.Admin && isNonGovEmailInput) ||
+                !isSingpassEnabled
+              }
+            >
+              Send invite
+            </Button>
+          </SingpassConditionalTooltip>
         </ModalFooter>
       </ModalContent>
     </Modal>
