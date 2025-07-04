@@ -389,6 +389,7 @@ export const getLocalisedSitemap = async (
               "nestedResources.id",
               "Resource.parentId",
             )
+            .where("Resource.siteId", "=", Number(siteId))
             .where("Resource.type", "in", [
               ResourceType.Folder,
               ResourceType.Collection,

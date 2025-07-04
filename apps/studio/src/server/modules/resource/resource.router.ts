@@ -433,6 +433,7 @@ export const resourceRouter = router({
 
             await tx
               .updateTable("Resource")
+              .where("siteId", "=", Number(siteId))
               .where("id", "=", String(movedResourceId))
               .where("Resource.type", "in", [
                 ResourceType.Page,
@@ -449,6 +450,7 @@ export const resourceRouter = router({
 
             const moved = await tx
               .selectFrom("Resource")
+              .where("siteId", "=", Number(siteId))
               .where("id", "=", movedResourceId)
               .select(defaultResourceSelect)
               .executeTakeFirst()
@@ -585,6 +587,7 @@ export const resourceRouter = router({
       const result = await db.transaction().execute(async (tx) => {
         const before = await tx
           .selectFrom("Resource")
+          .where("siteId", "=", Number(siteId))
           .where("id", "=", resourceId)
           .select(defaultResourceSelect)
           .executeTakeFirst()

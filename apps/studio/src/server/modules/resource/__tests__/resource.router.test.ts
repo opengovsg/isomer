@@ -2488,6 +2488,7 @@ describe("resource.router", async () => {
         resourceType: "RootPage",
       })
       const { folder: parentFolder } = await setupFolder({
+        siteId: site.id,
         permalink: "parent-folder",
         title: "Parent folder",
       })

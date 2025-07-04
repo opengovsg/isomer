@@ -170,9 +170,9 @@ export const folderRouter = router({
     ),
   getMetadata: protectedProcedure
     .input(readFolderSchema)
-    .query(async ({ ctx, input }) => {
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId: input.siteId,
+        siteId,
         action: "read",
         userId: ctx.user.id,
       })
@@ -183,7 +183,8 @@ export const folderRouter = router({
       const data = await db
         .selectFrom("Resource")
         .select(["Resource.title", "Resource.permalink", "Resource.parentId"])
-        .where("id", "=", String(input.resourceId))
+        .where("siteId", "=", siteId)
+        .where("id", "=", String(resourceId))
         .executeTakeFirst()
 
       if (!data) {
@@ -298,12 +299,14 @@ export const folderRouter = router({
 
       const { title } = await db
         .selectFrom("Resource")
+        .where("siteId", "=", siteId)
         .where("id", "=", resourceId)
         .select("title")
         .executeTakeFirstOrThrow()
 
       const indexPage = await db
         .selectFrom("Resource")
+        .where("siteId", "=", siteId)
         .where("Resource.parentId", "=", resourceId)
         .where("Resource.type", "=", ResourceType.IndexPage)
         .select(["id", "draftBlobId"])
@@ -345,6 +348,7 @@ export const folderRouter = router({
       // of the folder, not the actual folder itself
       const { parentId, type } = await db
         .selectFrom("Resource")
+        .where("siteId", "=", Number(siteId))
         .where("id", "=", indexPageId)
         .select(["parentId", "type"])
         // NOTE: Technically we'll already throw
@@ -407,6 +411,7 @@ export const folderRouter = router({
           )
         })
         .selectFrom("Resource")
+        .where("siteId", "=", Number(siteId))
         .where("id", "in", (qb) =>
           qb.selectFrom("publishedCousinIndexPages").select("parentId"),
         )
