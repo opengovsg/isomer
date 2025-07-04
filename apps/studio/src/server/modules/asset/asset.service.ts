@@ -7,6 +7,7 @@ import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { env } from "~/env.mjs"
 import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
+import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 
@@ -36,6 +37,20 @@ export const validateUserPermissionsForAsset = async ({
       message: "Resource ID is required to validate asset permissions",
     })
   }
+
+  await db
+    .selectFrom("Resource")
+    .where("id", "=", resourceId)
+    .where("siteId", "=", siteId)
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+    )
+
   await bulkValidateUserPermissionsForResources({
     resourceIds: [resourceId],
     action,
