@@ -127,7 +127,7 @@ export const createSearchSgClient = async ({
     },
   })
 
-  console.log("Created search sg application with id: ", applicationId)
+  console.log("Created search sg application with id:", applicationId)
 
   const searchConfigJson = {
     search: {
