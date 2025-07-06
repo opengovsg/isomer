@@ -56,9 +56,9 @@ export const readSiteConfig = async (repo: string) => {
     const content = Buffer.from((data as any).content, "base64").toString(
       "utf8",
     )
-    const parsedJson = JSON.parse(content) as Record<string, unknown>
+    const parsedJson = JSON.parse(content) as Record<string, any>
 
-    return parsedJson
+    return { content: parsedJson, sha: (data as any).sha }
   } catch (error) {
     console.error("Error:", error)
     throw error
@@ -68,9 +68,12 @@ export const readSiteConfig = async (repo: string) => {
 export const updateSiteConfig = async (
   repo: string,
   siteConfig: Record<string, unknown>,
+  sha: string,
 ) => {
   const commitMessage = `[AUTOMATED]: Updating site config for ${repo}`
-  const content = Buffer.from(JSON.stringify(siteConfig)).toString("base64")
+  const content = Buffer.from(JSON.stringify(siteConfig, null, 2)).toString(
+    "base64",
+  )
 
   await octokit.rest.repos.createOrUpdateFileContents({
     owner,
@@ -79,6 +82,7 @@ export const updateSiteConfig = async (
     message: commitMessage,
     content,
     branch: "staging",
+    sha,
   })
 }
 
@@ -88,15 +92,21 @@ export const addSearchJson = async (repo: string) => {
     repo,
     path: "schema/search.json",
     message: `[AUTOMATED]: Adding search.json for ${repo}`,
-    content: JSON.stringify({
-      version: "0.1.0",
-      layout: "search",
-      page: {
-        title: "Search",
-        description: "Search results",
-      },
-      content: [],
-    }),
+    content: Buffer.from(
+      JSON.stringify(
+        {
+          version: "0.1.0",
+          layout: "search",
+          page: {
+            title: "Search",
+            description: "Search results",
+          },
+          content: [],
+        },
+        null,
+        2,
+      ),
+    ).toString("base64"),
     branch: "staging",
   })
 }
