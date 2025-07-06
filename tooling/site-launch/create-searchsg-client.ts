@@ -46,7 +46,7 @@ const generateRequestData = ({
     application: {
       siteDomain,
       // TODO: change back to production
-      environment: "non-production",
+      environment: "production",
       config: {
         search: {
           theme: {
@@ -68,7 +68,7 @@ export const createSearchSgClient = async ({
   domain,
   name,
 }: CreateSearchSgClientParams) => {
-  const authToken = fs.readFileSync(".searchsg").toString().trim()
+  const authToken = process.env.SEARCHSG_API_KEY
 
   const {
     data: { accessToken, tokenType },
@@ -101,9 +101,14 @@ export const createSearchSgClient = async ({
     throw new Error("Invalid URL: expected protocol to be `https`")
   }
 
+  const displayedName = await input({
+    message: "Enter the site name displayed on the search results page",
+    default: name,
+  })
+
   const data = generateRequestData({
     domain: dataDomain,
-    name,
+    name: displayedName,
     siteDomain: domain,
     primary,
   })
@@ -122,7 +127,7 @@ export const createSearchSgClient = async ({
     },
   })
 
-  console.log(applicationId)
+  console.log("Created search sg application with id: ", applicationId)
 
   const searchConfigJson = {
     search: {
@@ -146,23 +151,23 @@ export const createSearchSgClient = async ({
   // TODO: Write for users
   if (isGithub) {
     await confirm({
-      message: `Add the contents of ${urlRelativePath} to the data/config.json -> site`,
+      message: `Have you added the contents of ${urlRelativePath} to the data/config.json -> site?`,
     })
     await confirm({
-      message: `Add the contents of ${searchJsonRelativePath} to data/config.json -> site`,
+      message: `Have you added the contents of ${searchJsonRelativePath} to data/config.json -> site?`,
     })
     await confirm({
-      message: `Add the contents of \`search.json\` to the \`schema\` folder`,
+      message: `Have you added the contents of \`search.json\` to the \`schema\` folder?`,
     })
   } else {
     await confirm({
-      message: `Add the contents of ${searchJsonRelativePath} to Site.config`,
+      message: `Have you added the contents of ${searchJsonRelativePath} to Site.config?`,
     })
     await confirm({
-      message: `Add the contents of ${urlRelativePath} to Site.config`,
+      message: `Have you added the contents of ${urlRelativePath} to Site.config?`,
     })
     await confirm({
-      message: `Add the contents of \`search.json\` to the site via Admin mode on Studio`,
+      message: `Have you added the contents of \`search.json\` to the site via Admin mode on Studio?`,
     })
   }
 }
