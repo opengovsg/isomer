@@ -1,5 +1,6 @@
 import { confirm, input } from "@inquirer/prompts"
 import { createSearchSgClient } from "create-searchsg-client"
+import { createIndirection } from "indirection"
 import { requestAcm } from "request-acm"
 
 const profile = process.env.AWS_PROFILE
@@ -21,3 +22,5 @@ const long = await input({ message: "Enter the long name of the site:" })
 // })
 
 await createSearchSgClient({ domain, name: long })
+
+await createIndirection(domain)
