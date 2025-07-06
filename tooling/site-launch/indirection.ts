@@ -2,7 +2,7 @@ import {
   CloudFrontClient,
   ListDistributionsCommand,
 } from "@aws-sdk/client-cloudfront"
-import { Octokit } from "@octokit/rest"
+import { commitAndCreatePR } from "github"
 
 export const createIndirection = async (domain: string) => {
   const indirectionDomain = domain.replaceAll(".", "-")
@@ -60,46 +60,4 @@ export const createRecords = (zoneId: string): Record[] => {
 };`
 
   await commitAndCreatePR(domain, content)
-}
-
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
-})
-
-const commitAndCreatePR = async (domain: string, rawContent: string) => {
-  const owner = "isomerpages"
-  const repo = "isomer-indirection"
-  const filePath = `dns/${domain}.ts`
-  const commitMessage = `[AUTOMATED]: Site launch for ${domain}`
-  const prTitle = `[AUTOMATED]: Site launch for ${domain}`
-  const content = Buffer.from(rawContent).toString("base64")
-
-  try {
-    // Step 1: Create or update file content
-    await octokit.rest.repos.createOrUpdateFileContents({
-      owner,
-      repo,
-      path: filePath,
-      message: commitMessage,
-      content,
-      branch: "staging",
-    })
-
-    // Step 2: Create pull request
-    const { data: pullRequest } = await octokit.rest.pulls.create({
-      owner,
-      repo,
-      title: prTitle,
-      head: "staging",
-      base: "main",
-    })
-
-    console.log(
-      `Pull request created: ${pullRequest.html_url}, ask another @isoengineer to approve it`,
-    )
-    return pullRequest
-  } catch (error) {
-    console.error("Error:", error)
-    throw error
-  }
 }
