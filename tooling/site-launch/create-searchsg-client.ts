@@ -1,7 +1,7 @@
-import fs, { writeFileSync } from "fs"
+import { writeFileSync } from "fs"
 import { confirm, input } from "@inquirer/prompts"
 import axios from "axios"
-import { exec } from "utils"
+import { addSearchJson, readSiteConfig, updateSiteConfig } from "github"
 
 const BASE_SEARCHSG_URL = "https://api.services.search.gov.sg/admin/v1"
 const ISOMER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
@@ -64,10 +64,53 @@ type CreateSearchSgClientParams = Omit<
   "primary" | "siteDomain"
 >
 
-export const createSearchSgClient = async ({
+export const createSearchSgClientForGithub = async ({
   domain,
   name,
 }: CreateSearchSgClientParams) => {
+  const repo = await input({
+    message: "Enter the github repo for the site:",
+  })
+
+  const siteConfig = await readSiteConfig(repo)
+
+  // TODO: add validation via zod
+  const primary = (siteConfig as any).colors?.brand?.canvas?.inverse
+
+  const { displayedName, dataDomain } = await askForDomainAndName({
+    domain,
+    name,
+  })
+
+  const applicationId = await createSearchSgClient({
+    dataDomain,
+    displayedName,
+    domain,
+    primary,
+  })
+
+  siteConfig.url = `https://${domain}`
+  siteConfig.search = {
+    type: "searchSG",
+    clientId: applicationId,
+  }
+
+  await updateSiteConfig(repo, siteConfig)
+  await addSearchJson(repo)
+}
+
+interface SearchSgConfig {
+  dataDomain: string
+  domain: string
+  displayedName: string
+  primary: string
+}
+export const createSearchSgClient = async ({
+  dataDomain,
+  domain,
+  displayedName,
+  primary,
+}: SearchSgConfig) => {
   const authToken = process.env.SEARCHSG_API_KEY
 
   const {
@@ -82,29 +125,6 @@ export const createSearchSgClient = async ({
       },
     },
   )
-
-  // TODO: validate this to be #[0-9A-F]{6}
-  const primary = await input({
-    message:
-      "Enter the hex value (eg: #FFFFFF) of the site's `colors.brand.canvas.inverse`:",
-  })
-
-  const dataDomain = await input({
-    message:
-      "Enter the domain for the data source (e.g. https://isomer.gov.sg):",
-    default: `https://${domain}`,
-  })
-
-  // NOTE: try to form a URL with the `dataDomain` - reject if we cannot
-  const url = new URL(dataDomain)
-  if (url.protocol !== "https:") {
-    throw new Error("Invalid URL: expected protocol to be `https`")
-  }
-
-  const displayedName = await input({
-    message: "Enter the site name displayed on the search results page",
-    default: name,
-  })
 
   const data = generateRequestData({
     domain: dataDomain,
@@ -127,6 +147,31 @@ export const createSearchSgClient = async ({
     },
   })
 
+  return applicationId
+}
+
+export const createSearchSgClientForStudio = async ({
+  domain,
+  name,
+}: CreateSearchSgClientParams) => {
+  // TODO: validate this to be #[0-9A-F]{6}
+  const primary = await input({
+    message:
+      "Enter the hex value (eg: #FFFFFF) of the site's `colors.brand.canvas.inverse`:",
+  })
+
+  const { displayedName, dataDomain } = await askForDomainAndName({
+    domain,
+    name,
+  })
+
+  const applicationId = await createSearchSgClient({
+    dataDomain,
+    displayedName,
+    domain,
+    primary,
+  })
+
   console.log("Created search sg application with id:", applicationId)
 
   const searchConfigJson = {
@@ -146,28 +191,38 @@ export const createSearchSgClient = async ({
   const urlRelativePath = `${domain}.url.json`
   writeFileSync(`./${urlRelativePath}`, JSON.stringify(urlJson))
 
-  const isGithub = await confirm({ message: "Is your site on Github?" })
+  // TODO: Write to db
+  await confirm({
+    message: `Have you added the contents of ${searchJsonRelativePath} to Site.config?`,
+  })
+  await confirm({
+    message: `Have you added the contents of ${urlRelativePath} to Site.config?`,
+  })
+  await confirm({
+    message: `Have you added the contents of \`search.json\` to the site via Admin mode on Studio?`,
+  })
+}
 
-  // TODO: Write for users
-  if (isGithub) {
-    await confirm({
-      message: `Have you added the contents of ${urlRelativePath} to the data/config.json -> site?`,
-    })
-    await confirm({
-      message: `Have you added the contents of ${searchJsonRelativePath} to data/config.json -> site?`,
-    })
-    await confirm({
-      message: `Have you added the contents of \`search.json\` to the \`schema\` folder?`,
-    })
-  } else {
-    await confirm({
-      message: `Have you added the contents of ${searchJsonRelativePath} to Site.config?`,
-    })
-    await confirm({
-      message: `Have you added the contents of ${urlRelativePath} to Site.config?`,
-    })
-    await confirm({
-      message: `Have you added the contents of \`search.json\` to the site via Admin mode on Studio?`,
-    })
+const askForDomainAndName = async ({
+  domain,
+  name,
+}: CreateSearchSgClientParams) => {
+  const dataDomain = await input({
+    message:
+      "Enter the domain for the data source (e.g. https://isomer.gov.sg):",
+    default: `https://${domain}`,
+  })
+
+  // NOTE: try to form a URL with the `dataDomain` - reject if we cannot
+  const url = new URL(dataDomain)
+  if (url.protocol !== "https:") {
+    throw new Error("Invalid URL: expected protocol to be `https`")
   }
+
+  const displayedName = await input({
+    message: "Enter the site name displayed on the search results page",
+    default: name,
+  })
+
+  return { displayedName, dataDomain }
 }
