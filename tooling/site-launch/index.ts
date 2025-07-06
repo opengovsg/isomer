@@ -1,5 +1,8 @@
 import { confirm, input } from "@inquirer/prompts"
-import { createSearchSgClient } from "create-searchsg-client"
+import {
+  createSearchSgClientForGithub,
+  createSearchSgClientForStudio,
+} from "create-searchsg-client"
 import { createIndirection } from "indirection"
 import { requestAcm } from "request-acm"
 
@@ -14,13 +17,25 @@ if (!profile) throw new Error("No AWS_PROFILE found in environment variables")
 const domain = await input({
   message: "Enter the domain (FQDN) of the site (eg: www.isomer.gov.sg):",
 })
-// await requestAcm(domain)
+const needsAcm = await confirm({
+  message: `Do you need to generate a SSL cert for this domain?`,
+})
+
+if (needsAcm) await requestAcm(domain)
 
 const long = await input({ message: "Enter the long name of the site:" })
 // const codebuild = await input({
 //   message: "Enter the code-build name of the site (eg: ogp-corp)",
 // })
 
-await createSearchSgClient({ domain, name: long })
+const isGithub = await confirm({
+  message: `Is this a Github site?`,
+})
+
+if (isGithub) {
+  await createSearchSgClientForGithub({ domain, name: long })
+} else {
+  await createSearchSgClientForStudio({ domain, name: long })
+}
 
 await createIndirection(domain)

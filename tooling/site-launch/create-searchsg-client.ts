@@ -72,7 +72,7 @@ export const createSearchSgClientForGithub = async ({
     message: "Enter the github repo for the site:",
   })
 
-  const siteConfig = await readSiteConfig(repo)
+  const { content: siteConfig, sha } = await readSiteConfig(repo)
 
   // TODO: add validation via zod
   const primary = (siteConfig as any).colors?.brand?.canvas?.inverse
@@ -89,13 +89,13 @@ export const createSearchSgClientForGithub = async ({
     primary,
   })
 
-  siteConfig.url = `https://${domain}`
-  siteConfig.search = {
+  siteConfig.site.url = `https://${domain}`
+  siteConfig.site.search = {
     type: "searchSG",
     clientId: applicationId,
   }
 
-  await updateSiteConfig(repo, siteConfig)
+  await updateSiteConfig(repo, siteConfig, sha)
   await addSearchJson(repo)
 }
 
@@ -105,7 +105,7 @@ interface SearchSgConfig {
   displayedName: string
   primary: string
 }
-export const createSearchSgClient = async ({
+const createSearchSgClient = async ({
   dataDomain,
   domain,
   displayedName,
@@ -147,6 +147,8 @@ export const createSearchSgClient = async ({
     },
   })
 
+  console.log("Created search sg application with id:", applicationId)
+
   return applicationId
 }
 
@@ -171,8 +173,6 @@ export const createSearchSgClientForStudio = async ({
     domain,
     primary,
   })
-
-  console.log("Created search sg application with id:", applicationId)
 
   const searchConfigJson = {
     search: {
