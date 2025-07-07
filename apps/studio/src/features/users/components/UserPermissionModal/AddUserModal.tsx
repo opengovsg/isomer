@@ -70,7 +70,7 @@ export const AddUserModal = () => {
   const debouncedEmail = useDebounce(email, 300)
 
   const isNonGovEmailInput = useMemo(
-    () => !!(!errors.email && email && !isGovEmail(email)),
+    () => !!(!errors.email && email && !isGovEmail(email.trim())),
     [errors.email, email],
   )
 

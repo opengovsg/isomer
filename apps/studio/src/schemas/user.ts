@@ -4,7 +4,7 @@ import { z } from "zod"
 
 import { offsetPaginationSchema } from "./pagination"
 
-const emailSchema = createEmailSchema().pipe(z.string().toLowerCase())
+const emailSchema = createEmailSchema().pipe(z.string().trim().toLowerCase())
 
 export const getPermissionsInputSchema = z.object({
   siteId: z.number().min(1),
