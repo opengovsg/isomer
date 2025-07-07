@@ -530,7 +530,7 @@ describe("inactiveUsers.service", () => {
     it("should return an empty array when there are no users", async () => {
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -557,7 +557,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -574,7 +574,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -592,7 +592,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -609,7 +609,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -627,7 +627,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -664,7 +664,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -694,7 +694,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -710,7 +710,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -734,7 +734,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -759,7 +759,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -782,11 +782,115 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
+    })
+
+    it("should filter users by fromDaysAgo when provided", async () => {
+      // Arrange
+      const userCreatedVeryLongAgo = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 120,
+        lastLoginDaysAgo: null,
+      })
+      const userCreatedLongAgo = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 100,
+        lastLoginDaysAgo: null,
+      })
+      const userCreatedRecently = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 80,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act + Assert (1)
+      const usersCreatedVeryLongAgo = await getInactiveUsers({
+        fromDaysAgo: 130,
+        toDaysAgo: 110,
+      })
+      expect(usersCreatedVeryLongAgo).toHaveLength(1)
+      expect(usersCreatedVeryLongAgo[0]?.id).toBe(userCreatedVeryLongAgo.id)
+
+      // Act + Assert (2)
+      const usersCreatedLongAgo = await getInactiveUsers({
+        fromDaysAgo: 110,
+        toDaysAgo: 90,
+      })
+      expect(usersCreatedLongAgo).toHaveLength(1)
+      expect(usersCreatedLongAgo[0]?.id).toBe(userCreatedLongAgo.id)
+
+      // Act + Assert (3)
+      const usersCreatedRecently = await getInactiveUsers({
+        fromDaysAgo: 90,
+        toDaysAgo: 70,
+      })
+      expect(usersCreatedRecently).toHaveLength(1)
+      expect(usersCreatedRecently[0]?.id).toBe(userCreatedRecently.id)
+
+      // Act + Assert (4)
+      const users = await getInactiveUsers({
+        fromDaysAgo: 110,
+        toDaysAgo: 0,
+      })
+      expect(users).toHaveLength(2)
+      expect(users.map((u) => u.id)).toContain(userCreatedLongAgo.id)
+      expect(users.map((u) => u.id)).toContain(userCreatedRecently.id)
+    })
+
+    it("should filter users by fromDaysAgo for users who have logged in", async () => {
+      // Arrange
+      const _userLoggedInVeryLongAgo = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 120,
+        lastLoginDaysAgo: 110,
+      })
+      const userLoggedInLongAgo = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 100,
+        lastLoginDaysAgo: 90,
+      })
+      const _userLoggedInRecently = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 80,
+        lastLoginDaysAgo: 70,
+      })
+
+      // Act
+      const users = await getInactiveUsers({
+        fromDaysAgo: 110,
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
+      })
+
+      // Assert
+      expect(users).toHaveLength(1)
+      expect(users.map((u) => u.id)).toContain(userLoggedInLongAgo.id)
+    })
+
+    it("should work with only fromDaysAgo parameter", async () => {
+      // Arrange
+      const userCreatedVeryLongAgo = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 110,
+        lastLoginDaysAgo: null,
+      })
+      const _userCreatedLongAgo = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 80,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      const inactiveUsers = await getInactiveUsers({
+        fromDaysAgo: 120,
+      })
+
+      // Assert
+      expect(inactiveUsers).toHaveLength(1)
+      expect(inactiveUsers[0]?.id).toBe(userCreatedVeryLongAgo.id)
     })
   })
 })
