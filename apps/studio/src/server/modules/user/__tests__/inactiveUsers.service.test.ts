@@ -961,7 +961,7 @@ describe("inactiveUsers.service", () => {
         // Assert
         expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
           recipientEmail: user.email,
-          siteNames: [],
+          siteNames: [site.name],
           inHowManyDays: 1,
         })
         await expect(
@@ -985,7 +985,7 @@ describe("inactiveUsers.service", () => {
         // Assert
         expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
           recipientEmail: user.email,
-          siteNames: [],
+          siteNames: [site.name],
           inHowManyDays: 7,
         })
         await expect(
@@ -1009,7 +1009,7 @@ describe("inactiveUsers.service", () => {
         // Assert
         expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
           recipientEmail: user.email,
-          siteNames: [],
+          siteNames: [site.name],
           inHowManyDays: 14,
         })
         await expect(
@@ -1041,9 +1041,10 @@ describe("inactiveUsers.service", () => {
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(1)
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
-        siteNames: [],
+        siteNames: [site.name],
         inHowManyDays: 1,
       })
+      // Assert that the user is not sent ANY email for days 7 method
       expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
         recipientEmail: user.email,
         siteNames: [],
@@ -1051,7 +1052,18 @@ describe("inactiveUsers.service", () => {
       })
       expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
         recipientEmail: user.email,
+        siteNames: [site.name],
+        inHowManyDays: 7,
+      })
+      // Assert that the user is not sent ANY email for days 14 method
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        recipientEmail: user.email,
         siteNames: [],
+        inHowManyDays: 14,
+      })
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [site.name],
         inHowManyDays: 14,
       })
     })
@@ -1095,12 +1107,12 @@ describe("inactiveUsers.service", () => {
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(2)
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
         recipientEmail: user1.email,
-        siteNames: [],
+        siteNames: [site.name],
         inHowManyDays: 1,
       })
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
         recipientEmail: user2.email,
-        siteNames: [],
+        siteNames: [site.name],
         inHowManyDays: 1,
       })
     })
@@ -1138,9 +1150,57 @@ describe("inactiveUsers.service", () => {
       users.forEach((user) => {
         expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
           recipientEmail: user.email,
-          siteNames: [],
+          siteNames: [site.name],
           inHowManyDays: 1,
         })
+      })
+    })
+
+    it("should not send warning emails to users who have no site permissions", async () => {
+      // Arrange
+      await setupUserWrapper({
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalled()
+    })
+
+    it("should include multiple sites in the email", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null,
+      })
+      // Add another site permission for the user
+      const { site: anotherSite } = await setupSite()
+      await db
+        .insertInto("ResourcePermission")
+        .values({
+          userId: user.id,
+          siteId: anotherSite.id,
+          role: RoleType.Admin,
+        })
+        .execute()
+
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(1)
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [site.name, anotherSite.name],
+        inHowManyDays: 1,
       })
     })
 
@@ -1160,7 +1220,7 @@ describe("inactiveUsers.service", () => {
       // Assert
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
-        siteNames: [],
+        siteNames: [site.name],
         inHowManyDays: 1,
       })
     })
@@ -1181,7 +1241,7 @@ describe("inactiveUsers.service", () => {
       // Assert
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
-        siteNames: [],
+        siteNames: [site.name],
         inHowManyDays: 1,
       })
     })

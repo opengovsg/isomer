@@ -86,10 +86,33 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
     toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN - inHowManyDays,
   })
 
-  for (const user of inactiveUsers) {
+  const userIds = inactiveUsers.map((user) => user.id)
+  if (userIds.length === 0) return
+
+  const userAndSiteNames: { userEmail: string; siteNames: string[] }[] =
+    await db
+      .selectFrom("User")
+      .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
+      .innerJoin("Site", "Site.id", "ResourcePermission.siteId")
+      .where("User.id", "in", userIds)
+      .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
+      .where("User.deletedAt", "is", null)
+      .where("ResourcePermission.deletedAt", "is", null)
+      .select([
+        "User.email as userEmail",
+        db.fn.agg<string[]>("array_agg", ["Site.name"]).as("siteNames"),
+      ])
+      .groupBy("User.email")
+      .execute()
+
+  for (const { userEmail, siteNames } of userAndSiteNames) {
+    // should not happen as we filter out users who have no site permissions
+    // but just in case, we add this as a safety net
+    if (siteNames.length === 0) continue
+
     await sendAccountDeactivationWarningEmail({
-      recipientEmail: user.email,
-      siteNames: [],
+      recipientEmail: userEmail,
+      siteNames,
       inHowManyDays,
     })
   }
