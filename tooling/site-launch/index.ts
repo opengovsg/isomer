@@ -26,9 +26,9 @@ const needsAcm = await confirm({
 if (needsAcm) await requestAcm(domain)
 
 const long = await input({ message: "Enter the long name of the site:" })
-// const codebuild = await input({
-//   message: "Enter the code-build name of the site (eg: ogp-corp)",
-// })
+const codebuild = await input({
+  message: "Enter the code-build name of the site (eg: ogp-corp)",
+})
 
 const isGithub = await confirm({
   message: `Is this a Github site?`,
@@ -43,10 +43,18 @@ if (isGithub) {
     message: "Enter the site id for the site:",
   })
 
+  await confirm({ message: "Have you ran `npm run db:connect`?" })
   // TODO: validate
-  migrate(repo, siteId as unknown as number)
+  // cleanup old assets/repos folder
+  // connect to db automatically
+  await migrate(repo, siteId as unknown as number)
 } else {
   await createSearchSgClientForStudio({ domain, name: long })
 }
 
 await createIndirection(domain)
+// await startCodeBuild()
+// add admins
+
+// const shouldCleanup = await confirm({ message: "Perform clean-up for assets?" })
+// await cleanup()
