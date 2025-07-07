@@ -102,7 +102,7 @@ export const AddUserModal = () => {
 
   const { refetch: checkWhitelist } =
     trpc.whitelist.isEmailWhitelisted.useQuery(
-      { siteId, email: debouncedEmail || "" },
+      { siteId, email: (debouncedEmail || "").trim() },
       {
         enabled: false,
         onSuccess: (isWhitelisted) => {
