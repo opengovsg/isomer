@@ -4,7 +4,7 @@ import type { User } from "../database"
 import type { AccountDeactivationEmailTemplateData } from "~/features/mail/templates/types"
 import { sendAccountDeactivationEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
-import { db, sql } from "../database"
+import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 
 export const DAYS_IN_MS = 24 * 60 * 60 * 1000
@@ -99,6 +99,7 @@ export const deactivateUser = async ({
               .where("ResourcePermission.userId", "!=", user.id) // don't want to ask users to ask themselves for permissions
               .where("ResourcePermission.userId", "not in", userIdsToDeactivate)
               .where("ResourcePermission.deletedAt", "is", null)
+              .where("ResourcePermission.role", "=", RoleType.Admin) // should only give the admin emails to request reactivation permissions from
               .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
               .select([
                 "Site.id as siteId",

@@ -2,6 +2,8 @@ import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
+  setupEditorPermissions,
+  setupPublisherPermissions,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
@@ -10,6 +12,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Site, User } from "~/server/modules/database"
 import { sendAccountDeactivationEmail } from "~/features/mail/service"
 import { db } from "~/server/modules/database"
+import { RoleType } from "~/server/modules/database/types"
 import {
   DAYS_FROM_LAST_LOGIN,
   DAYS_IN_MS,
@@ -23,6 +26,7 @@ interface SetupUserWrapperProps {
   createdDaysAgo: number | null
   lastLoginDaysAgo: number | null
   isDeleted?: boolean
+  sitePermission?: RoleType
 }
 const setupUserWrapper = async ({
   siteId,
@@ -30,6 +34,7 @@ const setupUserWrapper = async ({
   createdDaysAgo = null,
   lastLoginDaysAgo = null,
   isDeleted = false,
+  sitePermission = RoleType.Admin,
 }: SetupUserWrapperProps): Promise<User> => {
   const user = await setupUser({
     email: email ?? crypto.randomUUID() + "@user.com",
@@ -40,7 +45,20 @@ const setupUserWrapper = async ({
   })
 
   if (siteId) {
-    await setupAdminPermissions({ siteId, userId: user.id, isDeleted })
+    switch (sitePermission) {
+      case RoleType.Admin:
+        await setupAdminPermissions({ siteId, userId: user.id, isDeleted })
+        break
+      case RoleType.Publisher:
+        await setupPublisherPermissions({ siteId, userId: user.id, isDeleted })
+        break
+      case RoleType.Editor:
+        await setupEditorPermissions({ siteId, userId: user.id, isDeleted })
+        break
+      default:
+        const _: never = sitePermission
+        throw new Error(`Invalid site permission`)
+    }
   }
 
   if (!createdDaysAgo) return user
@@ -436,6 +454,48 @@ describe("inactiveUsers.service", () => {
         recipientEmail: userToDeactivate.email,
         sitesAndAdmins: expect.any(Array),
       })
+    })
+
+    it("should not include non-admins (publishers + editors) in the site admins list", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+      const admin = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null,
+        sitePermission: RoleType.Admin,
+      })
+      const publisher = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null,
+        sitePermission: RoleType.Publisher,
+      })
+      const editor = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null,
+        sitePermission: RoleType.Editor,
+      })
+
+      // Act
+      await deactivateUser({
+        user,
+        userIdsToDeactivate: [user.id],
+      })
+
+      // Assert
+      const emailCall = vi.mocked(sendAccountDeactivationEmail).mock.calls[0]
+      const sitesAndAdmins = emailCall?.[0]?.sitesAndAdmins
+      expect(sitesAndAdmins).toBeDefined()
+      expect(sitesAndAdmins).toHaveLength(1)
+      expect(sitesAndAdmins?.[0]?.adminEmails).toContain(admin.email)
+      expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(publisher.email)
+      expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(editor.email)
     })
 
     it("should not throw error when userIdsToDeactivate is empty array", async () => {
