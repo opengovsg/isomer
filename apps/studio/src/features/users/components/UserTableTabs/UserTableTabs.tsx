@@ -11,7 +11,7 @@ import {
 import { UserManagementContext } from "~/features/users"
 import { trpc } from "~/utils/trpc"
 import { UserTable } from "../UserTable"
-import { InactiveUsersBanner, IsomerAdminAccessBanner } from "./Banners"
+import { IsomerAdminAccessBanner } from "./Banners"
 import { UserTableTab } from "./UserTableTab"
 
 interface UserTableTabsProps {
@@ -67,10 +67,6 @@ export const UserTableTabs = ({
         </TabList>
         <TabPanels __css={styles.tabpanels}>
           <TabPanel>
-            {inactiveUsersCount > 0 &&
-              ability.can("manage", "UserManagement") && (
-                <InactiveUsersBanner />
-              )}
             <UserTable siteId={siteId} adminType="agency" />
           </TabPanel>
           <TabPanel>
