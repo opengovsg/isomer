@@ -1018,6 +1018,44 @@ describe("inactiveUsers.service", () => {
       })
     })
 
+    it("should not send multiple emails to the same user", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 7,
+      })
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 14,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(1)
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [],
+        inHowManyDays: 1,
+      })
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [],
+        inHowManyDays: 7,
+      })
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [],
+        inHowManyDays: 14,
+      })
+    })
+
     it("should not send warning emails to users who are active", async () => {
       // Arrange
       await setupUserWrapper({
