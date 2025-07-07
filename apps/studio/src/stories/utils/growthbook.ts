@@ -4,6 +4,7 @@ import {
   BANNER_FEATURE_KEY,
   CATEGORY_DROPDOWN_FEATURE_KEY,
   IS_SINGPASS_ENABLED_FEATURE_KEY,
+  COLLECTION_WIDGET_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
 
 export const createBannerGbParameters = ({
@@ -22,4 +23,8 @@ export const createDropdownGbParameters = (siteId: string) => {
 
 export const createSingpassEnabledGbParameters = (isEnabled: boolean) => {
   return [IS_SINGPASS_ENABLED_FEATURE_KEY, isEnabled]
+}
+
+export const createCollectionWidgetEnabledGbParameters = (isEnabled: boolean) => {
+  return [COLLECTION_WIDGET_ENABLED_FEATURE_KEY, isEnabled]
 }

@@ -5,6 +5,8 @@ export const ISOMER_ADMIN_FEATURE_KEY = "isomer_admins"
 export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
+export const COLLECTION_WIDGET_ENABLED_FEATURE_KEY = "collection-widget-enabled"
+export const COLLECTION_WIDGET_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
 interface GetIsSingpassEnabledProps {
   gb: GrowthBook
@@ -16,6 +18,19 @@ export const getIsSingpassEnabled = ({
   return gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+  )
+}
+
+interface GetIsCollectionWidgetEnabledProps {
+  gb: GrowthBook
+}
+
+export const getIsCollectionWidgetEnabled = ({
+  gb,
+}: GetIsCollectionWidgetEnabledProps): boolean => {
+  return gb.getFeatureValue(
+    COLLECTION_WIDGET_ENABLED_FEATURE_KEY,
+    COLLECTION_WIDGET_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
   )
 }
 
