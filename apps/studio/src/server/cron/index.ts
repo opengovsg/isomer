@@ -1,6 +1,7 @@
 import { createBaseLogger } from "../../lib/logger"
 import {
   deactivateInactiveUsersJob,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   sendAccountDeactivationDayEmailJob,
 } from "./jobs"
 
@@ -14,9 +15,10 @@ export const initializeCronJobs = () => {
 
   // Initialize and track all cron jobs
   cronJobs.push(
-    sendAccountDeactivationDayEmailJob({ inHowManyDays: 1 }),
-    sendAccountDeactivationDayEmailJob({ inHowManyDays: 7 }),
-    sendAccountDeactivationDayEmailJob({ inHowManyDays: 14 }),
+    // TODO: Uncomment when we have a proper scheduler that prevents idempotency issues
+    // sendAccountDeactivationDayEmailJob({ inHowManyDays: 1 }),
+    // sendAccountDeactivationDayEmailJob({ inHowManyDays: 7 }),
+    // sendAccountDeactivationDayEmailJob({ inHowManyDays: 14 }),
     deactivateInactiveUsersJob(),
   )
 
