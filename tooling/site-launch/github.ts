@@ -1,4 +1,3 @@
-import { readFileSync } from "fs"
 import { Octokit } from "@octokit/rest"
 
 const octokit = new Octokit({
@@ -40,7 +39,6 @@ export const commitAndCreatePR = async (domain: string, rawContent: string) => {
     return pullRequest
   } catch (error) {
     console.error("Error:", error)
-    throw error
   }
 }
 
@@ -87,26 +85,31 @@ export const updateSiteConfig = async (
 }
 
 export const addSearchJson = async (repo: string) => {
-  await octokit.rest.repos.createOrUpdateFileContents({
-    owner,
-    repo,
-    path: "schema/search.json",
-    message: `[AUTOMATED]: Adding search.json for ${repo}`,
-    content: Buffer.from(
-      JSON.stringify(
-        {
-          version: "0.1.0",
-          layout: "search",
-          page: {
-            title: "Search",
-            description: "Search results",
+  try {
+    await octokit.rest.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path: "schema/search.json",
+      message: `[AUTOMATED]: Adding search.json for ${repo}`,
+      content: Buffer.from(
+        JSON.stringify(
+          {
+            version: "0.1.0",
+            layout: "search",
+            page: {
+              title: "Search",
+              description: "Search results",
+            },
+            content: [],
           },
-          content: [],
-        },
-        null,
-        2,
-      ),
-    ).toString("base64"),
-    branch: "staging",
-  })
+          null,
+          2,
+        ),
+      ).toString("base64"),
+      branch: "staging",
+    })
+  } catch (e) {
+    console.log(`Error occured: ${JSON.stringify(e)}`)
+    console.log("There is already an existing `search.json`, skipping")
+  }
 }

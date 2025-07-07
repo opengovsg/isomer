@@ -6,6 +6,8 @@ import {
 import { createIndirection } from "indirection"
 import { requestAcm } from "request-acm"
 
+import { main as migrate } from "@isomer/seed-from-repo"
+
 const profile = process.env.AWS_PROFILE
 
 await confirm({
@@ -33,7 +35,16 @@ const isGithub = await confirm({
 })
 
 if (isGithub) {
-  await createSearchSgClientForGithub({ domain, name: long })
+  const repo = await input({
+    message: "Enter the github repo for the site:",
+  })
+  await createSearchSgClientForGithub({ domain, name: long, repo })
+  const siteId = await input({
+    message: "Enter the site id for the site:",
+  })
+
+  // TODO: validate
+  migrate(repo, siteId as unknown as number)
 } else {
   await createSearchSgClientForStudio({ domain, name: long })
 }

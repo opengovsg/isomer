@@ -67,11 +67,8 @@ type CreateSearchSgClientParams = Omit<
 export const createSearchSgClientForGithub = async ({
   domain,
   name,
-}: CreateSearchSgClientParams) => {
-  const repo = await input({
-    message: "Enter the github repo for the site:",
-  })
-
+  repo,
+}: CreateSearchSgClientParams & { repo: string }) => {
   const { content: siteConfig, sha } = await readSiteConfig(repo)
 
   // TODO: add validation via zod

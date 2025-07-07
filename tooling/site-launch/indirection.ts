@@ -5,7 +5,7 @@ import {
 import { commitAndCreatePR } from "github"
 
 export const createIndirection = async (domain: string) => {
-  const indirectionDomain = domain.replaceAll(".", "-")
+  const indirectionDomain = domain.replace(/^www\./, "").replaceAll(".", "-")
   // NOTE: get the cloudfront distribution where the alternate domain
   // is the `domain`
   const client = new CloudFrontClient({})
