@@ -1,4 +1,5 @@
 import type { Resource } from "~/server/modules/database"
+import type { BulkSendAccountDeactivationWarningEmailsProps } from "~/server/modules/user/inactiveUsers.service"
 import type { RoleType } from "~prisma/generated/generatedEnums"
 
 export interface BaseEmailTemplateData {
@@ -28,9 +29,9 @@ export interface PublishAlertSiteAdminEmailTemplateData
 }
 
 export interface AccountDeactivationWarningEmailTemplateData
-  extends BaseEmailTemplateData {
+  extends BaseEmailTemplateData,
+    Pick<BulkSendAccountDeactivationWarningEmailsProps, "inHowManyDays"> {
   siteNames: string[]
-  inHowManyDays: 1 | 7 | 14 // note: this is arbitrarily set to when we want to remind users to log in
 }
 
 export interface AccountDeactivationEmailTemplateData
