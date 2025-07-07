@@ -4,7 +4,7 @@ import { deactiveInactiveUsers } from "~/server/modules/user/inactiveUsers.servi
 import { createBaseLogger } from "../../../lib/logger"
 
 const logger = createBaseLogger({
-  path: "cron:sendAccountDeactivationDayEmailJob",
+  path: "cron:deactivateInactiveUsersJob",
 })
 
 export const deactivateInactiveUsersJob = () => {
