@@ -171,13 +171,11 @@ export const deactivateUser = async ({
 }
 
 export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
-  const inactiveUsers = await getInactiveUsers({
-    // not setting fromDaysAgo to MAX_DAYS_FROM_LAST_LOGIN because we want to
-    // deactivate users beyond the MAX_DAYS_FROM_LAST_LOGIN (e.g. 91 days). This could be due to:
-    // 1. legacy users who wasn't covered by the MAX_DAYS_FROM_LAST_LOGIN before the feature was introduced
-    // 2. users who weren't removed for whatever reason e.g. unintentional failed cron job that wasn't retried
-    toDaysAgo: 0,
-  })
+  // not setting fromDaysAgo to MAX_DAYS_FROM_LAST_LOGIN because we want to
+  // deactivate users beyond the MAX_DAYS_FROM_LAST_LOGIN (e.g. 91 days). This could be due to:
+  // 1. legacy users who wasn't covered by the MAX_DAYS_FROM_LAST_LOGIN before the feature was introduced
+  // 2. users who weren't removed for whatever reason e.g. unintentional failed cron job that wasn't retried
+  const inactiveUsers = await getInactiveUsers({})
 
   const userIdsToDeactivate = inactiveUsers.map((user) => user.id)
 
