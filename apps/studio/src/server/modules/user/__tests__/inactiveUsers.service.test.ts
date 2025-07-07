@@ -944,7 +944,7 @@ describe("inactiveUsers.service", () => {
       site = _site
     })
 
-    describe("should send warning emails to users who will be inactive in specified days", async () => {
+    describe("should send warning emails to users who will be inactive in specified days", () => {
       it("1 day", async () => {
         // Arrange
         const user = await setupUserWrapper({
