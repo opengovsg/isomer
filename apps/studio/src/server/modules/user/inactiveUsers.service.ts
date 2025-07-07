@@ -6,9 +6,9 @@ import { sendAccountDeactivationEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
 import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
 
 export const DAYS_IN_MS = 24 * 60 * 60 * 1000
-export const DAYS_FROM_LAST_LOGIN = 90 // hardcoded to 90 as per IM8 requirement
 
 const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
@@ -160,7 +160,7 @@ export const deactivateUser = async ({
 
 export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
   const inactiveUsers = await getInactiveUsers({
-    daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+    daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
   })
 
   const userIdsToDeactivate = inactiveUsers.map((user) => user.id)

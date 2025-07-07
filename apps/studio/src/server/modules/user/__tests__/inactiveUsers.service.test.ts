@@ -13,8 +13,8 @@ import type { Site, User } from "~/server/modules/database"
 import { sendAccountDeactivationEmail } from "~/features/mail/service"
 import { db } from "~/server/modules/database"
 import { RoleType } from "~/server/modules/database/types"
+import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 import {
-  DAYS_FROM_LAST_LOGIN,
   DAYS_IN_MS,
   deactivateUser,
   getInactiveUsers,
@@ -530,7 +530,7 @@ describe("inactiveUsers.service", () => {
     it("should return an empty array when there are no users", async () => {
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -557,7 +557,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -574,7 +574,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -592,7 +592,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -609,7 +609,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -627,7 +627,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -664,7 +664,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -694,7 +694,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -710,7 +710,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -734,7 +734,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -759,7 +759,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
@@ -782,7 +782,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       const inactiveUsers = await getInactiveUsers({
-        daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+        daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
       })
 
       // Assert
