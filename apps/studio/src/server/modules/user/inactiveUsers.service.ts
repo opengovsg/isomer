@@ -1,6 +1,7 @@
 import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 
 import type { User } from "../database"
+import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
 import type { AccountDeactivationEmailTemplateData } from "~/features/mail/templates/types"
 import {
   sendAccountDeactivationEmail,
@@ -75,9 +76,6 @@ export const getInactiveUsers = async ({
     .execute()
 }
 
-export interface BulkSendAccountDeactivationWarningEmailsProps {
-  inHowManyDays: 1 | 7 | 14 // note: this is arbitrarily set to when we want to remind users to log in
-}
 export const bulkSendAccountDeactivationWarningEmails = async ({
   inHowManyDays,
 }: BulkSendAccountDeactivationWarningEmailsProps): Promise<void> => {
