@@ -92,6 +92,7 @@ export const deactivateUser = async ({
           .where("Site.id", "in", siteIdsUserHasPermissionsFor)
           .where("ResourcePermission.userId", "!=", user.id) // don't want to ask users to ask themselves for permissions
           .where("ResourcePermission.userId", "not in", userIdsToDeactivate)
+          .where("ResourcePermission.deletedAt", "is", null)
           .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
           .select([
             "Site.name as siteName",
