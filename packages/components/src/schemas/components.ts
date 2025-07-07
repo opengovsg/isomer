@@ -85,7 +85,7 @@ const generateComponentSchema = ({ component, layout }: ComponentSchema) => {
   }
 
   if (component === "infobar") {
-    return InfobarHomepageSchema
+    return layout === "homepage" ? InfobarHomepageSchema : InfobarDefaultSchema
   }
 
   return IsomerComplexComponentsMap[component]
