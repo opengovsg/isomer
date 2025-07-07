@@ -2,6 +2,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import type {
   AccountDeactivationEmailTemplateData,
+  AccountDeactivationWarningEmailTemplateData,
   BaseEmailTemplateData,
   EmailTemplate,
   InvitationEmailTemplateData,
@@ -100,6 +101,23 @@ export const publishAlertSiteAdminTemplate = (
     body: `<p>Hi ${recipientEmail},</p>
 <p>${publisherEmail} has published "${resource.title}" on ${siteName}. You can view the published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
 <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. As a site admin, we want to keep you informed of all publishing activities. If you have any concerns, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
+export const accountDeactivationWarningTemplate = (
+  data: AccountDeactivationWarningEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, siteNames, inHowManyDays } = data
+  return {
+    subject: `[Isomer Studio] Account deactivation warning - ${inHowManyDays} days remaining`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>We noticed you haven’t logged in for a while. To keep your account active, please log in within the next ${inHowManyDays} days at <a href="${env.NEXT_PUBLIC_APP_URL}">${env.NEXT_PUBLIC_APP_URL?.replace("https://", "")}</a>.</p>
+<p>This is a standard security measure to protect your sites and data.</p>
+<p>If your account becomes deactivated, you will lose access to the following sites:</p>
+<ul>${siteNames.map((site) => `<li>${site}</li>`).join("")}</ul>
+<p>Your content will still be preserved, but you won’t be able to access or manage these sites unless your account is reactivated.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }
