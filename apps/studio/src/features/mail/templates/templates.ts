@@ -173,6 +173,8 @@ export const templates = {
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
   publishAlertSiteAdmin:
     publishAlertSiteAdminTemplate satisfies EmailTemplateFunction<PublishAlertSiteAdminEmailTemplateData>,
+  accountDeactivationWarning:
+    accountDeactivationWarningTemplate satisfies EmailTemplateFunction<AccountDeactivationWarningEmailTemplateData>,
   accountDeactivation:
     accountDeactivationTemplate satisfies EmailTemplateFunction<AccountDeactivationEmailTemplateData>,
 } as const
