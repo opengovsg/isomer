@@ -1,1 +1,1 @@
-export { sendAccountDeactivation1DayEmailJob } from "./sendAccountDeactivation1DayEmailJob"
+export { sendAccountDeactivationDayEmailJob } from "./sendAccountDeactivationDayEmailJob"
