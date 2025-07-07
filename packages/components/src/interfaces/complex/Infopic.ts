@@ -4,6 +4,7 @@ import { Type } from "@sinclair/typebox"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
+import { ARRAY_RADIO_FORMAT } from "../format"
 
 export const InfopicVariants = {
   Block: {
@@ -65,7 +66,7 @@ export const InfopicSchema = Type.Object(
         {
           title: "Infopic style",
           default: InfopicVariants.Block.value,
-          format: "hidden",
+          format: ARRAY_RADIO_FORMAT,
         },
       ),
     ),
