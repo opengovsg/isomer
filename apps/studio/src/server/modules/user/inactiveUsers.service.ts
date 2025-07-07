@@ -2,7 +2,10 @@ import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 
 import type { User } from "../database"
 import type { AccountDeactivationEmailTemplateData } from "~/features/mail/templates/types"
-import { sendAccountDeactivationEmail } from "~/features/mail/service"
+import {
+  sendAccountDeactivationEmail,
+  sendAccountDeactivationWarningEmail,
+} from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
 import { db } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -45,6 +48,25 @@ export const getInactiveUsers = async ({
     .selectAll(["User"])
     .distinct()
     .execute()
+}
+
+export interface BulkSendAccountDeactivationWarningEmailsProps {
+  inHowManyDays: 1 | 7 | 14 // note: this is arbitrarily set to when we want to remind users to log in
+}
+export const bulkSendAccountDeactivationWarningEmails = async ({
+  inHowManyDays,
+}: BulkSendAccountDeactivationWarningEmailsProps): Promise<void> => {
+  const inactiveUsers = await getInactiveUsers({
+    daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+  })
+
+  for (const user of inactiveUsers) {
+    await sendAccountDeactivationWarningEmail({
+      recipientEmail: user.email,
+      siteNames: [],
+      inHowManyDays,
+    })
+  }
 }
 
 interface DeactivateUserProps {
