@@ -109,11 +109,17 @@ export const deactivateUser = async ({
               ])
               .groupBy("Site.id"),
           )
-          .selectFrom("Site")
-          .leftJoin("siteAdmins", "siteAdmins.siteId", "Site.id")
-          .where("Site.id", "in", siteIdsUserHasPermissionsFor)
+          // Needed as we still want the site records even if there are no other users with permissions for that site
+          .with("baseSites", (eb) =>
+            eb
+              .selectFrom("Site")
+              .where("Site.id", "in", siteIdsUserHasPermissionsFor)
+              .select(["Site.id as siteId", "Site.name as siteName"]),
+          )
+          .selectFrom("baseSites")
+          .leftJoin("siteAdmins", "siteAdmins.siteId", "baseSites.siteId")
           .select([
-            "Site.name as siteName",
+            "baseSites.siteName",
             sql`COALESCE("siteAdmins"."adminEmails", ARRAY[]::text[])`.as(
               "adminEmails",
             ),
