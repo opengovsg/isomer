@@ -15,8 +15,8 @@ import { db } from "~/server/modules/database"
 import { RoleType } from "~/server/modules/database/types"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 import {
-  DAYS_IN_MS,
   deactivateUser,
+  getDateOnlyInSG,
   getInactiveUsers,
 } from "../inactiveUsers.service"
 
@@ -38,9 +38,7 @@ const setupUserWrapper = async ({
 }: SetupUserWrapperProps): Promise<User> => {
   const user = await setupUser({
     email: email ?? crypto.randomUUID() + "@user.com",
-    lastLoginAt: lastLoginDaysAgo
-      ? new Date(Date.now() - lastLoginDaysAgo * DAYS_IN_MS)
-      : null,
+    lastLoginAt: lastLoginDaysAgo ? getDateOnlyInSG(lastLoginDaysAgo) : null,
     isDeleted,
   })
 
@@ -66,7 +64,7 @@ const setupUserWrapper = async ({
   return await db
     .updateTable("User")
     .where("id", "=", user.id)
-    .set({ createdAt: new Date(Date.now() - createdDaysAgo * DAYS_IN_MS) })
+    .set({ createdAt: getDateOnlyInSG(createdDaysAgo) })
     .returningAll()
     .executeTakeFirstOrThrow()
 }
