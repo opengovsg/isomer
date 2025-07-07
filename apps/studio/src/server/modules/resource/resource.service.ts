@@ -18,6 +18,7 @@ import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE } from "~/lib/growthbook"
+import { env } from "~/env.mjs"
 import {
   getSitemapTree,
   overwriteCollectionChildrenForCollectionBlock,
@@ -509,7 +510,7 @@ export const publishPageResource = async ({
   siteId,
   resourceId,
   userId,
-  isSingpassEnabled = IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+  isSingpassEnabled = env.NEXT_PUBLIC_APP_ENV === "uat" ? false : IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
 }: PublishPageResourceArgs) => {
   // Step 1: Create a new version
   const by = await db

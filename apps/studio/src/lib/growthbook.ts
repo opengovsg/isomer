@@ -1,5 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook-react"
 
+import { env } from "~/env.mjs"
+
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const ISOMER_ADMIN_FEATURE_KEY = "isomer_admins"
 export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
@@ -13,6 +15,11 @@ interface GetIsSingpassEnabledProps {
 export const getIsSingpassEnabled = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
+  // Always disable SingPass in UAT environment
+  if (env.NEXT_PUBLIC_APP_ENV === "uat") {
+    return false
+  }
+
   return gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,

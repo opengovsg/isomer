@@ -19,7 +19,7 @@ import _, { get, isEmpty, isEqual } from "lodash"
 import { z } from "zod"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { getIsSingpassEnabled } from "~/lib/growthbook"
 import {
   basePageSchema,
   createIndexPageSchema,
@@ -558,7 +558,7 @@ export const pageRouter = router({
         siteId,
         resourceId: String(pageId),
         userId: ctx.user.id,
-        isSingpassEnabled: ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY),
+        isSingpassEnabled: getIsSingpassEnabled({ gb: ctx.gb }),
       })
     }),
 
