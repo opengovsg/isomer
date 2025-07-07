@@ -1,6 +1,6 @@
 import cron from "node-cron"
 
-import type { AccountDeactivationWarningEmailTemplateData } from "~/features/mail/templates/types"
+import type { BulkSendAccountDeactivationWarningEmailsProps } from "~/server/modules/user/inactiveUsers.service"
 import { createBaseLogger } from "../../../lib/logger"
 
 const logger = createBaseLogger({
@@ -8,7 +8,7 @@ const logger = createBaseLogger({
 })
 
 export type SendAccountDeactivationDayEmailJobProps = Pick<
-  AccountDeactivationWarningEmailTemplateData,
+  BulkSendAccountDeactivationWarningEmailsProps,
   "inHowManyDays"
 >
 
