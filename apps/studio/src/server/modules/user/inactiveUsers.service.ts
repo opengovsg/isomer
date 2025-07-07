@@ -82,7 +82,8 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
   inHowManyDays,
 }: BulkSendAccountDeactivationWarningEmailsProps): Promise<void> => {
   const inactiveUsers = await getInactiveUsers({
-    daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN - inHowManyDays,
+    fromDaysAgo: MAX_DAYS_FROM_LAST_LOGIN - inHowManyDays + 1,
+    toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN - inHowManyDays,
   })
 
   for (const user of inactiveUsers) {
