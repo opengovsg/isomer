@@ -1,7 +1,10 @@
 import type { SendAccountDeactivationDayEmailJobProps } from "./jobs/sendAccountDeactivationDayEmailJob"
 import { createBaseLogger } from "../../lib/logger"
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { sendAccountDeactivationDayEmailJob } from "./jobs"
+import {
+  deactivateInactiveUsersJob,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  sendAccountDeactivationDayEmailJob,
+} from "./jobs"
 
 const logger = createBaseLogger({ path: "cron:index" })
 
@@ -14,6 +17,8 @@ export const initializeCronJobs = () => {
     // Commented out until we implement proper scheduler that prevents idempotency issues
     // sendAccountDeactivationDayEmailJob({ inHowManyDays })
   })
+
+  deactivateInactiveUsersJob()
 
   logger.info("Cron jobs initialized successfully")
 }
