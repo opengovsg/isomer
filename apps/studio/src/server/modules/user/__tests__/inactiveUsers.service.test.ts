@@ -892,5 +892,41 @@ describe("inactiveUsers.service", () => {
       expect(inactiveUsers).toHaveLength(1)
       expect(inactiveUsers[0]?.id).toBe(userCreatedVeryLongAgo.id)
     })
+
+    it("should return empty array when toDaysAgo is greater than fromDaysAgo", async () => {
+      // Arrange
+      await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 100,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      const inactiveUsers = await getInactiveUsers({
+        fromDaysAgo: 80,
+        toDaysAgo: 120,
+      })
+
+      // Assert
+      expect(inactiveUsers).toHaveLength(0)
+    })
+
+    // default days for inactive users is 90 days by IM8 standard
+    it("should return empty array when fromDaysAgo is less than 90", async () => {
+      // Arrange
+      await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 80,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      const inactiveUsers = await getInactiveUsers({
+        fromDaysAgo: 70,
+      })
+
+      // Assert
+      expect(inactiveUsers).toHaveLength(0)
+    })
   })
 })
