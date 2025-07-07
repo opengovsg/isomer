@@ -397,6 +397,10 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
     label: "Basic content blocks",
     types: ["prose", "image", "accordion", "callout", "blockquote"],
   },
+  {
+    label: "Add a new section",
+    types: [IMAGE_GALLERY_TYPE],
+  },
   { label: "Embed external content", types: ["map", "video"] },
 ]
 
