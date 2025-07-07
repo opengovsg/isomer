@@ -279,26 +279,6 @@ describe("inactiveUsers.service", () => {
       )
     })
 
-    it("should handle sites with no remaining admins", async () => {
-      // Arrange
-      const onlyAdmin = await setupUserWrapper({
-        siteId: site.id,
-        createdDaysAgo: 91,
-        lastLoginDaysAgo: null,
-      })
-
-      // Act
-      await deactivateUser({
-        user: onlyAdmin,
-        userIdsToDeactivate: [onlyAdmin.id],
-      })
-
-      // Assert
-      const emailCall = vi.mocked(sendAccountDeactivationEmail).mock.calls[0]
-      const sitesAndAdmins = emailCall?.[0]?.sitesAndAdmins
-      expect(sitesAndAdmins).toBeUndefined()
-    })
-
     it("should send email with correct recipient and site data", async () => {
       // Arrange
       const user = await setupUserWrapper({
@@ -325,6 +305,33 @@ describe("inactiveUsers.service", () => {
           {
             siteName: site.name,
             adminEmails: [admin.email],
+          },
+        ],
+      })
+    })
+
+    it("should send email if user is the last admin on a site", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      await deactivateUser({
+        user,
+        userIdsToDeactivate: [user.id],
+      })
+
+      // Assert
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        sitesAndAdmins: [
+          {
+            siteName: site.name,
+            adminEmails: [],
           },
         ],
       })
@@ -424,7 +431,11 @@ describe("inactiveUsers.service", () => {
       })
 
       // Assert
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(0)
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1) // send to deactivated user
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
+        recipientEmail: userToDeactivate.email,
+        sitesAndAdmins: expect.any(Array),
+      })
     })
 
     it("should not throw error when userIdsToDeactivate is empty array", async () => {

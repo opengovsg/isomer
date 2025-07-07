@@ -4,7 +4,7 @@ import type { User } from "../database"
 import type { AccountDeactivationEmailTemplateData } from "~/features/mail/templates/types"
 import { sendAccountDeactivationEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
-import { db } from "../database"
+import { db, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 
 export const DAYS_IN_MS = 24 * 60 * 60 * 1000
@@ -86,24 +86,42 @@ export const deactivateUser = async ({
         )
 
         return await tx
-          .selectFrom("Site")
-          .leftJoin(
-            "ResourcePermission",
-            "ResourcePermission.siteId",
-            "Site.id",
+          .with("siteAdmins", (eb) =>
+            eb
+              .selectFrom("Site")
+              .leftJoin(
+                "ResourcePermission",
+                "ResourcePermission.siteId",
+                "Site.id",
+              )
+              .innerJoin("User", "User.id", "ResourcePermission.userId")
+              .where("Site.id", "in", siteIdsUserHasPermissionsFor)
+              .where("ResourcePermission.userId", "!=", user.id) // don't want to ask users to ask themselves for permissions
+              .where("ResourcePermission.userId", "not in", userIdsToDeactivate)
+              .where("ResourcePermission.deletedAt", "is", null)
+              .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
+              .select([
+                "Site.id as siteId",
+                db.fn
+                  .agg<string[]>("array_agg", ["User.email"])
+                  .as("adminEmails"),
+              ])
+              .groupBy("Site.id"),
           )
-          .innerJoin("User", "User.id", "ResourcePermission.userId")
+          .selectFrom("Site")
+          .leftJoin("siteAdmins", "siteAdmins.siteId", "Site.id")
           .where("Site.id", "in", siteIdsUserHasPermissionsFor)
-          .where("ResourcePermission.userId", "!=", user.id) // don't want to ask users to ask themselves for permissions
-          .where("ResourcePermission.userId", "not in", userIdsToDeactivate)
-          .where("ResourcePermission.deletedAt", "is", null)
-          .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
           .select([
             "Site.name as siteName",
-            db.fn.agg<string[]>("array_agg", ["User.email"]).as("adminEmails"),
+            sql`COALESCE("siteAdmins"."adminEmails", ARRAY[]::text[])`.as(
+              "adminEmails",
+            ),
           ])
-          .groupBy("Site.name")
           .execute()
+          .then(
+            (result) =>
+              result as AccountDeactivationEmailTemplateData["sitesAndAdmins"],
+          )
       })
   } catch (error) {
     if (
