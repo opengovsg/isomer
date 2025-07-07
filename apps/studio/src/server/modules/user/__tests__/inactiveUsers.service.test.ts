@@ -426,6 +426,24 @@ describe("inactiveUsers.service", () => {
       // Assert
       expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(0)
     })
+
+    it("should not throw error when userIdsToDeactivate is empty array", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act & Assert
+      const result = deactivateUser({
+        user,
+        userIdsToDeactivate: [],
+      })
+
+      // Assert
+      await expect(result).resolves.not.toThrow()
+    })
   })
 
   describe("getInactiveUsers", () => {

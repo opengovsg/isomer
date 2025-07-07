@@ -55,6 +55,10 @@ export const deactivateUser = async ({
   user,
   userIdsToDeactivate,
 }: DeactivateUserProps): Promise<void> => {
+  // This should not happen as this sub-function is only called when there are users to deactivate
+  // Nevertheless, needed to add this as a safety net to ensure valid Kysely query
+  if (userIdsToDeactivate.length === 0) return
+
   // Note: we are just deleting their site permissions (by setting deletedAt)
   // we are NOT deleting the user themselves because the intention is to
   // remove their access to interact with their sites, not remove them from Isomer
