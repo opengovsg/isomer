@@ -39,7 +39,7 @@ export const getInactiveUsers = async ({
         // Users who have never logged in
         eb.and([
           eb("User.lastLoginAt", "is", null),
-          eb("User.createdAt", "<", toDateThreshold),
+          eb("User.createdAt", "<=", toDateThreshold),
           ...(fromDaysAgo
             ? [eb("User.createdAt", ">=", fromDateThreshold)]
             : []),
@@ -47,7 +47,7 @@ export const getInactiveUsers = async ({
         // Users who have logged in but haven't logged in for a while
         eb.and([
           eb("User.lastLoginAt", "is not", null),
-          eb("User.lastLoginAt", "<", toDateThreshold),
+          eb("User.lastLoginAt", "<=", toDateThreshold),
           ...(fromDaysAgo
             ? [eb("User.lastLoginAt", ">=", fromDateThreshold)]
             : []),
