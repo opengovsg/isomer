@@ -27,6 +27,12 @@ export interface PublishAlertSiteAdminEmailTemplateData
   resource: Resource
 }
 
+export interface AccountDeactivationWarningEmailTemplateData
+  extends BaseEmailTemplateData {
+  siteNames: string[]
+  inHowManyDays: number
+}
+
 export interface AccountDeactivationEmailTemplateData
   extends BaseEmailTemplateData {
   sitesAndAdmins: {
