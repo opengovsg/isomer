@@ -12,7 +12,7 @@ import type {
 } from "./types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
-import { DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/inactiveUsers.service"
+import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
 import { getStudioResourceUrl } from "~/utils/resources"
 
 export const invitationTemplate = (
@@ -146,7 +146,7 @@ export const accountDeactivationTemplate = (
 
   const emailBody = [
     `<p>Hi ${recipientEmail},</p>`,
-    `<p>Your Isomer Studio account has been removed as you have not logged in for over ${DAYS_FROM_LAST_LOGIN} days. This is a standard security measure to protect your site data.</p>`,
+    `<p>Your Isomer Studio account has been removed as you have not logged in for over ${MAX_DAYS_FROM_LAST_LOGIN} days. This is a standard security measure to protect your site data.</p>`,
     `<p>Your content and previous contributions have been preserved. Your site(s) will continue to be accessible to visitors, and all your work remains intact.</p>`,
     `<p>To regain access to your site(s), please follow the instructions below:</p>`,
     siteSpecificInstructions,

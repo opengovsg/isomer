@@ -7,11 +7,11 @@ import {
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
-import { db } from "../database"
+import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
 
 export const DAYS_IN_MS = 24 * 60 * 60 * 1000
-export const DAYS_FROM_LAST_LOGIN = 90 // hardcoded to 90 as per IM8 requirement
 
 const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
@@ -77,6 +77,10 @@ export const deactivateUser = async ({
   user,
   userIdsToDeactivate,
 }: DeactivateUserProps): Promise<void> => {
+  // This should not happen as this sub-function is only called when there are users to deactivate
+  // Nevertheless, needed to add this as a safety net to ensure valid Kysely query
+  if (userIdsToDeactivate.length === 0) return
+
   // Note: we are just deleting their site permissions (by setting deletedAt)
   // we are NOT deleting the user themselves because the intention is to
   // remove their access to interact with their sites, not remove them from Isomer
@@ -104,23 +108,49 @@ export const deactivateUser = async ({
         )
 
         return await tx
-          .selectFrom("Site")
-          .leftJoin(
-            "ResourcePermission",
-            "ResourcePermission.siteId",
-            "Site.id",
+          .with("siteAdmins", (eb) =>
+            eb
+              .selectFrom("Site")
+              .leftJoin(
+                "ResourcePermission",
+                "ResourcePermission.siteId",
+                "Site.id",
+              )
+              .innerJoin("User", "User.id", "ResourcePermission.userId")
+              .where("Site.id", "in", siteIdsUserHasPermissionsFor)
+              .where("ResourcePermission.userId", "!=", user.id) // don't want to ask users to ask themselves for permissions
+              .where("ResourcePermission.userId", "not in", userIdsToDeactivate)
+              .where("ResourcePermission.deletedAt", "is", null)
+              .where("ResourcePermission.role", "=", RoleType.Admin) // should only give the admin emails to request reactivation permissions from
+              .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
+              .select([
+                "Site.id as siteId",
+                db.fn
+                  .agg<string[]>("array_agg", ["User.email"])
+                  .as("adminEmails"),
+              ])
+              .groupBy("Site.id"),
           )
-          .innerJoin("User", "User.id", "ResourcePermission.userId")
-          .where("Site.id", "in", siteIdsUserHasPermissionsFor)
-          .where("ResourcePermission.userId", "!=", user.id) // don't want to ask users to ask themselves for permissions
-          .where("ResourcePermission.userId", "not in", userIdsToDeactivate)
-          .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
+          // Needed as we still want the site records even if there are no other users with permissions for that site
+          .with("baseSites", (eb) =>
+            eb
+              .selectFrom("Site")
+              .where("Site.id", "in", siteIdsUserHasPermissionsFor)
+              .select(["Site.id as siteId", "Site.name as siteName"]),
+          )
+          .selectFrom("baseSites")
+          .leftJoin("siteAdmins", "siteAdmins.siteId", "baseSites.siteId")
           .select([
-            "Site.name as siteName",
-            db.fn.agg<string[]>("array_agg", ["User.email"]).as("adminEmails"),
+            "baseSites.siteName",
+            sql`COALESCE("siteAdmins"."adminEmails", ARRAY[]::text[])`.as(
+              "adminEmails",
+            ),
           ])
-          .groupBy("Site.name")
           .execute()
+          .then(
+            (result) =>
+              result as AccountDeactivationEmailTemplateData["sitesAndAdmins"],
+          )
       })
   } catch (error) {
     if (
@@ -150,9 +180,9 @@ export const deactivateUser = async ({
   }
 }
 
-export const deactiveInactiveUsers = async (): Promise<void> => {
+export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
   const inactiveUsers = await getInactiveUsers({
-    daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
+    daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
   })
 
   const userIdsToDeactivate = inactiveUsers.map((user) => user.id)
