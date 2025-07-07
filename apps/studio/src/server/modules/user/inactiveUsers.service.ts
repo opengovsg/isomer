@@ -11,11 +11,27 @@ import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
 
-export const DAYS_IN_MS = 24 * 60 * 60 * 1000
+export const HOURS_IN_MS = 60 * 60 * 1000
 
 const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
 })
+
+export function getDateOnlyInSG(daysAgo: number): Date {
+  const now = new Date()
+
+  // Convert to SG time
+  const sgOffsetMs = 8 * HOURS_IN_MS
+  const sgNow = new Date(now.getTime() + sgOffsetMs)
+
+  // Subtract daysAgo and zero out time (SG midnight)
+  sgNow.setDate(sgNow.getDate() - daysAgo)
+  sgNow.setHours(0, 0, 0, 0)
+
+  // Convert back to UTC
+  const utcDate = new Date(sgNow.getTime() - sgOffsetMs)
+  return utcDate
+}
 
 interface GetInactiveUsersProps {
   fromDaysAgo?: number
@@ -25,11 +41,8 @@ export const getInactiveUsers = async ({
   fromDaysAgo,
   toDaysAgo = MAX_DAYS_FROM_LAST_LOGIN,
 }: GetInactiveUsersProps): Promise<User[]> => {
-  const fromDateThreshold = fromDaysAgo
-    ? new Date(Date.now() - fromDaysAgo * DAYS_IN_MS)
-    : null
-
-  const toDateThreshold = new Date(Date.now() - toDaysAgo * DAYS_IN_MS)
+  const fromDateThreshold = fromDaysAgo ? getDateOnlyInSG(fromDaysAgo) : null
+  const toDateThreshold = getDateOnlyInSG(toDaysAgo)
 
   return db
     .selectFrom("User")
