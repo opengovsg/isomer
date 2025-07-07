@@ -128,7 +128,7 @@ export const deactivateUser = async ({
   }
 }
 
-export const deactiveInactiveUsers = async (): Promise<void> => {
+export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
   const inactiveUsers = await getInactiveUsers({
     daysFromLastLogin: DAYS_FROM_LAST_LOGIN,
   })
