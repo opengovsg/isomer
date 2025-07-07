@@ -1,4 +1,3 @@
-import { useContext } from "react"
 import {
   Box,
   TabList,
@@ -8,7 +7,6 @@ import {
   useMultiStyleConfig,
 } from "@chakra-ui/react"
 
-import { UserManagementContext } from "~/features/users"
 import { trpc } from "~/utils/trpc"
 import { UserTable } from "../UserTable"
 import { IsomerAdminAccessBanner } from "./Banners"
@@ -27,8 +25,6 @@ export const UserTableTabs = ({
   size = "md",
   colorScheme = "blue",
 }: UserTableTabsProps) => {
-  const ability = useContext(UserManagementContext)
-
   // Get Chakra UI's style configuration for Tabs
   const styles = useMultiStyleConfig("Tabs", { variant, size, colorScheme })
 
