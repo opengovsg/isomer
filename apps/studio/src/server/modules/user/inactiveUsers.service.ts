@@ -15,12 +15,18 @@ const logger = createBaseLogger({
 })
 
 interface GetInactiveUsersProps {
-  daysFromLastLogin: number
+  fromDaysAgo?: number
+  toDaysAgo?: number
 }
 export const getInactiveUsers = async ({
-  daysFromLastLogin,
+  fromDaysAgo,
+  toDaysAgo = MAX_DAYS_FROM_LAST_LOGIN,
 }: GetInactiveUsersProps): Promise<User[]> => {
-  const dateThreshold = new Date(Date.now() - daysFromLastLogin * DAYS_IN_MS)
+  const fromDateThreshold = fromDaysAgo
+    ? new Date(Date.now() - fromDaysAgo * DAYS_IN_MS)
+    : null
+
+  const toDateThreshold = new Date(Date.now() - toDaysAgo * DAYS_IN_MS)
 
   return db
     .selectFrom("User")
@@ -33,12 +39,18 @@ export const getInactiveUsers = async ({
         // Users who have never logged in
         eb.and([
           eb("User.lastLoginAt", "is", null),
-          eb("User.createdAt", "<", dateThreshold),
+          eb("User.createdAt", "<", toDateThreshold),
+          ...(fromDaysAgo
+            ? [eb("User.createdAt", ">=", fromDateThreshold)]
+            : []),
         ]),
         // Users who have logged in but haven't logged in for a while
         eb.and([
           eb("User.lastLoginAt", "is not", null),
-          eb("User.lastLoginAt", "<", dateThreshold),
+          eb("User.lastLoginAt", "<", toDateThreshold),
+          ...(fromDaysAgo
+            ? [eb("User.lastLoginAt", ">=", fromDateThreshold)]
+            : []),
         ]),
       ]),
     )
@@ -160,7 +172,11 @@ export const deactivateUser = async ({
 
 export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
   const inactiveUsers = await getInactiveUsers({
-    daysFromLastLogin: MAX_DAYS_FROM_LAST_LOGIN,
+    // not setting fromDaysAgo to MAX_DAYS_FROM_LAST_LOGIN because we want to
+    // deactivate users beyond the MAX_DAYS_FROM_LAST_LOGIN (e.g. 91 days). This could be due to:
+    // 1. legacy users who wasn't covered by the MAX_DAYS_FROM_LAST_LOGIN before the feature was introduced
+    // 2. users who weren't removed for whatever reason e.g. unintentional failed cron job that wasn't retried
+    toDaysAgo: 0,
   })
 
   const userIdsToDeactivate = inactiveUsers.map((user) => user.id)
