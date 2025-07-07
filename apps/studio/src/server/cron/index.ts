@@ -1,6 +1,7 @@
 import { createBaseLogger } from "../../lib/logger"
 import {
   deactivateInactiveUsersJob,
+  sampleJob,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   sendAccountDeactivationDayEmailJob,
 } from "./jobs"
@@ -20,6 +21,7 @@ export const initializeCronJobs = () => {
     // sendAccountDeactivationDayEmailJob({ inHowManyDays: 7 }),
     // sendAccountDeactivationDayEmailJob({ inHowManyDays: 14 }),
     deactivateInactiveUsersJob(),
+    sampleJob(),
   )
 
   logger.info("Cron jobs initialized successfully")
