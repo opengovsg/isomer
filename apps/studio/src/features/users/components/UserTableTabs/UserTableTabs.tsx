@@ -38,12 +38,6 @@ export const UserTableTabs = ({
     adminType: "isomer",
   })
 
-  const { data: inactiveUsersCount = 0 } = trpc.user.count.useQuery({
-    siteId,
-    adminType: "agency",
-    activityType: "inactive",
-  })
-
   return (
     <Box w="100%">
       <Tabs

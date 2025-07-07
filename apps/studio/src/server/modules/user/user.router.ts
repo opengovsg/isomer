@@ -251,24 +251,14 @@ export const userRouter = router({
   count: protectedProcedure
     .input(countUsersInputSchema)
     .output(countUsersOutputSchema)
-    .query(async ({ ctx, input: { siteId, adminType, activityType } }) => {
+    .query(async ({ ctx, input: { siteId, adminType } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
         action: "read",
       })
 
-      let query = getUsersQuery({ siteId, adminType })
-
-      if (activityType === "inactive") {
-        const ninetyDaysAgo = new Date()
-        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
-        query = query
-          .where("ActiveUser.lastLoginAt", "is not", null)
-          .where("ActiveUser.lastLoginAt", "<", ninetyDaysAgo)
-      }
-
-      const result = await query
+      const result = await getUsersQuery({ siteId, adminType })
         .select((eb) => [eb.fn.countAll().as("count")])
         .executeTakeFirstOrThrow()
 
