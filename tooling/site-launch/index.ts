@@ -26,7 +26,7 @@ const needsAcm = await confirm({
 if (needsAcm) await requestAcm(domain)
 
 const long = await input({ message: "Enter the long name of the site:" })
-const codebuild = await input({
+const codebuildId = await input({
   message: "Enter the code-build name of the site (eg: ogp-corp)",
 })
 
@@ -58,6 +58,6 @@ if (isGithub) {
   await createSearchSgClientForStudio({ domain, name: long })
 }
 
-await createIndirection(domain)
-// await startCodeBuild()
+await createIndirection(domain, codebuildId)
+// await startCodeBuild(codebuildId)
 // add admins

@@ -109,7 +109,7 @@ export const addSearchJson = async (repo: string) => {
       branch: "staging",
     })
   } catch (e) {
-    console.log(`Error occured: ${JSON.stringify(e)}`)
+    console.error(e)
     console.log("There is already an existing `search.json`, skipping")
   }
 }
