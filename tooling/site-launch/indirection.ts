@@ -4,15 +4,20 @@ import {
 } from "@aws-sdk/client-cloudfront"
 import { commitAndCreatePR } from "github"
 
-export const createIndirection = async (domain: string) => {
+export const createIndirection = async (
+  domain: string,
+  codebuildId: string,
+) => {
   const indirectionDomain = domain.replace(/^www\./, "").replaceAll(".", "-")
   // NOTE: get the cloudfront distribution where the alternate domain
   // is the `domain`
   const client = new CloudFrontClient({})
   const command = new ListDistributionsCommand({})
   const resp = await client.send(command)
-  const matching = resp.DistributionList?.Items?.find(({ Aliases }) => {
-    return Aliases?.Items?.some((value) => value === domain)
+  const matching = resp.DistributionList?.Items?.find(({ Origins }) => {
+    return Origins?.Items?.some(({ OriginPath }) =>
+      OriginPath?.startsWith(`/${codebuildId}/`),
+    )
   })
 
   if (!matching) {
