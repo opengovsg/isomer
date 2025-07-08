@@ -6,7 +6,7 @@ import {
 import { createIndirection } from "indirection"
 import { requestAcm } from "request-acm"
 
-import { main as migrate } from "@isomer/seed-from-repo"
+import { cleanup, main as migrate } from "@isomer/seed-from-repo"
 
 const profile = process.env.AWS_PROFILE
 
@@ -48,6 +48,12 @@ if (isGithub) {
   // cleanup old assets/repos folder
   // connect to db automatically
   await migrate(repo, siteId as unknown as number)
+
+  const shouldCleanup = await confirm({
+    message: "Perform clean-up for assets?",
+  })
+
+  if (shouldCleanup) cleanup(repo)
 } else {
   await createSearchSgClientForStudio({ domain, name: long })
 }
@@ -55,6 +61,3 @@ if (isGithub) {
 await createIndirection(domain)
 // await startCodeBuild()
 // add admins
-
-// const shouldCleanup = await confirm({ message: "Perform clean-up for assets?" })
-// await cleanup()

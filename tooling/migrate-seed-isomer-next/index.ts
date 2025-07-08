@@ -686,3 +686,10 @@ function getIndexPageContent(title: string) {
     version: "0.1.0",
   };
 }
+
+export const cleanup = (siteName: string) => {
+  const assetsDir = path.join(__dirname, "assets");
+  const assetsCsv = path.join(__dirname, `asset-mappings-${siteName}.csv`);
+  fs.rmdirSync(assetsDir);
+  fs.rmSync(assetsCsv);
+};
