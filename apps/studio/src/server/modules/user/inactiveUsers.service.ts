@@ -1,32 +1,31 @@
 import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+import dayjs from "dayjs"
+import timezone from "dayjs/plugin/timezone"
+import utc from "dayjs/plugin/utc"
 
 import type { User } from "../database"
 import type { AccountDeactivationEmailTemplateData } from "~/features/mail/templates/types"
-import { HOURS_IN_MS } from "~/constants/misc"
 import { sendAccountDeactivationEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
 import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
 
+// Extend dayjs with timezone support
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
 })
 
 export function getDateOnlyInSG(daysAgo: number): Date {
-  const now = new Date()
-
-  // Convert to SG time
-  const sgOffsetMs = 8 * HOURS_IN_MS
-  const sgNow = new Date(now.getTime() + sgOffsetMs)
-
-  // Subtract daysAgo and zero out time (SG midnight)
-  sgNow.setDate(sgNow.getDate() - daysAgo)
-  sgNow.setHours(0, 0, 0, 0)
-
-  // Convert back to UTC
-  const utcDate = new Date(sgNow.getTime() - sgOffsetMs)
-  return utcDate
+  return dayjs()
+    .tz("Asia/Singapore")
+    .subtract(daysAgo, "day")
+    .startOf("day")
+    .utc()
+    .toDate()
 }
 
 interface GetInactiveUsersProps {
