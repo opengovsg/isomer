@@ -34,7 +34,7 @@ import { CLOUDFRONT_HOSTED_ZONE_ID } from "../constants";
 
 export const createRecords = (zoneId: string): Record[] => {
   const records = [
-    new Record("${domain} A", {
+    new Record("${domain.replace(/^www\./, "")} A", {
       name: "${indirectionDomain}",
       type: "A",
       zoneId: zoneId,
