@@ -109,48 +109,58 @@ export const deactivateUser = async ({
           (p) => p.siteId,
         )
 
-        return await tx
-          .with("siteAdmins", (eb) =>
-            eb
-              .selectFrom("Site")
-              .innerJoin(
-                "ResourcePermission",
-                "ResourcePermission.siteId",
-                "Site.id",
-              )
-              .innerJoin("User", "User.id", "ResourcePermission.userId")
-              .where("Site.id", "in", siteIdsUserHasPermissionsFor)
-              .where("ResourcePermission.userId", "!=", user.id) // don't want to ask users to ask themselves for permissions
-              .where("ResourcePermission.userId", "not in", userIdsToDeactivate)
-              .where("ResourcePermission.deletedAt", "is", null)
-              .where("ResourcePermission.role", "=", RoleType.Admin) // should only give the admin emails to request reactivation permissions from
-              .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
-              .select([
-                "Site.id as siteId",
-                db.fn
-                  .agg<string[]>("array_agg", ["User.email"])
-                  .as("adminEmails"),
-              ])
-              .groupBy("Site.id"),
-          )
-          // Needed as we still want the site records even if there are no other users with permissions for that site
-          .with("baseSites", (eb) =>
-            eb
-              .selectFrom("Site")
-              .where("Site.id", "in", siteIdsUserHasPermissionsFor)
-              .select(["Site.id as siteId", "Site.name as siteName"]),
-          )
-          .selectFrom("baseSites")
-          .leftJoin("siteAdmins", "siteAdmins.siteId", "baseSites.siteId")
-          .select([
-            "baseSites.siteName",
-            sql<
-              string[]
-            >`COALESCE("siteAdmins"."adminEmails", ARRAY[]::text[])`.as(
-              "adminEmails",
-            ),
-          ])
-          .execute()
+        return (
+          tx
+            .with("siteAdmins", (eb) =>
+              eb
+                .selectFrom("Site")
+                .innerJoin(
+                  "ResourcePermission",
+                  "ResourcePermission.siteId",
+                  "Site.id",
+                )
+                .innerJoin("User", "User.id", "ResourcePermission.userId")
+                .where("Site.id", "in", siteIdsUserHasPermissionsFor)
+                .where("ResourcePermission.userId", "!=", user.id) // don't want to ask users to ask themselves for permissions
+                .where(
+                  "ResourcePermission.userId",
+                  "not in",
+                  userIdsToDeactivate,
+                )
+                .where("ResourcePermission.deletedAt", "is", null)
+                .where("ResourcePermission.role", "=", RoleType.Admin) // should only give the admin emails to request reactivation permissions from
+                .where(
+                  "User.email",
+                  "not in",
+                  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
+                ) // we don't want to send emails to admins and migrators
+                .select([
+                  "Site.id as siteId",
+                  db.fn
+                    .agg<string[]>("array_agg", ["User.email"])
+                    .as("adminEmails"),
+                ])
+                .groupBy("Site.id"),
+            )
+            // Needed as we still want the site records even if there are no other users with permissions for that site
+            .with("baseSites", (eb) =>
+              eb
+                .selectFrom("Site")
+                .where("Site.id", "in", siteIdsUserHasPermissionsFor)
+                .select(["Site.id as siteId", "Site.name as siteName"]),
+            )
+            .selectFrom("baseSites")
+            .leftJoin("siteAdmins", "siteAdmins.siteId", "baseSites.siteId")
+            .select([
+              "baseSites.siteName",
+              sql<
+                string[]
+              >`COALESCE("siteAdmins"."adminEmails", ARRAY[]::text[])`.as(
+                "adminEmails",
+              ),
+            ])
+            .execute()
+        )
       })
   } catch (error) {
     if (
