@@ -144,15 +144,13 @@ export const deactivateUser = async ({
           .leftJoin("siteAdmins", "siteAdmins.siteId", "baseSites.siteId")
           .select([
             "baseSites.siteName",
-            sql`COALESCE("siteAdmins"."adminEmails", ARRAY[]::text[])`.as(
+            sql<
+              string[]
+            >`COALESCE("siteAdmins"."adminEmails", ARRAY[]::text[])`.as(
               "adminEmails",
             ),
           ])
           .execute()
-          .then(
-            (result) =>
-              result as AccountDeactivationEmailTemplateData["sitesAndAdmins"],
-          )
       })
   } catch (error) {
     if (
