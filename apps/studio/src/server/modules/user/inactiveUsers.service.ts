@@ -2,13 +2,12 @@ import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 
 import type { User } from "../database"
 import type { AccountDeactivationEmailTemplateData } from "~/features/mail/templates/types"
+import { HOURS_IN_MS } from "~/constants/misc"
 import { sendAccountDeactivationEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
 import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
-
-export const HOURS_IN_MS = 60 * 60 * 1000
 
 const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
