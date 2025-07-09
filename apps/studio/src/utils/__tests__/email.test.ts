@@ -51,4 +51,32 @@ describe("isGovEmail", () => {
       expect(isGovEmail(input)).toBe(false)
     })
   })
+
+  it("should return false for .gov.sg emails with leading or trailing spaces", () => {
+    const emailsWithSpaces = [
+      " test@agency.gov.sg",
+      "test@agency.gov.sg ",
+      " test@agency.gov.sg ",
+      "\ttest@agency.gov.sg",
+      "test@agency.gov.sg\n",
+    ]
+
+    emailsWithSpaces.forEach((email) => {
+      expect(isGovEmail(email)).toBe(false)
+    })
+  })
+
+  it("should return true for .gov.sg emails when manually trimmed", () => {
+    const emailsWithSpaces = [
+      " test@agency.gov.sg",
+      "test@agency.gov.sg ",
+      " test@agency.gov.sg ",
+      "\ttest@agency.gov.sg",
+      "test@agency.gov.sg\n",
+    ]
+
+    emailsWithSpaces.forEach((email) => {
+      expect(isGovEmail(email.trim())).toBe(true)
+    })
+  })
 })
