@@ -113,7 +113,7 @@ export const deactivateUser = async ({
           .with("siteAdmins", (eb) =>
             eb
               .selectFrom("Site")
-              .leftJoin(
+              .innerJoin(
                 "ResourcePermission",
                 "ResourcePermission.siteId",
                 "Site.id",
