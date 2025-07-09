@@ -74,6 +74,7 @@ async function ensureSiteExists(
     // Git clone the repository
     const cloneDir = path.join(__dirname, "repos");
     await new Promise<void>((resolve, reject) => {
+      // NOTE: Do not touch this directly! This should be invoked as part of site migration
       exec(
         `git clone https://oauth2:${process.env.GITHUB_TOKEN}@github.com/isomerpages/${siteName}.git ${cloneDir}/${siteName}`,
         (err) => {
