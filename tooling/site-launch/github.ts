@@ -8,7 +8,8 @@ const owner = "isomerpages"
 
 export const commitAndCreatePR = async (domain: string, rawContent: string) => {
   const repo = "isomer-indirection"
-  const filePath = `dns/${domain}.ts`
+  const filename = domain.replace(/^www\./, "")
+  const filePath = `dns/${filename}.ts`
   const commitMessage = `[AUTOMATED]: Site launch for ${domain}`
   const prTitle = `[AUTOMATED]: Site launch for ${domain}`
   const content = Buffer.from(rawContent).toString("base64")
