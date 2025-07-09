@@ -1,0 +1,275 @@
+import { randomUUID, UUID } from "crypto"
+import _ from "lodash"
+
+import { db, ResourceType, sql } from "~/server/modules/database"
+import {
+  getBlobOfResource,
+  updateBlobById,
+} from "~/server/modules/resource/resource.service"
+
+// NOTE: this is the `Blob`.`content` of a `CollectionPage` that contains a tag
+// {
+//     "meta": {
+//         "image": "/36/7607feb6-f9e8-46f1-b639-2d189391511e/IOTX0108-L.png"
+//     },
+//     "page": {
+//         "ref": "[resource:36:33844]",
+//         "date": "12/12/2024",
+//         "tags": [
+//             {
+//                 "category": "CLS Level",
+//                 "selected": [
+//                     "Level 1 ✱"
+//                 ]
+//             },
+//             {
+//                 "category": "Brand",
+//                 "selected": [
+//                     "TP-Link"
+//                 ]
+//             }
+//         ],
+//         "image": {
+//             "alt": "TP-Link Tapo C211",
+//             "src": "/36/6c8621d0-0284-47a9-92d5-70ccf89bdca4/IOTX0108-P.jpg"
+//         },
+//         "title": "TP-Link Tapo C211",
+//         "category": "IP Camera",
+//         "description": "Pan/Tilt Home Security Wi-Fi Camera\nIssued date: 12 December 2024\nExpiry date: 11 December 2027"
+//     },
+//     "layout": "link",
+//     "content": [],
+//     "version": "0.1.0"
+// }
+
+// NOTE: old tag is `category: string + selected: string[]`
+export interface LegacyTag {
+  category: string
+  selected: string[]
+}
+
+export interface TagValue {
+  // NOTE: holds the `uuid` of the selected value
+  selected: UUID[]
+}
+
+interface TagOption {
+  // label is what's shown to our end user
+  label: string
+  id: UUID
+}
+
+interface TagCategory {
+  id: UUID
+  label: string
+  options: TagOption[]
+}
+
+export type TagCategories = TagCategory[]
+
+export const up = async () => {
+  // select * from "Blob" where jsonb_array_length("content" -> 'page' -> 'tags') > 0;
+  // 10190 blobs that have tags but total of 8312 distinct (replace `parentId` below with `id`)
+  //
+  // SELECT DISTINCT
+  // "Resource"."parentId"
+  //  FROM
+  // "Resource"
+  // LEFT JOIN "Version" ON "Version"."id" = "Resource"."publishedVersionId"
+  // LEFT JOIN "Blob" AS "draft_blob" ON "draft_blob"."id" = "Resource"."draftBlobId"
+  // LEFT JOIN "Blob" AS "published_blob" ON "published_blob"."id" = "Version"."blobId"
+  //  WHERE
+  // (
+  // 	jsonb_array_length("draft_blob"."content" -> 'page' -> 'tags') > 0
+  // 	OR jsonb_array_length("published_blob"."content" -> 'page' -> 'tags') > 0
+  // )
+  //
+  // 54 collections containing tags
+
+  const collectionIds = await getCollectionsWithTags()
+
+  for (const { id } of collectionIds) {
+    if (!id) return
+
+    // NOTE: guaranteed non-null since we selected as `parentId` for pages explicitly
+    const resourcesWithTags = await getChildPagesWithTags(id)
+
+    const tags: LegacyTag[][] = resourcesWithTags.map(
+      // NOTE: have to cast here - this is because we take our type defs from
+      // the schema, but we haven't narrowed the type down.
+      // However, note that in `getChildPagesWithTags`, we only select
+      // the pages with tags
+      // NOTE: `any` cast here - accessor is guaranteed due to db query
+      // and this code won't live long in our codebase (if at all)
+      (resource) => (resource.content.page as any).tags as LegacyTag[],
+    )
+
+    const baseTags: {
+      categories: Set<string>
+      mappings: Record<string, Set<string>>
+    } = {
+      categories: new Set(),
+      // NOTE: mappings denotes the mapping of category -> options
+      mappings: {},
+    }
+
+    const collatedTags = tags.reduce((prevTags, curTags) => {
+      curTags.forEach((tag) => {
+        prevTags.categories.add(tag.category)
+        tag.selected.forEach((value) => {
+          let prevCategorySet = prevTags.mappings[tag.category]
+          if (!prevCategorySet) {
+            prevTags.mappings[tag.category] = new Set()
+            prevCategorySet = prevTags.mappings[tag.category]
+          }
+
+          prevCategorySet!.add(value)
+        })
+      })
+
+      return prevTags
+    }, baseTags)
+
+    const { labelToId, tagCategories } = migrateTags(collatedTags)
+    const indexPage = await db
+      .selectFrom("Resource")
+      .where("type", "=", "IndexPage")
+      .where("parentId", "=", id)
+      .selectAll()
+      // NOTE: assumption - every collection has an index page
+      // we should always run the other migration `addCollectionIndexPage` first
+      .executeTakeFirstOrThrow()
+
+    // NOTE: we need to do 2 things in this `tx`
+    // Step 1: write to the index page with the newly generated tags
+    // Step 2: write the updated mappings to each individual page
+    await db.transaction().execute(async (tx) => {
+      const indexPageBlob = await getBlobOfResource({
+        tx,
+        resourceId: indexPage.id,
+      })
+
+      await updateBlobById(tx, {
+        pageId: Number(indexPage.id),
+        siteId: indexPage.siteId,
+        content: {
+          ...indexPageBlob.content,
+          page: { ...indexPageBlob.content.page, tags: tagCategories },
+        },
+      })
+
+      for (const resource of resourcesWithTags) {
+        const blob = resource.content
+        const tagsOfResource = (resource.content.page as any)
+          .tags as LegacyTag[]
+        // NOTE: we only update the `page.tags` here
+        // since the rest of the content is not changed
+        const updatedContent = {
+          ...blob,
+          page: {
+            ...blob.page,
+            // NOTE: we CANNOT reuse `tags` because our existing tags use it...
+            // If we replace the existing labels because it'll cause the sites to have the uuid
+            // on the next rebuild due to this feature not being released.
+            // We also cannot add on this label,
+            // because it will hinder deletion.
+            tagged: tagsOfResource
+              .flatMap(({ selected }) =>
+                selected.map((label) => labelToId[label]),
+              )
+              .filter((v) => !!v),
+          },
+        }
+
+        await updateBlobById(tx, {
+          pageId: Number(resource.id),
+          siteId: indexPage.siteId,
+          content: updatedContent,
+        })
+      }
+    })
+  }
+}
+
+const getChildPagesWithTags = async (parentId: string) => {
+  return db
+    .selectFrom("Resource")
+    .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
+    .leftJoin("Blob as draftBlob", "draftBlob.id", "Resource.draftBlobId")
+    .leftJoin("Blob as publishedBlob", "publishedBlob.id", "Version.blobId")
+    .select((eb) => {
+      return [
+        "Resource.id",
+        eb.fn
+          // NOTE: select draft blob preferentially
+          .coalesce(
+            sql<PrismaJson.BlobJsonContent>`"draftBlob"."content"`,
+            sql<PrismaJson.BlobJsonContent>`"publishedBlob"."content"`,
+          )
+          .as("content"),
+        // NOTE: can update `draftBlobId` (if it exists) directly
+        // but we need to create a new `draftBlob` if `draftBlobId`
+        // doesn't exist
+        "blobId",
+        "draftBlobId",
+      ]
+    })
+    .where((eb) =>
+      eb.or([
+        sql<boolean>`jsonb_array_length("draftBlob"."content" -> 'page' -> 'tags') > 0`,
+        sql<boolean>`jsonb_array_length("publishedBlob"."content" -> 'page' -> 'tags') > 0`,
+      ]),
+    )
+    .where("parentId", "=", parentId)
+    .execute()
+}
+
+const migrateTags = (collatedTags: {
+  categories: Set<string>
+  mappings: Record<string, Set<string>>
+}) => {
+  const labelToId: Record<string, UUID> = {}
+
+  const tagCategories: TagCategories = _.entries(collatedTags.mappings).map(
+    ([categoryLabel, categoryOptions]) => {
+      const categoryId = randomUUID()
+
+      const options = Array.from(categoryOptions.values()).map((option) => {
+        const id = randomUUID()
+        const label = option
+        labelToId[label] = id
+
+        return {
+          id,
+          label,
+        }
+      })
+
+      return { id: categoryId, options, label: categoryLabel }
+    },
+  )
+
+  return {
+    tagCategories,
+    labelToId,
+  }
+}
+
+async function getCollectionsWithTags() {
+  return await db
+    .selectFrom("Resource")
+    .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
+    .leftJoin("Blob as draftBlob", "draftBlob.id", "Resource.draftBlobId")
+    .leftJoin("Blob as publishedBlob", "publishedBlob.id", "Version.blobId")
+    .select("Resource.parentId as id")
+    .distinct()
+    .where((eb) =>
+      eb.or([
+        sql<boolean>`jsonb_array_length("draftBlob"."content" -> 'page' -> 'tags') > 0`,
+        sql<boolean>`jsonb_array_length("publishedBlob"."content" -> 'page' -> 'tags') > 0`,
+      ]),
+    )
+    // NOTE: 6 folders have pages with tags
+    .where("type", "!=", ResourceType.Page)
+    .execute()
+}
