@@ -525,14 +525,14 @@ export const setupUser = async ({
   email,
   phone = "",
   isDeleted = false,
-  hasLoggedIn = false,
+  lastLoginAt = null,
 }: {
   name?: string
   userId?: string
   email?: string
   phone?: string
   isDeleted?: boolean
-  hasLoggedIn?: boolean
+  lastLoginAt?: Date | null
 }) => {
   return db
     .insertInto("User")
@@ -542,7 +542,7 @@ export const setupUser = async ({
       email: email ?? `${nanoid()}@test.com`,
       phone: phone,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
-      lastLoginAt: hasLoggedIn ? MOCK_STORY_DATE : null,
+      lastLoginAt,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
