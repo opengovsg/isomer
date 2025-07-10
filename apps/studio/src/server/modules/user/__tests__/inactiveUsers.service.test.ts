@@ -79,6 +79,7 @@ describe("inactiveUsers.service", () => {
 
     vi.mock("~/features/mail/service", () => ({
       sendAccountDeactivationEmail: vi.fn(),
+      sendAccountDeactivationWarningEmail: vi.fn(),
     }))
 
     beforeEach(async () => {
