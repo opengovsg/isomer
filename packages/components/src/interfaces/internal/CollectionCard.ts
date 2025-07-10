@@ -1,17 +1,18 @@
 import type { ImageProps } from "~/interfaces"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type {
+  CollectionPagePageProps,
+  IsomerSiteProps,
+  LinkComponentType,
+} from "~/types"
 
-export interface Tag {
-  selected: string[]
-  category: string
-}
+type Tags = Pick<CollectionPagePageProps, "tags">
+type Tagged = Pick<CollectionPagePageProps, "tagged">
 
 export interface FileDetails {
   type: string
   size: string
 }
-interface BaseCardProps {
-  tags?: Tag[]
+interface BaseCardProps extends Tags, Tagged {
   id: string
   lastUpdated?: string
   category: string

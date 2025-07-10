@@ -67,7 +67,7 @@ const TagCategorySchema = Type.Composite([
 ])
 // NOTE: can be optional because the categories might not exist
 const TagCategoriesSchema = Type.Object({
-  tagged: Type.Optional(Type.Array(TagCategorySchema)),
+  tags: Type.Optional(Type.Array(TagCategorySchema)),
 })
 
 // NOTE: old tag schema that we should migrate away
@@ -77,7 +77,6 @@ const TagSchema = Type.Object({
   selected: Type.Array(Type.String()),
   category: Type.String(),
 })
-const TagCategoriesSchema = Type.Record(UuidSchema, TagCategorySchema)
 const TaggedSchema = Type.Object({
   tagged: Type.Optional(Type.Array(TagValueSchema)),
 })
@@ -165,6 +164,21 @@ export const ContentPagePageSchema = Type.Composite([
   imageSchemaObject,
 ])
 
+// NOTE: Previously, index page's header and content page's header
+// are identical but we are splitting them apart now.
+// This is the index page's header
+// should fully own the state of the collection/folder
+// but the content page header should not.
+// Doing a straight copy paste rather than `Type.Composite`
+// to avoid unexpected spillover of properties
+export const IndexPagePageSchema = Type.Composite([
+  Type.Object({
+    contentPageHeader: ContentPageHeaderSchema,
+  }),
+  imageSchemaObject,
+  TagCategoriesSchema,
+])
+
 export const DatabasePagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,
   database: SearchableTableSchema,
@@ -203,6 +217,8 @@ export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
   BasePageAdditionalProps &
   CollectionVariantProps
 export type ContentPagePageProps = Static<typeof ContentPagePageSchema> &
+  BasePageAdditionalProps
+export type IndexPagePageProps = Static<typeof IndexPagePageSchema> &
   BasePageAdditionalProps
 export type DatabasePagePageProps = Static<typeof DatabasePagePageSchema> &
   BasePageAdditionalProps
