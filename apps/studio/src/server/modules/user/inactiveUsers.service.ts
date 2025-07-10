@@ -123,6 +123,9 @@ const getSiteAndAdmins = async ({
   userId,
   siteIds,
 }: GetSiteAndAdminsProps): Promise<GetSiteAndAdminsOutput> => {
+  // Prevent empty array from being passed in
+  if (siteIds.length === 0) return []
+
   return (
     tx
       .with("siteAdmins", (eb) =>
@@ -199,6 +202,8 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
         })
 
         for (const { user, siteIds } of deactivatedUsersAndSiteIds) {
+          if (siteIds.length === 0) continue
+
           const sitesAndAdmins = await getSiteAndAdmins({
             tx,
             userId: user.id,
