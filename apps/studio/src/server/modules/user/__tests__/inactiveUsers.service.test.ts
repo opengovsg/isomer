@@ -18,8 +18,8 @@ import { db } from "~/server/modules/database"
 import { RoleType } from "~/server/modules/database/types"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 import {
+  bulkDeactivateInactiveUsers,
   bulkSendAccountDeactivationWarningEmails,
-  deactivateUser,
   getDateOnlyInSG,
   getInactiveUsers,
 } from "../inactiveUsers.service"
@@ -74,22 +74,12 @@ const setupUserWrapper = async ({
 }
 
 describe("inactiveUsers.service", () => {
-  vi.mock("~/features/mail/service", () => ({
-    sendAccountDeactivationEmail: vi.fn(),
-    sendAccountDeactivationWarningEmail: vi.fn(),
-  }))
-
-  describe("deactivateUser", () => {
+  describe("bulkDeactivateInactiveUsers", () => {
     let site: Site
 
-    // Necessary pre-requisite as no emails will be sent if there are no admins
-    const setupAnotherUserWithPermissions = async (): Promise<User> => {
-      const user = await setupUser({
-        email: crypto.randomUUID() + "@user.com",
-      })
-      await setupAdminPermissions({ siteId: site.id, userId: user.id })
-      return user
-    }
+    vi.mock("~/features/mail/service", () => ({
+      sendAccountDeactivationEmail: vi.fn(),
+    }))
 
     beforeEach(async () => {
       vi.clearAllMocks()
@@ -101,7 +91,6 @@ describe("inactiveUsers.service", () => {
 
     it("should successfully deactivate user with permissions", async () => {
       // Arrange
-      await setupAnotherUserWithPermissions()
       const user = await setupUserWrapper({
         siteId: site.id,
         createdDaysAgo: 91,
@@ -109,10 +98,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      await deactivateUser({
-        user,
-        userIdsToDeactivate: [user.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       const deletedPermissions = await db
@@ -131,17 +117,13 @@ describe("inactiveUsers.service", () => {
 
     it("should return early when user has no permissions to delete", async () => {
       // Arrange
-      await setupAnotherUserWithPermissions()
-      const user = await setupUserWrapper({
+      await setupUserWrapper({
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
       })
 
       // Act
-      await deactivateUser({
-        user,
-        userIdsToDeactivate: [user.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       expect(sendAccountDeactivationEmail).not.toHaveBeenCalled()
@@ -149,8 +131,7 @@ describe("inactiveUsers.service", () => {
 
     it("should return early when user's permissions are already deleted", async () => {
       // Arrange
-      await setupAnotherUserWithPermissions()
-      const user = await setupUserWrapper({
+      await setupUserWrapper({
         siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
@@ -158,19 +139,15 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      await deactivateUser({
-        user,
-        userIdsToDeactivate: [user.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       expect(sendAccountDeactivationEmail).not.toHaveBeenCalled()
     })
 
-    it("should handle multiple calls to deactivate same user", async () => {
+    it("should handle multiple calls to deactivate same user without sending duplicate emails", async () => {
       // Arrange
-      await setupAnotherUserWithPermissions()
-      const user = await setupUserWrapper({
+      await setupUserWrapper({
         siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
@@ -178,12 +155,7 @@ describe("inactiveUsers.service", () => {
 
       // Act
       await Promise.all(
-        Array.from({ length: 5 }, () =>
-          deactivateUser({
-            user,
-            userIdsToDeactivate: [user.id],
-          }),
-        ),
+        Array.from({ length: 5 }, () => bulkDeactivateInactiveUsers()),
       )
 
       // Assert
@@ -192,7 +164,6 @@ describe("inactiveUsers.service", () => {
 
     it("should deactivate user with permissions on multiple sites", async () => {
       // Arrange
-      await setupAnotherUserWithPermissions()
       const user = await setupUserWrapper({
         siteId: site.id,
         createdDaysAgo: 91,
@@ -202,10 +173,7 @@ describe("inactiveUsers.service", () => {
       await setupAdminPermissions({ siteId: otherSite.id, userId: user.id })
 
       // Act
-      await deactivateUser({
-        user,
-        userIdsToDeactivate: [user.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       const deletedPermissions = await db
@@ -225,31 +193,26 @@ describe("inactiveUsers.service", () => {
 
     it("should exclude users being deactivated from admin list", async () => {
       // Arrange
-      const anotherAdmin = await setupAnotherUserWithPermissions()
-      const toDeactivate = await setupUserWrapper({
+      const user1 = await setupUserWrapper({
         siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
       })
-      const adminUser2 = await setupUserWrapper({
+      const user2 = await setupUserWrapper({
         siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
       })
 
       // Act
-      await deactivateUser({
-        user: toDeactivate,
-        userIdsToDeactivate: [anotherAdmin.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       const emailCall = vi.mocked(sendAccountDeactivationEmail).mock.calls[0]
       const sitesAndAdmins = emailCall?.[0]?.sitesAndAdmins
       expect(sitesAndAdmins).toBeDefined()
-      expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(anotherAdmin.email)
-      expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(toDeactivate.email)
-      expect(sitesAndAdmins?.[0]?.adminEmails).toContain(adminUser2.email)
+      expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(user1.email)
+      expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(user2.email)
     })
 
     it("should only include admins from sites the deactivated user had permissions for", async () => {
@@ -275,10 +238,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      await deactivateUser({
-        user: userToDeactivate,
-        userIdsToDeactivate: [userToDeactivate.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       const emailCall = vi.mocked(sendAccountDeactivationEmail).mock.calls[0]
@@ -302,36 +262,33 @@ describe("inactiveUsers.service", () => {
 
     it("should send email with correct recipient and site data", async () => {
       // Arrange
-      const user = await setupUserWrapper({
+      const userToDeactivate = await setupUserWrapper({
         siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
       })
-      const admin = await setupUserWrapper({
+      const userNotToDeactivate = await setupUserWrapper({
         siteId: site.id,
-        createdDaysAgo: 91,
+        createdDaysAgo: 89,
         lastLoginDaysAgo: null,
       })
 
       // Act
-      await deactivateUser({
-        user,
-        userIdsToDeactivate: [user.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
-        recipientEmail: user.email,
+        recipientEmail: userToDeactivate.email,
         sitesAndAdmins: [
           {
             siteName: site.name,
-            adminEmails: [admin.email],
+            adminEmails: [userNotToDeactivate.email],
           },
         ],
       })
     })
 
-    it("should send email if user is the last admin on a site", async () => {
+    it("should still send email if user is the last admin on a site", async () => {
       // Arrange
       const user = await setupUserWrapper({
         siteId: site.id,
@@ -340,10 +297,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      await deactivateUser({
-        user,
-        userIdsToDeactivate: [user.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
@@ -360,7 +314,6 @@ describe("inactiveUsers.service", () => {
 
     it("should still remove permissions when sendAccountDeactivationEmail throws error", async () => {
       // Arrange
-      await setupAnotherUserWithPermissions()
       const user = await setupUserWrapper({
         siteId: site.id,
         createdDaysAgo: 91,
@@ -371,10 +324,7 @@ describe("inactiveUsers.service", () => {
       )
 
       // Act & Assert
-      await deactivateUser({
-        user,
-        userIdsToDeactivate: [user.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       const deletedPermissions = await db
@@ -388,7 +338,6 @@ describe("inactiveUsers.service", () => {
 
     it("should only delete non-deleted permissions", async () => {
       // Arrange
-      await setupAnotherUserWithPermissions()
       const user = await setupUserWrapper({
         siteId: site.id,
         createdDaysAgo: 91,
@@ -403,10 +352,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      await deactivateUser({
-        user,
-        userIdsToDeactivate: [user.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       const allPermissions = await db
@@ -446,10 +392,7 @@ describe("inactiveUsers.service", () => {
       )
 
       // Act
-      await deactivateUser({
-        user: userToDeactivate,
-        userIdsToDeactivate: [userToDeactivate.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1) // send to deactivated user
@@ -461,7 +404,7 @@ describe("inactiveUsers.service", () => {
 
     it("should not include non-admins (publishers + editors) in the site admins list", async () => {
       // Arrange
-      const user = await setupUserWrapper({
+      await setupUserWrapper({
         siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
@@ -486,10 +429,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Act
-      await deactivateUser({
-        user,
-        userIdsToDeactivate: [user.id],
-      })
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       const emailCall = vi.mocked(sendAccountDeactivationEmail).mock.calls[0]
@@ -499,24 +439,6 @@ describe("inactiveUsers.service", () => {
       expect(sitesAndAdmins?.[0]?.adminEmails).toContain(admin.email)
       expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(publisher.email)
       expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(editor.email)
-    })
-
-    it("should not throw error when userIdsToDeactivate is empty array", async () => {
-      // Arrange
-      const user = await setupUserWrapper({
-        siteId: site.id,
-        createdDaysAgo: 91,
-        lastLoginDaysAgo: null,
-      })
-
-      // Act & Assert
-      const result = deactivateUser({
-        user,
-        userIdsToDeactivate: [],
-      })
-
-      // Assert
-      await expect(result).resolves.not.toThrow()
     })
   })
 
