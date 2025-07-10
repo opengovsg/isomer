@@ -163,7 +163,6 @@ const InfoCardsWithFullImageSchema = Type.Object(
   },
   {
     title: "Cards with full images",
-    format: "hidden",
   },
 )
 
