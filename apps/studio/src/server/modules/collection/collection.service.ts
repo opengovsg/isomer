@@ -1,4 +1,10 @@
 import type { UnwrapTagged } from "type-fest"
+import {
+  COLLECTION_PAGE_DEFAULT_SORT_BY,
+  COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+  CollectionPagePageProps,
+  ISOMER_USABLE_PAGE_LAYOUTS,
+} from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
 import type { ResourceType } from "../database"
@@ -37,4 +43,18 @@ export const createCollectionLinkJson = ({}: {
     // TODO: Add pdf blob to content
     version: "0.1.0",
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
+}
+
+export const createCollectionIndexJson = (title: string) => {
+  return {
+    layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
+    page: {
+      title,
+      subtitle: `Read more on ${title.toLowerCase()} here.`,
+      defaultSortBy: COLLECTION_PAGE_DEFAULT_SORT_BY,
+      defaultSortDirection: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+    } as CollectionPagePageProps,
+    content: [],
+    version: "0.1.0",
+  }
 }

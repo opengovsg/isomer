@@ -2,6 +2,7 @@ import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash"
 
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createCollectionSchema,
   editLinkSchema,
@@ -11,7 +12,13 @@ import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
-import { db, jsonb, ResourceState, ResourceType } from "../database"
+import {
+  AuditLogEvent,
+  db,
+  jsonb,
+  ResourceState,
+  ResourceType,
+} from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
@@ -23,6 +30,7 @@ import {
 } from "../resource/resource.service"
 import { defaultCollectionSelect } from "./collection.select"
 import {
+  createCollectionIndexJson,
   createCollectionLinkJson,
   createCollectionPageJson,
 } from "./collection.service"
@@ -122,6 +130,44 @@ export const collectionRouter = router({
             eventType: "ResourceCreate",
             delta: { before: null, after: collection },
             by: user,
+          })
+
+          const indexJson = createCollectionIndexJson(collection.title)
+
+          const blob = await tx
+            .insertInto("Blob")
+            .values({ content: jsonb(indexJson) })
+            .returning("Blob.id")
+            .executeTakeFirstOrThrow()
+
+          const addedResource = await tx
+            .insertInto("Resource")
+            .values({
+              title: collection.title,
+              permalink: INDEX_PAGE_PERMALINK,
+              siteId,
+              parentId: collection.id,
+              draftBlobId: blob.id,
+              type: ResourceType.IndexPage,
+              state: ResourceState.Draft,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
+
+          await logResourceEvent(tx, {
+            siteId,
+            by: user,
+            delta: { before: null, after: addedResource },
+            eventType: AuditLogEvent.ResourceCreate,
           })
 
           return collection
