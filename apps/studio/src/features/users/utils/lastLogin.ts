@@ -30,10 +30,6 @@ export const getLastLoginText = ({
 
   const daysFromLastLogin = getDaysFromLastLogin(lastLoginAt)
 
-  if (daysFromLastLogin > 90) {
-    return "More than 90 days ago"
-  }
-
   if (daysFromLastLogin === 0) {
     return "Today"
   }
