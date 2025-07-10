@@ -106,11 +106,17 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
     // but just in case, we add this as a safety net
     if (siteNames.length === 0) continue
 
-    await sendAccountDeactivationWarningEmail({
-      recipientEmail: userEmail,
-      siteNames,
-      inHowManyDays,
-    })
+    try {
+      await sendAccountDeactivationWarningEmail({
+        recipientEmail: userEmail,
+        siteNames,
+        inHowManyDays,
+      })
+    } catch {
+      logger.error(
+        `Error sending account deactivation warning email for user ${userEmail}`,
+      )
+    }
   }
 }
 
