@@ -1,5 +1,6 @@
 import type {
   AccountDeactivationEmailTemplateData,
+  AccountDeactivationWarningEmailTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
@@ -121,6 +122,35 @@ export async function sendPublishAlertSiteAdminEmail(
   } catch (error) {
     logger.error({
       error: "Failed to send publish alert site admin email",
+      email: data.recipientEmail,
+      originalError: error,
+    })
+    throw error
+  }
+}
+
+export async function sendAccountDeactivationWarningEmail(
+  data: AccountDeactivationWarningEmailTemplateData,
+): Promise<void> {
+  if (!isValidEmail(data.recipientEmail)) {
+    logger.error({
+      error: "Invalid email format",
+      email: data.recipientEmail,
+    })
+    throw new Error("Invalid email format")
+  }
+
+  const template = templates.accountDeactivationWarning(data)
+
+  try {
+    await sendMail({
+      recipient: data.recipientEmail,
+      subject: template.subject,
+      body: template.body,
+    })
+  } catch (error) {
+    logger.error({
+      error: "Failed to send account deactivation warning email",
       email: data.recipientEmail,
       originalError: error,
     })

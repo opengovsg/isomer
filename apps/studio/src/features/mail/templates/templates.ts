@@ -2,6 +2,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import type {
   AccountDeactivationEmailTemplateData,
+  AccountDeactivationWarningEmailTemplateData,
   BaseEmailTemplateData,
   EmailTemplate,
   InvitationEmailTemplateData,
@@ -105,6 +106,23 @@ export const publishAlertSiteAdminTemplate = (
   }
 }
 
+export const accountDeactivationWarningTemplate = (
+  data: AccountDeactivationWarningEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, siteNames, inHowManyDays } = data
+  return {
+    subject: `[Isomer Studio] Account deactivation warning - ${inHowManyDays} days remaining`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>We noticed you haven’t logged in for a while. To keep your account active, please log in within the next ${inHowManyDays} days at <a href="${env.NEXT_PUBLIC_APP_URL}">${env.NEXT_PUBLIC_APP_URL?.replace("https://", "")}</a>.</p>
+<p>This is a standard security measure to protect your sites and data.</p>
+<p>If your account becomes deactivated, you will lose access to the following sites:</p>
+<ul>${siteNames.map((site) => `<li>${site}</li>`).join("")}</ul>
+<p>Your content will still be preserved, but you won’t be able to access or manage these sites unless your account is reactivated.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
 export const accountDeactivationTemplate = (
   data: AccountDeactivationEmailTemplateData,
 ): EmailTemplate => {
@@ -155,6 +173,8 @@ export const templates = {
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
   publishAlertSiteAdmin:
     publishAlertSiteAdminTemplate satisfies EmailTemplateFunction<PublishAlertSiteAdminEmailTemplateData>,
+  accountDeactivationWarning:
+    accountDeactivationWarningTemplate satisfies EmailTemplateFunction<AccountDeactivationWarningEmailTemplateData>,
   accountDeactivation:
     accountDeactivationTemplate satisfies EmailTemplateFunction<AccountDeactivationEmailTemplateData>,
 } as const
