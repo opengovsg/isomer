@@ -1,1 +1,0 @@
-export { WizgovWidget } from "./WizgovWidget"
