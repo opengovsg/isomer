@@ -430,7 +430,6 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "infopic",
       "infobar",
       "blockquote",
-      COLLECTION_BLOCK_TYPE,
     ],
   },
 ]
