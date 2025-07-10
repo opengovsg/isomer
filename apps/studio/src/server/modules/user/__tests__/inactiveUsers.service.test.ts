@@ -141,7 +141,7 @@ describe("inactiveUsers.service", () => {
       expect(sendAccountDeactivationEmail).not.toHaveBeenCalled()
     })
 
-    it("should handle multiple calls to deactivate same user", async () => {
+    it("should handle multiple calls to deactivate same user without sending duplicate emails", async () => {
       // Arrange
       await setupUserWrapper({
         siteId: site.id,
