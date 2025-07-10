@@ -51,9 +51,35 @@ const BaseRefPageSchema = Type.Composite([
   }),
 ])
 
+// NOTE: a tag value is simply a uuid that maps to a given label;
+// essentially, it is just a pointer
+const UuidSchema = Type.String({ format: "uuid" })
+export const TagValueSchema = UuidSchema
+// NOTE: single value for now but we might extend this in the future with additional metadata,
+// so we will leave it as is
+const DropdownItemSchema = Type.Object({ label: Type.String(), id: UuidSchema })
+const TagOptionSchema = DropdownItemSchema
+const TagCategorySchema = Type.Composite([
+  Type.Object({
+    options: Type.Record(TagValueSchema, TagOptionSchema),
+  }),
+  DropdownItemSchema,
+])
+// NOTE: can be optional because the categories might not exist
+const TagCategoriesSchema = Type.Object({
+  tagged: Type.Optional(Type.Array(TagCategorySchema)),
+})
+
+// NOTE: old tag schema that we should migrate away
+// because we sit on the `tag` key,
+// we cannot reuse it for our new tags
 const TagSchema = Type.Object({
   selected: Type.Array(Type.String()),
   category: Type.String(),
+})
+const TagCategoriesSchema = Type.Record(UuidSchema, TagCategorySchema)
+const TaggedSchema = Type.Object({
+  tagged: Type.Optional(Type.Array(TagValueSchema)),
 })
 
 const TagsSchema = Type.Object({
@@ -92,6 +118,7 @@ export const CollectionPagePageSchema = Type.Intersect([
     }),
   }),
   TagsSchema,
+  TaggedSchema,
   Type.Object({
     defaultSortBy: Type.Optional(
       Type.Union(
