@@ -213,12 +213,15 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
       })
   } catch (error) {
     if (
-      // Handle serializable transaction errors gracefully
+      // Handle serializable transaction errors gracefully - this is expected for idempotency
       error instanceof Error &&
       "code" in error &&
       error.code === PG_ERROR_CODES.serializationFailure
     ) {
-      logger.info("Serialization failure, retrying...")
+      logger.info(
+        "Serialization failure detected, skipping operation for idempotency",
+      )
+      return
     }
     // Re-throw other errors
     throw error
