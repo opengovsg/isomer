@@ -1,4 +1,4 @@
-import { IsomerSitemap } from "~/types"
+import type { IsomerSitemap } from "~/types"
 
 export type ChildPage = Pick<IsomerSitemap, "id" | "title" | "image"> & {
   url: IsomerSitemap["permalink"]

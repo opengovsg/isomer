@@ -1,7 +1,7 @@
 import { cloneDeep } from "lodash"
 import { describe, expect, it } from "vitest"
 
-import { ChildPage } from "../types"
+import type { ChildPage } from "../types"
 import { mergeChildrenPages } from "../utils"
 
 const generateChildrenPages = (extraPages: ChildPage[] = []): ChildPage[] => {

@@ -1,12 +1,10 @@
-import {
-  INFOCARD_VARIANT,
-  SingleCardWithImageProps,
-} from "~/interfaces/complex/InfoCards"
+import type { With4Cols } from "./types"
+import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
+import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { isExternalUrl } from "~/utils"
 import { InfoCardContainer } from "./InfoCardContainer"
 import { InfoCardImage } from "./InfoCardImage"
 import { InfoCardText } from "./InfoCardText"
-import { With4Cols } from "./types"
 
 export const InfoCardWithFullImage = ({
   title,

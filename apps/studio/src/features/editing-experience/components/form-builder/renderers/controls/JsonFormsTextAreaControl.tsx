@@ -63,7 +63,9 @@ export function JsonFormsTextAreaControl({
   return (
     <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
-        <FormLabel description={description}>{label}</FormLabel>
+        <FormLabel description={description} mb={0}>
+          {label}
+        </FormLabel>
         <Textarea
           value={String(data || "")}
           onChange={onChange}
@@ -71,9 +73,10 @@ export function JsonFormsTextAreaControl({
           maxLength={maxLength}
           minAutosizeRows={numOfRows}
           maxAutosizeRows={numOfRows}
+          my="0.5rem"
         />
         {maxLength && !errors && (
-          <FormHelperText mt="0.5rem">
+          <FormHelperText>
             {remainingCharacterCount}{" "}
             {remainingCharacterCount === 1 ? "character" : "characters"} left
           </FormHelperText>

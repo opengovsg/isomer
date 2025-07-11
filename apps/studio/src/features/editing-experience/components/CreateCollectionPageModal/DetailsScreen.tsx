@@ -162,7 +162,7 @@ export const CreateCollectionPageDetailsScreen = () => {
             <Stack gap="1.5rem">
               {/* Section 1: Page Title */}
               <FormControl isRequired isInvalid={!!errors.title}>
-                <FormLabel color="base.content.strong">
+                <FormLabel color="base.content.strong" mb={0}>
                   {type === ResourceType.CollectionPage ? "Page" : "Item"} title
                   <FormHelperText color="base.content.default">
                     Title should be descriptive
@@ -172,6 +172,7 @@ export const CreateCollectionPageDetailsScreen = () => {
                 <Input
                   placeholder="This is a title for your new page"
                   maxLength={MAX_TITLE_LENGTH}
+                  my="0.5rem"
                   {...register("title")}
                 />
                 {errors.title?.message ? (

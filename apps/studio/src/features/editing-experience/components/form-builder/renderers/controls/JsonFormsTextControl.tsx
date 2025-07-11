@@ -52,7 +52,7 @@ export function JsonFormsTextControl({
   return (
     <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
-        <FormLabel description={description} margin="0rem 0rem 0.5rem 0rem">
+        <FormLabel description={description} mb={0}>
           {label}
         </FormLabel>
         <Input
@@ -61,9 +61,10 @@ export function JsonFormsTextControl({
           onChange={onChange}
           placeholder={label}
           maxLength={maxLength}
+          my="0.5rem"
         />
         {maxLength && !errors && (
-          <FormHelperText mt="0.5rem">
+          <FormHelperText>
             {remainingCharacterCount}{" "}
             {remainingCharacterCount === 1 ? "character" : "characters"} left
           </FormHelperText>

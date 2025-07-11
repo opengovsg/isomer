@@ -1,4 +1,4 @@
-import { SingleCardNoImageProps } from "~/interfaces/complex/InfoCards"
+import type { SingleCardNoImageProps } from "~/interfaces/complex/InfoCards"
 import { isExternalUrl } from "~/utils"
 import { InfoCardContainer } from "./InfoCardContainer"
 import { InfoCardText } from "./InfoCardText"
