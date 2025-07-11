@@ -121,7 +121,13 @@ export const getResourceRoomFileType = (filePath: string) => {
     return undefined;
   }
 
-  return matchedPart.split("-")[0];
+  const potentialType = matchedPart.split("-")[0];
+
+  if (!potentialType || !["post", "file", "link"].includes(potentialType)) {
+    return undefined;
+  }
+
+  return potentialType;
 };
 
 export const getManualReviewItems = (
