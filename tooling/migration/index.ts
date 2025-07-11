@@ -106,7 +106,7 @@ const saveContentsToFile = async ({
   const schema = JSON.stringify(content, null, 2);
 
   // Create the parent folders to the permalink
-  const filePath = path.join(__dirname, site, permalink);
+  const filePath = path.join(__dirname, site, permalink.toLocaleLowerCase());
   const fileName = `${path.basename(filePath)}.json`;
   const folderPath = path.dirname(filePath);
   const isFolderExists = fs.existsSync(folderPath);
