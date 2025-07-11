@@ -73,7 +73,7 @@ export const getIsomerSchemaFromJekyll = async ({
   const fileType = getResourceRoomFileType(path);
 
   // Map to Isomer Schema
-  if (layout === "post" && fileType === "post") {
+  if (layout === "post" && (!fileType || fileType === "post")) {
     return {
       status,
       permalink,
@@ -81,7 +81,26 @@ export const getIsomerSchemaFromJekyll = async ({
       content: {
         version: "0.1.0",
         layout: "article",
-        content: updatedContent,
+        content: [
+          {
+            type: "callout",
+            content: {
+              type: "prose",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "This article has been migrated from an earlier version of the site and may display formatting inconsistencies.",
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+          ...updatedContent,
+        ],
         page: {
           title,
           category: "Placeholder", // Note: This will be changed to the actual category in the next step
