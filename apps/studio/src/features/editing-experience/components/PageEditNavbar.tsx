@@ -28,12 +28,14 @@ const NavigationBreadcrumbs = ({
 }: NavigationBreadcrumbsProps): JSX.Element => {
   const { data: resource, isLoading: isResourceLoading } =
     trpc.resource.getMetadataById.useQuery({
+      siteId: Number(siteId),
       resourceId: pageId,
     })
 
   const { data: parentResource, isLoading: isParentResourceLoading } =
     trpc.resource.getMetadataById.useQuery(
       {
+        siteId: Number(siteId),
         resourceId: resource?.parentId ?? "",
       },
       { enabled: !!resource?.parentId },
