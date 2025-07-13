@@ -10,6 +10,32 @@ import {
 import { imageSchemaObject } from "~/schemas/internal"
 import { REF_HREF_PATTERN } from "~/utils/validation"
 
+// NOTE: a tag value is simply a uuid that maps to a given label;
+// essentially, it is just a pointer
+const UuidSchema = Type.String({ format: "uuid" })
+export const TagValueSchema = UuidSchema
+// NOTE: single value for now but we might extend this in the future with additional metadata,
+// so we will leave it as is
+const DropdownItemSchema = Type.Object({ label: Type.String(), id: UuidSchema })
+const TagOptionSchema = DropdownItemSchema
+const TagCategorySchema = Type.Composite([
+  Type.Object({
+    options: Type.Record(TagValueSchema, TagOptionSchema),
+  }),
+  DropdownItemSchema,
+])
+// NOTE: can be optional because the categories might not exist
+const TagCategoriesSchema = Type.Object({
+  tagCategories: Type.Optional(Type.Array(TagCategorySchema)),
+})
+const TaggedSchema = Type.Optional(
+  Type.Array(TagValueSchema, {
+    // NOTE: we need a custom format because this cannot just be a simple drop down
+    // as we need to reference the existing data that is pointing to this
+    format: "tagged",
+  }),
+)
+
 const categorySchemaObject = Type.Object({
   category: Type.String({
     title: "Article category",
@@ -29,6 +55,7 @@ const dateSchemaObject = Type.Object({
 })
 
 const BaseRefPageSchema = Type.Composite([
+  Type.Object({ tagged: TaggedSchema }),
   categorySchemaObject,
   dateSchemaObject,
   imageSchemaObject,
@@ -51,25 +78,6 @@ const BaseRefPageSchema = Type.Composite([
   }),
 ])
 
-// NOTE: a tag value is simply a uuid that maps to a given label;
-// essentially, it is just a pointer
-const UuidSchema = Type.String({ format: "uuid" })
-export const TagValueSchema = UuidSchema
-// NOTE: single value for now but we might extend this in the future with additional metadata,
-// so we will leave it as is
-const DropdownItemSchema = Type.Object({ label: Type.String(), id: UuidSchema })
-const TagOptionSchema = DropdownItemSchema
-const TagCategorySchema = Type.Composite([
-  Type.Object({
-    options: Type.Record(TagValueSchema, TagOptionSchema),
-  }),
-  DropdownItemSchema,
-])
-// NOTE: can be optional because the categories might not exist
-const TagCategoriesSchema = Type.Object({
-  tags: Type.Optional(Type.Array(TagCategorySchema)),
-})
-
 // NOTE: old tag schema that we should migrate away
 // because we sit on the `tag` key,
 // we cannot reuse it for our new tags
@@ -77,13 +85,13 @@ const TagSchema = Type.Object({
   selected: Type.Array(Type.String()),
   category: Type.String(),
 })
-const TaggedSchema = Type.Object({
-  tagged: Type.Optional(Type.Array(TagValueSchema)),
-})
-
-const TagsSchema = Type.Object({
-  tags: Type.Optional(Type.Array(TagSchema)),
-})
+const TagsSchema = Type.Object(
+  {
+    tags: Type.Optional(Type.Array(TagSchema)),
+  },
+  // NOTE: we need to hide this because it's not supposed to be visible to our end user
+  { format: "hidden" },
+)
 
 export const ArticlePagePageSchema = Type.Composite([
   dateSchemaObject,
@@ -92,6 +100,7 @@ export const ArticlePagePageSchema = Type.Composite([
   }),
   categorySchemaObject,
   imageSchemaObject,
+  Type.Object({ tagged: TaggedSchema }),
 ])
 
 const COLLECTION_PAGE_SORT_BY = {
@@ -116,8 +125,8 @@ export const CollectionPagePageSchema = Type.Intersect([
       title: "The subtitle of the collection",
     }),
   }),
+  TagCategoriesSchema,
   TagsSchema,
-  TaggedSchema,
   Type.Object({
     defaultSortBy: Type.Optional(
       Type.Union(

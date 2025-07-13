@@ -1,18 +1,17 @@
 import type { ImageProps } from "~/interfaces"
 import type {
-  CollectionPagePageProps,
+  ArticlePagePageProps,
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
-
-type Tags = Pick<CollectionPagePageProps, "tags">
-type Tagged = Pick<CollectionPagePageProps, "tagged">
 
 export interface FileDetails {
   type: string
   size: string
 }
-interface BaseCardProps extends Tags, Tagged {
+interface BaseCardProps {
+  tags?: ArticlePagePageProps["tags"]
+  tagged?: ArticlePagePageProps["tagged"]
   id: string
   lastUpdated?: string
   category: string
@@ -23,6 +22,9 @@ interface BaseCardProps extends Tags, Tagged {
   LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
+
+// NOTE: exported for storybook compat
+export type Tag = NonNullable<BaseCardProps["tags"]>[number]
 
 export interface ArticleCardProps extends BaseCardProps {
   variant: "article"
