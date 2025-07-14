@@ -52,3 +52,9 @@ export {
   CHILDREN_PAGES_LAYOUT_OPTIONS,
   type ChildrenPagesProps,
 } from "./ChildrenPages"
+export {
+  DGS_SEARCHABLE_TABLE_TYPE,
+  DGSSearchableTableSchema,
+  type DGSSearchableTableProps,
+  type DGSResponse,
+} from "./DGSSearchableTable"
