@@ -2,6 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { IconType } from "react-icons"
 import {
   COLLECTION_BLOCK_TYPE,
+  DGS_SEARCHABLE_TABLE_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
 } from "@opengovsg/isomer-components"
@@ -18,6 +19,7 @@ import {
   BiMoviePlay,
   BiPointer,
   BiSolidQuoteAltLeft,
+  BiTable,
   BiText,
 } from "react-icons/bi"
 import { FaYoutube } from "react-icons/fa"
@@ -51,6 +53,7 @@ export const TYPE_TO_ICON: Record<
   [DYNAMIC_DATA_BANNER_TYPE]: TbApi,
   [COLLECTION_BLOCK_TYPE]: TbDatabase,
   [IMAGE_GALLERY_TYPE]: BiImages,
+  [DGS_SEARCHABLE_TABLE_TYPE]: BiTable,
   childrenpages: BiListUl,
   // TODO: Add in these new block types
   // table: BiTable,
