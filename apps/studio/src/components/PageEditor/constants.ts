@@ -395,11 +395,14 @@ type AllowedBlockSections = {
 export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Basic content blocks",
-    types: ["prose", "image", "accordion", "callout", "blockquote"],
-  },
-  {
-    label: "Add a new section",
-    types: [IMAGE_GALLERY_TYPE],
+    types: [
+      "prose",
+      "image",
+      "accordion",
+      "callout",
+      "blockquote",
+      IMAGE_GALLERY_TYPE,
+    ],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
@@ -415,11 +418,12 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
       "blockquote",
       "contentpic",
       "infobar",
+      IMAGE_GALLERY_TYPE,
     ],
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics", IMAGE_GALLERY_TYPE],
+    types: ["infocards", "infocols", "keystatistics"],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
