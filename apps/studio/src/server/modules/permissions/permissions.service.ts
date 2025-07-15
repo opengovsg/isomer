@@ -125,16 +125,16 @@ export const getResourcePermission = async ({
   siteId,
   resourceId = null,
 }: PermissionsProps) => {
-  const query = db
+  let query = db
     .selectFrom("ResourcePermission")
     .where("userId", "=", userId)
     .where("siteId", "=", siteId)
     .where("deletedAt", "is", null)
 
   if (resourceId) {
-    query.where("resourceId", "=", resourceId)
+    query = query.where("resourceId", "=", resourceId)
   } else {
-    query.where("resourceId", "is", null)
+    query = query.where("resourceId", "is", null)
   }
 
   return query.select("role").execute()

@@ -1,7 +1,17 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
+import { resetTables } from "tests/integration/helpers/db"
+import {
+  setupAdminPermissions,
+  setupEditorPermissions,
+  setupPageResource,
+  setupPublisherPermissions,
+  setupSite,
+  setupUser,
+} from "tests/integration/helpers/seed"
 
 import type { ResourceAbility } from "../permissions.type"
-import { RoleType } from "../../database"
+import { db, ResourceType, RoleType } from "../../database"
+import { getResourcePermission } from "../permissions.service"
 import { CRUD_ACTIONS } from "../permissions.type"
 import { buildPermissionsForResource } from "../permissions.util"
 
@@ -142,5 +152,196 @@ describe("permissions.service", () => {
     // Assert
     expect(canMoveFrom).toBe(expected)
     expect(canMoveTo).toBe(false)
+  })
+})
+
+describe("getResourcePermission", () => {
+  beforeEach(async () => {
+    await resetTables("ResourcePermission", "User", "Site", "Resource")
+  })
+
+  it("should return site-wide permissions when resourceId is null", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const site = await setupSite()
+    await setupAdminPermissions({ userId: user.id, siteId: site.site.id })
+
+    // Act
+    const permissions = await getResourcePermission({
+      userId: user.id,
+      siteId: site.site.id,
+      resourceId: null,
+    })
+
+    // Assert
+    expect(permissions).toHaveLength(1)
+    expect(permissions[0]?.role).toBe(RoleType.Admin)
+  })
+
+  it("should return resource-specific permissions when resourceId is provided", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { page, site } = await setupPageResource({
+      resourceType: ResourceType.Page,
+    })
+
+    await db
+      .insertInto("ResourcePermission")
+      .values({
+        userId: user.id,
+        siteId: site.id,
+        resourceId: page.id,
+        role: RoleType.Admin,
+        deletedAt: null,
+      })
+      .execute()
+
+    // Act
+    const permissions = await getResourcePermission({
+      userId: user.id,
+      siteId: site.id,
+      resourceId: page.id,
+    })
+
+    // Assert
+    expect(permissions).toHaveLength(1)
+    expect(permissions[0]?.role).toBe(RoleType.Admin)
+  })
+
+  it("should return empty array when no permissions exist for user and site", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const site = await setupSite()
+
+    // Act
+    const permissions = await getResourcePermission({
+      userId: user.id,
+      siteId: site.site.id,
+      resourceId: null,
+    })
+
+    // Assert
+    expect(permissions).toHaveLength(0)
+  })
+
+  it("should return empty array when no permissions exist for specific resource", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { page, site } = await setupPageResource({
+      resourceType: ResourceType.Page,
+    })
+
+    // Act
+    const permissions = await getResourcePermission({
+      userId: user.id,
+      siteId: site.id,
+      resourceId: page.id,
+    })
+
+    // Assert
+    expect(permissions).toHaveLength(0)
+  })
+
+  it("should not return site-wide permissions when resourceId is provided and is not null", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { page, site } = await setupPageResource({
+      resourceType: ResourceType.Page,
+    })
+    await setupAdminPermissions({ userId: user.id, siteId: site.id })
+
+    // Act
+    const permissions = await getResourcePermission({
+      userId: user.id,
+      siteId: site.id,
+      resourceId: page.id,
+    })
+
+    // Assert
+    expect(permissions).toHaveLength(0)
+  })
+
+  it("should exclude soft-deleted permissions", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const site = await setupSite()
+
+    // Create a soft-deleted permission
+    await db
+      .insertInto("ResourcePermission")
+      .values({
+        userId: user.id,
+        siteId: site.site.id,
+        resourceId: null,
+        role: RoleType.Admin,
+        deletedAt: new Date(),
+      })
+      .execute()
+
+    // Act
+    const permissions = await getResourcePermission({
+      userId: user.id,
+      siteId: site.site.id,
+      resourceId: null,
+    })
+
+    // Assert
+    expect(permissions).toHaveLength(0)
+  })
+
+  it("should only return permissions for the specified user", async () => {
+    // Arrange
+    const user1 = await setupUser({ email: "user1@example.com" })
+    const user2 = await setupUser({ email: "user2@example.com" })
+    const site = await setupSite()
+    await setupAdminPermissions({ userId: user1.id, siteId: site.site.id })
+    await setupEditorPermissions({ userId: user2.id, siteId: site.site.id })
+
+    // Act
+    const permissions1 = await getResourcePermission({
+      userId: user1.id,
+      siteId: site.site.id,
+      resourceId: null,
+    })
+
+    const permissions2 = await getResourcePermission({
+      userId: user2.id,
+      siteId: site.site.id,
+      resourceId: null,
+    })
+
+    // Assert
+    expect(permissions1).toHaveLength(1)
+    expect(permissions1[0]?.role).toBe(RoleType.Admin)
+    expect(permissions2).toHaveLength(1)
+    expect(permissions2[0]?.role).toBe(RoleType.Editor)
+  })
+
+  it("should only return permissions for the specified site", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const site1 = await setupSite()
+    const site2 = await setupSite()
+    await setupAdminPermissions({ userId: user.id, siteId: site1.site.id })
+    await setupEditorPermissions({ userId: user.id, siteId: site2.site.id })
+
+    // Act
+    const permissions1 = await getResourcePermission({
+      userId: user.id,
+      siteId: site1.site.id,
+      resourceId: null,
+    })
+
+    const permissions2 = await getResourcePermission({
+      userId: user.id,
+      siteId: site2.site.id,
+      resourceId: null,
+    })
+
+    // Assert
+    expect(permissions1).toHaveLength(1)
+    expect(permissions1[0]?.role).toBe(RoleType.Admin)
+    expect(permissions2).toHaveLength(1)
+    expect(permissions2[0]?.role).toBe(RoleType.Editor)
   })
 })
