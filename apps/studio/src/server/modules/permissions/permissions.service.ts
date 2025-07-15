@@ -140,6 +140,7 @@ export const bulkValidateUserPermissionsForResources = async ({
   }
 
   // This executes 1 DB query
+  // NOTE: not passing in resourceIds because we are using site-wide permissions
   const perms = await definePermissionsForResource({ siteId, userId })
 
   // This executes 0-1 DB query
