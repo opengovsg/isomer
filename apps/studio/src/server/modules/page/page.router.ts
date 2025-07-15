@@ -246,16 +246,9 @@ export const pageRouter = router({
         action: "update",
       })
 
-      if (!ctx.session?.userId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please ensure that you are authenticated",
-        })
-      }
-
       const by = await db
         .selectFrom("User")
-        .where("id", "=", ctx.session.userId)
+        .where("id", "=", ctx.user.id)
         .selectAll()
         .executeTakeFirstOrThrow(
           () =>
