@@ -195,258 +195,274 @@ describe("permissions.service", () => {
     })
 
     describe("create", () => {
-      it("should allow admins to create resources", async () => {
-        // Arrange
-        await setupAdminPermissions({ userId: user.id, siteId: site.id })
+      describe("admin", () => {
+        it("should allow admins to create root resources", async () => {
+          // Arrange
+          await setupAdminPermissions({ userId: user.id, siteId: site.id })
 
-        // Act
-        const validation = bulkValidateUserPermissionsForResources({
-          action: "create",
-          resourceIds: [null, folder.id],
-          userId: user.id,
-          siteId: site.id,
+          // Act
+          const validation = bulkValidateUserPermissionsForResources({
+            action: "create",
+            resourceIds: [null, folder.id],
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert
+          await expect(validation).resolves.not.toThrow()
         })
-
-        // Assert
-        await expect(validation).resolves.not.toThrow()
       })
 
-      it("should allow publishers to create non-root resources", async () => {
-        // Arrange
-        await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+      describe("publisher", () => {
+        it("should allow publishers to create non-root resources", async () => {
+          // Arrange
+          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
 
-        // Act
-        const validation = bulkValidateUserPermissionsForResources({
-          action: "create",
-          resourceIds: [folder.id],
-          userId: user.id,
-          siteId: site.id,
+          // Act
+          const validation = bulkValidateUserPermissionsForResources({
+            action: "create",
+            resourceIds: [folder.id],
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert
+          await expect(validation).resolves.not.toThrow()
         })
 
-        // Assert
-        await expect(validation).resolves.not.toThrow()
+        it("should not allow publishers to create root resources", async () => {
+          // Arrange
+          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+
+          // Act
+          const validation = bulkValidateUserPermissionsForResources({
+            action: "create",
+            resourceIds: [null],
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert
+          await expect(validation).rejects.toThrow(
+            "You do not have sufficient permissions to perform this action",
+          )
+        })
+
+        it("sould not allow publishers to create root resources among non-root resources", async () => {
+          // Arrange
+          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+
+          // Act
+          const validation = bulkValidateUserPermissionsForResources({
+            action: "create",
+            resourceIds: [folder.id, null],
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert
+          await expect(validation).rejects.toThrow(
+            "You do not have sufficient permissions to perform this action",
+          )
+        })
       })
 
-      it("should not allow publishers to create root resources", async () => {
-        // Arrange
-        await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+      describe("editor", () => {
+        it("should allow editors to create non-root resources", async () => {
+          // Arrange
+          await setupEditorPermissions({ userId: user.id, siteId: site.id })
 
-        // Act
-        const validation = bulkValidateUserPermissionsForResources({
-          action: "create",
-          resourceIds: [null],
-          userId: user.id,
-          siteId: site.id,
+          // Act
+          const validation = bulkValidateUserPermissionsForResources({
+            action: "create",
+            resourceIds: [folder.id],
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert
+          await expect(validation).resolves.not.toThrow()
         })
 
-        // Assert
-        await expect(validation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
+        it("should not allow editors to create root resources", async () => {
+          // Arrange
+          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+
+          // Act
+          const validation = bulkValidateUserPermissionsForResources({
+            action: "create",
+            resourceIds: [null],
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert
+          await expect(validation).rejects.toThrow(
+            "You do not have sufficient permissions to perform this action",
+          )
+        })
+
+        it("should not allow editors to create non-root resources among root resources", async () => {
+          // Arrange
+          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+
+          // Act
+          const validation = bulkValidateUserPermissionsForResources({
+            action: "create",
+            resourceIds: [folder.id, null],
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert
+          await expect(validation).rejects.toThrow(
+            "You do not have sufficient permissions to perform this action",
+          )
+        })
       })
 
-      it("sould not allow publishers to create root resources among non-root resources", async () => {
-        // Arrange
-        await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+      describe("no permissions", () => {
+        it("should not allow users without permissions to create resources", async () => {
+          // Act
+          const validation = bulkValidateUserPermissionsForResources({
+            action: "create",
+            resourceIds: [folder.id],
+            userId: user.id,
+            siteId: site.id,
+          })
 
-        // Act
-        const validation = bulkValidateUserPermissionsForResources({
-          action: "create",
-          resourceIds: [folder.id, null],
-          userId: user.id,
-          siteId: site.id,
+          // Assert
+          await expect(validation).rejects.toThrow(
+            "You do not have sufficient permissions to perform this action",
+          )
         })
-
-        // Assert
-        await expect(validation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
-      })
-
-      it("should allow editors to create non-root resources", async () => {
-        // Arrange
-        await setupEditorPermissions({ userId: user.id, siteId: site.id })
-
-        // Act
-        const validation = bulkValidateUserPermissionsForResources({
-          action: "create",
-          resourceIds: [folder.id],
-          userId: user.id,
-          siteId: site.id,
-        })
-
-        // Assert
-        await expect(validation).resolves.not.toThrow()
-      })
-
-      it("should not allow editors to create root resources", async () => {
-        // Arrange
-        await setupEditorPermissions({ userId: user.id, siteId: site.id })
-
-        // Act
-        const validation = bulkValidateUserPermissionsForResources({
-          action: "create",
-          resourceIds: [null],
-          userId: user.id,
-          siteId: site.id,
-        })
-
-        // Assert
-        await expect(validation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
-      })
-
-      it("should not allow editors to create non-root resources among root resources", async () => {
-        // Arrange
-        await setupEditorPermissions({ userId: user.id, siteId: site.id })
-
-        // Act
-        const validation = bulkValidateUserPermissionsForResources({
-          action: "create",
-          resourceIds: [folder.id, null],
-          userId: user.id,
-          siteId: site.id,
-        })
-
-        // Assert
-        await expect(validation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
-      })
-
-      it("should not allow users without permissions to create resources", async () => {
-        // Act
-        const validation = bulkValidateUserPermissionsForResources({
-          action: "create",
-          resourceIds: [folder.id],
-          userId: user.id,
-          siteId: site.id,
-        })
-
-        // Assert
-        await expect(validation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
       })
     })
 
     describe("read", () => {
-      it("should allow admins to read any resource", async () => {
-        // Arrange
-        await setupAdminPermissions({ userId: user.id, siteId: site.id })
+      describe("admin", () => {
+        it("should allow admins to read any resource", async () => {
+          // Arrange
+          await setupAdminPermissions({ userId: user.id, siteId: site.id })
 
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "read",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "read",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).resolves.not.toThrow()
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "read",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).resolves.not.toThrow()
       })
 
-      // Note: currently we do not have resource-level permissions
-      it("should allow publishers to read any resource", async () => {
-        await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+      describe("publisher", () => {
+        // Note: currently we do not have resource-level permissions
+        it("should allow publishers to read any resource", async () => {
+          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
 
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "read",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "read",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).resolves.not.toThrow()
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "read",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).resolves.not.toThrow()
       })
 
-      // Note: currently we do not have resource-level permissions
-      it("should allow editors to read any resource", async () => {
-        await setupEditorPermissions({ userId: user.id, siteId: site.id })
+      describe("editor", () => {
+        // Note: currently we do not have resource-level permissions
+        it("should allow editors to read any resource", async () => {
+          await setupEditorPermissions({ userId: user.id, siteId: site.id })
 
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "read",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "read",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).resolves.not.toThrow()
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "read",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).resolves.not.toThrow()
       })
 
-      it("should not allow users without permissions to read any resources", async () => {
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+      describe("no permissions", () => {
+        it("should not allow users without permissions to read any resources", async () => {
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "read",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).rejects.toThrow(
+              "You do not have sufficient permissions to perform this action",
+            )
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "read",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).rejects.toThrow(
+          // Assert (multiple resources)
+          await expect(bulkValidation).rejects.toThrow(
             "You do not have sufficient permissions to perform this action",
           )
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "read",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
       })
 
       describe("should throw error if resource is not found", () => {
@@ -495,121 +511,129 @@ describe("permissions.service", () => {
     })
 
     describe("update", () => {
-      it("should allow admins to update any resources", async () => {
-        // Arrange
-        await setupAdminPermissions({ userId: user.id, siteId: site.id })
+      describe("admin", () => {
+        it("should allow admins to update any resources", async () => {
+          // Arrange
+          await setupAdminPermissions({ userId: user.id, siteId: site.id })
 
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "update",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "update",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).resolves.not.toThrow()
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "update",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).resolves.not.toThrow()
       })
 
-      it("should allow publishers to update any resources", async () => {
-        // Arrange
-        await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+      describe("publisher", () => {
+        it("should allow publishers to update any resources", async () => {
+          // Arrange
+          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
 
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "update",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "update",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).resolves.not.toThrow()
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "update",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).resolves.not.toThrow()
       })
 
-      it("should allow editors to update any resources", async () => {
-        // Arrange
-        await setupEditorPermissions({ userId: user.id, siteId: site.id })
+      describe("editor", () => {
+        it("should allow editors to update any resources", async () => {
+          // Arrange
+          await setupEditorPermissions({ userId: user.id, siteId: site.id })
 
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "update",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "update",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).resolves.not.toThrow()
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "update",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).resolves.not.toThrow()
       })
 
-      it("should not allow users without permissions to update any resources", async () => {
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+      describe("no permissions", () => {
+        it("should not allow users without permissions to update any resources", async () => {
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "update",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert
+            await expect(validation).rejects.toThrow(
+              "You do not have sufficient permissions to perform this action",
+            )
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "update",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert
-          await expect(validation).rejects.toThrow(
+          // Assert (multiple resources)
+          await expect(bulkValidation).rejects.toThrow(
             "You do not have sufficient permissions to perform this action",
           )
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "update",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
       })
 
       it("should throw error if resource is not found", async () => {
@@ -630,201 +654,209 @@ describe("permissions.service", () => {
     })
 
     describe("delete", () => {
-      it("should allow admins to delete any resources", async () => {
-        // Arrange
-        await setupAdminPermissions({ userId: user.id, siteId: site.id })
+      describe("admin", () => {
+        it("should allow admins to delete any resources", async () => {
+          // Arrange
+          await setupAdminPermissions({ userId: user.id, siteId: site.id })
 
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "delete",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).resolves.not.toThrow()
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "delete",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).resolves.not.toThrow()
       })
 
-      it("should allow publishers to delete non-root resources", async () => {
-        // Arrange
-        await setupPublisherPermissions({ userId: user.id, siteId: site.id })
-        const nonRootResourceIds = [page.id]
+      describe("publisher", () => {
+        it("should allow publishers to delete non-root resources", async () => {
+          // Arrange
+          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+          const nonRootResourceIds = [page.id]
 
-        for (const resourceId of nonRootResourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of nonRootResourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "delete",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
-            resourceIds: [resourceId],
+            resourceIds: nonRootResourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).resolves.not.toThrow()
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "delete",
-          resourceIds: nonRootResourceIds,
-          userId: user.id,
-          siteId: site.id,
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
 
-        // Assert (multiple resources)
-        await expect(bulkValidation).resolves.not.toThrow()
-      })
+        it("should not allow publishers to delete root resources", async () => {
+          // Arrange
+          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+          const rootResourceIds = [
+            rootPage.id,
+            pageWithoutParent.id,
+            folder.id,
+            null,
+          ]
 
-      it("should not allow publishers to delete root resources", async () => {
-        // Arrange
-        await setupPublisherPermissions({ userId: user.id, siteId: site.id })
-        const rootResourceIds = [
-          rootPage.id,
-          pageWithoutParent.id,
-          folder.id,
-          null,
-        ]
+          for (const resourceId of rootResourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "delete",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
 
-        for (const resourceId of rootResourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+            // Assert (single resource)
+            await expect(validation).rejects.toThrow(
+              "You do not have sufficient permissions to perform this action",
+            )
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
-            resourceIds: [resourceId],
+            resourceIds: rootResourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).rejects.toThrow(
+          // Assert (multiple resources)
+          await expect(bulkValidation).rejects.toThrow(
             "You do not have sufficient permissions to perform this action",
           )
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "delete",
-          resourceIds: rootResourceIds,
-          userId: user.id,
-          siteId: site.id,
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
       })
 
-      it("should allow editors to delete non-root resources", async () => {
-        // Arrange
-        await setupEditorPermissions({ userId: user.id, siteId: site.id })
-        const nonRootResourceIds = [page.id]
+      describe("editor", () => {
+        it("should allow editors to delete non-root resources", async () => {
+          // Arrange
+          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+          const nonRootResourceIds = [page.id]
 
-        for (const resourceId of nonRootResourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of nonRootResourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "delete",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
-            resourceIds: [resourceId],
+            resourceIds: nonRootResourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).resolves.not.toThrow()
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "delete",
-          resourceIds: nonRootResourceIds,
-          userId: user.id,
-          siteId: site.id,
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
 
-        // Assert (multiple resources)
-        await expect(bulkValidation).resolves.not.toThrow()
-      })
+        it("should not allow editors to delete root resources", async () => {
+          // Arrange
+          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+          const rootResourceIds = [
+            rootPage.id,
+            pageWithoutParent.id,
+            folder.id,
+            null,
+          ]
 
-      it("should not allow editors to delete root resources", async () => {
-        // Arrange
-        await setupEditorPermissions({ userId: user.id, siteId: site.id })
-        const rootResourceIds = [
-          rootPage.id,
-          pageWithoutParent.id,
-          folder.id,
-          null,
-        ]
+          for (const resourceId of rootResourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "delete",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
 
-        for (const resourceId of rootResourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+            // Assert (single resource)
+            await expect(validation).rejects.toThrow(
+              "You do not have sufficient permissions to perform this action",
+            )
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
-            resourceIds: [resourceId],
+            resourceIds: rootResourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).rejects.toThrow(
+          // Assert (multiple resources)
+          await expect(bulkValidation).rejects.toThrow(
             "You do not have sufficient permissions to perform this action",
           )
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "delete",
-          resourceIds: rootResourceIds,
-          userId: user.id,
-          siteId: site.id,
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
       })
 
-      it("should not allow users without permissions to delete any resources", async () => {
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+      describe("no permissions", () => {
+        it("should not allow users without permissions to delete any resources", async () => {
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "delete",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).rejects.toThrow(
+              "You do not have sufficient permissions to perform this action",
+            )
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).rejects.toThrow(
+          // Assert (multiple resources)
+          await expect(bulkValidation).rejects.toThrow(
             "You do not have sufficient permissions to perform this action",
           )
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "delete",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
       })
 
       it("should throw error if resource is not found", async () => {
@@ -845,125 +877,133 @@ describe("permissions.service", () => {
     })
 
     describe("publish", () => {
-      it("should allow admins to publish any resources", async () => {
-        // Arrange
-        await setupAdminPermissions({ userId: user.id, siteId: site.id })
+      describe("admin", () => {
+        it("should allow admins to publish any resources", async () => {
+          // Arrange
+          await setupAdminPermissions({ userId: user.id, siteId: site.id })
 
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "publish",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "publish",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).resolves.not.toThrow()
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "publish",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).resolves.not.toThrow()
       })
 
-      it("should allow publishers to publish any resources", async () => {
-        // Arrange
-        await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+      describe("publisher", () => {
+        it("should allow publishers to publish any resources", async () => {
+          // Arrange
+          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
 
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "publish",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "publish",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).resolves.not.toThrow()
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "publish",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).resolves.not.toThrow()
       })
 
-      it("should not allow editors to publish resources", async () => {
-        // Arrange
-        await setupEditorPermissions({ userId: user.id, siteId: site.id })
+      describe("editor", () => {
+        it("should not allow editors to publish resources", async () => {
+          // Arrange
+          await setupEditorPermissions({ userId: user.id, siteId: site.id })
 
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "publish",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).rejects.toThrow(
+              "You do not have sufficient permissions to perform this action",
+            )
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "publish",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).rejects.toThrow(
+          // Assert (multiple resources)
+          await expect(bulkValidation).rejects.toThrow(
             "You do not have sufficient permissions to perform this action",
           )
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "publish",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
       })
 
-      it("should not allow users without permissions to publish any resources", async () => {
-        for (const resourceId of resourceIds) {
-          // Act (single resource)
-          const validation = bulkValidateUserPermissionsForResources({
+      describe("no permissions", () => {
+        it("should not allow users without permissions to publish any resources", async () => {
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "publish",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).rejects.toThrow(
+              "You do not have sufficient permissions to perform this action",
+            )
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "publish",
-            resourceIds: [resourceId],
+            resourceIds,
             userId: user.id,
             siteId: site.id,
           })
 
-          // Assert (single resource)
-          await expect(validation).rejects.toThrow(
+          // Assert (multiple resources)
+          await expect(bulkValidation).rejects.toThrow(
             "You do not have sufficient permissions to perform this action",
           )
-        }
-
-        // Act (multiple resources)
-        const bulkValidation = bulkValidateUserPermissionsForResources({
-          action: "publish",
-          resourceIds,
-          userId: user.id,
-          siteId: site.id,
         })
-
-        // Assert (multiple resources)
-        await expect(bulkValidation).rejects.toThrow(
-          "You do not have sufficient permissions to perform this action",
-        )
       })
 
       it("should throw error if resource is not found", async () => {
