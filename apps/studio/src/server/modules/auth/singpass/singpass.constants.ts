@@ -3,7 +3,6 @@ import { calculateJwkThumbprint, exportJWK, importPKCS8 } from "jose"
 import { env } from "~/env.mjs"
 import { getBaseUrl } from "~/utils/getBaseUrl"
 
-export const SINGPASS_SIGN_IN_STATE = "sign-in"
 export const SINGPASS_SCOPES = ["openid"]
 
 export const SINGPASS_REDIRECT_URI =
