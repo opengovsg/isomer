@@ -166,14 +166,8 @@ export const userRouter = router({
         })
       }
 
-      if (!ctx.session?.userId)
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Please ensure you are logged in!",
-        })
-
       await deleteUserPermission({
-        byUserId: ctx.session.userId,
+        byUserId: ctx.user.id,
         userId,
         siteId,
       })
@@ -325,15 +319,8 @@ export const userRouter = router({
       // We don't have to check if the user is admin here
       // because we only allow users to update their own details
       // They should be able to update their own details even without any resource permissions
-
-      if (!ctx.session?.userId)
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Please ensure you are logged in!",
-        })
-
       const updatedUser = await updateUserDetails({
-        userId: ctx.session.userId,
+        userId: ctx.user.id,
         name,
         phone,
       })

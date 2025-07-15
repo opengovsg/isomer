@@ -184,8 +184,8 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
 }
 
 interface DeleteUserPermissionProps {
-  byUserId: NonNullable<SessionData["userId"]>
-  userId: string
+  byUserId: User["id"]
+  userId: User["id"]
   siteId: number
 }
 
@@ -266,7 +266,7 @@ export const deleteUserPermission = async ({
 }
 
 interface UpdateUserDetailsProps {
-  userId: NonNullable<SessionData["userId"]>
+  userId: User["id"]
   name?: string
   phone?: string
 }
