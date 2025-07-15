@@ -83,12 +83,16 @@ export const definePermissionsForSite = async ({
 
 // TODO: this is using site wide permissions for now
 // we should fetch the oldest `parent` of this resource eventually
+interface BulkValidateUserPermissionsForResourcesProps
+  extends BulkPermissionsProps {
+  action: CrudResourceActions | "publish"
+}
 export const bulkValidateUserPermissionsForResources = async ({
   action,
   siteId,
   resourceIds,
   userId,
-}: BulkPermissionsProps & { action: CrudResourceActions | "publish" }) => {
+}: BulkValidateUserPermissionsForResourcesProps) => {
   const generateResources = async (
     resourceIds: NonNullable<BulkPermissionsProps["resourceIds"]>,
   ): Promise<{ parentId: string | null }[]> => {
