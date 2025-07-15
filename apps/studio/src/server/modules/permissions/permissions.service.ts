@@ -148,12 +148,15 @@ export const bulkValidateUserPermissionsForResources = async ({
   await Promise.all(
     resources.map((resource) => {
       if (perms.cannot(action, resource)) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        })
+        return Promise.reject(
+          new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "You do not have sufficient permissions to perform this action",
+          }),
+        )
       }
+      return Promise.resolve()
     }),
   )
 }
