@@ -36,7 +36,7 @@ describe("page.router", async () => {
 
   describe("readPage", () => {
     beforeEach(async () => {
-      await resetTables("Site")
+      await resetTables("Site", "ResourcePermission", "Resource")
     })
 
     it("should throw 401 if not logged in", async () => {
@@ -160,6 +160,10 @@ describe("page.router", async () => {
   })
 
   describe("readPageAndBlob", () => {
+    beforeEach(async () => {
+      await resetTables("Site", "ResourcePermission", "Resource")
+    })
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -327,6 +331,7 @@ describe("page.router", async () => {
     let pageToReorder: Awaited<ReturnType<typeof setupPageResource>>
 
     beforeEach(async () => {
+      await resetTables("Site", "ResourcePermission", "Resource", "AuditLog")
       pageToReorder = await setupPageResource({ resourceType: "Page" })
     })
 
@@ -349,6 +354,10 @@ describe("page.router", async () => {
     })
 
     it("should return 404 if page does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
       // Act
       const result = caller.reorderBlock({
         siteId: 1,
@@ -609,7 +618,7 @@ describe("page.router", async () => {
     }
 
     beforeEach(async () => {
-      await resetTables("Site", "AuditLog")
+      await resetTables("Site", "ResourcePermission", "Resource", "AuditLog")
       const { page } = await setupPageResource({ resourceType: "Page" })
       pageToUpdate = page
     })
@@ -770,8 +779,9 @@ describe("page.router", async () => {
 
   describe("createPage", () => {
     beforeEach(async () => {
-      await resetTables("Site", "AuditLog")
+      await resetTables("Site", "ResourcePermission", "Resource", "AuditLog")
     })
+
     it("should throw 401 if not logged in create", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1077,6 +1087,10 @@ describe("page.router", async () => {
   })
 
   describe("getRootPage", () => {
+    beforeEach(async () => {
+      await resetTables("Site", "ResourcePermission", "Resource")
+    })
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1150,6 +1164,10 @@ describe("page.router", async () => {
   })
 
   describe("updateSettings", () => {
+    beforeEach(async () => {
+      await resetTables("Site", "ResourcePermission", "Resource", "AuditLog")
+    })
+
     it("should throw 401 if not logged in update", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1171,9 +1189,11 @@ describe("page.router", async () => {
     })
 
     it("should return 404 if page does not exist", async () => {
-      // Act
+      // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
       const result = caller.updateSettings({
         siteId: site.id,
         pageId: 1,
@@ -1312,6 +1332,10 @@ describe("page.router", async () => {
   })
 
   describe("getFullPermalink", () => {
+    beforeEach(async () => {
+      await resetTables("Site", "ResourcePermission", "Resource")
+    })
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1415,6 +1439,10 @@ describe("page.router", async () => {
   })
 
   describe("getPermalinkTree", () => {
+    beforeEach(async () => {
+      await resetTables("Site", "ResourcePermission", "Resource")
+    })
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
