@@ -398,6 +398,30 @@ describe("inactiveUsers.service", () => {
       })
     })
 
+    it("should not include themselves in the site admins list", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      await bulkDeactivateInactiveUsers()
+
+      // Assert
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        sitesAndAdmins: [
+          {
+            siteName: site.name,
+            adminEmails: [], // does not include themselves
+          },
+        ],
+      })
+    })
+
     it("should not include non-admins (publishers + editors) in the site admins list", async () => {
       // Arrange
       await setupUserWrapper({
