@@ -81,6 +81,7 @@ export const definePermissionsForSite = async ({
   return builder.build({ detectSubjectType: () => "Site" })
 }
 
+// We do bulk validation to reduce the number of DB queries: currently at max. 1-2 queries
 // TODO: this is using site wide permissions for now
 // we should fetch the oldest `parent` of this resource eventually
 interface BulkValidateUserPermissionsForResourcesProps
@@ -138,8 +139,12 @@ export const bulkValidateUserPermissionsForResources = async ({
     return resources.concat(nullResourceIds.map(() => ({ parentId: null })))
   }
 
+  // This executes 1 DB query
   const perms = await definePermissionsForResource({ siteId, userId })
+
+  // This executes 0-1 DB query
   const resources = await generateResources(resourceIds ?? [])
+
   await Promise.all(
     resources.map((resource) => {
       if (perms.cannot(action, resource)) {
