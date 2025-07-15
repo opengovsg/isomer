@@ -8,7 +8,7 @@ import { FormLabel } from "@opengovsg/design-system-react"
 
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { editPageSchema } from "~/features/editing-experience/schema"
+import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { BaseBlock, BaseBlockDragHandle } from "../../../Block/BaseBlock"
@@ -133,7 +133,7 @@ export function JsonFormsChildrenPagesLayoutControl({
   description,
   ...rest
 }: ReorderingControlProps): JSX.Element {
-  const { pageId: indexPageId, siteId } = useQueryParse(editPageSchema)
+  const { pageId: indexPageId, siteId } = useQueryParse(pageSchema)
 
   return (
     <Box h="full">

@@ -8,8 +8,6 @@ export const pageSchema = siteSchema.extend({
   pageId: z.coerce.number(),
 })
 
-export const editPageSchema = pageSchema
-
 export const collectionItemSchema = pageSchema
   .extend({
     linkId: z.coerce.number(),

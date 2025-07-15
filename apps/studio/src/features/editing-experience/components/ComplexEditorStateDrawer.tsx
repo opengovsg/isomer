@@ -15,7 +15,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { editPageSchema } from "../schema"
+import { pageSchema } from "../schema"
 import {
   CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
   PLACEHOLDER_IMAGE_FILENAME,
@@ -52,7 +52,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
   const toast = useToast()
 
-  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const { pageId, siteId } = useQueryParse(pageSchema)
   const utils = trpc.useUtils()
 
   const { mutate: savePage, isLoading: isSavingPage } =

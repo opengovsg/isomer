@@ -14,7 +14,7 @@ import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
-import { editPageSchema } from "../schema"
+import { pageSchema } from "../schema"
 import PublishButton from "./PublishButton"
 
 interface NavigationBreadcrumbsProps {
@@ -95,7 +95,7 @@ const NavigationBreadcrumbs = ({
 }
 
 export const PageEditNavbar = (): JSX.Element => {
-  const { siteId, pageId } = useQueryParse(editPageSchema)
+  const { siteId, pageId } = useQueryParse(pageSchema)
 
   const { pathname } = useRouter()
 

@@ -4,13 +4,13 @@ import { Tabs } from "@opengovsg/design-system-react"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { LayoutHead } from "~/components/LayoutHead"
 import { PageEditNavbar } from "~/features/editing-experience/components/PageEditNavbar"
-import { editPageSchema } from "~/features/editing-experience/schema"
+import { pageSchema } from "~/features/editing-experience/schema"
 import { PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
 
 export const PageEditingLayout: GetLayout = (page) => {
-  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const { pageId, siteId } = useQueryParse(pageSchema)
 
   return (
     <EnforceLoginStatePageWrapper>
