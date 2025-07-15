@@ -138,12 +138,14 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               </Box>
             )}
 
-            <FormBuilder<Static<typeof metadataSchema>>
-              schema={metadataSchema}
-              validateFn={validateFn}
-              data={previewPageState.page}
-              handleChange={(data) => handleChange(data)}
-            />
+            <Box mb="1rem">
+              <FormBuilder<Static<typeof metadataSchema>>
+                schema={metadataSchema}
+                validateFn={validateFn}
+                data={previewPageState.page}
+                handleChange={(data) => handleChange(data)}
+              />
+            </Box>
           </Box>
           <Box
             bgColor="base.canvas.default"
