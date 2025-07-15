@@ -87,7 +87,7 @@ export const bulkValidateUserPermissionsForResources = async ({
   action,
   siteId,
   resourceIds,
-  ...rest
+  userId,
 }: BulkPermissionsProps & { action: CrudResourceActions | "publish" }) => {
   const generateResources = async (
     resourceIds: NonNullable<BulkPermissionsProps["resourceIds"]>,
@@ -134,7 +134,7 @@ export const bulkValidateUserPermissionsForResources = async ({
     return resources.concat(nullResourceIds.map(() => ({ parentId: null })))
   }
 
-  const perms = await definePermissionsForResource({ siteId, ...rest })
+  const perms = await definePermissionsForResource({ siteId, userId })
   const resources = await generateResources(resourceIds ?? [])
   await Promise.all(
     resources.map((resource) => {
