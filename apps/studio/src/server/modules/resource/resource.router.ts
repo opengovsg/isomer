@@ -98,6 +98,13 @@ export const resourceRouter = router({
   getMetadataById: protectedProcedure
     .input(getMetadataSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        resourceIds: [resourceId],
+        userId: ctx.user.id,
+        siteId: Number(siteId),
+      })
+
       const resource = await db
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
@@ -118,13 +125,6 @@ export const resourceRouter = router({
           message: "Resource not found",
         })
       }
-
-      await bulkValidateUserPermissionsForResources({
-        action: "read",
-        resourceIds: [resourceId],
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
 
       return resource
     }),
@@ -672,6 +672,13 @@ export const resourceRouter = router({
   getWithFullPermalink: protectedProcedure
     .input(getFullPermalinkSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        resourceIds: [resourceId],
+        userId: ctx.user.id,
+        siteId: Number(siteId),
+      })
+
       const resource = await db
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
@@ -685,13 +692,6 @@ export const resourceRouter = router({
           message: "Resource not found",
         })
       }
-
-      await bulkValidateUserPermissionsForResources({
-        action: "read",
-        resourceIds: [resource.id],
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
 
       const result = await getWithFullPermalink({ resourceId })
 
