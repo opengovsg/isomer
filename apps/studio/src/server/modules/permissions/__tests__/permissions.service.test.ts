@@ -4,7 +4,6 @@ import {
   setupAdminPermissions,
   setupEditorPermissions,
   setupPageResource,
-  setupPublisherPermissions,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
