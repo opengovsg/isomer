@@ -136,8 +136,8 @@ const CreateCollectionModalContent = ({
         <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.5rem">
-            <FormControl isInvalid={!!errors.collectionTitle}>
-              <FormLabel color="base.content.strong">
+            <FormControl isRequired isInvalid={!!errors.collectionTitle}>
+              <FormLabel color="base.content.strong" mb={0}>
                 Collection name
                 <FormHelperText color="base.content.default">
                   This will be the title of the index page of your collection.
@@ -146,6 +146,7 @@ const CreateCollectionModalContent = ({
 
               <Input
                 placeholder="This is a title for your new collection"
+                my="0.5rem"
                 {...register("collectionTitle")}
               />
               {errors.collectionTitle?.message ? (
@@ -153,13 +154,13 @@ const CreateCollectionModalContent = ({
                   {errors.collectionTitle.message}
                 </FormErrorMessage>
               ) : (
-                <FormHelperText mt="0.5rem" color="base.content.medium">
+                <FormHelperText color="base.content.medium">
                   {MAX_FOLDER_TITLE_LENGTH - collectionTitle.length} characters
                   left
                 </FormHelperText>
               )}
             </FormControl>
-            <FormControl isInvalid={!!errors.permalink}>
+            <FormControl isRequired isInvalid={!!errors.permalink}>
               <FormLabel color="base.content.strong">
                 Collection URL
                 <FormHelperText color="base.content.default">
@@ -195,12 +196,13 @@ const CreateCollectionModalContent = ({
                 py="0.5rem"
                 px="0.75rem"
                 bg="interaction.support.disabled"
+                my="0.5rem"
               >
                 <Icon mr="0.5rem" as={BiLink} />
                 {permalink}
               </Box>
 
-              <FormHelperText mt="0.5rem" color="base.content.medium">
+              <FormHelperText color="base.content.medium">
                 {MAX_FOLDER_PERMALINK_LENGTH - permalink.length} characters left
               </FormHelperText>
             </FormControl>

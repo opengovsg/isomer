@@ -16,6 +16,7 @@ const externalIconStyles = tv({
   base: "h-auto flex-shrink-0",
   variants: {
     size: {
+      sm: "w-2.5 lg:w-3",
       base: "w-3.5 lg:w-4",
       lg: "w-4.5 lg:w-5",
     },

@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
-import { get } from "lodash"
+import get from "lodash/get"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
 import {

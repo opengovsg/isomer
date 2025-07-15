@@ -7,6 +7,7 @@ import { userHandlers } from "tests/msw/handlers/user"
 import { whitelistHandlers } from "tests/msw/handlers/whitelist"
 
 import UsersPage from "~/pages/sites/[siteId]/users"
+import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
 import { ResetAddUserModalDecorator } from "../decorators/resetModalState"
 
 const EMAIL = "chillguy@isomer.gov.sg"
@@ -22,6 +23,7 @@ const meta: Meta<typeof UsersPage> = {
   component: UsersPage,
   parameters: {
     getLayout: UsersPage.getLayout,
+    growthbook: [createSingpassEnabledGbParameters(true)],
     msw: {
       handlers: COMMON_HANDLERS,
     },

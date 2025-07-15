@@ -160,8 +160,8 @@ const SuspendableModalContent = ({
         <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.5rem">
-            <FormControl isInvalid={!!errors.title}>
-              <FormLabel color="base.content.strong">
+            <FormControl isRequired isInvalid={!!errors.title}>
+              <FormLabel color="base.content.strong" mb={0}>
                 Folder name
                 <FormHelperText color="base.content.default">
                   This will be the title of the index page of your folder.
@@ -171,18 +171,19 @@ const SuspendableModalContent = ({
               <Input
                 placeholder="This is a title for your new folder"
                 maxLength={MAX_FOLDER_TITLE_LENGTH}
+                my="0.5rem"
                 {...register("title")}
               />
               {errors.title?.message ? (
                 <FormErrorMessage>{errors.title.message}</FormErrorMessage>
               ) : (
-                <FormHelperText mt="0.5rem" color="base.content.medium">
+                <FormHelperText color="base.content.medium">
                   {MAX_FOLDER_TITLE_LENGTH - (title || "").length} characters
                   left
                 </FormHelperText>
               )}
             </FormControl>
-            <FormControl isInvalid={!!errors.permalink}>
+            <FormControl isRequired isInvalid={!!errors.permalink}>
               <FormLabel color="base.content.strong">
                 Folder URL
                 <FormHelperText color="base.content.default">
@@ -206,7 +207,7 @@ const SuspendableModalContent = ({
               {errors.permalink?.message ? (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
               ) : (
-                <Suspense fallback={<Skeleton w="100%" h="2rem" mt="0.5rem" />}>
+                <Suspense fallback={<Skeleton w="100%" h="2rem" my="0.5rem" />}>
                   <Box
                     mt="0.5rem"
                     py="0.5rem"
@@ -214,6 +215,7 @@ const SuspendableModalContent = ({
                     bg="interaction.support.disabled"
                     display="flex"
                     alignItems="center"
+                    my="0.5rem"
                   >
                     <Icon mr="0.5rem" as={BiLink} />
                     <SuspendablePermalink
@@ -224,7 +226,7 @@ const SuspendableModalContent = ({
                 </Suspense>
               )}
 
-              <FormHelperText mt="0.5rem" color="base.content.medium">
+              <FormHelperText color="base.content.medium">
                 {MAX_FOLDER_PERMALINK_LENGTH - (permalink || "").length}{" "}
                 characters left
               </FormHelperText>

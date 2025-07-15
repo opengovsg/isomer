@@ -18,6 +18,7 @@ import {
 import _, { get, isEmpty, isEqual } from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   basePageSchema,
   createIndexPageSchema,
@@ -473,6 +474,16 @@ export const pageRouter = router({
               })
               .returningAll()
               .executeTakeFirstOrThrow()
+              .catch((err) => {
+                if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                  throw new TRPCError({
+                    code: "CONFLICT",
+                    message:
+                      "A resource with the same permalink already exists",
+                  })
+                }
+                throw err
+              })
 
             await logResourceEvent(tx, {
               siteId,
@@ -537,12 +548,13 @@ export const pageRouter = router({
         siteId,
         action: "publish",
       })
-      return publishPageResource(
-        ctx.logger,
+      return publishPageResource({
+        logger: ctx.logger,
         siteId,
-        String(pageId),
-        ctx.user.id,
-      )
+        resourceId: String(pageId),
+        userId: ctx.user.id,
+        isSingpassEnabled: ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY),
+      })
     }),
 
   updateMeta: protectedProcedure
@@ -691,6 +703,7 @@ export const pageRouter = router({
               .where("Resource.type", "in", [
                 ResourceType.Page,
                 ResourceType.CollectionPage,
+                ResourceType.CollectionLink,
                 ResourceType.RootPage,
               ])
               .set({ title, ...settings })

@@ -5,7 +5,8 @@ import set from "lodash/set"
 import type { SessionData } from "~/lib/types/session"
 import type { GrowthbookAttributes } from "~/types/growthbook"
 import { env } from "~/env.mjs"
-import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { sendLoginAlertEmail } from "~/features/mail/service"
+import { getIsSingpassEnabled } from "~/lib/growthbook"
 import { sendMail } from "~/lib/mail"
 import {
   emailSignInSchema,
@@ -143,10 +144,10 @@ export const emailSessionRouter = router({
 
       await ctx.gb.setAttributes(newAttributes)
 
-      const isSingpassEnabled = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
+      const isSingpassEnabled = getIsSingpassEnabled({ gb: ctx.gb })
 
       if (!isSingpassEnabled) {
-        return db.transaction().execute(async (tx) => {
+        const user = await db.transaction().execute(async (tx) => {
           const user = await upsertUser({
             tx,
             email,
@@ -164,6 +165,10 @@ export const emailSessionRouter = router({
           await ctx.session.save()
           return pick(user, defaultUserSelect)
         })
+
+        await sendLoginAlertEmail({ recipientEmail: email })
+
+        return user
       }
 
       return db.transaction().execute(async (tx) => {

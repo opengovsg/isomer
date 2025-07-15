@@ -16,7 +16,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import { createCallerFactory } from "~/server/trpc"
-import { AuditLogEvent, db, ResourceType } from "../../database"
+import { AuditLogEvent, db, ResourceState, ResourceType } from "../../database"
 import { folderRouter } from "../folder.router"
 
 const createCaller = createCallerFactory(folderRouter)
@@ -799,6 +799,185 @@ describe("folder.router", async () => {
         id: page.id,
         draftBlobId: blob.id,
       })
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
+    })
+  })
+
+  describe("listChildPages", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page: indexPage } = await setupPageResource({
+        parentId: folder.id,
+        siteId: site.id,
+        resourceType: "IndexPage",
+      })
+      await createChildPages({
+        parentId: folder.id,
+        siteId: site.id,
+        numPages: 3,
+        numFolders: 5,
+      })
+
+      // Act
+      const result = unauthedCaller.listChildPages({
+        siteId: String(site.id),
+        indexPageId: indexPage.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return an empty array if `siteId` does not exist", async () => {
+      // Arrange
+      const invalidSiteId = 999
+      const { site, folder } = await setupFolder()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      expect(site.id).not.toEqual(invalidSiteId)
+      const { page: indexPage } = await setupPageResource({
+        parentId: folder.id,
+        siteId: site.id,
+        resourceType: "IndexPage",
+      })
+      await createChildPages({
+        parentId: folder.id,
+        siteId: site.id,
+        numPages: 3,
+        numFolders: 5,
+      })
+
+      // Act
+      const result = await caller.listChildPages({
+        siteId: String(site.id),
+        indexPageId: indexPage.id,
+      })
+
+      // Assert
+      expect(result.childPages).toEqual([])
+    })
+
+    it("should throw 403 if user does not have access to the site", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      const { page: indexPage } = await setupPageResource({
+        parentId: folder.id,
+        siteId: site.id,
+        resourceType: "IndexPage",
+      })
+
+      // Act
+      const result = caller.listChildPages({
+        siteId: String(site.id),
+        indexPageId: indexPage.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw 404 if the page specified by `indexPageId` is not an `IndexPage`", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+        parentId: folder.id,
+      })
+
+      // Act
+      const result = caller.listChildPages({
+        siteId: String(site.id),
+        indexPageId: page.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "No index page with the specified id could be found",
+        }),
+      )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
+    })
+
+    it("should throw 404 if the `indexPageId` does not exist", async () => {
+      // Arrange
+      const { site } = await setupFolder()
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+
+      // Act
+      const result = caller.listChildPages({
+        siteId: String(site.id),
+        indexPageId: "1234",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        }),
+      )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
+    })
+
+    it("should return only the published pages of the parent folder", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+      const { page: indexPage } = await setupPageResource({
+        parentId: folder.id,
+        siteId: site.id,
+        resourceType: "IndexPage",
+      })
+      const { pages, folders } = await createChildPages({
+        parentId: folder.id,
+        siteId: site.id,
+        numPages: 3,
+        numFolders: 4,
+        state: "Published",
+        userId: session.userId,
+      })
+
+      // NOTE: Not `published`
+      await createChildPages({
+        parentId: folder.id,
+        siteId: site.id,
+        numPages: 3,
+        numFolders: 4,
+      })
+
+      // Act
+      const result = await caller.listChildPages({
+        siteId: String(site.id),
+        indexPageId: indexPage.id,
+      })
+
+      // Assert
+      expect(result.childPages).toHaveLength(7)
+      const folderPagesId = folders.map(({ id }) => id)
+      const pagesId = pages.map(({ id }) => id)
+      expect(result.childPages.map(({ id }) => id).toSorted()).toStrictEqual(
+        [...pagesId, ...folderPagesId].toSorted(),
+      )
     })
   })
 })
@@ -818,4 +997,70 @@ const getFolderWithPermalink = ({
     .where("permalink", "=", permalink)
     .selectAll()
     .executeTakeFirstOrThrow()
+}
+
+const createChildPages = async ({
+  parentId,
+  siteId,
+  numPages,
+  numFolders,
+  state = ResourceState.Draft,
+  userId,
+}: {
+  parentId: string
+  siteId: number
+  numPages: number
+  numFolders: number
+  state?: ResourceState
+  userId?: string
+}) => {
+  if (state === ResourceState.Published && !userId) {
+    throw new Error(
+      "Precondition failed for `createChildPages`: a valid `userId` is required in order to publish a resource",
+    )
+  }
+
+  const pages = await Promise.all(
+    Array.from({ length: numPages })
+      .fill(null)
+      .map(async () => {
+        const permalink = crypto.randomUUID()
+        const { page } = await setupPageResource({
+          resourceType: "Page",
+          siteId,
+          parentId,
+          state,
+          permalink,
+          userId,
+        })
+        return page
+      }),
+  )
+
+  const folders = await Promise.all(
+    Array.from({ length: numFolders })
+      .fill(null)
+      .map(async () => {
+        const { folder } = await setupFolder({
+          siteId,
+          parentId,
+          permalink: crypto.randomUUID(),
+          state: ResourceState.Published,
+        })
+
+        const permalink = crypto.randomUUID()
+        await setupPageResource({
+          resourceType: "IndexPage",
+          siteId,
+          parentId: folder.id,
+          state,
+          permalink,
+          userId,
+        })
+
+        return folder
+      }),
+  )
+
+  return { pages, folders }
 }

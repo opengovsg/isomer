@@ -78,3 +78,7 @@ export {
   default as JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
 } from "./JsonFormsChildPageLayoutControl"
+export {
+  default as JsonFormsChildrenPagesOrderingControl,
+  jsonFormsChildrenPagesOrderingControlTester,
+} from "./JsonFormsChildrenPagesOrderingControl"

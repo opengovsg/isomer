@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { Button } from "./Button"
 
-const BUTTON_SIZES = ["base", "lg"] as const
+const BUTTON_SIZES = ["sm", "base", "lg"] as const
 
 const meta: Meta<typeof Button> = {
   title: "Next/Internal Components/Button",

@@ -29,9 +29,7 @@ class MockIronStore {
   }
 
   static getOrCreateStore(): MockIronStore {
-    if (!MockIronStore.instance) {
-      MockIronStore.instance = new MockIronStore()
-    }
+    MockIronStore.instance ??= new MockIronStore()
     return MockIronStore.instance
   }
 
@@ -95,6 +93,9 @@ export const applySession = () => {
     },
     destroy() {
       store.clear()
+    },
+    updateConfig() {
+      // No-op in tests since we don't need to actually update config for tests
     },
   } as unknown as Session
 
