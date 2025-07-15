@@ -207,12 +207,14 @@ export default function HeroEditorDrawer(): JSX.Element {
 
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
-            <FormBuilder<IsomerComponent>
-              schema={subSchema}
-              validateFn={validateFn}
-              data={previewPageState.content[0]}
-              handleChange={handleChange}
-            />
+            <Box mb="1rem">
+              <FormBuilder<IsomerComponent>
+                schema={subSchema}
+                validateFn={validateFn}
+                data={previewPageState.content[0]}
+                handleChange={handleChange}
+              />
+            </Box>
           </Box>
           <Box
             bgColor="base.canvas.default"

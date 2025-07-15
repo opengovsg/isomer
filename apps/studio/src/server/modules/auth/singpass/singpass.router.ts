@@ -7,10 +7,8 @@ import { DASHBOARD } from "~/lib/routes"
 import {
   singpassCallbackSchema,
   singpassLoginSchema,
-  singpassStateSchema,
 } from "~/schemas/auth/singpass"
 import { publicProcedure, router } from "~/server/trpc"
-import { safeSchemaJsonParse } from "~/utils/zod"
 import { logUserEvent } from "../../audit/audit.service"
 import { recordUserLogin } from "../auth.service"
 import { generateSessionOptions } from "../session"
@@ -94,20 +92,6 @@ export const singpassRouter = router({
         })
       }
 
-      const parsedState = safeSchemaJsonParse(singpassStateSchema, state)
-
-      if (!parsedState.success) {
-        ctx.logger.error(
-          { state, error: parsedState.error },
-          "Invalid Singpass callback state",
-        )
-
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid Singpass callback state",
-        })
-      }
-
       const { codeVerifier, nonce, userId, verificationToken } =
         ctx.session.singpass.sessionState
 
@@ -127,12 +111,12 @@ export const singpassRouter = router({
         code,
         codeVerifier,
         nonce,
-        state: parsedState.data,
+        state,
       })
 
       if (!uuid) {
         ctx.logger.error(
-          { code, codeVerifier, nonce, state: parsedState.data },
+          { code, codeVerifier, nonce, state },
           "Failed to login to Singpass",
         )
 
