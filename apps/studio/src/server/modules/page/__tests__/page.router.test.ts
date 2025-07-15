@@ -360,7 +360,7 @@ describe("page.router", async () => {
 
       // Act
       const result = caller.reorderBlock({
-        siteId: 1,
+        siteId: site.id,
         pageId: 999999, // should not exist
         from: 0,
         to: 1,
