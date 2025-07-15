@@ -1,6 +1,8 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Sets up a tunnel to the RDS instance using AWS Session Manager
 # Usage: bash ./scripts/connectRds.sh prod|staging|uat|vapt
+
+set -e
 
 if [ -z "$1" ]; then
     echo "Usage: $0 <environment>"
@@ -9,7 +11,7 @@ fi
 
 # Validate environment
 ENV="$1"
-if ! echo "prod staging uat vapt" | grep -q "\b$ENV\b"; then
+if ! echo "prod staging uat vapt" | grep -w -q "$ENV"; then
     echo "Invalid environment: $ENV. Valid options are: prod, staging, uat, vapt."
     exit 1
 fi
