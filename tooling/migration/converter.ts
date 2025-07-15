@@ -581,6 +581,11 @@ const getCleanedSchema = (schema: any) => {
     schema.forEach((component: any) => {
       if (component.type === "table") {
         component.caption = "";
+
+        // Remove any empty tableRow
+        component.content = component.content.filter(
+          (row: any) => row.content && row.content.length > 0
+        );
       } else if (component.content) {
         findTable(component.content);
       }
