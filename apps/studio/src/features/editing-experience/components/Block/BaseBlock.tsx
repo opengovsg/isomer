@@ -1,7 +1,7 @@
 import type { ButtonProps, StackProps } from "@chakra-ui/react"
+import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd"
 import type { IconType } from "react-icons"
 import { chakra, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
-import { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd"
 import { BiGridVertical } from "react-icons/bi"
 
 interface BaseBlockProps {
