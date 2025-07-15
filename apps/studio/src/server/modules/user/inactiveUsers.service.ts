@@ -94,19 +94,18 @@ export const deactivateUsers = async ({
     .returningAll()
     .execute()
 
-  return tx
+  const users = await tx
     .selectFrom("User")
     .where("id", "in", userIds)
     .selectAll()
     .execute()
-    .then((users) =>
-      users.map((user) => ({
-        user,
-        siteIds: deletedPermissions
-          .filter((permission) => permission.userId === user.id)
-          .map((permission) => permission.siteId),
-      })),
-    )
+
+  return users.map((user) => ({
+    user,
+    siteIds: deletedPermissions
+      .filter((permission) => permission.userId === user.id)
+      .map((permission) => permission.siteId),
+  }))
 }
 
 interface GetSiteAndAdminsProps {
