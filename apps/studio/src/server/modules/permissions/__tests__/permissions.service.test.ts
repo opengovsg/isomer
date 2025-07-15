@@ -1,4 +1,5 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
+import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -448,20 +449,48 @@ describe("permissions.service", () => {
         )
       })
 
-      it("should throw error if resource is not found", async () => {
-        // Arrange
-        await setupAdminPermissions({ userId: user.id, siteId: site.id })
+      describe("should throw error if resource is not found", () => {
+        it("single resource", async () => {
+          // Arrange
+          await setupAdminPermissions({ userId: user.id, siteId: site.id })
 
-        // Act
-        const validation = bulkValidateUserPermissionsForResources({
-          action: "read",
-          resourceIds: ["999999999"],
-          userId: user.id,
-          siteId: site.id,
+          // Act
+          const validation = bulkValidateUserPermissionsForResources({
+            action: "read",
+            resourceIds: ["999999999"],
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert
+          await expect(validation).rejects.toThrow(
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "Resource not found",
+            }),
+          )
         })
 
-        // Assert
-        await expect(validation).rejects.toThrow("Resource not found")
+        it("multiple resources", async () => {
+          // Arrange
+          await setupAdminPermissions({ userId: user.id, siteId: site.id })
+
+          // Act
+          const validation = bulkValidateUserPermissionsForResources({
+            action: "read",
+            resourceIds: ["999999999", "999999998"],
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert
+          await expect(validation).rejects.toThrow(
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "Resources not found",
+            }),
+          )
+        })
       })
     })
 
