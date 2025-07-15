@@ -12,7 +12,6 @@ import {
   setupFolder,
   setupPageResource,
   setupPublisherPermissions,
-  setupSite,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { vi } from "vitest"
@@ -62,6 +61,7 @@ describe("asset.router", async () => {
       // Act
       const result = unauthedCaller.getPresignedPutUrl({
         siteId: 1,
+        resourceId: "1",
         fileName: "test.png",
       })
 
@@ -72,9 +72,15 @@ describe("asset.router", async () => {
     })
 
     it("should throw 403 if site does not exist", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+
       // Act
       const result = caller.getPresignedPutUrl({
-        siteId: 99999,
+        siteId: site.id + 1,
+        resourceId: page.id,
         fileName: "test.png",
       })
 
@@ -88,13 +94,19 @@ describe("asset.router", async () => {
       )
     })
 
-    it("should throw 403 if user does not have permission to read site", async () => {
+    it("should throw 403 if user does not have permission to update resource", async () => {
       // Arrange
-      const { site } = await setupSite()
+      const { site, folder } = await setupFolder({})
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.getPresignedPutUrl({
         siteId: site.id,
+        resourceId: page.id,
         fileName: "test.png",
       })
 
@@ -108,9 +120,14 @@ describe("asset.router", async () => {
       )
     })
 
-    it("should return success if user has permission to read site", async () => {
+    it("should return success if user has permission to update resource", async () => {
       // Arrange
-      const { site } = await setupSite()
+      const { site, folder } = await setupFolder({})
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        siteId: site.id,
+      })
       await setupEditorPermissions({
         siteId: site.id,
         userId: session.userId,
@@ -119,6 +136,7 @@ describe("asset.router", async () => {
       // Act
       const result = caller.getPresignedPutUrl({
         siteId: site.id,
+        resourceId: page.id,
         fileName: "test.png",
       })
 
@@ -128,7 +146,9 @@ describe("asset.router", async () => {
 
     it("should call generateSignedPutUrl with correct parameters", async () => {
       // Arrange
-      const { site } = await setupSite()
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
       await setupEditorPermissions({
         siteId: site.id,
         userId: session.userId,
@@ -138,6 +158,7 @@ describe("asset.router", async () => {
       // Act
       await caller.getPresignedPutUrl({
         siteId: site.id,
+        resourceId: page.id,
         fileName,
       })
 
@@ -173,6 +194,8 @@ describe("asset.router", async () => {
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
       })
+
+      // Act
       const result = caller.deleteAssets({
         siteId: site.id + 1,
         resourceId: page.id,
@@ -191,10 +214,7 @@ describe("asset.router", async () => {
 
     it("should throw 403 if user does not have permission to read resource", async () => {
       // Arrange
-      const { site } = await setupSite()
-      const { folder } = await setupFolder({
-        siteId: site.id,
-      })
+      const { site, folder } = await setupFolder({})
       const { page } = await setupPageResource({
         resourceType: ResourceType.Page,
         parentId: folder.id,
@@ -220,10 +240,7 @@ describe("asset.router", async () => {
 
     it("should return success if user only has Editor permission to read non-root resource", async () => {
       // Arrange
-      const { site } = await setupSite()
-      const { folder } = await setupFolder({
-        siteId: site.id,
-      })
+      const { site, folder } = await setupFolder({})
       const { page } = await setupPageResource({
         resourceType: ResourceType.Page,
         parentId: folder.id,
@@ -247,10 +264,8 @@ describe("asset.router", async () => {
 
     it("should throw 403 if user does only has Editor permission to read root resource", async () => {
       // Arrange
-      const { site } = await setupSite()
-      const { page } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
-        siteId: site.id,
       })
       await setupEditorPermissions({
         siteId: site.id,
@@ -276,10 +291,7 @@ describe("asset.router", async () => {
 
     it("should return success if user only has Publisher permission to read non-root resource", async () => {
       // Arrange
-      const { site } = await setupSite()
-      const { folder } = await setupFolder({
-        siteId: site.id,
-      })
+      const { site, folder } = await setupFolder({})
       const { page } = await setupPageResource({
         resourceType: ResourceType.Page,
         parentId: folder.id,
@@ -303,10 +315,8 @@ describe("asset.router", async () => {
 
     it("should throw 403 if user does only has Publisher permission to read root resource", async () => {
       // Arrange
-      const { site } = await setupSite()
-      const { page } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
-        siteId: site.id,
       })
       await setupPublisherPermissions({
         siteId: site.id,
@@ -332,10 +342,8 @@ describe("asset.router", async () => {
 
     it("should return success if user only has Admin permission to read root resource", async () => {
       // Arrange
-      const { site } = await setupSite()
-      const { page } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
-        siteId: site.id,
       })
       await setupAdminPermissions({
         siteId: site.id,
@@ -355,10 +363,8 @@ describe("asset.router", async () => {
 
     it("should call deleteFile with correct parameters for each file key", async () => {
       // Arrange
-      const { site } = await setupSite()
-      const { page } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
-        siteId: site.id,
       })
       await setupAdminPermissions({
         siteId: site.id,

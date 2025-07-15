@@ -12,17 +12,15 @@ import {
 export const assetRouter = router({
   getPresignedPutUrl: protectedProcedure
     .input(getPresignedPutUrlSchema)
-    .mutation(async ({ ctx, input: { siteId, fileName } }) => {
+    .mutation(async ({ ctx, input: { siteId, fileName, resourceId } }) => {
       await validateUserPermissionsForAsset({
         siteId,
+        resourceId,
         action: "create",
         userId: ctx.user.id,
       })
 
-      const fileKey = getFileKey({
-        siteId,
-        fileName,
-      })
+      const fileKey = getFileKey({ siteId, fileName })
 
       const presignedPutUrl = await getPresignedPutUrl({
         key: fileKey,

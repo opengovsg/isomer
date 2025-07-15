@@ -68,7 +68,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     })
 
   const { mutateAsync: uploadAsset, isLoading: isUploadingAsset } =
-    useUploadAssetMutation({ siteId })
+    useUploadAssetMutation({ siteId, resourceId: String(pageId) })
   const { mutate: deleteAssets, isLoading: isDeletingAssets } =
     trpc.asset.deleteAssets.useMutation()
 

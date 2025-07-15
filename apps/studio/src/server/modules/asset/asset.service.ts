@@ -9,35 +9,17 @@ import { env } from "~/env.mjs"
 import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
 import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-import { validateUserPermissionsForSite } from "../site/site.service"
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
+// Permissions for assets share the same permissions as resources
+// because the underlying assumption is that the asset is tied to the resource
 export const validateUserPermissionsForAsset = async ({
   resourceId,
   action,
   userId,
   siteId,
 }: AssetPermissionsProps) => {
-  // We're using site permissions for create action
-  // If user can read site, they can create assets
-  if (action === "create") {
-    return await validateUserPermissionsForSite({
-      siteId,
-      userId,
-      action: "read",
-    })
-  }
-
-  // Permissions for assets share the same permissions as resources
-  // because the underlying assumption is that the asset is tied to the resource
-  if (!resourceId) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Resource ID is required to validate asset permissions",
-    })
-  }
-
   await db
     .selectFrom("Resource")
     .where("id", "=", resourceId)
@@ -59,10 +41,11 @@ export const validateUserPermissionsForAsset = async ({
   })
 }
 
-export const getFileKey = ({
-  siteId,
-  fileName,
-}: z.infer<typeof getPresignedPutUrlSchema>) => {
+type GetFileKeyProps = Pick<
+  z.infer<typeof getPresignedPutUrlSchema>,
+  "siteId" | "fileName"
+>
+export const getFileKey = ({ siteId, fileName }: GetFileKeyProps) => {
   // NOTE: We're using a random folder name to prevent collisions
   const folderName = randomUUID()
   const sanitizedFileName = filenamify(fileName, { replacement: "-" })
