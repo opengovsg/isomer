@@ -20,25 +20,25 @@ export const validateUserPermissionsForAsset = async ({
   userId,
   siteId,
 }: AssetPermissionsProps) => {
-  await db
+  const resource = await db
     .selectFrom("Resource")
     .where("id", "=", resourceId)
     .where("siteId", "=", siteId)
-    .executeTakeFirstOrThrow(
-      () =>
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        }),
-    )
+    .executeTakeFirst();
+
+  if (!resource) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "The requested resource does not exist",
+    });
+  }
 
   await bulkValidateUserPermissionsForResources({
     resourceIds: [resourceId],
     action,
     userId,
     siteId,
-  })
+  });
 }
 
 type GetFileKeyProps = Pick<
