@@ -2,7 +2,11 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
-import { accountDeactivationTemplate, invitationTemplate } from "../templates"
+import {
+  accountDeactivationTemplate,
+  accountDeactivationWarningTemplate,
+  invitationTemplate,
+} from "../templates"
 
 describe("invitationTemplate", () => {
   const mockData = {
@@ -55,6 +59,105 @@ describe("invitationTemplate", () => {
         role: "InvalidRole" as RoleType,
       }),
     ).toThrow("Unknown role. Please check the role type.")
+  })
+})
+
+describe("accountDeactivationWarningTemplate", () => {
+  const mockData = {
+    recipientEmail: "test@example.com",
+    siteNames: ["Test Site 1"],
+    inHowManyDays: 7 as const,
+  }
+
+  it("should generate correct subject line with days remaining", () => {
+    // Arrange
+    const template = accountDeactivationWarningTemplate(mockData)
+
+    // Assert
+    expect(template.subject).toBe(
+      "[Isomer Studio] Account deactivation warning - 7 days remaining",
+    )
+  })
+
+  it("should generate correct subject line with different days remaining", () => {
+    // Arrange
+    const template = accountDeactivationWarningTemplate({
+      ...mockData,
+      inHowManyDays: 14,
+    })
+
+    // Assert
+    expect(template.subject).toBe(
+      "[Isomer Studio] Account deactivation warning - 14 days remaining",
+    )
+  })
+
+  it("should generate correct body content with recipient email", () => {
+    // Arrange
+    const template = accountDeactivationWarningTemplate(mockData)
+
+    // Assert
+    expect(template.body).toContain("Hi test@example.com")
+  })
+
+  it("should include login reminder with correct days", () => {
+    // Arrange
+    const template = accountDeactivationWarningTemplate(mockData)
+
+    // Assert
+    expect(template.body).toContain("please log in within the next 7 days")
+    expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
+  })
+
+  it("should include security measure message", () => {
+    // Arrange
+    const template = accountDeactivationWarningTemplate(mockData)
+
+    // Assert
+    expect(template.body).toContain(
+      "This is a standard security measure to protect your sites and data.",
+    )
+  })
+
+  it("should include site access loss warning", () => {
+    // Arrange
+    const template = accountDeactivationWarningTemplate(mockData)
+
+    // Assert
+    expect(template.body).toContain(
+      "If your account becomes deactivated, you will lose access to the following sites:",
+    )
+  })
+
+  it("should include single site name in list", () => {
+    // Arrange
+    const template = accountDeactivationWarningTemplate(mockData)
+
+    // Assert
+    expect(template.body).toContain("<li>Test Site 1</li>")
+  })
+
+  it("should include multiple site names in list", () => {
+    // Arrange
+    const template = accountDeactivationWarningTemplate({
+      ...mockData,
+      siteNames: ["Site A", "Site B", "Site C"],
+    })
+
+    // Assert
+    expect(template.body).toContain("<li>Site A</li>")
+    expect(template.body).toContain("<li>Site B</li>")
+    expect(template.body).toContain("<li>Site C</li>")
+  })
+
+  it("should include content preservation message", () => {
+    // Arrange
+    const template = accountDeactivationWarningTemplate(mockData)
+
+    // Assert
+    expect(template.body).toContain(
+      "Your content will still be preserved, but you won’t be able to access or manage these sites unless your account is reactivated.",
+    )
   })
 })
 

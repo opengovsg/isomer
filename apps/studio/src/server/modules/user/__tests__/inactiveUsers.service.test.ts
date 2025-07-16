@@ -10,12 +10,16 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { Site, User } from "~/server/modules/database"
-import { sendAccountDeactivationEmail } from "~/features/mail/service"
+import {
+  sendAccountDeactivationEmail,
+  sendAccountDeactivationWarningEmail,
+} from "~/features/mail/service"
 import { db } from "~/server/modules/database"
 import { RoleType } from "~/server/modules/database/types"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 import {
   bulkDeactivateInactiveUsers,
+  bulkSendAccountDeactivationWarningEmails,
   getDateOnlyInSG,
   getInactiveUsers,
 } from "../inactiveUsers.service"
@@ -75,6 +79,7 @@ describe("inactiveUsers.service", () => {
 
     vi.mock("~/features/mail/service", () => ({
       sendAccountDeactivationEmail: vi.fn(),
+      sendAccountDeactivationWarningEmail: vi.fn(),
     }))
 
     beforeEach(async () => {
@@ -872,6 +877,320 @@ describe("inactiveUsers.service", () => {
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
+    })
+  })
+
+  describe("bulkSendAccountDeactivationWarningEmails", () => {
+    let site: Site
+
+    beforeEach(async () => {
+      vi.clearAllMocks()
+      await resetTables("Site", "User", "ResourcePermission")
+
+      const { site: _site } = await setupSite()
+      site = _site
+    })
+
+    describe("should send warning emails to users who will be inactive in specified days", () => {
+      it("1 day", async () => {
+        // Arrange
+        const user = await setupUserWrapper({
+          siteId: site.id,
+          createdDaysAgo: 89, // Will be inactive in 1 day (90 - 1 = 89)
+          lastLoginDaysAgo: null,
+        })
+
+        // Act
+        await bulkSendAccountDeactivationWarningEmails({
+          inHowManyDays: 1,
+        })
+
+        // Assert
+        expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+          recipientEmail: user.email,
+          siteNames: [site.name],
+          inHowManyDays: 1,
+        })
+        await expect(
+          bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 1 }),
+        ).resolves.not.toThrowError()
+      })
+
+      it("7 days", async () => {
+        // Arrange
+        const user = await setupUserWrapper({
+          siteId: site.id,
+          createdDaysAgo: 83, // Will be inactive in 7 days (90 - 7 = 83)
+          lastLoginDaysAgo: null,
+        })
+
+        // Act
+        await bulkSendAccountDeactivationWarningEmails({
+          inHowManyDays: 7,
+        })
+
+        // Assert
+        expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+          recipientEmail: user.email,
+          siteNames: [site.name],
+          inHowManyDays: 7,
+        })
+        await expect(
+          bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 7 }),
+        ).resolves.not.toThrowError()
+      })
+
+      it("14 days", async () => {
+        // Arrange
+        const user = await setupUserWrapper({
+          siteId: site.id,
+          createdDaysAgo: 76, // Will be inactive in 14 days (90 - 14 = 76)
+          lastLoginDaysAgo: null,
+        })
+
+        // Act
+        await bulkSendAccountDeactivationWarningEmails({
+          inHowManyDays: 14,
+        })
+
+        // Assert
+        expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+          recipientEmail: user.email,
+          siteNames: [site.name],
+          inHowManyDays: 14,
+        })
+        await expect(
+          bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 14 }),
+        ).resolves.not.toThrowError()
+      })
+    })
+
+    it("should not send multiple emails to the same user", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 7,
+      })
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 14,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(1)
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [site.name],
+        inHowManyDays: 1,
+      })
+      // Assert that the user is not sent ANY email for days 7 method
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [],
+        inHowManyDays: 7,
+      })
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [site.name],
+        inHowManyDays: 7,
+      })
+      // Assert that the user is not sent ANY email for days 14 method
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [],
+        inHowManyDays: 14,
+      })
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [site.name],
+        inHowManyDays: 14,
+      })
+    })
+
+    it("should not send warning emails to users who are active", async () => {
+      // Arrange
+      await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: 1,
+      })
+
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalled()
+    })
+
+    it("should send warning emails to all inactive users", async () => {
+      // Arrange
+      const user1 = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89, // Will be inactive in 1 day
+        lastLoginDaysAgo: null,
+      })
+      const user2 = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89, // Will be inactive in 1 day
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(2)
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        recipientEmail: user1.email,
+        siteNames: [site.name],
+        inHowManyDays: 1,
+      })
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        recipientEmail: user2.email,
+        siteNames: [site.name],
+        inHowManyDays: 1,
+      })
+    })
+
+    it("should handle empty inactive users list", async () => {
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalled()
+    })
+
+    it("should handle multiple inactive users", async () => {
+      // Arrange
+      const users = []
+      for (let i = 0; i < 3; i++) {
+        users.push(
+          await setupUserWrapper({
+            siteId: site.id,
+            createdDaysAgo: 89,
+            lastLoginDaysAgo: null,
+          }),
+        )
+      }
+
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(3)
+      users.forEach((user) => {
+        expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+          recipientEmail: user.email,
+          siteNames: [site.name],
+          inHowManyDays: 1,
+        })
+      })
+    })
+
+    it("should not send warning emails to users who have no site permissions", async () => {
+      // Arrange
+      await setupUserWrapper({
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalled()
+    })
+
+    it("should include multiple sites in the email", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null,
+      })
+      // Add another site permission for the user
+      const { site: anotherSite } = await setupSite()
+      await db
+        .insertInto("ResourcePermission")
+        .values({
+          userId: user.id,
+          siteId: anotherSite.id,
+          role: RoleType.Admin,
+        })
+        .execute()
+
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(1)
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [site.name, anotherSite.name],
+        inHowManyDays: 1,
+      })
+    })
+
+    it("should work with users who have never logged in", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 89,
+        lastLoginDaysAgo: null, // Never logged in
+      })
+
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [site.name],
+        inHowManyDays: 1,
+      })
+    })
+
+    it("should work with users who have logged in before", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: 89, // Logged in 89 days ago
+      })
+
+      // Act
+      await bulkSendAccountDeactivationWarningEmails({
+        inHowManyDays: 1,
+      })
+
+      // Assert
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        siteNames: [site.name],
+        inHowManyDays: 1,
+      })
     })
   })
 })
