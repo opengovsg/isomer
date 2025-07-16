@@ -80,6 +80,7 @@ export const UserTableMenu = ({
           {ability.can("manage", "UserManagement") && (
             <>
               <MenuItem
+                key="edit-user"
                 onClick={() =>
                   setUpdateUserModalState({ siteId, userId, email, role })
                 }
@@ -96,6 +97,7 @@ export const UserTableMenu = ({
               </MenuItem>
               {canResendInviteToUser({ createdAt, lastLoginAt }) && (
                 <MenuItem
+                  key="resend-invite"
                   onClick={() => resendInvite({ siteId, userId })}
                   isDisabled={isResendingInvite || !isSingpassEnabled}
                   icon={<BiMailSend fontSize="1rem" />}
@@ -109,6 +111,7 @@ export const UserTableMenu = ({
                 </MenuItem>
               )}
               <MenuItem
+                key="remove-user"
                 onClick={() => setRemoveUserModalState({ siteId, userId })}
                 colorScheme="critical"
                 icon={<BiTrash fontSize="1rem" />}
