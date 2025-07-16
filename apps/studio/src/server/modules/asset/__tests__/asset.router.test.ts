@@ -71,7 +71,7 @@ describe("asset.router", async () => {
       )
     })
 
-    it("should throw 403 if site does not exist", async () => {
+    it("should throw 404 if site does not exist", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
@@ -87,9 +87,8 @@ describe("asset.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
+          code: "NOT_FOUND",
+          message: "The requested resource does not exist",
         }),
       )
     })
@@ -189,7 +188,7 @@ describe("asset.router", async () => {
       )
     })
 
-    it("should throw 403 if site does not exist", async () => {
+    it("should throw 404 if site does not exist", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
@@ -205,9 +204,8 @@ describe("asset.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
+          code: "NOT_FOUND",
+          message: "The requested resource does not exist",
         }),
       )
     })
