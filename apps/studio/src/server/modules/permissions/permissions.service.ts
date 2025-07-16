@@ -123,7 +123,7 @@ export const validateUserPermissionsForResource = async ({
 export const getResourcePermission = async ({
   userId,
   siteId,
-  resourceId = null,
+  resourceId,
 }: PermissionsProps) => {
   let query = db
     .selectFrom("ResourcePermission")
