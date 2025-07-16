@@ -39,7 +39,10 @@ function SuspendableJsonFormsCollectionDropdownControl({
       value={data}
       name={label}
       items={collections.map((collection) => {
-        return { label: collection.title, value: collection.id }
+        return {
+          label: collection.title,
+          value: `[resource:${siteId}:${collection.id}]`,
+        }
       })}
       isClearable={false}
       onChange={(value) => {
