@@ -2,6 +2,7 @@ import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
   COLLECTION_BLOCK_TYPE,
   DEFAULT_CHILDREN_PAGES_BLOCK,
+  DGS_SEARCHABLE_TABLE_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
 } from "@opengovsg/isomer-components"
@@ -257,6 +258,27 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
+  [DGS_SEARCHABLE_TABLE_TYPE]: {
+    type: `${DGS_SEARCHABLE_TABLE_TYPE}`,
+    title: "Sample DGS Table",
+    // TODO: replace this with our own uploaded sample DGS dataset
+    dgsResourceId: "d_ebc5ab87086db484f88045b47411ebc5",
+    headers: [
+      { label: "Year", key: "year" },
+      { label: "University", key: "university" },
+      { label: "School", key: "school" },
+      { label: "Degree", key: "degree" },
+      { label: "Monthly Median", key: "gross_monthly_median" },
+      {
+        label: "Monthly 25th Percentile",
+        key: "gross_mthly_25_percentile",
+      },
+      {
+        label: "Monthly 75th Percentile",
+        key: "gross_mthly_75_percentile",
+      },
+    ],
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -384,6 +406,12 @@ export const BLOCK_TO_META: Record<
     description: "Display a quote or testimonial",
     usageText: "Highlight an important quote. You can add an optional image.",
     imageSrc: "/assets/block-images/Blockquote.png",
+  },
+  // TODO: update everything (currently YOLO-ing the placeholder for this POC)
+  [DGS_SEARCHABLE_TABLE_TYPE]: {
+    label: "DGS Searchable Table",
+    description: "Display a searchable table from a DGS dataset",
+    usageText: "Display a searchable table from a DGS dataset.",
   },
 }
 
