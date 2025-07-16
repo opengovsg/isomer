@@ -3,9 +3,8 @@ import dayjs from "dayjs"
 import timezone from "dayjs/plugin/timezone"
 import utc from "dayjs/plugin/utc"
 
-import type { DB, Site, Transaction, User } from "../database"
+import type { ResourcePermission, Site, User } from "../database"
 import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
-import type { AccountDeactivationEmailTemplateData } from "~/features/mail/templates/types"
 import {
   sendAccountDeactivationEmail,
   sendAccountDeactivationWarningEmail,
@@ -121,63 +120,67 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
 }
 
 interface DeactivateUsersProps {
-  tx: Transaction<DB>
   userIds: User["id"][]
 }
-type DeactivateUsersOutput = {
-  user: User
-  siteIds: Site["id"][]
-}[]
-
-export const deactivateUsers = async ({
-  tx,
-  userIds,
-}: DeactivateUsersProps): Promise<DeactivateUsersOutput> => {
+export const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
   // prevent empty array from being passed in
   if (userIds.length === 0) return []
 
-  const deletedPermissions = await tx
-    .updateTable("ResourcePermission")
-    .where("userId", "in", userIds)
-    .where("deletedAt", "is", null)
-    .set({ deletedAt: new Date() })
-    .returningAll()
-    .execute()
+  let deletedPermissions: ResourcePermission[] = []
 
-  return tx
+  try {
+    deletedPermissions = await db
+      .transaction()
+      .setIsolationLevel("serializable") // for idempotency
+      .execute(async (tx) => {
+        return tx
+          .updateTable("ResourcePermission")
+          .where("userId", "in", userIds)
+          .where("deletedAt", "is", null)
+          .set({ deletedAt: new Date() })
+          .returningAll()
+          .execute()
+      })
+  } catch (error) {
+    if (
+      // Handle serializable transaction errors gracefully - this is expected for idempotency
+      error instanceof Error &&
+      "code" in error &&
+      error.code === PG_ERROR_CODES.serializationFailure
+    ) {
+      logger.info(
+        "Serialization failure detected, skipping operation for idempotency",
+      )
+      return []
+    }
+    // Re-throw other errors
+    throw error
+  }
+
+  const users = await db
     .selectFrom("User")
     .where("id", "in", userIds)
     .selectAll()
     .execute()
-    .then((users) =>
-      users.map((user) => ({
-        user,
-        siteIds: deletedPermissions
-          .filter((permission) => permission.userId === user.id)
-          .map((permission) => permission.siteId),
-      })),
-    )
+
+  return users.map((user) => ({
+    user,
+    siteIds: deletedPermissions
+      .filter((permission) => permission.userId === user.id)
+      .map((permission) => permission.siteId),
+  }))
 }
 
 interface GetSiteAndAdminsProps {
-  tx: Transaction<DB>
   userId: User["id"]
   siteIds: Site["id"][]
 }
-
-type GetSiteAndAdminsOutput =
-  AccountDeactivationEmailTemplateData["sitesAndAdmins"]
-
-const getSiteAndAdmins = async ({
-  tx,
-  userId,
-  siteIds,
-}: GetSiteAndAdminsProps): Promise<GetSiteAndAdminsOutput> => {
+const getSiteAndAdmins = async ({ userId, siteIds }: GetSiteAndAdminsProps) => {
   // Prevent empty array from being passed in
   if (siteIds.length === 0) return []
 
   return (
-    tx
+    db
       .with("siteAdmins", (eb) =>
         eb
           .selectFrom("Site")
@@ -217,21 +220,6 @@ const getSiteAndAdmins = async ({
   )
 }
 
-type SendAccountDeactivationEmailsProps = AccountDeactivationEmailTemplateData[]
-const sendAccountDeactivationEmails = async (
-  deactivatedUsersAndSites: SendAccountDeactivationEmailsProps,
-): Promise<void> => {
-  for (const { recipientEmail, sitesAndAdmins } of deactivatedUsersAndSites) {
-    try {
-      await sendAccountDeactivationEmail({ recipientEmail, sitesAndAdmins })
-    } catch {
-      logger.error(
-        `Error sending account deactivation email for user ${recipientEmail}`,
-      )
-    }
-  }
-}
-
 export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
   // not setting fromDaysAgo to MAX_DAYS_FROM_LAST_LOGIN because we want to
   // deactivate users beyond the MAX_DAYS_FROM_LAST_LOGIN (e.g. 91 days). This could be due to:
@@ -239,53 +227,32 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
   // 2. users who weren't removed for whatever reason e.g. unintentional failed cron job that wasn't retried
   const inactiveUsers = await getInactiveUsers({})
 
-  const deactivatedUsersAndSites: SendAccountDeactivationEmailsProps = []
+  const deactivatedUsersAndSiteIds = await deactivateUsers({
+    userIds: inactiveUsers.map((user) => user.id),
+  })
 
-  try {
-    await db
-      .transaction()
-      .setIsolationLevel("serializable")
-      .execute(async (tx) => {
-        const deactivatedUsersAndSiteIds = await deactivateUsers({
-          tx,
-          userIds: inactiveUsers.map((user) => user.id),
-        })
-
-        for (const { user, siteIds } of deactivatedUsersAndSiteIds) {
-          if (siteIds.length === 0) continue
-
-          const sitesAndAdmins = await getSiteAndAdmins({
-            tx,
-            userId: user.id,
-            siteIds,
-          })
-
-          deactivatedUsersAndSites.push({
-            recipientEmail: user.email,
-            sitesAndAdmins,
-          })
-        }
-      })
-  } catch (error) {
-    if (
-      // Handle serializable transaction errors gracefully - this is expected for idempotency
-      error instanceof Error &&
-      "code" in error &&
-      error.code === PG_ERROR_CODES.serializationFailure
-    ) {
-      logger.info(
-        "Serialization failure detected, skipping operation for idempotency",
-      )
-      return
-    }
-    // Re-throw other errors
-    throw error
-  }
-
-  if (deactivatedUsersAndSites.length === 0) {
+  if (deactivatedUsersAndSiteIds.length === 0) {
     logger.info("No deactivated users and sites found")
     return
   }
 
-  await sendAccountDeactivationEmails(deactivatedUsersAndSites)
+  for (const { user, siteIds } of deactivatedUsersAndSiteIds) {
+    if (siteIds.length === 0) continue
+
+    const sitesAndAdmins = await getSiteAndAdmins({
+      userId: user.id,
+      siteIds,
+    })
+
+    try {
+      await sendAccountDeactivationEmail({
+        recipientEmail: user.email,
+        sitesAndAdmins,
+      })
+    } catch {
+      logger.error(
+        `Error sending account deactivation email for user ${user.email}`,
+      )
+    }
+  }
 }

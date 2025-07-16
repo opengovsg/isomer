@@ -1,11 +1,9 @@
-import {
-  INFOCARD_VARIANT,
-  SingleCardWithImageProps,
-} from "~/interfaces/complex/InfoCards"
+import type { With4Cols } from "./types"
+import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
+import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { getTailwindVariantLayout, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../Image"
 import { compoundStyles } from "../common"
-import { With4Cols } from "./types"
 
 export const InfoCardImage = ({
   imageUrl,
