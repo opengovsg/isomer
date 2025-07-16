@@ -13,7 +13,6 @@ import {
   createUserOutputSchema,
   deleteUserInputSchema,
   deleteUserOutputSchema,
-  getPermissionsInputSchema,
   getUserInputSchema,
   getUserOutputSchema,
   listUsersInputSchema,
@@ -28,7 +27,7 @@ import {
 import { protectedProcedure, router } from "../../trpc"
 import { db, RoleType, sql } from "../database"
 import {
-  getSitePermissions,
+  getResourcePermission,
   updateUserSitewidePermission,
   validatePermissionsForManagingUsers,
 } from "../permissions/permissions.service"
@@ -49,12 +48,6 @@ const throwSingpassDisabledError = () => {
 }
 
 export const userRouter = router({
-  getPermissions: protectedProcedure
-    .input(getPermissionsInputSchema)
-    .query(async ({ ctx, input: { siteId } }) => {
-      return await getSitePermissions({ userId: ctx.user.id, siteId })
-    }),
-
   create: protectedProcedure
     .input(createUserInputSchema)
     .output(createUserOutputSchema)
@@ -173,14 +166,8 @@ export const userRouter = router({
         })
       }
 
-      if (!ctx.session?.userId)
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Please ensure you are logged in!",
-        })
-
       await deleteUserPermission({
-        byUserId: ctx.session.userId,
+        byUserId: ctx.user.id,
         userId,
         siteId,
       })
@@ -332,15 +319,8 @@ export const userRouter = router({
       // We don't have to check if the user is admin here
       // because we only allow users to update their own details
       // They should be able to update their own details even without any resource permissions
-
-      if (!ctx.session?.userId)
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Please ensure you are logged in!",
-        })
-
       const updatedUser = await updateUserDetails({
-        userId: ctx.session.userId,
+        userId: ctx.user.id,
         name,
         phone,
       })
@@ -404,7 +384,7 @@ export const userRouter = router({
       }
 
       // Defensive programming to check if the user has permissions to receive invite
-      const userPermission = await getSitePermissions({
+      const userPermission = await getResourcePermission({
         userId: user.id,
         siteId,
       })

@@ -84,6 +84,11 @@ export const getFullPermalinkSchema = z.object({
   resourceId: bigIntSchema,
 })
 
+export const getRolesForSchema = z.object({
+  siteId: z.number(),
+  resourceId: z.string().nullable(),
+})
+
 export const getAncestryStackSchema = z.object({
   siteId: z.string(),
   resourceId: z.string().optional(),

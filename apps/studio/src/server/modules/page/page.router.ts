@@ -16,7 +16,6 @@ import {
   ResourceType,
 } from "~prisma/generated/generatedEnums"
 import _, { get, isEmpty, isEqual } from "lodash"
-import { z } from "zod"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
@@ -25,6 +24,7 @@ import {
   createIndexPageSchema,
   createPageSchema,
   getRootPageSchema,
+  listPagesSchema,
   pageSettingsSchema,
   publishPageSchema,
   readPageOutputSchema,
@@ -86,12 +86,7 @@ const validatedPageProcedure = protectedProcedure.use(
 
 export const pageRouter = router({
   list: protectedProcedure
-    .input(
-      z.object({
-        siteId: z.number(),
-        resourceId: z.number().optional(),
-      }),
-    )
+    .input(listPagesSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
       await bulkValidateUserPermissionsForResources({
         siteId,
@@ -249,16 +244,9 @@ export const pageRouter = router({
         userId: ctx.user.id,
       })
 
-      if (!ctx.session?.userId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please ensure that you are authenticated",
-        })
-      }
-
       const by = await db
         .selectFrom("User")
-        .where("id", "=", ctx.session.userId)
+        .where("id", "=", ctx.user.id)
         .selectAll()
         .executeTakeFirstOrThrow(
           () =>
@@ -353,13 +341,6 @@ export const pageRouter = router({
         userId: ctx.user.id,
       })
 
-      if (!ctx.session?.userId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please ensure that you are authenticated",
-        })
-      }
-
       const resource = await getPageById(db, {
         resourceId: input.pageId,
         siteId: input.siteId,
@@ -374,7 +355,7 @@ export const pageRouter = router({
 
       const by = await db
         .selectFrom("User")
-        .where("id", "=", ctx.session.userId)
+        .where("id", "=", ctx.user.id)
         .selectAll()
         .executeTakeFirstOrThrow(
           () =>
@@ -422,16 +403,9 @@ export const pageRouter = router({
 
         const newPage = createDefaultPage({ layout })
 
-        if (!ctx.session?.userId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Please ensure that you are authenticated",
-          })
-        }
-
         const by = await db
           .selectFrom("User")
-          .where("id", "=", ctx.session.userId)
+          .where("id", "=", ctx.user.id)
           .selectAll()
           .executeTakeFirstOrThrow(
             () =>

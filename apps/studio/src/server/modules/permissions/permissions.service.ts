@@ -162,18 +162,24 @@ export const bulkValidateUserPermissionsForResources = async ({
   )
 }
 
-export const getSitePermissions = async ({
+export const getResourcePermission = async ({
   userId,
   siteId,
-}: Omit<PermissionsProps, "resourceId">) => {
-  return await db
+  resourceId,
+}: PermissionsProps) => {
+  let query = db
     .selectFrom("ResourcePermission")
     .where("userId", "=", userId)
     .where("siteId", "=", siteId)
-    .where("resourceId", "is", null)
     .where("deletedAt", "is", null)
-    .select("role")
-    .execute()
+
+  if (resourceId) {
+    query = query.where("resourceId", "=", resourceId)
+  } else {
+    query = query.where("resourceId", "is", null)
+  }
+
+  return query.select("role").execute()
 }
 
 export const validatePermissionsForManagingUsers = async ({
@@ -183,7 +189,7 @@ export const validatePermissionsForManagingUsers = async ({
 }: Omit<PermissionsProps, "resourceId"> & {
   action: UserManagementActions
 }) => {
-  const roles = await getSitePermissions({ userId, siteId })
+  const roles = await getResourcePermission({ userId, siteId })
   const perms = buildUserManagementPermissions(roles)
 
   if (perms.cannot(action, "UserManagement")) {
@@ -293,6 +299,7 @@ export const validateUserIsIsomerCoreAdmin = async ({
   const user = await db
     .selectFrom("User")
     .where("id", "=", userId)
+    .where("deletedAt", "is", null)
     .select(["email"])
     .executeTakeFirstOrThrow()
 
