@@ -1,5 +1,9 @@
 import { z } from "zod"
 
+export const siteSchema = z.object({
+  siteId: z.coerce.string(),
+})
+
 export const editPageSchema = z.object({
   pageId: z.coerce.number(),
   siteId: z.coerce.number(),

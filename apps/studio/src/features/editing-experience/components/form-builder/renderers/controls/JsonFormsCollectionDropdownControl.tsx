@@ -9,7 +9,7 @@ import { useSetAtom } from "jotai"
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { linkAtom } from "~/features/editing-experience/atoms"
-import { collectionItemSchema } from "~/features/editing-experience/schema"
+import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 
@@ -28,22 +28,18 @@ function SuspendableJsonFormsCollectionDropdownControl({
   path,
   label,
 }: JsonFormsCollectionDropdownControlProps) {
-  const { siteId, pageId, linkId } = useQueryParse(collectionItemSchema)
+  const { siteId } = useQueryParse(siteSchema)
 
-  const [{ categories }] = trpc.page.getCategories.useSuspenseQuery({
-    siteId,
-    // NOTE: This control should only be rendered inside
-    // a collection - because of this,
-    // there is either a `pageId` or a `linkId`
-    pageId: pageId || linkId || -1,
+  const [collections] = trpc.collection.getCollections.useSuspenseQuery({
+    siteId: Number(siteId),
   })
 
   return (
     <SingleSelect
       value={data}
       name={label}
-      items={categories.map((category) => {
-        return { label: category, value: category }
+      items={collections.map((collection) => {
+        return { label: collection.title, value: collection.id }
       })}
       isClearable={false}
       onChange={(value) => {
