@@ -24,13 +24,13 @@ export const validateUserPermissionsForAsset = async ({
     .selectFrom("Resource")
     .where("id", "=", resourceId)
     .where("siteId", "=", siteId)
-    .executeTakeFirst();
+    .executeTakeFirst()
 
   if (!resource) {
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "The requested resource does not exist",
-    });
+    })
   }
 
   await bulkValidateUserPermissionsForResources({
@@ -38,7 +38,7 @@ export const validateUserPermissionsForAsset = async ({
     action,
     userId,
     siteId,
-  });
+  })
 }
 
 type GetFileKeyProps = Pick<
