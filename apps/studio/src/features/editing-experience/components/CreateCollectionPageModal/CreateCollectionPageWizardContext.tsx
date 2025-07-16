@@ -66,6 +66,7 @@ const useCreateCollectionPageWizardContext = ({
   const [type, title] = formMethods.watch(["type", "title"])
   const { data, isLoading: isPermalinkLoading } =
     trpc.resource.getWithFullPermalink.useQuery({
+      siteId,
       resourceId: collectionId ? String(collectionId) : "",
     })
 

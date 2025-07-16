@@ -12,7 +12,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
-import { editPageSchema } from "~/features/editing-experience/schema"
+import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { updatePageMetaSchema } from "~/schemas/page"
@@ -23,7 +23,7 @@ import { trpc } from "~/utils/trpc"
 const SUCCESS_TOAST_ID = "save-page-settings-success"
 
 const PageSettings: NextPageWithLayout = () => {
-  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const { pageId, siteId } = useQueryParse(pageSchema)
   const [{ content, type, updatedAt, title }] =
     trpc.page.readPageAndBlob.useSuspenseQuery(
       {

@@ -11,6 +11,7 @@ import { getPresignedPutUrlSchema } from "~/schemas/asset"
 interface FileAttachmentProps {
   setHref: (href?: string) => void
   siteId: number
+  resourceId: string
   value?: File
   maxSizeInBytes: number
   acceptedFileTypes: Record<string, string>
@@ -22,6 +23,7 @@ type FileRejections = AttachmentProps<false>["rejections"]
 export const FileAttachment = ({
   setHref,
   siteId,
+  resourceId,
   maxSizeInBytes,
   acceptedFileTypes,
   shouldFetchResource = true,
@@ -30,6 +32,7 @@ export const FileAttachment = ({
   // TODO: Add a mutation for deletion next time of s3 resources
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
+    resourceId,
   })
   const { handleAssetUpload, isLoading } = useAssetUpload({})
 

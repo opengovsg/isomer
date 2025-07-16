@@ -1,17 +1,51 @@
 import { randomUUID } from "crypto"
 import type { z } from "zod"
+import { TRPCError } from "@trpc/server"
 import filenamify from "filenamify"
 
+import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { env } from "~/env.mjs"
 import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
+import { db } from "../database"
+import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
-export const getFileKey = ({
+// Permissions for assets share the same permissions as resources
+// because the underlying assumption is that the asset is tied to the resource
+export const validateUserPermissionsForAsset = async ({
+  resourceId,
+  action,
+  userId,
   siteId,
-  fileName,
-}: z.infer<typeof getPresignedPutUrlSchema>) => {
+}: AssetPermissionsProps) => {
+  const resource = await db
+    .selectFrom("Resource")
+    .where("id", "=", resourceId)
+    .where("siteId", "=", siteId)
+    .executeTakeFirst()
+
+  if (!resource) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "The requested resource does not exist",
+    })
+  }
+
+  await bulkValidateUserPermissionsForResources({
+    resourceIds: [resourceId],
+    action,
+    userId,
+    siteId,
+  })
+}
+
+type GetFileKeyProps = Pick<
+  z.infer<typeof getPresignedPutUrlSchema>,
+  "siteId" | "fileName"
+>
+export const getFileKey = ({ siteId, fileName }: GetFileKeyProps) => {
   // NOTE: We're using a random folder name to prevent collisions
   const folderName = randomUUID()
   const sanitizedFileName = filenamify(fileName, { replacement: "-" })
