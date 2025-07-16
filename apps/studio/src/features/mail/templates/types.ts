@@ -1,4 +1,5 @@
 import type { Resource } from "~/server/modules/database"
+import type { BulkSendAccountDeactivationWarningEmailsProps } from "~/server/modules/user/types"
 import type { RoleType } from "~prisma/generated/generatedEnums"
 
 export interface BaseEmailTemplateData {
@@ -25,6 +26,12 @@ export interface PublishAlertSiteAdminEmailTemplateData
   publisherEmail: string
   siteName: string
   resource: Resource
+}
+
+export interface AccountDeactivationWarningEmailTemplateData
+  extends BaseEmailTemplateData,
+    Pick<BulkSendAccountDeactivationWarningEmailsProps, "inHowManyDays"> {
+  siteNames: string[]
 }
 
 export interface AccountDeactivationEmailTemplateData

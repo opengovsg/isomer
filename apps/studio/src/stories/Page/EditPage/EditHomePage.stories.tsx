@@ -26,7 +26,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.homepage(),
   pageHandlers.readPage.homepage(),
   pageHandlers.getFullPermalink.homepage(),
-  resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getRolesFor.admin(),
 ]
 
 const meta: Meta<typeof EditPage> = {

@@ -22,7 +22,10 @@ export const UserManagementProvider = ({
   siteId,
   children,
 }: PropsWithChildren<UserManagementProviderProps>) => {
-  const { data: roles } = trpc.user.getPermissions.useQuery({ siteId })
+  const { data: roles } = trpc.resource.getRolesFor.useQuery({
+    siteId,
+    resourceId: null,
+  })
 
   const ability = useMemo(
     () => (roles ? buildUserManagementPermissions(roles) : new PureAbility()),
