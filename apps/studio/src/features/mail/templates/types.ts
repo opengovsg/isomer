@@ -1,5 +1,5 @@
 import type { Resource } from "~/server/modules/database"
-import type { BulkSendAccountDeactivationWarningEmailsProps } from "~/server/modules/user/inactiveUsers.service"
+import type { BulkSendAccountDeactivationWarningEmailsProps } from "~/server/modules/user/types"
 import type { RoleType } from "~prisma/generated/generatedEnums"
 
 export interface BaseEmailTemplateData {

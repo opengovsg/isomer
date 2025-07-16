@@ -11,10 +11,9 @@ import { ResetEditUserModalDecorator } from "../decorators/resetModalState"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
-  resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getRolesFor.admin(),
   sitesHandlers.getSiteName.default(),
   userHandlers.count.default(),
-  userHandlers.getPermissions.admin(),
   userHandlers.list.users(),
 ]
 

@@ -1,13 +1,10 @@
-import type { z } from "zod"
 import { generators, Issuer } from "openid-client"
 
-import type { singpassStateSchema } from "~/schemas/auth/singpass"
 import { env } from "~/env.mjs"
 import {
   SINGPASS_ENCRYPTION_JWK,
   SINGPASS_REDIRECT_URI,
   SINGPASS_SCOPES,
-  SINGPASS_SIGN_IN_STATE,
   SINGPASS_SIGNING_JWK,
 } from "./singpass.constants"
 import { extractUuid } from "./singpass.utils"
@@ -29,7 +26,7 @@ export const getAuthorizationUrl = () => {
   const codeVerifier = generators.codeVerifier()
   const codeChallenge = generators.codeChallenge(codeVerifier)
   const nonce = generators.nonce()
-  const state = JSON.stringify({ state: SINGPASS_SIGN_IN_STATE })
+  const state = generators.state()
 
   const authorizationUrl = singpassClient.authorizationUrl({
     redirect_uri: SINGPASS_REDIRECT_URI,
@@ -51,7 +48,7 @@ interface LoginParams {
   code: string
   codeVerifier: string
   nonce: string
-  state: z.infer<typeof singpassStateSchema>
+  state: string
 }
 
 export const login = async ({
