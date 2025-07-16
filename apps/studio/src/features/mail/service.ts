@@ -108,32 +108,3 @@ export async function sendAccountDeactivationEmail(
     emailType: "account deactivation",
   })
 }
-
-export async function sendAccountDeactivationEmail(
-  data: AccountDeactivationEmailTemplateData,
-): Promise<void> {
-  if (!isValidEmail(data.recipientEmail)) {
-    logger.error({
-      error: "Invalid email format",
-      email: data.recipientEmail,
-    })
-    throw new Error("Invalid email format")
-  }
-
-  const template = templates.accountDeactivation(data)
-
-  try {
-    await sendMail({
-      recipient: data.recipientEmail,
-      subject: template.subject,
-      body: template.body,
-    })
-  } catch (error) {
-    logger.error({
-      error: "Failed to send account deactivation email",
-      email: data.recipientEmail,
-      originalError: error,
-    })
-    throw error
-  }
-}
