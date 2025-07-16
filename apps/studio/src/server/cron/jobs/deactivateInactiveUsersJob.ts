@@ -1,6 +1,6 @@
 import cron from "node-cron"
 
-import { deactiveInactiveUsers } from "~/server/modules/user/inactiveUsers.service"
+import { bulkDeactivateInactiveUsers } from "~/server/modules/user/inactiveUsers.service"
 import { createBaseLogger } from "../../../lib/logger"
 
 const logger = createBaseLogger({
@@ -18,7 +18,7 @@ export const deactivateInactiveUsersJob = () => {
             jobName: `deactivateInactiveUsersJob`,
           })
 
-          await deactiveInactiveUsers()
+          await bulkDeactivateInactiveUsers()
 
           logger.info(`deactivateInactiveUsersJob completed successfully`)
         } catch (error) {
