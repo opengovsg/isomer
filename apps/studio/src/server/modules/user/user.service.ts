@@ -4,7 +4,6 @@ import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 import isEmail from "validator/lib/isEmail"
 
 import type { DB, Transaction } from "../database"
-import type { SessionData } from "~/lib/types/session"
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { isGovEmail } from "~/utils/email"
@@ -184,8 +183,8 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
 }
 
 interface DeleteUserPermissionProps {
-  byUserId: NonNullable<SessionData["userId"]>
-  userId: string
+  byUserId: User["id"]
+  userId: User["id"]
   siteId: number
 }
 
@@ -266,7 +265,7 @@ export const deleteUserPermission = async ({
 }
 
 interface UpdateUserDetailsProps {
-  userId: NonNullable<SessionData["userId"]>
+  userId: User["id"]
   name?: string
   phone?: string
 }

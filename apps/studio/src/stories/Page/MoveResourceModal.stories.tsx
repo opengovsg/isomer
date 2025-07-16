@@ -17,7 +17,7 @@ const COMMON_HANDLERS = [
   pageHandlers.getPermalinkTree.withParent(),
   sitesHandlers.getSiteName.default(),
   resourceHandlers.getChildrenOf.default(),
-  resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getRolesFor.admin(),
   resourceHandlers.getWithFullPermalink.default(),
   resourceHandlers.getAncestryStack.default(),
   resourceHandlers.getMetadataById.content(),

@@ -11,7 +11,7 @@ import { ResetUpdateProfileModalDecorator } from "~/stories/decorators/resetModa
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
-  resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getRolesFor.admin(),
   sitesHandlers.getSiteName.default(),
   pageHandlers.getRootPage.default(),
 ]

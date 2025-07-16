@@ -127,23 +127,6 @@ export const userHandlers = {
       })
     },
   },
-  getPermissions: {
-    admin: () => {
-      return trpcMsw.user.getPermissions.query(() => {
-        return [{ role: RoleType.Admin }]
-      })
-    },
-    publisher: () => {
-      return trpcMsw.user.getPermissions.query(() => {
-        return [{ role: RoleType.Publisher }]
-      })
-    },
-    editor: () => {
-      return trpcMsw.user.getPermissions.query(() => {
-        return [{ role: RoleType.Editor }]
-      })
-    },
-  },
   create: {
     success: ({ email }: { email: string }) => {
       return trpcMsw.user.create.mutation(() => {
