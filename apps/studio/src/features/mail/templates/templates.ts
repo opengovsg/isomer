@@ -1,6 +1,7 @@
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import type {
+  AccountDeactivationEmailTemplateData,
   BaseEmailTemplateData,
   EmailTemplate,
   InvitationEmailTemplateData,
@@ -10,6 +11,7 @@ import type {
 } from "./types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
+import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
 import { getStudioResourceUrl } from "~/utils/resources"
 
 export const invitationTemplate = (
@@ -103,6 +105,43 @@ export const publishAlertSiteAdminTemplate = (
   }
 }
 
+export const accountDeactivationTemplate = (
+  data: AccountDeactivationEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, sitesAndAdmins } = data
+
+  const siteSpecificInstructions = sitesAndAdmins
+    .map(({ siteName, adminEmails }) => {
+      if (adminEmails.length > 0) {
+        return `
+          <p><b>${siteName}</b></p>
+          <p>To regain access, please contact one of your site's administrators:</p>
+          <ul>${adminEmails.map((email) => `<li>${email}</li>`).join("")}</ul>
+        `
+      }
+      return `
+        <p><b>${siteName}</b></p>
+        <p>There are no administrators for this site. To be added back, please send an email to <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> with your line manager in CC for approval.</p>
+      `
+    })
+    .join("")
+
+  const emailBody = [
+    `<p>Hi ${recipientEmail},</p>`,
+    `<p>Your Isomer Studio account has been removed as you have not logged in for over ${MAX_DAYS_FROM_LAST_LOGIN} days. This is a standard security measure to protect your site data.</p>`,
+    `<p>Your content and previous contributions have been preserved. Your site(s) will continue to be accessible to visitors, and all your work remains intact.</p>`,
+    `<p>To regain access to your site(s), please follow the instructions below:</p>`,
+    siteSpecificInstructions,
+    `<p>Best,</p>`,
+    `<p>Isomer team</p>`,
+  ].join("")
+
+  return {
+    subject: `[Isomer Studio] Your account has been deactivated due to inactivity`,
+    body: emailBody,
+  }
+}
+
 type EmailTemplateFunction<
   T extends BaseEmailTemplateData = BaseEmailTemplateData,
 > = (data: T) => EmailTemplate
@@ -116,4 +155,6 @@ export const templates = {
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
   publishAlertSiteAdmin:
     publishAlertSiteAdminTemplate satisfies EmailTemplateFunction<PublishAlertSiteAdminEmailTemplateData>,
+  accountDeactivation:
+    accountDeactivationTemplate satisfies EmailTemplateFunction<AccountDeactivationEmailTemplateData>,
 } as const

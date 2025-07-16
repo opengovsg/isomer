@@ -1328,7 +1328,7 @@ describe("user.router", () => {
         const user = await setupUser({
           email: TEST_EMAIL,
           isDeleted: false,
-          hasLoggedIn: true,
+          lastLoginAt: MOCK_STORY_DATE,
         })
         await setupEditorPermissions({ userId: user.id, siteId })
 
@@ -2235,7 +2235,7 @@ describe("user.router", () => {
       const user = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
-        hasLoggedIn: true,
+        lastLoginAt: MOCK_STORY_DATE,
       })
       await setupEditorPermissions({ userId: user.id, siteId })
 
@@ -2258,7 +2258,7 @@ describe("user.router", () => {
       const user = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
-        hasLoggedIn: false,
+        lastLoginAt: null,
       })
       await db
         .updateTable("User")
@@ -2286,7 +2286,7 @@ describe("user.router", () => {
       const user = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
-        hasLoggedIn: false,
+        lastLoginAt: null,
       })
       await db
         .updateTable("User")
@@ -2313,7 +2313,7 @@ describe("user.router", () => {
       const user = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
-        hasLoggedIn: false,
+        lastLoginAt: null,
       })
       await db
         .updateTable("User")
