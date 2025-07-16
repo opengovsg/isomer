@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import get from "lodash/get"
-import { z } from "zod"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
 import {
@@ -20,6 +19,7 @@ import {
   getNestedFolderChildrenOutputSchema,
   getNestedFolderChildrenSchema,
   getParentSchema,
+  getRolesForSchema,
   listResourceSchema,
   moveSchema,
   searchOutputSchema,
@@ -33,6 +33,7 @@ import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
   definePermissionsForResource,
+  getResourcePermission,
   validateUserPermissionsForResource,
 } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
@@ -625,24 +626,13 @@ export const resourceRouter = router({
     }),
 
   getRolesFor: protectedProcedure
-    .input(
-      z.object({
-        resourceId: z.string().nullable(),
-        siteId: z.number(),
-      }),
-    )
-    .query(({ ctx, input: { resourceId, siteId } }) => {
-      const query = db
-        .selectFrom("ResourcePermission")
-        .where("userId", "=", ctx.user.id)
-        .where("siteId", "=", siteId)
-        .where("deletedAt", "is", null)
-
-      if (!resourceId) {
-        query.where("resourceId", "is", null)
-      } else query.where("resourceId", "=", resourceId)
-
-      return query.select(["role"]).execute()
+    .input(getRolesForSchema)
+    .query(async ({ ctx, input: { resourceId, siteId } }) => {
+      return await getResourcePermission({
+        userId: ctx.user.id,
+        siteId,
+        resourceId: resourceId ? String(resourceId) : null,
+      })
     }),
 
   getAncestryStack: protectedProcedure
