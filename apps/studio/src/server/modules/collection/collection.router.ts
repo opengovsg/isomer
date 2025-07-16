@@ -5,6 +5,7 @@ import { get, pick } from "lodash"
 import {
   createCollectionSchema,
   editLinkSchema,
+  getCollectionsSchema,
   readLinkSchema,
 } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
@@ -349,4 +350,21 @@ export const collectionRouter = router({
         })
       },
     ),
+  getCollections: protectedProcedure
+    .input(getCollectionsSchema)
+    .query(async ({ ctx, input: { siteId } }) => {
+      await validateUserPermissionsForResource({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      return db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "=", ResourceType.Collection)
+        .orderBy("Resource.title", "asc")
+        .selectAll()
+        .execute()
+    }),
 })
