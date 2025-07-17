@@ -22,6 +22,7 @@ import {
   publishResource,
   updateBlobById,
 } from "../resource/resource.service"
+import { validateUserPermissionsForSite } from "../site/site.service"
 import { defaultCollectionSelect } from "./collection.select"
 import {
   createCollectionLinkJson,
@@ -353,7 +354,8 @@ export const collectionRouter = router({
   getCollections: protectedProcedure
     .input(getCollectionsSchema)
     .query(async ({ ctx, input: { siteId } }) => {
-      await validateUserPermissionsForResource({
+      // will need permissions to fetch all collections for a site
+      await validateUserPermissionsForSite({
         siteId,
         action: "read",
         userId: ctx.user.id,
