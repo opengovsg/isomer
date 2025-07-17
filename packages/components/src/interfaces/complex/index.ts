@@ -27,7 +27,13 @@ export {
   DEFAULT_INFOBAR_VARIANT,
 } from "./Infobar"
 export { InfopicSchema, type InfopicProps } from "./Infopic"
-export { KeyStatisticsSchema, type KeyStatisticsProps } from "./KeyStatistics"
+export {
+  KeyStatisticsSchema,
+  type KeyStatisticsProps,
+  type NativeKeyStatisticsProps,
+  type DGSKeyStatisticsProps,
+  type DGSResponse,
+} from "./KeyStatistics"
 export { MapSchema, type MapProps } from "./Map"
 export { VideoSchema, type VideoProps } from "./Video"
 export {
