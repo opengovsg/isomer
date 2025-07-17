@@ -15,3 +15,33 @@ export type NativeSearchableTableProps = Static<
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }
+
+export const DGSSearchableTableSchema = Type.Object({
+  dgsResourceId: Type.String({
+    title: "DGS Resource ID",
+    description: "The DGS resource ID to fetch the data from",
+  }),
+  title: Type.String({
+    title: "Title",
+    description: "The title of the table",
+  }),
+  headers: Type.Array(
+    Type.Object({
+      label: Type.String({
+        title: "Label",
+        description: "The label of the header",
+      }),
+      key: Type.String({
+        title: "Key",
+        description: "The key of the header in DGS table",
+      }),
+    }),
+  ),
+})
+
+export type DGSSearchableTableProps = Static<
+  typeof DGSSearchableTableSchema
+> & {
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
+}
