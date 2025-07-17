@@ -50,6 +50,7 @@ export const useDGSData = ({
   const [data, setData] = useState<DGSResponse | null>(null)
 
   useEffect(() => {
+    // Note: we can add better error handling here - skipping now as this is a POC
     async function fetchData() {
       try {
         const response = await fetchDataFromDGS({
