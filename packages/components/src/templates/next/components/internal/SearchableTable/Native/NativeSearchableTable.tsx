@@ -1,6 +1,5 @@
 import type { NativeSearchableTableProps } from "~/interfaces"
-import { SearchableTableClient } from "../shared"
-import { HYPERLINK_EXCEL_FUNCTION } from "../shared/constants"
+import { HYPERLINK_EXCEL_FUNCTION, SearchableTableClient } from "../shared"
 
 export const NativeSearchableTable = ({
   items,
