@@ -3,13 +3,15 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 
-export const SearchableTableSchema = Type.Object({
+export const NativeSearchableTableSchema = Type.Object({
   title: Type.Optional(Type.String()),
   headers: Type.Array(Type.Union([Type.String(), Type.Number()])),
   items: Type.Array(Type.Array(Type.Union([Type.String(), Type.Number()]))),
 })
 
-export type SearchableTableProps = Static<typeof SearchableTableSchema> & {
+export type NativeSearchableTableProps = Static<
+  typeof NativeSearchableTableSchema
+> & {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }
