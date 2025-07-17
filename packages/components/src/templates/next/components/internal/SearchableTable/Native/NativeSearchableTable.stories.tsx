@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { NativeSearchableTableProps } from "~/interfaces"
-import SearchableTable from "./SearchableTable"
+import { NativeSearchableTable } from "./NativeSearchableTable"
 
 const meta: Meta<NativeSearchableTableProps> = {
   title: "Next/Internal Components/SearchableTable",
-  component: SearchableTable,
+  component: NativeSearchableTable,
   argTypes: {},
   parameters: {
     themes: {
@@ -14,7 +14,7 @@ const meta: Meta<NativeSearchableTableProps> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof SearchableTable>
+type Story = StoryObj<typeof NativeSearchableTable>
 
 export const Default: Story = {
   args: {

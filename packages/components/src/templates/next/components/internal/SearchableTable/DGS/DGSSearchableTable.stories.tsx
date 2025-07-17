@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { DGSSearchableTable } from "./SearchableTable"
+import { DGSSearchableTable } from "./DGSSearchableTable"
 
 const meta: Meta<typeof DGSSearchableTable> = {
   title: "Next/Components/DGSSearchableTable",

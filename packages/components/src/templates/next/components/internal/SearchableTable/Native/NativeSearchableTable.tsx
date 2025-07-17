@@ -2,7 +2,10 @@ import type { NativeSearchableTableProps } from "~/interfaces"
 import { SearchableTableClient } from "../shared"
 import { HYPERLINK_EXCEL_FUNCTION } from "./constants"
 
-const SearchableTable = ({ items, ...rest }: NativeSearchableTableProps) => {
+export const NativeSearchableTable = ({
+  items,
+  ...rest
+}: NativeSearchableTableProps) => {
   const cacheItems = items.map((item) => ({
     row: item,
     key: item
@@ -26,5 +29,3 @@ const SearchableTable = ({ items, ...rest }: NativeSearchableTableProps) => {
 
   return <SearchableTableClient items={cacheItems} {...rest} />
 }
-
-export default SearchableTable
