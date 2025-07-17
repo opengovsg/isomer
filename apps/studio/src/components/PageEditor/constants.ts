@@ -372,6 +372,7 @@ export const BLOCK_TO_META: Record<
     label: "Collection block",
     description: "Automatically display recent pages from a collection",
     usageText: "Link recent articles from your newsroom, research, or blog.",
+    imageSrc: "/assets/block-images/CollectionBlock.png",
   },
   [IMAGE_GALLERY_TYPE]: {
     // TODO: Add image source
@@ -438,6 +439,7 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "infopic",
       "infobar",
       "blockquote",
+      COLLECTION_BLOCK_TYPE,
     ],
   },
 ]

@@ -152,6 +152,19 @@ const SingleCard = ({
   )
 }
 
+const EmptyCollectionBlockSkeleton = () => {
+  return (
+    <section className={compoundStyles.container()}>
+      <div className={compoundStyles.headingContainer()}>
+        <h2 className={compoundStyles.headingTitle()}>
+          No collection selected
+        </h2>
+        <p>Choose a collection to display its content.</p>
+      </div>
+    </section>
+  )
+}
+
 export const CollectionBlock = ({
   site,
   LinkComponent,
@@ -164,6 +177,11 @@ export const CollectionBlock = ({
   shouldLazyLoad,
 }: CollectionBlockProps): JSX.Element => {
   const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
+
+  // This happens when no collection is selected yet on Studio when the user just added the block
+  if (collectionId === "") {
+    return <EmptyCollectionBlockSkeleton />
+  }
 
   const collectionParent = getCollectionParent({ site, collectionId })
 
