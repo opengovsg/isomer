@@ -1,13 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
-
-import type { DGSKeyStatisticsProps, DGSResponse } from "~/interfaces"
+import type { DGSKeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { ComponentContent } from "../../../internal/customCssClass"
 import { LinkButton } from "../../../internal/LinkButton"
-import { fetchDataFromDGS } from "./fetchDataFromDGS"
+import { useDGSData } from "./useDGSData"
 
 const MAX_ITEMS = 4
 type NoOfItemVariants = 1 | 2 | 3 | 4
@@ -74,30 +72,10 @@ export const DGSKeyStatistics = ({
   dgsRow,
   statistics,
 }: DGSKeyStatisticsProps) => {
-  // 👇👇👇 Can be moved to a shared hook
-  const [isLoading, setIsLoading] = useState(true)
-  const [isError, setIsError] = useState(false)
-  const [data, setData] = useState<DGSResponse | null>(null)
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetchDataFromDGS({
-          resourceId: dgsResourceId,
-          filters: {
-            [dgsRow.dgsFieldKey]: dgsRow.dgsFieldValue,
-          },
-        })
-        setData(response)
-      } catch {
-        setIsError(true)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    void fetchData()
-  }, [])
+  const { data, isLoading, isError } = useDGSData({
+    dgsResourceId,
+    dgsRow,
+  })
 
   const noOfItems = Math.min(MAX_ITEMS, statistics.length) as NoOfItemVariants
   const simplifiedLayout = getTailwindVariantLayout(layout)
