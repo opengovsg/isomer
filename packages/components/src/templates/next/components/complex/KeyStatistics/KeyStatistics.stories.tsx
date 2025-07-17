@@ -138,7 +138,7 @@ export const WithLinkAndLabel: Story = {
 
 export const DGS: Story = {
   args: {
-    variant: "dgs",
+    dataSource: "dgs",
     title: "DGS Stats: Victoria Junior College",
     dgsResourceId: "d_688b934f82c1059ed0a6993d2a829089",
     dgsRow: {

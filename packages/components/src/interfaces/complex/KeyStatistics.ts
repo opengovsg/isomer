@@ -59,7 +59,7 @@ const StatisticSchemaConfig = {
 
 export const NativeKeyStatisticsSchema = Type.Object(
   {
-    variant: Type.Optional(
+    dataSource: Type.Optional(
       // optional for backward compatibility
       Type.Literal(NATIVE_SEARCHABLE_TABLE_TYPE, {
         default: NATIVE_SEARCHABLE_TABLE_TYPE,
@@ -86,7 +86,7 @@ export const NativeKeyStatisticsSchema = Type.Object(
 
 export const DGSKeyStatisticsSchema = Type.Object(
   {
-    variant: Type.Literal(DGS_SEARCHABLE_TABLE_TYPE, {
+    dataSource: Type.Literal(DGS_SEARCHABLE_TABLE_TYPE, {
       default: DGS_SEARCHABLE_TABLE_TYPE,
     }),
     // 👇👇👇 This is used to identify the dataset ID in DGS
@@ -136,7 +136,7 @@ export const KeyStatisticsSchema = Type.Intersect(
       [
         NativeKeyStatisticsSchema,
         DGSKeyStatisticsSchema,
-        // We can add more variants and data sources here
+        // We can add more data sources here
       ],
       {
         format: ARRAY_RADIO_FORMAT,

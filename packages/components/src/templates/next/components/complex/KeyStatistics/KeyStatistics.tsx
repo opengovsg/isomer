@@ -3,7 +3,7 @@ import { DGSKeyStatistics } from "./DGS/DGSKeyStatistics"
 import { NativeKeyStatistics } from "./Native/NativeKeyStatistics"
 
 const KeyStatistics = (props: KeyStatisticsProps) => {
-  switch (props.variant) {
+  switch (props.dataSource) {
     case "dgs":
       return <DGSKeyStatistics {...props} />
     case "native":
