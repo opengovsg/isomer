@@ -5,5 +5,5 @@ export const NativeKeyStatistics = ({
   statistics,
   ...props
 }: NativeKeyStatisticsProps) => {
-  return <KeyStatisticsSkeleton {...props} statisticsData={statistics} />
+  return <KeyStatisticsSkeleton statisticsData={statistics} {...props} />
 }
