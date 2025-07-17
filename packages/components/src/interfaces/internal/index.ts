@@ -24,8 +24,8 @@ export type { NotificationProps, NotificationClientProps } from "./Notification"
 export type { PillProps } from "./Pill"
 export type { SearchProps } from "./Search"
 export {
-  NativeSearchableTableSchema,
-  type NativeSearchableTableProps,
+  SearchableTableSchema,
+  type SearchableTableProps,
 } from "./SearchableTable"
 export type { SearchSGInputBoxProps } from "./SearchSGInputBox"
 export type { SidePaneProps } from "./SidePane"

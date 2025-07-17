@@ -5,7 +5,7 @@ import type { CollectionVariant } from "./variants"
 import {
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
-  NativeSearchableTableSchema,
+  SearchableTableSchema,
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
 import { REF_HREF_PATTERN } from "~/utils/validation"
@@ -140,7 +140,7 @@ export const ContentPagePageSchema = Type.Composite([
 
 export const DatabasePagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,
-  database: NativeSearchableTableSchema,
+  database: SearchableTableSchema,
 })
 
 export const HomePagePageSchema = Type.Object({})
