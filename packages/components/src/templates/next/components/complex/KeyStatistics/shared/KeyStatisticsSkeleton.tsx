@@ -1,4 +1,4 @@
-import type { KeyStatisticsProps } from "~/interfaces"
+import type { KeyStatisticsSkeletonProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { ComponentContent } from "../../../internal/customCssClass"
@@ -60,14 +60,18 @@ const compoundStyles = createKeyStatisticsStyles()
 export const KeyStatisticsSkeleton = ({
   id,
   title,
-  statistics,
   url,
   label,
   layout,
   site,
   LinkComponent,
-}: KeyStatisticsProps) => {
-  const noOfItems = Math.min(MAX_ITEMS, statistics.length) as NoOfItemVariants
+  statisticsData,
+}: KeyStatisticsSkeletonProps) => {
+  const noOfItems = Math.min(
+    MAX_ITEMS,
+    statisticsData.length,
+  ) as NoOfItemVariants
+
   const simplifiedLayout = getTailwindVariantLayout(layout)
 
   return (
@@ -78,7 +82,7 @@ export const KeyStatisticsSkeleton = ({
       <h2 className={compoundStyles.title()}>{title}</h2>
 
       <div className={compoundStyles.statistics()}>
-        {statistics.slice(0, MAX_ITEMS).map(({ label, value }, index) => (
+        {statisticsData.slice(0, MAX_ITEMS).map(({ label, value }, index) => (
           <div
             key={index}
             className={compoundStyles.itemContainer({ noOfItems })}

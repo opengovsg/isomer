@@ -166,6 +166,16 @@ export type KeyStatisticsProps = Static<typeof KeyStatisticsSchema> & {
   LinkComponent?: LinkComponentType
 }
 
+export type KeyStatisticsSkeletonProps = Omit<
+  KeyStatisticsProps,
+  "statistics"
+> & {
+  statisticsData: {
+    label: string
+    value: string
+  }[]
+}
+
 // TODO: to move to somewhere else as shared interface
 const _DGSResponseSchema = Type.Object({
   result: Type.Object({
