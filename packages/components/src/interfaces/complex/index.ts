@@ -33,6 +33,8 @@ export {
   type NativeKeyStatisticsProps,
   type DGSKeyStatisticsProps,
   type KeyStatisticsSkeletonProps,
+  type DGSSuccessResponse,
+  type DGSFailureResponse,
   type DGSResponse,
 } from "./KeyStatistics"
 export { MapSchema, type MapProps } from "./Map"

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-import type { DGSResponse } from "~/interfaces"
+import type { DGSResponse, DGSSuccessResponse } from "~/interfaces"
 
 const BASE_URL = "https://data.gov.sg/api/action/datastore_search"
 
@@ -37,7 +37,7 @@ interface UseDGSDataProps {
   }
 }
 interface UseDGSDataReturn {
-  row: DGSResponse["result"]["records"][0] | undefined
+  row: DGSSuccessResponse["result"]["records"][0] | undefined
   isLoading: boolean
   isError: boolean
 }
@@ -59,7 +59,11 @@ export const useDGSData = ({
             [dgsRow.dgsFieldKey]: dgsRow.dgsFieldValue,
           },
         })
-        setData(response)
+        if (response.success) {
+          setData(response)
+        } else {
+          setIsError(true)
+        }
       } catch {
         setIsError(true)
       } finally {
@@ -71,7 +75,7 @@ export const useDGSData = ({
   }, [dgsResourceId, dgsRow.dgsFieldKey, dgsRow.dgsFieldValue])
 
   // Assumption: we only have one row. If more than one, we will choose the first one
-  const row = data?.result.records[0]
+  const row = data?.success ? data.result.records[0] : undefined
 
   return { row, isLoading, isError }
 }
