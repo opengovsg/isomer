@@ -72,7 +72,7 @@ export const DGSKeyStatistics = ({
   dgsRow,
   statistics,
 }: DGSKeyStatisticsProps) => {
-  const { data, isLoading, isError } = useDGSData({
+  const { row, isLoading, isError } = useDGSData({
     dgsResourceId,
     dgsRow,
   })
@@ -81,12 +81,9 @@ export const DGSKeyStatistics = ({
   const simplifiedLayout = getTailwindVariantLayout(layout)
 
   // TODO: better handling of these non-success states
-  if (isLoading || isError || data === null) {
+  if (isLoading || isError || !row) {
     return <div>Loading...</div>
   }
-
-  // Assumption: we only have one row. If more than one, we will choose the first one
-  const row = data.result.records[0]
 
   return (
     <section

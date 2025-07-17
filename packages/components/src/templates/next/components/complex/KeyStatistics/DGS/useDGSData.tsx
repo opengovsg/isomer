@@ -36,7 +36,15 @@ interface UseDGSDataProps {
     dgsFieldValue: string
   }
 }
-export const useDGSData = ({ dgsResourceId, dgsRow }: UseDGSDataProps) => {
+interface UseDGSDataReturn {
+  row: DGSResponse["result"]["records"][0] | undefined
+  isLoading: boolean
+  isError: boolean
+}
+export const useDGSData = ({
+  dgsResourceId,
+  dgsRow,
+}: UseDGSDataProps): UseDGSDataReturn => {
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [data, setData] = useState<DGSResponse | null>(null)
@@ -61,5 +69,8 @@ export const useDGSData = ({ dgsResourceId, dgsRow }: UseDGSDataProps) => {
     void fetchData()
   }, [])
 
-  return { data, isLoading, isError }
+  // Assumption: we only have one row. If more than one, we will choose the first one
+  const row = data?.result.records[0]
+
+  return { row, isLoading, isError }
 }
