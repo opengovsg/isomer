@@ -22,7 +22,7 @@ const meta: Meta<typeof Database> = {
 export default meta
 type Story = StoryObj<typeof Database>
 
-const generateNativeSearchableTableArgs = ({
+const generateArgs = ({
   database,
   content = [],
 }: {
@@ -141,7 +141,8 @@ const generateNativeSearchableTableArgs = ({
 }
 
 export const Default: Story = {
-  args: generateNativeSearchableTableArgs({
+  name: "Native Searchable Table",
+  args: generateArgs({
     database: {
       title: "The Cancer Drug List (CDL)",
       headers: [
@@ -658,7 +659,7 @@ export const Default: Story = {
 }
 
 export const NoTitle: Story = {
-  args: generateNativeSearchableTableArgs({
+  args: generateArgs({
     database: {
       headers: [
         "Header",
@@ -678,7 +679,7 @@ export const NoTitle: Story = {
 }
 
 export const Empty: Story = {
-  args: generateNativeSearchableTableArgs({
+  args: generateArgs({
     database: {
       title: "The Cancer Drug List (CDL)",
       headers: [
@@ -699,7 +700,7 @@ export const Empty: Story = {
 }
 
 export const NoSearchResults: Story = {
-  args: generateNativeSearchableTableArgs({
+  args: generateArgs({
     database: {
       title: "The Cancer Drug List (CDL)",
       headers: [
@@ -917,4 +918,29 @@ export const NoSearchResults: Story = {
     })
     await userEvent.type(searchElem, "some whacky search term")
   },
+}
+
+export const DGSSearchableTable: Story = {
+  name: "DGS Searchable Table",
+  args: generateArgs({
+    database: {
+      title: "Sample DGS Table",
+      dgsResourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+      headers: [
+        { label: "Year", key: "year" },
+        { label: "University", key: "university" },
+        { label: "School", key: "school" },
+        { label: "Degree", key: "degree" },
+        { label: "Monthly Median", key: "gross_monthly_median" },
+        {
+          label: "Monthly 25th Percentile",
+          key: "gross_mthly_25_percentile",
+        },
+        {
+          label: "Monthly 75th Percentile",
+          key: "gross_mthly_75_percentile",
+        },
+      ],
+    },
+  }),
 }
