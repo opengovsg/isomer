@@ -57,67 +57,77 @@ const StatisticSchemaConfig = {
   maxItems: 4,
 }
 
-export const NativeKeyStatisticsSchema = Type.Object({
-  variant: Type.Optional(
-    // optional for backward compatibility
-    Type.Literal(NATIVE_SEARCHABLE_TABLE_TYPE, {
-      default: NATIVE_SEARCHABLE_TABLE_TYPE,
-    }),
-  ),
-  statistics: Type.Array(
-    Type.Composite([
-      StatisticsSchema,
-      Type.Object({
-        value: Type.String({
-          title: "Number",
-          description: "Keep it succinct. E.g., 3.3%, $12M",
-          maxLength: 7,
-        }),
+export const NativeKeyStatisticsSchema = Type.Object(
+  {
+    variant: Type.Optional(
+      // optional for backward compatibility
+      Type.Literal(NATIVE_SEARCHABLE_TABLE_TYPE, {
+        default: NATIVE_SEARCHABLE_TABLE_TYPE,
       }),
-    ]),
-    StatisticSchemaConfig,
-  ),
-})
+    ),
+    statistics: Type.Array(
+      Type.Composite([
+        StatisticsSchema,
+        Type.Object({
+          value: Type.String({
+            title: "Number",
+            description: "Keep it succinct. E.g., 3.3%, $12M",
+            maxLength: 7,
+          }),
+        }),
+      ]),
+      StatisticSchemaConfig,
+    ),
+  },
+  {
+    title: "Native",
+  },
+)
 
-export const DGSKeyStatisticsSchema = Type.Object({
-  variant: Type.Literal(DGS_SEARCHABLE_TABLE_TYPE, {
-    default: DGS_SEARCHABLE_TABLE_TYPE,
-  }),
-  // 👇👇👇 This is used to identify the dataset ID in DGS
-  dgsResourceId: Type.String({
-    title: "DGS Resource ID",
-    description: "The DGS resource ID to fetch the data from",
-  }),
-  // 👇👇👇 This is used to identify which row to fetch the data from
-  // Needed because while DGS currently has a "_id" field, it's non-deterministic,
-  // which will change when new CSV files are uploaded.
-  // By putting the column and value in the same object, we create an "artificial" static identifier
-  // Limitation: This assumes that the column and value are unique for each row,
-  // which might not be the case. However, we will just fetch the first matching row.
-  dgsRow: Type.Object({
-    dgsFieldKey: Type.String({
-      title: "Key",
-      description: "The key of the header in DGS table",
+export const DGSKeyStatisticsSchema = Type.Object(
+  {
+    variant: Type.Literal(DGS_SEARCHABLE_TABLE_TYPE, {
+      default: DGS_SEARCHABLE_TABLE_TYPE,
     }),
-    dgsFieldValue: Type.String({
-      title: "Value",
-      description: "The value of that cell in that column",
+    // 👇👇👇 This is used to identify the dataset ID in DGS
+    dgsResourceId: Type.String({
+      title: "DGS Resource ID",
+      description: "The DGS resource ID to fetch the data from",
     }),
-  }),
-  statistics: Type.Array(
-    Type.Composite([
-      StatisticsSchema,
-      Type.Object({
-        // 👇👇👇 This tells us which column to fetch the data from
-        dgsFieldKey: Type.String({
-          title: "Key",
-          description: "The key of the header in DGS table",
-        }),
+    // 👇👇👇 This is used to identify which row to fetch the data from
+    // Needed because while DGS currently has a "_id" field, it's non-deterministic,
+    // which will change when new CSV files are uploaded.
+    // By putting the column and value in the same object, we create an "artificial" static identifier
+    // Limitation: This assumes that the column and value are unique for each row,
+    // which might not be the case. However, we will just fetch the first matching row.
+    dgsRow: Type.Object({
+      dgsFieldKey: Type.String({
+        title: "Key",
+        description: "The key of the header in DGS table",
       }),
-    ]),
-    StatisticSchemaConfig,
-  ),
-})
+      dgsFieldValue: Type.String({
+        title: "Value",
+        description: "The value of that cell in that column",
+      }),
+    }),
+    statistics: Type.Array(
+      Type.Composite([
+        StatisticsSchema,
+        Type.Object({
+          // 👇👇👇 This tells us which column to fetch the data from
+          dgsFieldKey: Type.String({
+            title: "Key",
+            description: "The key of the header in DGS table",
+          }),
+        }),
+      ]),
+      StatisticSchemaConfig,
+    ),
+  },
+  {
+    title: "DGS",
+  },
+)
 
 export const KeyStatisticsSchema = Type.Intersect(
   [
@@ -135,12 +145,6 @@ export const KeyStatisticsSchema = Type.Intersect(
     ),
   ],
   {
-    groups: [
-      {
-        label: "Add a call-to-action",
-        fields: ["label", "url"],
-      },
-    ],
     title: "KeyStatistics component",
     description: "A component that displays KeyStatistics",
   },
