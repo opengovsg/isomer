@@ -9,9 +9,11 @@ export const NATIVE_SEARCHABLE_TABLE_TYPE = "native"
 export const DGS_SEARCHABLE_TABLE_TYPE = "dgs"
 
 export const NativeSearchableTableSchema = Type.Object({
-  variant: Type.Literal(NATIVE_SEARCHABLE_TABLE_TYPE, {
-    default: NATIVE_SEARCHABLE_TABLE_TYPE,
-  }),
+  variant: Type.Optional(
+    Type.Literal(NATIVE_SEARCHABLE_TABLE_TYPE, {
+      default: NATIVE_SEARCHABLE_TABLE_TYPE,
+    }),
+  ),
   title: Type.Optional(Type.String()),
   headers: Type.Array(Type.Union([Type.String(), Type.Number()])),
   items: Type.Array(Type.Array(Type.Union([Type.String(), Type.Number()]))),
