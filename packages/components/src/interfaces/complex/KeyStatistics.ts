@@ -124,7 +124,7 @@ export const DGSKeyStatisticsSchema = Type.Object(
     ),
   },
   {
-    title: "DGS",
+    title: "data.gov.sg",
   },
 )
 
