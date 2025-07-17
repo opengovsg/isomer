@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
-import type { SearchableTableProps } from "~/interfaces"
+import type { NativeSearchableTableProps } from "~/interfaces"
 import SearchableTable from "./SearchableTable"
 
-const meta: Meta<SearchableTableProps> = {
+const meta: Meta<NativeSearchableTableProps> = {
   title: "Next/Internal Components/SearchableTable",
   component: SearchableTable,
   argTypes: {},
