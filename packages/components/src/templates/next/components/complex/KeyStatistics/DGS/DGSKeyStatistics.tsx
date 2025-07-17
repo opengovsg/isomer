@@ -24,10 +24,11 @@ export const DGSKeyStatistics = ({
 
   const statisticsData: KeyStatisticsSkeletonProps["statisticsData"] =
     props.statistics.map(({ label, dgsFieldKey }) => {
-      return {
-        label,
-        value: row[dgsFieldKey] as string,
-      }
+      const value = row[
+        dgsFieldKey
+      ] as KeyStatisticsSkeletonProps["statisticsData"][number]["value"]
+
+      return { label, value }
     })
 
   return <KeyStatisticsSkeleton {...props} statisticsData={statisticsData} />

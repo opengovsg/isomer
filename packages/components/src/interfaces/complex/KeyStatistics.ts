@@ -172,7 +172,7 @@ export type KeyStatisticsSkeletonProps = Omit<
 > & {
   statisticsData: {
     label: string
-    value: string
+    value: string | undefined // undefined if the value is not available
   }[]
 }
 

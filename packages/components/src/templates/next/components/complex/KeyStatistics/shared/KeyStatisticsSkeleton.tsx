@@ -88,7 +88,7 @@ export const KeyStatisticsSkeleton = ({
             className={compoundStyles.itemContainer({ noOfItems })}
           >
             <h3 className={compoundStyles.itemValue()}>
-              {value.slice(0, MAX_CHAR_LIMIT)}
+              {value?.slice(0, MAX_CHAR_LIMIT) ?? "N/A"}
             </h3>
 
             <p className={compoundStyles.itemLabel()}>{label}</p>
