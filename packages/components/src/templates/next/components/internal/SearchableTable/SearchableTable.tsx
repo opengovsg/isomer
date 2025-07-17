@@ -1,30 +1,43 @@
-import type { SearchableTableProps } from "~/interfaces"
-import { HYPERLINK_EXCEL_FUNCTION } from "./constants"
-import { SearchableTableClient } from "./SearchableTableClient"
+import type {
+  DGSSearchableTableProps,
+  NativeSearchableTableProps,
+  SearchableTableProps,
+} from "~/interfaces"
+import {
+  DGS_SEARCHABLE_TABLE_TYPE,
+  NATIVE_SEARCHABLE_TABLE_TYPE,
+} from "~/interfaces"
+import { DGSSearchableTable } from "./DGS"
+import { NativeSearchableTable } from "./Native"
 
-const SearchableTable = ({ items, ...rest }: SearchableTableProps) => {
-  const cacheItems = items.map((item) => ({
-    row: item,
-    key: item
-      .map((content) => {
-        if (
-          typeof content === "string" &&
-          content.startsWith(HYPERLINK_EXCEL_FUNCTION) &&
-          content.endsWith(")")
-        ) {
-          const link = content.slice(HYPERLINK_EXCEL_FUNCTION.length, -1)
-          const [linkHref, linkText] = link.split(",")
-
-          return linkText || linkHref
-        }
-
-        return content
-      })
-      .join(" ")
-      .toLowerCase(),
-  }))
-
-  return <SearchableTableClient items={cacheItems} {...rest} />
+// Type guards for proper type narrowing
+const isNativeSearchableTable = (
+  props: SearchableTableProps,
+): props is NativeSearchableTableProps => {
+  // check for undefined type is for backward compatibility
+  // we can alternatively choose to do a patch on existing content to add the type field
+  return (
+    props.variant === NATIVE_SEARCHABLE_TABLE_TYPE ||
+    props.variant === undefined
+  )
 }
 
-export default SearchableTable
+const isDGSSearchableTable = (
+  props: SearchableTableProps,
+): props is DGSSearchableTableProps => {
+  return props.variant === DGS_SEARCHABLE_TABLE_TYPE
+}
+
+export const SearchableTable = (props: SearchableTableProps) => {
+  if (isNativeSearchableTable(props)) {
+    return <NativeSearchableTable {...props} />
+  }
+
+  if (isDGSSearchableTable(props)) {
+    return <DGSSearchableTable {...props} />
+  }
+
+  // This should never happen with proper typing, but provides a fallback
+  const _exhaustiveCheck: never = props
+  return null
+}
