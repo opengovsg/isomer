@@ -924,6 +924,7 @@ export const DGSSearchableTable: Story = {
   name: "DGS Searchable Table",
   args: generateArgs({
     database: {
+      type: "dgs",
       title: "Sample DGS Table",
       dgsResourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
       headers: [

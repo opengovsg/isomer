@@ -3,7 +3,12 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 
+// TODO: maybe also move this outside of this file as a shared interface
+export const NATIVE_SEARCHABLE_TABLE_TYPE = "native"
+export const DGS_SEARCHABLE_TABLE_TYPE = "dgs"
+
 export const NativeSearchableTableSchema = Type.Object({
+  type: Type.Optional(Type.Literal(NATIVE_SEARCHABLE_TABLE_TYPE)), // optional for backward compatibility
   title: Type.Optional(Type.String()),
   headers: Type.Array(Type.Union([Type.String(), Type.Number()])),
   items: Type.Array(Type.Array(Type.Union([Type.String(), Type.Number()]))),
@@ -17,6 +22,7 @@ export type NativeSearchableTableProps = Static<
 }
 
 export const DGSSearchableTableSchema = Type.Object({
+  type: Type.Literal(DGS_SEARCHABLE_TABLE_TYPE),
   dgsResourceId: Type.String({
     title: "DGS Resource ID",
     description: "The DGS resource ID to fetch the data from",
