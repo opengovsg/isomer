@@ -9,6 +9,13 @@ export const NativeSearchableTableSchema = Type.Object({
   items: Type.Array(Type.Array(Type.Union([Type.String(), Type.Number()]))),
 })
 
+export type NativeSearchableTableProps = Static<
+  typeof NativeSearchableTableSchema
+> & {
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
+}
+
 export const DGSSearchableTableSchema = Type.Object({
   dgsResourceId: Type.String({
     title: "DGS Resource ID",
@@ -32,12 +39,18 @@ export const DGSSearchableTableSchema = Type.Object({
   ),
 })
 
+export type DGSSearchableTableProps = Static<
+  typeof DGSSearchableTableSchema
+> & {
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
+}
+
 export const SearchableTableSchema = Type.Union([
   NativeSearchableTableSchema,
   DGSSearchableTableSchema,
 ])
 
-export type SearchableTableProps = Static<typeof SearchableTableSchema> & {
-  site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
-}
+export type SearchableTableProps =
+  | NativeSearchableTableProps
+  | DGSSearchableTableProps
