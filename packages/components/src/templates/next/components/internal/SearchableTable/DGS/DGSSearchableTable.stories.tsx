@@ -1,15 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
-import { withChromaticModes } from "@isomer/storybook-config"
-
+import type { DGSSearchableTableProps } from "~/interfaces"
 import { DGSSearchableTable } from "./DGSSearchableTable"
 
-const meta: Meta<typeof DGSSearchableTable> = {
-  title: "Next/Components/DGSSearchableTable",
+const meta: Meta<DGSSearchableTableProps> = {
+  title: "Next/Internal Components/SearchableTable/DGS",
   component: DGSSearchableTable,
+  argTypes: {},
   parameters: {
-    layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    themes: {
+      themeOverride: "Isomer Next",
+    },
   },
   args: {
     title: "Sample DGS Table",
