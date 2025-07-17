@@ -7,7 +7,6 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
-import { ARRAY_RADIO_FORMAT } from "../format"
 
 // TODO: maybe also move this outside of this file as a shared interface
 export const NATIVE_SEARCHABLE_TABLE_TYPE = "native"
@@ -139,7 +138,6 @@ export const KeyStatisticsSchema = Type.Intersect(
         // We can add more data sources here
       ],
       {
-        format: ARRAY_RADIO_FORMAT,
         title: "Data Source", // TODO: placeholder, to decide on the name of the field
       },
     ),
