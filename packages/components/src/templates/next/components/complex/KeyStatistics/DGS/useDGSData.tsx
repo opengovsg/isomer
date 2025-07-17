@@ -67,7 +67,7 @@ export const useDGSData = ({
     }
 
     void fetchData()
-  }, [])
+  }, [dgsResourceId, dgsRow.dgsFieldKey, dgsRow.dgsFieldValue])
 
   // Assumption: we only have one row. If more than one, we will choose the first one
   const row = data?.result.records[0]
