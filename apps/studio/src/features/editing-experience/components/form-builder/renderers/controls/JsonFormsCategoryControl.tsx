@@ -16,7 +16,7 @@ import { trpc } from "~/utils/trpc"
 import { JsonFormsTextControl } from "./JsonFormsTextControl"
 
 export const jsonFormsCategoryControlTester: RankedTester = rankWith(
-  JSON_FORMS_RANKING.RefControl,
+  JSON_FORMS_RANKING.AnyOfControl,
   and(schemaMatches((schema) => schema.format === "category")),
 )
 
