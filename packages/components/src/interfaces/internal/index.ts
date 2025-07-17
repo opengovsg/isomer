@@ -28,6 +28,7 @@ export {
   type SearchableTableProps,
   type NativeSearchableTableProps,
   type DGSSearchableTableProps,
+  type DGSResponse,
 } from "./SearchableTable"
 export type { SearchSGInputBoxProps } from "./SearchSGInputBox"
 export type { SidePaneProps } from "./SidePane"
