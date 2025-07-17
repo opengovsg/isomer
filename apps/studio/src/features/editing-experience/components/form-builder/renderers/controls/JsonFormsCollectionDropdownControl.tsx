@@ -9,6 +9,7 @@ import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { getReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 
 export const jsonFormsCollectionDropdownControlTester: RankedTester = rankWith(
@@ -39,7 +40,10 @@ function SuspendableJsonFormsCollectionDropdownControl({
       items={collections.map((collection) => {
         return {
           label: collection.title,
-          value: `[resource:${siteId}:${collection.id}]`,
+          value: getReferenceLink({
+            siteId: siteId.toString(),
+            resourceId: collection.id.toString(),
+          }),
         }
       })}
       isClearable={false}
