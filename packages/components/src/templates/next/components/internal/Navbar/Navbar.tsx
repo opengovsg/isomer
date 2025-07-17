@@ -40,7 +40,7 @@ export const Navbar = ({
         alt: logoAlt,
         width: "100%",
         className:
-          "max-h-[48px] max-w-[128px] object-contain object-center lg:mr-3",
+          "max-h-[48px] max-w-[128px] object-contain object-left lg:mr-3",
         assetsBaseUrl: site.assetsBaseUrl,
         lazyLoading: false, // will always be above the fold
       }}
