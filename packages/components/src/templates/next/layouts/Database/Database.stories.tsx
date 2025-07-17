@@ -22,7 +22,7 @@ const meta: Meta<typeof Database> = {
 export default meta
 type Story = StoryObj<typeof Database>
 
-const generateArgs = ({
+const generateNativeSearchableTableArgs = ({
   database,
   content = [],
 }: {
@@ -141,7 +141,7 @@ const generateArgs = ({
 }
 
 export const Default: Story = {
-  args: generateArgs({
+  args: generateNativeSearchableTableArgs({
     database: {
       title: "The Cancer Drug List (CDL)",
       headers: [
@@ -658,7 +658,7 @@ export const Default: Story = {
 }
 
 export const NoTitle: Story = {
-  args: generateArgs({
+  args: generateNativeSearchableTableArgs({
     database: {
       headers: [
         "Header",
@@ -678,7 +678,7 @@ export const NoTitle: Story = {
 }
 
 export const Empty: Story = {
-  args: generateArgs({
+  args: generateNativeSearchableTableArgs({
     database: {
       title: "The Cancer Drug List (CDL)",
       headers: [
@@ -699,7 +699,7 @@ export const Empty: Story = {
 }
 
 export const NoSearchResults: Story = {
-  args: generateArgs({
+  args: generateNativeSearchableTableArgs({
     database: {
       title: "The Cancer Drug List (CDL)",
       headers: [
