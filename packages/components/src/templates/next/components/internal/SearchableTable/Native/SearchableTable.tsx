@@ -1,6 +1,6 @@
 import type { NativeSearchableTableProps } from "~/interfaces"
+import { SearchableTableClient } from "../shared"
 import { HYPERLINK_EXCEL_FUNCTION } from "./constants"
-import { SearchableTableClient } from "./SearchableTableClient"
 
 const SearchableTable = ({ items, ...rest }: NativeSearchableTableProps) => {
   const cacheItems = items.map((item) => ({

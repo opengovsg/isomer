@@ -7,8 +7,11 @@ import { tv } from "~/lib/tv"
 import BaseParagraph from "../../BaseParagraph"
 import { PaginationControls } from "../../PaginationControls"
 import { SearchField } from "../../Search"
+import {
+  MAX_NUMBER_OF_COLUMNS,
+  PAGINATION_MAX_ITEMS,
+} from "../Native/constants"
 import { CellContent } from "./CellContent"
-import { MAX_NUMBER_OF_COLUMNS, PAGINATION_MAX_ITEMS } from "./constants"
 import { getFilteredItems } from "./getFilteredItems"
 import { getPaginatedItems } from "./getPaginatedItems"
 

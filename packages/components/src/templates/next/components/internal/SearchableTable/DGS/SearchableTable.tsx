@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react"
 
-import type { SearchableTableClientProps } from "../Native/SearchableTableClient"
+import type { SearchableTableClientProps } from "../shared"
 import type { DGSResponse, DGSSearchableTableProps } from "~/interfaces"
-import { SearchableTableClient } from "../Native/SearchableTableClient"
+import { SearchableTableClient } from "../shared"
 import { fetchDataFromDGS } from "./fetchDataFromDGS"
 
 export const DGSSearchableTable = ({
