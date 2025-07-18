@@ -7,6 +7,7 @@ const KeyStatistics = ({ dataSource, ...rest }: KeyStatisticsProps) => {
     return <KeyStatisticsSkeleton dataSource={dataSource} {...rest} />
   }
 
+  // To use a switch statement here if there are more data sources
   return <DGSKeyStatistics dataSource={dataSource} {...rest} />
 }
 
