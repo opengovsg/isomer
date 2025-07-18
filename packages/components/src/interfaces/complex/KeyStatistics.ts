@@ -33,12 +33,6 @@ const DGSDataSourceSchema = Type.Object({
       description: "The value to display for the field",
     }),
   }),
-  // 👇👇👇 We use this array as reference on when we should a field pick their data from DGS
-  mapping: Type.Tuple([Type.Literal("statistics.value")], {
-    title: "Mapping",
-    description: "The mapping of field keys to labels",
-    format: "hidden", // this is a hidden field for component and not user-editable
-  }),
 })
 
 const DataSourceSchema = Type.Union([

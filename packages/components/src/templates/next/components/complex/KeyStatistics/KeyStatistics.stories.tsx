@@ -145,7 +145,6 @@ export const DGS: Story = {
         fieldKey: "school_name",
         fieldValue: "VICTORIA JUNIOR COLLEGE",
       },
-      mapping: ["statistics.value"],
     },
     title: "DGS Stats: Victoria Junior College",
     statistics: [
