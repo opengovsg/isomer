@@ -30,20 +30,20 @@ export const fetchDataFromDGS = async ({
 }
 
 interface UseDGSDataProps {
-  dgsResourceId: string
-  dgsRow: {
-    dgsFieldKey: string
-    dgsFieldValue: string
+  resourceId: string
+  row: {
+    fieldKey: string
+    fieldValue: string
   }
 }
 interface UseDGSDataReturn {
-  row: DGSSuccessResponse["result"]["records"][0] | undefined
+  record: DGSSuccessResponse["result"]["records"][0] | undefined
   isLoading: boolean
   isError: boolean
 }
 export const useDGSData = ({
-  dgsResourceId,
-  dgsRow,
+  resourceId,
+  row,
 }: UseDGSDataProps): UseDGSDataReturn => {
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
@@ -54,9 +54,9 @@ export const useDGSData = ({
     async function fetchData() {
       try {
         const response = await fetchDataFromDGS({
-          resourceId: dgsResourceId,
+          resourceId,
           filters: {
-            [dgsRow.dgsFieldKey]: dgsRow.dgsFieldValue,
+            [row.fieldKey]: row.fieldValue,
           },
         })
         if (response.success) {
@@ -72,10 +72,10 @@ export const useDGSData = ({
     }
 
     void fetchData()
-  }, [dgsResourceId, dgsRow.dgsFieldKey, dgsRow.dgsFieldValue])
+  }, [resourceId, row.fieldKey, row.fieldValue])
 
   // Assumption: we only have one row. If more than one, we will choose the first one
-  const row = data?.success ? data.result.records[0] : undefined
+  const record = data?.success ? data.result.records[0] : undefined
 
-  return { row, isLoading, isError }
+  return { record, isLoading, isError }
 }

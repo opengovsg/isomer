@@ -59,8 +59,6 @@ const DataSourceSchema = Type.Object({
   ),
 })
 
-export type DGSDataSourceProps = Static<typeof DGSDataSourceSchema>
-
 export const KeyStatisticsSchema = Type.Object(
   {
     type: Type.Literal("keystatistics", { default: "keystatistics" }),
@@ -122,6 +120,16 @@ export const KeyStatisticsSchema = Type.Object(
     description: "A component that displays KeyStatistics",
   },
 )
+
+export type DGSKeyStatisticsProps = Omit<
+  Static<typeof KeyStatisticsSchema>,
+  "dataSource"
+> & {
+  dataSource: Static<typeof DGSDataSourceSchema>
+  layout: IsomerPageLayoutType
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
+}
 
 export type KeyStatisticsProps = Static<typeof KeyStatisticsSchema> & {
   layout: IsomerPageLayoutType
