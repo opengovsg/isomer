@@ -28,8 +28,6 @@ export {
 } from "./Infobar"
 export { InfopicSchema, type InfopicProps } from "./Infopic"
 export {
-  NATIVE_DATA_SOURCE,
-  DGS_DATA_SOURCE,
   KeyStatisticsSchema,
   type DGSKeyStatisticsProps,
   type KeyStatisticsProps,

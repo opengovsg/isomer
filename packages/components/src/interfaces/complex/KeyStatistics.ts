@@ -8,12 +8,7 @@ import type {
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
-export const NATIVE_DATA_SOURCE = "native"
 export const DGS_DATA_SOURCE = "dgs"
-
-const NativeDataSourceSchema = Type.Object({
-  type: Type.Literal(NATIVE_DATA_SOURCE, { default: NATIVE_DATA_SOURCE }),
-})
 
 const DGSDataSourceSchema = Type.Object({
   type: Type.Literal(DGS_DATA_SOURCE, { default: DGS_DATA_SOURCE }),
@@ -46,23 +41,15 @@ const DGSDataSourceSchema = Type.Object({
   }),
 })
 
-const DataSourceSchema = Type.Object({
-  dataSource: Type.Union(
-    [
-      NativeDataSourceSchema,
-      DGSDataSourceSchema,
-      // TODO: Add other data sources here
-    ],
-    {
-      default: NativeDataSourceSchema,
-    },
-  ),
-})
+const DataSourceSchema = Type.Union([
+  DGSDataSourceSchema,
+  // TODO: Add other data sources here
+])
 
 export const KeyStatisticsSchema = Type.Object(
   {
     type: Type.Literal("keystatistics", { default: "keystatistics" }),
-    ...DataSourceSchema.properties,
+    dataSource: Type.Optional(DataSourceSchema),
     id: Type.Optional(
       Type.String({
         title: "Anchor ID",
