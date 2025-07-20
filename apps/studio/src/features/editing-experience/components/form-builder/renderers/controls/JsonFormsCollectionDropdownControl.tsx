@@ -13,7 +13,7 @@ import { getReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 
 export const jsonFormsCollectionDropdownControlTester: RankedTester = rankWith(
-  JSON_FORMS_RANKING.AnyOfControl,
+  JSON_FORMS_RANKING.CollectionDropdownControl,
   and(schemaMatches((schema) => schema.format === COLLECTION_DROPDOWN_FORMAT)),
 )
 
