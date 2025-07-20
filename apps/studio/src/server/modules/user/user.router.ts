@@ -26,7 +26,7 @@ import {
   updateUserOutputSchema,
 } from "~/schemas/user"
 import { protectedProcedure, router } from "../../trpc"
-import { db, RoleType, sql } from "../database"
+import { db, RoleType } from "../database"
 import {
   getSitePermissions,
   updateUserSitewidePermission,
