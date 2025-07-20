@@ -234,8 +234,7 @@ export const userRouter = router({
       })
 
       return getUsersQuery({ siteId, adminType })
-        .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
-        .orderBy("ActiveUser.createdAt", "desc")
+        .orderBy("ActiveUser.email", "asc")
         .select((eb) => [
           "ActiveUser.id",
           "ActiveUser.email",
