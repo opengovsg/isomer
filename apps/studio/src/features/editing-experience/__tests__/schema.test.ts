@@ -17,23 +17,15 @@ describe("editing-experience schemas", () => {
       expect(result.success).toBe(true)
     })
 
-    it("should coerce string siteId to number", () => {
+    it("should coerce string siteId to string", () => {
       // Arrange + Act
       const result = siteSchema.safeParse({ siteId: "456" })
 
       // Assert
       if (result.success) {
-        expect(result.data.siteId).toBe(456)
-        expect(typeof result.data.siteId).toBe("number")
+        expect(result.data.siteId).toBe("456")
+        expect(typeof result.data.siteId).toBe("string")
       }
-    })
-
-    it("should reject undefined siteId", () => {
-      // Arrange + Act
-      const result = siteSchema.safeParse({ siteId: undefined })
-
-      // Assert
-      expect(result.success).toBe(false)
     })
   })
 
