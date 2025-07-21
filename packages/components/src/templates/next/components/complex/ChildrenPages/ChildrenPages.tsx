@@ -54,17 +54,17 @@ const createBoxStyles = tv({
   slots: {
     container: `${ComponentContent} grid grid-cols-3 gap-10 md:grid-cols-6 md:gap-x-10 [&:not(:first-child)]:mt-7`,
     imageContainer:
-      "align-center col-span-full row-span-1 flex aspect-[3/2] h-full w-full justify-center border-b border-b-base-divider-subtle",
-    image: "bg-white",
+      "align-center col-span-full row-span-1 flex aspect-[3/2] h-full w-full justify-center border-b border-b-base-divider-medium",
+    image: "rounded-t-md bg-white",
     textContainer:
       "col-span-full row-span-1 flex flex-col gap-2 break-words px-5 pb-5",
     contentContainer:
-      "grid-rows-[1fr fit-content] group grid cursor-pointer grid-cols-subgrid content-start items-start gap-y-5 rounded-[0.25rem] border border-base-divider-medium max-md:col-span-full md:col-span-3",
+      "grid-rows-[1fr fit-content] group grid cursor-pointer grid-cols-subgrid content-start items-start gap-y-5 rounded-md border border-base-divider-medium max-md:col-span-full md:col-span-3",
     title: [
       groupFocusVisibleHighlight(),
       "prose-title-md-medium text-base-content-strong group-hover:text-brand-canvas-inverse group-hover:underline",
     ],
-    description: "gray prose-body-base text-base-content",
+    description: "prose-body-base text-base-content",
   },
   variants: {
     layout: {
@@ -75,7 +75,7 @@ const createBoxStyles = tv({
       false: { textContainer: "pt-5" },
     },
     hasFallbackImage: {
-      true: { image: "w-[50%]" },
+      true: { image: "size-1/2 self-center" },
       false: { image: "object-cover" },
     },
   },
@@ -135,7 +135,7 @@ const BoxLayout = ({
 const createRowStyles = tv({
   slots: {
     container: `${ComponentContent} grid grid-cols-3 gap-10 md:grid-cols-6 lg:grid-cols-12 [&:not(:first-child)]:mt-7`,
-    image: "bg-white",
+    image: "rounded-l-sm bg-white",
     imageContainer:
       "align-center flex aspect-[3/2] h-full w-full justify-center max-md:col-span-full max-md:row-span-1 max-md:border-b max-md:border-b-base-divider-subtle md:col-span-2 md:border-r md:border-r-base-divider-subtle lg:col-span-3",
     textContainer:
@@ -162,7 +162,7 @@ const createRowStyles = tv({
       false: { textContainer: "md:col-span-6 lg:col-span-12" },
     },
     hasFallbackImage: {
-      true: { image: "w-[50%]" },
+      true: { image: "h-auto w-[50%]" },
       false: { image: "object-cover" },
     },
   },
