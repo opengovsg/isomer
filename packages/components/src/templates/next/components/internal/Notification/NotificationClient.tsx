@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { BiInfoCircle, BiX } from "react-icons/bi"
 import { useSessionStorage } from "usehooks-ts"
 
@@ -11,25 +10,12 @@ const NotificationClient = ({
   title,
   baseParagraph,
 }: NotificationClientProps) => {
-  const [currentHostname, setCurrentHostname] = useState<string>("")
-  
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setCurrentHostname(window.location.hostname)
-    }
-  }, [])
-  
   const [isShown, setIsShown] = useSessionStorage(
-    `notification-dismissed-${currentHostname}`,
+    `notification-dismissed-${window.location.hostname}`,
     true
   )
   const onDismiss = () => {
     setIsShown(false)
-  }
-
-  // Don't render until we have the current hostname to prevent flash of content
-  if (!currentHostname) {
-    return null
   }
 
   return (
