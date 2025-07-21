@@ -11,24 +11,24 @@ const NotificationClient = ({
   title,
   baseParagraph,
 }: NotificationClientProps) => {
-  const [currentUrl, setCurrentUrl] = useState<string>("")
+  const [currentHostname, setCurrentHostname] = useState<string>("")
   
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setCurrentUrl(window.location.pathname + window.location.search)
+      setCurrentHostname(window.location.hostname)
     }
   }, [])
   
   const [isShown, setIsShown] = useSessionStorage(
-    `notification-dismissed-${currentUrl}`,
+    `notification-dismissed-${currentHostname}`,
     true
   )
   const onDismiss = () => {
     setIsShown(false)
   }
 
-  // Don't render until we have the current URL to prevent flash of content
-  if (!currentUrl) {
+  // Don't render until we have the current hostname to prevent flash of content
+  if (!currentHostname) {
     return null
   }
 
