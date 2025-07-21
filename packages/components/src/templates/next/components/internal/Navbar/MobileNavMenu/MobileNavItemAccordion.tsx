@@ -96,7 +96,9 @@ const ParentItemLink = ({
       >
         <span className="row-gap-0 flex flex-row flex-wrap items-baseline gap-1">
           Pages in
-          <span className="prose-headline-base-medium">{allButLastWord}</span>
+          {allButLastWord && (
+            <span className="prose-headline-base-medium">{allButLastWord}</span>
+          )}
           <span className="prose-headline-base-medium flex flex-row items-center gap-1">
             {lastWord}
             {!isExternal && (
