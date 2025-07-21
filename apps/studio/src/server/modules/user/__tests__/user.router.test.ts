@@ -1186,6 +1186,41 @@ describe("user.router", () => {
       // Assert
       expect(result).toHaveLength(6)
     })
+
+    it("should return users with emails in ascending alphabetical order", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+
+      // Create users with emails in non-alphabetical order
+      const userC = await setupUser({
+        email: "charlie@example.gov.sg",
+        isDeleted: false,
+      })
+      const userA = await setupUser({
+        email: "alice@example.gov.sg",
+        isDeleted: false,
+      })
+      const userB = await setupUser({
+        email: "bob@example.gov.sg",
+        isDeleted: false,
+      })
+      await Promise.all(
+        [userA, userB, userC].map((user) =>
+          setupEditorPermissions({ userId: user.id, siteId }),
+        ),
+      )
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(4) // current user + 3 new users
+      expect(result.map((user) => user.email).slice(0, 3)).toEqual([
+        "alice@example.gov.sg",
+        "bob@example.gov.sg",
+        "charlie@example.gov.sg",
+      ])
+    })
   })
 
   describe("count", () => {

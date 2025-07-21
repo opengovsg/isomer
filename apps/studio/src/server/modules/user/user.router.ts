@@ -25,7 +25,7 @@ import {
   updateUserOutputSchema,
 } from "~/schemas/user"
 import { protectedProcedure, router } from "../../trpc"
-import { db, RoleType, sql } from "../database"
+import { db, RoleType } from "../database"
 import {
   getResourcePermission,
   updateUserSitewidePermission,
@@ -221,7 +221,7 @@ export const userRouter = router({
       })
 
       return getUsersQuery({ siteId, adminType })
-        .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
+        .orderBy("ActiveUser.email", "asc")
         .select((eb) => [
           "ActiveUser.id",
           "ActiveUser.email",

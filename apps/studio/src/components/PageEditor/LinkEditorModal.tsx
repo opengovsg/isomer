@@ -53,7 +53,7 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
   return (
     <ResourceSelector
       interactionType="link"
-      siteId={siteId}
+      siteId={Number(siteId)}
       onChange={(resourceId) =>
         onChange(
           getReferenceLink({
@@ -235,7 +235,7 @@ const ModalLinkEditor = () => {
           <FileAttachment
             maxSizeInBytes={MAX_FILE_SIZE_BYTES}
             acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
-            siteId={siteId}
+            siteId={Number(siteId)}
             resourceId={String(pageId ?? linkId)}
             setHref={(href) => setHref(href ?? "")}
             shouldFetchResource={false}

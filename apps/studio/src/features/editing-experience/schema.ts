@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 export const siteSchema = z.object({
-  siteId: z.coerce.number(),
+  siteId: z.coerce.string(),
 })
 
 export const pageSchema = siteSchema.extend({
