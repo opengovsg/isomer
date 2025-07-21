@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { BiInfoCircle, BiX } from "react-icons/bi"
+import { useSessionStorage } from "usehooks-ts"
 
 import type { NotificationClientProps } from "~/interfaces"
 import { IconButton } from "../IconButton"
@@ -10,9 +11,25 @@ const NotificationClient = ({
   title,
   baseParagraph,
 }: NotificationClientProps) => {
-  const [isShown, setIsShown] = useState(true)
+  const [currentUrl, setCurrentUrl] = useState<string>("")
+  
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setCurrentUrl(window.location.pathname + window.location.search)
+    }
+  }, [])
+  
+  const [isShown, setIsShown] = useSessionStorage(
+    `notification-dismissed-${currentUrl}`,
+    true
+  )
   const onDismiss = () => {
     setIsShown(false)
+  }
+
+  // Don't render until we have the current URL to prevent flash of content
+  if (!currentUrl) {
+    return null
   }
 
   return (
