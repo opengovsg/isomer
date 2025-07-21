@@ -32,6 +32,10 @@ import {
   useLinkEditor,
 } from "~/features/editing-experience/components/LinkEditor/LinkEditorContext"
 import { getLinkHrefType } from "~/features/editing-experience/components/LinkEditor/utils"
+import {
+  pageOrLinkSchema,
+  siteSchema,
+} from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink } from "~/utils/link"
@@ -39,21 +43,17 @@ import { AttachmentData } from "../AttachmentData"
 import { ResourceSelector } from "../ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
 
-const editSiteSchema = z.object({
-  siteId: z.coerce.number(),
-})
-
 interface PageLinkElementProps {
   value: string
   onChange: (value: string) => void
 }
 
 const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
-  const { siteId } = useQueryParse(editSiteSchema)
+  const { siteId } = useQueryParse(siteSchema)
   return (
     <ResourceSelector
       interactionType="link"
-      siteId={siteId}
+      siteId={Number(siteId)}
       onChange={(resourceId) =>
         onChange(
           getReferenceLink({
@@ -219,7 +219,7 @@ export const LinkEditorModal = ({
 
 const ModalLinkEditor = () => {
   const { error, curHref, setHref } = useLinkEditor()
-  const { siteId } = useQueryParse(editSiteSchema)
+  const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
 
   return (
     <LinkHrefEditor
@@ -235,7 +235,8 @@ const ModalLinkEditor = () => {
           <FileAttachment
             maxSizeInBytes={MAX_FILE_SIZE_BYTES}
             acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
-            siteId={siteId}
+            siteId={Number(siteId)}
+            resourceId={String(pageId ?? linkId)}
             setHref={(href) => setHref(href ?? "")}
             shouldFetchResource={false}
           />

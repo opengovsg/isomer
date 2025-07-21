@@ -894,6 +894,7 @@ describe("folder.router", async () => {
       const { site, folder } = await setupFolder()
       await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       const { page } = await setupPageResource({
+        siteId: site.id,
         resourceType: "Page",
         parentId: folder.id,
       })
