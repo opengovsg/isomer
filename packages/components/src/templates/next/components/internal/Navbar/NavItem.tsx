@@ -126,11 +126,11 @@ const Megamenu = ({
         showExternalIcon={isExternal}
         isWithFocusVisibleHighlight
         href={referenceLinkHref}
-        className="group relative w-fit items-center gap-1.5 hover:text-brand-interaction-hover hover:no-underline"
+        className="group inline-flex w-fit items-center gap-1 hover:text-brand-interaction-hover hover:no-underline"
       >
         {name}
         {!isExternal && (
-          <BiRightArrowAlt className="inline text-[1.5rem] transition ease-in group-hover:translate-x-2.5" />
+          <BiRightArrowAlt className="mt-0.5 inline text-[1.5rem] transition ease-in group-hover:translate-x-1" />
         )}
       </Link>
     )
@@ -179,7 +179,7 @@ const Megamenu = ({
                         showExternalIcon={isExternal}
                         isWithFocusVisibleHighlight
                         href={subItem.referenceLinkHref}
-                        className="group prose-label-md-medium relative w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
+                        className="group prose-label-md-medium w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
                       >
                         {subItem.name}
                         {!isExternal && (
