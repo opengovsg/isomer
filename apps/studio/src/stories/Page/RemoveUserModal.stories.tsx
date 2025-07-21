@@ -7,13 +7,13 @@ import { userHandlers } from "tests/msw/handlers/user"
 
 import UsersPage from "~/pages/sites/[siteId]/users"
 import { ResetRemoveUserModalDecorator } from "~/stories/decorators/resetModalState"
+import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
-  resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getRolesFor.admin(),
   sitesHandlers.getSiteName.default(),
   userHandlers.count.default(),
-  userHandlers.getPermissions.admin(),
   userHandlers.list.removeUserModal(),
   userHandlers.getUser.default(),
 ]
@@ -23,6 +23,7 @@ const meta: Meta<typeof UsersPage> = {
   component: UsersPage,
   parameters: {
     getLayout: UsersPage.getLayout,
+    growthbook: [createSingpassEnabledGbParameters(true)],
     msw: {
       handlers: COMMON_HANDLERS,
     },

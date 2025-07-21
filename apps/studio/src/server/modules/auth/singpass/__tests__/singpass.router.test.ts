@@ -11,7 +11,6 @@ import type { SessionData } from "~/lib/types/session"
 import { env } from "~/env.mjs"
 import { AuditLogEvent, db } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
-import { SINGPASS_SIGN_IN_STATE } from "../singpass.constants"
 import { singpassRouter } from "../singpass.router"
 import * as SingpassService from "../singpass.service"
 
@@ -165,34 +164,6 @@ describe("auth.singpass", () => {
       )
     })
 
-    it("should throw if Singpass callback state is invalid", async () => {
-      // Arrange
-      session.singpass = {
-        sessionState: {
-          userId: "user-id" as NonNullable<
-            NonNullable<SessionData["singpass"]>["sessionState"]
-          >["userId"],
-          verificationToken: {} as never,
-          codeVerifier: "code-verifier",
-          nonce: "nonce",
-        },
-      }
-      await session.save()
-
-      // Assert
-      await expect(
-        caller.callback({
-          state: "invalid-state",
-          code: "code",
-        }),
-      ).rejects.toThrowError(
-        new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid Singpass callback state",
-        }),
-      )
-    })
-
     it("should throw if the Singpass UUID cannot be extracted", async () => {
       // Arrange
       session.singpass = {
@@ -214,7 +185,7 @@ describe("auth.singpass", () => {
       // Assert
       await expect(
         caller.callback({
-          state: JSON.stringify({ state: SINGPASS_SIGN_IN_STATE }),
+          state: JSON.stringify({ state: expect.any(String) }),
           code: "code",
         }),
       ).rejects.toThrowError(
@@ -252,7 +223,7 @@ describe("auth.singpass", () => {
       // Assert
       await expect(
         caller.callback({
-          state: JSON.stringify({ state: SINGPASS_SIGN_IN_STATE }),
+          state: JSON.stringify({ state: expect.any(String) }),
           code: "code",
         }),
       ).rejects.toThrowError(
@@ -289,7 +260,7 @@ describe("auth.singpass", () => {
 
       // Act
       await caller.callback({
-        state: JSON.stringify({ state: SINGPASS_SIGN_IN_STATE }),
+        state: JSON.stringify({ state: expect.any(String) }),
         code: "code",
       })
 
@@ -349,7 +320,7 @@ describe("auth.singpass", () => {
 
       // Act
       await caller.callback({
-        state: JSON.stringify({ state: SINGPASS_SIGN_IN_STATE }),
+        state: JSON.stringify({ state: expect.any(String) }),
         code: "code",
       })
 

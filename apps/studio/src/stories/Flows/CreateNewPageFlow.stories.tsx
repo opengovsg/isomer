@@ -24,7 +24,7 @@ const meta: Meta<typeof SitePage> = {
         sitesHandlers.getSiteName.default(),
         sitesHandlers.getLocalisedSitemap.default(),
         resourceHandlers.getChildrenOf.default(),
-        resourceHandlers.getRolesFor.default(),
+        resourceHandlers.getRolesFor.admin(),
       ],
     },
     nextjs: {

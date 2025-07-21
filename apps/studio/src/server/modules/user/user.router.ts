@@ -2,9 +2,10 @@ import { TRPCError } from "@trpc/server"
 import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 import { pick } from "lodash"
 
+import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { sendInvitation } from "~/features/mail/service"
 import { canResendInviteToUser } from "~/features/users/utils"
-import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { getIsSingpassEnabled } from "~/lib/growthbook"
 import {
   countUsersInputSchema,
   countUsersOutputSchema,
@@ -12,7 +13,6 @@ import {
   createUserOutputSchema,
   deleteUserInputSchema,
   deleteUserOutputSchema,
-  getPermissionsInputSchema,
   getUserInputSchema,
   getUserOutputSchema,
   listUsersInputSchema,
@@ -27,7 +27,7 @@ import {
 import { protectedProcedure, router } from "../../trpc"
 import { db, RoleType, sql } from "../database"
 import {
-  getSitePermissions,
+  getResourcePermission,
   updateUserSitewidePermission,
   validatePermissionsForManagingUsers,
 } from "../permissions/permissions.service"
@@ -40,13 +40,14 @@ import {
   validateEmailRoleCombination,
 } from "./user.service"
 
-export const userRouter = router({
-  getPermissions: protectedProcedure
-    .input(getPermissionsInputSchema)
-    .query(async ({ ctx, input: { siteId } }) => {
-      return await getSitePermissions({ userId: ctx.user.id, siteId })
-    }),
+const throwSingpassDisabledError = () => {
+  throw new TRPCError({
+    code: "FORBIDDEN",
+    message: SINGPASS_DISABLED_ERROR_MESSAGE,
+  })
+}
 
+export const userRouter = router({
   create: protectedProcedure
     .input(createUserInputSchema)
     .output(createUserOutputSchema)
@@ -56,6 +57,13 @@ export const userRouter = router({
         userId: ctx.user.id,
         action: "manage",
       })
+
+      const isSingpassEnabled = getIsSingpassEnabled({
+        gb: ctx.gb,
+      })
+      if (!isSingpassEnabled) {
+        throwSingpassDisabledError()
+      }
 
       const possibleActor = await db
         .selectFrom("User")
@@ -69,7 +77,6 @@ export const userRouter = router({
             }),
         )
       const actorName = possibleActor.name || possibleActor.email
-      const isSingpassEnabled = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
 
       const createdUsers = await db.transaction().execute(async (tx) => {
         return await Promise.all(
@@ -118,6 +125,13 @@ export const userRouter = router({
         action: "manage",
       })
 
+      const isSingpassEnabled = getIsSingpassEnabled({
+        gb: ctx.gb,
+      })
+      if (!isSingpassEnabled) {
+        throwSingpassDisabledError()
+      }
+
       if (userId === ctx.user.id) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -152,14 +166,8 @@ export const userRouter = router({
         })
       }
 
-      if (!ctx.session?.userId)
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Please ensure you are logged in!",
-        })
-
       await deleteUserPermission({
-        byUserId: ctx.session.userId,
+        byUserId: ctx.user.id,
         userId,
         siteId,
       })
@@ -264,6 +272,13 @@ export const userRouter = router({
         action: "manage",
       })
 
+      const isSingpassEnabled = getIsSingpassEnabled({
+        gb: ctx.gb,
+      })
+      if (!isSingpassEnabled) {
+        throwSingpassDisabledError()
+      }
+
       if (userId === ctx.user.id) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -304,15 +319,8 @@ export const userRouter = router({
       // We don't have to check if the user is admin here
       // because we only allow users to update their own details
       // They should be able to update their own details even without any resource permissions
-
-      if (!ctx.session?.userId)
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Please ensure you are logged in!",
-        })
-
       const updatedUser = await updateUserDetails({
-        userId: ctx.session.userId,
+        userId: ctx.user.id,
         name,
         phone,
       })
@@ -330,6 +338,13 @@ export const userRouter = router({
         action: "manage",
       })
 
+      const isSingpassEnabled = getIsSingpassEnabled({
+        gb: ctx.gb,
+      })
+      if (!isSingpassEnabled) {
+        throwSingpassDisabledError()
+      }
+
       const possibleActor = await db
         .selectFrom("User")
         .where("id", "=", ctx.user.id)
@@ -342,7 +357,6 @@ export const userRouter = router({
             }),
         )
       const actorName = possibleActor.name || possibleActor.email
-      const isSingpassEnabled = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
 
       const user = await db
         .selectFrom("User")
@@ -370,7 +384,7 @@ export const userRouter = router({
       }
 
       // Defensive programming to check if the user has permissions to receive invite
-      const userPermission = await getSitePermissions({
+      const userPermission = await getResourcePermission({
         userId: user.id,
         siteId,
       })

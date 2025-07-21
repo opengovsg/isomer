@@ -26,7 +26,7 @@ const COMMON_HANDLERS = [
   resourceHandlers.getAncestryStack.default(),
   resourceHandlers.getBatchAncestryWithSelf.default(),
   resourceHandlers.getMetadataById.content(),
-  resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getRolesFor.admin(),
   pageHandlers.readPageAndBlob.content(),
   pageHandlers.readPage.content(),
   pageHandlers.getFullPermalink.content(),

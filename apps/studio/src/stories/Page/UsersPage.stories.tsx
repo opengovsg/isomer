@@ -9,7 +9,7 @@ import UsersPage from "~/pages/sites/[siteId]/users"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
-  resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getRolesFor.admin(),
   sitesHandlers.getSiteName.default(),
   userHandlers.count.default(),
 ]
@@ -41,7 +41,7 @@ export const Admin: Story = {
     msw: {
       handlers: [
         ...COMMON_HANDLERS,
-        userHandlers.getPermissions.admin(),
+        resourceHandlers.getRolesFor.admin(),
         userHandlers.list.users(),
       ],
     },
@@ -53,7 +53,7 @@ export const Publisher: Story = {
     msw: {
       handlers: [
         ...COMMON_HANDLERS,
-        userHandlers.getPermissions.publisher(),
+        resourceHandlers.getRolesFor.publisher(),
         userHandlers.list.users(),
       ],
     },
@@ -65,7 +65,7 @@ export const Editor: Story = {
     msw: {
       handlers: [
         ...COMMON_HANDLERS,
-        userHandlers.getPermissions.editor(),
+        resourceHandlers.getRolesFor.editor(),
         userHandlers.list.users(),
       ],
     },
@@ -77,7 +77,7 @@ export const ExpandedMenu: Story = {
     msw: {
       handlers: [
         ...COMMON_HANDLERS,
-        userHandlers.getPermissions.admin(),
+        resourceHandlers.getRolesFor.admin(),
         userHandlers.list.users(),
       ],
     },
@@ -96,7 +96,7 @@ export const IsomerAdminsTab: Story = {
     msw: {
       handlers: [
         ...COMMON_HANDLERS,
-        userHandlers.getPermissions.admin(),
+        resourceHandlers.getRolesFor.admin(),
         userHandlers.list.isomerAdmins(),
       ],
     },
@@ -113,9 +113,8 @@ export const NoUsers: Story = {
     msw: {
       handlers: [
         meHandlers.me(),
-        resourceHandlers.getRolesFor.default(),
+        resourceHandlers.getRolesFor.admin(),
         sitesHandlers.getSiteName.default(),
-        userHandlers.getPermissions.admin(),
         userHandlers.list.noUsers(),
         userHandlers.count.noUsers(),
       ],

@@ -145,6 +145,7 @@ const CreateFolderModalContent = ({
               <Input
                 placeholder="This is a title for your new folder"
                 maxLength={MAX_FOLDER_TITLE_LENGTH}
+                my="0.5rem"
                 {...register("folderTitle")}
               />
               {errors.folderTitle?.message ? (
@@ -152,7 +153,7 @@ const CreateFolderModalContent = ({
                   {errors.folderTitle.message}
                 </FormErrorMessage>
               ) : (
-                <FormHelperText mt="0.5rem" color="base.content.medium">
+                <FormHelperText color="base.content.medium">
                   {MAX_FOLDER_TITLE_LENGTH - folderTitle.length} characters left
                 </FormHelperText>
               )}
@@ -193,12 +194,13 @@ const CreateFolderModalContent = ({
                 py="0.5rem"
                 px="0.75rem"
                 bg="interaction.support.disabled"
+                my="0.5rem"
               >
                 <Icon mr="0.5rem" as={BiLink} />
                 {permalink}
               </Box>
 
-              <FormHelperText mt="0.5rem" color="base.content.medium">
+              <FormHelperText color="base.content.medium">
                 {MAX_FOLDER_PERMALINK_LENGTH - permalink.length} characters left
               </FormHelperText>
             </FormControl>

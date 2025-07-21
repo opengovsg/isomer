@@ -19,6 +19,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
@@ -124,8 +125,7 @@ const SiteAdminPage: NextPageWithLayout = () => {
     onError: () => {
       toast({
         title: "Error saving site config!",
-        description:
-          "If this persists, please report this issue at support@isomer.gov.sg",
+        description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
       })
