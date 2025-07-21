@@ -3,7 +3,6 @@ import { useRouter } from "next/router"
 import { Flex } from "@chakra-ui/react"
 import { BiCog, BiFolder, BiLogOut, BiStar } from "react-icons/bi"
 import { PiUsersBold } from "react-icons/pi"
-import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
