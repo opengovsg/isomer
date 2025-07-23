@@ -162,7 +162,7 @@ const createRowStyles = tv({
       false: { textContainer: "md:col-span-6 lg:col-span-12" },
     },
     hasFallbackImage: {
-      true: { image: "h-auto w-[50%]" },
+      true: { image: "h-auto w-2/3 object-contain" },
       false: { image: "object-cover" },
     },
   },
