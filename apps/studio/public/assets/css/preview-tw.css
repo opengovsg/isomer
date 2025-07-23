@@ -1739,6 +1739,10 @@ video {
   width: 0.625rem;
 }
 
+.w-2\/3 {
+  width: 66.666667%;
+}
+
 .w-24 {
   width: 6rem;
 }
@@ -1793,10 +1797,6 @@ video {
 
 .w-\[200px\] {
   width: 200px;
-}
-
-.w-\[50\%\] {
-  width: 50%;
 }
 
 .w-auto {
