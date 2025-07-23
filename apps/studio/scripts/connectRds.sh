@@ -2,8 +2,6 @@
 # Sets up a tunnel to the RDS instance using AWS Session Manager
 # Usage: bash ./scripts/connectRds.sh prod|staging|uat|vapt
 
-set -e
-
 if [ -z "$1" ]; then
     echo "Usage: $0 <environment>"
     exit 1
