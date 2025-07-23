@@ -10,6 +10,8 @@ import {
   COLLECTION_BLOCK_TYPE,
   CollectionBlockSchema,
   ContentpicSchema,
+  DGS_SEARCHABLE_TABLE_TYPE,
+  DGSSearchableTableSchema,
   DividerSchema,
   DYNAMIC_DATA_BANNER_TYPE,
   DynamicDataBannerSchema,
@@ -55,6 +57,7 @@ export const IsomerComplexComponentsMap = {
   logocloud: LogoCloudSchema,
   [COLLECTION_BLOCK_TYPE]: CollectionBlockSchema,
   [IMAGE_GALLERY_TYPE]: ImageGallerySchema,
+  [DGS_SEARCHABLE_TABLE_TYPE]: DGSSearchableTableSchema,
 }
 
 export const IsomerNativeComponentsMap = {
