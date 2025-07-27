@@ -44,6 +44,7 @@ export const HeroGradient = ({
                     site.assetsBaseUrl,
                   )}
                   size="lg"
+                  colorScheme="inverse"
                   LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
                 >
