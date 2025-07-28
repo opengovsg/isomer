@@ -37,13 +37,17 @@ const ContentSecurityPolicy = `
     'self'
     https://intercom-sheets.com
     https://www.intercom-reporting.com
-    https://player.vimeo.com
     https://fast.wistia.net
     https://www.google.com
-    https://www.youtube.com
-    https://www.youtube-nocookie.com
+    https://www.googletagmanager.com
+    https://td.doubleclick.net
     https://www.onemap.gov.sg
+    https://www.youtube-nocookie.com
+    https://player.vimeo.com
+    https://m.facebook.com
     https://www.facebook.com
+    https://docs.google.com
+    https://form.gov.sg
     ;
   object-src 'none';
   script-src
