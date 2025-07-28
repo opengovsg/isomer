@@ -1,3 +1,5 @@
+import DOMPurify from "isomorphic-dompurify"
+
 import type { KeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
@@ -84,11 +86,23 @@ export const KeyStatisticsSkeleton = ({
             key={index}
             className={compoundStyles.itemContainer({ noOfItems })}
           >
-            <h3 className={compoundStyles.itemValue()}>
-              {value.slice(0, MAX_CHAR_LIMIT)}
-            </h3>
+            <h3
+              className={compoundStyles.itemValue()}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(value.slice(0, MAX_CHAR_LIMIT), {
+                  ALLOWED_TAGS: ["br", "b"],
+                }),
+              }}
+            />
 
-            <p className={compoundStyles.itemLabel()}>{label}</p>
+            <p
+              className={compoundStyles.itemLabel()}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(label, {
+                  ALLOWED_TAGS: ["br", "b"],
+                }),
+              }}
+            />
           </div>
         ))}
       </div>
