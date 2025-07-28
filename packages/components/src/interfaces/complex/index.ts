@@ -27,7 +27,11 @@ export {
   DEFAULT_INFOBAR_VARIANT,
 } from "./Infobar"
 export { InfopicSchema, type InfopicProps } from "./Infopic"
-export { KeyStatisticsSchema, type KeyStatisticsProps } from "./KeyStatistics"
+export {
+  KeyStatisticsSchema,
+  type KeyStatisticsProps,
+  KEY_STATISTICS_TYPE,
+} from "./KeyStatistics"
 export { MapSchema, type MapProps } from "./Map"
 export { VideoSchema, type VideoProps } from "./Video"
 export {
@@ -52,3 +56,11 @@ export {
   CHILDREN_PAGES_LAYOUT_OPTIONS,
   type ChildrenPagesProps,
 } from "./ChildrenPages"
+export {
+  DYNAMIC_COMPONENT_LIST_TYPE,
+  DGS_DATA_SOURCE,
+  DynamicComponentListSchema,
+  type DynamicComponentListProps,
+  type KeyStatisticsComponentProps,
+  type ImageGalleryComponentProps,
+} from "./DynamicComponentList"

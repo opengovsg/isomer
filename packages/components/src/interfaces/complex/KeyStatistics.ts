@@ -8,9 +8,11 @@ import type {
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
+export const KEY_STATISTICS_TYPE = "keystatistics"
+
 export const KeyStatisticsSchema = Type.Object(
   {
-    type: Type.Literal("keystatistics", { default: "keystatistics" }),
+    type: Type.Literal(KEY_STATISTICS_TYPE, { default: KEY_STATISTICS_TYPE }),
     id: Type.Optional(
       Type.String({
         title: "Anchor ID",
