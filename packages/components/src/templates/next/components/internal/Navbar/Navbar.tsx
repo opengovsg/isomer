@@ -1,5 +1,5 @@
 import type { NavbarProps } from "~/interfaces"
-import type { NavbarItem } from "~/interfaces/internal/Navbar"
+import type { NavbarItemProps } from "~/interfaces/internal/Navbar"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import NavbarClient from "./NavbarClient"
 
@@ -15,9 +15,9 @@ export const Navbar = ({
   items,
   site,
   LinkComponent,
-}: Omit<NavbarProps, "type">) => {
+}: NavbarProps) => {
   // recursive function to process each navbar item
-  const processNavItem = (item: NavbarItem): NavbarItem => ({
+  const processNavItem = (item: NavbarItemProps): NavbarItemProps => ({
     ...item,
     referenceLinkHref: getReferenceLinkHref(
       item.url,
