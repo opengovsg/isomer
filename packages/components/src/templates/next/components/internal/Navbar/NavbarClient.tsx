@@ -6,6 +6,7 @@ import { useResizeObserver } from "usehooks-ts"
 
 import type { NavbarClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 import { LinkButton } from "../../internal/LinkButton"
@@ -14,22 +15,47 @@ import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
 import { NavItem } from "./NavItem"
 
-const navbarStyles = tv({
+const createNavbarStyles = tv({
   slots: {
+    navbar: "relative flex flex-col",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
-    navbar:
+    logo: "flex rounded focus-visible:bg-utility-highlight",
+    navigationSection: "flex w-full flex-col items-center justify-between",
+    primaryNavigationSection: "flex w-full items-center justify-end",
+    utilityNavigationSection:
+      "prose-label-sm-medium mt-3 hidden w-full items-center justify-end gap-4 lg:flex",
+    utilityItemsList: "flex items-center gap-4",
+    utilityItem:
+      "prose-label-sm-medium text-base-content-subtle hover:underline",
+    navbarItems:
       "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-2 pl-6 pr-3 md:px-10",
     navItemContainer: "hidden flex-1 items-center gap-x-4 pl-2 lg:flex",
+    callToAction: "align-content mx-5 hidden h-fit lg:flex",
+    buttonsSection: "flex flex-row gap-1",
+    searchIcon: "flex h-[68px] items-center",
+    hamburgerIcon: "flex h-[68px] items-center lg:hidden",
+    searchBar: "mx-auto mb-4 w-full max-w-screen-xl px-6 lg:px-10",
+  },
+  variants: {
+    isSearchOpen: {
+      true: {
+        searchBar: "block",
+      },
+      false: {
+        searchBar: "hidden",
+      },
+    },
   },
 })
 
-const { navItemContainer, navbarContainer, navbar } = navbarStyles()
+const navbarStyles = createNavbarStyles()
 
 export const NavbarClient = ({
   layout,
   search,
   items,
   callToAction,
+  utility,
   imageClientProps,
   LinkComponent,
 }: Omit<NavbarClientProps, "type">) => {
@@ -74,97 +100,126 @@ export const NavbarClient = ({
   }, [isHamburgerOpen, isMenuOpen, refreshMenuOffset])
 
   return (
-    <div className="relative flex flex-col">
+    <div className={navbarStyles.navbar()}>
       {/* Site header */}
-      <div className={navbarContainer()} ref={siteHeaderRef}>
-        <div className={navbar()}>
+      <div className={navbarStyles.navbarContainer()} ref={siteHeaderRef}>
+        <div className={navbarStyles.navbarItems()}>
           {/* Logo */}
           <Link
             LinkComponent={LinkComponent}
-            className="flex rounded focus-visible:bg-utility-highlight"
+            className={navbarStyles.logo()}
             href="/"
           >
             <ImageClient {...imageClientProps} />
           </Link>
 
-          {/* Navigation items (for desktop) */}
-          <ul className={navItemContainer()} ref={navDesktopRef}>
-            {items.map((item, index) => (
-              <NavItem
-                key={`${item.name}-${index}`}
-                ref={openNavItemIdx === index ? activeNavRef : null}
-                {...item}
-                onCloseMegamenu={onCloseMenu}
-                onClick={() => {
-                  setIsSearchOpen(false)
-                  setOpenNavItemIdx((currIdx) =>
-                    currIdx === index ? -1 : index,
-                  )
-                }}
-                isOpen={openNavItemIdx === index && !isHamburgerOpen}
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                LinkComponent={LinkComponent}
-              />
-            ))}
-          </ul>
-
-          {/* Call To Action button */}
-          {callToAction && (
-            <LinkButton
-              href={callToAction.referenceLinkHref}
-              isExternal={callToAction.isExternal}
-              size={"sm"}
-              className="align-content mx-5 hidden h-fit lg:flex"
-              isWithFocusVisibleHighlight
-              LinkComponent={LinkComponent}
-            >
-              {callToAction.label}
-            </LinkButton>
-          )}
-
-          <div className="flex flex-row gap-1">
-            {/* Search icon */}
-            {search && !isHamburgerOpen && layout !== "search" && (
-              <div className="flex h-[68px] items-center">
-                {isSearchOpen ? (
-                  <IconButton
-                    onPress={() => {
-                      setIsSearchOpen(!isSearchOpen)
-                    }}
-                    aria-label="Close search bar"
-                    icon={BiX}
-                  />
-                ) : (
-                  <IconButton
-                    onPress={() => {
-                      setOpenNavItemIdx(-1)
-                      setIsSearchOpen(!isSearchOpen)
-                    }}
-                    aria-label="Open search bar"
-                    icon={BiSearch}
-                  />
-                )}
+          <div className={navbarStyles.navigationSection()}>
+            {utility && (
+              <div className={navbarStyles.utilityNavigationSection()}>
+                <p color={navbarStyles.utilityItem()}>
+                  {utility.label || "Quick links"}
+                </p>
+                <ul className={navbarStyles.utilityItemsList()}>
+                  {utility.items.map((item, index) => (
+                    <li key={`${item.name}-${index}`}>
+                      <Link
+                        LinkComponent={LinkComponent}
+                        className={navbarStyles.utilityItem()}
+                        href={item.url}
+                        isExternal={isExternalUrl(item.url)}
+                      >
+                        {item.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 
-            {/* Hamburger menu for small screens */}
-            <div className="flex h-[68px] items-center lg:hidden">
-              {isHamburgerOpen ? (
-                <IconButton
-                  onPress={onCloseMenu}
-                  aria-label="Close navigation menu"
-                  icon={BiX}
-                />
-              ) : (
-                <IconButton
-                  onPress={() => {
-                    setIsHamburgerOpen(true)
-                    setIsSearchOpen(false)
-                  }}
-                  aria-label="Open navigation menu"
-                  icon={BiMenu}
-                />
+            <div className={navbarStyles.primaryNavigationSection()}>
+              {/* Navigation items (for desktop) */}
+              <ul
+                className={navbarStyles.navItemContainer()}
+                ref={navDesktopRef}
+              >
+                {items.map((item, index) => (
+                  <NavItem
+                    key={`${item.name}-${index}`}
+                    ref={openNavItemIdx === index ? activeNavRef : null}
+                    {...item}
+                    onCloseMegamenu={onCloseMenu}
+                    onClick={() => {
+                      setIsSearchOpen(false)
+                      setOpenNavItemIdx((currIdx) =>
+                        currIdx === index ? -1 : index,
+                      )
+                    }}
+                    isOpen={openNavItemIdx === index && !isHamburgerOpen}
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    LinkComponent={LinkComponent}
+                  />
+                ))}
+              </ul>
+
+              {/* Call To Action button */}
+              {callToAction && (
+                <LinkButton
+                  href={callToAction.referenceLinkHref}
+                  isExternal={callToAction.isExternal}
+                  size="sm"
+                  className={navbarStyles.callToAction()}
+                  isWithFocusVisibleHighlight
+                  LinkComponent={LinkComponent}
+                >
+                  {callToAction.label}
+                </LinkButton>
               )}
+
+              <div className={navbarStyles.buttonsSection()}>
+                {/* Search icon */}
+                {search && !isHamburgerOpen && layout !== "search" && (
+                  <div className={navbarStyles.searchIcon()}>
+                    {isSearchOpen ? (
+                      <IconButton
+                        onPress={() => {
+                          setIsSearchOpen(!isSearchOpen)
+                        }}
+                        aria-label="Close search bar"
+                        icon={BiX}
+                      />
+                    ) : (
+                      <IconButton
+                        onPress={() => {
+                          setOpenNavItemIdx(-1)
+                          setIsSearchOpen(!isSearchOpen)
+                        }}
+                        aria-label="Open search bar"
+                        icon={BiSearch}
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* Hamburger menu for small screens */}
+                <div className={navbarStyles.hamburgerIcon()}>
+                  {isHamburgerOpen ? (
+                    <IconButton
+                      onPress={onCloseMenu}
+                      aria-label="Close navigation menu"
+                      icon={BiX}
+                    />
+                  ) : (
+                    <IconButton
+                      onPress={() => {
+                        setIsHamburgerOpen(true)
+                        setIsSearchOpen(false)
+                      }}
+                      aria-label="Open navigation menu"
+                      icon={BiMenu}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -172,11 +227,7 @@ export const NavbarClient = ({
 
       {/* Search bar */}
       {search && layout !== "search" && (
-        <div
-          className={`${
-            isSearchOpen ? "block" : "hidden"
-          } mx-auto mb-4 w-full max-w-screen-xl px-6 lg:px-10`}
-        >
+        <div className={navbarStyles.searchBar({ isSearchOpen })}>
           {search.type === "localSearch" && (
             <LocalSearchInputBox searchUrl={search.searchUrl} />
           )}
@@ -194,6 +245,7 @@ export const NavbarClient = ({
           top={mobileNavbarTopPx}
           items={items}
           callToAction={callToAction}
+          utility={utility}
           openNavItemIdx={openNavItemIdx}
           setOpenNavItemIdx={setOpenNavItemIdx}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

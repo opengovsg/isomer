@@ -7,12 +7,16 @@ import { Button } from "react-aria-components"
 import { useScrollLock } from "usehooks-ts"
 
 import type { NavbarClientProps } from "~/interfaces"
-import { focusVisibleHighlight } from "~/utils"
+import { focusVisibleHighlight, isExternalUrl } from "~/utils"
+import { Link } from "../../Link"
 import { LinkButton } from "../../LinkButton/LinkButton"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
 
 interface MobileNavMenuProps
-  extends Pick<NavbarClientProps, "items" | "callToAction" | "LinkComponent"> {
+  extends Pick<
+    NavbarClientProps,
+    "items" | "callToAction" | "utility" | "LinkComponent"
+  > {
   top: number | undefined
   openNavItemIdx: number
   setOpenNavItemIdx: Dispatch<SetStateAction<number>>
@@ -25,6 +29,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
       top,
       items,
       callToAction,
+      utility,
       LinkComponent,
       openNavItemIdx,
       setOpenNavItemIdx,
@@ -72,6 +77,28 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                 {...item}
               />
             ))}
+            {utility && (
+              <div className="flex flex-col items-start gap-3 self-stretch bg-base-canvas-alt px-6 py-4">
+                <p className="prose-label-sm-medium text-base-content-strong">
+                  {utility.label || "Quick links"}
+                </p>
+
+                <ul className="flex flex-col gap-3">
+                  {utility.items.map((item, index) => (
+                    <li key={`${item.name}-${index}`}>
+                      <Link
+                        LinkComponent={LinkComponent}
+                        className="prose-label-sm-medium text-base-content-subtle"
+                        href={item.url}
+                        isExternal={isExternalUrl(item.url)}
+                      >
+                        {item.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <Button
               className={focusVisibleHighlight({
                 className:
