@@ -40,26 +40,37 @@ const SiteSettingsPage: NextPageWithLayout = () => {
   const trpcUtils = trpc.useUtils()
   const { siteId } = useQueryParse(siteSettingsSchema)
 
-  const notificationMutation = trpc.site.setNotification.useMutation({
-    onSuccess: async () => {
+  const notificationMutation = trpc.site.setNotification.useMutation()
+
+  useEffect(() => {
+    if (notificationMutation.isSuccess) {
       reset({ notificationEnabled, notification })
-      await trpcUtils.site.getNotification.invalidate({ siteId })
+      void trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
         title: "Saved site settings!",
         description: "Check your site in 5-10 minutes to view it live.",
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-    onError: () => {
+    }
+  }, [
+    notificationMutation.isSuccess,
+    reset,
+    notificationEnabled,
+    notification,
+    siteId,
+  ])
+
+  useEffect(() => {
+    if (notificationMutation.isError) {
       toast({
         title: "Error saving site settings!",
         description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
+    }
+  }, [notificationMutation.isError])
 
   const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
     siteId,

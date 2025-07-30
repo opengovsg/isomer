@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Button,
   Modal,
@@ -55,42 +55,39 @@ const MoveResourceContent = withSuspense(
     const ability = usePermissions()
     const utils = trpc.useUtils()
     const toast = useToast({ status: "success" })
-    const { mutate, isLoading } = trpc.resource.move.useMutation({
-      onError: (err) => {
-        toast({
-          title: "Failed to move resource",
-          status: "error",
-          description: err.message,
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-      onSettled: () => {
-        // TODO: actually close the modal
-        setMovedItem(null)
-      },
-      onSuccess: async () => {
-        await utils.collection.list.invalidate()
-        await utils.page.readPageAndBlob.invalidate()
-        await utils.resource.getParentOf.invalidate()
-        await utils.resource.getFolderChildrenOf.invalidate()
-        await utils.resource.getChildrenOf.invalidate()
-        await utils.resource.getAncestryStack.invalidate()
-        await utils.resource.getBatchAncestryWithSelf.invalidate()
-        await utils.resource.countWithoutRoot.invalidate({
+
+    const moveResourceMutation = trpc.resource.move.useMutation()
+
+    useEffect(() => {
+      if (moveResourceMutation.isSuccess || moveResourceMutation.isError) {
+        onClose()
+      }
+    }, [moveResourceMutation.isSuccess, moveResourceMutation.isError, onClose])
+
+    useEffect(() => {
+      if (moveResourceMutation.isSuccess) {
+        void utils.collection.list.invalidate()
+        void utils.page.readPageAndBlob.invalidate()
+        void utils.resource.getParentOf.invalidate()
+        void utils.resource.getFolderChildrenOf.invalidate()
+        void utils.resource.getChildrenOf.invalidate()
+        void utils.resource.getAncestryStack.invalidate()
+        void utils.resource.getBatchAncestryWithSelf.invalidate()
+        void utils.resource.countWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
           resourceId: curResourceId ? Number(curResourceId) : undefined,
         })
-        await utils.resource.countWithoutRoot.invalidate({
+        void utils.resource.countWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
           resourceId: movedItem?.parentId
             ? Number(movedItem.parentId)
             : undefined,
         })
-        await utils.resource.listWithoutRoot.invalidate({
+        void utils.resource.listWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
           resourceId: curResourceId ? Number(curResourceId) : undefined,
         })
-        await utils.resource.listWithoutRoot.invalidate({
+        void utils.resource.listWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
           resourceId: movedItem?.parentId
             ? Number(movedItem.parentId)
@@ -98,13 +95,24 @@ const MoveResourceContent = withSuspense(
         })
         // NOTE: We might want to have smarter logic here
         // and invalidate the new + old folders
-        await utils.folder.getMetadata.invalidate()
-        await utils.resource.getMetadataById.invalidate({
+        void utils.folder.getMetadata.invalidate()
+        void utils.resource.getMetadataById.invalidate({
           resourceId: movedItem?.id,
         })
         toast({ title: "Resource moved!", ...BRIEF_TOAST_SETTINGS })
-      },
-    })
+      }
+    }, [moveResourceMutation.isSuccess, onClose])
+
+    useEffect(() => {
+      if (moveResourceMutation.isError) {
+        toast({
+          title: "Failed to move resource",
+          status: "error",
+          description: moveResourceMutation.error.message,
+          ...BRIEF_TOAST_SETTINGS,
+        })
+      }
+    }, [moveResourceMutation.isError, moveResourceMutation.error])
 
     const movedItem = useAtomValue(moveResourceAtom)
 
@@ -145,10 +153,10 @@ const MoveResourceContent = withSuspense(
               }) ||
               ability.cannot("move", { parentId: movedItem?.parentId ?? null })
             }
-            isLoading={isLoading}
+            isLoading={moveResourceMutation.isLoading}
             onClick={() =>
               movedItem?.id &&
-              mutate({
+              moveResourceMutation.mutate({
                 siteId,
                 movedResourceId: movedItem.id,
                 destinationResourceId: curResourceId ?? null,

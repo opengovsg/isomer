@@ -64,27 +64,37 @@ export const EditUserModal = () => {
     setValue("role", role)
   }, [role, setValue])
 
-  const { mutate, isLoading } = trpc.user.update.useMutation({
-    onSettled: onClose,
-    onSuccess: async () => {
-      await utils.user.list.invalidate()
-      await utils.user.count.invalidate()
+  const updateUserMutation = trpc.user.update.useMutation()
+
+  useEffect(() => {
+    if (updateUserMutation.isSuccess || updateUserMutation.isError) {
+      onClose()
+    }
+  }, [updateUserMutation.isSuccess, updateUserMutation.isError, onClose])
+
+  useEffect(() => {
+    if (updateUserMutation.isSuccess) {
+      void utils.user.list.invalidate()
+      void utils.user.count.invalidate()
       toast({
         status: "success",
         title: `Changes saved!`,
       })
-    },
-    onError: (err) => {
+    }
+  }, [updateUserMutation.isSuccess])
+
+  useEffect(() => {
+    if (updateUserMutation.isError) {
       toast({
         status: "error",
         title: "Failed to update user",
-        description: err.message,
+        description: updateUserMutation.error.message,
       })
-    },
-  })
+    }
+  }, [updateUserMutation.isError, updateUserMutation.error])
 
   const onUpdateUser = handleSubmit((data) => {
-    mutate({
+    updateUserMutation.mutate({
       siteId,
       userId,
       role: data.role,
@@ -159,7 +169,7 @@ export const EditUserModal = () => {
             <Button
               variant="solid"
               onClick={onUpdateUser}
-              isLoading={isLoading}
+              isLoading={updateUserMutation.isLoading}
               isDisabled={!isSingpassEnabled}
             >
               Save changes

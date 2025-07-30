@@ -1,4 +1,4 @@
-import { Suspense } from "react"
+import { Suspense, useEffect } from "react"
 import {
   Box,
   chakra,
@@ -117,20 +117,28 @@ const SuspendableModalContent = ({
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
-  const { mutate, isLoading } = trpc.folder.editFolder.useMutation({
-    onSettled: onClose,
-    onSuccess: async () => {
-      await utils.resource.listWithoutRoot.invalidate()
-      await utils.resource.getChildrenOf.invalidate({
+
+  const editFolderMutation = trpc.folder.editFolder.useMutation()
+
+  useEffect(() => {
+    if (editFolderMutation.isSuccess || editFolderMutation.isError) {
+      onClose()
+    }
+  }, [editFolderMutation.isSuccess, editFolderMutation.isError, onClose])
+
+  useEffect(() => {
+    if (editFolderMutation.isSuccess) {
+      void utils.resource.listWithoutRoot.invalidate()
+      void utils.resource.getChildrenOf.invalidate({
         resourceId: parentId ? String(parentId) : null,
       })
-      await utils.folder.getMetadata.invalidate({
+      void utils.folder.getMetadata.invalidate({
         resourceId: Number(folderId),
       })
-      await utils.folder.getIndexpage.invalidate({
+      void utils.folder.getIndexpage.invalidate({
         resourceId: folderId,
       })
-      await utils.collection.getMetadata.invalidate({
+      void utils.collection.getMetadata.invalidate({
         resourceId: Number(folderId),
       })
       toast({
@@ -138,20 +146,27 @@ const SuspendableModalContent = ({
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-    onError: (err) => {
+    }
+  }, [editFolderMutation.isSuccess, onClose, folderId, parentId])
+
+  useEffect(() => {
+    if (editFolderMutation.isError) {
       toast({
         title: "Failed to update folder",
         status: "error",
         // TODO: check if this property is correct
-        description: err.message,
+        description: editFolderMutation.error.message,
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
+    }
+  }, [editFolderMutation.isError, editFolderMutation.error])
 
   const onSubmit = handleSubmit((data) => {
-    mutate({ ...data, resourceId: String(folderId), siteId: String(siteId) })
+    editFolderMutation.mutate({
+      ...data,
+      resourceId: String(folderId),
+      siteId: String(siteId),
+    })
   })
 
   const [title, permalink] = watch(["title", "permalink"])
@@ -241,7 +256,11 @@ const SuspendableModalContent = ({
           <Button mr={3} onClick={onClose} variant="clear">
             Close
           </Button>
-          <Button isLoading={isLoading} isDisabled={!isValid} type="submit">
+          <Button
+            isLoading={editFolderMutation.isLoading}
+            isDisabled={!isValid}
+            type="submit"
+          >
             Save changes
           </Button>
         </ModalFooter>

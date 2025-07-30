@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useRouter } from "next/router"
 import { Box, Flex, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
@@ -9,14 +10,22 @@ import { getRedirectUrl } from "~/utils/url"
 
 export const SingpassLoginButton = (): JSX.Element | null => {
   const router = useRouter()
-  const singpassLoginMutation = trpc.auth.singpass.login.useMutation({
-    onSuccess: async ({ redirectUrl }) => {
-      await router.push(redirectUrl)
-    },
-    onError: async (error) => {
-      await router.push(`${SIGN_IN}?error=${error.message}`)
-    },
-  })
+
+  const singpassLoginMutation = trpc.auth.singpass.login.useMutation()
+
+  useEffect(() => {
+    if (singpassLoginMutation.isSuccess) {
+      void router.push(singpassLoginMutation.data.redirectUrl)
+    }
+  }, [singpassLoginMutation.isSuccess])
+
+  useEffect(() => {
+    if (singpassLoginMutation.isError) {
+      void router.push(
+        `${SIGN_IN}?error=${singpassLoginMutation.error.message}`,
+      )
+    }
+  }, [singpassLoginMutation.isError, singpassLoginMutation.error])
 
   const landingUrl = getRedirectUrl(router.query)
 

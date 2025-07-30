@@ -1,5 +1,5 @@
 import type { DropResult } from "@hello-pangea/dnd"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   Box,
   Button,
@@ -75,11 +75,18 @@ export default function RootStateDrawer() {
   })
   const toast = useToast()
 
-  const { mutate } = trpc.page.reorderBlock.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPage.invalidate({ pageId, siteId })
-    },
-    onError: (error, variables) => {
+  const reorderBlockMutation = trpc.page.reorderBlock.useMutation()
+
+  useEffect(() => {
+    if (reorderBlockMutation.isSuccess) {
+      void utils.page.readPage.invalidate({ pageId, siteId })
+    }
+  }, [reorderBlockMutation.isSuccess])
+
+  useEffect(() => {
+    if (reorderBlockMutation.isError) {
+      const { blocks } = reorderBlockMutation.variables
+
       // NOTE: rollback to last known good state
       // @ts-expect-error Our zod validator runs between frontend and backend
       // and the error type is automatically inferred from the zod validator.
@@ -87,33 +94,34 @@ export default function RootStateDrawer() {
       // because `Preview` (amongst other things) requires the other properties on the actual schema type
       setPreviewPageState((prevPreview) => ({
         ...prevPreview,
-        content: variables.blocks,
+        content: blocks,
       }))
       // @ts-expect-error See above
       setSavedPageState((prevSavedPageState) => ({
         ...prevSavedPageState,
-        content: variables.blocks,
+        content: blocks,
       }))
       toast({
         title: "Failed to update blocks",
-        description: error.message,
+        description: reorderBlockMutation.error.message,
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
+    }
+  }, [reorderBlockMutation.isError, reorderBlockMutation.error])
 
-  const { mutate: savePage, isLoading: isSavingPage } =
-    trpc.page.updatePageBlob.useMutation({
-      onSuccess: async () => {
-        await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-        await utils.page.readPage.invalidate({ pageId, siteId })
-        toast({
-          title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-    })
+  const savePageMutation = trpc.page.updatePageBlob.useMutation()
+
+  useEffect(() => {
+    if (savePageMutation.isSuccess) {
+      void utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      void utils.page.readPage.invalidate({ pageId, siteId })
+      toast({
+        title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [savePageMutation.isSuccess])
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
@@ -143,10 +151,16 @@ export default function RootStateDrawer() {
       }
 
       // NOTE: drive an update to the db with the updated index
-      mutate({ pageId, from, to, blocks: savedPageState.content, siteId })
+      reorderBlockMutation.mutate({
+        pageId,
+        from,
+        to,
+        blocks: savedPageState.content,
+        siteId,
+      })
     },
     [
-      mutate,
+      reorderBlockMutation.mutate,
       pageId,
       savedPageState,
       setPreviewPageState,
@@ -181,7 +195,7 @@ export default function RootStateDrawer() {
   }, [savedPageState, setPreviewPageState])
 
   const handleSaveConversionToIndexPage = useCallback(() => {
-    savePage(
+    savePageMutation.mutate(
       {
         pageId,
         siteId,
@@ -200,7 +214,7 @@ export default function RootStateDrawer() {
     onConfirmConvertIndexPageModalClose,
     pageId,
     previewPageState,
-    savePage,
+    savePageMutation.mutate,
     setDrawerState,
     setSavedPageState,
     siteId,
@@ -462,7 +476,7 @@ export default function RootStateDrawer() {
             <VStack gap="1rem" w="full">
               <Button
                 w="100%"
-                isLoading={isSavingPage}
+                isLoading={savePageMutation.isLoading}
                 onClick={onConfirmConvertIndexPageModalOpen}
               >
                 Accept this change

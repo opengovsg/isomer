@@ -1,4 +1,5 @@
 import type { Static } from "@sinclair/typebox"
+import { useEffect } from "react"
 import { Box, chakra, Grid, GridItem, Text, VStack } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
@@ -62,12 +63,14 @@ const PageSettings: NextPageWithLayout = () => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
 
-  const { mutate: updateMeta } = trpc.page.updateMeta.useMutation({
-    onSuccess: async () => {
+  const updateMetaMutation = trpc.page.updateMeta.useMutation()
+
+  useEffect(() => {
+    if (updateMetaMutation.isSuccess) {
       // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
-      await utils.page.invalidate()
-      await utils.resource.invalidate()
-      await utils.folder.invalidate()
+      void utils.page.invalidate()
+      void utils.resource.invalidate()
+      void utils.folder.invalidate()
       if (toast.isActive(SUCCESS_TOAST_ID)) {
         toast.close(SUCCESS_TOAST_ID)
       }
@@ -77,20 +80,23 @@ const PageSettings: NextPageWithLayout = () => {
         description: "Publish this page for your changes to go live.",
         status: "success",
       })
-    },
-    onError: (error) => {
+    }
+  }, [updateMetaMutation.isSuccess])
+
+  useEffect(() => {
+    if (updateMetaMutation.isError) {
       toast({
         title: "Failed to save page metadata",
-        description: error.message,
+        description: updateMetaMutation.error.message,
         status: "error",
       })
       reset()
-    },
-  })
+    }
+  }, [updateMetaMutation.isError, updateMetaMutation.error])
 
   const onSubmit = handleSubmit(({ meta, ...rest }) => {
     if (isDirty) {
-      updateMeta(
+      updateMetaMutation.mutate(
         {
           resourceId: String(pageId),
           siteId,

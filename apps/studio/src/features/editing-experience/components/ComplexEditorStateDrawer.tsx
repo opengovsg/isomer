@@ -1,5 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
@@ -55,17 +55,18 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const { pageId, siteId } = useQueryParse(pageSchema)
   const utils = trpc.useUtils()
 
-  const { mutate: savePage, isLoading: isSavingPage } =
-    trpc.page.updatePageBlob.useMutation({
-      onSuccess: async () => {
-        await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-        await utils.page.readPage.invalidate({ pageId, siteId })
-        toast({
-          title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-    })
+  const savePageMutation = trpc.page.updatePageBlob.useMutation()
+
+  useEffect(() => {
+    if (savePageMutation.isSuccess) {
+      void utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      void utils.page.readPage.invalidate({ pageId, siteId })
+      toast({
+        title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [savePageMutation.isSuccess])
 
   const { mutateAsync: uploadAsset, isLoading: isUploadingAsset } =
     useUploadAssetMutation({ siteId, resourceId: String(pageId) })
@@ -82,7 +83,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
     setAddedBlockIndex(null)
-    savePage({
+    savePageMutation.mutate({
       pageId,
       siteId,
       content: JSON.stringify(newPageState),
@@ -101,7 +102,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     onDeleteBlockModalClose,
     pageId,
     previewPageState,
-    savePage,
+    savePageMutation.mutate,
     savedPageState.content,
     setAddedBlockIndex,
     setDrawerState,
@@ -216,7 +217,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       })
     }
 
-    savePage(
+    savePageMutation.mutate(
       {
         pageId,
         siteId,
@@ -238,7 +239,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     modifiedAssets,
     pageId,
     previewPageState,
-    savePage,
+    savePageMutation.mutate,
     setAddedBlockIndex,
     setDrawerState,
     setModifiedAssets,
@@ -249,7 +250,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     uploadAsset,
   ])
 
-  const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
+  const isLoading =
+    savePageMutation.isLoading || isUploadingAsset || isDeletingAssets
 
   if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
     return <></>

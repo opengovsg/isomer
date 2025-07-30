@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import {
   FormControl,
@@ -59,22 +59,27 @@ export const VerificationInput = (): JSX.Element | null => {
     },
   })
 
-  const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation({
-    onSuccess: async () => {
+  const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation()
+
+  useEffect(() => {
+    if (verifyOtpMutation.isSuccess) {
       if (isSingpassEnabled) {
-        await router.push(SIGN_IN_SINGPASS)
+        void router.push(SIGN_IN_SINGPASS)
       } else {
         setHasLoginStateFlag()
-        await utils.me.get.invalidate()
+        void utils.me.get.invalidate()
         // accessing router.query values returns decoded URI params automatically,
         // so there's no need to call decodeURIComponent manually when accessing the callback url.
-        await router.push(
+        void router.push(
           callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]),
         )
       }
-    },
-    onError: (error) => {
-      switch (error.message) {
+    }
+  }, [verifyOtpMutation.isSuccess, setError])
+
+  useEffect(() => {
+    if (verifyOtpMutation.isError) {
+      switch (verifyOtpMutation.error.message) {
         case "Token is invalid or has expired":
           setError("token", {
             message:
@@ -88,10 +93,10 @@ export const VerificationInput = (): JSX.Element | null => {
           })
           break
         default:
-          setError("token", { message: error.message })
+          setError("token", { message: verifyOtpMutation.error.message })
       }
-    },
-  })
+    }
+  }, [verifyOtpMutation.isError, verifyOtpMutation.error, setError])
 
   const resendOtpMutation = trpc.auth.email.login.useMutation({
     onError: (error) => setError("token", { message: error.message }),

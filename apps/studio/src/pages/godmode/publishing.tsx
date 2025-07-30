@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import {
@@ -43,45 +44,55 @@ const GodModePublishingPage: NextPageWithLayout = () => {
 
   const { data: sites = [] } = trpc.site.listAllSites.useQuery()
 
-  const { mutate: publishOneSite, isLoading: isPublishingOneSite } =
-    trpc.site.publish.useMutation({
-      onSuccess: () => {
-        toast({
-          title: "Site published successfully",
-          status: "success",
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-      onError: (error) => {
-        toast({
-          title: "Failed to publish site",
-          description: error.message,
-          status: "error",
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-    })
+  const publishOneSiteMutation = trpc.site.publish.useMutation()
 
-  const { mutate: publishAllSite, isLoading: isPublishingAllSite } =
-    trpc.site.publishAll.useMutation({
-      onSuccess: ({ siteCount }) => {
-        toast({
-          title: `Starting to publish ${siteCount} sites in the background...`,
-          status: "success",
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-      onError: (error) => {
-        toast({
-          title: "Failed to publish site",
-          description: error.message,
-          status: "error",
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-    })
+  useEffect(() => {
+    if (publishOneSiteMutation.isSuccess) {
+      toast({
+        title: "Site published successfully",
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [publishOneSiteMutation.isSuccess])
 
-  const isLoading = isPublishingOneSite || isPublishingAllSite
+  useEffect(() => {
+    if (publishOneSiteMutation.isError) {
+      toast({
+        title: "Failed to publish site",
+        description: publishOneSiteMutation.error.message,
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [publishOneSiteMutation.isError, publishOneSiteMutation.error])
+
+  const publishAllSiteMutation = trpc.site.publishAll.useMutation()
+
+  useEffect(() => {
+    if (publishAllSiteMutation.isSuccess) {
+      const { siteCount } = publishAllSiteMutation.data
+      toast({
+        title: `Starting to publish ${siteCount} sites in the background...`,
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [publishAllSiteMutation.isSuccess, publishAllSiteMutation.data])
+
+  useEffect(() => {
+    if (publishAllSiteMutation.isError) {
+      toast({
+        title: "Failed to publish site",
+        description: publishAllSiteMutation.error.message,
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [publishAllSiteMutation.isError, publishAllSiteMutation.error])
+
+  const isLoading =
+    publishOneSiteMutation.isLoading || publishAllSiteMutation.isLoading
 
   return (
     <Flex flexDir="column" py="2rem" maxW="57rem" mx="auto" width="100%">
@@ -120,7 +131,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
           <Text fontWeight="bold">Sites</Text>
           <Button
             colorScheme="blue"
-            onClick={() => publishAllSite()}
+            onClick={() => publishAllSiteMutation.mutate()}
             isLoading={isLoading}
           >
             Publish All
@@ -146,7 +157,9 @@ const GodModePublishingPage: NextPageWithLayout = () => {
                     <Button
                       size="xs"
                       colorScheme="blue"
-                      onClick={() => publishOneSite({ siteId: site.id })}
+                      onClick={() =>
+                        publishOneSiteMutation.mutate({ siteId: site.id })
+                      }
                       isLoading={isLoading}
                     >
                       Publish

@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from "react"
+import { Suspense, useEffect, useMemo } from "react"
 import {
   chakra,
   FormControl,
@@ -113,33 +113,36 @@ const PageSettingsModalContent = ({
   const utils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
 
-  const { mutate: updatePageSettings } = trpc.page.updateSettings.useMutation({
-    onSuccess: async () => {
-      // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
-      await utils.page.invalidate()
-      await utils.resource.invalidate()
-      await utils.folder.invalidate()
-      await utils.collection.invalidate()
+  const updatePageSettingsMutation = trpc.page.updateSettings.useMutation()
 
+  useEffect(() => {
+    if (updatePageSettingsMutation.isSuccess) {
+      // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
+      void utils.page.invalidate()
+      void utils.resource.invalidate()
+      void utils.folder.invalidate()
+      void utils.collection.invalidate()
       toast({
         title: "Saved and published settings",
         description: "Check your site in 5-10 minutes to view it live.",
         status: "success",
       })
-    },
-    onError: (error) => {
+    }
+  }, [updatePageSettingsMutation.isSuccess])
+
+  useEffect(() => {
+    if (updatePageSettingsMutation.isError) {
       toast({
         title: "Failed to save settings",
-        description: error.message,
+        description: updatePageSettingsMutation.error.message,
         status: "error",
       })
-      reset()
-    },
-  })
+    }
+  }, [updatePageSettingsMutation.isError, updatePageSettingsMutation.error])
 
   const onSubmit = handleSubmit((data) => {
     if (isDirty) {
-      updatePageSettings(
+      updatePageSettingsMutation.mutate(
         {
           pageId: Number(pageId),
           siteId,

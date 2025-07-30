@@ -1,6 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
 import {
@@ -45,24 +45,27 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
-  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-      await utils.page.readPage.invalidate({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
+
+  const updatePageBlobMutation = trpc.page.updatePageBlob.useMutation()
+
+  useEffect(() => {
+    if (updatePageBlobMutation.isSuccess) {
+      void utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      void utils.page.readPage.invalidate({ pageId, siteId })
+      void utils.page.getCategories.invalidate({ pageId, siteId })
       toast({
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
+    }
+  }, [updatePageBlobMutation.isSuccess])
 
   const metadataSchema = getLayoutPageSchema(previewPageState.layout)
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(metadataSchema)
 
   const handleSaveChanges = useCallback(() => {
     setSavedPageState(previewPageState)
-    mutate(
+    updatePageBlobMutation.mutate(
       {
         pageId,
         siteId,
@@ -73,7 +76,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
       },
     )
   }, [
-    mutate,
+    updatePageBlobMutation.mutate,
     pageId,
     previewPageState,
     setDrawerState,
@@ -107,7 +110,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
       <Flex flexDir="column" position="relative" h="100%" w="100%">
         <DrawerHeader
-          isDisabled={isLoading}
+          isDisabled={updatePageBlobMutation.isLoading}
           onBackClick={() => {
             if (!isEqual(previewPageState, savedPageState)) {
               onDiscardChangesModalOpen()
@@ -153,7 +156,10 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             py="1.5rem"
             px="2rem"
           >
-            <SaveButton isLoading={isLoading} onClick={handleSaveChanges} />
+            <SaveButton
+              isLoading={updatePageBlobMutation.isLoading}
+              onClick={handleSaveChanges}
+            />
           </Box>
         </ErrorProvider>
       </Flex>

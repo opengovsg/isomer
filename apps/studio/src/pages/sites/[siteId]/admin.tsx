@@ -107,12 +107,15 @@ const SiteAdminPage: NextPageWithLayout = () => {
     },
   })
 
-  const { mutate, isLoading } = trpc.site.setSiteConfigByAdmin.useMutation({
-    onSuccess: async () => {
-      await trpcUtils.site.getConfig.invalidate({ id: siteId })
-      await trpcUtils.site.getTheme.invalidate({ id: siteId })
-      await trpcUtils.site.getNavbar.invalidate({ id: siteId })
-      await trpcUtils.site.getFooter.invalidate({ id: siteId })
+  const setSiteConfigByAdminMutation =
+    trpc.site.setSiteConfigByAdmin.useMutation()
+
+  useEffect(() => {
+    if (setSiteConfigByAdminMutation.isSuccess) {
+      void trpcUtils.site.getConfig.invalidate({ id: siteId })
+      void trpcUtils.site.getTheme.invalidate({ id: siteId })
+      void trpcUtils.site.getNavbar.invalidate({ id: siteId })
+      void trpcUtils.site.getFooter.invalidate({ id: siteId })
       // Reset the form's isDirty but use the latest values provided by the user
       reset(watch())
       toast({
@@ -121,16 +124,19 @@ const SiteAdminPage: NextPageWithLayout = () => {
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-    onError: () => {
+    }
+  }, [setSiteConfigByAdminMutation.isSuccess, reset, watch])
+
+  useEffect(() => {
+    if (setSiteConfigByAdminMutation.isError) {
       toast({
         title: "Error saving site config!",
         description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
+    }
+  }, [setSiteConfigByAdminMutation.isError, setSiteConfigByAdminMutation.error])
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
@@ -155,7 +161,7 @@ const SiteAdminPage: NextPageWithLayout = () => {
   }, [isOpen, router.events, isDirty])
 
   const onClickUpdate = handleSubmit((input) => {
-    mutate({
+    setSiteConfigByAdminMutation.mutate({
       siteId,
       ...input,
     })
@@ -212,7 +218,11 @@ const SiteAdminPage: NextPageWithLayout = () => {
                 Changes will be reflected on your site immediately.
               </Text>
 
-              <Button type="submit" isLoading={isLoading} isDisabled={!isDirty}>
+              <Button
+                type="submit"
+                isLoading={setSiteConfigByAdminMutation.isLoading}
+                isDisabled={!isDirty}
+              >
                 Save settings
               </Button>
             </HStack>

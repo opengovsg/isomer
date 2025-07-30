@@ -1,7 +1,7 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
-import { createContext, useContext, useMemo, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/router"
 import { merge } from "lodash"
 
@@ -87,16 +87,17 @@ const useCreatePageWizardContext = ({
   const utils = trpc.useUtils()
   const router = useRouter()
 
-  const { mutate, isLoading } = trpc.page.createPage.useMutation({
-    onSuccess: async () => {
-      await utils.resource.listWithoutRoot.invalidate()
+  const createPageMutation = trpc.page.createPage.useMutation()
+
+  useEffect(() => {
+    if (createPageMutation.isSuccess) {
+      void utils.resource.listWithoutRoot.invalidate()
       onClose()
-    },
-    // TODO: Error handling
-  })
+    }
+  }, [createPageMutation.isSuccess, onClose])
 
   const handleCreatePage = formMethods.handleSubmit((values) => {
-    mutate(
+    createPageMutation.mutate(
       {
         siteId,
         folderId,
@@ -134,7 +135,8 @@ const useCreatePageWizardContext = ({
     currentStep,
     formMethods,
     handleCreatePage,
-    isLoading: isLoading || (!!folderId && isPermalinkLoading),
+    isLoading:
+      createPageMutation.isLoading || (!!folderId && isPermalinkLoading),
     handleNextToDetailScreen,
     handleBackToLayoutScreen,
     layoutPreviewJson,

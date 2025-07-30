@@ -1,5 +1,5 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useToast } from "@opengovsg/design-system-react"
 import { schema } from "@opengovsg/isomer-components"
 import isEqual from "lodash/isEqual"
@@ -31,20 +31,23 @@ export default function RawJsonEditorModeStateDrawer(): JSX.Element {
   )
 
   const utils = trpc.useUtils()
-  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-      await utils.page.readPage.invalidate({ pageId, siteId })
+
+  const updatePageBlobMutation = trpc.page.updatePageBlob.useMutation()
+
+  useEffect(() => {
+    if (updatePageBlobMutation.isSuccess) {
+      void utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      void utils.page.readPage.invalidate({ pageId, siteId })
       toast({
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
+    }
+  }, [updatePageBlobMutation.isSuccess])
 
   const handleSaveChanges = useCallback(() => {
     setSavedPageState(previewPageState)
-    mutate(
+    updatePageBlobMutation.mutate(
       {
         pageId,
         siteId,
@@ -55,7 +58,7 @@ export default function RawJsonEditorModeStateDrawer(): JSX.Element {
       },
     )
   }, [
-    mutate,
+    updatePageBlobMutation.mutate,
     pageId,
     previewPageState,
     setDrawerState,
@@ -84,7 +87,7 @@ export default function RawJsonEditorModeStateDrawer(): JSX.Element {
   return (
     <RawJsonEditor
       pendingChanges={pendingChanges}
-      isLoading={isLoading}
+      isLoading={updatePageBlobMutation.isLoading}
       isModified={!isEqual(previewPageState, savedPageState)}
       isPendingChangesValid={isPendingChangesValid}
       handleChange={handleChange}

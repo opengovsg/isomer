@@ -77,21 +77,25 @@ export function EditorDrawerProvider({
   const [addedBlockIndex, setAddedBlockIndex] = useState<number | null>(null)
   const toast = useToast({ status: "error" })
   const utils = trpc.useUtils()
-  const { mutate: insertChildpageBlock } = trpc.page.updatePageBlob.useMutation(
-    {
-      onSuccess: async () => {
-        await utils.page.readPage.invalidate({ pageId, siteId })
-        await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-      },
-      onError: (error) => {
-        toast({
-          title: "Failed to update blocks",
-          description: error.message,
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-    },
-  )
+
+  const updatePageBlobMutation = trpc.page.updatePageBlob.useMutation()
+
+  useEffect(() => {
+    if (updatePageBlobMutation.isSuccess) {
+      void utils.page.readPage.invalidate({ pageId, siteId })
+      void utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    }
+  }, [updatePageBlobMutation.isSuccess, pageId, siteId])
+
+  useEffect(() => {
+    if (updatePageBlobMutation.isError) {
+      toast({
+        title: "Failed to update blocks",
+        description: updatePageBlobMutation.error.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [updatePageBlobMutation.isError, updatePageBlobMutation.error])
 
   useEffect(() => {
     if (
@@ -114,7 +118,8 @@ export function EditorDrawerProvider({
       setPreviewPageState(newPageState)
       setSavedPageState(newPageState)
 
-      insertChildpageBlock({
+      // insert child page block
+      updatePageBlobMutation.mutate({
         siteId,
         pageId,
         content: JSON.stringify(newPageState),

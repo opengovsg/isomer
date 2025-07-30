@@ -1,4 +1,4 @@
-import { useContext } from "react"
+import { useContext, useEffect } from "react"
 import {
   IconButton,
   Menu,
@@ -51,20 +51,25 @@ export const UserTableMenu = ({
 
   const isSingpassEnabled = useIsSingpassEnabled()
 
-  const { mutate: resendInvite, isLoading: isResendingInvite } =
-    trpc.user.resendInvite.useMutation({
-      onSuccess: (result) => {
-        toast({
-          title: `Invite resent to ${result.email}`,
-        })
-      },
-      onError: (err) => {
-        toast({
-          title: "Failed to resend invite",
-          description: err.message,
-        })
-      },
-    })
+  const resendInviteMutation = trpc.user.resendInvite.useMutation()
+
+  useEffect(() => {
+    if (resendInviteMutation.isSuccess) {
+      const { email } = resendInviteMutation.data
+      toast({
+        title: `Invite resent to ${email}`,
+      })
+    }
+  }, [resendInviteMutation.isSuccess, resendInviteMutation.data])
+
+  useEffect(() => {
+    if (resendInviteMutation.isError) {
+      toast({
+        title: "Failed to resend invite",
+        description: resendInviteMutation.error.message,
+      })
+    }
+  }, [resendInviteMutation.isError, resendInviteMutation.error])
 
   return (
     <Menu isLazy size="sm">
@@ -96,8 +101,12 @@ export const UserTableMenu = ({
               </MenuItem>
               {canResendInviteToUser({ createdAt, lastLoginAt }) && (
                 <MenuItem
-                  onClick={() => resendInvite({ siteId, userId })}
-                  isDisabled={isResendingInvite || !isSingpassEnabled}
+                  onClick={() =>
+                    resendInviteMutation.mutate({ siteId, userId })
+                  }
+                  isDisabled={
+                    resendInviteMutation.isLoading || !isSingpassEnabled
+                  }
                   icon={<BiMailSend fontSize="1rem" />}
                   tooltip={
                     isSingpassEnabled

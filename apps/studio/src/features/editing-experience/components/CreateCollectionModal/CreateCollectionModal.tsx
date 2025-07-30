@@ -89,32 +89,53 @@ const CreateCollectionModalContent = ({
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
-  const { mutate, isLoading } = trpc.collection.create.useMutation({
-    onSettled: onClose,
-    onSuccess: async () => {
-      await utils.resource.listWithoutRoot.invalidate()
-      await utils.resource.countWithoutRoot.invalidate()
-      await utils.resource.getChildrenOf.invalidate()
+
+  const createCollectionMutation = trpc.collection.create.useMutation()
+
+  useEffect(() => {
+    if (
+      createCollectionMutation.isSuccess ||
+      createCollectionMutation.isError
+    ) {
+      onClose()
+    }
+  }, [
+    createCollectionMutation.isSuccess,
+    createCollectionMutation.isError,
+    onClose,
+  ])
+
+  useEffect(() => {
+    if (
+      createCollectionMutation.isSuccess ||
+      createCollectionMutation.isError
+    ) {
+      void utils.resource.listWithoutRoot.invalidate()
+      void utils.resource.countWithoutRoot.invalidate()
+      void utils.resource.getChildrenOf.invalidate()
       toast({
         title: "Collection created!",
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-    onError: (err) => {
+    }
+  }, [createCollectionMutation.isSuccess])
+
+  useEffect(() => {
+    if (createCollectionMutation.isError) {
       toast({
         title: "Failed to create collection",
         status: "error",
         // TODO: check if this property is correct
-        description: err.message,
+        description: createCollectionMutation.error.message,
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
+    }
+  }, [createCollectionMutation.isError, createCollectionMutation.error])
 
   const [collectionTitle, permalink] = watch(["collectionTitle", "permalink"])
   const onSubmit = handleSubmit((data) => {
-    mutate({ ...data, parentFolderId, siteId })
+    createCollectionMutation.mutate({ ...data, parentFolderId, siteId })
   })
 
   useEffect(() => {
@@ -213,7 +234,11 @@ const CreateCollectionModalContent = ({
           <Button mr={3} onClick={onClose} variant="clear">
             Close
           </Button>
-          <Button isLoading={isLoading} isDisabled={!isValid} type="submit">
+          <Button
+            isLoading={createCollectionMutation.isLoading}
+            isDisabled={!isValid}
+            type="submit"
+          >
             Create collection
           </Button>
         </ModalFooter>

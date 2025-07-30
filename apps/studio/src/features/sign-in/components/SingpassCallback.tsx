@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { Button, Flex, Grid, GridItem, Text } from "@chakra-ui/react"
@@ -28,19 +29,23 @@ export const SingpassCallback = (): JSX.Element => {
     { code: String(code), state: String(state) },
     {
       staleTime: Infinity,
-      onSuccess: ({ isNewUser, redirectUrl }) => {
-        setHasLoginStateFlag()
-        void utils.me.get.invalidate()
-
-        if (!isNewUser) {
-          void router.replace(callbackUrlSchema.parse(redirectUrl))
-        }
-      },
       onError: (_) => {
         void router.replace(`${SIGN_IN_SINGPASS}?error=true`)
       },
     },
   )
+
+  useEffect(() => {
+    if (data) {
+      setHasLoginStateFlag()
+      void utils.me.get.invalidate()
+
+      const { isNewUser, redirectUrl } = data
+      if (!isNewUser) {
+        void router.replace(callbackUrlSchema.parse(redirectUrl))
+      }
+    }
+  }, [data])
 
   const { isNewUser, redirectUrl } = data
 

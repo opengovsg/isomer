@@ -58,16 +58,19 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
 
   const router = useRouter()
 
-  const loginMutation = trpc.auth.email.login.useMutation({
-    onSuccess,
-    onError: (error) => {
-      if (error.data?.code === "UNAUTHORIZED") {
+  const loginMutation = trpc.auth.email.login.useMutation()
+
+  useEffect(() => {
+    if (loginMutation.isError) {
+      if (loginMutation.error.data?.code === "UNAUTHORIZED") {
         setErrorState("unauthorized")
       }
-
-      setError("email", { type: error.data?.code, message: error.message })
-    },
-  })
+      setError("email", {
+        type: loginMutation.error.data?.code,
+        message: loginMutation.error.message,
+      })
+    }
+  }, [loginMutation.isError, loginMutation.error, setError, setErrorState])
 
   useEffect(() => {
     if (router.query.error) {

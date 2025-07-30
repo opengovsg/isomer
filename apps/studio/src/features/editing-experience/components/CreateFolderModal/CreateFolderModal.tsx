@@ -83,33 +83,44 @@ const CreateFolderModalContent = ({
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
-  const { mutate, isLoading } = trpc.folder.create.useMutation({
-    onSettled: onClose,
-    onSuccess: async () => {
-      await utils.site.list.invalidate()
-      await utils.resource.listWithoutRoot.invalidate()
-      await utils.resource.countWithoutRoot.invalidate()
-      await utils.resource.getChildrenOf.invalidate()
+
+  const createFolderMutation = trpc.folder.create.useMutation()
+
+  useEffect(() => {
+    if (createFolderMutation.isSuccess || createFolderMutation.isError) {
+      onClose()
+    }
+  }, [createFolderMutation.isSuccess, createFolderMutation.isError, onClose])
+
+  useEffect(() => {
+    if (createFolderMutation.isSuccess) {
+      void utils.site.list.invalidate()
+      void utils.resource.listWithoutRoot.invalidate()
+      void utils.resource.countWithoutRoot.invalidate()
+      void utils.resource.getChildrenOf.invalidate()
       toast({
         title: "Folder created!",
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-    onError: (err) => {
+    }
+  }, [createFolderMutation.isSuccess, onClose])
+
+  useEffect(() => {
+    if (createFolderMutation.isError) {
       toast({
         title: "Failed to create folder",
         status: "error",
         // TODO: check if this property is correct
-        description: err.message,
+        description: createFolderMutation.error.message,
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
+    }
+  }, [createFolderMutation.isError, createFolderMutation.error])
 
   const [folderTitle, permalink] = watch(["folderTitle", "permalink"])
   const onSubmit = handleSubmit((data) => {
-    mutate({ ...data, parentFolderId, siteId })
+    createFolderMutation.mutate({ ...data, parentFolderId, siteId })
   })
 
   useEffect(() => {
@@ -210,7 +221,11 @@ const CreateFolderModalContent = ({
           <Button mr={3} onClick={onClose} variant="clear">
             Close
           </Button>
-          <Button isLoading={isLoading} isDisabled={!isValid} type="submit">
+          <Button
+            isLoading={createFolderMutation.isLoading}
+            isDisabled={!isValid}
+            type="submit"
+          >
             Create Folder
           </Button>
         </ModalFooter>

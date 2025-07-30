@@ -1,4 +1,5 @@
 import type { ButtonProps } from "@opengovsg/design-system-react"
+import { useEffect } from "react"
 import { Skeleton } from "@chakra-ui/react"
 import {
   Button,
@@ -32,36 +33,46 @@ const SuspendablePublishButton = ({
     "Failed to publish page. Please contact Isomer support."
   const publishSuccessMsg = "Page published successfully"
 
-  const { mutate, isLoading } = trpc.page.publishPage.useMutation({
-    onSuccess: async () => {
+  const publishPageMutation = trpc.page.publishPage.useMutation()
+
+  useEffect(() => {
+    if (publishPageMutation.isSuccess) {
       toast({
         status: "success",
         title: publishSuccessMsg,
         ...BRIEF_TOAST_SETTINGS,
       })
-      await utils.page.readPage.invalidate({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
-      await utils.site.getLocalisedSitemap.invalidate({
+      void utils.page.readPage.invalidate({ pageId, siteId })
+      void utils.page.getCategories.invalidate({ pageId, siteId })
+      void utils.site.getLocalisedSitemap.invalidate({
         resourceId: pageId,
         siteId,
       })
-    },
-    onError: async (error) => {
-      console.error(`Error occurred when publishing page: ${error.message}`)
+    }
+  }, [publishPageMutation.isSuccess])
+
+  useEffect(() => {
+    if (publishPageMutation.isError) {
+      console.error(
+        `Error occurred when publishing page: ${publishPageMutation.error.message}`,
+      )
       toast({
         status: "error",
         title: publishFailureMsg,
         ...BRIEF_TOAST_SETTINGS,
       })
-      await utils.page.readPage.invalidate({ pageId, siteId })
-    },
-  })
+      void utils.page.readPage.invalidate({ pageId, siteId })
+    }
+  }, [publishPageMutation.isError, publishPageMutation.error])
 
   const handlePublish = () => {
     const coercedSiteId = Number(siteId)
     const coercedPageId = Number(pageId)
     if (coercedSiteId && coercedPageId)
-      mutate({ pageId: coercedPageId, siteId: coercedSiteId })
+      publishPageMutation.mutate({
+        pageId: coercedPageId,
+        siteId: coercedSiteId,
+      })
   }
 
   const isChangesPendingPublish = !!currPage.draftBlobId
@@ -82,7 +93,7 @@ const SuspendablePublishButton = ({
                 handlePublish()
                 onClick?.(e)
               }}
-              isLoading={isLoading}
+              isLoading={publishPageMutation.isLoading}
               {...rest}
             >
               Publish

@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { Tooltip } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { BiLogoDevTo } from "react-icons/bi"
@@ -28,37 +29,38 @@ export const AdminCreateIndexPageButton = ({
 
   const hasIndexPage = !!indexPage
 
-  const { mutate: createIndexPage, isLoading } =
-    trpc.page.createIndexPage.useMutation({
-      onSuccess: async () => {
-        // Invalidate only the necessary queries
-        await Promise.all([
-          utils.resource.getChildrenOf.invalidate({
-            siteId: String(siteId),
-            resourceId: String(parentId),
-          }),
-          utils.resource.listWithoutRoot.invalidate({ siteId: Number(siteId) }),
-          utils.collection.list.invalidate({ siteId: Number(siteId) }),
-          utils.resource.getIndexPage.invalidate({
-            siteId,
-            parentId: String(parentId),
-          }),
-        ])
-        toast({
-          status: "success",
-          title: "Index page created successfully",
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-      onError: (error) => {
-        toast({
-          status: "error",
-          title: "Failed to create index page",
-          description: error.message,
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-    })
+  const createIndexPageMutation = trpc.page.createIndexPage.useMutation()
+
+  useEffect(() => {
+    if (createIndexPageMutation.isSuccess) {
+      void utils.resource.getChildrenOf.invalidate({
+        siteId: String(siteId),
+        resourceId: String(parentId),
+      })
+      void utils.resource.listWithoutRoot.invalidate({ siteId: Number(siteId) })
+      void utils.collection.list.invalidate({ siteId: Number(siteId) })
+      void utils.resource.getIndexPage.invalidate({
+        siteId,
+        parentId: String(parentId),
+      })
+      toast({
+        status: "success",
+        title: "Index page created successfully",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [createIndexPageMutation.isSuccess, siteId, parentId])
+
+  useEffect(() => {
+    if (createIndexPageMutation.isError) {
+      toast({
+        status: "error",
+        title: "Failed to create index page",
+        description: createIndexPageMutation.error.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [createIndexPageMutation.isError, createIndexPageMutation.error])
 
   if (!isUserIsomerAdmin) return null
   return (
@@ -71,9 +73,14 @@ export const AdminCreateIndexPageButton = ({
       <Button
         variant="outline"
         size="md"
-        isDisabled={isLoading || hasIndexPage}
-        isLoading={isLoading}
-        onClick={() => createIndexPage({ siteId, parentId: String(parentId) })}
+        isDisabled={createIndexPageMutation.isLoading || hasIndexPage}
+        isLoading={createIndexPageMutation.isLoading}
+        onClick={() =>
+          createIndexPageMutation.mutate({
+            siteId,
+            parentId: String(parentId),
+          })
+        }
         leftIcon={<BiLogoDevTo fontSize="1rem" />}
         aria-label="Create index page"
       >

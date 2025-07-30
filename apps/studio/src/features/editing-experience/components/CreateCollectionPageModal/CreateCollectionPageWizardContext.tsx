@@ -1,7 +1,7 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
-import { createContext, useContext, useMemo, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/router"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { merge } from "lodash"
@@ -84,17 +84,18 @@ const useCreateCollectionPageWizardContext = ({
   const router = useRouter()
 
   // TODO: Call correct mutation
-  const { mutate, isLoading } =
-    trpc.collection.createCollectionPage.useMutation({
-      onSuccess: async () => {
-        await utils.collection.list.invalidate()
-        onClose()
-      },
-      // TOOD: Error handling
-    })
+  const createCollectionPageMutation =
+    trpc.collection.createCollectionPage.useMutation()
+
+  useEffect(() => {
+    if (createCollectionPageMutation.isSuccess) {
+      void utils.collection.list.invalidate()
+      onClose()
+    }
+  }, [createCollectionPageMutation.isSuccess, onClose])
 
   const handleCreatePage = formMethods.handleSubmit((values) => {
-    mutate(
+    createCollectionPageMutation.mutate(
       {
         siteId,
         collectionId,
@@ -147,7 +148,7 @@ const useCreateCollectionPageWizardContext = ({
     currentStep,
     formMethods,
     handleCreatePage,
-    isLoading: isLoading || isPermalinkLoading,
+    isLoading: createCollectionPageMutation.isLoading || isPermalinkLoading,
     handleNextToDetailScreen,
     handleBackToTypeScreen,
     pagePreviewJson,

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useDebounce } from "@uidotdev/usehooks"
 
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
@@ -18,16 +18,17 @@ export const useSearchQuery = ({
   const [searchValue, setSearchValue] = useState("")
   const debouncedSearchTerm = useDebounce(searchValue, 300)
 
-  const { data, isLoading } = trpc.resource.search.useInfiniteQuery(
-    {
-      siteId,
-      query: debouncedSearchTerm,
-      resourceTypes,
-    },
-    {
-      onSuccess: onSearchSuccess,
-    },
-  )
+  const { data, isLoading } = trpc.resource.search.useInfiniteQuery({
+    siteId,
+    query: debouncedSearchTerm,
+    resourceTypes,
+  })
+
+  useEffect(() => {
+    if (data) {
+      onSearchSuccess?.()
+    }
+  }, [data])
 
   const matchedResources = useMemo((): SearchResultResource[] => {
     return data?.pages.flatMap((page) => page.resources) ?? []

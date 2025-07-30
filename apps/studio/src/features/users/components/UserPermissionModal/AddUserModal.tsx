@@ -81,24 +81,31 @@ export const AddUserModal = () => {
     [isNonGovEmailInput, hasWhitelistError],
   )
 
-  const { mutate: createUser, isLoading } = trpc.user.create.useMutation({
-    onSuccess: async (createdUsers) => {
-      await utils.user.list.invalidate()
-      await utils.user.count.invalidate()
+  const createUserMutation = trpc.user.create.useMutation()
+
+  useEffect(() => {
+    if (createUserMutation.isSuccess) {
+      void utils.user.list.invalidate()
+      void utils.user.count.invalidate()
+
+      const createdUsers = createUserMutation.data
       toast({
         status: "success",
         description: `Sent invite to ${createdUsers.length === 1 ? createdUsers[0]?.email : createdUsers.length + " users"}. They'll receive an email in a few minutes.`,
       })
-    },
-    onError: (error) => {
+    }
+  }, [createUserMutation.isSuccess, createUserMutation.data])
+
+  useEffect(() => {
+    if (createUserMutation.isError) {
       toast({
         status: "error",
         title: "Failed to create user",
-        description: error.message,
+        description: createUserMutation.error.message,
       })
       reset()
-    },
-  })
+    }
+  }, [createUserMutation.isError, createUserMutation.error, reset])
 
   const { refetch: checkWhitelist } =
     trpc.whitelist.isEmailWhitelisted.useQuery(
@@ -140,7 +147,7 @@ export const AddUserModal = () => {
   }, [reset, setAddUserModalState])
 
   const onSendInvite = handleSubmit((data) => {
-    createUser(
+    createUserMutation.mutate(
       {
         siteId,
         users: [
@@ -245,7 +252,7 @@ export const AddUserModal = () => {
             <Button
               variant="solid"
               onClick={onSendInvite}
-              isLoading={isLoading}
+              isLoading={createUserMutation.isLoading}
               isDisabled={
                 Object.keys(errors).length > 0 ||
                 email === "" ||

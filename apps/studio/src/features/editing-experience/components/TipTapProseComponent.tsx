@@ -1,5 +1,6 @@
 import type { ProseProps } from "@opengovsg/isomer-components"
 import type { JSONContent } from "@tiptap/react"
+import { useEffect } from "react"
 import { Box, HStack, useDisclosure, VStack } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import isEqual from "lodash/isEqual"
@@ -46,16 +47,19 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
 
   const toast = useToast()
   const { pageId, siteId } = useQueryParse(pageSchema)
-  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-      await utils.page.readPage.invalidate({ pageId, siteId })
+
+  const updatePageBlobMutation = trpc.page.updatePageBlob.useMutation()
+
+  useEffect(() => {
+    if (updatePageBlobMutation.isSuccess) {
+      void utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      void utils.page.readPage.invalidate({ pageId, siteId })
       toast({
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
+    }
+  }, [updatePageBlobMutation.isSuccess])
 
   const updatePageState = (editorContent: JSONContent | undefined) => {
     const updatedBlocks = Array.from(previewPageState.content)
@@ -85,7 +89,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     setPreviewPageState(newPageState)
     onDeleteBlockModalClose()
     setAddedBlockIndex(null)
-    mutate({
+    updatePageBlobMutation.mutate({
       pageId,
       siteId,
       content: JSON.stringify(newPageState),
@@ -130,7 +134,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
 
       <VStack bg="white" h="100%" gap="0">
         <DrawerHeader
-          isDisabled={isLoading}
+          isDisabled={updatePageBlobMutation.isLoading}
           onBackClick={() => {
             if (!isEqual(previewPageState, savedPageState)) {
               onDiscardChangesModalOpen()
@@ -163,7 +167,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                 w="100%"
                 onClick={() => {
                   setSavedPageState(previewPageState)
-                  mutate(
+                  updatePageBlobMutation.mutate(
                     {
                       pageId,
                       siteId,
@@ -177,7 +181,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                     },
                   )
                 }}
-                isLoading={isLoading}
+                isLoading={updatePageBlobMutation.isLoading}
               >
                 Save changes
               </Button>
