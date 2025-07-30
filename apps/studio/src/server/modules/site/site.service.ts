@@ -262,6 +262,7 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
         config: jsonb({
           theme: "isomer-next",
           siteName,
+          url: "https://www.isomer.gov.sg",
           logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
           search: undefined,
           isGovernment: true,

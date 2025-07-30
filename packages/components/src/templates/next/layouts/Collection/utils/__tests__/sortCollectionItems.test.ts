@@ -39,6 +39,7 @@ describe("sortCollectionItems", () => {
         },
         siteName: "Test Site",
         theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
         logoUrl: "",
         search: {
           type: "localSearch",

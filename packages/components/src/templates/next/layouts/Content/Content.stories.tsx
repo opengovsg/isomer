@@ -324,6 +324,7 @@ export const Default: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: { items: [] },
       footerItems: {
@@ -1785,6 +1786,7 @@ export const Image: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: { items: [] },
       footerItems: {
@@ -2962,6 +2964,7 @@ export const NoTable: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: { items: [] },
       footerItems: {
@@ -3375,6 +3378,7 @@ export const SmallTable: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: { items: [] },
       footerItems: {
@@ -3956,6 +3960,7 @@ export const FirstLevelPage: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: { items: [] },
       footerItems: {
@@ -4349,6 +4354,7 @@ export const MultipleAccordions: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: { items: [] },
       footerItems: {
@@ -4535,6 +4541,7 @@ export const MultipleInfobars: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: { items: [] },
       footerItems: {
