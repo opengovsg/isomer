@@ -10,6 +10,7 @@ export const Navbar = ({
   logoUrl,
   logoAlt,
   callToAction,
+  utility,
   layout,
   search,
   items,
@@ -54,6 +55,22 @@ export const Navbar = ({
           ),
           isExternal: isExternalUrl(callToAction.url),
         }
+      }
+      utility={
+        utility && !callToAction
+          ? {
+              label: utility.label,
+              items: utility.items.map((item) => ({
+                name: item.name,
+                url:
+                  getReferenceLinkHref(
+                    item.url,
+                    site.siteMap,
+                    site.assetsBaseUrl,
+                  ) || item.url,
+              })),
+            }
+          : undefined
       }
       LinkComponent={LinkComponent}
     />

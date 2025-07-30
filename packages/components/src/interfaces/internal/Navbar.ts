@@ -68,6 +68,32 @@ export const NavbarSchema = Type.Object({
       }),
     }),
   ),
+  // TODO: Convert callToAction and utility into variants that are mutually exclusive
+  utility: Type.Optional(
+    Type.Object({
+      label: Type.Optional(
+        Type.String({
+          title: "Label for the list of utility links",
+          maxLength: 30,
+        }),
+      ),
+      items: Type.Array(
+        Type.Object({
+          name: Type.String({
+            title: "Name of the utility link",
+            maxLength: 30,
+          }),
+          url: Type.String({
+            title: "URL destination of the utility link",
+            format: "link",
+          }),
+        }),
+        {
+          maxItems: 4,
+        },
+      ),
+    }),
+  ),
 })
 
 type NavbarItemSchemaType = Static<typeof NavbarItemSchema>
