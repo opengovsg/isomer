@@ -17,12 +17,10 @@ export const SiteConfigSchema = Type.Object({
     title: "Name of the site",
     description: "The name of the site, displayed in the footer.",
   }),
-  url: Type.Optional(
-    Type.String({
-      title: "Base URL of the site",
-      description: "The base URL of the site.",
-    }),
-  ),
+  url: Type.String({
+    title: "Base URL of the site",
+    description: "The base URL of the site.",
+  }),
   agencyName: Type.Optional(
     Type.String({
       title: "Agency name",
