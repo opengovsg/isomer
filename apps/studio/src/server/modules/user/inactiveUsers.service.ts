@@ -1,7 +1,6 @@
 import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
-import dayjs from "dayjs"
-import timezone from "dayjs/plugin/timezone"
-import utc from "dayjs/plugin/utc"
+import { startOfDay, subDays } from "date-fns"
+import { toZonedTime } from "date-fns-tz"
 
 import type { ResourcePermission, Site, User } from "../database"
 import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
@@ -14,21 +13,15 @@ import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
 
-// Extend dayjs with timezone support
-dayjs.extend(utc)
-dayjs.extend(timezone)
-
 const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
 })
 
 export function getDateOnlyInSG(daysAgo: number): Date {
-  return dayjs()
-    .tz("Asia/Singapore")
-    .subtract(daysAgo, "day")
-    .startOf("day")
-    .utc()
-    .toDate()
+  const singaporeTime = toZonedTime(new Date(), "Asia/Singapore")
+  const targetDate = subDays(singaporeTime, daysAgo)
+  const startOfTargetDate = startOfDay(targetDate)
+  return toZonedTime(startOfTargetDate, "UTC")
 }
 
 interface GetInactiveUsersProps {
