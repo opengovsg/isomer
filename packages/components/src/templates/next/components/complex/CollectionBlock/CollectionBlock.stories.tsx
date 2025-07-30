@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import type { CollectionBlockProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types/sitemap"
 import { CollectionBlock } from "./CollectionBlock"
+import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<CollectionBlockProps> = {
   title: "Next/Components/CollectionBlock",
@@ -92,8 +93,7 @@ const generateArgs = ({
     displayThumbnail,
     displayCategory,
     buttonLabel,
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Home",
@@ -114,22 +114,7 @@ const generateArgs = ({
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
   }
 }
 

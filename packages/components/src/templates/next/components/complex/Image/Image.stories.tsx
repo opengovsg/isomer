@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { ImageProps } from "~/interfaces"
 import { Image } from "./Image"
+import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<ImageProps> = {
   title: "Next/Components/Image",
@@ -13,33 +14,7 @@ const meta: Meta<ImageProps> = {
     },
   },
   args: {
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    site: generateSiteConfig(),
   },
 }
 export default meta

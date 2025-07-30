@@ -7,6 +7,7 @@ import type { NavbarProps } from "~/interfaces"
 import { Button } from "../Button"
 import Masthead from "../Masthead"
 import Navbar from "./Navbar"
+import { generateSiteConfig } from ".storybook/helpers"
 
 const Renderer = (props: NavbarProps) => {
   return (
@@ -151,33 +152,7 @@ const generateNavbarArgs = ({
       },
     ],
     callToAction,
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    site: generateSiteConfig(),
   }
 }
 

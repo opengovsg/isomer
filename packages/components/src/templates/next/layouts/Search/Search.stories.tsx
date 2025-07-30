@@ -5,6 +5,7 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { SearchPageSchemaType } from "~/engine"
 import SearchLayout from "./Search"
+import { generateSiteConfig } from ".storybook/helpers"
 
 // Template for stories
 const Template = (props: SearchPageSchemaType) => {
@@ -47,33 +48,12 @@ export const SearchSG: Story = {
   name: "SearchSG",
   args: {
     layout: "search",
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
+    site: generateSiteConfig({
       search: {
         type: "searchSG",
         clientId: TEST_CLIENT_ID,
       },
-    },
+    }),
     meta: {
       description: "Search results",
     },
