@@ -647,20 +647,17 @@ describe("page.router", async () => {
         siteId: pageToReorder.site.id,
       })
 
-      // Act
-      const result = caller.reorderBlock({
-        siteId: pageToReorder.site.id,
-        pageId: Number(pageToReorder.page.id),
-        from: -1,
-        to: 1,
-        blocks: pageToReorder.blob.content.content,
-      })
-
-      // Assert
+      // Act & Assert
+      await expect(
+        caller.reorderBlock({
+          siteId: pageToReorder.site.id,
+          pageId: Number(pageToReorder.page.id),
+          from: -1,
+          to: 1,
+          blocks: pageToReorder.blob.content.content,
+        }),
+      ).rejects.toThrowError("Number must be greater than or equal to 0")
       await assertAuditLogRows()
-      await expect(result).rejects.toThrowError(
-        "Number must be greater than or equal to 0",
-      )
     })
 
     it("should return 422 if `to` arg is out of bounds", async () => {
@@ -696,20 +693,17 @@ describe("page.router", async () => {
         siteId: pageToReorder.site.id,
       })
 
-      // Act
-      const result = caller.reorderBlock({
-        siteId: pageToReorder.site.id,
-        pageId: Number(pageToReorder.page.id),
-        from: 1,
-        to: -1,
-        blocks: pageToReorder.blob.content.content,
-      })
-
-      // Assert
+      // Act & Assert
+      await expect(
+        caller.reorderBlock({
+          siteId: pageToReorder.site.id,
+          pageId: Number(pageToReorder.page.id),
+          from: 1,
+          to: -1,
+          blocks: pageToReorder.blob.content.content,
+        }),
+      ).rejects.toThrowError("Number must be greater than or equal to 0")
       await assertAuditLogRows()
-      await expect(result).rejects.toThrowError(
-        "Number must be greater than or equal to 0",
-      )
     })
 
     it("should reorder block if args are valid", async () => {

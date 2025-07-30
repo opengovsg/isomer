@@ -176,6 +176,9 @@ export const siteRouter = router({
   setSiteConfigByAdmin: protectedProcedure
     .input(setSiteConfigByAdminSchema)
     .mutation(
+      // TODO: Make use of the site config, navbar and footer JSON schemas to
+      // validate the input JSON before parsing. Also ensure that existing site
+      // configs in the database meets the schema requirements
       async ({ ctx, input: { siteId, config, theme, navbar, footer } }) => {
         await validateUserPermissionsForSite({
           siteId,

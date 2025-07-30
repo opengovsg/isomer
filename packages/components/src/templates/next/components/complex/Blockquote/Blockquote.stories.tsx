@@ -27,6 +27,7 @@ const meta: Meta<BlockquoteProps> = {
       theme: "isomer-next",
       isGovernment: true,
       logoUrl: "/isomer-logo.svg",
+      url: "https://www.isomer.gov.sg",
       lastUpdated: "2021-10-01",
       navbar: { items: [] },
       footerItems: {

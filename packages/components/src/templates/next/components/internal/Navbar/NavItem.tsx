@@ -6,7 +6,7 @@ import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useScrollLock } from "usehooks-ts"
 
 import type {
-  NavbarItem as BaseNavbarItemProps,
+  NavbarItemProps as BaseNavbarItemProps,
   NavbarProps,
 } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"

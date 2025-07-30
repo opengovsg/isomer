@@ -27,6 +27,7 @@ describe("getCollectionParent", () => {
     // IsomerSiteConfigProps
     siteName: "Test Site",
     theme: "isomer-next",
+    url: "https://www.isomer.gov.sg",
     logoUrl: "/images/logo.svg",
     search: { type: "localSearch", searchUrl: "/search" },
   }

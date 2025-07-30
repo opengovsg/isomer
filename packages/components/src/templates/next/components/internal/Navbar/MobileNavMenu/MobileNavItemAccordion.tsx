@@ -1,12 +1,12 @@
 import { BiChevronDown, BiRightArrowAlt } from "react-icons/bi"
 
-import type { NavbarItem, NavbarProps } from "~/interfaces/internal/Navbar"
+import type { NavbarItemProps, NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight, isExternalUrl } from "~/utils"
 import { Link } from "../../Link"
 
 interface NavItemAccordionProps
-  extends NavbarItem,
+  extends NavbarItemProps,
     Pick<NavbarProps, "LinkComponent"> {
   isOpen: boolean
   onClick: () => void

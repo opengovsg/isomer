@@ -164,6 +164,7 @@ const generateNavbarArgs = ({
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       navbar: { items: [] },
