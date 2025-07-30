@@ -55,7 +55,7 @@ export const EditProfileModal = () => {
       })
       handleClose()
     }
-  }, [updateDetailsMutation.isSuccess, handleClose])
+  }, [updateDetailsMutation.isSuccess, utils.me.get, toast, handleClose])
 
   useEffect(() => {
     if (updateDetailsMutation.isError) {
@@ -66,7 +66,7 @@ export const EditProfileModal = () => {
       })
       reset()
     }
-  }, [updateDetailsMutation.isError, updateDetailsMutation.error, reset])
+  }, [updateDetailsMutation.isError, updateDetailsMutation.error, toast, reset])
 
   const {
     register,
