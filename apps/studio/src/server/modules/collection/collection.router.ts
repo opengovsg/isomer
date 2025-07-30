@@ -5,6 +5,7 @@ import { get, pick } from "lodash"
 import {
   createCollectionSchema,
   editLinkSchema,
+  getCollectionsSchema,
   readLinkSchema,
 } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
@@ -13,7 +14,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
 import { db, jsonb, ResourceState, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { validateUserPermissionsForResource } from "../permissions/permissions.service"
+import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
   defaultResourceSelect,
   getBlobOfResource,
@@ -21,6 +22,7 @@ import {
   publishResource,
   updateBlobById,
 } from "../resource/resource.service"
+import { validateUserPermissionsForSite } from "../site/site.service"
 import { defaultCollectionSelect } from "./collection.select"
 import {
   createCollectionLinkJson,
@@ -31,7 +33,7 @@ export const collectionRouter = router({
   getMetadata: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
         userId: ctx.user.id,
@@ -57,11 +59,11 @@ export const collectionRouter = router({
         ctx,
         input: { collectionTitle, permalink, siteId, parentFolderId },
       }) => {
-        await validateUserPermissionsForResource({
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "create",
           userId: ctx.user.id,
-          resourceId: !!parentFolderId ? String(parentFolderId) : null,
+          resourceIds: [!!parentFolderId ? String(parentFolderId) : null],
         })
 
         const user = await db
@@ -136,11 +138,11 @@ export const collectionRouter = router({
   createCollectionPage: protectedProcedure
     .input(createCollectionPageSchema)
     .mutation(async ({ ctx, input }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId: input.siteId,
         action: "create",
         userId: ctx.user.id,
-        resourceId: !!input.collectionId ? String(input.collectionId) : null,
+        resourceIds: [!!input.collectionId ? String(input.collectionId) : null],
       })
 
       const user = await db
@@ -220,7 +222,7 @@ export const collectionRouter = router({
   list: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
         userId: ctx.user.id,
@@ -233,13 +235,11 @@ export const collectionRouter = router({
         .selectFrom("Resource")
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
-        .where((eb) => {
-          return eb.or([
-            eb("Resource.type", "=", ResourceType.CollectionPage),
-            eb("Resource.type", "=", ResourceType.CollectionLink),
-            eb("Resource.type", "=", ResourceType.IndexPage),
-          ])
-        })
+        .where("Resource.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+          ResourceType.IndexPage,
+        ])
         .orderBy("Resource.type", "asc")
         .orderBy("Resource.title", "asc")
         .limit(limit)
@@ -250,15 +250,16 @@ export const collectionRouter = router({
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
     .query(async ({ ctx, input: { linkId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const baseQuery = db
         .selectFrom("Resource")
         .where("Resource.id", "=", String(linkId))
+        .where("Resource.type", "=", ResourceType.CollectionLink)
         .where("Resource.siteId", "=", siteId)
 
       const draft = await baseQuery
@@ -291,10 +292,10 @@ export const collectionRouter = router({
         // Things that aren't working yet:
         // 1. Last Edited user and time
         // 2. Page status(draft, published)
-        await validateUserPermissionsForResource({
-          userId: ctx.user.id,
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "update",
+          userId: ctx.user.id,
         })
 
         const content = createCollectionLinkJson({
@@ -350,4 +351,22 @@ export const collectionRouter = router({
         })
       },
     ),
+  getCollections: protectedProcedure
+    .input(getCollectionsSchema)
+    .query(async ({ ctx, input: { siteId } }) => {
+      // will need permissions to fetch all collections for a site
+      await validateUserPermissionsForSite({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      return db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "=", ResourceType.Collection)
+        .orderBy("Resource.title", "asc")
+        .selectAll()
+        .execute()
+    }),
 })

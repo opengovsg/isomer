@@ -119,7 +119,7 @@ export const CreatePageDetailsScreen = () => {
               <Stack gap="1.5rem">
                 {/* Section 1: Page Title */}
                 <FormControl isRequired isInvalid={!!errors.title}>
-                  <FormLabel color="base.content.strong">
+                  <FormLabel color="base.content.strong" mb={0}>
                     Page title
                     <FormHelperText color="base.content.default">
                       Title should be descriptive
@@ -128,8 +128,9 @@ export const CreatePageDetailsScreen = () => {
 
                   <Input
                     placeholder="This is a title for your new page"
-                    {...register("title")}
                     maxLength={MAX_TITLE_LENGTH}
+                    my="0.5rem"
+                    {...register("title")}
                   />
                   {errors.title?.message ? (
                     <FormErrorMessage>{errors.title.message}</FormErrorMessage>

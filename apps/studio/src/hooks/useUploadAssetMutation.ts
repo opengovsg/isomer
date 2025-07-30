@@ -6,7 +6,7 @@ import { trpc } from "~/utils/trpc"
 
 type UploadAssetMutationParams = Pick<
   z.infer<typeof getPresignedPutUrlSchema>,
-  "siteId"
+  "siteId" | "resourceId"
 >
 
 export interface UploadAssetMutationInput {
@@ -40,6 +40,7 @@ const handleUpload = async ({ file, presignedPutUrl }: HandleUploadParams) => {
 
 export const useUploadAssetMutation = ({
   siteId,
+  resourceId,
 }: UploadAssetMutationParams) => {
   const { mutateAsync: getPresignedPutUrl } =
     trpc.asset.getPresignedPutUrl.useMutation()
@@ -48,6 +49,7 @@ export const useUploadAssetMutation = ({
     async ({ file }) => {
       const { fileKey, presignedPutUrl } = await getPresignedPutUrl({
         siteId,
+        resourceId,
         fileName: file.name,
       })
       await handleUpload({ file, presignedPutUrl })

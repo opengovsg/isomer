@@ -3,11 +3,11 @@ import { Box, FormControl } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
-import { z } from "zod"
 
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
@@ -22,11 +22,6 @@ export const jsonFormsImageControlTester: RankedTester = rankWith(
     schemaMatches((schema) => schema.format === "image"),
   ),
 )
-
-const editSiteSchema = z.object({
-  siteId: z.coerce.number(),
-})
-
 interface JsonFormsImageControlProps extends ControlProps {
   data: string
 }
@@ -39,7 +34,7 @@ export function JsonFormsImageControl({
   description,
   data,
 }: JsonFormsImageControlProps) {
-  const { siteId } = useQueryParse(editSiteSchema)
+  const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
 
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
@@ -54,6 +49,7 @@ export function JsonFormsImageControl({
           maxSizeInBytes={MAX_IMG_FILE_SIZE_BYTES}
           acceptedFileTypes={IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
           siteId={siteId}
+          resourceId={String(pageId ?? linkId)}
           setHref={(src) => handleChange(path, src)}
         />
       )}

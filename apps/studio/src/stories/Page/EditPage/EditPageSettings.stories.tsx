@@ -31,7 +31,7 @@ const imageHandler = {
 const COMMON_HANDLERS = [
   meHandlers.me(),
   resourceHandlers.getMetadataById.content(),
-  resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getRolesFor.admin(),
   pageHandlers.readPageAndBlob.content(),
   pageHandlers.readPage.content(),
   pageHandlers.getFullPermalink.content(),

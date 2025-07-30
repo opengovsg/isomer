@@ -164,6 +164,7 @@ const generateNavbarArgs = ({
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       navbar: { items: [] },
@@ -308,7 +309,26 @@ export const MobileCallToAction: Story = {
   },
 }
 
-export const ExpandMobileWithLink: Story = {
+export const ExpandMobileWithLinkOneWord: Story = {
+  name: "Expand Mobile With Link (one word)",
+  args: generateNavbarArgs({}),
+  parameters: {
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+    await userEvent.click(canvas.getByRole("button", { name: /Please/i }))
+  },
+}
+
+export const ExpandMobileWithLinkMultipleWords: Story = {
+  name: "Expand Mobile With Link (multiple words)",
   args: generateNavbarArgs({}),
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),

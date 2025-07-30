@@ -1,12 +1,12 @@
 import { BiChevronDown, BiRightArrowAlt } from "react-icons/bi"
 
-import type { NavbarItem, NavbarProps } from "~/interfaces/internal/Navbar"
+import type { NavbarItemProps, NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight, isExternalUrl } from "~/utils"
 import { Link } from "../../Link"
 
 interface NavItemAccordionProps
-  extends NavbarItem,
+  extends NavbarItemProps,
     Pick<NavbarProps, "LinkComponent"> {
   isOpen: boolean
   onClick: () => void
@@ -96,7 +96,9 @@ const ParentItemLink = ({
       >
         <span className="row-gap-0 flex flex-row flex-wrap items-baseline gap-1">
           Pages in
-          <span className="prose-headline-base-medium">{allButLastWord}</span>
+          {allButLastWord && (
+            <span className="prose-headline-base-medium">{allButLastWord}</span>
+          )}
           <span className="prose-headline-base-medium flex flex-row items-center gap-1">
             {lastWord}
             {!isExternal && (

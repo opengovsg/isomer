@@ -69,6 +69,7 @@ const generateArgs = ({
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: {
         items: [
@@ -209,6 +210,7 @@ export const Default: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: {
         items: [
@@ -351,6 +353,7 @@ export const NoImage: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: {
         items: [
@@ -494,6 +497,7 @@ export const TaggedArticle: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: {
         items: [

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
-import type { LocalSearchInputBoxProps } from "~/interfaces"
+import type { LocalSearchProps } from "~/interfaces"
 import LocalSearchInputBox from "./LocalSearchInputBox"
 
-const meta: Meta<LocalSearchInputBoxProps> = {
+const meta: Meta<LocalSearchProps> = {
   title: "Next/Internal Components/LocalSearchInputBox",
   component: LocalSearchInputBox,
   argTypes: {},

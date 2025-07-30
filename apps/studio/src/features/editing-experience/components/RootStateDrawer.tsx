@@ -25,7 +25,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
-import { editPageSchema } from "../schema"
+import { pageSchema } from "../schema"
 import { ActivateRawJsonEditorMode } from "./ActivateRawJsonEditorMode"
 import { BaseBlock } from "./Block/BaseBlock"
 import { DraggableBlock } from "./Block/DraggableBlock"
@@ -68,7 +68,7 @@ export default function RootStateDrawer() {
     onOpen: onConfirmConvertIndexPageModalOpen,
     onClose: onConfirmConvertIndexPageModalClose,
   } = useDisclosure()
-  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const { pageId, siteId } = useQueryParse(pageSchema)
   const utils = trpc.useUtils()
   const isUserIsomerAdmin = useIsUserIsomerAdmin({
     roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],

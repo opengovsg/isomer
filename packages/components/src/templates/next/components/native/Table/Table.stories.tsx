@@ -24,6 +24,7 @@ const meta: Meta<typeof Table> = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      url: "https://www.isomer.gov.sg",
       logoUrl: "/isomer-logo.svg",
       navbar: { items: [] },
       footerItems: {

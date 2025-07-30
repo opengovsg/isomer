@@ -27,6 +27,7 @@ const siteListQuery = ({
         config: {
           theme: "isomer-next",
           siteName: "MTI",
+          url: "https://www.isomer.gov.sg",
           logoUrl: "",
           search: undefined,
           isGovernment: true,
@@ -38,6 +39,7 @@ const siteListQuery = ({
         config: {
           theme: "isomer-next",
           siteName: "MTI",
+          url: "https://www.isomer.gov.sg",
           logoUrl: "",
           search: undefined,
           isGovernment: true,
@@ -49,6 +51,7 @@ const siteListQuery = ({
         config: {
           theme: "isomer-next",
           siteName: "MTI",
+          url: "https://www.isomer.gov.sg",
           logoUrl: "",
           search: undefined,
           isGovernment: true,
@@ -103,6 +106,7 @@ export const sitesHandlers = {
           search: undefined,
           agencyName: "Ministry of Test and Industry",
           isGovernment: true,
+          url: "https://www.isomer.gov.sg",
           logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
         } as PrismaJson.SiteJsonConfig
       })

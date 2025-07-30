@@ -14,7 +14,7 @@ import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
-import { editPageSchema } from "../schema"
+import { pageSchema } from "../schema"
 import PublishButton from "./PublishButton"
 
 interface NavigationBreadcrumbsProps {
@@ -28,12 +28,14 @@ const NavigationBreadcrumbs = ({
 }: NavigationBreadcrumbsProps): JSX.Element => {
   const { data: resource, isLoading: isResourceLoading } =
     trpc.resource.getMetadataById.useQuery({
+      siteId: Number(siteId),
       resourceId: pageId,
     })
 
   const { data: parentResource, isLoading: isParentResourceLoading } =
     trpc.resource.getMetadataById.useQuery(
       {
+        siteId: Number(siteId),
         resourceId: resource?.parentId ?? "",
       },
       { enabled: !!resource?.parentId },
@@ -93,7 +95,7 @@ const NavigationBreadcrumbs = ({
 }
 
 export const PageEditNavbar = (): JSX.Element => {
-  const { siteId, pageId } = useQueryParse(editPageSchema)
+  const { siteId, pageId } = useQueryParse(pageSchema)
 
   const { pathname } = useRouter()
 
