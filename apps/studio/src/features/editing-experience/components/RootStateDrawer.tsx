@@ -476,7 +476,7 @@ export default function RootStateDrawer() {
             <VStack gap="1rem" w="full">
               <Button
                 w="100%"
-                isLoading={savePageMutation.isLoading}
+                isLoading={savePageMutation.isPending}
                 onClick={onConfirmConvertIndexPageModalOpen}
               >
                 Accept this change

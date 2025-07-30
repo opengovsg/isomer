@@ -130,7 +130,7 @@ export const VerificationInput = (): JSX.Element | null => {
         <FormControl
           id="email"
           isInvalid={!!errors.token}
-          isReadOnly={verifyOtpMutation.isLoading}
+          isReadOnly={verifyOtpMutation.isPending}
           isRequired
         >
           <FormLabel htmlFor="email">Enter OTP</FormLabel>
@@ -168,7 +168,7 @@ export const VerificationInput = (): JSX.Element | null => {
             type="submit"
             // Want to keep loading state until redirection is complete.
             isLoading={
-              verifyOtpMutation.isLoading || verifyOtpMutation.isSuccess
+              verifyOtpMutation.isPending || verifyOtpMutation.isSuccess
             }
             isDisabled={!isValid}
           >
@@ -184,8 +184,8 @@ export const VerificationInput = (): JSX.Element | null => {
             alignSelf="end"
             timer={timer}
             onClick={handleResendOtp}
-            isDisabled={timer > 0 || verifyOtpMutation.isLoading}
-            isLoading={resendOtpMutation.isLoading}
+            isDisabled={timer > 0 || verifyOtpMutation.isPending}
+            isLoading={resendOtpMutation.isPending}
             spinnerFontSize="1rem"
             _loading={{
               justifyContent: "flex-end",

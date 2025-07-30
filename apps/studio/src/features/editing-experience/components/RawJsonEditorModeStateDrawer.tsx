@@ -87,7 +87,7 @@ export default function RawJsonEditorModeStateDrawer(): JSX.Element {
   return (
     <RawJsonEditor
       pendingChanges={pendingChanges}
-      isLoading={updatePageBlobMutation.isLoading}
+      isLoading={updatePageBlobMutation.isPending}
       isModified={!isEqual(previewPageState, savedPageState)}
       isPendingChangesValid={isPendingChangesValid}
       handleChange={handleChange}

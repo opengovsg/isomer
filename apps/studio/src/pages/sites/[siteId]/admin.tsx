@@ -220,7 +220,7 @@ const SiteAdminPage: NextPageWithLayout = () => {
 
               <Button
                 type="submit"
-                isLoading={setSiteConfigByAdminMutation.isLoading}
+                isLoading={setSiteConfigByAdminMutation.isPending}
                 isDisabled={!isDirty}
               >
                 Save settings

@@ -153,7 +153,7 @@ const MoveResourceContent = withSuspense(
               }) ||
               ability.cannot("move", { parentId: movedItem?.parentId ?? null })
             }
-            isLoading={moveResourceMutation.isLoading}
+            isLoading={moveResourceMutation.isPending}
             onClick={() =>
               movedItem?.id &&
               moveResourceMutation.mutate({

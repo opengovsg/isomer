@@ -46,7 +46,7 @@ export const SingpassLoginButton = (): JSX.Element | null => {
       _disabled={{ bgColor: "#F4333D" }}
       _hover={{ bgColor: "#B0262D" }}
       textColor="white"
-      isLoading={singpassLoginMutation.isLoading}
+      isLoading={singpassLoginMutation.isPending}
       onClick={handleSingpassLogin}
       aria-label="Authenticate with Singpass"
     >

@@ -252,7 +252,7 @@ export const AddUserModal = () => {
             <Button
               variant="solid"
               onClick={onSendInvite}
-              isLoading={createUserMutation.isLoading}
+              isLoading={createUserMutation.isPending}
               isDisabled={
                 Object.keys(errors).length > 0 ||
                 email === "" ||

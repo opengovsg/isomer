@@ -216,7 +216,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
 
                 <Button
                   type="submit"
-                  isLoading={notificationMutation.isLoading}
+                  isLoading={notificationMutation.isPending}
                   // NOTE: we only validate that it is non empty
                   // because zod form prevents us from going over 100 characters.
                   isDisabled={

@@ -68,10 +68,10 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     }
   }, [savePageMutation.isSuccess])
 
-  const { mutateAsync: uploadAsset, isLoading: isUploadingAsset } =
+  const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
     useUploadAssetMutation({ siteId, resourceId: String(pageId) })
-  const { mutate: deleteAssets, isLoading: isDeletingAssets } =
-    trpc.asset.deleteAssets.useMutation()
+
+  const deleteAssetsMutation = trpc.asset.deleteAssets.useMutation()
 
   const handleDeleteBlock = useCallback(() => {
     const updatedBlocks = Array.from(savedPageState.content)
@@ -210,7 +210,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           return acc
         }, [])
 
-      deleteAssets({
+      deleteAssetsMutation.mutate({
         siteId,
         resourceId: String(pageId),
         fileKeys: assetsToDelete,
@@ -235,7 +235,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     )
   }, [
     currActiveIdx,
-    deleteAssets,
+    deleteAssetsMutation.mutate,
     modifiedAssets,
     pageId,
     previewPageState,
@@ -251,7 +251,9 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   ])
 
   const isLoading =
-    savePageMutation.isLoading || isUploadingAsset || isDeletingAssets
+    savePageMutation.isPending ||
+    isUploadingAsset ||
+    deleteAssetsMutation.isPending
 
   if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
     return <></>

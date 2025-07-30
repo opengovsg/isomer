@@ -89,7 +89,7 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
           id="email"
           isRequired
           isInvalid={!!errors.email}
-          isReadOnly={loginMutation.isLoading}
+          isReadOnly={loginMutation.isPending}
         >
           <FormLabel mb="0.5rem">Email address</FormLabel>
           <Input
@@ -108,7 +108,7 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
           size="sm"
           height="2.75rem"
           type="submit"
-          isLoading={loginMutation.isLoading}
+          isLoading={loginMutation.isPending}
           isDisabled={!isValid}
         >
           Send One-Time Password (OTP)

@@ -165,7 +165,7 @@ const DeleteResourceModalContent = ({
             variant="solid"
             colorScheme="critical"
             onClick={onDelete}
-            isLoading={deleteResourceMutation.isLoading}
+            isLoading={deleteResourceMutation.isPending}
           >
             Delete {label}
           </Button>

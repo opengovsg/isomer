@@ -222,7 +222,7 @@ const CreateFolderModalContent = ({
             Close
           </Button>
           <Button
-            isLoading={createFolderMutation.isLoading}
+            isLoading={createFolderMutation.isPending}
             isDisabled={!isValid}
             type="submit"
           >

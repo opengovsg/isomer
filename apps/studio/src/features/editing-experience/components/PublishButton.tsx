@@ -93,7 +93,7 @@ const SuspendablePublishButton = ({
                 handlePublish()
                 onClick?.(e)
               }}
-              isLoading={publishPageMutation.isLoading}
+              isLoading={publishPageMutation.isPending}
               {...rest}
             >
               Publish

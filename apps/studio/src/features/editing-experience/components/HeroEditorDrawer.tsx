@@ -62,14 +62,15 @@ export default function HeroEditorDrawer(): JSX.Element {
     }
   }, [savePageMutation.isSuccess])
 
-  const { mutateAsync: uploadAsset, isLoading: isUploadingAsset } =
+  const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
     useUploadAssetMutation({ siteId, resourceId: String(pageId) })
 
-  const { mutate: deleteAssets, isLoading: isDeletingAssets } =
-    trpc.asset.deleteAssets.useMutation()
+  const deleteAssetsMutation = trpc.asset.deleteAssets.useMutation()
 
   const isLoading =
-    savePageMutation.isLoading || isUploadingAsset || isDeletingAssets
+    savePageMutation.isPending ||
+    isUploadingAsset ||
+    deleteAssetsMutation.isPending
 
   const handleSaveChanges = useCallback(async () => {
     let newPageState = previewPageState
@@ -127,7 +128,7 @@ export default function HeroEditorDrawer(): JSX.Element {
           return acc
         }, [])
 
-      deleteAssets({
+      deleteAssetsMutation.mutate({
         siteId,
         resourceId: String(pageId),
         fileKeys: assetsToDelete,
@@ -151,7 +152,7 @@ export default function HeroEditorDrawer(): JSX.Element {
     )
   }, [
     currActiveIdx,
-    deleteAssets,
+    deleteAssetsMutation.mutate,
     modifiedAssets,
     savePageMutation.mutate,
     pageId,

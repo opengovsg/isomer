@@ -136,7 +136,7 @@ const useCreatePageWizardContext = ({
     formMethods,
     handleCreatePage,
     isLoading:
-      createPageMutation.isLoading || (!!folderId && isPermalinkLoading),
+      createPageMutation.isPending || (!!folderId && isPermalinkLoading),
     handleNextToDetailScreen,
     handleBackToLayoutScreen,
     layoutPreviewJson,

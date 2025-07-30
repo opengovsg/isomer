@@ -110,7 +110,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
       <Flex flexDir="column" position="relative" h="100%" w="100%">
         <DrawerHeader
-          isDisabled={updatePageBlobMutation.isLoading}
+          isDisabled={updatePageBlobMutation.isPending}
           onBackClick={() => {
             if (!isEqual(previewPageState, savedPageState)) {
               onDiscardChangesModalOpen()
@@ -157,7 +157,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             px="2rem"
           >
             <SaveButton
-              isLoading={updatePageBlobMutation.isLoading}
+              isLoading={updatePageBlobMutation.isPending}
               onClick={handleSaveChanges}
             />
           </Box>

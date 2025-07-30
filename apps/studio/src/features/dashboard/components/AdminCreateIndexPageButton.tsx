@@ -73,8 +73,8 @@ export const AdminCreateIndexPageButton = ({
       <Button
         variant="outline"
         size="md"
-        isDisabled={createIndexPageMutation.isLoading || hasIndexPage}
-        isLoading={createIndexPageMutation.isLoading}
+        isDisabled={createIndexPageMutation.isPending || hasIndexPage}
+        isLoading={createIndexPageMutation.isPending}
         onClick={() =>
           createIndexPageMutation.mutate({
             siteId,

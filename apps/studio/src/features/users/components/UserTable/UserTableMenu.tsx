@@ -105,7 +105,7 @@ export const UserTableMenu = ({
                     resendInviteMutation.mutate({ siteId, userId })
                   }
                   isDisabled={
-                    resendInviteMutation.isLoading || !isSingpassEnabled
+                    resendInviteMutation.isPending || !isSingpassEnabled
                   }
                   icon={<BiMailSend fontSize="1rem" />}
                   tooltip={

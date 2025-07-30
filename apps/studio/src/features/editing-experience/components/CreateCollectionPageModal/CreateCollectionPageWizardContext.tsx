@@ -148,7 +148,7 @@ const useCreateCollectionPageWizardContext = ({
     currentStep,
     formMethods,
     handleCreatePage,
-    isLoading: createCollectionPageMutation.isLoading || isPermalinkLoading,
+    isLoading: createCollectionPageMutation.isPending || isPermalinkLoading,
     handleNextToDetailScreen,
     handleBackToTypeScreen,
     pagePreviewJson,

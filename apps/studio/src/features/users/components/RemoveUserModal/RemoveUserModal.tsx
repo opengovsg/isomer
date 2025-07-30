@@ -93,7 +93,7 @@ export const RemoveUserModal = () => {
                 colorScheme="critical"
                 variant="solid"
                 onClick={() => deleteUserMutation.mutate({ siteId, userId })}
-                isLoading={deleteUserMutation.isLoading}
+                isLoading={deleteUserMutation.isPending}
                 isDisabled={!isSingpassEnabled}
               >
                 Remove user

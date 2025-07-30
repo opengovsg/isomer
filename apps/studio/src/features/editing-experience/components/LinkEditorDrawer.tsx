@@ -217,7 +217,7 @@ export const LinkEditorDrawer = () => {
       <DrawerState
         savedPageState={savedPageState}
         previewPageState={data}
-        isLoading={updateCollectionLinkMutation.isLoading}
+        isLoading={updateCollectionLinkMutation.isPending}
         handleChange={handleChange}
         handleSaveChanges={() =>
           updateCollectionLinkMutation.mutate({ siteId, linkId, ...data })

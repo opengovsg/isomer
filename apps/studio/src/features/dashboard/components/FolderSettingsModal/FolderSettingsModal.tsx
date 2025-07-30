@@ -257,7 +257,7 @@ const SuspendableModalContent = ({
             Close
           </Button>
           <Button
-            isLoading={editFolderMutation.isLoading}
+            isLoading={editFolderMutation.isPending}
             isDisabled={!isValid}
             type="submit"
           >

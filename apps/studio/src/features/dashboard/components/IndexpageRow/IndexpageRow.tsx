@@ -12,8 +12,8 @@ type IndexpageRowProps = z.infer<typeof getIndexpageSchema>
 
 export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
   const trpcUtils = trpc.useUtils()
-  const { mutate: createIndexPage, isLoading } =
-    trpc.page.createIndexPage.useMutation()
+
+  const createIndexPageMutation = trpc.page.createIndexPage.useMutation()
 
   const { data } = trpc.folder.getIndexpage.useQuery(
     {
@@ -23,7 +23,7 @@ export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
     {
       onError: (err) => {
         if (err.data?.code === "NOT_FOUND") {
-          void createIndexPage({ siteId, parentId: resourceId })
+          void createIndexPageMutation.mutate({ siteId, parentId: resourceId })
           void trpcUtils.folder.getIndexpage.refetch()
           void trpcUtils.resource.getChildrenOf.invalidate()
         }
@@ -32,7 +32,7 @@ export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
   )
 
   return (
-    <Skeleton w="full" isLoaded={!isLoading && !!data}>
+    <Skeleton w="full" isLoaded={!createIndexPageMutation.isPending && !!data}>
       <HStack
         as={Link}
         href={`/sites/${siteId}/pages/${data?.id}`}

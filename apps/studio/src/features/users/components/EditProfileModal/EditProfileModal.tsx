@@ -164,7 +164,7 @@ export const EditProfileModal = () => {
               variant="solid"
               onClick={onSubmit}
               isDisabled={!isDirty || Object.keys(errors).length > 0}
-              isLoading={updateDetailsMutation.isLoading}
+              isLoading={updateDetailsMutation.isPending}
             >
               Save changes
             </Button>

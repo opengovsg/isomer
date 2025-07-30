@@ -169,7 +169,7 @@ export const EditUserModal = () => {
             <Button
               variant="solid"
               onClick={onUpdateUser}
-              isLoading={updateUserMutation.isLoading}
+              isLoading={updateUserMutation.isPending}
               isDisabled={!isSingpassEnabled}
             >
               Save changes

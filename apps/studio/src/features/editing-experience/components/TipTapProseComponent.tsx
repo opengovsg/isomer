@@ -134,7 +134,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
 
       <VStack bg="white" h="100%" gap="0">
         <DrawerHeader
-          isDisabled={updatePageBlobMutation.isLoading}
+          isDisabled={updatePageBlobMutation.isPending}
           onBackClick={() => {
             if (!isEqual(previewPageState, savedPageState)) {
               onDiscardChangesModalOpen()
@@ -181,7 +181,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                     },
                   )
                 }}
-                isLoading={updatePageBlobMutation.isLoading}
+                isLoading={updatePageBlobMutation.isPending}
               >
                 Save changes
               </Button>

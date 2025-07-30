@@ -92,7 +92,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
   }, [publishAllSiteMutation.isError, publishAllSiteMutation.error])
 
   const isLoading =
-    publishOneSiteMutation.isLoading || publishAllSiteMutation.isLoading
+    publishOneSiteMutation.isPending || publishAllSiteMutation.isPending
 
   return (
     <Flex flexDir="column" py="2rem" maxW="57rem" mx="auto" width="100%">

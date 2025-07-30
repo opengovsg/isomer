@@ -235,7 +235,7 @@ const CreateCollectionModalContent = ({
             Close
           </Button>
           <Button
-            isLoading={createCollectionMutation.isLoading}
+            isLoading={createCollectionMutation.isPending}
             isDisabled={!isValid}
             type="submit"
           >
