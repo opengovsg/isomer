@@ -8,7 +8,6 @@ import {
   LocalSearchSchema,
   SearchSGSearchSchema,
   VicaSchema,
-  WizgovSchema,
 } from "~/interfaces"
 import { NotificationSchema } from "~/interfaces/internal/Notification"
 
@@ -64,7 +63,6 @@ export const SiteConfigSchema = Type.Object({
     }),
   ),
   vica: Type.Optional(VicaSchema),
-  wizgov: Type.Optional(WizgovSchema),
   askgov: Type.Optional(AskgovSchema),
 })
 

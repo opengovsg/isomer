@@ -64,9 +64,4 @@ export {
   type AskgovWidgetProps,
   type AskgovProps,
 } from "./Askgov"
-export {
-  WizgovSchema,
-  type WizgovWidgetProps,
-  type WizgovProps,
-} from "./Wizgov"
 export type { ImageClientProps } from "./Image"
