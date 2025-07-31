@@ -32,6 +32,15 @@ const downloadIconStyles = tv({
   },
 })
 
+const downloadFile = (url: string) => {
+  const a = document.createElement("a")
+  a.href = url
+  a.download = "" // filename will be set by the browser
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+}
+
 export interface DownloadButtonProps
   extends AriaButtonProps,
     VariantProps<typeof buttonStyles> {
@@ -68,7 +77,7 @@ export const DownloadButton = ({
 
       const downloadUrl = await strategy.getDownloadUrl(url)
       if (downloadUrl) {
-        window.open(downloadUrl, "_blank")
+        downloadFile(downloadUrl)
       } else {
         console.error("Failed to get download URL")
       }
