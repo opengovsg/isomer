@@ -31,6 +31,7 @@ function SuspendableJsonFormsCollectionDropdownControl({
 
   const [collections] = trpc.collection.getCollections.useSuspenseQuery({
     siteId: Number(siteId),
+    hasChildren: true,
   })
 
   return (
