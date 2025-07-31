@@ -1,0 +1,56 @@
+const DGS_LINK_REGEX = /\[dgs:([a-zA-Z0-9_]+)\]/
+
+export const getDgsIdFromDgsLink = (dgsLink: string): string => {
+  const match = DGS_LINK_REGEX.exec(dgsLink)
+  if (!match) {
+    return ""
+  }
+  return match[1] || ""
+}
+
+interface FetchDgsMetadataProps {
+  dgsId: string
+}
+
+interface DgsMetadata {
+  name: string
+  format: string
+  datasetSize: number // in bytes
+}
+
+type FetchDgsMetadataOutput = Pick<DgsMetadata, "name" | "format"> & {
+  datasetSize: string
+}
+
+export const fetchDgsMetadata = async ({
+  dgsId,
+}: FetchDgsMetadataProps): Promise<FetchDgsMetadataOutput | undefined> => {
+  try {
+    const response = await fetch(
+      `https://api-production.data.gov.sg/v2/public/api/datasets/${dgsId}/metadata`,
+    )
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = (await response.json()) as {
+      data: DgsMetadata
+    }
+
+    return {
+      name: data.data.name,
+      format: data.data.format,
+      datasetSize: formatBytes(data.data.datasetSize),
+    }
+  } catch (error) {
+    console.error("Error fetching DGS metadata:", error)
+    return undefined
+  }
+}
+
+const formatBytes = (bytes: number): string => {
+  const units = ["B", "KB", "MB", "GB", "TB"]
+  const index = Math.floor(Math.log(bytes) / Math.log(1024))
+  return (bytes / Math.pow(1024, index)).toFixed(2) + " " + units[index]
+}
