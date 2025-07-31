@@ -52,3 +52,7 @@ export {
   CHILDREN_PAGES_LAYOUT_OPTIONS,
   type ChildrenPagesProps,
 } from "./ChildrenPages"
+export {
+  ContactInformationSchema,
+  type ContactInformation,
+} from "./ContactInformation"
