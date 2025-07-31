@@ -53,6 +53,7 @@ export {
   type ChildrenPagesProps,
 } from "./ChildrenPages"
 export {
+  CONTACT_INFORMATION_TYPE,
   ContactInformationSchema,
-  type ContactInformation,
+  type ContactInformationProps,
 } from "./ContactInformation"

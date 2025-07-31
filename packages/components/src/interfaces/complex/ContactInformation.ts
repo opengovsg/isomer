@@ -67,4 +67,4 @@ export const ContactInformationSchema = Type.Object(
   },
 )
 
-export type ContactInformation = Static<typeof ContactInformationSchema>
+export type ContactInformationProps = Static<typeof ContactInformationSchema>
