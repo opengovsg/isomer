@@ -30,10 +30,11 @@ export const PermissionsContext = createContext<ResourceAbility | PureAbility>(
 export const PermissionsProvider = ({
   children,
   siteId,
+  resourceId,
 }: PropsWithChildren<PermissionsProviderProps>) => {
   const [roles] = trpc.resource.getRolesFor.useSuspenseQuery({
     siteId,
-    resourceId: null, // Note: we are using site role for now since there's no granular resource role
+    resourceId: resourceId ?? null,
   })
 
   const ability = getPermissions(roles)
