@@ -2,18 +2,14 @@
 
 import type { ButtonProps as AriaButtonProps } from "react-aria-components"
 import type { VariantProps } from "tailwind-variants"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Button as AriaButton, composeRenderProps } from "react-aria-components"
 import { BiDownload, BiLoaderAlt } from "react-icons/bi"
 
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import {
-  fetchDgsFileDownloadUrl,
-  fetchDgsMetadata,
-  getDgsIdFromDgsLink,
-} from "~/utils"
 import { buttonStyles } from "../Button"
+import { defaultDownloadStrategies, directDownloadStrategy } from "./strategies"
 
 const downloadButtonStyles = tv({
   base: "flex items-center gap-2",
@@ -39,11 +35,12 @@ const downloadIconStyles = tv({
 export interface DownloadButtonProps
   extends AriaButtonProps,
     VariantProps<typeof buttonStyles> {
-  url: string // use to download the file from
+  url: string // URL to download the file from
 }
 
 /**
- * Button that allows users to download a file.
+ * Generic button that allows users to download a file.
+ * Supports multiple download strategies including DGS and direct file downloads.
  */
 export const DownloadButton = ({
   className,
@@ -53,10 +50,15 @@ export const DownloadButton = ({
   url,
   ...props
 }: DownloadButtonProps) => {
-  const [text, setText] = useState<string | null>("Download")
+  const [text, setText] = useState<string>("Download")
   const [isDownloading, setIsDownloading] = useState<boolean>(false)
 
-  const dgsId = getDgsIdFromDgsLink(url)
+  const strategy = useMemo(
+    () =>
+      defaultDownloadStrategies.find((s) => s.canHandle(url)) ??
+      directDownloadStrategy, // assume direct download if no strategy is found
+    [url],
+  )
 
   const handleDownload = async () => {
     if (isDownloading) return // Prevent multiple simultaneous downloads
@@ -64,15 +66,12 @@ export const DownloadButton = ({
     try {
       setIsDownloading(true)
 
-      if (dgsId) {
-        const result = await fetchDgsFileDownloadUrl({ dgsId })
-        if (result?.downloadUrl) {
-          window.open(result.downloadUrl, "_blank")
-        }
-        return
+      const downloadUrl = await strategy.getDownloadUrl(url)
+      if (downloadUrl) {
+        window.open(downloadUrl, "_blank")
+      } else {
+        console.error("Failed to get download URL")
       }
-
-      console.log("downloading", url) // TODO: Implement download logic
     } catch (error) {
       console.error("Download failed:", error)
     } finally {
@@ -81,18 +80,18 @@ export const DownloadButton = ({
   }
 
   useEffect(() => {
-    if (dgsId) {
-      fetchDgsMetadata({ dgsId })
-        .then((metadata) => {
-          if (metadata) {
-            setText(`Download ${metadata.format} (${metadata.datasetSize})`)
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching DGS metadata:", error)
-        })
+    const updateDisplayText = async () => {
+      try {
+        const displayText = await strategy.getDisplayText(url)
+        if (displayText) {
+          setText(displayText)
+        }
+      } catch (error) {
+        console.error("Error getting display text:", error)
+      }
     }
-  }, [dgsId])
+    void updateDisplayText()
+  }, [url, strategy])
 
   return (
     <AriaButton

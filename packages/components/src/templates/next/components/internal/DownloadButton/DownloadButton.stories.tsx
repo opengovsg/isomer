@@ -90,6 +90,14 @@ export const InverseOutlineVariant: Story = {
   },
 }
 
+export const DirectLink: Story = {
+  name: "Download Direct Link",
+  args: {
+    ...Default.args,
+    url: "/sample-file.pdf",
+  },
+}
+
 export const DgsLink: Story = {
   name: "Download DGS Button",
   args: {
