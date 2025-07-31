@@ -92,7 +92,7 @@ const useCreateCollectionPageWizardContext = ({
       void utils.collection.list.invalidate()
       onClose()
     }
-  }, [createCollectionPageMutation.isSuccess, onClose])
+  }, [createCollectionPageMutation.isSuccess, onClose, utils])
 
   const handleCreatePage = formMethods.handleSubmit((values) => {
     createCollectionPageMutation.mutate(

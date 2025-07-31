@@ -123,7 +123,7 @@ const DeleteResourceModalContent = ({
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [deleteResourceMutation.isSuccess, label])
+  }, [deleteResourceMutation.isSuccess, utils, label, toast])
 
   useEffect(() => {
     if (deleteResourceMutation.isError) {
@@ -135,11 +135,12 @@ const DeleteResourceModalContent = ({
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [deleteResourceMutation.isError, deleteResourceMutation.error, label])
-
-  const onDelete = () => {
-    deleteResourceMutation.mutate({ siteId, resourceId })
-  }
+  }, [
+    deleteResourceMutation.isError,
+    deleteResourceMutation.error,
+    label,
+    toast,
+  ])
 
   return (
     <ModalContent>
@@ -164,7 +165,9 @@ const DeleteResourceModalContent = ({
             isDisabled={!isChecked}
             variant="solid"
             colorScheme="critical"
-            onClick={onDelete}
+            onClick={() =>
+              deleteResourceMutation.mutate({ siteId, resourceId })
+            }
             isLoading={deleteResourceMutation.isPending}
           >
             Delete {label}

@@ -104,7 +104,7 @@ const CreateFolderModalContent = ({
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [createFolderMutation.isSuccess, onClose])
+  }, [createFolderMutation.isSuccess, onClose, utils, toast])
 
   useEffect(() => {
     if (createFolderMutation.isError) {
@@ -116,7 +116,7 @@ const CreateFolderModalContent = ({
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [createFolderMutation.isError, createFolderMutation.error])
+  }, [createFolderMutation.isError, createFolderMutation.error, toast])
 
   const [folderTitle, permalink] = watch(["folderTitle", "permalink"])
   const onSubmit = handleSubmit((data) => {

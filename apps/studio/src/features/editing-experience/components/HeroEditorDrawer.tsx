@@ -159,9 +159,9 @@ export default function HeroEditorDrawer(): JSX.Element {
     )
   }, [
     currActiveIdx,
-    deleteAssetsMutation.mutate,
+    deleteAssetsMutation,
     modifiedAssets,
-    savePageMutation.mutate,
+    savePageMutation,
     pageId,
     previewPageState,
     setDrawerState,

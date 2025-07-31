@@ -94,7 +94,7 @@ const useCreatePageWizardContext = ({
       void utils.resource.listWithoutRoot.invalidate()
       onClose()
     }
-  }, [createPageMutation.isSuccess, onClose])
+  }, [createPageMutation.isSuccess, onClose, utils])
 
   const handleCreatePage = formMethods.handleSubmit((values) => {
     createPageMutation.mutate(

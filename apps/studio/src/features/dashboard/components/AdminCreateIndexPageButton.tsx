@@ -49,7 +49,7 @@ export const AdminCreateIndexPageButton = ({
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [createIndexPageMutation.isSuccess, siteId, parentId])
+  }, [createIndexPageMutation.isSuccess, utils, toast, siteId, parentId])
 
   useEffect(() => {
     if (createIndexPageMutation.isError) {
@@ -60,7 +60,7 @@ export const AdminCreateIndexPageButton = ({
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [createIndexPageMutation.isError, createIndexPageMutation.error])
+  }, [createIndexPageMutation.isError, createIndexPageMutation.error, toast])
 
   if (!isUserIsomerAdmin) return null
   return (

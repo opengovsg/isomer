@@ -28,7 +28,7 @@ export const useSearchQuery = ({
     if (data) {
       onSearchSuccess?.()
     }
-  }, [data])
+  }, [data, onSearchSuccess])
 
   const matchedResources = useMemo((): SearchResultResource[] => {
     return data?.pages.flatMap((page) => page.resources) ?? []

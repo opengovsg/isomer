@@ -56,13 +56,20 @@ const MoveResourceContent = withSuspense(
     const utils = trpc.useUtils()
     const toast = useToast({ status: "success" })
 
+    const movedItem = useAtomValue(moveResourceAtom)
+
     const moveResourceMutation = trpc.resource.move.useMutation()
 
     useEffect(() => {
       if (moveResourceMutation.isSuccess || moveResourceMutation.isError) {
-        onClose()
+        // TODO: actually close the modal
+        setMovedItem(null)
       }
-    }, [moveResourceMutation.isSuccess, moveResourceMutation.isError, onClose])
+    }, [
+      moveResourceMutation.isSuccess,
+      moveResourceMutation.isError,
+      setMovedItem,
+    ])
 
     useEffect(() => {
       if (moveResourceMutation.isSuccess) {
@@ -101,7 +108,14 @@ const MoveResourceContent = withSuspense(
         })
         toast({ title: "Resource moved!", ...BRIEF_TOAST_SETTINGS })
       }
-    }, [moveResourceMutation.isSuccess, onClose])
+    }, [
+      moveResourceMutation.isSuccess,
+      utils,
+      onClose,
+      toast,
+      curResourceId,
+      movedItem,
+    ])
 
     useEffect(() => {
       if (moveResourceMutation.isError) {
@@ -112,9 +126,7 @@ const MoveResourceContent = withSuspense(
           ...BRIEF_TOAST_SETTINGS,
         })
       }
-    }, [moveResourceMutation.isError, moveResourceMutation.error])
-
-    const movedItem = useAtomValue(moveResourceAtom)
+    }, [moveResourceMutation.isError, moveResourceMutation.error, toast])
 
     return (
       <ModalContent>

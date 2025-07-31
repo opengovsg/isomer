@@ -128,7 +128,7 @@ const PageSettingsModalContent = ({
         status: "success",
       })
     }
-  }, [updatePageSettingsMutation.isSuccess])
+  }, [updatePageSettingsMutation.isSuccess, utils, toast])
 
   useEffect(() => {
     if (updatePageSettingsMutation.isError) {
@@ -138,7 +138,11 @@ const PageSettingsModalContent = ({
         status: "error",
       })
     }
-  }, [updatePageSettingsMutation.isError, updatePageSettingsMutation.error])
+  }, [
+    updatePageSettingsMutation.isError,
+    updatePageSettingsMutation.error,
+    toast,
+  ])
 
   const onSubmit = handleSubmit((data) => {
     if (isDirty) {

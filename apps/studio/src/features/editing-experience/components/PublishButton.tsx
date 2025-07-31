@@ -49,7 +49,7 @@ const SuspendablePublishButton = ({
         siteId,
       })
     }
-  }, [publishPageMutation.isSuccess])
+  }, [publishPageMutation.isSuccess, toast, utils, pageId, siteId])
 
   useEffect(() => {
     if (publishPageMutation.isError) {
@@ -63,7 +63,14 @@ const SuspendablePublishButton = ({
       })
       void utils.page.readPage.invalidate({ pageId, siteId })
     }
-  }, [publishPageMutation.isError, publishPageMutation.error])
+  }, [
+    publishPageMutation.isError,
+    publishPageMutation.error,
+    toast,
+    utils,
+    pageId,
+    siteId,
+  ])
 
   const handlePublish = () => {
     const coercedSiteId = Number(siteId)

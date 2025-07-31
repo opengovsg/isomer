@@ -75,7 +75,14 @@ export const VerificationInput = (): JSX.Element | null => {
         )
       }
     }
-  }, [verifyOtpMutation.isSuccess, setError])
+  }, [
+    verifyOtpMutation.isSuccess,
+    setError,
+    isSingpassEnabled,
+    router,
+    utils,
+    setHasLoginStateFlag,
+  ])
 
   useEffect(() => {
     if (verifyOtpMutation.isError) {

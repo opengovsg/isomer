@@ -61,6 +61,15 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
   const loginMutation = trpc.auth.email.login.useMutation()
 
   useEffect(() => {
+    if (loginMutation.isSuccess) {
+      onSuccess({
+        email: loginMutation.data.email,
+        otpPrefix: loginMutation.data.otpPrefix,
+      })
+    }
+  }, [loginMutation.isSuccess, loginMutation.data, onSuccess])
+
+  useEffect(() => {
     if (loginMutation.isError) {
       if (loginMutation.error.data?.code === "UNAUTHORIZED") {
         setErrorState("unauthorized")

@@ -181,14 +181,12 @@ export const LinkEditorDrawer = () => {
     )
 
   useEffect(() => {
-    if (content.page && title) {
-      setLinkAtom({
-        ...(content.page as CollectionLinkProps),
-        title,
-      })
-      setLinkRef((content.page as CollectionLinkProps).ref)
-    }
-  }, [content?.page, title, setLinkAtom, setLinkRef])
+    setLinkAtom({
+      ...(content.page as CollectionLinkProps),
+      title,
+    })
+    setLinkRef((content.page as CollectionLinkProps).ref)
+  }, [content.page, title, setLinkAtom, setLinkRef])
 
   const updateCollectionLinkMutation =
     trpc.collection.updateCollectionLink.useMutation()
@@ -203,7 +201,7 @@ export const LinkEditorDrawer = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [updateCollectionLinkMutation.isSuccess])
+  }, [updateCollectionLinkMutation.isSuccess, utils, toast])
 
   const savedPageState = {
     ...(content.page as CollectionLinkProps),

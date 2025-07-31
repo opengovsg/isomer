@@ -60,7 +60,7 @@ export const UserTableMenu = ({
         title: `Invite resent to ${email}`,
       })
     }
-  }, [resendInviteMutation.isSuccess, resendInviteMutation.data])
+  }, [resendInviteMutation.isSuccess, resendInviteMutation.data, toast])
 
   useEffect(() => {
     if (resendInviteMutation.isError) {
@@ -69,7 +69,7 @@ export const UserTableMenu = ({
         description: resendInviteMutation.error.message,
       })
     }
-  }, [resendInviteMutation.isError, resendInviteMutation.error])
+  }, [resendInviteMutation.isError, resendInviteMutation.error, toast])
 
   return (
     <Menu isLazy size="sm">

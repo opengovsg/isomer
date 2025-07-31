@@ -46,6 +46,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
   } = useEditorDrawerContext()
 
   const toast = useToast()
+  const utils = trpc.useUtils()
   const { pageId, siteId } = useQueryParse(pageSchema)
 
   const updatePageBlobMutation = trpc.page.updatePageBlob.useMutation()
@@ -59,7 +60,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [updatePageBlobMutation.isSuccess])
+  }, [updatePageBlobMutation.isSuccess, utils, toast, pageId, siteId])
 
   const updatePageState = (editorContent: JSONContent | undefined) => {
     const updatedBlocks = Array.from(previewPageState.content)
@@ -113,8 +114,6 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     onDiscardChangesModalClose()
     setDrawerState({ state: "root" })
   }
-
-  const utils = trpc.useUtils()
 
   // TODO: Add a loading state or use suspense
   return (

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import {
   Button,
   FormControl,
@@ -43,11 +43,6 @@ export const EditUserModal = () => {
 
   const isSingpassEnabled = useIsSingpassEnabled()
 
-  const onClose = () => {
-    reset()
-    setUpdateUserModalState(DEFAULT_UPDATE_USER_MODAL_STATE)
-  }
-
   const { watch, handleSubmit, setValue, reset } = useZodForm({
     schema: zod.object({
       role: updateUserInputSchema.shape.role,
@@ -58,6 +53,11 @@ export const EditUserModal = () => {
       role,
     },
   })
+
+  const onClose = useCallback(() => {
+    reset()
+    setUpdateUserModalState(DEFAULT_UPDATE_USER_MODAL_STATE)
+  }, [reset, setUpdateUserModalState])
 
   // Update form value when role from atom changes
   useEffect(() => {
@@ -81,7 +81,7 @@ export const EditUserModal = () => {
         title: `Changes saved!`,
       })
     }
-  }, [updateUserMutation.isSuccess])
+  }, [updateUserMutation.isSuccess, utils, toast])
 
   useEffect(() => {
     if (updateUserMutation.isError) {
@@ -91,7 +91,7 @@ export const EditUserModal = () => {
         description: updateUserMutation.error.message,
       })
     }
-  }, [updateUserMutation.isError, updateUserMutation.error])
+  }, [updateUserMutation.isError, updateUserMutation.error, toast])
 
   const onUpdateUser = handleSubmit((data) => {
     updateUserMutation.mutate({

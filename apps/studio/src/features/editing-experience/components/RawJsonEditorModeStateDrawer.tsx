@@ -43,7 +43,7 @@ export default function RawJsonEditorModeStateDrawer(): JSX.Element {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [updatePageBlobMutation.isSuccess])
+  }, [updatePageBlobMutation.isSuccess, utils, toast, pageId, siteId])
 
   const handleSaveChanges = useCallback(() => {
     setSavedPageState(previewPageState)
@@ -58,7 +58,7 @@ export default function RawJsonEditorModeStateDrawer(): JSX.Element {
       },
     )
   }, [
-    updatePageBlobMutation.mutate,
+    updatePageBlobMutation,
     pageId,
     previewPageState,
     setDrawerState,

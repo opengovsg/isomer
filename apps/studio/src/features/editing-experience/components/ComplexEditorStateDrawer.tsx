@@ -66,7 +66,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [savePageMutation.isSuccess])
+  }, [savePageMutation.isSuccess, utils, toast, pageId, siteId])
 
   const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
     useUploadAssetMutation({ siteId, resourceId: String(pageId) })
@@ -102,7 +102,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     onDeleteBlockModalClose,
     pageId,
     previewPageState,
-    savePageMutation.mutate,
+    savePageMutation,
     savedPageState.content,
     setAddedBlockIndex,
     setDrawerState,
@@ -235,11 +235,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     )
   }, [
     currActiveIdx,
-    deleteAssetsMutation.mutate,
+    deleteAssetsMutation,
     modifiedAssets,
     pageId,
     previewPageState,
-    savePageMutation.mutate,
+    savePageMutation,
     setAddedBlockIndex,
     setDrawerState,
     setModifiedAssets,

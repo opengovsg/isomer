@@ -81,7 +81,7 @@ const PageSettings: NextPageWithLayout = () => {
         status: "success",
       })
     }
-  }, [updateMetaMutation.isSuccess])
+  }, [updateMetaMutation.isSuccess, utils, toast])
 
   useEffect(() => {
     if (updateMetaMutation.isError) {
@@ -92,7 +92,7 @@ const PageSettings: NextPageWithLayout = () => {
       })
       reset()
     }
-  }, [updateMetaMutation.isError, updateMetaMutation.error])
+  }, [updateMetaMutation.isError, updateMetaMutation.error, toast, reset])
 
   const onSubmit = handleSubmit(({ meta, ...rest }) => {
     if (isDirty) {

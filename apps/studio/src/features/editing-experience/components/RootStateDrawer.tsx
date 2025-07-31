@@ -81,7 +81,7 @@ export default function RootStateDrawer() {
     if (reorderBlockMutation.isSuccess) {
       void utils.page.readPage.invalidate({ pageId, siteId })
     }
-  }, [reorderBlockMutation.isSuccess])
+  }, [reorderBlockMutation.isSuccess, utils, pageId, siteId])
 
   useEffect(() => {
     if (reorderBlockMutation.isError) {
@@ -108,7 +108,14 @@ export default function RootStateDrawer() {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [reorderBlockMutation.isError, reorderBlockMutation.error])
+  }, [
+    reorderBlockMutation.isError,
+    reorderBlockMutation.error,
+    reorderBlockMutation.variables,
+    setPreviewPageState,
+    setSavedPageState,
+    toast,
+  ])
 
   const savePageMutation = trpc.page.updatePageBlob.useMutation()
 
@@ -121,7 +128,7 @@ export default function RootStateDrawer() {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [savePageMutation.isSuccess])
+  }, [savePageMutation.isSuccess, utils, toast, pageId, siteId])
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
@@ -160,7 +167,7 @@ export default function RootStateDrawer() {
       })
     },
     [
-      reorderBlockMutation.mutate,
+      reorderBlockMutation,
       pageId,
       savedPageState,
       setPreviewPageState,
@@ -214,7 +221,7 @@ export default function RootStateDrawer() {
     onConfirmConvertIndexPageModalClose,
     pageId,
     previewPageState,
-    savePageMutation.mutate,
+    savePageMutation,
     setDrawerState,
     setSavedPageState,
     siteId,

@@ -45,7 +45,7 @@ const SUPPORTED_SITE_CONFIG_TYPES = [
 const SiteAdminPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
-  const trpcUtils = trpc.useUtils()
+  const utils = trpc.useUtils()
   const { siteId } = useQueryParse(siteAdminSchema)
   const isUserIsomerAdmin = useIsUserIsomerAdmin({
     roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
@@ -112,10 +112,10 @@ const SiteAdminPage: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (setSiteConfigByAdminMutation.isSuccess) {
-      void trpcUtils.site.getConfig.invalidate({ id: siteId })
-      void trpcUtils.site.getTheme.invalidate({ id: siteId })
-      void trpcUtils.site.getNavbar.invalidate({ id: siteId })
-      void trpcUtils.site.getFooter.invalidate({ id: siteId })
+      void utils.site.getConfig.invalidate({ id: siteId })
+      void utils.site.getTheme.invalidate({ id: siteId })
+      void utils.site.getNavbar.invalidate({ id: siteId })
+      void utils.site.getFooter.invalidate({ id: siteId })
       // Reset the form's isDirty but use the latest values provided by the user
       reset(watch())
       toast({
@@ -125,7 +125,14 @@ const SiteAdminPage: NextPageWithLayout = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [setSiteConfigByAdminMutation.isSuccess, reset, watch])
+  }, [
+    setSiteConfigByAdminMutation.isSuccess,
+    reset,
+    watch,
+    siteId,
+    utils,
+    toast,
+  ])
 
   useEffect(() => {
     if (setSiteConfigByAdminMutation.isError) {
@@ -136,7 +143,11 @@ const SiteAdminPage: NextPageWithLayout = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [setSiteConfigByAdminMutation.isError, setSiteConfigByAdminMutation.error])
+  }, [
+    setSiteConfigByAdminMutation.isError,
+    setSiteConfigByAdminMutation.error,
+    toast,
+  ])
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl

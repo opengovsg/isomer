@@ -58,7 +58,7 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
       })
       void router.push(`/sites/${siteId}`)
     }
-  }, [createSiteMutation.isSuccess, createSiteMutation.data])
+  }, [createSiteMutation.isSuccess, createSiteMutation.data, toast, router])
 
   useEffect(() => {
     if (createSiteMutation.isError) {
@@ -69,7 +69,7 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [createSiteMutation.isError, createSiteMutation.error])
+  }, [createSiteMutation.isError, createSiteMutation.error, toast])
 
   const {
     register,

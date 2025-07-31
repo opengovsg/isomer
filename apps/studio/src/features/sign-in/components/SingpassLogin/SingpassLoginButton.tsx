@@ -17,7 +17,7 @@ export const SingpassLoginButton = (): JSX.Element | null => {
     if (singpassLoginMutation.isSuccess) {
       void router.push(singpassLoginMutation.data.redirectUrl)
     }
-  }, [singpassLoginMutation.isSuccess])
+  }, [singpassLoginMutation.isSuccess, singpassLoginMutation.data, router])
 
   useEffect(() => {
     if (singpassLoginMutation.isError) {
@@ -25,7 +25,7 @@ export const SingpassLoginButton = (): JSX.Element | null => {
         `${SIGN_IN}?error=${singpassLoginMutation.error.message}`,
       )
     }
-  }, [singpassLoginMutation.isError, singpassLoginMutation.error])
+  }, [singpassLoginMutation.isError, singpassLoginMutation.error, router])
 
   const landingUrl = getRedirectUrl(router.query)
 

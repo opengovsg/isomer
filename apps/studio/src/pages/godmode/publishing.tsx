@@ -54,7 +54,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [publishOneSiteMutation.isSuccess])
+  }, [publishOneSiteMutation.isSuccess, toast])
 
   useEffect(() => {
     if (publishOneSiteMutation.isError) {
@@ -65,7 +65,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [publishOneSiteMutation.isError, publishOneSiteMutation.error])
+  }, [publishOneSiteMutation.isError, publishOneSiteMutation.error, toast])
 
   const publishAllSiteMutation = trpc.site.publishAll.useMutation()
 
@@ -78,7 +78,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [publishAllSiteMutation.isSuccess, publishAllSiteMutation.data])
+  }, [publishAllSiteMutation.isSuccess, publishAllSiteMutation.data, toast])
 
   useEffect(() => {
     if (publishAllSiteMutation.isError) {
@@ -89,7 +89,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [publishAllSiteMutation.isError, publishAllSiteMutation.error])
+  }, [publishAllSiteMutation.isError, publishAllSiteMutation.error, toast])
 
   const isLoading =
     publishOneSiteMutation.isPending || publishAllSiteMutation.isPending

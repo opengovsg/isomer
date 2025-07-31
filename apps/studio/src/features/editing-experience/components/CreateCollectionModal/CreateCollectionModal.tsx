@@ -119,7 +119,12 @@ const CreateCollectionModalContent = ({
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [createCollectionMutation.isSuccess])
+  }, [
+    createCollectionMutation.isSuccess,
+    createCollectionMutation.isError,
+    utils,
+    toast,
+  ])
 
   useEffect(() => {
     if (createCollectionMutation.isError) {
@@ -131,7 +136,7 @@ const CreateCollectionModalContent = ({
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [createCollectionMutation.isError, createCollectionMutation.error])
+  }, [createCollectionMutation.isError, createCollectionMutation.error, toast])
 
   const [collectionTitle, permalink] = watch(["collectionTitle", "permalink"])
   const onSubmit = handleSubmit((data) => {

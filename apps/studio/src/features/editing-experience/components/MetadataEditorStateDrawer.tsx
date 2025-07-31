@@ -58,7 +58,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [updatePageBlobMutation.isSuccess])
+  }, [updatePageBlobMutation.isSuccess, utils, toast, pageId, siteId])
 
   const metadataSchema = getLayoutPageSchema(previewPageState.layout)
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(metadataSchema)
@@ -76,7 +76,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
       },
     )
   }, [
-    updatePageBlobMutation.mutate,
+    updatePageBlobMutation,
     pageId,
     previewPageState,
     setDrawerState,

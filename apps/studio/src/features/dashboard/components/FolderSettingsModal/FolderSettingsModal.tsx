@@ -147,7 +147,7 @@ const SuspendableModalContent = ({
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [editFolderMutation.isSuccess, onClose, folderId, parentId])
+  }, [editFolderMutation.isSuccess, utils, onClose, folderId, parentId, toast])
 
   useEffect(() => {
     if (editFolderMutation.isError) {
@@ -159,7 +159,7 @@ const SuspendableModalContent = ({
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [editFolderMutation.isError, editFolderMutation.error])
+  }, [editFolderMutation.isError, editFolderMutation.error, toast])
 
   const onSubmit = handleSubmit((data) => {
     editFolderMutation.mutate({

@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import {
   Modal,
   ModalBody,
@@ -29,7 +29,11 @@ export const RemoveUserModal = () => {
 
   const { siteId, userId } = useAtomValue(removeUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
-  const onClose = () => setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE)
+
+  const onClose = useCallback(
+    () => setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE),
+    [setRemoveUserModalState],
+  )
 
   const isSingpassEnabled = useIsSingpassEnabled()
 
@@ -51,7 +55,7 @@ export const RemoveUserModal = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [deleteUserMutation.isSuccess, deleteUserMutation.data])
+  }, [deleteUserMutation.isSuccess, deleteUserMutation.data, utils, toast])
 
   useEffect(() => {
     if (deleteUserMutation.isError) {
@@ -62,7 +66,7 @@ export const RemoveUserModal = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [deleteUserMutation.isError, deleteUserMutation.error])
+  }, [deleteUserMutation.isError, deleteUserMutation.error, toast])
 
   return (
     <Modal isOpen={!!siteId && !!userId} onClose={onClose}>
