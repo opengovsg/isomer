@@ -165,7 +165,7 @@ export const bulkValidateUserPermissionsForResources = async ({
 export const getResourcePermission = async ({
   userId,
   siteId,
-  resourceId,
+  resourceId: _resourceId,
 }: PermissionsProps) => {
   let query = db
     .selectFrom("ResourcePermission")
@@ -173,11 +173,9 @@ export const getResourcePermission = async ({
     .where("siteId", "=", siteId)
     .where("deletedAt", "is", null)
 
-  if (resourceId) {
-    query = query.where("resourceId", "=", resourceId)
-  } else {
-    query = query.where("resourceId", "is", null)
-  }
+  // NOTE: we are using site-wide permissions for now
+  // because there's no granular resource role
+  query = query.where("resourceId", "is", null)
 
   return query.select("role").execute()
 }

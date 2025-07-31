@@ -1051,7 +1051,8 @@ describe("getResourcePermission", () => {
     expect(permissions[0]?.role).toBe(RoleType.Admin)
   })
 
-  it("should return resource-specific permissions when resourceId is provided", async () => {
+  // TODO: add this back in when we have resource-specific permissions
+  it.skip("should return resource-specific permissions when resourceId is provided", async () => {
     // Arrange
     const user = await setupUser({ email: "test@example.com" })
     const { page, site } = await setupPageResource({
@@ -1115,7 +1116,8 @@ describe("getResourcePermission", () => {
     expect(permissions).toHaveLength(0)
   })
 
-  it("should not return site-wide permissions when resourceId is provided and is not null", async () => {
+  // TODO: add this back in when we have resource-specific permissions
+  it.skip("should not return site-wide permissions when resourceId is provided and is not null", async () => {
     // Arrange
     const user = await setupUser({ email: "test@example.com" })
     const { page, site } = await setupPageResource({
