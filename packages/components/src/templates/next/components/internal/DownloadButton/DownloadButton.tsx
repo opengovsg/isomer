@@ -104,6 +104,7 @@ export const DownloadButton = ({
           size,
           className: twMerge(downloadButtonStyles(), className),
           colorScheme,
+          isDisabled: isDownloading,
         }),
       )}
       onPress={handleDownload}
