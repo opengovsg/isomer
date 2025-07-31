@@ -94,7 +94,13 @@ export const AddUserModal = () => {
         description: `Sent invite to ${createdUsers.length === 1 ? createdUsers[0]?.email : createdUsers.length + " users"}. They'll receive an email in a few minutes.`,
       })
     }
-  }, [createUserMutation.isSuccess, createUserMutation.data])
+  }, [
+    createUserMutation.isSuccess,
+    createUserMutation.data,
+    toast,
+    utils.user.list,
+    utils.user.count,
+  ])
 
   useEffect(() => {
     if (createUserMutation.isError) {
@@ -105,39 +111,45 @@ export const AddUserModal = () => {
       })
       reset()
     }
-  }, [createUserMutation.isError, createUserMutation.error, reset])
+  }, [createUserMutation.isError, createUserMutation.error, reset, toast])
 
-  const { refetch: checkWhitelist } =
-    trpc.whitelist.isEmailWhitelisted.useQuery(
-      { siteId, email: (debouncedEmail || "").trim() },
-      {
-        enabled: false,
-        onSuccess: (isWhitelisted) => {
-          setAddUserModalState((prev) => ({
-            ...prev,
-            hasWhitelistError: !isWhitelisted,
-          }))
-        },
-        onError: () => {
-          setAddUserModalState((prev) => ({
-            ...prev,
-            hasWhitelistError: false,
-          }))
-        },
-      },
-    )
+  const whitelistQuery = trpc.whitelist.isEmailWhitelisted.useQuery(
+    { siteId, email: (debouncedEmail || "").trim() },
+    {
+      enabled: false,
+    },
+  )
+
+  // Handle whitelist query results
+  useEffect(() => {
+    if (whitelistQuery.data !== undefined) {
+      setAddUserModalState((prev) => ({
+        ...prev,
+        hasWhitelistError: !whitelistQuery.data,
+      }))
+    }
+  }, [whitelistQuery.data, setAddUserModalState])
+
+  useEffect(() => {
+    if (whitelistQuery.error) {
+      setAddUserModalState((prev) => ({
+        ...prev,
+        hasWhitelistError: false,
+      }))
+    }
+  }, [whitelistQuery.error, setAddUserModalState])
 
   // Check whitelist when email changes
   useEffect(() => {
     // no need to check whitelist if email is not entered or already invalid
     if (!debouncedEmail || errors.email) return
 
-    void checkWhitelist()
+    void whitelistQuery.refetch()
   }, [
     debouncedEmail,
     isNonGovEmailInput,
     errors.email,
-    checkWhitelist,
+    whitelistQuery,
     setAddUserModalState,
   ])
 

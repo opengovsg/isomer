@@ -45,8 +45,10 @@ export const useUploadAssetMutation = ({
   const { mutateAsync: getPresignedPutUrl } =
     trpc.asset.getPresignedPutUrl.useMutation()
 
-  return useMutation<UploadAssetMutationOutput, void, UploadAssetMutationInput>(
-    async ({ file }) => {
+  return useMutation({
+    mutationFn: async ({
+      file,
+    }: UploadAssetMutationInput): Promise<UploadAssetMutationOutput> => {
       const { fileKey, presignedPutUrl } = await getPresignedPutUrl({
         siteId,
         resourceId,
@@ -58,8 +60,6 @@ export const useUploadAssetMutation = ({
         path: `/${fileKey}`,
       }
     },
-    {
-      retry: false,
-    },
-  )
+    retry: false,
+  })
 }

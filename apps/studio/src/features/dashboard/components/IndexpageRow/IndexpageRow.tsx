@@ -1,4 +1,5 @@
 import type { z } from "zod"
+import { useEffect } from "react"
 import Link from "next/link"
 import { HStack, IconButton, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
@@ -11,25 +12,32 @@ import { trpc } from "~/utils/trpc"
 type IndexpageRowProps = z.infer<typeof getIndexpageSchema>
 
 export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
-  const trpcUtils = trpc.useUtils()
+  const utils = trpc.useUtils()
 
   const createIndexPageMutation = trpc.page.createIndexPage.useMutation()
 
-  const { data } = trpc.folder.getIndexpage.useQuery(
-    {
-      siteId,
-      resourceId,
-    },
-    {
-      onError: (err) => {
-        if (err.data?.code === "NOT_FOUND") {
-          void createIndexPageMutation.mutate({ siteId, parentId: resourceId })
-          void trpcUtils.folder.getIndexpage.refetch()
-          void trpcUtils.resource.getChildrenOf.invalidate()
-        }
-      },
-    },
-  )
+  const { data, isError, error } = trpc.folder.getIndexpage.useQuery({
+    siteId,
+    resourceId,
+  })
+
+  useEffect(() => {
+    if (isError) {
+      if (error.data?.code === "NOT_FOUND") {
+        void createIndexPageMutation.mutate({ siteId, parentId: resourceId })
+        void utils.folder.getIndexpage.refetch()
+        void utils.resource.getChildrenOf.invalidate()
+      }
+    }
+  }, [
+    isError,
+    error,
+    createIndexPageMutation,
+    utils.folder.getIndexpage,
+    utils.resource.getChildrenOf,
+    siteId,
+    resourceId,
+  ])
 
   return (
     <Skeleton w="full" isLoaded={!createIndexPageMutation.isPending && !!data}>

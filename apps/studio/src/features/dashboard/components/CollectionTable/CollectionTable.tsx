@@ -79,17 +79,12 @@ export const CollectionTable = ({
       totalCount: totalRowCount,
     })
 
-  const { data: resources, isFetching } = trpc.collection.list.useQuery(
-    {
-      siteId,
-      resourceId,
-      limit,
-      offset: skip,
-    },
-    {
-      keepPreviousData: true, // Required for table to show previous data while fetching next page
-    },
-  )
+  const { data: resources, isFetching } = trpc.collection.list.useQuery({
+    siteId,
+    resourceId,
+    limit,
+    offset: skip,
+  })
 
   const tableInstance = useReactTable<CollectionTableData>({
     columns,

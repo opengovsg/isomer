@@ -25,13 +25,10 @@ export const SingpassCallback = (): JSX.Element => {
     query: { code, state },
   } = router
 
-  const [data] = trpc.auth.singpass.callback.useSuspenseQuery(
+  const { data, error } = trpc.auth.singpass.callback.useQuery(
     { code: String(code), state: String(state) },
     {
       staleTime: Infinity,
-      onError: (_) => {
-        void router.replace(`${SIGN_IN_SINGPASS}?error=true`)
-      },
     },
   )
 
@@ -45,11 +42,15 @@ export const SingpassCallback = (): JSX.Element => {
         void router.replace(callbackUrlSchema.parse(redirectUrl))
       }
     }
-  }, [data])
+  }, [data, setHasLoginStateFlag, utils.me.get, router])
 
-  const { isNewUser, redirectUrl } = data
+  useEffect(() => {
+    if (error) {
+      void router.replace(`${SIGN_IN_SINGPASS}?error=true`)
+    }
+  }, [error, router])
 
-  if (!isNewUser) {
+  if (data?.isNewUser) {
     return <FullscreenSpinner />
   }
 
@@ -90,7 +91,7 @@ export const SingpassCallback = (): JSX.Element => {
               </Text>
             </Flex>
 
-            <Button as={NextLink} href={redirectUrl} w="full">
+            <Button as={NextLink} href={data?.redirectUrl} w="full">
               Continue to Isomer Studio
             </Button>
           </Flex>

@@ -60,7 +60,14 @@ export default function HeroEditorDrawer(): JSX.Element {
         ...BRIEF_TOAST_SETTINGS,
       })
     }
-  }, [savePageMutation.isSuccess])
+  }, [
+    savePageMutation.isSuccess,
+    toast,
+    utils.page.readPage,
+    utils.page.readPageAndBlob,
+    pageId,
+    siteId,
+  ])
 
   const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
     useUploadAssetMutation({ siteId, resourceId: String(pageId) })
