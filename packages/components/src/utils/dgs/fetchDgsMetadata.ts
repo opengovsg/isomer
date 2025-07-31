@@ -2,13 +2,18 @@ interface FetchDgsMetadataProps {
   dgsId: string
 }
 
-interface DgsMetadata {
-  name: string
-  format: string
-  datasetSize: number // in bytes
+interface FetchDgsMetadataResponse {
+  data: {
+    name: string
+    format: string
+    datasetSize: number // in bytes
+  }
 }
 
-type FetchDgsMetadataOutput = Pick<DgsMetadata, "name" | "format"> & {
+type FetchDgsMetadataOutput = Pick<
+  FetchDgsMetadataResponse["data"],
+  "name" | "format"
+> & {
   datasetSize: string
 }
 
@@ -24,9 +29,7 @@ export const fetchDgsMetadata = async ({
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = (await response.json()) as {
-      data: DgsMetadata
-    }
+    const data = (await response.json()) as FetchDgsMetadataResponse
 
     return {
       name: data.data.name,
