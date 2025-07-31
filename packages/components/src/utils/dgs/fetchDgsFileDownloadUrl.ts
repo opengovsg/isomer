@@ -15,10 +15,11 @@ interface FetchDgsFileDownloadUrlOutput {
 export const fetchDgsFileDownloadUrl = async ({
   dgsId,
 }: FetchDgsFileDownloadUrlProps): Promise<FetchDgsFileDownloadUrlOutput | null> => {
-  const initiateDownloadUrl = getInitiateDownloadUrl(dgsId)
-
   try {
-    const initiateDownloadResponse = await fetch(initiateDownloadUrl)
+    // For simplicity sake, we will always use data.gov.sg production API
+    const initiateDownloadResponse = await fetch(
+      `https://api-open.data.gov.sg/v1/public/api/datasets/${dgsId}/initiate-download`,
+    )
 
     if (!initiateDownloadResponse.ok) {
       throw new Error("Failed to initiate download")
@@ -35,6 +36,3 @@ export const fetchDgsFileDownloadUrl = async ({
     return null
   }
 }
-
-const getInitiateDownloadUrl = (dgsId: FetchDgsFileDownloadUrlProps["dgsId"]) =>
-  `https://api-open.data.gov.sg/v1/public/api/datasets/${dgsId}/initiate-download`
