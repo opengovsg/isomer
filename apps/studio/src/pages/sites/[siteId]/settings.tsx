@@ -117,7 +117,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     notification,
     siteId,
     toast,
-    utils.site.getNotification,
+    utils,
   ])
 
   useEffect(() => {

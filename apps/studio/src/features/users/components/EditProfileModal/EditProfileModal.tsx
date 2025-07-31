@@ -96,7 +96,7 @@ export const EditProfileModal = () => {
       })
       handleClose()
     }
-  }, [updateDetailsMutation.isSuccess, utils.me.get, toast, handleClose])
+  }, [updateDetailsMutation.isSuccess, utils, toast, handleClose])
 
   useEffect(() => {
     if (updateDetailsMutation.isError) {

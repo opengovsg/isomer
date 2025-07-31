@@ -85,13 +85,7 @@ export function EditorDrawerProvider({
       void utils.page.readPage.invalidate({ pageId, siteId })
       void utils.page.readPageAndBlob.invalidate({ pageId, siteId })
     }
-  }, [
-    updatePageBlobMutation.isSuccess,
-    utils.page.readPage,
-    utils.page.readPageAndBlob,
-    pageId,
-    siteId,
-  ])
+  }, [updatePageBlobMutation.isSuccess, utils, pageId, siteId])
 
   useEffect(() => {
     if (updatePageBlobMutation.isError) {
