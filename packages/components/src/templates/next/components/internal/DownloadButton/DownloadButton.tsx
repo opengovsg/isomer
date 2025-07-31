@@ -2,6 +2,7 @@
 
 import type { ButtonProps as AriaButtonProps } from "react-aria-components"
 import type { VariantProps } from "tailwind-variants"
+import { useState } from "react"
 import { Button as AriaButton, composeRenderProps } from "react-aria-components"
 import { BiDownload } from "react-icons/bi"
 
@@ -45,14 +46,26 @@ export const DownloadButton = ({
   url,
   ...props
 }: DownloadButtonProps) => {
-  // TODO: Implement download logic
-  const handleDownload = () => {
-    console.log("download", url)
+  const [isDownloading, setIsDownloading] = useState(false)
+
+  const handleDownload = async () => {
+    if (isDownloading) return // Prevent multiple simultaneous downloads
+
+    try {
+      setIsDownloading(true)
+      console.log("downloading", url) // TODO: Implement download logic
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+    } catch (error) {
+      console.error("Download failed:", error)
+    } finally {
+      setIsDownloading(false)
+    }
   }
 
   return (
     <AriaButton
       {...props}
+      isDisabled={isDownloading}
       className={composeRenderProps(className, (className, renderProps) =>
         buttonStyles({
           ...renderProps,
