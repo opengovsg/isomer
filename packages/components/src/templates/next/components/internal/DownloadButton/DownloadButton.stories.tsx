@@ -7,7 +7,7 @@ const meta: Meta<typeof DownloadButton> = {
   component: DownloadButton,
   render: (args) => {
     // Define matrices for link types and sizes
-    const links = ["/"] as const
+    const links = ["/sample-file.pdf"] as const
     const sizes = ["sm", "base", "lg"] as const
 
     // Generate all combinations
@@ -87,14 +87,6 @@ export const InverseOutlineVariant: Story = {
   args: {
     ...OutlineVariant.args,
     colorScheme: "inverse",
-  },
-}
-
-export const DirectLink: Story = {
-  name: "Download Direct Link",
-  args: {
-    ...Default.args,
-    url: "/sample-file.pdf",
   },
 }
 
