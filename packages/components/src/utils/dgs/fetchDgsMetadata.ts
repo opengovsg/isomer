@@ -1,13 +1,3 @@
-const DGS_LINK_REGEX = /\[dgs:([a-zA-Z0-9_]+)\]/
-
-export const getDgsIdFromDgsLink = (dgsLink: string): string => {
-  const match = DGS_LINK_REGEX.exec(dgsLink)
-  if (!match) {
-    return ""
-  }
-  return match[1] || ""
-}
-
 interface FetchDgsMetadataProps {
   dgsId: string
 }
