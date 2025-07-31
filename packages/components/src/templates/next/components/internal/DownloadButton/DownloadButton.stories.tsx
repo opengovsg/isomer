@@ -19,7 +19,11 @@ const meta: Meta<typeof DownloadButton> = {
       <div className="flex flex-col gap-2">
         {combinations.map((combo, index) => (
           <div key={index}>
-            <DownloadButton {...args} size={combo.size} url={combo.link} />
+            <DownloadButton
+              {...args}
+              size={combo.size}
+              url={args.url || combo.link}
+            />
           </div>
         ))}
       </div>
@@ -83,5 +87,13 @@ export const InverseOutlineVariant: Story = {
   args: {
     ...OutlineVariant.args,
     colorScheme: "inverse",
+  },
+}
+
+export const DgsLink: Story = {
+  name: "Download DGS Button",
+  args: {
+    ...Default.args,
+    url: "[dgs:d_688b934f82c1059ed0a6993d2a829089]",
   },
 }

@@ -2,12 +2,17 @@
 
 import type { ButtonProps as AriaButtonProps } from "react-aria-components"
 import type { VariantProps } from "tailwind-variants"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button as AriaButton, composeRenderProps } from "react-aria-components"
-import { BiDownload } from "react-icons/bi"
+import { BiDownload, BiLoaderAlt } from "react-icons/bi"
 
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+import {
+  fetchDgsFileDownloadUrl,
+  fetchDgsMetadata,
+  getDgsIdFromDgsLink,
+} from "~/utils"
 import { buttonStyles } from "../Button"
 
 const downloadButtonStyles = tv({
@@ -21,6 +26,9 @@ const downloadIconStyles = tv({
       sm: "w-2.5 lg:w-3",
       base: "w-3.5 lg:w-4",
       lg: "w-4.5 lg:w-5",
+    },
+    isLoading: {
+      true: "animate-spin",
     },
   },
   defaultVariants: {
@@ -42,25 +50,49 @@ export const DownloadButton = ({
   variant,
   size,
   colorScheme,
-  children,
   url,
   ...props
 }: DownloadButtonProps) => {
-  const [isDownloading, setIsDownloading] = useState(false)
+  const [text, setText] = useState<string | null>("Download")
+  const [isDownloading, setIsDownloading] = useState<boolean>(false)
+
+  const dgsId = getDgsIdFromDgsLink(url)
 
   const handleDownload = async () => {
     if (isDownloading) return // Prevent multiple simultaneous downloads
 
     try {
       setIsDownloading(true)
+
+      if (dgsId) {
+        const result = await fetchDgsFileDownloadUrl({ dgsId })
+        if (result?.downloadUrl) {
+          window.open(result.downloadUrl, "_blank")
+        }
+        return
+      }
+
       console.log("downloading", url) // TODO: Implement download logic
-      await new Promise((resolve) => setTimeout(resolve, 2000))
     } catch (error) {
       console.error("Download failed:", error)
     } finally {
       setIsDownloading(false)
     }
   }
+
+  useEffect(() => {
+    if (dgsId) {
+      fetchDgsMetadata({ dgsId })
+        .then((metadata) => {
+          if (metadata) {
+            setText(`Download ${metadata.format} (${metadata.datasetSize})`)
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching DGS metadata:", error)
+        })
+    }
+  }, [dgsId])
 
   return (
     <AriaButton
@@ -77,12 +109,14 @@ export const DownloadButton = ({
       )}
       onPress={handleDownload}
     >
-      {composeRenderProps(children, (children) => (
-        <>
-          {children}
-          <BiDownload className={downloadIconStyles({ size })} />
-        </>
-      ))}
+      {text}
+      {isDownloading ? (
+        <BiLoaderAlt
+          className={downloadIconStyles({ size, isLoading: isDownloading })}
+        />
+      ) : (
+        <BiDownload className={downloadIconStyles({ size })} />
+      )}
     </AriaButton>
   )
 }
