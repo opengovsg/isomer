@@ -25,6 +25,7 @@ export const ContactInformationSchema = Type.Object(
     }),
     country: Type.Optional(Type.String()),
     city: Type.Optional(Type.String()),
+    description: Type.Optional(Type.String()),
     entityDetails: Type.Optional(
       Type.Array(CompulsorySingleContactInformationSchema, {
         minItems: 1,
