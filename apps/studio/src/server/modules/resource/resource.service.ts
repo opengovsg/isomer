@@ -2,6 +2,7 @@ import type { SelectExpression } from "kysely"
 import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 import _ from "lodash"
 
@@ -565,7 +566,7 @@ export const publishPageResource = async ({
             : null,
           after: version,
         },
-        eventType: "Publish",
+        eventType: AuditLogEvent.Publish,
         metadata: fullResource,
       })
 
@@ -617,7 +618,7 @@ export const publishResource = async (
         before: null,
         after: null,
       },
-      eventType: "Publish",
+      eventType: AuditLogEvent.Publish,
       metadata: resource,
     })
 
@@ -653,7 +654,7 @@ export const publishSiteConfig = async (
         before: null,
         after: null,
       },
-      eventType: "Publish",
+      eventType: AuditLogEvent.Publish,
       metadata: { site, ...rest },
     })
 
