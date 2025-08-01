@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { Button, Flex, Grid, GridItem, Text } from "@chakra-ui/react"
@@ -24,27 +25,32 @@ export const SingpassCallback = (): JSX.Element => {
     query: { code, state },
   } = router
 
-  const [data] = trpc.auth.singpass.callback.useSuspenseQuery(
+  const { data, error } = trpc.auth.singpass.callback.useQuery(
     { code: String(code), state: String(state) },
     {
       staleTime: Infinity,
-      onSuccess: ({ isNewUser, redirectUrl }) => {
-        setHasLoginStateFlag()
-        void utils.me.get.invalidate()
-
-        if (!isNewUser) {
-          void router.replace(callbackUrlSchema.parse(redirectUrl))
-        }
-      },
-      onError: (_) => {
-        void router.replace(`${SIGN_IN_SINGPASS}?error=true`)
-      },
     },
   )
 
-  const { isNewUser, redirectUrl } = data
+  useEffect(() => {
+    if (data) {
+      setHasLoginStateFlag()
+      void utils.me.get.invalidate()
 
-  if (!isNewUser) {
+      const { isNewUser, redirectUrl } = data
+      if (!isNewUser) {
+        void router.replace(callbackUrlSchema.parse(redirectUrl))
+      }
+    }
+  }, [data, setHasLoginStateFlag, utils.me.get, router])
+
+  useEffect(() => {
+    if (error) {
+      void router.replace(`${SIGN_IN_SINGPASS}?error=true`)
+    }
+  }, [error, router])
+
+  if (data?.isNewUser) {
     return <FullscreenSpinner />
   }
 
@@ -85,7 +91,7 @@ export const SingpassCallback = (): JSX.Element => {
               </Text>
             </Flex>
 
-            <Button as={NextLink} href={redirectUrl} w="full">
+            <Button as={NextLink} href={data?.redirectUrl} w="full">
               Continue to Isomer Studio
             </Button>
           </Flex>

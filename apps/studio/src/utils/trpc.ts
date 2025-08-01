@@ -126,21 +126,13 @@ export interface SSRContext extends NextPageContext {
  * A set of strongly-typed React hooks from your `AppRouter` type signature with `createReactQueryHooks`.
  * @link https://trpc.io/docs/react#3-create-trpc-hooks
  */
-export const trpc = createTRPCNext<
-  AppRouter,
-  SSRContext,
-  "ExperimentalSuspense"
->({
+export const trpc = createTRPCNext<AppRouter, SSRContext>({
   config({ ctx }) {
     /**
      * If you want to use SSR, you need to use the server's full URL
      * @link https://trpc.io/docs/ssr
      */
     return {
-      /**
-       * @link https://trpc.io/docs/data-transformers
-       */
-      transformer: superjson,
       /**
        * @link https://trpc.io/docs/links
        */
@@ -156,6 +148,7 @@ export const trpc = createTRPCNext<
         }),
         httpLink({
           url: `${getBaseUrl()}/api/trpc`,
+          transformer: superjson,
           /**
            * Provide a function that will invoke the current global
            * window.fetch. We do this to pick up any changes to fetch
@@ -236,6 +229,7 @@ export const trpc = createTRPCNext<
 
   //   return {};
   // },
+  transformer: superjson,
 })
 
 export type RouterInput = inferRouterInputs<AppRouter>

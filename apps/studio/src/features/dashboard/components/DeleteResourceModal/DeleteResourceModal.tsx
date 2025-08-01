@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   HStack,
   Modal,
@@ -99,34 +99,48 @@ const DeleteResourceModalContent = ({
   const utils = trpc.useUtils()
   const toast = useToast()
   const [isChecked, setIsChecked] = useState(false)
-  const { mutate, isLoading } = trpc.resource.delete.useMutation({
-    onSettled: onClose,
-    onSuccess: async () => {
-      // TODO: here and elsewhere, we should aim to simplify our query pattern
-      // such that the invalidation logic is clear
-      await utils.resource.listWithoutRoot.invalidate()
-      await utils.resource.getChildrenOf.invalidate()
-      await utils.collection.list.invalidate()
+
+  const deleteResourceMutation = trpc.resource.delete.useMutation()
+
+  useEffect(() => {
+    if (deleteResourceMutation.isSuccess || deleteResourceMutation.isError) {
+      onClose()
+    }
+  }, [
+    deleteResourceMutation.isSuccess,
+    deleteResourceMutation.isError,
+    onClose,
+  ])
+
+  useEffect(() => {
+    if (deleteResourceMutation.isSuccess) {
+      void utils.resource.listWithoutRoot.invalidate()
+      void utils.resource.getChildrenOf.invalidate()
+      void utils.collection.list.invalidate()
       toast({
         title: `${upperFirst(label)} deleted!`,
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-    onError: (err) => {
+    }
+  }, [deleteResourceMutation.isSuccess, utils, label, toast])
+
+  useEffect(() => {
+    if (deleteResourceMutation.isError) {
       toast({
         title: `Failed to delete ${label}`,
         status: "error",
         // TODO: check if this property is correct
-        description: err.message,
+        description: deleteResourceMutation.error.message,
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
-
-  const onDelete = () => {
-    mutate({ siteId, resourceId })
-  }
+    }
+  }, [
+    deleteResourceMutation.isError,
+    deleteResourceMutation.error,
+    label,
+    toast,
+  ])
 
   return (
     <ModalContent>
@@ -151,8 +165,10 @@ const DeleteResourceModalContent = ({
             isDisabled={!isChecked}
             variant="solid"
             colorScheme="critical"
-            onClick={onDelete}
-            isLoading={isLoading}
+            onClick={() =>
+              deleteResourceMutation.mutate({ siteId, resourceId })
+            }
+            isLoading={deleteResourceMutation.isPending}
           >
             Delete {label}
           </Button>

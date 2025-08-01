@@ -81,56 +81,75 @@ export const AddUserModal = () => {
     [isNonGovEmailInput, hasWhitelistError],
   )
 
-  const { mutate: createUser, isLoading } = trpc.user.create.useMutation({
-    onSuccess: async (createdUsers) => {
-      await utils.user.list.invalidate()
-      await utils.user.count.invalidate()
+  const createUserMutation = trpc.user.create.useMutation()
+
+  useEffect(() => {
+    if (createUserMutation.isSuccess) {
+      void utils.user.list.invalidate()
+      void utils.user.count.invalidate()
+
+      const createdUsers = createUserMutation.data
       toast({
         status: "success",
         description: `Sent invite to ${createdUsers.length === 1 ? createdUsers[0]?.email : createdUsers.length + " users"}. They'll receive an email in a few minutes.`,
       })
-    },
-    onError: (error) => {
+    }
+  }, [
+    createUserMutation.isSuccess,
+    createUserMutation.data,
+    toast,
+    utils.user.list,
+    utils.user.count,
+  ])
+
+  useEffect(() => {
+    if (createUserMutation.isError) {
       toast({
         status: "error",
         title: "Failed to create user",
-        description: error.message,
+        description: createUserMutation.error.message,
       })
       reset()
-    },
-  })
+    }
+  }, [createUserMutation.isError, createUserMutation.error, reset, toast])
 
-  const { refetch: checkWhitelist } =
-    trpc.whitelist.isEmailWhitelisted.useQuery(
-      { siteId, email: (debouncedEmail || "").trim() },
-      {
-        enabled: false,
-        onSuccess: (isWhitelisted) => {
-          setAddUserModalState((prev) => ({
-            ...prev,
-            hasWhitelistError: !isWhitelisted,
-          }))
-        },
-        onError: () => {
-          setAddUserModalState((prev) => ({
-            ...prev,
-            hasWhitelistError: false,
-          }))
-        },
-      },
-    )
+  const whitelistQuery = trpc.whitelist.isEmailWhitelisted.useQuery(
+    { siteId, email: (debouncedEmail || "").trim() },
+    {
+      enabled: false,
+    },
+  )
+
+  // Handle whitelist query results
+  useEffect(() => {
+    if (whitelistQuery.data !== undefined) {
+      setAddUserModalState((prev) => ({
+        ...prev,
+        hasWhitelistError: !whitelistQuery.data,
+      }))
+    }
+  }, [whitelistQuery.data, setAddUserModalState])
+
+  useEffect(() => {
+    if (whitelistQuery.error) {
+      setAddUserModalState((prev) => ({
+        ...prev,
+        hasWhitelistError: false,
+      }))
+    }
+  }, [whitelistQuery.error, setAddUserModalState])
 
   // Check whitelist when email changes
   useEffect(() => {
     // no need to check whitelist if email is not entered or already invalid
     if (!debouncedEmail || errors.email) return
 
-    void checkWhitelist()
+    void whitelistQuery.refetch()
   }, [
     debouncedEmail,
     isNonGovEmailInput,
     errors.email,
-    checkWhitelist,
+    whitelistQuery,
     setAddUserModalState,
   ])
 
@@ -140,7 +159,7 @@ export const AddUserModal = () => {
   }, [reset, setAddUserModalState])
 
   const onSendInvite = handleSubmit((data) => {
-    createUser(
+    createUserMutation.mutate(
       {
         siteId,
         users: [
@@ -245,7 +264,7 @@ export const AddUserModal = () => {
             <Button
               variant="solid"
               onClick={onSendInvite}
-              isLoading={isLoading}
+              isLoading={createUserMutation.isPending}
               isDisabled={
                 Object.keys(errors).length > 0 ||
                 email === "" ||
