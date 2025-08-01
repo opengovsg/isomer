@@ -12,6 +12,11 @@ export { getTailwindVariantLayout } from "./getTailwindVariantLayout"
 export { getTextAsHtml } from "./getTextAsHtml"
 export { getTransformedPageContent } from "./getTransformedPageContent"
 export { isExternalUrl } from "./isExternalUrl"
+export {
+  fetchDgsFileDownloadUrl,
+  fetchDgsMetadata,
+  getDgsIdFromDgsLink,
+} from "./dgs"
 export { orderedListSchemaBuilder } from "./orderedListSchemaBuilder"
 export * from "./tailwind"
 export { unorderedListSchemaBuilder } from "./unorderedListSchemaBuilder"
