@@ -4,6 +4,7 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import { IMAGE_GALLERY_TYPE } from "~/interfaces"
 import Content from "./Content"
+import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<typeof Content> = {
   title: "Next/Layouts/Content",
@@ -24,8 +25,7 @@ type Story = StoryObj<typeof Content>
 export const Default: Story = {
   args: {
     layout: "content",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Isomer Next",
@@ -322,25 +322,7 @@ export const Default: Story = {
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-      notification: {
-        content: [{ type: "text", text: "This is a short notification" }],
-      },
-    },
+    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },
@@ -1486,8 +1468,7 @@ export const Default: Story = {
 export const Image: Story = {
   args: {
     layout: "content",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Isomer Next",
@@ -1784,25 +1765,7 @@ export const Image: Story = {
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-      notification: {
-        content: [{ type: "text", text: "This is a short notification" }],
-      },
-    },
+    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },
@@ -2888,8 +2851,7 @@ export const Image: Story = {
 export const NoTable: Story = {
   args: {
     layout: "content",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Isomer Next",
@@ -2962,22 +2924,7 @@ export const NoTable: Story = {
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },
@@ -3302,8 +3249,7 @@ export const NoTable: Story = {
 export const SmallTable: Story = {
   args: {
     layout: "content",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Isomer Next",
@@ -3376,22 +3322,7 @@ export const SmallTable: Story = {
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },
@@ -3884,8 +3815,7 @@ export const SmallTable: Story = {
 export const FirstLevelPage: Story = {
   args: {
     layout: "content",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Isomer Next",
@@ -3958,22 +3888,7 @@ export const FirstLevelPage: Story = {
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },
@@ -4278,8 +4193,7 @@ export const FirstLevelPage: Story = {
 export const MultipleAccordions: Story = {
   args: {
     layout: "content",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Isomer Next",
@@ -4352,22 +4266,7 @@ export const MultipleAccordions: Story = {
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },
@@ -4465,8 +4364,7 @@ export const MultipleAccordions: Story = {
 export const MultipleInfobars: Story = {
   args: {
     layout: "content",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Isomer Next",
@@ -4539,22 +4437,7 @@ export const MultipleInfobars: Story = {
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },

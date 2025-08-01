@@ -8,6 +8,7 @@ import type { HomePageSchemaType } from "~/engine"
 import type { HeroProps } from "~/interfaces/complex/Hero"
 import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import Homepage from "./Homepage"
+import { generateSiteConfig } from ".storybook/helpers"
 
 // Template for stories
 const Template = (props: HomePageSchemaType) => {
@@ -71,8 +72,7 @@ const generateArgs = ({
 }): HomePageSchemaType => {
   return {
     layout: "homepage",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Home",
@@ -141,10 +141,6 @@ const generateArgs = ({
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
       navbar: {
         items: [
           {
@@ -268,17 +264,11 @@ const generateArgs = ({
           },
         ],
       },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
       search: {
         type: "searchSG",
         clientId: TEST_CLIENT_ID,
       },
-    },
+    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },

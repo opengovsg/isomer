@@ -4,6 +4,7 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { IndexPageSchemaType } from "~/types"
 import IndexPage from "./IndexPage"
+import { generateSiteConfig } from ".storybook/helpers"
 
 const DEFAULT_INDEX_PAGE = {
   permalink: "/parent",
@@ -21,8 +22,7 @@ const generateIndexPage = (
 ): Partial<IndexPageSchemaType> => {
   return {
     layout: "index",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Isomer Next",
@@ -107,22 +107,7 @@ const generateIndexPage = (
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },

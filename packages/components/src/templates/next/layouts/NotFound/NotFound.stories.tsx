@@ -4,6 +4,7 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { NotFoundPageSchemaType } from "~/engine"
 import NotFoundLayout from "./NotFound"
+import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<NotFoundPageSchemaType> = {
   title: "Next/Layouts/NotFound",
@@ -25,33 +26,7 @@ export const Default: Story = {
   name: "NotFound",
   args: {
     layout: "notfound",
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    site: generateSiteConfig(),
     meta: {
       description: "Search results",
     },

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { BlockquoteProps } from "~/interfaces"
 import { Blockquote } from "./Blockquote"
+import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<BlockquoteProps> = {
   title: "Next/Components/Blockquote",
@@ -13,33 +14,7 @@ const meta: Meta<BlockquoteProps> = {
     },
   },
   args: {
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      logoUrl: "/isomer-logo.svg",
-      url: "https://www.isomer.gov.sg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    site: generateSiteConfig(),
   },
 }
 export default meta
