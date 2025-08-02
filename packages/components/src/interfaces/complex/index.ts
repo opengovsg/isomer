@@ -56,6 +56,7 @@ export {
   CONTACT_INFORMATION_TYPE,
   ContactInformationSchema,
   type ContactInformationProps,
+  type ContactInformationUIProps,
   type NativeContactInformationProps,
   type DgsContactInformationProps,
 } from "./ContactInformation"
