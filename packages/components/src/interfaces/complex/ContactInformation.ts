@@ -21,7 +21,6 @@ const generateSingleContactInformationSchema = ({
   return Type.Object({
     displayText: Type.Optional(
       Type.String({
-        default: defaultDisplayText,
         title: defaultDisplayText,
       }),
     ),
@@ -136,6 +135,17 @@ export const ContactInformationSchema = Type.Intersect([
   BaseContactInformationSchema,
   Type.Union([NativeContactInformationSchema, DgsContactInformationSchema]),
 ])
+
+export type ContactInformationUIProps = Static<
+  typeof BaseContactInformationSchema
+> & {
+  entityDetails: Static<typeof NativeContactInformationSchema>["entityDetails"]
+  otherMethods: Static<typeof NativeContactInformationSchema>["otherMethods"]
+} & {
+  layout: IsomerPageLayoutType
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
+}
 
 export type NativeContactInformationProps = Static<
   typeof BaseContactInformationSchema
