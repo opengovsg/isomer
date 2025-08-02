@@ -13,13 +13,7 @@ const ContactInformation = (props: ContactInformationProps) => {
       return (
         <DgsContactInformation {...(props as DgsContactInformationProps)} />
       )
-    case DATA_SOURCE_TYPE.native:
-      return (
-        <NativeContactInformation
-          {...(props as NativeContactInformationProps)}
-        />
-      )
-    default: // backward compatibility
+    default:
       return (
         <NativeContactInformation
           {...(props as NativeContactInformationProps)}

@@ -138,14 +138,15 @@ export const ContactInformationSchema = Type.Intersect([
 
 export type ContactInformationUIProps = Static<
   typeof BaseContactInformationSchema
-> & {
-  entityDetails: Static<typeof NativeContactInformationSchema>["entityDetails"]
-  otherMethods: Static<typeof NativeContactInformationSchema>["otherMethods"]
-} & {
-  layout: IsomerPageLayoutType
-  site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
-}
+> &
+  Pick<
+    Static<typeof NativeContactInformationSchema>,
+    "entityDetails" | "otherMethods"
+  > & {
+    layout: IsomerPageLayoutType
+    site: IsomerSiteProps
+    LinkComponent?: LinkComponentType
+  }
 
 export type NativeContactInformationProps = Static<
   typeof BaseContactInformationSchema
