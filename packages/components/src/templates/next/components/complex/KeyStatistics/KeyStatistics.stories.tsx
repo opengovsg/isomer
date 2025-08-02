@@ -136,3 +136,25 @@ export const WithLinkAndLabel: Story = {
     label: "We have no achievements",
   },
 }
+
+export const DGS: Story = {
+  args: {
+    dataSource: {
+      type: "dgs",
+      resourceId: "d_688b934f82c1059ed0a6993d2a829089",
+      row: {
+        fieldKey: "school_name",
+        fieldValue: "VICTORIA JUNIOR COLLEGE",
+      },
+    },
+    title: "[dgs:school_name]",
+    statistics: [
+      { label: "Postal Code", value: "[dgs:postal_code]" },
+      { label: "Development Guide Plan Code", value: "[dgs:dgp_code]" },
+      { label: "Zone Code", value: "[dgs:zone_code]" },
+      { label: "School Type", value: "[dgs:mainlevel_code]" },
+    ],
+    url: "/",
+    label: "[dgs:email_address]",
+  },
+}
