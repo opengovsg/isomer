@@ -180,10 +180,10 @@ export const siteRouter = router({
       // validate the input JSON before parsing. Also ensure that existing site
       // configs in the database meets the schema requirements
       async ({ ctx, input: { siteId, config, theme, navbar, footer } }) => {
-        await validateUserPermissionsForSite({
-          siteId,
+        await validateUserIsIsomerCoreAdmin({
           userId: ctx.user.id,
-          action: "update",
+          gb: ctx.gb,
+          roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
         })
 
         await db.transaction().execute(async (tx) => {

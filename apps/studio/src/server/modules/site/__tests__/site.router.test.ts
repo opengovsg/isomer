@@ -776,17 +776,21 @@ describe("site.router", async () => {
       await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
     })
 
-    it("should throw 403 if user does not have write access to the site", async () => {
+    it("should throw 403 if user is not an Isomer Core Admin", async () => {
       // Arrange
-      const { site } = await setupSite()
-      await setupEditorPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
+      const mockRequest = createMockRequest(session)
+      const mockGrowthBook: Partial<GrowthBook> = {
+        getFeatureValue: vi.fn().mockReturnValue({
+          core: [],
+          migrators: [],
+        }),
+      }
+      mockRequest.gb = mockGrowthBook as GrowthBook
+      caller = createCaller(mockRequest)
 
       // Act
       const result = caller.setSiteConfigByAdmin({
-        siteId: site.id,
+        siteId: 1,
         config: "config",
         theme: "theme",
         navbar: "navbar",
@@ -801,20 +805,90 @@ describe("site.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
     })
 
-    it("should save changes to the site config, navbar and footer successfully", async () => {
+    it("should save changes to the site config, navbar and footer successfully if user is an Isomer Core Admin", async () => {
       // Arrange
       const NEW_CONFIG = `"config"`
       const NEW_THEME = `"theme"`
       const NEW_NAVBAR = `"navbar"`
       const NEW_FOOTER = `"footer"`
       const { site } = await setupSite()
-      await setupAdminPermissions({
-        userId: session.userId,
+      const mockRequest = createMockRequest(session)
+      const mockGrowthBook: Partial<GrowthBook> = {
+        getFeatureValue: vi.fn().mockReturnValue({
+          core: [user.email],
+          migrators: [],
+        }),
+      }
+      mockRequest.gb = mockGrowthBook as GrowthBook
+      caller = createCaller(mockRequest)
+
+      // Act
+      await caller.setSiteConfigByAdmin({
         siteId: site.id,
+        config: NEW_CONFIG,
+        theme: NEW_THEME,
+        navbar: NEW_NAVBAR,
+        footer: NEW_FOOTER,
       })
+
+      // Assert
+      const newSite = await db
+        .selectFrom("Site")
+        .where("id", "=", site.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const newNavbar = await db
+        .selectFrom("Navbar")
+        .where("siteId", "=", site.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const newFooter = await db
+        .selectFrom("Footer")
+        .where("siteId", "=", site.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+
+      expect(newSite.config).toEqual(NEW_CONFIG.replaceAll(`"`, ""))
+      expect(newSite.theme).toEqual(NEW_THEME.replaceAll(`"`, ""))
+      expect(newNavbar.content).toEqual(NEW_NAVBAR.replaceAll(`"`, ""))
+      expect(newFooter.content).toEqual(NEW_FOOTER.replaceAll(`"`, ""))
+      expect(auditLogs).toHaveLength(4)
+      expect(
+        auditLogs.some(
+          (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
+        ),
+      ).toBe(true)
+      expect(
+        auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
+      ).toBe(true)
+      expect(
+        auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
+      ).toBe(true)
+      expect(
+        auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
+      ).toBe(true)
+      expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
+    })
+
+    it("should save changes to the site config, navbar and footer successfully if user is an Isomer Migrator Admin", async () => {
+      // Arrange
+      const NEW_CONFIG = `"config"`
+      const NEW_THEME = `"theme"`
+      const NEW_NAVBAR = `"navbar"`
+      const NEW_FOOTER = `"footer"`
+      const { site } = await setupSite()
+      const mockRequest = createMockRequest(session)
+      const mockGrowthBook: Partial<GrowthBook> = {
+        getFeatureValue: vi.fn().mockReturnValue({
+          core: [],
+          migrators: [user.email],
+        }),
+      }
+      mockRequest.gb = mockGrowthBook as GrowthBook
+      caller = createCaller(mockRequest)
 
       // Act
       await caller.setSiteConfigByAdmin({
