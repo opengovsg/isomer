@@ -5,6 +5,7 @@ import type {
   NativeContactInformationProps,
 } from "~/interfaces/complex/ContactInformation"
 import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
+import { safeJsonParse } from "~/utils"
 import { ContactInformationUI } from "./ContactInformationUI"
 
 export const DgsContactInformation = ({
@@ -28,39 +29,39 @@ export const DgsContactInformation = ({
   const otherInformation = transformDgsField(rest.otherInformation, record)
 
   const telephone = rest.telephone
-    ? (JSON.parse(
+    ? safeJsonParse<NativeContactInformationProps["telephone"]>(
         transformDgsField(rest.telephone, record),
-      ) as NativeContactInformationProps["telephone"])
+      )
     : undefined
 
   const fax = rest.fax
-    ? (JSON.parse(
+    ? safeJsonParse<NativeContactInformationProps["fax"]>(
         transformDgsField(rest.fax, record),
-      ) as NativeContactInformationProps["fax"])
+      )
     : undefined
 
   const email = rest.email
-    ? (JSON.parse(
+    ? safeJsonParse<NativeContactInformationProps["email"]>(
         transformDgsField(rest.email, record),
-      ) as NativeContactInformationProps["email"])
+      )
     : undefined
 
   const website = rest.website
-    ? (JSON.parse(
+    ? safeJsonParse<NativeContactInformationProps["website"]>(
         transformDgsField(rest.website, record),
-      ) as NativeContactInformationProps["website"])
+      )
     : undefined
 
   const operatingHours = rest.operatingHours
-    ? (JSON.parse(
+    ? safeJsonParse<NativeContactInformationProps["operatingHours"]>(
         transformDgsField(rest.operatingHours, record),
-      ) as NativeContactInformationProps["operatingHours"])
+      )
     : undefined
 
   const entityDetails = rest.entityDetails
-    ? (JSON.parse(
+    ? safeJsonParse<NativeContactInformationProps["entityDetails"]>(
         transformDgsField(rest.entityDetails, record),
-      ) as NativeContactInformationProps["entityDetails"])
+      )
     : undefined
 
   return (
