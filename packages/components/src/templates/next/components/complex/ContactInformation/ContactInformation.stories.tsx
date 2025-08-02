@@ -24,7 +24,7 @@ type Story = StoryObj<typeof ContactInformation>
 export const Default: Story = {
   args: {
     country: "Singapore",
-    city: "Sentosa",
+    entityName: "Sentosa",
     entityDetails: [
       {
         displayText: "Ambassador (Non-Resident)",
