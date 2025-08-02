@@ -70,8 +70,8 @@ const renderContactMethod = ({
 }
 
 export const ContactInformationUI = ({
-  country,
-  city,
+  country: _country, // not actually used in the UI
+  entityName,
   entityDetails,
   description,
   telephone,
@@ -83,12 +83,9 @@ export const ContactInformationUI = ({
   otherInformation,
   LinkComponent,
 }: ContactInformationUIProps) => {
-  const title: string | undefined =
-    country && city ? `${country} - ${city}` : country ? country : city
-
   return (
     <div className={compoundStyles.container()}>
-      {title && <h3 className={compoundStyles.title()}>{title}</h3>}
+      {entityName && <h3 className={compoundStyles.title()}>{entityName}</h3>}
 
       <p className={compoundStyles.description()}>{description}</p>
 

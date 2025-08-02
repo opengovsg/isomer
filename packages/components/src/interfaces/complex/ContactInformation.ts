@@ -41,9 +41,9 @@ const BaseContactInformationSchema = Type.Object({
       title: "Country",
     }),
   ),
-  city: Type.Optional(
+  entityName: Type.Optional(
     Type.String({
-      title: "City",
+      title: "Entity Name",
     }),
   ),
   description: Type.Optional(
