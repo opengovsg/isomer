@@ -1,7 +1,7 @@
-import type { SearchableTableProps } from "~/interfaces"
+import type { NativeSearchableTableProps } from "~/interfaces"
 
 interface GetPaginatedItemsParams {
-  items: SearchableTableProps["items"]
+  items: NativeSearchableTableProps["items"]
   currPage: number
   itemsPerPage: number
 }

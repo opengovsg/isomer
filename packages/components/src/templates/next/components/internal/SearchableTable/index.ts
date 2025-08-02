@@ -1,1 +1,1 @@
-export { default } from "./SearchableTable"
+export { SearchableTable } from "./SearchableTable"
