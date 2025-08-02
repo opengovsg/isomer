@@ -10,16 +10,7 @@ export const fetchDataFromDgsApiDataset = async ({
   filters,
   sort: _sort, // not in used for now
 }: DgsApiDatasetSearchParams): Promise<DgsApiDatasetSearchResponseSuccess> => {
-  const params = new URLSearchParams({
-    resource_id: resourceId,
-  })
-
-  if (filters && Object.keys(filters).length > 0) {
-    params.set("filters", JSON.stringify(filters))
-  }
-
-  const url = `https://data.gov.sg/api/action/datastore_search?${params.toString()}`
-
+  const url = generateDgsUrl({ resourceId, filters })
   const res = await fetch(url)
 
   if (!res.ok) {
@@ -35,4 +26,19 @@ export const fetchDataFromDgsApiDataset = async ({
   }
 
   return data
+}
+
+export const generateDgsUrl = ({
+  resourceId,
+  filters,
+}: DgsApiDatasetSearchParams) => {
+  const params = new URLSearchParams({
+    resource_id: resourceId,
+  })
+
+  if (filters && Object.keys(filters).length > 0) {
+    params.set("filters", JSON.stringify(filters))
+  }
+
+  return `https://data.gov.sg/api/action/datastore_search?${params.toString()}`
 }
