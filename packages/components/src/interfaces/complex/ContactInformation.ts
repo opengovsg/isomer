@@ -36,32 +36,27 @@ const BaseContactInformationSchema = Type.Object({
   type: Type.Literal(CONTACT_INFORMATION_TYPE, {
     default: CONTACT_INFORMATION_TYPE,
   }),
-  country: Type.Optional(
-    Type.String({
-      title: "Country",
-    }),
-  ),
-  entityName: Type.Optional(
-    Type.String({
-      title: "Entity Name",
-    }),
-  ),
-  description: Type.Optional(
-    Type.String({
-      title: "Description",
-    }),
-  ),
-  otherInformation: Type.Optional(
-    Type.String({
-      title: "Other Information",
-    }),
-  ), // note: there can be HTML tags in this field
 })
 
 export const NativeContactInformationSchema = Type.Intersect([
   NativeDataSourceSingleRecordSchema,
   Type.Object(
     {
+      country: Type.Optional(
+        Type.String({
+          title: "Country",
+        }),
+      ),
+      entityName: Type.Optional(
+        Type.String({
+          title: "Entity Name",
+        }),
+      ),
+      description: Type.Optional(
+        Type.String({
+          title: "Description",
+        }),
+      ),
       telephone: Type.Optional(
         generateSingleContactInformationSchema({
           defaultDisplayText: "Telephone",
@@ -97,6 +92,11 @@ export const NativeContactInformationSchema = Type.Intersect([
           minItems: 1,
         }),
       ),
+      otherInformation: Type.Optional(
+        Type.String({
+          title: "Other Information",
+        }),
+      ), // note: there can be HTML tags in this field
     },
     {
       title: "Native Contact Information component",
@@ -108,6 +108,9 @@ export const DgsContactInformationSchema = Type.Intersect([
   DgsDataSourceSingleRecordSchema,
   Type.Object(
     {
+      country: Type.Optional(Type.String()),
+      entityName: Type.Optional(Type.String()),
+      description: Type.Optional(Type.String()),
       telephone: Type.Optional(Type.String()),
       fax: Type.Optional(Type.String()),
       email: Type.Optional(Type.String()),
@@ -115,6 +118,7 @@ export const DgsContactInformationSchema = Type.Intersect([
       operatingHours: Type.Optional(Type.String()),
       entityDetails: Type.Optional(Type.String()),
       otherMethods: Type.Optional(Type.String()),
+      otherInformation: Type.Optional(Type.String()),
     },
     {
       title: "DGS Contact Information component",
@@ -132,6 +136,9 @@ export type ContactInformationUIProps = Static<
 > &
   Pick<
     Static<typeof NativeContactInformationSchema>,
+    | "country"
+    | "entityName"
+    | "description"
     | "telephone"
     | "fax"
     | "email"
@@ -139,6 +146,7 @@ export type ContactInformationUIProps = Static<
     | "operatingHours"
     | "entityDetails"
     | "otherMethods"
+    | "otherInformation"
   > & {
     layout: IsomerPageLayoutType
     site: IsomerSiteProps
