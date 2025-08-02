@@ -83,11 +83,13 @@ export const ContactInformationUI = ({
   otherInformation,
   LinkComponent,
 }: ContactInformationUIProps) => {
+  const title: string | undefined =
+    country && city ? `${country} - ${city}` : country ? country : city
+
   return (
     <div className={compoundStyles.container()}>
-      <h3 className={compoundStyles.title()}>
-        {country} - {city}
-      </h3>
+      {title && <h3 className={compoundStyles.title()}>{title}</h3>}
+
       <p className={compoundStyles.description()}>{description}</p>
 
       {!!entityDetails &&
