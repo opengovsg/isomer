@@ -166,6 +166,10 @@ export const Dgs: Story = {
                         displayText: "Telegram",
                         values: ["https://t.me/isomer_gov_sg"],
                       },
+                      {
+                        displayText: "WhatsApp",
+                        values: ["+65-63798000 (MFA)"],
+                      },
                     ]),
                     other_information:
                       "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
