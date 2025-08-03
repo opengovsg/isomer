@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import pick from "lodash/pick"
 
 import type {
@@ -16,16 +17,21 @@ export const DgsContactInformation = ({
   dataSource: { resourceId, filters },
   ...rest
 }: DgsContactInformationProps) => {
-  const { records, isLoading, isError } = useDgsData({
-    resourceId,
-    filters: filters?.reduce(
-      (acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      },
-      {} as NonNullable<DgsApiDatasetSearchParams["filters"]>,
-    ),
-  })
+  const params = useMemo(
+    () => ({
+      resourceId,
+      filters: filters?.reduce(
+        (acc, filter) => {
+          acc[filter.fieldKey] = filter.fieldValue
+          return acc
+        },
+        {} as NonNullable<DgsApiDatasetSearchParams["filters"]>,
+      ),
+    }),
+    [resourceId, filters],
+  )
+
+  const { records, isLoading, isError } = useDgsData(params)
 
   const record = records?.[0]
 

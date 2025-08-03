@@ -1,5 +1,7 @@
 "use client"
 
+import { useMemo } from "react"
+
 import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type { DynamicComponentListProps } from "~/interfaces"
 import { useDgsData } from "~/hooks/useDgsData"
@@ -14,17 +16,22 @@ const DynamicComponentList = ({
   site,
   LinkComponent,
 }: DynamicComponentListProps) => {
-  const { records, isLoading, isError } = useDgsData({
-    resourceId,
-    sort,
-    filters: filters?.reduce(
-      (acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      },
-      {} as NonNullable<DgsApiDatasetSearchParams["filters"]>,
-    ),
-  })
+  const params = useMemo(
+    () => ({
+      resourceId,
+      sort,
+      filters: filters?.reduce(
+        (acc, filter) => {
+          acc[filter.fieldKey] = filter.fieldValue
+          return acc
+        },
+        {} as NonNullable<DgsApiDatasetSearchParams["filters"]>,
+      ),
+    }),
+    [resourceId, sort, filters],
+  )
+
+  const { records, isLoading, isError } = useDgsData(params)
 
   // TODO: better handling of these non-success states
   if (isLoading || isError || !records || records.length === 0) {
