@@ -2,4 +2,5 @@
 // https://github.com/postgres/postgres/blob/master/src/backend/utils/errcodes.txt
 export const PG_ERROR_CODES = {
   uniqueViolation: "23505",
+  serializationFailure: "40001",
 } as const
