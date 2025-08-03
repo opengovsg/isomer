@@ -12,7 +12,14 @@ export const DgsContactInformation = ({
   dataSource: { resourceId, row },
   ...rest
 }: DgsContactInformationProps) => {
-  const { record, isLoading, isError } = useDgsData({ resourceId, row })
+  const { records, isLoading, isError } = useDgsData({
+    resourceId,
+    filters: {
+      [row.fieldKey]: row.fieldValue,
+    },
+  })
+
+  const record = records?.[0]
 
   // TODO: better handling of these non-success states
   // will check with SY for design

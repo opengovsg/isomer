@@ -1,17 +1,12 @@
 import { useEffect, useState } from "react"
 
-import type { DgsApiDatasetSearchResponseSuccess } from "./types"
+import type {
+  DgsApiDatasetSearchParams,
+  DgsApiDatasetSearchResponseSuccess,
+} from "./types"
 import { fetchDataFromDgsApiDataset } from "./fetchDataFromDgsApi"
 
-export interface UseDGSDataProps {
-  resourceId: string
-  row: {
-    fieldKey: string
-    fieldValue: string
-  }
-}
-
-export const useDgsData = ({ resourceId, row }: UseDGSDataProps) => {
+export const useDgsData = (params: DgsApiDatasetSearchParams) => {
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [data, setData] = useState<DgsApiDatasetSearchResponseSuccess | null>(
@@ -21,12 +16,7 @@ export const useDgsData = ({ resourceId, row }: UseDGSDataProps) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchDataFromDgsApiDataset({
-          resourceId,
-          filters: {
-            [row.fieldKey]: row.fieldValue,
-          },
-        })
+        const response = await fetchDataFromDgsApiDataset(params)
         setData(response)
       } catch {
         setIsError(true)
@@ -36,10 +26,11 @@ export const useDgsData = ({ resourceId, row }: UseDGSDataProps) => {
     }
 
     void fetchData()
-  }, [resourceId, row.fieldKey, row.fieldValue])
+  }, [params])
 
-  // Assumption: we only have one row. If more than one, we will choose the first one
-  const record = data?.result.records[0]
-
-  return { record, isLoading, isError }
+  return {
+    records: data?.result.records,
+    isLoading,
+    isError,
+  }
 }
