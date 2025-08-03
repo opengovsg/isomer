@@ -17,18 +17,25 @@ export const NativeDataSourceSingleRecordSchema = Type.Object({
 })
 
 // Refer to https://guide.data.gov.sg/developer-guide/dataset-apis/search-and-filter-within-dataset
-const DgsFieldSchema = Type.Object({
-  fieldKey: Type.String(),
-  fieldValue: Type.String(),
-})
-export const DgsDataSourceSingleRecordSchema = Type.Object({
-  dataSource: Type.Object({
-    type: Type.Literal(DATA_SOURCE_TYPE.dgs, {
-      default: DATA_SOURCE_TYPE.dgs,
-    }),
-    resourceId: Type.String(),
-    row: DgsFieldSchema,
-    filters: Type.Optional(Type.Array(DgsFieldSchema)),
-    sort: Type.Optional(Type.String()),
+export const DgsDataSourceSchema = Type.Object({
+  type: Type.Literal(DATA_SOURCE_TYPE.dgs, {
+    default: DATA_SOURCE_TYPE.dgs,
   }),
+  resourceId: Type.String({
+    title: "DGS Resource ID",
+    description: "The resource ID to fetch data from DGS",
+  }),
+  filters: Type.Optional(
+    Type.Array(
+      Type.Object({
+        fieldKey: Type.String(),
+        fieldValue: Type.String(),
+      }),
+    ),
+  ),
+  sort: Type.Optional(Type.String()),
+})
+
+export const DgsDataSourceSingleRecordSchema = Type.Object({
+  dataSource: DgsDataSourceSchema,
 })

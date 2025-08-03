@@ -1,6 +1,10 @@
 import pick from "lodash/pick"
 
 import type {
+  DgsApiDatasetSearchParams,
+  DgsApiDatasetSearchResponseSuccess,
+} from "~/hooks/useDgsData/types"
+import type {
   DgsContactInformationProps,
   NativeContactInformationProps,
 } from "~/interfaces/complex/ContactInformation"
@@ -9,14 +13,18 @@ import { safeJsonParse } from "~/utils"
 import { ContactInformationUI } from "./ContactInformationUI"
 
 export const DgsContactInformation = ({
-  dataSource: { resourceId, row },
+  dataSource: { resourceId, filters },
   ...rest
 }: DgsContactInformationProps) => {
   const { records, isLoading, isError } = useDgsData({
     resourceId,
-    filters: {
-      [row.fieldKey]: row.fieldValue,
-    },
+    filters: filters?.reduce(
+      (acc, filter) => {
+        acc[filter.fieldKey] = filter.fieldValue
+        return acc
+      },
+      {} as NonNullable<DgsApiDatasetSearchParams["filters"]>,
+    ),
   })
 
   const record = records?.[0]
@@ -27,6 +35,17 @@ export const DgsContactInformation = ({
     return <div>Loading...</div>
   }
 
+  return <DgsTransformedContactInformation {...rest} record={record} />
+}
+
+interface DgsTransformedContactInformationProps
+  extends Omit<DgsContactInformationProps, "dataSource"> {
+  record: DgsApiDatasetSearchResponseSuccess["result"]["records"][number]
+}
+export const DgsTransformedContactInformation = ({
+  record,
+  ...rest
+}: DgsTransformedContactInformationProps) => {
   const country = transformDgsField(rest.country, record)
 
   const entityName = transformDgsField(rest.entityName, record)

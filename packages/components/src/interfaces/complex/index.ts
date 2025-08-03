@@ -60,3 +60,8 @@ export {
   type NativeContactInformationProps,
   type DgsContactInformationProps,
 } from "./ContactInformation"
+export {
+  DYNAMIC_COMPONENT_LIST_TYPE,
+  DynamicComponentListSchema,
+  type DynamicComponentListProps,
+} from "./DynamicComponentList"

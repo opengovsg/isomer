@@ -182,10 +182,12 @@ export const Dgs: Story = {
     dataSource: {
       type: "dgs",
       resourceId: "PLACEHOLDER_RESOURCE_ID",
-      row: {
-        fieldKey: "testFieldKey",
-        fieldValue: "testFieldValue",
-      },
+      filters: [
+        {
+          fieldKey: "testFieldKey",
+          fieldValue: "testFieldValue",
+        },
+      ],
     },
     country: "[dgs:country]",
     entityName: "[dgs:entity_name]",
