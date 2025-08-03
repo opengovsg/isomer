@@ -18,7 +18,7 @@ export const fetchDataFromDgsApiDataset = async (
 
   // Safety check:
   // Already handled by status code, but checking the response "success" field to be safe
-  if (data.success === "false") {
+  if (!data.success) {
     throw new Error("Failed to fetch data from DGS API")
   }
 

@@ -6,14 +6,14 @@ export interface DgsApiDatasetSearchParams {
 }
 
 export interface DgsApiDatasetSearchResponseSuccess {
-  success: "true"
+  success: true
   result: {
     records: Record<string, string | number>[]
   }
 }
 
 interface DgsApiDatasetSearchResponseError {
-  success: "false"
+  success: false
 }
 
 export type DgsApiDatasetSearchResponse =
