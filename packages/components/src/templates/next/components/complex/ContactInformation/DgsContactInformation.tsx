@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import pick from "lodash/pick"
+import omit from "lodash/omit"
 
 import type {
   DgsApiDatasetSearchParams,
@@ -84,6 +84,10 @@ export const DgsTransformedContactInformation = ({
     NativeContactInformationProps["entityDetails"]
   >(transformDgsField(rest.entityDetails, record))
 
+  const otherMethods = safeJsonParse<
+    NativeContactInformationProps["otherMethods"]
+  >(transformDgsField(rest.otherMethods, record))
+
   return (
     <ContactInformationUI
       country={country}
@@ -95,8 +99,22 @@ export const DgsTransformedContactInformation = ({
       website={website}
       operatingHours={operatingHours}
       entityDetails={entityDetails}
+      otherMethods={otherMethods}
       otherInformation={otherInformation}
-      {...pick(rest, "type", "layout", "site", "LinkComponent")}
+      {...omit(
+        rest,
+        "country",
+        "entityName",
+        "description",
+        "telephone",
+        "fax",
+        "email",
+        "website",
+        "operatingHours",
+        "entityDetails",
+        "otherMethods",
+        "otherInformation",
+      )}
     />
   )
 }
