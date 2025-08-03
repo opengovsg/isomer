@@ -22,7 +22,7 @@ const dgsDownloadStrategy: DownloadStrategy = {
     const dgsId = getDgsIdFromDgsLink(url)
     if (!dgsId) return null
 
-    const result = await fetchDgsFileDownloadUrl({ dgsId })
+    const result = await fetchDgsFileDownloadUrl({ resourceId: dgsId })
     return result?.downloadUrl || null
   },
   getDisplayText: async (url: string) => {
@@ -30,7 +30,7 @@ const dgsDownloadStrategy: DownloadStrategy = {
     if (!dgsId) return null
 
     try {
-      const metadata = await fetchDgsMetadata({ dgsId })
+      const metadata = await fetchDgsMetadata({ resourceId: dgsId })
       if (metadata) {
         return `Download ${metadata.format} (${metadata.datasetSize})`
       }

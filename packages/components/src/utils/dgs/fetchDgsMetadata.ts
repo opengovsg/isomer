@@ -1,5 +1,5 @@
 interface FetchDgsMetadataProps {
-  dgsId: string
+  resourceId: string
 }
 
 interface FetchDgsMetadataResponse {
@@ -18,12 +18,12 @@ type FetchDgsMetadataOutput = Pick<
 }
 
 export const fetchDgsMetadata = async ({
-  dgsId,
+  resourceId,
 }: FetchDgsMetadataProps): Promise<FetchDgsMetadataOutput | undefined> => {
   try {
     // For simplicity sake, we will always use data.gov.sg production API
     const response = await fetch(
-      `https://api-production.data.gov.sg/v2/public/api/datasets/${dgsId}/metadata`,
+      `https://api-production.data.gov.sg/v2/public/api/datasets/${resourceId}/metadata`,
     )
 
     if (!response.ok) {

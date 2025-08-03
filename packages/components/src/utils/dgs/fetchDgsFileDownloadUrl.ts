@@ -1,5 +1,5 @@
 interface FetchDgsFileDownloadUrlProps {
-  dgsId: string
+  resourceId: string
 }
 
 interface InitiateDownloadResponse {
@@ -13,12 +13,12 @@ interface FetchDgsFileDownloadUrlOutput {
 }
 
 export const fetchDgsFileDownloadUrl = async ({
-  dgsId,
+  resourceId,
 }: FetchDgsFileDownloadUrlProps): Promise<FetchDgsFileDownloadUrlOutput | null> => {
   try {
     // For simplicity sake, we will always use data.gov.sg production API
     const initiateDownloadResponse = await fetch(
-      `https://api-open.data.gov.sg/v1/public/api/datasets/${dgsId}/initiate-download`,
+      `https://api-open.data.gov.sg/v1/public/api/datasets/${resourceId}/initiate-download`,
     )
 
     if (!initiateDownloadResponse.ok) {
