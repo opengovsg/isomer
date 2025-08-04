@@ -1,6 +1,7 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
   COLLECTION_BLOCK_TYPE,
+  CONTACT_INFORMATION_TYPE,
   DEFAULT_CHILDREN_PAGES_BLOCK,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
@@ -257,6 +258,13 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
+  [CONTACT_INFORMATION_TYPE]: {
+    type: `${CONTACT_INFORMATION_TYPE}`,
+    country: "Singapore",
+    entityName: "Ministry of Trade and Industry",
+    description:
+      "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -385,6 +393,12 @@ export const BLOCK_TO_META: Record<
     description: "Display a quote or testimonial",
     usageText: "Highlight an important quote. You can add an optional image.",
     imageSrc: "/assets/block-images/Blockquote.png",
+  },
+  [CONTACT_INFORMATION_TYPE]: {
+    label: "Contact information",
+    description: "Display contact information",
+    usageText: "Showcase contact information for your agency.",
+    // imageSrc: TODO: Add image source
   },
 }
 
