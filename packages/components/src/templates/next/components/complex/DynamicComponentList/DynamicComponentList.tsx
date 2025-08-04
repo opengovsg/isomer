@@ -13,7 +13,6 @@ const DynamicComponentList = ({
   dataSource: { resourceId, sort, filters },
   component,
   layout,
-  site,
   LinkComponent,
 }: DynamicComponentListProps) => {
   const params = useMemo(
@@ -47,7 +46,6 @@ const DynamicComponentList = ({
           record={record}
           {...component}
           layout={layout}
-          site={site}
           LinkComponent={LinkComponent}
         />
       ))
