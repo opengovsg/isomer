@@ -4,7 +4,7 @@ import { BiEnvelope } from "react-icons/bi"
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { Link } from "~/templates/next/components/internal/Link"
-import { isEmail, isExternalUrl, isUrl } from "~/utils"
+import { focusVisibleHighlight, isEmail, isExternalUrl, isUrl } from "~/utils"
 
 const createContactMethodStyles = tv({
   slots: {
@@ -68,7 +68,10 @@ export const ContactMethod = ({
                   isExternal={isExternalLink}
                   showExternalIcon={isExternalLink}
                   LinkComponent={LinkComponent}
-                  className={styles.value({ isLink: true })}
+                  className={styles.value({
+                    isLink: true,
+                    className: focusVisibleHighlight(),
+                  })}
                 >
                   {value}
                 </Link>
@@ -78,7 +81,10 @@ export const ContactMethod = ({
               return (
                 <Link
                   href={`mailto:${value}`}
-                  className={styles.value({ isLink: true })}
+                  className={styles.value({
+                    isLink: true,
+                    className: focusVisibleHighlight(),
+                  })}
                 >
                   {value}
                 </Link>
