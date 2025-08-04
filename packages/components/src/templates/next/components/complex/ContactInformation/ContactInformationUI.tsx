@@ -10,12 +10,13 @@ import {
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getTailwindVariantLayout } from "~/utils"
+import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 import { ContactMethod } from "./components"
 
 const createContactInformationStyles = tv({
   slots: {
-    container: "flex flex-col",
+    container: `${ComponentContent} flex flex-col`,
     title: "prose-display-md font-bold text-base-content-strong",
     description: "prose-body-md text-base-content",
     contactMethodsContainer: "flex flex-col gap-4",
@@ -27,11 +28,11 @@ const createContactInformationStyles = tv({
   variants: {
     layout: {
       homepage: {
-        container: "gap-12",
+        container: "gap-12 py-12 md:py-16",
         contactMethodsContainer: "grid grid-cols-1 gap-10 md:grid-cols-3",
       },
       default: {
-        container: "gap-9",
+        container: "gap-9 py-12",
         contactMethodsContainer: "grid grid-cols-1 gap-10 md:grid-cols-2",
       },
     },
