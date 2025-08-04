@@ -38,17 +38,9 @@ const isValidOneMapEmbedUrl = (urlObject: URL) => {
   )
 }
 
-// Slug pattern obtained from:
-// https://github.com/opengovsg/maps/blob/8c3f2e6c9af1be78fac5fc69115858241ae1f720/apps/web/modules/map/schema.ts#L3-L16
-const OGP_MAPS_SLUG_REGEX_PATTERN = "[a-z0-9][a-z0-9_-]*[a-z0-9]"
-
 const isValidOGPMapsEmbedUrl = (urlObject: URL) => {
   return (
-    urlObject.hostname === "maps.gov.sg" &&
-    urlObject.pathname.startsWith("/") &&
-    new RegExp(`^${OGP_MAPS_SLUG_REGEX_PATTERN}$`).test(
-      urlObject.pathname.slice(1),
-    )
+    urlObject.hostname === "maps.gov.sg" && urlObject.pathname.startsWith("/")
   )
 }
 
@@ -78,7 +70,7 @@ export const MAPS_EMBED_URL_REGEXES = {
   googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed?.*$",
   onemap:
     "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$",
-  ogpmaps: `^https://maps\\.gov\\.sg/${OGP_MAPS_SLUG_REGEX_PATTERN}$`,
+  ogpmaps: `^https://maps\\.gov\\.sg/.*$`,
 } as const
 
 export const MAPS_EMBED_URL_PATTERN = Object.values(MAPS_EMBED_URL_REGEXES)
