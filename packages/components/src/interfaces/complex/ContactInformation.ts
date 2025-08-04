@@ -6,6 +6,7 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 import {
   DgsDataSourceSingleRecordSchema,
   NativeDataSourceSingleRecordSchema,
@@ -36,6 +37,22 @@ const BaseContactInformationSchema = Type.Object({
   type: Type.Literal(CONTACT_INFORMATION_TYPE, {
     default: CONTACT_INFORMATION_TYPE,
   }),
+  label: Type.Optional(
+    Type.String({
+      title: "Link text",
+      maxLength: 50,
+      description:
+        "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
+    }),
+  ),
+  url: Type.Optional(
+    Type.String({
+      title: "Link destination",
+      description: "When this is clicked, open:",
+      format: "link",
+      pattern: LINK_HREF_PATTERN,
+    }),
+  ),
 })
 
 export const NativeContactInformationSchema = Type.Intersect([

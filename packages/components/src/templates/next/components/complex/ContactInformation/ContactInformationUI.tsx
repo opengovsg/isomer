@@ -9,7 +9,8 @@ import {
 
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getTailwindVariantLayout } from "~/utils"
+import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
+import { LinkButton } from "../../internal/LinkButton"
 import { ContactMethod } from "./components"
 
 const createContactInformationStyles = tv({
@@ -21,6 +22,7 @@ const createContactInformationStyles = tv({
     otherInformationContainer: "mt-8 flex flex-col gap-6",
     otherInformationTitle:
       "prose-display-md font-bold text-base-content-strong",
+    urlButtonContainer: "mx-auto block",
   },
   variants: {
     layout: {
@@ -40,6 +42,7 @@ const createContactInformationStyles = tv({
 })
 
 export const ContactInformationUI = ({
+  site,
   layout,
   country: _country, // not actually used in the UI
   entityName,
@@ -52,6 +55,8 @@ export const ContactInformationUI = ({
   operatingHours,
   otherMethods,
   otherInformation,
+  url,
+  label,
   LinkComponent,
 }: ContactInformationUIProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
@@ -154,6 +159,20 @@ export const ContactInformationUI = ({
               }),
             }}
           />
+        </div>
+      )}
+
+      {!!url && !!label && (
+        <div className={compoundStyles.urlButtonContainer()}>
+          <LinkButton
+            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            size="base"
+            variant="outline"
+            LinkComponent={LinkComponent}
+            isWithFocusVisibleHighlight
+          >
+            {label}
+          </LinkButton>
         </div>
       )}
     </div>

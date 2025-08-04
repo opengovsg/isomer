@@ -19,6 +19,35 @@ const meta: Meta<ContactInformationProps> = {
       themeOverride: "Isomer Next",
     },
   },
+  args: {
+    site: {
+      siteName: "Isomer Next",
+      siteMap: {
+        id: "1",
+        title: "Home",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [],
+      },
+      theme: "isomer-next",
+      isGovernment: true,
+      url: "https://www.isomer.gov.sg",
+      logoUrl: "/isomer-logo.svg",
+      lastUpdated: "2021-10-01",
+      navbar: { items: [] },
+      footerItems: {
+        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
+        termsOfUseLink: "https://www.isomer.gov.sg/terms",
+        siteNavItems: [],
+      },
+      search: {
+        type: "localSearch",
+        searchUrl: "/search",
+      },
+    },
+  },
 }
 export default meta
 type Story = StoryObj<typeof ContactInformation>
@@ -81,6 +110,8 @@ const NativeArgs: Partial<ContactInformationProps> = {
   ],
   otherInformation:
     "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+  url: "/",
+  label: "I can't even help myself",
 }
 
 export const Default: Story = {
