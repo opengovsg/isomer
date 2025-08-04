@@ -5,8 +5,8 @@ interface FetchFileMetadataProps {
 }
 
 interface FetchFileMetadataOutput {
-  format: string
-  size: string
+  format: string | undefined
+  size: string | undefined
 }
 
 export const fetchFileMetadata = async ({
@@ -33,6 +33,8 @@ export const fetchFileMetadata = async ({
   }
 
   // Fallback to extension from URL if format is missing or generic
+  // `octet-stream` is a generic MIME type (`application/octet-stream`) used when server doesn't know the file's specific type.
+  // It just means "binary data," so the code tries to get the file extension from the URL instead for a more useful format.
   let format = response.headers.get("content-type")?.split("/")[1]
   if (!format || format === "octet-stream") {
     const urlParts = url.split(".")
@@ -42,10 +44,6 @@ export const fetchFileMetadata = async ({
   }
 
   const contentLength = response.headers.get("content-length")
-
-  if (!format || !contentLength) {
-    return null
-  }
 
   return {
     format,

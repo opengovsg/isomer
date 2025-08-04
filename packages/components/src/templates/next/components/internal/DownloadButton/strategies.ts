@@ -56,7 +56,13 @@ export const directDownloadStrategy: DownloadStrategy = {
       const metadata = await fetchFileMetadata({ url })
       if (metadata) {
         const { format, size } = metadata
-        return Promise.resolve(`Download ${format.toUpperCase()} (${size})`)
+        if (format && size) {
+          return Promise.resolve(`Download ${format.toUpperCase()} (${size})`)
+        } else if (format) {
+          return Promise.resolve(`Download ${format.toUpperCase()}`)
+        } else if (size) {
+          return Promise.resolve(`Download (${size})`)
+        }
       }
     } catch (error) {
       console.error("Error fetching file metadata:", error)
