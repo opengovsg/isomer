@@ -10,9 +10,9 @@ import {
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getTailwindVariantLayout } from "~/utils"
-import { ComponentContent } from "../../internal/customCssClass"
-import { LinkButton } from "../../internal/LinkButton"
-import { ContactMethod } from "./components"
+import { ComponentContent } from "../../../internal/customCssClass"
+import { LinkButton } from "../../../internal/LinkButton"
+import { ContactMethod } from "./ContactMethod"
 
 const createContactInformationStyles = tv({
   slots: {

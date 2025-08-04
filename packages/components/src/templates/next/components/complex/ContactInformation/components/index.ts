@@ -1,1 +1,2 @@
-export * from "./ContactMethod"
+export { NativeContactInformation } from "./NativeContactInformation"
+export { DgsContactInformation } from "./DgsContactInformation"

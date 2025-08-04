@@ -7,8 +7,7 @@ import type {
 } from "~/interfaces"
 import { DATA_SOURCE_TYPE } from "~/interfaces/dataSource"
 import { getReferenceLinkHref } from "~/utils"
-import { DgsContactInformation } from "./DgsContactInformation"
-import { NativeContactInformation } from "./NativeContactInformation"
+import { DgsContactInformation, NativeContactInformation } from "./components"
 
 const ContactInformation = (props: ContactInformationProps) => {
   const uiProps = {

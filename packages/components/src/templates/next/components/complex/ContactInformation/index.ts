@@ -1,2 +1,2 @@
 export { default } from "./ContactInformation"
-export { DgsTransformedContactInformation } from "./DgsContactInformation"
+export { DgsTransformedContactInformation } from "./components/DgsContactInformation"
