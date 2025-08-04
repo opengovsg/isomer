@@ -51,10 +51,20 @@ export const directDownloadStrategy: DownloadStrategy = {
     return Promise.resolve(url)
   },
   getDisplayText: (url: string) => {
-    // Try to extract extension from URL
+    let pathname: string | undefined
+
     try {
+      // Try parsing as "absolute" URL
       const urlObj = new URL(url)
-      const pathname = urlObj.pathname
+      pathname = urlObj.pathname
+    } catch {
+      // If parsing fails, treat as "relative" path
+      if (url.startsWith("/")) {
+        pathname = url
+      }
+    }
+
+    if (pathname) {
       const filename = pathname.split("/").pop()
       if (filename?.includes(".")) {
         const extension = filename.split(".").pop()
@@ -62,9 +72,8 @@ export const directDownloadStrategy: DownloadStrategy = {
           return Promise.resolve(`Download ${extension.toUpperCase()}`)
         }
       }
-    } catch {
-      // If URL parsing fails, fall back to generic text
     }
+
     return Promise.resolve(null)
   },
 }
