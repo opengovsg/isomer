@@ -72,7 +72,7 @@ export const ImageContainer = ({ imageSrc, imageAlt }: ImageContainerProps) => {
         src={imageSrc}
         alt={imageAlt}
         width="100%"
-        className="aspect-square max-h-[60rem] w-full object-cover object-center md:aspect-[2/1]"
+        className="aspect-square max-h-[60rem] w-full object-cover object-center will-change-transform md:aspect-[2/1]"
         lazyLoading={false}
       />
       {shouldShowButton && <ScrollForMoreButton isFixed={isFixed} />}

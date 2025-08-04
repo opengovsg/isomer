@@ -3806,6 +3806,10 @@ video {
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
 
+.will-change-transform {
+  will-change: transform;
+}
+
 .text-heading-01 {
   font-size: 2.75rem;
   line-height: 3.25rem;
