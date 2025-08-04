@@ -1533,6 +1533,11 @@ video {
   height: 1.25rem;
 }
 
+.size-8 {
+  width: 2rem;
+  height: 2rem;
+}
+
 .h-10 {
   height: 2.5rem;
 }
@@ -3988,6 +3993,54 @@ video {
 
 .\[--color\:theme\(colors\.red\.700\)\] {
   --color: #b91c1c;
+}
+
+.\[dgs\:country\] {
+  dgs: country;
+}
+
+.\[dgs\:description\] {
+  dgs: description;
+}
+
+.\[dgs\:email\] {
+  dgs: email;
+}
+
+.\[dgs\:entity_details\] {
+  dgs: entity details;
+}
+
+.\[dgs\:entity_name\] {
+  dgs: entity name;
+}
+
+.\[dgs\:fax\] {
+  dgs: fax;
+}
+
+.\[dgs\:field_key\] {
+  dgs: field key;
+}
+
+.\[dgs\:operating_hours\] {
+  dgs: operating hours;
+}
+
+.\[dgs\:other_information\] {
+  dgs: other information;
+}
+
+.\[dgs\:other_methods\] {
+  dgs: other methods;
+}
+
+.\[dgs\:telephone\] {
+  dgs: telephone;
+}
+
+.\[dgs\:website\] {
+  dgs: website;
 }
 
 .\[grid-area\:content\] {

@@ -9,7 +9,7 @@ import { isEmail, isExternalUrl, isUrl } from "~/utils"
 const createContactMethodStyles = tv({
   slots: {
     container: "flex flex-col items-start gap-2",
-    icon: "h-[32px] w-[32px] flex-shrink-0 text-base-content-strong",
+    icon: "size-8 flex-shrink-0 text-base-content-strong",
     textContainer: "flex flex-col items-start gap-3",
     label: "prose-headline-lg-semibold text-base-content",
     valuesContainer: "flex flex-col items-start gap-1",
