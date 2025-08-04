@@ -148,8 +148,9 @@ export const ContactInformationSchema = Type.Intersect([
   Type.Union([NativeContactInformationSchema, DgsContactInformationSchema]),
 ])
 
-export type ContactInformationUIProps = Static<
-  typeof BaseContactInformationSchema
+export type ContactInformationUIProps = Omit<
+  Static<typeof BaseContactInformationSchema>,
+  "url"
 > &
   Pick<
     Static<typeof NativeContactInformationSchema>,
@@ -166,8 +167,8 @@ export type ContactInformationUIProps = Static<
     | "otherInformation"
   > & {
     layout: IsomerPageLayoutType
-    site: IsomerSiteProps
     LinkComponent?: LinkComponentType
+    referenceLinkHref?: string
   }
 
 export type NativeContactInformationProps = Static<
@@ -175,7 +176,6 @@ export type NativeContactInformationProps = Static<
 > &
   Static<typeof NativeContactInformationSchema> & {
     layout: IsomerPageLayoutType
-    site: IsomerSiteProps
     LinkComponent?: LinkComponentType
   }
 
@@ -184,7 +184,6 @@ export type DgsContactInformationProps = Static<
 > &
   Static<typeof DgsContactInformationSchema> & {
     layout: IsomerPageLayoutType
-    site: IsomerSiteProps
     LinkComponent?: LinkComponentType
   }
 

@@ -9,7 +9,7 @@ import {
 
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
+import { getTailwindVariantLayout } from "~/utils"
 import { LinkButton } from "../../internal/LinkButton"
 import { ContactMethod } from "./components"
 
@@ -42,7 +42,6 @@ const createContactInformationStyles = tv({
 })
 
 export const ContactInformationUI = ({
-  site,
   layout,
   country: _country, // not actually used in the UI
   entityName,
@@ -55,7 +54,7 @@ export const ContactInformationUI = ({
   operatingHours,
   otherMethods,
   otherInformation,
-  url,
+  referenceLinkHref,
   label,
   LinkComponent,
 }: ContactInformationUIProps) => {
@@ -162,10 +161,10 @@ export const ContactInformationUI = ({
         </div>
       )}
 
-      {!!url && !!label && (
+      {!!referenceLinkHref && !!label && (
         <div className={compoundStyles.urlButtonContainer()}>
           <LinkButton
-            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            href={referenceLinkHref}
             size="base"
             variant="outline"
             LinkComponent={LinkComponent}

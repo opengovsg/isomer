@@ -1,22 +1,34 @@
+import omit from "lodash/omit"
+
 import type {
   ContactInformationProps,
   DgsContactInformationProps,
   NativeContactInformationProps,
 } from "~/interfaces"
 import { DATA_SOURCE_TYPE } from "~/interfaces/dataSource"
+import { getReferenceLinkHref } from "~/utils"
 import { DgsContactInformation } from "./DgsContactInformation"
 import { NativeContactInformation } from "./NativeContactInformation"
 
 const ContactInformation = (props: ContactInformationProps) => {
+  const uiProps = {
+    ...omit(props, ["url", "site"]),
+    referenceLinkHref: getReferenceLinkHref(
+      props.url,
+      props.site.siteMap,
+      props.site.assetsBaseUrl,
+    ),
+  }
+
   switch (props.dataSource?.type) {
     case DATA_SOURCE_TYPE.dgs:
       return (
-        <DgsContactInformation {...(props as DgsContactInformationProps)} />
+        <DgsContactInformation {...(uiProps as DgsContactInformationProps)} />
       )
     default:
       return (
         <NativeContactInformation
-          {...(props as NativeContactInformationProps)}
+          {...(uiProps as NativeContactInformationProps)}
         />
       )
   }
