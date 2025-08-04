@@ -51,13 +51,16 @@ export const directDownloadStrategy: DownloadStrategy = {
     return Promise.resolve(url)
   },
   getDisplayText: (url: string) => {
-    // Try to extract filename from URL
+    // Try to extract extension from URL
     try {
       const urlObj = new URL(url)
       const pathname = urlObj.pathname
       const filename = pathname.split("/").pop()
-      if (filename) {
-        return Promise.resolve(`Download ${filename}`)
+      if (filename?.includes(".")) {
+        const extension = filename.split(".").pop()
+        if (extension) {
+          return Promise.resolve(`Download ${extension.toUpperCase()}`)
+        }
       }
     } catch {
       // If URL parsing fails, fall back to generic text
