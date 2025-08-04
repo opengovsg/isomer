@@ -1,6 +1,6 @@
-export const formatBytes = (bytes: number): string => {
+export const formatBytes = (bytes: number): string | undefined => {
   // Handle edge cases
-  if (bytes <= 0) return "0 B"
+  if (bytes <= 0 || isNaN(bytes)) return undefined
 
   const units = ["B", "KB", "MB", "GB", "TB"]
   const index = Math.floor(Math.log(bytes) / Math.log(1024))

@@ -4,13 +4,17 @@ import { formatBytes } from "../formatBytes"
 
 describe("formatBytes", () => {
   describe("edge cases", () => {
-    it("should return '0 B' for zero bytes", () => {
-      expect(formatBytes(0)).toBe("0 B")
+    it("should return undefined for zero bytes", () => {
+      expect(formatBytes(0)).toBeUndefined()
     })
 
-    it("should return '0 B' for negative bytes", () => {
-      expect(formatBytes(-1)).toBe("0 B")
-      expect(formatBytes(-100)).toBe("0 B")
+    it("should return undefined for negative bytes", () => {
+      expect(formatBytes(-1)).toBeUndefined()
+      expect(formatBytes(-100)).toBeUndefined()
+    })
+
+    it("should return undefined for NaN", () => {
+      expect(formatBytes(NaN)).toBeUndefined()
     })
   })
 
