@@ -45,8 +45,17 @@ export const fetchFileMetadata = async ({
 
   const contentLength = response.headers.get("content-length")
 
+  // Parse content length safely, handling invalid values
+  let size: string | undefined
+  if (contentLength) {
+    const parsedLength = parseInt(contentLength, 10)
+    if (!isNaN(parsedLength) && parsedLength > 0) {
+      size = formatBytes(parsedLength)
+    }
+  }
+
   return {
     format,
-    size: formatBytes(contentLength ? parseInt(contentLength, 10) : 0),
+    size,
   }
 }
