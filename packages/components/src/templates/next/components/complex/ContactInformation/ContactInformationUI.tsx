@@ -1,75 +1,46 @@
 import DOMPurify from "isomorphic-dompurify"
+import {
+  BiGlobe,
+  BiMailSend,
+  BiPhone,
+  BiPrinter,
+  BiTimeFive,
+} from "react-icons/bi"
 
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { Link } from "~/templates/next/components/internal/Link"
-import { isEmail, isExternalUrl, isUrl } from "~/utils"
+import { getTailwindVariantLayout } from "~/utils"
+import { ContactMethod } from "./components"
 
 const createContactInformationStyles = tv({
   slots: {
-    container: "flex flex-col gap-4",
+    container: "flex flex-col",
     title: "prose-display-md font-bold text-base-content-strong",
     description: "prose-body-md text-base-content",
-    contactMethod: "flex w-fit flex-col",
-    contactMethodDisplayText:
-      "prose-body-base font-bold text-base-content-strong",
-    contactMethodValue: "prose-body-base flex flex-col text-base-content",
-    contactMethodValueLink:
-      "w-fit text-base-content underline hover:text-base-content-strong",
+    contactMethodsContainer: "flex flex-col gap-4",
+    otherInformationContainer: "mt-8 flex flex-col gap-6",
+    otherInformationTitle:
+      "prose-display-md font-bold text-base-content-strong",
+  },
+  variants: {
+    layout: {
+      homepage: {
+        container: "gap-12",
+        contactMethodsContainer: "grid grid-cols-1 gap-10 md:grid-cols-3",
+      },
+      default: {
+        container: "gap-9",
+        contactMethodsContainer: "grid grid-cols-1 gap-10 md:grid-cols-2",
+      },
+    },
+  },
+  defaultVariants: {
+    layout: "default",
   },
 })
 
-const compoundStyles = createContactInformationStyles()
-
-interface ContactMethod {
-  displayText: string
-  values: string[]
-  LinkComponent: ContactInformationUIProps["LinkComponent"]
-}
-const renderContactMethod = ({
-  displayText,
-  values,
-  LinkComponent,
-}: ContactMethod) => {
-  return (
-    <div className={compoundStyles.contactMethod()}>
-      <div className={compoundStyles.contactMethodDisplayText()}>
-        {displayText}
-      </div>
-      {values.map((value) => {
-        if (isUrl(value)) {
-          const isExternalLink = isExternalUrl(value)
-          return (
-            <Link
-              href={value}
-              isExternal={isExternalLink}
-              showExternalIcon={isExternalLink}
-              LinkComponent={LinkComponent}
-              className={compoundStyles.contactMethodValueLink()}
-            >
-              {value}
-            </Link>
-          )
-        }
-        if (isEmail(value)) {
-          return (
-            <Link
-              href={`mailto:${value}`}
-              className={compoundStyles.contactMethodValueLink()}
-            >
-              {value}
-            </Link>
-          )
-        }
-        return (
-          <div className={compoundStyles.contactMethodValue()}>{value}</div>
-        )
-      })}
-    </div>
-  )
-}
-
 export const ContactInformationUI = ({
+  layout,
   country: _country, // not actually used in the UI
   entityName,
   entityDetails,
@@ -83,62 +54,97 @@ export const ContactInformationUI = ({
   otherInformation,
   LinkComponent,
 }: ContactInformationUIProps) => {
+  const simplifiedLayout = getTailwindVariantLayout(layout)
+  const variants = {
+    layout: simplifiedLayout,
+  } as const
+  const compoundStyles = createContactInformationStyles(variants)
+
   return (
     <div className={compoundStyles.container()}>
       {entityName && <h3 className={compoundStyles.title()}>{entityName}</h3>}
 
       <p className={compoundStyles.description()}>{description}</p>
 
-      {!!entityDetails &&
-        entityDetails.length > 0 &&
-        entityDetails.map((detail) => {
-          return renderContactMethod({ ...detail, LinkComponent })
-        })}
+      <div className={compoundStyles.contactMethodsContainer()}>
+        {!!entityDetails &&
+          entityDetails.length > 0 &&
+          entityDetails.map((detail) => {
+            return (
+              <ContactMethod
+                variant={simplifiedLayout}
+                {...detail}
+                LinkComponent={LinkComponent}
+              />
+            )
+          })}
 
-      {!!telephone &&
-        renderContactMethod({
-          displayText: telephone.displayText ?? "Telephone",
-          values: telephone.values,
-          LinkComponent,
-        })}
+        {!!telephone && (
+          <ContactMethod
+            variant={simplifiedLayout}
+            Icon={BiPhone}
+            displayText={telephone.displayText ?? "Telephone"}
+            values={telephone.values}
+            LinkComponent={LinkComponent}
+          />
+        )}
 
-      {!!fax &&
-        renderContactMethod({
-          displayText: fax.displayText ?? "Fax",
-          values: fax.values,
-          LinkComponent,
-        })}
+        {!!fax && (
+          <ContactMethod
+            variant={simplifiedLayout}
+            Icon={BiPrinter}
+            displayText={fax.displayText ?? "Fax"}
+            values={fax.values}
+            LinkComponent={LinkComponent}
+          />
+        )}
 
-      {!!email &&
-        renderContactMethod({
-          displayText: email.displayText ?? "Email",
-          values: email.values,
-          LinkComponent,
-        })}
+        {!!email && (
+          <ContactMethod
+            variant={simplifiedLayout}
+            Icon={BiMailSend}
+            displayText={email.displayText ?? "Email"}
+            values={email.values}
+            LinkComponent={LinkComponent}
+          />
+        )}
 
-      {!!website &&
-        renderContactMethod({
-          displayText: website.displayText ?? "Website",
-          values: website.values,
-          LinkComponent,
-        })}
+        {!!website && (
+          <ContactMethod
+            variant={simplifiedLayout}
+            Icon={BiGlobe}
+            displayText={website.displayText ?? "Website"}
+            values={website.values}
+            LinkComponent={LinkComponent}
+          />
+        )}
 
-      {!!operatingHours &&
-        renderContactMethod({
-          displayText: operatingHours.displayText ?? "Operating Hours",
-          values: operatingHours.values,
-          LinkComponent,
-        })}
+        {!!operatingHours && (
+          <ContactMethod
+            variant={simplifiedLayout}
+            Icon={BiTimeFive}
+            displayText={operatingHours.displayText ?? "Operating Hours"}
+            values={operatingHours.values}
+            LinkComponent={LinkComponent}
+          />
+        )}
 
-      {!!otherMethods &&
-        otherMethods.length > 0 &&
-        otherMethods.map((method) => {
-          return renderContactMethod({ ...method, LinkComponent })
-        })}
+        {!!otherMethods &&
+          otherMethods.length > 0 &&
+          otherMethods.map((method) => {
+            return (
+              <ContactMethod
+                variant={simplifiedLayout}
+                {...method}
+                LinkComponent={LinkComponent}
+              />
+            )
+          })}
+      </div>
 
-      {!!otherInformation && (
-        <div className={compoundStyles.contactMethod()}>
-          <div className={compoundStyles.contactMethodDisplayText()}>
+      {simplifiedLayout === "default" && !!otherInformation && (
+        <div className={compoundStyles.otherInformationContainer()}>
+          <div className={compoundStyles.otherInformationTitle()}>
             Other Information
           </div>
           <div
