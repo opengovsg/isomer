@@ -1243,7 +1243,7 @@ describe("collection.router", async () => {
       expect(result).toEqual([])
     })
 
-    it("should return all collections for the site ordered by title", async () => {
+    it("should return all collections for the site ordered by title (default behavior)", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
@@ -1342,6 +1342,40 @@ describe("collection.router", async () => {
       expect(result[0]?.title).toBe("Test Collection")
       expect(result[0]?.id).toBe(collection.id)
       expect(result[0]?.type).toBe(ResourceType.Collection)
+    })
+
+    it("should return only collections that have children when hasChildren is true", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Create collections
+      const { collection: collectionWithChildren } = await setupCollection({
+        siteId: site.id,
+        permalink: "collection-with-children",
+      })
+      const { collection: _emptyCollection } = await setupCollection({
+        siteId: site.id,
+        permalink: "empty-collection",
+      })
+
+      // Add children to the first collection
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collectionWithChildren.id,
+        permalink: "child-page",
+      })
+
+      // Act
+      const result = await caller.getCollections({
+        siteId: site.id,
+        hasChildren: true,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]?.id).toBe(collectionWithChildren.id)
     })
   })
 })
