@@ -68,7 +68,9 @@ export const ContactInformationUI = ({
     <div className={compoundStyles.container()}>
       {entityName && <h3 className={compoundStyles.title()}>{entityName}</h3>}
 
-      <p className={compoundStyles.description()}>{description}</p>
+      {!!description && (
+        <p className={compoundStyles.description()}>{description}</p>
+      )}
 
       <div className={compoundStyles.contactMethodsContainer()}>
         {!!entityDetails &&
