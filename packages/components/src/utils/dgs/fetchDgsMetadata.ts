@@ -16,7 +16,7 @@ type FetchDgsMetadataOutput = Pick<
   FetchDgsMetadataResponse["data"],
   "name" | "format"
 > & {
-  datasetSize: string
+  size: string | undefined
 }
 
 export const fetchDgsMetadata = async ({
@@ -37,7 +37,7 @@ export const fetchDgsMetadata = async ({
     return {
       name: data.data.name,
       format: data.data.format,
-      datasetSize: formatBytes(data.data.datasetSize),
+      size: formatBytes(data.data.datasetSize),
     }
   } catch (error) {
     console.error("Error fetching DGS metadata:", error)

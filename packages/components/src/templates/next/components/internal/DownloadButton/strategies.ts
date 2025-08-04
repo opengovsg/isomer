@@ -33,7 +33,7 @@ const dgsDownloadStrategy: DownloadStrategy = {
     try {
       const metadata = await fetchDgsMetadata({ resourceId: dgsId })
       if (metadata) {
-        return `Download ${metadata.format} (${metadata.datasetSize})`
+        return renderDownloadText(metadata)
       }
     } catch (error) {
       console.error("Error fetching DGS metadata:", error)
@@ -55,14 +55,7 @@ export const directDownloadStrategy: DownloadStrategy = {
     try {
       const metadata = await fetchFileMetadata({ url })
       if (metadata) {
-        const { format, size } = metadata
-        if (format && size) {
-          return Promise.resolve(`Download ${format.toUpperCase()} (${size})`)
-        } else if (format) {
-          return Promise.resolve(`Download ${format.toUpperCase()}`)
-        } else if (size) {
-          return Promise.resolve(`Download (${size})`)
-        }
+        return renderDownloadText(metadata)
       }
     } catch (error) {
       console.error("Error fetching file metadata:", error)
@@ -78,3 +71,19 @@ export const defaultDownloadStrategies: DownloadStrategy[] = [
   dgsDownloadStrategy,
   directDownloadStrategy, // Fallback strategy
 ]
+
+interface RenderDownloadTextProps {
+  format: string | undefined
+  size: string | undefined
+}
+const renderDownloadText = ({ format, size }: RenderDownloadTextProps) => {
+  if (format && size) {
+    return `Download ${format} (${size})`
+  } else if (format) {
+    return `Download ${format}`
+  } else if (size) {
+    return `Download (${size})`
+  } else {
+    return "Download"
+  }
+}
