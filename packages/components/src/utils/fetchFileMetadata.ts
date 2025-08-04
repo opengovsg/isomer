@@ -26,9 +26,16 @@ export const fetchFileMetadata = async ({
   }
 
   // We use HEAD request to get the file metadata without downloading the file
-  const response = await fetch(url, { method: "HEAD" })
+  let response: Response
+  try {
+    response = await fetch(url, { method: "HEAD" })
 
-  if (!response.ok) {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+  } catch (error) {
+    // Handle network errors, CORS issues, or other fetch failures
+    console.error("Error fetching file metadata:", error)
     return null
   }
 
