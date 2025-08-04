@@ -353,7 +353,7 @@ export const collectionRouter = router({
     ),
   getCollections: protectedProcedure
     .input(getCollectionsSchema)
-    .query(async ({ ctx, input: { siteId } }) => {
+    .query(async ({ ctx, input: { siteId, hasChildren } }) => {
       // will need permissions to fetch all collections for a site
       await validateUserPermissionsForSite({
         siteId,
@@ -361,12 +361,22 @@ export const collectionRouter = router({
         userId: ctx.user.id,
       })
 
-      return db
-        .selectFrom("Resource")
+      let query = db.selectFrom("Resource")
+
+      if (hasChildren) {
+        query = query.innerJoin(
+          "Resource as children",
+          "Resource.id",
+          "children.parentId",
+        )
+      }
+
+      return query
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "=", ResourceType.Collection)
         .orderBy("Resource.title", "asc")
-        .selectAll()
+        .distinct()
+        .selectAll("Resource")
         .execute()
     }),
 })
