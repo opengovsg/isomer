@@ -2,7 +2,7 @@ interface FetchDgsFileDownloadUrlProps {
   resourceId: string
 }
 
-interface InitiateDownloadResponse {
+interface DownloadResponse {
   data: {
     url: string
   }
@@ -17,19 +17,24 @@ export const fetchDgsFileDownloadUrl = async ({
 }: FetchDgsFileDownloadUrlProps): Promise<FetchDgsFileDownloadUrlOutput | null> => {
   try {
     // For simplicity sake, we will always use data.gov.sg production API
-    const initiateDownloadResponse = await fetch(
-      `https://api-open.data.gov.sg/v1/public/api/datasets/${resourceId}/initiate-download`,
-    )
+    // The 'initiate' endpoint is less performant and has scalability limitations.
+    // Therefore, it's recommended to call 'initiate' only once, then use 'poll' for subsequent checks.
+    // Since multiple users may access this page, we use Promise.race to return the first available response.
+    // Reference: https://opengovproducts.slack.com/archives/C05FKB7JM1U/p1754303394798019
+    const baseUrl = `https://api-open.data.gov.sg/v1/public/api/datasets/${resourceId}`
+    const downloadResponse = await Promise.race([
+      fetch(`${baseUrl}/initiate-download`),
+      fetch(`${baseUrl}/poll-download`),
+    ])
 
-    if (!initiateDownloadResponse.ok) {
+    if (!downloadResponse.ok) {
       throw new Error("Failed to initiate download")
     }
 
-    const initiateDownloadData =
-      (await initiateDownloadResponse.json()) as InitiateDownloadResponse
+    const downloadData = (await downloadResponse.json()) as DownloadResponse
 
     return {
-      downloadUrl: initiateDownloadData.data.url,
+      downloadUrl: downloadData.data.url,
     }
   } catch (error) {
     console.error("Error fetching DGS file download URL:", error)
