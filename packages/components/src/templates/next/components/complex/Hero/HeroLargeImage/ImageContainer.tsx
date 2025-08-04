@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import type { ImageClientProps } from "~/interfaces"
 import { ImageClient } from "../../Image"
@@ -14,12 +14,15 @@ interface ImageContainerProps {
 // Arbitrary threshold to prevent the button from showing too early
 const SCROLL_THRESHOLD = 120
 
+// Grouping scroll events to prevent excessive re-renders
+const THROTTLE_DELAY = 100
+
 export const ImageContainer = ({ imageSrc, imageAlt }: ImageContainerProps) => {
   const imageRef = useRef<HTMLImageElement>(null)
   const [isFixed, setIsFixed] = useState(false)
   const [shouldShowButton, setShouldShowButton] = useState(false)
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (!imageRef.current) return
 
     const imageRect = imageRef.current.getBoundingClientRect()
@@ -33,22 +36,34 @@ export const ImageContainer = ({ imageSrc, imageAlt }: ImageContainerProps) => {
 
     const imageBottom = imageRect.bottom
     const viewportHeight = window.innerHeight
+    console.log("imageBottom", imageBottom)
     setIsFixed(imageBottom > viewportHeight + 1)
-  }
+  }, [])
 
   useEffect(() => {
     // to not render during static site generation on the server
     if (typeof window === "undefined") return
 
-    window.addEventListener("scroll", handleScroll)
-    window.addEventListener("resize", handleScroll)
+    let inThrottle = false
+    const throttledScrollHandler = () => {
+      if (!inThrottle) {
+        handleScroll()
+        inThrottle = true
+        setTimeout(() => {
+          inThrottle = false
+        }, THROTTLE_DELAY)
+      }
+    }
+
+    window.addEventListener("scroll", throttledScrollHandler)
+    window.addEventListener("resize", throttledScrollHandler)
     handleScroll()
 
     return () => {
-      window.removeEventListener("scroll", handleScroll)
-      window.removeEventListener("resize", handleScroll)
+      window.removeEventListener("scroll", throttledScrollHandler)
+      window.removeEventListener("resize", throttledScrollHandler)
     }
-  }, [])
+  }, [handleScroll])
 
   return (
     <div className="relative w-full">
