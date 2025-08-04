@@ -1,4 +1,4 @@
-import { formatBytes } from "./formatBytes"
+import { formatBytes } from "../formatBytes"
 
 interface FetchDgsMetadataProps {
   resourceId: string

@@ -1,6 +1,7 @@
 import {
   fetchDgsFileDownloadUrl,
   fetchDgsMetadata,
+  fetchFileMetadata,
   getDgsIdFromDgsLink,
 } from "~/utils"
 
@@ -50,31 +51,17 @@ export const directDownloadStrategy: DownloadStrategy = {
     // For direct URLs, return the URL as-is
     return Promise.resolve(url)
   },
-  getDisplayText: (url: string) => {
-    let pathname: string | undefined
-
+  getDisplayText: async (url: string) => {
     try {
-      // Try parsing as "absolute" URL
-      const urlObj = new URL(url)
-      pathname = urlObj.pathname
-    } catch {
-      // If parsing fails, treat as "relative" path
-      if (url.startsWith("/")) {
-        pathname = url
+      const metadata = await fetchFileMetadata({ url })
+      if (metadata) {
+        const { format, size } = metadata
+        return Promise.resolve(`Download ${format.toUpperCase()} (${size})`)
       }
+    } catch (error) {
+      console.error("Error fetching file metadata:", error)
     }
-
-    if (pathname) {
-      const filename = pathname.split("/").pop()
-      if (filename?.includes(".")) {
-        const extension = filename.split(".").pop()
-        if (extension) {
-          return Promise.resolve(`Download ${extension.toUpperCase()}`)
-        }
-      }
-    }
-
-    return Promise.resolve(null)
+    return null
   },
 }
 

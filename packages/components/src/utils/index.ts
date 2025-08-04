@@ -17,6 +17,7 @@ export {
   fetchDgsMetadata,
   getDgsIdFromDgsLink,
 } from "./dgs"
+export { fetchFileMetadata } from "./fetchFileMetadata"
 export { orderedListSchemaBuilder } from "./orderedListSchemaBuilder"
 export * from "./tailwind"
 export { unorderedListSchemaBuilder } from "./unorderedListSchemaBuilder"
