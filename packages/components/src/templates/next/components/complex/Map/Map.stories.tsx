@@ -37,3 +37,11 @@ export const OneMapLocation: Story = {
     url: "https://www.onemap.gov.sg/minimap/minimap.html?mapStyle=Default&zoomLevel=15&latLng=1.29793747849037,103.850182257356&ewt=JTNDcCUzRSUzQ3N0cm9uZyUzRU9wZW4lMjBHb3Zlcm5tZW50JTIwUHJvZHVjdHMlMjBvZmZpY2UlM0MlMkZzdHJvbmclM0UlM0MlMkZwJTNF&popupWidth=200&showPopup=true",
   },
 }
+
+export const OGPMaps: Story = {
+  name: "Maps.gov.sg",
+  args: {
+    title: "Public AED Locations",
+    url: "https://maps.gov.sg/scdf-aed",
+  },
+}
