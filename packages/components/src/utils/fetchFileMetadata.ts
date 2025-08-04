@@ -42,11 +42,14 @@ export const fetchFileMetadata = async ({
   // Fallback to extension from URL if format is missing or generic
   // `octet-stream` is a generic MIME type (`application/octet-stream`) used when server doesn't know the file's specific type.
   // It just means "binary data," so the code tries to get the file extension from the URL instead for a more useful format.
-  let format = response.headers.get("content-type")?.split("/")[1]
+  let format = response.headers
+    .get("content-type")
+    ?.split("/")[1] //
+    ?.split(";")[0] // Correctly remove MIME type parameters e.g. "text/plain; charset=utf-8" will correctly extract "plain" instead of "plain; charset=utf-8".
   if (!format || format === "octet-stream") {
-    const urlParts = url.split(".")
-    if (urlParts.length > 1) {
-      format = urlParts.pop()?.toLowerCase()
+    const pathnameParts = pathname.split(".")
+    if (pathnameParts.length > 1) {
+      format = pathnameParts.pop()?.toLowerCase()
     }
   }
 
