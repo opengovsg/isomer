@@ -8,12 +8,12 @@ import { isEmail, isExternalUrl, isUrl } from "~/utils"
 
 const createContactMethodStyles = tv({
   slots: {
-    container: "flex flex-col items-start gap-2",
+    container: "flex w-full flex-col items-start gap-2",
     icon: "size-8 flex-shrink-0 text-base-content-strong",
-    textContainer: "flex flex-col items-start gap-3",
+    textContainer: "flex w-full flex-col items-start gap-3",
     label: "prose-headline-lg-semibold text-base-content",
-    valuesContainer: "flex flex-col items-start gap-1",
-    value: "prose-headline-lg-medium text-center text-base-content",
+    valuesContainer: "flex w-full flex-col items-start gap-1",
+    value: "prose-headline-lg-medium text-left text-base-content",
   },
   variants: {
     variant: {
@@ -22,6 +22,7 @@ const createContactMethodStyles = tv({
         container: "md:items-center",
         textContainer: "md:items-center",
         valuesContainer: "md:items-center",
+        value: "md:text-center",
       },
     },
     isLink: {
