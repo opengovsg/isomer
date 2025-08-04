@@ -27,7 +27,11 @@ const createContactMethodStyles = tv({
     },
     isLink: {
       true: {
-        value: "underline",
+        value:
+          "text-hyperlink underline visited:text-hyperlink-visited hover:text-hyperlink-hover",
+      },
+      false: {
+        value: "text-base-content",
       },
     },
   },
