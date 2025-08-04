@@ -38,7 +38,7 @@ const isValidOneMapEmbedUrl = (urlObject: URL) => {
   )
 }
 
-const isValidOGPMapsEmbedUrl = (urlObject: URL) => {
+export const isValidOGPMapsEmbedUrl = (urlObject: URL) => {
   return (
     urlObject.hostname === "maps.gov.sg" && urlObject.pathname.startsWith("/")
   )
