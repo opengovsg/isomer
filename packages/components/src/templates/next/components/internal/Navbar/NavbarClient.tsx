@@ -6,7 +6,7 @@ import { useResizeObserver } from "usehooks-ts"
 
 import type { NavbarClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { isExternalUrl } from "~/utils"
+import { focusVisibleHighlight, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 import { LinkButton } from "../../internal/LinkButton"
@@ -25,8 +25,10 @@ const createNavbarStyles = tv({
     utilityNavigationSection:
       "prose-label-sm-medium mt-3 hidden w-full items-center justify-end gap-4 lg:flex",
     utilityItemsList: "flex items-center gap-4",
-    utilityItem:
+    utilityItem: [
+      focusVisibleHighlight(),
       "prose-label-sm-medium text-base-content-subtle hover:underline",
+    ],
     navbarItems:
       "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-2 pl-6 pr-3 md:px-10",
     navItemContainer: "hidden flex-1 items-center gap-x-4 pl-2 lg:flex",

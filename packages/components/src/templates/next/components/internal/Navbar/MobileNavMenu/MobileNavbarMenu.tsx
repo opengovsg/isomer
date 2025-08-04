@@ -88,7 +88,10 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                     <li key={`${item.name}-${index}`}>
                       <Link
                         LinkComponent={LinkComponent}
-                        className="prose-label-sm-medium text-base-content-subtle"
+                        className={focusVisibleHighlight({
+                          className:
+                            "prose-label-sm-medium text-base-content-subtle",
+                        })}
                         href={item.url}
                         isExternal={isExternalUrl(item.url)}
                       >
