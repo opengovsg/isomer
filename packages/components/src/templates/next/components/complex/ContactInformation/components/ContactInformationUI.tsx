@@ -17,8 +17,9 @@ import { ContactMethod } from "./ContactMethod"
 const createContactInformationStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col`,
+    titleAndDescriptionContainer: "flex flex-col gap-2",
     title: "prose-display-md font-bold text-base-content-strong",
-    description: "prose-body-md text-base-content",
+    description: "prose-headline-lg-regular text-base-content-strong",
     contactMethodsContainer: "flex flex-col gap-4",
     otherInformationContainer: "mt-8 flex flex-col gap-6",
     otherInformationTitle:
@@ -67,11 +68,12 @@ export const ContactInformationUI = ({
 
   return (
     <div className={compoundStyles.container()}>
-      {entityName && <h3 className={compoundStyles.title()}>{entityName}</h3>}
-
-      {!!description && (
-        <p className={compoundStyles.description()}>{description}</p>
-      )}
+      <div className={compoundStyles.titleAndDescriptionContainer()}>
+        {entityName && <h3 className={compoundStyles.title()}>{entityName}</h3>}
+        {!!description && (
+          <p className={compoundStyles.description()}>{description}</p>
+        )}
+      </div>
 
       <div className={compoundStyles.contactMethodsContainer()}>
         {!!entityDetails &&
