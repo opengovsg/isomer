@@ -5,7 +5,7 @@ import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import NavbarClient from "./NavbarClient"
 
 const navbarLogoStyles = tv({
-  base: "object-contain object-left lg:mr-3",
+  base: "object-contain object-left",
   variants: {
     hasUtilityLinks: {
       true: "max-h-[68px] max-w-[180px]",

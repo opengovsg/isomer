@@ -19,7 +19,7 @@ const createNavbarStyles = tv({
   slots: {
     navbar: "relative flex flex-col",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
-    logo: "flex rounded focus-visible:bg-utility-highlight",
+    logo: "flex flex-shrink-0 rounded focus-visible:bg-utility-highlight",
     navigationSection: "flex w-full flex-col items-center justify-between",
     primaryNavigationSection: "flex w-full items-center justify-end",
     utilityNavigationSection:
@@ -31,7 +31,7 @@ const createNavbarStyles = tv({
       "prose-label-sm-medium text-base-content-subtle hover:underline",
     ],
     navbarItems:
-      "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-2 pl-6 pr-3 md:px-10",
+      "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-4 pl-6 pr-3 md:px-10",
     navItemContainer: "hidden flex-1 items-center gap-x-4 pl-2 lg:flex",
     callToAction: "align-content mx-5 hidden h-fit lg:flex",
     buttonsSection: "flex flex-row gap-1",
