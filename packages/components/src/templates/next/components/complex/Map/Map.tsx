@@ -14,7 +14,7 @@ const createMapStyles = tv({
   variants: {
     isOgpMapsEmbed: {
       true: {
-        innerContainer: "min-h-[45rem]",
+        innerContainer: "min-h-[45rem] lg:min-h-0",
       },
     },
   },
