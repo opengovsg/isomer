@@ -1485,11 +1485,11 @@ export const Default: Story = {
         entityName: "Sentosa",
         entityDetails: [
           {
-            displayText: "Ambassador (Non-Resident)",
+            label: "Ambassador (Non-Resident)",
             values: ["Mr MOHAMMAD Alami Musa"],
           },
           {
-            displayText: "Chancery",
+            label: "Chancery",
             values: [
               "c/o Ministry of Foreign Affairs",
               "Tanglin",
@@ -1499,31 +1499,31 @@ export const Default: Story = {
         ],
         description: "Embassy of the Republic of Singapore - Algeria",
         telephone: {
-          displayText: "Telephone",
+          label: "Telephone",
           values: ["+65-63798000 (MFA)"],
         },
         fax: {
-          displayText: "Fax",
+          label: "Fax",
           values: ["+65-64747885 (MFA)"],
         },
         email: {
-          displayText: "Email",
+          label: "Email",
           values: [
             "do-not-reply@isomer.gov.sg",
             "do-not-reply-pelase@isomer.gov.sg",
           ],
         },
         website: {
-          displayText: "Website",
+          label: "Website",
           values: ["https://www.isomer.gov.sg", "https://sample.isomer.gov.sg"],
         },
         operatingHours: {
-          displayText: "Operating Hours",
+          label: "Operating Hours",
           values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
         },
         otherMethods: [
           {
-            displayText: "Emergency Contact",
+            label: "Emergency Contact",
             values: [
               "https://this-should-still-be-hyperlinked.isomer.gov.sg",
               "this-should-still-be-hyperlinked@isomer.gov.sg",
@@ -1531,11 +1531,11 @@ export const Default: Story = {
             ],
           },
           {
-            displayText: "Telegram",
+            label: "Telegram",
             values: ["https://t.me/isomer_gov_sg"],
           },
           {
-            displayText: "WhatsApp",
+            label: "WhatsApp",
             values: ["+65-63798000 (MFA)"],
           },
         ],

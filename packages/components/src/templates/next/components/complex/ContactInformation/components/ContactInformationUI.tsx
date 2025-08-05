@@ -93,7 +93,7 @@ export const ContactInformationUI = ({
             variant={simplifiedLayout}
             Icon={BiPhone}
             {...telephone}
-            displayText={telephone.displayText ?? "Telephone"}
+            label={telephone.label ?? "Telephone"}
             LinkComponent={LinkComponent}
           />
         )}
@@ -103,7 +103,7 @@ export const ContactInformationUI = ({
             variant={simplifiedLayout}
             Icon={BiPrinter}
             {...fax}
-            displayText={fax.displayText ?? "Fax"}
+            label={fax.label ?? "Fax"}
             LinkComponent={LinkComponent}
           />
         )}
@@ -113,7 +113,7 @@ export const ContactInformationUI = ({
             variant={simplifiedLayout}
             Icon={BiMailSend}
             {...email}
-            displayText={email.displayText ?? "Email"}
+            label={email.label ?? "Email"}
             LinkComponent={LinkComponent}
           />
         )}
@@ -123,7 +123,7 @@ export const ContactInformationUI = ({
             variant={simplifiedLayout}
             Icon={BiGlobe}
             {...website}
-            displayText={website.displayText ?? "Website"}
+            label={website.label ?? "Website"}
             LinkComponent={LinkComponent}
           />
         )}
@@ -133,7 +133,7 @@ export const ContactInformationUI = ({
             variant={simplifiedLayout}
             Icon={BiTimeFive}
             {...operatingHours}
-            displayText={operatingHours.displayText ?? "Operating Hours"}
+            label={operatingHours.label ?? "Operating Hours"}
             LinkComponent={LinkComponent}
           />
         )}

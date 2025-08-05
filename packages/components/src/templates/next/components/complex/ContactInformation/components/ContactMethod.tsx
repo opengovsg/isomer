@@ -14,8 +14,8 @@ const createContactMethodStyles = tv({
     container: "flex w-full flex-col items-start gap-2",
     icon: "size-8 flex-shrink-0 text-base-content-strong",
     textContainer: "flex w-full flex-col items-start gap-3",
-    displayText: "prose-headline-lg-semibold text-base-content",
-    valuesAndLabelContainer: "flex w-full flex-col items-start gap-1",
+    label: "prose-headline-lg-semibold text-base-content",
+    valuesAndCaptionContainer: "flex w-full flex-col items-start gap-1",
     value: "prose-headline-lg-medium text-left text-base-content",
     caption: "prose-body-sm text-base-content",
   },
@@ -25,7 +25,7 @@ const createContactMethodStyles = tv({
       homepage: {
         container: "md:items-center",
         textContainer: "md:items-center",
-        valuesAndLabelContainer: "md:items-center",
+        valuesAndCaptionContainer: "md:items-center",
         value: "md:text-center",
       },
     },
@@ -53,21 +53,19 @@ interface ContactMethodProps extends SingleContactInformationProps {
 export const ContactMethod = ({
   variant,
   Icon = BiEnvelope,
-  displayText,
+  label,
   values,
   caption,
   LinkComponent,
 }: ContactMethodProps) => {
   const styles = createContactMethodStyles({ variant })
 
-  console.log(11111, displayText, caption)
-
   return (
     <div className={styles.container()}>
       <Icon className={styles.icon()} />
       <div className={styles.textContainer()}>
-        <div className={styles.displayText()}>{displayText}</div>
-        <div className={styles.valuesAndLabelContainer()}>
+        <div className={styles.label()}>{label}</div>
+        <div className={styles.valuesAndCaptionContainer()}>
           {values.map((value) => {
             if (isUrl(value)) {
               const isExternalLink = isExternalUrl(value)

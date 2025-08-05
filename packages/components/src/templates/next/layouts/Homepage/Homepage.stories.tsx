@@ -558,15 +558,15 @@ const generateArgs = ({
         type: "contactinformation",
         entityName: "Contact the High Commission of Canberra",
         telephone: {
-          displayText: "Telephone",
+          label: "Telephone",
           values: ["+65-63798000 (MFA)"],
         },
         email: {
-          displayText: "Email",
+          label: "Email",
           values: ["do-not-reply@isomer.gov.sg"],
         },
         operatingHours: {
-          displayText: "Operating Hours",
+          label: "Operating Hours",
           values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
         },
         url: "/",

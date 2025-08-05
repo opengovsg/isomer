@@ -15,14 +15,14 @@ import {
 export const CONTACT_INFORMATION_TYPE = "contactinformation"
 
 const generateSingleContactInformationSchema = ({
-  defaultDisplayText,
+  defaultLabelTitle,
 }: {
-  defaultDisplayText: string
+  defaultLabelTitle: string
 }) => {
   return Type.Object({
-    displayText: Type.Optional(
+    label: Type.Optional(
       Type.String({
-        title: defaultDisplayText,
+        title: defaultLabelTitle,
       }),
     ),
     values: Type.Array(Type.String(), { minItems: 1 }),
@@ -35,7 +35,7 @@ const generateSingleContactInformationSchema = ({
   })
 }
 const CompulsorySingleContactInformationSchema = Type.Object({
-  displayText: Type.String(),
+  label: Type.String(),
   values: Type.Array(Type.String(), { minItems: 1 }),
   caption: Type.Optional(
     Type.String({
@@ -88,27 +88,27 @@ export const NativeContactInformationSchema = Type.Intersect([
       ),
       telephone: Type.Optional(
         generateSingleContactInformationSchema({
-          defaultDisplayText: "Telephone",
+          defaultLabelTitle: "Telephone",
         }),
       ),
       fax: Type.Optional(
         generateSingleContactInformationSchema({
-          defaultDisplayText: "Fax",
+          defaultLabelTitle: "Fax",
         }),
       ),
       email: Type.Optional(
         generateSingleContactInformationSchema({
-          defaultDisplayText: "Email",
+          defaultLabelTitle: "Email",
         }),
       ),
       website: Type.Optional(
         generateSingleContactInformationSchema({
-          defaultDisplayText: "Website",
+          defaultLabelTitle: "Website",
         }),
       ),
       operatingHours: Type.Optional(
         generateSingleContactInformationSchema({
-          defaultDisplayText: "Operating Hours",
+          defaultLabelTitle: "Operating Hours",
         }),
       ),
       entityDetails: Type.Optional(

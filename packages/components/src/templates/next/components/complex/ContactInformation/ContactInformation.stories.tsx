@@ -57,11 +57,11 @@ const NativeArgs: Partial<ContactInformationProps> = {
   entityName: "Sentosa",
   entityDetails: [
     {
-      displayText: "Ambassador (Non-Resident)",
+      label: "Ambassador (Non-Resident)",
       values: ["Mr MOHAMMAD Alami Musa"],
     },
     {
-      displayText: "Chancery",
+      label: "Chancery",
       values: [
         "c/o Ministry of Foreign Affairs",
         "Tanglin",
@@ -71,29 +71,29 @@ const NativeArgs: Partial<ContactInformationProps> = {
   ],
   description: "Embassy of the Republic of Singapore - Algeria",
   telephone: {
-    displayText: "Telephone",
+    label: "Telephone",
     values: ["+65-63798000 (MFA)"],
   },
   fax: {
-    displayText: "Fax",
+    label: "Fax",
     values: ["+65-64747885 (MFA)"],
     caption: "Got people use meh?",
   },
   email: {
-    displayText: "Email",
+    label: "Email",
     values: ["do-not-reply@isomer.gov.sg", "do-not-reply-pelase@isomer.gov.sg"],
   },
   website: {
-    displayText: "Website",
+    label: "Website",
     values: ["https://www.isomer.gov.sg", "https://sample.isomer.gov.sg"],
   },
   operatingHours: {
-    displayText: "Operating Hours",
+    label: "Operating Hours",
     values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
   },
   otherMethods: [
     {
-      displayText: "Emergency Contact",
+      label: "Emergency Contact",
       values: [
         "https://this-should-still-be-hyperlinked.isomer.gov.sg",
         "this-should-still-be-hyperlinked@isomer.gov.sg",
@@ -102,11 +102,11 @@ const NativeArgs: Partial<ContactInformationProps> = {
       caption: "(After hours)",
     },
     {
-      displayText: "Telegram",
+      label: "Telegram",
       values: ["https://t.me/isomer_gov_sg"],
     },
     {
-      displayText: "WhatsApp",
+      label: "WhatsApp",
       values: ["+65-63798000 (MFA)"],
     },
   ],
@@ -147,30 +147,30 @@ const DgsParameters = {
                   entity_name: "Sentosa",
                   description: "Embassy of the Republic of Singapore - Algeria",
                   telephone: JSON.stringify({
-                    displayText: "Telephone",
+                    label: "Telephone",
                     values: ["+65-63798000 (MFA)"],
                   }),
                   fax: JSON.stringify({
-                    displayText: "Fax",
+                    label: "Fax",
                     values: ["+65-64747885 (MFA)"],
                     caption: "Got people use meh?",
                   }),
                   email: JSON.stringify({
-                    displayText: "Email",
+                    label: "Email",
                     values: [
                       "do-not-reply@isomer.gov.sg",
                       "do-not-reply-pelase@isomer.gov.sg",
                     ],
                   }),
                   website: JSON.stringify({
-                    displayText: "Website",
+                    label: "Website",
                     values: [
                       "https://www.isomer.gov.sg",
                       "https://sample.isomer.gov.sg",
                     ],
                   }),
                   operating_hours: JSON.stringify({
-                    displayText: "Operating Hours",
+                    label: "Operating Hours",
                     values: [
                       "Mon - Fri",
                       "8.30 am to 5.00 pm",
@@ -179,11 +179,11 @@ const DgsParameters = {
                   }),
                   entity_details: JSON.stringify([
                     {
-                      displayText: "Ambassador (Non-Resident)",
+                      label: "Ambassador (Non-Resident)",
                       values: ["Mr MOHAMMAD Alami Musa"],
                     },
                     {
-                      displayText: "Chancery",
+                      label: "Chancery",
                       values: [
                         "c/o Ministry of Foreign Affairs",
                         "Tanglin",
@@ -193,7 +193,7 @@ const DgsParameters = {
                   ]),
                   other_methods: JSON.stringify([
                     {
-                      displayText: "Emergency Contact",
+                      label: "Emergency Contact",
                       values: [
                         "https://this-should-still-be-hyperlinked.isomer.gov.sg",
                         "this-should-still-be-hyperlinked@isomer.gov.sg",
@@ -202,11 +202,11 @@ const DgsParameters = {
                       caption: "(After hours)",
                     },
                     {
-                      displayText: "Telegram",
+                      label: "Telegram",
                       values: ["https://t.me/isomer_gov_sg"],
                     },
                     {
-                      displayText: "WhatsApp",
+                      label: "WhatsApp",
                       values: ["+65-63798000 (MFA)"],
                     },
                   ]),
@@ -264,12 +264,12 @@ export const DgsPartial: Story = {
     entityName: "This entityName is not from DGS",
     description: "This description is not from DGS",
     telephone: {
-      displayText: "This telephone is not from DGS",
+      label: "This telephone is not from DGS",
       values: ["+65-63798000 (MFA)"],
     },
     fax: "[dgs:fax]",
     email: {
-      displayText: "This email is not from DGS",
+      label: "This email is not from DGS",
       values: [
         "do-not-reply@isomer.gov.sg",
         "do-not-reply-pelase@isomer.gov.sg",
@@ -279,11 +279,11 @@ export const DgsPartial: Story = {
     entityDetails: "[dgs:entity_details]",
     otherMethods: [
       {
-        displayText: "This otherMethod is not from DGS",
+        label: "This otherMethod is not from DGS",
         values: ["https://t.me/isomer_gov_sg"],
       },
       {
-        displayText: "This otherMethod is also not from DGS",
+        label: "This otherMethod is also not from DGS",
         values: ["+65-63798000 (MFA)"],
       },
     ],
