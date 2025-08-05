@@ -25,6 +25,7 @@ const createContactMethodStyles = tv({
       homepage: {
         container: "md:items-center",
         textContainer: "md:items-center",
+        label: "md:text-center",
         valuesAndCaptionContainer: "md:items-center",
         value: "md:text-center",
       },
