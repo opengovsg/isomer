@@ -25,6 +25,7 @@ const createNavbarStyles = tv({
     utilityNavigationSection:
       "prose-label-sm-medium mt-3 hidden w-full items-center justify-end gap-4 lg:flex",
     utilityItemsList: "flex items-center gap-4",
+    utilityItemsHeader: "prose-label-sm-medium text-base-content-subtle",
     utilityItem: [
       focusVisibleHighlight(),
       "prose-label-sm-medium text-base-content-subtle hover:underline",
@@ -118,7 +119,7 @@ export const NavbarClient = ({
           <div className={navbarStyles.navigationSection()}>
             {utility && (
               <div className={navbarStyles.utilityNavigationSection()}>
-                <p color={navbarStyles.utilityItem()}>
+                <p className={navbarStyles.utilityItemsHeader()}>
                   {utility.label || "Quick links"}
                 </p>
                 <ul className={navbarStyles.utilityItemsList()}>
