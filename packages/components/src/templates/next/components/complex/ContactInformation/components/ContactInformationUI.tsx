@@ -92,8 +92,8 @@ export const ContactInformationUI = ({
           <ContactMethod
             variant={simplifiedLayout}
             Icon={BiPhone}
+            {...telephone}
             displayText={telephone.displayText ?? "Telephone"}
-            values={telephone.values}
             LinkComponent={LinkComponent}
           />
         )}
@@ -102,8 +102,8 @@ export const ContactInformationUI = ({
           <ContactMethod
             variant={simplifiedLayout}
             Icon={BiPrinter}
+            {...fax}
             displayText={fax.displayText ?? "Fax"}
-            values={fax.values}
             LinkComponent={LinkComponent}
           />
         )}
@@ -112,8 +112,8 @@ export const ContactInformationUI = ({
           <ContactMethod
             variant={simplifiedLayout}
             Icon={BiMailSend}
+            {...email}
             displayText={email.displayText ?? "Email"}
-            values={email.values}
             LinkComponent={LinkComponent}
           />
         )}
@@ -122,8 +122,8 @@ export const ContactInformationUI = ({
           <ContactMethod
             variant={simplifiedLayout}
             Icon={BiGlobe}
+            {...website}
             displayText={website.displayText ?? "Website"}
-            values={website.values}
             LinkComponent={LinkComponent}
           />
         )}
@@ -132,8 +132,8 @@ export const ContactInformationUI = ({
           <ContactMethod
             variant={simplifiedLayout}
             Icon={BiTimeFive}
+            {...operatingHours}
             displayText={operatingHours.displayText ?? "Operating Hours"}
-            values={operatingHours.values}
             LinkComponent={LinkComponent}
           />
         )}

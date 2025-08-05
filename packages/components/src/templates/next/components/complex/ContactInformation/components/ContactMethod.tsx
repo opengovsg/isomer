@@ -1,7 +1,10 @@
 import type { IconType } from "react-icons"
 import { BiEnvelope } from "react-icons/bi"
 
-import type { ContactInformationUIProps } from "~/interfaces"
+import type {
+  ContactInformationUIProps,
+  SingleContactInformationProps,
+} from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { Link } from "~/templates/next/components/internal/Link"
 import { focusVisibleHighlight, isEmail, isExternalUrl, isUrl } from "~/utils"
@@ -11,9 +14,10 @@ const createContactMethodStyles = tv({
     container: "flex w-full flex-col items-start gap-2",
     icon: "size-8 flex-shrink-0 text-base-content-strong",
     textContainer: "flex w-full flex-col items-start gap-3",
-    label: "prose-headline-lg-semibold text-base-content",
-    valuesContainer: "flex w-full flex-col items-start gap-1",
+    displayText: "prose-headline-lg-semibold text-base-content",
+    valuesAndLabelContainer: "flex w-full flex-col items-start gap-1",
     value: "prose-headline-lg-medium text-left text-base-content",
+    caption: "prose-body-sm text-base-content",
   },
   variants: {
     variant: {
@@ -21,7 +25,7 @@ const createContactMethodStyles = tv({
       homepage: {
         container: "md:items-center",
         textContainer: "md:items-center",
-        valuesContainer: "md:items-center",
+        valuesAndLabelContainer: "md:items-center",
         value: "md:text-center",
       },
     },
@@ -40,11 +44,9 @@ const createContactMethodStyles = tv({
   },
 })
 
-interface ContactMethodProps {
+interface ContactMethodProps extends SingleContactInformationProps {
   variant: "default" | "homepage"
   Icon?: IconType
-  displayText: string
-  values: string[]
   LinkComponent: ContactInformationUIProps["LinkComponent"]
 }
 
@@ -53,16 +55,19 @@ export const ContactMethod = ({
   Icon = BiEnvelope,
   displayText,
   values,
+  caption,
   LinkComponent,
 }: ContactMethodProps) => {
   const styles = createContactMethodStyles({ variant })
+
+  console.log(11111, displayText, caption)
 
   return (
     <div className={styles.container()}>
       <Icon className={styles.icon()} />
       <div className={styles.textContainer()}>
-        <div className={styles.label()}>{displayText}</div>
-        <div className={styles.valuesContainer()}>
+        <div className={styles.displayText()}>{displayText}</div>
+        <div className={styles.valuesAndLabelContainer()}>
           {values.map((value) => {
             if (isUrl(value)) {
               const isExternalLink = isExternalUrl(value)
@@ -96,6 +101,7 @@ export const ContactMethod = ({
             }
             return <div className={styles.value()}>{value}</div>
           })}
+          {!!caption && <div className={styles.caption()}>{caption}</div>}
         </div>
       </div>
     </div>

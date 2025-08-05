@@ -26,11 +26,23 @@ const generateSingleContactInformationSchema = ({
       }),
     ),
     values: Type.Array(Type.String(), { minItems: 1 }),
+    caption: Type.Optional(
+      Type.String({
+        title: "Caption",
+        maxLength: 30, // arbitrarily low limit for now to prevent abuse
+      }),
+    ),
   })
 }
 const CompulsorySingleContactInformationSchema = Type.Object({
   displayText: Type.String(),
   values: Type.Array(Type.String(), { minItems: 1 }),
+  caption: Type.Optional(
+    Type.String({
+      title: "Caption",
+      maxLength: 30, // arbitrarily low limit for now to prevent abuse
+    }),
+  ),
 })
 
 const BaseContactInformationSchema = Type.Object({
@@ -194,3 +206,7 @@ export type ContactInformationProps = Static<
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }
+
+export type SingleContactInformationProps = Static<
+  typeof CompulsorySingleContactInformationSchema
+>

@@ -77,6 +77,7 @@ const NativeArgs: Partial<ContactInformationProps> = {
   fax: {
     displayText: "Fax",
     values: ["+65-64747885 (MFA)"],
+    caption: "Got people use meh?",
   },
   email: {
     displayText: "Email",
@@ -98,6 +99,7 @@ const NativeArgs: Partial<ContactInformationProps> = {
         "this-should-still-be-hyperlinked@isomer.gov.sg",
         "12345678",
       ],
+      caption: "(After hours)",
     },
     {
       displayText: "Telegram",
@@ -151,6 +153,7 @@ const DgsParameters = {
                   fax: JSON.stringify({
                     displayText: "Fax",
                     values: ["+65-64747885 (MFA)"],
+                    caption: "Got people use meh?",
                   }),
                   email: JSON.stringify({
                     displayText: "Email",
@@ -196,6 +199,7 @@ const DgsParameters = {
                         "this-should-still-be-hyperlinked@isomer.gov.sg",
                         "12345678",
                       ],
+                      caption: "(After hours)",
                     },
                     {
                       displayText: "Telegram",
