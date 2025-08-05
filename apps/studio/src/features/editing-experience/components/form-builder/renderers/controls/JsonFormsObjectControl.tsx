@@ -1,12 +1,18 @@
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
-import { useMemo } from "react"
+import { ComponentType, memo, useMemo } from "react"
 import {
   findUISchema,
   Generate,
   isObjectControl,
   rankWith,
 } from "@jsonforms/core"
-import { JsonFormsDispatch, withJsonFormsControlProps } from "@jsonforms/react"
+import {
+  ctxDispatchToControlProps,
+  ctxToControlWithDetailProps,
+  JsonFormsDispatch,
+  JsonFormsStateContext,
+  withJsonFormsContext,
+} from "@jsonforms/react"
 import isEmpty from "lodash/isEmpty"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -65,4 +71,32 @@ export function JsonFormsObjectControl({
   )
 }
 
-export default withJsonFormsControlProps(JsonFormsObjectControl)
+// NOTE: This is a custom handrolled higher order component.
+// It is needed to provide both `uischemas` as well as the `handleChange` prop.
+// The implementation here is taken with reference from:
+// https://github.com/eclipsesource/jsonforms/blob/f815e1cde8794380d59e55c34beff17cf0ffb565/packages/react/src/JsonFormsContext.tsx
+const withJsonFormsControlWithDetailProps = (
+  Component: ComponentType<ControlWithDetailProps>,
+) => {
+  return withJsonFormsContext(
+    withContextToControlWithDetailProps(memo(Component)),
+  )
+}
+
+const withContextToControlWithDetailProps = (
+  Component: ComponentType<ControlWithDetailProps>,
+) =>
+  function WithContextToControlProps({
+    ctx,
+    props,
+  }: JsonFormsStateContext & ControlWithDetailProps) {
+    // NOTE: provides `handleChange`
+    const dispatchProps = ctxDispatchToControlProps(ctx.dispatch)
+    // NOTE: provides `uischemas, renderers, cells`
+    // The previous implementation of using `withJsonFormsDetailProps`
+    // only provided this.
+    const detailProps = ctxToControlWithDetailProps(ctx, props)
+    return <Component {...props} {...dispatchProps} {...detailProps} />
+  }
+
+export default withJsonFormsControlWithDetailProps(JsonFormsObjectControl)
