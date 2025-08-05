@@ -24,7 +24,7 @@ export const BaseParagraph = ({
   LinkComponent,
 }: Omit<BaseParagraphProps, "type">) => {
   const transform = (node: HTMLElement, children: Node[]): React.ReactNode => {
-    if (node.tagName === "a") {
+    if (node.tagName === "A") {
       const href = node.getAttribute("href") ?? undefined
       const isExternalLink = !!href && isExternalUrl(href)
 

@@ -1,6 +1,7 @@
 import type { MapProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { isValidMapEmbedUrl, isValidOGPMapsEmbedUrl } from "~/utils/validation"
+import { BaseParagraph } from "../../internal"
 import { ComponentContent } from "../../internal/customCssClass"
 
 const createMapStyles = tv({
@@ -8,9 +9,10 @@ const createMapStyles = tv({
     outerContainer: `${ComponentContent} mt-7 first:mt-0`,
     innerContainer: "relative w-full overflow-hidden pt-[75%]",
     iframe: "absolute bottom-0 left-0 right-0 top-0 border-0",
+    paragraph: "prose-body-base text-base-content",
   },
   variants: {
-    isOgpMapsUrl: {
+    isOgpMapsEmbed: {
       true: {
         innerContainer: "min-h-[45rem]",
       },
@@ -18,19 +20,27 @@ const createMapStyles = tv({
   },
 })
 
-export const Map = ({ title, url }: MapProps) => {
+export const Map = ({ title, url, site, LinkComponent }: MapProps) => {
   if (!isValidMapEmbedUrl(url)) {
     return <></>
   }
 
-  const isOgpMapsUrl = isValidOGPMapsEmbedUrl(new URL(url))
+  const isOgpMapsEmbed = isValidOGPMapsEmbedUrl(new URL(url))
 
   const compoundStyles = createMapStyles({
-    isOgpMapsUrl,
+    isOgpMapsEmbed,
   })
 
   return (
     <section className={compoundStyles.outerContainer()}>
+      {isOgpMapsEmbed && (
+        <BaseParagraph
+          content={`You can also view the map below on <a href="${url}">Maps.gov.sg</a>.`}
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      )}
+
       {/* NOTE: 75% is a 4:3 aspect ratio */}
       <div className={compoundStyles.innerContainer()}>
         <iframe
