@@ -230,7 +230,10 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
     return
   }
 
-  if (env.NEXT_PUBLIC_APP_ENV !== "production") {
+  if (
+    env.NEXT_PUBLIC_APP_ENV !== "production" &&
+    env.NEXT_PUBLIC_APP_ENV !== "test"
+  ) {
     // NOTE: We do not notify users in UAT or staging environments, so as to
     // avoid inducing unnecessary panic
     return
