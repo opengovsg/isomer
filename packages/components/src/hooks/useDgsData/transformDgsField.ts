@@ -16,9 +16,12 @@ export const transformDgsField = <T extends string | undefined | null>(
   field: T,
   record: Record<string, unknown>,
 ): T extends string ? string : T => {
-  if (!field || !isStringDgs(field)) {
+  try {
+    if (!field || !isStringDgs(field)) {
+      return field as T extends string ? string : T
+    }
+    return record[extractDgsFieldKey(field)] as T extends string ? string : T
+  } catch {
     return field as T extends string ? string : T
   }
-
-  return record[extractDgsFieldKey(field)] as T extends string ? string : T
 }
