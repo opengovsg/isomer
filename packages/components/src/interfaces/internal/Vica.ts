@@ -3,6 +3,14 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps } from "~/types"
 
+// We can only pass in string values to the Vica script
+// as React omit boolean props when spreading onto a DOM element,
+// so they won't appear as attributes in the rendered HTML.
+const BooleanStringOptions = Type.Union([
+  Type.Literal("true"),
+  Type.Literal("false"),
+])
+
 // NOTE: not all props will be used even if we passed them in
 // as we will override some of them with Isomer's configuration e.g. font-family
 // Nevertheless, keeping them here for reference
@@ -24,29 +32,29 @@ export const VicaSchema = Type.Object({
   "app-button-border-color": Type.Optional(Type.String()),
   "app-quick-reply-button-background-color": Type.Optional(Type.String()),
   // Autocomplete
-  "app-enable-auto-complete": Type.Optional(Type.Boolean()),
+  "app-enable-auto-complete": Type.Optional(BooleanStringOptions),
   "app-auto-complete-background-color": Type.Optional(Type.String()),
   "app-auto-complete-foreground-color": Type.Optional(Type.String()),
   "app-auto-complete-hover-color": Type.Optional(Type.String()),
   "app-auto-complete-divider-color": Type.Optional(Type.String()),
   // Recommendations
-  "app-enable-recommendations": Type.Optional(Type.Boolean()),
+  "app-enable-recommendations": Type.Optional(BooleanStringOptions),
   "app-recommendations-background-color": Type.Optional(Type.String()),
   "app-recommendations-foreground-color": Type.Optional(Type.String()),
   "app-recommendations-hover-color": Type.Optional(Type.String()),
   // UI Behaviours
   "app-orchestrator-timeout": Type.Optional(Type.Number()),
   "app-alternate-copy-vault": Type.Optional(Type.String()),
-  "app-auto-launch": Type.Optional(Type.Boolean()),
+  "app-auto-launch": Type.Optional(BooleanStringOptions),
   "app-launched-animation-iteration": Type.Optional(Type.Number()),
-  "app-disable-csat": Type.Optional(Type.Boolean()),
+  "app-disable-csat": Type.Optional(BooleanStringOptions),
   // Chatbot Behaviours
   "app-quick-launch-event": Type.Optional(Type.String()),
-  "app-quick-launch-event-force-trigger": Type.Optional(Type.Boolean()),
+  "app-quick-launch-event-force-trigger": Type.Optional(BooleanStringOptions),
   "app-bot-response-trigger-event": Type.Optional(Type.String()),
   "app-environment-override": Type.Optional(Type.String()),
   "app-translation-languages": Type.Optional(Type.String()),
-  "app-enable-hide-translation": Type.Optional(Type.Boolean()),
+  "app-enable-hide-translation": Type.Optional(BooleanStringOptions),
 })
 
 export type VicaProps = Static<typeof VicaSchema>
