@@ -4,10 +4,10 @@ import { expect, userEvent, within } from "@storybook/test"
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import type { NavbarProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import { Button } from "../Button"
 import Masthead from "../Masthead"
 import Navbar from "./Navbar"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const Renderer = (props: NavbarProps) => {
   return (

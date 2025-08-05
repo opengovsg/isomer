@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { ContentPageHeaderProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import ContentPageHeader from "./ContentPageHeader"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<ContentPageHeaderProps> = {
   title: "Next/Internal Components/ContentPageHeader",

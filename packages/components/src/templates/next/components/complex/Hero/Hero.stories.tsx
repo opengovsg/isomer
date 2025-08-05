@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
+import { generateSiteConfig } from "~/stories/helpers"
 import Hero from "./Hero"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<typeof Hero> = {
   title: "Next/Components/Hero",

@@ -6,9 +6,9 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { HomePageSchemaType } from "~/engine"
 import type { HeroProps } from "~/interfaces/complex/Hero"
+import { generateSiteConfig } from "~/stories/helpers"
 import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import Homepage from "./Homepage"
-import { generateSiteConfig } from ".storybook/helpers"
 
 // Template for stories
 const Template = (props: HomePageSchemaType) => {

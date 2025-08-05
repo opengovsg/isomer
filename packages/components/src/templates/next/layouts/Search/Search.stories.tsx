@@ -4,8 +4,8 @@ import { useEffect } from "react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { SearchPageSchemaType } from "~/engine"
+import { generateSiteConfig } from "~/stories/helpers"
 import SearchLayout from "./Search"
-import { generateSiteConfig } from ".storybook/helpers"
 
 // Template for stories
 const Template = (props: SearchPageSchemaType) => {

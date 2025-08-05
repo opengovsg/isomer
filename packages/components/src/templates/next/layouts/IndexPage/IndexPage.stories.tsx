@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { IndexPageSchemaType } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 import IndexPage from "./IndexPage"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const DEFAULT_INDEX_PAGE = {
   permalink: "/parent",

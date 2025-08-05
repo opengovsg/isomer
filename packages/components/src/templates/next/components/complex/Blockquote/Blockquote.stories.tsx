@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { BlockquoteProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import { Blockquote } from "./Blockquote"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<BlockquoteProps> = {
   title: "Next/Components/Blockquote",

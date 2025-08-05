@@ -5,8 +5,8 @@ import { omit } from "lodash"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { ImageGalleryProps } from "~/interfaces/complex/ImageGallery"
+import { generateSiteConfig } from "~/stories/helpers"
 import { ImageGallery } from "./ImageGallery"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<ImageGalleryProps> = {
   title: "Next/Components/ImageGallery",

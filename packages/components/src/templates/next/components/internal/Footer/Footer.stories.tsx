@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { FooterProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import Footer from "./Footer"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<FooterProps> = {
   title: "Next/Internal Components/Footer",

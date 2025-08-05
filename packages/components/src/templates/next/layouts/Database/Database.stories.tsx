@@ -4,8 +4,8 @@ import { userEvent, within } from "@storybook/test"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { DatabasePageSchemaType } from "~/engine"
+import { generateSiteConfig } from "~/stories/helpers"
 import Database from "./Database"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<typeof Database> = {
   title: "Next/Layouts/Database",

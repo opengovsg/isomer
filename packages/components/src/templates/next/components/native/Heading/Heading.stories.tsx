@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { AttrsDirProps, HeadingProps } from "~/interfaces"
 import { HeadingLevels } from "~/interfaces/native/Heading"
+import { generateSiteConfig } from "~/stories/helpers"
 import Heading from "./Heading"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<typeof Heading> = {
   title: "Next/Components/Heading",

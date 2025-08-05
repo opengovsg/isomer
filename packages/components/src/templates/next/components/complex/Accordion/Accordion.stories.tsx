@@ -3,8 +3,8 @@ import { userEvent, within } from "@storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
+import { generateSiteConfig } from "~/stories/helpers"
 import Accordion from "./Accordion"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<typeof Accordion> = {
   title: "Next/Components/Accordion",

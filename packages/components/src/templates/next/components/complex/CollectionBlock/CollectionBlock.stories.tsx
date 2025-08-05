@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { CollectionBlockProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types/sitemap"
+import { generateSiteConfig } from "~/stories/helpers"
 import { CollectionBlock } from "./CollectionBlock"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<CollectionBlockProps> = {
   title: "Next/Components/CollectionBlock",

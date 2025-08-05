@@ -7,8 +7,8 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { IsomerSitemap } from "~/engine"
 import { type CollectionPageSchemaType } from "~/engine"
+import { generateSiteConfig } from "~/stories/helpers"
 import CollectionLayout from "./Collection"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
   times(10, (index) => [

@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import { IMAGE_GALLERY_TYPE } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import Content from "./Content"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<typeof Content> = {
   title: "Next/Layouts/Content",

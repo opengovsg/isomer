@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { InfoColsProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import InfoCols from "./InfoCols"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<InfoColsProps> = {
   title: "Next/Components/InfoCols",

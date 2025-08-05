@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { KeyStatisticsProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import KeyStatistics from "./KeyStatistics"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<KeyStatisticsProps> = {
   title: "Next/Components/KeyStatistics",

@@ -3,9 +3,9 @@ import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
+import { generateSiteConfig } from "~/stories/helpers"
 import { DynamicDataBanner } from "./DynamicDataBanner"
 import { getSingaporeDateYYYYMMDD } from "./utils"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<typeof DynamicDataBanner> = {
   title: "Next/Components/DynamicDataBanner",

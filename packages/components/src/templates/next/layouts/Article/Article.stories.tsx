@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { generateSiteConfig } from "~/stories/helpers"
 import { type ArticlePageSchemaType } from "~/types"
 import ArticleLayout from "./Article"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<ArticlePageSchemaType> = {
   title: "Next/Layouts/Article",

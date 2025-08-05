@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { InfopicProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import { Infopic } from "../Infopic"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<InfopicProps> = {
   title: "Next/Components/Infopic/Full",

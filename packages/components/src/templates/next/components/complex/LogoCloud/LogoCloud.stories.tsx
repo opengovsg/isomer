@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { IsomerSiteProps } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 import { LogoCloud } from "./LogoCloud"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<typeof LogoCloud> = {
   title: "Next/Components/Logo Cloud",

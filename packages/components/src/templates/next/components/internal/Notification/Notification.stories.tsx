@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { NotificationProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import Notification from "./Notification"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<NotificationProps> = {
   title: "Next/Internal Components/Notification",

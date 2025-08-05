@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { UnorderedListProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import UnorderedList from "./UnorderedList"
-import { generateSiteConfig } from ".storybook/helpers"
 
 // Template for stories
 const Template = (props: UnorderedListProps) => (

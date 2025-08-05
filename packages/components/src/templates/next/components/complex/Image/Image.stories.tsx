@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { ImageProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import { Image } from "./Image"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<ImageProps> = {
   title: "Next/Components/Image",

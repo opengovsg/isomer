@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { InfoCardsProps } from "~/interfaces"
 import type { IsomerPageLayoutType } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 import InfoCards from "./InfoCards"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<InfoCardsProps> = {
   title: "Next/Components/InfoCards",

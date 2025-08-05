@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { InfobarProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import Infobar from "./Infobar"
-import { generateSiteConfig } from ".storybook/helpers"
 
 const meta: Meta<InfobarProps> = {
   title: "Next/Components/Infobar",
