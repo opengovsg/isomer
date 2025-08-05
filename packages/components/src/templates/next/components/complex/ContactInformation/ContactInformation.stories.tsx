@@ -125,100 +125,100 @@ export const Homepage: Story = {
   },
 }
 
-export const Dgs: Story = {
-  parameters: {
-    msw: {
-      handlers: [
-        http.get(
-          generateDgsUrl({
-            resourceId: "PLACEHOLDER_RESOURCE_ID",
-            filters: {
-              testFieldKey: "testFieldValue",
+const DgsParameters = {
+  msw: {
+    handlers: [
+      http.get(
+        generateDgsUrl({
+          resourceId: "PLACEHOLDER_RESOURCE_ID",
+          filters: {
+            testFieldKey: "testFieldValue",
+          },
+        }),
+        () =>
+          HttpResponse.json({
+            success: true,
+            result: {
+              records: [
+                {
+                  country: "Singapore",
+                  entity_name: "Sentosa",
+                  description: "Embassy of the Republic of Singapore - Algeria",
+                  telephone: JSON.stringify({
+                    displayText: "Telephone",
+                    values: ["+65-63798000 (MFA)"],
+                  }),
+                  fax: JSON.stringify({
+                    displayText: "Fax",
+                    values: ["+65-64747885 (MFA)"],
+                  }),
+                  email: JSON.stringify({
+                    displayText: "Email",
+                    values: [
+                      "do-not-reply@isomer.gov.sg",
+                      "do-not-reply-pelase@isomer.gov.sg",
+                    ],
+                  }),
+                  website: JSON.stringify({
+                    displayText: "Website",
+                    values: [
+                      "https://www.isomer.gov.sg",
+                      "https://sample.isomer.gov.sg",
+                    ],
+                  }),
+                  operating_hours: JSON.stringify({
+                    displayText: "Operating Hours",
+                    values: [
+                      "Mon - Fri",
+                      "8.30 am to 5.00 pm",
+                      "Sat & Sun - Closed",
+                    ],
+                  }),
+                  entity_details: JSON.stringify([
+                    {
+                      displayText: "Ambassador (Non-Resident)",
+                      values: ["Mr MOHAMMAD Alami Musa"],
+                    },
+                    {
+                      displayText: "Chancery",
+                      values: [
+                        "c/o Ministry of Foreign Affairs",
+                        "Tanglin",
+                        "Singapore 248163",
+                      ],
+                    },
+                  ]),
+                  other_methods: JSON.stringify([
+                    {
+                      displayText: "Emergency Contact",
+                      values: [
+                        "https://this-should-still-be-hyperlinked.isomer.gov.sg",
+                        "this-should-still-be-hyperlinked@isomer.gov.sg",
+                        "12345678",
+                      ],
+                    },
+                    {
+                      displayText: "Telegram",
+                      values: ["https://t.me/isomer_gov_sg"],
+                    },
+                    {
+                      displayText: "WhatsApp",
+                      values: ["+65-63798000 (MFA)"],
+                    },
+                  ]),
+                  other_information:
+                    "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+                },
+              ],
             },
           }),
-          () => {
-            return HttpResponse.json({
-              success: true,
-              result: {
-                records: [
-                  {
-                    country: "Singapore",
-                    entity_name: "Sentosa",
-                    description:
-                      "Embassy of the Republic of Singapore - Algeria",
-                    telephone: JSON.stringify({
-                      displayText: "Telephone",
-                      values: ["+65-63798000 (MFA)"],
-                    }),
-                    fax: JSON.stringify({
-                      displayText: "Fax",
-                      values: ["+65-64747885 (MFA)"],
-                    }),
-                    email: JSON.stringify({
-                      displayText: "Email",
-                      values: [
-                        "do-not-reply@isomer.gov.sg",
-                        "do-not-reply-pelase@isomer.gov.sg",
-                      ],
-                    }),
-                    website: JSON.stringify({
-                      displayText: "Website",
-                      values: [
-                        "https://www.isomer.gov.sg",
-                        "https://sample.isomer.gov.sg",
-                      ],
-                    }),
-                    operating_hours: JSON.stringify({
-                      displayText: "Operating Hours",
-                      values: [
-                        "Mon - Fri",
-                        "8.30 am to 5.00 pm",
-                        "Sat & Sun - Closed",
-                      ],
-                    }),
-                    entity_details: JSON.stringify([
-                      {
-                        displayText: "Ambassador (Non-Resident)",
-                        values: ["Mr MOHAMMAD Alami Musa"],
-                      },
-                      {
-                        displayText: "Chancery",
-                        values: [
-                          "c/o Ministry of Foreign Affairs",
-                          "Tanglin",
-                          "Singapore 248163",
-                        ],
-                      },
-                    ]),
-                    other_methods: JSON.stringify([
-                      {
-                        displayText: "Emergency Contact",
-                        values: [
-                          "https://this-should-still-be-hyperlinked.isomer.gov.sg",
-                          "this-should-still-be-hyperlinked@isomer.gov.sg",
-                          "12345678",
-                        ],
-                      },
-                      {
-                        displayText: "Telegram",
-                        values: ["https://t.me/isomer_gov_sg"],
-                      },
-                      {
-                        displayText: "WhatsApp",
-                        values: ["+65-63798000 (MFA)"],
-                      },
-                    ]),
-                    other_information:
-                      "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
-                  },
-                ],
-              },
-            })
-          },
-        ),
-      ],
-    },
+      ),
+    ],
   },
+}
+
+export const Dgs: Story = {
+  parameters: DgsParameters,
   args: {
     dataSource: {
       type: "dgs",
@@ -230,7 +230,6 @@ export const Dgs: Story = {
         },
       ],
     },
-    country: "[dgs:country]",
     entityName: "[dgs:entity_name]",
     description: "[dgs:description]",
     telephone: "[dgs:telephone]",
@@ -241,5 +240,49 @@ export const Dgs: Story = {
     entityDetails: "[dgs:entity_details]",
     otherMethods: "[dgs:other_methods]",
     otherInformation: "[dgs:other_information]",
+  },
+}
+
+export const DgsPartial: Story = {
+  name: "Dgs (Part Native, Part DGS)",
+  parameters: DgsParameters,
+  args: {
+    dataSource: {
+      type: "dgs",
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      filters: [
+        {
+          fieldKey: "testFieldKey",
+          fieldValue: "testFieldValue",
+        },
+      ],
+    },
+    entityName: "This entityName is not from DGS",
+    description: "This description is not from DGS",
+    telephone: {
+      displayText: "This telephone is not from DGS",
+      values: ["+65-63798000 (MFA)"],
+    },
+    fax: "[dgs:fax]",
+    email: {
+      displayText: "This email is not from DGS",
+      values: [
+        "do-not-reply@isomer.gov.sg",
+        "do-not-reply-pelase@isomer.gov.sg",
+      ],
+    },
+    website: "[dgs:website]",
+    entityDetails: "[dgs:entity_details]",
+    otherMethods: [
+      {
+        displayText: "This otherMethod is not from DGS",
+        values: ["https://t.me/isomer_gov_sg"],
+      },
+      {
+        displayText: "This otherMethod is also not from DGS",
+        values: ["+65-63798000 (MFA)"],
+      },
+    ],
+    otherInformation: "This otherInformation is not from DGS",
   },
 }
