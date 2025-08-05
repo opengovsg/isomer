@@ -369,7 +369,7 @@ export const collectionRouter = router({
             )
 
           const oldBlob = await getBlobOfResource({
-            tx,
+            db: tx,
             resourceId: resource.id,
           })
 
