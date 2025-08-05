@@ -1,4 +1,5 @@
 import type { UnwrapTagged } from "type-fest"
+import { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash"
 
@@ -6,6 +7,7 @@ import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createCollectionSchema,
   editLinkSchema,
+  getCollectionTagsSchema,
   readLinkSchema,
 } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
@@ -396,4 +398,29 @@ export const collectionRouter = router({
         })
       },
     ),
+
+  getCollectionTags: protectedProcedure
+    .input(getCollectionTagsSchema)
+    .query(async ({ input: { resourceId, siteId } }) => {
+      const { parentId } = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(resourceId))
+        .where("siteId", "=", siteId)
+        .select("parentId")
+        .executeTakeFirstOrThrow()
+
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("type", "=", ResourceType.IndexPage)
+        .where("parentId", "=", parentId)
+        .select("id")
+        .executeTakeFirstOrThrow()
+
+      const { content } = await getBlobOfResource({
+        db,
+        resourceId: indexPage.id,
+      })
+
+      return (content as unknown as CollectionPageSchemaType).page.tagCategories
+    }),
 })

@@ -65,3 +65,8 @@ export const createCollectionSchema = z.object({
   // Nullable for top level folder
   parentFolderId: z.number().optional(),
 })
+
+export const getCollectionTagsSchema = z.object({
+  resourceId: z.number().min(1),
+  siteId: z.number().min(1),
+})
