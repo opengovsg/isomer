@@ -316,7 +316,7 @@ export const pageRouter = router({
         })
         await logResourceEvent(tx, {
           siteId,
-          eventType: "ResourceUpdate",
+          eventType: AuditLogEvent.ResourceUpdate,
           delta: {
             before: {
               blob: oldBlob,
@@ -379,7 +379,7 @@ export const pageRouter = router({
             before: { blob: oldBlob, resource },
             after: { blob: updatedBlob, resource },
           },
-          eventType: "ResourceUpdate",
+          eventType: AuditLogEvent.ResourceUpdate,
         })
         return updatedBlob
       })
@@ -472,7 +472,7 @@ export const pageRouter = router({
               siteId,
               by,
               delta: { before: null, after: { blob, resource: addedResource } },
-              eventType: "ResourceCreate",
+              eventType: AuditLogEvent.ResourceCreate,
             })
 
             return addedResource
@@ -626,7 +626,7 @@ export const pageRouter = router({
             before: { resource, blob: oldBlob },
             after: { resource, blob: newBlob },
           },
-          eventType: "ResourceUpdate",
+          eventType: AuditLogEvent.ResourceUpdate,
         })
       })
     }),
@@ -708,7 +708,7 @@ export const pageRouter = router({
               siteId,
               by,
               delta: { before: resource, after: updatedResource },
-              eventType: "ResourceUpdate",
+              eventType: AuditLogEvent.ResourceUpdate,
             })
 
             // We do an implicit publish so that we can make the changes to the
