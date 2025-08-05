@@ -351,4 +351,11 @@ export const UtilityLinksMobile: Story = {
       defaultViewport: getViewportByMode("mobile"),
     },
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+    await userEvent.click(canvas.getByRole("button", { name: /max 70 chars/i }))
+  },
 }
