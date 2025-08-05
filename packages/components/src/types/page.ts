@@ -185,7 +185,6 @@ export const IndexPagePageSchema = Type.Composite([
     contentPageHeader: ContentPageHeaderSchema,
   }),
   imageSchemaObject,
-  TagCategoriesSchema,
 ])
 
 export const DatabasePagePageSchema = Type.Object({
