@@ -1,4 +1,3 @@
-import { env } from "~/env.mjs"
 import { createBaseLogger } from "../../lib/logger"
 import { deactivateInactiveUsersJob } from "./jobs"
 
@@ -11,12 +10,7 @@ export const initializeCronJobs = () => {
   logger.info("Initializing cron jobs...")
 
   // Initialize and track all cron jobs
-  if (env.NEXT_PUBLIC_APP_ENV === "production") {
-    // NOTE: We only remove inactive users in production as UAT and staging
-    // environments are free for users to play around with for an indefinite
-    // period of time
-    cronJobs.push(deactivateInactiveUsersJob())
-  }
+  cronJobs.push(deactivateInactiveUsersJob())
 
   logger.info("Cron jobs initialized successfully")
 }

@@ -4,6 +4,7 @@ import { toZonedTime } from "date-fns-tz"
 
 import type { ResourcePermission, Site, User } from "../database"
 import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
+import { env } from "~/env.mjs"
 import {
   sendAccountDeactivationEmail,
   sendAccountDeactivationWarningEmail,
@@ -226,6 +227,12 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
 
   if (deactivatedUsersAndSiteIds.length === 0) {
     logger.info("No deactivated users and sites found")
+    return
+  }
+
+  if (env.NEXT_PUBLIC_APP_ENV !== "production") {
+    // NOTE: We do not notify users in UAT or staging environments, so as to
+    // avoid inducing unnecessary panic
     return
   }
 
