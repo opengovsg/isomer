@@ -208,5 +208,5 @@ export type ContactInformationProps = Static<
 }
 
 export type SingleContactInformationProps = Static<
-  typeof CompulsorySingleContactInformationSchema
+  ReturnType<typeof generateSingleContactInformationSchema>
 >

@@ -1,18 +1,15 @@
 import DOMPurify from "isomorphic-dompurify"
-import {
-  BiGlobe,
-  BiMailSend,
-  BiPhone,
-  BiPrinter,
-  BiTimeFive,
-} from "react-icons/bi"
 
-import type { ContactInformationUIProps } from "~/interfaces"
+import type {
+  ContactInformationUIProps,
+  SingleContactInformationProps,
+} from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getTailwindVariantLayout } from "~/utils"
 import { ComponentContent } from "../../../internal/customCssClass"
 import { LinkButton } from "../../../internal/LinkButton"
 import { ContactMethod } from "./ContactMethod"
+import { METHODS_MAPPING } from "./mapping"
 
 const createContactInformationStyles = tv({
   slots: {
@@ -66,6 +63,26 @@ export const ContactInformationUI = ({
   } as const
   const compoundStyles = createContactInformationStyles(variants)
 
+  const renderContactMethod = (
+    methodKey?: keyof typeof METHODS_MAPPING,
+    method?: SingleContactInformationProps,
+  ) => {
+    if (!method) return null
+
+    const methodMapping = methodKey ? METHODS_MAPPING[methodKey] : undefined
+    return (
+      <ContactMethod
+        variant={simplifiedLayout}
+        {...method}
+        label={
+          methodMapping ? (method.label ?? methodMapping.label) : method.label
+        }
+        Icon={methodMapping?.Icon}
+        LinkComponent={LinkComponent}
+      />
+    )
+  }
+
   return (
     <div className={compoundStyles.container()}>
       <div className={compoundStyles.titleAndDescriptionContainer()}>
@@ -78,77 +95,17 @@ export const ContactInformationUI = ({
       <div className={compoundStyles.contactMethodsContainer()}>
         {!!entityDetails &&
           entityDetails.length > 0 &&
-          entityDetails.map((detail) => {
-            return (
-              <ContactMethod
-                variant={simplifiedLayout}
-                {...detail}
-                LinkComponent={LinkComponent}
-              />
-            )
-          })}
+          entityDetails.map((detail) => renderContactMethod(undefined, detail))}
 
-        {!!telephone && (
-          <ContactMethod
-            variant={simplifiedLayout}
-            Icon={BiPhone}
-            {...telephone}
-            label={telephone.label ?? "Telephone"}
-            LinkComponent={LinkComponent}
-          />
-        )}
-
-        {!!fax && (
-          <ContactMethod
-            variant={simplifiedLayout}
-            Icon={BiPrinter}
-            {...fax}
-            label={fax.label ?? "Fax"}
-            LinkComponent={LinkComponent}
-          />
-        )}
-
-        {!!email && (
-          <ContactMethod
-            variant={simplifiedLayout}
-            Icon={BiMailSend}
-            {...email}
-            label={email.label ?? "Email"}
-            LinkComponent={LinkComponent}
-          />
-        )}
-
-        {!!website && (
-          <ContactMethod
-            variant={simplifiedLayout}
-            Icon={BiGlobe}
-            {...website}
-            label={website.label ?? "Website"}
-            LinkComponent={LinkComponent}
-          />
-        )}
-
-        {!!operatingHours && (
-          <ContactMethod
-            variant={simplifiedLayout}
-            Icon={BiTimeFive}
-            {...operatingHours}
-            label={operatingHours.label ?? "Operating Hours"}
-            LinkComponent={LinkComponent}
-          />
-        )}
+        {renderContactMethod("telephone", telephone)}
+        {renderContactMethod("fax", fax)}
+        {renderContactMethod("email", email)}
+        {renderContactMethod("website", website)}
+        {renderContactMethod("operatingHours", operatingHours)}
 
         {!!otherMethods &&
           otherMethods.length > 0 &&
-          otherMethods.map((method) => {
-            return (
-              <ContactMethod
-                variant={simplifiedLayout}
-                {...method}
-                LinkComponent={LinkComponent}
-              />
-            )
-          })}
+          otherMethods.map((method) => renderContactMethod(undefined, method))}
       </div>
 
       {simplifiedLayout === "default" && !!otherInformation && (
