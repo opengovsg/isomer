@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import pick from "lodash/pick"
 import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
@@ -120,10 +121,28 @@ export const Default: Story = {
   args: NativeArgs,
 }
 
-export const Homepage: Story = {
+export const Homepage2Methods: Story = {
+  name: "Homepage (2 Methods)",
+  args: {
+    layout: "homepage",
+    ...pick(NativeArgs, [
+      "entityName",
+      "description",
+      "telephone",
+      "email",
+      "label",
+      "url",
+    ]),
+  },
+}
+
+export const Homepage3Methods: Story = {
+  name: "Homepage (3 Methods)",
   args: {
     layout: "homepage",
     ...NativeArgs,
+    description:
+      "Should only render max. 3 contact methods regardless of the number of contact methods provided",
   },
 }
 

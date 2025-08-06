@@ -5,62 +5,24 @@ import type {
   ContactInformationUIProps,
   SingleContactInformationProps,
 } from "~/interfaces"
-import { tv } from "~/lib/tv"
 import { Link } from "~/templates/next/components/internal/Link"
 import { focusVisibleHighlight, isEmail, isExternalUrl, isUrl } from "~/utils"
-
-const createContactMethodStyles = tv({
-  slots: {
-    container: "flex w-full flex-col items-start gap-2",
-    icon: "size-8 flex-shrink-0 text-base-content-strong",
-    textContainer: "flex w-full flex-col items-start gap-3",
-    label: "prose-headline-lg-semibold text-base-content",
-    valuesAndCaptionContainer: "flex w-full flex-col items-start gap-1",
-    value: "prose-headline-lg-medium text-left text-base-content",
-    caption: "prose-body-sm text-base-content",
-  },
-  variants: {
-    variant: {
-      default: {},
-      homepage: {
-        container: "md:items-center",
-        textContainer: "md:items-center",
-        label: "md:text-center",
-        valuesAndCaptionContainer: "md:items-center",
-        value: "md:text-center",
-      },
-    },
-    isLink: {
-      true: {
-        value:
-          "text-hyperlink underline visited:text-hyperlink-visited hover:text-hyperlink-hover",
-      },
-      false: {
-        value: "text-base-content",
-      },
-    },
-  },
-  defaultVariants: {
-    variant: "default",
-  },
-})
+import { commonContactMethodStyles } from "./common"
 
 interface ContactMethodProps extends SingleContactInformationProps {
-  variant: "default" | "homepage"
+  styles: ReturnType<typeof commonContactMethodStyles>
   Icon?: IconType
   LinkComponent: ContactInformationUIProps["LinkComponent"]
 }
 
 export const ContactMethod = ({
-  variant,
+  styles,
   Icon = BiEnvelope,
   label,
   values,
   caption,
   LinkComponent,
 }: ContactMethodProps) => {
-  const styles = createContactMethodStyles({ variant })
-
   return (
     <div className={styles.container()}>
       <Icon className={styles.icon()} />
