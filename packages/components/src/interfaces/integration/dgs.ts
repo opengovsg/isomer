@@ -1,9 +1,6 @@
 import { TSchema, Type } from "@sinclair/typebox"
 
-export const DATA_SOURCE_TYPE = {
-  native: "native",
-  dgs: "dgs",
-} as const
+import { DATA_SOURCE_TYPE } from "./dataSource"
 
 export const NativeDataSourceSingleRecordSchema = Type.Object({
   // "optional" to ensure backward compatibility

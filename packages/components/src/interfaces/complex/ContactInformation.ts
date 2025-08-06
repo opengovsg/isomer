@@ -10,7 +10,7 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 import {
   createDgsSchema,
   NativeDataSourceSingleRecordSchema,
-} from "../dataSource"
+} from "../integration"
 
 export const CONTACT_INFORMATION_TYPE = "contactinformation"
 

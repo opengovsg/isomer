@@ -6,7 +6,7 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
-import { DgsDataSourceSchema } from "../dataSource"
+import { DgsDataSourceSchema } from "../integration"
 import {
   CONTACT_INFORMATION_TYPE,
   DgsContactInformationSchema,

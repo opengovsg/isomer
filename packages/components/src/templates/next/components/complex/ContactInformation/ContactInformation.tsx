@@ -5,7 +5,7 @@ import type {
   DgsContactInformationProps,
   NativeContactInformationProps,
 } from "~/interfaces"
-import { DATA_SOURCE_TYPE } from "~/interfaces/dataSource"
+import { DATA_SOURCE_TYPE } from "~/interfaces/integration"
 import { getReferenceLinkHref } from "~/utils"
 import { DgsContactInformation, NativeContactInformation } from "./components"
 
