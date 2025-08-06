@@ -1,33 +1,19 @@
-import { Suspense, useMemo, useState } from "react"
-import { FormControl, Skeleton, VStack } from "@chakra-ui/react"
+import { FormControl, VStack } from "@chakra-ui/react"
 import {
   and,
-  ArrayLayoutProps,
   ControlProps,
-  findUISchema,
   RankedTester,
   rankWith,
   schemaMatches,
 } from "@jsonforms/core"
-import {
-  JsonFormsDispatch,
-  withJsonFormsArrayLayoutProps,
-  withJsonFormsControlProps,
-} from "@jsonforms/react"
-import {
-  FormLabel,
-  MultiSelect,
-  SingleSelect,
-} from "@opengovsg/design-system-react"
+import { withJsonFormsControlProps } from "@jsonforms/react"
+import { FormLabel, MultiSelect } from "@opengovsg/design-system-react"
 import { ArticlePagePageProps } from "@opengovsg/isomer-components"
-import required from "ajv/dist/vocabularies/validation/required"
-import { useSetAtom } from "jotai"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
-import { tagCategoriesAtom } from "../../atoms"
 
 export const jsonFormsTaggedControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
@@ -41,12 +27,7 @@ interface TaggedControlProps extends Omit<ControlProps, "data"> {
 export function JsonFormsTaggedControl({
   data,
   path,
-  visible,
-  schema,
-  renderers,
-  cells,
   description,
-  label,
   required,
   handleChange,
 }: TaggedControlProps) {
@@ -58,7 +39,6 @@ export function JsonFormsTaggedControl({
     resourceId,
     siteId,
   })
-  const [tagCategory, updateTagCategory] = useState(data)
 
   return (
     <VStack>
@@ -69,11 +49,16 @@ export function JsonFormsTaggedControl({
           <FormControl isRequired={required} gap="0.5rem">
             <FormLabel description={description}>{label}</FormLabel>
             <MultiSelect
-              values={currentTagCategory?.values ?? []}
+              values={currentTagCategory?.values || []}
               name={label}
               items={options.map(({ label, id }) => ({ value: id, label }))}
               onChange={(value) => {
-                handleChange(path, value)
+                const remaining =
+                  data?.filter(({ id: tagId }) => tagId !== id) ?? []
+                const updatedItem = { id, values: value }
+                const updated = [updatedItem, ...remaining]
+
+                handleChange(path, updated)
               }}
             />
           </FormControl>
