@@ -17,6 +17,7 @@ const createDefaultContactInformationStyles = tv({
   extend: commonContactInformationStyles,
   slots: {
     container: "gap-9 py-12",
+    titleAndDescriptionContainer: "lg:max-w-3xl",
     contactMethodsContainer: "md:grid md:grid-cols-2",
     urlButtonContainer: "block",
   },

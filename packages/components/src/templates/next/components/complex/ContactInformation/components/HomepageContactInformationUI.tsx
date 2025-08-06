@@ -27,6 +27,7 @@ const createHomepageContactInformationStyles = tv({
           "md:flex md:flex-1 md:flex-col lg:grid lg:grid-cols-2",
       },
       3: {
+        titleAndDescriptionContainer: "lg:max-w-3xl",
         contactMethodsContainer: "md:grid md:grid-cols-3",
       },
     },

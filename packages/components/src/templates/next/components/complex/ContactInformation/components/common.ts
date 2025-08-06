@@ -4,7 +4,7 @@ import { ComponentContent } from "../../../internal/customCssClass"
 export const commonContactInformationStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col`,
-    titleAndDescriptionContainer: "flex flex-col gap-2 lg:max-w-3xl",
+    titleAndDescriptionContainer: "flex flex-col gap-2",
     title: "prose-display-md font-bold text-base-content-strong",
     description: "prose-headline-lg-regular text-base-content-strong",
     contactMethodsContainer: "flex flex-col gap-10",
