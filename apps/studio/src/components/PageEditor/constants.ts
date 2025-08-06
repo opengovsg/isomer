@@ -260,10 +260,7 @@ export const DEFAULT_BLOCKS: Record<
   },
   [CONTACT_INFORMATION_TYPE]: {
     type: `${CONTACT_INFORMATION_TYPE}`,
-    country: "Singapore",
-    entityName: "Ministry of Trade and Industry",
-    description:
-      "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+    entityName: "Contact us",
   },
 }
 

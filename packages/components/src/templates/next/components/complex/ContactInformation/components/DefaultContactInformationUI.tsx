@@ -27,7 +27,6 @@ const createDefaultContactMethodStyles = tv({
 })
 
 export const DefaultContactInformationUI = ({
-  country: _country, // not actually used in the UI
   entityName,
   entityDetails,
   description,

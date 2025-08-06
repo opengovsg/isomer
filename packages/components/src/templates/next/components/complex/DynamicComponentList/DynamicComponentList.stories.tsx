@@ -41,7 +41,6 @@ export const ContactInformation: Story = {
               result: {
                 records: [
                   {
-                    country: "Singapore",
                     entity_name: "Sentosa",
                     description:
                       "Embassy of the Republic of Singapore - Algeria",
@@ -87,7 +86,6 @@ export const ContactInformation: Story = {
                       "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
                   },
                   {
-                    country: "Singapore",
                     entity_name: "Sentosa 2",
                     description:
                       "Embassy of the Republic of Singapore - Algeria 2",
@@ -157,7 +155,6 @@ export const ContactInformation: Story = {
     },
     component: {
       type: "contactinformation",
-      country: "[dgs:country]",
       entityName: "[dgs:entity_name]",
       description: "[dgs:description]",
       telephone: "[dgs:telephone]",

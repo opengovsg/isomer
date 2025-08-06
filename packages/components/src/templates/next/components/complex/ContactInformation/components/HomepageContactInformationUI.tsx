@@ -84,7 +84,6 @@ const createHomepageContactMethodStyles = tv({
 })
 
 export const HomepageContactInformationUI = ({
-  country: _country, // not actually used in the UI
   entityName,
   entityDetails,
   description,

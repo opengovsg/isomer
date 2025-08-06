@@ -54,7 +54,6 @@ export default meta
 type Story = StoryObj<typeof ContactInformation>
 
 const NativeArgs: Partial<ContactInformationProps> = {
-  country: "Singapore",
   entityName: "Sentosa",
   entityDetails: [
     {
@@ -157,7 +156,6 @@ const DgsParameters = {
             result: {
               records: [
                 {
-                  country: "Singapore",
                   entity_name: "Sentosa",
                   description: "Embassy of the Republic of Singapore - Algeria",
                   telephone: JSON.stringify({

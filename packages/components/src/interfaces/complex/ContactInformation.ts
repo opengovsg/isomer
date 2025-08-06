@@ -71,11 +71,6 @@ export const NativeContactInformationSchema = Type.Intersect([
   NativeDataSourceSingleRecordSchema,
   Type.Object(
     {
-      country: Type.Optional(
-        Type.String({
-          title: "Country",
-        }),
-      ),
       entityName: Type.Optional(
         Type.String({
           title: "Entity Name",
@@ -137,7 +132,6 @@ export const DgsContactInformationSchema = Type.Intersect([
   DgsDataSourceSingleRecordSchema,
   Type.Object(
     {
-      country: Type.Optional(Type.String()),
       entityName: Type.Optional(Type.String()),
       description: Type.Optional(Type.String()),
       telephone: Type.Optional(Type.String()),
@@ -166,7 +160,6 @@ export type ContactInformationUIProps = Omit<
 > &
   Pick<
     Static<typeof NativeContactInformationSchema>,
-    | "country"
     | "entityName"
     | "description"
     | "telephone"

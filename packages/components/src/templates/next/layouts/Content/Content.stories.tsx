@@ -1481,7 +1481,6 @@ export const Default: Story = {
       },
       {
         type: "contactinformation",
-        country: "Singapore",
         entityName: "Sentosa",
         entityDetails: [
           {

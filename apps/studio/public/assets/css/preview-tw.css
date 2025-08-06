@@ -1386,6 +1386,10 @@ video {
   margin-top: 0.25rem;
 }
 
+.mt-10 {
+  margin-top: 2.5rem;
+}
+
 .mt-12 {
   margin-top: 3rem;
 }
@@ -1855,6 +1859,10 @@ video {
 
 .max-w-\[128px\] {
   max-width: 128px;
+}
+
+.max-w-\[24\.5rem\] {
+  max-width: 24.5rem;
 }
 
 .max-w-\[47\.5rem\] {
@@ -3494,6 +3502,11 @@ video {
   color: rgb(17 24 39 / var(--tw-text-opacity));
 }
 
+.text-hyperlink {
+  --tw-text-opacity: 1;
+  color: rgb(19 97 240 / var(--tw-text-opacity));
+}
+
 .text-indigo-600 {
   --tw-text-opacity: 1;
   color: rgb(79 70 229 / var(--tw-text-opacity));
@@ -3995,10 +4008,6 @@ video {
   --color: #b91c1c;
 }
 
-.\[dgs\:country\] {
-  dgs: country;
-}
-
 .\[dgs\:description\] {
   dgs: description;
 }
@@ -4220,6 +4229,10 @@ video {
   border-width: 0px;
 }
 
+.visited\:text-hyperlink-visited:visited {
+  color: rgb(83 0 133);
+}
+
 .visited\:text-link-visited:visited {
   color: rgb(76 29 149);
 }
@@ -4356,6 +4369,11 @@ video {
   color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 
+.hover\:text-hyperlink-hover:where([data-rac])[data-hovered] {
+  --tw-text-opacity: 1;
+  color: rgb(13 79 202 / var(--tw-text-opacity));
+}
+
 .hover\:text-link-hover:where([data-rac])[data-hovered] {
   --tw-text-opacity: 1;
   color: rgb(21 71 190 / var(--tw-text-opacity));
@@ -4469,6 +4487,11 @@ video {
 .hover\:text-gray-700:where(:not([data-rac])):hover {
   --tw-text-opacity: 1;
   color: rgb(55 65 81 / var(--tw-text-opacity));
+}
+
+.hover\:text-hyperlink-hover:where(:not([data-rac])):hover {
+  --tw-text-opacity: 1;
+  color: rgb(13 79 202 / var(--tw-text-opacity));
 }
 
 .hover\:text-link-hover:where(:not([data-rac])):hover {
@@ -5434,6 +5457,11 @@ video {
     grid-row: span 2 / span 2;
   }
 
+  .md\:mx-0 {
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+
   .md\:mx-10 {
     margin-left: 2.5rem;
     margin-right: 2.5rem;
@@ -5516,6 +5544,10 @@ video {
     max-width: calc(100% - 5rem);
   }
 
+  .md\:flex-1 {
+    flex: 1 1 0%;
+  }
+
   .md\:basis-\[calc\(\(100\%-2\.5rem\)\/2\)\] {
     flex-basis: calc((100% - 2.5rem) / 2);
   }
@@ -5548,6 +5580,10 @@ video {
     flex-direction: row;
   }
 
+  .md\:flex-col {
+    flex-direction: column;
+  }
+
   .md\:items-start {
     align-items: flex-start;
   }
@@ -5570,6 +5606,10 @@ video {
 
   .md\:gap-1\.5 {
     gap: 0.375rem;
+  }
+
+  .md\:gap-10 {
+    gap: 2.5rem;
   }
 
   .md\:gap-12 {
