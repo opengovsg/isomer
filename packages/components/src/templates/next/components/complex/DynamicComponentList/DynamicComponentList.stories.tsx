@@ -82,8 +82,11 @@ export const ContactInformation: Story = {
                         ],
                       },
                     ]),
-                    other_information:
-                      "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+                    other_information: JSON.stringify({
+                      label: "Other Information",
+                      value:
+                        "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+                    }),
                   },
                   {
                     entity_name: "Sentosa 2",
@@ -127,8 +130,11 @@ export const ContactInformation: Story = {
                         ],
                       },
                     ]),
-                    other_information:
-                      "2 For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+                    other_information: JSON.stringify({
+                      label: "Other Information 2",
+                      value:
+                        "2 For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+                    }),
                   },
                 ],
               },

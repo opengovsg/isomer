@@ -122,10 +122,13 @@ export const NativeContactInformationSchema = Type.Intersect([
         }),
       ),
       otherInformation: Type.Optional(
-        Type.String({
-          title: "Other Information",
+        Type.Object({
+          label: Type.String({
+            title: "Other Information",
+          }),
+          value: Type.String(), // note: there can be HTML tags in this field
         }),
-      ), // note: there can be HTML tags in this field
+      ),
     },
     {
       title: "Native Contact Information component",

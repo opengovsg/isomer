@@ -1535,8 +1535,11 @@ export const Default: Story = {
             values: ["+65-63798000 (MFA)"],
           },
         ],
-        otherInformation:
-          "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+        otherInformation: {
+          label: "Other Information",
+          value:
+            "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+        },
         url: "/",
         label: "I can't even help myself",
       },

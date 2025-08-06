@@ -106,8 +106,11 @@ const NativeArgs: Partial<ContactInformationProps> = {
       values: ["+65-63798000 (MFA)"],
     },
   ],
-  otherInformation:
-    "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+  otherInformation: {
+    label: "This is a customized header of a Other Information field",
+    value:
+      "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+  },
   url: "/",
   label: "I can't even help myself",
 }
@@ -214,8 +217,12 @@ const DgsParameters = {
                       values: ["+65-63798000 (MFA)"],
                     },
                   ]),
-                  other_information:
-                    "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+                  other_information: JSON.stringify({
+                    label:
+                      "This is a customized header of a Other Information field",
+                    value:
+                      "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+                  }),
                 },
               ],
             },
@@ -292,6 +299,10 @@ export const DgsPartial: Story = {
         values: ["+65-63798000 (MFA)"],
       },
     ],
-    otherInformation: "This otherInformation is not from DGS",
+    otherInformation: JSON.stringify({
+      label: "This otherInformation is not from DGS",
+      value:
+        "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+    }),
   },
 }

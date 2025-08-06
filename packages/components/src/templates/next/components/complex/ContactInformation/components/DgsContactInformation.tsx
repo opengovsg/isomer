@@ -56,8 +56,6 @@ export const DgsTransformedContactInformation = ({
 
   const description = transformDgsField(rest.description, record)
 
-  const otherInformation = transformDgsField(rest.otherInformation, record)
-
   const telephone = safeJsonParse<NativeContactInformationProps["telephone"]>(
     transformDgsField(rest.telephone, record),
   )
@@ -89,6 +87,10 @@ export const DgsTransformedContactInformation = ({
   const otherMethods = safeJsonParse<
     NativeContactInformationProps["otherMethods"]
   >(transformDgsField(rest.otherMethods, record))
+
+  const otherInformation = safeJsonParse<
+    NativeContactInformationProps["otherInformation"]
+  >(transformDgsField(rest.otherInformation, record))
 
   return (
     <ContactInformationUI

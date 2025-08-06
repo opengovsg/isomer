@@ -95,11 +95,11 @@ export const DefaultContactInformationUI = ({
       {!!otherInformation && (
         <div className={compoundStyles.otherInformationContainer()}>
           <div className={compoundStyles.otherInformationTitle()}>
-            Other Information
+            {otherInformation.label}
           </div>
           <div
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(otherInformation, {
+              __html: DOMPurify.sanitize(otherInformation.value, {
                 ALLOWED_TAGS: ["b"],
               }),
             }}
