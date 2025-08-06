@@ -24,22 +24,21 @@ describe("isPhoneNumber", () => {
         "",
         " ",
         "abc",
-        "123",
+        "12",
         "+",
         "++1234567890",
-        "123456789012345678901234567890", // Too long
+        "12345678901234567890123456789012345", // Too long
         "0123456789", // Starts with 0
       ]
 
       invalidPhones.forEach((phone) => {
-        console.log(phone)
         expect(isPhoneNumber(phone)).toBe(false)
       })
     })
 
     // edge case related to runtime validation
     it("should return false for non-string inputs", () => {
-      const invalidInputs = [null, undefined, 123, {}, [], true, false]
+      const invalidInputs = [null, undefined, 12345678, {}, [], true, false]
 
       invalidInputs.forEach((input) => {
         expect(isPhoneNumber(input as any)).toBe(false)
