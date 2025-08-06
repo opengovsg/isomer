@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { AttrsDirProps, HeadingProps } from "~/interfaces"
 import { HeadingLevels } from "~/interfaces/native/Heading"
+import { generateSiteConfig } from "~/stories/helpers"
 import Heading from "./Heading"
 
 const meta: Meta<typeof Heading> = {
@@ -25,33 +26,7 @@ const DefaultHeadings = () => {
             <Heading
               attrs={{ level }}
               content={[{ type: "text", text: `This is a heading-${level}` }]}
-              site={{
-                siteName: "Isomer Next",
-                siteMap: {
-                  id: "1",
-                  title: "Home",
-                  permalink: "/",
-                  lastModified: "",
-                  layout: "homepage",
-                  summary: "",
-                  children: [],
-                },
-                theme: "isomer-next",
-                isGovernment: true,
-                url: "https://www.isomer.gov.sg",
-                logoUrl: "/isomer-logo.svg",
-                navbar: { items: [] },
-                footerItems: {
-                  privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-                  termsOfUseLink: "https://www.isomer.gov.sg/terms",
-                  siteNavItems: [],
-                },
-                lastUpdated: "1 Jan 2021",
-                search: {
-                  type: "searchSG",
-                  clientId: "",
-                },
-              }}
+              site={generateSiteConfig()}
             />
           </div>
         )
@@ -73,33 +48,7 @@ const HeadingsWithDirection = () => {
             <Heading
               attrs={{ level: 2, dir: dir as AttrsDirProps }}
               content={[{ type: "text", text: `ما ${dir} فائدته ؟` }]}
-              site={{
-                siteName: "Isomer Next",
-                siteMap: {
-                  id: "1",
-                  title: "Home",
-                  permalink: "/",
-                  lastModified: "",
-                  layout: "homepage",
-                  summary: "",
-                  children: [],
-                },
-                theme: "isomer-next",
-                isGovernment: true,
-                url: "https://www.isomer.gov.sg",
-                logoUrl: "/isomer-logo.svg",
-                navbar: { items: [] },
-                footerItems: {
-                  privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-                  termsOfUseLink: "https://www.isomer.gov.sg/terms",
-                  siteNavItems: [],
-                },
-                lastUpdated: "1 Jan 2021",
-                search: {
-                  type: "searchSG",
-                  clientId: "",
-                },
-              }}
+              site={generateSiteConfig()}
             />
           </div>
         )
