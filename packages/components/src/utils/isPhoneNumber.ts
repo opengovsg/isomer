@@ -5,7 +5,7 @@ export const isPhoneNumber = (phone: string): boolean => {
   // wrap in try-catch as this is being used in runtime
   try {
     // Remove all whitespace and common phone number separators
-    const cleanPhone = phone.replace(/[\s\-\(\)\.]/g, "")
+    const cleanPhone = sanitizePhoneNumber(phone)
 
     // Generic international phone number validation
     // Allows country codes (+1, +44, etc.) and various formats
@@ -16,5 +16,15 @@ export const isPhoneNumber = (phone: string): boolean => {
     return internationalPattern.test(cleanPhone)
   } catch {
     return false
+  }
+}
+
+// Remove all whitespace and common phone number separators
+export const sanitizePhoneNumber = (phone: string): string => {
+  // wrap in try-catch as this is being used in runtime
+  try {
+    return phone.replace(/[\s\-\(\)\.]/g, "")
+  } catch {
+    return phone
   }
 }
