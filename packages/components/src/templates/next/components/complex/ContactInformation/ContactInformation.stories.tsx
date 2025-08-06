@@ -124,7 +124,15 @@ export const Homepage2Methods: Story = {
   name: "Homepage (2 Methods)",
   args: {
     layout: "homepage",
-    ...pick(NativeArgs, ["entityName", "telephone", "email", "label", "url"]),
+    ...pick(NativeArgs, [
+      "type",
+      "entityName",
+      "label",
+      "url",
+      // randomly pick 2 fields from the rest
+      "telephone",
+      "email",
+    ]),
     description:
       "This is how it looks like when there are 2 contact methods on homepage",
   },

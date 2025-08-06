@@ -156,7 +156,7 @@ export type InjectableContactInformationProps = Static<
 
 export type ContactInformationUIProps = Omit<
   Static<typeof BaseContactInformationSchema>,
-  "type" | "url"
+  "url"
 > &
   Static<typeof InjectableContactInformationSchema> & {
     layout: IsomerPageLayoutType

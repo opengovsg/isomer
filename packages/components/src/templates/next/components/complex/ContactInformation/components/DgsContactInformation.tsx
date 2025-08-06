@@ -106,7 +106,7 @@ export const DgsTransformedContactInformation = ({
       entityDetails={entityDetails}
       otherMethods={otherMethods}
       otherInformation={otherInformation}
-      {...pick(rest, "layout", "LinkComponent")}
+      {...pick(rest, "type", "layout", "LinkComponent")}
       {...(rest as InjectableContactInformationProps)}
     />
   )
