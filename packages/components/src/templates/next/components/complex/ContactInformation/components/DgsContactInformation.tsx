@@ -36,9 +36,15 @@ export const DgsContactInformation = ({
 
   const record = records?.[0]
 
+  // Should display nothing if there is an realtime error
+  // as any rendering will likely seems jank and useless
+  if (isError || !record) {
+    return null
+  }
+
   // TODO: better handling of these non-success states
   // will check with SY for design
-  if (isLoading || isError || !record) {
+  if (isLoading) {
     return <div>Loading...</div>
   }
 

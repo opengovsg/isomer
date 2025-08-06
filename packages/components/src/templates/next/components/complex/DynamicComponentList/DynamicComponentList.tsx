@@ -32,8 +32,14 @@ const DynamicComponentList = ({
 
   const { records, isLoading, isError } = useDgsData(params)
 
+  // Should display nothing if there is an realtime error
+  // as any rendering will likely seems jank and useless
+  if (isError || !records || records.length === 0) {
+    return null
+  }
+
   // TODO: better handling of these non-success states
-  if (isLoading || isError || !records || records.length === 0) {
+  if (isLoading) {
     return <div>Loading...</div>
   }
 
