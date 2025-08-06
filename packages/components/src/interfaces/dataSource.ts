@@ -39,3 +39,8 @@ export const DgsDataSourceSchema = Type.Object({
 export const DgsDataSourceSingleRecordSchema = Type.Object({
   dataSource: DgsDataSourceSchema,
 })
+
+export const DgsKeySchema = Type.String({
+  title: "Key",
+  description: "The key of the header in DGS table",
+})

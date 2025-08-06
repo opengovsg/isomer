@@ -9,6 +9,7 @@ import type {
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 import {
   DgsDataSourceSingleRecordSchema,
+  DgsKeySchema,
   NativeDataSourceSingleRecordSchema,
 } from "../dataSource"
 
@@ -142,17 +143,66 @@ export const DgsContactInformationSchema = Type.Intersect([
   DgsDataSourceSingleRecordSchema,
   Type.Object(
     {
-      entityName: Type.Optional(Type.String()),
-      description: Type.Optional(Type.String()),
-      telephone: Type.Optional(Type.String()),
-      fax: Type.Optional(Type.String()),
-      email: Type.Optional(Type.String()),
-      website: Type.Optional(Type.String()),
-      emergencyContact: Type.Optional(Type.String()),
-      operatingHours: Type.Optional(Type.String()),
-      entityDetails: Type.Optional(Type.String()),
-      otherMethods: Type.Optional(Type.String()),
-      otherInformation: Type.Optional(Type.String()),
+      entityName: Type.Optional(
+        Type.Union([
+          NativeContactInformationSchema.shape.entityName,
+          DgsKeySchema,
+        ]),
+      ),
+      description: Type.Optional(
+        Type.Union([
+          NativeContactInformationSchema.shape.description,
+          DgsKeySchema,
+        ]),
+      ),
+      telephone: Type.Optional(
+        Type.Union([
+          NativeContactInformationSchema.shape.telephone,
+          DgsKeySchema,
+        ]),
+      ),
+      fax: Type.Optional(
+        Type.Union([NativeContactInformationSchema.shape.fax, DgsKeySchema]),
+      ),
+      email: Type.Optional(
+        Type.Union([NativeContactInformationSchema.shape.email, DgsKeySchema]),
+      ),
+      website: Type.Optional(
+        Type.Union([
+          NativeContactInformationSchema.shape.website,
+          DgsKeySchema,
+        ]),
+      ),
+      emergencyContact: Type.Optional(
+        Type.Union([
+          NativeContactInformationSchema.shape.emergencyContact,
+          DgsKeySchema,
+        ]),
+      ),
+      operatingHours: Type.Optional(
+        Type.Union([
+          NativeContactInformationSchema.shape.operatingHours,
+          DgsKeySchema,
+        ]),
+      ),
+      entityDetails: Type.Optional(
+        Type.Union([
+          NativeContactInformationSchema.shape.entityDetails,
+          DgsKeySchema,
+        ]),
+      ),
+      otherMethods: Type.Optional(
+        Type.Union([
+          NativeContactInformationSchema.shape.otherMethods,
+          DgsKeySchema,
+        ]),
+      ),
+      otherInformation: Type.Optional(
+        Type.Union([
+          NativeContactInformationSchema.shape.otherInformation,
+          DgsKeySchema,
+        ]),
+      ),
     },
     {
       title: "DGS Contact Information component",
