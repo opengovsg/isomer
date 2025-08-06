@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import pick from "lodash/pick"
 import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
@@ -53,98 +52,119 @@ const meta: Meta<ContactInformationProps> = {
 export default meta
 type Story = StoryObj<typeof ContactInformation>
 
-const NativeArgs: Partial<ContactInformationProps> = {
-  type: "contactinformation",
-  entityName: "Sentosa",
-  entityDetails: [
-    {
-      label: "Ambassador (Non-Resident)",
-      values: ["Mr MOHAMMAD Alami Musa"],
-    },
-    {
-      label: "Chancery",
-      values: [
-        "c/o Ministry of Foreign Affairs",
-        "Tanglin",
-        "Singapore 248163",
-      ],
-    },
-  ],
-  description: "Embassy of the Republic of Singapore - Algeria",
-  telephone: {
-    label: "Telephone",
-    values: ["+65-63798000 (MFA)"],
-  },
-  fax: {
-    label: "Fax",
-    values: ["+65-64747885 (MFA)"],
-    caption: "Got people use meh?",
-  },
-  email: {
-    label: "Email",
-    values: ["do-not-reply@isomer.gov.sg", "do-not-reply-pelase@isomer.gov.sg"],
-  },
-  website: {
-    label: "Website",
-    values: ["https://www.isomer.gov.sg", "https://sample.isomer.gov.sg"],
-  },
-  emergencyContact: {
-    label: "In the case of emergency",
-    values: ["+65 5678 1234"],
-    caption: "(after hours)",
-  },
-  operatingHours: {
-    label: "Operating Hours",
-    values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
-  },
-  otherMethods: [
-    {
-      label: "Telegram",
-      values: ["https://t.me/isomer_gov_sg"],
-    },
-    {
-      label: "WhatsApp",
+export const Default: Story = {
+  args: {
+    type: "contactinformation",
+    entityName: "Sentosa",
+    entityDetails: [
+      {
+        label: "Ambassador (Non-Resident)",
+        values: ["Mr MOHAMMAD Alami Musa"],
+      },
+      {
+        label: "Chancery",
+        values: [
+          "c/o Ministry of Foreign Affairs",
+          "Tanglin",
+          "Singapore 248163",
+        ],
+      },
+    ],
+    description: "Embassy of the Republic of Singapore - Algeria",
+    telephone: {
+      label: "Telephone",
       values: ["+65-63798000 (MFA)"],
     },
-  ],
-  otherInformation: {
-    label: "This is a customized header of a Other Information field",
-    value:
-      "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+    fax: {
+      label: "Fax",
+      values: ["+65-64747885 (MFA)"],
+      caption: "Got people use meh?",
+    },
+    email: {
+      label: "Email",
+      values: [
+        "do-not-reply@isomer.gov.sg",
+        "do-not-reply-pelase@isomer.gov.sg",
+      ],
+    },
+    website: {
+      label: "Website",
+      values: ["https://www.isomer.gov.sg", "https://sample.isomer.gov.sg"],
+    },
+    emergencyContact: {
+      label: "In the case of emergency",
+      values: ["+65 5678 1234"],
+      caption: "(after hours)",
+    },
+    operatingHours: {
+      label: "Operating Hours",
+      values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
+    },
+    otherMethods: [
+      {
+        label: "Telegram",
+        values: ["https://t.me/isomer_gov_sg"],
+      },
+      {
+        label: "WhatsApp",
+        values: ["+65-63798000 (MFA)"],
+      },
+    ],
+    otherInformation: {
+      label: "This is a customized header of a Other Information field",
+      value:
+        "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+    },
+    url: "/",
+    label: "I can't even help myself",
   },
-  url: "/",
-  label: "I can't even help myself",
-}
-
-export const Default: Story = {
-  args: NativeArgs,
 }
 
 export const Homepage2Methods: Story = {
   name: "Homepage (2 Methods)",
   args: {
+    type: "contactinformation",
     layout: "homepage",
-    ...pick(NativeArgs, [
-      "type",
-      "entityName",
-      "label",
-      "url",
-      // randomly pick 2 fields from the rest
-      "telephone",
-      "email",
-    ]),
+    entityName: "Contact the High Commission of Canberra",
     description:
       "This is how it looks like when there are 2 contact methods on homepage",
+    telephone: {
+      label: "Call us",
+      values: ["+61 2 6271 2000"],
+    },
+    emergencyContact: {
+      label: "In the case of emergency",
+      values: ["+65 5678 1234"],
+      caption: "(after hours)",
+    },
+    url: "/",
+    label: "More ways to contact us",
   },
 }
 
 export const Homepage3Methods: Story = {
   name: "Homepage (3 Methods)",
   args: {
+    type: "contactinformation",
     layout: "homepage",
-    ...NativeArgs,
+    entityName: "Contact the High Commission of Canberra",
     description:
       "Should only render max. 3 contact methods regardless of the number of contact methods provided",
+    telephone: {
+      label: "Call us",
+      values: ["+61 2 6271 2000"],
+    },
+    emergencyContact: {
+      label: "In the case of emergency",
+      values: ["+65 5678 1234"],
+      caption: "(after hours)",
+    },
+    email: {
+      label: "Email us",
+      values: ["singhc_cbr@mfa.sg"],
+    },
+    url: "/",
+    label: "More ways to contact us",
   },
 }
 
