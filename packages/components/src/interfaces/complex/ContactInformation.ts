@@ -123,9 +123,11 @@ export const NativeContactInformationSchema = Type.Intersect([
       ),
       otherInformation: Type.Optional(
         Type.Object({
-          label: Type.String({
-            title: "Other Information",
-          }),
+          label: Type.Optional(
+            Type.String({
+              title: "Other Information",
+            }),
+          ),
           value: Type.String(), // note: there can be HTML tags in this field
         }),
       ),

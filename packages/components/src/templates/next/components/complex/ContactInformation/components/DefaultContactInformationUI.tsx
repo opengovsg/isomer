@@ -95,7 +95,7 @@ export const DefaultContactInformationUI = ({
       {!!otherInformation && (
         <div className={compoundStyles.otherInformationContainer()}>
           <div className={compoundStyles.otherInformationTitle()}>
-            {otherInformation.label}
+            {otherInformation.label ?? "Other Information"}
           </div>
           <div
             dangerouslySetInnerHTML={{
