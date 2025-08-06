@@ -1,4 +1,5 @@
-import { useMemo } from "react"
+import { Suspense, useMemo, useState } from "react"
+import { FormControl, Skeleton, VStack } from "@chakra-ui/react"
 import {
   and,
   ArrayLayoutProps,
@@ -11,7 +12,15 @@ import {
 import {
   JsonFormsDispatch,
   withJsonFormsArrayLayoutProps,
+  withJsonFormsControlProps,
 } from "@jsonforms/react"
+import {
+  FormLabel,
+  MultiSelect,
+  SingleSelect,
+} from "@opengovsg/design-system-react"
+import { ArticlePagePageProps } from "@opengovsg/isomer-components"
+import required from "ajv/dist/vocabularies/validation/required"
 import { useSetAtom } from "jotai"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -25,16 +34,22 @@ export const jsonFormsTaggedControlTester: RankedTester = rankWith(
   and(schemaMatches((schema) => schema.format === "tagged")),
 )
 
+interface TaggedControlProps extends Omit<ControlProps, "data"> {
+  data: ArticlePagePageProps["tagged"]
+}
+
 export function JsonFormsTaggedControl({
+  data,
   path,
   visible,
   schema,
   renderers,
   cells,
-  uischema,
-  rootSchema,
+  description,
+  label,
+  required,
   handleChange,
-}: ControlProps) {
+}: TaggedControlProps) {
   const { siteId, linkId, pageId } = useQueryParse(collectionItemSchema)
   // NOTE: Since this is only rendered inside a collection page or collection link,
   // we should always have the `resourceId` specifier
@@ -43,37 +58,28 @@ export function JsonFormsTaggedControl({
     resourceId,
     siteId,
   })
-
-  const setTagCategories = useSetAtom(tagCategoriesAtom)
-  setTagCategories(tags)
-  const childUiSchema = useMemo(
-    () =>
-      findUISchema(
-        uischemas ?? [],
-        schema,
-        uischema.scope,
-        path,
-        undefined,
-        uischema,
-        rootSchema,
-      ),
-    [uischemas, schema, uischema, path, rootSchema],
-  )
-
-  console.log(rootSchema, "roote")
+  const [tagCategory, updateTagCategory] = useState(data)
 
   return (
-    <div>
-      <p>hello</p>
-      <JsonFormsDispatch
-        renderers={renderers}
-        cells={cells}
-        visible={visible}
-        schema={schema}
-        uischema={uischema}
-        path={path}
-      />
-    </div>
+    <VStack>
+      {tags?.map(({ id, label, options }) => {
+        const currentTagCategory = data?.find(({ id: tagId }) => tagId === id)
+
+        return (
+          <FormControl isRequired={required} gap="0.5rem">
+            <FormLabel description={description}>{label}</FormLabel>
+            <MultiSelect
+              values={currentTagCategory?.values ?? []}
+              name={label}
+              items={options.map(({ label, id }) => ({ value: id, label }))}
+              onChange={(value) => {
+                handleChange(path, value)
+              }}
+            />
+          </FormControl>
+        )
+      })}
+    </VStack>
   )
 }
 

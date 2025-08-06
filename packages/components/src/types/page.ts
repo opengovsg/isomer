@@ -30,15 +30,17 @@ const TagCategoriesSchema = Type.Object({
 })
 const TaggedSchema = Type.Optional(
   // NOTE: This stores the `uuid` of the tag category
-  // to the array of the `uuid` of the values:
-  // `[category_uuid_1: [value_uuid_1, value_uuid_2], category_uuid_2: [value_uuid_3]]`.
+  // to the array of the `uuid` of the values;
   // we cannot just store a plain array of `uuid`
   // because we need to render each category as a dropdown
-  Type.Array(Type.Record(TagValueSchema, Type.Array(TagValueSchema)), {
-    // NOTE: we need a custom format because this cannot just be a simple drop down
-    // as we need to reference the existing data that is pointing to this
-    format: "tagged",
-  }),
+  Type.Array(
+    Type.Object({ id: TagValueSchema, values: Type.Array(TagValueSchema) }),
+    {
+      // NOTE: we need a custom format because this cannot just be a simple drop down
+      // as we need to reference the existing data that is pointing to this
+      format: "tagged",
+    },
+  ),
 )
 
 const categorySchemaObject = Type.Object({
