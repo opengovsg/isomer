@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import omit from "lodash/omit"
+import pick from "lodash/pick"
 
 import type {
   DgsApiDatasetSearchParams,
@@ -7,6 +7,7 @@ import type {
 } from "~/hooks/useDgsData/types"
 import type {
   DgsContactInformationProps,
+  InjectableContactInformationProps,
   NativeContactInformationProps,
 } from "~/interfaces/complex/ContactInformation"
 import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
@@ -105,20 +106,8 @@ export const DgsTransformedContactInformation = ({
       entityDetails={entityDetails}
       otherMethods={otherMethods}
       otherInformation={otherInformation}
-      {...omit(
-        rest,
-        "entityName",
-        "description",
-        "telephone",
-        "fax",
-        "email",
-        "website",
-        "emergencyContact",
-        "operatingHours",
-        "entityDetails",
-        "otherMethods",
-        "otherInformation",
-      )}
+      {...pick(rest, "layout", "LinkComponent")}
+      {...(rest as InjectableContactInformationProps)}
     />
   )
 }

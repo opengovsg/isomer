@@ -54,6 +54,7 @@ export default meta
 type Story = StoryObj<typeof ContactInformation>
 
 const NativeArgs: Partial<ContactInformationProps> = {
+  type: "contactinformation",
   entityName: "Sentosa",
   entityDetails: [
     {

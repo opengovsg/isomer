@@ -1,4 +1,4 @@
-import type { Static } from "@sinclair/typebox"
+import type { Static, TSchema } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type {
@@ -8,8 +8,7 @@ import type {
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 import {
-  DgsDataSourceSingleRecordSchema,
-  DgsKeySchema,
+  createDgsSchema,
   NativeDataSourceSingleRecordSchema,
 } from "../dataSource"
 
@@ -68,171 +67,98 @@ const BaseContactInformationSchema = Type.Object({
   ),
 })
 
+const InjectableContactInformationSchema = Type.Object(
+  {
+    entityName: Type.Optional(
+      Type.String({
+        title: "Entity Name",
+      }),
+    ),
+    description: Type.Optional(
+      Type.String({
+        title: "Description",
+      }),
+    ),
+    telephone: Type.Optional(
+      generateSingleContactInformationSchema({
+        defaultLabelTitle: "Telephone",
+      }),
+    ),
+    fax: Type.Optional(
+      generateSingleContactInformationSchema({
+        defaultLabelTitle: "Fax",
+      }),
+    ),
+    email: Type.Optional(
+      generateSingleContactInformationSchema({
+        defaultLabelTitle: "Email",
+      }),
+    ),
+    website: Type.Optional(
+      generateSingleContactInformationSchema({
+        defaultLabelTitle: "Website",
+      }),
+    ),
+    emergencyContact: Type.Optional(
+      generateSingleContactInformationSchema({
+        defaultLabelTitle: "Emergency Contact",
+      }),
+    ),
+    operatingHours: Type.Optional(
+      generateSingleContactInformationSchema({
+        defaultLabelTitle: "Operating Hours",
+      }),
+    ),
+    entityDetails: Type.Optional(
+      Type.Array(CompulsorySingleContactInformationSchema, {
+        minItems: 1,
+      }),
+    ),
+    otherMethods: Type.Optional(
+      Type.Array(CompulsorySingleContactInformationSchema, {
+        minItems: 1,
+      }),
+    ),
+    otherInformation: Type.Optional(
+      Type.Object({
+        label: Type.Optional(
+          Type.String({
+            title: "Other Information",
+          }),
+        ),
+        value: Type.String(), // note: there can be HTML tags in this field
+      }),
+    ),
+  },
+  {
+    title: "Native Contact Information component",
+  },
+)
+
 export const NativeContactInformationSchema = Type.Intersect([
   NativeDataSourceSingleRecordSchema,
-  Type.Object(
-    {
-      entityName: Type.Optional(
-        Type.String({
-          title: "Entity Name",
-        }),
-      ),
-      description: Type.Optional(
-        Type.String({
-          title: "Description",
-        }),
-      ),
-      telephone: Type.Optional(
-        generateSingleContactInformationSchema({
-          defaultLabelTitle: "Telephone",
-        }),
-      ),
-      fax: Type.Optional(
-        generateSingleContactInformationSchema({
-          defaultLabelTitle: "Fax",
-        }),
-      ),
-      email: Type.Optional(
-        generateSingleContactInformationSchema({
-          defaultLabelTitle: "Email",
-        }),
-      ),
-      website: Type.Optional(
-        generateSingleContactInformationSchema({
-          defaultLabelTitle: "Website",
-        }),
-      ),
-      emergencyContact: Type.Optional(
-        generateSingleContactInformationSchema({
-          defaultLabelTitle: "Emergency Contact",
-        }),
-      ),
-      operatingHours: Type.Optional(
-        generateSingleContactInformationSchema({
-          defaultLabelTitle: "Operating Hours",
-        }),
-      ),
-      entityDetails: Type.Optional(
-        Type.Array(CompulsorySingleContactInformationSchema, {
-          minItems: 1,
-        }),
-      ),
-      otherMethods: Type.Optional(
-        Type.Array(CompulsorySingleContactInformationSchema, {
-          minItems: 1,
-        }),
-      ),
-      otherInformation: Type.Optional(
-        Type.Object({
-          label: Type.Optional(
-            Type.String({
-              title: "Other Information",
-            }),
-          ),
-          value: Type.String(), // note: there can be HTML tags in this field
-        }),
-      ),
-    },
-    {
-      title: "Native Contact Information component",
-    },
-  ),
+  InjectableContactInformationSchema,
 ])
 
-export const DgsContactInformationSchema = Type.Intersect([
-  DgsDataSourceSingleRecordSchema,
-  Type.Object(
-    {
-      entityName: Type.Optional(
-        Type.Union([
-          NativeContactInformationSchema.shape.entityName,
-          DgsKeySchema,
-        ]),
-      ),
-      description: Type.Optional(
-        Type.Union([
-          NativeContactInformationSchema.shape.description,
-          DgsKeySchema,
-        ]),
-      ),
-      telephone: Type.Optional(
-        Type.Union([
-          NativeContactInformationSchema.shape.telephone,
-          DgsKeySchema,
-        ]),
-      ),
-      fax: Type.Optional(
-        Type.Union([NativeContactInformationSchema.shape.fax, DgsKeySchema]),
-      ),
-      email: Type.Optional(
-        Type.Union([NativeContactInformationSchema.shape.email, DgsKeySchema]),
-      ),
-      website: Type.Optional(
-        Type.Union([
-          NativeContactInformationSchema.shape.website,
-          DgsKeySchema,
-        ]),
-      ),
-      emergencyContact: Type.Optional(
-        Type.Union([
-          NativeContactInformationSchema.shape.emergencyContact,
-          DgsKeySchema,
-        ]),
-      ),
-      operatingHours: Type.Optional(
-        Type.Union([
-          NativeContactInformationSchema.shape.operatingHours,
-          DgsKeySchema,
-        ]),
-      ),
-      entityDetails: Type.Optional(
-        Type.Union([
-          NativeContactInformationSchema.shape.entityDetails,
-          DgsKeySchema,
-        ]),
-      ),
-      otherMethods: Type.Optional(
-        Type.Union([
-          NativeContactInformationSchema.shape.otherMethods,
-          DgsKeySchema,
-        ]),
-      ),
-      otherInformation: Type.Optional(
-        Type.Union([
-          NativeContactInformationSchema.shape.otherInformation,
-          DgsKeySchema,
-        ]),
-      ),
-    },
-    {
-      title: "DGS Contact Information component",
-    },
-  ),
-])
+export const DgsContactInformationSchema = createDgsSchema({
+  componentName: "Contact Information",
+  nativeSchema: InjectableContactInformationSchema,
+})
 
 export const ContactInformationSchema = Type.Intersect([
   BaseContactInformationSchema,
   Type.Union([NativeContactInformationSchema, DgsContactInformationSchema]),
 ])
 
+export type InjectableContactInformationProps = Static<
+  typeof InjectableContactInformationSchema
+>
+
 export type ContactInformationUIProps = Omit<
   Static<typeof BaseContactInformationSchema>,
-  "url"
+  "type" | "url"
 > &
-  Pick<
-    Static<typeof NativeContactInformationSchema>,
-    | "entityName"
-    | "description"
-    | "telephone"
-    | "fax"
-    | "email"
-    | "website"
-    | "emergencyContact"
-    | "operatingHours"
-    | "entityDetails"
-    | "otherMethods"
-    | "otherInformation"
-  > & {
+  Static<typeof InjectableContactInformationSchema> & {
     layout: IsomerPageLayoutType
     LinkComponent?: LinkComponentType
     referenceLinkHref?: string

@@ -1,4 +1,4 @@
-import { Type } from "@sinclair/typebox"
+import { TSchema, Type } from "@sinclair/typebox"
 
 export const DATA_SOURCE_TYPE = {
   native: "native",
@@ -36,11 +36,37 @@ export const DgsDataSourceSchema = Type.Object({
   sort: Type.Optional(Type.String()),
 })
 
-export const DgsDataSourceSingleRecordSchema = Type.Object({
-  dataSource: DgsDataSourceSchema,
-})
+// Generic helper to create DGS schema from native schema
+type CreateDgsSchemaProps<T extends TSchema> = {
+  componentName: string
+  nativeSchema: T
+}
+export const createDgsSchema = <T extends TSchema>({
+  componentName,
+  nativeSchema,
+}: CreateDgsSchemaProps<T>) => {
+  const dgsFields = Object.keys(nativeSchema.properties).reduce(
+    (acc, key) => {
+      acc[key] = Type.Optional(
+        Type.Union([
+          nativeSchema.properties[key as keyof T["properties"]],
+          Type.String({
+            title: "Key",
+            description: "The key of the header in DGS table",
+          }),
+        ]),
+      )
+      return acc
+    },
+    {} as Record<string, any>,
+  )
 
-export const DgsKeySchema = Type.String({
-  title: "Key",
-  description: "The key of the header in DGS table",
-})
+  return Type.Intersect([
+    Type.Object({
+      dataSource: DgsDataSourceSchema,
+    }),
+    Type.Object(dgsFields, {
+      title: `DGS ${componentName} component`,
+    }),
+  ])
+}
