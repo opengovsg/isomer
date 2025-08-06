@@ -1,6 +1,6 @@
 export const MAX_IMG_FILE_SIZE_BYTES = 5000000
 export const IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
-  ".jpg": "image/jpeg",
+  ".jpg": "image/jpeg", // same MIME type as .jpeg
   ".jpeg": "image/jpeg",
   ".png": "image/png",
   ".gif": "image/gif",
