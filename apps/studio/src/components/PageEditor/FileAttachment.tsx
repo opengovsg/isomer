@@ -73,7 +73,7 @@ export const FileAttachment = ({
           accept={uniq([
             ...Object.keys(acceptedFileTypes),
             ...Object.values(acceptedFileTypes),
-          ]).join(",")}
+          ])}
           onFileValidation={(file) => {
             const parseResult = getPresignedPutUrlSchema
               .pick({ fileName: true })
