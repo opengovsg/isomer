@@ -39,7 +39,7 @@ const createHomepageContactInformationStyles = tv({
       numberOfContactMethods: 2,
       isBottomButton: false,
       class: {
-        urlButtonContainer: "my-10 hidden md:mx-0 md:block",
+        urlButtonContainer: "mt-10 hidden md:mx-0 md:block",
       },
     },
     {
