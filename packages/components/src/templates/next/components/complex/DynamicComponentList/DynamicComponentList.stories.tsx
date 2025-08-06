@@ -76,7 +76,7 @@ export const ContactInformation: Story = {
                     ]),
                     other_methods: JSON.stringify([
                       {
-                        label: "Emergency Contact",
+                        label: "Not Telegram",
                         values: [
                           "https://this-should-still-be-hyperlinked.isomer.gov.sg",
                         ],

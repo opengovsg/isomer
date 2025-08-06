@@ -34,6 +34,7 @@ export const DefaultContactInformationUI = ({
   fax,
   email,
   website,
+  emergencyContact,
   operatingHours,
   otherMethods,
   otherInformation,
@@ -60,6 +61,7 @@ export const DefaultContactInformationUI = ({
         }
         Icon={methodMapping?.Icon}
         LinkComponent={LinkComponent}
+        iconColor={methodMapping?.color}
       />
     )
   }
@@ -82,6 +84,7 @@ export const DefaultContactInformationUI = ({
         {renderContactMethod("fax", fax)}
         {renderContactMethod("email", email)}
         {renderContactMethod("website", website)}
+        {renderContactMethod("emergencyContact", emergencyContact)}
         {renderContactMethod("operatingHours", operatingHours)}
 
         {!!otherMethods &&

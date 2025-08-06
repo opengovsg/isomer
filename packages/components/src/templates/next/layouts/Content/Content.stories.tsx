@@ -1516,19 +1516,16 @@ export const Default: Story = {
           label: "Website",
           values: ["https://www.isomer.gov.sg", "https://sample.isomer.gov.sg"],
         },
+        emergencyContact: {
+          label: "In the case of emergency",
+          values: ["+65 5678 1234"],
+          caption: "(after hours)",
+        },
         operatingHours: {
           label: "Operating Hours",
           values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
         },
         otherMethods: [
-          {
-            label: "Emergency Contact",
-            values: [
-              "https://this-should-still-be-hyperlinked.isomer.gov.sg",
-              "this-should-still-be-hyperlinked@isomer.gov.sg",
-              "12345678",
-            ],
-          },
           {
             label: "Telegram",
             values: ["https://t.me/isomer_gov_sg"],

@@ -1,5 +1,6 @@
 import type { IconType } from "react-icons"
 import { BiEnvelope } from "react-icons/bi"
+import { twMerge } from "tailwind-merge"
 
 import type {
   ContactInformationUIProps,
@@ -13,6 +14,7 @@ interface ContactMethodProps extends SingleContactInformationProps {
   styles: ReturnType<typeof commonContactMethodStyles>
   Icon?: IconType
   LinkComponent: ContactInformationUIProps["LinkComponent"]
+  iconColor?: string
 }
 
 export const ContactMethod = ({
@@ -22,10 +24,15 @@ export const ContactMethod = ({
   values,
   caption,
   LinkComponent,
+  iconColor,
 }: ContactMethodProps) => {
   return (
     <div className={styles.container()}>
-      <Icon className={styles.icon()} />
+      <Icon
+        className={
+          iconColor ? twMerge(styles.icon(), iconColor) : styles.icon()
+        }
+      />
       <div className={styles.textContainer()}>
         <div className={styles.label()}>{label}</div>
         <div className={styles.valuesAndCaptionContainer()}>

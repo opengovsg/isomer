@@ -87,20 +87,16 @@ const NativeArgs: Partial<ContactInformationProps> = {
     label: "Website",
     values: ["https://www.isomer.gov.sg", "https://sample.isomer.gov.sg"],
   },
+  emergencyContact: {
+    label: "In the case of emergency",
+    values: ["+65 5678 1234"],
+    caption: "(after hours)",
+  },
   operatingHours: {
     label: "Operating Hours",
     values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
   },
   otherMethods: [
-    {
-      label: "Emergency Contact",
-      values: [
-        "https://this-should-still-be-hyperlinked.isomer.gov.sg",
-        "this-should-still-be-hyperlinked@isomer.gov.sg",
-        "12345678",
-      ],
-      caption: "(After hours)",
-    },
     {
       label: "Telegram",
       values: ["https://t.me/isomer_gov_sg"],
@@ -181,6 +177,11 @@ const DgsParameters = {
                       "https://sample.isomer.gov.sg",
                     ],
                   }),
+                  emergency_contact: JSON.stringify({
+                    label: "In the case of emergency",
+                    values: ["+65 5678 1234"],
+                    caption: "(after hours)",
+                  }),
                   operating_hours: JSON.stringify({
                     label: "Operating Hours",
                     values: [
@@ -204,15 +205,6 @@ const DgsParameters = {
                     },
                   ]),
                   other_methods: JSON.stringify([
-                    {
-                      label: "Emergency Contact",
-                      values: [
-                        "https://this-should-still-be-hyperlinked.isomer.gov.sg",
-                        "this-should-still-be-hyperlinked@isomer.gov.sg",
-                        "12345678",
-                      ],
-                      caption: "(After hours)",
-                    },
                     {
                       label: "Telegram",
                       values: ["https://t.me/isomer_gov_sg"],
@@ -252,6 +244,7 @@ export const Dgs: Story = {
     fax: "[dgs:fax]",
     email: "[dgs:email]",
     website: "[dgs:website]",
+    emergencyContact: "[dgs:emergency_contact]",
     operatingHours: "[dgs:operating_hours]",
     entityDetails: "[dgs:entity_details]",
     otherMethods: "[dgs:other_methods]",

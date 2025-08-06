@@ -93,6 +93,7 @@ export const HomepageContactInformationUI = ({
   fax,
   email,
   website,
+  emergencyContact,
   operatingHours,
   otherMethods,
   referenceLinkHref,
@@ -110,6 +111,7 @@ export const HomepageContactInformationUI = ({
     { method: fax, key: "fax" as const },
     { method: email, key: "email" as const },
     { method: website, key: "website" as const },
+    { method: emergencyContact, key: "emergencyContact" as const },
     { method: operatingHours, key: "operatingHours" as const },
     ...(otherMethods ?? []).map((method) => ({ method, key: undefined })),
   ].filter(({ method }) => method) // Filter out undefined methods
@@ -144,6 +146,7 @@ export const HomepageContactInformationUI = ({
         }
         Icon={methodMapping?.Icon}
         LinkComponent={LinkComponent}
+        iconColor={methodMapping?.color}
       />
     )
   }

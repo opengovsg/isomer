@@ -101,6 +101,11 @@ export const NativeContactInformationSchema = Type.Intersect([
           defaultLabelTitle: "Website",
         }),
       ),
+      emergencyContact: Type.Optional(
+        generateSingleContactInformationSchema({
+          defaultLabelTitle: "Emergency Contact",
+        }),
+      ),
       operatingHours: Type.Optional(
         generateSingleContactInformationSchema({
           defaultLabelTitle: "Operating Hours",
@@ -138,6 +143,7 @@ export const DgsContactInformationSchema = Type.Intersect([
       fax: Type.Optional(Type.String()),
       email: Type.Optional(Type.String()),
       website: Type.Optional(Type.String()),
+      emergencyContact: Type.Optional(Type.String()),
       operatingHours: Type.Optional(Type.String()),
       entityDetails: Type.Optional(Type.String()),
       otherMethods: Type.Optional(Type.String()),
@@ -166,6 +172,7 @@ export type ContactInformationUIProps = Omit<
     | "fax"
     | "email"
     | "website"
+    | "emergencyContact"
     | "operatingHours"
     | "entityDetails"
     | "otherMethods"

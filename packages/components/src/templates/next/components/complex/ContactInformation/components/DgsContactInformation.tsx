@@ -74,6 +74,10 @@ export const DgsTransformedContactInformation = ({
     transformDgsField(rest.website, record),
   )
 
+  const emergencyContact = safeJsonParse<
+    NativeContactInformationProps["emergencyContact"]
+  >(transformDgsField(rest.emergencyContact, record))
+
   const operatingHours = safeJsonParse<
     NativeContactInformationProps["operatingHours"]
   >(transformDgsField(rest.operatingHours, record))
@@ -94,6 +98,7 @@ export const DgsTransformedContactInformation = ({
       fax={fax}
       email={email}
       website={website}
+      emergencyContact={emergencyContact}
       operatingHours={operatingHours}
       entityDetails={entityDetails}
       otherMethods={otherMethods}
@@ -106,6 +111,7 @@ export const DgsTransformedContactInformation = ({
         "fax",
         "email",
         "website",
+        "emergencyContact",
         "operatingHours",
         "entityDetails",
         "otherMethods",

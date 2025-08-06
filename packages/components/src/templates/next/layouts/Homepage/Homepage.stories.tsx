@@ -557,20 +557,23 @@ const generateArgs = ({
       {
         type: "contactinformation",
         entityName: "Contact the High Commission of Canberra",
+        description:
+          "Click “More ways to contact us” to find our address, fax number, and other contact details.",
         telephone: {
-          label: "Telephone",
-          values: ["+65-63798000 (MFA)"],
+          label: "Call us",
+          values: ["+61 2 6271 2000"],
+        },
+        emergencyContact: {
+          label: "In the case of emergency",
+          values: ["+65 5678 1234"],
+          caption: "(after hours)",
         },
         email: {
-          label: "Email",
-          values: ["do-not-reply@isomer.gov.sg"],
-        },
-        operatingHours: {
-          label: "Operating Hours",
-          values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
+          label: "Email us",
+          values: ["singhc_cbr@mfa.sg"],
         },
         url: "/",
-        label: "DO NOT contact us",
+        label: "More ways to contact us",
       },
     ],
   }
