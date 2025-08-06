@@ -150,9 +150,9 @@ export const ContactInformationSchema = Type.Intersect([
   Type.Union([NativeContactInformationSchema, DgsContactInformationSchema]),
 ])
 
-export type InjectableContactInformationProps = Static<
-  typeof InjectableContactInformationSchema
->
+export const InjectableContactInformationKeys = Object.keys(
+  InjectableContactInformationSchema.properties,
+)
 
 export type ContactInformationUIProps = Omit<
   Static<typeof BaseContactInformationSchema>,

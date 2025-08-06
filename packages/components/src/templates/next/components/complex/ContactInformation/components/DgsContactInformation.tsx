@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import omit from "lodash/omit"
 import pick from "lodash/pick"
 
 import type {
@@ -7,10 +8,10 @@ import type {
 } from "~/hooks/useDgsData/types"
 import type {
   DgsContactInformationProps,
-  InjectableContactInformationProps,
   NativeContactInformationProps,
 } from "~/interfaces/complex/ContactInformation"
 import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
+import { InjectableContactInformationKeys } from "~/interfaces/complex/ContactInformation"
 import { safeJsonParse } from "~/utils"
 import { ContactInformationUI } from "./ContactInformationUI"
 
@@ -113,7 +114,7 @@ export const DgsTransformedContactInformation = ({
       otherMethods={otherMethods}
       otherInformation={otherInformation}
       {...pick(rest, "type", "layout", "LinkComponent")}
-      {...(rest as InjectableContactInformationProps)}
+      {...omit(rest, InjectableContactInformationKeys)}
     />
   )
 }
