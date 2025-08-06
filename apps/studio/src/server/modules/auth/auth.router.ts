@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import { publicProcedure, router } from "~/server/trpc"
 import getIP from "~/utils/getClientIp"
@@ -32,7 +33,7 @@ export const authRouter = router({
       const ip = getIP(ctx.req)
 
       return logAuthEvent(tx, {
-        eventType: "Logout",
+        eventType: AuditLogEvent.Logout,
         delta: {
           before: user,
           after: null,

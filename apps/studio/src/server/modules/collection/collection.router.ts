@@ -1,5 +1,6 @@
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { get, pick } from "lodash"
 
 import {
@@ -121,7 +122,7 @@ export const collectionRouter = router({
 
           await logResourceEvent(tx, {
             siteId,
-            eventType: "ResourceCreate",
+            eventType: AuditLogEvent.ResourceCreate,
             delta: { before: null, after: collection },
             by: user,
           })
@@ -207,7 +208,7 @@ export const collectionRouter = router({
 
         await logResourceEvent(tx, {
           siteId,
-          eventType: "ResourceCreate",
+          eventType: AuditLogEvent.ResourceCreate,
           by: user,
           delta: {
             before: null,
@@ -339,7 +340,7 @@ export const collectionRouter = router({
 
           await logResourceEvent(tx, {
             siteId,
-            eventType: "ResourceUpdate",
+            eventType: AuditLogEvent.ResourceUpdate,
             delta: {
               before: { blob: oldBlob, resource },
               after: { blob, resource },

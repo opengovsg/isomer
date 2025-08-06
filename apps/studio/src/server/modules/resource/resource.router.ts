@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import get from "lodash/get"
 
@@ -469,7 +470,7 @@ export const resourceRouter = router({
 
             await logResourceEvent(tx, {
               siteId,
-              eventType: "ResourceUpdate",
+              eventType: AuditLogEvent.ResourceUpdate,
               delta: { before: toMove, after: moved },
               by: user,
             })
@@ -608,7 +609,7 @@ export const resourceRouter = router({
             before,
           },
           by: user,
-          eventType: "ResourceDelete",
+          eventType: AuditLogEvent.ResourceDelete,
         })
 
         return tx

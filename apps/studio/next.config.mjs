@@ -100,6 +100,7 @@ const ContentSecurityPolicy = `
     https://uploads.au.intercomcdn.com
     https://uploads.eu.intercomcdn.com
     https://uploads.intercomusercontent.com
+    https://*.data.gov.sg
     ;
   worker-src
     'self'
