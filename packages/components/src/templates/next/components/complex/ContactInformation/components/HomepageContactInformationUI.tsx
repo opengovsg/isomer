@@ -83,6 +83,8 @@ const createHomepageContactMethodStyles = tv({
   },
 })
 
+const MAX_CONTACT_METHODS_FOR_HOMEPAGE = 3
+
 export const HomepageContactInformationUI = ({
   entityName,
   entityDetails,
@@ -97,21 +99,33 @@ export const HomepageContactInformationUI = ({
   label,
   LinkComponent,
 }: ContactInformationUIProps) => {
-  const numberOfContactMethods =
-    (entityDetails?.length ?? 0) +
-    (telephone ? 1 : 0) +
-    (fax ? 1 : 0) +
-    (email ? 1 : 0) +
-    (website ? 1 : 0) +
-    (operatingHours ? 1 : 0) +
-    (otherMethods?.length ?? 0)
+  // Create a mapping of methods to their keys for proper rendering
+  // Note: ordering is important here, as it determines the order of the methods in the UI
+  const allMethods = [
+    ...(entityDetails ?? []).map((detail) => ({
+      method: detail,
+      key: undefined,
+    })),
+    { method: telephone, key: "telephone" as const },
+    { method: fax, key: "fax" as const },
+    { method: email, key: "email" as const },
+    { method: website, key: "website" as const },
+    { method: operatingHours, key: "operatingHours" as const },
+    ...(otherMethods ?? []).map((method) => ({ method, key: undefined })),
+  ].filter(({ method }) => method) // Filter out undefined methods
 
   const compoundStyles = createHomepageContactInformationStyles({
-    numberOfContactMethods: numberOfContactMethods >= 3 ? 3 : 2,
+    numberOfContactMethods:
+      allMethods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
+        ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
+        : 2,
   })
 
   const contactMethodStyles = createHomepageContactMethodStyles({
-    numberOfContactMethods: numberOfContactMethods >= 3 ? 3 : 2,
+    numberOfContactMethods:
+      allMethods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
+        ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
+        : 2,
   })
 
   const renderContactMethod = (
@@ -167,19 +181,9 @@ export const HomepageContactInformationUI = ({
       </div>
 
       <div className={compoundStyles.contactMethodsContainer()}>
-        {!!entityDetails &&
-          entityDetails.length > 0 &&
-          entityDetails.map((detail) => renderContactMethod(undefined, detail))}
-
-        {renderContactMethod("telephone", telephone)}
-        {renderContactMethod("fax", fax)}
-        {renderContactMethod("email", email)}
-        {renderContactMethod("website", website)}
-        {renderContactMethod("operatingHours", operatingHours)}
-
-        {!!otherMethods &&
-          otherMethods.length > 0 &&
-          otherMethods.map((method) => renderContactMethod(undefined, method))}
+        {allMethods
+          .slice(0, MAX_CONTACT_METHODS_FOR_HOMEPAGE)
+          .map(({ method, key }) => renderContactMethod(key, method))}
       </div>
 
       {!!referenceLinkHref && !!label && renderButton({ isBottomButton: true })}
