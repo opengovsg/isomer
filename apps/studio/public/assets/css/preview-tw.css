@@ -3532,6 +3532,11 @@ video {
   color: rgb(78 69 65 / var(--tw-text-opacity));
 }
 
+.text-utility-feedback-alert {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity));
+}
+
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
@@ -4014,6 +4019,10 @@ video {
 
 .\[dgs\:email\] {
   dgs: email;
+}
+
+.\[dgs\:emergency_contact\] {
+  dgs: emergency contact;
 }
 
 .\[dgs\:entity_details\] {
