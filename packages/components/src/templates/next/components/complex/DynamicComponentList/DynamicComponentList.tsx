@@ -47,8 +47,9 @@ const DynamicComponentList = ({
     // Disabling for now so its easier to extend in the future
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     case CONTACT_INFORMATION_TYPE:
-      return records.map((record) => (
+      return records.map((record, index) => (
         <DgsTransformedContactInformation
+          key={`${component.type}-${index}`}
           record={record}
           {...component}
           layout={layout}
