@@ -22,6 +22,7 @@ const createHomepageContactInformationStyles = tv({
     numberOfContactMethods: {
       2: {
         container: "md:flex-row md:gap-10",
+        titleAndDescriptionContainer: "max-w-[24.5rem]",
         contactMethodsContainer:
           "md:flex md:flex-1 md:flex-col lg:grid lg:grid-cols-2",
       },
