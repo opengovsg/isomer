@@ -37,7 +37,7 @@ export const DgsDataSourceSchema = Type.Object({
 })
 
 // Generic helper to create DGS schema from native schema
-type CreateDgsSchemaProps<T extends TSchema> = {
+interface CreateDgsSchemaProps<T extends TSchema> {
   componentName: string
   nativeSchema: T
 }

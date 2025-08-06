@@ -1,11 +1,11 @@
 import type { IconType } from "react-icons"
 import { BiEnvelope } from "react-icons/bi"
-import { twMerge } from "tailwind-merge"
 
 import type {
   ContactInformationUIProps,
   SingleContactInformationProps,
 } from "~/interfaces"
+import { twMerge } from "~/lib/twMerge"
 import { Link } from "~/templates/next/components/internal/Link"
 import {
   focusVisibleHighlight,
