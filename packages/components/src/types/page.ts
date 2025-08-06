@@ -20,7 +20,7 @@ const DropdownItemSchema = Type.Object({ label: Type.String(), id: UuidSchema })
 const TagOptionSchema = DropdownItemSchema
 const TagCategorySchema = Type.Composite([
   Type.Object({
-    options: Type.Record(TagValueSchema, TagOptionSchema),
+    options: Type.Array(TagOptionSchema),
   }),
   DropdownItemSchema,
 ])
@@ -29,7 +29,12 @@ const TagCategoriesSchema = Type.Object({
   tagCategories: Type.Optional(Type.Array(TagCategorySchema)),
 })
 const TaggedSchema = Type.Optional(
-  Type.Array(TagValueSchema, {
+  // NOTE: This stores the `uuid` of the tag category
+  // to the array of the `uuid` of the values:
+  // `[category_uuid_1: [value_uuid_1, value_uuid_2], category_uuid_2: [value_uuid_3]]`.
+  // we cannot just store a plain array of `uuid`
+  // because we need to render each category as a dropdown
+  Type.Array(Type.Record(TagValueSchema, Type.Array(TagValueSchema)), {
     // NOTE: we need a custom format because this cannot just be a simple drop down
     // as we need to reference the existing data that is pointing to this
     format: "tagged",

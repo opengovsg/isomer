@@ -82,3 +82,7 @@ export {
   default as JsonFormsChildrenPagesOrderingControl,
   jsonFormsChildrenPagesOrderingControlTester,
 } from "./JsonFormsChildrenPagesOrderingControl"
+export {
+  default as JsonFormsTaggedControl,
+  jsonFormsTaggedControlTester,
+} from "./JsonFormsTaggedControl"

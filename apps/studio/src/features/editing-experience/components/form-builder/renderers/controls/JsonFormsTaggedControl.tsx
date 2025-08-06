@@ -1,45 +1,40 @@
-import { FormControl, Skeleton } from "@chakra-ui/react"
-import { useFeatureValue } from "@growthbook/growthbook-react"
+import { useMemo } from "react"
 import {
   and,
   ArrayLayoutProps,
   ControlProps,
+  findUISchema,
   RankedTester,
   rankWith,
   schemaMatches,
 } from "@jsonforms/core"
 import {
+  JsonFormsDispatch,
   withJsonFormsArrayLayoutProps,
-  withJsonFormsControlProps,
 } from "@jsonforms/react"
-import { FormLabel, SingleSelect } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
 
-import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { linkAtom } from "~/features/editing-experience/atoms"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
+import { tagCategoriesAtom } from "../../atoms"
 
 export const jsonFormsTaggedControlTester: RankedTester = rankWith(
-  JSON_FORMS_RANKING.HiddenControl,
+  JSON_FORMS_RANKING.ArrayControl,
   and(schemaMatches((schema) => schema.format === "tagged")),
 )
 
 export function JsonFormsTaggedControl({
-  data,
   path,
   visible,
-  enabled,
-  label,
   schema,
-  rootSchema,
   renderers,
   cells,
-  uischemas,
   uischema,
-}: ArrayLayoutProps) {
+  rootSchema,
+  handleChange,
+}: ControlProps) {
   const { siteId, linkId, pageId } = useQueryParse(collectionItemSchema)
   // NOTE: Since this is only rendered inside a collection page or collection link,
   // we should always have the `resourceId` specifier
@@ -49,9 +44,37 @@ export function JsonFormsTaggedControl({
     siteId,
   })
 
-  console.log(tags)
+  const setTagCategories = useSetAtom(tagCategoriesAtom)
+  setTagCategories(tags)
+  const childUiSchema = useMemo(
+    () =>
+      findUISchema(
+        uischemas ?? [],
+        schema,
+        uischema.scope,
+        path,
+        undefined,
+        uischema,
+        rootSchema,
+      ),
+    [uischemas, schema, uischema, path, rootSchema],
+  )
 
-  return null
+  console.log(rootSchema, "roote")
+
+  return (
+    <div>
+      <p>hello</p>
+      <JsonFormsDispatch
+        renderers={renderers}
+        cells={cells}
+        visible={visible}
+        schema={schema}
+        uischema={uischema}
+        path={path}
+      />
+    </div>
+  )
 }
 
-export default withJsonFormsArrayLayoutProps(JsonFormsTaggedControl)
+export default withJsonFormsControlProps(JsonFormsTaggedControl)
