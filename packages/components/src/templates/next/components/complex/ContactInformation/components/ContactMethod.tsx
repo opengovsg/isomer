@@ -7,7 +7,14 @@ import type {
   SingleContactInformationProps,
 } from "~/interfaces"
 import { Link } from "~/templates/next/components/internal/Link"
-import { focusVisibleHighlight, isEmail, isExternalUrl, isUrl } from "~/utils"
+import {
+  focusVisibleHighlight,
+  isEmail,
+  isExternalUrl,
+  isPhoneNumber,
+  isUrl,
+  sanitizePhoneNumber,
+} from "~/utils"
 import { commonContactMethodStyles } from "./common"
 
 interface ContactMethodProps extends SingleContactInformationProps {
@@ -58,6 +65,19 @@ export const ContactMethod = ({
               return (
                 <Link
                   href={`mailto:${value}`}
+                  className={styles.value({
+                    isLink: true,
+                    className: focusVisibleHighlight(),
+                  })}
+                >
+                  {value}
+                </Link>
+              )
+            }
+            if (isPhoneNumber(value)) {
+              return (
+                <Link
+                  href={`tel:${sanitizePhoneNumber(value)}`}
                   className={styles.value({
                     isLink: true,
                     className: focusVisibleHighlight(),
