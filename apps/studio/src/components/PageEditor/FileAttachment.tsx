@@ -2,6 +2,7 @@ import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { useEffect, useState } from "react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
+import uniq from "lodash/uniq"
 
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { ONE_MB_IN_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
@@ -69,7 +70,10 @@ export const FileAttachment = ({
             )
           }}
           maxSize={maxSizeInBytes}
-          accept={Object.values(acceptedFileTypes)}
+          accept={uniq([
+            ...Object.keys(acceptedFileTypes),
+            ...Object.values(acceptedFileTypes),
+          ]).join(",")}
           onFileValidation={(file) => {
             const parseResult = getPresignedPutUrlSchema
               .pick({ fileName: true })
