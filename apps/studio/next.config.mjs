@@ -44,6 +44,7 @@ const ContentSecurityPolicy = `
     https://www.youtube-nocookie.com
     https://www.onemap.gov.sg
     https://www.facebook.com
+    https://maps.gov.sg
     ;
   object-src 'none';
   script-src

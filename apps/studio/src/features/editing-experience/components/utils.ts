@@ -22,9 +22,10 @@ export const EMBED_NAME_MAPPING: Record<
   keyof typeof MAPS_EMBED_URL_REGEXES | keyof typeof VIDEO_EMBED_URL_REGEXES,
   string
 > = {
-  fbvideo: "Facebook Video",
   googlemaps: "Google Map",
   onemap: "OneMap",
+  ogpmaps: "Maps.gov.sg",
+  fbvideo: "Facebook Video",
   youtube: "YouTube",
   vimeo: "Vimeo",
 }

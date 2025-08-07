@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { IMAGE_GALLERY_TYPE } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 import Content from "./Content"
 
@@ -2976,6 +2975,12 @@ export const NoTable: Story = {
           ],
         },
       },
+
+      {
+        type: "map",
+        title: "Public AED locations",
+        url: "https://maps.gov.sg/scdf-aed",
+      },
       {
         type: "prose",
         content: [
@@ -3234,6 +3239,11 @@ export const NoTable: Story = {
             ],
           },
         ],
+      },
+      {
+        type: "map",
+        title: "Error map",
+        url: "https://maps.gov.sg/this-map-should-not-exist!",
       },
       {
         type: "image",
