@@ -372,6 +372,7 @@ export const BLOCK_TO_META: Record<
     label: "Collection block",
     description: "Automatically display recent pages from a collection",
     usageText: "Link recent articles from your newsroom, research, or blog.",
+    imageSrc: "/assets/block-images/CollectionBlock.png",
   },
   [IMAGE_GALLERY_TYPE]: {
     // TODO: Add image source
@@ -395,7 +396,14 @@ type AllowedBlockSections = {
 export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Basic content blocks",
-    types: ["prose", "image", "accordion", "callout", "blockquote"],
+    types: [
+      "prose",
+      "image",
+      "accordion",
+      "callout",
+      "blockquote",
+      IMAGE_GALLERY_TYPE,
+    ],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
@@ -411,11 +419,12 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
       "blockquote",
       "contentpic",
       "infobar",
+      IMAGE_GALLERY_TYPE,
     ],
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics", IMAGE_GALLERY_TYPE],
+    types: ["infocards", "infocols", "keystatistics"],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
@@ -430,6 +439,7 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "infopic",
       "infobar",
       "blockquote",
+      COLLECTION_BLOCK_TYPE,
     ],
   },
 ]

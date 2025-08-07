@@ -2,6 +2,7 @@ import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { useEffect, useState } from "react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
+import uniq from "lodash/uniq"
 
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { ONE_MB_IN_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
@@ -11,6 +12,7 @@ import { getPresignedPutUrlSchema } from "~/schemas/asset"
 interface FileAttachmentProps {
   setHref: (href?: string) => void
   siteId: number
+  resourceId: string
   value?: File
   maxSizeInBytes: number
   acceptedFileTypes: Record<string, string>
@@ -22,6 +24,7 @@ type FileRejections = AttachmentProps<false>["rejections"]
 export const FileAttachment = ({
   setHref,
   siteId,
+  resourceId,
   maxSizeInBytes,
   acceptedFileTypes,
   shouldFetchResource = true,
@@ -30,6 +33,7 @@ export const FileAttachment = ({
   // TODO: Add a mutation for deletion next time of s3 resources
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
+    resourceId,
   })
   const { handleAssetUpload, isLoading } = useAssetUpload({})
 
@@ -50,7 +54,7 @@ export const FileAttachment = ({
           onRejection={setRejections}
           onChange={(file) => {
             if (!file) {
-              setHref()
+              setHref(undefined)
               return
             }
 
@@ -66,7 +70,10 @@ export const FileAttachment = ({
             )
           }}
           maxSize={maxSizeInBytes}
-          accept={Object.values(acceptedFileTypes)}
+          accept={uniq([
+            ...Object.keys(acceptedFileTypes),
+            ...Object.values(acceptedFileTypes),
+          ])}
           onFileValidation={(file) => {
             const parseResult = getPresignedPutUrlSchema
               .pick({ fileName: true })

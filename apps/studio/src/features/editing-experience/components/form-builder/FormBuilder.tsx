@@ -23,6 +23,8 @@ import {
   jsonFormsChildrenPagesLayoutControlTester,
   JsonFormsChildrenPagesOrderingControl,
   jsonFormsChildrenPagesOrderingControlTester,
+  JsonFormsCollectionDropdownControl,
+  jsonFormsCollectionDropdownControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
@@ -116,6 +118,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsCategoryControlTester,
     renderer: JsonFormsCategoryControl,
+  },
+  {
+    tester: jsonFormsCollectionDropdownControlTester,
+    renderer: JsonFormsCollectionDropdownControl,
   },
 ]
 

@@ -81,11 +81,9 @@ export const HeroSchema = Type.Composite(
           Type.Literal(HERO_STYLE.block, { title: "Block" }),
           Type.Literal(HERO_STYLE.largeImage, {
             title: "Large image",
-            format: "hidden",
           }),
           Type.Literal(HERO_STYLE.floating, {
             title: "Floating",
-            format: "hidden",
           }),
         ],
         {

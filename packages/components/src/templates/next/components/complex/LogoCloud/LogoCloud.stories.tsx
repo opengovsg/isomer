@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { IsomerSiteProps } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 import { LogoCloud } from "./LogoCloud"
 
 const meta: Meta<typeof LogoCloud> = {
@@ -25,44 +26,19 @@ const VERTICAL_IMAGE = {
   src: "https://placehold.co/100x1000",
   alt: "placeholder",
 }
-const site: IsomerSiteProps = {
-  siteName: "Isomer Next",
-  siteMap: {
-    id: "1",
-    title: "Home",
-    permalink: "/",
-    lastModified: "",
-    layout: "homepage",
-    summary: "",
-  },
-  theme: "isomer-next",
-  isGovernment: true,
-  logoUrl: "/isomer-logo.svg",
-  navbar: { items: [] },
-  footerItems: {
-    privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-    termsOfUseLink: "https://www.isomer.gov.sg/terms",
-    siteNavItems: [],
-  },
-  lastUpdated: "1 Jan 2021",
-  search: {
-    type: "searchSG",
-    clientId: "",
-  },
-}
 
 // Default scenario
 export const Default: Story = {
   args: {
     images: [IMAGE],
-    site,
+    site: generateSiteConfig(),
   },
 }
 
 export const ManyImages: Story = {
   args: {
     images: Array(10).fill(IMAGE),
-    site,
+    site: generateSiteConfig(),
   },
 }
 
@@ -82,20 +58,20 @@ export const Agency: Story = {
         src: "https://www.ncss.gov.sg/images/default-source/asset/celebrating-volunteers-logo.png?sfvrsn=44b85185_2 ",
       },
     ],
-    site,
+    site: generateSiteConfig(),
   },
 }
 
 export const HugeHorizontalLogo: Story = {
   args: {
     images: [...Array(4).fill(IMAGE), HORIZONTAL_IMAGE],
-    site,
+    site: generateSiteConfig(),
   },
 }
 
 export const HugeVerticalLogo: Story = {
   args: {
     images: [...Array(4).fill(IMAGE), VERTICAL_IMAGE],
-    site,
+    site: generateSiteConfig(),
   },
 }

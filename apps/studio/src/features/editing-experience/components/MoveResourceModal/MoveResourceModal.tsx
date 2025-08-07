@@ -49,6 +49,7 @@ const MoveResourceContent = withSuspense(
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
     const [{ title }] = trpc.resource.getMetadataById.useSuspenseQuery({
+      siteId: Number(siteId),
       resourceId,
     })
     const ability = usePermissions()

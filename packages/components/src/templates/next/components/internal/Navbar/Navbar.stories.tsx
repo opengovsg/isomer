@@ -4,6 +4,7 @@ import { expect, userEvent, within } from "@storybook/test"
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import type { NavbarProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import { Button } from "../Button"
 import Masthead from "../Masthead"
 import Navbar from "./Navbar"
@@ -151,32 +152,7 @@ const generateNavbarArgs = ({
       },
     ],
     callToAction,
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      logoUrl: "/isomer-logo.svg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    site: generateSiteConfig(),
   }
 }
 
@@ -308,7 +284,26 @@ export const MobileCallToAction: Story = {
   },
 }
 
-export const ExpandMobileWithLink: Story = {
+export const ExpandMobileWithLinkOneWord: Story = {
+  name: "Expand Mobile With Link (one word)",
+  args: generateNavbarArgs({}),
+  parameters: {
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+    await userEvent.click(canvas.getByRole("button", { name: /Please/i }))
+  },
+}
+
+export const ExpandMobileWithLinkMultipleWords: Story = {
+  name: "Expand Mobile With Link (multiple words)",
   args: generateNavbarArgs({}),
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),

@@ -25,7 +25,7 @@ const meta: Meta<typeof CollectionPage> = {
         pageHandlers.getPermalinkTree.withParent(),
         sitesHandlers.getSiteName.default(),
         resourceHandlers.getChildrenOf.default(),
-        resourceHandlers.getRolesFor.default(),
+        resourceHandlers.getRolesFor.admin(),
         resourceHandlers.getParentOf.collection(),
         collectionHandlers.getMetadata.default(),
         collectionHandlers.list.default(),

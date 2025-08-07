@@ -10,6 +10,7 @@ import {
 import {
   setupAdminPermissions,
   setupEditorPermissions,
+  setupPublisherPermissions,
   setupSite,
   setupUser,
   setUpWhitelist,
@@ -1185,6 +1186,41 @@ describe("user.router", () => {
       // Assert
       expect(result).toHaveLength(6)
     })
+
+    it("should return users with emails in ascending alphabetical order", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+
+      // Create users with emails in non-alphabetical order
+      const userC = await setupUser({
+        email: "charlie@example.gov.sg",
+        isDeleted: false,
+      })
+      const userA = await setupUser({
+        email: "alice@example.gov.sg",
+        isDeleted: false,
+      })
+      const userB = await setupUser({
+        email: "bob@example.gov.sg",
+        isDeleted: false,
+      })
+      await Promise.all(
+        [userA, userB, userC].map((user) =>
+          setupEditorPermissions({ userId: user.id, siteId }),
+        ),
+      )
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(4) // current user + 3 new users
+      expect(result.map((user) => user.email).slice(0, 3)).toEqual([
+        "alice@example.gov.sg",
+        "bob@example.gov.sg",
+        "charlie@example.gov.sg",
+      ])
+    })
   })
 
   describe("count", () => {
@@ -1303,48 +1339,6 @@ describe("user.router", () => {
 
       // Assert
       expect(result).toBe(1) // only the current admin user
-    })
-
-    describe("activityType", () => {
-      it("if inactive, do not count users who have not logged in at all", async () => {
-        // Arrange
-        await setupEditorPermissions({ userId: session.userId, siteId })
-
-        const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-        await setupEditorPermissions({ userId: user.id, siteId })
-
-        // Act
-        const result = await caller.count({ siteId, activityType: "inactive" })
-
-        // Assert
-        expect(result).toBe(0)
-      })
-
-      it("if inactive, do not count active users (logged in within 90 days)", async () => {
-        // Arrange
-        await setupEditorPermissions({ userId: session.userId, siteId })
-
-        const user = await setupUser({
-          email: TEST_EMAIL,
-          isDeleted: false,
-          hasLoggedIn: true,
-        })
-        await setupEditorPermissions({ userId: user.id, siteId })
-
-        // Set last login to be within 90 days
-        const thirtyDaysAgo = new Date()
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-        await db
-          .updateTable("User")
-          .set({ lastLoginAt: thirtyDaysAgo })
-          .execute()
-
-        // Act
-        const result = await caller.count({ siteId, activityType: "inactive" })
-
-        // Assert
-        expect(result).toBe(0)
-      })
     })
 
     it("should only return isomer admins if adminType is set as isomer", async () => {
@@ -2194,7 +2188,10 @@ describe("user.router", () => {
       )
     })
 
-    it("should throw 403 if user does not have any permissions to the site", async () => {
+    it("should throw 403 if user does not have admin permissions", async () => {
+      // Arrange
+      await setupPublisherPermissions({ userId: session.userId, siteId })
+
       // Act
       const result = caller.resendInvite({ siteId, userId: "123" })
 
@@ -2231,7 +2228,7 @@ describe("user.router", () => {
       const user = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
-        hasLoggedIn: true,
+        lastLoginAt: MOCK_STORY_DATE,
       })
       await setupEditorPermissions({ userId: user.id, siteId })
 
@@ -2254,7 +2251,7 @@ describe("user.router", () => {
       const user = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
-        hasLoggedIn: false,
+        lastLoginAt: null,
       })
       await db
         .updateTable("User")
@@ -2282,7 +2279,7 @@ describe("user.router", () => {
       const user = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
-        hasLoggedIn: false,
+        lastLoginAt: null,
       })
       await db
         .updateTable("User")
@@ -2309,7 +2306,7 @@ describe("user.router", () => {
       const user = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
-        hasLoggedIn: false,
+        lastLoginAt: null,
       })
       await db
         .updateTable("User")

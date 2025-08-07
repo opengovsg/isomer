@@ -71,6 +71,10 @@ export {
   jsonFormsCategoryControlTester,
 } from "./JsonFormsCategoryControl"
 export {
+  default as JsonFormsCollectionDropdownControl,
+  jsonFormsCollectionDropdownControlTester,
+} from "./JsonFormsCollectionDropdownControl"
+export {
   default as JsonFormsMetaImageControl,
   jsonFormsMetaImageControlTester,
 } from "./JsonFormsMetaImageControl"

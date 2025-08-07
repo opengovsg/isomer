@@ -70,3 +70,8 @@ export const getCollectionTagsSchema = z.object({
   resourceId: z.number().min(1),
   siteId: z.number().min(1),
 })
+
+export const getCollectionsSchema = z.object({
+  siteId: z.number().min(1),
+  hasChildren: z.boolean().optional().default(false),
+})

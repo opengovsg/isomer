@@ -7,6 +7,7 @@ import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createCollectionSchema,
   editLinkSchema,
+  getCollectionsSchema,
   getCollectionTagsSchema,
   readLinkSchema,
 } from "~/schemas/collection"
@@ -22,7 +23,7 @@ import {
   ResourceType,
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { validateUserPermissionsForResource } from "../permissions/permissions.service"
+import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
   defaultResourceSelect,
   getBlobOfResource,
@@ -30,6 +31,7 @@ import {
   publishResource,
   updateBlobById,
 } from "../resource/resource.service"
+import { validateUserPermissionsForSite } from "../site/site.service"
 import { defaultCollectionSelect } from "./collection.select"
 import {
   createCollectionIndexJson,
@@ -41,7 +43,7 @@ export const collectionRouter = router({
   getMetadata: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
         userId: ctx.user.id,
@@ -67,11 +69,11 @@ export const collectionRouter = router({
         ctx,
         input: { collectionTitle, permalink, siteId, parentFolderId },
       }) => {
-        await validateUserPermissionsForResource({
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "create",
           userId: ctx.user.id,
-          resourceId: !!parentFolderId ? String(parentFolderId) : null,
+          resourceIds: [!!parentFolderId ? String(parentFolderId) : null],
         })
 
         const user = await db
@@ -129,7 +131,7 @@ export const collectionRouter = router({
 
           await logResourceEvent(tx, {
             siteId,
-            eventType: "ResourceCreate",
+            eventType: AuditLogEvent.ResourceCreate,
             delta: { before: null, after: collection },
             by: user,
           })
@@ -184,11 +186,11 @@ export const collectionRouter = router({
   createCollectionPage: protectedProcedure
     .input(createCollectionPageSchema)
     .mutation(async ({ ctx, input }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId: input.siteId,
         action: "create",
         userId: ctx.user.id,
-        resourceId: !!input.collectionId ? String(input.collectionId) : null,
+        resourceIds: [!!input.collectionId ? String(input.collectionId) : null],
       })
 
       const user = await db
@@ -253,7 +255,7 @@ export const collectionRouter = router({
 
         await logResourceEvent(tx, {
           siteId,
-          eventType: "ResourceCreate",
+          eventType: AuditLogEvent.ResourceCreate,
           by: user,
           delta: {
             before: null,
@@ -268,7 +270,7 @@ export const collectionRouter = router({
   list: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
         userId: ctx.user.id,
@@ -281,13 +283,11 @@ export const collectionRouter = router({
         .selectFrom("Resource")
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
-        .where((eb) => {
-          return eb.or([
-            eb("Resource.type", "=", ResourceType.CollectionPage),
-            eb("Resource.type", "=", ResourceType.CollectionLink),
-            eb("Resource.type", "=", ResourceType.IndexPage),
-          ])
-        })
+        .where("Resource.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+          ResourceType.IndexPage,
+        ])
         .orderBy("Resource.type", "asc")
         .orderBy("Resource.title", "asc")
         .limit(limit)
@@ -298,15 +298,16 @@ export const collectionRouter = router({
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
     .query(async ({ ctx, input: { linkId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const baseQuery = db
         .selectFrom("Resource")
         .where("Resource.id", "=", String(linkId))
+        .where("Resource.type", "=", ResourceType.CollectionLink)
         .where("Resource.siteId", "=", siteId)
 
       const draft = await baseQuery
@@ -339,10 +340,10 @@ export const collectionRouter = router({
         // Things that aren't working yet:
         // 1. Last Edited user and time
         // 2. Page status(draft, published)
-        await validateUserPermissionsForResource({
-          userId: ctx.user.id,
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "update",
+          userId: ctx.user.id,
         })
 
         const content = createCollectionLinkJson({
@@ -386,7 +387,7 @@ export const collectionRouter = router({
 
           await logResourceEvent(tx, {
             siteId,
-            eventType: "ResourceUpdate",
+            eventType: AuditLogEvent.ResourceUpdate,
             delta: {
               before: { blob: oldBlob, resource },
               after: { blob, resource },
@@ -401,7 +402,14 @@ export const collectionRouter = router({
 
   getCollectionTags: protectedProcedure
     .input(getCollectionTagsSchema)
-    .query(async ({ input: { resourceId, siteId } }) => {
+    .query(async ({ ctx, input: { resourceId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+        resourceIds: [String(resourceId)],
+      })
+
       const { parentId } = await db
         .selectFrom("Resource")
         .where("id", "=", String(resourceId))
@@ -422,5 +430,33 @@ export const collectionRouter = router({
       })
 
       return (content as unknown as CollectionPageSchemaType).page.tagCategories
+    }),
+  getCollections: protectedProcedure
+    .input(getCollectionsSchema)
+    .query(async ({ ctx, input: { siteId, hasChildren } }) => {
+      // will need permissions to fetch all collections for a site
+      await validateUserPermissionsForSite({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      let query = db.selectFrom("Resource")
+
+      if (hasChildren) {
+        query = query.innerJoin(
+          "Resource as children",
+          "Resource.id",
+          "children.parentId",
+        )
+      }
+
+      return query
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "=", ResourceType.Collection)
+        .orderBy("Resource.title", "asc")
+        .distinct()
+        .selectAll("Resource")
+        .execute()
     }),
 })
