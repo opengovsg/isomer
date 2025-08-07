@@ -1,3 +1,4 @@
+import { useCallback, useEffect } from "react"
 import {
   Modal,
   ModalBody,
@@ -28,34 +29,44 @@ export const RemoveUserModal = () => {
 
   const { siteId, userId } = useAtomValue(removeUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
-  const onClose = () => setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE)
+
+  const onClose = useCallback(
+    () => setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE),
+    [setRemoveUserModalState],
+  )
 
   const isSingpassEnabled = useIsSingpassEnabled()
 
-  const { mutate, isLoading } = trpc.user.delete.useMutation({
-    onSettled: onClose,
-    onSuccess: async (result) => {
-      await utils.user.list.invalidate()
-      await utils.user.count.invalidate()
+  const deleteUserMutation = trpc.user.delete.useMutation()
+
+  useEffect(() => {
+    if (deleteUserMutation.isSuccess || deleteUserMutation.isError) {
+      onClose()
+    }
+  }, [deleteUserMutation.isSuccess, deleteUserMutation.isError, onClose])
+
+  useEffect(() => {
+    if (deleteUserMutation.isSuccess) {
+      void utils.user.list.invalidate()
+      void utils.user.count.invalidate()
       toast({
         status: "success",
-        title: `Removed ${result.email} from site.`,
+        title: `Removed ${deleteUserMutation.data.email} from site.`,
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-    onError: (err) => {
+    }
+  }, [deleteUserMutation.isSuccess, deleteUserMutation.data, utils, toast])
+
+  useEffect(() => {
+    if (deleteUserMutation.isError) {
       toast({
         status: "error",
         title: "Failed to remove user",
-        description: err.message,
+        description: deleteUserMutation.error.message,
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
-
-  const onRemoveUser = () => {
-    mutate({ siteId, userId })
-  }
+    }
+  }, [deleteUserMutation.isError, deleteUserMutation.error, toast])
 
   return (
     <Modal isOpen={!!siteId && !!userId} onClose={onClose}>
@@ -85,8 +96,8 @@ export const RemoveUserModal = () => {
               <Button
                 colorScheme="critical"
                 variant="solid"
-                onClick={onRemoveUser}
-                isLoading={isLoading}
+                onClick={() => deleteUserMutation.mutate({ siteId, userId })}
+                isLoading={deleteUserMutation.isPending}
                 isDisabled={!isSingpassEnabled}
               >
                 Remove user

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import {
   FormControl,
@@ -59,22 +59,34 @@ export const VerificationInput = (): JSX.Element | null => {
     },
   })
 
-  const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation({
-    onSuccess: async () => {
+  const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation()
+
+  useEffect(() => {
+    if (verifyOtpMutation.isSuccess) {
       if (isSingpassEnabled) {
-        await router.push(SIGN_IN_SINGPASS)
+        void router.push(SIGN_IN_SINGPASS)
       } else {
         setHasLoginStateFlag()
-        await utils.me.get.invalidate()
+        void utils.me.get.invalidate()
         // accessing router.query values returns decoded URI params automatically,
         // so there's no need to call decodeURIComponent manually when accessing the callback url.
-        await router.push(
+        void router.push(
           callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]),
         )
       }
-    },
-    onError: (error) => {
-      switch (error.message) {
+    }
+  }, [
+    verifyOtpMutation.isSuccess,
+    setError,
+    isSingpassEnabled,
+    router,
+    utils,
+    setHasLoginStateFlag,
+  ])
+
+  useEffect(() => {
+    if (verifyOtpMutation.isError) {
+      switch (verifyOtpMutation.error.message) {
         case "Token is invalid or has expired":
           setError("token", {
             message:
@@ -88,10 +100,10 @@ export const VerificationInput = (): JSX.Element | null => {
           })
           break
         default:
-          setError("token", { message: error.message })
+          setError("token", { message: verifyOtpMutation.error.message })
       }
-    },
-  })
+    }
+  }, [verifyOtpMutation.isError, verifyOtpMutation.error, setError])
 
   const resendOtpMutation = trpc.auth.email.login.useMutation({
     onError: (error) => setError("token", { message: error.message }),
@@ -125,7 +137,7 @@ export const VerificationInput = (): JSX.Element | null => {
         <FormControl
           id="email"
           isInvalid={!!errors.token}
-          isReadOnly={verifyOtpMutation.isLoading}
+          isReadOnly={verifyOtpMutation.isPending}
           isRequired
         >
           <FormLabel htmlFor="email">Enter OTP</FormLabel>
@@ -163,7 +175,7 @@ export const VerificationInput = (): JSX.Element | null => {
             type="submit"
             // Want to keep loading state until redirection is complete.
             isLoading={
-              verifyOtpMutation.isLoading || verifyOtpMutation.isSuccess
+              verifyOtpMutation.isPending || verifyOtpMutation.isSuccess
             }
             isDisabled={!isValid}
           >
@@ -179,8 +191,8 @@ export const VerificationInput = (): JSX.Element | null => {
             alignSelf="end"
             timer={timer}
             onClick={handleResendOtp}
-            isDisabled={timer > 0 || verifyOtpMutation.isLoading}
-            isLoading={resendOtpMutation.isLoading}
+            isDisabled={timer > 0 || verifyOtpMutation.isPending}
+            isLoading={resendOtpMutation.isPending}
             spinnerFontSize="1rem"
             _loading={{
               justifyContent: "flex-end",

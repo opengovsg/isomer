@@ -116,17 +116,12 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
       totalCount: totalRowCount,
     })
 
-  const { data: users, isFetching } = trpc.user.list.useQuery(
-    {
-      siteId,
-      adminType,
-      limit,
-      offset: skip,
-    },
-    {
-      keepPreviousData: true, // Required for table to show previous data while fetching next page
-    },
-  )
+  const { data: users, isFetching } = trpc.user.list.useQuery({
+    siteId,
+    adminType,
+    limit,
+    offset: skip,
+  })
 
   const tableInstance = useReactTable<UserTableData>({
     columns,

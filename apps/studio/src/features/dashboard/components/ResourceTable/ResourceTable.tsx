@@ -78,17 +78,12 @@ export const ResourceTable = ({
     })
 
   const { data: resources, isFetching } =
-    trpc.resource.listWithoutRoot.useQuery(
-      {
-        siteId,
-        resourceId,
-        limit,
-        offset: skip,
-      },
-      {
-        keepPreviousData: true, // Required for table to show previous data while fetching next page
-      },
-    )
+    trpc.resource.listWithoutRoot.useQuery({
+      siteId,
+      resourceId,
+      limit,
+      offset: skip,
+    })
 
   const tableInstance = useReactTable<ResourceTableData>({
     columns,

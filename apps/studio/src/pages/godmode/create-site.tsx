@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import {
@@ -45,24 +46,30 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
     void router.push(`/`)
   }
 
-  const createSiteMutation = trpc.site.create.useMutation({
-    onSuccess: ({ siteId, siteName }) => {
+  const createSiteMutation = trpc.site.create.useMutation()
+
+  useEffect(() => {
+    if (createSiteMutation.isSuccess) {
+      const { siteId, siteName } = createSiteMutation.data
       toast({
         title: `Site ${siteName} (id: ${siteId}) created successfully`,
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
       })
       void router.push(`/sites/${siteId}`)
-    },
-    onError: (error) => {
+    }
+  }, [createSiteMutation.isSuccess, createSiteMutation.data, toast, router])
+
+  useEffect(() => {
+    if (createSiteMutation.isError) {
       toast({
         title: "Failed to create site",
-        description: error.message,
+        description: createSiteMutation.error.message,
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
       })
-    },
-  })
+    }
+  }, [createSiteMutation.isError, createSiteMutation.error, toast])
 
   const {
     register,
@@ -131,7 +138,7 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
           variant="solid"
           width="full"
           onClick={onSubmit}
-          isLoading={createSiteMutation.isLoading}
+          isLoading={createSiteMutation.isPending}
           isDisabled={Object.keys(errors).length > 0}
         >
           Create Site

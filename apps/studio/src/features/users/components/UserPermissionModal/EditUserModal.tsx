@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import {
   Button,
   FormControl,
@@ -43,11 +43,6 @@ export const EditUserModal = () => {
 
   const isSingpassEnabled = useIsSingpassEnabled()
 
-  const onClose = () => {
-    reset()
-    setUpdateUserModalState(DEFAULT_UPDATE_USER_MODAL_STATE)
-  }
-
   const { watch, handleSubmit, setValue, reset } = useZodForm({
     schema: zod.object({
       role: updateUserInputSchema.shape.role,
@@ -59,32 +54,47 @@ export const EditUserModal = () => {
     },
   })
 
+  const onClose = useCallback(() => {
+    reset()
+    setUpdateUserModalState(DEFAULT_UPDATE_USER_MODAL_STATE)
+  }, [reset, setUpdateUserModalState])
+
   // Update form value when role from atom changes
   useEffect(() => {
     setValue("role", role)
   }, [role, setValue])
 
-  const { mutate, isLoading } = trpc.user.update.useMutation({
-    onSettled: onClose,
-    onSuccess: async () => {
-      await utils.user.list.invalidate()
-      await utils.user.count.invalidate()
+  const updateUserMutation = trpc.user.update.useMutation()
+
+  useEffect(() => {
+    if (updateUserMutation.isSuccess || updateUserMutation.isError) {
+      onClose()
+    }
+  }, [updateUserMutation.isSuccess, updateUserMutation.isError, onClose])
+
+  useEffect(() => {
+    if (updateUserMutation.isSuccess) {
+      void utils.user.list.invalidate()
+      void utils.user.count.invalidate()
       toast({
         status: "success",
         title: `Changes saved!`,
       })
-    },
-    onError: (err) => {
+    }
+  }, [updateUserMutation.isSuccess, utils, toast])
+
+  useEffect(() => {
+    if (updateUserMutation.isError) {
       toast({
         status: "error",
         title: "Failed to update user",
-        description: err.message,
+        description: updateUserMutation.error.message,
       })
-    },
-  })
+    }
+  }, [updateUserMutation.isError, updateUserMutation.error, toast])
 
   const onUpdateUser = handleSubmit((data) => {
-    mutate({
+    updateUserMutation.mutate({
       siteId,
       userId,
       role: data.role,
@@ -159,7 +169,7 @@ export const EditUserModal = () => {
             <Button
               variant="solid"
               onClick={onUpdateUser}
-              isLoading={isLoading}
+              isLoading={updateUserMutation.isPending}
               isDisabled={!isSingpassEnabled}
             >
               Save changes

@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Box, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { LAYOUT_PAGE_MAP } from "@opengovsg/isomer-components"
@@ -176,28 +176,32 @@ export const LinkEditorDrawer = () => {
         siteId,
       },
       {
-        onSuccess: (data) => {
-          setLinkAtom({
-            ...(data.content.page as CollectionLinkProps),
-            title: data.title,
-          })
-          setLinkRef((data.content.page as CollectionLinkProps).ref)
-        },
         refetchOnWindowFocus: false,
       },
     )
-  const { mutate, isLoading } =
-    trpc.collection.updateCollectionLink.useMutation({
-      onSuccess: () => {
-        void utils.collection.readCollectionLink.invalidate()
-        void utils.page.readPage.invalidate()
-        toast({
-          title: "Link updated!",
-          status: "success",
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
+
+  useEffect(() => {
+    setLinkAtom({
+      ...(content.page as CollectionLinkProps),
+      title,
     })
+    setLinkRef((content.page as CollectionLinkProps).ref)
+  }, [content.page, title, setLinkAtom, setLinkRef])
+
+  const updateCollectionLinkMutation =
+    trpc.collection.updateCollectionLink.useMutation()
+
+  useEffect(() => {
+    if (updateCollectionLinkMutation.isSuccess) {
+      void utils.collection.readCollectionLink.invalidate()
+      void utils.page.readPage.invalidate()
+      toast({
+        title: "Link updated!",
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [updateCollectionLinkMutation.isSuccess, utils, toast])
 
   const savedPageState = {
     ...(content.page as CollectionLinkProps),
@@ -211,9 +215,11 @@ export const LinkEditorDrawer = () => {
       <DrawerState
         savedPageState={savedPageState}
         previewPageState={data}
-        isLoading={isLoading}
+        isLoading={updateCollectionLinkMutation.isPending}
         handleChange={handleChange}
-        handleSaveChanges={() => mutate({ siteId, linkId, ...data })}
+        handleSaveChanges={() =>
+          updateCollectionLinkMutation.mutate({ siteId, linkId, ...data })
+        }
       />
     </ErrorProvider>
   )

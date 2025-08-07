@@ -37,29 +37,8 @@ const siteSettingsSchema = z.object({
 const SiteSettingsPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
-  const trpcUtils = trpc.useUtils()
+  const utils = trpc.useUtils()
   const { siteId } = useQueryParse(siteSettingsSchema)
-
-  const notificationMutation = trpc.site.setNotification.useMutation({
-    onSuccess: async () => {
-      reset({ notificationEnabled, notification })
-      await trpcUtils.site.getNotification.invalidate({ siteId })
-      toast({
-        title: "Saved site settings!",
-        description: "Check your site in 5-10 minutes to view it live.",
-        status: "success",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-    onError: () => {
-      toast({
-        title: "Error saving site settings!",
-        description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
-        status: "error",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-  })
 
   const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
     siteId,
@@ -117,6 +96,40 @@ const SiteSettingsPage: NextPageWithLayout = () => {
       })
     },
   )
+
+  const notificationMutation = trpc.site.setNotification.useMutation()
+
+  useEffect(() => {
+    if (notificationMutation.isSuccess) {
+      reset({ notificationEnabled, notification })
+      void utils.site.getNotification.invalidate({ siteId })
+      toast({
+        title: "Saved site settings!",
+        description: "Check your site in 5-10 minutes to view it live.",
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [
+    notificationMutation.isSuccess,
+    reset,
+    notificationEnabled,
+    notification,
+    siteId,
+    toast,
+    utils,
+  ])
+
+  useEffect(() => {
+    if (notificationMutation.isError) {
+      toast({
+        title: "Error saving site settings!",
+        description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
+  }, [notificationMutation.isError, toast])
 
   return (
     <>
@@ -205,7 +218,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
 
                 <Button
                   type="submit"
-                  isLoading={notificationMutation.isLoading}
+                  isLoading={notificationMutation.isPending}
                   // NOTE: we only validate that it is non empty
                   // because zod form prevents us from going over 100 characters.
                   isDisabled={

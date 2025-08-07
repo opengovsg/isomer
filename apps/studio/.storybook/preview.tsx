@@ -71,8 +71,7 @@ const SetupDecorator: Decorator = (Story, { parameters }) => {
   )
   const [trpcClient] = useState(() =>
     trpc.createClient({
-      links: [httpLink({ url: "" })],
-      transformer: superjson,
+      links: [httpLink({ url: "", transformer: superjson })],
     }),
   )
   return (
