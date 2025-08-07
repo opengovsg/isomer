@@ -16,7 +16,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 
 export const jsonFormsTaggedControlTester: RankedTester = rankWith(
-  JSON_FORMS_RANKING.ArrayControl,
+  JSON_FORMS_RANKING.TaggedControl,
   and(schemaMatches((schema) => schema.format === "tagged")),
 )
 

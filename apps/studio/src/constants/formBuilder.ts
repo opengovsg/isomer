@@ -1,6 +1,7 @@
 // Rankings are adapted from JSONForms' Material Renderers package
 export const JSON_FORMS_RANKING = {
   ArrayControl: 4,
+  TaggedControl: 4,
   BooleanControl: 2,
   ConstControl: 2,
   HiddenControl: 99999999999, // Always rendered first
