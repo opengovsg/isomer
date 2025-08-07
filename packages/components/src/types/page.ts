@@ -1,4 +1,4 @@
-import type { Static } from "@sinclair/typebox"
+import type { Static, StringOptions } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { CollectionVariant } from "./variants"
@@ -12,11 +12,25 @@ import { REF_HREF_PATTERN } from "~/utils/validation"
 
 // NOTE: a tag value is simply a uuid that maps to a given label;
 // essentially, it is just a pointer
-const UuidSchema = Type.String({ format: "uuid" })
-export const TagValueSchema = UuidSchema
+const generateUuidSchema = (options: Omit<StringOptions, "format">) =>
+  Type.String({ format: "uuid", ...options })
+
+export const TagOptionUuidSchema = generateUuidSchema({
+  title: "Uuid of a single tag option",
+  description:
+    "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
+})
+export const TagCategoryUuidSchema = generateUuidSchema({
+  title: "Uuid of a single tag",
+  description:
+    "This is the uuid of a single tag category and will be used to uniquely identify it.",
+})
 // NOTE: single value for now but we might extend this in the future with additional metadata,
 // so we will leave it as is
-const DropdownItemSchema = Type.Object({ label: Type.String(), id: UuidSchema })
+const DropdownItemSchema = Type.Object({
+  label: Type.String(),
+  id: TagOptionUuidSchema,
+})
 const TagOptionSchema = DropdownItemSchema
 const TagCategorySchema = Type.Composite([
   Type.Object({
@@ -34,7 +48,10 @@ const TaggedSchema = Type.Optional(
   // we cannot just store a plain array of `uuid`
   // because we need to render each category as a dropdown
   Type.Array(
-    Type.Object({ id: TagValueSchema, values: Type.Array(TagValueSchema) }),
+    Type.Object({
+      id: TagCategoryUuidSchema,
+      values: Type.Array(TagOptionUuidSchema),
+    }),
     {
       // NOTE: we need a custom format because this cannot just be a simple drop down
       // as we need to reference the existing data that is pointing to this
