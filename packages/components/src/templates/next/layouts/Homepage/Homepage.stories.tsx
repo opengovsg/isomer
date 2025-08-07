@@ -142,6 +142,7 @@ const generateArgs = ({
         ],
       },
       navbar: {
+        variant: "default",
         items: [
           {
             name: "About us",
