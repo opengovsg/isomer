@@ -321,6 +321,7 @@ export const ExpandMobileWithLinkMultipleWords: Story = {
 
 export const UtilityLinksDesktop: Story = {
   args: generateNavbarArgs({
+    variant: "utility",
     utility: {
       label: "Custom label",
       items: [
@@ -338,6 +339,7 @@ export const UtilityLinksDesktop: Story = {
 
 export const UtilityLinksMobile: Story = {
   args: generateNavbarArgs({
+    variant: "utility",
     utility: {
       label: "Quick links",
       items: [
