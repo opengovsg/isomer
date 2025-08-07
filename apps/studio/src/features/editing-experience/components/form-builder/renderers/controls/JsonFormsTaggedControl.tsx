@@ -49,7 +49,7 @@ export function JsonFormsTaggedControl({
           <FormControl isRequired={required} gap="0.5rem">
             <FormLabel description={description}>{label}</FormLabel>
             <MultiSelect
-              values={currentTagCategory?.values || []}
+              values={currentTagCategory?.values ?? []}
               name={label}
               items={options.map(({ label, id }) => ({ value: id, label }))}
               onChange={(value) => {
