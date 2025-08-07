@@ -358,6 +358,5 @@ export const UtilityLinksMobile: Story = {
     await userEvent.click(
       canvas.getByRole("button", { name: /open navigation menu/i }),
     )
-    await userEvent.click(canvas.getByRole("button", { name: /max 70 chars/i }))
   },
 }
