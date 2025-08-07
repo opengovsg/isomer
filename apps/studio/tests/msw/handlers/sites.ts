@@ -1,5 +1,6 @@
 import type { DelayMode } from "msw"
 import { delay } from "msw"
+import { UnwrapTagged } from "type-fest"
 
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
@@ -163,6 +164,7 @@ export const sitesHandlers = {
           id: 1,
           siteId: 1,
           content: {
+            variant: "default",
             items: [
               {
                 url: "/item-one",

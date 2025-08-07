@@ -108,6 +108,7 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
       .insertInto("Navbar")
       .values({
         content: jsonb({
+          variant: "default",
           items: [
             {
               url: "/item-one",

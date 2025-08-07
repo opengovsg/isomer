@@ -12,11 +12,10 @@ import { Link } from "../../Link"
 import { LinkButton } from "../../LinkButton/LinkButton"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
 
-interface MobileNavMenuProps
-  extends Pick<
-    NavbarClientProps,
-    "items" | "callToAction" | "utility" | "LinkComponent"
-  > {
+type MobileNavMenuProps = OmitFromUnion<
+  NavbarClientProps,
+  "layout" | "imageClientProps" | "ScriptComponent"
+> & {
   top: number | undefined
   openNavItemIdx: number
   setOpenNavItemIdx: Dispatch<SetStateAction<number>>
@@ -28,12 +27,11 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     {
       top,
       items,
-      callToAction,
-      utility,
       LinkComponent,
       openNavItemIdx,
       setOpenNavItemIdx,
       onCloseMenu,
+      ...rest
     },
     mobileMenuRef,
   ) => {
@@ -49,16 +47,16 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
       >
         <FocusScope contain restoreFocus>
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
-            {callToAction && (
+            {rest.variant === "callToAction" && (
               <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
                 <LinkButton
-                  href={callToAction.referenceLinkHref}
-                  isExternal={callToAction.isExternal}
+                  href={rest.callToAction.url}
+                  isExternal={isExternalUrl(rest.callToAction.url)}
                   className="h-fit w-full justify-center"
                   isWithFocusVisibleHighlight
                   LinkComponent={LinkComponent}
                 >
-                  {callToAction.label}
+                  {rest.callToAction.label}
                 </LinkButton>
               </div>
             )}
@@ -77,14 +75,14 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                 {...item}
               />
             ))}
-            {utility && (
+            {rest.variant === "utility" && (
               <div className="flex flex-col items-start gap-3 self-stretch bg-base-canvas-alt px-6 py-4">
                 <p className="prose-label-sm-medium text-base-content-strong">
-                  {utility.label || "Quick links"}
+                  {rest.utility.label || "Quick links"}
                 </p>
 
                 <ul className="flex flex-col gap-3">
-                  {utility.items.map((item, index) => (
+                  {rest.utility.items.map((item, index) => (
                     <li key={`${item.name}-${index}`}>
                       <Link
                         LinkComponent={LinkComponent}

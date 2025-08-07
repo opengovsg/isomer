@@ -57,11 +57,10 @@ export const NavbarClient = ({
   layout,
   search,
   items,
-  callToAction,
-  utility,
   imageClientProps,
   LinkComponent,
-}: Omit<NavbarClientProps, "type">) => {
+  ...rest
+}: NavbarClientProps) => {
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -117,13 +116,13 @@ export const NavbarClient = ({
           </Link>
 
           <div className={navbarStyles.navigationSection()}>
-            {utility && (
+            {rest.variant === "utility" && (
               <div className={navbarStyles.utilityNavigationSection()}>
                 <p className={navbarStyles.utilityItemsHeader()}>
-                  {utility.label || "Quick links"}
+                  {rest.utility.label || "Quick links"}
                 </p>
                 <ul className={navbarStyles.utilityItemsList()}>
-                  {utility.items.map((item, index) => (
+                  {rest.utility.items.map((item, index) => (
                     <li key={`${item.name}-${index}`}>
                       <Link
                         LinkComponent={LinkComponent}
@@ -165,16 +164,16 @@ export const NavbarClient = ({
               </ul>
 
               {/* Call To Action button */}
-              {callToAction && (
+              {rest.variant === "callToAction" && (
                 <LinkButton
-                  href={callToAction.referenceLinkHref}
-                  isExternal={callToAction.isExternal}
+                  href={rest.callToAction.url}
+                  isExternal={isExternalUrl(rest.callToAction.url)}
                   size="sm"
                   className={navbarStyles.callToAction()}
                   isWithFocusVisibleHighlight
                   LinkComponent={LinkComponent}
                 >
-                  {callToAction.label}
+                  {rest.callToAction.label}
                 </LinkButton>
               )}
 
@@ -247,13 +246,12 @@ export const NavbarClient = ({
         <MobileNavMenu
           top={mobileNavbarTopPx}
           items={items}
-          callToAction={callToAction}
-          utility={utility}
           openNavItemIdx={openNavItemIdx}
           setOpenNavItemIdx={setOpenNavItemIdx}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           LinkComponent={LinkComponent}
           onCloseMenu={onCloseMenu}
+          {...rest}
         />
       )}
     </div>

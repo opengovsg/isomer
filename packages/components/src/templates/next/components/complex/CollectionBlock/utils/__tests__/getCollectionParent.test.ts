@@ -17,7 +17,7 @@ describe("getCollectionParent", () => {
     },
     lastUpdated: "2021-01-01",
     // IsomerSiteWideComponentsProps
-    navbar: { items: [] }, // Provide minimal valid value
+    navbar: { variant: "default", items: [] }, // Provide minimal valid value
     footerItems: {
       contactUsLink: "/contact-us",
       privacyStatementLink: "/privacy",

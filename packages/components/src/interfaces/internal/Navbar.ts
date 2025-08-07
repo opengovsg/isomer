@@ -1,4 +1,5 @@
 import type { Static } from "@sinclair/typebox"
+import type { Simplify } from "type-fest"
 import { Type } from "@sinclair/typebox"
 
 import type { ImageClientProps } from "./Image"
@@ -51,61 +52,79 @@ const NavbarItemSchema = Type.Object({
   ),
 })
 
-export const NavbarSchema = Type.Object({
+const NavbarBaseSchema = Type.Object({
   items: Type.Array(NavbarItemSchema, {
     title: "Navbar items",
     description: "List of items to be displayed in the navbar",
   }),
-  callToAction: Type.Optional(
-    Type.Object({
-      label: Type.String({
-        title: "Label for the call to action button",
-        maxLength: 30,
-      }),
-      url: Type.String({
-        title: "URL destination of the call to action button",
-        format: "link",
-      }),
-    }),
-  ),
-  // TODO: Convert callToAction and utility into variants that are mutually exclusive
-  utility: Type.Optional(
-    Type.Object({
-      label: Type.Optional(
-        Type.String({
-          title: "Label for the list of utility links",
-          maxLength: 30,
-        }),
-      ),
-      items: Type.Array(
-        Type.Object({
-          name: Type.String({
-            title: "Name of the utility link",
-            maxLength: 30,
-          }),
-          url: Type.String({
-            title: "URL destination of the utility link",
-            format: "link",
-          }),
-        }),
-        {
-          maxItems: 4,
-        },
-      ),
-    }),
-  ),
 })
 
-type NavbarItemSchemaType = Static<typeof NavbarItemSchema>
-type NavbarItem = NavbarItemSchemaType & {
-  referenceLinkHref?: string
-}
-export type NavbarItemProps = Omit<NavbarItem, "items"> & {
-  items?: NavbarItem[]
-}
+const NavbarDefaultVariant = Type.Object({
+  variant: Type.Literal("default", { default: "default" }),
+})
 
-export type NavbarSchemaType = Static<typeof NavbarSchema>
-type BaseNavbarProps = Omit<NavbarSchemaType, "items"> & {
+const NavbarCallToActionVariant = Type.Object({
+  variant: Type.Literal("callToAction", { default: "callToAction" }),
+  callToAction: Type.Object({
+    label: Type.String({
+      title: "Label for the call to action button",
+      maxLength: 30,
+    }),
+    url: Type.String({
+      title: "URL destination of the call to action button",
+      format: "link",
+    }),
+  }),
+})
+
+const NavbarUtilityVariant = Type.Object({
+  variant: Type.Literal("utility", { default: "utility" }),
+  utility: Type.Object({
+    label: Type.Optional(
+      Type.String({
+        title: "Label for the list of utility links",
+        maxLength: 30,
+      }),
+    ),
+    items: Type.Array(
+      Type.Object({
+        name: Type.String({
+          title: "Name of the utility link",
+          maxLength: 30,
+        }),
+        url: Type.String({
+          title: "URL destination of the utility link",
+          format: "link",
+        }),
+      }),
+      {
+        maxItems: 4,
+      },
+    ),
+  }),
+})
+
+export const NavbarSchema = Type.Intersect(
+  [
+    NavbarBaseSchema,
+    Type.Union([
+      NavbarDefaultVariant,
+      NavbarCallToActionVariant,
+      NavbarUtilityVariant,
+    ]),
+  ],
+  {
+    title: "Navbar Schema",
+    description:
+      "Schema for the navbar component, including items and variants",
+  },
+)
+
+type NavbarItemSchemaType = Static<typeof NavbarItemSchema>
+export type NavbarItemProps = NavbarItemSchemaType
+export type NavbarSchemaType = Simplify<Static<typeof NavbarSchema>>
+
+type BaseNavbarProps = OmitFromUnion<NavbarSchemaType, "items"> & {
   layout: IsomerPageLayoutType
   search?: LocalSearchProps | SearchSGInputBoxProps
   LinkComponent?: LinkComponentType
@@ -118,10 +137,7 @@ export type NavbarProps = BaseNavbarProps & {
   logoAlt: string
   site: IsomerSiteProps
 }
-export type NavbarClientProps = Omit<BaseNavbarProps, "callToAction"> & {
-  callToAction?: Omit<NonNullable<NavbarProps["callToAction"]>, "url"> & {
-    referenceLinkHref?: string
-    isExternal: boolean
-  }
+
+export type NavbarClientProps = OmitFromUnion<BaseNavbarProps, "type"> & {
   imageClientProps: ImageClientProps
 }

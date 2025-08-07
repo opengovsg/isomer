@@ -19,6 +19,7 @@ export const generateSiteConfig = (
     url: "https://www.isomer.gov.sg",
     logoUrl: "/isomer-logo.svg",
     navbar: {
+      variant: "default",
       items: [
         {
           name: "Home",

@@ -52,7 +52,6 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
       LinkComponent,
       name,
       url,
-      referenceLinkHref,
       description,
       isOpen,
       onClick,
@@ -67,7 +66,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
             LinkComponent={LinkComponent}
             isExternal={isExternalUrl(url)}
             showExternalIcon={isExternalUrl(url)}
-            href={referenceLinkHref}
+            href={url}
             className={focusVisibleHighlight()}
           >
             {name}
@@ -86,7 +85,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
           <Megamenu
             name={name}
             description={description}
-            referenceLinkHref={referenceLinkHref}
+            url={url}
             items={items}
             LinkComponent={LinkComponent}
             onCloseMegamenu={onCloseMegamenu}
@@ -100,32 +99,29 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
 const Megamenu = ({
   name,
   description,
-  referenceLinkHref,
+  url,
   onCloseMegamenu,
   items,
   LinkComponent,
-}: Pick<
-  BaseNavbarItemProps,
-  "name" | "description" | "referenceLinkHref" | "items"
-> & {
+}: Pick<BaseNavbarItemProps, "name" | "description" | "url" | "items"> & {
   LinkComponent: NavbarProps["LinkComponent"]
   onCloseMegamenu: () => void
 }) => {
   useScrollLock()
 
   const renderTitleContent = () => {
-    if (!referenceLinkHref) {
+    if (!url) {
       return name
     }
 
-    const isExternal = isExternalUrl(referenceLinkHref)
+    const isExternal = isExternalUrl(url)
     return (
       <Link
         LinkComponent={LinkComponent}
         isExternal={isExternal}
         showExternalIcon={isExternal}
         isWithFocusVisibleHighlight
-        href={referenceLinkHref}
+        href={url}
         className="group inline-flex w-fit items-center gap-1 hover:text-brand-interaction-hover hover:no-underline"
       >
         {name}
@@ -178,7 +174,7 @@ const Megamenu = ({
                         isExternal={isExternal}
                         showExternalIcon={isExternal}
                         isWithFocusVisibleHighlight
-                        href={subItem.referenceLinkHref}
+                        href={subItem.url}
                         className="group prose-label-md-medium w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
                       >
                         {subItem.name}
