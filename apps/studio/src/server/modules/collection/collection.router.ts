@@ -410,17 +410,16 @@ export const collectionRouter = router({
         resourceIds: [String(resourceId)],
       })
 
-      const { parentId } = await db
-        .selectFrom("Resource")
-        .where("id", "=", String(resourceId))
-        .where("siteId", "=", siteId)
-        .select("parentId")
-        .executeTakeFirstOrThrow()
-
       const indexPage = await db
         .selectFrom("Resource")
         .where("type", "=", ResourceType.IndexPage)
-        .where("parentId", "=", parentId)
+        .where("parentId", "=", (eb) =>
+          eb
+            .selectFrom("Resource")
+            .where("id", "=", String(resourceId))
+            .where("siteId", "=", siteId)
+            .select("parentId"),
+        )
         .select("id")
         .executeTakeFirstOrThrow()
 
@@ -431,6 +430,7 @@ export const collectionRouter = router({
 
       return (content as unknown as CollectionPageSchemaType).page.tagCategories
     }),
+
   getCollections: protectedProcedure
     .input(getCollectionsSchema)
     .query(async ({ ctx, input: { siteId, hasChildren } }) => {
