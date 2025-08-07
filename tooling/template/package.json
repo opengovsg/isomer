@@ -26,7 +26,7 @@
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21"
+    "@types/node": "^24.0.10"
   },
   "prettier": "@isomer/prettier-config"
 }
