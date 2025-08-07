@@ -16,6 +16,8 @@ import { BiTrash } from "react-icons/bi"
 import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import type { LinkEditorModalProps } from "~/components/PageEditor/LinkEditorModal"
 import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
@@ -30,9 +32,14 @@ const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
   }
 }
 
-const SuspendableLabel = ({ resourceId }: { resourceId: string }) => {
+interface SuspendableLabelProps {
+  siteId: number
+  resourceId: string
+}
+const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
   const [{ fullPermalink }] =
     trpc.resource.getWithFullPermalink.useSuspenseQuery({
+      siteId,
       resourceId,
     })
 
@@ -67,6 +74,7 @@ export function BaseLinkControl({
     dataString,
     pageType as LinkTypesWithHrefFormat,
   )
+  const { siteId } = useQueryParse(sitePageSchema)
 
   return (
     <>
@@ -89,6 +97,7 @@ export function BaseLinkControl({
                 {pageType === LINK_TYPES.Page && dataString.length > 0 && (
                   <Suspense fallback={<Skeleton w="100%" h="100%" />}>
                     <SuspendableLabel
+                      siteId={Number(siteId)}
                       resourceId={getResourceIdFromReferenceLink(dataString)}
                     />
                   </Suspense>

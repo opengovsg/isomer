@@ -10,7 +10,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
-import { editPageSchema } from "../schema"
+import { pageSchema } from "../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
 import { RawJsonEditor } from "./RawJsonEditor"
 
@@ -24,7 +24,7 @@ export default function RawJsonEditorModeStateDrawer(): JSX.Element {
     previewPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
-  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const [pendingChanges, setPendingChanges] = useState(
     JSON.stringify(savedPageState, null, 2),

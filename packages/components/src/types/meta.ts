@@ -1,6 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+export const META_IMAGE_FORMAT = "meta-image"
+
 const BaseItemMetaSchema = Type.Object({
   description: Type.Optional(
     Type.String({
@@ -29,7 +31,7 @@ const BasePageMetaSchema = Type.Composite([
         title: "Meta image",
         description:
           "This image may appear when the page is shared on social media such as LinkedIn or Facebook.",
-        format: "meta-image",
+        format: META_IMAGE_FORMAT,
       }),
     ),
   }),

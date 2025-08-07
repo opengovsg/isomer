@@ -44,6 +44,7 @@ const ContentSecurityPolicy = `
     https://www.youtube-nocookie.com
     https://www.onemap.gov.sg
     https://www.facebook.com
+    https://maps.gov.sg
     ;
   object-src 'none';
   script-src
@@ -100,6 +101,7 @@ const ContentSecurityPolicy = `
     https://uploads.au.intercomcdn.com
     https://uploads.eu.intercomcdn.com
     https://uploads.intercomusercontent.com
+    https://*.data.gov.sg
     ;
   worker-src
     'self'

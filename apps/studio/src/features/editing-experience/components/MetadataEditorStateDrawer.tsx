@@ -15,7 +15,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { editPageSchema } from "../schema"
+import { pageSchema } from "../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
@@ -42,7 +42,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     setPreviewPageState,
   } = useEditorDrawerContext()
 
-  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
@@ -138,12 +138,14 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               </Box>
             )}
 
-            <FormBuilder<Static<typeof metadataSchema>>
-              schema={metadataSchema}
-              validateFn={validateFn}
-              data={previewPageState.page}
-              handleChange={(data) => handleChange(data)}
-            />
+            <Box mb="1rem">
+              <FormBuilder<Static<typeof metadataSchema>>
+                schema={metadataSchema}
+                validateFn={validateFn}
+                data={previewPageState.page}
+                handleChange={(data) => handleChange(data)}
+              />
+            </Box>
           </Box>
           <Box
             bgColor="base.canvas.default"

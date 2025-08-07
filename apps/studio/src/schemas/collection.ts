@@ -65,3 +65,8 @@ export const createCollectionSchema = z.object({
   // Nullable for top level folder
   parentFolderId: z.number().optional(),
 })
+
+export const getCollectionsSchema = z.object({
+  siteId: z.number().min(1),
+  hasChildren: z.boolean().optional().default(false),
+})

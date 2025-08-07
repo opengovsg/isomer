@@ -7,6 +7,7 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { IsomerSitemap } from "~/engine"
 import { type CollectionPageSchemaType } from "~/engine"
+import { generateSiteConfig } from "~/stories/helpers"
 import CollectionLayout from "./Collection"
 
 const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
@@ -81,7 +82,7 @@ const generateArgs = ({
 } = {}): CollectionPageSchemaType => {
   return {
     layout: "collection",
-    site: {
+    site: generateSiteConfig({
       siteName: "Isomer Next",
       siteMap: {
         id: "1",
@@ -118,146 +119,7 @@ const generateArgs = ({
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      logoUrl: "/isomer-logo.svg",
-      navbar: {
-        items: [
-          {
-            name: "About us",
-            url: "/item-one",
-            items: [
-              {
-                name: "PA's network one",
-                url: "/item-one/pa-network-one",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
-              },
-              {
-                name: "PA's network two",
-                url: "/item-one/pa-network-two",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
-              },
-              {
-                name: "PA's network three",
-                url: "/item-one/pa-network-three",
-              },
-              {
-                name: "PA's network four",
-                url: "/item-one/pa-network-four",
-                description:
-                  "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-              },
-              {
-                name: "PA's network five",
-                url: "/item-one/pa-network-five",
-                description:
-                  "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-              },
-              {
-                name: "PA's network six",
-                url: "/item-one/pa-network-six",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
-              },
-            ],
-          },
-          {
-            name: "Industries",
-            url: "/item-two",
-            description: "This is a description of the item.",
-            items: [
-              {
-                name: "A sub item",
-                url: "/item-two/sub-item",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
-              },
-              {
-                name: "Another sub item",
-                url: "/item-two/another-sub-item",
-              },
-            ],
-          },
-          {
-            name: "Media",
-            url: "/item-three",
-            items: [
-              {
-                name: "A sub item",
-                url: "/item-three/sub-item",
-              },
-              {
-                name: "Another sub item",
-                url: "/item-three/another-sub-item",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
-              },
-            ],
-          },
-          {
-            name: "Careers",
-            url: "/item-four",
-            items: [
-              {
-                name: "A sub item",
-                url: "/item-four/sub-item",
-              },
-              {
-                name: "Another sub item",
-                url: "/item-four/another-sub-item",
-              },
-            ],
-          },
-          {
-            name: "Publications",
-            url: "/item-five",
-            items: [
-              {
-                name: "A sub item",
-                url: "/item-five/sub-item",
-              },
-              {
-                name: "Another sub item",
-                url: "/item-five/another-sub-item",
-              },
-            ],
-          },
-          {
-            name: "Newsroom",
-            url: "/item-six",
-            items: [
-              {
-                name: "A sub item",
-                url: "/item-six/sub-item",
-              },
-              {
-                name: "Another sub item",
-                url: "/item-six/another-sub-item",
-              },
-            ],
-          },
-          {
-            name: "Contact us",
-            url: "/single-item",
-          },
-        ],
-      },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-      notification: {
-        content: [{ type: "text", text: "This is a short notification" }],
-      },
-    },
+    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },

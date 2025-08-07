@@ -3,7 +3,6 @@ import { useRouter } from "next/router"
 import { Flex } from "@chakra-ui/react"
 import { BiCog, BiFolder, BiLogOut, BiStar } from "react-icons/bi"
 import { PiUsersBold } from "react-icons/pi"
-import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
@@ -11,6 +10,7 @@ import { CmsContainer, CmsSidebar } from "~/components/CmsSidebar"
 import { LayoutHead } from "~/components/LayoutHead"
 import { SearchableHeader } from "~/components/SearchableHeader"
 import { DirectorySidebar } from "~/features/dashboard/components/DirectorySidebar"
+import { siteSchema } from "~/features/editing-experience/schema"
 import { useMe } from "~/features/me/api"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -33,10 +33,6 @@ export const AdminCmsSearchableLayout: GetLayout = (page) => {
     </EnforceLoginStatePageWrapper>
   )
 }
-
-const siteSchema = z.object({
-  siteId: z.coerce.string(),
-})
 
 // Extracted out since this needs to be a child of EnforceLoginStatePageWrapper
 const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
