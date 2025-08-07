@@ -1,6 +1,5 @@
 import { FormControl, VStack } from "@chakra-ui/react"
 import {
-  and,
   ControlProps,
   RankedTester,
   rankWith,
@@ -17,7 +16,7 @@ import { trpc } from "~/utils/trpc"
 
 export const jsonFormsTaggedControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TaggedControl,
-  and(schemaMatches((schema) => schema.format === "tagged")),
+  schemaMatches((schema) => schema.format === "tagged"),
 )
 
 interface TaggedControlProps extends Omit<ControlProps, "data"> {
