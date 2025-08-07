@@ -1460,6 +1460,70 @@ export const Default: Story = {
           },
         ],
       },
+      {
+        type: "contactinformation",
+        entityName: "Sentosa",
+        entityDetails: [
+          {
+            label: "Ambassador (Non-Resident)",
+            values: ["Mr MOHAMMAD Alami Musa"],
+          },
+          {
+            label: "Chancery",
+            values: [
+              "c/o Ministry of Foreign Affairs",
+              "Tanglin",
+              "Singapore 248163",
+            ],
+          },
+        ],
+        description: "Embassy of the Republic of Singapore - Algeria",
+        telephone: {
+          label: "Telephone",
+          values: ["+65-63798000 (MFA)"],
+        },
+        fax: {
+          label: "Fax",
+          values: ["+65-64747885 (MFA)"],
+        },
+        email: {
+          label: "Email",
+          values: [
+            "do-not-reply@isomer.gov.sg",
+            "do-not-reply-pelase@isomer.gov.sg",
+          ],
+        },
+        website: {
+          label: "Website",
+          values: ["https://www.isomer.gov.sg", "https://sample.isomer.gov.sg"],
+        },
+        emergencyContact: {
+          label: "In the case of emergency",
+          values: ["+65 5678 1234"],
+          caption: "(after hours)",
+        },
+        operatingHours: {
+          label: "Operating Hours",
+          values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
+        },
+        otherMethods: [
+          {
+            label: "Telegram",
+            values: ["https://t.me/isomer_gov_sg"],
+          },
+          {
+            label: "WhatsApp",
+            values: ["+65-63798000 (MFA)"],
+          },
+        ],
+        otherInformation: {
+          label: "Other Information",
+          value:
+            "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+        },
+        url: "/",
+        label: "I can't even help myself",
+      },
     ],
   },
 }

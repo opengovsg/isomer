@@ -544,6 +544,27 @@ const generateArgs = ({
         imageSrc: "https://placehold.co/600x600",
         imageAlt: "This is the alt text",
       },
+      {
+        type: "contactinformation",
+        entityName: "Contact the High Commission of Canberra",
+        description:
+          "Click “More ways to contact us” to find our address, fax number, and other contact details.",
+        telephone: {
+          label: "Call us",
+          values: ["+61 2 6271 2000"],
+        },
+        emergencyContact: {
+          label: "In the case of emergency",
+          values: ["+65 5678 1234"],
+          caption: "(after hours)",
+        },
+        email: {
+          label: "Email us",
+          values: ["singhc_cbr@mfa.sg"],
+        },
+        url: "/",
+        label: "More ways to contact us",
+      },
     ],
   }
 }
