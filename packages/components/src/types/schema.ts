@@ -34,6 +34,7 @@ import {
   DatabasePagePageSchema,
   FileRefPageSchema,
   HomePagePageSchema,
+  IndexPagePageSchema,
   LinkRefPageSchema,
   SearchPagePageSchema,
 } from "./page"
@@ -160,7 +161,7 @@ export const IndexPageSchema = Type.Object(
       default: ISOMER_PAGE_LAYOUTS.Index,
     }),
     meta: Type.Optional(ContentPageMetaSchema),
-    page: ContentPagePageSchema,
+    page: IndexPagePageSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),
