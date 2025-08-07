@@ -92,7 +92,7 @@ const withContextToControlWithDetailProps = (
   }: JsonFormsStateContext & ControlWithDetailProps) {
     // NOTE: provides `handleChange` for our method.
     // Unfortunately, the `ctx` is typed as `any` here
-    // and requires suprresion.
+    // and requires suppression.
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const dispatchProps = ctxDispatchToControlProps(ctx.dispatch)
     // NOTE: provides `uischemas, renderers, cells`
