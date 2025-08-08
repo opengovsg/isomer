@@ -129,6 +129,7 @@ export const NavbarClient = ({
                         className={navbarStyles.utilityItem()}
                         href={item.url}
                         isExternal={isExternalUrl(item.url)}
+                        showExternalIcon={isExternalUrl(item.url)}
                       >
                         {item.name}
                       </Link>

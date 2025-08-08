@@ -92,6 +92,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                         })}
                         href={item.url}
                         isExternal={isExternalUrl(item.url)}
+                        showExternalIcon={isExternalUrl(item.url)}
                       >
                         {item.name}
                       </Link>
