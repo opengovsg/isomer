@@ -40,15 +40,11 @@ const meta: Meta<NavbarProps> = {
 export default meta
 type Story = StoryObj<typeof Navbar>
 
-const generateNavbarArgs = ({
-  callToAction = undefined,
-}: {
-  callToAction?: {
-    label: string
-    url: string
-  }
-}): Partial<NavbarProps> => {
+const generateNavbarArgs = (
+  overrides?: Partial<NavbarProps>,
+): Partial<NavbarProps> => {
   return {
+    variant: "default",
     logoUrl: "/isomer-logo.svg",
     logoAlt: "Isomer logo",
     search: {
@@ -151,14 +147,14 @@ const generateNavbarArgs = ({
         url: "/single-item",
       },
     ],
-    callToAction,
     site: generateSiteConfig(),
+    ...overrides,
   }
 }
 
 // Default scenario
 export const Default: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     chromatic: {
       ...withChromaticModes(["desktop", "mobile"]),
@@ -168,6 +164,7 @@ export const Default: Story = {
 
 export const CallToAction: Story = {
   args: generateNavbarArgs({
+    variant: "callToAction",
     callToAction: {
       label: "Login to Donation Portal",
       url: "/call-to-action",
@@ -179,7 +176,7 @@ export const CallToAction: Story = {
 }
 
 export const ExpandFirstItem: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     viewport: {
       defaultViewport: getViewportByMode("desktop"),
@@ -196,7 +193,7 @@ export const ExpandFirstItem: Story = {
 }
 
 export const ExpandNavbarItemWithLink: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     viewport: {
       defaultViewport: getViewportByMode("desktop"),
@@ -217,7 +214,7 @@ export const ExpandNavbarItemWithLink: Story = {
 }
 
 export const ExpandSearch: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: Default.parameters,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -231,7 +228,7 @@ export const ExpandSearch: Story = {
 }
 
 export const Mobile: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     chromatic: withChromaticModes(["mobile"]),
     viewport: {
@@ -247,7 +244,7 @@ export const Mobile: Story = {
 }
 
 export const ExpandMobile: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     chromatic: withChromaticModes(["mobile"]),
     viewport: {
@@ -286,7 +283,7 @@ export const MobileCallToAction: Story = {
 
 export const ExpandMobileWithLinkOneWord: Story = {
   name: "Expand Mobile With Link (one word)",
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
     viewport: {
@@ -304,7 +301,7 @@ export const ExpandMobileWithLinkOneWord: Story = {
 
 export const ExpandMobileWithLinkMultipleWords: Story = {
   name: "Expand Mobile With Link (multiple words)",
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
     viewport: {
@@ -318,6 +315,50 @@ export const ExpandMobileWithLinkMultipleWords: Story = {
     )
     await userEvent.click(
       canvas.getByRole("button", { name: /Longer item with 30 characters/i }),
+    )
+  },
+}
+
+export const UtilityLinksDesktop: Story = {
+  args: generateNavbarArgs({
+    variant: "utility",
+    utility: {
+      label: "Custom label",
+      items: [
+        { name: "First link", url: "/link-1" },
+        { name: "Linkedua", url: "/link-2" },
+        { name: "Link 3", url: "/link-3" },
+        { name: "Quad link", url: "/link-4" },
+      ],
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+}
+
+export const UtilityLinksMobile: Story = {
+  args: generateNavbarArgs({
+    variant: "utility",
+    utility: {
+      label: "Quick links",
+      items: [
+        { name: "Link 1", url: "/link-1" },
+        { name: "Link 2", url: "/link-2" },
+        { name: "Link 3", url: "/link-3" },
+      ],
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
     )
   },
 }

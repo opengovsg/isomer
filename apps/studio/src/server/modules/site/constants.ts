@@ -57,6 +57,7 @@ export const PAGE_BLOB: IsomerSchema = {
 }
 
 export const NAVBAR_CONTENT: Navbar = {
+  variant: "default",
   items: [
     {
       name: "Expandable nav item",
