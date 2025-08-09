@@ -261,6 +261,13 @@ export const DEFAULT_BLOCKS: Record<
   [CONTACT_INFORMATION_TYPE]: {
     type: `${CONTACT_INFORMATION_TYPE}`,
     entityName: "Contact us",
+    methods: [
+      {
+        method: "email",
+        label: "Email",
+        values: ["contact@example.com"],
+      },
+    ],
   },
 }
 
