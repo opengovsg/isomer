@@ -6,8 +6,8 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
-import { ARRAY_RADIO_FORMAT } from "~/index"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { ARRAY_RADIO_FORMAT } from "../format"
 import {
   createDgsSchema,
   NativeDataSourceSingleRecordSchema,
