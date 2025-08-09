@@ -6,6 +6,7 @@ import type {
 import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
 import {
   COLLECTION_BLOCK_TYPE,
+  DGS_SEARCHABLE_TABLE_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
 } from "~/interfaces"
@@ -16,6 +17,7 @@ import {
   ChildrenPages,
   CollectionBlock,
   Contentpic,
+  DGSSearchableTable,
   DynamicDataBanner,
   Hero,
   Iframe,
@@ -105,6 +107,8 @@ export const renderComponent = ({
       return <CollectionBlock key={elementKey} {...component} {...rest} />
     case IMAGE_GALLERY_TYPE:
       return <ImageGallery key={elementKey} {...component} {...rest} />
+    case DGS_SEARCHABLE_TABLE_TYPE:
+      return <DGSSearchableTable key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
       return <></>
