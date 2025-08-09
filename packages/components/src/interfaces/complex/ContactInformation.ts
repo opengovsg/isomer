@@ -6,6 +6,7 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { ARRAY_RADIO_FORMAT } from "~/index"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 import {
   createDgsSchema,
@@ -14,36 +15,14 @@ import {
 
 export const CONTACT_INFORMATION_TYPE = "contactinformation"
 
-const generateSingleContactInformationSchema = ({
-  defaultLabelTitle,
-}: {
-  defaultLabelTitle: string
-}) => {
-  return Type.Object({
-    label: Type.Optional(
-      Type.String({
-        title: defaultLabelTitle,
-      }),
-    ),
-    values: Type.Array(Type.String(), { minItems: 1 }),
-    caption: Type.Optional(
-      Type.String({
-        title: "Caption",
-        maxLength: 30, // arbitrarily low limit for now to prevent abuse
-      }),
-    ),
-  })
-}
-const CompulsorySingleContactInformationSchema = Type.Object({
-  label: Type.String(),
-  values: Type.Array(Type.String(), { minItems: 1 }),
-  caption: Type.Optional(
-    Type.String({
-      title: "Caption",
-      maxLength: 30, // arbitrarily low limit for now to prevent abuse
-    }),
-  ),
-})
+export const SUPPORT_METHODS = [
+  "telephone",
+  "fax",
+  "email",
+  "website",
+  "emergency_contact",
+  "operating_hours",
+] as const
 
 const BaseContactInformationSchema = Type.Object({
   type: Type.Literal(CONTACT_INFORMATION_TYPE, {
@@ -79,45 +58,48 @@ const InjectableContactInformationSchema = Type.Object(
         title: "Description",
       }),
     ),
-    telephone: Type.Optional(
-      generateSingleContactInformationSchema({
-        defaultLabelTitle: "Telephone",
+    methods: Type.Array(
+      Type.Object({
+        method: Type.Optional(
+          Type.Union(
+            SUPPORT_METHODS.map((method) =>
+              Type.Literal(method, {
+                title:
+                  method.charAt(0).toUpperCase() +
+                  method.slice(1).replace(/_/g, " "),
+              }),
+            ),
+            {
+              title: "Type",
+              description: "Select the type of contact information",
+              format: ARRAY_RADIO_FORMAT,
+            },
+          ),
+        ),
+        label: Type.Optional(
+          Type.String({
+            title: "Label",
+            maxLength: 30, // arbitrarily low limit for now to prevent abuse
+          }),
+        ),
+        values: Type.Array(
+          Type.String({
+            maxLength: 30, // arbitrarily low limit for now to prevent abuse
+          }),
+          { minItems: 1 },
+        ),
+        caption: Type.Optional(
+          Type.String({
+            title: "Caption",
+            maxLength: 30, // arbitrarily low limit for now to prevent abuse
+          }),
+        ),
       }),
-    ),
-    fax: Type.Optional(
-      generateSingleContactInformationSchema({
-        defaultLabelTitle: "Fax",
-      }),
-    ),
-    email: Type.Optional(
-      generateSingleContactInformationSchema({
-        defaultLabelTitle: "Email",
-      }),
-    ),
-    website: Type.Optional(
-      generateSingleContactInformationSchema({
-        defaultLabelTitle: "Website",
-      }),
-    ),
-    emergencyContact: Type.Optional(
-      generateSingleContactInformationSchema({
-        defaultLabelTitle: "Emergency Contact",
-      }),
-    ),
-    operatingHours: Type.Optional(
-      generateSingleContactInformationSchema({
-        defaultLabelTitle: "Operating Hours",
-      }),
-    ),
-    entityDetails: Type.Optional(
-      Type.Array(CompulsorySingleContactInformationSchema, {
+      {
+        title: "Contact Methods",
+        description: "Displayed in the order you add them here.",
         minItems: 1,
-      }),
-    ),
-    otherMethods: Type.Optional(
-      Type.Array(CompulsorySingleContactInformationSchema, {
-        minItems: 1,
-      }),
+      },
     ),
     otherInformation: Type.Optional(
       Type.Object({
@@ -187,7 +169,3 @@ export type ContactInformationProps = Static<
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }
-
-export type SingleContactInformationProps = Static<
-  ReturnType<typeof generateSingleContactInformationSchema>
->

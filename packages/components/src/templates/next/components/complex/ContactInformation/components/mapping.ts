@@ -8,25 +8,18 @@ import {
   BiTimeFive,
 } from "react-icons/bi"
 
-import type { ContactInformationProps } from "~/interfaces"
+import type { SUPPORT_METHODS } from "~/interfaces/complex/ContactInformation"
 
-interface MethodMapping {
-  label: string
-  Icon: IconType
-  color?: string
-}
-
-type MethodKeys = Extract<
-  keyof ContactInformationProps,
-  | "telephone"
-  | "fax"
-  | "email"
-  | "website"
-  | "emergencyContact"
-  | "operatingHours"
+type MethodMapping = Record<
+  (typeof SUPPORT_METHODS)[number],
+  {
+    label: string
+    Icon: IconType
+    color?: string
+  }
 >
 
-export const METHODS_MAPPING: Record<MethodKeys, MethodMapping> = {
+export const METHODS_MAPPING: MethodMapping = {
   telephone: {
     label: "Telephone",
     Icon: BiPhone,
@@ -43,12 +36,12 @@ export const METHODS_MAPPING: Record<MethodKeys, MethodMapping> = {
     label: "Website",
     Icon: BiGlobe,
   },
-  emergencyContact: {
+  emergency_contact: {
     label: "Emergency Contact",
     Icon: BiPhoneCall,
     color: "text-utility-feedback-alert",
   },
-  operatingHours: {
+  operating_hours: {
     label: "Operating Hours",
     Icon: BiTimeFive,
   },

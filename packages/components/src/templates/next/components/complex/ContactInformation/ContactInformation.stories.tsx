@@ -56,7 +56,8 @@ export const Default: Story = {
   args: {
     type: "contactinformation",
     entityName: "Sentosa",
-    entityDetails: [
+    description: "Embassy of the Republic of Singapore - Algeria",
+    methods: [
       {
         label: "Ambassador (Non-Resident)",
         values: ["Mr MOHAMMAD Alami Musa"],
@@ -69,38 +70,41 @@ export const Default: Story = {
           "Singapore 248163",
         ],
       },
-    ],
-    description: "Embassy of the Republic of Singapore - Algeria",
-    telephone: {
-      label: "Telephone",
-      values: ["+65-63798000 (MFA)"],
-    },
-    fax: {
-      label: "Fax",
-      values: ["+65-64747885 (MFA)"],
-      caption: "Got people use meh?",
-    },
-    email: {
-      label: "Email",
-      values: [
-        "do-not-reply@isomer.gov.sg",
-        "do-not-reply-pelase@isomer.gov.sg",
-      ],
-    },
-    website: {
-      label: "Website",
-      values: ["https://www.isomer.gov.sg", "https://sample.isomer.gov.sg"],
-    },
-    emergencyContact: {
-      label: "In the case of emergency",
-      values: ["+65 5678 1234"],
-      caption: "(after hours)",
-    },
-    operatingHours: {
-      label: "Operating Hours",
-      values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
-    },
-    otherMethods: [
+      {
+        method: "telephone",
+        label: "Telephone",
+        values: ["+65-63798000 (MFA)"],
+      },
+      {
+        method: "fax",
+        label: "Fax",
+        values: ["+65-64747885 (MFA)"],
+        caption: "Got people use meh?",
+      },
+      {
+        method: "email",
+        label: "Email",
+        values: [
+          "do-not-reply@isomer.gov.sg",
+          "do-not-reply-pelase@isomer.gov.sg",
+        ],
+      },
+      {
+        method: "website",
+        label: "Website",
+        values: ["https://www.isomer.gov.sg", "https://sample.isomer.gov.sg"],
+      },
+      {
+        method: "emergency_contact",
+        label: "In the case of emergency",
+        values: ["+65 5678 1234"],
+        caption: "(after hours)",
+      },
+      {
+        method: "operating_hours",
+        label: "Operating Hours",
+        values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
+      },
       {
         label: "Telegram",
         values: ["https://t.me/isomer_gov_sg"],
@@ -128,15 +132,19 @@ export const Homepage2Methods: Story = {
     entityName: "Contact the High Commission of Canberra",
     description:
       "This is how it looks like when there are 2 contact methods on homepage",
-    telephone: {
-      label: "Call us",
-      values: ["+61 2 6271 2000"],
-    },
-    emergencyContact: {
-      label: "In the case of emergency",
-      values: ["+65 5678 1234"],
-      caption: "(after hours)",
-    },
+    methods: [
+      {
+        method: "telephone",
+        label: "Call us",
+        values: ["+61 2 6271 2000"],
+      },
+      {
+        method: "emergency_contact",
+        label: "In the case of emergency",
+        values: ["+65 5678 1234"],
+        caption: "(after hours)",
+      },
+    ],
     url: "/",
     label: "More ways to contact us",
   },
@@ -150,19 +158,24 @@ export const Homepage3Methods: Story = {
     entityName: "Contact the High Commission of Canberra",
     description:
       "Should only render max. 3 contact methods regardless of the number of contact methods provided",
-    telephone: {
-      label: "Call us",
-      values: ["+61 2 6271 2000"],
-    },
-    emergencyContact: {
-      label: "In the case of emergency",
-      values: ["+65 5678 1234"],
-      caption: "(after hours)",
-    },
-    email: {
-      label: "Email us",
-      values: ["singhc_cbr@mfa.sg"],
-    },
+    methods: [
+      {
+        method: "telephone",
+        label: "Call us",
+        values: ["+61 2 6271 2000"],
+      },
+      {
+        method: "emergency_contact",
+        label: "In the case of emergency",
+        values: ["+65 5678 1234"],
+        caption: "(after hours)",
+      },
+      {
+        method: "email",
+        label: "Email us",
+        values: ["singhc_cbr@mfa.sg"],
+      },
+    ],
     url: "/",
     label: "More ways to contact us",
   },
@@ -186,43 +199,49 @@ const DgsParameters = {
                 {
                   entity_name: "Sentosa",
                   description: "Embassy of the Republic of Singapore - Algeria",
-                  telephone: JSON.stringify({
-                    label: "Telephone",
-                    values: ["+65-63798000 (MFA)"],
-                  }),
-                  fax: JSON.stringify({
-                    label: "Fax",
-                    values: ["+65-64747885 (MFA)"],
-                    caption: "Got people use meh?",
-                  }),
-                  email: JSON.stringify({
-                    label: "Email",
-                    values: [
-                      "do-not-reply@isomer.gov.sg",
-                      "do-not-reply-pelase@isomer.gov.sg",
-                    ],
-                  }),
-                  website: JSON.stringify({
-                    label: "Website",
-                    values: [
-                      "https://www.isomer.gov.sg",
-                      "https://sample.isomer.gov.sg",
-                    ],
-                  }),
-                  emergency_contact: JSON.stringify({
-                    label: "In the case of emergency",
-                    values: ["+65 5678 1234"],
-                    caption: "(after hours)",
-                  }),
-                  operating_hours: JSON.stringify({
-                    label: "Operating Hours",
-                    values: [
-                      "Mon - Fri",
-                      "8.30 am to 5.00 pm",
-                      "Sat & Sun - Closed",
-                    ],
-                  }),
-                  entity_details: JSON.stringify([
+                  methods: JSON.stringify([
+                    {
+                      method: "telephone",
+                      label: "Telephone",
+                      values: ["+65-63798000 (MFA)"],
+                    },
+                    {
+                      method: "fax",
+                      label: "Fax",
+                      values: ["+65-64747885 (MFA)"],
+                      caption: "Got people use meh?",
+                    },
+                    {
+                      method: "email",
+                      label: "Email",
+                      values: [
+                        "do-not-reply@isomer.gov.sg",
+                        "do-not-reply-pelase@isomer.gov.sg",
+                      ],
+                    },
+                    {
+                      method: "website",
+                      label: "Website",
+                      values: [
+                        "https://www.isomer.gov.sg",
+                        "https://sample.isomer.gov.sg",
+                      ],
+                    },
+                    {
+                      method: "emergency_contact",
+                      label: "In the case of emergency",
+                      values: ["+65 5678 1234"],
+                      caption: "(after hours)",
+                    },
+                    {
+                      method: "operating_hours",
+                      label: "Operating Hours",
+                      values: [
+                        "Mon - Fri",
+                        "8.30 am to 5.00 pm",
+                        "Sat & Sun - Closed",
+                      ],
+                    },
                     {
                       label: "Ambassador (Non-Resident)",
                       values: ["Mr MOHAMMAD Alami Musa"],
@@ -235,13 +254,13 @@ const DgsParameters = {
                         "Singapore 248163",
                       ],
                     },
-                  ]),
-                  other_methods: JSON.stringify([
                     {
+                      method: "other_methods",
                       label: "Telegram",
                       values: ["https://t.me/isomer_gov_sg"],
                     },
                     {
+                      method: "other_methods",
                       label: "WhatsApp",
                       values: ["+65-63798000 (MFA)"],
                     },
@@ -276,14 +295,7 @@ export const Dgs: Story = {
     },
     entityName: "[dgs:entity_name]",
     description: "[dgs:description]",
-    telephone: "[dgs:telephone]",
-    fax: "[dgs:fax]",
-    email: "[dgs:email]",
-    website: "[dgs:website]",
-    emergencyContact: "[dgs:emergency_contact]",
-    operatingHours: "[dgs:operating_hours]",
-    entityDetails: "[dgs:entity_details]",
-    otherMethods: "[dgs:other_methods]",
+    methods: "[dgs:methods]",
     otherInformation: "[dgs:other_information]",
   },
 }
@@ -304,34 +316,11 @@ export const DgsPartial: Story = {
     },
     entityName: "This entityName is not from DGS",
     description: "This description is not from DGS",
-    telephone: {
-      label: "This telephone is not from DGS",
-      values: ["+65-63798000 (MFA)"],
-    },
-    fax: "[dgs:fax]",
-    email: {
-      label: "This email is not from DGS",
-      values: [
-        "do-not-reply@isomer.gov.sg",
-        "do-not-reply-pelase@isomer.gov.sg",
-      ],
-    },
-    website: "[dgs:website]",
-    entityDetails: "[dgs:entity_details]",
-    otherMethods: [
-      {
-        label: "This otherMethod is not from DGS",
-        values: ["https://t.me/isomer_gov_sg"],
-      },
-      {
-        label: "This otherMethod is also not from DGS",
-        values: ["+65-63798000 (MFA)"],
-      },
-    ],
-    otherInformation: JSON.stringify({
+    methods: "[dgs:methods]",
+    otherInformation: {
       label: "This otherInformation is not from DGS",
       value:
         "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
-    }),
+    },
   },
 }

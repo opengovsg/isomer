@@ -60,41 +60,19 @@ export const DgsTransformedContactInformation = ({
   record,
   ...rest
 }: DgsTransformedContactInformationProps) => {
-  const entityName = transformDgsField(rest.entityName, record)
+  const entityName = transformDgsField(
+    rest.entityName,
+    record,
+  ) as NativeContactInformationProps["entityName"]
 
-  const description = transformDgsField(rest.description, record)
+  const description = transformDgsField(
+    rest.description,
+    record,
+  ) as NativeContactInformationProps["description"]
 
-  const telephone = safeJsonParse<NativeContactInformationProps["telephone"]>(
-    transformDgsField(rest.telephone, record),
+  const methods = safeJsonParse<NativeContactInformationProps["methods"]>(
+    transformDgsField(rest.methods, record),
   )
-
-  const fax = safeJsonParse<NativeContactInformationProps["fax"]>(
-    transformDgsField(rest.fax, record),
-  )
-
-  const email = safeJsonParse<NativeContactInformationProps["email"]>(
-    transformDgsField(rest.email, record),
-  )
-
-  const website = safeJsonParse<NativeContactInformationProps["website"]>(
-    transformDgsField(rest.website, record),
-  )
-
-  const emergencyContact = safeJsonParse<
-    NativeContactInformationProps["emergencyContact"]
-  >(transformDgsField(rest.emergencyContact, record))
-
-  const operatingHours = safeJsonParse<
-    NativeContactInformationProps["operatingHours"]
-  >(transformDgsField(rest.operatingHours, record))
-
-  const entityDetails = safeJsonParse<
-    NativeContactInformationProps["entityDetails"]
-  >(transformDgsField(rest.entityDetails, record))
-
-  const otherMethods = safeJsonParse<
-    NativeContactInformationProps["otherMethods"]
-  >(transformDgsField(rest.otherMethods, record))
 
   const otherInformation = safeJsonParse<
     NativeContactInformationProps["otherInformation"]
@@ -104,14 +82,7 @@ export const DgsTransformedContactInformation = ({
     <ContactInformationUI
       entityName={entityName}
       description={description}
-      telephone={telephone}
-      fax={fax}
-      email={email}
-      website={website}
-      emergencyContact={emergencyContact}
-      operatingHours={operatingHours}
-      entityDetails={entityDetails}
-      otherMethods={otherMethods}
+      methods={methods ?? []}
       otherInformation={otherInformation}
       {...pick(rest, "type", "layout", "LinkComponent")}
       {...omit(rest, InjectableContactInformationKeys)}

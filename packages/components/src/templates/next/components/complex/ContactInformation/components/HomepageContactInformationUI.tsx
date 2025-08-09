@@ -1,7 +1,4 @@
-import type {
-  ContactInformationUIProps,
-  SingleContactInformationProps,
-} from "~/interfaces"
+import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { LinkButton } from "../../../internal/LinkButton"
 import {
@@ -9,7 +6,6 @@ import {
   commonContactMethodStyles,
 } from "./common"
 import { ContactMethod } from "./ContactMethod"
-import { METHODS_MAPPING } from "./mapping"
 
 const createHomepageContactInformationStyles = tv({
   extend: commonContactInformationStyles,
@@ -88,71 +84,31 @@ const MAX_CONTACT_METHODS_FOR_HOMEPAGE = 3
 
 export const HomepageContactInformationUI = ({
   entityName,
-  entityDetails,
   description,
-  telephone,
-  fax,
-  email,
-  website,
-  emergencyContact,
-  operatingHours,
-  otherMethods,
+  methods,
   referenceLinkHref,
   label,
   LinkComponent,
 }: ContactInformationUIProps) => {
-  // Create a mapping of methods to their keys for proper rendering
-  // Note: ordering is important here, as it determines the order of the methods in the UI
-  const allMethods = [
-    ...(entityDetails ?? []).map((detail) => ({
-      method: detail,
-      key: undefined,
-    })),
-    { method: telephone, key: "telephone" as const },
-    { method: fax, key: "fax" as const },
-    { method: email, key: "email" as const },
-    { method: website, key: "website" as const },
-    { method: emergencyContact, key: "emergencyContact" as const },
-    { method: operatingHours, key: "operatingHours" as const },
-    ...(otherMethods ?? []).map((method) => ({ method, key: undefined })),
-  ].filter(({ method }) => method) // Filter out undefined methods
-
   const compoundStyles = createHomepageContactInformationStyles({
     numberOfContactMethods:
-      allMethods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
+      methods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
         ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
         : 2,
   })
 
   const contactMethodStyles = createHomepageContactMethodStyles({
     numberOfContactMethods:
-      allMethods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
+      methods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
         ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
         : 2,
   })
 
-  const renderContactMethod = (
-    methodKey?: keyof typeof METHODS_MAPPING,
-    method?: SingleContactInformationProps,
-  ) => {
-    if (!method) return null
-
-    const methodMapping = methodKey ? METHODS_MAPPING[methodKey] : undefined
-    return (
-      <ContactMethod
-        styles={contactMethodStyles}
-        {...method}
-        label={
-          methodMapping ? (method.label ?? methodMapping.label) : method.label
-        }
-        Icon={methodMapping?.Icon}
-        LinkComponent={LinkComponent}
-        iconColor={methodMapping?.color}
-      />
-    )
-  }
-
-  const renderButton = ({ isBottomButton }: { isBottomButton: boolean }) => {
+  const CallToActionButton = ({
+    isBottomButton,
+  }: {
+    isBottomButton: boolean
+  }) => {
     return (
       <div
         className={compoundStyles.urlButtonContainer({
@@ -179,18 +135,29 @@ export const HomepageContactInformationUI = ({
         {!!description && (
           <p className={compoundStyles.description()}>{description}</p>
         )}
-        {!!referenceLinkHref &&
-          !!label &&
-          renderButton({ isBottomButton: false })}
+        {!!referenceLinkHref && !!label && (
+          <CallToActionButton isBottomButton={false} />
+        )}
       </div>
 
       <div className={compoundStyles.contactMethodsContainer()}>
-        {allMethods
+        {methods
           .slice(0, MAX_CONTACT_METHODS_FOR_HOMEPAGE)
-          .map(({ method, key }) => renderContactMethod(key, method))}
+          .map((method, index) => {
+            return (
+              <ContactMethod
+                key={`contact-method-${index}`}
+                {...method}
+                LinkComponent={LinkComponent}
+                styles={contactMethodStyles}
+              />
+            )
+          })}
       </div>
 
-      {!!referenceLinkHref && !!label && renderButton({ isBottomButton: true })}
+      {!!referenceLinkHref && !!label && (
+        <CallToActionButton isBottomButton={true} />
+      )}
     </div>
   )
 }

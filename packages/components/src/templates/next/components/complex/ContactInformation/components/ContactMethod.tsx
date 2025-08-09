@@ -1,10 +1,7 @@
-import type { IconType } from "react-icons"
 import { BiEnvelope } from "react-icons/bi"
 
-import type {
-  ContactInformationUIProps,
-  SingleContactInformationProps,
-} from "~/interfaces"
+import type { commonContactMethodStyles } from "./common"
+import type { ContactInformationUIProps } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
 import { Link } from "~/templates/next/components/internal/Link"
 import {
@@ -15,29 +12,31 @@ import {
   isUrl,
   sanitizePhoneNumber,
 } from "~/utils"
-import { commonContactMethodStyles } from "./common"
+import { METHODS_MAPPING } from "./mapping"
 
-interface ContactMethodProps extends SingleContactInformationProps {
+type ContactMethodProps = ContactInformationUIProps["methods"][number] & {
   styles: ReturnType<typeof commonContactMethodStyles>
-  Icon?: IconType
   LinkComponent: ContactInformationUIProps["LinkComponent"]
-  iconColor?: string
 }
 
 export const ContactMethod = ({
   styles,
-  Icon = BiEnvelope,
+  method,
   label,
   values,
   caption,
   LinkComponent,
-  iconColor,
 }: ContactMethodProps) => {
+  const methodMapping = method ? METHODS_MAPPING[method] : undefined
+  const Icon = methodMapping?.Icon ?? BiEnvelope
+
   return (
     <div className={styles.container()}>
       <Icon
         className={
-          iconColor ? twMerge(styles.icon(), iconColor) : styles.icon()
+          methodMapping?.color
+            ? twMerge(styles.icon(), methodMapping.color)
+            : styles.icon()
         }
       />
       <div className={styles.textContainer()}>

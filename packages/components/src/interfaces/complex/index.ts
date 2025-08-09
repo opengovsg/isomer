@@ -59,7 +59,6 @@ export {
   type ContactInformationUIProps,
   type NativeContactInformationProps,
   type DgsContactInformationProps,
-  type SingleContactInformationProps,
 } from "./ContactInformation"
 export {
   DYNAMIC_COMPONENT_LIST_TYPE,

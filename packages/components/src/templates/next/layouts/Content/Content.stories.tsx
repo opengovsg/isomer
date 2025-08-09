@@ -1463,7 +1463,8 @@ export const Default: Story = {
       {
         type: "contactinformation",
         entityName: "Sentosa",
-        entityDetails: [
+        description: "Embassy of the Republic of Singapore - Algeria",
+        methods: [
           {
             label: "Ambassador (Non-Resident)",
             values: ["Mr MOHAMMAD Alami Musa"],
@@ -1476,37 +1477,44 @@ export const Default: Story = {
               "Singapore 248163",
             ],
           },
-        ],
-        description: "Embassy of the Republic of Singapore - Algeria",
-        telephone: {
-          label: "Telephone",
-          values: ["+65-63798000 (MFA)"],
-        },
-        fax: {
-          label: "Fax",
-          values: ["+65-64747885 (MFA)"],
-        },
-        email: {
-          label: "Email",
-          values: [
-            "do-not-reply@isomer.gov.sg",
-            "do-not-reply-pelase@isomer.gov.sg",
-          ],
-        },
-        website: {
-          label: "Website",
-          values: ["https://www.isomer.gov.sg", "https://sample.isomer.gov.sg"],
-        },
-        emergencyContact: {
-          label: "In the case of emergency",
-          values: ["+65 5678 1234"],
-          caption: "(after hours)",
-        },
-        operatingHours: {
-          label: "Operating Hours",
-          values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
-        },
-        otherMethods: [
+          {
+            method: "telephone",
+            label: "Telephone",
+            values: ["+65-63798000 (MFA)"],
+          },
+          {
+            method: "fax",
+            label: "Fax",
+            values: ["+65-64747885 (MFA)"],
+            caption: "Got people use meh?",
+          },
+          {
+            method: "email",
+            label: "Email",
+            values: [
+              "do-not-reply@isomer.gov.sg",
+              "do-not-reply-pelase@isomer.gov.sg",
+            ],
+          },
+          {
+            method: "website",
+            label: "Website",
+            values: [
+              "https://www.isomer.gov.sg",
+              "https://sample.isomer.gov.sg",
+            ],
+          },
+          {
+            method: "emergency_contact",
+            label: "In the case of emergency",
+            values: ["+65 5678 1234"],
+            caption: "(after hours)",
+          },
+          {
+            method: "operating_hours",
+            label: "Operating Hours",
+            values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
+          },
           {
             label: "Telegram",
             values: ["https://t.me/isomer_gov_sg"],

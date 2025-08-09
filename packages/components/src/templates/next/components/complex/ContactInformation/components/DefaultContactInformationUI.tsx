@@ -1,9 +1,6 @@
 import DOMPurify from "isomorphic-dompurify"
 
-import type {
-  ContactInformationUIProps,
-  SingleContactInformationProps,
-} from "~/interfaces"
+import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { LinkButton } from "../../../internal/LinkButton"
 import {
@@ -11,7 +8,6 @@ import {
   commonContactMethodStyles,
 } from "./common"
 import { ContactMethod } from "./ContactMethod"
-import { METHODS_MAPPING } from "./mapping"
 
 const createDefaultContactInformationStyles = tv({
   extend: commonContactInformationStyles,
@@ -29,15 +25,8 @@ const createDefaultContactMethodStyles = tv({
 
 export const DefaultContactInformationUI = ({
   entityName,
-  entityDetails,
   description,
-  telephone,
-  fax,
-  email,
-  website,
-  emergencyContact,
-  operatingHours,
-  otherMethods,
+  methods,
   otherInformation,
   referenceLinkHref,
   label,
@@ -45,27 +34,6 @@ export const DefaultContactInformationUI = ({
 }: ContactInformationUIProps) => {
   const compoundStyles = createDefaultContactInformationStyles()
   const contactMethodStyles = createDefaultContactMethodStyles()
-
-  const renderContactMethod = (
-    methodKey?: keyof typeof METHODS_MAPPING,
-    method?: SingleContactInformationProps,
-  ) => {
-    if (!method) return null
-
-    const methodMapping = methodKey ? METHODS_MAPPING[methodKey] : undefined
-    return (
-      <ContactMethod
-        styles={contactMethodStyles}
-        {...method}
-        label={
-          methodMapping ? (method.label ?? methodMapping.label) : method.label
-        }
-        Icon={methodMapping?.Icon}
-        LinkComponent={LinkComponent}
-        iconColor={methodMapping?.color}
-      />
-    )
-  }
 
   return (
     <div className={compoundStyles.container()}>
@@ -77,20 +45,16 @@ export const DefaultContactInformationUI = ({
       </div>
 
       <div className={compoundStyles.contactMethodsContainer()}>
-        {!!entityDetails &&
-          entityDetails.length > 0 &&
-          entityDetails.map((detail) => renderContactMethod(undefined, detail))}
-
-        {renderContactMethod("telephone", telephone)}
-        {renderContactMethod("fax", fax)}
-        {renderContactMethod("email", email)}
-        {renderContactMethod("website", website)}
-        {renderContactMethod("emergencyContact", emergencyContact)}
-        {renderContactMethod("operatingHours", operatingHours)}
-
-        {!!otherMethods &&
-          otherMethods.length > 0 &&
-          otherMethods.map((method) => renderContactMethod(undefined, method))}
+        {methods.map((method, index) => {
+          return (
+            <ContactMethod
+              key={`contact-method-${index}`}
+              {...method}
+              LinkComponent={LinkComponent}
+              styles={contactMethodStyles}
+            />
+          )
+        })}
       </div>
 
       {!!otherInformation && (
