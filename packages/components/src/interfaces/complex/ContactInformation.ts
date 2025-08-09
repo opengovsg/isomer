@@ -21,7 +21,9 @@ export const SUPPORT_METHODS = [
   "email",
   "website",
   "emergency_contact",
+  "address",
   "operating_hours",
+  "person",
 ] as const
 
 const BaseContactInformationSchema = Type.Object({

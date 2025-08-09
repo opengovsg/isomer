@@ -1466,10 +1466,12 @@ export const Default: Story = {
         description: "Embassy of the Republic of Singapore - Algeria",
         methods: [
           {
+            method: "person",
             label: "Ambassador (Non-Resident)",
             values: ["Mr MOHAMMAD Alami Musa"],
           },
           {
+            method: "address",
             label: "Chancery",
             values: [
               "c/o Ministry of Foreign Affairs",

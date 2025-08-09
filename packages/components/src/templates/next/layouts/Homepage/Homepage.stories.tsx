@@ -551,10 +551,12 @@ const generateArgs = ({
           "Click “More ways to contact us” to find our address, fax number, and other contact details.",
         methods: [
           {
+            method: "person",
             label: "Ambassador (Non-Resident)",
             values: ["Mr MOHAMMAD Alami Musa"],
           },
           {
+            method: "address",
             label: "Chancery",
             values: [
               "c/o Ministry of Foreign Affairs",

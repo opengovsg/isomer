@@ -2,10 +2,12 @@ import type { IconType } from "react-icons"
 import {
   BiGlobe,
   BiMailSend,
+  BiMap,
   BiPhone,
   BiPhoneCall,
   BiPrinter,
   BiTimeFive,
+  BiUser,
 } from "react-icons/bi"
 
 import type { SUPPORT_METHODS } from "~/interfaces/complex/ContactInformation"
@@ -41,8 +43,16 @@ export const METHODS_MAPPING: MethodMapping = {
     Icon: BiPhoneCall,
     color: "text-utility-feedback-alert",
   },
+  address: {
+    label: "Address",
+    Icon: BiMap,
+  },
   operating_hours: {
     label: "Operating Hours",
     Icon: BiTimeFive,
+  },
+  person: {
+    label: "Person",
+    Icon: BiUser,
   },
 }
