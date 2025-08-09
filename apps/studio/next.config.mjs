@@ -80,6 +80,7 @@ const ContentSecurityPolicy = `
         ? `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
         : "https://*.by.gov.sg"
     }
+    https://data.gov.sg
     https://via.intercom.io
     https://api.intercom.io
     https://api.au.intercom.io
