@@ -7,7 +7,6 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
-import { ARRAY_RADIO_FORMAT } from "../format"
 import {
   createDgsSchema,
   NativeDataSourceSingleRecordSchema,
@@ -74,7 +73,6 @@ const InjectableContactInformationSchema = Type.Object(
             {
               title: "Type",
               description: "Select the type of contact information",
-              format: ARRAY_RADIO_FORMAT,
             },
           ),
         ),
