@@ -35,18 +35,18 @@ export const DgsContactInformation = ({
 
   const { records, isLoading, isError } = useDgsData(params)
 
+  // TODO: better handling of these non-success states
+  // will check with SY for design
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
   const record = records?.[0]
 
   // Should display nothing if there is an realtime error
   // as any rendering will likely seems jank and useless
   if (isError || !record) {
     return null
-  }
-
-  // TODO: better handling of these non-success states
-  // will check with SY for design
-  if (isLoading) {
-    return <div>Loading...</div>
   }
 
   return <DgsTransformedContactInformation {...rest} record={record} />
@@ -60,15 +60,9 @@ export const DgsTransformedContactInformation = ({
   record,
   ...rest
 }: DgsTransformedContactInformationProps) => {
-  const entityName = transformDgsField(
-    rest.entityName,
-    record,
-  ) as NativeContactInformationProps["entityName"]
+  const entityName = transformDgsField(rest.entityName, record)
 
-  const description = transformDgsField(
-    rest.description,
-    record,
-  ) as NativeContactInformationProps["description"]
+  const description = transformDgsField(rest.description, record)
 
   const methods = safeJsonParse<NativeContactInformationProps["methods"]>(
     transformDgsField(rest.methods, record),
