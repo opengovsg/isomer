@@ -18,7 +18,7 @@ const ContactInformationComponentSchema = Type.Intersect([
   Type.Object({
     type: Type.Literal(CONTACT_INFORMATION_TYPE),
   }),
-  Omit(DgsContactInformationSchema, ["type", "dataSource"]),
+  Omit(DgsContactInformationSchema, ["dataSource"]),
 ])
 
 export const DynamicComponentListSchema = Type.Object({
