@@ -546,7 +546,7 @@ const generateArgs = ({
       },
       {
         type: "contactinformation",
-        entityName: "Contact the High Commission of Canberra",
+        title: "Contact the High Commission of Canberra",
         description:
           "Click “More ways to contact us” to find our address, fax number, and other contact details.",
         methods: [

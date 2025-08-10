@@ -60,7 +60,7 @@ export const DgsTransformedContactInformation = ({
   record,
   ...rest
 }: DgsTransformedContactInformationProps) => {
-  const entityName = transformDgsField(rest.entityName, record)
+  const title = transformDgsField(rest.title, record)
 
   const description = transformDgsField(rest.description, record)
 
@@ -74,7 +74,7 @@ export const DgsTransformedContactInformation = ({
 
   return (
     <ContactInformationUI
-      entityName={entityName}
+      title={title}
       description={description}
       methods={methods ?? []}
       otherInformation={otherInformation}

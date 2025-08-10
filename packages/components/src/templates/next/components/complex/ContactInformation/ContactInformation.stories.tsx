@@ -55,7 +55,7 @@ type Story = StoryObj<typeof ContactInformation>
 export const Default: Story = {
   args: {
     type: "contactinformation",
-    entityName: "Sentosa",
+    title: "Sentosa",
     description: "Embassy of the Republic of Singapore - Algeria",
     methods: [
       {
@@ -131,7 +131,7 @@ export const Homepage2Methods: Story = {
   args: {
     type: "contactinformation",
     layout: "homepage",
-    entityName: "Contact the High Commission of Canberra",
+    title: "Contact the High Commission of Canberra",
     description:
       "This is how it looks like when there are 2 contact methods on homepage",
     methods: [
@@ -157,7 +157,7 @@ export const Homepage3Methods: Story = {
   args: {
     type: "contactinformation",
     layout: "homepage",
-    entityName: "Contact the High Commission of Canberra",
+    title: "Contact the High Commission of Canberra",
     description:
       "Should only render max. 3 contact methods regardless of the number of contact methods provided",
     methods: [
@@ -297,7 +297,7 @@ export const Dgs: Story = {
         },
       ],
     },
-    entityName: "[dgs:entity_name]",
+    title: "[dgs:entity_name]", // to show that they can have different value from DGS
     description: "[dgs:description]",
     methods: "[dgs:methods]",
     otherInformation: "[dgs:other_information]",
@@ -318,7 +318,7 @@ export const DgsPartial: Story = {
         },
       ],
     },
-    entityName: "This entityName is not from DGS",
+    title: "This title is not from DGS",
     description: "This description is not from DGS",
     methods: "[dgs:methods]",
     otherInformation: {
@@ -345,7 +345,7 @@ export const DgsHomepage: Story = {
         },
       ],
     },
-    entityName: "[dgs:entity_name]",
+    title: "[dgs:entity_name]",
     description: "[dgs:description]",
     methods: "[dgs:methods]",
     otherInformation: "[dgs:other_information]",

@@ -1462,7 +1462,7 @@ export const Default: Story = {
       },
       {
         type: "contactinformation",
-        entityName: "Sentosa",
+        title: "Sentosa",
         description: "Embassy of the Republic of Singapore - Algeria",
         methods: [
           {

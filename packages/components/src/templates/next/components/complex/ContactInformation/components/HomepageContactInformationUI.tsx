@@ -84,7 +84,7 @@ const MAX_CONTACT_METHODS_FOR_HOMEPAGE = 3
 
 export const HomepageContactInformationUI = ({
   whitelistedMethods,
-  entityName,
+  title,
   description,
   methods,
   referenceLinkHref,
@@ -138,7 +138,7 @@ export const HomepageContactInformationUI = ({
   return (
     <div className={compoundStyles.container()}>
       <div className={compoundStyles.titleAndDescriptionContainer()}>
-        {entityName && <h3 className={compoundStyles.title()}>{entityName}</h3>}
+        {title && <h3 className={compoundStyles.title()}>{title}</h3>}
         {!!description && (
           <p className={compoundStyles.description()}>{description}</p>
         )}

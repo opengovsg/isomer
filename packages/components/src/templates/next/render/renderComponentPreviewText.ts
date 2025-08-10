@@ -121,7 +121,7 @@ export function renderComponentPreviewText({
     case IMAGE_GALLERY_TYPE:
       return "Image Gallery"
     case CONTACT_INFORMATION_TYPE:
-      return component.entityName || "Contact Information"
+      return component.title || "Contact Information"
     default:
       const _: never = component
       return (component as { type: string }).type || ""

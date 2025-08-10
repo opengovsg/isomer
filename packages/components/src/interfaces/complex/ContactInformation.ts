@@ -65,9 +65,9 @@ const BaseContactInformationSchema = Type.Object({
 
 const InjectableContactInformationSchema = Type.Object(
   {
-    entityName: Type.Optional(
+    title: Type.Optional(
       Type.String({
-        title: "Entity Name",
+        title: "Title",
       }),
     ),
     description: Type.Optional(

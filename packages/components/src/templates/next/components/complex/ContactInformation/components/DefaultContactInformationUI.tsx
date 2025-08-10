@@ -25,7 +25,7 @@ const createDefaultContactMethodStyles = tv({
 
 export const DefaultContactInformationUI = ({
   whitelistedMethods,
-  entityName,
+  title,
   description,
   methods,
   otherInformation,
@@ -45,7 +45,7 @@ export const DefaultContactInformationUI = ({
   return (
     <div className={compoundStyles.container()}>
       <div className={compoundStyles.titleAndDescriptionContainer()}>
-        {entityName && <h3 className={compoundStyles.title()}>{entityName}</h3>}
+        {title && <h3 className={compoundStyles.title()}>{title}</h3>}
         {!!description && (
           <p className={compoundStyles.description()}>{description}</p>
         )}

@@ -161,7 +161,7 @@ export const ContactInformation: Story = {
     },
     component: {
       type: "contactinformation",
-      entityName: "[dgs:entity_name]",
+      title: "[dgs:entity_name]",
       description: "[dgs:description]",
       telephone: "[dgs:telephone]",
       fax: "[dgs:fax]",
