@@ -24,6 +24,7 @@ const createDefaultContactMethodStyles = tv({
 })
 
 export const DefaultContactInformationUI = ({
+  whitelistedMethods,
   entityName,
   description,
   methods,
@@ -35,6 +36,12 @@ export const DefaultContactInformationUI = ({
   const compoundStyles = createDefaultContactInformationStyles()
   const contactMethodStyles = createDefaultContactMethodStyles()
 
+  const filteredMethods = whitelistedMethods
+    ? methods.filter(
+        (method) => method.method && whitelistedMethods.includes(method.method),
+      )
+    : methods
+
   return (
     <div className={compoundStyles.container()}>
       <div className={compoundStyles.titleAndDescriptionContainer()}>
@@ -45,7 +52,7 @@ export const DefaultContactInformationUI = ({
       </div>
 
       <div className={compoundStyles.contactMethodsContainer()}>
-        {methods.map((method, index) => {
+        {filteredMethods.map((method, index) => {
           return (
             <ContactMethod
               key={`contact-method-${index}`}

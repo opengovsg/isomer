@@ -328,3 +328,26 @@ export const DgsPartial: Story = {
     },
   },
 }
+
+export const DgsHomepage: Story = {
+  name: "Dgs (Homepage)",
+  parameters: DgsParameters,
+  args: {
+    layout: "homepage",
+    whitelistedMethods: ["telephone", "emergency_contact", "email"],
+    dataSource: {
+      type: "dgs",
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      filters: [
+        {
+          fieldKey: "testFieldKey",
+          fieldValue: "testFieldValue",
+        },
+      ],
+    },
+    entityName: "[dgs:entity_name]",
+    description: "[dgs:description]",
+    methods: "[dgs:methods]",
+    otherInformation: "[dgs:other_information]",
+  },
+}

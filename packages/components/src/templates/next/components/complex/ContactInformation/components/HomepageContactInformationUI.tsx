@@ -83,6 +83,7 @@ const createHomepageContactMethodStyles = tv({
 const MAX_CONTACT_METHODS_FOR_HOMEPAGE = 3
 
 export const HomepageContactInformationUI = ({
+  whitelistedMethods,
   entityName,
   description,
   methods,
@@ -90,16 +91,22 @@ export const HomepageContactInformationUI = ({
   label,
   LinkComponent,
 }: ContactInformationUIProps) => {
+  const filteredMethods = whitelistedMethods
+    ? methods.filter(
+        (method) => method.method && whitelistedMethods.includes(method.method),
+      )
+    : methods
+
   const compoundStyles = createHomepageContactInformationStyles({
     numberOfContactMethods:
-      methods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
+      filteredMethods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
         ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
         : 2,
   })
 
   const contactMethodStyles = createHomepageContactMethodStyles({
     numberOfContactMethods:
-      methods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
+      filteredMethods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
         ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
         : 2,
   })
@@ -141,7 +148,7 @@ export const HomepageContactInformationUI = ({
       </div>
 
       <div className={compoundStyles.contactMethodsContainer()}>
-        {methods
+        {filteredMethods
           .slice(0, MAX_CONTACT_METHODS_FOR_HOMEPAGE)
           .map((method, index) => {
             return (

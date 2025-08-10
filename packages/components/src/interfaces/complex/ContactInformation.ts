@@ -45,6 +45,22 @@ const BaseContactInformationSchema = Type.Object({
       pattern: LINK_HREF_PATTERN,
     }),
   ),
+  // Needed for MFA case where we want to
+  // selectively display contact methods retrieved from DGS
+  whitelistedMethods: Type.Optional(
+    Type.Array(
+      Type.Union(
+        SUPPORT_METHODS.map((method) =>
+          Type.Literal(method, { default: method }),
+        ),
+        {
+          title: "Whitelisted Methods",
+          description: "Only whitelisted methods will be displayed.",
+          format: "hidden",
+        },
+      ),
+    ),
+  ),
 })
 
 const InjectableContactInformationSchema = Type.Object(
