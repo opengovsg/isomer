@@ -44,37 +44,42 @@ export const ContactInformation: Story = {
                     entity_name: "Sentosa",
                     description:
                       "Embassy of the Republic of Singapore - Algeria",
-                    telephone: JSON.stringify({
-                      label: "Telephone",
-                      values: ["+65-63798000 (MFA)"],
-                    }),
-                    fax: JSON.stringify({
-                      label: "Fax",
-                      values: ["+65-64747885 (MFA)"],
-                    }),
-                    email: JSON.stringify({
-                      label: "Email",
-                      values: ["do-not-reply@isomer.gov.sg"],
-                    }),
-                    website: JSON.stringify({
-                      label: "Website",
-                      values: ["https://www.isomer.gov.sg"],
-                    }),
-                    operating_hours: JSON.stringify({
-                      label: "Operating Hours",
-                      values: ["8.30 am to 5.00 pm"],
-                    }),
-                    entity_details: JSON.stringify([
+                    methods: JSON.stringify([
                       {
+                        method: "person",
                         label: "Ambassador (Non-Resident)",
                         values: ["Mr MOHAMMAD Alami Musa"],
                       },
                       {
+                        method: "address",
                         label: "Chancery",
                         values: ["c/o Ministry of Foreign Affairs"],
                       },
-                    ]),
-                    other_methods: JSON.stringify([
+                      {
+                        method: "telephone",
+                        label: "Telephone",
+                        values: ["+65-63798000 (MFA)"],
+                      },
+                      {
+                        method: "fax",
+                        label: "Fax",
+                        values: ["+65-64747885 (MFA)"],
+                      },
+                      {
+                        method: "email",
+                        label: "Email",
+                        values: ["do-not-reply@isomer.gov.sg"],
+                      },
+                      {
+                        method: "website",
+                        label: "Website",
+                        values: ["https://www.isomer.gov.sg"],
+                      },
+                      {
+                        method: "operating_hours",
+                        label: "Operating Hours",
+                        values: ["8.30 am to 5.00 pm"],
+                      },
                       {
                         label: "Not Telegram",
                         values: [
@@ -92,39 +97,44 @@ export const ContactInformation: Story = {
                     entity_name: "Sentosa 2",
                     description:
                       "Embassy of the Republic of Singapore - Algeria 2",
-                    telephone: JSON.stringify({
-                      label: "Telephone 2",
-                      values: ["+65-63798000 (MFA) 2"],
-                    }),
-                    fax: JSON.stringify({
-                      label: "Fax 2",
-                      values: ["+65-64747885 (MFA) 2"],
-                    }),
-                    email: JSON.stringify({
-                      label: "Email 2",
-                      values: ["do-not-reply-2@isomer.gov.sg"],
-                    }),
-                    website: JSON.stringify({
-                      label: "Website 2",
-                      values: ["https://www.isomer-2.gov.sg"],
-                    }),
-                    operating_hours: JSON.stringify({
-                      label: "Operating Hours 2",
-                      values: ["8.30 am to 5.00 pm 2"],
-                    }),
-                    entity_details: JSON.stringify([
+                    methods: JSON.stringify([
                       {
+                        method: "person",
                         label: "Ambassador (Non-Resident) 2",
                         values: ["Mr MOHAMMAD Alami Musa 2"],
                       },
                       {
+                        method: "address",
                         label: "Chancery 2",
                         values: ["c/o Ministry of Foreign Affairs 2"],
                       },
-                    ]),
-                    other_methods: JSON.stringify([
                       {
-                        label: "Emergency Contact 2",
+                        method: "telephone",
+                        label: "Telephone",
+                        values: ["+65-63798000 (MFA)"],
+                      },
+                      {
+                        method: "fax",
+                        label: "Fax 2",
+                        values: ["+65-64747885 (MFA) 2"],
+                      },
+                      {
+                        method: "email",
+                        label: "Email 2",
+                        values: ["do-not-reply-2@isomer.gov.sg"],
+                      },
+                      {
+                        method: "website",
+                        label: "Website 2",
+                        values: ["https://www.isomer-2.gov.sg"],
+                      },
+                      {
+                        method: "operating_hours",
+                        label: "Operating Hours 2",
+                        values: ["8.30 am to 5.00 pm 2"],
+                      },
+                      {
+                        label: "Not Telegram 2",
                         values: [
                           "https://this-should-still-be-hyperlinked-2.isomer.gov.sg",
                         ],
@@ -163,13 +173,7 @@ export const ContactInformation: Story = {
       type: "contactinformation",
       title: "[dgs:entity_name]",
       description: "[dgs:description]",
-      telephone: "[dgs:telephone]",
-      fax: "[dgs:fax]",
-      email: "[dgs:email]",
-      website: "[dgs:website]",
-      operatingHours: "[dgs:operating_hours]",
-      entityDetails: "[dgs:entity_details]",
-      otherMethods: "[dgs:other_methods]",
+      methods: "[dgs:methods]",
       otherInformation: "[dgs:other_information]",
     },
   },
