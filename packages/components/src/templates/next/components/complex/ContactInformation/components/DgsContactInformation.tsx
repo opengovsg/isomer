@@ -7,8 +7,8 @@ import type {
   DgsApiDatasetSearchResponseSuccess,
 } from "~/hooks/useDgsData/types"
 import type {
+  ContactInformationUIProps,
   DgsContactInformationProps,
-  NativeContactInformationProps,
 } from "~/interfaces/complex/ContactInformation"
 import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
 import { InjectableContactInformationKeys } from "~/interfaces/complex/ContactInformation"
@@ -60,16 +60,22 @@ export const DgsTransformedContactInformation = ({
   record,
   ...rest
 }: DgsTransformedContactInformationProps) => {
-  const title = transformDgsField(rest.title, record)
+  const title = transformDgsField(
+    rest.title,
+    record,
+  ) as ContactInformationUIProps["title"]
 
-  const description = transformDgsField(rest.description, record)
+  const description = transformDgsField(
+    rest.description,
+    record,
+  ) as ContactInformationUIProps["description"]
 
-  const methods = safeJsonParse<NativeContactInformationProps["methods"]>(
+  const methods = safeJsonParse<ContactInformationUIProps["methods"]>(
     transformDgsField(rest.methods, record),
   )
 
   const otherInformation = safeJsonParse<
-    NativeContactInformationProps["otherInformation"]
+    ContactInformationUIProps["otherInformation"]
   >(transformDgsField(rest.otherInformation, record))
 
   return (
