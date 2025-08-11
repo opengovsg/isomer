@@ -41,6 +41,9 @@ export const useDgsData = ({
 
     // 2nd API call to fetch all records
     // using the total number of records returned by the initial API call
+    // We are risk-accepting that:
+    // 1. The total number of records is accurate
+    // 2. The total number of records is not too large
     const allRecordsResponse = await fetchDataFromDgsApiDataset({
       ...params,
       limit: numberOfRecords,
