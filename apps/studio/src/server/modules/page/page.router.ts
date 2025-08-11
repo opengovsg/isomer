@@ -200,9 +200,9 @@ export const pageRouter = router({
           })
         }
 
-        const siteMeta = await getSiteConfig(page.siteId)
-        const navbar = await getNavBar(page.siteId)
-        const footer = await getFooter(page.siteId)
+        const siteMeta = await getSiteConfig(tx, page.siteId)
+        const navbar = await getNavBar(tx, page.siteId)
+        const footer = await getFooter(tx, page.siteId)
 
         const { title, type, permalink, content, updatedAt } = page
 
