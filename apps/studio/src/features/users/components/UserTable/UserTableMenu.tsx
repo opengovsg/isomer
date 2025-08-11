@@ -55,11 +55,13 @@ export const UserTableMenu = ({
     trpc.user.resendInvite.useMutation({
       onSuccess: (result) => {
         toast({
+          status: "success",
           title: `Invite resent to ${result.email}`,
         })
       },
       onError: (err) => {
         toast({
+          status: "error",
           title: "Failed to resend invite",
           description: err.message,
         })
