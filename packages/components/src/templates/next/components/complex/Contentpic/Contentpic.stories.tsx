@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { ContentpicProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import { Contentpic } from "./Contentpic"
 
 const meta: Meta<ContentpicProps> = {
@@ -19,32 +20,7 @@ const meta: Meta<ContentpicProps> = {
     },
   },
   args: {
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "searchSG",
-        clientId: "",
-      },
-    },
+    site: generateSiteConfig(),
     imageAlt:
       "Two rhinos. A rhino is peacefully grazing on grass in a field in front of the other rhino.",
     imageSrc:

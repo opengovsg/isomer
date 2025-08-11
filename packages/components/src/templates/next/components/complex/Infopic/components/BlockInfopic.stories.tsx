@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { InfopicProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import { Infopic } from "../Infopic"
 
 const meta: Meta<InfopicProps> = {
@@ -29,33 +30,7 @@ const meta: Meta<InfopicProps> = {
       "https://images.unsplash.com/photo-1527436826045-8805c615a6df?w=1280",
     buttonLabel: "Sign up",
     buttonUrl: "/",
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    site: generateSiteConfig(),
   },
 }
 export default meta

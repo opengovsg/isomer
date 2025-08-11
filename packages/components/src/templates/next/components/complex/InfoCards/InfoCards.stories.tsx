@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { InfoCardsProps } from "~/interfaces"
 import type { IsomerPageLayoutType } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 import InfoCards from "./InfoCards"
 
 const meta: Meta<InfoCardsProps> = {
@@ -14,33 +15,7 @@ const meta: Meta<InfoCardsProps> = {
     },
   },
   args: {
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    site: generateSiteConfig(),
   },
 }
 export default meta

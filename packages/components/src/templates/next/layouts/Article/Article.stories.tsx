@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { generateSiteConfig } from "~/stories/helpers"
 import { type ArticlePageSchemaType } from "~/types"
 import ArticleLayout from "./Article"
 
@@ -25,8 +26,7 @@ const generateArgs = ({
 }): ArticlePageSchemaType => {
   return {
     layout: "article",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Home",
@@ -67,39 +67,7 @@ const generateArgs = ({
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: {
-        items: [
-          {
-            name: "Home",
-            url: "/",
-          },
-          {
-            name: "Newsroom",
-            url: "/newsroom",
-            items: [
-              {
-                name: "News",
-                url: "/newsroom/news",
-              },
-            ],
-          },
-        ],
-      },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
     page: {
       title:
         "Singapore's Spectacular Citizens' Festival: a Celebration of Unity and Diversity",
@@ -166,7 +134,7 @@ export const Default: Story = {
   name: "Article",
   args: {
     layout: "article",
-    site: {
+    site: generateSiteConfig({
       siteName: "Isomer Next",
       siteMap: {
         id: "1",
@@ -208,39 +176,7 @@ export const Default: Story = {
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: {
-        items: [
-          {
-            name: "Home",
-            url: "/",
-          },
-          {
-            name: "Newsroom",
-            url: "/newsroom",
-            items: [
-              {
-                name: "News",
-                url: "/newsroom/news",
-              },
-            ],
-          },
-        ],
-      },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
     page: {
       title:
         "Singapore's Spectacular Citizens' Festival: a Celebration of Unity and Diversity",
@@ -309,8 +245,7 @@ export const NoImage: Story = {
   name: "NoImage",
   args: {
     layout: "article",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Home",
@@ -351,39 +286,7 @@ export const NoImage: Story = {
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: {
-        items: [
-          {
-            name: "Home",
-            url: "/",
-          },
-          {
-            name: "Newsroom",
-            url: "/newsroom",
-            items: [
-              {
-                name: "News",
-                url: "/newsroom/news",
-              },
-            ],
-          },
-        ],
-      },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
     page: {
       title:
         "Singapore's Spectacular Citizens' Festival: a Celebration of Unity and Diversity",
@@ -453,8 +356,7 @@ export const TaggedArticle: Story = {
   name: "TaggedArticle",
   args: {
     layout: "article",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Home",
@@ -495,39 +397,7 @@ export const TaggedArticle: Story = {
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      navbar: {
-        items: [
-          {
-            name: "Home",
-            url: "/",
-          },
-          {
-            name: "Newsroom",
-            url: "/newsroom",
-            items: [
-              {
-                name: "News",
-                url: "/newsroom/news",
-              },
-            ],
-          },
-        ],
-      },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
     page: {
       title:
         "Singapore's Spectacular Citizens' Festival: a Celebration of Unity and Diversity",

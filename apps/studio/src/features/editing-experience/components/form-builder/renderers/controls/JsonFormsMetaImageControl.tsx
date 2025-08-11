@@ -8,6 +8,7 @@ import {
   FormLabel,
 } from "@opengovsg/design-system-react"
 import { META_IMAGE_FORMAT } from "@opengovsg/isomer-components"
+import uniq from "lodash/uniq"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
@@ -53,7 +54,10 @@ export function JsonFormsMetaImageControl(
 
       <Skeleton isLoaded={!isLoading}>
         <Attachment
-          accept={Object.values(IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING)}
+          accept={uniq([
+            ...Object.keys(IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
+            ...Object.values(IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
+          ])}
           maxSize={MAX_IMG_FILE_SIZE_BYTES}
           multiple={false}
           value={image}
