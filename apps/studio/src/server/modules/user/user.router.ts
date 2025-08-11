@@ -25,7 +25,7 @@ import {
   updateUserOutputSchema,
 } from "~/schemas/user"
 import { protectedProcedure, router } from "../../trpc"
-import { db, RoleType, sql } from "../database"
+import { db, RoleType } from "../database"
 import {
   getResourcePermission,
   updateUserSitewidePermission,
@@ -221,7 +221,7 @@ export const userRouter = router({
       })
 
       return getUsersQuery({ siteId, adminType })
-        .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
+        .orderBy("ActiveUser.email", "asc")
         .select((eb) => [
           "ActiveUser.id",
           "ActiveUser.email",
@@ -238,24 +238,14 @@ export const userRouter = router({
   count: protectedProcedure
     .input(countUsersInputSchema)
     .output(countUsersOutputSchema)
-    .query(async ({ ctx, input: { siteId, adminType, activityType } }) => {
+    .query(async ({ ctx, input: { siteId, adminType } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
         action: "read",
       })
 
-      let query = getUsersQuery({ siteId, adminType })
-
-      if (activityType === "inactive") {
-        const ninetyDaysAgo = new Date()
-        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
-        query = query
-          .where("ActiveUser.lastLoginAt", "is not", null)
-          .where("ActiveUser.lastLoginAt", "<", ninetyDaysAgo)
-      }
-
-      const result = await query
+      const result = await getUsersQuery({ siteId, adminType })
         .select((eb) => [eb.fn.countAll().as("count")])
         .executeTakeFirstOrThrow()
 

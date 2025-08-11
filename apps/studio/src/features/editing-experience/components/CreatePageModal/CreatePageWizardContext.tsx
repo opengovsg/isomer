@@ -68,6 +68,7 @@ const useCreatePageWizardContext = ({
   const { data, isLoading: isPermalinkLoading } =
     trpc.resource.getWithFullPermalink.useQuery(
       {
+        siteId,
         resourceId: folderId ? String(folderId) : "",
       },
       { enabled: !!folderId },

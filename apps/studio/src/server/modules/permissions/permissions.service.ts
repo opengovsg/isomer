@@ -1,10 +1,12 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
-import { RoleType } from "@prisma/client"
+import { AuditLogEvent, RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import get from "lodash/get"
+import partition from "lodash/partition"
 
 import type {
+  BulkPermissionsProps,
   CrudResourceActions,
   PermissionsProps,
   ResourceAbility,
@@ -79,51 +81,91 @@ export const definePermissionsForSite = async ({
   return builder.build({ detectSubjectType: () => "Site" })
 }
 
-export const validateUserPermissionsForResource = async ({
+// We do bulk validation to reduce the number of DB queries: currently at max. 1-2 queries
+// TODO: this is using site wide permissions for now
+// we should fetch the oldest `parent` of this resource eventually
+interface BulkValidateUserPermissionsForResourcesProps
+  extends BulkPermissionsProps {
+  action: CrudResourceActions | "publish"
+}
+export const bulkValidateUserPermissionsForResources = async ({
   action,
-  resourceId = null,
-  ...rest
-}: PermissionsProps & { action: CrudResourceActions | "publish" }) => {
-  // TODO: this is using site wide permissions for now
-  // we should fetch the oldest `parent` of this resource eventually
-  const hasCustomParentId = resourceId === null || action === "create"
-  const resource = hasCustomParentId
-    ? // NOTE: If this is at root, we will always use `null` as the parent
+  siteId,
+  resourceIds,
+  userId,
+}: BulkValidateUserPermissionsForResourcesProps) => {
+  const generateResources = async (
+    resourceIds: NonNullable<BulkPermissionsProps["resourceIds"]>,
+  ): Promise<{ parentId: string | null }[]> => {
+    if (resourceIds.length === 0) {
+      return [{ parentId: null }]
+    }
+
+    if (action === "create") {
+      // NOTE: If this is at root, we will always use `null` as the parent
       // otherwise, this is a `create` action and the parent of the resource that
       // we want to create is the resource passed in.
       // However, because we don't have root level permissions for now,
       // we will pass in `null` to signify the site level permissions
-      { parentId: resourceId ?? null }
-    : await db
+      return resourceIds.map((resourceId) => ({ parentId: resourceId }))
+    }
+
+    const [nullResourceIds, nonNullResourceIds] = partition(
+      resourceIds,
+      (resourceId) => resourceId === null,
+    )
+
+    let resources: { parentId: string | null }[] = []
+
+    if (nonNullResourceIds.length > 0) {
+      resources = await db
         .selectFrom("Resource")
-        .where("Resource.id", "=", resourceId)
+        .where("siteId", "=", siteId)
+        .where("id", "in", nonNullResourceIds)
         .select(["Resource.parentId"])
-        .executeTakeFirst()
+        .execute()
 
-  if (!resource) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Resource not found",
-    })
+      if (nonNullResourceIds.length !== resources.length) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            resourceIds.length === 1
+              ? "Resource not found"
+              : "Resources not found",
+        })
+      }
+    }
+
+    return resources.concat(nullResourceIds.map(() => ({ parentId: null })))
   }
 
-  const perms = await definePermissionsForResource({
-    ...rest,
-  })
+  // This executes 1 DB query
+  // NOTE: not passing in resourceIds because we are using site-wide permissions
+  const perms = await definePermissionsForResource({ siteId, userId })
 
-  // TODO: create should check against the current resource id
-  if (perms.cannot(action, resource)) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "You do not have sufficient permissions to perform this action",
-    })
-  }
+  // This executes 0-1 DB query
+  const resources = await generateResources(resourceIds ?? [])
+
+  await Promise.all(
+    resources.map((resource) => {
+      if (perms.cannot(action, resource)) {
+        return Promise.reject(
+          new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "You do not have sufficient permissions to perform this action",
+          }),
+        )
+      }
+      return Promise.resolve()
+    }),
+  )
 }
 
 export const getResourcePermission = async ({
   userId,
   siteId,
-  resourceId,
+  resourceId: _resourceId,
 }: PermissionsProps) => {
   let query = db
     .selectFrom("ResourcePermission")
@@ -131,11 +173,9 @@ export const getResourcePermission = async ({
     .where("siteId", "=", siteId)
     .where("deletedAt", "is", null)
 
-  if (resourceId) {
-    query = query.where("resourceId", "=", resourceId)
-  } else {
-    query = query.where("resourceId", "is", null)
-  }
+  // NOTE: we are using site-wide permissions for now
+  // because there's no granular resource role
+  query = query.where("resourceId", "is", null)
 
   return query.select("role").execute()
 }
@@ -213,7 +253,7 @@ export const updateUserSitewidePermission = async ({
     }
 
     await logPermissionEvent(tx, {
-      eventType: "PermissionDelete",
+      eventType: AuditLogEvent.PermissionDelete,
       by: byUser,
       delta: { before: sitePermissionToRemove, after: deletedSitePermission },
     })
@@ -234,7 +274,7 @@ export const updateUserSitewidePermission = async ({
       })
 
     await logPermissionEvent(tx, {
-      eventType: "PermissionCreate",
+      eventType: AuditLogEvent.PermissionCreate,
       by: byUser,
       delta: { before: null, after: createdSitePermission },
     })

@@ -2,37 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { HeroProps } from "~/interfaces/complex/Hero"
+import { generateSiteConfig } from "~/stories/helpers"
 import Hero from "./Hero"
-
-const SITE_ARGS: Partial<HeroProps> = {
-  site: {
-    siteName: "Isomer Next",
-    siteMap: {
-      id: "1",
-      title: "Home",
-      permalink: "/",
-      lastModified: "",
-      layout: "homepage",
-      summary: "",
-      children: [],
-    },
-    theme: "isomer-next",
-    isGovernment: true,
-    logoUrl: "/isomer-logo.svg",
-    lastUpdated: "2021-10-01",
-    navbar: { items: [] },
-    footerItems: {
-      privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-      termsOfUseLink: "https://www.isomer.gov.sg/terms",
-      siteNavItems: [],
-    },
-    search: {
-      type: "localSearch",
-      searchUrl: "/search",
-    },
-  },
-}
 
 const meta: Meta<typeof Hero> = {
   title: "Next/Components/Hero",
@@ -51,7 +22,7 @@ type Story = StoryObj<typeof Hero>
 
 export const Gradient: Story = {
   args: {
-    ...SITE_ARGS,
+    site: generateSiteConfig(),
     backgroundUrl: "/hero-banner.png",
     title: "Ministry of Trade and Industry",
     subtitle:
@@ -66,7 +37,7 @@ export const Gradient: Story = {
 
 export const ColourBlock: Story = {
   args: {
-    ...SITE_ARGS,
+    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     title: "Your hero title goes here, please keep it short and sweet",
@@ -83,7 +54,7 @@ export const ColourBlock: Story = {
 
 export const ColourBlockInverse: Story = {
   args: {
-    ...SITE_ARGS,
+    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     title: "Your hero title goes here, please keep it short and sweet",
@@ -100,7 +71,7 @@ export const ColourBlockInverse: Story = {
 
 export const LargeImage: Story = {
   args: {
-    ...SITE_ARGS,
+    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     title: "Your hero title goes here, please keep it short and sweet",
@@ -116,7 +87,7 @@ export const LargeImage: Story = {
 
 export const Floating: Story = {
   args: {
-    ...SITE_ARGS,
+    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     title: "Youths, the future of our nation",
@@ -132,7 +103,7 @@ export const Floating: Story = {
 
 export const FloatingInverse: Story = {
   args: {
-    ...SITE_ARGS,
+    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     title: "Youths, the future of our nation",
@@ -149,7 +120,7 @@ export const FloatingInverse: Story = {
 
 export const FloatingShortText: Story = {
   args: {
-    ...SITE_ARGS,
+    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     title: "Short",

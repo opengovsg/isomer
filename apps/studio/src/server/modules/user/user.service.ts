@@ -1,6 +1,7 @@
 import cuid2 from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import isEmail from "validator/lib/isEmail"
 
 import type { DB, Transaction } from "../database"
@@ -97,7 +98,7 @@ export const createUserWithPermission = async ({
     // if user is defined, it means it's newly created and there's no conflict
     if (user) {
       await logUserEvent(tx, {
-        eventType: "UserCreate",
+        eventType: AuditLogEvent.UserCreate,
         by: byUser,
         delta: { before: null, after: user },
       })
@@ -136,7 +137,7 @@ export const createUserWithPermission = async ({
     }
 
     await logPermissionEvent(tx, {
-      eventType: "PermissionCreate",
+      eventType: AuditLogEvent.PermissionCreate,
       by: byUser,
       delta: { before: null, after: resourcePermission },
     })
@@ -256,7 +257,7 @@ export const deleteUserPermission = async ({
       }
 
       await logPermissionEvent(tx, {
-        eventType: "PermissionDelete",
+        eventType: AuditLogEvent.PermissionDelete,
         by: byUser,
         delta: { before, after: deletedUserPermission },
       })
@@ -290,7 +291,7 @@ export const updateUserDetails = async ({
       .executeTakeFirstOrThrow()
 
     await logUserEvent(tx, {
-      eventType: "UserUpdate",
+      eventType: AuditLogEvent.UserUpdate,
       by: user,
       delta: { before: user, after: updatedUser },
     })

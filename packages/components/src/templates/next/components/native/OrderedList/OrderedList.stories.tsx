@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { OrderedListProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import OrderedList from "./OrderedList"
 
 // Template for stories
@@ -22,31 +23,7 @@ const meta: Meta<OrderedListProps> = {
     },
   },
   args: {
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "searchSG",
-        clientId: "",
-      },
-    },
+    site: generateSiteConfig(),
   },
 }
 export default meta

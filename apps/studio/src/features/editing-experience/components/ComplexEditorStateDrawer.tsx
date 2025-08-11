@@ -15,7 +15,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { editPageSchema } from "../schema"
+import { pageSchema } from "../schema"
 import {
   CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
   PLACEHOLDER_IMAGE_FILENAME,
@@ -52,7 +52,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
   const toast = useToast()
 
-  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const { pageId, siteId } = useQueryParse(pageSchema)
   const utils = trpc.useUtils()
 
   const { mutate: savePage, isLoading: isSavingPage } =
@@ -68,7 +68,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     })
 
   const { mutateAsync: uploadAsset, isLoading: isUploadingAsset } =
-    useUploadAssetMutation({ siteId })
+    useUploadAssetMutation({ siteId, resourceId: String(pageId) })
   const { mutate: deleteAssets, isLoading: isDeletingAssets } =
     trpc.asset.deleteAssets.useMutation()
 
@@ -209,7 +209,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           return acc
         }, [])
 
-      deleteAssets({ fileKeys: assetsToDelete })
+      deleteAssets({
+        siteId,
+        resourceId: String(pageId),
+        fileKeys: assetsToDelete,
+      })
     }
 
     savePage(

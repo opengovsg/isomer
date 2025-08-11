@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { MapProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import { Map } from "./Map"
 
 const meta: Meta<MapProps> = {
@@ -11,6 +12,9 @@ const meta: Meta<MapProps> = {
     themes: {
       themeOverride: "Isomer Next",
     },
+  },
+  args: {
+    site: generateSiteConfig(),
   },
 }
 export default meta
@@ -35,5 +39,13 @@ export const OneMapLocation: Story = {
   args: {
     title: "Singapore region",
     url: "https://www.onemap.gov.sg/minimap/minimap.html?mapStyle=Default&zoomLevel=15&latLng=1.29793747849037,103.850182257356&ewt=JTNDcCUzRSUzQ3N0cm9uZyUzRU9wZW4lMjBHb3Zlcm5tZW50JTIwUHJvZHVjdHMlMjBvZmZpY2UlM0MlMkZzdHJvbmclM0UlM0MlMkZwJTNF&popupWidth=200&showPopup=true",
+  },
+}
+
+export const OGPMaps: Story = {
+  name: "Maps.gov.sg",
+  args: {
+    title: "Public AED Locations",
+    url: "https://maps.gov.sg/scdf-aed",
   },
 }

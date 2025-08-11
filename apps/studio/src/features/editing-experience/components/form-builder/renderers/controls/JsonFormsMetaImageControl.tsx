@@ -7,9 +7,11 @@ import {
   FormErrorMessage,
   FormLabel,
 } from "@opengovsg/design-system-react"
-import { z } from "zod"
+import { META_IMAGE_FORMAT } from "@opengovsg/isomer-components"
+import uniq from "lodash/uniq"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
@@ -27,14 +29,9 @@ export const jsonFormsMetaImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
   and(
     isStringControl,
-    schemaMatches((schema) => schema.format === "meta-image"),
+    schemaMatches((schema) => schema.format === META_IMAGE_FORMAT),
   ),
 )
-
-const schema = z.object({
-  siteId: z.coerce.number(),
-})
-
 interface JsonFormsMetaImageControlProps extends ControlProps {
   data: string
 }
@@ -45,9 +42,10 @@ export function JsonFormsMetaImageControl(
     props
   const { image } = useS3Image(data)
   const { handleAssetUpload, isLoading } = useAssetUpload({})
-  const { siteId } = useQueryParse(schema)
+  const { siteId, pageId } = useQueryParse(pageSchema)
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
+    resourceId: String(pageId),
   })
 
   return (
@@ -56,7 +54,10 @@ export function JsonFormsMetaImageControl(
 
       <Skeleton isLoaded={!isLoading}>
         <Attachment
-          accept={Object.values(IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING)}
+          accept={uniq([
+            ...Object.keys(IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
+            ...Object.values(IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
+          ])}
           maxSize={MAX_IMG_FILE_SIZE_BYTES}
           multiple={false}
           value={image}

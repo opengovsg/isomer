@@ -13,14 +13,23 @@ export {
   ContentPageHeaderSchema,
   type ContentPageHeaderProps,
 } from "./ContentPageHeader"
-export type { FooterProps } from "./Footer"
+export { FooterSchema, type FooterSchemaType, type FooterProps } from "./Footer"
 export { HardBreakSchema, type HardBreakProps } from "./HardBreak"
 export type { HeaderProps } from "./Header"
 export type { LinkProps } from "./Link"
-export type { LocalSearchInputBoxProps } from "./LocalSearchInputBox"
+export { LocalSearchSchema, type LocalSearchProps } from "./LocalSearchInputBox"
 export type { MastheadProps } from "./Masthead"
-export type { NavbarProps, NavbarClientProps } from "./Navbar"
-export type { NotificationProps, NotificationClientProps } from "./Notification"
+export {
+  NavbarSchema,
+  type NavbarProps,
+  type NavbarClientProps,
+  type NavbarSchemaType,
+} from "./Navbar"
+export {
+  NotificationSchema,
+  type NotificationProps,
+  type NotificationClientProps,
+} from "./Notification"
 export type { PillProps } from "./Pill"
 export type { SearchProps } from "./Search"
 export {
@@ -32,17 +41,21 @@ export {
   NATIVE_SEARCHABLE_TABLE_TYPE,
   DGS_SEARCHABLE_TABLE_TYPE,
 } from "./SearchableTable"
-export type { SearchSGInputBoxProps } from "./SearchSGInputBox"
+export {
+  SearchSGSearchSchema,
+  type SearchSGInputBoxProps,
+} from "./SearchSGInputBox"
 export type { SidePaneProps } from "./SidePane"
 export type { SiderailProps } from "./Siderail"
 export type { SkipToContentProps } from "./SkipToContent"
 export type { TableOfContentsProps } from "./TableOfContents"
 export type { WogaaProps } from "./Wogaa"
-export type {
-  VicaWidgetClientProps,
-  VicaWidgetProps,
-  VicaProps,
-  VicaStylesheetProps,
+export {
+  VicaSchema,
+  type VicaWidgetClientProps,
+  type VicaWidgetProps,
+  type VicaProps,
+  type VicaStylesheetProps,
 } from "./Vica"
 export type {
   GoogleTagManagerHeaderScriptProps,
@@ -51,6 +64,9 @@ export type {
   GoogleTagManagerBodyProps,
 } from "./GoogleTagManager"
 export type { AttrsDirProps } from "./AttrsDir"
-export type { AskgovWidgetProps, AskgovProps } from "./Askgov"
-export type { WizgovWidgetProps, WizgovProps } from "./Wizgov"
+export {
+  AskgovSchema,
+  type AskgovWidgetProps,
+  type AskgovProps,
+} from "./Askgov"
 export type { ImageClientProps } from "./Image"
