@@ -22,18 +22,23 @@ export const DGSSearchableTable = ({
     [headers],
   )
 
-  const { records, isLoading, isError } = useDgsData({
-    resourceId,
-    fields: fieldKeys.join(","),
-    filters: filters?.reduce(
-      (acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      },
-      {} as NonNullable<DgsApiDatasetSearchParams["filters"]>,
-    ),
-    sort,
-  })
+  const params = useMemo(
+    () => ({
+      resourceId,
+      fields: fieldKeys.join(","),
+      filters: filters?.reduce(
+        (acc, filter) => {
+          acc[filter.fieldKey] = filter.fieldValue
+          return acc
+        },
+        {} as NonNullable<DgsApiDatasetSearchParams["filters"]>,
+      ),
+      sort,
+    }),
+    [resourceId, filters, sort, fieldKeys],
+  )
+
+  const { records, isLoading, isError } = useDgsData(params)
 
   const items: SearchableTableClientProps["items"] = useMemo(
     () =>
