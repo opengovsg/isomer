@@ -3,13 +3,14 @@
 import { useMemo } from "react"
 
 import type { SearchableTableClientProps } from "../shared"
+import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type { DGSSearchableTableProps } from "~/interfaces"
 import { useDgsData } from "~/hooks/useDgsData"
 import { SearchableTableClient } from "../shared"
 
 export const DGSSearchableTable = ({
+  dataSource: { resourceId, filters, sort },
   title,
-  dgsResourceId,
   headers,
   site,
   LinkComponent,
@@ -22,8 +23,16 @@ export const DGSSearchableTable = ({
   )
 
   const { records, isLoading, isError } = useDgsData({
-    resourceId: dgsResourceId,
+    resourceId,
     fields: fieldKeys.join(","),
+    filters: filters?.reduce(
+      (acc, filter) => {
+        acc[filter.fieldKey] = filter.fieldValue
+        return acc
+      },
+      {} as NonNullable<DgsApiDatasetSearchParams["filters"]>,
+    ),
+    sort,
   })
 
   const items: SearchableTableClientProps["items"] = useMemo(

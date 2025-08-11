@@ -3,15 +3,15 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { ARRAY_RADIO_FORMAT } from "../format"
-
-// TODO: maybe also move this outside of this file as a shared interface
-export const NATIVE_SEARCHABLE_TABLE_TYPE = "native"
-export const DGS_SEARCHABLE_TABLE_TYPE = "dgs"
+import { DATA_SOURCE_TYPE } from "../integration/dataSource"
 
 export const NativeSearchableTableSchema = Type.Object({
-  variant: Type.Optional(
-    Type.Literal(NATIVE_SEARCHABLE_TABLE_TYPE, {
-      default: NATIVE_SEARCHABLE_TABLE_TYPE,
+  // "optional" to ensure backward compatibility
+  dataSource: Type.Optional(
+    Type.Object({
+      type: Type.Literal(DATA_SOURCE_TYPE.native, {
+        default: DATA_SOURCE_TYPE.native,
+      }),
     }),
   ),
   title: Type.Optional(Type.String()),
@@ -27,12 +27,23 @@ export type NativeSearchableTableProps = Static<
 }
 
 export const DGSSearchableTableSchema = Type.Object({
-  variant: Type.Literal(DGS_SEARCHABLE_TABLE_TYPE, {
-    default: DGS_SEARCHABLE_TABLE_TYPE,
-  }),
-  dgsResourceId: Type.String({
-    title: "DGS Resource ID",
-    description: "The DGS resource ID to fetch the data from",
+  dataSource: Type.Object({
+    type: Type.Literal(DATA_SOURCE_TYPE.dgs, {
+      default: DATA_SOURCE_TYPE.dgs,
+    }),
+    resourceId: Type.String({
+      title: "DGS Resource ID",
+      description: "The resource ID to fetch data from DGS",
+    }),
+    filters: Type.Optional(
+      Type.Array(
+        Type.Object({
+          fieldKey: Type.String(),
+          fieldValue: Type.String(),
+        }),
+      ),
+    ),
+    sort: Type.Optional(Type.String()),
   }),
   title: Type.String({
     title: "Title",

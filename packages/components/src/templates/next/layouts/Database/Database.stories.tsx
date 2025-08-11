@@ -910,9 +910,11 @@ export const DGSSearchableTable: Story = {
   name: "DGS Searchable Table",
   args: generateArgs({
     database: {
-      variant: "dgs",
       title: "Sample DGS Table",
-      dgsResourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+      dataSource: {
+        type: "dgs",
+        resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+      },
       headers: [
         { label: "Year", key: "year" },
         { label: "University", key: "university" },
