@@ -76,15 +76,3 @@ export type SearchableTableProps = Static<typeof SearchableTableSchema> & {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }
-
-// TODO: to move to somewhere else as shared interface
-const _DGSResponseSchema = Type.Object({
-  result: Type.Object({
-    resource_id: Type.String(),
-    records: Type.Array(Type.Record(Type.String(), Type.Any())),
-    total: Type.Number(),
-    limit: Type.Number(),
-  }),
-})
-
-export type DGSResponse = Static<typeof _DGSResponseSchema>

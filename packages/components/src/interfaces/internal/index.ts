@@ -37,7 +37,6 @@ export {
   type SearchableTableProps,
   type NativeSearchableTableProps,
   type DGSSearchableTableProps,
-  type DGSResponse,
   NATIVE_SEARCHABLE_TABLE_TYPE,
   DGS_SEARCHABLE_TABLE_TYPE,
 } from "./SearchableTable"
