@@ -9,6 +9,7 @@ import { BiDownload, BiLoaderAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { buttonStyles } from "../Button"
+import { buttonIconStyles } from "../Button/common"
 import { defaultDownloadStrategies, directDownloadStrategy } from "./strategies"
 
 const downloadButtonStyles = tv({
@@ -16,19 +17,11 @@ const downloadButtonStyles = tv({
 })
 
 const downloadIconStyles = tv({
-  base: "h-auto flex-shrink-0",
+  extend: buttonIconStyles,
   variants: {
-    size: {
-      sm: "w-3.5 lg:w-4",
-      base: "w-3.5 lg:w-4",
-      lg: "w-4.5 lg:w-5",
-    },
     isLoading: {
       true: "animate-spin",
     },
-  },
-  defaultVariants: {
-    size: "base",
   },
 })
 
