@@ -2,9 +2,11 @@
 
 import { useMemo } from "react"
 
-import type { SearchableTableClientProps } from "../shared"
 import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
-import type { DGSSearchableTableProps } from "~/interfaces"
+import type {
+  DGSSearchableTableProps,
+  SearchableTableClientProps,
+} from "~/interfaces"
 import { useDgsData } from "~/hooks/useDgsData"
 import { SearchableTableClient } from "../shared"
 

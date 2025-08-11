@@ -1,5 +1,2 @@
-export {
-  SearchableTableClient,
-  type SearchableTableClientProps,
-} from "./SearchableTableClient"
+export { SearchableTableClient } from "./SearchableTableClient"
 export * from "./constants"

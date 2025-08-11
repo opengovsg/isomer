@@ -3,7 +3,7 @@ import { Type } from "@sinclair/typebox"
 import { DATA_SOURCE_TYPE } from "./dataSource"
 
 // Refer to https://guide.data.gov.sg/developer-guide/dataset-apis/search-and-filter-within-dataset
-export const DgsDataSourceSchema = Type.Object({
+const DgsDataSourceFieldsSchema = Type.Object({
   type: Type.Literal(DATA_SOURCE_TYPE.dgs, {
     default: DATA_SOURCE_TYPE.dgs,
   }),
@@ -20,4 +20,8 @@ export const DgsDataSourceSchema = Type.Object({
     ),
   ),
   sort: Type.Optional(Type.String()),
+})
+
+export const DgsDataSourceSchema = Type.Object({
+  dataSource: DgsDataSourceFieldsSchema,
 })

@@ -2,7 +2,7 @@
 
 import { useDeferredValue, useId, useMemo, useRef, useState } from "react"
 
-import type { NativeSearchableTableProps } from "~/interfaces"
+import type { SearchableTableClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import BaseParagraph from "../../BaseParagraph"
 import { PaginationControls } from "../../PaginationControls"
@@ -53,16 +53,6 @@ const createSearchableTableStyles = tv({
 })
 
 const compoundStyles = createSearchableTableStyles()
-
-export type SearchableTableClientProps = Omit<
-  NativeSearchableTableProps,
-  "items"
-> & {
-  items: {
-    row: NativeSearchableTableProps["items"][number]
-    key: string
-  }[]
-}
 
 export const SearchableTableClient = ({
   title,

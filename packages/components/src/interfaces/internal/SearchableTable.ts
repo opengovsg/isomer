@@ -3,26 +3,19 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { DgsDataSourceSchema, NativeDataSourceSchema } from "../integration"
-import { DATA_SOURCE_TYPE } from "../integration/dataSource"
 
 const BaseSearchableTableSchema = Type.Object({
-  title: Type.String({
-    title: "Title",
-    description: "The title of the table",
-  }),
+  title: Type.Optional(
+    Type.String({
+      title: "Title",
+      description: "The title of the table",
+    }),
+  ),
 })
 
 export const NativeSearchableTableSchema = Type.Intersect([
   NativeDataSourceSchema,
   Type.Object({
-    // "optional" to ensure backward compatibility
-    dataSource: Type.Optional(
-      Type.Object({
-        type: Type.Literal(DATA_SOURCE_TYPE.native, {
-          default: DATA_SOURCE_TYPE.native,
-        }),
-      }),
-    ),
     headers: Type.Array(Type.Union([Type.String(), Type.Number()])),
     items: Type.Array(Type.Array(Type.Union([Type.String(), Type.Number()]))),
   }),
@@ -31,24 +24,6 @@ export const NativeSearchableTableSchema = Type.Intersect([
 export const DGSSearchableTableSchema = Type.Intersect([
   DgsDataSourceSchema,
   Type.Object({
-    dataSource: Type.Object({
-      type: Type.Literal(DATA_SOURCE_TYPE.dgs, {
-        default: DATA_SOURCE_TYPE.dgs,
-      }),
-      resourceId: Type.String({
-        title: "DGS Resource ID",
-        description: "The resource ID to fetch data from DGS",
-      }),
-      filters: Type.Optional(
-        Type.Array(
-          Type.Object({
-            fieldKey: Type.String(),
-            fieldValue: Type.String(),
-          }),
-        ),
-      ),
-      sort: Type.Optional(Type.String()),
-    }),
     headers: Type.Array(
       Type.Object({
         label: Type.String({
@@ -70,19 +45,35 @@ export const SearchableTableSchema = Type.Intersect([
   Type.Union([NativeSearchableTableSchema, DGSSearchableTableSchema]),
 ])
 
-export type NativeSearchableTableProps = Static<
-  typeof NativeSearchableTableSchema
-> & {
-  site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
-}
+// note: ideally we should not pass entire "site" object to the client component
+// as it can be quite large and increase page size
+// but since this is not a common component, we will allow it for now :(
+export type SearchableTableClientProps = Static<
+  typeof BaseSearchableTableSchema
+> &
+  Pick<NativeSearchableTableProps, "headers"> & {
+    items: {
+      row: NativeSearchableTableProps["items"][number]
+      key: string
+    }[]
+  } & {
+    site: IsomerSiteProps
+    LinkComponent?: LinkComponentType
+  }
 
-export type DGSSearchableTableProps = Static<
-  typeof DGSSearchableTableSchema
-> & {
-  site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
-}
+export type NativeSearchableTableProps = Static<
+  typeof BaseSearchableTableSchema
+> &
+  Static<typeof NativeSearchableTableSchema> & {
+    site: IsomerSiteProps
+    LinkComponent?: LinkComponentType
+  }
+
+export type DGSSearchableTableProps = Static<typeof BaseSearchableTableSchema> &
+  Static<typeof DGSSearchableTableSchema> & {
+    site: IsomerSiteProps
+    LinkComponent?: LinkComponentType
+  }
 
 export type SearchableTableProps = Static<typeof SearchableTableSchema> & {
   site: IsomerSiteProps
