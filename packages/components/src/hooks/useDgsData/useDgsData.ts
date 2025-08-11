@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import type {
   DgsApiDatasetSearchParams,
@@ -6,18 +6,37 @@ import type {
 } from "./types"
 import { fetchDataFromDgsApiDataset } from "./fetchDataFromDgsApi"
 
-interface UseDgsDataParams extends DgsApiDatasetSearchParams {
+interface UseDgsData extends DgsApiDatasetSearchParams {
   fetchAll?: boolean
 }
 
 export const useDgsData = ({
   fetchAll = false,
-  ...params
-}: UseDgsDataParams) => {
+  resourceId,
+  limit,
+  offset,
+  fields,
+  filters,
+  sort,
+}: UseDgsData) => {
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [data, setData] = useState<DgsApiDatasetSearchResponseSuccess | null>(
     null,
+  )
+
+  // Required because we don't want to deconstruct the params in the props,
+  // which will cause infinite re-renders for the subsequent useCallback hooks.
+  const memoizedParams = useMemo(
+    () => ({
+      resourceId,
+      limit,
+      offset,
+      fields,
+      filters,
+      sort,
+    }),
+    [resourceId, limit, offset, fields, filters, sort],
   )
 
   const fetchAllRecords = useCallback(async () => {
@@ -26,7 +45,7 @@ export const useDgsData = ({
 
     // 1st API call to attempt to fetch all records
     const initialResponse = await fetchDataFromDgsApiDataset({
-      ...params,
+      ...memoizedParams,
       limit: fetchAllLimit,
     })
 
@@ -45,17 +64,17 @@ export const useDgsData = ({
     // 1. The total number of records is accurate
     // 2. The total number of records is not too large
     const allRecordsResponse = await fetchDataFromDgsApiDataset({
-      ...params,
+      ...memoizedParams,
       limit: numberOfRecords,
     })
 
     setData(allRecordsResponse)
-  }, [params])
+  }, [memoizedParams])
 
   const fetchRecords = useCallback(async () => {
-    const response = await fetchDataFromDgsApiDataset(params)
+    const response = await fetchDataFromDgsApiDataset(memoizedParams)
     setData(response)
-  }, [params])
+  }, [memoizedParams])
 
   useEffect(() => {
     const fetchData = async () => {
