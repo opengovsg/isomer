@@ -8,13 +8,8 @@ import { BiDownload, BiLoaderAlt } from "react-icons/bi"
 
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { buttonStyles } from "../Button"
-import { buttonIconStyles } from "../Button/common"
+import { buttonIconStyles, buttonStyles } from "../Button/common"
 import { defaultDownloadStrategies, directDownloadStrategy } from "./strategies"
-
-const downloadButtonStyles = tv({
-  base: "flex items-center gap-2",
-})
 
 const downloadIconStyles = tv({
   extend: buttonIconStyles,
@@ -100,14 +95,17 @@ export const DownloadButton = ({
       {...props}
       isDisabled={isDownloading}
       className={composeRenderProps(className, (className, renderProps) =>
-        buttonStyles({
-          ...renderProps,
-          variant,
-          size,
-          className: twMerge(downloadButtonStyles(), className),
-          colorScheme,
-          isDisabled: isDownloading,
-        }),
+        twMerge(
+          buttonStyles({
+            ...renderProps,
+            variant,
+            size,
+            className,
+            colorScheme,
+            isDisabled: isDownloading,
+          }),
+          className,
+        ),
       )}
       onPress={handleDownload}
     >

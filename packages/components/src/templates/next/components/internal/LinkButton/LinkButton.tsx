@@ -5,22 +5,10 @@ import type { VariantProps } from "tailwind-variants"
 import { BiLinkExternal } from "react-icons/bi"
 
 import type { LinkProps } from "~/interfaces"
-import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { isExternalUrl } from "~/utils"
-import { buttonStyles } from "../Button"
-import { buttonIconStyles } from "../Button/common"
+import { buttonIconStyles, buttonStyles } from "../Button/common"
 import { Link } from "../Link"
-
-// Link button layout styling
-const linkButtonStyles = tv({
-  base: "",
-  variants: {
-    isExternal: {
-      true: "flex items-center gap-2",
-    },
-  },
-})
 
 export interface LinkButtonProps
   extends LinkProps,
@@ -47,7 +35,6 @@ export const LinkButton = ({
         {...props}
         className={twMerge(
           buttonStyles({ variant, size, className, colorScheme }),
-          linkButtonStyles({ isExternal: true }),
           className,
         )}
         isExternal={isExternalLink}
