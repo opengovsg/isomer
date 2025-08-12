@@ -8,7 +8,7 @@ import { Tag } from "../Tag"
 
 export const BlogCard = ({
   LinkComponent,
-  lastUpdated,
+  date,
   description,
   category,
   image,
@@ -49,7 +49,7 @@ export const BlogCard = ({
       )}
       {shouldShowDate && (
         <p className="prose-label-md-regular shrink-0 text-base-content-subtle">
-          {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
+          {date ? getFormattedDate(date.toISOString()) : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
