@@ -1706,6 +1706,10 @@ video {
   min-height: 360px;
 }
 
+.min-h-\[45rem\] {
+  min-height: 45rem;
+}
+
 .min-h-dvh {
   min-height: 100dvh;
 }
@@ -5790,6 +5794,10 @@ video {
 
   .lg\:max-h-full {
     max-height: 100%;
+  }
+
+  .lg\:min-h-0 {
+    min-height: 0px;
   }
 
   .lg\:min-h-\[31\.25rem\] {
