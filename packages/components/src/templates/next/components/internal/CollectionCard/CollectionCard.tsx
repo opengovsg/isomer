@@ -8,7 +8,7 @@ import { Title } from "./Title"
 
 export const CollectionCard = ({
   LinkComponent,
-  lastUpdated,
+  date,
   description,
   category,
   image,
@@ -34,7 +34,7 @@ export const CollectionCard = ({
     >
       {shouldShowDate && (
         <p className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
-          {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
+          {date ? getFormattedDate(date.toISOString()) : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">

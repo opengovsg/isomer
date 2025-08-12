@@ -1,33 +1,22 @@
 import { beforeAll, describe, expect, it } from "vitest"
 
-import type { SortableCardProps } from "../sortCollectionItems"
+import type { AllCardProps } from "~/interfaces"
 import { sortCollectionItems } from "../sortCollectionItems"
 
 describe("sortCollectionItems", () => {
   let itemCounter = 0
 
-  const createItem = ({
-    title = "Test Item",
-    date,
-    variant = "article",
-    url = "",
-    category = "Others",
-  }: {
-    title?: string
-    date?: Date
-    variant?: "file" | "link" | "article"
-    url?: string
-    category?: string
-  }): SortableCardProps => {
+  const createItem = (overrides?: Partial<AllCardProps>): AllCardProps => {
     itemCounter++
     return {
       id: `test-${itemCounter}`,
-      title,
-      rawDate: date,
-      variant,
-      url,
+      title: "Collection Item",
+      date: new Date(),
+      lastUpdated: "2024-12-01T12:00:00Z",
+      variant: "article",
+      url: "/test-item",
       description: "",
-      category,
+      category: "Category",
       site: {
         siteMap: {
           id: "root",
@@ -53,7 +42,8 @@ describe("sortCollectionItems", () => {
         },
         lastUpdated: "2024-01-01",
       },
-    } as SortableCardProps
+      ...overrides,
+    } as AllCardProps
   }
 
   it("should sort items by date (newest first)", () => {
@@ -72,17 +62,63 @@ describe("sortCollectionItems", () => {
     expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
   })
 
-  it("should sort by title when dates are equal", () => {
+  it("should sort by last modified date when dates are equal", () => {
     // Arrange
     const sameDate = new Date("2023-01-01")
     const items = [
-      createItem({ title: "Charlie", date: sameDate }),
-      createItem({ title: "Alice", date: sameDate }),
-      createItem({ title: "Bob", date: sameDate }),
+      createItem({
+        title: "Charlie",
+        date: sameDate,
+        lastUpdated: "2025-01-01T12:00:00Z",
+      }),
+      createItem({
+        title: "Alice",
+        date: sameDate,
+        lastUpdated: "2025-03-01T12:00:00Z",
+      }),
+      createItem({
+        title: "Bob",
+        date: sameDate,
+        lastUpdated: "2025-02-01T12:00:00Z",
+      }),
     ]
 
     // Act
     const sorted = sortCollectionItems({ items })
+
+    // Assert
+    const expectedTitles = ["Alice", "Bob", "Charlie"]
+    expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
+  })
+
+  it("should sort by title when dates and the last modified dates are equal", () => {
+    // Arrange
+    const sameDate = new Date("2023-01-01")
+    const sameLastUpdated = "2025-01-01T12:00:00Z"
+    const items = [
+      createItem({
+        title: "Charlie",
+        date: sameDate,
+        lastUpdated: sameLastUpdated,
+      }),
+      createItem({
+        title: "Alice",
+        date: sameDate,
+        lastUpdated: sameLastUpdated,
+      }),
+      createItem({
+        title: "Bob",
+        date: sameDate,
+        lastUpdated: sameLastUpdated,
+      }),
+    ]
+
+    // Act
+    const sorted = sortCollectionItems({
+      items,
+      sortBy: "title",
+      sortDirection: "asc",
+    })
 
     // Assert
     const expectedTitles = ["Alice", "Bob", "Charlie"]
@@ -111,13 +147,13 @@ describe("sortCollectionItems", () => {
   })
 
   describe("should place items without dates at the end, sorted alphabetically by title:", () => {
-    let items: SortableCardProps[]
+    let items: AllCardProps[]
 
     beforeAll(() => {
       items = [
-        createItem({ title: "No Date" }),
+        createItem({ title: "No Date", date: undefined }),
         createItem({ title: "Newest", date: new Date("2023-12-31") }),
-        createItem({ title: "Also No Date" }),
+        createItem({ title: "Also No Date", date: undefined }),
         createItem({ title: "Oldest", date: new Date("2023-01-01") }),
       ]
     })
@@ -163,7 +199,7 @@ describe("sortCollectionItems", () => {
   })
 
   describe("should sort by title with date as tiebreaker (newest first) when sortBy is title and", () => {
-    let items: SortableCardProps[]
+    let items: AllCardProps[]
 
     beforeAll(() => {
       // Arrange
@@ -217,7 +253,7 @@ describe("sortCollectionItems", () => {
   })
 
   describe("should sort by category with title as tiebreaker (alphabetically) when sortBy is category and", () => {
-    let items: SortableCardProps[]
+    let items: AllCardProps[]
 
     beforeAll(() => {
       items = [
@@ -259,8 +295,8 @@ describe("sortCollectionItems", () => {
     })
   })
 
-  describe("should sort by date with title as tiebreaker (alphabetically) when sortBy is date and", () => {
-    let items: SortableCardProps[]
+  describe("should sort by date with last modified and alphabetical title as tiebreaker when sortBy is date and", () => {
+    let items: AllCardProps[]
 
     beforeAll(() => {
       // Arrange

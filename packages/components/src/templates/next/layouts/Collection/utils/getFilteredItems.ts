@@ -41,10 +41,9 @@ export const getFilteredItems = (
     if (
       yearFilter &&
       !yearFilter.items.some((filterItem) =>
-        item.lastUpdated
+        item.date
           ? // if date is defined, check if year matches
-            new Date(item.lastUpdated).getFullYear().toString() ===
-            filterItem.id
+            item.date.getFullYear().toString() === filterItem.id
           : // if undefined date, check if "not specified" filter is applied
             filterItem.id === NO_SPECIFIED_YEAR_FILTER_ID,
       )
