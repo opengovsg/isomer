@@ -68,7 +68,6 @@ const generateArgs = ({
         ],
       },
       navbar: {
-        variant: "utility",
         items: [
           {
             name: "Home",
@@ -216,7 +215,6 @@ export const Default: Story = {
         ],
       },
       navbar: {
-        variant: "utility",
         items: [
           {
             name: "Home",

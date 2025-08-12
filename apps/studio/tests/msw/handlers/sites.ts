@@ -163,7 +163,6 @@ export const sitesHandlers = {
           id: 1,
           siteId: 1,
           content: {
-            variant: "default",
             items: [
               {
                 url: "/item-one",

@@ -44,7 +44,6 @@ const generateNavbarArgs = (
   overrides?: Partial<NavbarProps>,
 ): Partial<NavbarProps> => {
   return {
-    variant: "default",
     logoUrl: "/isomer-logo.svg",
     logoAlt: "Isomer logo",
     search: {
@@ -164,7 +163,6 @@ export const Default: Story = {
 
 export const CallToAction: Story = {
   args: generateNavbarArgs({
-    variant: "callToAction",
     callToAction: {
       label: "Login to Donation Portal",
       url: "/call-to-action",
@@ -321,7 +319,6 @@ export const ExpandMobileWithLinkMultipleWords: Story = {
 
 export const UtilityLinksDesktop: Story = {
   args: generateNavbarArgs({
-    variant: "utility",
     utility: {
       label: "Custom label",
       items: [
@@ -339,7 +336,6 @@ export const UtilityLinksDesktop: Story = {
 
 export const UtilityLinksMobile: Story = {
   args: generateNavbarArgs({
-    variant: "utility",
     utility: {
       label: "Quick links",
       items: [

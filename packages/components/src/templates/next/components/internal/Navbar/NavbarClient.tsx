@@ -25,7 +25,7 @@ const createNavbarStyles = tv({
     utilityNavigationSection:
       "prose-label-sm-medium mt-3 hidden w-full items-center justify-end gap-4 lg:flex",
     utilityItemsList: "flex items-center gap-4",
-    utilityItemsHeader: "prose-label-sm-medium text-base-content-subtle",
+    utilityItemsHeader: "prose-label-sm-medium text-base-content-strong",
     utilityItem: [
       focusVisibleHighlight(),
       "prose-label-sm-medium text-base-content-subtle hover:underline",
@@ -58,8 +58,9 @@ export const NavbarClient = ({
   search,
   items,
   imageClientProps,
+  callToAction,
+  utility,
   LinkComponent,
-  ...rest
 }: NavbarClientProps) => {
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
@@ -116,13 +117,13 @@ export const NavbarClient = ({
           </Link>
 
           <div className={navbarStyles.navigationSection()}>
-            {rest.variant === "utility" && (
+            {!!utility && (
               <div className={navbarStyles.utilityNavigationSection()}>
                 <p className={navbarStyles.utilityItemsHeader()}>
-                  {rest.utility.label || "Quick links"}
+                  {utility.label || "Quick links"}
                 </p>
                 <ul className={navbarStyles.utilityItemsList()}>
-                  {rest.utility.items.map((item, index) => (
+                  {utility.items.map((item, index) => (
                     <li key={`${item.name}-${index}`}>
                       <Link
                         LinkComponent={LinkComponent}
@@ -165,16 +166,16 @@ export const NavbarClient = ({
               </ul>
 
               {/* Call To Action button */}
-              {rest.variant === "callToAction" && (
+              {!!callToAction && (
                 <LinkButton
-                  href={rest.callToAction.url}
-                  isExternal={isExternalUrl(rest.callToAction.url)}
+                  href={callToAction.url}
+                  isExternal={isExternalUrl(callToAction.url)}
                   size="sm"
                   className={navbarStyles.callToAction()}
                   isWithFocusVisibleHighlight
                   LinkComponent={LinkComponent}
                 >
-                  {rest.callToAction.label}
+                  {callToAction.label}
                 </LinkButton>
               )}
 
@@ -249,10 +250,11 @@ export const NavbarClient = ({
           items={items}
           openNavItemIdx={openNavItemIdx}
           setOpenNavItemIdx={setOpenNavItemIdx}
+          callToAction={callToAction}
+          utility={utility}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           LinkComponent={LinkComponent}
           onCloseMenu={onCloseMenu}
-          {...rest}
         />
       )}
     </div>

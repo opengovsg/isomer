@@ -5,10 +5,7 @@ import { FocusScope } from "react-aria"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useScrollLock } from "usehooks-ts"
 
-import type {
-  NavbarItemProps as BaseNavbarItemProps,
-  NavbarProps,
-} from "~/interfaces/internal/Navbar"
+import type { NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
 import {
   focusVisibleHighlight,
@@ -18,13 +15,12 @@ import {
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 
-interface NavbarItemProps
-  extends BaseNavbarItemProps,
-    Pick<NavbarProps, "LinkComponent"> {
-  isOpen: boolean
-  onClick: () => void
-  onCloseMegamenu: () => void
-}
+type NavbarItemProps = NavbarProps["items"][number] &
+  Pick<NavbarProps, "LinkComponent"> & {
+    isOpen: boolean
+    onClick: () => void
+    onCloseMegamenu: () => void
+  }
 
 const navbarItemStyles = tv({
   slots: {
@@ -103,7 +99,10 @@ const Megamenu = ({
   onCloseMegamenu,
   items,
   LinkComponent,
-}: Pick<BaseNavbarItemProps, "name" | "description" | "url" | "items"> & {
+}: Pick<
+  NavbarProps["items"][number],
+  "name" | "description" | "url" | "items"
+> & {
   LinkComponent: NavbarProps["LinkComponent"]
   onCloseMegamenu: () => void
 }) => {

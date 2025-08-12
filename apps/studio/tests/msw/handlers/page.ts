@@ -153,7 +153,6 @@ export const pageHandlers = {
             id: 1,
             siteId: 1,
             content: {
-              variant: "default",
               items: [
                 {
                   url: "/item-one",
@@ -301,7 +300,6 @@ export const pageHandlers = {
             id: 1,
             siteId: 1,
             content: {
-              variant: "default",
               items: [
                 {
                   url: "/item-one",
@@ -514,7 +512,6 @@ export const pageHandlers = {
             id: 1,
             siteId: 1,
             content: {
-              variant: "default",
               items: [
                 {
                   url: "/item-one",
@@ -674,7 +671,6 @@ export const pageHandlers = {
           navbar: {
             id: 1,
             siteId: 1,
-            variant: "default",
             content: [
               {
                 url: "/item-one",
@@ -776,7 +772,6 @@ export const pageHandlers = {
           navbar: {
             id: 1,
             siteId: 1,
-            variant: "default",
             content: [
               {
                 url: "/item-one",

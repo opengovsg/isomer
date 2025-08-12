@@ -12,7 +12,7 @@ import { Link } from "../../Link"
 import { LinkButton } from "../../LinkButton/LinkButton"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
 
-type MobileNavMenuProps = OmitFromUnion<
+type MobileNavMenuProps = Omit<
   NavbarClientProps,
   "layout" | "imageClientProps" | "ScriptComponent"
 > & {
@@ -31,7 +31,8 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
       openNavItemIdx,
       setOpenNavItemIdx,
       onCloseMenu,
-      ...rest
+      callToAction,
+      utility,
     },
     mobileMenuRef,
   ) => {
@@ -47,19 +48,20 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
       >
         <FocusScope contain restoreFocus>
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
-            {rest.variant === "callToAction" && (
+            {!!callToAction && (
               <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
                 <LinkButton
-                  href={rest.callToAction.url}
-                  isExternal={isExternalUrl(rest.callToAction.url)}
+                  href={callToAction.url}
+                  isExternal={isExternalUrl(callToAction.url)}
                   className="h-fit w-full justify-center"
                   isWithFocusVisibleHighlight
                   LinkComponent={LinkComponent}
                 >
-                  {rest.callToAction.label}
+                  {callToAction.label}
                 </LinkButton>
               </div>
             )}
+
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={`${item.name}-${index}`}
@@ -75,20 +77,21 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                 {...item}
               />
             ))}
-            {rest.variant === "utility" && (
-              <div className="flex flex-col items-start gap-3 self-stretch bg-base-canvas-alt px-6 py-4">
+
+            {!!utility && (
+              <div className="flex flex-col items-start gap-1 self-stretch bg-base-canvas-alt px-6 py-4">
                 <p className="prose-label-sm-medium text-base-content-strong">
-                  {rest.utility.label || "Quick links"}
+                  {utility.label || "Quick links"}
                 </p>
 
-                <ul className="flex flex-col gap-3">
-                  {rest.utility.items.map((item, index) => (
+                <ul className="flex flex-col gap-1">
+                  {utility.items.map((item, index) => (
                     <li key={`${item.name}-${index}`}>
                       <Link
                         LinkComponent={LinkComponent}
                         className={focusVisibleHighlight({
                           className:
-                            "prose-label-sm-medium text-base-content-subtle",
+                            "prose-label-sm-medium py-1 text-base-content-subtle",
                         })}
                         href={item.url}
                         isExternal={isExternalUrl(item.url)}
@@ -101,6 +104,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                 </ul>
               </div>
             )}
+
             <Button
               className={focusVisibleHighlight({
                 className:

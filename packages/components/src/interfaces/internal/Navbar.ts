@@ -14,16 +14,18 @@ import type {
 
 const NavbarItemSchema = Type.Object({
   name: Type.String({
-    title: "Name of the navbar item",
+    title: "Menu item label",
     maxLength: 30,
   }),
   url: Type.String({
-    title: "URL destination of the navbar item",
+    title: "Link destination",
+    description:
+      "You can link an index page, collection, page, or an external link.",
     format: "link",
   }),
   description: Type.Optional(
     Type.String({
-      title: "Description of the navbar item",
+      title: "Add an optional description",
       maxLength: 120,
     }),
   ),
@@ -52,67 +54,66 @@ const NavbarItemSchema = Type.Object({
   ),
 })
 
-const NavbarBaseSchema = Type.Object({
-  items: Type.Array(NavbarItemSchema, {
-    title: "Navbar items",
-    description: "List of items to be displayed in the navbar",
-  }),
-})
-
-const NavbarDefaultVariant = Type.Object({
-  variant: Type.Literal("default", { default: "default" }),
-})
-
-const NavbarCallToActionVariant = Type.Object({
-  variant: Type.Literal("callToAction", { default: "callToAction" }),
-  callToAction: Type.Object({
-    label: Type.String({
-      title: "Label for the call to action button",
-      maxLength: 30,
+export const NavbarSchema = Type.Object(
+  {
+    items: Type.Array(NavbarItemSchema, {
+      title: "Navbar items",
+      description: "List of items to be displayed in the navbar",
     }),
-    url: Type.String({
-      title: "URL destination of the call to action button",
-      format: "link",
-    }),
-  }),
-})
-
-const NavbarUtilityVariant = Type.Object({
-  variant: Type.Literal("utility", { default: "utility" }),
-  utility: Type.Object({
-    label: Type.Optional(
-      Type.String({
-        title: "Label for the list of utility links",
-        maxLength: 30,
-      }),
+    callToAction: Type.Optional(
+      Type.Object(
+        {
+          label: Type.String({
+            title: "Label for Call-to-Action",
+            maxLength: 30,
+          }),
+          url: Type.String({
+            title: "Call-to-Action destination",
+            description: "You can link a folder, page, or external link.",
+            format: "link",
+          }),
+        },
+        {
+          title: "Primary Call-to-Action",
+          description:
+            "You can highlight a key Call-to-Action using a prominent button.",
+        },
+      ),
     ),
-    items: Type.Array(
-      Type.Object({
-        name: Type.String({
-          title: "Name of the utility link",
-          maxLength: 30,
-        }),
-        url: Type.String({
-          title: "URL destination of the utility link",
-          format: "link",
-        }),
-      }),
-      {
-        maxItems: 4,
-      },
+    utility: Type.Optional(
+      Type.Object(
+        {
+          label: Type.Optional(
+            Type.String({
+              title: "Label for the list of utility links",
+              maxLength: 30,
+            }),
+          ),
+          items: Type.Array(
+            Type.Object({
+              name: Type.String({
+                title: "Name of the utility link",
+                maxLength: 30,
+              }),
+              url: Type.String({
+                title: "URL destination of the utility link",
+                format: "link",
+              }),
+            }),
+            {
+              maxItems: 4,
+            },
+          ),
+        },
+        {
+          title: "Add utility links",
+          description:
+            "Make frequent actions (like login) easily accessible using utility links.",
+        },
+      ),
     ),
-  }),
-})
+  },
 
-export const NavbarSchema = Type.Intersect(
-  [
-    NavbarBaseSchema,
-    Type.Union([
-      NavbarDefaultVariant,
-      NavbarCallToActionVariant,
-      NavbarUtilityVariant,
-    ]),
-  ],
   {
     title: "Navbar Schema",
     description:
@@ -120,15 +121,12 @@ export const NavbarSchema = Type.Intersect(
   },
 )
 
-type NavbarItemSchemaType = Static<typeof NavbarItemSchema>
-export type NavbarItemProps = NavbarItemSchemaType
-export type NavbarSchemaType = Simplify<Static<typeof NavbarSchema>>
+export type NavbarSchemaType = Static<typeof NavbarSchema>
 
-type BaseNavbarProps = OmitFromUnion<NavbarSchemaType, "items"> & {
+type BaseNavbarProps = NavbarSchemaType & {
   layout: IsomerPageLayoutType
   search?: LocalSearchProps | SearchSGInputBoxProps
   LinkComponent?: LinkComponentType
-  items: NavbarItemProps[]
   ScriptComponent?: ScriptComponentType
 }
 
