@@ -16,6 +16,12 @@ export { isPhoneNumber, sanitizePhoneNumber } from "./isPhoneNumber"
 export { isUrl } from "./isUrl"
 export { isExternalUrl } from "./isExternalUrl"
 export { safeJsonParse } from "./safeJsonParse"
+export {
+  fetchDgsFileDownloadUrl,
+  fetchDgsMetadata,
+  getDgsIdFromDgsLink,
+} from "./dgs"
+export { fetchFileMetadata } from "./fetchFileMetadata"
 export { orderedListSchemaBuilder } from "./orderedListSchemaBuilder"
 export * from "./tailwind"
 export { unorderedListSchemaBuilder } from "./unorderedListSchemaBuilder"
