@@ -13,7 +13,7 @@ import type {
 import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
 import { InjectableContactInformationKeys } from "~/interfaces/complex/ContactInformation"
 import { safeJsonParse } from "~/utils"
-import { ContactInformationUI } from "./ContactInformationUI"
+import { ContactInformationUI } from "../components"
 
 export const DgsContactInformation = ({
   dataSource: { resourceId, filters },

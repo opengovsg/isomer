@@ -1,2 +1,1 @@
-export { NativeContactInformation } from "./NativeContactInformation"
-export { DgsContactInformation } from "./DgsContactInformation"
+export { ContactInformationUI } from "./ContactInformationUI"

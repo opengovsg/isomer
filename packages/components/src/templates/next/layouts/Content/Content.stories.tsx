@@ -1462,41 +1462,38 @@ export const Default: Story = {
       },
       {
         type: "contactinformation",
-        title: "Sentosa",
-        description: "Embassy of the Republic of Singapore - Algeria",
+        title: "This is the title e.g. Office Name 123",
+        description: "This is the description e.g. Established in 1965",
         methods: [
           {
             method: "person",
             label: "Ambassador (Non-Resident)",
-            values: ["Mr MOHAMMAD Alami Musa"],
+            values: ["Mr John Doe"],
           },
           {
             method: "address",
             label: "Chancery",
             values: [
-              "c/o Ministry of Foreign Affairs",
-              "Tanglin",
-              "Singapore 248163",
+              "c/o Ministry of Isomer",
+              "Lazada One",
+              "Singapore 123456",
             ],
           },
           {
             method: "telephone",
             label: "Telephone",
-            values: ["+65-63798000 (MFA)"],
+            values: ["+65-12345678 (MFA)"],
           },
           {
             method: "fax",
-            label: "Fax",
-            values: ["+65-64747885 (MFA)"],
-            caption: "Got people use meh?",
+            label: "Fax (MFA)",
+            values: ["+65-64747885"],
+            caption: "Recommended to email instead",
           },
           {
             method: "email",
             label: "Email",
-            values: [
-              "do-not-reply@isomer.gov.sg",
-              "do-not-reply-pelase@isomer.gov.sg",
-            ],
+            values: ["hello@isomer.gov.sg", "hello-too@isomer.gov.sg"],
           },
           {
             method: "website",
@@ -1516,14 +1513,6 @@ export const Default: Story = {
             method: "operating_hours",
             label: "Operating Hours",
             values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
-          },
-          {
-            label: "Telegram",
-            values: ["https://t.me/isomer_gov_sg"],
-          },
-          {
-            label: "WhatsApp",
-            values: ["+65-63798000 (MFA)"],
           },
         ],
         otherInformation: {
