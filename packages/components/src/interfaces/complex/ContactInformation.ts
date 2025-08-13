@@ -160,6 +160,7 @@ export type ContactInformationUIProps = Omit<
     layout: IsomerPageLayoutType
     LinkComponent?: LinkComponentType
     referenceLinkHref?: string
+    isLoading?: boolean
   }
 
 export type NativeContactInformationProps = Static<

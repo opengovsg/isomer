@@ -35,10 +35,14 @@ export const DgsContactInformation = ({
 
   const { records, isLoading, isError } = useDgsData(params)
 
-  // TODO: better handling of these non-success states
-  // will check with SY for design
   if (isLoading) {
-    return <div>Loading...</div>
+    return (
+      <ContactInformationUI
+        isLoading={isLoading}
+        methods={[]} // not needed for loading state but its required prop
+        {...pick(rest, "type", "layout")}
+      />
+    )
   }
 
   const record = records?.[0]

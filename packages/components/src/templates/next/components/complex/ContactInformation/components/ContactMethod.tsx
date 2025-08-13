@@ -94,3 +94,22 @@ export const ContactMethod = ({
     </div>
   )
 }
+
+interface LoadingContactMethodProps {
+  styles: ReturnType<typeof commonContactMethodStyles>
+}
+
+export const LoadingContactMethod = ({ styles }: LoadingContactMethodProps) => {
+  return (
+    <div className={styles.container()}>
+      <div className={styles.icon()} />
+      <div className={styles.textContainer()}>
+        <div className={styles.label()} />
+        <div className={styles.valuesAndCaptionContainer()}>
+          <div className={styles.value()} />
+          <div className={styles.caption()} />
+        </div>
+      </div>
+    </div>
+  )
+}

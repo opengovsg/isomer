@@ -220,7 +220,8 @@ export const Homepage: Story = {
   },
 }
 
-export const Loading: Story = {
+export const LoadingDefault: Story = {
+  name: "Loading (Default)",
   parameters: {
     msw: {
       handlers: [
@@ -233,6 +234,38 @@ export const Loading: Story = {
     },
   },
   args: {
+    dataSource: {
+      type: "dgs",
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      filters: [
+        {
+          fieldKey: "testFieldKey",
+          fieldValue: "testFieldValue",
+        },
+      ],
+    },
+    title: "[dgs:entity_name]",
+    description: "[dgs:description]",
+    methods: "[dgs:methods]",
+    otherInformation: "[dgs:other_information]",
+  },
+}
+
+export const LoadingHomepage: Story = {
+  name: "Loading (Homepage)",
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(DgsUrl, () => {
+          return new Promise(() => {
+            // Never resolve the promise
+          })
+        }),
+      ],
+    },
+  },
+  args: {
+    layout: "homepage",
     dataSource: {
       type: "dgs",
       resourceId: "PLACEHOLDER_RESOURCE_ID",

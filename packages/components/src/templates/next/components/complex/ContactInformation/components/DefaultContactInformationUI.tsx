@@ -7,7 +7,7 @@ import {
   commonContactInformationStyles,
   commonContactMethodStyles,
 } from "./common"
-import { ContactMethod } from "./ContactMethod"
+import { ContactMethod, LoadingContactMethod } from "./ContactMethod"
 
 const createDefaultContactInformationStyles = tv({
   extend: commonContactInformationStyles,
@@ -32,9 +32,14 @@ export const DefaultContactInformationUI = ({
   referenceLinkHref,
   label,
   LinkComponent,
+  isLoading,
 }: ContactInformationUIProps) => {
-  const compoundStyles = createDefaultContactInformationStyles()
-  const contactMethodStyles = createDefaultContactMethodStyles()
+  const compoundStyles = createDefaultContactInformationStyles({
+    isLoading,
+  })
+  const contactMethodStyles = createDefaultContactMethodStyles({
+    isLoading,
+  })
 
   const filteredMethods = whitelistedMethods
     ? methods.filter(
@@ -45,23 +50,34 @@ export const DefaultContactInformationUI = ({
   return (
     <div className={compoundStyles.container()}>
       <div className={compoundStyles.titleAndDescriptionContainer()}>
-        {title && <h3 className={compoundStyles.title()}>{title}</h3>}
-        {!!description && (
-          <p className={compoundStyles.description()}>{description}</p>
+        {(title || isLoading) && (
+          <h3 className={compoundStyles.title()}>{isLoading ? "" : title}</h3>
+        )}
+        {(!!description || isLoading) && (
+          <p className={compoundStyles.description()}>
+            {isLoading ? "" : description}
+          </p>
         )}
       </div>
 
       <div className={compoundStyles.contactMethodsContainer()}>
-        {filteredMethods.map((method, index) => {
-          return (
-            <ContactMethod
-              key={`contact-method-${index}`}
-              {...method}
-              LinkComponent={LinkComponent}
-              styles={contactMethodStyles}
-            />
-          )
-        })}
+        {isLoading
+          ? Array.from({ length: 4 }).map((_, index) => (
+              <LoadingContactMethod
+                key={`loading-contact-method-${index}`}
+                styles={contactMethodStyles}
+              />
+            ))
+          : filteredMethods.map((method, index) => {
+              return (
+                <ContactMethod
+                  key={`contact-method-${index}`}
+                  {...method}
+                  LinkComponent={LinkComponent}
+                  styles={contactMethodStyles}
+                />
+              )
+            })}
       </div>
 
       {!!otherInformation && (
@@ -79,7 +95,7 @@ export const DefaultContactInformationUI = ({
         </div>
       )}
 
-      {!!referenceLinkHref && !!label && (
+      {!!referenceLinkHref && !!label && !isLoading && (
         <div className={compoundStyles.urlButtonContainer()}>
           <LinkButton
             href={referenceLinkHref}

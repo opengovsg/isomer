@@ -5,7 +5,7 @@ import {
   commonContactInformationStyles,
   commonContactMethodStyles,
 } from "./common"
-import { ContactMethod } from "./ContactMethod"
+import { ContactMethod, LoadingContactMethod } from "./ContactMethod"
 
 const createHomepageContactInformationStyles = tv({
   extend: commonContactInformationStyles,
@@ -90,6 +90,7 @@ export const HomepageContactInformationUI = ({
   referenceLinkHref,
   label,
   LinkComponent,
+  isLoading,
 }: ContactInformationUIProps) => {
   const filteredMethods = whitelistedMethods
     ? methods.filter(
@@ -97,18 +98,20 @@ export const HomepageContactInformationUI = ({
       )
     : methods
 
+  const numberOfContactMethods = isLoading
+    ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
+    : filteredMethods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
+      ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
+      : 2
+
   const compoundStyles = createHomepageContactInformationStyles({
-    numberOfContactMethods:
-      filteredMethods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
-        ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
-        : 2,
+    numberOfContactMethods,
+    isLoading,
   })
 
   const contactMethodStyles = createHomepageContactMethodStyles({
-    numberOfContactMethods:
-      filteredMethods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
-        ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
-        : 2,
+    numberOfContactMethods,
+    isLoading,
   })
 
   const CallToActionButton = ({
@@ -138,31 +141,44 @@ export const HomepageContactInformationUI = ({
   return (
     <div className={compoundStyles.container()}>
       <div className={compoundStyles.titleAndDescriptionContainer()}>
-        {title && <h3 className={compoundStyles.title()}>{title}</h3>}
-        {!!description && (
-          <p className={compoundStyles.description()}>{description}</p>
+        {(title || isLoading) && (
+          <h3 className={compoundStyles.title()}>{isLoading ? "" : title}</h3>
         )}
-        {!!referenceLinkHref && !!label && (
+        {(!!description || isLoading) && (
+          <p className={compoundStyles.description()}>
+            {isLoading ? "" : description}
+          </p>
+        )}
+        {!!referenceLinkHref && !!label && !isLoading && (
           <CallToActionButton isBottomButton={false} />
         )}
       </div>
 
       <div className={compoundStyles.contactMethodsContainer()}>
-        {filteredMethods
-          .slice(0, MAX_CONTACT_METHODS_FOR_HOMEPAGE)
-          .map((method, index) => {
-            return (
-              <ContactMethod
-                key={`contact-method-${index}`}
-                {...method}
-                LinkComponent={LinkComponent}
-                styles={contactMethodStyles}
-              />
+        {isLoading
+          ? Array.from({ length: MAX_CONTACT_METHODS_FOR_HOMEPAGE }).map(
+              (_, index) => (
+                <LoadingContactMethod
+                  key={`loading-contact-method-${index}`}
+                  styles={contactMethodStyles}
+                />
+              ),
             )
-          })}
+          : filteredMethods
+              .slice(0, MAX_CONTACT_METHODS_FOR_HOMEPAGE)
+              .map((method, index) => {
+                return (
+                  <ContactMethod
+                    key={`contact-method-${index}`}
+                    {...method}
+                    LinkComponent={LinkComponent}
+                    styles={contactMethodStyles}
+                  />
+                )
+              })}
       </div>
 
-      {!!referenceLinkHref && !!label && (
+      {!!referenceLinkHref && !!label && !isLoading && (
         <CallToActionButton isBottomButton={true} />
       )}
     </div>

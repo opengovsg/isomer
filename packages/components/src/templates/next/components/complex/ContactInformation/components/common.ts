@@ -13,6 +13,14 @@ export const commonContactInformationStyles = tv({
       "prose-display-md font-bold text-base-content-strong",
     urlButtonContainer: "mx-auto",
   },
+  variants: {
+    isLoading: {
+      true: {
+        title: "h-8 w-48 animate-pulse rounded-sm bg-[#0000001a]",
+        description: "h-6 w-64 animate-pulse rounded-sm bg-[#0000001a]",
+      },
+    },
+  },
 })
 
 export const commonContactMethodStyles = tv({
@@ -33,6 +41,14 @@ export const commonContactMethodStyles = tv({
       },
       false: {
         value: "text-base-content",
+      },
+    },
+    isLoading: {
+      true: {
+        icon: "size-8 animate-pulse rounded-sm bg-[#0000001a]",
+        label: "h-6 w-24 animate-pulse rounded-sm bg-[#0000001a]",
+        value: "h-6 w-48 animate-pulse rounded-sm bg-[#0000001a]",
+        caption: "h-4 w-20 animate-pulse rounded-sm bg-[#0000001a]",
       },
     },
   },
