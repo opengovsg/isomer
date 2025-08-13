@@ -102,7 +102,11 @@ const MoveResourceContent = withSuspense(
         await utils.resource.getMetadataById.invalidate({
           resourceId: movedItem?.id,
         })
-        toast({ title: "Resource moved!", ...BRIEF_TOAST_SETTINGS })
+        toast({
+          status: "success",
+          title: "Resource moved!",
+          ...BRIEF_TOAST_SETTINGS,
+        })
       },
     })
 
