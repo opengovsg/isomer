@@ -1744,16 +1744,12 @@ video {
   width: 3rem;
 }
 
-.w-2 {
-  width: 0.5rem;
-}
-
-.w-2\.5 {
-  width: 0.625rem;
-}
-
 .w-2\/3 {
   width: 66.666667%;
+}
+
+.w-20 {
+  width: 5rem;
 }
 
 .w-24 {
@@ -2064,6 +2060,16 @@ video {
 
 .animate-slide-up-fade-in {
   animation: slideUpFadeIn 0.3s ease-in-out;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 
 .cursor-not-allowed {
@@ -4017,24 +4023,36 @@ video {
   --color: #b91c1c;
 }
 
+.\[dgs\:123456\] {
+  dgs: 123456;
+}
+
+.\[dgs\:TestID123\] {
+  dgs: TestID123;
+}
+
+.\[dgs\:___\] {
+  dgs:;
+}
+
+.\[dgs\:abc123def\] {
+  dgs: abc123def;
+}
+
+.\[dgs\:abcdef\] {
+  dgs: abcdef;
+}
+
+.\[dgs\:d_688b934f82c1059ed0a6993d2a829089\] {
+  dgs: d 688b934f82c1059ed0a6993d2a829089;
+}
+
 .\[dgs\:description\] {
   dgs: description;
 }
 
-.\[dgs\:email\] {
-  dgs: email;
-}
-
-.\[dgs\:entity_details\] {
-  dgs: entity details;
-}
-
 .\[dgs\:entity_name\] {
   dgs: entity name;
-}
-
-.\[dgs\:fax\] {
-  dgs: fax;
 }
 
 .\[dgs\:field_key\] {
@@ -4045,24 +4063,20 @@ video {
   dgs: methods;
 }
 
-.\[dgs\:operating_hours\] {
-  dgs: operating hours;
-}
-
 .\[dgs\:other_information\] {
   dgs: other information;
 }
 
-.\[dgs\:other_methods\] {
-  dgs: other methods;
+.\[dgs\:test-123\] {
+  dgs: test-123;
 }
 
-.\[dgs\:telephone\] {
-  dgs: telephone;
+.\[dgs\:test123\] {
+  dgs: test123;
 }
 
-.\[dgs\:website\] {
-  dgs: website;
+.\[dgs\:test_id_123\] {
+  dgs: test id 123;
 }
 
 .\[grid-area\:content\] {
@@ -4087,6 +4101,10 @@ video {
 
 .\[grid-template-rows\:max-content\] {
   grid-template-rows: max-content;
+}
+
+.\[link\:test123\] {
+  link: test123;
 }
 
 .\[resource\:some-resource\] {
@@ -5912,10 +5930,6 @@ video {
 
   .lg\:w-1\/2 {
     width: 50%;
-  }
-
-  .lg\:w-3 {
-    width: 0.75rem;
   }
 
   .lg\:w-4 {
