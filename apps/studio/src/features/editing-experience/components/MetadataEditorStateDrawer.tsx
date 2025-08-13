@@ -51,6 +51,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
       await utils.page.readPage.invalidate({ pageId, siteId })
       await utils.page.getCategories.invalidate({ pageId, siteId })
       toast({
+        status: "success",
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
         ...BRIEF_TOAST_SETTINGS,
       })
