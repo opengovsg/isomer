@@ -51,7 +51,7 @@ export const DefaultContactInformationUI = ({
     <div className={compoundStyles.container()}>
       <div className={compoundStyles.titleAndDescriptionContainer()}>
         {(title || isLoading) && (
-          <h3 className={compoundStyles.title()}>{isLoading ? "" : title}</h3>
+          <h2 className={compoundStyles.title()}>{isLoading ? "" : title}</h2>
         )}
         {(!!description || isLoading) && (
           <p className={compoundStyles.description()}>
@@ -82,9 +82,9 @@ export const DefaultContactInformationUI = ({
 
       {!!otherInformation && (
         <div className={compoundStyles.otherInformationContainer()}>
-          <div className={compoundStyles.otherInformationTitle()}>
+          <h3 className={compoundStyles.otherInformationTitle()}>
             {otherInformation.label ?? "Other Information"}
-          </div>
+          </h3>
           <div
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(otherInformation.value, {

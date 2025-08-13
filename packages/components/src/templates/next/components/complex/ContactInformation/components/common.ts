@@ -10,7 +10,7 @@ export const commonContactInformationStyles = tv({
     contactMethodsContainer: "flex flex-col gap-10",
     otherInformationContainer: "mt-8 flex flex-col gap-6",
     otherInformationTitle:
-      "prose-display-md font-bold text-base-content-strong",
+      "prose-display-sm font-bold text-base-content-strong",
     urlButtonContainer: "mx-auto",
   },
   variants: {
