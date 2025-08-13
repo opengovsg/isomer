@@ -3,6 +3,7 @@ import type { IconType } from "react-icons"
 import {
   COLLECTION_BLOCK_TYPE,
   CONTACT_INFORMATION_TYPE,
+  DYNAMIC_COMPONENT_LIST_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
 } from "@opengovsg/isomer-components"
@@ -54,6 +55,7 @@ export const TYPE_TO_ICON: Record<
   [COLLECTION_BLOCK_TYPE]: TbDatabase,
   [IMAGE_GALLERY_TYPE]: BiImages,
   [CONTACT_INFORMATION_TYPE]: BiPhoneCall,
+  [DYNAMIC_COMPONENT_LIST_TYPE]: BiListUl,
   childrenpages: BiListUl,
   // TODO: Add in these new block types
   // table: BiTable,
