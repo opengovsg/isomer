@@ -59,9 +59,11 @@ export const DgsContactInformation = ({
 interface DgsTransformedContactInformationProps
   extends Omit<DgsContactInformationProps, "dataSource"> {
   record: DgsApiDatasetSearchResponseSuccess["result"]["records"][number]
+  isLoading?: ContactInformationUIProps["isLoading"]
 }
 export const DgsTransformedContactInformation = ({
   record,
+  isLoading,
   ...rest
 }: DgsTransformedContactInformationProps) => {
   const title = transformDgsField(
@@ -84,6 +86,7 @@ export const DgsTransformedContactInformation = ({
 
   return (
     <ContactInformationUI
+      isLoading={isLoading}
       title={title}
       description={description}
       methods={methods ?? []}
