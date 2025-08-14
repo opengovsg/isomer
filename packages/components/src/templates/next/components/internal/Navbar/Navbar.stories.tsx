@@ -359,6 +359,46 @@ export const UtilityLinksMobile: Story = {
   },
 }
 
+export const UtilityLinksNoLabelDesktop: Story = {
+  args: generateNavbarArgs({
+    utility: {
+      items: [
+        { name: "First link", url: "/link-1" },
+        { name: "Linkedua", url: "/link-2" },
+        { name: "Link 3", url: "/link-3" },
+        { name: "Quad link", url: "/link-4" },
+      ],
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+}
+
+export const UtilityLinksNoLabelMobile: Story = {
+  args: generateNavbarArgs({
+    utility: {
+      items: [
+        { name: "Link 1", url: "/link-1" },
+        { name: "Link 2", url: "/link-2" },
+        { name: "Link 3", url: "/link-3" },
+      ],
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+  },
+}
+
 export const CTAAndUtilityLinksDesktop: Story = {
   args: generateNavbarArgs({
     callToAction: {
