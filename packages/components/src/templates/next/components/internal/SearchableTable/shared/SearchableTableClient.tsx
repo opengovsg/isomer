@@ -25,7 +25,7 @@ const createSearchableTableStyles = tv({
     emptyState:
       "flex flex-col items-center justify-center gap-8 self-stretch px-10 py-20 pt-24",
     emptyStateHeadings: "text-center",
-    emptyStateTitle: "prose-headline-lg-regular",
+    emptyStateTitle: "prose-headline-lg-regular text-center",
     emptyStateSubtitle: "prose-headline-lg-regular mt-3 text-base-content",
     emptyStateButton:
       "prose-headline-base-medium text-link visited:text-link-visited hover:text-link-hover",
@@ -60,6 +60,8 @@ export const SearchableTableClient = ({
   items,
   site,
   LinkComponent,
+  isLoading = false,
+  isError = false,
 }: SearchableTableClientProps) => {
   const [_search, setSearch] = useState("")
   const search = useDeferredValue(_search)
@@ -100,6 +102,24 @@ export const SearchableTableClient = ({
     })
   }
 
+  const EmptyState = () => {
+    let text: string
+    if (isLoading) {
+      text = "Loading..."
+    } else if (isError) {
+      text =
+        "Oops! Something went wrong while loading the table. Please try again later."
+    } else {
+      text = "There are no items to display"
+    }
+
+    return (
+      <div className={compoundStyles.emptyState()}>
+        <p className={compoundStyles.emptyStateTitle()}>{text}</p>
+      </div>
+    )
+  }
+
   return (
     <div className={compoundStyles.container()} ref={sectionTopRef}>
       {!!title && (
@@ -118,13 +138,7 @@ export const SearchableTableClient = ({
         }}
       />
 
-      {isInitiallyEmpty && (
-        <div className={compoundStyles.emptyState()}>
-          <p className={compoundStyles.emptyStateTitle()}>
-            There are no items to display
-          </p>
-        </div>
-      )}
+      {(isInitiallyEmpty || isLoading || isError) && <EmptyState />}
 
       {isFilteredEmpty && (
         <div className={compoundStyles.emptyState()}>

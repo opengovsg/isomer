@@ -59,6 +59,8 @@ export type SearchableTableClientProps = Static<
   } & {
     site: IsomerSiteProps
     LinkComponent?: LinkComponentType
+    isLoading?: boolean
+    isError?: boolean
   }
 
 export type NativeSearchableTableProps = Static<

@@ -54,18 +54,6 @@ export const DGSSearchableTable = ({
     [records, fieldKeys],
   )
 
-  // TODO: better handling of these non-success states
-  // will check with SY for design
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
-
-  // Should display nothing if there is an realtime error
-  // as any rendering will likely seems jank and useless
-  if (isError || records?.length === 0 || items.length === 0) {
-    return null
-  }
-
   return (
     <SearchableTableClient
       title={title}
@@ -73,6 +61,8 @@ export const DGSSearchableTable = ({
       items={items}
       site={site}
       LinkComponent={LinkComponent}
+      isLoading={isLoading}
+      isError={isError}
     />
   )
 }

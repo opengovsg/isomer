@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { http, HttpResponse } from "msw"
 
 import type { DGSSearchableTableProps } from "~/interfaces"
+import { generateDgsUrl } from "~/hooks/useDgsData/fetchDataFromDgsApi"
 import { DGSSearchableTable } from "./DGSSearchableTable"
 
 const meta: Meta<DGSSearchableTableProps> = {
@@ -36,7 +38,48 @@ const meta: Meta<DGSSearchableTableProps> = {
   },
 }
 
+const DgsUrl = generateDgsUrl({
+  resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+  fields: [
+    "year",
+    "university",
+    "school",
+    "degree",
+    "gross_monthly_median",
+    "gross_mthly_25_percentile",
+    "gross_mthly_75_percentile",
+  ].join(","),
+})
+
 export default meta
 type Story = StoryObj<typeof DGSSearchableTable>
 
 export const Default: Story = {}
+
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(DgsUrl, () => {
+          return new Promise(() => {
+            // Never resolve the promise
+          })
+        }),
+      ],
+    },
+  },
+}
+
+export const Error: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(DgsUrl, () => {
+          return new HttpResponse(null, {
+            status: 500,
+          })
+        }),
+      ],
+    },
+  },
+}
