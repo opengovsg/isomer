@@ -282,3 +282,39 @@ export const LoadingHomepage: Story = {
     otherInformation: "[dgs:other_information]",
   },
 }
+
+// Note: should not show anything - this is intentional
+export const Error: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: "Should not show anything - this is intentional",
+      },
+    },
+    msw: {
+      handlers: [
+        http.get(DgsUrl, () => {
+          return new HttpResponse(null, {
+            status: 500,
+          })
+        }),
+      ],
+    },
+  },
+  args: {
+    dataSource: {
+      type: "dgs",
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      filters: [
+        {
+          fieldKey: "testFieldKey",
+          fieldValue: "testFieldValue",
+        },
+      ],
+    },
+    title: "[dgs:entity_name]",
+    description: "[dgs:description]",
+    methods: "[dgs:methods]",
+    otherInformation: "[dgs:other_information]",
+  },
+}
