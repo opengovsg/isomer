@@ -47,7 +47,7 @@ export const DGSSearchableTable = ({
       records?.map((record) => {
         const content = fieldKeys.map((field) => String(record[field] ?? ""))
         return {
-          key: content.join(" "),
+          key: content.join(" ").toLowerCase(),
           row: content,
         }
       }) ?? [],
