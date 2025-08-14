@@ -101,6 +101,7 @@ export const NavbarSchema = Type.Object(
               }),
             }),
             {
+              minItems: 1,
               maxItems: 4,
             },
           ),

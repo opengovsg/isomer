@@ -119,9 +119,11 @@ export const NavbarClient = ({
           <div className={navbarStyles.navigationSection()}>
             {!!utility && (
               <div className={navbarStyles.utilityNavigationSection()}>
-                <p className={navbarStyles.utilityItemsHeader()}>
-                  {utility.label || "Quick links"}
-                </p>
+                {!!utility.label && (
+                  <p className={navbarStyles.utilityItemsHeader()}>
+                    {utility.label}
+                  </p>
+                )}
                 <ul className={navbarStyles.utilityItemsList()}>
                   {utility.items.map((item, index) => (
                     <li key={`${item.name}-${index}`}>

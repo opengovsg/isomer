@@ -81,8 +81,8 @@ const ParentItemLink = ({
     >
       <Link
         LinkComponent={LinkComponent}
-        isExternal={isExternalUrl(url)}
-        showExternalIcon={isExternalUrl(url)}
+        isExternal={isExternal}
+        showExternalIcon={isExternal}
         isWithFocusVisibleHighlight
         href={url}
         className={nestedItem({

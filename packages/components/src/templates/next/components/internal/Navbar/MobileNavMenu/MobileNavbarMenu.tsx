@@ -80,9 +80,11 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
 
             {!!utility && (
               <div className="flex flex-col items-start gap-1 self-stretch bg-base-canvas-alt px-6 py-4">
-                <p className="prose-label-sm-medium text-base-content-strong">
-                  {utility.label || "Quick links"}
-                </p>
+                {!!utility.label && (
+                  <p className="prose-label-sm-medium text-base-content-strong">
+                    {utility.label}
+                  </p>
+                )}
 
                 <ul className="flex flex-col gap-1">
                   {utility.items.map((item, index) => (
