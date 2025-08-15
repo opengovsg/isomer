@@ -1459,10 +1459,6 @@ video {
   -webkit-line-clamp: 3;
 }
 
-.\!block {
-  display: block !important;
-}
-
 .block {
   display: block;
 }
@@ -1483,20 +1479,12 @@ video {
   display: inline-flex;
 }
 
-.\!table {
-  display: table !important;
-}
-
 .table {
   display: table;
 }
 
 .table-row {
   display: table-row;
-}
-
-.\!grid {
-  display: grid !important;
 }
 
 .grid {
@@ -3413,11 +3401,6 @@ video {
   color: rgb(71 71 71 / var(--tw-text-opacity));
 }
 
-.text-\[\#999\] {
-  --tw-text-opacity: 1;
-  color: rgb(153 153 153 / var(--tw-text-opacity));
-}
-
 .text-base-canvas {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
@@ -4022,10 +4005,6 @@ video {
 
 .\[--color\:theme\(colors\.red\.700\)\] {
   --color: #b91c1c;
-}
-
-.\[a-zA-Z0-9\:\\\\-\\\\\._\$\] {
-  a-z-a--z0-9: \\-\\.$;
 }
 
 .\[dgs\:123456\] {
