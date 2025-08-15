@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { FORMSG_EMBED_URL_PATTERN } from "~/utils/validation"
 
 export const FormSGSchema = Type.Object(
@@ -26,4 +27,7 @@ export const FormSGSchema = Type.Object(
   },
 )
 
-export type FormSGProps = Static<typeof FormSGSchema>
+export type FormSGProps = Static<typeof FormSGSchema> & {
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
+}
