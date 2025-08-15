@@ -54,7 +54,8 @@ export const Default: Story = {
   args: {
     type: "contactinformation",
     title: "Sentosa",
-    description: "Embassy of the Republic of Singapore - Algeria",
+    description:
+      "Embassy of the Republic of Singapore - Algeria<br>should NOT accept line break HTML tag",
     methods: [
       {
         method: "person",

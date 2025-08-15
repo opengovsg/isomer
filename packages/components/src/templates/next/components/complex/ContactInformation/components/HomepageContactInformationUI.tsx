@@ -1,3 +1,5 @@
+import DOMPurify from "isomorphic-dompurify"
+
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { LinkButton } from "../../../internal/LinkButton"
@@ -91,6 +93,7 @@ export const HomepageContactInformationUI = ({
   label,
   LinkComponent,
   isLoading,
+  acceptHtmlTags = false,
 }: ContactInformationUIProps) => {
   const filteredMethods = whitelistedMethods
     ? methods.filter(
@@ -138,17 +141,27 @@ export const HomepageContactInformationUI = ({
     )
   }
 
+  const descriptionText = isLoading ? "" : (description ?? "")
+
   return (
     <div className={compoundStyles.container()}>
       <div className={compoundStyles.titleAndDescriptionContainer()}>
         {(title || isLoading) && (
           <h3 className={compoundStyles.title()}>{isLoading ? "" : title}</h3>
         )}
-        {(!!description || isLoading) && (
-          <p className={compoundStyles.description()}>
-            {isLoading ? "" : description}
-          </p>
-        )}
+        {(!!description || isLoading) &&
+          (acceptHtmlTags ? (
+            <p
+              className={compoundStyles.description()}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(descriptionText, {
+                  ALLOWED_TAGS: ["br"],
+                }),
+              }}
+            />
+          ) : (
+            <p className={compoundStyles.description()}>{descriptionText}</p>
+          ))}
         {!!referenceLinkHref && !!label && !isLoading && (
           <CallToActionButton isBottomButton={false} />
         )}

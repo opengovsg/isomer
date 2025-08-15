@@ -33,6 +33,7 @@ export const DefaultContactInformationUI = ({
   label,
   LinkComponent,
   isLoading,
+  acceptHtmlTags = false,
 }: ContactInformationUIProps) => {
   const compoundStyles = createDefaultContactInformationStyles({
     isLoading,
@@ -47,17 +48,27 @@ export const DefaultContactInformationUI = ({
       )
     : methods
 
+  const descriptionText = isLoading ? "" : (description ?? "")
+
   return (
     <div className={compoundStyles.container()}>
       <div className={compoundStyles.titleAndDescriptionContainer()}>
         {(title || isLoading) && (
           <h2 className={compoundStyles.title()}>{isLoading ? "" : title}</h2>
         )}
-        {(!!description || isLoading) && (
-          <p className={compoundStyles.description()}>
-            {isLoading ? "" : description}
-          </p>
-        )}
+        {(!!description || isLoading) &&
+          (acceptHtmlTags ? (
+            <p
+              className={compoundStyles.description()}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(descriptionText, {
+                  ALLOWED_TAGS: ["br"],
+                }),
+              }}
+            />
+          ) : (
+            <p className={compoundStyles.description()}>{descriptionText}</p>
+          ))}
       </div>
 
       <div className={compoundStyles.contactMethodsContainer()}>
@@ -85,13 +96,17 @@ export const DefaultContactInformationUI = ({
           <h3 className={compoundStyles.otherInformationTitle()}>
             {otherInformation.label ?? "Other Information"}
           </h3>
-          <div
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(otherInformation.value, {
-                ALLOWED_TAGS: ["b"],
-              }),
-            }}
-          />
+          {acceptHtmlTags ? (
+            <div
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(otherInformation.value, {
+                  ALLOWED_TAGS: ["b"],
+                }),
+              }}
+            />
+          ) : (
+            <div>{otherInformation.value}</div>
+          )}
         </div>
       )}
 

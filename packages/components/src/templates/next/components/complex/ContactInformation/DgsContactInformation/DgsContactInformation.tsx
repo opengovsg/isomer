@@ -41,6 +41,7 @@ export const DgsContactInformation = ({
         isLoading={isLoading}
         methods={[]} // not needed for loading state but its required prop
         {...pick(rest, "type", "layout")}
+        acceptHtmlTags
       />
     )
   }
@@ -93,6 +94,7 @@ export const DgsTransformedContactInformation = ({
       otherInformation={otherInformation}
       {...pick(rest, "type", "layout", "LinkComponent")}
       {...omit(rest, InjectableContactInformationKeys)}
+      acceptHtmlTags
     />
   )
 }

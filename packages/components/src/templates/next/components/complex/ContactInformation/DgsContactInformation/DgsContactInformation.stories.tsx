@@ -69,7 +69,8 @@ const DgsParameters = {
             records: [
               {
                 entity_name: "Sentosa",
-                description: "Embassy of the Republic of Singapore - Algeria",
+                description:
+                  "Embassy of the Republic of Singapore - Algeria<br>should accept line break HTM tag",
                 methods: JSON.stringify([
                   {
                     method: "telephone",

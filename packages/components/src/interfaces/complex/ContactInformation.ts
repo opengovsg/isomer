@@ -161,6 +161,7 @@ export type ContactInformationUIProps = Omit<
     LinkComponent?: LinkComponentType
     referenceLinkHref?: string
     isLoading?: boolean
+    acceptHtmlTags?: boolean
   }
 
 export type NativeContactInformationProps = Static<
