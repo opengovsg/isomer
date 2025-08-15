@@ -604,7 +604,6 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "CONFLICT",
@@ -612,6 +611,7 @@ describe("page.router", async () => {
             "Someone on your team has changed this page, refresh the page and try again",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should return 422 if `from` arg is out of bounds", async () => {
@@ -632,12 +632,12 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "UNPROCESSABLE_CONTENT",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should fail validation if `from` arg is negative index", async () => {
@@ -678,12 +678,12 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "UNPROCESSABLE_CONTENT",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should fail validation if `to` arg is negative index", async () => {

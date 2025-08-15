@@ -2,7 +2,13 @@ import { TRPCError } from "@trpc/server"
 import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
 import { addUsersToSite } from "~prisma/scripts/addUsersToSite"
 
-import type { DB, Resource, Transaction, Version } from "../database"
+import type {
+  DB,
+  Resource,
+  SafeKysely,
+  Transaction,
+  Version,
+} from "../database"
 import type { UserPermissionsProps } from "../permissions/permissions.type"
 import {
   ResourceState,
@@ -38,7 +44,7 @@ export const validateUserPermissionsForSite = async ({
   }
 }
 
-export const getSiteConfig = async (siteId: number) => {
+export const getSiteConfig = async (db: SafeKysely, siteId: number) => {
   const { config } = await db
     .selectFrom("Site")
     .where("id", "=", siteId)

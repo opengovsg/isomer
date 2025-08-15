@@ -744,7 +744,7 @@ describe("resource.service", () => {
       // Arrange
       const { site } = await setupSite()
       // Act
-      const result = await getNavBar(site.id)
+      const result = await getNavBar(db, site.id)
       // Assert
       expect(result).toBeDefined()
       expect(result.siteId).toBe(site.id)
@@ -752,7 +752,7 @@ describe("resource.service", () => {
 
     it("should throw an error if the `siteId` is not found", async () => {
       // Act
-      const result = getNavBar(99999)
+      const result = getNavBar(db, 99999)
       // Assert
       await expect(result).rejects.toThrowError()
     })
@@ -763,7 +763,7 @@ describe("resource.service", () => {
       // Arrange
       const { site } = await setupSite()
       // Act
-      const result = await getNavBar(site.id)
+      const result = await getNavBar(db, site.id)
       // Assert
       expect(result).toBeDefined()
       expect(result.siteId).toBe(site.id)
@@ -771,7 +771,7 @@ describe("resource.service", () => {
 
     it("should throw an error if the `siteId` is not found", async () => {
       // Act
-      const result = getNavBar(99999)
+      const result = getNavBar(db, 99999)
       // Assert
       await expect(result).rejects.toThrowError()
     })
