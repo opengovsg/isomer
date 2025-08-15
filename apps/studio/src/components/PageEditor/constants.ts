@@ -36,9 +36,10 @@ export const DEFAULT_BLOCKS: Record<
   },
   blockquote: {
     type: "blockquote",
-    quote: "This is a quote",
-    source: "This is the source of the quote",
-    imageAlt: "This is the alt text for the image",
+    quote:
+      "Enforcing the gold standards of building government informational websites at Isomer (OGP)",
+    source: "Huaying Zhu",
+    imageAlt: "Portrait of Huaying Zhu",
   },
   callout: {
     type: "callout",
