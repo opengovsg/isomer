@@ -1,23 +1,19 @@
 import { BiChevronDown, BiRightArrowAlt } from "react-icons/bi"
 
-import type { NavbarItemProps, NavbarProps } from "~/interfaces/internal/Navbar"
+import type { NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight, isExternalUrl } from "~/utils"
 import { Link } from "../../Link"
 
-interface NavItemAccordionProps
-  extends NavbarItemProps,
-    Pick<NavbarProps, "LinkComponent"> {
-  isOpen: boolean
-  onClick: () => void
-  index: number
-}
+type NavItemAccordionProps = NavbarProps["items"][number] &
+  Pick<NavbarProps, "LinkComponent"> & {
+    isOpen: boolean
+    onClick: () => void
+    index: number
+  }
 
 interface ParentItemLinkProps
-  extends Pick<
-    NavItemAccordionProps,
-    "name" | "referenceLinkHref" | "LinkComponent"
-  > {
+  extends Pick<NavItemAccordionProps, "name" | "url" | "LinkComponent"> {
   isExternal: boolean
 }
 
@@ -67,7 +63,7 @@ const { item, chevron, container, nestedItem, sublist, menuItemsContainer } =
 
 const ParentItemLink = ({
   name,
-  referenceLinkHref,
+  url,
   isExternal,
   LinkComponent,
 }: ParentItemLinkProps) => {
@@ -85,10 +81,10 @@ const ParentItemLink = ({
     >
       <Link
         LinkComponent={LinkComponent}
-        isExternal={isExternalUrl(referenceLinkHref)}
-        showExternalIcon={isExternalUrl(referenceLinkHref)}
+        isExternal={isExternal}
+        showExternalIcon={isExternal}
         isWithFocusVisibleHighlight
-        href={referenceLinkHref}
+        href={url}
         className={nestedItem({
           className: `group/parent-item ${focusVisibleHighlight()}`,
           itemType: "parentItem",
@@ -117,7 +113,6 @@ const ParentItemLink = ({
 export const MobileNavItemAccordion = ({
   name,
   url,
-  referenceLinkHref,
   items,
   isOpen,
   onClick,
@@ -133,7 +128,7 @@ export const MobileNavItemAccordion = ({
           className={item({
             className: focusVisibleHighlight(),
           })}
-          href={referenceLinkHref}
+          href={url}
         >
           {name}
         </Link>
@@ -173,7 +168,7 @@ export const MobileNavItemAccordion = ({
                 <div className={item({ withVerticalPadding: true })}>
                   <Link
                     LinkComponent={LinkComponent}
-                    href={subItem.referenceLinkHref}
+                    href={subItem.url}
                     isExternal={isExternal}
                     className={nestedItem({
                       className: focusVisibleHighlight(),
@@ -186,11 +181,11 @@ export const MobileNavItemAccordion = ({
             )
           })}
         </ul>
-        {referenceLinkHref && (
+        {url && (
           <ParentItemLink
             name={name}
-            referenceLinkHref={referenceLinkHref}
-            isExternal={isExternalUrl(referenceLinkHref)}
+            url={url}
+            isExternal={isExternalUrl(url)}
             LinkComponent={LinkComponent}
           />
         )}

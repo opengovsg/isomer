@@ -67,6 +67,44 @@ const generateArgs = ({
           },
         ],
       },
+      navbar: {
+        items: [
+          {
+            name: "Home",
+            url: "/",
+          },
+          {
+            name: "Newsroom",
+            url: "/newsroom",
+            items: [
+              {
+                name: "News",
+                url: "/newsroom/news",
+              },
+            ],
+          },
+        ],
+        utility: {
+          items: [
+            {
+              name: "eServices & Forms",
+              url: "/quick-link-1",
+            },
+            {
+              name: "Student Login",
+              url: "/quick-link-2",
+            },
+            {
+              name: "Staff Login",
+              url: "/quick-link-3",
+            },
+            {
+              name: "Employer Login",
+              url: "/quick-link-4",
+            },
+          ],
+        },
+      },
     }),
     page: {
       title:
@@ -175,6 +213,44 @@ export const Default: Story = {
             ],
           },
         ],
+      },
+      navbar: {
+        items: [
+          {
+            name: "Home",
+            url: "/",
+          },
+          {
+            name: "Newsroom",
+            url: "/newsroom",
+            items: [
+              {
+                name: "News",
+                url: "/newsroom/news",
+              },
+            ],
+          },
+        ],
+        utility: {
+          items: [
+            {
+              name: "eServices & Forms",
+              url: "/quick-link-1",
+            },
+            {
+              name: "Student Login",
+              url: "/quick-link-2",
+            },
+            {
+              name: "Staff Login",
+              url: "/quick-link-3",
+            },
+            {
+              name: "Employer Login",
+              url: "/quick-link-4",
+            },
+          ],
+        },
       },
     }),
     page: {
