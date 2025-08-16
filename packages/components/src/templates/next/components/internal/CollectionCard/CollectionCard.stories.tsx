@@ -3,7 +3,6 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { CollectionCardProps } from "~/interfaces"
-import type { Tag } from "~/interfaces/internal/CollectionCard"
 import { CollectionCard } from "./CollectionCard"
 
 const meta: Meta<typeof CollectionCard> = {
@@ -21,42 +20,34 @@ const meta: Meta<typeof CollectionCard> = {
 export default meta
 type Story = StoryObj<typeof CollectionCard>
 
-interface GenerateArgsProps {
-  shouldShowDate?: boolean
-  isLastUpdatedUndefined?: boolean
-  withoutImage?: boolean
-  title?: string
-  description?: string
-  tags?: Tag[]
-  isExternalLink?: boolean
-}
 const generateArgs = ({
   shouldShowDate = true,
-  isLastUpdatedUndefined = false,
-  withoutImage = false,
-  title = "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
-  description = "We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year. We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year.",
-  tags = [],
   isExternalLink = false,
-}: GenerateArgsProps): Partial<CollectionCardProps> & {
+  ...overrides
+}: Partial<CollectionCardProps> & {
+  isExternalLink?: boolean
+  shouldShowDate?: boolean
+}): Partial<CollectionCardProps> & {
   shouldShowDate?: boolean
 } => {
   return {
-    lastUpdated: isLastUpdatedUndefined ? undefined : "December 2, 2023",
+    date: new Date("2023-12-02"),
     category: "Research",
-    title,
-    description,
-    image: withoutImage
-      ? undefined
-      : {
-          src: "https://placehold.co/500x500",
-          alt: "placeholder",
-        },
+    title:
+      "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
+    description:
+      "We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year. We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year.",
+    image: {
+      src: "https://placehold.co/500x500",
+      alt: "placeholder",
+    },
     referenceLinkHref: isExternalLink ? "https://www.google.com" : "/",
     imageSrc: "https://placehold.co/500x500",
-    itemTitle: title,
+    itemTitle:
+      "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
     shouldShowDate,
-    tags,
+    tags: [],
+    ...overrides,
   }
 }
 
@@ -87,18 +78,18 @@ export const ExternalLinkLongText: Story = {
 }
 
 export const UndefinedDate: Story = {
-  args: generateArgs({ isLastUpdatedUndefined: true }),
+  args: generateArgs({ date: undefined }),
 }
 
 export const HideDate: Story = {
   args: generateArgs({
     shouldShowDate: false,
-    isLastUpdatedUndefined: true,
+    date: undefined,
   }),
 }
 
 export const CardWithoutImage: Story = {
-  args: generateArgs({ withoutImage: true }),
+  args: generateArgs({ image: undefined }),
 }
 
 export const ShortDescription: Story = {
@@ -133,7 +124,7 @@ export const TagsWithImage: Story = {
 export const TagsWithoutImage: Story = {
   args: generateArgs({
     title: "Collection card without tags",
-    withoutImage: true,
+    image: undefined,
     description: "This is a random description that will be on the card",
     tags: [
       {

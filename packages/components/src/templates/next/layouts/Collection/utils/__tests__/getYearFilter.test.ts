@@ -24,19 +24,19 @@ describe("getYearFilter", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       {
-        lastUpdated: "2023-01-01",
+        date: new Date("2023-01-01"),
       } as ProcessedCollectionCardProps,
       {
-        lastUpdated: "2023-06-15",
+        date: new Date("2023-06-15"),
       } as ProcessedCollectionCardProps,
       {
-        lastUpdated: "2022-12-31",
+        date: new Date("2022-12-31"),
       } as ProcessedCollectionCardProps,
       {
-        lastUpdated: "2022-01-01",
+        date: new Date("2022-01-01"),
       } as ProcessedCollectionCardProps,
       {
-        lastUpdated: undefined,
+        date: undefined,
       } as ProcessedCollectionCardProps,
     ]
 
@@ -58,9 +58,9 @@ describe("getYearFilter", () => {
   it("should return a single item if all items have the same year", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      { lastUpdated: "2023-01-01" } as ProcessedCollectionCardProps,
-      { lastUpdated: "2023-01-01" } as ProcessedCollectionCardProps,
-      { lastUpdated: "2023-01-01" } as ProcessedCollectionCardProps,
+      { date: new Date("2023-01-01") } as ProcessedCollectionCardProps,
+      { date: new Date("2023-01-01") } as ProcessedCollectionCardProps,
+      { date: new Date("2023-01-01") } as ProcessedCollectionCardProps,
     ]
 
     // Act
@@ -77,9 +77,9 @@ describe("getYearFilter", () => {
   it("should not return any items if all items have no dates", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      { lastUpdated: undefined } as ProcessedCollectionCardProps,
-      { lastUpdated: undefined } as ProcessedCollectionCardProps,
-      { lastUpdated: undefined } as ProcessedCollectionCardProps,
+      { date: undefined } as ProcessedCollectionCardProps,
+      { date: undefined } as ProcessedCollectionCardProps,
+      { date: undefined } as ProcessedCollectionCardProps,
     ]
 
     // Act

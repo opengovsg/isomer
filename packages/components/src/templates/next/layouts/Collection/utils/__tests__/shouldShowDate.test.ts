@@ -4,18 +4,18 @@ import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { shouldShowDate } from "../shouldShowDate"
 
 describe("shouldShowDate", () => {
-  it("returns true if any item has lastUpdated", () => {
+  it("returns true if any item has date", () => {
     const items = [
       {
         title: "Item 1",
         description: "Description 1",
-        lastUpdated: "2023-01-01",
+        date: new Date("2023-01-01"),
         category: "category1",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
         description: "Description 2",
-        lastUpdated: undefined,
+        date: undefined,
         category: "category2",
       } as ProcessedCollectionCardProps,
     ]
@@ -23,18 +23,18 @@ describe("shouldShowDate", () => {
     expect(shouldShowDate(items)).toBe(true)
   })
 
-  it("returns false if no items have lastUpdated", () => {
+  it("returns false if no items have date", () => {
     const items = [
       {
         title: "Item 1",
         description: "Description 1",
-        lastUpdated: undefined,
+        date: undefined,
         category: "category1",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
         description: "Description 2",
-        lastUpdated: undefined,
+        date: undefined,
         category: "category2",
       } as ProcessedCollectionCardProps,
     ]

@@ -5,13 +5,21 @@ import {
   COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
 } from "~/types"
 
-export type SortableCardProps = AllCardProps & {
-  rawDate?: Date
-}
-
 export interface SortCollectionItemsProps
   extends Pick<GetCollectionItemsProps, "sortBy" | "sortDirection"> {
-  items: SortableCardProps[]
+  items: AllCardProps[]
+}
+
+const getLastUpdatedDate = (item: AllCardProps): Date | undefined => {
+  if (!item.lastUpdated) {
+    return undefined
+  }
+
+  try {
+    return new Date(item.lastUpdated)
+  } catch {
+    return undefined
+  }
 }
 
 // Sort by last updated date, tiebreaker by title
@@ -20,14 +28,14 @@ const sortCollectionItemsByDate = ({
   sortDirection = "desc",
 }: Omit<SortCollectionItemsProps, "sortBy">) => {
   return items.sort((a, b) => {
-    const bothHaveDates = a.rawDate instanceof Date && b.rawDate instanceof Date
-    const bothSameDatetime = a.rawDate?.getTime() === b.rawDate?.getTime()
+    const bothHaveDates = a.date instanceof Date && b.date instanceof Date
+    const bothSameDatetime = a.date?.getTime() === b.date?.getTime()
 
     if (bothHaveDates && !bothSameDatetime) {
       // Type assertion because TS control-flow narrowing only works when
       // check is done inline and not when we define the variable
-      const aDate = a.rawDate as unknown as Date
-      const bDate = b.rawDate as unknown as Date
+      const aDate = a.date as unknown as Date
+      const bDate = b.date as unknown as Date
 
       switch (sortDirection) {
         case "asc":
@@ -40,13 +48,44 @@ const sortCollectionItemsByDate = ({
       }
     }
 
-    const bothNoDates = a.rawDate === undefined && b.rawDate === undefined
-    if ((bothHaveDates && bothSameDatetime) || bothNoDates) {
+    const aNoDate = a.date === undefined
+    const bNoDate = b.date === undefined
+    const aLastUpdated = getLastUpdatedDate(a)
+    const bLastUpdated = getLastUpdatedDate(b)
+
+    if (
+      (aNoDate && bNoDate) ||
+      (bothHaveDates && aLastUpdated?.getTime() === bLastUpdated?.getTime())
+    ) {
       return a.title.localeCompare(b.title, undefined, { numeric: true })
     }
 
-    return a.rawDate instanceof Date ? -1 : 1
-  }) as AllCardProps[]
+    // If one has a date and the other does not, place the one with a date first
+    if (aNoDate) {
+      return 1 // Place items without dates at the end
+    } else if (bNoDate) {
+      return -1 // Place items without dates at the end
+    }
+
+    // Sort by last updated date if both have dates and the dates are the same
+
+    if (aLastUpdated && bLastUpdated) {
+      const aDate = aLastUpdated.getTime()
+      const bDate = bLastUpdated.getTime()
+
+      switch (sortDirection) {
+        case "asc":
+          return aDate >= bDate ? 1 : -1
+        case "desc":
+          return aDate <= bDate ? 1 : -1
+        default:
+          const exhaustiveCheck: never = sortDirection
+          return exhaustiveCheck
+      }
+    }
+
+    return a.date instanceof Date ? -1 : 1
+  })
 }
 
 // Sort by title, tiebreaker by last updated date
@@ -55,8 +94,10 @@ const sortCollectionItemsByTitle = ({
   sortDirection = "asc",
 }: Omit<SortCollectionItemsProps, "sortBy">) => {
   return items.sort((a, b) => {
-    const bothHaveDates = a.rawDate instanceof Date && b.rawDate instanceof Date
-    const bothNoDates = a.rawDate === undefined && b.rawDate === undefined
+    const bothHaveDates = a.date instanceof Date && b.date instanceof Date
+    const aNoDate = a.date === undefined
+    const bNoDate = b.date === undefined
+    const bothNoDates = aNoDate && bNoDate
 
     if ((bothHaveDates && a.title !== b.title) || bothNoDates) {
       switch (sortDirection) {
@@ -73,8 +114,8 @@ const sortCollectionItemsByTitle = ({
     if (bothHaveDates && a.title === b.title) {
       // Type assertion because TS control-flow narrowing only works when
       // check is done inline and not when we define the variable
-      const aDate = a.rawDate as unknown as Date
-      const bDate = b.rawDate as unknown as Date
+      const aDate = a.date as unknown as Date
+      const bDate = b.date as unknown as Date
 
       if (aDate.getTime() === bDate.getTime()) {
         return 0
@@ -83,8 +124,25 @@ const sortCollectionItemsByTitle = ({
       return aDate.getTime() < bDate.getTime() ? 1 : -1
     }
 
-    return a.rawDate instanceof Date ? -1 : 1
-  }) as AllCardProps[]
+    // If one has a date and the other does not, place the one with a date first
+    if (aNoDate && !bNoDate) {
+      return 1
+    } else if (!aNoDate && bNoDate) {
+      return -1
+    }
+
+    const aLastUpdated = getLastUpdatedDate(a)
+    const bLastUpdated = getLastUpdatedDate(b)
+
+    if (aLastUpdated && bLastUpdated) {
+      const aDate = aLastUpdated.getTime()
+      const bDate = bLastUpdated.getTime()
+
+      return aDate < bDate ? 1 : -1
+    }
+
+    return a.date instanceof Date ? -1 : 1
+  })
 }
 
 // Sort by category, tiebreaker by title
@@ -93,8 +151,10 @@ const sortCollectionItemsByCategory = ({
   sortDirection = "asc",
 }: Omit<SortCollectionItemsProps, "sortBy">) => {
   return items.sort((a, b) => {
-    const bothHaveDates = a.rawDate instanceof Date && b.rawDate instanceof Date
-    const bothNoDates = a.rawDate === undefined && b.rawDate === undefined
+    const bothHaveDates = a.date instanceof Date && b.date instanceof Date
+    const aNoDate = a.date === undefined
+    const bNoDate = b.date === undefined
+    const bothNoDates = aNoDate && bNoDate
 
     if ((bothHaveDates && a.category !== b.category) || bothNoDates) {
       switch (sortDirection) {
@@ -116,8 +176,25 @@ const sortCollectionItemsByCategory = ({
       return a.title.localeCompare(b.title, undefined, { numeric: true })
     }
 
-    return a.rawDate instanceof Date ? -1 : 1
-  }) as AllCardProps[]
+    // If one has a date and the other does not, place the one with a date first
+    if (aNoDate && !bNoDate) {
+      return 1
+    } else if (!aNoDate && bNoDate) {
+      return -1
+    }
+
+    const aLastUpdated = getLastUpdatedDate(a)
+    const bLastUpdated = getLastUpdatedDate(b)
+
+    if (aLastUpdated && bLastUpdated) {
+      const aDate = aLastUpdated.getTime()
+      const bDate = bLastUpdated.getTime()
+
+      return aDate < bDate ? 1 : -1
+    }
+
+    return a.date instanceof Date ? -1 : 1
+  })
 }
 
 export const sortCollectionItems = ({
