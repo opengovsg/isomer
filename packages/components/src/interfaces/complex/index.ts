@@ -52,3 +52,16 @@ export {
   CHILDREN_PAGES_LAYOUT_OPTIONS,
   type ChildrenPagesProps,
 } from "./ChildrenPages"
+export {
+  CONTACT_INFORMATION_TYPE,
+  ContactInformationSchema,
+  type ContactInformationProps,
+  type ContactInformationUIProps,
+  type NativeContactInformationProps,
+  type DgsContactInformationProps,
+} from "./ContactInformation"
+export {
+  DYNAMIC_COMPONENT_LIST_TYPE,
+  DynamicComponentListSchema,
+  type DynamicComponentListProps,
+} from "./DynamicComponentList"

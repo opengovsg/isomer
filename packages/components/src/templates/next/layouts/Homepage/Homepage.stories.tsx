@@ -544,6 +544,76 @@ const generateArgs = ({
         imageSrc: "https://placehold.co/600x600",
         imageAlt: "This is the alt text",
       },
+      {
+        type: "contactinformation",
+        title: "Contact the High Commission of Canberra",
+        description:
+          "Click “More ways to contact us” to find our address, fax number, and other contact details.",
+        methods: [
+          {
+            method: "person",
+            label: "Ambassador (Non-Resident)",
+            values: ["Mr MOHAMMAD Alami Musa"],
+          },
+          {
+            method: "address",
+            label: "Chancery",
+            values: [
+              "c/o Ministry of Foreign Affairs",
+              "Tanglin",
+              "Singapore 248163",
+            ],
+          },
+          {
+            method: "telephone",
+            label: "Telephone",
+            values: ["+65-63798000 (MFA)"],
+          },
+          {
+            method: "fax",
+            label: "Fax",
+            values: ["+65-64747885 (MFA)"],
+            caption: "Got people use meh?",
+          },
+          {
+            method: "email",
+            label: "Email",
+            values: [
+              "do-not-reply@isomer.gov.sg",
+              "do-not-reply-pelase@isomer.gov.sg",
+            ],
+          },
+          {
+            method: "website",
+            label: "Website",
+            values: [
+              "https://www.isomer.gov.sg",
+              "https://sample.isomer.gov.sg",
+            ],
+          },
+          {
+            method: "emergency_contact",
+            label: "In the case of emergency",
+            values: ["+65 5678 1234"],
+            caption: "(after hours)",
+          },
+          {
+            method: "operating_hours",
+            label: "Operating Hours",
+            values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
+          },
+          {
+            label: "Telegram",
+            values: ["https://t.me/isomer_gov_sg"],
+          },
+          {
+            label: "WhatsApp",
+            values: ["+65-63798000 (MFA)"],
+          },
+        ],
+        url: "/",
+        label: "More ways to contact us",
+      },
     ],
   }
 }
