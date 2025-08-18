@@ -1169,7 +1169,6 @@ describe("collection.router", async () => {
 
       // Assert
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(1)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceUpdate")
@@ -1190,6 +1189,7 @@ describe("collection.router", async () => {
       // which is an empty array
       expect(expected.content.content).toEqual([])
       expect(expected.id).toEqual(blob.id)
+      await assertAuditLogRows(1)
     })
 
     it.skip("should throw when trying to update to a deleted `ref`")
