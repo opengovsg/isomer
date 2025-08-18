@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -87,7 +88,7 @@ export const CollectionTable = ({
       offset: skip,
     },
     {
-      keepPreviousData: true, // Required for table to show previous data while fetching next page
+      placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
     },
   )
 

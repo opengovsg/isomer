@@ -5,40 +5,44 @@ import { DEFAULT_PAGE_ITEMS } from "./page"
 export const resourceHandlers = {
   getChildrenOf: {
     default: () => {
-      return trpcMsw.resource.getChildrenOf.query(({ resourceId }) => {
-        const items = DEFAULT_PAGE_ITEMS.map((item) => ({
-          title: item.title,
-          permalink: item.permalink,
-          type: item.type as
-            | "Page"
-            | "Folder"
-            | "Collection"
-            | "CollectionPage",
-          // ID must be unique so infinite loop won't occur
-          id: `${resourceId}-${item.title}-${item.id}`,
-          parentId: item.parentId,
-        }))
-        return {
-          items,
-          nextOffset: null,
-        }
-      })
+      return trpcMsw.resource.getChildrenOf.query(
+        ({ input: { resourceId } }) => {
+          const items = DEFAULT_PAGE_ITEMS.map((item) => ({
+            title: item.title,
+            permalink: item.permalink,
+            type: item.type as
+              | "Page"
+              | "Folder"
+              | "Collection"
+              | "CollectionPage",
+            // ID must be unique so infinite loop won't occur
+            id: `${resourceId}-${item.title}-${item.id}`,
+            parentId: item.parentId,
+          }))
+          return {
+            items,
+            nextOffset: null,
+          }
+        },
+      )
     },
     collection: () => {
-      return trpcMsw.resource.getChildrenOf.query(({ resourceId }) => {
-        const items = DEFAULT_COLLECTION_ITEMS.map((item) => ({
-          title: item.title,
-          permalink: item.permalink,
-          parentId: item.parentId,
-          type: item.type as "Page" | "CollectionLink" | "CollectionPage",
-          // ID must be unique so infinite loop won't occur
-          id: `${resourceId}-${item.title}-${item.id}`,
-        }))
-        return {
-          items,
-          nextOffset: null,
-        }
-      })
+      return trpcMsw.resource.getChildrenOf.query(
+        ({ input: { resourceId } }) => {
+          const items = DEFAULT_COLLECTION_ITEMS.map((item) => ({
+            title: item.title,
+            permalink: item.permalink,
+            parentId: item.parentId,
+            type: item.type as "Page" | "CollectionLink" | "CollectionPage",
+            // ID must be unique so infinite loop won't occur
+            id: `${resourceId}-${item.title}-${item.id}`,
+          }))
+          return {
+            items,
+            nextOffset: null,
+          }
+        },
+      )
     },
   },
   getRolesFor: {
@@ -238,6 +242,7 @@ export const resourceHandlers = {
               fullPermalink: permalink,
             }
           }),
+          nextOffset: null,
         }
       })
     },
@@ -293,6 +298,7 @@ export const resourceHandlers = {
             },
           ],
           recentlyEdited: [],
+          nextOffset: null,
         }
       })
     },

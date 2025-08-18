@@ -2779,6 +2779,7 @@ describe("resource.router", async () => {
         totalCount: 0,
         resources: [],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -2830,6 +2831,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -2882,6 +2884,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -2984,6 +2987,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3028,6 +3032,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3069,6 +3074,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3115,6 +3121,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3161,6 +3168,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3189,6 +3197,7 @@ describe("resource.router", async () => {
         totalCount: 0,
         resources: [],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3230,6 +3239,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3298,6 +3308,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3327,6 +3338,7 @@ describe("resource.router", async () => {
         totalCount: 0,
         resources: [],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3360,6 +3372,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page1.updatedAt,
           },
         ],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3393,6 +3406,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page1.updatedAt,
           },
         ],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3425,6 +3439,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page1.updatedAt,
           },
         ],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3470,6 +3485,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page1.updatedAt,
           },
         ],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3496,6 +3512,7 @@ describe("resource.router", async () => {
         totalCount: null,
         resources: [],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3540,6 +3557,7 @@ describe("resource.router", async () => {
               }
             }),
           recentlyEdited: [],
+          nextOffset: 10,
         }
         expect(result).toEqual(expected)
       })
@@ -3590,6 +3608,7 @@ describe("resource.router", async () => {
             },
           ],
           recentlyEdited: [],
+          nextOffset: 2,
         }
         expect(result).toEqual(expected)
       })
@@ -3624,6 +3643,7 @@ describe("resource.router", async () => {
             },
           ],
           recentlyEdited: [],
+          nextOffset: null,
         }
         expect(result).toEqual(expected)
       })
@@ -3650,6 +3670,7 @@ describe("resource.router", async () => {
           totalCount: 1,
           resources: [],
           recentlyEdited: [],
+          nextOffset: null,
         }
         expect(result).toEqual(expected)
       })
@@ -3694,6 +3715,7 @@ describe("resource.router", async () => {
               }
             }),
           recentlyEdited: [],
+          nextOffset: 20,
         }
         expect(result).toEqual(expected)
       })

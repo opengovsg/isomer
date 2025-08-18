@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import {
   Modal,
   ModalContent,
@@ -37,9 +37,9 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   } = useSearchQuery({
     siteId,
     resourceTypes: getUserViewableResourceTypes(),
-    onSearchSuccess: () => {
+    onSearchSuccess: useCallback(() => {
       setQueryCount((prev) => prev + 1)
-    },
+    }, []),
   })
 
   const renderModalBody = (): React.ReactNode => {

@@ -780,6 +780,7 @@ export const resourceRouter = router({
             recentlyEdited: await getSearchRecentlyEdited({
               siteId: Number(siteId),
             }),
+            nextOffset: null,
           }
         }
 
@@ -790,10 +791,14 @@ export const resourceRouter = router({
           limit,
           resourceTypes,
         })
+
+        const totalCount = Number(searchResults.totalCount)
+        const nextOffset = totalCount > offset + limit ? offset + limit : null
         return {
           totalCount: Number(searchResults.totalCount),
           resources: searchResults.resources,
           recentlyEdited: [],
+          nextOffset,
         }
       },
     ),

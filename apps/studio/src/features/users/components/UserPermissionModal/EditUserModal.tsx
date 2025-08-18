@@ -64,7 +64,7 @@ export const EditUserModal = () => {
     setValue("role", role)
   }, [role, setValue])
 
-  const { mutate, isLoading } = trpc.user.update.useMutation({
+  const { mutate, isPending } = trpc.user.update.useMutation({
     onSettled: onClose,
     onSuccess: async () => {
       await utils.user.list.invalidate()
@@ -159,7 +159,7 @@ export const EditUserModal = () => {
             <Button
               variant="solid"
               onClick={onUpdateUser}
-              isLoading={isLoading}
+              isLoading={isPending}
               isDisabled={!isSingpassEnabled}
             >
               Save changes

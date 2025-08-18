@@ -43,7 +43,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
 
   const { data: sites = [] } = trpc.site.listAllSites.useQuery()
 
-  const { mutate: publishOneSite, isLoading: isPublishingOneSite } =
+  const { mutate: publishOneSite, isPending: isPublishingOneSite } =
     trpc.site.publish.useMutation({
       onSuccess: () => {
         toast({
@@ -62,7 +62,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
       },
     })
 
-  const { mutate: publishAllSite, isLoading: isPublishingAllSite } =
+  const { mutate: publishAllSite, isPending: isPublishingAllSite } =
     trpc.site.publishAll.useMutation({
       onSuccess: ({ siteCount }) => {
         toast({
