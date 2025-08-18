@@ -1,5 +1,4 @@
 import type { Static } from "@sinclair/typebox"
-import type { Simplify } from "type-fest"
 import { Type } from "@sinclair/typebox"
 
 import type { ImageClientProps } from "./Image"
