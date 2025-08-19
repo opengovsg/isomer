@@ -14,6 +14,8 @@ import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 
+const MAX_TAG_CATEGORY_ITEMS = 3 as const
+
 export const jsonFormsTaggedControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TaggedControl,
   schemaMatches((schema) => schema.format === "tagged"),
@@ -42,7 +44,15 @@ export function JsonFormsTaggedControl({
   return (
     <VStack>
       {tags?.map(({ id, label, options }) => {
-        const currentTagCategory = data?.find(({ id: tagId }) => tagId === id)
+        const currentTagCategory = data?.find(
+          ({ id: tagCategoryId }) => tagCategoryId === id,
+        )
+        const shouldRenderItems =
+          !!currentTagCategory?.values.length &&
+          currentTagCategory?.values.length < MAX_TAG_CATEGORY_ITEMS
+        const matchingTagCategory = tags.find(
+          ({ id: tagCategoryId }) => tagCategoryId === id,
+        )
 
         return (
           <FormControl isRequired={required} gap="0.5rem">
@@ -50,7 +60,19 @@ export function JsonFormsTaggedControl({
             <MultiSelect
               values={currentTagCategory?.values ?? []}
               name={label}
-              items={options.map(({ label, id }) => ({ value: id, label }))}
+              items={
+                shouldRenderItems
+                  ? options.map(({ label, id }) => ({ value: id, label }))
+                  : // NOTE: Find the labels of the current tag id
+                    (currentTagCategory?.values.map((id) => {
+                      return {
+                        value: id,
+                        label: matchingTagCategory?.options.find(
+                          ({ id: tagId }) => tagId === id,
+                        )?.label,
+                      }
+                    }) ?? [])
+              }
               onChange={(value) => {
                 const remaining =
                   data?.filter(({ id: tagId }) => tagId !== id) ?? []
