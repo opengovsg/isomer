@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "incremental": true,
-    "target": "es2021",
+    "target": "es2022",
     "outDir": "dist/cjs",
     "rootDirs": ["src"],
     "moduleResolution": "node",
@@ -39,7 +39,7 @@
     // "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators. */,
 
     "typeRoots": ["node_modules/@types", "src/types"],
-    "lib": ["es2021", "dom"],
+    "lib": ["es2022", "dom"],
     "baseUrl": "./",
     "paths": {
       "~/*": ["./src/*"]
