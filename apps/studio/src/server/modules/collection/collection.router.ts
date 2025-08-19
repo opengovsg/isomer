@@ -428,7 +428,11 @@ export const collectionRouter = router({
         resourceId: indexPage.id,
       })
 
-      return (content as unknown as CollectionPageSchemaType).page.tagCategories
+      if (content.layout === "collection") {
+        return content.page.tagCategories
+      }
+
+      return []
     }),
 
   getCollections: protectedProcedure

@@ -1,5 +1,6 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
+import { SimplifyDeep } from "type-fest"
 
 import type { NotFoundPageMetaProps, SearchPageMetaProps } from "./meta"
 import type { IsomerSiteProps } from "./site"
@@ -237,7 +238,7 @@ export const LinkRefSchema = Type.Object(
   },
 )
 
-export const IsomerPageSchema = Type.Composite([
+export const IsomerPageSchema = Type.Intersect([
   BaseItemSchema,
   Type.Union([
     ArticlePageSchema,
@@ -252,7 +253,7 @@ export const IsomerPageSchema = Type.Composite([
   ]),
 ])
 
-export type IsomerSchema = Static<typeof IsomerPageSchema>
+export type IsomerSchema = SimplifyDeep<Static<typeof IsomerPageSchema>>
 
 // These props are required by the render engine, but are not enforced by the
 // JSON schema, as the data should be provided by the template directly
