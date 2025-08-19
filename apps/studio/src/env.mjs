@@ -59,21 +59,12 @@ const server = z
     NODE_ENV: z.enum(["development", "test", "production"]),
     OTP_EXPIRY: z.coerce.number().positive().optional().default(600),
     POSTMAN_API_KEY: z.string().optional(),
-    SENDGRID_API_KEY: z.string().optional(),
-    SENDGRID_FROM_ADDRESS: z.union([
-      z.string().email().optional(),
-      z.string().length(0),
-    ]),
     SESSION_SECRET: z.string().min(32),
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
   })
   .merge(s3Schema)
   .merge(singpassSchema)
   .merge(client)
-  .refine((val) => !(val.SENDGRID_API_KEY && !val.SENDGRID_FROM_ADDRESS), {
-    message: "SENDGRID_FROM_ADDRESS is required when SENDGRID_API_KEY is set",
-    path: ["SENDGRID_FROM_ADDRESS"],
-  })
 
 /**
  * You can't destruct `process.env` as a regular object in the Next.js edge runtimes (e.g.
@@ -89,8 +80,6 @@ const processEnv = {
   NODE_ENV: process.env.NODE_ENV,
   OTP_EXPIRY: process.env.OTP_EXPIRY,
   POSTMAN_API_KEY: process.env.POSTMAN_API_KEY,
-  SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
-  SENDGRID_FROM_ADDRESS: process.env.SENDGRID_FROM_ADDRESS,
   SESSION_SECRET: process.env.SESSION_SECRET,
   GROWTHBOOK_CLIENT_KEY: process.env.GROWTHBOOK_CLIENT_KEY,
   NEXT_PUBLIC_S3_REGION: process.env.NEXT_PUBLIC_S3_REGION,
