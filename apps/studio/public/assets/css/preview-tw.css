@@ -1459,6 +1459,10 @@ video {
   -webkit-line-clamp: 3;
 }
 
+.\!block {
+  display: block !important;
+}
+
 .block {
   display: block;
 }
@@ -1479,12 +1483,20 @@ video {
   display: inline-flex;
 }
 
+.\!table {
+  display: table !important;
+}
+
 .table {
   display: table;
 }
 
 .table-row {
   display: table-row;
+}
+
+.\!grid {
+  display: grid !important;
 }
 
 .grid {
@@ -1737,14 +1749,6 @@ video {
 
 .w-12 {
   width: 3rem;
-}
-
-.w-2 {
-  width: 0.5rem;
-}
-
-.w-2\.5 {
-  width: 0.625rem;
 }
 
 .w-2\/3 {
@@ -2059,6 +2063,16 @@ video {
 
 .animate-slide-up-fade-in {
   animation: slideUpFadeIn 0.3s ease-in-out;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 
 .cursor-not-allowed {
@@ -3997,6 +4011,46 @@ video {
   --color: #b91c1c;
 }
 
+.\[a-zA-Z0-9\:\\\\-\\\\\._\$\] {
+  a-z-a--z0-9: \\-\\.$;
+}
+
+.\[dgs\:123456\] {
+  dgs: 123456;
+}
+
+.\[dgs\:TestID123\] {
+  dgs: TestID123;
+}
+
+.\[dgs\:___\] {
+  dgs:;
+}
+
+.\[dgs\:abc123def\] {
+  dgs: abc123def;
+}
+
+.\[dgs\:abcdef\] {
+  dgs: abcdef;
+}
+
+.\[dgs\:d_688b934f82c1059ed0a6993d2a829089\] {
+  dgs: d 688b934f82c1059ed0a6993d2a829089;
+}
+
+.\[dgs\:test-123\] {
+  dgs: test-123;
+}
+
+.\[dgs\:test123\] {
+  dgs: test123;
+}
+
+.\[dgs\:test_id_123\] {
+  dgs: test id 123;
+}
+
 .\[grid-area\:content\] {
   grid-area: content;
 }
@@ -4019,6 +4073,10 @@ video {
 
 .\[grid-template-rows\:max-content\] {
   grid-template-rows: max-content;
+}
+
+.\[link\:test123\] {
+  link: test123;
 }
 
 .\[resource\:some-resource\] {
@@ -5809,10 +5867,6 @@ video {
 
   .lg\:w-1\/2 {
     width: 50%;
-  }
-
-  .lg\:w-3 {
-    width: 0.75rem;
   }
 
   .lg\:w-4 {

@@ -32,7 +32,7 @@ const SuspendablePublishButton = ({
     "Failed to publish page. Please contact Isomer support."
   const publishSuccessMsg = "Page published successfully"
 
-  const { mutate, isLoading } = trpc.page.publishPage.useMutation({
+  const { mutate, isPending } = trpc.page.publishPage.useMutation({
     onSuccess: async () => {
       toast({
         status: "success",
@@ -82,7 +82,7 @@ const SuspendablePublishButton = ({
                 handlePublish()
                 onClick?.(e)
               }}
-              isLoading={isLoading}
+              isLoading={isPending}
               {...rest}
             >
               Publish

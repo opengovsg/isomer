@@ -117,7 +117,7 @@ const SuspendableModalContent = ({
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
-  const { mutate, isLoading } = trpc.folder.editFolder.useMutation({
+  const { mutate, isPending } = trpc.folder.editFolder.useMutation({
     onSettled: onClose,
     onSuccess: async () => {
       await utils.resource.listWithoutRoot.invalidate()
@@ -241,7 +241,7 @@ const SuspendableModalContent = ({
           <Button mr={3} onClick={onClose} variant="clear">
             Close
           </Button>
-          <Button isLoading={isLoading} isDisabled={!isValid} type="submit">
+          <Button isLoading={isPending} isDisabled={!isValid} type="submit">
             Save changes
           </Button>
         </ModalFooter>

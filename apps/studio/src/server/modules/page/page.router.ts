@@ -59,7 +59,9 @@ const schemaValidator = ajv.compile<IsomerSchema>(schema)
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
 const validatedPageProcedure = protectedProcedure.use(
-  async ({ next, rawInput }) => {
+  async ({ next, getRawInput }) => {
+    const rawInput = await getRawInput()
+
     if (
       typeof rawInput === "object" &&
       rawInput !== null &&

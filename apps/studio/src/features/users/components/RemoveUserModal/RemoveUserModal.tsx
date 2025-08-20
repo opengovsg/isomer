@@ -32,7 +32,7 @@ export const RemoveUserModal = () => {
 
   const isSingpassEnabled = useIsSingpassEnabled()
 
-  const { mutate, isLoading } = trpc.user.delete.useMutation({
+  const { mutate, isPending } = trpc.user.delete.useMutation({
     onSettled: onClose,
     onSuccess: async (result) => {
       await utils.user.list.invalidate()
@@ -86,7 +86,7 @@ export const RemoveUserModal = () => {
                 colorScheme="critical"
                 variant="solid"
                 onClick={onRemoveUser}
-                isLoading={isLoading}
+                isLoading={isPending}
                 isDisabled={!isSingpassEnabled}
               >
                 Remove user

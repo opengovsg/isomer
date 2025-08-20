@@ -46,7 +46,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
 
   const toast = useToast()
   const { pageId, siteId } = useQueryParse(pageSchema)
-  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
+  const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
@@ -131,7 +131,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
 
       <VStack bg="white" h="100%" gap="0">
         <DrawerHeader
-          isDisabled={isLoading}
+          isDisabled={isPending}
           onBackClick={() => {
             if (!isEqual(previewPageState, savedPageState)) {
               onDiscardChangesModalOpen()
@@ -178,7 +178,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                     },
                   )
                 }}
-                isLoading={isLoading}
+                isLoading={isPending}
               >
                 Save changes
               </Button>

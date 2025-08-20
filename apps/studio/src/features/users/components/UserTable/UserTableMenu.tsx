@@ -51,7 +51,7 @@ export const UserTableMenu = ({
 
   const isSingpassEnabled = useIsSingpassEnabled()
 
-  const { mutate: resendInvite, isLoading: isResendingInvite } =
+  const { mutate: resendInvite, isPending: isResendingInvite } =
     trpc.user.resendInvite.useMutation({
       onSuccess: (result) => {
         toast({

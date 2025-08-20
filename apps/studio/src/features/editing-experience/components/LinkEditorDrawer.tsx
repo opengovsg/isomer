@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Box, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { LAYOUT_PAGE_MAP } from "@opengovsg/isomer-components"
@@ -176,17 +176,19 @@ export const LinkEditorDrawer = () => {
         siteId,
       },
       {
-        onSuccess: (data) => {
-          setLinkAtom({
-            ...(data.content.page as CollectionLinkProps),
-            title: data.title,
-          })
-          setLinkRef((data.content.page as CollectionLinkProps).ref)
-        },
         refetchOnWindowFocus: false,
       },
     )
-  const { mutate, isLoading } =
+
+  useEffect(() => {
+    setLinkAtom({
+      ...(content.page as CollectionLinkProps),
+      title,
+    })
+    setLinkRef((content.page as CollectionLinkProps).ref)
+  }, [content, setLinkAtom, setLinkRef, title])
+
+  const { mutate, isPending } =
     trpc.collection.updateCollectionLink.useMutation({
       onSuccess: () => {
         void utils.collection.readCollectionLink.invalidate()
@@ -211,7 +213,7 @@ export const LinkEditorDrawer = () => {
       <DrawerState
         savedPageState={savedPageState}
         previewPageState={data}
-        isLoading={isLoading}
+        isLoading={isPending}
         handleChange={handleChange}
         handleSaveChanges={() => mutate({ siteId, linkId, ...data })}
       />

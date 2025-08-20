@@ -45,7 +45,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
-  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
+  const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
@@ -108,7 +108,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
       <Flex flexDir="column" position="relative" h="100%" w="100%">
         <DrawerHeader
-          isDisabled={isLoading}
+          isDisabled={isPending}
           onBackClick={() => {
             if (!isEqual(previewPageState, savedPageState)) {
               onDiscardChangesModalOpen()
@@ -154,7 +154,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             py="1.5rem"
             px="2rem"
           >
-            <SaveButton isLoading={isLoading} onClick={handleSaveChanges} />
+            <SaveButton isLoading={isPending} onClick={handleSaveChanges} />
           </Box>
         </ErrorProvider>
       </Flex>
