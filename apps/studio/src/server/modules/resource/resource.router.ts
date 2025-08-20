@@ -230,6 +230,7 @@ export const resourceRouter = router({
           .where("Resource.type", "!=", ResourceType.RootPage)
           .where("Resource.type", "!=", ResourceType.FolderMeta)
           .where("Resource.type", "!=", ResourceType.CollectionMeta)
+          .where("Resource.type", "!=", ResourceType.CollectionLink)
           .where("Resource.siteId", "=", Number(siteId))
           .$narrowType<{
             type: Exclude<
@@ -237,6 +238,7 @@ export const resourceRouter = router({
               | typeof ResourceType.RootPage
               | typeof ResourceType.FolderMeta
               | typeof ResourceType.CollectionMeta
+              | typeof ResourceType.CollectionLink
             >
           }>()
           .orderBy("type", "asc")

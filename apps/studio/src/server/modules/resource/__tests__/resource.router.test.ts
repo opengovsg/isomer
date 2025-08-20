@@ -12,6 +12,7 @@ import {
   setupBlob,
   setupCollection,
   setupCollectionLink,
+  setupCollectionMeta,
   setupEditorPermissions,
   setupFolder,
   setupFolderMeta,
@@ -589,6 +590,89 @@ describe("resource.router", async () => {
         nextOffset: null,
       }
       expect(result).toMatchObject(expected)
+    })
+
+    it("should not return FolderMeta, CollectionMeta, and CollectionLink as children", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      // Create a folder
+      const { folder } = await setupFolder({
+        siteId: site.id,
+        parentId: null,
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { collection } = await setupCollection({
+        siteId: site.id,
+      })
+      // Create FolderMeta, CollectionMeta, and CollectionLink
+      await setupFolderMeta({
+        siteId: site.id,
+        folderId: folder.id,
+      })
+      await setupCollectionMeta({
+        siteId: site.id,
+        collectionId: collection.id,
+      })
+      await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+        title: "Collection Link",
+      })
+      // Create children pages of folder
+      const childPages = await Promise.all(
+        Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
+          const { page } = await setupPageResource({
+            siteId: site.id,
+            permalink: `child-page-${i}`,
+            title: `Child page ${i}`,
+            resourceType: "Page",
+            parentId: folder.id,
+          })
+          return pick(page, ["title", "permalink", "type", "id"])
+        }),
+      )
+      // Create children pages of collection
+      const childCollectionPages = await Promise.all(
+        Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
+          const { page } = await setupPageResource({
+            siteId: site.id,
+            permalink: `collection-child-page-${i}`,
+            title: `Collection Child page ${i}`,
+            resourceType: "Page",
+            parentId: collection.id,
+          })
+          return pick(page, ["title", "permalink", "type", "id"])
+        }),
+      )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const resultFolder = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: folder.id,
+      })
+      const resultCollection = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: collection.id,
+      })
+
+      // Assert
+      const expectedFolder = {
+        items: childPages.sort((a, b) => a.title.localeCompare(b.title)),
+        nextOffset: null,
+      }
+      const expectedCollection = {
+        items: childCollectionPages.sort((a, b) =>
+          a.title.localeCompare(b.title),
+        ),
+        nextOffset: null,
+      }
+      expect(resultFolder).toMatchObject(expectedFolder)
+      expect(resultCollection).toMatchObject(expectedCollection)
     })
 
     it("should return empty items array if `cursor` is invalid", async () => {
