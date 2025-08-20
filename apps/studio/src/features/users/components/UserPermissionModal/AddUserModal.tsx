@@ -100,27 +100,41 @@ export const AddUserModal = () => {
     },
   })
 
-  const { data: isWhitelisted, refetch: checkWhitelist } =
-    trpc.whitelist.isEmailWhitelisted.useQuery(
-      { siteId, email: (debouncedEmail || "").trim() },
-      {
-        enabled: false,
-      },
-    )
+  const {
+    data: isWhitelisted,
+    refetch: checkWhitelist,
+    isSuccess,
+    isError,
+  } = trpc.whitelist.isEmailWhitelisted.useQuery(
+    { siteId, email: (debouncedEmail || "").trim() },
+    {
+      enabled: false,
+    },
+  )
 
   useEffect(() => {
+    // Run after the whitelist check is successful
+    if (!isSuccess) {
+      return
+    }
+
     setAddUserModalState((prev) => ({
       ...prev,
       hasWhitelistError: !isWhitelisted,
     }))
-  }, [isWhitelisted, setAddUserModalState])
+  }, [isSuccess, isWhitelisted, setAddUserModalState])
 
   useEffect(() => {
+    // Run if the whitelist check is unsuccessful
+    if (!isError) {
+      return
+    }
+
     setAddUserModalState((prev) => ({
       ...prev,
       hasWhitelistError: false,
     }))
-  }, [setAddUserModalState])
+  }, [isError, setAddUserModalState])
 
   // Check whitelist when email changes
   useEffect(() => {
