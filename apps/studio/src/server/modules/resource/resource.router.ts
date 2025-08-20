@@ -227,18 +227,22 @@ export const resourceRouter = router({
         let query = db
           .selectFrom("Resource")
           .select(["title", "permalink", "type", "id", "parentId"])
-          .where("Resource.type", "!=", ResourceType.RootPage)
-          .where("Resource.type", "!=", ResourceType.FolderMeta)
-          .where("Resource.type", "!=", ResourceType.CollectionMeta)
-          .where("Resource.type", "!=", ResourceType.CollectionLink)
+          .where("Resource.type", "in", [
+            ResourceType.Page,
+            ResourceType.Folder,
+            ResourceType.Collection,
+            ResourceType.CollectionPage,
+            ResourceType.IndexPage,
+          ])
           .where("Resource.siteId", "=", Number(siteId))
           .$narrowType<{
-            type: Exclude<
+            type: Extract<
               ResourceType,
-              | typeof ResourceType.RootPage
-              | typeof ResourceType.FolderMeta
-              | typeof ResourceType.CollectionMeta
-              | typeof ResourceType.CollectionLink
+              | typeof ResourceType.Page
+              | typeof ResourceType.Folder
+              | typeof ResourceType.Collection
+              | typeof ResourceType.CollectionPage
+              | typeof ResourceType.IndexPage
             >
           }>()
           .orderBy("type", "asc")
