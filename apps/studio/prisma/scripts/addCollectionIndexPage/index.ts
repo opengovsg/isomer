@@ -8,6 +8,8 @@ import { TRPCError } from "@trpc/server"
 import { get } from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { createBaseLogger } from "~/lib/logger"
+import { publishSite } from "~/server/modules/aws/codebuild.service"
 import {
   db,
   jsonb,
@@ -15,6 +17,11 @@ import {
   ResourceType,
 } from "~/server/modules/database"
 import { PG_ERROR_CODES } from "~/server/modules/database/constants"
+import { createVersion } from "~/server/modules/version/version.service"
+
+const logger = createBaseLogger({
+  path: "prisma/scripts/addCollectionIndexPage/index.ts",
+})
 
 export const up = async () => {
   const collectionsWithoutIndexPages = await db
@@ -79,6 +86,17 @@ export const up = async () => {
           }
           throw err
         })
+
+      await createVersion(tx, {
+        // NOTE: This is guaranteed to be 1 because these are new colection pages
+        versionNum: 1,
+        resourceId: addedResource.id,
+        blobId: blob.id,
+        // NOTE: my user id
+        publisherId: "vr98fu4knaujg0st7sgpve4t",
+      })
+
+      await publishSite(logger, collection.siteId)
 
       console.log(`Added index page with id: ${addedResource.id}`)
     })

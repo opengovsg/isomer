@@ -22,7 +22,7 @@ export const getVersionById = ({ versionId }: { versionId: string }) =>
     .select(defaultVersionSelect)
     .executeTakeFirstOrThrow()
 
-const createVersion = async (
+export const createVersion = async (
   db: SafeKysely,
   props: {
     versionNum: number
