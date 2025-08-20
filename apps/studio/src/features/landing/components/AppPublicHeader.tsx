@@ -1,4 +1,4 @@
-import type { As } from "@chakra-ui/react"
+import type { ElementType } from "react"
 import NextLink from "next/link"
 import { Flex, HStack } from "@chakra-ui/react"
 import {
@@ -15,7 +15,7 @@ interface PublicHeaderLinkProps {
   label: string
   href: string
   showOnMobile?: boolean
-  MobileIcon?: As
+  MobileIcon?: ElementType
 }
 
 export interface AppPublicHeaderProps {
