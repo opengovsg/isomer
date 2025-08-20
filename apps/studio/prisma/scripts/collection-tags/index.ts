@@ -1,7 +1,7 @@
 import { randomUUID, UUID } from "crypto"
 import _ from "lodash"
 
-import { db, ResourceType, sql } from "~/server/modules/database"
+import { db, jsonb, ResourceType, sql } from "~/server/modules/database"
 import {
   getBlobOfResource,
   updateBlobById,
@@ -94,14 +94,28 @@ export const up = async () => {
     // NOTE: guaranteed non-null since we selected as `parentId` for pages explicitly
     const resourcesWithTags = await getChildPagesWithTags(id)
 
-    const tags: LegacyTag[][] = resourcesWithTags.map(
+    const tags: LegacyTag[][] = resourcesWithTags.flatMap(
       // NOTE: have to cast here - this is because we take our type defs from
       // the schema, but we haven't narrowed the type down.
       // However, note that in `getChildPagesWithTags`, we only select
       // the pages with tags
       // NOTE: `any` cast here - accessor is guaranteed due to db query
       // and this code won't live long in our codebase (if at all)
-      (resource) => (resource.content.page as any).tags as LegacyTag[],
+      (resource) => {
+        let draftTags: LegacyTag[] = []
+        if (resource.draftBlobContent) {
+          draftTags = (resource.draftBlobContent.page as any)
+            .tags as LegacyTag[]
+        }
+
+        let publishedTags: LegacyTag[] = []
+        if (resource.publishedBlobContent) {
+          publishedTags = (resource.publishedBlobContent.page as any)
+            .tags as LegacyTag[]
+        }
+
+        return [draftTags, publishedTags]
+      },
     )
 
     const baseTags: {
@@ -159,33 +173,44 @@ export const up = async () => {
       })
 
       for (const resource of resourcesWithTags) {
-        const blob = resource.content
+        const draftBlob = resource.content
         const tagsOfResource = (resource.content.page as any)
           .tags as LegacyTag[]
         // NOTE: we only update the `page.tags` here
         // since the rest of the content is not changed
-        const updatedContent = {
-          ...blob,
-          page: {
-            ...blob.page,
-            // NOTE: we CANNOT reuse `tags` because our existing tags use it...
-            // If we replace the existing labels because it'll cause the sites to have the uuid
-            // on the next rebuild due to this feature not being released.
-            // We also cannot add on this label,
-            // because it will hinder deletion.
-            tagged: tagsOfResource
-              .flatMap(({ selected }) =>
-                selected.map((label) => labelToId[label]),
-              )
-              .filter((v) => !!v),
-          },
-        }
+        const updatedDraftBlobContent = generateUpdatedContent(
+          draftBlob,
+          tagsOfResource,
+          labelToId,
+        )
 
         await updateBlobById(tx, {
           pageId: Number(resource.id),
           siteId: indexPage.siteId,
-          content: updatedContent,
+          content: updatedDraftBlobContent,
         })
+
+        // NOTE: update the published blob
+        // using the same logic and the same uuid
+        if (resource.requiresPublish) {
+          const publishedBlob = resource.publishedBlobContent
+          if (!publishedBlob) continue
+
+          const updatedPublishedBlobContent = generateUpdatedContent(
+            publishedBlob,
+            tagsOfResource,
+            labelToId,
+          )
+
+          // NOTE: cannot use `updateBlobById` here
+          await tx
+            .updateTable("Blob")
+            // NOTE: This works because a page has a 1-1 relation with a blob
+            .set({ content: jsonb(updatedPublishedBlobContent) })
+            .where("Blob.id", "=", resource.blobId)
+            .returningAll()
+            .executeTakeFirstOrThrow()
+        }
       }
     })
   }
@@ -199,6 +224,14 @@ const getChildPagesWithTags = async (parentId: string) => {
     .leftJoin("Blob as publishedBlob", "publishedBlob.id", "Version.blobId")
     .select((eb) => {
       return [
+        "draftBlob.content as draftBlobContent",
+        "publishedBlob.content as publishedBlobContent",
+        // NOTE: If the published version has tags, we need to also
+        // update it in place so that we don't have a long tail
+        // and we can remove the outdated code
+        sql<boolean>`jsonb_array_length("publishedBlob"."content" -> 'page' -> 'tags') > 0`.as(
+          "requiresPublish",
+        ),
         "Resource.id",
         eb.fn
           // NOTE: select draft blob preferentially
@@ -272,4 +305,25 @@ async function getCollectionsWithTags() {
     // NOTE: 6 folders have pages with tags
     .where("type", "!=", ResourceType.Page)
     .execute()
+}
+
+function generateUpdatedContent(
+  blob: PrismaJson.BlobJsonContent,
+  tagsOfResource: LegacyTag[],
+  labelToId: Record<string, UUID>,
+): PrismaJson.BlobJsonContent {
+  return {
+    ...blob,
+    page: {
+      ...blob.page,
+      // NOTE: we CANNOT reuse `tags` because our existing tags use it...
+      // If we replace the existing labels because it'll cause the sites to have the uuid
+      // on the next rebuild due to this feature not being released.
+      // We also cannot add on this label,
+      // because it will hinder deletion.
+      tagged: tagsOfResource
+        .flatMap(({ selected }) => selected.map((label) => labelToId[label]))
+        .filter((v) => !!v),
+    },
+  }
 }
