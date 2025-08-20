@@ -53,13 +53,13 @@ export interface TagValue {
   selected: UUID[]
 }
 
-interface TagOption {
+export interface TagOption {
   // label is what's shown to our end user
   label: string
   id: UUID
 }
 
-interface TagCategory {
+export interface TagCategory {
   id: UUID
   label: string
   options: TagOption[]
