@@ -266,3 +266,5 @@ export const up = async () => {
     }
   }
 }
+
+// await up()

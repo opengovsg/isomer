@@ -44,7 +44,7 @@ export const up = async () => {
       )
     }
     console.log(`Adding index page to collection with id: ${collection.id}`)
-    // NOTE: should only have 42 rows requiring this migration
+    // NOTE: should only have 47 rows requiring this migration
     const blobContent = {
       layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
       page: {
@@ -108,3 +108,5 @@ export const up = async () => {
     })
   }
 }
+
+// await up()

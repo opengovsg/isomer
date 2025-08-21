@@ -327,3 +327,5 @@ function generateUpdatedContent(
     },
   }
 }
+
+// await up()
