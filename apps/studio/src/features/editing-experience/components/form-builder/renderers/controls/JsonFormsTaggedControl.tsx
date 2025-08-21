@@ -48,8 +48,9 @@ export function JsonFormsTaggedControl({
           ({ id: tagCategoryId }) => tagCategoryId === id,
         )
         const shouldRenderItems =
-          !!currentTagCategory?.values.length &&
-          currentTagCategory?.values.length < MAX_TAG_CATEGORY_ITEMS
+          !!currentTagCategory?.values &&
+          (currentTagCategory?.values.length === 0 ||
+            currentTagCategory?.values.length < MAX_TAG_CATEGORY_ITEMS)
         const matchingTagCategory = tags.find(
           ({ id: tagCategoryId }) => tagCategoryId === id,
         )
