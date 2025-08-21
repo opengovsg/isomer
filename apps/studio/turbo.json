@@ -2,6 +2,10 @@
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
   "tasks": {
+    "db:connect": {},
+    "db:connect:staging": {},
+    "db:connect:uat": {},
+    "db:connect:vapt": {},
     "db:seed": {},
     "test:watch": {},
     "test:unit": {
