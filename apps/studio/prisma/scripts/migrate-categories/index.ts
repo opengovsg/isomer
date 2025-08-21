@@ -125,32 +125,59 @@ const migrateCollection = async (db: Transaction<DB>, collectionId: string) => {
             sql<PrismaJson.BlobJsonContent>`"publishedBlob"."content"`,
           )
           .as("content"),
+        "publishedBlob.content as publishedContent",
+        "publishedBlob.id as blobId",
         // NOTE: can update `draftBlobId` (if it exists) directly
       ]
     })
     .executeTakeFirstOrThrow()
 
-  // The actual typing change is not in this PR, which results in an error
-  // @ts-ignore
-  const existingTags = indexPage.content.page.tags ?? []
-
   // NOTE: no need to update if no categories (required because there are collection pages without categories)
-  if (labels.length > 0)
-    await updateBlobById(db, {
-      pageId: Number(indexPage.id),
-      siteId: indexPage.siteId,
-      content: {
-        ...indexPage.content,
-        page: {
-          ...indexPage.content.page,
-          // NOTE: we need this ignore because the `tags` property doesn't exist on the index page yet
-          // but we've already added it in our previous migration.
-          // The actual typing change is not in this PR, which results in an error
-          // @ts-ignore
-          tags: [...existingTags, tagCategory],
+  if (labels.length > 0) {
+    // NOTE: need to update the published index page directly
+    if (indexPage.publishedContent) {
+      // The actual typing change is not in this PR, which results in an error
+      // @ts-ignore
+      const existingPublishedTags = indexPage.publishedContent.page.tags ?? []
+
+      await db
+        .updateTable("Blob")
+        .where("id", "=", indexPage.blobId)
+        .set({
+          content: jsonb({
+            ...indexPage.publishedContent,
+            page: {
+              ...indexPage.publishedContent.page,
+              // NOTE: we need this ignore because the `tags` property doesn't exist on the index page yet
+              // but we've already added it in our previous migration.
+              // The actual typing change is not in this PR, which results in an error
+              // @ts-ignore
+              tags: [...existingPublishedTags, tagCategory],
+            },
+          }),
+        })
+        .execute()
+    } else {
+      // @ts-ignore
+      const existingTags = indexPage.content.page.tags ?? []
+
+      await updateBlobById(db, {
+        pageId: Number(indexPage.id),
+        siteId: indexPage.siteId,
+        content: {
+          ...indexPage.content,
+          page: {
+            ...indexPage.content.page,
+            // NOTE: we need this ignore because the `tags` property doesn't exist on the index page yet
+            // but we've already added it in our previous migration.
+            // The actual typing change is not in this PR, which results in an error
+            // @ts-ignore
+            tags: [...existingTags, tagCategory],
+          },
         },
-      },
-    })
+      })
+    }
+  }
 
   // NOTE: Step 4: write the new id to the individual pages and links
   for (const data of pages) {
