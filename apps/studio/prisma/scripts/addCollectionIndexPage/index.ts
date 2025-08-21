@@ -87,13 +87,19 @@ export const up = async () => {
           throw err
         })
 
+      const publisher = await db
+        .selectFrom("User")
+        .where("email", "=", "jiachin@open.gov.sg")
+        .select("id")
+        .executeTakeFirstOrThrow()
+
       await createVersion(tx, {
         // NOTE: This is guaranteed to be 1 because these are new colection pages
         versionNum: 1,
         resourceId: addedResource.id,
         blobId: blob.id,
         // NOTE: my user id
-        publisherId: "vr98fu4knaujg0st7sgpve4t",
+        publisherId: publisher.id,
       })
 
       await publishSite(logger, collection.siteId)

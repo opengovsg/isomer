@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto"
 import {
   COLLECTION_PAGE_DEFAULT_SORT_BY,
   COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
@@ -32,6 +33,17 @@ const generateDefaultBlob = (title: string) => {
 }
 
 describe("addCollectionIndexPage", () => {
+  beforeAll(async () => {
+    await db
+      .insertInto("User")
+      .values({
+        email: "jiachin@open.gov.sg",
+        phone: "12345678",
+        id: randomUUID(),
+        name: "",
+      })
+      .executeTakeFirstOrThrow()
+  })
   beforeEach(async () => {
     await resetTables("Blob", "Resource")
   })
@@ -311,4 +323,3 @@ describe("addCollectionIndexPage", () => {
     expect(site2IndexPages[0]?.siteId).toBe(site2.id)
   })
 })
-
