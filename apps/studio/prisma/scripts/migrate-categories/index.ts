@@ -5,12 +5,7 @@ import { Transaction } from "kysely"
 
 import { DB, db, jsonb, SafeKysely, sql } from "~/server/modules/database"
 import { updateBlobById } from "~/server/modules/resource/resource.service"
-import {
-  TagCategories,
-  TagCategory,
-  TagOption,
-  TagValue,
-} from "../collection-tags/"
+import { TagCategory } from "../collection-tags/"
 
 // NOTE: we need to get all pages + indexpage
 // under a category.
@@ -54,6 +49,16 @@ const migrateCollection = async (db: Transaction<DB>, collectionId: string) => {
   const pages = await db
     .selectFrom("Resource")
     .where("type", "in", ["CollectionPage", "CollectionLink"])
+    .where((eb) =>
+      eb.or([
+        eb(sql`"draftBlob"."content" -> 'page' -> 'category'`, "is not", null),
+        eb(
+          sql`"publishedBlob"."content" -> 'page' -> 'category'`,
+          "is not",
+          null,
+        ),
+      ]),
+    )
     .where("parentId", "=", collectionId)
     .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
     .leftJoin("Blob as draftBlob", "draftBlob.id", "Resource.draftBlobId")
@@ -125,21 +130,27 @@ const migrateCollection = async (db: Transaction<DB>, collectionId: string) => {
     })
     .executeTakeFirstOrThrow()
 
-  await updateBlobById(db, {
-    pageId: Number(indexPage.id),
-    siteId: indexPage.siteId,
-    content: {
-      ...indexPage.content,
-      page: {
-        ...indexPage.content.page,
-        // NOTE: we need this ignore because the `tags` property doesn't exist on the index page yet
-        // but we've already added it in our previous migration.
-        // The actual typing change is not in this PR, which results in an error
-        // @ts-ignore
-        tags: [...indexPage.content.page.tags, tagCategory],
+  // The actual typing change is not in this PR, which results in an error
+  // @ts-ignore
+  const existingTags = indexPage.content.page.tags ?? []
+
+  // NOTE: no need to update if no categories (required because there are collection pages without categories)
+  if (labels.length > 0)
+    await updateBlobById(db, {
+      pageId: Number(indexPage.id),
+      siteId: indexPage.siteId,
+      content: {
+        ...indexPage.content,
+        page: {
+          ...indexPage.content.page,
+          // NOTE: we need this ignore because the `tags` property doesn't exist on the index page yet
+          // but we've already added it in our previous migration.
+          // The actual typing change is not in this PR, which results in an error
+          // @ts-ignore
+          tags: [...existingTags, tagCategory],
+        },
       },
-    },
-  })
+    })
 
   // NOTE: Step 4: write the new id to the individual pages and links
   for (const data of pages) {
@@ -151,6 +162,9 @@ const migrateCollection = async (db: Transaction<DB>, collectionId: string) => {
       )
       continue
     } else {
+      // The actual typing change is not in this PR, which results in an error
+      // @ts-ignore
+      const existingTags = content.page.tagged ?? []
       const updatedContent = {
         ...content,
         page: {
@@ -158,9 +172,7 @@ const migrateCollection = async (db: Transaction<DB>, collectionId: string) => {
           // NOTE: assumption is that this is the last PR in the chain, which means that we need
           // to preserve the prior `tagged` which we added.
           // The `uuid` is guaranteed to exist due to our earlier check
-          // The actual typing change is not in this PR, which results in an error
-          // @ts-ignore
-          tagged: [...content.page.tagged, categoryId],
+          tagged: [...existingTags, categoryId],
         },
       }
 
