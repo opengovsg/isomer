@@ -3,7 +3,7 @@
 import { randomUUID, UUID } from "crypto"
 import { Transaction } from "kysely"
 
-import { DB, db, SafeKysely, sql } from "~/server/modules/database"
+import { DB, db, jsonb, SafeKysely, sql } from "~/server/modules/database"
 import { updateBlobById } from "~/server/modules/resource/resource.service"
 import {
   TagCategories,
@@ -143,7 +143,7 @@ const migrateCollection = async (db: Transaction<DB>, collectionId: string) => {
 
   // NOTE: Step 4: write the new id to the individual pages and links
   for (const data of pages) {
-    const { category, id: resourceId, content } = data
+    const { category, id: resourceId, content, blobId } = data
     const categoryId = labelToId[category]
     if (!categoryId) {
       console.error(
@@ -169,6 +169,46 @@ const migrateCollection = async (db: Transaction<DB>, collectionId: string) => {
         siteId: indexPage.siteId,
         content: updatedContent,
       })
+
+      // NOTE: need to update the last published version also
+      // to ensure that we also have a consistent state
+      const lastPublishedBlob = await db
+        .selectFrom("Blob")
+        .select("content")
+        .where("id", "=", blobId)
+        .executeTakeFirst()
+
+      if (!lastPublishedBlob) {
+        console.error(
+          `expected blob with id: ${blobId} for page with id: ${resourceId} but found no blob`,
+        )
+        continue
+      }
+
+      // NOTE: this update is conditional and we might not have anything
+      // if there were no `tags` on the page previously
+      // @ts-ignore
+      const previousTagged = lastPublishedBlob.content.page.tagged ?? []
+      const newContent = {
+        ...lastPublishedBlob.content,
+        page: {
+          ...lastPublishedBlob.content.page,
+          // NOTE: assumption is that this is the last PR in the chain, which means that we need
+          // to preserve the prior `tagged` which we added.
+          // The `uuid` is guaranteed to exist due to our earlier check
+          // The actual typing change is not in this PR, which results in an error
+          // @ts-ignore
+          tagged: [...previousTagged, categoryId],
+        },
+      }
+
+      await db
+        .updateTable("Blob")
+        // NOTE: This works because a page has a 1-1 relation with a blob
+        .set({ content: jsonb(newContent) })
+        .where("Blob.id", "=", blobId)
+        .returningAll()
+        .executeTakeFirstOrThrow()
     }
   }
 }
