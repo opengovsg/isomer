@@ -2,7 +2,7 @@ import type {
   IsomerComponent,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
-import { useCallback, useMemo } from "react"
+import { useMemo } from "react"
 import { VStack } from "@chakra-ui/react"
 import { Draggable } from "@hello-pangea/dnd"
 import {
@@ -44,18 +44,18 @@ export const DraggableBlock = ({
     component: block,
   })
 
-  const validateFn = useCallback(() => {
+  const compiledValidator = useMemo(() => {
     const subSchema = getComponentSchema({
       component: block.type,
       layout,
     })
     return ajv.compile<IsomerComponent>(subSchema)
-  }, [block, layout])
+  }, [block.type, layout])
 
   const isInvalid = useMemo(() => {
-    const isValid = validateFn()(block)
+    const isValid = compiledValidator(block)
     return !isValid
-  }, [block, validateFn])
+  }, [block, compiledValidator])
 
   return (
     <Draggable
