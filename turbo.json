@@ -19,6 +19,10 @@
     "build": {},
     "build:template": {},
     "clean": {},
+    "db:connect": {},
+    "db:connect:staging": {},
+    "db:connect:uat": {},
+    "db:connect:vapt": {},
     "dev": {
       "dependsOn": ["services:setup"],
       "cache": false,
