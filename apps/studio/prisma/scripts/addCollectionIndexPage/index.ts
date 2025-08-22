@@ -8,6 +8,8 @@ import { TRPCError } from "@trpc/server"
 import { get } from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { createBaseLogger } from "~/lib/logger"
+import { publishSite } from "~/server/modules/aws/codebuild.service"
 import {
   db,
   jsonb,
@@ -15,6 +17,12 @@ import {
   ResourceType,
 } from "~/server/modules/database"
 import { PG_ERROR_CODES } from "~/server/modules/database/constants"
+import { publishPageResource } from "~/server/modules/resource/resource.service"
+import { createVersion } from "~/server/modules/version/version.service"
+
+const logger = createBaseLogger({
+  path: "prisma/scripts/addCollectionIndexPage/index.ts",
+})
 
 export const up = async () => {
   const collectionsWithoutIndexPages = await db
@@ -37,7 +45,7 @@ export const up = async () => {
       )
     }
     console.log(`Adding index page to collection with id: ${collection.id}`)
-    // NOTE: should only have 42 rows requiring this migration
+    // NOTE: should only have 47 rows requiring this migration
     const blobContent = {
       layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
       page: {
@@ -80,7 +88,47 @@ export const up = async () => {
           throw err
         })
 
+      const publisher = await db
+        .selectFrom("User")
+        .where("email", "=", "jiachin@open.gov.sg")
+        .select("id")
+        .executeTakeFirstOrThrow()
+
+      await createVersion(tx, {
+        // NOTE: This is guaranteed to be 1 because these are new colection pages
+        versionNum: 1,
+        resourceId: addedResource.id,
+        blobId: blob.id,
+        // NOTE: my user id
+        publisherId: publisher.id,
+      })
+
+      await publishSite(logger, collection.siteId)
+
       console.log(`Added index page with id: ${addedResource.id}`)
     })
   }
+
+  // NOTE: select all index pages that have never been published
+  // we need to do this because we now store data on the index page
+  // which needs to be available at build time
+  const draftCollectionIndexPages = await db
+    .selectFrom("Resource as index")
+    .innerJoin("Resource as parent", "index.parentId", "parent.id")
+    .where("index.type", "=", ResourceType.IndexPage)
+    .where("parent.type", "=", ResourceType.Collection)
+    .where("index.state", "=", ResourceState.Draft)
+    .selectAll("index")
+    .execute()
+
+  for (const { siteId, id: resourceId } of draftCollectionIndexPages) {
+    const user = await db
+      .selectFrom("User")
+      .where("email", "=", "jiachin@open.gov.sg")
+      .select("id")
+      .executeTakeFirstOrThrow()
+    await publishPageResource({ logger, siteId, resourceId, userId: user.id })
+  }
 }
+
+// await up()
