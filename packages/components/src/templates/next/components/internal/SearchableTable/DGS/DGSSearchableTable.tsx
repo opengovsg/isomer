@@ -40,7 +40,10 @@ export const DGSSearchableTable = ({
     [resourceId, filters, sort, fieldKeys],
   )
 
-  const { records, isLoading, isError } = useDgsData(params)
+  const { records, isLoading, isError } = useDgsData({
+    ...params,
+    fetchAll: true,
+  })
 
   const items: SearchableTableClientProps["items"] = useMemo(
     () =>
