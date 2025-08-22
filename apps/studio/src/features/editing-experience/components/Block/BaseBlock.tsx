@@ -12,6 +12,7 @@ interface BaseBlockProps {
   containerProps?: StackProps
   onClick?: () => void
   draggableProps?: DraggableProvidedDragHandleProps | null
+  isInvalid?: boolean
 }
 
 export const BaseBlock = ({
@@ -22,6 +23,7 @@ export const BaseBlock = ({
   draggableProps,
   containerProps,
   onClick,
+  isInvalid = false,
 }: BaseBlockProps): JSX.Element => {
   const actualDraggableProps = draggableProps ?? {}
 
@@ -32,7 +34,7 @@ export const BaseBlock = ({
       w="100%"
       borderRadius="6px"
       border="1px solid"
-      borderColor="base.divider.medium"
+      borderColor={isInvalid ? "red.200" : "base.divider.medium"}
       transitionProperty="common"
       transitionDuration="normal"
       _hover={{
@@ -44,7 +46,7 @@ export const BaseBlock = ({
         borderColor: "interaction.main-subtle.hover",
         shadow: "0px 1px 6px 0px #1361F026",
       }}
-      bg="white"
+      bg={isInvalid ? "red.50" : "white"}
       py="0.75rem"
       px="0.75rem"
       flexDirection="row"
