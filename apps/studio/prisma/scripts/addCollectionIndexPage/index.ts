@@ -17,6 +17,7 @@ import {
   ResourceType,
 } from "~/server/modules/database"
 import { PG_ERROR_CODES } from "~/server/modules/database/constants"
+import { publishPageResource } from "~/server/modules/resource/resource.service"
 import { createVersion } from "~/server/modules/version/version.service"
 
 const logger = createBaseLogger({
@@ -106,6 +107,27 @@ export const up = async () => {
 
       console.log(`Added index page with id: ${addedResource.id}`)
     })
+  }
+
+  // NOTE: select all index pages that have never been published
+  // we need to do this because we now store data on the index page
+  // which needs to be available at build time
+  const draftCollectionIndexPages = await db
+    .selectFrom("Resource as index")
+    .innerJoin("Resource as parent", "index.parentId", "parent.id")
+    .where("index.type", "=", ResourceType.IndexPage)
+    .where("parent.type", "=", ResourceType.Collection)
+    .where("index.state", "=", ResourceState.Draft)
+    .selectAll("index")
+    .execute()
+
+  for (const { siteId, id: resourceId } of draftCollectionIndexPages) {
+    const user = await db
+      .selectFrom("User")
+      .where("email", "=", "jiachin@open.gov.sg")
+      .select("id")
+      .executeTakeFirstOrThrow()
+    await publishPageResource({ logger, siteId, resourceId, userId: user.id })
   }
 }
 
