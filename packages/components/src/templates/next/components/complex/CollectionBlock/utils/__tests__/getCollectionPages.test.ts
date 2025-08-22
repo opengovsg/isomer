@@ -38,10 +38,12 @@ describe("getCollectionPages", () => {
     id,
     permalink,
     date = "2021-01-01",
+    category,
   }: {
     id: string
     permalink: string
     date?: string
+    category?: string
   }): IsomerSitemap => ({
     id,
     title: `${id} title`,
@@ -50,6 +52,7 @@ describe("getCollectionPages", () => {
     lastModified: date,
     layout: "article",
     date,
+    category,
   })
 
   it("should throw an error when the collection exists but has no items", () => {
@@ -199,5 +202,47 @@ describe("getCollectionPages", () => {
     // Assert
     expect(result[0]?.itemTitle).toEqual(`${collectionId}2 title`)
     expect(result[1]?.itemTitle).toEqual(`${collectionId}1 title`)
+  })
+
+  it("should filter items by highlighted categories", () => {
+    // Arrange
+    const collectionParent: IsomerSitemap = {
+      id: collectionId,
+      title: "Collection 1",
+      permalink: collectionPermalink,
+      layout: "collection",
+      summary: "Collection 1 summary",
+      lastModified: new Date("2021-01-01").toISOString(),
+      children: [
+        createMockCollectionItem({
+          id: `${collectionId}1`,
+          permalink: `${collectionPermalink}/1`,
+          category: "Apple",
+        }),
+        createMockCollectionItem({
+          id: `${collectionId}2`,
+          permalink: `${collectionPermalink}/2`,
+          category: "Banana",
+        }),
+      ],
+    }
+    site = {
+      ...site,
+      siteMap: {
+        ...site.siteMap,
+        children: [collectionParent],
+      },
+    }
+
+    // Act
+    const result = getCollectionPages({
+      site,
+      collectionParent,
+      categories: ["Apple"],
+    })
+
+    // Assert
+    expect(result).toHaveLength(1)
+    expect(result[0]?.itemTitle).toEqual(`${collectionId}1 title`)
   })
 })
