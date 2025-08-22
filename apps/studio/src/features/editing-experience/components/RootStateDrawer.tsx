@@ -230,7 +230,7 @@ export default function RootStateDrawer() {
 
   const FixedBlock = () => {
     // Assuming only one fixedBlock can exist at a time for now
-    const fixedBlock = previewPageState.content[0]
+    const fixedBlock = savedPageState.content[0]
 
     if (isHeroFixedBlock) {
       const subSchema = getComponentSchema({ component: "hero" })
