@@ -1,7 +1,4 @@
-import type {
-  IsomerComponent,
-  IsomerSchema,
-} from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useMemo } from "react"
 import { VStack } from "@chakra-ui/react"
 import { Draggable } from "@hello-pangea/dnd"
@@ -11,24 +8,23 @@ import {
 } from "@opengovsg/isomer-components"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
-import { ajv } from "~/utils/ajv"
 import { TYPE_TO_ICON } from "../../constants"
 import { BaseBlock, BaseBlockDragHandle } from "./BaseBlock"
 
 interface DraggableBlockProps {
   block: IsomerSchema["content"][number]
-  layout: IsomerSchema["layout"]
   draggableId: string
   index: number
   onClick: () => void
+  isInvalid?: boolean
 }
 
 export const DraggableBlock = ({
   block,
-  layout,
   draggableId,
   index,
   onClick,
+  isInvalid = false,
 }: DraggableBlockProps): JSX.Element => {
   const icon = TYPE_TO_ICON[block.type]
 
@@ -43,19 +39,6 @@ export const DraggableBlock = ({
   const previewText: string = renderComponentPreviewText({
     component: block,
   })
-
-  const compiledValidator = useMemo(() => {
-    const subSchema = getComponentSchema({
-      component: block.type,
-      layout,
-    })
-    return ajv.compile<IsomerComponent>(subSchema)
-  }, [block.type, layout])
-
-  const isInvalid = useMemo(() => {
-    const isValid = compiledValidator(block)
-    return !isValid
-  }, [block, compiledValidator])
 
   return (
     <Draggable

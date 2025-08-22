@@ -1,5 +1,8 @@
 import type { DropResult } from "@hello-pangea/dnd"
-import type { IsomerComponent } from "@opengovsg/isomer-components"
+import type {
+  IsomerComponent,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import { useCallback, useState } from "react"
 import {
   Box,
@@ -15,6 +18,7 @@ import { Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getComponentSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
+  schema,
 } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
@@ -56,6 +60,8 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
     description: "Summary, Button label and Button URL",
   },
 }
+
+const validateFn = ajv.compile<IsomerSchema>(schema)
 
 export default function RootStateDrawer() {
   const {
@@ -227,6 +233,17 @@ export default function RootStateDrawer() {
     type === ResourceType.IndexPage &&
     pageLayout !== "index" &&
     pageLayout !== "collection"
+
+  const invalidBlockIndexes = new Set<number>()
+  validateFn(savedPageState)
+  for (const error of validateFn.errors ?? []) {
+    if (error.instancePath.startsWith("/content")) {
+      const index = error.instancePath.split("/content/")[1]?.replace(/\D/g, "")
+      if (index) {
+        invalidBlockIndexes.add(parseInt(index))
+      }
+    }
+  }
 
   const FixedBlock = () => {
     // Assuming only one fixedBlock can exist at a time for now
@@ -429,7 +446,6 @@ export default function RootStateDrawer() {
                                 return (
                                   <DraggableBlock
                                     block={block}
-                                    layout={pageLayout}
                                     // TODO: Generate a block ID instead of index
                                     key={`${block.type}-${index}`}
                                     // TODO: Use block ID when instead of index for uniquely identifying blocks
@@ -446,6 +462,7 @@ export default function RootStateDrawer() {
                                       // NOTE: SNAPSHOT
                                       setDrawerState({ state: nextState })
                                     }}
+                                    isInvalid={invalidBlockIndexes.has(index)}
                                   />
                                 )
                               })}
