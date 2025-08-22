@@ -119,4 +119,25 @@ describe("getCollectionParent", () => {
     // Assert
     expect(result).toEqual(collectionNode)
   })
+
+  it("should find the collection node when collectionPermalink is provided", () => {
+    // Arrange
+    site = {
+      ...site,
+      siteMap: {
+        ...site.siteMap,
+        children: [collectionNode],
+      },
+    }
+
+    // Act
+    const result = getCollectionParent({
+      site,
+      collectionId: collectionId,
+      collectionPermalink,
+    })
+
+    // Assert
+    expect(result).toEqual(collectionNode)
+  })
 })
