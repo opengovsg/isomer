@@ -1,4 +1,5 @@
 import type { DropResult } from "@hello-pangea/dnd"
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { useCallback, useState } from "react"
 import {
   Box,
@@ -11,7 +12,10 @@ import {
 } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
-import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
+import {
+  getComponentSchema,
+  ISOMER_USABLE_PAGE_LAYOUTS,
+} from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
@@ -23,6 +27,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ADMIN_ROLE } from "~/lib/growthbook"
+import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
 import { pageSchema } from "../schema"
@@ -223,6 +228,45 @@ export default function RootStateDrawer() {
     pageLayout !== "index" &&
     pageLayout !== "collection"
 
+  const FixedBlock = () => {
+    // Assuming only one fixedBlock can exist at a time for now
+    const fixedBlock = previewPageState.content[0]
+
+    if (isHeroFixedBlock) {
+      const subSchema = getComponentSchema({ component: "hero" })
+      const validateFn = ajv.compile<IsomerComponent>(subSchema)
+      const isValid = validateFn(fixedBlock)
+      return (
+        <BaseBlock
+          onClick={() => {
+            setCurrActiveIdx(0)
+            setDrawerState({ state: "heroEditor" })
+          }}
+          label="Hero banner"
+          description="Title, subtitle, and Call-to-Action"
+          icon={TYPE_TO_ICON.hero}
+          isInvalid={!isValid}
+        />
+      )
+    }
+
+    return (
+      <BaseBlock
+        onClick={() => {
+          setDrawerState({ state: "metadataEditor" })
+        }}
+        label={
+          FIXED_BLOCK_CONTENT[pageLayout]?.label ||
+          "Page description and summary"
+        }
+        description={
+          FIXED_BLOCK_CONTENT[pageLayout]?.description || "Click to edit"
+        }
+        icon={BiPin}
+      />
+    )
+  }
+
   return (
     <Flex direction="column" h="full">
       <ConfirmConvertIndexPageModal
@@ -295,33 +339,7 @@ export default function RootStateDrawer() {
                     deleted
                   </Text>
                 </VStack>
-
-                {isHeroFixedBlock ? (
-                  <BaseBlock
-                    onClick={() => {
-                      setCurrActiveIdx(0)
-                      setDrawerState({ state: "heroEditor" })
-                    }}
-                    label="Hero banner"
-                    description="Title, subtitle, and Call-to-Action"
-                    icon={TYPE_TO_ICON.hero}
-                  />
-                ) : (
-                  <BaseBlock
-                    onClick={() => {
-                      setDrawerState({ state: "metadataEditor" })
-                    }}
-                    label={
-                      FIXED_BLOCK_CONTENT[pageLayout]?.label ||
-                      "Page description and summary"
-                    }
-                    description={
-                      FIXED_BLOCK_CONTENT[pageLayout]?.description ||
-                      "Click to edit"
-                    }
-                    icon={BiPin}
-                  />
-                )}
+                <FixedBlock />
               </VStack>
 
               <VStack gap="1.5rem" w="100%">
