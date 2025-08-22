@@ -61,6 +61,9 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
   },
 }
 
+// ideally, we should do validation on a component-level
+// however, ajv compilation is expensive, so we do it once and reuse it
+// for now, we do it on the page level so it only compiles once
 const validateFn = ajv.compile<IsomerSchema>(schema)
 
 export default function RootStateDrawer() {
@@ -238,9 +241,13 @@ export default function RootStateDrawer() {
   validateFn(savedPageState)
   for (const error of validateFn.errors ?? []) {
     if (error.instancePath.startsWith("/content")) {
-      const index = error.instancePath.split("/content/")[1]?.replace(/\D/g, "")
-      if (index) {
-        invalidBlockIndexes.add(parseInt(index))
+      const pathAfterContent = error.instancePath.split("/content/")[1]
+      if (pathAfterContent) {
+        const pathParts = pathAfterContent.split("/")
+        const blockIndex = pathParts[0]
+        if (blockIndex && !isNaN(parseInt(blockIndex))) {
+          invalidBlockIndexes.add(parseInt(blockIndex))
+        }
       }
     }
   }
