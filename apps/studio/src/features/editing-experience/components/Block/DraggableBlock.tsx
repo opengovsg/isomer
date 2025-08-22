@@ -1,5 +1,8 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
-import { useMemo } from "react"
+import type {
+  IsomerComponent,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
+import { useCallback, useMemo } from "react"
 import { VStack } from "@chakra-ui/react"
 import { Draggable } from "@hello-pangea/dnd"
 import {
@@ -8,11 +11,13 @@ import {
 } from "@opengovsg/isomer-components"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
+import { ajv } from "~/utils/ajv"
 import { TYPE_TO_ICON } from "../../constants"
 import { BaseBlock, BaseBlockDragHandle } from "./BaseBlock"
 
 interface DraggableBlockProps {
   block: IsomerSchema["content"][number]
+  layout: IsomerSchema["layout"]
   draggableId: string
   index: number
   onClick: () => void
@@ -20,6 +25,7 @@ interface DraggableBlockProps {
 
 export const DraggableBlock = ({
   block,
+  layout,
   draggableId,
   index,
   onClick,
@@ -37,6 +43,19 @@ export const DraggableBlock = ({
   const previewText: string = renderComponentPreviewText({
     component: block,
   })
+
+  const validateFn = useCallback(() => {
+    const subSchema = getComponentSchema({
+      component: block.type,
+      layout,
+    })
+    return ajv.compile<IsomerComponent>(subSchema)
+  }, [block, layout])
+
+  const isInvalid = useMemo(() => {
+    const isValid = validateFn()(block)
+    return !isValid
+  }, [block, validateFn])
 
   return (
     <Draggable
@@ -70,6 +89,7 @@ export const DraggableBlock = ({
               }
               description={blockComponentName}
               icon={icon}
+              isInvalid={isInvalid}
             />
           </VStack>
         )

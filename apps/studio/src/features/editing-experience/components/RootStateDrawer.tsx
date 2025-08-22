@@ -411,6 +411,7 @@ export default function RootStateDrawer() {
                                 return (
                                   <DraggableBlock
                                     block={block}
+                                    layout={pageLayout}
                                     // TODO: Generate a block ID instead of index
                                     key={`${block.type}-${index}`}
                                     // TODO: Use block ID when instead of index for uniquely identifying blocks
