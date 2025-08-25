@@ -1,6 +1,5 @@
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { get, pick } from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
