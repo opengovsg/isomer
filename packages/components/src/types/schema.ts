@@ -238,7 +238,7 @@ export const LinkRefSchema = Type.Object(
   },
 )
 
-export const IsomerPageSchema = Type.Intersect([
+export const IsomerPageSchema = Type.Composite([
   BaseItemSchema,
   Type.Union([
     ArticlePageSchema,
