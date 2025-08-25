@@ -142,7 +142,7 @@ export const collectionRouter = router({
             .returning("Blob.id")
             .executeTakeFirstOrThrow()
 
-          const addedResource = await tx
+          const indexPage = await tx
             .insertInto("Resource")
             .values({
               title: collection.title,
@@ -168,7 +168,7 @@ export const collectionRouter = router({
           await logResourceEvent(tx, {
             siteId,
             by: user,
-            delta: { before: null, after: addedResource },
+            delta: { before: null, after: indexPage },
             eventType: AuditLogEvent.ResourceCreate,
           })
 
