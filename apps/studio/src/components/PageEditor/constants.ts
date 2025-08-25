@@ -58,6 +58,11 @@ export const DEFAULT_BLOCKS: Record<
       ],
     },
   },
+  formsg: {
+    type: "formsg",
+    url: "https://form.gov.sg/686e73c1a1f7bf391ee2b3af",
+    title: "A feedback collection form",
+  },
   hero: undefined,
   iframe: {
     type: "iframe",
@@ -387,6 +392,13 @@ export const BLOCK_TO_META: Record<
     usageText: "Highlight an important quote. You can add an optional image.",
     imageSrc: "/assets/block-images/Blockquote.png",
   },
+  formsg: {
+    label: "FormSG",
+    description: "Embed a form to collect data",
+    usageText:
+      "Get mailing list sign-ups or quick feedback by embedding a form directly on your page.",
+    imageSrc: "/assets/block-images/FormSG.png",
+  },
 }
 
 type AllowedBlockSections = {
@@ -427,7 +439,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
     label: "Add a new section",
     types: ["infocards", "infocols", "keystatistics"],
   },
-  { label: "Embed external content", types: ["map", "video"] },
+  { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
