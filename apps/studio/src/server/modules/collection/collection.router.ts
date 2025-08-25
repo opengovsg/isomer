@@ -1,19 +1,27 @@
 import type { UnwrapTagged } from "type-fest"
+import { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { get, pick } from "lodash"
 
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createCollectionSchema,
   editLinkSchema,
   getCollectionsSchema,
+  getCollectionTagsSchema,
   readLinkSchema,
 } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
-import { db, jsonb, ResourceState, ResourceType } from "../database"
+import {
+  AuditLogEvent,
+  db,
+  jsonb,
+  ResourceState,
+  ResourceType,
+} from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
@@ -26,6 +34,7 @@ import {
 import { validateUserPermissionsForSite } from "../site/site.service"
 import { defaultCollectionSelect } from "./collection.select"
 import {
+  createCollectionIndexJson,
   createCollectionLinkJson,
   createCollectionPageJson,
 } from "./collection.service"
@@ -125,6 +134,44 @@ export const collectionRouter = router({
             eventType: AuditLogEvent.ResourceCreate,
             delta: { before: null, after: collection },
             by: user,
+          })
+
+          const indexJson = createCollectionIndexJson(collection.title)
+
+          const blob = await tx
+            .insertInto("Blob")
+            .values({ content: jsonb(indexJson) })
+            .returning("Blob.id")
+            .executeTakeFirstOrThrow()
+
+          const addedResource = await tx
+            .insertInto("Resource")
+            .values({
+              title: collection.title,
+              permalink: INDEX_PAGE_PERMALINK,
+              siteId,
+              parentId: collection.id,
+              draftBlobId: blob.id,
+              type: ResourceType.IndexPage,
+              state: ResourceState.Draft,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
+
+          await logResourceEvent(tx, {
+            siteId,
+            by: user,
+            delta: { before: null, after: addedResource },
+            eventType: AuditLogEvent.ResourceCreate,
           })
 
           return collection
@@ -325,7 +372,7 @@ export const collectionRouter = router({
             )
 
           const oldBlob = await getBlobOfResource({
-            tx,
+            db: tx,
             resourceId: resource.id,
           })
 
@@ -352,6 +399,48 @@ export const collectionRouter = router({
         })
       },
     ),
+
+  getCollectionTags: protectedProcedure
+    .input(getCollectionTagsSchema)
+    .query(async ({ ctx, input: { resourceId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+        resourceIds: [String(resourceId)],
+      })
+
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("type", "=", ResourceType.IndexPage)
+        .where("parentId", "=", (eb) =>
+          eb
+            .selectFrom("Resource")
+            .where("id", "=", String(resourceId))
+            .where("siteId", "=", siteId)
+            .select("parentId"),
+        )
+        .select("id")
+        .executeTakeFirstOrThrow()
+
+      const { content } = await getBlobOfResource({
+        db,
+        resourceId: indexPage.id,
+      })
+
+      return (content as unknown as CollectionPageSchemaType).page.tagCategories
+
+      // FIXME: we cannot do this yet because we still use `Type.Composite`
+      // over `Type.Intersect`, which causes typing errors above.
+      // Once we swap over to using `Type.Intersect`, we can uncomment this
+      // and the typing will work properly
+      // if (content.layout === "collection") {
+      //   return content.page.tagCategories
+      // }
+      //
+      // return []
+    }),
+
   getCollections: protectedProcedure
     .input(getCollectionsSchema)
     .query(async ({ ctx, input: { siteId, hasChildren } }) => {
