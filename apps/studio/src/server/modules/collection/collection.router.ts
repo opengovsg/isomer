@@ -1,4 +1,5 @@
 import type { UnwrapTagged } from "type-fest"
+import { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash"
 
@@ -427,11 +428,17 @@ export const collectionRouter = router({
         resourceId: indexPage.id,
       })
 
-      if (content.layout === "collection") {
-        return content.page.tagCategories
-      }
+      return (content as unknown as CollectionPageSchemaType).page.tagCategories
 
-      return []
+      // FIXME: we cannot do this yet because we still use `Type.Composite`
+      // over `Type.Intersect`, which causes typing errors above.
+      // Once we swap over to using `Type.Intersect`, we can uncomment this
+      // and the typing will work properly
+      // if (content.layout === "collection") {
+      //   return content.page.tagCategories
+      // }
+      //
+      // return []
     }),
 
   getCollections: protectedProcedure
