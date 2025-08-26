@@ -50,7 +50,7 @@ export const createCollectionIndexJson = (title: string) => {
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
     page: {
       title,
-      subtitle: `Read more on ${title.toLowerCase()} here.`,
+      subtitle: `Read up-to-date news articles, speeches, and press releases here.`,
       defaultSortBy: COLLECTION_PAGE_DEFAULT_SORT_BY,
       defaultSortDirection: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
     } as CollectionPagePageProps,
