@@ -423,12 +423,48 @@ export const collectionRouter = router({
         .select("id")
         .executeTakeFirstOrThrow()
 
-      const { content } = await getBlobOfResource({
-        db,
-        resourceId: indexPage.id,
-      })
+      const { draftBlobId, publishedVersionId } = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(indexPage.id))
+        .select(["draftBlobId", "publishedVersionId"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "The specified resource could not be found",
+            }),
+        )
 
-      return (content as unknown as CollectionPageSchemaType).page.tagCategories
+      if (publishedVersionId) {
+        const { content } = await db
+          .selectFrom("Blob")
+          .where("id", "=", (qb) =>
+            qb
+              .selectFrom("Version")
+              .where("id", "=", publishedVersionId)
+              .select("blobId"),
+          )
+          .selectAll()
+          // NOTE: Guaranteed to exist since this is a foreign key
+          .executeTakeFirstOrThrow()
+
+        return (content as unknown as CollectionPageSchemaType).page
+          .tagCategories
+      }
+
+      if (draftBlobId) {
+        const { content } = await db
+          .selectFrom("Blob")
+          .where("id", "=", draftBlobId)
+          .selectAll()
+          // NOTE: Guaranteed to exist since this is a foreign key
+          .executeTakeFirstOrThrow()
+
+        return (content as unknown as CollectionPageSchemaType).page
+          .tagCategories
+      }
+
+      return []
 
       // FIXME: we cannot do this yet because we still use `Type.Composite`
       // over `Type.Intersect`, which causes typing errors above.
