@@ -21,6 +21,28 @@ export const REF_HREF_PATTERN =
 export const REF_INTERNAL_HREF_PATTERN =
   `(${ALLOWED_URL_REGEXES.internal})|(${ALLOWED_URL_REGEXES.legacy})` as const
 
+// Validation for form-related embed URLs
+export const isValidFormSGEmbedUrl = (url: string) => {
+  if (!url) {
+    return false
+  }
+
+  try {
+    const urlObject = new URL(url)
+    return urlObject.hostname === "form.gov.sg"
+  } catch (_) {
+    return false
+  }
+}
+
+export const FORMSG_EMBED_URL_REGEXES = {
+  formsg: "^https://form\\.gov\\.sg/[a-z0-9]*$",
+} as const
+
+export const FORMSG_EMBED_URL_PATTERN = Object.values(FORMSG_EMBED_URL_REGEXES)
+  .map((re) => `(${re})`)
+  .join("|")
+
 // Validation for map-related embed URLs
 const isValidGoogleMapsEmbedUrl = (urlObject: URL) => {
   return (
