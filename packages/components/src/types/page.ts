@@ -75,15 +75,10 @@ const COLLECTION_PAGE_SORT_BY = {
   category: "category",
 } as const
 
-export const COLLECTION_PAGE_DEFAULT_SORT_BY = COLLECTION_PAGE_SORT_BY.date
-
 const COLLECTION_PAGE_SORT_DIRECTION = {
   asc: "asc",
   desc: "desc",
 } as const
-
-export const COLLECTION_PAGE_DEFAULT_SORT_DIRECTION =
-  COLLECTION_PAGE_SORT_DIRECTION.desc
 
 export const CollectionPagePageSchema = Type.Intersect([
   Type.Object({
@@ -105,7 +100,7 @@ export const CollectionPagePageSchema = Type.Intersect([
           description: "The default sort order of the collection",
           format: "hidden",
           type: "string",
-          default: COLLECTION_PAGE_DEFAULT_SORT_BY,
+          default: COLLECTION_PAGE_SORT_BY.date,
         },
       ),
     ),
@@ -124,7 +119,7 @@ export const CollectionPagePageSchema = Type.Intersect([
           description: "The default sort direction of the collection",
           format: "hidden",
           type: "string",
-          default: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+          default: COLLECTION_PAGE_SORT_DIRECTION.desc,
         },
       ),
     ),

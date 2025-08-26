@@ -65,7 +65,7 @@ export const getCollectionItems = ({
         type: "collectionCard" as const,
         id: item.permalink,
         date,
-        lastUpdated: item.lastModified,
+        lastModified: item.lastModified,
         category: item.category || CATEGORY_OTHERS,
         title: item.title,
         description: item.summary,

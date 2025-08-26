@@ -14,7 +14,7 @@ interface BaseCardProps {
   tags?: Tag[]
   id: string
   date?: Date
-  lastUpdated: string
+  lastModified: string
   category: string
   title: string
   url: string
