@@ -1,4 +1,4 @@
-import type { Static } from "@sinclair/typebox"
+import type { Static, StringOptions } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { CollectionVariant } from "./variants"
@@ -9,6 +9,57 @@ import {
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
 import { REF_HREF_PATTERN } from "~/utils/validation"
+
+// NOTE: a tag value is simply a uuid that maps to a given label;
+// essentially, it is just a pointer
+const generateUuidSchema = (options: Omit<StringOptions, "format">) =>
+  Type.String({ format: "uuid", ...options })
+
+export const TagOptionUuidSchema = generateUuidSchema({
+  title: "Uuid of a single tag option",
+  description:
+    "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
+})
+export const TagCategoryUuidSchema = generateUuidSchema({
+  title: "Uuid of a single tag",
+  description:
+    "This is the uuid of a single tag category and will be used to uniquely identify it.",
+})
+// NOTE: single value for now but we might extend this in the future with additional metadata,
+// so we will leave it as is
+const DropdownItemSchema = Type.Object({
+  label: Type.String(),
+  id: TagOptionUuidSchema,
+})
+const TagOptionSchema = DropdownItemSchema
+const TagCategorySchema = Type.Composite([
+  Type.Object({
+    options: Type.Array(TagOptionSchema),
+  }),
+  DropdownItemSchema,
+])
+// NOTE: can be optional because the categories might not exist
+const TagCategoriesSchema = Type.Object({
+  tagCategories: Type.Optional(Type.Array(TagCategorySchema)),
+})
+const TaggedSchema = Type.Optional(
+  // NOTE: This stores the `uuid` of the tag category
+  // to the array of the `uuid` of the values;
+  // we cannot just store a plain array of `uuid`
+  // because we need to render each category as a dropdown
+  Type.Array(
+    Type.Object({
+      id: TagCategoryUuidSchema,
+      values: Type.Array(TagOptionUuidSchema),
+    }),
+    {
+      // NOTE: we need a custom format because this cannot just be a simple drop down
+      // as we need to reference the existing data that is pointing to this
+      format: "tagged",
+      description: "To add new options, reach out to your site owner(s).",
+    },
+  ),
+)
 
 const categorySchemaObject = Type.Object({
   category: Type.String({
@@ -29,6 +80,7 @@ const dateSchemaObject = Type.Object({
 })
 
 const BaseRefPageSchema = Type.Composite([
+  Type.Object({ tagged: TaggedSchema }),
   categorySchemaObject,
   dateSchemaObject,
   imageSchemaObject,
@@ -51,14 +103,20 @@ const BaseRefPageSchema = Type.Composite([
   }),
 ])
 
+// NOTE: old tag schema that we should migrate away
+// because we sit on the `tag` key,
+// we cannot reuse it for our new tags
 const TagSchema = Type.Object({
   selected: Type.Array(Type.String()),
   category: Type.String(),
 })
-
-const TagsSchema = Type.Object({
-  tags: Type.Optional(Type.Array(TagSchema)),
-})
+const TagsSchema = Type.Object(
+  {
+    tags: Type.Optional(Type.Array(TagSchema)),
+  },
+  // NOTE: we need to hide this because it's not supposed to be visible to our end user
+  { format: "hidden" },
+)
 
 export const ArticlePagePageSchema = Type.Composite([
   dateSchemaObject,
@@ -67,6 +125,7 @@ export const ArticlePagePageSchema = Type.Composite([
   }),
   categorySchemaObject,
   imageSchemaObject,
+  Type.Object({ tagged: TaggedSchema }),
 ])
 
 const COLLECTION_PAGE_SORT_BY = {
@@ -91,6 +150,7 @@ export const CollectionPagePageSchema = Type.Intersect([
       title: "The subtitle of the collection",
     }),
   }),
+  TagCategoriesSchema,
   TagsSchema,
   Type.Object({
     defaultSortBy: Type.Optional(
@@ -138,6 +198,20 @@ export const ContentPagePageSchema = Type.Composite([
   imageSchemaObject,
 ])
 
+// NOTE: Previously, index page's header and content page's header
+// are identical but we are splitting them apart now.
+// This is the index page's header
+// should fully own the state of the collection/folder
+// but the content page header should not.
+// Doing a straight copy paste rather than `Type.Composite`
+// to avoid unexpected spillover of properties
+export const IndexPagePageSchema = Type.Composite([
+  Type.Object({
+    contentPageHeader: ContentPageHeaderSchema,
+  }),
+  imageSchemaObject,
+])
+
 export const DatabasePagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,
   database: SearchableTableSchema,
@@ -176,6 +250,8 @@ export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
   BasePageAdditionalProps &
   CollectionVariantProps
 export type ContentPagePageProps = Static<typeof ContentPagePageSchema> &
+  BasePageAdditionalProps
+export type IndexPagePageProps = Static<typeof IndexPagePageSchema> &
   BasePageAdditionalProps
 export type DatabasePagePageProps = Static<typeof DatabasePagePageSchema> &
   BasePageAdditionalProps
