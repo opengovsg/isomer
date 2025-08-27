@@ -95,55 +95,7 @@ export const up = async () => {
     // NOTE: guaranteed non-null since we selected as `parentId` for pages explicitly
     const resourcesWithTags = await getChildItemsWithTags(id)
 
-    const tags: LegacyTag[][] = resourcesWithTags.flatMap(
-      // NOTE: have to cast here - this is because we take our type defs from
-      // the schema, but we haven't narrowed the type down.
-      // However, note that in `getChildPagesWithTags`, we only select
-      // the pages with tags
-      // NOTE: `any` cast here - accessor is guaranteed due to db query
-      // and this code won't live long in our codebase (if at all)
-      (resource) => {
-        let draftTags: LegacyTag[] = []
-        if (resource.draftBlobContent) {
-          draftTags = (resource.draftBlobContent.page as any)
-            .tags as LegacyTag[]
-        }
-
-        let publishedTags: LegacyTag[] = []
-        if (resource.publishedBlobContent) {
-          publishedTags = (resource.publishedBlobContent.page as any)
-            .tags as LegacyTag[]
-        }
-
-        return [draftTags, publishedTags]
-      },
-    )
-
-    const baseTags: {
-      categories: Set<string>
-      mappings: Record<string, Set<string>>
-    } = {
-      categories: new Set(),
-      // NOTE: mappings denotes the mapping of category -> options
-      mappings: {},
-    }
-
-    const collatedTags = tags.reduce((prevTags, curTags) => {
-      curTags.forEach((tag) => {
-        prevTags.categories.add(tag.category)
-        tag.selected.forEach((value) => {
-          let prevCategorySet = prevTags.mappings[tag.category]
-          if (!prevCategorySet) {
-            prevTags.mappings[tag.category] = new Set()
-            prevCategorySet = prevTags.mappings[tag.category]
-          }
-
-          prevCategorySet!.add(value)
-        })
-      })
-
-      return prevTags
-    }, baseTags)
+    const collatedTags = await getCollatedTags(resourcesWithTags)
 
     const { labelToId, tagCategories } = migrateTags(collatedTags)
     const indexPage = await db
@@ -368,6 +320,61 @@ function generateUpdatedContent(
         .filter((v) => !!v),
     },
   }
+}
+
+const getCollatedTags = async (
+  resourcesWithTags: Awaited<ReturnType<typeof getChildItemsWithTags>>,
+) => {
+  const tags: LegacyTag[][] = resourcesWithTags.flatMap(
+    // NOTE: have to cast here - this is because we take our type defs from
+    // the schema, but we haven't narrowed the type down.
+    // However, note that in `getChildPagesWithTags`, we only select
+    // the pages with tags
+    // NOTE: `any` cast here - accessor is guaranteed due to db query
+    // and this code won't live long in our codebase (if at all)
+    (resource) => {
+      let draftTags: LegacyTag[] = []
+      if (resource.draftBlobContent) {
+        draftTags = (resource.draftBlobContent.page as any).tags as LegacyTag[]
+      }
+
+      let publishedTags: LegacyTag[] = []
+      if (resource.publishedBlobContent) {
+        publishedTags = (resource.publishedBlobContent.page as any)
+          .tags as LegacyTag[]
+      }
+
+      return [draftTags, publishedTags]
+    },
+  )
+
+  const baseTags: {
+    categories: Set<string>
+    mappings: Record<string, Set<string>>
+  } = {
+    categories: new Set(),
+    // NOTE: mappings denotes the mapping of category -> options
+    mappings: {},
+  }
+
+  const collatedTags = tags.reduce((prevTags, curTags) => {
+    curTags.forEach((tag) => {
+      prevTags.categories.add(tag.category)
+      tag.selected.forEach((value) => {
+        let prevCategorySet = prevTags.mappings[tag.category]
+        if (!prevCategorySet) {
+          prevTags.mappings[tag.category] = new Set()
+          prevCategorySet = prevTags.mappings[tag.category]
+        }
+
+        prevCategorySet!.add(value)
+      })
+    })
+
+    return prevTags
+  }, baseTags)
+
+  return collatedTags
 }
 
 await up()
