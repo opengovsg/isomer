@@ -87,10 +87,20 @@ export const up = async () => {
   // 54 collections containing tags
 
   const collectionIds = await getCollectionsWithTags()
+  const publisher = await db
+    .selectFrom("User")
+    .where("email", "=", "jiachin@open.gov.sg")
+    .select("id")
+    .executeTakeFirstOrThrow()
 
   for (const { id } of collectionIds) {
     console.log(`Updating collection: ${id}`)
     if (!id) return
+    const { title } = await db
+      .selectFrom("Resource")
+      .where("id", "=", id)
+      .select("title")
+      .executeTakeFirstOrThrow()
 
     // NOTE: guaranteed non-null since we selected as `parentId` for pages explicitly
     const resourcesWithTags = await getChildItemsWithTags(id)
@@ -127,9 +137,7 @@ export const up = async () => {
       })
 
       if (indexPage.publishedVersionId) {
-        console.log(
-          `Updating the published blob of collection item: ${indexPage.id}`,
-        )
+        console.log(`Updating the published blob of index: ${indexPage.id}`)
 
         const publishedContent = await tx
           .selectFrom("Version")
@@ -158,6 +166,46 @@ export const up = async () => {
             .where("id", "=", publishedBlob.id)
             .execute()
         }
+      } else {
+        // NOTE: if we're lacking a published version, we will use a default collection page
+        console.log(
+          `Creating a default published blob for index: ${indexPage.id}`,
+        )
+
+        const content = {
+          ...indexPageBlob.content,
+          page: {
+            ...indexPageBlob.content.page,
+            tagCategories,
+            subtitle: `Pages in ${title}`,
+          },
+        }
+
+        const publishedBlob = await tx
+          .insertInto("Blob")
+          .values({ content: jsonb(content) })
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        const version = await tx
+          .insertInto("Version")
+          .values({
+            resourceId: indexPage.id,
+            blobId: publishedBlob.id,
+            versionNum: 1,
+            publishedBy: publisher.id,
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await tx
+          .updateTable("Resource")
+          .set({
+            publishedVersionId: version.id,
+            state: "Published",
+          })
+          .where("id", "=", indexPage.id)
+          .execute()
       }
 
       for (const resource of resourcesWithTags) {
@@ -207,6 +255,8 @@ export const up = async () => {
         }
       }
     })
+
+    console.log(`Update completed for collection ${id}`)
   }
 }
 
