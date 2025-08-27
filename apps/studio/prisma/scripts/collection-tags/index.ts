@@ -89,10 +89,11 @@ export const up = async () => {
   const collectionIds = await getCollectionsWithTags()
 
   for (const { id } of collectionIds) {
+    console.log(`Updating collection: ${id}`)
     if (!id) return
 
     // NOTE: guaranteed non-null since we selected as `parentId` for pages explicitly
-    const resourcesWithTags = await getChildPagesWithTags(id)
+    const resourcesWithTags = await getChildItemsWithTags(id)
 
     const tags: LegacyTag[][] = resourcesWithTags.flatMap(
       // NOTE: have to cast here - this is because we take our type defs from
@@ -158,6 +159,7 @@ export const up = async () => {
     // Step 1: write to the index page with the newly generated tags
     // Step 2: write the updated mappings to each individual page
     await db.transaction().execute(async (tx) => {
+      console.log(`Updating the draft blob of index page: ${indexPage.id}`)
       const indexPageBlob = await getBlobOfResource({
         tx,
         resourceId: indexPage.id,
@@ -168,9 +170,43 @@ export const up = async () => {
         siteId: indexPage.siteId,
         content: {
           ...indexPageBlob.content,
-          page: { ...indexPageBlob.content.page, tags: tagCategories },
+          page: { ...indexPageBlob.content.page, tagCategories },
         },
       })
+
+      if (indexPage.publishedVersionId) {
+        console.log(
+          `Updating the published blob of collection item: ${indexPage.id}`,
+        )
+
+        const publishedContent = await tx
+          .selectFrom("Version")
+          .where("id", "=", indexPage.publishedVersionId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (publishedContent) {
+          const publishedBlob = await tx
+            .selectFrom("Blob")
+            .selectAll()
+            .where("id", "=", publishedContent.blobId)
+            .executeTakeFirstOrThrow()
+
+          await tx
+            .updateTable("Blob")
+            .set({
+              content: jsonb({
+                ...publishedBlob.content,
+                page: {
+                  ...publishedBlob.content.page,
+                  tagCategories,
+                },
+              }),
+            })
+            .where("id", "=", publishedBlob.id)
+            .execute()
+        }
+      }
 
       for (const resource of resourcesWithTags) {
         const draftBlob = resource.content
@@ -184,6 +220,9 @@ export const up = async () => {
           labelToId,
         )
 
+        console.log(
+          `Updating the draft blob of collection item: ${resource.id}`,
+        )
         await updateBlobById(tx, {
           pageId: Number(resource.id),
           siteId: indexPage.siteId,
@@ -203,6 +242,9 @@ export const up = async () => {
           )
 
           // NOTE: cannot use `updateBlobById` here
+          console.log(
+            `Updating the published blob of collection item: ${resource.id}`,
+          )
           await tx
             .updateTable("Blob")
             // NOTE: This works because a page has a 1-1 relation with a blob
@@ -216,7 +258,7 @@ export const up = async () => {
   }
 }
 
-const getChildPagesWithTags = async (parentId: string) => {
+const getChildItemsWithTags = async (parentId: string) => {
   return db
     .selectFrom("Resource")
     .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
@@ -328,4 +370,4 @@ function generateUpdatedContent(
   }
 }
 
-// await up()
+await up()
