@@ -17,7 +17,7 @@
     "test:e2e": "dotenv -- turbo run test:e2e",
     "setup:test": "turbo setup:test",
     "storybook": "dotenv -- turbo run storybook --parallel",
-    "storybook:build": "turbo run storybook:build --parallel",
+    "build-storybook": "turbo run build-storybook --parallel",
     "teardown": "turbo teardown",
     "test-start": "turbo test-start",
     "typecheck": "turbo typecheck",

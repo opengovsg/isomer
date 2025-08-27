@@ -19,10 +19,18 @@
     "build": {},
     "build:template": {},
     "clean": {},
-    "db:connect": {},
-    "db:connect:staging": {},
-    "db:connect:uat": {},
-    "db:connect:vapt": {},
+    "db:connect": {
+      "cache": false
+    },
+    "db:connect:staging": {
+      "cache": false
+    },
+    "db:connect:uat": {
+      "cache": false
+    },
+    "db:connect:vapt": {
+      "cache": false
+    },
     "dev": {
       "dependsOn": ["services:setup"],
       "cache": false,
@@ -35,7 +43,7 @@
     "storybook": {
       "cache": false
     },
-    "storybook:build": {
+    "build-storybook": {
       "inputs": ["!storybook-static/**"],
       "outputs": ["storybook-static/**"]
     },
