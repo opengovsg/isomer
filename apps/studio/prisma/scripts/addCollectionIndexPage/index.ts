@@ -8,8 +8,6 @@ import { TRPCError } from "@trpc/server"
 import _ from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { createBaseLogger } from "~/lib/logger"
-import { publishSite } from "~/server/modules/aws/codebuild.service"
 import {
   db,
   jsonb,
@@ -38,9 +36,10 @@ export const up = async () => {
 
   for (const collection of collectionsWithoutIndexPages) {
     if (collection.type != ResourceType.Collection) {
-      throw new Error(
+      console.log(
         `invalid type: ${collection.type}, resource: ${collection.id}`,
       )
+      continue
     }
     console.log(`Adding index page to collection with id: ${collection.id}`)
     // NOTE: should only have 47 rows requiring this migration
@@ -48,7 +47,7 @@ export const up = async () => {
       layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
       page: {
         title: collection.title,
-        subtitle: `Read more on ${collection.title.toLowerCase()} here.`,
+        subtitle: `Read up-to-date news articles, speeches, and press releases here.`,
         defaultSortBy: COLLECTION_PAGE_DEFAULT_SORT_BY,
         defaultSortDirection: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
       } as CollectionPagePageProps,
@@ -91,4 +90,4 @@ export const up = async () => {
   }
 }
 
-// await up()
+await up()
