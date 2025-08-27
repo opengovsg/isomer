@@ -36,7 +36,7 @@ const isGithub = await confirm({
 
 if (isGithub) {
   const repo = await input({
-    message: "Enter the github repo for the site:",
+    message: "Enter the github repo for the site (eg: `isomer-corp`):",
   })
   await createSearchSgClientForGithub({ domain, name: long, repo })
   const siteId = await input({
