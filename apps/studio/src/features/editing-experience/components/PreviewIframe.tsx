@@ -4,12 +4,14 @@ import { Flex } from "@chakra-ui/react"
 import Frame, { useFrame } from "react-frame-component"
 
 import type { ViewportOptions } from "./IframeToolbar"
+import type { IframeCallbackFnProps } from "~/types/dom"
 
-interface PreviewIframeProps extends PropsWithChildren {
+interface PreviewIframeProps {
   preventPointerEvents?: boolean
   keyForRerender?: string
   style?: CSSProperties
   viewport?: ViewportOptions
+  callback?: (props: IframeCallbackFnProps) => void
 }
 
 export const PreviewIframe = ({
@@ -18,7 +20,8 @@ export const PreviewIframe = ({
   keyForRerender,
   style,
   viewport,
-}: PreviewIframeProps): JSX.Element => {
+  callback,
+}: PropsWithChildren<PreviewIframeProps>): JSX.Element => {
   const extraProps = preventPointerEvents
     ? {
         initialContent: `<!DOCTYPE html><html><head></head><body><div id="frame-root" style="pointer-events: none;"></div></body></html>`,
@@ -79,7 +82,7 @@ export const PreviewIframe = ({
         }
       >
         <div style={style}>
-          <IframeInnerComponent key={keyForRerender}>
+          <IframeInnerComponent key={keyForRerender} callback={callback}>
             {children}
           </IframeInnerComponent>
         </div>
@@ -88,8 +91,11 @@ export const PreviewIframe = ({
   )
 }
 
-const IframeInnerComponent = ({ children }: PropsWithChildren) => {
-  const { document: iframeDocument } = useFrame()
+const IframeInnerComponent = ({
+  children,
+  callback,
+}: PropsWithChildren<Pick<PreviewIframeProps, "callback">>) => {
+  const { document: iframeDocument, window: iframeWindow } = useFrame()
 
   // !! This effect might break usages of scroll lock if scroll lock is not triggered by inside the iframe.
   useEffect(() => {
@@ -117,8 +123,12 @@ const IframeInnerComponent = ({ children }: PropsWithChildren) => {
       attributeFilter: ["style"],
     })
 
+    if (callback) {
+      callback({ document: iframeDocument, window: iframeWindow })
+    }
+
     return () => observer.disconnect()
-  }, [iframeDocument?.documentElement])
+  }, [callback, iframeDocument, iframeDocument?.documentElement, iframeWindow])
 
   return children
 }
