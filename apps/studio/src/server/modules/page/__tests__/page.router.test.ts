@@ -2083,5 +2083,58 @@ describe("page.router", async () => {
         }),
       ).rejects.toThrowError()
     })
+    // TODO: check that the request fails if the job is already active - requires mocking the job queue
+    it("cancelling a scheduled publish works correctly", async () => {
+      // Arrange
+      const now = new Date()
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+        scheduledAt: set(addDays(now, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      // Act
+      // This should null out the the scheduledAt field
+      await caller.cancelSchedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+      })
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", expectedPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(actual.scheduledAt).toBeNull()
+    })
+    it("cancelling a scheduled publish throws an error if the page is not scheduled", async () => {
+      // Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      // Act
+      await expect(
+        caller.cancelSchedulePage({
+          siteId: site.id,
+          pageId: Number(expectedPage.id),
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unable to cancel schedule for a page that is not scheduled",
+        }),
+      )
+    })
   })
 })
