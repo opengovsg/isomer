@@ -68,6 +68,9 @@ model Resource {
   state ResourceState? @default(Draft)
   type  ResourceType
 
+  // This is only set if the resource is scheduled to be published at a later date
+  // If set, this indicates the time at which the resource should be published
+  scheduledAt        DateTime?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   ResourcePermission ResourcePermission[]
@@ -232,6 +235,7 @@ enum AuditLogEvent {
   ResourceCreate
   ResourceUpdate
   ResourceDelete
+  ResourceSchedule
   UserCreate
   UserUpdate
   UserDelete

@@ -285,6 +285,7 @@ export const setupPageResource = async ({
       siteId: site.id,
       parentId,
       publishedVersionId: null,
+      scheduledAt: null,
       draftBlobId: blob.id,
       type: resourceType,
       state,

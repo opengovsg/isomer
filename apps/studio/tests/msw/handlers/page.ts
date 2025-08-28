@@ -877,6 +877,7 @@ export const pageHandlers = {
           draftBlobId: "1",
           type: "RootPage",
           state: "Draft",
+          scheduledAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -897,7 +898,7 @@ export const pageHandlers = {
           draftBlobId: "2",
           type: "Page",
           state: "Draft",
-
+          scheduledAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -918,7 +919,7 @@ export const pageHandlers = {
           draftBlobId: "3",
           type: "Page",
           state: "Draft",
-
+          scheduledAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -939,7 +940,7 @@ export const pageHandlers = {
           draftBlobId: "3",
           type: "IndexPage",
           state: "Draft",
-
+          scheduledAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,

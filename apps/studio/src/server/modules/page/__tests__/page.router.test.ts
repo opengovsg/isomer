@@ -6,6 +6,7 @@ import {
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
+import { addDays, format, set } from "date-fns"
 import { omit, pick } from "lodash"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -2013,6 +2014,74 @@ describe("page.router", async () => {
       expect(result).toEqual({
         pageId: expect.any(String),
       })
+    })
+  })
+  describe("scheduled publishing", () => {
+    it("should set a scheduledAt time correctly for a page", async () => {
+      // Arrange
+      const now = new Date()
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      // Act
+      await caller.schedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+        publishDate: addDays(now, 1),
+        publishTime: "10:00",
+      })
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", expectedPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      // expect the scheduledAt to be tomorrow at 10am
+      const expectedDate = set(addDays(now, 1), {
+        hours: 10,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
+      expect(actual.scheduledAt).toEqual(expectedDate)
+      // expect the audit log to be created, with the updated scheduledAt time
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(1)
+      expect(auditLog[0]).toMatchObject({
+        eventType: AuditLogEvent.ResourceSchedule,
+        delta: {
+          before: omit(expectedPage, ["updatedAt", "createdAt"]),
+          // NOTE: Need to convert expectedDate to ISO string as the comparison is done with the DB value which is in ISO format
+          after: omit(
+            { ...expectedPage, scheduledAt: expectedDate.toISOString() },
+            ["updatedAt", "createdAt"],
+          ),
+        },
+      })
+    })
+    it("providing a scheduled timestamp in the past leads to an error being thrown", async () => {
+      // Arrange
+      const scheduledAtInPast = new Date()
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      // This should throw an error on the frontend or backend based on the value specified in MINIMUM_SCHEDULE_LEAD_TIME_MINUTES
+      await expect(
+        caller.schedulePage({
+          siteId: site.id,
+          pageId: Number(expectedPage.id),
+          publishDate: scheduledAtInPast,
+          publishTime: format(scheduledAtInPast, "HH:mm"),
+        }),
+      ).rejects.toThrowError()
     })
   })
 })
