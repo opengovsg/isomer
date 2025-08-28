@@ -1,7 +1,16 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
-import { format, isValid, parse, set } from "date-fns"
+import {
+  add,
+  format,
+  isAfter,
+  isBefore,
+  isValid,
+  parse,
+  set,
+  startOfDay,
+} from "date-fns"
 import { z } from "zod"
 
 import { ajv } from "~/utils/ajv"
@@ -60,6 +69,8 @@ export const reorderBlobSchema = z.object({
 // Schema for scheduling a page (publishAt is derived from publishDate and publishTime)
 // On the client side, publishDate is selected via a date picker
 // and publishTime is selected via a time picker (in HH:mm format)
+export const MINIMUM_SCHEDULE_LEAD_TIME_MINUTES = 10
+
 export const schedulePageSchema = basePageSchema
   .extend({
     publishDate: z.date(),
@@ -78,6 +89,29 @@ export const schedulePageSchema = basePageSchema
         hours,
         minutes,
       }),
+    }
+  })
+  .superRefine(({ scheduledAt }, ctx) => {
+    const earliestScheduleTime = add(new Date(), {
+      minutes: MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
+    })
+    if (isBefore(scheduledAt, earliestScheduleTime)) {
+      // if the scheduled date is before the earliest allowable date, show error on publishDate
+      if (startOfDay(scheduledAt) < startOfDay(earliestScheduleTime)) {
+        ctx.addIssue({
+          path: ["publishDate"],
+          code: z.ZodIssueCode.custom,
+          message: `Earliest publish time allowable is ${format(earliestScheduleTime, "MMMM d, yyyy hh:mm a")}`,
+        })
+      } else {
+        // if the scheduled date is the same as the allowable date, show error on publishTime
+        // since that means the time selected is too early in the day
+        ctx.addIssue({
+          path: ["publishTime"],
+          code: z.ZodIssueCode.custom,
+          message: `Earliest publish time allowable is ${format(earliestScheduleTime, "MMMM d, yyyy hh:mm a")}`,
+        })
+      }
     }
   })
 
