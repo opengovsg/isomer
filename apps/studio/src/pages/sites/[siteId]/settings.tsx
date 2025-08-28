@@ -27,7 +27,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
 import { setNotificationSchema } from "~/schemas/site"
-import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
+import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 import { trpc } from "~/utils/trpc"
 
 const siteSettingsSchema = z.object({
@@ -227,7 +227,7 @@ SiteSettingsPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
-      page={AdminSidebarOnlyLayout(page)}
+      page={SiteBasicLayout(page)}
     />
   )
 }

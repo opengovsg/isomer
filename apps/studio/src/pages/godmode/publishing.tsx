@@ -22,7 +22,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AdminLayout } from "~/templates/layouts/AdminLayout"
+import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
 
 const GodModePublishingPage: NextPageWithLayout = () => {
@@ -162,6 +162,6 @@ const GodModePublishingPage: NextPageWithLayout = () => {
   )
 }
 
-GodModePublishingPage.getLayout = AdminLayout
+GodModePublishingPage.getLayout = AuthenticatedLayout
 
 export default GodModePublishingPage

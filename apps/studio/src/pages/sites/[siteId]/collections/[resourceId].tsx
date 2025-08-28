@@ -20,7 +20,7 @@ import { CreateCollectionPageModal } from "~/features/editing-experience/compone
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AdminCmsSearchableLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getCollectionHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "../../../../../prisma/generated/generatedEnums"
@@ -100,7 +100,7 @@ CollectionResourceListPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.Collection}
-      page={AdminCmsSearchableLayout(page)}
+      page={SiteEditorLayout(page)}
     />
   )
 }

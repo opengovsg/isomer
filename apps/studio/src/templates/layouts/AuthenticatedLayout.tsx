@@ -7,7 +7,7 @@ import { APP_GRID_COLUMN } from "~/constants/layouts"
 import { type GetLayout } from "~/lib/types"
 import { AppGrid } from "../AppGrid"
 
-export const AdminLayout: GetLayout = (page) => {
+export const AuthenticatedLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
       <LayoutHead />
