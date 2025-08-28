@@ -22,9 +22,9 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 
+import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
-import { getUserViewableResourceTypes } from "~/utils/resources"
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
 import { getFullPageById } from "../resource.service"
@@ -3358,7 +3358,7 @@ describe("resource.router", async () => {
       const result = await caller.search({
         siteId: String(site.id),
         query: "test",
-        resourceTypes: getUserViewableResourceTypes(),
+        resourceTypes: USER_VIEWABLE_RESOURCE_TYPES,
       })
 
       // Assert
