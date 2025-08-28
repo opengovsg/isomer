@@ -16,6 +16,7 @@ interface DraggableBlockProps {
   draggableId: string
   index: number
   onClick: () => void
+  isInvalid?: boolean
 }
 
 export const DraggableBlock = ({
@@ -23,6 +24,7 @@ export const DraggableBlock = ({
   draggableId,
   index,
   onClick,
+  isInvalid = false,
 }: DraggableBlockProps): JSX.Element => {
   const icon = TYPE_TO_ICON[block.type]
 
@@ -70,6 +72,7 @@ export const DraggableBlock = ({
               }
               description={blockComponentName}
               icon={icon}
+              isInvalid={isInvalid}
             />
           </VStack>
         )
