@@ -87,6 +87,8 @@ export const schedulePageSchema = basePageSchema
       scheduledAt: set(publishDate, {
         hours,
         minutes,
+        seconds: 0,
+        milliseconds: 0,
       }),
     }
   })
