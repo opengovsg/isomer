@@ -6,6 +6,7 @@ import {
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
+import { addDays, set, setHours } from "date-fns"
 import { omit, pick } from "lodash"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -2013,6 +2014,40 @@ describe("page.router", async () => {
       expect(result).toEqual({
         pageId: expect.any(String),
       })
+    })
+  })
+  describe("scheduled publishing", () => {
+    it("should set a scheduledAt time correctly for a page", async () => {
+      // Arrange
+      const now = new Date()
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      // Act
+      await caller.schedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+        publishDate: addDays(now, 1),
+        publishTime: "10:00",
+      })
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", expectedPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      // expect the scheduledAt to be tomorrow at 10am
+      const expectedDate = set(addDays(now, 1), {
+        hours: 10,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
+      expect(actual.scheduledAt).toEqual(expectedDate)
     })
   })
 })
