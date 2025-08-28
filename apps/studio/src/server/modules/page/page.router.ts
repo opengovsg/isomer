@@ -412,6 +412,59 @@ export const pageRouter = router({
         recipientEmail: by.email,
       })
     }),
+  cancelSchedulePage: protectedProcedure
+    .input(basePageSchema)
+    .mutation(async ({ ctx, input }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId: input.siteId,
+        action: "update",
+        userId: ctx.user.id,
+      })
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      await db.transaction().execute(async (tx) => {
+        const resourceBeforeUpdate = await getPageById(db, {
+          resourceId: input.pageId,
+          siteId: input.siteId,
+        })
+        if (!resourceBeforeUpdate) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
+        if (!resourceBeforeUpdate.scheduledAt) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Unable to cancel schedule for a page that is not scheduled",
+          })
+        }
+        // update the resource's scheduled field
+        await updatePageById(
+          {
+            id: input.pageId,
+            siteId: input.siteId,
+            scheduledAt: null,
+          },
+          tx,
+        )
+        // TODO: add logic to remove the scheduledAt job in the job queue
+        // if execution has not started
+        await logResourceEvent(tx, {
+          siteId: input.siteId,
+          by,
+          delta: {
+            before: resourceBeforeUpdate,
+            after: { ...resourceBeforeUpdate, scheduledAt: null },
+          },
+          eventType: AuditLogEvent.ResourceSchedule,
+        })
+      })
+    }),
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
