@@ -243,7 +243,7 @@ export const pageRouter = router({
           title,
           type,
           updatedAt,
-          ...siteMeta,
+          config: siteMeta,
         }
       })
     }),
