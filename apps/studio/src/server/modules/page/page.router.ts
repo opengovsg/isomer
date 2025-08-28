@@ -19,6 +19,7 @@ import { format } from "date-fns"
 import _, { get, isEmpty, isEqual } from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { sendScheduledPageEmail } from "~/features/mail/service"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   basePageSchema,
@@ -387,6 +388,10 @@ export const pageRouter = router({
           },
           eventType: AuditLogEvent.ResourceSchedule,
         })
+      })
+      await sendScheduledPageEmail({
+        scheduledAt: input.scheduledAt,
+        recipientEmail: by.email,
       })
     }),
   updatePageBlob: validatedPageProcedure
