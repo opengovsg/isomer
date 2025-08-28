@@ -6,8 +6,9 @@ import {
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
-import { addDays, format, set } from "date-fns"
+import { addDays, format, set, subDays } from "date-fns"
 import { omit, pick } from "lodash"
+import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -2019,9 +2020,15 @@ describe("page.router", async () => {
     })
   })
   describe("schedulePage", () => {
+    const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
+    beforeEach(() => {
+      MockDate.set(FIXED_NOW) // Freeze time before each test
+    })
+    afterEach(() => {
+      MockDate.reset() // Reset time after each test
+    })
     it("should throw 403 if user does not have publish access to the site", async () => {
       //  Arrange
-      const now = new Date()
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
       })
@@ -2030,7 +2037,7 @@ describe("page.router", async () => {
       const scheduleCaller = caller.schedulePage({
         siteId: site.id,
         pageId: Number(expectedPage.id),
-        publishDate: addDays(now, 1),
+        publishDate: addDays(FIXED_NOW, 1),
         publishTime: "10:00",
       })
 
@@ -2045,7 +2052,6 @@ describe("page.router", async () => {
     })
     it("should set a scheduled time for a page", async () => {
       // Arrange
-      const now = new Date()
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
       })
@@ -2058,7 +2064,7 @@ describe("page.router", async () => {
       await caller.schedulePage({
         siteId: site.id,
         pageId: Number(expectedPage.id),
-        publishDate: addDays(now, 1),
+        publishDate: addDays(FIXED_NOW, 1),
         publishTime: "10:00",
       })
 
@@ -2069,7 +2075,7 @@ describe("page.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       // expect the scheduledAt to be tomorrow at 10am
-      const expectedDate = set(addDays(now, 1), {
+      const expectedDate = set(addDays(FIXED_NOW, 1), {
         hours: 10,
         minutes: 0,
         seconds: 0,
@@ -2093,7 +2099,6 @@ describe("page.router", async () => {
     })
     it("providing a scheduled timestamp in the past leads to an error being thrown", async () => {
       // Arrange
-      const scheduledAtInPast = new Date()
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
       })
@@ -2108,8 +2113,8 @@ describe("page.router", async () => {
         caller.schedulePage({
           siteId: site.id,
           pageId: Number(expectedPage.id),
-          publishDate: scheduledAtInPast,
-          publishTime: format(scheduledAtInPast, "HH:mm"),
+          publishDate: subDays(FIXED_NOW, 1),
+          publishTime: format(FIXED_NOW, "HH:mm"),
         }),
       ).rejects.toThrowError()
 
@@ -2123,6 +2128,97 @@ describe("page.router", async () => {
       // Since the request fails, expect no audit log to be created
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(0)
+    })
+  })
+  describe("cancelSchedulePage", () => {
+    const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
+    beforeEach(() => {
+      MockDate.set(FIXED_NOW) // Freeze time before each test
+    })
+    afterEach(() => {
+      MockDate.reset() // Reset time after each test
+    })
+    // TODO: check that the request fails if the job is already active - requires mocking the job queue
+    it("cancelling a scheduled publish works correctly", async () => {
+      // Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      // This should null out the the scheduledAt field
+      await caller.cancelSchedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+      })
+
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", expectedPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(actual.scheduledAt).toBeNull()
+    })
+    it("cancelling a scheduled publish throws an error if the page is not scheduled", async () => {
+      // Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act & Assert
+      await expect(
+        caller.cancelSchedulePage({
+          siteId: site.id,
+          pageId: Number(expectedPage.id),
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unable to cancel schedule for a page that is not scheduled",
+        }),
+      )
+    })
+    it("should throw 403 if user does not have publish access to the site", async () => {
+      //  Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+      })
+
+      // Act
+      const scheduleCaller = caller.cancelSchedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+      })
+
+      // Assert
+      await expect(scheduleCaller).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
     })
   })
 })

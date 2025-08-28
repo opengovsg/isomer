@@ -19,7 +19,10 @@ import { format, isBefore } from "date-fns"
 import _, { get, isEmpty, isEqual } from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { sendScheduledPageEmail } from "~/features/mail/service"
+import {
+  sendCancelSchedulePageEmail,
+  sendScheduledPageEmail,
+} from "~/features/mail/service"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   basePageSchema,
@@ -414,10 +417,10 @@ export const pageRouter = router({
     }),
   cancelSchedulePage: protectedProcedure
     .input(basePageSchema)
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId: input.siteId,
-        action: "update",
+        siteId,
+        action: "publish",
         userId: ctx.user.id,
       })
       const by = await db
@@ -425,18 +428,18 @@ export const pageRouter = router({
         .where("id", "=", ctx.user.id)
         .selectAll()
         .executeTakeFirstOrThrow()
-      await db.transaction().execute(async (tx) => {
-        const resourceBeforeUpdate = await getPageById(db, {
-          resourceId: input.pageId,
-          siteId: input.siteId,
+      const updatedPage = await db.transaction().execute(async (tx) => {
+        const resource = await getPageById(tx, {
+          resourceId: pageId,
+          siteId,
         })
-        if (!resourceBeforeUpdate) {
+        if (!resource) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Resource not found",
           })
         }
-        if (!resourceBeforeUpdate.scheduledAt) {
+        if (!resource.scheduledAt) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message:
@@ -444,25 +447,36 @@ export const pageRouter = router({
           })
         }
         // update the resource's scheduled field
-        await updatePageById(
+        const updatedPage = await updatePageById(
           {
-            id: input.pageId,
-            siteId: input.siteId,
+            id: pageId,
+            siteId,
             scheduledAt: null,
           },
           tx,
         )
+        if (!updatedPage) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to cancel page schedule",
+          })
+        }
         // TODO: add logic to remove the scheduledAt job in the job queue
         // if execution has not started
         await logResourceEvent(tx, {
-          siteId: input.siteId,
+          siteId,
           by,
           delta: {
-            before: resourceBeforeUpdate,
-            after: { ...resourceBeforeUpdate, scheduledAt: null },
+            before: resource,
+            after: updatedPage,
           },
-          eventType: AuditLogEvent.ResourceSchedule,
+          eventType: AuditLogEvent.CancelSchedulePublish,
         })
+        return updatedPage
+      })
+      await sendCancelSchedulePageEmail({
+        resource: updatedPage,
+        recipientEmail: by.email,
       })
     }),
   updatePageBlob: validatedPageProcedure
