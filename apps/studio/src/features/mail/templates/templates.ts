@@ -1,4 +1,5 @@
 import { RoleType } from "~prisma/generated/generatedEnums"
+import { format } from "date-fns"
 
 import type {
   AccountDeactivationEmailTemplateData,
@@ -9,6 +10,7 @@ import type {
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
+  SchedulePageTemplateData,
 } from "./types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
@@ -69,6 +71,20 @@ export const loginAlertTemplate = (
 <p>We wanted to let you know that your account was accessed successfully.</p>
 <p>If this was you, no action is needed.</p>
 <p><strong>Note:</strong> You're receiving this notification because your account was logged into during a Singpass authentication outage. If you are not the one who logged in, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
+export const schedulePageTemplate = (
+  data: SchedulePageTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, scheduledAt } = data
+  return {
+    subject: `[Isomer Studio] You scheduled a page to be published`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${format(scheduledAt, "MMMM d, yyyy hh:mm a")}</strong>.</p>
+<p>Log in to Isomer Studio to change or cancel this.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }
@@ -171,6 +187,8 @@ export const templates = {
     loginAlertTemplate satisfies EmailTemplateFunction<LoginAlertEmailTemplateData>,
   publishAlertContentPublisher:
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
+  schedulePage:
+    schedulePageTemplate satisfies EmailTemplateFunction<SchedulePageTemplateData>,
   publishAlertSiteAdmin:
     publishAlertSiteAdminTemplate satisfies EmailTemplateFunction<PublishAlertSiteAdminEmailTemplateData>,
   accountDeactivationWarning:

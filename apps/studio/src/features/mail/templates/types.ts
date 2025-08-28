@@ -21,6 +21,10 @@ export interface PublishAlertContentPublisherEmailTemplateData
   resource: Resource
 }
 
+export interface SchedulePageTemplateData extends BaseEmailTemplateData {
+  scheduledAt: Date
+}
+
 export interface PublishAlertSiteAdminEmailTemplateData
   extends BaseEmailTemplateData {
   publisherEmail: string
