@@ -19,7 +19,7 @@ export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
   breadcrumb: BreadcrumbProps
   title: string
   category: CollectionCardProps["category"]
-  date: CollectionCardProps["lastUpdated"]
+  date?: string
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }

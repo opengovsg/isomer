@@ -75,13 +75,12 @@ const COLLECTION_PAGE_SORT_BY = {
   category: "category",
 } as const
 
-export const COLLECTION_PAGE_DEFAULT_SORT_BY = COLLECTION_PAGE_SORT_BY.date
-
 const COLLECTION_PAGE_SORT_DIRECTION = {
   asc: "asc",
   desc: "desc",
 } as const
 
+export const COLLECTION_PAGE_DEFAULT_SORT_BY = COLLECTION_PAGE_SORT_BY.date
 export const COLLECTION_PAGE_DEFAULT_SORT_DIRECTION =
   COLLECTION_PAGE_SORT_DIRECTION.desc
 
