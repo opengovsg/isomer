@@ -5,6 +5,7 @@ import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
   BaseEmailTemplateData,
+  CancelSchedulePageTemplateData,
   EmailTemplate,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
@@ -88,6 +89,20 @@ export const schedulePageTemplate = (
     body: `<p>Hi ${recipientEmail},</p>
 <p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${format(scheduledAt, "MMMM d, yyyy hh:mm a")}</strong>.</p>
 <p>Log in to Isomer Studio at ${constructStudioRedirect()} to change or cancel this.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
+export const cancelSchedulePageTemplate = (
+  data: CancelSchedulePageTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, resource } = data
+  return {
+    subject: `[Isomer Studio] Your scheduled publish for ${resource.title} has been cancelled`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>Your scheduled publish for ${resource.title} has been cancelled.</p>
+<p>Log in to Isomer Studio at ${constructStudioRedirect()} to manage your content.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }
@@ -190,6 +205,8 @@ export const templates = {
     loginAlertTemplate satisfies EmailTemplateFunction<LoginAlertEmailTemplateData>,
   publishAlertContentPublisher:
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
+  cancelSchedulePage:
+    cancelSchedulePageTemplate satisfies EmailTemplateFunction<CancelSchedulePageTemplateData>,
   schedulePage:
     schedulePageTemplate satisfies EmailTemplateFunction<SchedulePageTemplateData>,
   publishAlertSiteAdmin:
