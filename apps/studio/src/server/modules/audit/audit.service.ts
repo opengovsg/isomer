@@ -24,30 +24,39 @@ type FullResource =
       resource: WithoutMeta<Resource>
     }
 
-interface ResourceCreateDelta {
-  before: null
-  after: FullResource
-}
-interface ResourceDeleteDelta {
-  before: FullResource
-  after: null
-}
-interface ResourceUpdateDelta {
-  before: FullResource
-  after: FullResource
+// map each event type to its delta type
+interface EventDeltaMap {
+  ResourceCreate: {
+    before: null
+    after: FullResource
+  }
+  ResourceUpdate: {
+    before: FullResource
+    after: FullResource
+  }
+  ResourceDelete: {
+    before: FullResource
+    after: null
+  }
+  ResourceSchedule: {
+    before: FullResource
+    after: FullResource
+  }
 }
 
-export interface ResourceEventLogProps {
-  eventType: Extract<
-    AuditLogEvent,
-    "ResourceCreate" | "ResourceUpdate" | "ResourceDelete" | "ResourceMove"
-  >
-  delta: ResourceCreateDelta | ResourceDeleteDelta | ResourceUpdateDelta
+interface BaseResourceEventLogProps {
   by: User
   ip?: string
   siteId: Site["id"]
   metadata?: Record<string, unknown>
 }
+
+export type ResourceEventLogProps = {
+  [K in keyof EventDeltaMap]: BaseResourceEventLogProps & {
+    eventType: K
+    delta: EventDeltaMap[K]
+  }
+}[keyof EventDeltaMap]
 
 // NOTE: Type to force every logger method to have a tx
 export type AuditLogger<T> = (tx: Transaction<DB>, props: T) => Promise<void>

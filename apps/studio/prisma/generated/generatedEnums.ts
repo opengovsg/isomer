@@ -25,6 +25,7 @@ export const AuditLogEvent = {
   ResourceCreate: "ResourceCreate",
   ResourceUpdate: "ResourceUpdate",
   ResourceDelete: "ResourceDelete",
+  ResourceSchedule: "ResourceSchedule",
   UserCreate: "UserCreate",
   UserUpdate: "UserUpdate",
   UserDelete: "UserDelete",
