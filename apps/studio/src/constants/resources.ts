@@ -11,7 +11,6 @@ export const USER_VIEWABLE_RESOURCE_TYPES: ResourceType[] = [
 
 // Resource types that users can create links to
 export const USER_LINKABLE_RESOURCE_TYPES = [
-  ResourceType.RootPage,
   ResourceType.Folder,
   ResourceType.Page,
   ResourceType.Collection,
