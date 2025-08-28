@@ -1,30 +1,28 @@
-import type { SearchableTableProps } from "~/interfaces"
-import { HYPERLINK_EXCEL_FUNCTION } from "./constants"
-import { SearchableTableClient } from "./SearchableTableClient"
+import type {
+  DGSSearchableTableProps,
+  NativeSearchableTableProps,
+  SearchableTableProps,
+} from "~/interfaces"
+import { DATA_SOURCE_TYPE } from "~/interfaces/integration"
+import { DGSSearchableTable } from "./DGS"
+import { NativeSearchableTable } from "./Native"
 
-const SearchableTable = ({ items, ...rest }: SearchableTableProps) => {
-  const cacheItems = items.map((item) => ({
-    row: item,
-    key: item
-      .map((content) => {
-        if (
-          typeof content === "string" &&
-          content.startsWith(HYPERLINK_EXCEL_FUNCTION) &&
-          content.endsWith(")")
-        ) {
-          const link = content.slice(HYPERLINK_EXCEL_FUNCTION.length, -1)
-          const [linkHref, linkText] = link.split(",")
+export const SearchableTable = (props: SearchableTableProps) => {
+  // For backward compatibility, where dataSource is not provided,
+  if (!props.dataSource) {
+    return <NativeSearchableTable {...(props as NativeSearchableTableProps)} />
+  }
 
-          return linkText || linkHref
-        }
-
-        return content
-      })
-      .join(" ")
-      .toLowerCase(),
-  }))
-
-  return <SearchableTableClient items={cacheItems} {...rest} />
+  const { type } = props.dataSource
+  switch (type) {
+    case DATA_SOURCE_TYPE.native:
+      return (
+        <NativeSearchableTable {...(props as NativeSearchableTableProps)} />
+      )
+    case DATA_SOURCE_TYPE.dgs:
+      return <DGSSearchableTable {...(props as DGSSearchableTableProps)} />
+    default:
+      const _exhaustiveCheck: never = type
+      return _exhaustiveCheck
+  }
 }
-
-export default SearchableTable

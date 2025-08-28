@@ -1,4 +1,4 @@
-import type { SearchableTableClientProps } from "./SearchableTableClient"
+import type { SearchableTableClientProps } from "~/interfaces"
 
 interface GetFilteredItemsParams {
   items: SearchableTableClientProps["items"]

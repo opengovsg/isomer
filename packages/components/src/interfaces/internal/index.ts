@@ -35,6 +35,9 @@ export type { SearchProps } from "./Search"
 export {
   SearchableTableSchema,
   type SearchableTableProps,
+  type SearchableTableClientProps,
+  type NativeSearchableTableProps,
+  type DGSSearchableTableProps,
 } from "./SearchableTable"
 export {
   SearchSGSearchSchema,
