@@ -15,7 +15,7 @@ import {
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
-import { format } from "date-fns"
+import { format, isBefore } from "date-fns"
 import _, { get, isEmpty, isEqual } from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -344,6 +344,13 @@ export const pageRouter = router({
         action: "update",
         userId: ctx.user.id,
       })
+      // check if the input.scheduledAt is after the current time
+      if (isBefore(input.scheduledAt, new Date())) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Scheduled time must be in the future",
+        })
+      }
       const by = await db
         .selectFrom("User")
         .where("id", "=", ctx.user.id)
@@ -379,12 +386,13 @@ export const pageRouter = router({
           },
           tx,
         )
+        // TODO: add logic to add the job to the job queue
         await logResourceEvent(tx, {
           siteId: input.siteId,
           by,
           delta: {
             before: resource,
-            after: resource,
+            after: { ...resource, scheduledAt: input.scheduledAt },
           },
           eventType: AuditLogEvent.ResourceSchedule,
         })

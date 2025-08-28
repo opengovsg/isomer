@@ -16,6 +16,7 @@ export const DEFAULT_COLLECTION_ITEMS = [
     state: ResourceState.Draft,
     siteId: 1,
     createdAt: new Date("2024-09-12T07:00:30.000Z"),
+    scheduledAt: null,
   },
   {
     id: "5",
@@ -29,6 +30,7 @@ export const DEFAULT_COLLECTION_ITEMS = [
     state: ResourceState.Draft,
     siteId: 1,
     createdAt: new Date("2024-09-12T07:00:30.000Z"),
+    scheduledAt: null,
   },
 ]
 export const collectionHandlers = {
@@ -49,6 +51,7 @@ export const collectionHandlers = {
         permalink: "/mock/title",
         parentId: "1",
         publishedVersionId: null,
+        scheduledAt: null,
         draftBlobId: "1",
       })),
   },
