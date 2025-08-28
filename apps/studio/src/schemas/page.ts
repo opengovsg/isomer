@@ -1,6 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import { format, isValid, parse, set } from "date-fns"
 import { z } from "zod"
 
 import { ajv } from "~/utils/ajv"
@@ -55,6 +56,30 @@ export const reorderBlobSchema = z.object({
       .passthrough(),
   ),
 })
+
+// Schema for scheduling a page (publishAt is derived from publishDate and publishTime)
+// On the client side, publishDate is selected via a date picker
+// and publishTime is selected via a time picker (in HH:mm format)
+export const schedulePageSchema = basePageSchema
+  .extend({
+    publishDate: z.date(),
+    publishTime: z.string().refine((time) => {
+      // check that time is in HH:mm format
+      const parsed = parse(time, "HH:mm", new Date())
+      return isValid(parsed) && format(parsed, "HH:mm") === time
+    }),
+  })
+  .transform(({ publishDate, publishTime, ...rest }) => {
+    // combine publishDate and publishTime into a single Date object
+    const [hours, minutes] = publishTime.split(":").map(Number)
+    return {
+      ...rest,
+      scheduledAt: set(publishDate, {
+        hours,
+        minutes,
+      }),
+    }
+  })
 
 export const updatePageBlobSchema = basePageSchema.extend({
   content: z.string().transform((value, ctx) => {

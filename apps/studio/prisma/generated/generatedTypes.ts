@@ -75,6 +75,7 @@ export interface Resource {
   draftBlobId: string | null
   state: Generated<ResourceState | null>
   type: ResourceType
+  scheduledAt: Timestamp | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
