@@ -6,7 +6,7 @@ import {
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
-import { addDays, format, set } from "date-fns"
+import { addDays, set } from "date-fns"
 import { omit, pick } from "lodash"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -2031,8 +2031,12 @@ describe("page.router", async () => {
       await caller.schedulePage({
         siteId: site.id,
         pageId: Number(expectedPage.id),
-        publishDate: addDays(now, 1),
-        publishTime: "10:00",
+        scheduledAt: set(addDays(now, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
       })
       // Assert
       const actual = await db
@@ -2078,8 +2082,7 @@ describe("page.router", async () => {
         caller.schedulePage({
           siteId: site.id,
           pageId: Number(expectedPage.id),
-          publishDate: scheduledAtInPast,
-          publishTime: format(scheduledAtInPast, "HH:mm"),
+          scheduledAt: scheduledAtInPast,
         }),
       ).rejects.toThrowError()
     })
