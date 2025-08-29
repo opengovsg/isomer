@@ -6,7 +6,7 @@ import {
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
-import { addDays, format, set, subDays } from "date-fns"
+import { addDays, set, subDays } from "date-fns"
 import { omit, pick } from "lodash"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
@@ -2037,8 +2037,12 @@ describe("page.router", async () => {
       const scheduleCaller = caller.schedulePage({
         siteId: site.id,
         pageId: Number(expectedPage.id),
-        publishDate: addDays(FIXED_NOW, 1),
-        publishTime: "10:00",
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
       })
 
       // Assert
@@ -2064,8 +2068,12 @@ describe("page.router", async () => {
       await caller.schedulePage({
         siteId: site.id,
         pageId: Number(expectedPage.id),
-        publishDate: addDays(FIXED_NOW, 1),
-        publishTime: "10:00",
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
       })
 
       // Assert
@@ -2113,8 +2121,7 @@ describe("page.router", async () => {
         caller.schedulePage({
           siteId: site.id,
           pageId: Number(expectedPage.id),
-          publishDate: subDays(FIXED_NOW, 1),
-          publishTime: format(FIXED_NOW, "HH:mm"),
+          scheduledAt: subDays(FIXED_NOW, 1),
         }),
       ).rejects.toThrowError()
 

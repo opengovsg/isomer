@@ -1,6 +1,7 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
+import type { z } from "zod"
 import { createContext, useContext, useMemo, useState } from "react"
 import { useRouter } from "next/router"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -93,46 +94,48 @@ const useCreateCollectionPageWizardContext = ({
       // TOOD: Error handling
     })
 
-  const handleCreatePage = formMethods.handleSubmit((values) => {
-    mutate(
-      {
-        siteId,
-        collectionId,
-        ...values,
-      },
-      {
-        onSuccess: ({ pageId }) => {
-          const nextType = getResourceSubpath(type)
-          void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
+  const handleCreatePage = formMethods.handleSubmit(
+    (values: z.output<typeof createCollectionPageFormSchema>) => {
+      mutate(
+        {
+          siteId,
+          collectionId,
+          ...values,
         },
-        onError: (error) => {
-          if (
-            error.data?.code === "CONFLICT" &&
-            values.type === ResourceType.CollectionPage
-          ) {
-            formMethods.setError(
-              "permalink",
-              { message: error.message },
-              { shouldFocus: true },
-            )
-            return
-          } else if (
-            error.data?.code === "CONFLICT" &&
-            values.type === ResourceType.CollectionLink
-          ) {
-            formMethods.setError(
-              "title",
-              { message: error.message },
-              { shouldFocus: true },
-            )
-            return
-          } else {
-            console.error(error)
-          }
+        {
+          onSuccess: ({ pageId }) => {
+            const nextType = getResourceSubpath(type)
+            void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
+          },
+          onError: (error) => {
+            if (
+              error.data?.code === "CONFLICT" &&
+              values.type === ResourceType.CollectionPage
+            ) {
+              formMethods.setError(
+                "permalink",
+                { message: error.message },
+                { shouldFocus: true },
+              )
+              return
+            } else if (
+              error.data?.code === "CONFLICT" &&
+              values.type === ResourceType.CollectionLink
+            ) {
+              formMethods.setError(
+                "title",
+                { message: error.message },
+                { shouldFocus: true },
+              )
+              return
+            } else {
+              console.error(error)
+            }
+          },
         },
-      },
-    )
-  })
+      )
+    },
+  )
 
   const handleNextToDetailScreen = () => {
     setCurrentStep(CreateCollectionPageFlowStates.Details)

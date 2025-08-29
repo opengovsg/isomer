@@ -7,7 +7,7 @@ import {
   set,
   startOfDay,
 } from "date-fns"
-import { fromZonedTime } from "date-fns-tz/dist/cjs/fromZonedTime"
+import { fromZonedTime } from "date-fns-tz"
 import { z } from "zod"
 
 import { basePageSchema } from "./page"
