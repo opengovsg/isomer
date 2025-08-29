@@ -1,9 +1,9 @@
 import { Button, HStack, Icon, Text, useDisclosure } from "@chakra-ui/react"
 import { TouchableTooltip } from "@opengovsg/design-system-react"
-import { format } from "date-fns"
 import { BiTimeFive } from "react-icons/bi"
 
-import { CancelScheduleModal } from "./ScheduledPublishingModal"
+import { CancelScheduleModal } from "."
+import { formatScheduledAtDate } from "./utils"
 
 export const CancelSchedulePublishIndicator = ({
   pageId,
@@ -29,7 +29,7 @@ export const CancelSchedulePublishIndicator = ({
           <HStack spacing="0.25rem">
             <Icon as={BiTimeFive} boxSize="1rem" />
             <Text textStyle="caption-1">
-              {format(scheduledAt, "hh:mma, dd/MM/yyyy")}
+              {formatScheduledAtDate(scheduledAt)}
             </Text>
           </HStack>
         </TouchableTooltip>

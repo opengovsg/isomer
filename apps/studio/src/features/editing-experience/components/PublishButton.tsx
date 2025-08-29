@@ -12,8 +12,8 @@ import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
-import { CancelSchedulePublishIndicator } from "./CancelSchedulePublishIndicator"
 import { ScheduledPublishingModal } from "./ScheduledPublishingModal"
+import { CancelSchedulePublishIndicator } from "./ScheduledPublishingModal/CancelSchedulePublishIndicator"
 
 interface PublishButtonProps extends ButtonProps {
   pageId: number
