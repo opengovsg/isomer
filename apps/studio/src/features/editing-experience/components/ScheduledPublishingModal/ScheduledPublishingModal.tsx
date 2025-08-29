@@ -24,7 +24,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { add, format, isBefore, isSameDay, startOfDay } from "date-fns"
+import { add, format, isBefore, isSameDay, parse, startOfDay } from "date-fns"
 import { Controller, FormProvider, useFormContext } from "react-hook-form"
 import { BiCheck, BiRocket, BiTimeFive } from "react-icons/bi"
 
@@ -100,12 +100,14 @@ export const ScheduledPublishingModal = ({
         onSubmit={(e) => {
           e.preventDefault()
           // publish immediately if publish mode is now, else schedule publish
+          // TODO: work the publish now and schedule publish flows into the same zod schema
           if (publishMode === PublishMode.NOW) {
             onPublishNow()
           } else {
-            methods.handleSubmit((res) => {
-              schedulePageMutation(res)
-            })
+            void methods.handleSubmit(
+              (res) => schedulePageMutation(res),
+              (err) => console.error(err),
+            )(e)
           }
         }}
       >
@@ -186,29 +188,41 @@ const getEarliestAllowableTime = (
 
 const SchedulePublishDetails = () => {
   const {
+    resetField,
     watch,
     control,
     formState: { errors },
   } = useFormContext<z.input<typeof schedulePageSchema>>()
 
   const publishDate = watch("publishDate")
+  const publishTime = watch("publishTime")
   // this is the earliest date and time that the user can schedule a publish for
   const { earliestAllowableTime, earliestSchedule } = useMemo(() => {
     const earliestSchedule = add(new Date(), {
       minutes: MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
     })
+    const earliestAllowableTime = getEarliestAllowableTime(
+      publishDate,
+      earliestSchedule,
+    )
+    // if there is an earliest allowable time and the indicated publish time is out of range
+    // reset the publish time to make the user re-input the time
+    if (
+      earliestAllowableTime &&
+      publishTime &&
+      isBefore(parse(publishTime, "HH:mm", new Date()), earliestSchedule)
+    ) {
+      resetField("publishTime")
+    }
     return {
       earliestSchedule,
-      earliestAllowableTime: getEarliestAllowableTime(
-        publishDate,
-        earliestSchedule,
-      ),
+      earliestAllowableTime,
     }
-  }, [publishDate])
+  }, [publishDate, publishTime, resetField])
 
   return (
     <VStack align="stretch" spacing="0.5rem">
-      <HStack spacing="1.5rem" w="100%">
+      <HStack spacing="1.5rem" w="100%" alignItems="flex-start">
         <FormControl isInvalid={!!errors.publishDate} flexGrow={1}>
           <FormLabel isRequired>Date</FormLabel>
           <Controller
@@ -240,7 +254,7 @@ const SchedulePublishDetails = () => {
               />
             )}
           />
-          <FormErrorMessage>{errors.publishDate?.message}</FormErrorMessage>
+          <FormErrorMessage>{errors.publishTime?.message}</FormErrorMessage>
         </FormControl>
       </HStack>
       <QuickSelectTimeSection earliestAllowableTime={earliestAllowableTime} />
