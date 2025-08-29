@@ -1,7 +1,7 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IconType } from "react-icons"
 import type { z } from "zod"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   FormControl,
   HStack,
@@ -26,7 +26,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { add, format, isBefore, isSameDay, parse, startOfDay } from "date-fns"
 import { Controller, FormProvider, useFormContext } from "react-hook-form"
-import { BiCheck, BiRocket, BiTimeFive } from "react-icons/bi"
+import { BiCalendarCheck, BiCheck, BiRocket, BiTimeFive } from "react-icons/bi"
 
 import { TimeSelect } from "~/components/Select/TimeSelect"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -59,6 +59,8 @@ export const ScheduledPublishingModal = ({
   const toast = useToast()
   const utils = trpc.useUtils()
   const [publishMode, setPublishMode] = useState<PublishMode>(PublishMode.NOW)
+  const [isScheduledPublishValid, setIsScheduledPublishValid] = useState(false)
+
   const methods = useZodForm({
     schema: schedulePageSchema,
     defaultValues: {
@@ -66,6 +68,19 @@ export const ScheduledPublishingModal = ({
       siteId,
     },
   })
+
+  // Validate form when publish mode changes or when the date/time selected changes
+  // so the banner can be shown to the users. Do NOT use trigger() since that
+  // triggers validation and causes error messages to show up
+  useEffect(() => {
+    const validateForm = () => {
+      if (publishMode === PublishMode.NOW) return
+      const valid = schedulePageSchema.safeParse(methods.getValues())
+      setIsScheduledPublishValid(valid.success)
+    }
+    const subscription = methods.watch(() => void validateForm())
+    return () => subscription.unsubscribe()
+  }, [methods, publishMode])
 
   const { mutate: schedulePageMutation } = trpc.page.schedulePage.useMutation({
     onSettled: () => {
@@ -117,31 +132,35 @@ export const ScheduledPublishingModal = ({
           <ModalCloseButton size="lg" />
           <ModalBody>
             <FormProvider {...methods}>
-              <VStack spacing="1rem" align="stretch">
-                <VStack align="stretch" spacing="1.5rem">
-                  <Text textStyle="subhead-1">
-                    When should we publish this page?
-                  </Text>
-                  <VStack spacing="0.75rem" align="stretch">
-                    <PublishModeCard
-                      icon={BiRocket}
-                      title="Publish now"
-                      description="Changes will be live on your site in approximately 5-10 minutes."
-                      isSelected={publishMode === PublishMode.NOW}
-                      onSelect={() => setPublishMode(PublishMode.NOW)}
-                    />
-                    <PublishModeCard
-                      icon={BiTimeFive}
-                      title="Publish later"
-                      description="Let us know when the page should start publishing."
-                      isSelected={publishMode === PublishMode.SCHEDULED}
-                      onSelect={() => setPublishMode(PublishMode.SCHEDULED)}
-                    />
+              <VStack align="stretch" spacing="1.5rem">
+                <VStack spacing="1rem" align="stretch">
+                  <VStack align="stretch" spacing="1.5rem">
+                    <Text textStyle="subhead-1">
+                      When should we publish this page?
+                    </Text>
+                    <VStack spacing="0.75rem" align="stretch">
+                      <PublishModeCard
+                        icon={BiRocket}
+                        title="Publish now"
+                        description="Changes will be live on your site in approximately 5-10 minutes."
+                        isSelected={publishMode === PublishMode.NOW}
+                        onSelect={() => setPublishMode(PublishMode.NOW)}
+                      />
+                      <PublishModeCard
+                        icon={BiTimeFive}
+                        title="Publish later"
+                        description="Let us know when the page should start publishing."
+                        isSelected={publishMode === PublishMode.SCHEDULED}
+                        onSelect={() => setPublishMode(PublishMode.SCHEDULED)}
+                      />
+                    </VStack>
                   </VStack>
+                  {publishMode === PublishMode.SCHEDULED && (
+                    <SchedulePublishDetails />
+                  )}
                 </VStack>
-                {publishMode === PublishMode.SCHEDULED && (
-                  <SchedulePublishDetails />
-                )}
+                {publishMode === PublishMode.SCHEDULED &&
+                  isScheduledPublishValid && <SchedulePublishBanner />}
               </VStack>
             </FormProvider>
           </ModalBody>
@@ -267,51 +286,56 @@ const QuickSelectTimeSection = ({
 }: {
   earliestAllowableTime: { hours: number; minutes: number } | undefined
 }) => {
-  // the array of pills to display in the section
-  const quickSelectTimes: { hours: number; minutes: number }[] = [
-    { hours: 0, minutes: 0 },
-    { hours: 9, minutes: 0 },
-    { hours: 13, minutes: 0 },
-    { hours: 17, minutes: 0 },
-  ]
+  const optionsToShow = useMemo(() => {
+    // the array of pills to display in the section
+    const quickSelectTimes: { hours: number; minutes: number }[] = [
+      { hours: 0, minutes: 0 },
+      { hours: 9, minutes: 0 },
+      { hours: 13, minutes: 0 },
+      { hours: 17, minutes: 0 },
+    ]
+    return quickSelectTimes.filter(({ hours, minutes }) => {
+      // filter out the time if it is before the earliest allowable time
+      // since both are kept as {hours, minutes}, we don't need to convert them to Date objects
+      if (!earliestAllowableTime) return true
+      return (
+        hours > earliestAllowableTime.hours ||
+        (hours === earliestAllowableTime.hours &&
+          minutes >= earliestAllowableTime.minutes)
+      )
+    })
+  }, [earliestAllowableTime])
   const { setValue } = useFormContext<z.input<typeof schedulePageSchema>>()
   return (
-    <VStack align="stretch" spacing="0.5rem">
-      <Text textStyle="caption-2">Quick select a time?</Text>
-      <HStack spacing="0.5rem">
-        {quickSelectTimes
-          .filter(({ hours, minutes }) => {
-            // filter out the time if it is before the earliest allowable time
-            // since both are kept as {hours, minutes}, we don't need to convert them to Date objects
-            if (!earliestAllowableTime) return true
-            return (
-              hours > earliestAllowableTime.hours ||
-              (hours === earliestAllowableTime.hours &&
-                minutes >= earliestAllowableTime.minutes)
-            )
-          })
-          .map((time) => {
-            const date = new Date()
-            date.setHours(time.hours, time.minutes, 0, 0)
-            const displayFormatted = format(date, "h:mm a")
-            const valueFormatted = format(date, "HH:mm")
-            return (
-              <Badge
-                key={displayFormatted}
-                variant="outline"
-                cursor="pointer"
-                borderWidth="1px"
-                borderColor="blue.200"
-                onClick={() => setValue("publishTime", valueFormatted)}
-              >
-                <Text textStyle="legal" color="interaction.main.default">
-                  {displayFormatted}
-                </Text>
-              </Badge>
-            )
-          })}
-      </HStack>
-    </VStack>
+    <>
+      {optionsToShow.length > 0 && (
+        <VStack align="stretch" spacing="0.5rem">
+          <Text textStyle="caption-2">Quick select a time?</Text>
+          <HStack spacing="0.5rem">
+            {optionsToShow.map((time) => {
+              const date = new Date()
+              date.setHours(time.hours, time.minutes, 0, 0)
+              const displayFormatted = format(date, "h:mm a")
+              const valueFormatted = format(date, "HH:mm")
+              return (
+                <Badge
+                  key={displayFormatted}
+                  variant="outline"
+                  cursor="pointer"
+                  borderWidth="1px"
+                  borderColor="blue.200"
+                  onClick={() => setValue("publishTime", valueFormatted)}
+                >
+                  <Text textStyle="legal" color="interaction.main.default">
+                    {displayFormatted}
+                  </Text>
+                </Badge>
+              )
+            })}
+          </HStack>
+        </VStack>
+      )}
+    </>
   )
 }
 
@@ -365,6 +389,37 @@ const PublishModeCard = ({
         </HStack>
         <Text textStyle="body-2">{description}</Text>
       </VStack>
+    </HStack>
+  )
+}
+
+const SchedulePublishBanner = () => {
+  const { getValues } = useFormContext<z.input<typeof schedulePageSchema>>()
+
+  return (
+    <HStack
+      spacing="0.5rem"
+      alignItems="flex-start"
+      bgColor="utility.feedback.info-subtle"
+      borderRadius="0.25rem"
+      p="0.75rem"
+    >
+      <Icon as={BiCalendarCheck} boxSize="1rem" color="base.content.default" />
+      <Text textStyle="body-2" color="base.content.strong" display="inline">
+        We will publish this page at{" "}
+        <Text display="inline" textStyle="subhead-2">
+          {format(
+            parse(getValues("publishTime"), "HH:mm", new Date()),
+            "hh:mm a",
+          )}
+        </Text>
+        , Singapore Standard Time, on{" "}
+        <Text display="inline" textStyle="subhead-2">
+          {format(getValues("publishDate"), "MMMM d, yyyy")}
+        </Text>
+        . Changes will be live on your site approximately 15-30 minutes after
+        publishing.
+      </Text>
     </HStack>
   )
 }
