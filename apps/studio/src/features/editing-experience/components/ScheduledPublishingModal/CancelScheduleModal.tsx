@@ -67,7 +67,7 @@ export const CancelScheduleModal = ({
             variant="clear"
             color="base.content.strong"
           >
-            No, leave it{" "}
+            No, leave it
           </Button>
           <Button
             onClick={() => mutate({ pageId, siteId })}
