@@ -75,12 +75,16 @@ const SuspendablePublishButton = ({
         >
           {allowed && (
             <>
-              <ScheduledPublishingModal
-                {...scheduledPublishingDisclosure}
-                siteId={siteId}
-                pageId={pageId}
-                onPublishNow={() => mutate({ pageId, siteId })}
-              />
+              {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
+              {scheduledPublishingDisclosure.isOpen && (
+                <ScheduledPublishingModal
+                  {...scheduledPublishingDisclosure}
+                  siteId={siteId}
+                  pageId={pageId}
+                  onPublishNow={(pageId, siteId) => mutate({ pageId, siteId })}
+                  isPublishingNow={isPending}
+                />
+              )}
               <Button
                 isDisabled={!isChangesPendingPublish || isDisabled}
                 variant="solid"
