@@ -210,8 +210,8 @@ export const up = async () => {
 
       for (const resource of resourcesWithTags) {
         const draftBlob = resource.content
-        const tagsOfResource = (resource.content.page as any)
-          .tags as LegacyTag[]
+        const tagsOfResource =
+          ((resource.content.page as any).tags as LegacyTag[]) ?? []
         // NOTE: we only update the `page.tags` here
         // since the rest of the content is not changed
         const updatedDraftBlobContent = generateUpdatedContent(
@@ -385,18 +385,22 @@ const getCollatedTags = async (
     (resource) => {
       let draftTags: LegacyTag[] = []
       if (resource.draftBlobContent) {
-        draftTags = (resource.draftBlobContent.page as any).tags as LegacyTag[]
+        draftTags =
+          ((resource.draftBlobContent.page as any).tags as LegacyTag[]) ?? []
       }
 
       let publishedTags: LegacyTag[] = []
       if (resource.publishedBlobContent) {
-        publishedTags = (resource.publishedBlobContent.page as any)
-          .tags as LegacyTag[]
+        publishedTags =
+          ((resource.publishedBlobContent.page as any).tags as LegacyTag[]) ??
+          []
       }
 
       return [draftTags, publishedTags]
     },
   )
+
+  console.log(tags)
 
   const baseTags: {
     categories: Set<string>
