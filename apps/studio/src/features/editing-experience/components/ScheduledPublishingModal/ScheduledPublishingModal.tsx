@@ -28,25 +28,24 @@ import { add, format, isBefore, isSameDay, parse, startOfDay } from "date-fns"
 import { Controller, FormProvider, useFormContext } from "react-hook-form"
 import { BiCalendarCheck, BiCheck, BiRocket, BiTimeFive } from "react-icons/bi"
 
+import type { schedulePublishClientSchema } from "~/schemas/schedule"
 import { TimeSelect } from "~/components/Select/TimeSelect"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 import {
   MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
-  schedulePageSchema,
-} from "~/schemas/page"
+  publishClientSchema,
+  PublishMode,
+} from "~/schemas/schedule"
 import { trpc } from "~/utils/trpc"
-
-enum PublishMode {
-  NOW,
-  SCHEDULED,
-}
 
 interface ScheduledPublishingModalProps extends UseDisclosureReturn {
   pageId: number
   siteId: number
   // callback invoked to handle the publishing process now
-  onPublishNow: () => void
+  onPublishNow: (pageId: number, siteId: number) => void
+  // used for the loading state of the publish button
+  isPublishingNow?: boolean
 }
 
 export const ScheduledPublishingModal = ({
@@ -54,77 +53,76 @@ export const ScheduledPublishingModal = ({
   siteId,
   onClose,
   onPublishNow,
+  isPublishingNow,
   ...rest
 }: ScheduledPublishingModalProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
-  const [publishMode, setPublishMode] = useState<PublishMode>(PublishMode.NOW)
   const [isScheduledPublishValid, setIsScheduledPublishValid] = useState(false)
 
-  const methods = useZodForm({
-    schema: schedulePageSchema,
+  const methods = useZodForm<typeof publishClientSchema>({
+    schema: publishClientSchema,
     defaultValues: {
+      publishMode: PublishMode.NOW,
       pageId,
       siteId,
     },
   })
-
+  const publishMode = methods.watch("publishMode")
   // Validate form when publish mode changes or when the date/time selected changes
   // so the banner can be shown to the users. Do NOT use trigger() since that
   // triggers validation and causes error messages to show up
   useEffect(() => {
     const validateForm = () => {
-      if (publishMode === PublishMode.NOW) return
-      const valid = schedulePageSchema.safeParse(methods.getValues())
+      if (publishMode === PublishMode.NOW) setIsScheduledPublishValid(false)
+      const valid = publishClientSchema.safeParse(methods.getValues())
       setIsScheduledPublishValid(valid.success)
     }
     const subscription = methods.watch(() => void validateForm())
     return () => subscription.unsubscribe()
   }, [methods, publishMode])
 
-  const { mutate: schedulePageMutation } = trpc.page.schedulePage.useMutation({
-    onSettled: () => {
-      onClose()
-    },
-    onSuccess: async () => {
-      toast({
-        status: "success",
-        title: "Page scheduled successfully",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-      await utils.page.readPage.invalidate({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
-      await utils.site.getLocalisedSitemap.invalidate({
-        resourceId: pageId,
-        siteId,
-      })
-    },
-    onError: async (error) => {
-      console.error(`Error occurred when scheduling page: ${error.message}`)
-      toast({
-        status: "error",
-        title: "Failed to schedule page. Please contact Isomer support.",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-      await utils.page.readPage.invalidate({ pageId, siteId })
-    },
-  })
+  const { mutate: schedulePageMutation, isPending: isScheduling } =
+    trpc.page.schedulePage.useMutation({
+      onSettled: () => {
+        onClose()
+      },
+      onSuccess: async () => {
+        toast({
+          status: "success",
+          title: "Page scheduled successfully",
+          ...BRIEF_TOAST_SETTINGS,
+        })
+        await utils.page.readPage.invalidate({ pageId, siteId })
+        await utils.page.getCategories.invalidate({ pageId, siteId })
+        await utils.site.getLocalisedSitemap.invalidate({
+          resourceId: pageId,
+          siteId,
+        })
+      },
+      onError: async (error) => {
+        console.error(`Error occurred when scheduling page: ${error.message}`)
+        toast({
+          status: "error",
+          title: "Failed to schedule page. Please contact Isomer support.",
+          ...BRIEF_TOAST_SETTINGS,
+        })
+        await utils.page.readPage.invalidate({ pageId, siteId })
+      },
+    })
   return (
     <Modal onClose={onClose} {...rest}>
       <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          // publish immediately if publish mode is now, else schedule publish
-          // TODO: work the publish now and schedule publish flows into the same zod schema
-          if (publishMode === PublishMode.NOW) {
-            onPublishNow()
-          } else {
-            void methods.handleSubmit(
-              (res) => schedulePageMutation(res),
-              (err) => console.error(err),
-            )(e)
-          }
-        }}
+        onSubmit={methods.handleSubmit(
+          (res: z.output<typeof publishClientSchema>) => {
+            // publish immediately if publish mode is now, else schedule publish
+            if (res.publishMode === PublishMode.NOW) {
+              onPublishNow(res.pageId, res.siteId)
+            } else {
+              schedulePageMutation(res)
+            }
+          },
+        )}
       >
         <ModalOverlay />
         <ModalContent>
@@ -144,14 +142,18 @@ export const ScheduledPublishingModal = ({
                         title="Publish now"
                         description="Changes will be live on your site in approximately 5-10 minutes."
                         isSelected={publishMode === PublishMode.NOW}
-                        onSelect={() => setPublishMode(PublishMode.NOW)}
+                        onSelect={() =>
+                          methods.setValue("publishMode", PublishMode.NOW)
+                        }
                       />
                       <PublishModeCard
                         icon={BiTimeFive}
                         title="Publish later"
                         description="Let us know when the page should start publishing."
                         isSelected={publishMode === PublishMode.SCHEDULED}
-                        onSelect={() => setPublishMode(PublishMode.SCHEDULED)}
+                        onSelect={() =>
+                          methods.setValue("publishMode", PublishMode.SCHEDULED)
+                        }
                       />
                     </VStack>
                   </VStack>
@@ -173,7 +175,7 @@ export const ScheduledPublishingModal = ({
             >
               No, don't publish
             </Button>
-            <Button type="submit">
+            <Button type="submit" isLoading={isPublishingNow || isScheduling}>
               {publishMode === PublishMode.NOW
                 ? "Publish now"
                 : "Schedule publish"}
@@ -211,7 +213,7 @@ const SchedulePublishDetails = () => {
     watch,
     control,
     formState: { errors },
-  } = useFormContext<z.input<typeof schedulePageSchema>>()
+  } = useFormContext<z.input<typeof schedulePublishClientSchema>>()
 
   const publishDate = watch("publishDate")
   const publishTime = watch("publishTime")
@@ -305,7 +307,8 @@ const QuickSelectTimeSection = ({
       )
     })
   }, [earliestAllowableTime])
-  const { setValue } = useFormContext<z.input<typeof schedulePageSchema>>()
+  const { setValue } =
+    useFormContext<z.input<typeof schedulePublishClientSchema>>()
   return (
     <>
       {optionsToShow.length > 0 && (
@@ -394,7 +397,8 @@ const PublishModeCard = ({
 }
 
 const SchedulePublishBanner = () => {
-  const { getValues } = useFormContext<z.input<typeof schedulePageSchema>>()
+  const { getValues } =
+    useFormContext<z.input<typeof schedulePublishClientSchema>>()
 
   return (
     <HStack
