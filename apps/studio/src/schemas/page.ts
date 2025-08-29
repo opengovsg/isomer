@@ -1,16 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
-import {
-  add,
-  format,
-  isBefore,
-  isValid,
-  parse,
-  set,
-  startOfDay,
-} from "date-fns"
-import { fromZonedTime } from "date-fns-tz"
 import { z } from "zod"
 
 import { ajv } from "~/utils/ajv"
@@ -65,52 +55,6 @@ export const reorderBlobSchema = z.object({
       .passthrough(),
   ),
 })
-
-// Schema for scheduling a page (publishAt is derived from publishDate and publishTime)
-// On the client side, publishDate is selected via a date picker
-// and publishTime is selected via a time picker (in HH:mm format)
-const MINIMUM_SCHEDULE_LEAD_TIME_MINUTES = 10
-
-export const schedulePageSchema = basePageSchema
-  .extend({
-    publishDate: z.date(),
-    publishTime: z.string().refine((time) => {
-      // check that time is in HH:mm format
-      const parsed = parse(time, "HH:mm", new Date())
-      return isValid(parsed) && format(parsed, "HH:mm") === time
-    }),
-  })
-  .transform(({ publishDate, publishTime, ...rest }) => {
-    // combine publishDate and publishTime into a single Date object
-    const [hours, minutes] = publishTime.split(":").map(Number)
-    return {
-      ...rest,
-      scheduledAt: fromZonedTime(
-        set(publishDate, {
-          hours,
-          minutes,
-          seconds: 0,
-          milliseconds: 0,
-        }),
-        "Asia/Singapore",
-      ),
-    }
-  })
-  .superRefine(({ scheduledAt }, ctx) => {
-    const earliestScheduleTime = add(new Date(), {
-      minutes: MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
-    })
-    const isDateBeforeToday =
-      startOfDay(scheduledAt) < startOfDay(earliestScheduleTime)
-
-    if (isBefore(scheduledAt, earliestScheduleTime)) {
-      ctx.addIssue({
-        path: isDateBeforeToday ? ["publishDate"] : ["publishTime"],
-        code: z.ZodIssueCode.custom,
-        message: `Earliest publish time allowable is ${format(earliestScheduleTime, "MMMM d, yyyy hh:mm a")}`,
-      })
-    }
-  })
 
 export const updatePageBlobSchema = basePageSchema.extend({
   content: z.string().transform((value, ctx) => {
