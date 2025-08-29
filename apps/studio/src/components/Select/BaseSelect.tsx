@@ -43,8 +43,6 @@ export const BaseSelect = <T,>({
 
   return (
     <Select<BaseSelectOption<T>>
-      menuPortalTarget={document.body}
-      menuPosition="fixed"
       isSearchable={isSearchable}
       value={transformSelect.input(value)}
       onChange={(value) => onChange(transformSelect.output(value))}
