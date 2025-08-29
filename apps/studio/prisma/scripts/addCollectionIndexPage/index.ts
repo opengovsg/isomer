@@ -5,7 +5,7 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { get } from "lodash"
+import _ from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
@@ -30,19 +30,24 @@ export const up = async () => {
     .where("p.type", "=", ResourceType.Collection)
     .execute()
 
+  console.log(
+    `Found ${collectionsWithoutIndexPages.length} collections without index pages`,
+  )
+
   for (const collection of collectionsWithoutIndexPages) {
     if (collection.type != ResourceType.Collection) {
-      throw new Error(
+      console.log(
         `invalid type: ${collection.type}, resource: ${collection.id}`,
       )
+      continue
     }
     console.log(`Adding index page to collection with id: ${collection.id}`)
-    // NOTE: should only have 42 rows requiring this migration
+    // NOTE: should only have 47 rows requiring this migration
     const blobContent = {
       layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
       page: {
         title: collection.title,
-        subtitle: `Read more on ${collection.title.toLowerCase()} here.`,
+        subtitle: `Read up-to-date news articles, speeches, and press releases here.`,
         defaultSortBy: COLLECTION_PAGE_DEFAULT_SORT_BY,
         defaultSortDirection: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
       } as CollectionPagePageProps,
@@ -71,7 +76,7 @@ export const up = async () => {
         .returningAll()
         .executeTakeFirstOrThrow()
         .catch((err) => {
-          if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+          if (_.get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
             throw new TRPCError({
               code: "CONFLICT",
               message: "A resource with the same permalink already exists",
@@ -84,3 +89,5 @@ export const up = async () => {
     })
   }
 }
+
+await up()
