@@ -3,7 +3,6 @@ import type { IconType } from "react-icons"
 import type { z } from "zod"
 import { useState } from "react"
 import {
-  Flex,
   FormControl,
   HStack,
   Icon,
@@ -120,7 +119,7 @@ export const ScheduledPublishingModal = ({
                   <Text textStyle="subhead-1">
                     When should we publish this page?
                   </Text>
-                  <VStack spacing="0.75rem">
+                  <VStack spacing="0.75rem" align="stretch">
                     <PublishModeCard
                       icon={BiRocket}
                       title="Publish now"
@@ -137,7 +136,9 @@ export const ScheduledPublishingModal = ({
                     />
                   </VStack>
                 </VStack>
-                <SchedulePublishDetails />
+                {publishMode === PublishMode.SCHEDULED && (
+                  <SchedulePublishDetails />
+                )}
               </VStack>
             </FormProvider>
           </ModalBody>
@@ -159,7 +160,7 @@ const SchedulePublishDetails = () => {
     formState: { errors },
   } = useFormContext<z.input<typeof schedulePageSchema>>()
   return (
-    <Flex w="100%">
+    <HStack spacing="1.5rem" w="100%">
       <FormControl isInvalid={!!errors.publishDate} flexGrow={1}>
         <FormLabel isRequired>Date</FormLabel>
         <Controller
@@ -191,7 +192,7 @@ const SchedulePublishDetails = () => {
         />
         <FormErrorMessage>{errors.publishDate?.message}</FormErrorMessage>
       </FormControl>
-    </Flex>
+    </HStack>
   )
 }
 
@@ -210,6 +211,8 @@ const PublishModeCard = ({
 }) => {
   return (
     <HStack
+      display="flex"
+      alignItems="flex-start"
       border="1px"
       borderColor={isSelected ? "base.divider.brand" : "base.divider.medium"}
       boxShadow={isSelected ? "sm" : undefined}
@@ -221,11 +224,12 @@ const PublishModeCard = ({
     >
       <Icon
         as={icon}
-        boxSize="1.25rem"
+        boxSize="1.5rem"
+        py="0.125rem"
         color={isSelected ? "base.content.brand" : "base.content.strong"}
       />
       <VStack align="stretch" spacing={0}>
-        <HStack display="flex" spacing="0.5rem" alignItems="center">
+        <HStack display="flex" spacing="0" alignItems="center">
           <Text
             textStyle="subhead-2"
             color={isSelected ? "base.content.brand" : "base.content.strong"}
