@@ -34,10 +34,10 @@ import {
   publishPageSchema,
   readPageOutputSchema,
   reorderBlobSchema,
-  schedulePageSchema,
   updatePageBlobSchema,
   updatePageMetaSchema,
 } from "~/schemas/page"
+import { scheduledPublishServerSchema } from "~/schemas/schedule"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -340,7 +340,7 @@ export const pageRouter = router({
       })
     }),
   schedulePage: protectedProcedure
-    .input(schedulePageSchema)
+    .input(scheduledPublishServerSchema)
     .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
       await bulkValidateUserPermissionsForResources({
         siteId,
