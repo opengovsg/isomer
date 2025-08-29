@@ -1,7 +1,10 @@
+import type { FormatOptionLabelMeta } from "chakra-react-select"
+import { Divider, Flex, Icon, Text } from "@chakra-ui/react"
 import { format, isAfter, parse, set } from "date-fns"
 import { range, sortBy } from "lodash"
+import { BiTimeFive } from "react-icons/bi"
 
-import type { BaseSelectProps } from "./BaseSelect"
+import type { BaseSelectOption, BaseSelectProps } from "./BaseSelect"
 import { BaseSelect } from "./BaseSelect"
 
 interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {
@@ -58,11 +61,50 @@ export const TimeSelect = ({
       return isAfter(optionTime, allowableTime)
     })
 
+  const formatOptionLabel = (
+    option: BaseSelectOption<string>,
+    { context }: FormatOptionLabelMeta<BaseSelectOption<string>>,
+  ) => {
+    return (
+      <Flex align="center" justify="space-between" w="100%" cursor="pointer">
+        <Text>{option.label}</Text>
+        {context === "value" && (
+          <Text textStyle="caption-2" color="base.content.medium">
+            SGT (GMT +8)
+          </Text>
+        )}
+      </Flex>
+    )
+  }
+
   return (
     <BaseSelect
       value={value}
       options={options}
       placeholder="Select time"
+      formatOptionLabel={formatOptionLabel}
+      customComponents={{
+        DropdownIndicator: () => {
+          return (
+            <Flex
+              height="100%"
+              w="2.75rem"
+              alignItems="center"
+              justifyContent="center"
+              cursor="pointer"
+            >
+              <Icon as={BiTimeFive} boxSize="1.25rem" />
+            </Flex>
+          )
+        },
+        IndicatorSeparator: () => (
+          <Divider
+            h="100%"
+            orientation="vertical"
+            borderColor="base.divider.strong"
+          />
+        ),
+      }}
       {...rest}
     />
   )

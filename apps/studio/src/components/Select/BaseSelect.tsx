@@ -1,4 +1,10 @@
-import type { OptionBase, SingleValue } from "chakra-react-select"
+import type {
+  FormatOptionLabelMeta,
+  GroupBase,
+  OptionBase,
+  SelectComponentsConfig,
+  SingleValue,
+} from "chakra-react-select"
 import { Select } from "chakra-react-select"
 
 export interface BaseSelectOption<T> extends OptionBase {
@@ -13,9 +19,17 @@ export interface BaseSelectProps<T> {
   onChange: (s: T | null) => void
   isDisabled?: boolean
   height?: string
-  formatOptionLabel?: (option: BaseSelectOption<T>) => JSX.Element
+  formatOptionLabel?: (
+    option: BaseSelectOption<T>,
+    meta: FormatOptionLabelMeta<BaseSelectOption<T>>,
+  ) => JSX.Element
   isSearchable?: boolean
   isClearable?: boolean
+  customComponents?: SelectComponentsConfig<
+    BaseSelectOption<T>,
+    false,
+    GroupBase<BaseSelectOption<T>>
+  >
 }
 
 export const BaseSelect = <T,>({
@@ -26,6 +40,7 @@ export const BaseSelect = <T,>({
   isDisabled,
   isClearable,
   isSearchable = true,
+  customComponents,
   ...rest
 }: BaseSelectProps<T>) => {
   const transformSelect = {
@@ -50,6 +65,7 @@ export const BaseSelect = <T,>({
       options={options}
       isDisabled={isDisabled}
       isClearable={isClearable}
+      components={customComponents}
       {...rest}
     />
   )
