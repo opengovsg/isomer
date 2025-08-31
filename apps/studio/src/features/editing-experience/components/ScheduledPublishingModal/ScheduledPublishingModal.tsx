@@ -48,6 +48,16 @@ interface ScheduledPublishingModalProps extends UseDisclosureReturn {
   isPublishingNow?: boolean
 }
 
+/**
+ * The times to display as 'quick-select-times' under the date/time picker
+ */
+const QUICK_SELECT_TIMES: { hours: number; minutes: number }[] = [
+  { hours: 0, minutes: 0 },
+  { hours: 9, minutes: 0 },
+  { hours: 13, minutes: 0 },
+  { hours: 17, minutes: 0 },
+]
+
 export const ScheduledPublishingModal = ({
   pageId,
   siteId,
@@ -71,7 +81,7 @@ export const ScheduledPublishingModal = ({
   const publishMode = methods.watch("publishMode")
   // Validate form when publish mode changes or when the date/time selected changes
   // so the banner can be shown to the users. Do NOT use trigger() since that
-  // triggers validation and causes error messages to show up
+  // triggers validation and causes error messages to appear
   useEffect(() => {
     const validateForm = () => {
       if (publishMode === PublishMode.NOW) setIsScheduledPublishValid(false)
@@ -284,13 +294,7 @@ const QuickSelectTimeSection = ({
 }) => {
   const optionsToShow = useMemo(() => {
     // the array of pills to display in the section
-    const quickSelectTimes: { hours: number; minutes: number }[] = [
-      { hours: 0, minutes: 0 },
-      { hours: 9, minutes: 0 },
-      { hours: 13, minutes: 0 },
-      { hours: 17, minutes: 0 },
-    ]
-    return quickSelectTimes.filter(({ hours, minutes }) => {
+    return QUICK_SELECT_TIMES.filter(({ hours, minutes }) => {
       // filter out the time if it is before the earliest allowable time
       // since both are kept as {hours, minutes}, we don't need to convert them to Date objects
       if (!earliestAllowableTime) return true
