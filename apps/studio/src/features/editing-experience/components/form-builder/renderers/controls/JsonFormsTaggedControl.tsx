@@ -43,44 +43,40 @@ export function JsonFormsTaggedControl({
 
   return (
     <VStack>
-      {tags?.map(({ id, label, options }) => {
-        const currentTagCategory = data?.find(
-          ({ id: tagCategoryId }) => tagCategoryId === id,
+      {tags?.map(({ label, options }) => {
+        const currentTagCategoryOptions = options.filter(({ id }) =>
+          data?.some((selectedTagId) => selectedTagId === id),
         )
-        const shouldRenderItems =
-          !!currentTagCategory?.values &&
-          (currentTagCategory?.values.length === 0 ||
-            currentTagCategory?.values.length < MAX_TAG_CATEGORY_ITEMS)
-        const matchingTagCategory = tags.find(
-          ({ id: tagCategoryId }) => tagCategoryId === id,
-        )
+        const tagOptionsIds = options.map(({ id }) => id)
+
+        const shouldRenderSelected =
+          currentTagCategoryOptions.length >= MAX_TAG_CATEGORY_ITEMS
 
         return (
           <FormControl isRequired={required} gap="0.5rem">
             <FormLabel description={description}>{label}</FormLabel>
             <MultiSelect
-              values={currentTagCategory?.values ?? []}
+              values={currentTagCategoryOptions?.map(({ id }) => id) ?? []}
               name={label}
               items={
-                shouldRenderItems
-                  ? options.map(({ label, id }) => ({ value: id, label }))
-                  : // NOTE: Find the labels of the current tag id
-                    (currentTagCategory?.values.map((id) => {
+                shouldRenderSelected
+                  ? currentTagCategoryOptions.map(({ id, label }) => ({
+                      value: id,
+                      label,
+                    }))
+                  : options.map(({ id, label }) => {
                       return {
                         value: id,
-                        label: matchingTagCategory?.options.find(
-                          ({ id: tagId }) => tagId === id,
-                        )?.label,
+                        label,
                       }
-                    }) ?? [])
+                    })
               }
+              // NOTE: `value` is the new set of selected options
               onChange={(value) => {
-                const remaining =
-                  data?.filter(({ id: tagId }) => tagId !== id) ?? []
-                const updatedItem = { id, values: value }
-                const updated = [updatedItem, ...remaining]
-
-                handleChange(path, updated)
+                console.log(value)
+                const others =
+                  data?.filter((tagId) => !tagOptionsIds.includes(tagId)) ?? []
+                handleChange(path, [...others, ...value])
               }}
             />
           </FormControl>
