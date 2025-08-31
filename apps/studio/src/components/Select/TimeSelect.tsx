@@ -1,7 +1,7 @@
 import type { FormatOptionLabelMeta, SelectInstance } from "chakra-react-select"
 import React from "react"
 import { Divider, Flex, Icon, Text } from "@chakra-ui/react"
-import { format, isAfter, parse, set } from "date-fns"
+import { format, isBefore, parse, set } from "date-fns"
 import { range, sortBy } from "lodash"
 import { BiTimeFive } from "react-icons/bi"
 
@@ -58,7 +58,7 @@ export const TimeSelect = React.forwardRef<
         seconds: 0,
         milliseconds: 0,
       })
-      return isAfter(optionTime, allowableTime)
+      return !isBefore(optionTime, allowableTime)
     })
 
   const formatOptionLabel = (
