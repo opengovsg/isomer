@@ -84,30 +84,24 @@ export const ScheduledPublishingModal = ({
 
   const { mutate: schedulePageMutation, isPending: isScheduling } =
     trpc.page.schedulePage.useMutation({
-      onSettled: () => {
+      onSettled: async () => {
+        await utils.page.readPage.refetch({ pageId, siteId })
         onClose()
       },
-      onSuccess: async () => {
+      onSuccess: () => {
         toast({
           status: "success",
           title: "Page scheduled successfully",
           ...BRIEF_TOAST_SETTINGS,
         })
-        await utils.page.readPage.invalidate({ pageId, siteId })
-        await utils.page.getCategories.invalidate({ pageId, siteId })
-        await utils.site.getLocalisedSitemap.invalidate({
-          resourceId: pageId,
-          siteId,
-        })
       },
-      onError: async (error) => {
+      onError: (error) => {
         console.error(`Error occurred when scheduling page: ${error.message}`)
         toast({
           status: "error",
           title: "Failed to schedule page. Please contact Isomer support.",
           ...BRIEF_TOAST_SETTINGS,
         })
-        await utils.page.readPage.invalidate({ pageId, siteId })
       },
     })
   return (
@@ -197,14 +191,14 @@ export const ScheduledPublishingModal = ({
 const getEarliestAllowableTime = (
   selectedDate: Date,
   earliestSchedule: Date,
-) => {
+): { hours: number; minutes: number } | null => {
   if (isSameDay(selectedDate, earliestSchedule)) {
     return {
       hours: earliestSchedule.getHours(),
       minutes: earliestSchedule.getMinutes(),
     }
   }
-  return undefined
+  return null
 }
 
 const SchedulePublishDetails = () => {
@@ -286,7 +280,7 @@ const SchedulePublishDetails = () => {
 const QuickSelectTimeSection = ({
   earliestAllowableTime,
 }: {
-  earliestAllowableTime: { hours: number; minutes: number } | undefined
+  earliestAllowableTime: { hours: number; minutes: number } | null
 }) => {
   const optionsToShow = useMemo(() => {
     // the array of pills to display in the section
