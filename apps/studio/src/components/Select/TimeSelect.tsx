@@ -1,4 +1,5 @@
-import type { FormatOptionLabelMeta } from "chakra-react-select"
+import type { FormatOptionLabelMeta, SelectInstance } from "chakra-react-select"
+import React from "react"
 import { Divider, Flex, Icon, Text } from "@chakra-ui/react"
 import { format, isAfter, parse, set } from "date-fns"
 import { range, sortBy } from "lodash"
@@ -11,11 +12,10 @@ interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {
   earliestAllowableTime?: { hours: number; minutes: number } // in 24-hour format
 }
 
-export const TimeSelect = ({
-  value,
-  earliestAllowableTime,
-  ...rest
-}: TimeSelectProps) => {
+export const TimeSelect = React.forwardRef<
+  SelectInstance<BaseSelectOption<string>>,
+  TimeSelectProps
+>(({ value, earliestAllowableTime, ...rest }: TimeSelectProps, ref) => {
   const r = range(0, 24)
 
   const options = r
@@ -79,6 +79,7 @@ export const TimeSelect = ({
 
   return (
     <BaseSelect
+      ref={ref}
       value={value}
       options={options}
       placeholder="Select time"
@@ -108,4 +109,4 @@ export const TimeSelect = ({
       {...rest}
     />
   )
-}
+})

@@ -35,7 +35,8 @@ const SuspendablePublishButton = ({
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
 
   const { mutate, isPending } = trpc.page.publishPage.useMutation({
-    onSettled: () => {
+    onSettled: async () => {
+      await utils.page.readPage.refetch({ pageId, siteId })
       if (scheduledPublishingDisclosure.isOpen) {
         scheduledPublishingDisclosure.onClose()
       }
@@ -46,21 +47,19 @@ const SuspendablePublishButton = ({
         title: "Page published successfully",
         ...BRIEF_TOAST_SETTINGS,
       })
-      await utils.page.readPage.invalidate({ pageId, siteId })
       await utils.page.getCategories.invalidate({ pageId, siteId })
       await utils.site.getLocalisedSitemap.invalidate({
         resourceId: pageId,
         siteId,
       })
     },
-    onError: async (error) => {
+    onError: (error) => {
       console.error(`Error occurred when publishing page: ${error.message}`)
       toast({
         status: "error",
         title: "Failed to publish page. Please contact Isomer support.",
         ...BRIEF_TOAST_SETTINGS,
       })
-      await utils.page.readPage.invalidate({ pageId, siteId })
     },
   })
 

@@ -3,6 +3,7 @@ import type {
   GroupBase,
   OptionBase,
   SelectComponentsConfig,
+  SelectInstance,
   SingleValue,
 } from "chakra-react-select"
 import { Select } from "chakra-react-select"
@@ -41,8 +42,11 @@ export const BaseSelect = <T,>({
   isClearable,
   isSearchable = true,
   customComponents,
+  ref,
   ...rest
-}: BaseSelectProps<T>) => {
+}: BaseSelectProps<T> & {
+  ref?: React.Ref<SelectInstance<BaseSelectOption<T>>>
+}) => {
   const transformSelect = {
     // mapping from the value to the option
     input: (value: T | null): BaseSelectOption<T> | null => {
@@ -66,6 +70,7 @@ export const BaseSelect = <T,>({
       isDisabled={isDisabled}
       isClearable={isClearable}
       components={customComponents}
+      ref={ref}
       {...rest}
     />
   )
