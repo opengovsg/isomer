@@ -9,7 +9,7 @@ import type { BaseSelectOption, BaseSelectProps } from "./BaseSelect"
 import { BaseSelect } from "./BaseSelect"
 
 interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {
-  earliestAllowableTime?: { hours: number; minutes: number } // in 24-hour format
+  earliestAllowableTime?: { hours: number; minutes: number } | null // in 24-hour format
 }
 
 export const TimeSelect = React.forwardRef<
