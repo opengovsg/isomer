@@ -4,7 +4,7 @@ import { http, HttpResponse } from "msw"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { DynamicComponentListProps } from "~/interfaces"
-import { generateDgsUrl } from "~/hooks/useDgsData/fetchDataFromDgsApi"
+import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import DynamicComponentList from "./DynamicComponentList"
 
 const meta: Meta<DynamicComponentListProps> = {

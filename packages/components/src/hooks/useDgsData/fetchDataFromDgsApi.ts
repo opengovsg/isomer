@@ -3,6 +3,7 @@ import type {
   DgsApiDatasetSearchResponse,
   DgsApiDatasetSearchResponseSuccess,
 } from "./types"
+import { generateDgsUrl } from "./generateDgsUrl"
 
 export const fetchDataFromDgsApiDataset = async (
   params: DgsApiDatasetSearchParams,
@@ -23,29 +24,4 @@ export const fetchDataFromDgsApiDataset = async (
   }
 
   return data
-}
-
-export const generateDgsUrl = ({
-  resourceId,
-  offset,
-  filters,
-  sort,
-}: DgsApiDatasetSearchParams) => {
-  const params = new URLSearchParams({
-    resource_id: resourceId,
-  })
-
-  if (offset) {
-    params.set("offset", offset.toString())
-  }
-
-  if (filters && Object.keys(filters).length > 0) {
-    params.set("filters", JSON.stringify(filters))
-  }
-
-  if (sort) {
-    params.set("sort", sort)
-  }
-
-  return `https://data.gov.sg/api/action/datastore_search?${params.toString()}`
 }

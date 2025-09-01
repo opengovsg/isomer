@@ -78,6 +78,8 @@ export function renderComponentPreviewText({
       return component.quote
     case "callout":
       return getTextContentOfProse(component.content.content)
+    case "formsg":
+      return component.title || "FormSG form"
     case "hero":
       return "" // should not show up in the sidebar
     case "iframe":

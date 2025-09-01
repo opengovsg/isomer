@@ -7,10 +7,7 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
-import {
-  createDgsSchema,
-  NativeDataSourceSingleRecordSchema,
-} from "../integration"
+import { createDgsSchema, NativeDataSourceSchema } from "../integration"
 
 export const CONTACT_INFORMATION_TYPE = "contactinformation"
 
@@ -134,7 +131,7 @@ const InjectableContactInformationSchema = Type.Object(
 )
 
 export const NativeContactInformationSchema = Type.Intersect([
-  NativeDataSourceSingleRecordSchema,
+  NativeDataSourceSchema,
   InjectableContactInformationSchema,
 ])
 
@@ -152,38 +149,33 @@ export const InjectableContactInformationKeys = Object.keys(
   InjectableContactInformationSchema.properties,
 )
 
+type BaseContactInformationType = Static<
+  typeof BaseContactInformationSchema
+> & {
+  layout: IsomerPageLayoutType
+  LinkComponent?: LinkComponentType
+}
+
 export type ContactInformationUIProps = Omit<
-  Static<typeof BaseContactInformationSchema>,
+  BaseContactInformationType,
   "url"
 > &
   Static<typeof InjectableContactInformationSchema> & {
-    layout: IsomerPageLayoutType
-    LinkComponent?: LinkComponentType
     referenceLinkHref?: string
     isLoading?: boolean
     acceptHtmlTags?: boolean
   }
 
-export type NativeContactInformationProps = Static<
-  typeof BaseContactInformationSchema
-> &
-  Static<typeof NativeContactInformationSchema> & {
-    layout: IsomerPageLayoutType
-    LinkComponent?: LinkComponentType
-  }
+export type NativeContactInformationProps = BaseContactInformationType &
+  Static<typeof NativeContactInformationSchema>
 
-export type DgsContactInformationProps = Static<
-  typeof BaseContactInformationSchema
-> &
-  Static<typeof DgsContactInformationSchema> & {
-    layout: IsomerPageLayoutType
-    LinkComponent?: LinkComponentType
-  }
+export type DgsContactInformationProps = BaseContactInformationType &
+  Static<typeof DgsContactInformationSchema>
 
-export type ContactInformationProps = Static<
-  typeof ContactInformationSchema
-> & {
-  layout: IsomerPageLayoutType
-  site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
-}
+export type ContactInformationProps = Pick<
+  BaseContactInformationType,
+  "layout" | "LinkComponent"
+> &
+  Static<typeof ContactInformationSchema> & {
+    site: IsomerSiteProps
+  }

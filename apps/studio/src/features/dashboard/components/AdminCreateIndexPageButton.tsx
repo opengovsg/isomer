@@ -28,7 +28,7 @@ export const AdminCreateIndexPageButton = ({
 
   const hasIndexPage = !!indexPage
 
-  const { mutate: createIndexPage, isLoading } =
+  const { mutate: createIndexPage, isPending } =
     trpc.page.createIndexPage.useMutation({
       onSuccess: async () => {
         // Invalidate only the necessary queries
@@ -71,8 +71,8 @@ export const AdminCreateIndexPageButton = ({
       <Button
         variant="outline"
         size="md"
-        isDisabled={isLoading || hasIndexPage}
-        isLoading={isLoading}
+        isDisabled={isPending || hasIndexPage}
+        isLoading={isPending}
         onClick={() => createIndexPage({ siteId, parentId: String(parentId) })}
         leftIcon={<BiLogoDevTo fontSize="1rem" />}
         aria-label="Create index page"

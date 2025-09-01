@@ -1,5 +1,6 @@
 import { useContext, useMemo } from "react"
 import { Text, VStack } from "@chakra-ui/react"
+import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -124,7 +125,7 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
       offset: skip,
     },
     {
-      keepPreviousData: true, // Required for table to show previous data while fetching next page
+      placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
     },
   )
 

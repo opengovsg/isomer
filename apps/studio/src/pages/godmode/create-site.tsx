@@ -131,7 +131,7 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
           variant="solid"
           width="full"
           onClick={onSubmit}
-          isLoading={createSiteMutation.isLoading}
+          isLoading={createSiteMutation.isPending}
           isDisabled={Object.keys(errors).length > 0}
         >
           Create Site

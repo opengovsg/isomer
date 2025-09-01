@@ -4,7 +4,7 @@ import { http, HttpResponse } from "msw"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { ContactInformationProps } from "~/interfaces"
-import { generateDgsUrl } from "~/hooks/useDgsData/fetchDataFromDgsApi"
+import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { DgsContactInformation } from "./DgsContactInformation"
 
 const meta: Meta<ContactInformationProps> = {

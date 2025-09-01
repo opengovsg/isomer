@@ -13,6 +13,8 @@ export const SocialMediaTypes = [
   "github",
   "tiktok",
   "whatsapp",
+  "flickr",
+  "threads",
 ] as const
 
 export type SocialMediaType = (typeof SocialMediaTypes)[number]

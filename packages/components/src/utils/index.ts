@@ -31,6 +31,7 @@ export {
   REFERENCE_LINK_REGEX,
 } from "./getResourceIdFromReferenceLink"
 export {
+  FORMSG_EMBED_URL_REGEXES,
   MAPS_EMBED_URL_REGEXES,
   VIDEO_EMBED_URL_REGEXES,
   NON_EMPTY_STRING_REGEX,

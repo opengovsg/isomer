@@ -3,7 +3,7 @@ import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { generateDgsUrl } from "~/hooks/useDgsData/fetchDataFromDgsApi"
+import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { generateSiteConfig } from "~/stories/helpers"
 import Content from "./Content"
 
@@ -2807,6 +2807,11 @@ export const Image: Story = {
         buttonUrl: "/",
         secondaryButtonLabel: "Secondary CTA",
         secondaryButtonUrl: "/",
+      },
+      {
+        type: "formsg",
+        url: "https://form.gov.sg/6041e9f8bd47260012395250",
+        title: "Post ICT Survey",
       },
       {
         type: "infocards",

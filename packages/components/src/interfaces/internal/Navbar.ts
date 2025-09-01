@@ -13,16 +13,18 @@ import type {
 
 const NavbarItemSchema = Type.Object({
   name: Type.String({
-    title: "Name of the navbar item",
+    title: "Menu item label",
     maxLength: 30,
   }),
   url: Type.String({
-    title: "URL destination of the navbar item",
+    title: "Link destination",
+    description:
+      "You can link an index page, collection, page, or an external link.",
     format: "link",
   }),
   description: Type.Optional(
     Type.String({
-      title: "Description of the navbar item",
+      title: "Add an optional description",
       maxLength: 120,
     }),
   ),
@@ -51,39 +53,80 @@ const NavbarItemSchema = Type.Object({
   ),
 })
 
-export const NavbarSchema = Type.Object({
-  items: Type.Array(NavbarItemSchema, {
-    title: "Navbar items",
-    description: "List of items to be displayed in the navbar",
-  }),
-  callToAction: Type.Optional(
-    Type.Object({
-      label: Type.String({
-        title: "Label for the call to action button",
-        maxLength: 30,
-      }),
-      url: Type.String({
-        title: "URL destination of the call to action button",
-        format: "link",
-      }),
+export const NavbarSchema = Type.Object(
+  {
+    items: Type.Array(NavbarItemSchema, {
+      title: "Navbar items",
+      description: "List of items to be displayed in the navbar",
     }),
-  ),
-})
+    callToAction: Type.Optional(
+      Type.Object(
+        {
+          label: Type.String({
+            title: "Label for Call-to-Action",
+            maxLength: 30,
+          }),
+          url: Type.String({
+            title: "Call-to-Action destination",
+            description: "You can link a folder, page, or external link.",
+            format: "link",
+          }),
+        },
+        {
+          title: "Primary Call-to-Action",
+          description:
+            "You can highlight a key Call-to-Action using a prominent button.",
+        },
+      ),
+    ),
+    utility: Type.Optional(
+      Type.Object(
+        {
+          label: Type.Optional(
+            Type.String({
+              title: "Label for the list of utility links",
+              maxLength: 30,
+            }),
+          ),
+          items: Type.Array(
+            Type.Object({
+              name: Type.String({
+                title: "Name of the utility link",
+                maxLength: 30,
+              }),
+              url: Type.String({
+                title: "URL destination of the utility link",
+                format: "link",
+              }),
+            }),
+            {
+              minItems: 1,
+              maxItems: 4,
+            },
+          ),
+        },
+        {
+          title: "Add utility links",
+          description:
+            "Make frequent actions (like login) easily accessible using utility links.",
+        },
+      ),
+    ),
+  },
 
-type NavbarItemSchemaType = Static<typeof NavbarItemSchema>
-type NavbarItem = NavbarItemSchemaType & {
-  referenceLinkHref?: string
-}
-export type NavbarItemProps = Omit<NavbarItem, "items"> & {
-  items?: NavbarItem[]
-}
+  {
+    title: "Navbar Schema",
+    description:
+      "Schema for the navbar component, including items and variants",
+  },
+)
 
 export type NavbarSchemaType = Static<typeof NavbarSchema>
-type BaseNavbarProps = Omit<NavbarSchemaType, "items"> & {
+
+type BaseNavbarProps = NavbarSchemaType & {
   layout: IsomerPageLayoutType
   search?: LocalSearchProps | SearchSGInputBoxProps
   LinkComponent?: LinkComponentType
-  items: NavbarItemProps[]
   ScriptComponent?: ScriptComponentType
 }
 
@@ -92,10 +135,7 @@ export type NavbarProps = BaseNavbarProps & {
   logoAlt: string
   site: IsomerSiteProps
 }
-export type NavbarClientProps = Omit<BaseNavbarProps, "callToAction"> & {
-  callToAction?: Omit<NonNullable<NavbarProps["callToAction"]>, "url"> & {
-    referenceLinkHref?: string
-    isExternal: boolean
-  }
+
+export type NavbarClientProps = OmitFromUnion<BaseNavbarProps, "type"> & {
   imageClientProps: ImageClientProps
 }

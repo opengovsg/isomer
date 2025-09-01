@@ -20,17 +20,30 @@ const ContactInformation = (props: ContactInformationProps) => {
     ),
   }
 
-  switch (props.dataSource?.type) {
-    case DATA_SOURCE_TYPE.dgs:
-      return (
-        <DgsContactInformation {...(uiProps as DgsContactInformationProps)} />
-      )
-    default:
+  if (!props.dataSource) {
+    return (
+      <NativeContactInformation
+        {...(uiProps as NativeContactInformationProps)}
+      />
+    )
+  }
+
+  const { type } = props.dataSource
+
+  switch (type) {
+    case DATA_SOURCE_TYPE.native:
       return (
         <NativeContactInformation
           {...(uiProps as NativeContactInformationProps)}
         />
       )
+    case DATA_SOURCE_TYPE.dgs:
+      return (
+        <DgsContactInformation {...(uiProps as DgsContactInformationProps)} />
+      )
+    default:
+      const _exhaustiveCheck: never = type
+      return _exhaustiveCheck
   }
 }
 

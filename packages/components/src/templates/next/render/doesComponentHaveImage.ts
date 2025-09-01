@@ -28,6 +28,7 @@ export const doesComponentHaveImage = ({
     case DYNAMIC_COMPONENT_LIST_TYPE: // The content are fetched, so they eager load has no impact
       return false
     case "image":
+    case "formsg":
     case "hero":
     case "logocloud":
     case "contentpic":

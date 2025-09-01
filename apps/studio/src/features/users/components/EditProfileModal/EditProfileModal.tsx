@@ -43,7 +43,7 @@ export const EditProfileModal = () => {
     }
   }, [isOnboarded, setIsOpen])
 
-  const { mutate: updateDetails, isLoading } =
+  const { mutate: updateDetails, isPending } =
     trpc.user.updateDetails.useMutation({
       onSuccess: () => {
         void utils.me.get.invalidate()
@@ -160,7 +160,7 @@ export const EditProfileModal = () => {
               variant="solid"
               onClick={onSubmit}
               isDisabled={!isDirty || Object.keys(errors).length > 0}
-              isLoading={isLoading}
+              isLoading={isPending}
             >
               Save changes
             </Button>
