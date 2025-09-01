@@ -46,7 +46,14 @@ export type AllCardProps = ArticleCardProps | FileCardProps | LinkCardProps
 // Thus, only the necessary props are passed to this component.
 export type CollectionCardProps = Pick<
   AllCardProps,
-  "id" | "lastUpdated" | "category" | "title" | "description" | "image" | "tags"
+  | "id"
+  | "lastUpdated"
+  | "category"
+  | "title"
+  | "description"
+  | "image"
+  | "tags"
+  | "tagged"
 > & {
   referenceLinkHref: string | undefined
   imageSrc: string | undefined
