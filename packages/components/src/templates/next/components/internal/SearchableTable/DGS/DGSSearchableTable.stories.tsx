@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { http, HttpResponse } from "msw"
 
 import type { DGSSearchableTableProps } from "~/interfaces"
-import { generateDgsUrl } from "~/hooks/useDgsData/fetchDataFromDgsApi"
+import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { DGSSearchableTable } from "./DGSSearchableTable"
 
 const meta: Meta<DGSSearchableTableProps> = {
