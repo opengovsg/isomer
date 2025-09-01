@@ -3,15 +3,42 @@
 import { useDeferredValue, useId, useMemo, useRef, useState } from "react"
 
 import type { SearchableTableClientProps } from "~/interfaces"
+import { tv } from "~/lib/tv"
 import BaseParagraph from "../../BaseParagraph"
 import { PaginationControls } from "../../PaginationControls"
 import { SearchField } from "../../Search"
 import { CellContent } from "./CellContent"
-import { compoundStyles } from "./common"
 import { MAX_NUMBER_OF_COLUMNS, PAGINATION_MAX_ITEMS } from "./constants"
-import { EmptyState } from "./EmptyState"
+import { EmptyState, FallbackEmptyState } from "./EmptyState"
 import { getFilteredItems } from "./getFilteredItems"
 import { getPaginatedItems } from "./getPaginatedItems"
+
+const createSearchableTableStyles = tv({
+  slots: {
+    container: "mx-auto w-full",
+    title: "prose-display-md mb-9 break-words text-base-content-strong",
+    tableContainer: "mt-8 overflow-x-auto",
+    table:
+      "[&_>_tbody_>_tr:nth-child(even)_>_td]:bg-base-canvas-default w-full border-collapse border-spacing-0 [&_>_tbody_>_tr:nth-child(odd)_>_td]:bg-base-canvas-alt",
+    tableRow: "text-left",
+    tableCell:
+      "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
+    pagination: "mt-8 flex w-full justify-center lg:justify-end",
+  },
+  variants: {
+    isHeader: {
+      true: {
+        tableCell:
+          "bg-brand-interaction text-base-content-inverse [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
+      },
+      false: {
+        tableCell: "text-base-content [&_ol]:prose-body-sm [&_p]:prose-body-sm",
+      },
+    },
+  },
+})
+
+export const compoundStyles = createSearchableTableStyles()
 
 export const SearchableTableClient = ({
   title,
@@ -80,35 +107,17 @@ export const SearchableTableClient = ({
       />
 
       {(isInitiallyEmpty || isLoading || isError) && (
-        <EmptyState isLoading={isLoading} isError={isError} />
+        <FallbackEmptyState isLoading={isLoading} isError={isError} />
       )}
 
       {isFilteredEmpty && (
-        <div className={compoundStyles.emptyState()}>
-          <div className={compoundStyles.emptyStateHeadings()}>
-            <p className={compoundStyles.emptyStateTitle({ bold: false })}>
-              No search results for “
-              <b className={compoundStyles.emptyStateTitle({ bold: true })}>
-                {search}
-              </b>
-              ”
-            </p>
-
-            <p className={compoundStyles.emptyStateSubtitle()}>
-              Check if you have a spelling error or try a different search term.
-            </p>
-          </div>
-
-          <button
-            className={compoundStyles.emptyStateButton()}
-            onClick={() => {
-              setSearch("")
-              setCurrPage(1)
-            }}
-          >
-            Clear search
-          </button>
-        </div>
+        <EmptyState
+          search={search}
+          onClick={() => {
+            setSearch("")
+            setCurrPage(1)
+          }}
+        />
       )}
 
       {paginatedItems.length > 0 && (
