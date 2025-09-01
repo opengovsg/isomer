@@ -3,56 +3,15 @@
 import { useDeferredValue, useId, useMemo, useRef, useState } from "react"
 
 import type { SearchableTableClientProps } from "~/interfaces"
-import { tv } from "~/lib/tv"
 import BaseParagraph from "../../BaseParagraph"
 import { PaginationControls } from "../../PaginationControls"
 import { SearchField } from "../../Search"
 import { CellContent } from "./CellContent"
+import { compoundStyles } from "./common"
 import { MAX_NUMBER_OF_COLUMNS, PAGINATION_MAX_ITEMS } from "./constants"
+import { EmptyState } from "./EmptyState"
 import { getFilteredItems } from "./getFilteredItems"
 import { getPaginatedItems } from "./getPaginatedItems"
-
-const createSearchableTableStyles = tv({
-  slots: {
-    container: "mx-auto w-full",
-    title: "prose-display-md mb-9 break-words text-base-content-strong",
-    tableContainer: "mt-8 overflow-x-auto",
-    table:
-      "[&_>_tbody_>_tr:nth-child(even)_>_td]:bg-base-canvas-default w-full border-collapse border-spacing-0 [&_>_tbody_>_tr:nth-child(odd)_>_td]:bg-base-canvas-alt",
-    tableRow: "text-left",
-    tableCell:
-      "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
-    emptyState:
-      "flex flex-col items-center justify-center gap-8 self-stretch px-10 py-20 pt-24",
-    emptyStateHeadings: "text-center",
-    emptyStateTitle: "prose-headline-lg-regular text-center",
-    emptyStateSubtitle: "prose-headline-lg-regular mt-3 text-base-content",
-    emptyStateButton:
-      "prose-headline-base-medium text-link visited:text-link-visited hover:text-link-hover",
-    pagination: "mt-8 flex w-full justify-center lg:justify-end",
-  },
-  variants: {
-    isHeader: {
-      true: {
-        tableCell:
-          "bg-brand-interaction text-base-content-inverse [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
-      },
-      false: {
-        tableCell: "text-base-content [&_ol]:prose-body-sm [&_p]:prose-body-sm",
-      },
-    },
-    bold: {
-      true: {
-        emptyStateTitle: "text-base-content-strong",
-      },
-      false: {
-        emptyStateTitle: "text-base-content-subtle",
-      },
-    },
-  },
-})
-
-const compoundStyles = createSearchableTableStyles()
 
 export const SearchableTableClient = ({
   title,
@@ -102,24 +61,6 @@ export const SearchableTableClient = ({
     })
   }
 
-  const EmptyState = () => {
-    let text: string
-    if (isLoading) {
-      text = "Loading..."
-    } else if (isError) {
-      text =
-        "Oops! Something went wrong while loading the table. Please try again later."
-    } else {
-      text = "There are no items to display"
-    }
-
-    return (
-      <div className={compoundStyles.emptyState()}>
-        <p className={compoundStyles.emptyStateTitle()}>{text}</p>
-      </div>
-    )
-  }
-
   return (
     <div className={compoundStyles.container()} ref={sectionTopRef}>
       {!!title && (
@@ -138,7 +79,9 @@ export const SearchableTableClient = ({
         }}
       />
 
-      {(isInitiallyEmpty || isLoading || isError) && <EmptyState />}
+      {(isInitiallyEmpty || isLoading || isError) && (
+        <EmptyState isLoading={isLoading} isError={isError} />
+      )}
 
       {isFilteredEmpty && (
         <div className={compoundStyles.emptyState()}>
