@@ -57,17 +57,6 @@ export const isAllowedToHaveLastEditedText = (
   )
 }
 
-// only show user-viewable resources (excluding root page, folder meta etc.)
-export const getUserViewableResourceTypes = (): ResourceType[] => {
-  return [
-    ResourceType.Page,
-    ResourceType.Folder,
-    ResourceType.Collection,
-    ResourceType.CollectionLink,
-    ResourceType.CollectionPage,
-  ]
-}
-
 export const getStudioResourceUrl = (resource: Resource): string => {
   const siteUrlPrefix = `${env.NEXT_PUBLIC_APP_URL}/sites/${resource.siteId}`
 

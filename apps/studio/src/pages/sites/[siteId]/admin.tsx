@@ -107,7 +107,7 @@ const SiteAdminPage: NextPageWithLayout = () => {
     },
   })
 
-  const { mutate, isLoading } = trpc.site.setSiteConfigByAdmin.useMutation({
+  const { mutate, isPending } = trpc.site.setSiteConfigByAdmin.useMutation({
     onSuccess: async () => {
       await trpcUtils.site.getConfig.invalidate({ id: siteId })
       await trpcUtils.site.getTheme.invalidate({ id: siteId })
@@ -212,7 +212,7 @@ const SiteAdminPage: NextPageWithLayout = () => {
                 Changes will be reflected on your site immediately.
               </Text>
 
-              <Button type="submit" isLoading={isLoading} isDisabled={!isDirty}>
+              <Button type="submit" isLoading={isPending} isDisabled={!isDirty}>
                 Save settings
               </Button>
             </HStack>

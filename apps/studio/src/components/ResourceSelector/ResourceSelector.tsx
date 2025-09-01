@@ -6,7 +6,6 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import type { ResourceItemContent } from "~/schemas/resource"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
-import { getUserViewableResourceTypes } from "~/utils/resources"
 import {
   LoadingResourceItemsResults,
   SuspendableContent,
@@ -211,7 +210,12 @@ export const ResourceSelector = (props: ResourceSelectorProps) => {
     siteId: String(props.siteId),
     resourceTypes: props.onlyShowFolders
       ? [ResourceType.Folder]
-      : getUserViewableResourceTypes(),
+      : [
+          ResourceType.Page,
+          ResourceType.Folder,
+          ResourceType.Collection,
+          ResourceType.CollectionPage,
+        ],
   })
 
   return (

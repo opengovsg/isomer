@@ -103,7 +103,7 @@ export default function RootStateDrawer() {
     },
   })
 
-  const { mutate: savePage, isLoading: isSavingPage } =
+  const { mutate: savePage, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })

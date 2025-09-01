@@ -89,7 +89,7 @@ const CreateCollectionModalContent = ({
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
-  const { mutate, isLoading } = trpc.collection.create.useMutation({
+  const { mutate, isPending } = trpc.collection.create.useMutation({
     onSettled: onClose,
     onSuccess: async () => {
       await utils.resource.listWithoutRoot.invalidate()
@@ -213,7 +213,7 @@ const CreateCollectionModalContent = ({
           <Button mr={3} onClick={onClose} variant="clear">
             Close
           </Button>
-          <Button isLoading={isLoading} isDisabled={!isValid} type="submit">
+          <Button isLoading={isPending} isDisabled={!isValid} type="submit">
             Create collection
           </Button>
         </ModalFooter>

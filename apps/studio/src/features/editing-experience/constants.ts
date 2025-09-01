@@ -24,6 +24,7 @@ import { FaYoutube } from "react-icons/fa"
 import { TbApi, TbDatabase } from "react-icons/tb"
 
 import { ContentpicIcon } from "./components/icons/Contentpic"
+import { FormSGIcon } from "./components/icons/FormSG"
 import { InfocardsIcon } from "./components/icons/Infocards"
 import { InfocolsIcon } from "./components/icons/Infocols"
 import { InfopicIcon } from "./components/icons/Infopic"
@@ -42,6 +43,7 @@ export const TYPE_TO_ICON: Record<
   infobar: BiPointer,
   infocols: InfocolsIcon,
   accordion: BiChevronDown,
+  formsg: FormSGIcon,
   hero: BiCrown,
   iframe: FaYoutube,
   map: BiMap,
@@ -52,10 +54,4 @@ export const TYPE_TO_ICON: Record<
   [COLLECTION_BLOCK_TYPE]: TbDatabase,
   [IMAGE_GALLERY_TYPE]: BiImages,
   childrenpages: BiListUl,
-  // TODO: Add in these new block types
-  // table: BiTable,
-  // divider: DividerIcon,
-  // iframe-gmap,
-  // iframe-formsg
-  // iframe-youtube
 }

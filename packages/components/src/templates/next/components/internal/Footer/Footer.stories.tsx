@@ -107,6 +107,14 @@ export const Default: Story = {
         type: "whatsapp",
         url: "https://www.facebook.com",
       },
+      {
+        type: "flickr",
+        url: "https://www.facebook.com",
+      },
+      {
+        type: "threads",
+        url: "https://www.facebook.com",
+      },
     ],
     contactUsLink: "/",
     feedbackFormLink: "https://www.google.com",

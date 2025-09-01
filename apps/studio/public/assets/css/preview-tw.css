@@ -1658,6 +1658,10 @@ video {
   max-height: 60rem;
 }
 
+.max-h-\[68px\] {
+  max-height: 68px;
+}
+
 .max-h-full {
   max-height: 100%;
 }
@@ -1733,14 +1737,6 @@ video {
 
 .w-12 {
   width: 3rem;
-}
-
-.w-2 {
-  width: 0.5rem;
-}
-
-.w-2\.5 {
-  width: 0.625rem;
 }
 
 .w-2\/3 {
@@ -1854,6 +1850,10 @@ video {
 
 .max-w-\[128px\] {
   max-width: 128px;
+}
+
+.max-w-\[180px\] {
+  max-width: 180px;
 }
 
 .max-w-\[47\.5rem\] {
@@ -2051,6 +2051,16 @@ video {
 
 .animate-slide-up-fade-in {
   animation: slideUpFadeIn 0.3s ease-in-out;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 
 .cursor-not-allowed {
@@ -2276,11 +2286,6 @@ video {
 .gap-x-16 {
   -moz-column-gap: 4rem;
   column-gap: 4rem;
-}
-
-.gap-x-2 {
-  -moz-column-gap: 0.5rem;
-  column-gap: 0.5rem;
 }
 
 .gap-x-4 {
@@ -3547,6 +3552,14 @@ video {
   opacity: 1;
 }
 
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.opacity-90 {
+  opacity: 0.9;
+}
+
 .shadow {
   --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color),
@@ -3994,6 +4007,42 @@ video {
   --color: #b91c1c;
 }
 
+.\[dgs\:123456\] {
+  dgs: 123456;
+}
+
+.\[dgs\:TestID123\] {
+  dgs: TestID123;
+}
+
+.\[dgs\:___\] {
+  dgs:;
+}
+
+.\[dgs\:abc123def\] {
+  dgs: abc123def;
+}
+
+.\[dgs\:abcdef\] {
+  dgs: abcdef;
+}
+
+.\[dgs\:d_688b934f82c1059ed0a6993d2a829089\] {
+  dgs: d 688b934f82c1059ed0a6993d2a829089;
+}
+
+.\[dgs\:test-123\] {
+  dgs: test-123;
+}
+
+.\[dgs\:test123\] {
+  dgs: test123;
+}
+
+.\[dgs\:test_id_123\] {
+  dgs: test id 123;
+}
+
 .\[grid-area\:content\] {
   grid-area: content;
 }
@@ -4016,6 +4065,10 @@ video {
 
 .\[grid-template-rows\:max-content\] {
   grid-template-rows: max-content;
+}
+
+.\[link\:test123\] {
+  link: test123;
 }
 
 .\[resource\:some-resource\] {
@@ -5740,10 +5793,6 @@ video {
     margin-right: 6rem;
   }
 
-  .lg\:mr-3 {
-    margin-right: 0.75rem;
-  }
-
   .lg\:mt-\[0\.2rem\] {
     margin-top: 0.2rem;
   }
@@ -5810,10 +5859,6 @@ video {
 
   .lg\:w-1\/2 {
     width: 50%;
-  }
-
-  .lg\:w-3 {
-    width: 0.75rem;
   }
 
   .lg\:w-4 {
