@@ -39,7 +39,8 @@ export const DGSSearchableTable = ({
     }),
     [resourceId, filters, sort, fieldKeys],
   )
-
+  // TODO: Consider implementing pagination or virtualization instead of fetchAll for large datasets.
+  // Currently, we fetch all records at once, which may not scale well.
   const { records, isLoading, isError } = useDgsData({
     ...params,
     fetchAll: true,
