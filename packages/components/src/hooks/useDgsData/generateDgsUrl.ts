@@ -8,29 +8,31 @@ export const generateDgsUrl = ({
   filters,
   sort,
 }: DgsApiDatasetSearchParams) => {
-  const params = new URLSearchParams({
-    resource_id: resourceId,
-  })
+  const url = new URL("https://data.gov.sg/api/action/datastore_search")
 
+  // Set the required resource_id parameter
+  url.searchParams.set("resource_id", resourceId)
+
+  // Set optional parameters if they exist
   if (limit) {
-    params.set("limit", limit.toString())
+    url.searchParams.set("limit", limit.toString())
   }
 
   if (offset) {
-    params.set("offset", offset.toString())
+    url.searchParams.set("offset", offset.toString())
   }
 
   if (fields) {
-    params.set("fields", fields)
+    url.searchParams.set("fields", fields)
   }
 
   if (filters && Object.keys(filters).length > 0) {
-    params.set("filters", JSON.stringify(filters))
+    url.searchParams.set("filters", JSON.stringify(filters))
   }
 
   if (sort) {
-    params.set("sort", sort)
+    url.searchParams.set("sort", sort)
   }
 
-  return `https://data.gov.sg/api/action/datastore_search?${params.toString()}`
+  return url.toString()
 }
