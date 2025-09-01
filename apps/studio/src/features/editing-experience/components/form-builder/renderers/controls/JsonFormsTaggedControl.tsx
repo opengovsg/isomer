@@ -73,7 +73,6 @@ export function JsonFormsTaggedControl({
               }
               // NOTE: `value` is the new set of selected options
               onChange={(value) => {
-                console.log(value)
                 const others =
                   data?.filter((tagId) => !tagOptionsIds.includes(tagId)) ?? []
                 handleChange(path, [...others, ...value])
