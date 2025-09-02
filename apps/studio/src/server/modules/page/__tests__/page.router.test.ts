@@ -894,7 +894,9 @@ describe("page.router", async () => {
       })
       const oldBlob = await db
         .transaction()
-        .execute((tx) => getBlobOfResource({ tx, resourceId: pageToUpdate.id }))
+        .execute((tx) =>
+          getBlobOfResource({ db: tx, resourceId: pageToUpdate.id }),
+        )
 
       // Act
       const result = await caller.updatePageBlob(pageUpdateArgs)
@@ -940,7 +942,7 @@ describe("page.router", async () => {
       const oldBlob = await db
         .transaction()
         .execute((tx) =>
-          getBlobOfResource({ tx, resourceId: publishedPageToUpdate.id }),
+          getBlobOfResource({ db: tx, resourceId: publishedPageToUpdate.id }),
         )
 
       // Act
@@ -1036,7 +1038,6 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "FORBIDDEN",
@@ -1044,6 +1045,7 @@ describe("page.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should throw 409 if permalink is not unique", async () => {
