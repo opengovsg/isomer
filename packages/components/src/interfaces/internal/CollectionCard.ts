@@ -13,7 +13,8 @@ export interface FileDetails {
 interface BaseCardProps {
   tags?: Tag[]
   id: string
-  lastUpdated?: string
+  date?: Date
+  lastModified: string
   category: string
   title: string
   url: string
@@ -43,7 +44,7 @@ export type AllCardProps = ArticleCardProps | FileCardProps | LinkCardProps
 // Thus, only the necessary props are passed to this component.
 export type CollectionCardProps = Pick<
   AllCardProps,
-  "id" | "lastUpdated" | "category" | "title" | "description" | "image" | "tags"
+  "id" | "date" | "category" | "title" | "description" | "image" | "tags"
 > & {
   referenceLinkHref: string | undefined
   imageSrc: string | undefined
