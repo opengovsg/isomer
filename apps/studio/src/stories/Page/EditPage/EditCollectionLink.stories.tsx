@@ -37,6 +37,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.article(),
   pageHandlers.readPage.article(),
   pageHandlers.getFullPermalink.article(),
+  pageHandlers.getCollectionTags.default(),
 ]
 
 const meta: Meta<typeof CollectionLinkPage> = {
