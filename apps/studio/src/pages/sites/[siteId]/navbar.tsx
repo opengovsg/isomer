@@ -17,7 +17,7 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
         <p>Navigation menu</p>
       </GridItem>
       <GridItem colSpan={1}>
-        <EditNavbarPreview siteId={Number(siteId)} />
+        <EditNavbarPreview siteId={siteId} />
       </GridItem>
     </Grid>
   )
