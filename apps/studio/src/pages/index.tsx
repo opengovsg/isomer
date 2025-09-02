@@ -2,7 +2,7 @@ import { Flex, Text } from "@chakra-ui/react"
 
 import { SiteList } from "~/features/dashboard/SiteList"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AdminLayout } from "~/templates/layouts/AdminLayout"
+import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 
 const DashboardPage: NextPageWithLayout = () => {
   return (
@@ -17,6 +17,6 @@ const DashboardPage: NextPageWithLayout = () => {
   )
 }
 
-DashboardPage.getLayout = AdminLayout
+DashboardPage.getLayout = AuthenticatedLayout
 
 export default DashboardPage

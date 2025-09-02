@@ -4,27 +4,34 @@ import { Box, Grid, GridItem } from "@chakra-ui/react"
 export interface CmsContainerProps {
   children: ReactNode
   sidebar: ReactElement
-  sidenav: ReactElement
   header: ReactElement
+  sidenav?: ReactElement
 }
 
 export function CmsContainer({
   children,
   sidebar,
-  sidenav,
   header,
+  sidenav,
 }: CmsContainerProps) {
+  const gridTemplateAreas = !!sidenav
+    ? `'header header header'
+      'sidebar sidenav main'`
+    : `'header header'
+      'sidebar main'`
+  const gridTemplateColumns = !!sidenav ? "auto 18.75rem 1fr" : "auto 1fr"
+
   return (
     <Grid
-      templateAreas={`'header header header'
-                       'sidebar sidenav main'`}
-      gridTemplateColumns="auto 18.75rem 1fr"
+      templateAreas={gridTemplateAreas}
+      gridTemplateColumns={gridTemplateColumns}
       gridTemplateRows="3.75rem 1fr"
       width="100%"
     >
       <GridItem area="header" as="header" w="full" p={0}>
         {header}
       </GridItem>
+
       <GridItem area="sidebar" as="aside" w="full" p={0}>
         <Box
           pos="sticky"
@@ -51,30 +58,34 @@ export function CmsContainer({
           {sidebar}
         </Box>
       </GridItem>
-      <GridItem as="aside" area="sidenav" overflow="hidden">
-        <Box
-          height={0}
-          minH="100%"
-          bg="utility.ui"
-          pos="sticky"
-          top={0}
-          borderRight="1px solid"
-          borderTop="1px solid"
-          borderColor="base.divider.medium"
-          overflow="auto"
-          css={{
-            "&::-webkit-scrollbar": {
-              height: "var(--chakra-sizes-1)",
-              width: "var(--chakra-sizes-1)",
-            },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "var(--chakra-colors-gray-400)",
-            },
-          }}
-        >
-          {sidenav}
-        </Box>
-      </GridItem>
+
+      {!!sidenav && (
+        <GridItem as="aside" area="sidenav" overflow="hidden">
+          <Box
+            height={0}
+            minH="100%"
+            bg="utility.ui"
+            pos="sticky"
+            top={0}
+            borderRight="1px solid"
+            borderTop="1px solid"
+            borderColor="base.divider.medium"
+            overflow="auto"
+            css={{
+              "&::-webkit-scrollbar": {
+                height: "var(--chakra-sizes-1)",
+                width: "var(--chakra-sizes-1)",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "var(--chakra-colors-gray-400)",
+              },
+            }}
+          >
+            {sidenav}
+          </Box>
+        </GridItem>
+      )}
+
       <GridItem as="main" area="main" overflow="hidden">
         <Box
           height={0}

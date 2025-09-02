@@ -28,7 +28,7 @@ import { useZodForm } from "~/lib/form"
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type NextPageWithLayout } from "~/lib/types"
 import { setSiteConfigByAdminSchema } from "~/schemas/site"
-import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
+import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 import { trpc } from "~/utils/trpc"
 
 const siteAdminSchema = z.object({
@@ -227,7 +227,7 @@ SiteAdminPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
-      page={AdminSidebarOnlyLayout(page)}
+      page={SiteBasicLayout(page)}
     />
   )
 }

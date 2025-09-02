@@ -15,7 +15,7 @@ import {
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
+import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 
 const siteUsersSchema = z.object({
   siteId: z.coerce.number(),
@@ -82,7 +82,7 @@ SiteUsersPage.getLayout = (page: React.ReactNode) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
-      page={AdminSidebarOnlyLayout(
+      page={SiteBasicLayout(
         <UserManagementLayout>{page}</UserManagementLayout>,
       )}
     />

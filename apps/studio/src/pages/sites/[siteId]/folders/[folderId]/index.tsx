@@ -22,7 +22,7 @@ import { CreatePageModal } from "~/features/editing-experience/components/Create
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AdminCmsSearchableLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getFolderHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 
@@ -157,7 +157,7 @@ FolderPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.Folder}
-      page={AdminCmsSearchableLayout(page)}
+      page={SiteEditorLayout(page)}
     />
   )
 }
