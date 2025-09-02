@@ -48,7 +48,7 @@ export type AllCardProps = ArticleCardProps | FileCardProps | LinkCardProps
 export type CollectionCardProps = Pick<
   AllCardProps,
   | "id"
-  | "lastUpdated"
+  | "date"
   | "category"
   | "title"
   | "description"
