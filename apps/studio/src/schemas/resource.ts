@@ -131,6 +131,7 @@ export const searchOutputSchema = z.object({
   totalCount: z.number().nullable(),
   resources: z.array(z.custom<SearchResultResource>()),
   recentlyEdited: z.array(z.custom<SearchResultResource>()),
+  nextOffset: z.number().nullable(),
 })
 
 export const searchWithResourceIdsSchema = z.object({

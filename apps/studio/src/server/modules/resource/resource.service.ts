@@ -270,7 +270,7 @@ export const updateBlobById = async (
 }
 
 // TODO: should be selecting from new table
-export const getNavBar = async (siteId: number) => {
+export const getNavBar = async (db: SafeKysely, siteId: number) => {
   const { content, ...rest } = await db
     .selectFrom("Navbar")
     .where("siteId", "=", siteId)
@@ -281,7 +281,7 @@ export const getNavBar = async (siteId: number) => {
   return { ...rest, content }
 }
 
-export const getFooter = async (siteId: number) => {
+export const getFooter = async (db: SafeKysely, siteId: number) => {
   const { content, ...rest } = await db
     .selectFrom("Footer")
     .where("siteId", "=", siteId)
@@ -304,7 +304,7 @@ export const getLocalisedSitemap = async (
     CASE
       WHEN (published.content ->> 'layout') IN ('index','content')
       THEN (published.content -> 'page' -> 'contentPageHeader' ->> 'summary')
-      WHEN (published.content ->> 'layout') = 'collection' 
+      WHEN (published.content ->> 'layout') = 'collection'
       THEN (published.content -> 'page' ->> 'subtitle')
       ELSE (published.content -> 'page' -> 'articlePageHeader' ->> 'summary')
     END

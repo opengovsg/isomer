@@ -12,6 +12,12 @@ export { getTailwindVariantLayout } from "./getTailwindVariantLayout"
 export { getTextAsHtml } from "./getTextAsHtml"
 export { getTransformedPageContent } from "./getTransformedPageContent"
 export { isExternalUrl } from "./isExternalUrl"
+export {
+  fetchDgsFileDownloadUrl,
+  fetchDgsMetadata,
+  getDgsIdFromDgsLink,
+} from "./dgs"
+export { fetchFileMetadata } from "./fetchFileMetadata"
 export { orderedListSchemaBuilder } from "./orderedListSchemaBuilder"
 export * from "./tailwind"
 export { unorderedListSchemaBuilder } from "./unorderedListSchemaBuilder"
@@ -21,6 +27,7 @@ export {
   REFERENCE_LINK_REGEX,
 } from "./getResourceIdFromReferenceLink"
 export {
+  FORMSG_EMBED_URL_REGEXES,
   MAPS_EMBED_URL_REGEXES,
   VIDEO_EMBED_URL_REGEXES,
   NON_EMPTY_STRING_REGEX,

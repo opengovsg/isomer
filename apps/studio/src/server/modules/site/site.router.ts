@@ -88,7 +88,7 @@ export const siteRouter = router({
         userId: ctx.user.id,
         action: "read",
       })
-      return getSiteConfig(id)
+      return getSiteConfig(db, id)
     }),
   getTheme: protectedProcedure
     .input(getConfigSchema)
@@ -109,7 +109,7 @@ export const siteRouter = router({
         userId: ctx.user.id,
         action: "read",
       })
-      return getFooter(id)
+      return getFooter(db, id)
     }),
   getNavbar: protectedProcedure
     .input(getConfigSchema)
@@ -119,7 +119,7 @@ export const siteRouter = router({
         userId: ctx.user.id,
         action: "read",
       })
-      return getNavBar(id)
+      return getNavBar(db, id)
     }),
   getLocalisedSitemap: protectedProcedure
     .input(getLocalisedSitemapSchema)

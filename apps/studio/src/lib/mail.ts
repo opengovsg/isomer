@@ -1,4 +1,3 @@
-import sendgrid from "@sendgrid/mail"
 import wretch from "wretch"
 
 import { env } from "~/env.mjs"
@@ -12,12 +11,6 @@ interface SendMailParams {
 }
 
 const logger = createBaseLogger({ path: "lib/mail" })
-
-if (env.SENDGRID_API_KEY) {
-  sendgrid.setApiKey(env.SENDGRID_API_KEY)
-}
-
-export const sgClient = env.SENDGRID_API_KEY ? sendgrid : null
 
 export const sendMail = async (params: SendMailParams): Promise<void> => {
   // Safe guard to prevent sending emails to non-whitelisted emails
@@ -53,18 +46,8 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
     }
   }
 
-  if (sgClient && env.SENDGRID_FROM_ADDRESS) {
-    await sgClient.send({
-      from: env.SENDGRID_FROM_ADDRESS,
-      to: params.recipient,
-      subject: params.subject,
-      html: params.body,
-    })
-    return
-  }
-
   console.warn(
-    "POSTMAN_API_KEY or SENDGRID_API_KEY missing. Logging the following mail: ",
+    "POSTMAN_API_KEY is missing. Logging the following mail: ",
     params,
   )
   return

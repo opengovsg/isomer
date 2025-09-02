@@ -55,21 +55,22 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const { pageId, siteId } = useQueryParse(pageSchema)
   const utils = trpc.useUtils()
 
-  const { mutate: savePage, isLoading: isSavingPage } =
+  const { mutate: savePage, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
         toast({
+          status: "success",
           title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
           ...BRIEF_TOAST_SETTINGS,
         })
       },
     })
 
-  const { mutateAsync: uploadAsset, isLoading: isUploadingAsset } =
+  const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
     useUploadAssetMutation({ siteId, resourceId: String(pageId) })
-  const { mutate: deleteAssets, isLoading: isDeletingAssets } =
+  const { mutate: deleteAssets, isPending: isDeletingAssets } =
     trpc.asset.deleteAssets.useMutation()
 
   const handleDeleteBlock = useCallback(() => {

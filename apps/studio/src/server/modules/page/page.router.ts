@@ -59,7 +59,9 @@ const schemaValidator = ajv.compile<IsomerSchema>(schema)
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
 const validatedPageProcedure = protectedProcedure.use(
-  async ({ next, rawInput }) => {
+  async ({ next, getRawInput }) => {
+    const rawInput = await getRawInput()
+
     if (
       typeof rawInput === "object" &&
       rawInput !== null &&
@@ -190,7 +192,6 @@ export const pageRouter = router({
         userId: ctx.user.id,
       })
 
-      // TODO: Return blob last modified so the renderer can show last modified
       return db.transaction().execute(async (tx) => {
         const page = await getFullPageById(tx, { resourceId: pageId, siteId })
         if (!page) {
@@ -199,10 +200,6 @@ export const pageRouter = router({
             message: "Resource not found",
           })
         }
-
-        const siteMeta = await getSiteConfig(page.siteId)
-        const navbar = await getNavBar(page.siteId)
-        const footer = await getFooter(page.siteId)
 
         const { title, type, permalink, content, updatedAt } = page
 
@@ -219,6 +216,10 @@ export const pageRouter = router({
             message: "The specified resource could not be found",
           })
         }
+
+        const siteMeta = await getSiteConfig(tx, siteId)
+        const navbar = await getNavBar(tx, siteId)
+        const footer = await getFooter(tx, siteId)
 
         return {
           permalink,
