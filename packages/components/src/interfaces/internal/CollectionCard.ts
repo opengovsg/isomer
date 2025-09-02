@@ -13,7 +13,8 @@ interface BaseCardProps {
   tags?: ArticlePagePageProps["tags"]
   tagged?: ArticlePagePageProps["tagged"]
   id: string
-  lastUpdated?: string
+  date?: Date
+  lastModified: string
   category: string
   title: string
   url: string

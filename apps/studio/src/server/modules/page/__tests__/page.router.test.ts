@@ -1038,7 +1038,6 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "FORBIDDEN",
@@ -1046,6 +1045,7 @@ describe("page.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should throw 409 if permalink is not unique", async () => {
