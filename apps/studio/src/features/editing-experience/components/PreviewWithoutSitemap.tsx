@@ -58,6 +58,8 @@ function SuspendablePreview({
   return (
     <RenderEngine
       {...renderProps}
+      // TODO: fixup all the typing errors
+      // @ts-expect-error to fix when types are proper
       site={{
         siteMap,
         environment: "production",

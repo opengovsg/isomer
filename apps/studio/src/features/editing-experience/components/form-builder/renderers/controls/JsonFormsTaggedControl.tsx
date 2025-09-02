@@ -46,11 +46,10 @@ export function JsonFormsTaggedControl({
   )
 }
 
-interface SuspendableJsonFormsTaggedControlProps
-  extends Pick<
-    TaggedControlProps,
-    "data" | "required" | "handleChange" | "description" | "path"
-  > {}
+type SuspendableJsonFormsTaggedControlProps = Pick<
+  TaggedControlProps,
+  "data" | "required" | "handleChange" | "description" | "path"
+>
 
 const SuspendableJsonFormsTaggedControl = ({
   path,
@@ -68,6 +67,10 @@ const SuspendableJsonFormsTaggedControl = ({
     siteId,
   })
 
+  // NOTE: Because we render according to the schema,
+  // this will also be rendered for Article pages
+  // that are not part of a collection.
+  // Hence, we render iff there is at least 1 tag
   return (
     !!tags &&
     tags.length > 1 && (
@@ -87,7 +90,7 @@ const SuspendableJsonFormsTaggedControl = ({
               <FormControl isRequired={required} gap="0.5rem">
                 <FormLabel description={description}>{label}</FormLabel>
                 <MultiSelect
-                  values={currentTagCategoryOptions?.map(({ id }) => id) ?? []}
+                  values={currentTagCategoryOptions.map(({ id }) => id)}
                   name={label}
                   items={
                     shouldRenderSelected
