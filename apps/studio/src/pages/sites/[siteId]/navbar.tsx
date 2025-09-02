@@ -3,8 +3,8 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { useCmsSidenavContext } from "~/contexts/CmsSidenavContext"
 import { EditNavbarPreview } from "~/features/settings/EditNavbarPreview"
+import { NavbarEditor } from "~/features/settings/NavbarEditor"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
@@ -15,18 +15,13 @@ const navbarSettingsSchema = z.object({
 
 const NavbarSettingsPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(navbarSettingsSchema)
-  const { isSidenavOpen } = useCmsSidenavContext()
-  // NOTE: Editor spans 54% of the width when sidenav is open, 50% when closed
-  const templateColumns = isSidenavOpen ? "repeat(50, 1fr)" : "repeat(2, 1fr)"
-  const editorColSpan = isSidenavOpen ? 27 : 1
-  const previewColSpan = isSidenavOpen ? 23 : 1
 
   return (
-    <Grid h="full" w="100%" templateColumns={templateColumns} gap={0}>
-      <GridItem colSpan={editorColSpan} overflow="auto" minW="30rem">
-        <p>Navigation menu</p>
+    <Grid h="full" w="100%" templateColumns="minmax(37.25rem, 1fr) 1fr" gap={0}>
+      <GridItem colSpan={1} overflow="auto" minW="30rem">
+        <NavbarEditor />
       </GridItem>
-      <GridItem colSpan={previewColSpan}>
+      <GridItem colSpan={1}>
         <EditNavbarPreview siteId={siteId} />
       </GridItem>
     </Grid>
