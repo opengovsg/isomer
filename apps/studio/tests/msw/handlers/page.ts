@@ -192,7 +192,8 @@ export const pageHandlers = {
                 id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a28",
               },
               {
-                label: "Waste Management",
+                label:
+                  "This is a random industry that has a very long text and might overflow. what do we do with this industry? i don't know",
                 id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a29",
               },
             ],
