@@ -1,4 +1,4 @@
-import { FormControl, VStack } from "@chakra-ui/react"
+import { FormControl, Skeleton, VStack } from "@chakra-ui/react"
 import {
   ControlProps,
   RankedTester,
@@ -9,6 +9,7 @@ import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, MultiSelect } from "@opengovsg/design-system-react"
 import { ArticlePagePageProps } from "@opengovsg/isomer-components"
 
+import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -32,6 +33,32 @@ export function JsonFormsTaggedControl({
   required,
   handleChange,
 }: TaggedControlProps) {
+  return (
+    <Suspense fallback={<Skeleton />}>
+      <SuspendableJsonFormsTaggedControl
+        data={data}
+        path={path}
+        description={description}
+        required={required}
+        handleChange={handleChange}
+      />
+    </Suspense>
+  )
+}
+
+interface SuspendableJsonFormsTaggedControlProps
+  extends Pick<
+    TaggedControlProps,
+    "data" | "required" | "handleChange" | "description" | "path"
+  > {}
+
+const SuspendableJsonFormsTaggedControl = ({
+  path,
+  data,
+  handleChange,
+  required,
+  description,
+}: SuspendableJsonFormsTaggedControlProps) => {
   const { siteId, linkId, pageId } = useQueryParse(collectionItemSchema)
   // NOTE: Since this is only rendered inside a collection page or collection link,
   // we should always have the `resourceId` specifier
