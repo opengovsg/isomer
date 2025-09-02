@@ -39,9 +39,12 @@ const TagCategorySchema = Type.Composite([
   DropdownItemSchema,
 ])
 // NOTE: can be optional because the categories might not exist
-const TagCategoriesSchema = Type.Object({
-  tagCategories: Type.Optional(Type.Array(TagCategorySchema)),
-})
+const TagCategoriesSchema = Type.Object(
+  {
+    tagCategories: Type.Optional(Type.Array(TagCategorySchema)),
+  },
+  { format: "hidden" },
+)
 const TaggedSchema = Type.Optional(
   // NOTE: This stores the `uuid` of the tag option
   Type.Array(TagOptionUuidSchema, {
