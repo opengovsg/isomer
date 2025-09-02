@@ -6,7 +6,6 @@ import {
   JsonFormsTaggedControl,
   jsonFormsTaggedControlTester,
 } from "~/features/editing-experience/components/form-builder/renderers/controls/JsonFormsTaggedControl"
-import { createDropdownGbParameters } from "~/stories/utils/growthbook"
 import { FormBuilder } from "./formBuilder"
 
 const meta: Meta<typeof FormBuilder> = {
@@ -14,7 +13,10 @@ const meta: Meta<typeof FormBuilder> = {
   component: FormBuilder,
   parameters: {
     msw: {
-      handlers: [pageHandlers.getCategories.default()],
+      handlers: [
+        pageHandlers.getCategories.default(),
+        pageHandlers.getCollectionTags.default(),
+      ],
     },
     nextjs: {
       router: {
@@ -41,24 +43,6 @@ const schema = Type.Object({
 })
 
 export const Default: Story = {
-  args: {
-    schema,
-    renderers: [
-      {
-        tester: jsonFormsTaggedControlTester,
-        renderer: JsonFormsTaggedControl,
-      },
-    ],
-  },
-}
-
-export const Dropdown: Story = {
-  parameters: {
-    growthbook: [createDropdownGbParameters("1")],
-    msw: {
-      handlers: [pageHandlers.getCategories.default()],
-    },
-  },
   args: {
     schema,
     renderers: [
