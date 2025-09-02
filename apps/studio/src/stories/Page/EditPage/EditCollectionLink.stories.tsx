@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react"
 import { userEvent, waitFor, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/react"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
@@ -61,10 +61,10 @@ const meta: Meta<typeof CollectionLinkPage> = {
 }
 
 export default meta
-type Story = StoryObj<typeof CollectionLinkPage>
 
 export const Default: Story = {}
 
+type Story = StoryObj<typeof CollectionLinkPage>
 export const Dropdown: Story = {
   parameters: {
     growthbook: [createDropdownGbParameters("1")],
@@ -73,7 +73,9 @@ export const Dropdown: Story = {
     const screen = within(canvasElement)
     // waitFor used as we can override the default timeout of findByRole (1000ms)
     // this is needed as growthbook might take more than 1000ms to initialise
-    const button = await waitFor(() => screen.findByRole("combobox"), {
+    const button = await waitFor(() => screen.findByRole("combobox", {
+      name: /article category/i,
+    }), {
       timeout: 5000,
     })
     await userEvent.click(button)
