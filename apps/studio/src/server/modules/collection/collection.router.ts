@@ -421,7 +421,11 @@ export const collectionRouter = router({
             .select("parentId"),
         )
         .select("id")
-        .executeTakeFirstOrThrow()
+        .executeTakeFirst()
+
+      if (!indexPage) {
+        return []
+      }
 
       const { draftBlobId, publishedVersionId } = await db
         .selectFrom("Resource")
