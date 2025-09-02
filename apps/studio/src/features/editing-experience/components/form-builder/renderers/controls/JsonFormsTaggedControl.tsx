@@ -73,7 +73,7 @@ const SuspendableJsonFormsTaggedControl = ({
   // Hence, we render iff there is at least 1 tag
   return (
     !!tags &&
-    tags.length > 1 && (
+    tags.length > 0 && (
       <VStack spacing="1.25rem">
         {tags
           .filter(({ options }) => options.length > 0)
