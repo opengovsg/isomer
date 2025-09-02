@@ -12,6 +12,7 @@ import {
   setupBlob,
   setupCollection,
   setupCollectionLink,
+  setupCollectionMeta,
   setupEditorPermissions,
   setupFolder,
   setupFolderMeta,
@@ -21,9 +22,9 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 
+import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
-import { getUserViewableResourceTypes } from "~/utils/resources"
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
 import { getFullPageById } from "../resource.service"
@@ -589,6 +590,89 @@ describe("resource.router", async () => {
         nextOffset: null,
       }
       expect(result).toMatchObject(expected)
+    })
+
+    it("should not return FolderMeta, CollectionMeta, and CollectionLink as children", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      // Create a folder
+      const { folder } = await setupFolder({
+        siteId: site.id,
+        parentId: null,
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { collection } = await setupCollection({
+        siteId: site.id,
+      })
+      // Create FolderMeta, CollectionMeta, and CollectionLink
+      await setupFolderMeta({
+        siteId: site.id,
+        folderId: folder.id,
+      })
+      await setupCollectionMeta({
+        siteId: site.id,
+        collectionId: collection.id,
+      })
+      await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+        title: "Collection Link",
+      })
+      // Create children pages of folder
+      const childPages = await Promise.all(
+        Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
+          const { page } = await setupPageResource({
+            siteId: site.id,
+            permalink: `child-page-${i}`,
+            title: `Child page ${i}`,
+            resourceType: "Page",
+            parentId: folder.id,
+          })
+          return pick(page, ["title", "permalink", "type", "id"])
+        }),
+      )
+      // Create children pages of collection
+      const childCollectionPages = await Promise.all(
+        Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
+          const { page } = await setupPageResource({
+            siteId: site.id,
+            permalink: `collection-child-page-${i}`,
+            title: `Collection Child page ${i}`,
+            resourceType: "Page",
+            parentId: collection.id,
+          })
+          return pick(page, ["title", "permalink", "type", "id"])
+        }),
+      )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const resultFolder = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: folder.id,
+      })
+      const resultCollection = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: collection.id,
+      })
+
+      // Assert
+      const expectedFolder = {
+        items: childPages.sort((a, b) => a.title.localeCompare(b.title)),
+        nextOffset: null,
+      }
+      const expectedCollection = {
+        items: childCollectionPages.sort((a, b) =>
+          a.title.localeCompare(b.title),
+        ),
+        nextOffset: null,
+      }
+      expect(resultFolder).toMatchObject(expectedFolder)
+      expect(resultCollection).toMatchObject(expectedCollection)
     })
 
     it("should return empty items array if `cursor` is invalid", async () => {
@@ -2779,6 +2863,7 @@ describe("resource.router", async () => {
         totalCount: 0,
         resources: [],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -2830,6 +2915,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -2882,6 +2968,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -2984,6 +3071,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3028,6 +3116,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3069,6 +3158,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3115,6 +3205,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3161,6 +3252,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3189,6 +3281,7 @@ describe("resource.router", async () => {
         totalCount: 0,
         resources: [],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3230,6 +3323,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3264,7 +3358,7 @@ describe("resource.router", async () => {
       const result = await caller.search({
         siteId: String(site.id),
         query: "test",
-        resourceTypes: getUserViewableResourceTypes(),
+        resourceTypes: USER_VIEWABLE_RESOURCE_TYPES,
       })
 
       // Assert
@@ -3298,6 +3392,7 @@ describe("resource.router", async () => {
           },
         ],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3327,6 +3422,7 @@ describe("resource.router", async () => {
         totalCount: 0,
         resources: [],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3360,6 +3456,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page1.updatedAt,
           },
         ],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3393,6 +3490,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page1.updatedAt,
           },
         ],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3425,6 +3523,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page1.updatedAt,
           },
         ],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3470,6 +3569,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page1.updatedAt,
           },
         ],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3496,6 +3596,7 @@ describe("resource.router", async () => {
         totalCount: null,
         resources: [],
         recentlyEdited: [],
+        nextOffset: null,
       }
       expect(result).toEqual(expected)
     })
@@ -3540,6 +3641,7 @@ describe("resource.router", async () => {
               }
             }),
           recentlyEdited: [],
+          nextOffset: 10,
         }
         expect(result).toEqual(expected)
       })
@@ -3590,6 +3692,7 @@ describe("resource.router", async () => {
             },
           ],
           recentlyEdited: [],
+          nextOffset: 2,
         }
         expect(result).toEqual(expected)
       })
@@ -3624,6 +3727,7 @@ describe("resource.router", async () => {
             },
           ],
           recentlyEdited: [],
+          nextOffset: null,
         }
         expect(result).toEqual(expected)
       })
@@ -3650,6 +3754,7 @@ describe("resource.router", async () => {
           totalCount: 1,
           resources: [],
           recentlyEdited: [],
+          nextOffset: null,
         }
         expect(result).toEqual(expected)
       })
@@ -3694,6 +3799,7 @@ describe("resource.router", async () => {
               }
             }),
           recentlyEdited: [],
+          nextOffset: 20,
         }
         expect(result).toEqual(expected)
       })

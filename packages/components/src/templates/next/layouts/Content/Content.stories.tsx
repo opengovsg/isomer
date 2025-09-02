@@ -2744,6 +2744,11 @@ export const Image: Story = {
         secondaryButtonUrl: "/",
       },
       {
+        type: "formsg",
+        url: "https://form.gov.sg/6041e9f8bd47260012395250",
+        title: "Post ICT Survey",
+      },
+      {
         type: "infocards",
         maxColumns: "3",
         title:

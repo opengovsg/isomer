@@ -84,7 +84,7 @@ const useCreateCollectionPageWizardContext = ({
   const router = useRouter()
 
   // TODO: Call correct mutation
-  const { mutate, isLoading } =
+  const { mutate, isPending } =
     trpc.collection.createCollectionPage.useMutation({
       onSuccess: async () => {
         await utils.collection.list.invalidate()
@@ -147,7 +147,7 @@ const useCreateCollectionPageWizardContext = ({
     currentStep,
     formMethods,
     handleCreatePage,
-    isLoading: isLoading || isPermalinkLoading,
+    isLoading: isPending || isPermalinkLoading,
     handleNextToDetailScreen,
     handleBackToTypeScreen,
     pagePreviewJson,

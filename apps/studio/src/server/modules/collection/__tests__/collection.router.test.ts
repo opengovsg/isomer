@@ -218,7 +218,7 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -252,7 +252,7 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -286,7 +286,7 @@ describe("collection.router", async () => {
       })
       expect(actualCollection.parentId).toEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -297,7 +297,7 @@ describe("collection.router", async () => {
       expect(auditEntry.userId).toBe(session.userId)
     })
 
-    it("should create a nested collection if `parentFolderId` is provided and hte user is not an admin", async () => {
+    it("should create a nested collection if `parentFolderId` is provided and the user is not an admin", async () => {
       // Arrange
       const permalinkToUse = "test-collection-777"
       const { folder: parent, site } = await setupFolder()
@@ -321,7 +321,7 @@ describe("collection.router", async () => {
       })
       expect(actualCollection.parentId).toEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -1169,7 +1169,6 @@ describe("collection.router", async () => {
 
       // Assert
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(1)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceUpdate")
@@ -1190,6 +1189,7 @@ describe("collection.router", async () => {
       // which is an empty array
       expect(expected.content.content).toEqual([])
       expect(expected.id).toEqual(blob.id)
+      await assertAuditLogRows(1)
     })
 
     it.skip("should throw when trying to update to a deleted `ref`")

@@ -4,6 +4,7 @@ import { jsonObjectFrom } from "kysely/helpers/postgres"
 import get from "lodash/get"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
+import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -227,17 +228,10 @@ export const resourceRouter = router({
         let query = db
           .selectFrom("Resource")
           .select(["title", "permalink", "type", "id", "parentId"])
-          .where("Resource.type", "!=", ResourceType.RootPage)
-          .where("Resource.type", "!=", ResourceType.FolderMeta)
-          .where("Resource.type", "!=", ResourceType.CollectionMeta)
+          .where("Resource.type", "in", USER_LINKABLE_RESOURCE_TYPES)
           .where("Resource.siteId", "=", Number(siteId))
           .$narrowType<{
-            type: Exclude<
-              ResourceType,
-              | typeof ResourceType.RootPage
-              | typeof ResourceType.FolderMeta
-              | typeof ResourceType.CollectionMeta
-            >
+            type: (typeof USER_LINKABLE_RESOURCE_TYPES)[number]
           }>()
           .orderBy("type", "asc")
           .orderBy("title", "asc")
@@ -780,6 +774,7 @@ export const resourceRouter = router({
             recentlyEdited: await getSearchRecentlyEdited({
               siteId: Number(siteId),
             }),
+            nextOffset: null,
           }
         }
 
@@ -790,10 +785,14 @@ export const resourceRouter = router({
           limit,
           resourceTypes,
         })
+
+        const totalCount = Number(searchResults.totalCount)
+        const nextOffset = totalCount > offset + limit ? offset + limit : null
         return {
           totalCount: Number(searchResults.totalCount),
           resources: searchResults.resources,
           recentlyEdited: [],
+          nextOffset,
         }
       },
     ),

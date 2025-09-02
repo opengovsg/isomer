@@ -85,6 +85,7 @@ export function EditorDrawerProvider({
       },
       onError: (error) => {
         toast({
+          status: "error",
           title: "Failed to update blocks",
           description: error.message,
           ...BRIEF_TOAST_SETTINGS,

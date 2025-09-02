@@ -173,8 +173,8 @@ jobs:
         with:
           artifact_type: "container"
           artifact_path: "${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
-          critical_threshold: 5
-          high_threshold: 12
+          critical_threshold: 0
+          high_threshold: 3
 
       # Display Inspector results in the GitHub Actions terminal
       - name: Display CycloneDX SBOM (JSON)
