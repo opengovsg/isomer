@@ -68,20 +68,17 @@ type Story = StoryObj<typeof CollectionLinkPage>
 export const Dropdown: Story = {
   parameters: {
     growthbook: [createDropdownGbParameters("1")],
+    msw: {
+      handlers: [pageHandlers.getCollectionTags.empty(), ...COMMON_HANDLERS],
+    },
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     // waitFor used as we can override the default timeout of findByRole (1000ms)
     // this is needed as growthbook might take more than 1000ms to initialise
-    const button = await waitFor(
-      () =>
-        screen.findByRole("combobox", {
-          name: /article category/i,
-        }),
-      {
-        timeout: 5000,
-      },
-    )
+    const button = await waitFor(() => screen.findByRole("combobox"), {
+      timeout: 5000,
+    })
     await userEvent.click(button)
   },
 }

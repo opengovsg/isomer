@@ -74,7 +74,6 @@ const dateSchemaObject = Type.Object({
 })
 
 const BaseRefPageSchema = Type.Composite([
-  Type.Object({ tagged: TaggedSchema }),
   categorySchemaObject,
   dateSchemaObject,
   imageSchemaObject,
@@ -95,6 +94,7 @@ const BaseRefPageSchema = Type.Composite([
       }),
     ),
   }),
+  Type.Object({ tagged: TaggedSchema }),
 ])
 
 // NOTE: old tag schema that we should migrate away
