@@ -44,24 +44,6 @@ export const createCollectionLinkJson = ({}: {
     version: "0.1.0",
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
-<<<<<<< HEAD
-
-export const createCollectionIndexJson = (title: string) => {
-  return {
-    layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
-    page: {
-      title,
-      subtitle: `Read more on ${title.toLowerCase()} here.`,
-      defaultSortBy: COLLECTION_PAGE_DEFAULT_SORT_BY,
-      defaultSortDirection: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
-    } as CollectionPagePageProps,
-    content: [],
-    version: "0.1.0",
-  }
-}
-||||||| 079051e8
-=======
-
 export const createCollectionIndexJson = (title: string) => {
   return {
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
@@ -75,4 +57,3 @@ export const createCollectionIndexJson = (title: string) => {
     version: "0.1.0",
   }
 }
->>>>>>> main

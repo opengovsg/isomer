@@ -136,47 +136,6 @@ export const collectionRouter = router({
             by: user,
           })
 
-<<<<<<< HEAD
-          const indexJson = createCollectionIndexJson(collection.title)
-
-          const blob = await tx
-            .insertInto("Blob")
-            .values({ content: jsonb(indexJson) })
-            .returning("Blob.id")
-            .executeTakeFirstOrThrow()
-
-          const addedResource = await tx
-            .insertInto("Resource")
-            .values({
-              title: collection.title,
-              permalink: INDEX_PAGE_PERMALINK,
-              siteId,
-              parentId: collection.id,
-              draftBlobId: blob.id,
-              type: ResourceType.IndexPage,
-              state: ResourceState.Draft,
-            })
-            .returningAll()
-            .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-                throw new TRPCError({
-                  code: "CONFLICT",
-                  message: "A resource with the same permalink already exists",
-                })
-              }
-              throw err
-            })
-
-          await logResourceEvent(tx, {
-            siteId,
-            by: user,
-            delta: { before: null, after: addedResource },
-            eventType: AuditLogEvent.ResourceCreate,
-          })
-
-||||||| 079051e8
-=======
           const indexJson = createCollectionIndexJson(collection.title)
 
           const blob = await tx
@@ -215,7 +174,6 @@ export const collectionRouter = router({
             eventType: AuditLogEvent.ResourceCreate,
           })
 
->>>>>>> main
           return collection
         })
 
