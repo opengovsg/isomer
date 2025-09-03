@@ -7,7 +7,6 @@ export const waitForElement = async (
     const observer = new MutationObserver((mutationsList, observer) => {
       const element = document.querySelector(querySelector)
       if (element) {
-        console.log("Element found:", element)
         observer.disconnect()
         resolve(element)
       }
