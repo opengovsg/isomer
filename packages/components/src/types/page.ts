@@ -106,7 +106,7 @@ const TagSchema = Type.Object({
 })
 const TagsSchema = Type.Object(
   {
-    tags: Type.Optional(Type.Array(TagSchema)),
+    tags: Type.Optional(Type.Array(TagSchema, { format: "hidden" })),
   },
   // NOTE: we need to hide this because it's not supposed to be visible to our end user
   { format: "hidden" },
