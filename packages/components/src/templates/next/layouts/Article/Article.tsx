@@ -1,8 +1,10 @@
 import { type ArticlePageSchemaType } from "~/engine"
 import { getBreadcrumbFromSiteMap } from "~/utils"
+import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { BackToTopLink } from "../../components/internal"
 import ArticlePageHeader from "../../components/internal/ArticlePageHeader"
 import { renderPageContent } from "../../render"
+import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
 import { Skeleton } from "../Skeleton"
 
 const ArticleLayout = ({
@@ -17,6 +19,17 @@ const ArticleLayout = ({
     site.siteMap,
     page.permalink.split("/").slice(1),
   )
+
+  const parent = getIndexByPermalink(page.permalink, site.siteMap)
+  const tagged = page.tagged
+  const tags = page.tags
+
+  const resolvedTags =
+    tagged &&
+    parent?.layout === "collection" &&
+    parent.collectionPagePageProps?.tagCategories
+      ? getTagsFromTagged(tagged, parent.collectionPagePageProps?.tagCategories)
+      : tags
 
   return (
     <Skeleton
@@ -35,7 +48,7 @@ const ArticleLayout = ({
           date={page.date}
           site={site}
           LinkComponent={LinkComponent}
-          tags={page.tags}
+          tags={resolvedTags}
         />
 
         <div className="mx-auto w-full gap-10 pb-20">
