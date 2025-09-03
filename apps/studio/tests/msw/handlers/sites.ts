@@ -283,42 +283,6 @@ export const sitesHandlers = {
             },
           ],
         }
-        return {
-          id: "1",
-          layout: "content",
-          title: "Home",
-          summary: "",
-          lastModified: "2024-09-16T04:34:54.838Z",
-          permalink: "/",
-          children: [
-            {
-              id: "4",
-              layout: "index",
-              title: "Index page",
-              summary: "",
-              lastModified: "2024-09-16T04:34:54.838Z",
-              permalink: "/parent",
-              children: [
-                {
-                  id: "5",
-                  layout: "content",
-                  title: "Page title here",
-                  summary: "",
-                  lastModified: "2024-09-16T04:34:54.838Z",
-                  permalink: "/parent/child",
-                },
-              ],
-            },
-            {
-              id: "3",
-              layout: "content",
-              title: "Page title here",
-              summary: "",
-              lastModified: "2024-09-16T04:34:54.838Z",
-              permalink: "/page-title-here",
-            },
-          ],
-        }
       })
     },
   },
