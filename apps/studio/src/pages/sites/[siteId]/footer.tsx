@@ -3,31 +3,31 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { EditNavbarPreview } from "~/features/settings/EditNavbarPreview"
+import { EditFooterPreview } from "~/features/settings/EditFooterPreview"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 
-const navbarSettingsSchema = z.object({
+const footerSettingsSchema = z.object({
   siteId: z.coerce.number(),
 })
 
-const NavbarSettingsPage: NextPageWithLayout = () => {
-  const { siteId } = useQueryParse(navbarSettingsSchema)
+const FooterSettingsPage: NextPageWithLayout = () => {
+  const { siteId } = useQueryParse(footerSettingsSchema)
 
   return (
     <Grid h="full" w="100%" templateColumns="minmax(37.25rem, 1fr) 1fr" gap={0}>
       <GridItem colSpan={1} overflow="auto" minW="30rem">
-        <p>Navigation menu</p>
+        <p>Footer menu</p>
       </GridItem>
       <GridItem colSpan={1}>
-        <EditNavbarPreview siteId={siteId} />
+        <EditFooterPreview siteId={siteId} />
       </GridItem>
     </Grid>
   )
 }
 
-NavbarSettingsPage.getLayout = (page) => {
+FooterSettingsPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
@@ -36,4 +36,4 @@ NavbarSettingsPage.getLayout = (page) => {
   )
 }
 
-export default NavbarSettingsPage
+export default FooterSettingsPage
