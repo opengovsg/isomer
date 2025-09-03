@@ -452,8 +452,10 @@ export const collectionRouter = router({
           // NOTE: Guaranteed to exist since this is a foreign key
           .executeTakeFirstOrThrow()
 
-        return (content as unknown as CollectionPageSchemaType).page
-          .tagCategories
+        return (
+          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
+          []
+        )
       }
 
       if (draftBlobId) {
@@ -464,8 +466,10 @@ export const collectionRouter = router({
           // NOTE: Guaranteed to exist since this is a foreign key
           .executeTakeFirstOrThrow()
 
-        return (content as unknown as CollectionPageSchemaType).page
-          .tagCategories
+        return (
+          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
+          []
+        )
       }
 
       return []
