@@ -1,5 +1,4 @@
 import type {
-  ArticlePageHeaderProps,
   ArticlePagePageProps,
   CollectionPagePageProps,
   FileRefPageProps,
