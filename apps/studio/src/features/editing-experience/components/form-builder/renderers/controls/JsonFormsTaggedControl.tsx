@@ -72,7 +72,6 @@ const SuspendableJsonFormsTaggedControl = ({
   // that are not part of a collection.
   // Hence, we render iff there is at least 1 tag
   return (
-    !!tags &&
     tags.length > 0 && (
       <VStack spacing="1.25rem">
         {tags
