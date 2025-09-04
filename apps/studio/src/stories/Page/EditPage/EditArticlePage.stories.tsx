@@ -170,7 +170,11 @@ export const Dropdown: Story = {
 export const WithTags: Story = {
   parameters: {
     msw: {
-      handlers: [pageHandlers.getCollectionTags.default(), ...COMMON_HANDLERS],
+      handlers: [
+        pageHandlers.getCollectionTags.default(),
+        sitesHandlers.getLocalisedSitemap.collection(),
+        ...COMMON_HANDLERS,
+      ],
     },
   },
   play: async ({ canvasElement }) => {

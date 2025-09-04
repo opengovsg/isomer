@@ -17,6 +17,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
     category,
     ref,
     image,
+    tagged,
   } = useAtomValue(linkAtom)
   const { linkId, siteId } = useQueryParse(editLinkSchema)
   const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
@@ -29,6 +30,11 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
 
   const [{ parent }] = trpc.resource.getParentOf.useSuspenseQuery({
     resourceId: String(linkId),
+    siteId,
+  })
+
+  const [tagCategories] = trpc.collection.getCollectionTags.useSuspenseQuery({
+    resourceId: linkId,
     siteId,
   })
 
@@ -50,6 +56,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
         layout: "collection",
         title: parentTitle,
         summary: "",
+        collectionPagePageProps: { tagCategories },
         children: [
           {
             id: "9999999",
@@ -62,6 +69,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
             permalink,
             lastModified: new Date().toString(),
             category,
+            tagged,
           },
         ],
       },

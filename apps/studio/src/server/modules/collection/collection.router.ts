@@ -334,7 +334,17 @@ export const collectionRouter = router({
     .input(editLinkSchema)
     .mutation(
       async ({
-        input: { date, category, linkId, siteId, description, ref, image },
+        input: {
+          date,
+          category,
+          linkId,
+          siteId,
+          description,
+          ref,
+          image,
+          tags,
+          tagged,
+        },
         ctx,
       }) => {
         // Things that aren't working yet:
@@ -379,7 +389,7 @@ export const collectionRouter = router({
           const blob = await updateBlobById(tx, {
             content: {
               ...content,
-              page: { description, ref, date, category, image },
+              page: { description, ref, date, category, image, tags, tagged },
             },
             pageId: linkId,
             siteId,
@@ -452,8 +462,10 @@ export const collectionRouter = router({
           // NOTE: Guaranteed to exist since this is a foreign key
           .executeTakeFirstOrThrow()
 
-        return (content as unknown as CollectionPageSchemaType).page
-          .tagCategories
+        return (
+          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
+          []
+        )
       }
 
       if (draftBlobId) {
@@ -464,8 +476,10 @@ export const collectionRouter = router({
           // NOTE: Guaranteed to exist since this is a foreign key
           .executeTakeFirstOrThrow()
 
-        return (content as unknown as CollectionPageSchemaType).page
-          .tagCategories
+        return (
+          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
+          []
+        )
       }
 
       return []

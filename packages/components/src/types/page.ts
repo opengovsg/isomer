@@ -51,7 +51,7 @@ const TaggedSchema = Type.Optional(
     // NOTE: we need a custom format because this cannot just be a simple drop down
     // as we need to reference the existing data that is pointing to this
     format: "tagged",
-    description: "To add new options, reach out to your site owner(s).",
+    description: "To add new options, contact your site owner(s).",
   }),
 )
 
@@ -75,6 +75,7 @@ const dateSchemaObject = Type.Object({
 
 const BaseRefPageSchema = Type.Composite([
   categorySchemaObject,
+  Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   imageSchemaObject,
   Type.Object({
@@ -94,7 +95,6 @@ const BaseRefPageSchema = Type.Composite([
       }),
     ),
   }),
-  Type.Object({ tagged: TaggedSchema }),
 ])
 
 // NOTE: old tag schema that we should migrate away
@@ -106,20 +106,20 @@ const TagSchema = Type.Object({
 })
 const TagsSchema = Type.Object(
   {
-    tags: Type.Optional(Type.Array(TagSchema)),
+    tags: Type.Optional(Type.Array(TagSchema, { format: "hidden" })),
   },
   // NOTE: we need to hide this because it's not supposed to be visible to our end user
   { format: "hidden" },
 )
 
 export const ArticlePagePageSchema = Type.Composite([
+  categorySchemaObject,
+  Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   Type.Object({
     articlePageHeader: ArticlePageHeaderSchema,
   }),
-  categorySchemaObject,
   imageSchemaObject,
-  Type.Object({ tagged: TaggedSchema }),
 ])
 
 const COLLECTION_PAGE_SORT_BY = {
