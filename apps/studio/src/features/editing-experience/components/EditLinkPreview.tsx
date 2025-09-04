@@ -17,6 +17,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
     category,
     ref,
     image,
+    tagged,
   } = useAtomValue(linkAtom)
   const { linkId, siteId } = useQueryParse(editLinkSchema)
   const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
@@ -62,6 +63,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
             permalink,
             lastModified: new Date().toString(),
             category,
+            tagged,
           },
         ],
       },
