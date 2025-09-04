@@ -33,6 +33,11 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
     siteId,
   })
 
+  const [tagCategories] = trpc.collection.getCollectionTags.useSuspenseQuery({
+    resourceId: linkId,
+    siteId,
+  })
+
   const parentPermalink = permalink.split("/").slice(0, -1).join("/")
   const parentTitle = parent?.title || ResourceType.Collection
 
@@ -51,6 +56,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
         layout: "collection",
         title: parentTitle,
         summary: "",
+        collectionPagePageProps: { tagCategories },
         children: [
           {
             id: "9999999",
