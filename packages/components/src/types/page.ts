@@ -75,6 +75,7 @@ const dateSchemaObject = Type.Object({
 
 const BaseRefPageSchema = Type.Composite([
   categorySchemaObject,
+  Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   imageSchemaObject,
   Type.Object({
@@ -94,7 +95,6 @@ const BaseRefPageSchema = Type.Composite([
       }),
     ),
   }),
-  Type.Object({ tagged: TaggedSchema }),
 ])
 
 // NOTE: old tag schema that we should migrate away
@@ -113,13 +113,13 @@ const TagsSchema = Type.Object(
 )
 
 export const ArticlePagePageSchema = Type.Composite([
+  categorySchemaObject,
+  Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   Type.Object({
     articlePageHeader: ArticlePageHeaderSchema,
   }),
-  categorySchemaObject,
   imageSchemaObject,
-  Type.Object({ tagged: TaggedSchema }),
 ])
 
 const COLLECTION_PAGE_SORT_BY = {
