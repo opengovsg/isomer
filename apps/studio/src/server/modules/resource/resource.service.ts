@@ -21,6 +21,8 @@ import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE } from "~/lib/growthbook"
 import {
   getSitemapTree,
+  injectTagMappings,
+  isCollectionItem,
   overwriteCollectionChildrenForCollectionBlock,
 } from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
@@ -171,13 +173,12 @@ export const updatePageById = (
     .executeTakeFirstOrThrow()
 }
 
-export const getBlobOfResource = async ({
-  db,
-  resourceId,
-}: {
+interface GetBlobProps {
   db: SafeKysely
   resourceId: string
-}) => {
+}
+
+export const getBlobOfResource = async ({ db, resourceId }: GetBlobProps) => {
   const { draftBlobId, publishedVersionId } = await db
     .selectFrom("Resource")
     .where("id", "=", resourceId)
@@ -211,6 +212,49 @@ export const getBlobOfResource = async ({
         .select("blobId"),
     )
     .executeTakeFirstOrThrow()
+}
+
+// NOTE: This function gets the published blob preferentially,
+// and if it fails to get a published blob (because the resource has never been published),
+// it will fall back to the draft blob
+export const getPublishedIndexBlobByParentId = async ({
+  db,
+  resourceId,
+}: GetBlobProps) => {
+  const { draftBlobId, publishedVersionId } = await db
+    .selectFrom("Resource")
+    .where("parentId", "=", resourceId)
+    .where("type", "=", ResourceType.IndexPage)
+    .select(["draftBlobId", "publishedVersionId"])
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "The specified resource could not be found",
+        }),
+    )
+
+  if (publishedVersionId) {
+    return db
+      .selectFrom("Blob")
+      .selectAll()
+      .where("Blob.id", "=", (eb) =>
+        eb
+          .selectFrom("Version")
+          .where("id", "=", publishedVersionId)
+          .select("blobId"),
+      )
+      .executeTakeFirstOrThrow()
+  }
+
+  return (
+    db
+      .selectFrom("Blob")
+      .where("id", "=", draftBlobId)
+      .selectAll()
+      // NOTE: Guaranteed to exist since this is a foreign key
+      .executeTakeFirstOrThrow()
+  )
 }
 
 export const updateBlobById = async (
@@ -439,6 +483,12 @@ export const getLocalisedSitemap = async (
   // Assumption: Collection Block is only being used on the root page
   if (resource.type === ResourceType.RootPage) {
     return overwriteCollectionChildrenForCollectionBlock(sitemapTree)
+  }
+
+  // NOTE: If the resource is part of a collection,
+  // we need to inject tag mappings for the preview
+  if (isCollectionItem(resource)) {
+    return injectTagMappings(sitemapTree, resource)
   }
 
   return sitemapTree
