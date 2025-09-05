@@ -169,7 +169,8 @@ export const updatePageById = (
     .set({ ...rest, ...(parentId && { parentId: String(parentId) }) })
     .where("siteId", "=", page.siteId)
     .where("id", "=", String(id))
-    .executeTakeFirstOrThrow()
+    .returningAll()
+    .executeTakeFirst()
 }
 
 export const getBlobOfResource = async ({

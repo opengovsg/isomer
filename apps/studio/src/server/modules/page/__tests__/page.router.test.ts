@@ -31,7 +31,7 @@ import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db } from "../../database"
-import { getBlobOfResource } from "../../resource/resource.service"
+import { getBlobOfResource, getPageById } from "../../resource/resource.service"
 import { pageRouter } from "../page.router"
 import { createDefaultPage } from "../page.service"
 
@@ -2016,17 +2016,42 @@ describe("page.router", async () => {
       })
     })
   })
-  describe("scheduled publishing", () => {
+  describe("schedulePage", () => {
+    it("should throw 403 if user does not have publish access to the site", async () => {
+      //  Arrange
+      const now = new Date()
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const scheduleCaller = caller.schedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+        publishDate: addDays(now, 1),
+        publishTime: "10:00",
+      })
+
+      // Assert
+      await expect(scheduleCaller).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
     it("should set a scheduledAt time correctly for a page", async () => {
       // Arrange
       const now = new Date()
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
       })
-      await setupEditorPermissions({
+      await setupAdminPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
+
       // Act
       await caller.schedulePage({
         siteId: site.id,
@@ -2034,6 +2059,7 @@ describe("page.router", async () => {
         publishDate: addDays(now, 1),
         publishTime: "10:00",
       })
+
       // Assert
       const actual = await db
         .selectFrom("Resource")
@@ -2069,10 +2095,12 @@ describe("page.router", async () => {
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
       })
-      await setupEditorPermissions({
+      await setupAdminPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
+
+      // Act
       // This should throw an error on the frontend or backend based on the value specified in MINIMUM_SCHEDULE_LEAD_TIME_MINUTES
       await expect(
         caller.schedulePage({
@@ -2082,6 +2110,17 @@ describe("page.router", async () => {
           publishTime: format(scheduledAtInPast, "HH:mm"),
         }),
       ).rejects.toThrowError()
+
+      // Assert
+      // Since the request fails, expect scheduledAt to be null
+      const pageById = await getPageById(db, {
+        resourceId: Number(expectedPage.id),
+        siteId: site.id,
+      })
+      expect(pageById?.scheduledAt).toBeNull()
+      // Since the request fails, expect no audit log to be created
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(0)
     })
   })
 })

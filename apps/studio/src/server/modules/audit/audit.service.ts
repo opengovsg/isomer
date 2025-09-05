@@ -25,7 +25,7 @@ type FullResource =
     }
 
 // map each event type to its delta type
-interface EventDeltaMap {
+interface ResourceEventDeltaMap {
   ResourceCreate: {
     before: null
     after: FullResource
@@ -52,11 +52,11 @@ interface BaseResourceEventLogProps {
 }
 
 export type ResourceEventLogProps = {
-  [K in keyof EventDeltaMap]: BaseResourceEventLogProps & {
+  [K in keyof ResourceEventDeltaMap]: BaseResourceEventLogProps & {
     eventType: K
-    delta: EventDeltaMap[K]
+    delta: ResourceEventDeltaMap[K]
   }
-}[keyof EventDeltaMap]
+}[keyof ResourceEventDeltaMap]
 
 // NOTE: Type to force every logger method to have a tx
 export type AuditLogger<T> = (tx: Transaction<DB>, props: T) => Promise<void>

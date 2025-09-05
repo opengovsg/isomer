@@ -338,14 +338,14 @@ export const pageRouter = router({
     }),
   schedulePage: protectedProcedure
     .input(schedulePageSchema)
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId: input.siteId,
-        action: "update",
+        siteId,
+        action: "publish",
         userId: ctx.user.id,
       })
       // check if the input.scheduledAt is after the current time
-      if (isBefore(input.scheduledAt, new Date())) {
+      if (isBefore(scheduledAt, new Date())) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Scheduled time must be in the future",
@@ -356,11 +356,12 @@ export const pageRouter = router({
         .where("id", "=", ctx.user.id)
         .selectAll()
         .executeTakeFirstOrThrow()
-      await db.transaction().execute(async (tx) => {
+
+      const updatedPage = await db.transaction().execute(async (tx) => {
         // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
-        const resource = await getPageById(db, {
-          resourceId: input.pageId,
-          siteId: input.siteId,
+        const resource = await getPageById(tx, {
+          resourceId: pageId,
+          siteId,
         })
         if (!resource) {
           throw new TRPCError({
@@ -378,27 +379,36 @@ export const pageRouter = router({
           })
         }
         // update the resource's scheduled field
-        await updatePageById(
+        const updatedPage = await updatePageById(
           {
-            id: input.pageId,
-            siteId: input.siteId,
-            scheduledAt: input.scheduledAt,
+            id: pageId,
+            siteId,
+            scheduledAt,
           },
           tx,
         )
+        // verify that the update was successful
+        if (!updatedPage) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to schedule page",
+          })
+        }
         // TODO: add logic to add the job to the job queue
         await logResourceEvent(tx, {
-          siteId: input.siteId,
+          siteId,
           by,
           delta: {
             before: resource,
-            after: { ...resource, scheduledAt: input.scheduledAt },
+            after: updatedPage,
           },
           eventType: AuditLogEvent.ResourceSchedule,
         })
+        return updatedPage
       })
       await sendScheduledPageEmail({
-        scheduledAt: input.scheduledAt,
+        resource: updatedPage,
+        scheduledAt,
         recipientEmail: by.email,
       })
     }),
