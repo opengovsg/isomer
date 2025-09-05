@@ -5,15 +5,17 @@ import { BiTimeFive } from "react-icons/bi"
 import { CancelScheduleModal } from "."
 import { formatScheduledAtDate } from "./utils"
 
+interface CancelSchedulePublishIndicatorProps {
+  pageId: number
+  siteId: number
+  scheduledAt: Date
+}
+
 export const CancelSchedulePublishIndicator = ({
   pageId,
   siteId,
   scheduledAt,
-}: {
-  pageId: number
-  siteId: number
-  scheduledAt: Date
-}) => {
+}: CancelSchedulePublishIndicatorProps) => {
   const cancelScheduleDisclosure = useDisclosure()
   return (
     <>
