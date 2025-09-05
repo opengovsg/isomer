@@ -1,9 +1,7 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
-import type { IconType } from "react-icons"
 import type { z } from "zod"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import {
-  FormControl,
   HStack,
   Icon,
   Modal,
@@ -16,28 +14,21 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import {
-  Badge,
   Button,
-  DatePicker,
-  FormErrorMessage,
-  FormLabel,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { add, format, isBefore, isSameDay, parse, startOfDay } from "date-fns"
-import { Controller, FormProvider, useFormContext } from "react-hook-form"
-import { BiCalendarCheck, BiCheck, BiRocket, BiTimeFive } from "react-icons/bi"
+import { format, parse } from "date-fns"
+import { FormProvider, useFormContext } from "react-hook-form"
+import { BiCalendarCheck, BiRocket, BiTimeFive } from "react-icons/bi"
 
 import type { schedulePublishClientSchema } from "~/schemas/schedule"
-import { TimeSelect } from "~/components/Select/TimeSelect"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
-import {
-  MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
-  publishClientSchema,
-  PublishMode,
-} from "~/schemas/schedule"
+import { publishClientSchema, PublishMode } from "~/schemas/schedule"
 import { trpc } from "~/utils/trpc"
+import { PublishModeCard } from "./PublishModeCard"
+import { SchedulePublishDetails } from "./ScheduledPublishDetails"
 
 interface ScheduledPublishingModalProps extends UseDisclosureReturn {
   pageId: number
@@ -47,16 +38,6 @@ interface ScheduledPublishingModalProps extends UseDisclosureReturn {
   // used for the loading state of the publish button
   isPublishingNow?: boolean
 }
-
-/**
- * The times to display as 'quick-select-times' under the date/time picker
- */
-const QUICK_SELECT_TIMES: { hours: number; minutes: number }[] = [
-  { hours: 0, minutes: 0 },
-  { hours: 9, minutes: 0 },
-  { hours: 13, minutes: 0 },
-  { hours: 17, minutes: 0 },
-]
 
 export const ScheduledPublishingModal = ({
   pageId,
@@ -120,10 +101,18 @@ export const ScheduledPublishingModal = ({
         onSubmit={methods.handleSubmit(
           (res: z.output<typeof publishClientSchema>) => {
             // publish immediately if publish mode is now, else schedule publish
-            if (res.publishMode === PublishMode.NOW) {
-              onPublishNow(res.pageId, res.siteId)
-            } else {
-              schedulePageMutation(res)
+            switch (res.publishMode) {
+              case PublishMode.NOW:
+                onPublishNow(res.pageId, res.siteId)
+                break
+              case PublishMode.SCHEDULED:
+                schedulePageMutation(res)
+                break
+              default:
+                const _exhaustiveCheck: never = res
+                throw new Error(
+                  `Unknown publish mode. Please check the publish mode type`,
+                )
             }
           },
         )}
@@ -180,9 +169,7 @@ export const ScheduledPublishingModal = ({
               No, don't publish
             </Button>
             <Button type="submit" isLoading={isPublishingNow || isScheduling}>
-              {publishMode === PublishMode.NOW
-                ? "Publish now"
-                : "Schedule publish"}
+              {getPublishButtonLabel(publishMode)}
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -191,207 +178,19 @@ export const ScheduledPublishingModal = ({
   )
 }
 
-/**
- * if the date provided is equal to the earliestSchedule's date, the earliest allowable time should be set to the FIRST
- * time slot after the current minimum allowable time
- * @param selectedDate Date selected inside the datepicker
- * @param earliestSchedule Earliest schedule time, based on the current date and MINIMUM_SCHEDULE_LEAD_TIME_MINUTES
- * @returns
- */
-const getEarliestAllowableTime = (
-  selectedDate: Date,
-  earliestSchedule: Date,
-): { hours: number; minutes: number } | null => {
-  if (isSameDay(selectedDate, earliestSchedule)) {
-    return {
-      hours: earliestSchedule.getHours(),
-      minutes: earliestSchedule.getMinutes(),
-    }
-  }
-  return null
-}
-
-const SchedulePublishDetails = () => {
-  const {
-    resetField,
-    watch,
-    control,
-    formState: { errors },
-  } = useFormContext<z.input<typeof schedulePublishClientSchema>>()
-
-  const publishDate = watch("publishDate")
-  const publishTime = watch("publishTime")
-  // this is the earliest date and time that the user can schedule a publish for
-  const { earliestAllowableTime, earliestSchedule } = useMemo(() => {
-    const earliestSchedule = add(new Date(), {
-      minutes: MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
-    })
-    const earliestAllowableTime = getEarliestAllowableTime(
-      publishDate,
-      earliestSchedule,
-    )
-    // if there is an earliest allowable time and the indicated publish time is out of range
-    // reset the publish time to make the user re-input the time
-    if (
-      earliestAllowableTime &&
-      publishTime &&
-      isBefore(parse(publishTime, "HH:mm", new Date()), earliestSchedule)
-    ) {
-      resetField("publishTime")
-    }
-    return {
-      earliestSchedule,
-      earliestAllowableTime,
-    }
-  }, [publishDate, publishTime, resetField])
-
-  return (
-    <VStack align="stretch" spacing="0.5rem">
-      <HStack spacing="1.5rem" w="100%" alignItems="flex-start">
-        <FormControl isInvalid={!!errors.publishDate} flexGrow={1}>
-          <FormLabel isRequired>Date</FormLabel>
-          <Controller
-            name="publishDate"
-            control={control}
-            render={({ field }) => (
-              <DatePicker
-                {...field}
-                isDateUnavailable={(date) => {
-                  return isBefore(
-                    startOfDay(date),
-                    startOfDay(earliestSchedule),
-                  )
-                }}
-              />
-            )}
-          />
-          <FormErrorMessage>{errors.publishDate?.message}</FormErrorMessage>
-        </FormControl>
-        <FormControl isInvalid={!!errors.publishTime} flexGrow={1}>
-          <FormLabel isRequired>Time</FormLabel>
-          <Controller
-            name="publishTime"
-            control={control}
-            render={({ field }) => (
-              <TimeSelect
-                {...field}
-                earliestAllowableTime={earliestAllowableTime}
-              />
-            )}
-          />
-          <FormErrorMessage>{errors.publishTime?.message}</FormErrorMessage>
-        </FormControl>
-      </HStack>
-      <QuickSelectTimeSection earliestAllowableTime={earliestAllowableTime} />
-    </VStack>
-  )
-}
-
-const QuickSelectTimeSection = ({
-  earliestAllowableTime,
-}: {
-  earliestAllowableTime: { hours: number; minutes: number } | null
-}) => {
-  const optionsToShow = useMemo(() => {
-    // the array of pills to display in the section
-    return QUICK_SELECT_TIMES.filter(({ hours, minutes }) => {
-      // filter out the time if it is before the earliest allowable time
-      // since both are kept as {hours, minutes}, we don't need to convert them to Date objects
-      if (!earliestAllowableTime) return true
-      return (
-        hours > earliestAllowableTime.hours ||
-        (hours === earliestAllowableTime.hours &&
-          minutes >= earliestAllowableTime.minutes)
+const getPublishButtonLabel = (publishMode: PublishMode): string => {
+  switch (publishMode) {
+    case PublishMode.NOW:
+      return "Publish now"
+    case PublishMode.SCHEDULED:
+      return "Schedule publish"
+    default:
+      // Exhaustive check: ensures all enum values are handled
+      const _exhaustiveCheck: never = publishMode
+      throw new Error(
+        `Unknown publish mode. Please check the publish mode type`,
       )
-    })
-  }, [earliestAllowableTime])
-  const { setValue } =
-    useFormContext<z.input<typeof schedulePublishClientSchema>>()
-  return (
-    <>
-      {optionsToShow.length > 0 && (
-        <VStack align="stretch" spacing="0.5rem">
-          <Text textStyle="caption-2">Quick select a time?</Text>
-          <HStack spacing="0.5rem">
-            {optionsToShow.map((time) => {
-              const date = new Date()
-              date.setHours(time.hours, time.minutes, 0, 0)
-              const displayFormatted = format(date, "h:mm a")
-              const valueFormatted = format(date, "HH:mm")
-              return (
-                <Badge
-                  key={displayFormatted}
-                  variant="outline"
-                  cursor="pointer"
-                  borderWidth="1px"
-                  borderColor="blue.200"
-                  onClick={() => setValue("publishTime", valueFormatted)}
-                >
-                  <Text textStyle="legal" color="interaction.main.default">
-                    {displayFormatted}
-                  </Text>
-                </Badge>
-              )
-            })}
-          </HStack>
-        </VStack>
-      )}
-    </>
-  )
-}
-
-const PublishModeCard = ({
-  icon,
-  title,
-  description,
-  isSelected,
-  onSelect,
-}: {
-  icon: IconType
-  title: string
-  description: string
-  isSelected: boolean
-  onSelect: () => void
-}) => {
-  return (
-    <HStack
-      display="flex"
-      alignItems="flex-start"
-      border="1px"
-      borderColor={isSelected ? "base.divider.brand" : "base.divider.medium"}
-      boxShadow={isSelected ? "sm" : undefined}
-      padding="0.75rem"
-      spacing="0.5rem"
-      cursor="pointer"
-      borderRadius="md"
-      onClick={onSelect}
-    >
-      <Icon
-        as={icon}
-        boxSize="1.5rem"
-        py="0.125rem"
-        color={isSelected ? "base.content.brand" : "base.content.strong"}
-      />
-      <VStack align="stretch" spacing={0}>
-        <HStack display="flex" spacing="0" alignItems="center">
-          <Text
-            textStyle="subhead-2"
-            color={isSelected ? "base.content.brand" : "base.content.strong"}
-          >
-            {title}
-          </Text>
-          {isSelected && (
-            <Icon
-              as={BiCheck}
-              boxSize="1rem"
-              color="utility.feedback.success"
-            />
-          )}
-        </HStack>
-        <Text textStyle="body-2">{description}</Text>
-      </VStack>
-    </HStack>
-  )
+  }
 }
 
 const SchedulePublishBanner = () => {
@@ -419,7 +218,7 @@ const SchedulePublishBanner = () => {
         <Text display="inline" textStyle="subhead-2">
           {format(getValues("publishDate"), "MMMM d, yyyy")}
         </Text>
-        . Changes will be live on your site approximately 15-30 minutes after
+        . Changes will be live on your site approximately 5-10 minutes after
         publishing.
       </Text>
     </HStack>
