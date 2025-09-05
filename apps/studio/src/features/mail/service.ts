@@ -7,6 +7,7 @@ import type {
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
+  SchedulePageTemplateData,
 } from "./templates"
 import { createBaseLogger } from "~/lib/logger"
 import { isValidEmail } from "~/utils/email"
@@ -66,6 +67,16 @@ export async function sendLoginAlertEmail(
     data,
     template: templates.loginAlert(data),
     emailType: "login alert",
+  })
+}
+
+export async function sendScheduledPageEmail(
+  data: SchedulePageTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.schedulePage(data),
+    emailType: "scheduled page",
   })
 }
 
