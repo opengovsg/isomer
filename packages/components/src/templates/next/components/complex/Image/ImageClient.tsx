@@ -34,6 +34,7 @@ export const ImageClient = forwardRef<
           currentTarget.src = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
         }}
         loading={lazyLoading ? "lazy" : "eager"}
+        decoding={lazyLoading ? "async" : "auto"}
       />
     )
   },
