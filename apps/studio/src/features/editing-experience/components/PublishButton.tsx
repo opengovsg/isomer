@@ -13,6 +13,7 @@ import { withSuspense } from "~/hocs/withSuspense"
 import { ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
 import { ScheduledPublishingModal } from "./ScheduledPublishingModal"
+import { CancelSchedulePublishIndicator } from "./ScheduledPublishingModal/CancelSchedulePublishIndicator"
 
 interface PublishButtonProps extends ButtonProps {
   pageId: number
@@ -84,23 +85,31 @@ const SuspendablePublishButton = ({
                   isPublishingNow={isPending}
                 />
               )}
-              <Button
-                isDisabled={!isChangesPendingPublish || isDisabled}
-                variant="solid"
-                size="sm"
-                onClick={(e) => {
-                  if (enableScheduledPublishing) {
-                    scheduledPublishingDisclosure.onOpen()
-                  } else {
-                    mutate({ pageId, siteId })
-                    onClick?.(e)
-                  }
-                }}
-                isLoading={isPending}
-                {...rest}
-              >
-                Publish
-              </Button>
+              {currPage.scheduledAt ? (
+                <CancelSchedulePublishIndicator
+                  siteId={siteId}
+                  pageId={pageId}
+                  scheduledAt={currPage.scheduledAt}
+                />
+              ) : (
+                <Button
+                  isDisabled={!isChangesPendingPublish || isDisabled}
+                  variant="solid"
+                  size="sm"
+                  onClick={(e) => {
+                    if (enableScheduledPublishing) {
+                      scheduledPublishingDisclosure.onOpen()
+                    } else {
+                      mutate({ pageId, siteId })
+                      onClick?.(e)
+                    }
+                  }}
+                  isLoading={isPending}
+                  {...rest}
+                >
+                  Publish
+                </Button>
+              )}
             </>
           )}
         </TouchableTooltip>
