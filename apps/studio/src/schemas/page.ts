@@ -68,7 +68,7 @@ export const reorderBlobSchema = z.object({
 // Schema for scheduling a page (publishAt is derived from publishDate and publishTime)
 // On the client side, publishDate is selected via a date picker
 // and publishTime is selected via a time picker (in HH:mm format)
-export const MINIMUM_SCHEDULE_LEAD_TIME_MINUTES = 10
+const MINIMUM_SCHEDULE_LEAD_TIME_MINUTES = 10
 
 export const schedulePageSchema = basePageSchema
   .extend({

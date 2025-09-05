@@ -17,6 +17,9 @@ import { env } from "~/env.mjs"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
 import { getStudioResourceUrl } from "~/utils/resources"
 
+const constructStudioRedirect = () =>
+  `<a target="_blank" href="${env.NEXT_PUBLIC_APP_URL}">${env.NEXT_PUBLIC_APP_URL?.replace("https://", "")}</a>`
+
 export const invitationTemplate = (
   data: InvitationEmailTemplateData,
 ): EmailTemplate => {
@@ -44,7 +47,7 @@ export const invitationTemplate = (
     `<p>Hi ${recipientEmail},</p>
 <p>${inviterName} has invited you to edit ${siteName} on Isomer Studio as ${role}. As a ${role}, you can ${roleAction}.</p>
 <p></p>
-<p>To start editing, log in to Isomer Studio and activate your account: <a target="_blank" href="${env.NEXT_PUBLIC_APP_URL}">${env.NEXT_PUBLIC_APP_URL?.replace("https://", "")}</a></p>`,
+<p>To start editing, log in to Isomer Studio and activate your account: ${constructStudioRedirect()}</p>`,
     ...(isSingpassEnabled
       ? [
           `<p>You will need to set up Two-Factor Authentication (2FA) using Singpass. Please have your Singpass ready to complete activation.</p>`,
@@ -79,12 +82,12 @@ export const loginAlertTemplate = (
 export const schedulePageTemplate = (
   data: SchedulePageTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, scheduledAt } = data
+  const { recipientEmail, resource, scheduledAt } = data
   return {
-    subject: `[Isomer Studio] You scheduled a page to be published`,
+    subject: `[Isomer Studio] You scheduled ${resource.title} to be published`,
     body: `<p>Hi ${recipientEmail},</p>
 <p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${format(scheduledAt, "MMMM d, yyyy hh:mm a")}</strong>.</p>
-<p>Log in to Isomer Studio to change or cancel this.</p>
+<p>Log in to Isomer Studio at ${constructStudioRedirect()} to change or cancel this.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }
@@ -129,7 +132,7 @@ export const accountDeactivationWarningTemplate = (
   return {
     subject: `[Isomer Studio] Account deactivation warning - ${inHowManyDays} days remaining`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>We noticed you haven’t logged in for a while. To keep your account active, please log in within the next ${inHowManyDays} days at <a href="${env.NEXT_PUBLIC_APP_URL}">${env.NEXT_PUBLIC_APP_URL?.replace("https://", "")}</a>.</p>
+<p>We noticed you haven’t logged in for a while. To keep your account active, please log in within the next ${inHowManyDays} days at ${constructStudioRedirect()}.</p>
 <p>This is a standard security measure to protect your sites and data.</p>
 <p>If your account becomes deactivated, you will lose access to the following sites:</p>
 <ul>${siteNames.map((site) => `<li>${site}</li>`).join("")}</ul>
