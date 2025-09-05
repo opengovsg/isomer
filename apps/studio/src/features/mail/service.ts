@@ -2,6 +2,7 @@ import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
   BaseEmailTemplateData,
+  CancelSchedulePageTemplateData,
   EmailTemplate,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
@@ -77,6 +78,16 @@ export async function sendScheduledPageEmail(
     data,
     template: templates.schedulePage(data),
     emailType: "scheduled page",
+  })
+}
+
+export async function sendCancelSchedulePageEmail(
+  data: CancelSchedulePageTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.cancelSchedulePage(data),
+    emailType: "cancel scheduled page",
   })
 }
 

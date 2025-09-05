@@ -42,6 +42,10 @@ interface ResourceEventDeltaMap {
     before: FullResource
     after: FullResource
   }
+  CancelResourceSchedule: {
+    before: FullResource
+    after: FullResource
+  }
 }
 
 interface BaseResourceEventLogProps {
