@@ -1,16 +1,14 @@
 import type {
-  GoogleTagManagerHeaderProps,
-  GoogleTagManagerHeaderScriptProps,
+  GoogleTagManagerProps,
+  GoogleTagManagerScriptProps,
 } from "~/interfaces"
 
 const GoogleTagManagerHeaderScript = ({
   gtmId,
-  ScriptComponent,
-}: GoogleTagManagerHeaderScriptProps) => {
+}: GoogleTagManagerScriptProps) => {
   return (
-    <ScriptComponent
+    <script
       id={`_next-gtm-init-${gtmId}`}
-      strategy="afterInteractive" // next/script's default but just in case Vercel changes it in the future
       dangerouslySetInnerHTML={{
         __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 					new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -26,22 +24,11 @@ const GoogleTagManagerHeaderScript = ({
 export const GoogleTagManagerHeader = ({
   siteGtmId,
   isomerGtmId,
-  ScriptComponent,
-}: GoogleTagManagerHeaderProps) => {
+}: GoogleTagManagerProps) => {
   return (
     <>
-      {!!siteGtmId && (
-        <GoogleTagManagerHeaderScript
-          gtmId={siteGtmId}
-          ScriptComponent={ScriptComponent}
-        />
-      )}
-      {!!isomerGtmId && (
-        <GoogleTagManagerHeaderScript
-          gtmId={isomerGtmId}
-          ScriptComponent={ScriptComponent}
-        />
-      )}
+      {!!siteGtmId && <GoogleTagManagerHeaderScript gtmId={siteGtmId} />}
+      {!!isomerGtmId && <GoogleTagManagerHeaderScript gtmId={isomerGtmId} />}
     </>
   )
 }

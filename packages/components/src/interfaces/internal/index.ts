@@ -56,10 +56,8 @@ export {
   type VicaStylesheetProps,
 } from "./Vica"
 export type {
-  GoogleTagManagerHeaderScriptProps,
-  GoogleTagManagerHeaderProps,
-  GoogleTagManagerBodyScriptProps,
-  GoogleTagManagerBodyProps,
+  GoogleTagManagerScriptProps,
+  GoogleTagManagerProps,
 } from "./GoogleTagManager"
 export type { AttrsDirProps } from "./AttrsDir"
 export {
