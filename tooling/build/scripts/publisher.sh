@@ -168,12 +168,6 @@ if [ ! -d "./out" ]; then
   exit 1
 fi
 
-# Create partytown folder and scripts
-echo "Creating partytown folder and scripts..."
-start_time=$(date +%s)
-npm run partytown
-calculate_duration $start_time
-
 ls -al
 find ./out -type f | wc -l
 
