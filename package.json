@@ -39,5 +39,8 @@
   "devDependencies": {
     "turbo": "^2.5.4"
   },
-  "packageManager": "npm@10.2.3"
+  "packageManager": "npm@10.2.3",
+  "dependencies": {
+    "bullmq": "^5.58.5"
+  }
 }
