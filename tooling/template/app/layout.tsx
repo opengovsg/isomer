@@ -3,6 +3,7 @@ import config from "@/data/config.json"
 import "@/styles/globals.css"
 
 import type { Metadata } from "next"
+import { Partytown } from "@qwik.dev/partytown/react"
 
 export const dynamic = "force-static"
 
@@ -16,7 +17,10 @@ export const metadata: Metadata = {
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="en" data-theme={config.site.theme || "isomer-next"}>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <Partytown debug={false} forward={["dataLayer.push"]} />
+        {children}
+      </body>
     </html>
   )
 }
