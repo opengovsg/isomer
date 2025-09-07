@@ -22,11 +22,9 @@ import {
 import { handleSignal, RedisClient, redlockClient } from "../utils"
 
 export interface ScheduledPublishJobData {
-  data: {
-    resourceId: number // the id of the resource to be scheduled for publish
-    siteId: number // the id of the site which the page belongs to
-    userId: string // the id of the user who scheduled the publish
-  }
+  resourceId: number // the id of the resource to be scheduled for publish
+  siteId: number // the id of the site which the page belongs to
+  userId: string // the id of the user who scheduled the publish
 }
 
 /**
@@ -34,14 +32,13 @@ export interface ScheduledPublishJobData {
  * needs to be forcefully cleaned up (in minutes)
  */
 export const SCHEDULED_AT_CRONJOB_CUTOFF_DELAY_MINUTES = 10
-export const getJobId = (resourceId: number) => `schedule-publish-${resourceId}`
 
 const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
 
-const worker = new Worker<ScheduledPublishJobData["data"]>(
+const worker = new Worker<ScheduledPublishJobData>(
   SCHEDULED_PUBLISH_QUEUE_NAME,
-  async (job: ScheduledPublishJobData) => {
-    await publishScheduledResource(job.data)
+  async (job: Job<ScheduledPublishJobData>) => {
+    await publishScheduledResource(job)
   },
   {
     connection: RedisClient,
@@ -52,10 +49,8 @@ const worker = new Worker<ScheduledPublishJobData["data"]>(
 )
 
 const publishScheduledResource = async ({
-  resourceId,
-  siteId,
-  userId,
-}: ScheduledPublishJobData["data"]) => {
+  data: { resourceId, siteId, userId },
+}: Job<ScheduledPublishJobData>) => {
   let lock: Lock | null = null
   try {
     // Acquire a lock for this resourceId to prevent concurrent processing
@@ -124,7 +119,7 @@ const publishScheduledResource = async ({
 // Handle failed jobs
 worker.on(
   "failed",
-  (job: Job<ScheduledPublishJobData["data"]> | undefined, err: Error) => {
+  (job: Job<ScheduledPublishJobData> | undefined, err: Error) => {
     void (async () => {
       if (!job) {
         logger.error({
