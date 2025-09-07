@@ -6,7 +6,6 @@ import { getIronSession } from "iron-session"
 
 import { env } from "~/env.mjs"
 import { type Session, type SessionData } from "~/lib/types/session"
-import { RedisClient } from "./bullmq/utils"
 import { generateSessionOptions } from "./modules/auth/session"
 import { db } from "./modules/database"
 import { type defaultUserSelect } from "./modules/me/me.select"
@@ -26,7 +25,6 @@ export function createContextInner(opts: CreateContextOptions) {
     session: opts.session,
     prisma,
     db,
-    redis: RedisClient,
   }
 }
 
