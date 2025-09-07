@@ -38,6 +38,8 @@ import {
   updatePageMetaSchema,
 } from "~/schemas/page"
 import { scheduledPublishServerSchema } from "~/schemas/schedule"
+import { jobOptions, scheduledPublishQueue } from "~/server/bullmq/queues"
+import { getJobId } from "~/server/bullmq/queues/schedule-publish"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -397,7 +399,12 @@ export const pageRouter = router({
             message: "Failed to schedule page",
           })
         }
-        // TODO: add logic to add the job to the job queue
+        // add to the scheduled publish queue so it's processed by the worker at the scheduled time
+        await scheduledPublishQueue.add(
+          getJobId(pageId),
+          { data: { resourceId: pageId, siteId, userId: ctx.user.id } },
+          jobOptions,
+        )
         await logResourceEvent(tx, {
           siteId,
           by,
@@ -461,8 +468,9 @@ export const pageRouter = router({
             message: "Failed to cancel page schedule",
           })
         }
-        // TODO: add logic to remove the scheduledAt job in the job queue
-        // if execution has not started
+        // remove the job from the scheduled publish queue, if the resource is still in a 'scheduled' state
+        const job = await scheduledPublishQueue.getJob(getJobId(pageId))
+        if (job) await job.remove()
         await logResourceEvent(tx, {
           siteId,
           by,
