@@ -28,6 +28,13 @@ interface ResourceJob {
     userId: string // the id of the user who scheduled the publish
   }
 }
+
+/**
+ * Cronjob cleanup settings, indicates delay after the scheduledAt timestamp when the job
+ * needs to be forcefully cleaned up (in minutes)
+ */
+export const SCHEDULED_AT_CRONJOB_CUTOFF_DELAY_MINUTES = 10
+
 const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
 
 const worker = new Worker<ResourceJob["data"]>(
