@@ -1,0 +1,35 @@
+{
+  "name": "@isomer/redis",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "run-p build:*",
+    "build:module": "tsc -p tsconfig.module.build.json && tsc-alias -p tsconfig.module.build.json",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint && tsc --noEmit --emitDeclarationOnly false",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "dependencies": {
+    "ioredis": "^5.7.0",
+    "redlock": "^5.0.0-beta.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@isomer/eslint-config": "*",
+    "@isomer/prettier-config": "*",
+    "@isomer/tsconfig": "*",
+    "eslint": "^9.10.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.9.2"
+  }
+}

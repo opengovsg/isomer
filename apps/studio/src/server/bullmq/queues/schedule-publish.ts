@@ -3,6 +3,8 @@ import type { Lock } from "redlock"
 import { Worker } from "bullmq"
 import { ResourceLockedError } from "redlock"
 
+import { RedisClient, RedlockClient } from "@isomer/redis"
+
 import { sendFailedSchedulePublishEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
 import { db } from "~/server/modules/database"
@@ -19,19 +21,13 @@ import {
   WORKER_CONCURRENCY,
   WORKER_RETRY_LIMIT,
 } from "."
-import { handleSignal, RedisClient, redlockClient } from "../utils"
+import { handleSignal } from "../utils"
 
 export interface ScheduledPublishJobData {
   resourceId: number // the id of the resource to be scheduled for publish
   siteId: number // the id of the site which the page belongs to
   userId: string // the id of the user who scheduled the publish
 }
-
-/**
- * Cronjob cleanup settings, indicates delay after the scheduledAt timestamp when the job
- * needs to be forcefully cleaned up (in minutes)
- */
-export const SCHEDULED_AT_CRONJOB_CUTOFF_DELAY_MINUTES = 10
 
 const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
 
@@ -54,7 +50,7 @@ const publishScheduledResource = async ({
   let lock: Lock | null = null
   try {
     // Acquire a lock for this resourceId to prevent concurrent processing
-    lock = await redlockClient.acquire(
+    lock = await RedlockClient.acquire(
       [`locks:resource:${resourceId}`],
       LOCK_TTL,
     )
