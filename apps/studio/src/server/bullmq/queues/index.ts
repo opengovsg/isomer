@@ -29,9 +29,20 @@ const BACKOFF: BackoffOptions = {
   delay: 10_000, // 10s, then 20s, then 40s etc
 }
 
-export const jobOptions: JobsOptions = {
-  attempts: WORKER_RETRY_LIMIT,
-  backoff: BACKOFF,
-  removeOnComplete: { age: REMOVE_ON_COMPLETE_BUFFER },
-  removeOnFail: { age: REMOVE_ON_FAIL_BUFFER },
+export const getJobOptionsFromScheduledAt = (
+  resourceId: string,
+  scheduledAt: Date,
+): JobsOptions => {
+  const delayInMs = scheduledAt.getTime() - Date.now()
+  return {
+    attempts: WORKER_RETRY_LIMIT,
+    backoff: BACKOFF,
+    removeOnComplete: { age: REMOVE_ON_COMPLETE_BUFFER },
+    removeOnFail: { age: REMOVE_ON_FAIL_BUFFER },
+    delay: delayInMs,
+    jobId: getJobIdFromResourceId(resourceId),
+  }
 }
+
+export const getJobIdFromResourceId = (resourceId: string) =>
+  `resource-${resourceId}`
