@@ -91,6 +91,16 @@ export async function sendCancelSchedulePageEmail(
   })
 }
 
+export async function sendFailedSchedulePublishEmail(
+  data: BaseEmailTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.failedSchedulePublish(data),
+    emailType: "failed schedule publish",
+  })
+}
+
 export async function sendPublishAlertContentPublisherEmail(
   data: PublishAlertContentPublisherEmailTemplateData,
 ): Promise<void> {
