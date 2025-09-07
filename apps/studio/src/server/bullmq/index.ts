@@ -1,5 +1,6 @@
+import { RedisClient } from "@isomer/redis"
+
 import { createBaseLogger } from "~/lib/logger"
-import { RedisClient } from "./utils"
 
 const logger = createBaseLogger({ path: "bullmq:index" })
 
