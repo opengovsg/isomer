@@ -1,5 +1,8 @@
 import { createBaseLogger } from "../../lib/logger"
-import { deactivateInactiveUsersJob } from "./jobs"
+import {
+  cleanupScheduledPublishesJob,
+  deactivateInactiveUsersJob,
+} from "./jobs"
 
 const logger = createBaseLogger({ path: "cron:index" })
 
@@ -11,6 +14,7 @@ export const initializeCronJobs = () => {
 
   // Initialize and track all cron jobs
   cronJobs.push(deactivateInactiveUsersJob())
+  cronJobs.push(cleanupScheduledPublishesJob())
 
   logger.info("Cron jobs initialized successfully")
 }
