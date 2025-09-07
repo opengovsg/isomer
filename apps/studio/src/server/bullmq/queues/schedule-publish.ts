@@ -21,7 +21,7 @@ import {
 } from "."
 import { handleSignal, RedisClient, redlockClient } from "../utils"
 
-interface ResourceJob {
+export interface ScheduledPublishJobData {
   data: {
     resourceId: number // the id of the resource to be scheduled for publish
     siteId: number // the id of the site which the page belongs to
@@ -34,12 +34,13 @@ interface ResourceJob {
  * needs to be forcefully cleaned up (in minutes)
  */
 export const SCHEDULED_AT_CRONJOB_CUTOFF_DELAY_MINUTES = 10
+export const getJobId = (resourceId: number) => `schedule-publish-${resourceId}`
 
 const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
 
-const worker = new Worker<ResourceJob["data"]>(
+const worker = new Worker<ScheduledPublishJobData["data"]>(
   SCHEDULED_PUBLISH_QUEUE_NAME,
-  async (job: ResourceJob) => {
+  async (job: ScheduledPublishJobData) => {
     await publishScheduledResource(job.data)
   },
   {
@@ -54,7 +55,7 @@ const publishScheduledResource = async ({
   resourceId,
   siteId,
   userId,
-}: ResourceJob["data"]) => {
+}: ScheduledPublishJobData["data"]) => {
   let lock: Lock | null = null
   try {
     // Acquire a lock for this resourceId to prevent concurrent processing
@@ -121,44 +122,50 @@ const publishScheduledResource = async ({
 }
 
 // Handle failed jobs
-worker.on("failed", (job: Job<ResourceJob["data"]> | undefined, err: Error) => {
-  void (async () => {
-    if (!job) {
-      logger.error({ message: "Job is undefined in failed event", error: err })
-      return
-    }
-    const {
-      data: { resourceId, userId },
-    } = job
-    // Log differently based on number of attempts made
-    logger.error({
-      message:
-        job.attemptsMade >= WORKER_RETRY_LIMIT
-          ? `Publish for page ${resourceId} has failed ${WORKER_RETRY_LIMIT} or more times`
-          : `Attempt ${job.attemptsMade} for ${resourceId} - publish failure`,
-      job,
-      error: err,
-    })
-    try {
-      // Send an email to the user to inform that the publish has failed >= WORKER_RETRY_LIMIT times
-      if (job.attemptsMade >= WORKER_RETRY_LIMIT) {
-        // Get the email of the user who scheduled the publish from the database
-        // We do not pass this in the job data to avoid stale data if the user has been deleted/modified
-        const user = await db
-          .selectFrom("User")
-          .where("id", "=", userId)
-          .selectAll()
-          .executeTakeFirstOrThrow()
-        await sendFailedSchedulePublishEmail({ recipientEmail: user.email })
+worker.on(
+  "failed",
+  (job: Job<ScheduledPublishJobData["data"]> | undefined, err: Error) => {
+    void (async () => {
+      if (!job) {
+        logger.error({
+          message: "Job is undefined in failed event",
+          error: err,
+        })
+        return
       }
-    } catch (emailErr) {
+      const {
+        data: { resourceId, userId },
+      } = job
+      // Log differently based on number of attempts made
       logger.error({
-        message: `Failed to send failed schedule publish email to ${userId} for resource ${resourceId}`,
-        error: emailErr,
+        message:
+          job.attemptsMade >= WORKER_RETRY_LIMIT
+            ? `Publish for page ${resourceId} has failed ${WORKER_RETRY_LIMIT} or more times`
+            : `Attempt ${job.attemptsMade} for ${resourceId} - publish failure`,
+        job,
+        error: err,
       })
-    }
-  })()
-})
+      try {
+        // Send an email to the user to inform that the publish has failed >= WORKER_RETRY_LIMIT times
+        if (job.attemptsMade >= WORKER_RETRY_LIMIT) {
+          // Get the email of the user who scheduled the publish from the database
+          // We do not pass this in the job data to avoid stale data if the user has been deleted/modified
+          const user = await db
+            .selectFrom("User")
+            .where("id", "=", userId)
+            .selectAll()
+            .executeTakeFirstOrThrow()
+          await sendFailedSchedulePublishEmail({ recipientEmail: user.email })
+        }
+      } catch (emailErr) {
+        logger.error({
+          message: `Failed to send failed schedule publish email to ${userId} for resource ${resourceId}`,
+          error: emailErr,
+        })
+      }
+    })()
+  },
+)
 
 // Handle worker-level errors
 worker.on("error", (err: Error) => {
