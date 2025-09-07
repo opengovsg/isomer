@@ -108,6 +108,19 @@ export const cancelSchedulePageTemplate = (
   }
 }
 
+export const failedSchedulePublishTemplate = (
+  data: BaseEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail } = data
+  return {
+    subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
+    body: `<p>Hi ${recipientEmail},</p>
+    <p>We couldn’t publish the page that you scheduled. Please log in to Isomer Studio at ${constructStudioRedirect()} and try publishing the page again.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
+  }
+}
+
 export const publishAlertContentPublisherTemplate = (
   data: PublishAlertContentPublisherEmailTemplateData,
 ): EmailTemplate => {
@@ -207,6 +220,8 @@ export const templates = {
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
   cancelSchedulePage:
     cancelSchedulePageTemplate satisfies EmailTemplateFunction<CancelSchedulePageTemplateData>,
+  failedSchedulePublish:
+    failedSchedulePublishTemplate satisfies EmailTemplateFunction<BaseEmailTemplateData>,
   schedulePage:
     schedulePageTemplate satisfies EmailTemplateFunction<SchedulePageTemplateData>,
   publishAlertSiteAdmin:
