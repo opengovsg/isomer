@@ -10,6 +10,7 @@ export const SCHEDULED_PUBLISH_QUEUE_NAME = "scheduled-publish-queue"
 export const REMOVE_ON_COMPLETE_BUFFER = 60 * 60 * 24 // 1 day in seconds
 export const REMOVE_ON_FAIL_BUFFER = 60 * 60 * 24 * 4 // 4 days in seconds
 export const WORKER_CONCURRENCY = 5
+export const WORKER_RETRY_LIMIT = 3
 export const BACKOFF: BackoffOptions = {
   type: "exponential",
   delay: 10_000, // 10s, then 20s, then 40s etc
