@@ -21,8 +21,8 @@ export const REDIS_URL = `redis://${env.REDIS_HOST}:${env.REDIS_PORT}`
 
 /** Redis client used for BullMQ jobs, uses MemoryDB */
 export const RedisClient: Redis | Cluster =
-  env.NODE_ENV === "development"
-    ? // in development just use same docker instance for convenience
+  env.NODE_ENV !== "production"
+    ? // in development or testing just use same docker instance for convenience
       new Redis(REDIS_URL, { maxRetriesPerRequest: null })
     : // MemoryDB cluster in deployed envs
       new Cluster([{ host: env.REDIS_HOST, port: env.REDIS_PORT }], {
