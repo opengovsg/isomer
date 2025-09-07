@@ -111,7 +111,6 @@
     "@tiptap/pm": "2.22.3",
     "@tiptap/react": "2.22.3",
     "@tiptap/starter-kit": "2.22.3",
-    "@trpc-limiter/redis": "^0.0.2",
     "@trpc/client": "^11.4.4",
     "@trpc/next": "^11.4.4",
     "@trpc/react-query": "^11.4.4",
