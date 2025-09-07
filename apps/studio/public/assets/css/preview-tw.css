@@ -1079,10 +1079,6 @@ video {
   position: absolute;
 }
 
-.\!relative {
-  position: relative !important;
-}
-
 .relative {
   position: relative;
 }
@@ -1493,10 +1489,6 @@ video {
 
 .table {
   display: table;
-}
-
-.table-row {
-  display: table-row;
 }
 
 .\!grid {
@@ -3335,10 +3327,6 @@ video {
 
 .lowercase {
   text-transform: lowercase;
-}
-
-.capitalize {
-  text-transform: capitalize;
 }
 
 .italic {
