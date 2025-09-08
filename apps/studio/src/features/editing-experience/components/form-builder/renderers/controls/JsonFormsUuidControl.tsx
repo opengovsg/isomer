@@ -1,5 +1,4 @@
-import { useMemo } from "react"
-import { Box, FormControl } from "@chakra-ui/react"
+import { useEffect, useMemo } from "react"
 import {
   ControlProps,
   RankedTester,
@@ -7,7 +6,6 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import { FormLabel, Input } from "@opengovsg/design-system-react"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
@@ -18,41 +16,18 @@ export const jsonFormsUuidControlTester: RankedTester = rankWith(
 
 export const JsonFormsUuidControl = ({
   data,
-  label,
   handleChange,
   path,
-  description,
-  required,
-  errors,
 }: ControlProps) => {
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target
-
-    if (value === "") {
-      handleChange(path, undefined)
-    } else {
-      handleChange(path, value)
-    }
-  }
-
   const uuid = useMemo(() => data || crypto.randomUUID(), [path])
+  useEffect(() => {
+    handleChange(path, uuid)
+  }, [path])
 
   return (
-    <Box>
-      <FormControl isRequired={required} isInvalid={!!errors}>
-        <FormLabel description={description} mb={0}>
-          {label}
-        </FormLabel>
-        <Input
-          disabled
-          type="text"
-          value={String(data || uuid)}
-          onChange={onChange}
-          placeholder={label}
-          my="0.5rem"
-        />
-      </FormControl>
-    </Box>
+    // NOTE: hide this because we want our rangers
+    // to go through the dropdown ui
+    null
   )
 }
 
