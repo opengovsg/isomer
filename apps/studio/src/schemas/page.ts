@@ -10,6 +10,7 @@ import {
   set,
   startOfDay,
 } from "date-fns"
+import { fromZonedTime } from "date-fns-tz"
 import { z } from "zod"
 
 import { ajv } from "~/utils/ajv"
@@ -84,12 +85,15 @@ export const schedulePageSchema = basePageSchema
     const [hours, minutes] = publishTime.split(":").map(Number)
     return {
       ...rest,
-      scheduledAt: set(publishDate, {
-        hours,
-        minutes,
-        seconds: 0,
-        milliseconds: 0,
-      }),
+      scheduledAt: fromZonedTime(
+        set(publishDate, {
+          hours,
+          minutes,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+        "Asia/Singapore",
+      ),
     }
   })
   .superRefine(({ scheduledAt }, ctx) => {
