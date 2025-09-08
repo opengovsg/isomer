@@ -42,7 +42,7 @@ const TagCategorySchema = Type.Composite([
 const TagCategoriesSchema = Type.Object(
   {
     tagCategories: Type.Optional(
-      Type.Array(TagCategorySchema, { format: "hidden" }),
+      Type.Array(TagCategorySchema, { format: "tag-categories" }),
     ),
   },
   { format: "hidden" },
