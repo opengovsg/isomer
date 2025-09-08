@@ -9,8 +9,7 @@
   "eslint.workingDirectories": [
     { "pattern": "apps/*/", "changeProcessCWD": true },
     { "pattern": "packages/*/", "changeProcessCWD": true },
-    { "pattern": "tooling/*/", "changeProcessCWD": true },
-    { "directory": ".", "changeProcessCWD": true }
+    { "pattern": "tooling/*/", "changeProcessCWD": true }
   ],
   "tailwindCSS.experimental.classRegex": [
     ["([\"'`][^\"'`]*.*?[\"'`])", "[\"'`]([^\"'`]*).*?[\"'`]"]
