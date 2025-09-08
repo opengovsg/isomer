@@ -235,8 +235,8 @@ enum AuditLogEvent {
   ResourceCreate
   ResourceUpdate
   ResourceDelete
-  ResourceSchedule
-  CancelResourceSchedule
+  SchedulePublish
+  CancelSchedulePublish
   UserCreate
   UserUpdate
   UserDelete

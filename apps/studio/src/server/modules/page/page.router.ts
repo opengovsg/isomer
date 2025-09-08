@@ -402,7 +402,7 @@ export const pageRouter = router({
             before: resource,
             after: updatedPage,
           },
-          eventType: AuditLogEvent.ResourceSchedule,
+          eventType: AuditLogEvent.SchedulePublish,
         })
         return updatedPage
       })

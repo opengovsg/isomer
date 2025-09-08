@@ -2078,7 +2078,7 @@ describe("page.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
       expect(auditLog[0]).toMatchObject({
-        eventType: AuditLogEvent.ResourceSchedule,
+        eventType: AuditLogEvent.SchedulePublish,
         delta: {
           before: omit(expectedPage, ["updatedAt", "createdAt"]),
           // NOTE: Need to convert expectedDate to ISO string as the comparison is done with the DB value which is in ISO format

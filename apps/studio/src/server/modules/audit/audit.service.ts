@@ -38,7 +38,7 @@ interface ResourceEventDeltaMap {
     before: FullResource
     after: null
   }
-  ResourceSchedule: {
+  SchedulePublish: {
     before: FullResource
     after: FullResource
   }

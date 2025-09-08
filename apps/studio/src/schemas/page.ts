@@ -96,23 +96,15 @@ export const schedulePageSchema = basePageSchema
     const earliestScheduleTime = add(new Date(), {
       minutes: MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
     })
+    const isDateBeforeToday =
+      startOfDay(scheduledAt) < startOfDay(earliestScheduleTime)
+
     if (isBefore(scheduledAt, earliestScheduleTime)) {
-      // if the scheduled date is before the earliest allowable date, show error on publishDate
-      if (startOfDay(scheduledAt) < startOfDay(earliestScheduleTime)) {
-        ctx.addIssue({
-          path: ["publishDate"],
-          code: z.ZodIssueCode.custom,
-          message: `Earliest publish time allowable is ${format(earliestScheduleTime, "MMMM d, yyyy hh:mm a")}`,
-        })
-      } else {
-        // if the scheduled date is the same as the allowable date, show error on publishTime
-        // since that means the time selected is too early in the day
-        ctx.addIssue({
-          path: ["publishTime"],
-          code: z.ZodIssueCode.custom,
-          message: `Earliest publish time allowable is ${format(earliestScheduleTime, "MMMM d, yyyy hh:mm a")}`,
-        })
-      }
+      ctx.addIssue({
+        path: isDateBeforeToday ? ["publishDate"] : ["publishTime"],
+        code: z.ZodIssueCode.custom,
+        message: `Earliest publish time allowable is ${format(earliestScheduleTime, "MMMM d, yyyy hh:mm a")}`,
+      })
     }
   })
 

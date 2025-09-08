@@ -1,6 +1,6 @@
 -- AlterEnum
-ALTER TYPE "AuditLogEvent" ADD VALUE 'ResourceSchedule';
-ALTER TYPE "AuditLogEvent" ADD VALUE 'CancelResourceSchedule';
+ALTER TYPE "AuditLogEvent" ADD VALUE 'SchedulePublish';
+ALTER TYPE "AuditLogEvent" ADD VALUE 'CancelSchedulePublish';
 
 -- AlterTable
 ALTER TABLE "Resource" ADD COLUMN     "scheduledAt" TIMESTAMP(3);
