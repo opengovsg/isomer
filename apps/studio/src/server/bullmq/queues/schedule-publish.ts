@@ -56,7 +56,18 @@ const publishScheduledResource = async ({
     )
     const page = await db.transaction().execute(async (tx) => {
       const page = await getPageById(tx, { resourceId, siteId })
-      if (!page) return null
+      if (!page) {
+        logger.error({
+          message: `Page with id ${resourceId} not found or does not belong to site ${siteId}.`,
+        })
+        return null
+      }
+      if (!page.scheduledAt) {
+        logger.info({
+          message: `Page with id ${resourceId} is no longer scheduled for publishing. Exiting job.`,
+        })
+        return null
+      }
       // NOTE: once it's been claimed, we unset scheduledAt even if publish fails
       // The scheduledAt field currently blocks the editing flow so we want to
       // ensure it's unset even if publish fails, to avoid blocking the user from making further edits
@@ -69,25 +80,18 @@ const publishScheduledResource = async ({
         tx,
       )
     })
-    if (!page) {
+    // Publish the page outside of the transaction to avoid long-running transactions
+    if (page) {
       logger.error({
         message: `Page with id ${resourceId} not found or does not belong to site ${siteId}.`,
       })
-      return null
-    }
-    if (!page.scheduledAt) {
-      logger.info({
-        message: `Page with id ${resourceId} is no longer scheduled for publishing. Exiting job.`,
+      await publishPageResource({
+        logger,
+        siteId,
+        resourceId: page.id,
+        userId,
       })
-      return null
     }
-    // Proceed to publish the page
-    await publishPageResource({
-      logger,
-      siteId,
-      resourceId: page.id,
-      userId,
-    })
   } catch (err) {
     // If we fail to acquire the lock, it means another worker is processing this resource
     // We log this and exit gracefully
