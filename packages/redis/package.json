@@ -3,21 +3,27 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./dist/esm/index.js",
-  "types": "./dist/esm/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "types": "./dist/esm/index.d.ts",
-      "default": "./src/index.ts"
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/cjs/index.d.ts"
     }
   },
+  "files": [
+    "dist/cjs",
+    "dist/esm"
+  ],
   "scripts": {
-    "build": "run-p build:*",
+    "prebuild": "rimraf dist",
+    "build": "run-p build:* && npm pack",
+    "build:main": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:module": "tsc -p tsconfig.module.build.json && tsc-alias -p tsconfig.module.build.json",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "format": "prettier --check . --ignore-path ../../.gitignore",
-    "lint": "eslint && tsc --noEmit --emitDeclarationOnly false",
-    "with-env": "dotenv -e ../../.env --"
+    "lint": "eslint"
   },
   "dependencies": {
     "ioredis": "^5.7.0",
