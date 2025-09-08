@@ -48,15 +48,15 @@ interface Childpage {
 
 interface ChildpageLayoutProps
   extends Pick<
-    ChildrenPagesProps,
-    | "showSummary"
-    | "showThumbnail"
-    | "shouldLazyLoad"
-    | "LinkComponent"
-    | "site"
-  > {
+      ChildrenPagesProps,
+      | "showSummary"
+      | "showThumbnail"
+      | "shouldLazyLoad"
+      | "LinkComponent"
+      | "site"
+    >,
+    Pick<ImageClientProps, "assetsBaseUrl"> {
   childpages: Childpage[]
-  assetsBaseUrl?: string
   fallback: Required<NonNullable<IsomerSitemap["image"]>>
 }
 
