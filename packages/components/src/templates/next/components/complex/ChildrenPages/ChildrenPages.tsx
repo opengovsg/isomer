@@ -17,7 +17,11 @@ const ChildpageImage = ({
   alt,
   assetsBaseUrl,
   className,
-}: Pick<ImageClientProps, "className" | "assetsBaseUrl" | "src" | "alt">) => {
+  lazyLoading,
+}: Pick<
+  ImageClientProps,
+  "className" | "assetsBaseUrl" | "src" | "alt" | "lazyLoading"
+>) => {
   const imgSrc =
     isExternalUrl(src) || assetsBaseUrl === undefined
       ? src
@@ -30,6 +34,7 @@ const ChildpageImage = ({
       className={className}
       alt={alt}
       src={imgSrc}
+      lazyLoading={lazyLoading}
     />
   )
 }
@@ -42,10 +47,15 @@ interface Childpage {
 }
 
 interface ChildpageLayoutProps
-  extends Pick<ChildrenPagesProps, "LinkComponent" | "site"> {
+  extends Pick<
+    ChildrenPagesProps,
+    | "showSummary"
+    | "showThumbnail"
+    | "shouldLazyLoad"
+    | "LinkComponent"
+    | "site"
+  > {
   childpages: Childpage[]
-  showSummary: boolean
-  showThumbnail: boolean
   assetsBaseUrl?: string
   fallback: Required<NonNullable<IsomerSitemap["image"]>>
 }
@@ -91,6 +101,7 @@ const BoxLayout = ({
   showThumbnail,
   assetsBaseUrl,
   fallback,
+  shouldLazyLoad,
   LinkComponent,
   site,
 }: ChildpageLayoutProps) => {
@@ -112,6 +123,7 @@ const BoxLayout = ({
               <div className={styles.imageContainer()}>
                 <ChildpageImage
                   assetsBaseUrl={assetsBaseUrl}
+                  lazyLoading={shouldLazyLoad}
                   {...renderedImage}
                   className={styles.image({ hasFallbackImage: !image?.src })}
                 />
@@ -178,6 +190,7 @@ const RowLayout = ({
   showThumbnail,
   assetsBaseUrl,
   fallback,
+  shouldLazyLoad,
   LinkComponent,
   site,
 }: ChildpageLayoutProps): JSX.Element => {
@@ -201,6 +214,7 @@ const RowLayout = ({
               <div className={styles.imageContainer()}>
                 <ChildpageImage
                   assetsBaseUrl={assetsBaseUrl}
+                  lazyLoading={shouldLazyLoad}
                   {...renderedImage}
                   className={styles.image({ hasFallbackImage: !image?.src })}
                 />
@@ -231,6 +245,7 @@ const ChildrenPages = ({
   variant,
   showSummary = true,
   showThumbnail,
+  shouldLazyLoad,
 }: ChildrenPagesProps) => {
   const currentPageNode = getNodeFromSiteMap(site.siteMap, permalink)
 
@@ -257,6 +272,7 @@ const ChildrenPages = ({
         showSummary={showSummary}
         showThumbnail={showThumbnail}
         fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
+        shouldLazyLoad={shouldLazyLoad}
         site={site}
       />
     )
@@ -274,6 +290,7 @@ const ChildrenPages = ({
       showSummary={showSummary}
       showThumbnail={showThumbnail}
       fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
+      shouldLazyLoad={shouldLazyLoad}
       site={site}
     />
   )
