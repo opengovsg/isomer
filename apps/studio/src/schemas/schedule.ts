@@ -19,10 +19,16 @@ export enum PublishMode {
   SCHEDULED = "Scheduled",
 }
 
+/**
+ * The schema for publishing the page immediately
+ */
 const nowPublishClientSchema = basePageSchema.extend({
   publishMode: z.enum([PublishMode.NOW]),
 })
 
+/**
+ * This schema includes the publish date and time for the scheduled publication
+ */
 export const schedulePublishClientSchema = basePageSchema.extend({
   publishMode: z.enum([PublishMode.SCHEDULED]),
   publishDate: z.date(),

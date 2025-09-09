@@ -1,5 +1,6 @@
 import type { ButtonProps } from "@opengovsg/design-system-react"
-import { Skeleton } from "@chakra-ui/react"
+import { Skeleton, useDisclosure } from "@chakra-ui/react"
+import { useFeatureIsOn } from "@growthbook/growthbook-react"
 import {
   Button,
   TouchableTooltip,
@@ -9,7 +10,9 @@ import {
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
+import { ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
+import { ScheduledPublishingModal } from "./ScheduledPublishingModal"
 
 interface PublishButtonProps extends ButtonProps {
   pageId: number
@@ -25,44 +28,40 @@ const SuspendablePublishButton = ({
 }: PublishButtonProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
-
+  const scheduledPublishingDisclosure = useDisclosure()
+  const enableScheduledPublishing = useFeatureIsOn(
+    ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY,
+  )
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
 
-  const publishFailureMsg =
-    "Failed to publish page. Please contact Isomer support."
-  const publishSuccessMsg = "Page published successfully"
-
   const { mutate, isPending } = trpc.page.publishPage.useMutation({
+    onSettled: async () => {
+      await utils.page.readPage.refetch({ pageId, siteId })
+      if (scheduledPublishingDisclosure.isOpen) {
+        scheduledPublishingDisclosure.onClose()
+      }
+    },
     onSuccess: async () => {
       toast({
         status: "success",
-        title: publishSuccessMsg,
+        title: "Page published successfully",
         ...BRIEF_TOAST_SETTINGS,
       })
-      await utils.page.readPage.invalidate({ pageId, siteId })
       await utils.page.getCategories.invalidate({ pageId, siteId })
       await utils.site.getLocalisedSitemap.invalidate({
         resourceId: pageId,
         siteId,
       })
     },
-    onError: async (error) => {
+    onError: (error) => {
       console.error(`Error occurred when publishing page: ${error.message}`)
       toast({
         status: "error",
-        title: publishFailureMsg,
+        title: "Failed to publish page. Please contact Isomer support.",
         ...BRIEF_TOAST_SETTINGS,
       })
-      await utils.page.readPage.invalidate({ pageId, siteId })
     },
   })
-
-  const handlePublish = () => {
-    const coercedSiteId = Number(siteId)
-    const coercedPageId = Number(pageId)
-    if (coercedSiteId && coercedPageId)
-      mutate({ pageId: coercedPageId, siteId: coercedSiteId })
-  }
 
   const isChangesPendingPublish = !!currPage.draftBlobId
 
@@ -74,19 +73,35 @@ const SuspendablePublishButton = ({
           label="All changes have been published"
         >
           {allowed && (
-            <Button
-              isDisabled={!isChangesPendingPublish || isDisabled}
-              variant="solid"
-              size="sm"
-              onClick={(e) => {
-                handlePublish()
-                onClick?.(e)
-              }}
-              isLoading={isPending}
-              {...rest}
-            >
-              Publish
-            </Button>
+            <>
+              {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
+              {scheduledPublishingDisclosure.isOpen && (
+                <ScheduledPublishingModal
+                  {...scheduledPublishingDisclosure}
+                  siteId={siteId}
+                  pageId={pageId}
+                  onPublishNow={(pageId, siteId) => mutate({ pageId, siteId })}
+                  isPublishingNow={isPending}
+                />
+              )}
+              <Button
+                isDisabled={!isChangesPendingPublish || isDisabled}
+                variant="solid"
+                size="sm"
+                onClick={(e) => {
+                  if (enableScheduledPublishing) {
+                    scheduledPublishingDisclosure.onOpen()
+                  } else {
+                    mutate({ pageId, siteId })
+                    onClick?.(e)
+                  }
+                }}
+                isLoading={isPending}
+                {...rest}
+              >
+                Publish
+              </Button>
+            </>
           )}
         </TouchableTooltip>
       )}
