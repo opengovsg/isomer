@@ -27,21 +27,21 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Ensures that the webchat widget only loads after the page has loaded */}
       {/* Note: did not account for both being added to the config as it's a very unlikely scenario and there's "correct" way to handle this */}
-      {/* @ts-expect-error sample config file not typed */}
+      {/* @ts-ignore sample config file not typed */}
       {site.vica && (
         <>
           <VicaStylesheet
             environment={process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT}
           />
-          {/* @ts-expect-error sample config file not typed */}
+          {/* @ts-ignore sample config file not typed */}
           <VicaWidget site={site} {...site.vica} />
         </>
       )}
-      {/* @ts-expect-error sample config file not typed */}
+      {/* @ts-ignore sample config file not typed */}
       {site.askgov && (
         <AskgovWidget
           environment={process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT}
-          // @ts-expect-error sample config file not typed
+          // @ts-ignore sample config file not typed
           {...site.askgov}
         />
       )}
