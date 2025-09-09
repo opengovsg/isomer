@@ -19,7 +19,10 @@ export const JsonFormsUuidControl = ({
   handleChange,
   path,
 }: ControlProps) => {
-  const uuid = useMemo(() => data || crypto.randomUUID(), [path])
+  const uuid = useMemo(
+    () => (typeof data === "string" ? data : crypto.randomUUID()),
+    [path],
+  )
   useEffect(() => {
     handleChange(path, uuid)
   }, [])
