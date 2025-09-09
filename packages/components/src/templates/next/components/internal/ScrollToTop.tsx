@@ -14,6 +14,10 @@ export const ScrollToTop = () => {
   // as Next.js may attempt it during static site generation when "window" is unavailable.
   // Ref: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#browser-apis
   useEffect(() => {
+    // Only scroll to top if there's no anchor in the URL
+    if (window.location.hash) {
+      return
+    }
     window.scrollTo(0, 0)
   }, [])
 
