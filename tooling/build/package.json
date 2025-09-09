@@ -5,12 +5,15 @@
   "scripts": {
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "format:fix": "prettier --write . --ignore-path ../../.gitignore",
-    "lint": "eslint",
+    "lint": "eslint .",
     "lint:fix": "eslint --fix"
   },
   "devDependencies": {
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*"
   },
-  "prettier": "@isomer/prettier-config"
+  "prettier": "@isomer/prettier-config",
+  "dependencies": {
+    "globals": "^11.12.0"
+  }
 }
