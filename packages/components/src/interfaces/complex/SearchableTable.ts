@@ -4,7 +4,10 @@ import { Type } from "@sinclair/typebox"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { DgsDataSourceSchema, NativeDataSourceSchema } from "../integration"
 
+export const SEARCHABLE_TABLE_TYPE = "searchabletable"
+
 const BaseSearchableTableSchema = Type.Object({
+  type: Type.Literal(SEARCHABLE_TABLE_TYPE, { default: SEARCHABLE_TABLE_TYPE }),
   title: Type.Optional(
     Type.String({
       title: "Title",

@@ -4,6 +4,7 @@ import {
   COLLECTION_BLOCK_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
+  SEARCHABLE_TABLE_TYPE,
 } from "~/interfaces"
 
 function getTextContentOfProse(content: ProseContent): string {
@@ -121,6 +122,8 @@ export function renderComponentPreviewText({
       )
     case IMAGE_GALLERY_TYPE:
       return "Image Gallery"
+    case SEARCHABLE_TABLE_TYPE:
+      return component.title || "Searchable Table"
     default:
       const _: never = component
       return (component as { type: string }).type || ""

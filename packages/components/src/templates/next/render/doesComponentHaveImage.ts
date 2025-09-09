@@ -3,6 +3,7 @@ import {
   COLLECTION_BLOCK_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
+  SEARCHABLE_TABLE_TYPE,
 } from "~/interfaces"
 
 export const doesComponentHaveImage = ({
@@ -22,6 +23,7 @@ export const doesComponentHaveImage = ({
     case "infopic":
     case "prose":
     case DYNAMIC_DATA_BANNER_TYPE:
+    case SEARCHABLE_TABLE_TYPE:
       return false
     case "image":
     case "formsg":
