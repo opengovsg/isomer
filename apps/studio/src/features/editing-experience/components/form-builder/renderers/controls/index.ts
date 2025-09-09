@@ -90,3 +90,11 @@ export {
   default as JsonFormsTaggedControl,
   jsonFormsTaggedControlTester,
 } from "./JsonFormsTaggedControl"
+export {
+  default as JsonFormsUuidControl,
+  jsonFormsUuidControlTester,
+} from "./JsonFormsUuidControl"
+export {
+  jsonFormsTagCategoriesControlTester,
+  default as JsonFormsTagCategoriesControl,
+} from "./JsonFormsTagCategoryControl"
