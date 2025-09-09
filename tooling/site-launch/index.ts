@@ -1,5 +1,6 @@
 import { confirm, input } from "@inquirer/prompts"
 
+import { migrateTagsOfSite } from "@isomer/migrate-tags"
 import { cleanup, main as migrate } from "@isomer/seed-from-repo"
 
 import { checkLastBuild } from "./amplify"
