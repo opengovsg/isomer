@@ -15,9 +15,11 @@ import {
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
+import { format, isBefore } from "date-fns"
 import _, { get, isEmpty, isEqual } from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { sendScheduledPageEmail } from "~/features/mail/service"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   basePageSchema,
@@ -29,6 +31,7 @@ import {
   publishPageSchema,
   readPageOutputSchema,
   reorderBlobSchema,
+  schedulePageSchema,
   updatePageBlobSchema,
   updatePageMetaSchema,
 } from "~/schemas/page"
@@ -50,6 +53,7 @@ import {
   publishPageResource,
   publishResource,
   updateBlobById,
+  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage, createFolderIndexPage } from "./page.service"
@@ -332,7 +336,82 @@ export const pageRouter = router({
         return actualBlocks
       })
     }),
+  schedulePage: protectedProcedure
+    .input(schedulePageSchema)
+    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "publish",
+        userId: ctx.user.id,
+      })
+      // check if the input.scheduledAt is after the current time
+      if (isBefore(scheduledAt, new Date())) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Scheduled time must be in the future",
+        })
+      }
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
 
+      const updatedPage = await db.transaction().execute(async (tx) => {
+        // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
+        const resource = await getPageById(tx, {
+          resourceId: pageId,
+          siteId,
+        })
+        if (!resource) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
+        if (resource.scheduledAt) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Page is already scheduled to be published at ${format(
+              resource.scheduledAt,
+              "yyyy-MM-dd HH:mm",
+            )}`,
+          })
+        }
+        // update the resource's scheduled field
+        const updatedPage = await updatePageById(
+          {
+            id: pageId,
+            siteId,
+            scheduledAt,
+          },
+          tx,
+        )
+        // verify that the update was successful
+        if (!updatedPage) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to schedule page",
+          })
+        }
+        // TODO: add logic to add the job to the job queue
+        await logResourceEvent(tx, {
+          siteId,
+          by,
+          delta: {
+            before: resource,
+            after: updatedPage,
+          },
+          eventType: AuditLogEvent.SchedulePublish,
+        })
+        return updatedPage
+      })
+      await sendScheduledPageEmail({
+        resource: updatedPage,
+        scheduledAt,
+        recipientEmail: by.email,
+      })
+    }),
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
