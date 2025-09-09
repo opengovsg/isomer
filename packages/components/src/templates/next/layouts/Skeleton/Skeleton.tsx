@@ -7,6 +7,7 @@ import {
   GoogleTagManagerHeader,
   GoogleTagManagerPreload,
   Masthead,
+  MicrosoftClarity,
   Navbar,
   Notification,
   ScrollToTop,
@@ -36,6 +37,10 @@ export const Skeleton = ({
     site.environment === "production" &&
     (!!site.siteGtmId || !!site.isomerGtmId)
 
+  // hardcoded for testing purposes
+  const microsoftClarityId =
+    site.environment === "production" ? "qbbapsgu8j" : "qbbk4nbgkq"
+
   return (
     <>
       <FontPreload />
@@ -50,6 +55,11 @@ export const Skeleton = ({
           />
         </>
       )}
+
+      <MicrosoftClarity
+        ScriptComponent={ScriptComponent}
+        clarityId={microsoftClarityId}
+      />
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
 

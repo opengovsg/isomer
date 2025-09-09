@@ -1,0 +1,1 @@
+export { MicrosoftClarity } from "./MicrosoftClarity"
