@@ -155,6 +155,7 @@ export const readPageOutputSchema = z.object({
   draftBlobId: z.string().nullable(),
   state: z.nativeEnum(ResourceState).nullable(),
   type: z.nativeEnum(ResourceType),
+  scheduledAt: z.date().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

@@ -140,10 +140,12 @@ async function main() {
             "",
           category: resource.content.page.category,
           tags: resource.content.page.tags,
+          tagged: resource.content.page.tagged,
           date: resource.content.page.date,
           image: getResourceImage(resource),
           ref: resource.content.page.ref, // For file and link layouts
           collectionPagePageProps: {
+            tagCategories: resource.content.page?.tagCategories,
             defaultSortBy: resource.content.page?.defaultSortBy,
             defaultSortDirection: resource.content.page?.defaultSortDirection,
           },

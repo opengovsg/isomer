@@ -76,6 +76,137 @@ export const pageHandlers = {
       })
     },
   },
+  getCollectionTags: {
+    default: () => {
+      return trpcMsw.collection.getCollectionTags.query(() => {
+        return [
+          {
+            label: "Topic",
+            id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            options: [
+              {
+                label: "Technology",
+                id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+              },
+              { label: "Science", id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8" },
+              { label: "Health", id: "6ba7b812-9dad-11d1-80b4-00c04fd430c8" },
+            ],
+          },
+          {
+            label: "Empty Category",
+            id: "123e4567-e89b-12d3-a456-426614174000",
+            options: [],
+          },
+          {
+            label: "Industries",
+            id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+            options: [
+              {
+                label: "Agriculture & Food",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+              },
+              {
+                label: "Automotive",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
+              },
+              {
+                label: "Banking & Finance",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
+              },
+              {
+                label: "Biotechnology",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14",
+              },
+              {
+                label: "Construction",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15",
+              },
+              { label: "Defense", id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16" },
+              {
+                label: "Education",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17",
+              },
+              {
+                label: "Electronics",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18",
+              },
+              {
+                label: "Energy & Utilities",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a19",
+              },
+              {
+                label: "Entertainment",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a1a",
+              },
+              {
+                label: "Healthcare",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a1b",
+              },
+              {
+                label: "Hospitality & Tourism",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a1c",
+              },
+              {
+                label: "Information Technology",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a1d",
+              },
+              {
+                label: "Insurance",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a1e",
+              },
+              {
+                label: "Legal Services",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a1f",
+              },
+              {
+                label: "Logistics & Transportation",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a20",
+              },
+              {
+                label: "Manufacturing",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a21",
+              },
+              { label: "Maritime", id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22" },
+              {
+                label: "Media & Communications",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a23",
+              },
+              {
+                label: "Pharmaceuticals",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a24",
+              },
+              {
+                label: "Real Estate",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a25",
+              },
+              {
+                label: "Retail & Commerce",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a26",
+              },
+              {
+                label: "Telecommunications",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a27",
+              },
+              {
+                label: "Textiles & Apparel",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a28",
+              },
+              {
+                label:
+                  "This is a random industry that has a very long text and might overflow. what do we do with this industry? i don't know",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a29",
+              },
+            ],
+          },
+        ]
+      })
+    },
+    empty: () => {
+      return trpcMsw.collection.getCollectionTags.query(() => {
+        return []
+      })
+    },
+  },
   updateSettings: {
     collection: () => {
       trpcMsw.page.updateSettings.mutation(() => {
@@ -877,6 +1008,7 @@ export const pageHandlers = {
           draftBlobId: "1",
           type: "RootPage",
           state: "Draft",
+          scheduledAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -897,7 +1029,7 @@ export const pageHandlers = {
           draftBlobId: "2",
           type: "Page",
           state: "Draft",
-
+          scheduledAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -918,7 +1050,7 @@ export const pageHandlers = {
           draftBlobId: "3",
           type: "Page",
           state: "Draft",
-
+          scheduledAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -939,7 +1071,7 @@ export const pageHandlers = {
           draftBlobId: "3",
           type: "IndexPage",
           state: "Draft",
-
+          scheduledAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
