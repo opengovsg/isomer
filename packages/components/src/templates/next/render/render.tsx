@@ -6,6 +6,8 @@ import type {
 import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
 import {
   COLLECTION_BLOCK_TYPE,
+  CONTACT_INFORMATION_TYPE,
+  DYNAMIC_COMPONENT_LIST_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
 } from "~/interfaces"
@@ -15,7 +17,9 @@ import {
   Callout,
   ChildrenPages,
   CollectionBlock,
+  ContactInformation,
   Contentpic,
+  DynamicComponentList,
   DynamicDataBanner,
   FormSG,
   Hero,
@@ -108,6 +112,10 @@ export const renderComponent = ({
       return <CollectionBlock key={elementKey} {...component} {...rest} />
     case IMAGE_GALLERY_TYPE:
       return <ImageGallery key={elementKey} {...component} {...rest} />
+    case CONTACT_INFORMATION_TYPE:
+      return <ContactInformation key={elementKey} {...component} {...rest} />
+    case DYNAMIC_COMPONENT_LIST_TYPE:
+      return <DynamicComponentList key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
       return <></>

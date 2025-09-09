@@ -9,9 +9,13 @@ import {
   ChildrenPagesSchema,
   COLLECTION_BLOCK_TYPE,
   CollectionBlockSchema,
+  CONTACT_INFORMATION_TYPE,
+  ContactInformationSchema,
   ContentpicSchema,
   DividerSchema,
+  DYNAMIC_COMPONENT_LIST_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
+  DynamicComponentListSchema,
   DynamicDataBannerSchema,
   FormSGSchema,
   HeadingSchema,
@@ -57,6 +61,8 @@ export const IsomerComplexComponentsMap = {
   logocloud: LogoCloudSchema,
   [COLLECTION_BLOCK_TYPE]: CollectionBlockSchema,
   [IMAGE_GALLERY_TYPE]: ImageGallerySchema,
+  [CONTACT_INFORMATION_TYPE]: ContactInformationSchema,
+  [DYNAMIC_COMPONENT_LIST_TYPE]: DynamicComponentListSchema,
 }
 
 export const IsomerNativeComponentsMap = {

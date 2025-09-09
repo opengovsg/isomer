@@ -1,6 +1,8 @@
 import type { IsomerSchema } from "~/types"
 import {
   COLLECTION_BLOCK_TYPE,
+  CONTACT_INFORMATION_TYPE,
+  DYNAMIC_COMPONENT_LIST_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
 } from "~/interfaces"
@@ -22,6 +24,8 @@ export const doesComponentHaveImage = ({
     case "infopic":
     case "prose":
     case DYNAMIC_DATA_BANNER_TYPE:
+    case CONTACT_INFORMATION_TYPE:
+    case DYNAMIC_COMPONENT_LIST_TYPE: // The content are fetched, so they eager load has no impact
       return false
     case "image":
     case "formsg":
