@@ -2041,7 +2041,7 @@ describe("page.router", async () => {
         }),
       )
     })
-    it("should set a scheduledAt time correctly for a page", async () => {
+    it("should set a scheduled time for a page", async () => {
       // Arrange
       const now = new Date()
       const { site, page: expectedPage } = await setupPageResource({
