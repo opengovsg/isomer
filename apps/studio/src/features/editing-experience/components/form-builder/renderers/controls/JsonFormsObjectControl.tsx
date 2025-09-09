@@ -1,5 +1,5 @@
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
-import { ComponentType, memo, useMemo } from "react"
+import { ComponentType, memo, useLayoutEffect, useMemo } from "react"
 import {
   findUISchema,
   Generate,
@@ -50,9 +50,11 @@ export function JsonFormsObjectControl({
     [uischemas, schema, uischema, path, rootSchema],
   )
 
-  if (isEmpty(data)) {
-    handleChange(path, undefined)
-  }
+  useLayoutEffect(() => {
+    if (isEmpty(data)) {
+      handleChange(path, undefined)
+    }
+  })
 
   if (!visible) {
     return null

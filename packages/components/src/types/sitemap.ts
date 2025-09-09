@@ -17,6 +17,7 @@ interface IsomerBaseSitemap {
   date?: string
   children?: IsomerSitemap[]
   tags?: CollectionCardProps["tags"]
+  tagged?: CollectionCardProps["tagged"]
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {

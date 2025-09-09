@@ -34,6 +34,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.article(),
   pageHandlers.readPage.article(),
   pageHandlers.getFullPermalink.article(),
+  pageHandlers.getCollectionTags.empty(),
 ]
 
 const meta: Meta<typeof EditPage> = {
@@ -162,6 +163,22 @@ export const Dropdown: Story = {
     const button = await waitFor(() => canvas.findByRole("combobox"), {
       timeout: 5000,
     })
+    await userEvent.click(button)
+  },
+}
+
+export const WithTags: Story = {
+  parameters: {
+    msw: {
+      handlers: [pageHandlers.getCollectionTags.default(), ...COMMON_HANDLERS],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", {
+      name: /article page header/i,
+    })
+
     await userEvent.click(button)
   },
 }
