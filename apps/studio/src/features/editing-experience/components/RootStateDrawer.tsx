@@ -11,7 +11,6 @@ import {
 } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
-import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
@@ -227,6 +226,13 @@ export default function RootStateDrawer() {
     pageLayout !== "index" &&
     pageLayout !== "collection"
 
+  // NOTE: if a page has either of these `layouts`,
+  // we should disable them from adding blocks
+  // because folder index pages aren't intended to have
+  // content yet and components don't render content
+  // for collection index pages
+  const canAddBlocks = pageLayout !== "index" && pageLayout !== "collection"
+
   return (
     <Flex direction="column" h="full">
       <ConfirmConvertIndexPageModal
@@ -355,18 +361,17 @@ export default function RootStateDrawer() {
                     {/* rather than the `page.layout` but we are unable to do so due */}
                     {/* to the existence of custom index page that are `layout: */}
                     {/* content` but have `resource.type: index` */}
-                    {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
-                      pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Index && (
-                        <Button
-                          size="xs"
-                          flexShrink={0}
-                          leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-                          variant="clear"
-                          onClick={() => setDrawerState({ state: "addBlock" })}
-                        >
-                          Add block
-                        </Button>
-                      )}
+                    {canAddBlocks && (
+                      <Button
+                        size="xs"
+                        flexShrink={0}
+                        leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+                        variant="clear"
+                        onClick={() => setDrawerState({ state: "addBlock" })}
+                      >
+                        Add block
+                      </Button>
+                    )}
                   </Flex>
                   <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable droppableId="blocks">
@@ -381,8 +386,7 @@ export default function RootStateDrawer() {
                               ((isHeroFixedBlock &&
                                 savedPageState.content.length === 1) ||
                                 (savedPageState.content.length === 0 &&
-                                  pageLayout !==
-                                    ISOMER_USABLE_PAGE_LAYOUTS.Index)) && (
+                                  canAddBlocks)) && (
                                 <>
                                   <VStack
                                     justifyContent="center"
