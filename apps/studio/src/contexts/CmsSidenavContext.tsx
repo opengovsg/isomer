@@ -26,7 +26,7 @@ export const useCmsSidenavContext = () => {
 
   if (!cmsSidenavContext) {
     throw new Error(
-      "useCmsSidenavContext must be used within an EditorDrawerContextProvider",
+      "useCmsSidenavContext must be used within an CmsSidenavContextProvider",
     )
   }
 

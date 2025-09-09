@@ -1,17 +1,13 @@
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 
-const navbarSettingsSchema = z.object({
-  siteId: z.coerce.number(),
-})
-
 const NavbarSettingsPage: NextPageWithLayout = () => {
-  const { siteId } = useQueryParse(navbarSettingsSchema)
+  const { siteId } = useQueryParse(siteSchema)
 
   return <p>Site {siteId}</p>
 }
