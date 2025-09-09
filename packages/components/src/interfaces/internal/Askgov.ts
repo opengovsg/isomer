@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps } from "~/types"
+import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 
 export const AskgovSchema = Type.Object(
   {
@@ -26,4 +26,5 @@ export type AskgovProps = Static<typeof AskgovSchema>
 
 export interface AskgovWidgetProps extends AskgovProps {
   environment: IsomerSiteProps["environment"]
+  ScriptComponent?: ScriptComponentType
 }
