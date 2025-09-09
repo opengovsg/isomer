@@ -3,6 +3,7 @@ import config from "@/data/config.json"
 import "@/styles/globals.css"
 
 import type { Metadata } from "next"
+import Script from "next/script"
 import {
   AskgovWidget,
   VicaStylesheet,
@@ -34,13 +35,14 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             environment={process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT}
           />
           {/* @ts-ignore sample config file not typed */}
-          <VicaWidget site={site} {...site.vica} />
+          <VicaWidget site={site} ScriptComponent={Script} {...site.vica} />
         </>
       )}
       {/* @ts-ignore sample config file not typed */}
       {site.askgov && (
         <AskgovWidget
           environment={process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT}
+          ScriptComponent={Script}
           // @ts-ignore sample config file not typed
           {...site.askgov}
         />

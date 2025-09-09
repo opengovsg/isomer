@@ -66,6 +66,7 @@ export interface VicaWidgetClientProps extends VicaProps {
 
 export interface VicaWidgetProps extends VicaProps {
   site: IsomerSiteProps
+  ScriptComponent?: ScriptComponentType
 }
 
 export interface VicaStylesheetProps {
