@@ -19,7 +19,10 @@ import { format, isBefore } from "date-fns"
 import _, { get, isEmpty, isEqual } from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { sendScheduledPageEmail } from "~/features/mail/service"
+import {
+  sendCancelSchedulePageEmail,
+  sendScheduledPageEmail,
+} from "~/features/mail/service"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   basePageSchema,
@@ -409,6 +412,70 @@ export const pageRouter = router({
       await sendScheduledPageEmail({
         resource: updatedPage,
         scheduledAt,
+        recipientEmail: by.email,
+      })
+    }),
+  cancelSchedulePage: protectedProcedure
+    .input(basePageSchema)
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "publish",
+        userId: ctx.user.id,
+      })
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const updatedPage = await db.transaction().execute(async (tx) => {
+        const resource = await getPageById(tx, {
+          resourceId: pageId,
+          siteId,
+        })
+        if (!resource) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
+        if (!resource.scheduledAt) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Unable to cancel schedule for a page that is not scheduled",
+          })
+        }
+        // update the resource's scheduled field
+        const updatedPage = await updatePageById(
+          {
+            id: pageId,
+            siteId,
+            scheduledAt: null,
+          },
+          tx,
+        )
+        if (!updatedPage) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to cancel page schedule",
+          })
+        }
+        // TODO: add logic to remove the scheduledAt job in the job queue
+        // if execution has not started
+        await logResourceEvent(tx, {
+          siteId,
+          by,
+          delta: {
+            before: resource,
+            after: updatedPage,
+          },
+          eventType: AuditLogEvent.CancelSchedulePublish,
+        })
+        return updatedPage
+      })
+      await sendCancelSchedulePageEmail({
+        resource: updatedPage,
         recipientEmail: by.email,
       })
     }),
