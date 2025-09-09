@@ -4,6 +4,7 @@ import {
   DEFAULT_CHILDREN_PAGES_BLOCK,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
+  SEARCHABLE_TABLE_TYPE,
 } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
@@ -263,6 +264,15 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
+  [SEARCHABLE_TABLE_TYPE]: {
+    type: `${SEARCHABLE_TABLE_TYPE}`,
+    title: "Sample DGS Table",
+    dataSource: {
+      type: "dgs",
+      resourceId: "d_1ebdc22551ae034d076722aa671e7f1b", // hardcoded
+    },
+    headers: [],
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -398,6 +408,12 @@ export const BLOCK_TO_META: Record<
     usageText:
       "Get mailing list sign-ups or quick feedback by embedding a form directly on your page.",
     imageSrc: "/assets/block-images/FormSG.png",
+  },
+  [SEARCHABLE_TABLE_TYPE]: {
+    // TODO: Add image source
+    label: "Searchable Table",
+    description: "Display a searchable table with data from a DGS dataset",
+    usageText: "Display a searchable table.",
   },
 }
 

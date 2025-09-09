@@ -4,6 +4,7 @@ import {
   COLLECTION_BLOCK_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
+  SEARCHABLE_TABLE_TYPE,
 } from "@opengovsg/isomer-components"
 import {
   BiChevronDown,
@@ -54,4 +55,5 @@ export const TYPE_TO_ICON: Record<
   [COLLECTION_BLOCK_TYPE]: TbDatabase,
   [IMAGE_GALLERY_TYPE]: BiImages,
   childrenpages: BiListUl,
+  [SEARCHABLE_TABLE_TYPE]: TbDatabase,
 }
