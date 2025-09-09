@@ -335,17 +335,22 @@ export default function RootStateDrawer() {
                         Use blocks to display your content in various ways
                       </Text>
                     </VStack>
-                    {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Index && (
-                      <Button
-                        size="xs"
-                        flexShrink={0}
-                        leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-                        variant="clear"
-                        onClick={() => setDrawerState({ state: "addBlock" })}
-                      >
-                        Add block
-                      </Button>
-                    )}
+                    {/* TODO: we should swap over to using the `resource.type` */}
+                    {/* rather than the `page.layout` but we are unable to do so due */}
+                    {/* to the existence of custom index page that are `layout: */}
+                    {/* content` but have `resource.type: index` */}
+                    {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
+                      pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Index && (
+                        <Button
+                          size="xs"
+                          flexShrink={0}
+                          leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+                          variant="clear"
+                          onClick={() => setDrawerState({ state: "addBlock" })}
+                        >
+                          Add block
+                        </Button>
+                      )}
                   </Flex>
                   <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable droppableId="blocks">
