@@ -10,6 +10,7 @@ import { requestAcmViaClient } from "request-acm"
 import { s3sync } from "s3"
 import { createBaseSiteInStudio } from "site"
 
+import { migrateTagsOfSite } from "@isomer/migrate-tags"
 import { cleanup, main as migrate } from "@isomer/seed-from-repo"
 
 const profile = process.env.AWS_PROFILE
