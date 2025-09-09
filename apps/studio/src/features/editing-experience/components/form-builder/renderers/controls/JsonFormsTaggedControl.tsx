@@ -72,7 +72,6 @@ const SuspendableJsonFormsTaggedControl = ({
   // that are not part of a collection.
   // Hence, we render iff there is at least 1 tag
   return (
-    !!tags &&
     tags.length > 0 && (
       <VStack spacing="1.25rem">
         {tags
@@ -92,6 +91,7 @@ const SuspendableJsonFormsTaggedControl = ({
               <FormControl isRequired={required} gap="0.5rem">
                 <FormLabel description={description}>{label}</FormLabel>
                 <MultiSelect
+                  size="sm"
                   nothingFoundLabel="No tags found. Search for something else or contact your site owner(s) to create new tags."
                   values={currentTagCategoryOptions.map(({ id }) => id)}
                   name={label}
