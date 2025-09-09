@@ -18,10 +18,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="en" data-theme={config.site.theme || "isomer-next"}>
       <head>
-        <Partytown
-          debug={false}
-          forward={["dataLayer.push", "clarity", "fbq"]}
-        />
+        <Partytown debug={false} forward={["dataLayer.push", "fbq"]} />
       </head>
       <body className="antialiased">{children}</body>
     </html>
