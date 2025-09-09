@@ -22,7 +22,7 @@ export const JsonFormsUuidControl = ({
   const uuid = useMemo(() => data || crypto.randomUUID(), [path])
   useEffect(() => {
     handleChange(path, uuid)
-  }, [path])
+  }, [])
 
   return (
     // NOTE: hide this because we want our rangers
