@@ -453,7 +453,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics"],
+    types: ["infocards", "infocols", "keystatistics", SEARCHABLE_TABLE_TYPE],
   },
   { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
