@@ -6,10 +6,15 @@ import { useFormContext } from "react-hook-form"
 
 import type { schedulePublishClientSchema } from "~/schemas/schedule"
 
+export interface QuickSelectTime {
+  hours: number
+  minutes: number
+}
+
 /**
  * The times to display as 'quick-select-times' under the date/time picker
  */
-const QUICK_SELECT_TIMES: { hours: number; minutes: number }[] = [
+const QUICK_SELECT_TIMES: QuickSelectTime[] = [
   { hours: 0, minutes: 0 },
   { hours: 9, minutes: 0 },
   { hours: 13, minutes: 0 },
@@ -19,7 +24,7 @@ const QUICK_SELECT_TIMES: { hours: number; minutes: number }[] = [
 export const QuickSelectTimeSection = ({
   earliestAllowableTime,
 }: {
-  earliestAllowableTime: { hours: number; minutes: number } | null
+  earliestAllowableTime: QuickSelectTime | null
 }) => {
   // filter out the time if it is before the earliest allowable time
   // since both are kept as {hours, minutes}, we don't need to convert them to Date objects
