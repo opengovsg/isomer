@@ -6,7 +6,7 @@
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "format:fix": "prettier --write . --ignore-path ../../.gitignore",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
     "@isomer/eslint-config": "*",
