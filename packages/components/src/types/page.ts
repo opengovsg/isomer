@@ -139,7 +139,7 @@ export const ContentPagePageSchema = Type.Composite([
 
 export const DatabasePagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,
-  database: SearchableTableSchema,
+  database: Type.Omit(SearchableTableSchema, ["type"]), // for backward compatibility + it can only be used with type "searchabletable"
 })
 
 export const HomePagePageSchema = Type.Object({})
