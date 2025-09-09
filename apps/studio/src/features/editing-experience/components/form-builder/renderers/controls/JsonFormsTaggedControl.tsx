@@ -83,7 +83,9 @@ const SuspendableJsonFormsTaggedControl = ({
             )
             const tagOptionsIds = options.map(({ id }) => id)
 
-            const shouldRenderSelected =
+            // NOTE: This refers to whether we should render and show
+            // ONLY the options that the user has selected
+            const shouldOnlyRenderSelected =
               currentTagCategoryOptions.length >= MAX_TAG_CATEGORY_ITEMS
 
             return (
@@ -94,7 +96,7 @@ const SuspendableJsonFormsTaggedControl = ({
                   values={currentTagCategoryOptions.map(({ id }) => id)}
                   name={label}
                   items={
-                    shouldRenderSelected
+                    shouldOnlyRenderSelected
                       ? currentTagCategoryOptions.map(({ id, label }) => ({
                           value: id,
                           label,
