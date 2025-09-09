@@ -1,6 +1,5 @@
 import type { IsomerPageSchemaType } from "~/engine"
 import {
-  AskgovWidget,
   FontPreload,
   Footer,
   GoogleTagManagerBody,
@@ -12,8 +11,6 @@ import {
   ScrollToTop,
   SkipToContent,
   UnsupportedBrowserBanner,
-  VicaStylesheet,
-  VicaWidget,
   Wogaa,
 } from "../../components/internal"
 import { SKIP_TO_CONTENT_ANCHOR_ID } from "../../constants"
@@ -52,8 +49,6 @@ export const Skeleton = ({
       )}
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
-
-      {site.vica && <VicaStylesheet environment={site.environment} />}
 
       <ScrollToTop />
 
@@ -106,13 +101,6 @@ export const Skeleton = ({
           siteGtmId={site.siteGtmId}
           isomerGtmId={site.isomerGtmId}
         />
-      )}
-
-      {/* Ensures that the webchat widget only loads after the page has loaded */}
-      {/* Note: did not account for both being added to the config as it's a very unlikely scenario and there's "correct" way to handle this */}
-      {site.vica && <VicaWidget site={site} {...site.vica} />}
-      {site.askgov && (
-        <AskgovWidget environment={site.environment} {...site.askgov} />
       )}
     </>
   )
