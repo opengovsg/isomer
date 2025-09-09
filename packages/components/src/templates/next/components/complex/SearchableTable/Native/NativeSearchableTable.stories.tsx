@@ -4,7 +4,7 @@ import type { NativeSearchableTableProps } from "~/interfaces"
 import { NativeSearchableTable } from "./NativeSearchableTable"
 
 const meta: Meta<NativeSearchableTableProps> = {
-  title: "Next/Internal Components/SearchableTable/Native",
+  title: "Next/Components/SearchableTable/Native",
   component: NativeSearchableTable,
   argTypes: {},
   parameters: {
