@@ -2,11 +2,8 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import {
-  DATA_SOURCE_TYPE,
-  DgsDataSourceSchema,
-  NativeDataSourceSchema,
-} from "../integration"
+import { ARRAY_RADIO_FORMAT } from "../format"
+import { DgsDataSourceSchema, NativeDataSourceSchema } from "../integration"
 
 export const SEARCHABLE_TABLE_TYPE = "searchabletable"
 
@@ -65,7 +62,7 @@ export const SearchableTableSchema = Type.Intersect(
     BaseSearchableTableSchema,
     Type.Union([NativeSearchableTableSchema, DGSSearchableTableSchema], {
       title: "Data source",
-      default: DATA_SOURCE_TYPE.dgs,
+      format: ARRAY_RADIO_FORMAT,
     }),
   ],
   {
