@@ -266,7 +266,6 @@ export const DEFAULT_BLOCKS: Record<
   },
   [SEARCHABLE_TABLE_TYPE]: {
     type: `${SEARCHABLE_TABLE_TYPE}`,
-    title: "Sample DGS Table",
     dataSource: {
       type: "dgs",
       resourceId: "d_1ebdc22551ae034d076722aa671e7f1b", // hardcoded
