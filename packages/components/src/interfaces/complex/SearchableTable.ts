@@ -30,6 +30,7 @@ export const NativeSearchableTableSchema = Type.Intersect(
   ],
   {
     title: "Native", // TODO: think of a better title that makes sense for user
+    format: "hidden", // currently we don't support this for Studio users
   },
 )
 
@@ -39,14 +40,16 @@ export const DGSSearchableTableSchema = Type.Intersect(
     Type.Object({
       headers: Type.Array(
         Type.Object({
-          label: Type.String({
-            title: "Label",
-            description: "The label of the header",
-          }),
           key: Type.String({
             title: "Key",
-            description: "The key of the header in DGS table",
+            description: "Column name in DGS table",
           }),
+          label: Type.Optional(
+            Type.String({
+              title: "Label",
+              description: "Rename the column's header",
+            }),
+          ),
         }),
         { minItems: 1 },
       ),
@@ -61,6 +64,7 @@ export const SearchableTableSchema = Type.Intersect([
   BaseSearchableTableSchema,
   Type.Union([NativeSearchableTableSchema, DGSSearchableTableSchema], {
     title: "Data source",
+    default: DATA_SOURCE_TYPE.dgs,
   }),
 ])
 

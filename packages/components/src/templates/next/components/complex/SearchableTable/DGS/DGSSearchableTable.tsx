@@ -18,7 +18,10 @@ export const DGSSearchableTable = ({
   site,
   LinkComponent,
 }: DGSSearchableTableProps) => {
-  const labels = useMemo(() => headers.map((header) => header.label), [headers])
+  const labels = useMemo(
+    () => headers.map((header) => header.label ?? header.key),
+    [headers],
+  )
 
   const fieldKeys = useMemo(
     () => headers.map((header) => header.key),
