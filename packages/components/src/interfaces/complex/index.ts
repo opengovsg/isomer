@@ -53,3 +53,10 @@ export {
   CHILDREN_PAGES_LAYOUT_OPTIONS,
   type ChildrenPagesProps,
 } from "./ChildrenPages"
+export {
+  SearchableTableSchema,
+  type SearchableTableProps,
+  type SearchableTableClientProps,
+  type NativeSearchableTableProps,
+  type DGSSearchableTableProps,
+} from "./SearchableTable"

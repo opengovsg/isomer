@@ -1,6 +1,6 @@
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { getReferenceLinkHref } from "~/utils"
-import BaseParagraph from "../../BaseParagraph"
+import BaseParagraph from "../../../internal/BaseParagraph"
 import { HYPERLINK_EXCEL_FUNCTION } from "./constants"
 
 interface CellContentProps {
