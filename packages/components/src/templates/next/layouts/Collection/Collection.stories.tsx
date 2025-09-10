@@ -325,7 +325,7 @@ export const Blog: Story = {
 }
 
 export const MobileFilterResults: Story = {
-  name: "Mobile - Click Filter results",
+  name: "Mobile (Open filter drawer)",
   args: generateArgs(),
   parameters: {
     chromatic: withChromaticModes(["mobile"]),
