@@ -13,7 +13,7 @@ import { spawn } from "child_process";
 const dom = new JSDOM(
   `<html>
       <div class="element"></div>
-    </html>`
+    </html>`,
 );
 const window = dom.window;
 const document = window.document;
@@ -39,7 +39,7 @@ const downloadFile = async (url: string, uuid: string, fileName: string) => {
   });
   const destination = path.join(
     "/Users/zhongjun/Downloads/moh",
-    `${uuid}/${fileName}`
+    `${uuid}/${fileName}`,
   );
   const fileStream = fs.createWriteStream(destination, { flags: "wx" });
   // @ts-ignore
@@ -166,7 +166,7 @@ const main = async () => {
     .filter((dirent) => dirent.isFile() && dirent.name.endsWith(".json"));
 
   for (const jsonFile of allFiles) {
-    const filePath = path.join(jsonFile.path, jsonFile.name);
+    const filePath = path.join(jsonFile.parentPath, jsonFile.name);
     // console.log("Processing file", filePath);
 
     try {
@@ -180,7 +180,7 @@ const main = async () => {
       COUNTER += 1;
 
       const path = Object.keys(NEW_TO_OLD_PATHS).includes(
-        jsonFile.name.replace(".json", "")
+        jsonFile.name.replace(".json", ""),
       )
         ? NEW_TO_OLD_PATHS[jsonFile.name.replace(".json", "")]
         : jsonFile.name.replace(".json", "");
@@ -204,7 +204,7 @@ const main = async () => {
           RECORD[sfref] = href;
           LINKS[sfref] = newPath;
         } else if (
-          href?.includes("https://www.moh.gov.sg/docs/librariesprovider")
+          href?.startsWith("https://www.moh.gov.sg/docs/librariesprovider")
         ) {
           console.log("Link has no sfref", href);
         }
@@ -257,8 +257,8 @@ const main = async () => {
     JSON.stringify(
       REPORT.map((item) => RECORD[item]),
       null,
-      2
-    )
+      2,
+    ),
   );
 };
 
