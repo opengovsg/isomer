@@ -5,6 +5,7 @@ import {
   createCombinatorRenderInfos,
   createDefaultValue,
   rankWith,
+  schemaMatches,
 } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsAnyOfProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
@@ -17,10 +18,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsDataSourceControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.DataSourceControl,
-  (uischema, schema) => {
-    // Check if this is a dataSource Union by looking for the DATA_SOURCE_FORMAT
-    return schema.format === DATA_SOURCE_FORMAT
-  },
+  schemaMatches((schema) => schema.format === DATA_SOURCE_FORMAT),
 )
 
 export function JsonFormsDataSourceControl({
