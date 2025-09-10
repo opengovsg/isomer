@@ -57,6 +57,17 @@ const createCollectionIndexPage = (title: string) => {
 
 describe("collection-tags migration", async () => {
   const session = await applyAuthedSession()
+  beforeAll(async () => {
+    await db
+      .insertInto("User")
+      .values({
+        email: "jiachin@open.gov.sg",
+        id: randomUUID(),
+        name: "test user",
+        phone: "99999999",
+      })
+      .execute()
+  })
   beforeEach(async () => {
     await resetTables("Blob", "Resource", "Version")
   })
@@ -170,9 +181,9 @@ describe("collection-tags migration", async () => {
         resourceId: indexPage.id,
       }),
     )
-    expect((updatedIndexBlob.content.page as any).tags).toBeDefined()
+    expect((updatedIndexBlob.content.page as any).tagCategories).toBeDefined()
 
-    const tagCategories = updatedIndexBlob.content.page.tags
+    const tagCategories = updatedIndexBlob.content.page.tagCategories
     const categoryIds = Object.keys(tagCategories)
     expect(categoryIds).toHaveLength(1)
 
@@ -261,7 +272,7 @@ describe("collection-tags migration", async () => {
         resourceId: indexPage.id,
       }),
     )
-    const tagCategories = updatedIndexBlob.content.page.tags
+    const tagCategories = updatedIndexBlob.content.page.tagCategories
 
     expect(Object.keys(tagCategories)).toHaveLength(3)
 
@@ -559,7 +570,7 @@ describe("collection-tags migration", async () => {
       await db.transaction().execute((tx) => {
         return getBlobOfResource({ tx, resourceId: indexPage.id })
       })
-    ).content.page.tags
+    ).content.page.tagCategories
 
     const updatedDraftBlob = await db.transaction().execute((tx) =>
       getBlobOfResource({
@@ -610,5 +621,132 @@ describe("collection-tags migration", async () => {
       }),
     )
     expect(actualIndexBlob.content).toEqual(expectedIndexBlob.content)
+  })
+
+  it("should handle identical tag option labels across different categories", async () => {
+    // Arrange
+    const { site, collection } = await setupCollection()
+
+    // Create collection index page
+    const indexBlob = await db
+      .insertInto("Blob")
+      .values({ content: jsonb(createCollectionIndexPage(collection.title)) })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    const { page: indexPage } = await setupPageResource({
+      siteId: site.id,
+      resourceType: ResourceType.IndexPage,
+      parentId: collection.id,
+      blobId: indexBlob.id,
+    })
+
+    // Create collection pages with identical option labels in different categories
+    const tagsData = [
+      [
+        { category: "Brand", selected: ["Pro"] },
+        { category: "Model", selected: ["Pro"] }, // Same label "Pro" in different category
+      ],
+      [
+        { category: "Brand", selected: ["Apple"] },
+        { category: "Color", selected: ["Apple"] }, // Same label "Apple" in different category
+      ],
+      [
+        { category: "Model", selected: ["Pro", "Standard"] },
+        { category: "Type", selected: ["Standard"] }, // "Standard" appears in both categories
+      ],
+    ]
+
+    const collectionPages = []
+    for (const tags of tagsData) {
+      const pageBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(createCollectionPageWithTags(tags)) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        blobId: pageBlob.id,
+        permalink: randomUUID(),
+      })
+
+      collectionPages.push(page)
+    }
+
+    // Act
+    await migrateCollectionTags()
+
+    // Assert
+    const updatedIndexBlob = await db.transaction().execute((tx) =>
+      getBlobOfResource({
+        tx,
+        resourceId: indexPage.id,
+      }),
+    )
+    const tagCategories = updatedIndexBlob.content.page.tagCategories
+
+    // Should have 4 categories: Brand, Model, Color, Type
+    expect(Object.keys(tagCategories)).toHaveLength(4)
+
+    // Verify that identical labels in different categories are treated as separate options
+    // with different UUIDs but same labelToId mapping (this is the collision issue)
+    const allOptionIds = new Set<string>()
+    const labelCounts: Record<string, number> = {}
+
+    Object.values(tagCategories).forEach((category: any) => {
+      Object.values(category.options).forEach((option: any) => {
+        allOptionIds.add(option.id)
+        labelCounts[option.label] = (labelCounts[option.label] || 0) + 1
+      })
+    })
+
+    // Check that we have the collision scenario: same labels in different categories
+    expect(labelCounts["Pro"]).toBe(2) // Appears in Brand and Model
+    expect(labelCounts["Apple"]).toBe(2) // Appears in Brand and Color
+    expect(labelCounts["Standard"]).toBe(2) // Appears in Model and Type
+
+    // Verify that collection pages have correct tagged values
+    // The bug is that labelToId maps the same string to the same UUID
+    // regardless of which category it belongs to
+    for (let i = 0; i < collectionPages.length; i++) {
+      const updatedPageBlob = await db.transaction().execute((tx) =>
+        getBlobOfResource({
+          tx,
+          resourceId: collectionPages[i].id,
+        }),
+      )
+
+      expect(updatedPageBlob.content.page.tagged).toBeDefined()
+      expect(updatedPageBlob.content.page.tagged).toBeInstanceOf(Array)
+
+      const tagIds = updatedPageBlob.content.page.tagged as UUID[]
+      const labels = tagIds.map((id) => getTagLabelById(id, tagCategories))
+
+      // Verify that the labels match the original selected values
+      const expectedLabels = tagsData[i].flatMap(({ selected }) => selected)
+      expect(labels.sort()).toEqual(expectedLabels.sort())
+    }
+
+    // The critical assertion: identical labels should map to the same UUID
+    // This demonstrates the collision issue in labelToId mapping
+    const brandCategory = Object.values(tagCategories).find(
+      (cat: any) => cat.label === "Brand",
+    )
+    const modelCategory = Object.values(tagCategories).find(
+      (cat: any) => cat.label === "Model",
+    )
+
+    const brandProOption = Object.values(brandCategory.options).find(
+      (opt: any) => opt.label === "Pro",
+    )
+    const modelProOption = Object.values(modelCategory.options).find(
+      (opt: any) => opt.label === "Pro",
+    )
+
+    // This assertion will demonstrate the bug: same label gets same UUID across categories
+    expect(brandProOption.id).not.toBe(modelProOption.id)
   })
 })
