@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
+import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
@@ -351,12 +352,14 @@ export default function RootStateDrawer() {
                   {/* Custom Blocks Section */}
                   {/* Custom Blocks Section */}
                   <Flex flexDirection="row" w="100%">
-                    <VStack gap="0.25rem" align="start" flex={1}>
-                      <Text textStyle="subhead-1">Custom blocks</Text>
-                      <Text textStyle="caption-2" color="base.content.medium">
-                        Use blocks to display your content in various ways
-                      </Text>
-                    </VStack>
+                    {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
+                      <VStack gap="0.25rem" align="start" flex={1}>
+                        <Text textStyle="subhead-1">Custom blocks</Text>
+                        <Text textStyle="caption-2" color="base.content.medium">
+                          Use blocks to display your content in various ways
+                        </Text>
+                      </VStack>
+                    )}
                     {/* TODO: we should swap over to using the `resource.type` */}
                     {/* rather than the `page.layout` but we are unable to do so due */}
                     {/* to the existence of custom index page that are `layout: */}
