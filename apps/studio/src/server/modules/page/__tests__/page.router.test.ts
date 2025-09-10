@@ -6,7 +6,9 @@ import {
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
+import { addDays, set, subDays } from "date-fns"
 import { omit, pick } from "lodash"
+import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -30,7 +32,7 @@ import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db } from "../../database"
-import { getBlobOfResource } from "../../resource/resource.service"
+import { getBlobOfResource, getPageById } from "../../resource/resource.service"
 import { pageRouter } from "../page.router"
 import { createDefaultPage } from "../page.service"
 
@@ -894,7 +896,9 @@ describe("page.router", async () => {
       })
       const oldBlob = await db
         .transaction()
-        .execute((tx) => getBlobOfResource({ tx, resourceId: pageToUpdate.id }))
+        .execute((tx) =>
+          getBlobOfResource({ db: tx, resourceId: pageToUpdate.id }),
+        )
 
       // Act
       const result = await caller.updatePageBlob(pageUpdateArgs)
@@ -940,7 +944,7 @@ describe("page.router", async () => {
       const oldBlob = await db
         .transaction()
         .execute((tx) =>
-          getBlobOfResource({ tx, resourceId: publishedPageToUpdate.id }),
+          getBlobOfResource({ db: tx, resourceId: publishedPageToUpdate.id }),
         )
 
       // Act
@@ -2013,6 +2017,343 @@ describe("page.router", async () => {
       expect(result).toEqual({
         pageId: expect.any(String),
       })
+    })
+  })
+  describe("schedulePage", () => {
+    const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
+    beforeEach(() => {
+      MockDate.set(FIXED_NOW) // Freeze time before each test
+    })
+    afterEach(() => {
+      MockDate.reset() // Reset time after each test
+    })
+    it("should throw 403 if user does not have publish access to the site", async () => {
+      //  Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const scheduleCaller = caller.schedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+      })
+
+      // Assert
+      await expect(scheduleCaller).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should set a scheduled time for a page", async () => {
+      // Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.schedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+      })
+
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", expectedPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      // expect the scheduledAt to be tomorrow at 10am
+      const expectedDate = set(addDays(FIXED_NOW, 1), {
+        hours: 10,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
+      expect(actual.scheduledAt).toEqual(expectedDate)
+      // expect the audit log to be created, with the updated scheduledAt time
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(1)
+      expect(auditLog[0]).toMatchObject({
+        eventType: AuditLogEvent.SchedulePublish,
+        delta: {
+          before: omit(expectedPage, ["updatedAt", "createdAt"]),
+          // NOTE: Need to convert expectedDate to ISO string as the comparison is done with the DB value which is in ISO format
+          after: omit(
+            { ...expectedPage, scheduledAt: expectedDate.toISOString() },
+            ["updatedAt", "createdAt"],
+          ),
+        },
+      })
+    })
+    it("providing a scheduled timestamp in the past leads to an error being thrown", async () => {
+      // Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      // This should throw an error on the frontend or backend based on the value specified in MINIMUM_SCHEDULE_LEAD_TIME_MINUTES
+      await expect(
+        caller.schedulePage({
+          siteId: site.id,
+          pageId: Number(expectedPage.id),
+          scheduledAt: subDays(FIXED_NOW, 1),
+        }),
+      ).rejects.toThrowError()
+
+      // Assert
+      // Since the request fails, expect scheduledAt to be null
+      const pageById = await getPageById(db, {
+        resourceId: Number(expectedPage.id),
+        siteId: site.id,
+      })
+      expect(pageById?.scheduledAt).toBeNull()
+      // Since the request fails, expect no audit log to be created
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(0)
+    })
+    it("should throw 403 if user does not have publish access to the site", async () => {
+      //  Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+      // The user is only an editor, not a publisher
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      // Act
+      const scheduleCaller = caller.schedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+        scheduledAt: subDays(FIXED_NOW, 1),
+      })
+
+      // Assert
+      await expect(scheduleCaller).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should throw 401 if not logged in", async () => {
+      //  Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.schedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+        scheduledAt: subDays(FIXED_NOW, 1),
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+    it("should throw an error if the resource is not found", async () => {
+      //  Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+      // The user is only an editor, not a publisher
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      // Act
+      const scheduleCaller = caller.schedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id) + 1, // Invalid pageId should lead to an error being thrown
+        scheduledAt: addDays(FIXED_NOW, 1),
+      })
+
+      // Assert
+      await expect(scheduleCaller).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Resource not found",
+        }),
+      )
+    })
+  })
+  describe("cancelSchedulePage", () => {
+    const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
+    beforeEach(() => {
+      MockDate.set(FIXED_NOW) // Freeze time before each test
+    })
+    afterEach(() => {
+      MockDate.reset() // Reset time after each test
+    })
+    // TODO: check that the request fails if the job is already active - requires mocking the job queue
+    it("cancelling a scheduled publish works correctly", async () => {
+      // Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      // This should null out the the scheduledAt field
+      await caller.cancelSchedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+      })
+
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", expectedPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(actual.scheduledAt).toBeNull()
+    })
+    it("cancelling a scheduled publish throws an error if the page is not scheduled", async () => {
+      // Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act & Assert
+      await expect(
+        caller.cancelSchedulePage({
+          siteId: site.id,
+          pageId: Number(expectedPage.id),
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unable to cancel schedule for a page that is not scheduled",
+        }),
+      )
+    })
+    it("should throw 403 if user does not have publish access to the site", async () => {
+      //  Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+      })
+      // The user is only an editor, not a publisher
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      // Act
+      const scheduleCaller = caller.cancelSchedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+      })
+
+      // Assert
+      await expect(scheduleCaller).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should throw 401 if not logged in", async () => {
+      //  Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+      })
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.cancelSchedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id),
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+    it("should throw an error if the resource is not found", async () => {
+      // Arrange
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const cancelScheduleCaller = caller.cancelSchedulePage({
+        siteId: site.id,
+        pageId: Number(expectedPage.id) + 1, // Invalid pageId should lead to an error being thrown
+      })
+
+      // Assert
+      await expect(cancelScheduleCaller).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Resource not found",
+        }),
+      )
     })
   })
 })
