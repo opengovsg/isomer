@@ -21,6 +21,7 @@ export const JSON_FORMS_RANKING = {
   AnyOfControl: 3,
   CategoryControl: 3,
   CollectionDropdownControl: 3,
+  DataSourceControl: 3,
   ProseControl: 3,
   LinkControl: 3,
   RefControl: 3,

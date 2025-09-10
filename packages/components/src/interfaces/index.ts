@@ -1,4 +1,5 @@
 export * from "./complex"
 export * from "./internal"
+export * from "./integration"
 export * from "./native"
 export * from "./format"

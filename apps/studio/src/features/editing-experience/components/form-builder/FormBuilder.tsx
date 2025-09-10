@@ -27,6 +27,8 @@ import {
   jsonFormsCollectionDropdownControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
+  JsonFormsDataSourceControl,
+  jsonFormsDataSourceControlTester,
   JsonFormsDateControl,
   jsonFormsDateControlTester,
   JsonFormsEmbedControl,
@@ -101,6 +103,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsTextControlTester, renderer: JsonFormsTextControl },
   { tester: jsonFormsRefControlTester, renderer: JsonFormsRefControl },
   { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
+  {
+    tester: jsonFormsDataSourceControlTester,
+    renderer: JsonFormsDataSourceControl,
+  },
   { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
   {
     tester: jsonFormsGroupLayoutTester,

@@ -23,6 +23,10 @@ export {
   jsonFormsAnyOfControlTester,
 } from "./JsonFormsAnyOfControl"
 export {
+  default as JsonFormsDataSourceControl,
+  jsonFormsDataSourceControlTester,
+} from "./JsonFormsDataSourceControl"
+export {
   default as JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
 } from "./JsonFormsAllOfControl"
