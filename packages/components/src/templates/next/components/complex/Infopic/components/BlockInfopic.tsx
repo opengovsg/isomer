@@ -14,6 +14,7 @@ export const BlockInfopic = ({
   description,
   imageAlt,
   isTextOnRight,
+  shouldLazyLoad,
   site,
   LinkComponent,
 }: Omit<InfopicProps, "variant">) => {
@@ -52,6 +53,7 @@ export const BlockInfopic = ({
           width="100%"
           className={compoundStyles.image()}
           assetsBaseUrl={site.assetsBaseUrl}
+          lazyLoading={shouldLazyLoad}
         />
       </div>
     </section>
