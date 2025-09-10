@@ -10,7 +10,7 @@ export const HeadScratch = (props: SVGProps<SVGSVGElement>) => {
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      <g clip-path="url(#clip0_9509_26755)">
+      <g clipPath="url(#clip0_9509_26755)">
         <rect
           x="207.605"
           y="114.265"

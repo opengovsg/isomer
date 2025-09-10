@@ -13,7 +13,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AdminLayout } from "~/templates/layouts/AdminLayout"
+import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 
 const GODMODE_LINKS = [
   {
@@ -78,6 +78,6 @@ const GodModePage: NextPageWithLayout = () => {
   )
 }
 
-GodModePage.getLayout = AdminLayout
+GodModePage.getLayout = AuthenticatedLayout
 
 export default GodModePage
