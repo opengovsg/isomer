@@ -21,7 +21,7 @@ export const useDgsData = ({
   filters,
   sort,
 }: UseDgsData) => {
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState(false)
   const [data, setData] = useState<DgsApiDatasetSearchResponseSuccess | null>(
     null,
@@ -80,12 +80,14 @@ export const useDgsData = ({
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true)
       try {
         if (fetchAll) {
           await fetchAllRecords()
         } else {
           await fetchRecords()
         }
+        setIsError(false)
       } catch {
         setIsError(true)
       } finally {
