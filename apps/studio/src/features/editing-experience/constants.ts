@@ -19,6 +19,7 @@ import {
   BiMoviePlay,
   BiPointer,
   BiSolidQuoteAltLeft,
+  BiTable,
   BiText,
 } from "react-icons/bi"
 import { FaYoutube } from "react-icons/fa"
@@ -55,5 +56,5 @@ export const TYPE_TO_ICON: Record<
   [COLLECTION_BLOCK_TYPE]: TbDatabase,
   [IMAGE_GALLERY_TYPE]: BiImages,
   childrenpages: BiListUl,
-  [SEARCHABLE_TABLE_TYPE]: TbDatabase,
+  [SEARCHABLE_TABLE_TYPE]: BiTable,
 }
