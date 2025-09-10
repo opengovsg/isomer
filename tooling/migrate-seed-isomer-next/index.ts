@@ -177,6 +177,7 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
           await processDirectory(fullPath, folderResourceId);
         }
       } else {
+        // TODO: create default index page for collections
         const title = getProperTitle(folder.name);
         // Create the folder resource
         const folderResourceId = await createResource(client, {

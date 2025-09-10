@@ -6,6 +6,7 @@ import {
 import { createIndirection } from "indirection"
 import { requestAcmViaClient } from "request-acm"
 
+import { migrateTagsOfSite } from "@isomer/migrate-tags"
 import { cleanup, main as migrate } from "@isomer/seed-from-repo"
 
 const profile = process.env.AWS_PROFILE
@@ -49,6 +50,7 @@ if (isGithub) {
   // connect to db automatically
   // create empty site
   await migrate(repo, siteId as unknown as number)
+  await migrateTagsOfSite(siteId as unknown as number)
   // TODO: s3 sync here
 
   // NOTE: Perform cleanup after s3 sync is done
