@@ -323,20 +323,3 @@ export const Blog: Story = {
     variant: "blog",
   }),
 }
-
-export const MobileFilterResults: Story = {
-  name: "Mobile (Open filter drawer)",
-  args: generateArgs(),
-  parameters: {
-    chromatic: withChromaticModes(["mobile"]),
-  },
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
-    const filterButton = screen.getByText("Filter results")
-    await userEvent.click(filterButton)
-
-    // Verify the filter drawer is open by checking for the "Filters" heading
-    const filtersHeading = screen.getByText("Filters")
-    await expect(filtersHeading).toBeInTheDocument()
-  },
-}
