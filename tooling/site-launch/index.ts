@@ -44,7 +44,7 @@ if (isGithub) {
   })
 
   await confirm({ message: "Have you ran `npm run db:connect`?" })
-  // TODO: validate
+  // TODO: validate last amplify build
   // cleanup old assets/repos folder
   // connect to db automatically
   // create empty site
@@ -69,4 +69,4 @@ if (hasInfra) {
 }
 // TODO: check amplify for github sites to ensure builds are successful
 // TODO: await startCodeBuild(codebuildId)
-// TODO: addsadmins
+// TODO: add admins

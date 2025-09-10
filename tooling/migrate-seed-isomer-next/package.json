@@ -10,7 +10,8 @@
     "convert": "tsx migrate-html.ts",
     "links": "tsx convert-links.ts",
     "jump:prod": "source .ssh/.env.prod && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/isomer-next-prod-bastion.pem",
-    "jump:staging": "source .ssh/.env.staging && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/isomer-next-staging-bastion.pem"
+    "jump:staging": "source .ssh/.env.staging && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/isomer-next-staging-bastion.pem",
+    "lint": "eslint"
   },
   "keywords": [],
   "author": "",
@@ -50,6 +51,7 @@
     "tsx": "^4.20.4"
   },
   "devDependencies": {
+    "@isomer/eslint-config": "*",
     "@types/jsdom": "^21.1.7",
     "@types/pg": "^8.15.4",
     "@types/request": "^2.48.12"
