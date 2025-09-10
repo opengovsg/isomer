@@ -60,13 +60,19 @@ export const DGSSearchableTableSchema = Type.Intersect(
   },
 )
 
-export const SearchableTableSchema = Type.Intersect([
-  BaseSearchableTableSchema,
-  Type.Union([NativeSearchableTableSchema, DGSSearchableTableSchema], {
-    title: "Data source",
-    default: DATA_SOURCE_TYPE.dgs,
-  }),
-])
+export const SearchableTableSchema = Type.Intersect(
+  [
+    BaseSearchableTableSchema,
+    Type.Union([NativeSearchableTableSchema, DGSSearchableTableSchema], {
+      title: "Data source",
+      default: DATA_SOURCE_TYPE.dgs,
+    }),
+  ],
+  {
+    title: "Searchable Table",
+    description: "Displays a table with search and pagination functionality.",
+  },
+)
 
 type BaseSearchableTableClientProps = Static<
   typeof BaseSearchableTableSchema
