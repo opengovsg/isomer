@@ -93,6 +93,9 @@ export const up = async () => {
     .select("id")
     .executeTakeFirstOrThrow()
 
+  // NOTE: id of `NNA` collection
+  // https://studio.isomer.gov.sg/sites/75/collections/54298
+  // for (const { id } of [{ id: "54298" }]) {
   for (const { id } of collectionIds) {
     console.log(`Updating collection: ${id}`)
     if (!id) return
@@ -107,7 +110,7 @@ export const up = async () => {
 
     const collatedTags = await getCollatedTags(resourcesWithTags)
 
-    const { labelToId, tagCategories } = migrateTags(collatedTags)
+    const { labelToCategoryToId, tagCategories } = migrateTags(collatedTags)
     const indexPage = await db
       .selectFrom("Resource")
       .where("type", "=", "IndexPage")
@@ -217,7 +220,7 @@ export const up = async () => {
         const updatedDraftBlobContent = generateUpdatedContent(
           draftBlob,
           tagsOfResource,
-          labelToId,
+          labelToCategoryToId,
         )
 
         console.log(
@@ -238,7 +241,7 @@ export const up = async () => {
           const updatedPublishedBlobContent = generateUpdatedContent(
             publishedBlob,
             tagsOfResource,
-            labelToId,
+            labelToCategoryToId,
           )
 
           // NOTE: cannot use `updateBlobById` here
@@ -305,7 +308,7 @@ const migrateTags = (collatedTags: {
   categories: Set<string>
   mappings: Record<string, Set<string>>
 }) => {
-  const labelToId: Record<string, UUID> = {}
+  const labelToCategoryToId: Record<string, Record<string, UUID>> = {}
 
   const tagCategories: TagCategories = _.entries(collatedTags.mappings).map(
     ([categoryLabel, categoryOptions]) => {
@@ -314,7 +317,10 @@ const migrateTags = (collatedTags: {
       const options = Array.from(categoryOptions.values()).map((option) => {
         const id = randomUUID()
         const label = option
-        labelToId[label] = id
+        if (!labelToCategoryToId[label]) {
+          labelToCategoryToId[label] = {}
+        }
+        labelToCategoryToId[label][categoryLabel] = id
 
         return {
           id,
@@ -328,7 +334,7 @@ const migrateTags = (collatedTags: {
 
   return {
     tagCategories,
-    labelToId,
+    labelToCategoryToId,
   }
 }
 
@@ -354,7 +360,7 @@ async function getCollectionsWithTags() {
 function generateUpdatedContent(
   blob: PrismaJson.BlobJsonContent,
   tagsOfResource: LegacyTag[],
-  labelToId: Record<string, UUID>,
+  labelToCategoryToId: Record<string, Record<string, UUID>>,
 ): PrismaJson.BlobJsonContent {
   return {
     ...blob,
@@ -366,7 +372,9 @@ function generateUpdatedContent(
       // We also cannot add on this label,
       // because it will hinder deletion.
       tagged: tagsOfResource
-        .flatMap(({ selected }) => selected.map((label) => labelToId[label]))
+        .flatMap(({ category, selected }) =>
+          selected.map((label) => labelToCategoryToId[label]?.[category]),
+        )
         .filter((v) => !!v),
     },
   }
@@ -431,4 +439,4 @@ const getCollatedTags = async (
   return collatedTags
 }
 
-await up()
+// await up()
