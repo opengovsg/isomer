@@ -5,10 +5,7 @@ import { FocusScope } from "react-aria"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useScrollLock } from "usehooks-ts"
 
-import type {
-  NavbarItem as BaseNavbarItemProps,
-  NavbarProps,
-} from "~/interfaces/internal/Navbar"
+import type { NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
 import {
   focusVisibleHighlight,
@@ -18,13 +15,12 @@ import {
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 
-interface NavbarItemProps
-  extends BaseNavbarItemProps,
-    Pick<NavbarProps, "LinkComponent"> {
-  isOpen: boolean
-  onClick: () => void
-  onCloseMegamenu: () => void
-}
+type NavbarItemProps = NavbarProps["items"][number] &
+  Pick<NavbarProps, "LinkComponent"> & {
+    isOpen: boolean
+    onClick: () => void
+    onCloseMegamenu: () => void
+  }
 
 const navbarItemStyles = tv({
   slots: {
@@ -52,7 +48,6 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
       LinkComponent,
       name,
       url,
-      referenceLinkHref,
       description,
       isOpen,
       onClick,
@@ -67,7 +62,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
             LinkComponent={LinkComponent}
             isExternal={isExternalUrl(url)}
             showExternalIcon={isExternalUrl(url)}
-            href={referenceLinkHref}
+            href={url}
             className={focusVisibleHighlight()}
           >
             {name}
@@ -86,7 +81,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
           <Megamenu
             name={name}
             description={description}
-            referenceLinkHref={referenceLinkHref}
+            url={url}
             items={items}
             LinkComponent={LinkComponent}
             onCloseMegamenu={onCloseMegamenu}
@@ -100,13 +95,13 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
 const Megamenu = ({
   name,
   description,
-  referenceLinkHref,
+  url,
   onCloseMegamenu,
   items,
   LinkComponent,
 }: Pick<
-  BaseNavbarItemProps,
-  "name" | "description" | "referenceLinkHref" | "items"
+  NavbarProps["items"][number],
+  "name" | "description" | "url" | "items"
 > & {
   LinkComponent: NavbarProps["LinkComponent"]
   onCloseMegamenu: () => void
@@ -114,23 +109,23 @@ const Megamenu = ({
   useScrollLock()
 
   const renderTitleContent = () => {
-    if (!referenceLinkHref) {
+    if (!url) {
       return name
     }
 
-    const isExternal = isExternalUrl(referenceLinkHref)
+    const isExternal = isExternalUrl(url)
     return (
       <Link
         LinkComponent={LinkComponent}
         isExternal={isExternal}
         showExternalIcon={isExternal}
         isWithFocusVisibleHighlight
-        href={referenceLinkHref}
-        className="group inline-flex w-fit items-center gap-1.5 hover:text-brand-interaction-hover hover:no-underline"
+        href={url}
+        className="group inline-flex w-fit items-center gap-1 hover:text-brand-interaction-hover hover:no-underline"
       >
         {name}
         {!isExternal && (
-          <BiRightArrowAlt className="text-[1.5rem] transition ease-in group-hover:translate-x-2.5" />
+          <BiRightArrowAlt className="mt-0.5 inline text-[1.5rem] transition ease-in group-hover:translate-x-1" />
         )}
       </Link>
     )
@@ -178,12 +173,12 @@ const Megamenu = ({
                         isExternal={isExternal}
                         showExternalIcon={isExternal}
                         isWithFocusVisibleHighlight
-                        href={subItem.referenceLinkHref}
-                        className="group prose-label-md-medium inline-flex w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
+                        href={subItem.url}
+                        className="group prose-label-md-medium w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
                       >
                         {subItem.name}
                         {!isExternal && (
-                          <BiRightArrowAlt className="text-[1.25rem] transition ease-in group-hover:translate-x-1" />
+                          <BiRightArrowAlt className="mb-0.5 ml-1 inline text-[1.25rem] transition ease-in group-hover:translate-x-1" />
                         )}
                       </Link>
                       <p className="prose-label-sm-regular text-base-content-subtle">

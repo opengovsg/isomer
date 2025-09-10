@@ -11,7 +11,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { useTextEditor } from "../hooks/useTextEditor"
-import { editPageSchema } from "../schema"
+import { pageSchema } from "../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
@@ -45,12 +45,13 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
   } = useEditorDrawerContext()
 
   const toast = useToast()
-  const { pageId, siteId } = useQueryParse(editPageSchema)
-  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
+  const { pageId, siteId } = useQueryParse(pageSchema)
+  const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
       toast({
+        status: "success",
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
         ...BRIEF_TOAST_SETTINGS,
       })
@@ -130,7 +131,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
 
       <VStack bg="white" h="100%" gap="0">
         <DrawerHeader
-          isDisabled={isLoading}
+          isDisabled={isPending}
           onBackClick={() => {
             if (!isEqual(previewPageState, savedPageState)) {
               onDiscardChangesModalOpen()
@@ -177,7 +178,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                     },
                   )
                 }}
-                isLoading={isLoading}
+                isLoading={isPending}
               >
                 Save changes
               </Button>

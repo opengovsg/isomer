@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useDebounce } from "@uidotdev/usehooks"
 
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
@@ -25,9 +25,15 @@ export const useSearchQuery = ({
       resourceTypes,
     },
     {
-      onSuccess: onSearchSuccess,
+      getNextPageParam: (lastPage) => lastPage.nextOffset,
     },
   )
+
+  useEffect(() => {
+    if (data) {
+      onSearchSuccess?.()
+    }
+  }, [data, onSearchSuccess])
 
   const matchedResources = useMemo((): SearchResultResource[] => {
     return data?.pages.flatMap((page) => page.resources) ?? []

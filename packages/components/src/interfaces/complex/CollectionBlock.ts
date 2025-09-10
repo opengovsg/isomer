@@ -3,6 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 import type { ProcessedCollectionCardProps } from "~/interfaces/internal/CollectionCard"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { COLLECTION_DROPDOWN_FORMAT } from "~/interfaces/format"
 import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
 
 export const COLLECTION_BLOCK_TYPE = "collectionblock"
@@ -15,7 +16,7 @@ export const CollectionBlockSchema = Type.Object(
     collectionReferenceLink: Type.String({
       title: "Collection",
       description: "The collection to display pages from",
-      format: "link",
+      format: COLLECTION_DROPDOWN_FORMAT,
       pattern: REF_INTERNAL_HREF_PATTERN,
     }),
     // TODO: Add the option to enable/disable the custom title and description as a whole
@@ -60,7 +61,7 @@ export type CollectionBlockProps = Static<typeof CollectionBlockSchema> & {
 
 export type CollectionBlockSingleCardProps = Pick<
   ProcessedCollectionCardProps,
-  "title" | "image" | "category" | "referenceLinkHref" | "lastUpdated"
+  "title" | "image" | "category" | "referenceLinkHref" | "date"
 > &
   Pick<CollectionBlockProps, "displayThumbnail" | "displayCategory"> &
   CollectionBlockNumberOfCards & {

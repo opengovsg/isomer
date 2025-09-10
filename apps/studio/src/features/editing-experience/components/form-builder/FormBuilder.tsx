@@ -23,6 +23,8 @@ import {
   jsonFormsChildrenPagesLayoutControlTester,
   JsonFormsChildrenPagesOrderingControl,
   jsonFormsChildrenPagesOrderingControlTester,
+  JsonFormsCollectionDropdownControl,
+  jsonFormsCollectionDropdownControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
@@ -47,17 +49,29 @@ import {
   jsonFormsProseControlTester,
   JsonFormsRefControl,
   jsonFormsRefControlTester,
+  JsonFormsTagCategoriesControl,
+  jsonFormsTagCategoriesControlTester,
+  JsonFormsTaggedControl,
+  jsonFormsTaggedControlTester,
   JsonFormsTextAreaControl,
   jsonFormsTextAreaControlTester,
   JsonFormsTextControl,
   jsonFormsTextControlTester,
   JsonFormsUnionRootControl,
   jsonFormsUnionRootControlTester,
+  JsonFormsUuidControl,
+  jsonFormsUuidControlTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
 } from "./renderers"
 
 export const renderers: JsonFormsRendererRegistryEntry[] = [
+  {
+    tester: jsonFormsTagCategoriesControlTester,
+    renderer: JsonFormsTagCategoriesControl,
+  },
+  { renderer: JsonFormsUuidControl, tester: jsonFormsUuidControlTester },
+  { renderer: JsonFormsTaggedControl, tester: jsonFormsTaggedControlTester },
   {
     renderer: JsonFormsChildrenPagesOrderingControl,
     tester: jsonFormsChildrenPagesOrderingControlTester,
@@ -113,6 +127,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsCategoryControlTester,
     renderer: JsonFormsCategoryControl,
+  },
+  {
+    tester: jsonFormsCollectionDropdownControlTester,
+    renderer: JsonFormsCollectionDropdownControl,
   },
 ]
 

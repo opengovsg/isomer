@@ -1,5 +1,8 @@
-export const MAX_IMG_FILE_SIZE_BYTES = 5000000
+export const ONE_MB_IN_BYTES = 1000000
+
+export const MAX_IMG_FILE_SIZE_BYTES = 5 * ONE_MB_IN_BYTES
 export const IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
+  ".jpg": "image/jpeg", // same MIME type as .jpeg
   ".jpeg": "image/jpeg",
   ".png": "image/png",
   ".gif": "image/gif",
@@ -13,7 +16,7 @@ export const ACCEPTED_IMAGE_TYPES_MESSAGE = Object.keys(
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 ).join(", ")
 
-export const MAX_FILE_SIZE_BYTES = 20000000
+export const MAX_FILE_SIZE_BYTES = 50 * ONE_MB_IN_BYTES
 export const FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
   ".pdf": "application/pdf",
   ".xls": "application/vnd.ms-excel",
@@ -25,5 +28,3 @@ export const FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
 export const ACCEPTED_FILE_TYPES_MESSAGE = Object.keys(
   FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 ).join(", ")
-
-export const ONE_MB_IN_BYTES = 1000000

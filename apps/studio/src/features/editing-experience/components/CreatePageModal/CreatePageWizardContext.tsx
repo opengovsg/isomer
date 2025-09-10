@@ -68,6 +68,7 @@ const useCreatePageWizardContext = ({
   const { data, isLoading: isPermalinkLoading } =
     trpc.resource.getWithFullPermalink.useQuery(
       {
+        siteId,
         resourceId: folderId ? String(folderId) : "",
       },
       { enabled: !!folderId },
@@ -86,7 +87,7 @@ const useCreatePageWizardContext = ({
   const utils = trpc.useUtils()
   const router = useRouter()
 
-  const { mutate, isLoading } = trpc.page.createPage.useMutation({
+  const { mutate, isPending } = trpc.page.createPage.useMutation({
     onSuccess: async () => {
       await utils.resource.listWithoutRoot.invalidate()
       onClose()
@@ -133,7 +134,7 @@ const useCreatePageWizardContext = ({
     currentStep,
     formMethods,
     handleCreatePage,
-    isLoading: isLoading || (!!folderId && isPermalinkLoading),
+    isLoading: isPending || (!!folderId && isPermalinkLoading),
     handleNextToDetailScreen,
     handleBackToLayoutScreen,
     layoutPreviewJson,

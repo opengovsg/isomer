@@ -1,19 +1,29 @@
 import type { UnwrapTagged } from "type-fest"
+import { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash"
 
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createCollectionSchema,
   editLinkSchema,
+  getCollectionsSchema,
+  getCollectionTagsSchema,
   readLinkSchema,
 } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
-import { db, jsonb, ResourceState, ResourceType } from "../database"
+import {
+  AuditLogEvent,
+  db,
+  jsonb,
+  ResourceState,
+  ResourceType,
+} from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { validateUserPermissionsForResource } from "../permissions/permissions.service"
+import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
   defaultResourceSelect,
   getBlobOfResource,
@@ -21,8 +31,10 @@ import {
   publishResource,
   updateBlobById,
 } from "../resource/resource.service"
+import { validateUserPermissionsForSite } from "../site/site.service"
 import { defaultCollectionSelect } from "./collection.select"
 import {
+  createCollectionIndexJson,
   createCollectionLinkJson,
   createCollectionPageJson,
 } from "./collection.service"
@@ -31,7 +43,7 @@ export const collectionRouter = router({
   getMetadata: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
         userId: ctx.user.id,
@@ -57,11 +69,11 @@ export const collectionRouter = router({
         ctx,
         input: { collectionTitle, permalink, siteId, parentFolderId },
       }) => {
-        await validateUserPermissionsForResource({
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "create",
           userId: ctx.user.id,
-          resourceId: !!parentFolderId ? String(parentFolderId) : null,
+          resourceIds: [!!parentFolderId ? String(parentFolderId) : null],
         })
 
         const user = await db
@@ -119,9 +131,47 @@ export const collectionRouter = router({
 
           await logResourceEvent(tx, {
             siteId,
-            eventType: "ResourceCreate",
+            eventType: AuditLogEvent.ResourceCreate,
             delta: { before: null, after: collection },
             by: user,
+          })
+
+          const indexJson = createCollectionIndexJson(collection.title)
+
+          const blob = await tx
+            .insertInto("Blob")
+            .values({ content: jsonb(indexJson) })
+            .returning("Blob.id")
+            .executeTakeFirstOrThrow()
+
+          const indexPage = await tx
+            .insertInto("Resource")
+            .values({
+              title: collection.title,
+              permalink: INDEX_PAGE_PERMALINK,
+              siteId,
+              parentId: collection.id,
+              draftBlobId: blob.id,
+              type: ResourceType.IndexPage,
+              state: ResourceState.Draft,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
+
+          await logResourceEvent(tx, {
+            siteId,
+            by: user,
+            delta: { before: null, after: indexPage },
+            eventType: AuditLogEvent.ResourceCreate,
           })
 
           return collection
@@ -136,11 +186,11 @@ export const collectionRouter = router({
   createCollectionPage: protectedProcedure
     .input(createCollectionPageSchema)
     .mutation(async ({ ctx, input }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId: input.siteId,
         action: "create",
         userId: ctx.user.id,
-        resourceId: !!input.collectionId ? String(input.collectionId) : null,
+        resourceIds: [!!input.collectionId ? String(input.collectionId) : null],
       })
 
       const user = await db
@@ -205,7 +255,7 @@ export const collectionRouter = router({
 
         await logResourceEvent(tx, {
           siteId,
-          eventType: "ResourceCreate",
+          eventType: AuditLogEvent.ResourceCreate,
           by: user,
           delta: {
             before: null,
@@ -220,7 +270,7 @@ export const collectionRouter = router({
   list: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {
-      await validateUserPermissionsForResource({
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
         userId: ctx.user.id,
@@ -233,13 +283,11 @@ export const collectionRouter = router({
         .selectFrom("Resource")
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
-        .where((eb) => {
-          return eb.or([
-            eb("Resource.type", "=", ResourceType.CollectionPage),
-            eb("Resource.type", "=", ResourceType.CollectionLink),
-            eb("Resource.type", "=", ResourceType.IndexPage),
-          ])
-        })
+        .where("Resource.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+          ResourceType.IndexPage,
+        ])
         .orderBy("Resource.type", "asc")
         .orderBy("Resource.title", "asc")
         .limit(limit)
@@ -250,15 +298,16 @@ export const collectionRouter = router({
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
     .query(async ({ ctx, input: { linkId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const baseQuery = db
         .selectFrom("Resource")
         .where("Resource.id", "=", String(linkId))
+        .where("Resource.type", "=", ResourceType.CollectionLink)
         .where("Resource.siteId", "=", siteId)
 
       const draft = await baseQuery
@@ -285,16 +334,26 @@ export const collectionRouter = router({
     .input(editLinkSchema)
     .mutation(
       async ({
-        input: { date, category, linkId, siteId, description, ref, image },
+        input: {
+          date,
+          category,
+          linkId,
+          siteId,
+          description,
+          ref,
+          image,
+          tags,
+          tagged,
+        },
         ctx,
       }) => {
         // Things that aren't working yet:
         // 1. Last Edited user and time
         // 2. Page status(draft, published)
-        await validateUserPermissionsForResource({
-          userId: ctx.user.id,
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "update",
+          userId: ctx.user.id,
         })
 
         const content = createCollectionLinkJson({
@@ -323,14 +382,14 @@ export const collectionRouter = router({
             )
 
           const oldBlob = await getBlobOfResource({
-            tx,
+            db: tx,
             resourceId: resource.id,
           })
 
           const blob = await updateBlobById(tx, {
             content: {
               ...content,
-              page: { description, ref, date, category, image },
+              page: { description, ref, date, category, image, tags, tagged },
             },
             pageId: linkId,
             siteId,
@@ -338,7 +397,7 @@ export const collectionRouter = router({
 
           await logResourceEvent(tx, {
             siteId,
-            eventType: "ResourceUpdate",
+            eventType: AuditLogEvent.ResourceUpdate,
             delta: {
               before: { blob: oldBlob, resource },
               after: { blob, resource },
@@ -350,4 +409,118 @@ export const collectionRouter = router({
         })
       },
     ),
+
+  getCollectionTags: protectedProcedure
+    .input(getCollectionTagsSchema)
+    .query(async ({ ctx, input: { resourceId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+        resourceIds: [String(resourceId)],
+      })
+
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("type", "=", ResourceType.IndexPage)
+        .where("parentId", "=", (eb) =>
+          eb
+            .selectFrom("Resource")
+            .where("id", "=", String(resourceId))
+            .where("siteId", "=", siteId)
+            .select("parentId"),
+        )
+        .select("id")
+        .executeTakeFirst()
+
+      if (!indexPage) {
+        return []
+      }
+
+      const { draftBlobId, publishedVersionId } = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(indexPage.id))
+        .select(["draftBlobId", "publishedVersionId"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "The specified resource could not be found",
+            }),
+        )
+
+      if (publishedVersionId) {
+        const { content } = await db
+          .selectFrom("Blob")
+          .where("id", "=", (qb) =>
+            qb
+              .selectFrom("Version")
+              .where("id", "=", publishedVersionId)
+              .select("blobId"),
+          )
+          .selectAll()
+          // NOTE: Guaranteed to exist since this is a foreign key
+          .executeTakeFirstOrThrow()
+
+        return (
+          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
+          []
+        )
+      }
+
+      if (draftBlobId) {
+        const { content } = await db
+          .selectFrom("Blob")
+          .where("id", "=", draftBlobId)
+          .selectAll()
+          // NOTE: Guaranteed to exist since this is a foreign key
+          .executeTakeFirstOrThrow()
+
+        return (
+          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
+          []
+        )
+      }
+
+      return []
+
+      // FIXME: we cannot do this yet because we still use `Type.Composite`
+      // over `Type.Intersect`, which causes typing errors above.
+      // Once we swap over to using `Type.Intersect`, we can uncomment this
+      // and the typing will work properly
+      // if (content.layout === "collection") {
+      //   return content.page.tagCategories
+      // }
+      //
+      // return []
+    }),
+
+  getCollections: protectedProcedure
+    .input(getCollectionsSchema)
+    .query(async ({ ctx, input: { siteId, hasChildren } }) => {
+      // will need permissions to fetch all collections for a site
+      await validateUserPermissionsForSite({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      let query = db.selectFrom("Resource")
+
+      if (hasChildren) {
+        query = query.innerJoin(
+          "Resource as children",
+          "Resource.id",
+          "children.parentId",
+        )
+      }
+
+      return query
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "=", ResourceType.Collection)
+        .orderBy("Resource.title", "asc")
+        .distinct()
+        .selectAll("Resource")
+        .execute()
+    }),
 })

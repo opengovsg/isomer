@@ -24,6 +24,7 @@ export const doesComponentHaveImage = ({
     case DYNAMIC_DATA_BANNER_TYPE:
       return false
     case "image":
+    case "formsg":
     case "hero":
     case "logocloud":
     case "contentpic":

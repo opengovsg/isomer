@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { ChildrenPagesProps } from "~/interfaces"
 import type { IsomerSiteProps } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 import ChildrenPages from "./ChildrenPages"
 
 const meta: Meta<ChildrenPagesProps> = {
@@ -17,8 +18,7 @@ const meta: Meta<ChildrenPagesProps> = {
 export default meta
 type Story = StoryObj<typeof ChildrenPages>
 
-const site: IsomerSiteProps = {
-  siteName: "Isomer Next",
+const site: IsomerSiteProps = generateSiteConfig({
   siteMap: {
     id: "1",
     title: "Isomer Next",
@@ -331,24 +331,7 @@ const site: IsomerSiteProps = {
       },
     ],
   },
-  theme: "isomer-next",
-  isGovernment: true,
-  logoUrl: "/isomer-logo.svg",
-  navbar: { items: [] },
-  footerItems: {
-    privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-    termsOfUseLink: "https://www.isomer.gov.sg/terms",
-    siteNavItems: [],
-  },
-  lastUpdated: "1 Jan 2021",
-  search: {
-    type: "localSearch",
-    searchUrl: "/search",
-  },
-  notification: {
-    content: [{ type: "text", text: "This is a short notification" }],
-  },
-}
+})
 
 export const Default: Story = {
   args: {

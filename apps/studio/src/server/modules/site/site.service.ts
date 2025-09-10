@@ -2,11 +2,14 @@ import { TRPCError } from "@trpc/server"
 import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
 import { addUsersToSite } from "~prisma/scripts/addUsersToSite"
 
-import type { DB, Resource, Transaction, Version } from "../database"
 import type {
-  CrudResourceActions,
-  PermissionsProps,
-} from "../permissions/permissions.type"
+  DB,
+  Resource,
+  SafeKysely,
+  Transaction,
+  Version,
+} from "../database"
+import type { UserPermissionsProps } from "../permissions/permissions.type"
 import {
   ResourceState,
   ResourceType,
@@ -26,7 +29,7 @@ export const validateUserPermissionsForSite = async ({
   siteId,
   userId,
   action,
-}: Omit<PermissionsProps, "resourceId"> & { action: CrudResourceActions }) => {
+}: Omit<UserPermissionsProps, "resourceId">) => {
   const perms = await definePermissionsForSite({
     siteId,
     userId,
@@ -41,7 +44,7 @@ export const validateUserPermissionsForSite = async ({
   }
 }
 
-export const getSiteConfig = async (siteId: number) => {
+export const getSiteConfig = async (db: SafeKysely, siteId: number) => {
   const { config } = await db
     .selectFrom("Site")
     .where("id", "=", siteId)
@@ -265,6 +268,7 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
         config: jsonb({
           theme: "isomer-next",
           siteName,
+          url: "https://www.isomer.gov.sg",
           logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
           search: undefined,
           isGovernment: true,

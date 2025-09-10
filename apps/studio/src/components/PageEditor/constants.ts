@@ -36,9 +36,10 @@ export const DEFAULT_BLOCKS: Record<
   },
   blockquote: {
     type: "blockquote",
-    quote: "This is a quote",
-    source: "This is the source of the quote",
-    imageAlt: "This is the alt text for the image",
+    quote:
+      "Enforcing the gold standards of building government informational websites at Isomer (OGP)",
+    source: "Huaying Zhu",
+    imageAlt: "Portrait of Huaying Zhu",
   },
   callout: {
     type: "callout",
@@ -56,6 +57,11 @@ export const DEFAULT_BLOCKS: Record<
         },
       ],
     },
+  },
+  formsg: {
+    type: "formsg",
+    url: "https://form.gov.sg/686e73c1a1f7bf391ee2b3af",
+    title: "A feedback collection form",
   },
   hero: undefined,
   iframe: {
@@ -372,6 +378,7 @@ export const BLOCK_TO_META: Record<
     label: "Collection block",
     description: "Automatically display recent pages from a collection",
     usageText: "Link recent articles from your newsroom, research, or blog.",
+    imageSrc: "/assets/block-images/CollectionBlock.png",
   },
   [IMAGE_GALLERY_TYPE]: {
     // TODO: Add image source
@@ -385,6 +392,13 @@ export const BLOCK_TO_META: Record<
     usageText: "Highlight an important quote. You can add an optional image.",
     imageSrc: "/assets/block-images/Blockquote.png",
   },
+  formsg: {
+    label: "FormSG",
+    description: "Embed a form to collect data",
+    usageText:
+      "Get mailing list sign-ups or quick feedback by embedding a form directly on your page.",
+    imageSrc: "/assets/block-images/FormSG.png",
+  },
 }
 
 type AllowedBlockSections = {
@@ -395,7 +409,14 @@ type AllowedBlockSections = {
 export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Basic content blocks",
-    types: ["prose", "image", "accordion", "callout", "blockquote"],
+    types: [
+      "prose",
+      "image",
+      "accordion",
+      "callout",
+      "blockquote",
+      IMAGE_GALLERY_TYPE,
+    ],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
@@ -411,13 +432,14 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
       "blockquote",
       "contentpic",
       "infobar",
+      IMAGE_GALLERY_TYPE,
     ],
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics", IMAGE_GALLERY_TYPE],
+    types: ["infocards", "infocols", "keystatistics"],
   },
-  { label: "Embed external content", types: ["map", "video"] },
+  { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
@@ -430,6 +452,7 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "infopic",
       "infobar",
       "blockquote",
+      COLLECTION_BLOCK_TYPE,
     ],
   },
 ]

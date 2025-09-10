@@ -5,46 +5,60 @@ import { DEFAULT_PAGE_ITEMS } from "./page"
 export const resourceHandlers = {
   getChildrenOf: {
     default: () => {
-      return trpcMsw.resource.getChildrenOf.query(({ resourceId }) => {
-        const items = DEFAULT_PAGE_ITEMS.map((item) => ({
-          title: item.title,
-          permalink: item.permalink,
-          type: item.type as
-            | "Page"
-            | "Folder"
-            | "Collection"
-            | "CollectionPage",
-          // ID must be unique so infinite loop won't occur
-          id: `${resourceId}-${item.title}-${item.id}`,
-          parentId: item.parentId,
-        }))
-        return {
-          items,
-          nextOffset: null,
-        }
-      })
+      return trpcMsw.resource.getChildrenOf.query(
+        ({ input: { resourceId } }) => {
+          const items = DEFAULT_PAGE_ITEMS.map((item) => ({
+            title: item.title,
+            permalink: item.permalink,
+            type: item.type as
+              | "Page"
+              | "Folder"
+              | "Collection"
+              | "CollectionPage",
+            // ID must be unique so infinite loop won't occur
+            id: `${resourceId}-${item.title}-${item.id}`,
+            parentId: item.parentId,
+          }))
+          return {
+            items,
+            nextOffset: null,
+          }
+        },
+      )
     },
     collection: () => {
-      return trpcMsw.resource.getChildrenOf.query(({ resourceId }) => {
-        const items = DEFAULT_COLLECTION_ITEMS.map((item) => ({
-          title: item.title,
-          permalink: item.permalink,
-          parentId: item.parentId,
-          type: item.type as "Page" | "CollectionLink" | "CollectionPage",
-          // ID must be unique so infinite loop won't occur
-          id: `${resourceId}-${item.title}-${item.id}`,
-        }))
-        return {
-          items,
-          nextOffset: null,
-        }
-      })
+      return trpcMsw.resource.getChildrenOf.query(
+        ({ input: { resourceId } }) => {
+          const items = DEFAULT_COLLECTION_ITEMS.map((item) => ({
+            title: item.title,
+            permalink: item.permalink,
+            parentId: item.parentId,
+            type: item.type as "Page" | "CollectionLink" | "CollectionPage",
+            // ID must be unique so infinite loop won't occur
+            id: `${resourceId}-${item.title}-${item.id}`,
+          }))
+          return {
+            items,
+            nextOffset: null,
+          }
+        },
+      )
     },
   },
   getRolesFor: {
-    default: () => {
+    admin: () => {
       return trpcMsw.resource.getRolesFor.query(() => {
         return [{ role: "Admin" }]
+      })
+    },
+    publisher: () => {
+      return trpcMsw.resource.getRolesFor.query(() => {
+        return [{ role: "Publisher" }]
+      })
+    },
+    editor: () => {
+      return trpcMsw.resource.getRolesFor.query(() => {
+        return [{ role: "Editor" }]
       })
     },
   },
@@ -172,6 +186,7 @@ export const resourceHandlers = {
           title: "Home",
           permalink: "home",
           parentId: null,
+          siteId: 1,
         }
       }),
     content: () =>
@@ -182,6 +197,7 @@ export const resourceHandlers = {
           title: "Page title here",
           permalink: "page-title-here",
           parentId: null,
+          siteId: 1,
         }
       }),
     article: () =>
@@ -192,6 +208,7 @@ export const resourceHandlers = {
           title: "article layout",
           permalink: "article-layout",
           parentId: null,
+          siteId: 1,
         }
       }),
     index: () =>
@@ -202,6 +219,7 @@ export const resourceHandlers = {
           title: "Index page",
           permalink: "_index",
           parentId: null,
+          siteId: 1,
         }
       }),
   },
@@ -224,6 +242,7 @@ export const resourceHandlers = {
               fullPermalink: permalink,
             }
           }),
+          nextOffset: null,
         }
       })
     },
@@ -279,6 +298,7 @@ export const resourceHandlers = {
             },
           ],
           recentlyEdited: [],
+          nextOffset: null,
         }
       })
     },

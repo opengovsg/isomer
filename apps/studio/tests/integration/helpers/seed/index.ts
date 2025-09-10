@@ -264,6 +264,7 @@ export const setupPageResource = async ({
   permalink,
   parentId,
   title,
+  scheduledAt = null,
 }: {
   siteId?: number
   blobId?: string
@@ -273,6 +274,7 @@ export const setupPageResource = async ({
   permalink?: string
   parentId?: string | null
   title?: string
+  scheduledAt?: Date | null
 }) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
@@ -285,6 +287,7 @@ export const setupPageResource = async ({
       siteId: site.id,
       parentId,
       publishedVersionId: null,
+      scheduledAt,
       draftBlobId: blob.id,
       type: resourceType,
       state,
@@ -411,15 +414,20 @@ export const setupCollectionLink = async ({
   permalink = "test-collection-link",
   collectionId,
   title = "test collection link",
+  state = ResourceState.Draft,
+  userId,
 }: {
   siteId?: number
   permalink?: string
   collectionId: string
   title?: string
+  state?: ResourceState
+  userId?: string
 }) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
+  const blob = await setupBlob()
 
-  const collectionLink = await db
+  let collectionLink = await db
     .insertInto("Resource")
     .values({
       permalink,
@@ -427,15 +435,47 @@ export const setupCollectionLink = async ({
       parentId: collectionId,
       title,
       type: ResourceType.CollectionLink,
+      state,
+      draftBlobId: blob.id,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
+
+  if (state === ResourceState.Published && !userId) {
+    throw new Error(
+      "Precondition failed, we need a valid `userId` in order to publish",
+    )
+  }
+
+  if (state === ResourceState.Published && userId) {
+    const version = await db
+      .insertInto("Version")
+      .values({
+        versionNum: 1,
+        resourceId: collectionLink.id,
+        blobId: blob.id,
+        publishedBy: userId,
+      })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    collectionLink = await db
+      .updateTable("Resource")
+      .where("id", "=", collectionLink.id)
+      .set({
+        publishedVersionId: version.id,
+        draftBlobId: null,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+  }
 
   return {
     site,
     navbar,
     footer,
     collectionLink,
+    blob,
   }
 }
 
@@ -525,14 +565,14 @@ export const setupUser = async ({
   email,
   phone = "",
   isDeleted = false,
-  hasLoggedIn = false,
+  lastLoginAt = null,
 }: {
   name?: string
   userId?: string
   email?: string
   phone?: string
   isDeleted?: boolean
-  hasLoggedIn?: boolean
+  lastLoginAt?: Date | null
 }) => {
   return db
     .insertInto("User")
@@ -542,7 +582,7 @@ export const setupUser = async ({
       email: email ?? `${nanoid()}@test.com`,
       phone: phone,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
-      lastLoginAt: hasLoggedIn ? MOCK_STORY_DATE : null,
+      lastLoginAt,
     })
     .returningAll()
     .executeTakeFirstOrThrow()

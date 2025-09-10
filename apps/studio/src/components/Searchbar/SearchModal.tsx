@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import {
   Modal,
   ModalContent,
@@ -9,8 +9,8 @@ import {
 } from "@chakra-ui/react"
 import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
 
+import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
-import { getUserViewableResourceTypes } from "~/utils/resources"
 import { CommandKey } from "./CommandKey"
 import {
   InitialState,
@@ -36,10 +36,10 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
     recentlyEditedResources,
   } = useSearchQuery({
     siteId,
-    resourceTypes: getUserViewableResourceTypes(),
-    onSearchSuccess: () => {
+    resourceTypes: USER_VIEWABLE_RESOURCE_TYPES,
+    onSearchSuccess: useCallback(() => {
       setQueryCount((prev) => prev + 1)
-    },
+    }, []),
   })
 
   const renderModalBody = (): React.ReactNode => {

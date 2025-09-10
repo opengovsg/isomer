@@ -11,6 +11,7 @@ import {
 import {
   setupAdminPermissions,
   setupCollection,
+  setupCollectionLink,
   setupEditorPermissions,
   setupFolder,
   setupPageResource,
@@ -21,7 +22,7 @@ import {
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
-import { db, ResourceType } from "../../database"
+import { db, ResourceState, ResourceType } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
 import { collectionRouter } from "../collection.router"
 import {
@@ -217,7 +218,7 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -251,7 +252,7 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -285,7 +286,7 @@ describe("collection.router", async () => {
       })
       expect(actualCollection.parentId).toEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -296,7 +297,7 @@ describe("collection.router", async () => {
       expect(auditEntry.userId).toBe(session.userId)
     })
 
-    it("should create a nested collection if `parentFolderId` is provided and hte user is not an admin", async () => {
+    it("should create a nested collection if `parentFolderId` is provided and the user is not an admin", async () => {
       // Arrange
       const permalinkToUse = "test-collection-777"
       const { folder: parent, site } = await setupFolder()
@@ -320,7 +321,7 @@ describe("collection.router", async () => {
       })
       expect(actualCollection.parentId).toEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -646,6 +647,115 @@ describe("collection.router", async () => {
     })
 
     it.skip("should throw 403 if user does not have write access to the parent collection", async () => {})
+  })
+
+  describe("list", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Act
+      const result = unauthedCaller.list({
+        siteId: 1,
+        resourceId: -1,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+
+      // Act
+      const result = caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+      })
+
+      // Assert
+      expect(result).toEqual(expect.any(Array))
+    })
+  })
+
+  describe("readCollectionLink", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Act
+      const result = unauthedCaller.readCollectionLink({
+        siteId: 1,
+        linkId: 999,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+
+      // Act
+      const result = caller.readCollectionLink({
+        siteId: site.id,
+        linkId: Number(collection.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { collectionLink, blob } = await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.readCollectionLink({
+        siteId: site.id,
+        linkId: Number(collectionLink.id),
+      })
+
+      // Assert
+      expect(result).toMatchObject({
+        title: collectionLink.title,
+        content: blob.content,
+      })
+    })
   })
 
   describe("getMetadata", () => {
@@ -1009,7 +1119,7 @@ describe("collection.router", async () => {
       // Act
       const originalBlob = await db
         .transaction()
-        .execute((tx) => getBlobOfResource({ tx, resourceId: page.id }))
+        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
 
       // Assert
       const expected = await caller.updateCollectionLink({
@@ -1046,7 +1156,7 @@ describe("collection.router", async () => {
       })
       const originalBlob = await db
         .transaction()
-        .execute((tx) => getBlobOfResource({ tx, resourceId: page.id }))
+        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
@@ -1059,7 +1169,6 @@ describe("collection.router", async () => {
 
       // Assert
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(1)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceUpdate")
@@ -1080,10 +1189,193 @@ describe("collection.router", async () => {
       // which is an empty array
       expect(expected.content.content).toEqual([])
       expect(expected.id).toEqual(blob.id)
+      await assertAuditLogRows(1)
     })
 
     it.skip("should throw when trying to update to a deleted `ref`")
 
     it.skip("should throw when trying to update to an invalid `ref`")
+  })
+
+  describe("getCollections", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Act
+      const result = unauthedCaller.getCollections({
+        siteId: 1,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.getCollections({
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return empty array when no collections exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getCollections({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should return all collections for the site ordered by title (default behavior)", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Create collections with different titles to test ordering
+      const { collection: collection1 } = await setupCollection({
+        siteId: site.id,
+        title: "Zebra Collection",
+        permalink: "zebra-collection",
+      })
+      const { collection: collection2 } = await setupCollection({
+        siteId: site.id,
+        title: "Alpha Collection",
+        permalink: "alpha-collection",
+      })
+      const { collection: collection3 } = await setupCollection({
+        siteId: site.id,
+        title: "Beta Collection",
+        permalink: "beta-collection",
+      })
+
+      // Act
+      const result = await caller.getCollections({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toHaveLength(3)
+      expect(result[0]?.title).toBe("Alpha Collection")
+      expect(result[1]?.title).toBe("Beta Collection")
+      expect(result[2]?.title).toBe("Zebra Collection")
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: collection1.id }),
+          expect.objectContaining({ id: collection2.id }),
+          expect.objectContaining({ id: collection3.id }),
+        ]),
+      )
+    })
+
+    it("should only return collections for the specified site", async () => {
+      // Arrange
+      const { site: site1 } = await setupSite()
+      const { site: site2 } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site1.id })
+      await setupEditorPermissions({ userId: session.userId, siteId: site2.id })
+
+      // Create collections in different sites
+      const { collection } = await setupCollection({
+        siteId: site1.id,
+        title: "Site 1 Collection",
+      })
+      await setupCollection({
+        siteId: site2.id,
+        title: "Site 2 Collection",
+      })
+
+      // Act
+      const result = await caller.getCollections({
+        siteId: site1.id,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]?.title).toBe("Site 1 Collection")
+      expect(result[0]?.id).toBe(collection.id)
+    })
+
+    it("should only return resources of type Collection", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Create a collection and other resource types
+      const { collection } = await setupCollection({
+        siteId: site.id,
+        title: "Test Collection",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Test Page",
+      })
+      await setupFolder({
+        siteId: site.id,
+        title: "Test Folder",
+      })
+
+      // Act
+      const result = await caller.getCollections({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]?.title).toBe("Test Collection")
+      expect(result[0]?.id).toBe(collection.id)
+      expect(result[0]?.type).toBe(ResourceType.Collection)
+    })
+
+    it("should return only collections that have children when hasChildren is true", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Create collections
+      const { collection: collectionWithChildren } = await setupCollection({
+        siteId: site.id,
+        permalink: "collection-with-children",
+      })
+      const { collection: _emptyCollection } = await setupCollection({
+        siteId: site.id,
+        permalink: "empty-collection",
+      })
+
+      // Add children to the first collection
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collectionWithChildren.id,
+        permalink: "child-page",
+      })
+
+      // Act
+      const result = await caller.getCollections({
+        siteId: site.id,
+        hasChildren: true,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]?.id).toBe(collectionWithChildren.id)
+    })
   })
 })

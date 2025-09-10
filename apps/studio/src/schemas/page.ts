@@ -32,6 +32,11 @@ export const permalinkSchema = generateBasePermalinkSchema("page")
     message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
   })
 
+export const listPagesSchema = z.object({
+  siteId: z.number(),
+  resourceId: z.number().optional(),
+})
+
 export const basePageSchema = z.object({
   pageId: z.number().min(1),
   siteId: z.number().min(1),
@@ -150,6 +155,7 @@ export const readPageOutputSchema = z.object({
   draftBlobId: z.string().nullable(),
   state: z.nativeEnum(ResourceState).nullable(),
   type: z.nativeEnum(ResourceType),
+  scheduledAt: z.date().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

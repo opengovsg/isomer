@@ -1,6 +1,7 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
+import type { z } from "zod"
 import { createContext, useContext, useMemo, useState } from "react"
 import { useRouter } from "next/router"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -66,6 +67,7 @@ const useCreateCollectionPageWizardContext = ({
   const [type, title] = formMethods.watch(["type", "title"])
   const { data, isLoading: isPermalinkLoading } =
     trpc.resource.getWithFullPermalink.useQuery({
+      siteId,
       resourceId: collectionId ? String(collectionId) : "",
     })
 
@@ -83,7 +85,7 @@ const useCreateCollectionPageWizardContext = ({
   const router = useRouter()
 
   // TODO: Call correct mutation
-  const { mutate, isLoading } =
+  const { mutate, isPending } =
     trpc.collection.createCollectionPage.useMutation({
       onSuccess: async () => {
         await utils.collection.list.invalidate()
@@ -92,46 +94,48 @@ const useCreateCollectionPageWizardContext = ({
       // TOOD: Error handling
     })
 
-  const handleCreatePage = formMethods.handleSubmit((values) => {
-    mutate(
-      {
-        siteId,
-        collectionId,
-        ...values,
-      },
-      {
-        onSuccess: ({ pageId }) => {
-          const nextType = getResourceSubpath(type)
-          void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
+  const handleCreatePage = formMethods.handleSubmit(
+    (values: z.output<typeof createCollectionPageFormSchema>) => {
+      mutate(
+        {
+          siteId,
+          collectionId,
+          ...values,
         },
-        onError: (error) => {
-          if (
-            error.data?.code === "CONFLICT" &&
-            values.type === ResourceType.CollectionPage
-          ) {
-            formMethods.setError(
-              "permalink",
-              { message: error.message },
-              { shouldFocus: true },
-            )
-            return
-          } else if (
-            error.data?.code === "CONFLICT" &&
-            values.type === ResourceType.CollectionLink
-          ) {
-            formMethods.setError(
-              "title",
-              { message: error.message },
-              { shouldFocus: true },
-            )
-            return
-          } else {
-            console.error(error)
-          }
+        {
+          onSuccess: ({ pageId }) => {
+            const nextType = getResourceSubpath(type)
+            void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
+          },
+          onError: (error) => {
+            if (
+              error.data?.code === "CONFLICT" &&
+              values.type === ResourceType.CollectionPage
+            ) {
+              formMethods.setError(
+                "permalink",
+                { message: error.message },
+                { shouldFocus: true },
+              )
+              return
+            } else if (
+              error.data?.code === "CONFLICT" &&
+              values.type === ResourceType.CollectionLink
+            ) {
+              formMethods.setError(
+                "title",
+                { message: error.message },
+                { shouldFocus: true },
+              )
+              return
+            } else {
+              console.error(error)
+            }
+          },
         },
-      },
-    )
-  })
+      )
+    },
+  )
 
   const handleNextToDetailScreen = () => {
     setCurrentStep(CreateCollectionPageFlowStates.Details)
@@ -146,7 +150,7 @@ const useCreateCollectionPageWizardContext = ({
     currentStep,
     formMethods,
     handleCreatePage,
-    isLoading: isLoading || isPermalinkLoading,
+    isLoading: isPending || isPermalinkLoading,
     handleNextToDetailScreen,
     handleBackToTypeScreen,
     pagePreviewJson,

@@ -26,6 +26,7 @@ export const bigIntSchema = z
   .refine((v) => v.at(0) !== "0")
 
 export const getMetadataSchema = z.object({
+  siteId: z.number(),
   resourceId: bigIntSchema,
 })
 
@@ -79,7 +80,13 @@ export const listResourceSchema = z
   .merge(offsetPaginationSchema)
 
 export const getFullPermalinkSchema = z.object({
+  siteId: z.number(),
   resourceId: bigIntSchema,
+})
+
+export const getRolesForSchema = z.object({
+  siteId: z.number(),
+  resourceId: z.string().nullable(),
 })
 
 export const getAncestryStackSchema = z.object({
@@ -124,6 +131,7 @@ export const searchOutputSchema = z.object({
   totalCount: z.number().nullable(),
   resources: z.array(z.custom<SearchResultResource>()),
   recentlyEdited: z.array(z.custom<SearchResultResource>()),
+  nextOffset: z.number().nullable(),
 })
 
 export const searchWithResourceIdsSchema = z.object({

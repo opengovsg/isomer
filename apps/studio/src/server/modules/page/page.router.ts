@@ -15,16 +15,21 @@ import {
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
+import { format, isBefore } from "date-fns"
 import _, { get, isEmpty, isEqual } from "lodash"
-import { z } from "zod"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import {
+  sendCancelSchedulePageEmail,
+  sendScheduledPageEmail,
+} from "~/features/mail/service"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   basePageSchema,
   createIndexPageSchema,
   createPageSchema,
   getRootPageSchema,
+  listPagesSchema,
   pageSettingsSchema,
   publishPageSchema,
   readPageOutputSchema,
@@ -32,13 +37,14 @@ import {
   updatePageBlobSchema,
   updatePageMetaSchema,
 } from "~/schemas/page"
+import { scheduledPublishServerSchema } from "~/schemas/schedule"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { logResourceEvent } from "../audit/audit.service"
 import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { validateUserPermissionsForResource } from "../permissions/permissions.service"
+import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
   getBlobOfResource,
   getFooter,
@@ -50,6 +56,7 @@ import {
   publishPageResource,
   publishResource,
   updateBlobById,
+  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage, createFolderIndexPage } from "./page.service"
@@ -59,7 +66,9 @@ const schemaValidator = ajv.compile<IsomerSchema>(schema)
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
 const validatedPageProcedure = protectedProcedure.use(
-  async ({ next, rawInput }) => {
+  async ({ next, getRawInput }) => {
+    const rawInput = await getRawInput()
+
     if (
       typeof rawInput === "object" &&
       rawInput !== null &&
@@ -86,17 +95,12 @@ const validatedPageProcedure = protectedProcedure.use(
 
 export const pageRouter = router({
   list: protectedProcedure
-    .input(
-      z.object({
-        siteId: z.number(),
-        resourceId: z.number().optional(),
-      }),
-    )
+    .input(listPagesSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       let query = db
@@ -121,14 +125,15 @@ export const pageRouter = router({
   getCategories: protectedProcedure
     .input(basePageSchema)
     .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const { parentId } = await db
         .selectFrom("Resource")
+        .where("siteId", "=", siteId)
         .where("id", "=", String(pageId))
         .select("parentId")
         .executeTakeFirstOrThrow()
@@ -138,6 +143,7 @@ export const pageRouter = router({
         .leftJoin("Blob as b", "r.draftBlobId", "b.id")
         .leftJoin("Version as v", "r.publishedVersionId", "v.id")
         .leftJoin("Blob as vb", "v.blobId", "vb.id")
+        .where("r.siteId", "=", siteId)
         .where("r.parentId", "=", String(parentId))
         .select((eb) => {
           return eb.fn
@@ -163,10 +169,10 @@ export const pageRouter = router({
     .input(basePageSchema)
     .output(readPageOutputSchema)
     .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const retrievedPage = await getPageById(db, {
@@ -187,12 +193,12 @@ export const pageRouter = router({
   readPageAndBlob: protectedProcedure
     .input(basePageSchema)
     .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
-      // TODO: Return blob last modified so the renderer can show last modified
+
       return db.transaction().execute(async (tx) => {
         const page = await getFullPageById(tx, { resourceId: pageId, siteId })
         if (!page) {
@@ -201,10 +207,6 @@ export const pageRouter = router({
             message: "Resource not found",
           })
         }
-
-        const siteMeta = await getSiteConfig(page.siteId)
-        const navbar = await getNavBar(page.siteId)
-        const footer = await getFooter(page.siteId)
 
         const { title, type, permalink, content, updatedAt } = page
 
@@ -221,6 +223,10 @@ export const pageRouter = router({
             message: "The specified resource could not be found",
           })
         }
+
+        const siteMeta = await getSiteConfig(tx, siteId)
+        const navbar = await getNavBar(tx, siteId)
+        const footer = await getFooter(tx, siteId)
 
         return {
           permalink,
@@ -240,22 +246,15 @@ export const pageRouter = router({
   reorderBlock: protectedProcedure
     .input(reorderBlobSchema)
     .mutation(async ({ ctx, input: { pageId, from, to, blocks, siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "update",
+        userId: ctx.user.id,
       })
-
-      if (!ctx.session?.userId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please ensure that you are authenticated",
-        })
-      }
 
       const by = await db
         .selectFrom("User")
-        .where("id", "=", ctx.session.userId)
+        .where("id", "=", ctx.user.id)
         .selectAll()
         .executeTakeFirstOrThrow(
           () =>
@@ -315,7 +314,7 @@ export const pageRouter = router({
         actualBlocks.splice(to, 0, movedBlock)
 
         const oldBlob = await getBlobOfResource({
-          tx,
+          db: tx,
           resourceId: String(pageId),
         })
         const updatedBlob = await updateBlobById(tx, {
@@ -325,7 +324,7 @@ export const pageRouter = router({
         })
         await logResourceEvent(tx, {
           siteId,
-          eventType: "ResourceUpdate",
+          eventType: AuditLogEvent.ResourceUpdate,
           delta: {
             before: {
               blob: oldBlob,
@@ -340,22 +339,154 @@ export const pageRouter = router({
         return actualBlocks
       })
     }),
+  schedulePage: protectedProcedure
+    .input(scheduledPublishServerSchema)
+    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "publish",
+        userId: ctx.user.id,
+      })
+      // check if the input.scheduledAt is after the current time
+      if (isBefore(scheduledAt, new Date())) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Scheduled time must be in the future",
+        })
+      }
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
 
+      const updatedPage = await db.transaction().execute(async (tx) => {
+        // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
+        const resource = await getPageById(tx, {
+          resourceId: pageId,
+          siteId,
+        })
+        if (!resource) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
+        if (resource.scheduledAt) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Page is already scheduled to be published at ${format(
+              resource.scheduledAt,
+              "yyyy-MM-dd HH:mm",
+            )}`,
+          })
+        }
+        // update the resource's scheduled field
+        const updatedPage = await updatePageById(
+          {
+            id: pageId,
+            siteId,
+            scheduledAt,
+          },
+          tx,
+        )
+        // verify that the update was successful
+        if (!updatedPage) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to schedule page",
+          })
+        }
+        // TODO: add logic to add the job to the job queue
+        await logResourceEvent(tx, {
+          siteId,
+          by,
+          delta: {
+            before: resource,
+            after: updatedPage,
+          },
+          eventType: AuditLogEvent.SchedulePublish,
+        })
+        return updatedPage
+      })
+      await sendScheduledPageEmail({
+        resource: updatedPage,
+        scheduledAt,
+        recipientEmail: by.email,
+      })
+    }),
+  cancelSchedulePage: protectedProcedure
+    .input(basePageSchema)
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "publish",
+        userId: ctx.user.id,
+      })
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const updatedPage = await db.transaction().execute(async (tx) => {
+        const resource = await getPageById(tx, {
+          resourceId: pageId,
+          siteId,
+        })
+        if (!resource) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
+        if (!resource.scheduledAt) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Unable to cancel schedule for a page that is not scheduled",
+          })
+        }
+        // update the resource's scheduled field
+        const updatedPage = await updatePageById(
+          {
+            id: pageId,
+            siteId,
+            scheduledAt: null,
+          },
+          tx,
+        )
+        if (!updatedPage) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to cancel page schedule",
+          })
+        }
+        // TODO: add logic to remove the scheduledAt job in the job queue
+        // if execution has not started
+        await logResourceEvent(tx, {
+          siteId,
+          by,
+          delta: {
+            before: resource,
+            after: updatedPage,
+          },
+          eventType: AuditLogEvent.CancelSchedulePublish,
+        })
+        return updatedPage
+      })
+      await sendCancelSchedulePageEmail({
+        resource: updatedPage,
+        recipientEmail: by.email,
+      })
+    }),
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId: input.siteId,
         action: "update",
+        userId: ctx.user.id,
       })
-
-      if (!ctx.session?.userId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please ensure that you are authenticated",
-        })
-      }
 
       const resource = await getPageById(db, {
         resourceId: input.pageId,
@@ -371,7 +502,7 @@ export const pageRouter = router({
 
       const by = await db
         .selectFrom("User")
-        .where("id", "=", ctx.session.userId)
+        .where("id", "=", ctx.user.id)
         .selectAll()
         .executeTakeFirstOrThrow(
           () =>
@@ -383,7 +514,7 @@ export const pageRouter = router({
 
       await db.transaction().execute(async (tx) => {
         const oldBlob = await getBlobOfResource({
-          tx,
+          db: tx,
           resourceId: String(input.pageId),
         })
         const updatedBlob = await updateBlobById(tx, input)
@@ -395,7 +526,7 @@ export const pageRouter = router({
             before: { blob: oldBlob, resource },
             after: { blob: updatedBlob, resource },
           },
-          eventType: "ResourceUpdate",
+          eventType: AuditLogEvent.ResourceUpdate,
         })
         return updatedBlob
       })
@@ -410,24 +541,18 @@ export const pageRouter = router({
         ctx,
         input: { permalink, siteId, folderId, title, layout },
       }) => {
-        await validateUserPermissionsForResource({
-          userId: ctx.user.id,
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "create",
-          resourceId: !!folderId ? String(folderId) : null,
+          userId: ctx.user.id,
+          resourceIds: [!!folderId ? String(folderId) : null],
         })
-        const newPage = createDefaultPage({ layout })
 
-        if (!ctx.session?.userId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Please ensure that you are authenticated",
-          })
-        }
+        const newPage = createDefaultPage({ layout })
 
         const by = await db
           .selectFrom("User")
-          .where("id", "=", ctx.session.userId)
+          .where("id", "=", ctx.user.id)
           .selectAll()
           .executeTakeFirstOrThrow(
             () =>
@@ -494,7 +619,7 @@ export const pageRouter = router({
               siteId,
               by,
               delta: { before: null, after: { blob, resource: addedResource } },
-              eventType: "ResourceCreate",
+              eventType: AuditLogEvent.ResourceCreate,
             })
 
             return addedResource
@@ -523,11 +648,12 @@ export const pageRouter = router({
   getRootPage: protectedProcedure
     .input(getRootPageSchema)
     .query(async ({ ctx, input: { siteId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
+
       const rootPage = await db
         .selectFrom("Resource")
         // TODO: Only return sites that the user has access to
@@ -548,10 +674,10 @@ export const pageRouter = router({
   publishPage: protectedProcedure
     .input(publishPageSchema)
     .mutation(async ({ ctx, input: { siteId, pageId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "publish",
+        userId: ctx.user.id,
       })
       return publishPageResource({
         logger: ctx.logger,
@@ -565,10 +691,10 @@ export const pageRouter = router({
   updateMeta: protectedProcedure
     .input(updatePageMetaSchema)
     .mutation(async ({ ctx, input: { meta, siteId, resourceId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "update",
+        userId: ctx.user.id,
       })
 
       const by = await db
@@ -633,7 +759,7 @@ export const pageRouter = router({
           ? rest
           : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
 
-        const oldBlob = await getBlobOfResource({ tx, resourceId })
+        const oldBlob = await getBlobOfResource({ db: tx, resourceId })
         const newBlob = await updateBlobById(tx, {
           pageId: Number(resourceId),
           content: newContent,
@@ -647,7 +773,7 @@ export const pageRouter = router({
             before: { resource, blob: oldBlob },
             after: { resource, blob: newBlob },
           },
-          eventType: "ResourceUpdate",
+          eventType: AuditLogEvent.ResourceUpdate,
         })
       })
     }),
@@ -656,10 +782,10 @@ export const pageRouter = router({
     .input(pageSettingsSchema)
     .mutation(
       async ({ ctx, input: { pageId, siteId, title, ...settings } }) => {
-        await validateUserPermissionsForResource({
-          userId: ctx.user.id,
+        await bulkValidateUserPermissionsForResources({
           siteId,
           action: "update",
+          userId: ctx.user.id,
         })
 
         const by = await db
@@ -729,7 +855,7 @@ export const pageRouter = router({
               siteId,
               by,
               delta: { before: resource, after: updatedResource },
-              eventType: "ResourceUpdate",
+              eventType: AuditLogEvent.ResourceUpdate,
             })
 
             // We do an implicit publish so that we can make the changes to the
@@ -759,12 +885,11 @@ export const pageRouter = router({
     ),
   getFullPermalink: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ ctx, input }) => {
-      const { pageId, siteId } = input
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const permalink = await getResourceFullPermalink(siteId, pageId)
@@ -779,12 +904,11 @@ export const pageRouter = router({
     }),
   getPermalinkTree: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ ctx, input }) => {
-      const { pageId, siteId } = input
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        userId: ctx.user.id,
       })
 
       const permalinkTree = await getResourcePermalinkTree(siteId, pageId)
@@ -800,11 +924,11 @@ export const pageRouter = router({
   createIndexPage: protectedProcedure
     .input(createIndexPageSchema)
     .mutation(async ({ ctx, input: { siteId, parentId } }) => {
-      await validateUserPermissionsForResource({
-        userId: ctx.user.id,
-        siteId: siteId,
+      await bulkValidateUserPermissionsForResources({
+        siteId,
         action: "create",
-        resourceId: parentId,
+        userId: ctx.user.id,
+        resourceIds: [String(parentId)],
       })
 
       const by = await db

@@ -25,7 +25,7 @@ const COMMON_HANDLERS = [
   sitesHandlers.getFooter.default(),
   sitesHandlers.getNavbar.default(),
   sitesHandlers.getLocalisedSitemap.default(),
-  resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getRolesFor.admin(),
   resourceHandlers.getWithFullPermalink.default(),
   resourceHandlers.getAncestryStack.default(),
   resourceHandlers.getBatchAncestryWithSelf.default(),
@@ -37,6 +37,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.article(),
   pageHandlers.readPage.article(),
   pageHandlers.getFullPermalink.article(),
+  pageHandlers.getCollectionTags.default(),
 ]
 
 const meta: Meta<typeof CollectionLinkPage> = {
@@ -60,13 +61,16 @@ const meta: Meta<typeof CollectionLinkPage> = {
 }
 
 export default meta
-type Story = StoryObj<typeof CollectionLinkPage>
 
 export const Default: Story = {}
 
+type Story = StoryObj<typeof CollectionLinkPage>
 export const Dropdown: Story = {
   parameters: {
     growthbook: [createDropdownGbParameters("1")],
+    msw: {
+      handlers: [pageHandlers.getCollectionTags.empty(), ...COMMON_HANDLERS],
+    },
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)

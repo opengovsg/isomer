@@ -4,6 +4,7 @@ import type {
 } from "@opengovsg/isomer-components"
 import type { UseMutateAsyncFunction } from "@tanstack/react-query"
 import {
+  FORMSG_EMBED_URL_REGEXES,
   MAPS_EMBED_URL_REGEXES,
   VIDEO_EMBED_URL_REGEXES,
 } from "@opengovsg/isomer-components"
@@ -19,14 +20,18 @@ import type { ModifiedAsset } from "~/types/assets"
 import { PLACEHOLDER_IMAGE_FILENAME } from "./constants"
 
 export const EMBED_NAME_MAPPING: Record<
-  keyof typeof MAPS_EMBED_URL_REGEXES | keyof typeof VIDEO_EMBED_URL_REGEXES,
+  | keyof typeof MAPS_EMBED_URL_REGEXES
+  | keyof typeof VIDEO_EMBED_URL_REGEXES
+  | keyof typeof FORMSG_EMBED_URL_REGEXES,
   string
 > = {
-  fbvideo: "Facebook Video",
   googlemaps: "Google Map",
   onemap: "OneMap",
+  ogpmaps: "Maps.gov.sg",
+  fbvideo: "Facebook Video",
   youtube: "YouTube",
   vimeo: "Vimeo",
+  formsg: "FormSG",
 }
 
 export const generateResourceUrl = (value: string) => {
@@ -122,6 +127,7 @@ export const getEmbedNameFromUrl = (url: string) =>
   Object.entries({
     ...MAPS_EMBED_URL_REGEXES,
     ...VIDEO_EMBED_URL_REGEXES,
+    ...FORMSG_EMBED_URL_REGEXES,
   }).reduce<string | undefined>((acc, curr) => {
     if (acc) {
       // Embed name already found, return it

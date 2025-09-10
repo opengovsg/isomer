@@ -4,6 +4,7 @@ import { expect, userEvent, within } from "@storybook/test"
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import type { NavbarProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 import { Button } from "../Button"
 import Masthead from "../Masthead"
 import Navbar from "./Navbar"
@@ -39,14 +40,9 @@ const meta: Meta<NavbarProps> = {
 export default meta
 type Story = StoryObj<typeof Navbar>
 
-const generateNavbarArgs = ({
-  callToAction = undefined,
-}: {
-  callToAction?: {
-    label: string
-    url: string
-  }
-}): Partial<NavbarProps> => {
+const generateNavbarArgs = (
+  overrides?: Partial<NavbarProps>,
+): Partial<NavbarProps> => {
   return {
     logoUrl: "/isomer-logo.svg",
     logoAlt: "Isomer logo",
@@ -150,39 +146,14 @@ const generateNavbarArgs = ({
         url: "/single-item",
       },
     ],
-    callToAction,
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      logoUrl: "/isomer-logo.svg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    site: generateSiteConfig(),
+    ...overrides,
   }
 }
 
 // Default scenario
 export const Default: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     chromatic: {
       ...withChromaticModes(["desktop", "mobile"]),
@@ -203,7 +174,7 @@ export const CallToAction: Story = {
 }
 
 export const ExpandFirstItem: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     viewport: {
       defaultViewport: getViewportByMode("desktop"),
@@ -220,7 +191,7 @@ export const ExpandFirstItem: Story = {
 }
 
 export const ExpandNavbarItemWithLink: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     viewport: {
       defaultViewport: getViewportByMode("desktop"),
@@ -241,7 +212,7 @@ export const ExpandNavbarItemWithLink: Story = {
 }
 
 export const ExpandSearch: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: Default.parameters,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -255,7 +226,7 @@ export const ExpandSearch: Story = {
 }
 
 export const Mobile: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     chromatic: withChromaticModes(["mobile"]),
     viewport: {
@@ -271,7 +242,7 @@ export const Mobile: Story = {
 }
 
 export const ExpandMobile: Story = {
-  args: generateNavbarArgs({}),
+  args: generateNavbarArgs(),
   parameters: {
     chromatic: withChromaticModes(["mobile"]),
     viewport: {
@@ -308,8 +279,27 @@ export const MobileCallToAction: Story = {
   },
 }
 
-export const ExpandMobileWithLink: Story = {
-  args: generateNavbarArgs({}),
+export const ExpandMobileWithLinkOneWord: Story = {
+  name: "Expand Mobile With Link (one word)",
+  args: generateNavbarArgs(),
+  parameters: {
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+    await userEvent.click(canvas.getByRole("button", { name: /Please/i }))
+  },
+}
+
+export const ExpandMobileWithLinkMultipleWords: Story = {
+  name: "Expand Mobile With Link (multiple words)",
+  args: generateNavbarArgs(),
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
     viewport: {
@@ -323,6 +313,138 @@ export const ExpandMobileWithLink: Story = {
     )
     await userEvent.click(
       canvas.getByRole("button", { name: /Longer item with 30 characters/i }),
+    )
+  },
+}
+
+export const UtilityLinksDesktop: Story = {
+  args: generateNavbarArgs({
+    utility: {
+      label: "Custom label",
+      items: [
+        { name: "First link", url: "/link-1" },
+        { name: "Linkedua", url: "/link-2" },
+        { name: "Link 3", url: "/link-3" },
+        { name: "Quad link", url: "/link-4" },
+      ],
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+}
+
+export const UtilityLinksMobile: Story = {
+  args: generateNavbarArgs({
+    utility: {
+      label: "Quick links",
+      items: [
+        { name: "Link 1", url: "/link-1" },
+        { name: "Link 2", url: "/link-2" },
+        { name: "Link 3", url: "/link-3" },
+      ],
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+  },
+}
+
+export const UtilityLinksNoLabelDesktop: Story = {
+  args: generateNavbarArgs({
+    utility: {
+      items: [
+        { name: "First link", url: "/link-1" },
+        { name: "Linkedua", url: "/link-2" },
+        { name: "Link 3", url: "/link-3" },
+        { name: "Quad link", url: "/link-4" },
+      ],
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+}
+
+export const UtilityLinksNoLabelMobile: Story = {
+  args: generateNavbarArgs({
+    utility: {
+      items: [
+        { name: "Link 1", url: "/link-1" },
+        { name: "Link 2", url: "/link-2" },
+        { name: "Link 3", url: "/link-3" },
+      ],
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+  },
+}
+
+export const CTAAndUtilityLinksDesktop: Story = {
+  args: generateNavbarArgs({
+    callToAction: {
+      label: "Login to Donation Portal",
+      url: "/call-to-action",
+    },
+    utility: {
+      label: "Custom label",
+      items: [
+        { name: "First link", url: "/link-1" },
+        { name: "Linkedua", url: "/link-2" },
+        { name: "Link 3", url: "/link-3" },
+        { name: "Quad link", url: "/link-4" },
+      ],
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+}
+
+export const CTAAndUtilityLinksMobile: Story = {
+  args: generateNavbarArgs({
+    callToAction: {
+      label: "Login to Donation Portal",
+      url: "/call-to-action",
+    },
+    utility: {
+      label: "Quick links",
+      items: [
+        { name: "Link 1", url: "/link-1" },
+        { name: "Link 2", url: "/link-2" },
+        { name: "Link 3", url: "/link-3" },
+      ],
+    },
+  }),
+  parameters: {
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
     )
   },
 }

@@ -1,7 +1,20 @@
 import type { NavbarProps } from "~/interfaces"
-import type { NavbarItem } from "~/interfaces/internal/Navbar"
+import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import NavbarClient from "./NavbarClient"
+
+const navbarLogoStyles = tv({
+  base: "object-contain object-left",
+  variants: {
+    variant: {
+      utility: "max-h-[68px] max-w-[180px]",
+      default: "max-h-[48px] max-w-[128px]",
+    },
+  },
+  defaultVariants: {
+    variant: "default",
+  },
+})
 
 // This section is server rendered to optimize performance
 // by avoiding the transfer of large sitemaps (under `site`) to the client,
@@ -9,21 +22,22 @@ import NavbarClient from "./NavbarClient"
 export const Navbar = ({
   logoUrl,
   logoAlt,
-  callToAction,
   layout,
   search,
   items,
+  callToAction,
+  utility,
   site,
   LinkComponent,
-}: Omit<NavbarProps, "type">) => {
+}: NavbarProps) => {
   // recursive function to process each navbar item
-  const processNavItem = (item: NavbarItem): NavbarItem => ({
+  const processNavItem = (
+    item: NavbarProps["items"][number],
+  ): NavbarProps["items"][number] => ({
     ...item,
-    referenceLinkHref: getReferenceLinkHref(
+    url:
+      getReferenceLinkHref(item.url, site.siteMap, site.assetsBaseUrl) ??
       item.url,
-      site.siteMap,
-      site.assetsBaseUrl,
-    ),
     items: item.items?.map(processNavItem),
   })
 
@@ -32,6 +46,7 @@ export const Navbar = ({
       layout={layout}
       search={search}
       items={items.map(processNavItem)}
+      LinkComponent={LinkComponent}
       imageClientProps={{
         src:
           isExternalUrl(logoUrl) || site.assetsBaseUrl === undefined
@@ -39,23 +54,41 @@ export const Navbar = ({
             : `${site.assetsBaseUrl}${logoUrl}`,
         alt: logoAlt,
         width: "100%",
-        className:
-          "max-h-[48px] max-w-[128px] object-contain object-center lg:mr-3",
+        className: navbarLogoStyles({
+          variant: !!utility ? "utility" : "default",
+        }),
         assetsBaseUrl: site.assetsBaseUrl,
         lazyLoading: false, // will always be above the fold
       }}
       callToAction={
-        callToAction && {
-          label: callToAction.label,
-          referenceLinkHref: getReferenceLinkHref(
-            callToAction.url,
-            site.siteMap,
-            site.assetsBaseUrl,
-          ),
-          isExternal: isExternalUrl(callToAction.url),
-        }
+        !!callToAction
+          ? {
+              label: callToAction.label,
+              url:
+                getReferenceLinkHref(
+                  callToAction.url,
+                  site.siteMap,
+                  site.assetsBaseUrl,
+                ) ?? callToAction.url,
+            }
+          : undefined
       }
-      LinkComponent={LinkComponent}
+      utility={
+        !!utility
+          ? {
+              label: utility.label,
+              items: utility.items.map((item) => ({
+                name: item.name,
+                url:
+                  getReferenceLinkHref(
+                    item.url,
+                    site.siteMap,
+                    site.assetsBaseUrl,
+                  ) ?? item.url,
+              })),
+            }
+          : undefined
+      }
     />
   )
 }

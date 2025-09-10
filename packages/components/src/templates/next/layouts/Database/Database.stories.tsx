@@ -4,6 +4,7 @@ import { userEvent, within } from "@storybook/test"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { DatabasePageSchemaType } from "~/engine"
+import { generateSiteConfig } from "~/stories/helpers"
 import Database from "./Database"
 
 const meta: Meta<typeof Database> = {
@@ -31,8 +32,7 @@ const generateArgs = ({
 }): DatabasePageSchemaType => {
   return {
     layout: "database",
-    site: {
-      siteName: "Isomer Next",
+    site: generateSiteConfig({
       siteMap: {
         id: "1",
         title: "Isomer Next",
@@ -105,21 +105,7 @@ const generateArgs = ({
           },
         ],
       },
-      theme: "isomer-next",
-      isGovernment: true,
-      logoUrl: "/isomer-logo.svg",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
+    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },
@@ -141,6 +127,7 @@ const generateArgs = ({
 }
 
 export const Default: Story = {
+  name: "Native Searchable Table",
   args: generateArgs({
     database: {
       title: "The Cancer Drug List (CDL)",
@@ -917,4 +904,32 @@ export const NoSearchResults: Story = {
     })
     await userEvent.type(searchElem, "some whacky search term")
   },
+}
+
+export const DGSSearchableTable: Story = {
+  name: "DGS Searchable Table",
+  args: generateArgs({
+    database: {
+      title: "Sample DGS Table",
+      dataSource: {
+        type: "dgs",
+        resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+      },
+      headers: [
+        { label: "Year", key: "year" },
+        { label: "University", key: "university" },
+        { label: "School", key: "school" },
+        { label: "Degree", key: "degree" },
+        { label: "Monthly Median", key: "gross_monthly_median" },
+        {
+          label: "Monthly 25th Percentile",
+          key: "gross_mthly_25_percentile",
+        },
+        {
+          label: "Monthly 75th Percentile",
+          key: "gross_mthly_75_percentile",
+        },
+      ],
+    },
+  }),
 }

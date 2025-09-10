@@ -70,7 +70,7 @@ export const AddUserModal = () => {
   const debouncedEmail = useDebounce(email, 300)
 
   const isNonGovEmailInput = useMemo(
-    () => !!(!errors.email && email && !isGovEmail(email)),
+    () => !!(!errors.email && email && !isGovEmail(email.trim())),
     [errors.email, email],
   )
 
@@ -81,7 +81,7 @@ export const AddUserModal = () => {
     [isNonGovEmailInput, hasWhitelistError],
   )
 
-  const { mutate: createUser, isLoading } = trpc.user.create.useMutation({
+  const { mutate: createUser, isPending } = trpc.user.create.useMutation({
     onSuccess: async (createdUsers) => {
       await utils.user.list.invalidate()
       await utils.user.count.invalidate()
@@ -100,25 +100,41 @@ export const AddUserModal = () => {
     },
   })
 
-  const { refetch: checkWhitelist } =
-    trpc.whitelist.isEmailWhitelisted.useQuery(
-      { siteId, email: debouncedEmail || "" },
-      {
-        enabled: false,
-        onSuccess: (isWhitelisted) => {
-          setAddUserModalState((prev) => ({
-            ...prev,
-            hasWhitelistError: !isWhitelisted,
-          }))
-        },
-        onError: () => {
-          setAddUserModalState((prev) => ({
-            ...prev,
-            hasWhitelistError: false,
-          }))
-        },
-      },
-    )
+  const {
+    data: isWhitelisted,
+    refetch: checkWhitelist,
+    isSuccess,
+    isError,
+  } = trpc.whitelist.isEmailWhitelisted.useQuery(
+    { siteId, email: (debouncedEmail || "").trim() },
+    {
+      enabled: false,
+    },
+  )
+
+  useEffect(() => {
+    // Run after the whitelist check is successful
+    if (!isSuccess) {
+      return
+    }
+
+    setAddUserModalState((prev) => ({
+      ...prev,
+      hasWhitelistError: !isWhitelisted,
+    }))
+  }, [isSuccess, isWhitelisted, setAddUserModalState])
+
+  useEffect(() => {
+    // Run if the whitelist check is unsuccessful
+    if (!isError) {
+      return
+    }
+
+    setAddUserModalState((prev) => ({
+      ...prev,
+      hasWhitelistError: false,
+    }))
+  }, [isError, setAddUserModalState])
 
   // Check whitelist when email changes
   useEffect(() => {
@@ -245,7 +261,7 @@ export const AddUserModal = () => {
             <Button
               variant="solid"
               onClick={onSendInvite}
-              isLoading={isLoading}
+              isLoading={isPending}
               isDisabled={
                 Object.keys(errors).length > 0 ||
                 email === "" ||

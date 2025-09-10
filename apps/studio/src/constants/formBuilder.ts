@@ -1,6 +1,8 @@
 // Rankings are adapted from JSONForms' Material Renderers package
 export const JSON_FORMS_RANKING = {
   ArrayControl: 4,
+  TagCategoryControl: 5,
+  TaggedControl: 4,
   BooleanControl: 2,
   ConstControl: 2,
   HiddenControl: 99999999999, // Always rendered first
@@ -8,6 +10,8 @@ export const JSON_FORMS_RANKING = {
   IntegerControl: 4,
   TextAreaControl: 1,
   TextControl: 1,
+  // NOTE: has to be higher than `TextControl`
+  UuidControl: 2,
   ObjectControl: 2,
   // NOTE: needs to have higher priority than anyof
   ChildrenPagesControl: 4,
@@ -15,6 +19,8 @@ export const JSON_FORMS_RANKING = {
   ChildrenPagesOrderingControl: 5,
   AllOfControl: 3,
   AnyOfControl: 3,
+  CategoryControl: 3,
+  CollectionDropdownControl: 3,
   ProseControl: 3,
   LinkControl: 3,
   RefControl: 3,

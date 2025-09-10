@@ -49,12 +49,13 @@ const MoveResourceContent = withSuspense(
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
     const [{ title }] = trpc.resource.getMetadataById.useSuspenseQuery({
+      siteId: Number(siteId),
       resourceId,
     })
     const ability = usePermissions()
     const utils = trpc.useUtils()
     const toast = useToast({ status: "success" })
-    const { mutate, isLoading } = trpc.resource.move.useMutation({
+    const { mutate, isPending } = trpc.resource.move.useMutation({
       onError: (err) => {
         toast({
           title: "Failed to move resource",
@@ -101,7 +102,11 @@ const MoveResourceContent = withSuspense(
         await utils.resource.getMetadataById.invalidate({
           resourceId: movedItem?.id,
         })
-        toast({ title: "Resource moved!", ...BRIEF_TOAST_SETTINGS })
+        toast({
+          status: "success",
+          title: "Resource moved!",
+          ...BRIEF_TOAST_SETTINGS,
+        })
       },
     })
 
@@ -144,7 +149,7 @@ const MoveResourceContent = withSuspense(
               }) ||
               ability.cannot("move", { parentId: movedItem?.parentId ?? null })
             }
-            isLoading={isLoading}
+            isLoading={isPending}
             onClick={() =>
               movedItem?.id &&
               mutate({

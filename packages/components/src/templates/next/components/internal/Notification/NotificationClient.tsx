@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
 import { BiInfoCircle, BiX } from "react-icons/bi"
+import { useSessionStorage } from "usehooks-ts"
 
 import type { NotificationClientProps } from "~/interfaces"
 import { IconButton } from "../IconButton"
@@ -10,13 +10,17 @@ const NotificationClient = ({
   title,
   baseParagraph,
 }: NotificationClientProps) => {
-  const [isShown, setIsShown] = useState(true)
+  const [isDismissed, setIsDismissed] = useSessionStorage(
+    "notification-dismissed",
+    false,
+  )
+
   const onDismiss = () => {
-    setIsShown(false)
+    setIsDismissed(true)
   }
 
   return (
-    isShown && (
+    !isDismissed && (
       <div className="bg-utility-feedback-info-faint">
         <div className="relative mx-auto flex max-w-screen-xl flex-row gap-4 px-6 py-8 text-base-content md:px-10 md:py-6">
           <BiInfoCircle className="mt-0.5 h-6 w-6 shrink-0" />
