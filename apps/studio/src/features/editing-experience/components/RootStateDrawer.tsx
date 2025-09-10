@@ -1,4 +1,8 @@
 import type { DropResult } from "@hello-pangea/dnd"
+import type {
+  IsomerComponent,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import { useCallback, useState } from "react"
 import {
   Box,
@@ -11,7 +15,11 @@ import {
 } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
-import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
+import {
+  getComponentSchema,
+  ISOMER_USABLE_PAGE_LAYOUTS,
+  schema,
+} from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
@@ -23,6 +31,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ADMIN_ROLE } from "~/lib/growthbook"
+import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
 import { pageSchema } from "../schema"
@@ -51,6 +60,11 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
     description: "Summary, Button label and Button URL",
   },
 }
+
+// ideally, we should do validation on a component-level
+// however, ajv compilation is expensive, so we do it once and reuse it
+// for now, we do it on the page level so it only compiles once
+const validateFn = ajv.compile<IsomerSchema>(schema)
 
 export default function RootStateDrawer() {
   const {
@@ -227,6 +241,60 @@ export default function RootStateDrawer() {
     pageLayout !== "index" &&
     pageLayout !== "collection"
 
+  const invalidBlockIndexes = new Set<number>()
+  validateFn(savedPageState)
+  for (const error of validateFn.errors ?? []) {
+    if (error.instancePath.startsWith("/content")) {
+      const pathAfterContent = error.instancePath.split("/content/")[1]
+      if (pathAfterContent) {
+        const pathParts = pathAfterContent.split("/")
+        const blockIndex = pathParts[0]
+        if (blockIndex && !isNaN(parseInt(blockIndex))) {
+          invalidBlockIndexes.add(parseInt(blockIndex))
+        }
+      }
+    }
+  }
+
+  const FixedBlock = () => {
+    // Assuming only one fixedBlock can exist at a time for now
+    const fixedBlock = savedPageState.content[0]
+
+    if (isHeroFixedBlock) {
+      const subSchema = getComponentSchema({ component: "hero" })
+      const validateFn = ajv.compile<IsomerComponent>(subSchema)
+      const isValid = validateFn(fixedBlock)
+      return (
+        <BaseBlock
+          onClick={() => {
+            setCurrActiveIdx(0)
+            setDrawerState({ state: "heroEditor" })
+          }}
+          label="Hero banner"
+          description="Title, subtitle, and Call-to-Action"
+          icon={TYPE_TO_ICON.hero}
+          isInvalid={!isValid}
+        />
+      )
+    }
+
+    return (
+      <BaseBlock
+        onClick={() => {
+          setDrawerState({ state: "metadataEditor" })
+        }}
+        label={
+          FIXED_BLOCK_CONTENT[pageLayout]?.label ||
+          "Page description and summary"
+        }
+        description={
+          FIXED_BLOCK_CONTENT[pageLayout]?.description || "Click to edit"
+        }
+        icon={BiPin}
+      />
+    )
+  }
+
   return (
     <Flex direction="column" h="full">
       <ConfirmConvertIndexPageModal
@@ -311,33 +379,7 @@ export default function RootStateDrawer() {
                     deleted
                   </Text>
                 </VStack>
-
-                {isHeroFixedBlock ? (
-                  <BaseBlock
-                    onClick={() => {
-                      setCurrActiveIdx(0)
-                      setDrawerState({ state: "heroEditor" })
-                    }}
-                    label="Hero banner"
-                    description="Title, subtitle, and Call-to-Action"
-                    icon={TYPE_TO_ICON.hero}
-                  />
-                ) : (
-                  <BaseBlock
-                    onClick={() => {
-                      setDrawerState({ state: "metadataEditor" })
-                    }}
-                    label={
-                      FIXED_BLOCK_CONTENT[pageLayout]?.label ||
-                      "Page description and summary"
-                    }
-                    description={
-                      FIXED_BLOCK_CONTENT[pageLayout]?.description ||
-                      "Click to edit"
-                    }
-                    icon={BiPin}
-                  />
-                )}
+                <FixedBlock />
               </VStack>
 
               <VStack gap="1.5rem" w="100%">
@@ -448,6 +490,7 @@ export default function RootStateDrawer() {
                                       // NOTE: SNAPSHOT
                                       setDrawerState({ state: nextState })
                                     }}
+                                    isInvalid={invalidBlockIndexes.has(index)}
                                   />
                                 )
                               })}
