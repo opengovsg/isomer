@@ -17,7 +17,6 @@ export const useDgsData = ({
   resourceId,
   limit,
   offset,
-  fields,
   filters,
   sort,
 }: UseDgsData) => {
@@ -34,11 +33,10 @@ export const useDgsData = ({
       resourceId,
       limit,
       offset,
-      fields,
       filters,
       sort,
     }),
-    [resourceId, limit, offset, fields, filters, sort],
+    [resourceId, limit, offset, filters, sort],
   )
 
   const fetchAllRecords = useCallback(async () => {
