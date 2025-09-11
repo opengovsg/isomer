@@ -5,10 +5,12 @@ import {
 } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
+import { NEW_PAGE_LAYOUT_VALUES } from "~/schemas/page"
+
 export const createDefaultPage = ({
   layout,
 }: {
-  layout: "content" | "article"
+  layout: (typeof NEW_PAGE_LAYOUT_VALUES)[number]
 }) => {
   switch (layout) {
     case "content": {
@@ -40,6 +42,29 @@ export const createDefaultPage = ({
       } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 
       return articleDefaultPage
+    }
+
+    case "database": {
+      const databaseDefaultPage = {
+        layout: ISOMER_USABLE_PAGE_LAYOUTS.Database,
+        page: {
+          title: "New database layout",
+          description:
+            "This is a layout where you can link your dataset from Data.gov.sg. Users can search through the table.",
+          database: {
+            title: "Link your database here",
+          },
+        },
+        content: [],
+        version: "0.1.0",
+      } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
+
+      return databaseDefaultPage
+    }
+
+    default: {
+      const _exhaustiveCheck: never = layout
+      return _exhaustiveCheck
     }
   }
 }
