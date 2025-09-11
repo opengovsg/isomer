@@ -98,3 +98,7 @@ export {
   jsonFormsTagCategoriesControlTester,
   default as JsonFormsTagCategoriesControl,
 } from "./JsonFormsTagCategoryControl"
+export {
+  default as JsonFormsNavbarControl,
+  jsonFormsNavbarControlTester,
+} from "./JsonFormsNavbarControl/JsonFormsNavbarControl"
