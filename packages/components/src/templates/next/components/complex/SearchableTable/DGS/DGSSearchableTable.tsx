@@ -29,15 +29,22 @@ export const DGSSearchableTable = ({
     isError: isMetadataError,
   } = useDgsMetadata({ resourceId, enabled: !hasUserProvidedHeaders })
 
-  const fieldKeys = useMemo(
-    () => (hasUserProvidedHeaders ? headers.map((header) => header.key) : []),
-    [headers, hasUserProvidedHeaders],
-  )
+  const computedHeaders: NonNullable<DGSSearchableTableProps["headers"]> =
+    useMemo(() => {
+      if (hasUserProvidedHeaders) {
+        return headers
+      }
+
+      if (metadata?.columnMetadata) {
+        return metadata.columnMetadata.map(([key, label]) => ({ key, label }))
+      }
+
+      return []
+    }, [headers, hasUserProvidedHeaders, metadata?.columnMetadata])
 
   const params = useMemo(
     () => ({
       resourceId,
-      fields: hasUserProvidedHeaders ? fieldKeys.join(",") : undefined,
       filters: filters?.reduce<
         NonNullable<DgsApiDatasetSearchParams["filters"]>
       >((acc, filter) => {
@@ -46,7 +53,7 @@ export const DGSSearchableTable = ({
       }, {}),
       sort,
     }),
-    [resourceId, filters, sort, fieldKeys, hasUserProvidedHeaders],
+    [resourceId, filters, sort],
   )
 
   // TODO: Consider implementing pagination or virtualization instead of fetchAll for large datasets.
@@ -60,26 +67,13 @@ export const DGSSearchableTable = ({
     fetchAll: true,
   })
 
-  const labels = useMemo(() => {
-    // If user has provided headers, use them
-    if (hasUserProvidedHeaders) {
-      return headers.map((header) => header.label ?? header.key)
-    }
-
-    // If user has not provided headers, use the column metadata
-    const columnMetadata = metadata?.columnMetadata
-    if (columnMetadata && columnMetadata.length > 0) {
-      return columnMetadata.map(([_, label]) => label)
-    }
-
-    return []
-  }, [headers, hasUserProvidedHeaders, metadata?.columnMetadata])
+  const labels = useMemo(
+    () => computedHeaders.map((header) => header.label ?? header.key),
+    [computedHeaders],
+  )
 
   const items: SearchableTableClientProps["items"] = useMemo(() => {
-    const keys = hasUserProvidedHeaders
-      ? fieldKeys
-      : (metadata?.columnMetadata?.map(([key]) => key) ?? [])
-
+    const keys = computedHeaders.map((header) => header.key)
     return (
       records?.map((record) => {
         const content = keys.map((field) => String(record[field] ?? ""))
@@ -89,7 +83,7 @@ export const DGSSearchableTable = ({
         }
       }) ?? []
     )
-  }, [records, fieldKeys, hasUserProvidedHeaders, metadata?.columnMetadata])
+  }, [records, computedHeaders])
 
   return (
     <SearchableTableClient
