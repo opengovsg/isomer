@@ -102,10 +102,10 @@ export const DGSSearchableTable = ({
       isLoading={
         hasUserProvidedHeaders
           ? isDataLoading
-          : isMetadataLoading && isDataLoading
+          : isMetadataLoading || isDataLoading
       }
       isError={
-        hasUserProvidedHeaders ? isDataError : isMetadataError && isDataError
+        hasUserProvidedHeaders ? isDataError : isMetadataError || isDataError
       }
     />
   )
