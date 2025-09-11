@@ -27,15 +27,17 @@ export const getTagFilters = (
     }
   })
 
-  return Array.from(tagCategories.entries()).reduce(
-    (acc: Filter[], [category, values]) => {
-      const items: FilterItem[] = Array.from(values.entries()).map(
-        ([label, count]) => ({
+  return Array.from(tagCategories.entries())
+    .reduce((acc: Filter[], [category, values]) => {
+      const items: FilterItem[] = Array.from(values.entries())
+        .map(([label, count]) => ({
           label,
           count,
           id: label,
-        }),
-      )
+        }))
+        .sort((a, b) =>
+          a.label.localeCompare(b.label, undefined, { numeric: true }),
+        )
 
       const filters: Filter[] = [
         ...acc,
@@ -47,7 +49,8 @@ export const getTagFilters = (
       ]
 
       return filters
-    },
-    [],
-  )
+    }, [])
+    .sort((a, b) =>
+      a.label.localeCompare(b.label, undefined, { numeric: true }),
+    )
 }
