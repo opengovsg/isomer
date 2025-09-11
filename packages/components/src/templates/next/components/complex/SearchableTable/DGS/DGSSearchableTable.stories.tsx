@@ -52,6 +52,10 @@ export const SelectedHeaders: Story = {
   args: commonArgs,
 }
 
+export const DefaultTitleWhenUnspecified: Story = {
+  args: omit(commonArgs, "title"),
+}
+
 export const Loading: Story = {
   args: commonArgs,
   parameters: {

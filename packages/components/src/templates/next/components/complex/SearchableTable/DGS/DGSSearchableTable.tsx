@@ -19,28 +19,34 @@ export const DGSSearchableTable = ({
   site,
   LinkComponent,
 }: DGSSearchableTableProps) => {
-  // If user provided headers, we use them,
-  // otherwise we fetch the column metadata from DGS to display the column titles
+  // If user provided headers/title, we use them,
+  // otherwise we fetch the metadata from DGS to display as default
+  const hasUserProvidedTitle = !!title
   const hasUserProvidedHeaders = headers && headers.length > 0
+  const shouldFetchMetadata = !hasUserProvidedTitle || hasUserProvidedHeaders
 
   const {
     metadata,
     isLoading: isMetadataLoading,
     isError: isMetadataError,
-  } = useDgsMetadata({ resourceId, enabled: !hasUserProvidedHeaders })
+  } = useDgsMetadata({ resourceId, enabled: shouldFetchMetadata })
 
-  const computedHeaders: NonNullable<DGSSearchableTableProps["headers"]> =
-    useMemo(() => {
-      if (hasUserProvidedHeaders) {
-        return headers
-      }
+  const resolvedTitle = useMemo(() => {
+    if (hasUserProvidedTitle) {
+      return title
+    }
+    return metadata?.name
+  }, [title, metadata?.name, hasUserProvidedTitle])
 
-      if (metadata?.columnMetadata) {
-        return metadata.columnMetadata.map(([key, label]) => ({ key, label }))
-      }
-
-      return []
-    }, [headers, hasUserProvidedHeaders, metadata?.columnMetadata])
+  const resolvedHeaders = useMemo(() => {
+    if (hasUserProvidedHeaders) {
+      return headers
+    }
+    if (metadata?.columnMetadata) {
+      return metadata.columnMetadata.map(([key, label]) => ({ key, label }))
+    }
+    return []
+  }, [headers, hasUserProvidedHeaders, metadata?.columnMetadata])
 
   const params = useMemo(
     () => ({
@@ -68,12 +74,12 @@ export const DGSSearchableTable = ({
   })
 
   const labels = useMemo(
-    () => computedHeaders.map((header) => header.label ?? header.key),
-    [computedHeaders],
+    () => resolvedHeaders.map((header) => header.label ?? header.key),
+    [resolvedHeaders],
   )
 
   const items: SearchableTableClientProps["items"] = useMemo(() => {
-    const keys = computedHeaders.map((header) => header.key)
+    const keys = resolvedHeaders.map((header) => header.key)
     return (
       records?.map((record) => {
         const content = keys.map((field) => String(record[field] ?? ""))
@@ -83,12 +89,12 @@ export const DGSSearchableTable = ({
         }
       }) ?? []
     )
-  }, [records, computedHeaders])
+  }, [records, resolvedHeaders])
 
   return (
     <SearchableTableClient
       type={type}
-      title={title}
+      title={resolvedTitle}
       headers={labels}
       items={items}
       site={site}
