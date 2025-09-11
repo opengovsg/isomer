@@ -69,7 +69,9 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
 // The schema serves as our contract - when inputs don't match expectations,
 // we should fail fast rather than accommodate inconsistent data formats.
 const getCanonicalUrl = (props: IsomerPageSchemaType) => {
-  if (!props.site.url) return props.page.permalink
+  const permalinkWithoutTrailingSlash = props.page.permalink.replace(/\/+$/, "")
+
+  if (!props.site.url) return permalinkWithoutTrailingSlash
 
   if (!props.site.url.startsWith("https://")) {
     throw new Error(
@@ -78,7 +80,7 @@ const getCanonicalUrl = (props: IsomerPageSchemaType) => {
   }
 
   try {
-    return new URL(props.page.permalink, props.site.url).toString()
+    return new URL(permalinkWithoutTrailingSlash, props.site.url).toString()
   } catch {
     throw new Error("Invalid site URL or permalink.")
   }
