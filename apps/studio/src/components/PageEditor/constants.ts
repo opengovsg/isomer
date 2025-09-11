@@ -268,18 +268,8 @@ export const DEFAULT_BLOCKS: Record<
     type: `${SEARCHABLE_TABLE_TYPE}`,
     dataSource: {
       type: "dgs",
-      resourceId: "d_1ebdc22551ae034d076722aa671e7f1b", // hardcoded
+      resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
     },
-    headers: [
-      {
-        key: "field_title",
-        label: "Title",
-      },
-      {
-        key: "description",
-        label: "Description",
-      },
-    ],
   },
 }
 
