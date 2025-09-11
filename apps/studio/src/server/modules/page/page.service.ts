@@ -54,6 +54,9 @@ export const createDefaultPage = ({
           database: {
             dataSource: {
               type: "dgs", // we only support DGS creation on studio for now
+              // Hardcoded: One of the most popular datasets on Data.gov.sg, so unlikely to be removed
+              // Either way, this is just a placeholder, unlikely agency will publish with this
+              resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352",
             },
           },
         },
