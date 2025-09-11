@@ -125,6 +125,7 @@ export const archiveRepo = async (repo: string) => {
       archived: true,
     })
     console.log(`Repository ${repo} has been archived`)
+    return true
   } catch (error) {
     console.error(`Error archiving ${repo}:`, error)
   }
