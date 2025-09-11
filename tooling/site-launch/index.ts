@@ -1,4 +1,5 @@
 import { confirm, input } from "@inquirer/prompts"
+import { toStateFile } from "state"
 
 import { migrateTagsOfSite } from "@isomer/migrate-tags"
 import { cleanup, main as migrate } from "@isomer/seed-from-repo"
@@ -31,6 +32,9 @@ const launch = async () => {
   const domain = await input({
     message: "Enter the domain (FQDN) of the site (eg: www.isomer.gov.sg):",
   })
+
+  await toStateFile(domain, "Domain", async () => domain)
+
   const needsAcm = await confirm({
     message: `Do you need to generate the first window record for this domain?`,
   })
@@ -40,6 +44,7 @@ const launch = async () => {
   const long = await input({
     message: "Enter the long name of the site (eg: Open Government Products):",
   })
+  await toStateFile(domain, "Domain", async () => domain)
   const codebuildId = await input({
     message: "Enter the code-build name of the site (eg: ogp-corp)",
   })
@@ -100,10 +105,9 @@ const launch = async () => {
 
   if (hasInfra) {
     await createIndirection(domain, codebuildId)
-  } else {
-    // tell the user to re-up and pause here?
   }
-  // TODO: await startCodeBuild(codebuildId)
+
+  // await startCodeBuild(codebuildId)
   // TODO: add admins
   // await addUsersToSite({ siteId, users })
 }
