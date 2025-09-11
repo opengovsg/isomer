@@ -1,4 +1,5 @@
 import { confirm, input } from "@inquirer/prompts"
+import { checkLastBuild } from "amplify"
 import {
   createSearchSgClientForGithub,
   createSearchSgClientForStudio,
@@ -7,6 +8,7 @@ import { archiveRepo } from "github"
 import { createIndirection } from "indirection"
 import { requestAcmViaClient } from "request-acm"
 import { s3sync } from "s3"
+import { createBaseSiteInStudio } from "site"
 
 import { cleanup, main as migrate } from "@isomer/seed-from-repo"
 
@@ -42,22 +44,29 @@ const launch = async () => {
       message: "Enter the github repo for the site (eg: `isomer-corp`):",
     })
     await archiveRepo(repo)
+    const status = await checkLastBuild(codebuildId)
+    if (status !== "SUCCEED") {
+      console.log("The last build of the site failed - please fix!")
+    }
+
     await createSearchSgClientForGithub({ domain, name: long, repo })
-    const siteId = await input({
-      message: "Enter the site id for the site:",
+    const siteId = await createBaseSiteInStudio({
+      name: long,
+      codeBuildId: codebuildId,
     })
 
     await confirm({ message: "Have you ran `npm run db:connect`?" })
-    // TODO: validate last amplify build
-    // cleanup old assets/repos folder
-    // connect to db automatically
-    // create empty site
-    await migrate(repo, siteId as unknown as number)
-    // TODO: s3 sync here
-    await s3sync(siteId as unknown as number)
+    await migrate(repo, siteId)
+
+    await s3sync(siteId)
 
     // NOTE: Perform cleanup after s3 sync is done
-    // cleanup(repo)
+
+    const canCleanup = await confirm({
+      message: `Have the assets been uploaded to s3?`,
+    })
+
+    if (canCleanup) cleanup(repo)
   } else {
     // TODO: create site
     await createSearchSgClientForStudio({ domain, name: long })
@@ -72,11 +81,9 @@ const launch = async () => {
   } else {
     // tell the user to re-up and pause here?
   }
-  // TODO: check amplify for github sites to ensure builds are successful
   // TODO: await startCodeBuild(codebuildId)
   // TODO: add admins
   // await addUsersToSite({ siteId, users })
 }
 
-// await launch()
-await s3sync(9999)
+await launch()

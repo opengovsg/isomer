@@ -2,8 +2,6 @@
   "name": "@isomer/site-launch",
   "type": "module",
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc",
     "launch": "dotenv npx tsx ./index.ts"
   },
   "devDependencies": {
@@ -13,7 +11,9 @@
   },
   "dependencies": {
     "@aws-sdk/client-acm": "^3.840.0",
+    "@aws-sdk/client-amplify": "^3.886.0",
     "@aws-sdk/client-cloudfront": "^3.840.0",
+    "@aws-sdk/credential-providers": "^3.886.0",
     "@inquirer/prompts": "^7.6.0",
     "@isomer/seed-from-repo": "*",
     "@octokit/rest": "^22.0.0",
