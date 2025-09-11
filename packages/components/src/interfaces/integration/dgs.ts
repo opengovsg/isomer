@@ -9,7 +9,7 @@ const DgsDataSourceFieldsSchema = Type.Object({
   }),
   resourceId: Type.String({
     title: "DGS Dataset ID",
-    description: "Looks like this: d_1a2b3c4d5e6f7g8h9i0j",
+    description: "Navigate to Data.gov.sg and copy the dataset’s ID",
   }),
   filters: Type.Optional(
     Type.Array(
