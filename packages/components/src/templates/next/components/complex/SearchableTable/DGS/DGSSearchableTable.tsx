@@ -23,7 +23,7 @@ export const DGSSearchableTable = ({
   // otherwise we fetch the metadata from DGS to display as default
   const hasUserProvidedTitle = !!title
   const hasUserProvidedHeaders = headers && headers.length > 0
-  const shouldFetchMetadata = !hasUserProvidedTitle || hasUserProvidedHeaders
+  const shouldFetchMetadata = !hasUserProvidedTitle || !hasUserProvidedHeaders
 
   const {
     metadata,
