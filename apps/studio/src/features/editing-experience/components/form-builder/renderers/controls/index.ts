@@ -106,3 +106,7 @@ export {
   default as JsonFormsWidgetIntegrationControl,
   jsonFormsWidgetIntegrationControlTester,
 } from "./JsonFormsWidgetIntegrationControl"
+export {
+  default as JsonFormsNavbarControl,
+  jsonFormsNavbarControlTester,
+} from "./JsonFormsNavbarControl/JsonFormsNavbarControl"

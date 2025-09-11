@@ -18,6 +18,8 @@ export const JSON_FORMS_RANKING = {
   ChildrenPagesControl: 4,
   // NOTE: needs to have higher priority than array
   ChildrenPagesOrderingControl: 5,
+  // NOTE: needs to have higher priority than array
+  NavbarControl: 5,
   AllOfControl: 3,
   // NOTE: Needs to be avbove `AnyOfControl`
   SearchSGControl: 4,
