@@ -14,7 +14,7 @@ interface CreateBaseSiteProps {
   codeBuildId: string
 }
 
-type Config = {
+interface Config {
   config: {
     theme: "isomer-next"
     logoUrl: string
@@ -23,7 +23,7 @@ type Config = {
   }
 }
 
-type Theme = {
+interface Theme {
   theme: {
     colors: {
       brand: {
@@ -63,7 +63,7 @@ const runDbAction = async <T>(cb: DbAction<T>) => {
 export const createBaseSiteInStudio = async ({
   name,
   codeBuildId,
-}: CreateBaseSiteProps): Promise<number> => {
+}: CreateBaseSiteProps): Promise<string> => {
   const res = await runDbAction<number>(async (client) => {
     const result = await client.query(
       `INSERT INTO public."Site" (name, config, "codeBuildId", theme) VALUES ($1, $2, $3, $4) RETURNING id`,
@@ -74,7 +74,7 @@ export const createBaseSiteInStudio = async ({
     return result.rows[0].id
   })
 
-  return res
+  return res.toString()
 }
 
 export const getSiteTheme = async (siteId: number) => {

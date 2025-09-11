@@ -1,6 +1,7 @@
 import { writeFileSync } from "fs"
 import { confirm } from "@inquirer/prompts"
 import _ from "lodash"
+import { SimplifyDeep } from "type-fest"
 
 import _state from "./state.json"
 
@@ -19,6 +20,7 @@ export const SharedSteps = {
 
 export const GithubSteps = {
   __type: "Github",
+  GithubName: "GithubName",
   Archived: "Archived",
   S3Sync: "S3Sync",
   StudioSiteId: "StudioSiteId",
@@ -32,10 +34,14 @@ export const Steps = _.omit(
   "__type",
 )
 
-type Step =
-  | keyof typeof GithubSteps
-  | keyof typeof StudioSteps
-  | keyof typeof SharedSteps
+type Step = SimplifyDeep<
+  Exclude<
+    | keyof typeof GithubSteps
+    | keyof typeof StudioSteps
+    | keyof typeof SharedSteps,
+    "__type"
+  >
+>
 
 type SiteLaunchState = {
   [step in Step]: string
@@ -48,7 +54,7 @@ export const toStateFile = async (
   domain: string,
   step: Step,
   f: () => Promise<string>,
-) => {
+): Promise<string> => {
   const siteLaunchState = state[domain]
   const prevResult = siteLaunchState?.[step]
 
@@ -57,10 +63,10 @@ export const toStateFile = async (
       message: `Previoous result for step ${step} found: ${prevResult}. Proceed to override?`,
     })
     if (shouldOverridePrevious) {
-      await writeToState(f, state, domain, step)
-    }
+      return writeToState(f, state, domain, step)
+    } else return prevResult
   } else {
-    await writeToState(f, state, domain, step)
+    return writeToState(f, state, domain, step)
   }
 }
 
@@ -73,12 +79,18 @@ async function writeToState(
   const result = await f()
   state[domain]![step] = result
   writeFileSync(STATE_PATH, JSON.stringify(state))
+  return result
 }
 
-export const skipIfExists = async (domain: string, step: Step, f: Function) => {
+export const skipIfExists = async (
+  domain: string,
+  step: Step,
+  f: () => Promise<string>,
+): Promise<string> => {
   if (state[domain]?.[step]) {
-    return
+    console.log(`Found previous result for ${step}: ${state[domain][step]}`)
+    return state[domain]?.[step]
   }
 
-  await f()
+  return writeToState(f, state, domain, step)
 }
