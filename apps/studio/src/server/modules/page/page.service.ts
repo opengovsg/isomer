@@ -5,7 +5,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
-import { NEW_PAGE_LAYOUT_VALUES } from "~/schemas/page"
+import type { NEW_PAGE_LAYOUT_VALUES } from "~/schemas/page"
 
 export const createDefaultPage = ({
   layout,
@@ -52,7 +52,9 @@ export const createDefaultPage = ({
           description:
             "This is a layout where you can link your dataset from Data.gov.sg. Users can search through the table.",
           database: {
-            title: "Link your database here",
+            dataSource: {
+              type: "dgs", // we only support DGS creation on studio for now
+            },
           },
         },
         content: [],
