@@ -6,6 +6,7 @@ import {
   RequestCertificateCommand,
 } from "@aws-sdk/client-acm"
 import { confirm } from "@inquirer/prompts"
+import { Steps, toStateFile } from "state"
 import { exec } from "utils"
 
 export const requestAcm = async (domain: string) => {
@@ -74,7 +75,9 @@ export const requestAcmViaClient = async (domain: string) => {
   }
 
   const { Name, Type, Value } = resourceRecord
-  console.log(`${Name}   ${Type}   ${Value}`)
+  const opsRecord = `${Name}   ${Type}   ${Value}`
+  console.log(opsRecord)
+  await toStateFile(domain, Steps.Acm, async () => opsRecord)
 
   // Step 3: Write DNS record to file
   fs.writeFileSync(`./${domain}.ssl.conf`, `${Name}   ${Type}   ${Value}`)
