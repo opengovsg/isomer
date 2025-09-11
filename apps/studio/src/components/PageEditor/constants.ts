@@ -270,7 +270,16 @@ export const DEFAULT_BLOCKS: Record<
       type: "dgs",
       resourceId: "d_1ebdc22551ae034d076722aa671e7f1b", // hardcoded
     },
-    headers: [],
+    headers: [
+      {
+        key: "field_title",
+        label: "Title",
+      },
+      {
+        key: "description",
+        label: "Description",
+      },
+    ],
   },
 }
 
