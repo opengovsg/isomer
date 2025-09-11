@@ -102,6 +102,7 @@ export const createSearchSgClientForGithub = async ({
 
   await updateSiteConfig(repo, siteConfig, sha)
   await addSearchJson(repo)
+  return applicationId
 }
 
 interface SearchSgConfig {
@@ -178,7 +179,53 @@ export const createSearchSgClientForStudio = async ({
 
   const url = `https://${domain}`
 
+<<<<<<< HEAD
   await updateSiteConfigWithSearch(siteId, url, applicationId)
+||||||| parent of 1df6d364f (feat: add state implementation poggers)
+  const urlJson = {
+    url: `https://${domain}`,
+  }
+
+  const searchJsonRelativePath = `${domain}.search.json`
+  writeFileSync(`./${searchJsonRelativePath}`, JSON.stringify(searchConfigJson))
+
+  const urlRelativePath = `${domain}.url.json`
+  writeFileSync(`./${urlRelativePath}`, JSON.stringify(urlJson))
+
+  // TODO: Write to db
+  await confirm({
+    message: `Have you added the contents of ${searchJsonRelativePath} to Site.config?`,
+  })
+  await confirm({
+    message: `Have you added the contents of ${urlRelativePath} to Site.config?`,
+  })
+  await confirm({
+    message: `Have you added the contents of \`search.json\` to the site via Admin mode on Studio?`,
+  })
+=======
+  const urlJson = {
+    url: `https://${domain}`,
+  }
+
+  const searchJsonRelativePath = `${domain}.search.json`
+  writeFileSync(`./${searchJsonRelativePath}`, JSON.stringify(searchConfigJson))
+
+  const urlRelativePath = `${domain}.url.json`
+  writeFileSync(`./${urlRelativePath}`, JSON.stringify(urlJson))
+
+  // TODO: Write to db
+  await confirm({
+    message: `Have you added the contents of ${searchJsonRelativePath} to Site.config?`,
+  })
+  await confirm({
+    message: `Have you added the contents of ${urlRelativePath} to Site.config?`,
+  })
+  await confirm({
+    message: `Have you added the contents of \`search.json\` to the site via Admin mode on Studio?`,
+  })
+
+  return applicationId
+>>>>>>> 1df6d364f (feat: add state implementation poggers)
 }
 
 const askForDomainAndName = async ({
