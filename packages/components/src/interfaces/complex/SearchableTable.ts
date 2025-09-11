@@ -35,20 +35,21 @@ export const DGSSearchableTableSchema = Type.Intersect(
   [
     DgsDataSourceSchema,
     Type.Object({
-      headers: Type.Array(
-        Type.Object({
-          key: Type.String({
-            title: "Key",
-            description: "Column name in DGS table",
-          }),
-          label: Type.Optional(
-            Type.String({
-              title: "Label",
-              description: "Rename the column's header",
+      headers: Type.Optional(
+        Type.Array(
+          Type.Object({
+            key: Type.String({
+              title: "Key",
+              description: "Column name in DGS table",
             }),
-          ),
-        }),
-        { minItems: 1 },
+            label: Type.Optional(
+              Type.String({
+                title: "Label",
+                description: "Rename the column's header",
+              }),
+            ),
+          }),
+        ),
       ),
     }),
   ],
