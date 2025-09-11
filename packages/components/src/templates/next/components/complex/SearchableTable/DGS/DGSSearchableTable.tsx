@@ -19,7 +19,15 @@ export const DGSSearchableTable = ({
   site,
   LinkComponent,
 }: DGSSearchableTableProps) => {
+  // If user provided headers, we use them,
+  // otherwise we fetch the column metadata from DGS to display the column titles
   const hasUserProvidedHeaders = headers && headers.length > 0
+
+  const {
+    metadata,
+    isLoading: isMetadataLoading,
+    isError: isMetadataError,
+  } = useDgsMetadata({ resourceId, enabled: !hasUserProvidedHeaders })
 
   const fieldKeys = useMemo(
     () => (hasUserProvidedHeaders ? headers.map((header) => header.key) : []),
@@ -40,12 +48,6 @@ export const DGSSearchableTable = ({
     }),
     [resourceId, filters, sort, fieldKeys, hasUserProvidedHeaders],
   )
-
-  const {
-    metadata,
-    isLoading: isMetadataLoading,
-    isError: isMetadataError,
-  } = useDgsMetadata({ resourceId, enabled: !hasUserProvidedHeaders })
 
   // TODO: Consider implementing pagination or virtualization instead of fetchAll for large datasets.
   // Currently, we fetch all records at once, which may not scale well.
