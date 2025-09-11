@@ -60,8 +60,6 @@ const launch = async () => {
 
     await s3sync(siteId)
 
-    // NOTE: Perform cleanup after s3 sync is done
-
     const canCleanup = await confirm({
       message: `Have the assets been uploaded to s3?`,
     })
