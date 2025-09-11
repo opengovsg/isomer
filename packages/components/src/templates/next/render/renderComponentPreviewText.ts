@@ -123,7 +123,7 @@ export function renderComponentPreviewText({
     case IMAGE_GALLERY_TYPE:
       return "Image Gallery"
     case SEARCHABLE_TABLE_TYPE:
-      return component.title || "Searchable Table"
+      return component.title || "Database"
     default:
       const _: never = component
       return (component as { type: string }).type || ""
