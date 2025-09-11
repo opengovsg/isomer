@@ -47,6 +47,10 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
     label: "Content page header",
     description: "Summary, Button label, and Button destination",
   },
+  database: {
+    label: "Database page header",
+    description: "Summary, Button label, and Button URL",
+  },
   index: {
     label: "Header",
     description: "Summary, Button label and Button URL",
