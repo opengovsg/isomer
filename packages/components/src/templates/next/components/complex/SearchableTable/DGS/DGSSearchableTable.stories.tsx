@@ -44,19 +44,6 @@ const commonArgs = {
   ],
 } as DGSSearchableTableProps
 
-const DgsUrl = generateDgsUrl({
-  resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
-  fields: [
-    "year",
-    "university",
-    "school",
-    "degree",
-    "gross_monthly_median",
-    "gross_mthly_25_percentile",
-    "gross_mthly_75_percentile",
-  ].join(","),
-})
-
 export const Default: Story = {
   args: omit(commonArgs, "headers"),
 }
@@ -70,11 +57,16 @@ export const Loading: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(DgsUrl, () => {
-          return new Promise(() => {
-            // Never resolve the promise
-          })
-        }),
+        http.get(
+          generateDgsUrl({
+            resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+          }),
+          () => {
+            return new Promise(() => {
+              // Never resolve the promise
+            })
+          },
+        ),
       ],
     },
   },
@@ -85,11 +77,16 @@ export const Error: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(DgsUrl, () => {
-          return new HttpResponse(null, {
-            status: 500,
-          })
-        }),
+        http.get(
+          generateDgsUrl({
+            resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+          }),
+          () => {
+            return new HttpResponse(null, {
+              status: 500,
+            })
+          },
+        ),
       ],
     },
   },
