@@ -68,9 +68,9 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
       ? {
           ...metadataSchema,
           properties: Object.fromEntries(
-            Object.entries(metadataSchema.properties || {}).filter(
-              ([key]) => key !== "database",
-            ),
+            Object.entries(
+              metadataSchema.properties as Record<string, unknown>,
+            ).filter(([key]) => key !== "database"),
           ),
         }
       : metadataSchema
