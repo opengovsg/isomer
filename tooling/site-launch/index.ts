@@ -9,7 +9,7 @@ import { createIndirection } from "indirection"
 import { requestAcmViaClient } from "request-acm"
 import { s3sync } from "s3"
 import { createBaseSiteInStudio } from "site"
-import { toStateFile } from "state"
+import { skipIfExists, Steps, toStateFile } from "state"
 
 import { cleanup, main as migrate } from "@isomer/seed-from-repo"
 
@@ -28,48 +28,67 @@ const launch = async () => {
 
   await toStateFile(domain, "Domain", async () => domain)
 
-  const needsAcm = await confirm({
-    message: `Do you need to generate the first window record for this domain?`,
-  })
+  await skipIfExists(domain, Steps.Acm, () => requestAcmViaClient(domain))
 
-  if (needsAcm) await requestAcmViaClient(domain)
+  const long = await skipIfExists(domain, Steps.LongName, () =>
+    input({ message: "Enter the long name of the site:" }),
+  )
 
-  const long = await input({ message: "Enter the long name of the site:" })
-  await toStateFile(domain, "Domain", async () => domain)
-  const codebuildId = await input({
-    message: "Enter the code-build name of the site (eg: ogp-corp)",
-  })
+  const codebuildId = await skipIfExists(domain, Steps.CodeBuildId, () =>
+    input({
+      message: "Enter the code-build name of the site (eg: ogp-corp)",
+    }),
+  )
 
-  const isGithub = await confirm({
-    message: `Is this a Github site?`,
-  })
-
-  if (isGithub) {
-    const repo = await input({
+  // TODO: Shard out into separate pipelines so we can skip this
+  const repo = await skipIfExists(domain, Steps.GithubName, () =>
+    input({
       message: "Enter the github repo for the site (eg: `isomer-corp`):",
-    })
-    await archiveRepo(repo)
+    }),
+  )
+
+  if (!!repo) {
     const status = await checkLastBuild(codebuildId)
     if (status !== "SUCCEED") {
       console.log("The last build of the site failed - please fix!")
     }
 
-    await createSearchSgClientForGithub({ domain, name: long, repo })
-    const siteId = await createBaseSiteInStudio({
-      name: long,
-      codeBuildId: codebuildId,
-    })
+    skipIfExists(
+      domain,
+      Steps.SearchSg,
+      async () =>
+        await createSearchSgClientForGithub({ domain, name: long, repo }),
+    )
+
+    const siteId = skipIfExists(
+      domain,
+      Steps.StudioSiteId,
+      async () =>
+        await createBaseSiteInStudio({
+          name: long,
+          codeBuildId: codebuildId,
+        }),
+    )
 
     await confirm({ message: "Have you ran `npm run db:connect`?" })
-    await migrate(repo, siteId)
-
-    await s3sync(siteId)
-
-    const canCleanup = await confirm({
-      message: `Have the assets been uploaded to s3?`,
+    // NOTE: End users should be able to retry here because this isn't idempotent
+    // and the side effect might be intended (overriding rows)
+    await toStateFile(domain, Steps.Imported, async () => {
+      await migrate(repo, Number(siteId))
+      return "true"
     })
 
-    if (canCleanup) cleanup(repo)
+    // NOTE: End users should be able to retry here because this isn't idempotent
+    // and the side effect might be intended (uploading to s3)
+    await toStateFile(domain, Steps.Imported, async () => {
+      await s3sync(Number(siteId))
+      const canCleanup = await confirm({
+        message: `Have the assets been uploaded to s3?`,
+      })
+
+      if (canCleanup) cleanup(repo)
+      return "true"
+    })
   } else {
     await createSearchSgClientForStudio({ domain, name: long })
   }

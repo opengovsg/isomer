@@ -96,4 +96,6 @@ export const requestAcmViaClient = async (domain: string) => {
     await client.send(deleteCommand)
     console.log(`Deleted certificate with arn: ${certArn}`)
   }
+
+  return opsRecord
 }

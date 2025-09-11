@@ -7,7 +7,7 @@ interface CreateBaseSiteProps {
 export const createBaseSiteInStudio = async ({
   name,
   codeBuildId,
-}: CreateBaseSiteProps): Promise<number> => {
+}: CreateBaseSiteProps): Promise<string> => {
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
   })
@@ -23,5 +23,6 @@ export const createBaseSiteInStudio = async ({
   await client.end()
   console.log(`Disconnected from database`)
   console.log(result.rows[0].id)
-  return result.rows[0].id
+  const id = result.rows[0].id
+  return String(id)
 }
