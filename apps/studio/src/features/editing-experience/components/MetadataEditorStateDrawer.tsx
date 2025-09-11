@@ -26,6 +26,7 @@ const HEADER_LABELS: Record<string, string> = {
   article: "Edit article page header",
   content: "Edit content page header",
   index: "Edit index page header",
+  database: "Edit page header",
 }
 
 export default function MetadataEditorStateDrawer(): JSX.Element {
@@ -59,7 +60,22 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   })
 
   const metadataSchema = getLayoutPageSchema(previewPageState.layout)
-  const validateFn = ajv.compile<Static<typeof metadataSchema>>(metadataSchema)
+
+  const filteredSchema =
+    // For database layout, exclude the database field from metadata editing
+    // since it's handled by the separate database editor (DatabaseEditorStateDrawer)
+    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Database
+      ? {
+          ...metadataSchema,
+          properties: Object.fromEntries(
+            Object.entries(metadataSchema.properties || {}).filter(
+              ([key]) => key !== "database",
+            ),
+          ),
+        }
+      : metadataSchema
+
+  const validateFn = ajv.compile<Static<typeof metadataSchema>>(filteredSchema)
 
   const handleSaveChanges = useCallback(() => {
     setSavedPageState(previewPageState)
@@ -141,7 +157,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
             <Box mb="1rem">
               <FormBuilder<Static<typeof metadataSchema>>
-                schema={metadataSchema}
+                schema={filteredSchema}
                 validateFn={validateFn}
                 data={previewPageState.page}
                 handleChange={(data) => handleChange(data)}
