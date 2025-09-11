@@ -408,6 +408,7 @@ export const BLOCK_TO_META: Record<
     imageSrc: "/assets/block-images/FormSG.png",
   },
   [SEARCHABLE_TABLE_TYPE]: {
+    // Not allowed to add in the component selector, just adding for type completeness
     // TODO: Add image source
     label: "Searchable Table",
     description: "Display a searchable table with data from a DGS dataset",
@@ -451,10 +452,14 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics", SEARCHABLE_TABLE_TYPE],
+    types: ["infocards", "infocols", "keystatistics"],
   },
   { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
+
+export const DATABASE_ALLOWED_BLOCKS: AllowedBlockSections =
+  CONTENT_ALLOWED_BLOCKS
+
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Add a new section",
