@@ -3,6 +3,7 @@ import {
   createSearchSgClientForGithub,
   createSearchSgClientForStudio,
 } from "create-searchsg-client"
+import { archiveRepo } from "github"
 import { createIndirection } from "indirection"
 import { requestAcmViaClient } from "request-acm"
 
@@ -38,6 +39,7 @@ if (isGithub) {
   const repo = await input({
     message: "Enter the github repo for the site (eg: `isomer-corp`):",
   })
+  await archiveRepo(repo)
   await createSearchSgClientForGithub({ domain, name: long, repo })
   const siteId = await input({
     message: "Enter the site id for the site:",
