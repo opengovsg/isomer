@@ -49,6 +49,9 @@ export const DGSSearchableTableSchema = Type.Intersect(
               }),
             ),
           }),
+          {
+            format: "hidden", // don't want to expose this to Studio users yet
+          },
         ),
       ),
     }),
@@ -67,7 +70,7 @@ export const SearchableTableSchema = Type.Intersect(
     }),
   ],
   {
-    title: "Searchable Table",
+    title: "Database",
     description: "Displays a table with search and pagination functionality.",
   },
 )
