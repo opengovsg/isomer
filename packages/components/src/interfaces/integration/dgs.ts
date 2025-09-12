@@ -1,5 +1,7 @@
 import { Type } from "@sinclair/typebox"
 
+import { DGS_ID_STRING_REGEX } from "../../utils/validation"
+import { DGS_DATASET_ID_FORMAT } from "../format"
 import { DATA_SOURCE_TYPE } from "./dataSource"
 
 // Refer to https://guide.data.gov.sg/developer-guide/dataset-apis/search-and-filter-within-dataset
@@ -8,8 +10,13 @@ const DgsDataSourceFieldsSchema = Type.Object({
     default: DATA_SOURCE_TYPE.dgs,
   }),
   resourceId: Type.String({
-    title: "DGS Dataset ID",
-    description: "Navigate to Data.gov.sg and copy the dataset’s ID",
+    title: "Link a dataset",
+    description: "You can only link CSV datasets from Data.gov.sg",
+    pattern: DGS_ID_STRING_REGEX,
+    errorMessage: {
+      pattern: "must start with 'd_' and contain only alphanumeric characters",
+    },
+    format: DGS_DATASET_ID_FORMAT,
   }),
   filters: Type.Optional(
     Type.Array(
