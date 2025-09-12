@@ -45,14 +45,16 @@ interface DgsDatasetIdModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (datasetId: string) => void
+  initialValue?: string
 }
 
 const DgsDatasetIdModal = ({
   isOpen,
   onClose,
   onSave,
+  initialValue = "",
 }: DgsDatasetIdModalProps) => {
-  const [inputValue, setInputValue] = useState("")
+  const [inputValue, setInputValue] = useState(initialValue)
   const [datasetId, setDatasetId] = useState<string | null>(null)
 
   const {
@@ -79,6 +81,11 @@ const DgsDatasetIdModal = ({
   // Use the custom hook to validate dataset
   const { data: isValidDataset, isLoading: isValidatingDataset } =
     useDgsMetadata({ datasetId })
+
+  // Update inputValue when initialValue changes (when modal opens)
+  useEffect(() => {
+    setInputValue(initialValue)
+  }, [initialValue])
 
   // Update datasetId when input changes and is valid
   useEffect(() => {
@@ -108,7 +115,7 @@ const DgsDatasetIdModal = ({
       onClose()
       onSave(dgsId)
       reset()
-      setInputValue("")
+      setInputValue(initialValue)
       setDatasetId(null)
     }
   })
@@ -116,7 +123,7 @@ const DgsDatasetIdModal = ({
   const handleClose = () => {
     onClose()
     reset()
-    setInputValue("")
+    setInputValue(initialValue)
     setDatasetId(null)
   }
 
@@ -188,6 +195,10 @@ const DgsDatasetIdModal = ({
   )
 }
 
+interface JsonFormsDgsDatasetIdControlProps extends ControlProps {
+  data: string
+}
+
 export function JsonFormsDgsDatasetIdControl({
   data,
   label,
@@ -197,7 +208,7 @@ export function JsonFormsDgsDatasetIdControl({
   required,
   errors,
   schema: _schema,
-}: ControlProps) {
+}: JsonFormsDgsDatasetIdControlProps) {
   const {
     isOpen: isDgsModalOpen,
     onOpen: onDgsModalOpen,
@@ -214,6 +225,7 @@ export function JsonFormsDgsDatasetIdControl({
         isOpen={isDgsModalOpen}
         onClose={onDgsModalClose}
         onSave={(datasetId) => handleDatasetIdSave(datasetId)}
+        initialValue={data || ""}
       />
 
       <Box>
