@@ -1,4 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
+import { useEffect, useState } from "react"
 import {
   Box,
   FormControl,
@@ -30,6 +31,7 @@ import { z } from "zod"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getDgsIdFromString } from "~/features/editing-experience/utils"
 import { useZodForm } from "~/lib/form"
+import { useDgsMetadata } from "./hooks/useDgsMetadata"
 
 export const jsonFormsDgsDatasetIdControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextControl,
@@ -45,15 +47,20 @@ interface DgsDatasetIdModalProps {
   onSave: (datasetId: string) => void
 }
 
-function DgsDatasetIdModal({
+const DgsDatasetIdModal = ({
   isOpen,
   onClose,
   onSave,
-}: DgsDatasetIdModalProps) {
+}: DgsDatasetIdModalProps) => {
+  const [inputValue, setInputValue] = useState("")
+  const [datasetId, setDatasetId] = useState<string | null>(null)
+
   const {
     register,
     handleSubmit,
     reset,
+    setError,
+    clearErrors,
     formState: { errors, isValid },
   } = useZodForm({
     mode: "onChange",
@@ -69,16 +76,52 @@ function DgsDatasetIdModal({
     reValidateMode: "onChange",
   })
 
+  // Use the custom hook to validate dataset
+  const { data: isValidDataset, isLoading: isValidatingDataset } =
+    useDgsMetadata({ datasetId })
+
+  // Update datasetId when input changes and is valid
+  useEffect(() => {
+    const extractedId = getDgsIdFromString({ string: inputValue })
+    setDatasetId(extractedId)
+  }, [inputValue])
+
+  // Handle dataset validation
+  useEffect(() => {
+    if (datasetId && !isValidatingDataset) {
+      if (isValidDataset === false) {
+        setError("datasetId", {
+          type: "manual",
+          message:
+            "You can only link CSV datasets. Please check the dataset ID and try again.",
+        })
+      } else if (isValidDataset === true) {
+        clearErrors("datasetId")
+      }
+    }
+  }, [datasetId, isValidDataset, isValidatingDataset, setError, clearErrors])
+
   const onSubmit = handleSubmit(({ datasetId }) => {
     // Extract the ID from URL or use as-is if it's already an ID
-    const dgsId = getDgsIdFromString({ string: datasetId }) ?? datasetId
-    onClose()
-    onSave(dgsId)
-    reset()
+    const dgsId = getDgsIdFromString({ string: datasetId })
+    if (dgsId) {
+      onClose()
+      onSave(dgsId)
+      reset()
+      setInputValue("")
+      setDatasetId(null)
+    }
   })
 
+  const handleClose = () => {
+    onClose()
+    reset()
+    setInputValue("")
+    setDatasetId(null)
+  }
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalOverlay />
       <ModalContent>
         <form onSubmit={onSubmit}>
@@ -94,10 +137,29 @@ function DgsDatasetIdModal({
               <Input
                 fontFamily="monospace"
                 placeholder="Paste dataset URL here"
-                {...register("datasetId")}
+                value={inputValue}
+                onChange={(e) => {
+                  setInputValue(e.target.value)
+                  void register("datasetId").onChange(e)
+                }}
+                onBlur={register("datasetId").onBlur}
+                name={register("datasetId").name}
+                ref={register("datasetId").ref}
+                isDisabled={isValidatingDataset}
               />
 
               <FormErrorMessage>{errors.datasetId?.message}</FormErrorMessage>
+
+              {isValidatingDataset && (
+                <Text fontSize="sm" color="base.content.medium" mt="0.5rem">
+                  Validating dataset...
+                </Text>
+              )}
+              {isValidDataset && (
+                <Text fontSize="sm" color="green.600" mt="0.5rem">
+                  ✓ Valid CSV dataset
+                </Text>
+              )}
             </FormControl>
           </ModalBody>
 
@@ -106,11 +168,16 @@ function DgsDatasetIdModal({
               <Button
                 variant="clear"
                 color="base.content.default"
-                onClick={onClose}
+                onClick={handleClose}
               >
                 Cancel
               </Button>
-              <Button type="submit" onClick={onSubmit} isDisabled={!isValid}>
+              <Button
+                type="submit"
+                onClick={onSubmit}
+                isDisabled={!isValid || isValidatingDataset || !isValidDataset}
+                isLoading={isValidatingDataset}
+              >
                 Save Dataset ID
               </Button>
             </HStack>
