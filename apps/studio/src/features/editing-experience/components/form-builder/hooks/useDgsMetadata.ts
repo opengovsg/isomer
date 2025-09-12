@@ -1,24 +1,21 @@
 import { useQuery } from "@tanstack/react-query"
-import { useDebounce } from "@uidotdev/usehooks"
 
 interface UseDgsMetadataProps {
   datasetId: string | null
 }
 export const useDgsMetadata = ({ datasetId }: UseDgsMetadataProps) => {
-  const debouncedDatasetId = useDebounce(datasetId, 300)
-
-  return useQuery<boolean, Error>({
-    queryKey: ["dgs-metadata", debouncedDatasetId],
+  return useQuery<string | undefined, Error>({
+    queryKey: ["dgs-metadata", datasetId],
     queryFn: async () => {
-      if (!debouncedDatasetId) return false
+      if (!datasetId) return undefined
 
       const metadata = await fetchDgsMetadata({
-        resourceId: debouncedDatasetId,
+        resourceId: datasetId,
       })
 
-      return Boolean(metadata && metadata.format === "CSV")
+      return metadata?.format
     },
-    enabled: !!debouncedDatasetId,
+    enabled: !!datasetId,
   })
 }
 

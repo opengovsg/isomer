@@ -25,13 +25,14 @@ import {
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { DGS_DATASET_ID_FORMAT } from "@opengovsg/isomer-components"
+import { useDebounce } from "@uidotdev/usehooks"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useDgsMetadata } from "~/features/editing-experience/components/form-builder/hooks/useDgsMetadata"
 import { getDgsIdFromString } from "~/features/editing-experience/utils"
 import { useZodForm } from "~/lib/form"
-import { useDgsMetadata } from "./hooks/useDgsMetadata"
 
 export const jsonFormsDgsDatasetIdControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextControl,
@@ -62,11 +63,17 @@ const DgsDatasetIdModal = ({
   const initialValueUrl = generateDgsDatasetUrl(initialValue)
 
   const [inputValue, setInputValue] = useState(initialValueUrl)
+  const debouncedInputValue = useDebounce(inputValue, 300)
+  const isDebouncing = inputValue !== debouncedInputValue
 
-  const datasetId = getDgsIdFromString({ string: inputValue })
+  const datasetId = getDgsIdFromString({ string: debouncedInputValue })
 
-  const { data: isValidDataset, isLoading: isValidatingDataset } =
-    useDgsMetadata({ datasetId })
+  const { data: format, isLoading: isValidatingDataset } = useDgsMetadata({
+    datasetId,
+  })
+  const isValidDataset = format === "CSV"
+
+  const isLoading = isValidatingDataset || isDebouncing
 
   const {
     register,
@@ -97,24 +104,28 @@ const DgsDatasetIdModal = ({
   useEffect(() => {
     if (isValidatingDataset || !datasetId) return
 
-    switch (isValidDataset) {
-      case true:
-        clearErrors("datasetId")
-        break
-      case false:
-        setError("datasetId", {
-          type: "manual",
-          message:
-            "You can only link CSV datasets. Please check the dataset ID and try again.",
-        })
-        break
-      case undefined:
-        break
+    if (isValidDataset) {
+      clearErrors("datasetId")
+      return
     }
-  }, [datasetId, isValidDataset, isValidatingDataset, setError, clearErrors])
 
-  const onSubmit = handleSubmit(({ datasetId }) => {
-    const extractedId = getDgsIdFromString({ string: datasetId })
+    setError("datasetId", {
+      type: "manual",
+      message: format
+        ? "You can only link CSV datasets. Please check the dataset ID and try again."
+        : "This doesn’t look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
+    })
+  }, [
+    datasetId,
+    isValidDataset,
+    format,
+    isValidatingDataset,
+    setError,
+    clearErrors,
+  ])
+
+  const onSubmit = handleSubmit(() => {
+    const extractedId = getDgsIdFromString({ string: debouncedInputValue })
     if (extractedId) {
       onClose()
       onSave(extractedId) // Save only the ID, not the full URL
@@ -124,6 +135,26 @@ const DgsDatasetIdModal = ({
   const handleClose = () => {
     onClose()
     setInputValue(initialValueUrl)
+  }
+
+  const FeedbackMessage = () => {
+    if (errors.datasetId) {
+      return <FormErrorMessage>{errors.datasetId.message}</FormErrorMessage>
+    }
+    if (isLoading) {
+      return (
+        <Text fontSize="sm" color="base.content.medium" mt="0.5rem">
+          Validating dataset...
+        </Text>
+      )
+    }
+    if (isValidDataset) {
+      return (
+        <Text fontSize="sm" color="green.600" mt="0.5rem">
+          ✓ Valid CSV dataset
+        </Text>
+      )
+    }
   }
 
   return (
@@ -154,18 +185,7 @@ const DgsDatasetIdModal = ({
                 isDisabled={isValidatingDataset}
               />
 
-              <FormErrorMessage>{errors.datasetId?.message}</FormErrorMessage>
-
-              {isValidatingDataset && (
-                <Text fontSize="sm" color="base.content.medium" mt="0.5rem">
-                  Validating dataset...
-                </Text>
-              )}
-              {isValidDataset && (
-                <Text fontSize="sm" color="green.600" mt="0.5rem">
-                  ✓ Valid CSV dataset
-                </Text>
-              )}
+              <FeedbackMessage />
             </FormControl>
           </ModalBody>
 
@@ -181,8 +201,8 @@ const DgsDatasetIdModal = ({
               <Button
                 type="submit"
                 onClick={onSubmit}
-                isDisabled={!isValid || isValidatingDataset || !isValidDataset}
-                isLoading={isValidatingDataset}
+                isDisabled={!isValid || isLoading || !isValidDataset}
+                isLoading={isLoading}
               >
                 Save Dataset ID
               </Button>
