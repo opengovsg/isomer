@@ -20,17 +20,8 @@ const createContentLayoutStyles = tv({
     container:
       "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
     siderailContainer: "relative col-span-3 hidden lg:block",
-    content: "col-span-12 flex flex-col gap-16 break-words",
-  },
-  variants: {
-    isSideRailPresent: {
-      true: {
-        content: "lg:col-span-9 lg:mr-24",
-      },
-      false: {
-        content: "max-w-[54rem]",
-      },
-    },
+    content:
+      "col-span-12 flex flex-col gap-16 break-words lg:col-span-9 lg:mr-24",
   },
 })
 
@@ -76,9 +67,7 @@ const ContentLayout = ({
         lastUpdated={page.lastModified}
       />
       <div className={compoundStyles.container()}>
-        <div
-          className={compoundStyles.content({ isSideRailPresent: !!sideRail })}
-        >
+        <div className={compoundStyles.content()}>
           {tableOfContents.length > 1 && (
             <TableOfContents
               items={tableOfContents}
@@ -95,13 +84,10 @@ const ContentLayout = ({
             })}
           </div>
         </div>
-
-        {sideRail && (
-          <div className={compoundStyles.siderailContainer()}>
-            <Siderail {...sideRail} LinkComponent={LinkComponent} />
-            <BackToTopLink />
-          </div>
-        )}
+        <div className={compoundStyles.siderailContainer()}>
+          {sideRail && <Siderail {...sideRail} LinkComponent={LinkComponent} />}
+          <BackToTopLink />
+        </div>
       </div>
     </Skeleton>
   )
