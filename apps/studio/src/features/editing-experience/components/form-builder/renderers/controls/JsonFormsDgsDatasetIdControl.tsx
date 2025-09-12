@@ -41,6 +41,11 @@ export const jsonFormsDgsDatasetIdControlTester: RankedTester = rankWith(
   ),
 )
 
+const generateDgsDatasetUrl = (datasetId: string | null) => {
+  if (!datasetId) return ""
+  return `https://data.gov.sg/datasets/${datasetId}/view`
+}
+
 interface DgsDatasetIdModalProps {
   isOpen: boolean
   onClose: () => void
@@ -54,13 +59,18 @@ const DgsDatasetIdModal = ({
   onSave,
   initialValue = "",
 }: DgsDatasetIdModalProps) => {
-  const [inputValue, setInputValue] = useState(initialValue)
-  const [datasetId, setDatasetId] = useState<string | null>(null)
+  const initialValueUrl = generateDgsDatasetUrl(initialValue)
+
+  const [inputValue, setInputValue] = useState(initialValueUrl)
+
+  const datasetId = getDgsIdFromString({ string: inputValue })
+
+  const { data: isValidDataset, isLoading: isValidatingDataset } =
+    useDgsMetadata({ datasetId })
 
   const {
     register,
     handleSubmit,
-    reset,
     setError,
     clearErrors,
     formState: { errors, isValid },
@@ -78,53 +88,42 @@ const DgsDatasetIdModal = ({
     reValidateMode: "onChange",
   })
 
-  // Use the custom hook to validate dataset
-  const { data: isValidDataset, isLoading: isValidatingDataset } =
-    useDgsMetadata({ datasetId })
-
   // Update inputValue when initialValue changes (when modal opens)
   useEffect(() => {
-    setInputValue(initialValue)
-  }, [initialValue])
-
-  // Update datasetId when input changes and is valid
-  useEffect(() => {
-    const extractedId = getDgsIdFromString({ string: inputValue })
-    setDatasetId(extractedId)
-  }, [inputValue])
+    setInputValue(initialValueUrl)
+  }, [initialValueUrl])
 
   // Handle dataset validation
   useEffect(() => {
-    if (datasetId && !isValidatingDataset) {
-      if (isValidDataset === false) {
+    if (isValidatingDataset || !datasetId) return
+
+    switch (isValidDataset) {
+      case true:
+        clearErrors("datasetId")
+        break
+      case false:
         setError("datasetId", {
           type: "manual",
           message:
             "You can only link CSV datasets. Please check the dataset ID and try again.",
         })
-      } else if (isValidDataset === true) {
-        clearErrors("datasetId")
-      }
+        break
+      case undefined:
+        break
     }
   }, [datasetId, isValidDataset, isValidatingDataset, setError, clearErrors])
 
   const onSubmit = handleSubmit(({ datasetId }) => {
-    // Extract the ID from URL or use as-is if it's already an ID
-    const dgsId = getDgsIdFromString({ string: datasetId })
-    if (dgsId) {
+    const extractedId = getDgsIdFromString({ string: datasetId })
+    if (extractedId) {
       onClose()
-      onSave(dgsId)
-      reset()
-      setInputValue(initialValue)
-      setDatasetId(null)
+      onSave(extractedId) // Save only the ID, not the full URL
     }
   })
 
   const handleClose = () => {
     onClose()
-    reset()
-    setInputValue(initialValue)
-    setDatasetId(null)
+    setInputValue(initialValueUrl)
   }
 
   return (
@@ -254,7 +253,7 @@ export function JsonFormsDgsDatasetIdControl({
                   textStyle="caption-2"
                   color="base.content.medium"
                 >
-                  https://data.gov.sg/datasets/{String(data || "")}/view
+                  {generateDgsDatasetUrl(data)}
                 </Text>
               </Box>
             </VStack>
