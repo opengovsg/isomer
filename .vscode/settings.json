@@ -7,9 +7,9 @@
   "eslint.rules.customizations": [{ "rule": "*", "severity": "warn" }],
   "eslint.useFlatConfig": true,
   "eslint.workingDirectories": [
-    { "pattern": "apps/*/" },
-    { "pattern": "packages/*/" },
-    { "pattern": "tooling/*/" }
+    { "pattern": "apps/*/", "changeProcessCWD": true },
+    { "pattern": "packages/*/", "changeProcessCWD": true },
+    { "pattern": "tooling/*/", "changeProcessCWD": true }
   ],
   "tailwindCSS.experimental.classRegex": [
     ["([\"'`][^\"'`]*.*?[\"'`])", "[\"'`]([^\"'`]*).*?[\"'`]"]

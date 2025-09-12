@@ -25,7 +25,7 @@ const getSchemaJson = async (filePath) => {
   try {
     const schemaContent = await fs.readFile(filePath, "utf8")
     return JSON.parse(schemaContent)
-  } catch (error) {
+  } catch {
     return null
   }
 }
@@ -33,7 +33,7 @@ const getSchemaJson = async (filePath) => {
 const getDirectoryItemStats = async (filePath) => {
   try {
     return await fs.stat(filePath)
-  } catch (error) {
+  } catch {
     return null
   }
 }
