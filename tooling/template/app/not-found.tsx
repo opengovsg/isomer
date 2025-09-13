@@ -78,7 +78,7 @@ const NotFound = () => {
           isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
           isomerMsClarityId:
             process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
-          usePartytown: process.env.NEXT_PUBLIC_USE_PARTYTOWN,
+          usePartytown: process.env.NEXT_PUBLIC_USE_PARTYTOWN === "true",
         }}
         layout="notfound"
         meta={{
