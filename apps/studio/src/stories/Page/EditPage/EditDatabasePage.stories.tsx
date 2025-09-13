@@ -170,10 +170,12 @@ export const DatabaseModalNonCsvDataset: Story = {
       "https://data.gov.sg/datasets/d_e25662f1a062dd046453926aa284ba64/view",
     )
 
-    await waitFor(() =>
-      screen.findByText(
-        "You can only link CSV datasets. Please check the dataset ID and try again.",
-      ),
+    await waitFor(
+      () =>
+        screen.findByText(
+          "You can only link CSV datasets. Please check the dataset ID and try again.",
+        ),
+      { timeout: 3000 },
     )
   },
 }
