@@ -14,7 +14,6 @@ const CollectionLayout = ({
   page,
   layout,
   LinkComponent,
-  ScriptComponent,
 }: CollectionPageSchemaType) => {
   const { permalink, defaultSortBy, defaultSortDirection, tagCategories } = page
 
@@ -37,7 +36,6 @@ const CollectionLayout = ({
       page={page}
       layout={layout}
       LinkComponent={LinkComponent}
-      ScriptComponent={ScriptComponent}
     >
       <CollectionClient
         page={page}

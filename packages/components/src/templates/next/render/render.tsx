@@ -116,13 +116,11 @@ export const renderComponent = ({
 
 export const renderLayout = ({
   LinkComponent = "a",
-  ScriptComponent = "script",
   ...rest
 }: IsomerPageSchemaType) => {
   const props = {
     ...rest,
     LinkComponent,
-    ScriptComponent,
   }
 
   switch (props.layout) {

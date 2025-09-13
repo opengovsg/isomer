@@ -7,7 +7,6 @@ const SearchLayout = ({
   page,
   layout,
   LinkComponent,
-  ScriptComponent = "script",
 }: SearchPageSchemaType) => {
   const clientId =
     (site.search && site.search.type === "searchSG" && site.search.clientId) ||
@@ -19,7 +18,6 @@ const SearchLayout = ({
       page={page}
       layout={layout}
       LinkComponent={LinkComponent}
-      ScriptComponent={ScriptComponent}
     >
       {/* Local search */}
       {site.search && site.search.type === "localSearch" && <></>}
