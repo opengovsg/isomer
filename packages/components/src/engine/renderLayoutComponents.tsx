@@ -49,11 +49,19 @@ export const RenderLayoutComponents = ({
       {site.vica && (
         <>
           <VicaStylesheet environment={site.environment} />
-          <VicaWidget site={site} {...site.vica} />
+          <VicaWidget
+            site={site}
+            ScriptComponent={ScriptComponent}
+            {...site.vica}
+          />
         </>
       )}
       {site.askgov && (
-        <AskgovWidget environment={site.environment} {...site.askgov} />
+        <AskgovWidget
+          environment={site.environment}
+          ScriptComponent={ScriptComponent}
+          {...site.askgov}
+        />
       )}
     </>
   )
