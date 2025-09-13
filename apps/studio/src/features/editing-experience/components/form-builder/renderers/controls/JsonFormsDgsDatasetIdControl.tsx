@@ -183,6 +183,7 @@ const DgsDatasetIdModal = ({
                 name={register("datasetId").name}
                 ref={register("datasetId").ref}
                 isDisabled={isValidatingDataset}
+                aria-label={inputValue}
               />
 
               <FeedbackMessage />
