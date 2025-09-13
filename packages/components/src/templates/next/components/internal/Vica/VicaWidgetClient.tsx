@@ -36,13 +36,15 @@ export const VicaWidgetClient = ({
     // to not render during static site generation on the server
     if (typeof window === "undefined") return
 
-    // Only inject the script after everything else has finished loading
-    // This is to replicate Next.js lazyOnload behaviour (as recommended for widgets)
-    if (document.readyState === "complete") {
-      reloadVicaScript()
+    // Use requestIdleCallback for better performance when available
+    // This ensures the widget loads only when the browser is idle
+    // Purpose: so that it does not affect Total Blocking Time (TBT)
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(reloadVicaScript)
     } else {
-      window.addEventListener("load", reloadVicaScript)
-      return () => window.removeEventListener("load", reloadVicaScript)
+      // fallback for browsers without requestIdleCallback
+      // Use a longer delay to ensure page is fully loaded
+      setTimeout(reloadVicaScript, 2000)
     }
   }, [])
 
