@@ -74,6 +74,7 @@ export interface IsomerGeneratedSiteProps {
   lastUpdated: string
   assetsBaseUrl?: string
   isomerGtmId?: string
+  isomerMsClarityId?: string
 }
 
 export interface IsomerSiteWideComponentsProps {

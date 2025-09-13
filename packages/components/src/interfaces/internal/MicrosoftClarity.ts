@@ -1,6 +1,6 @@
-import type { ScriptComponentType } from "~/types"
+import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 
 export interface MicrosoftClarityProps {
-  clarityId: string
+  msClarityId: NonNullable<IsomerSiteProps["isomerMsClarityId"]>
   ScriptComponent?: ScriptComponentType
 }

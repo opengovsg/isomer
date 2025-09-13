@@ -131,6 +131,7 @@ const Page = async (props: DynamicPageProps) => {
         lastUpdated,
         assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
         isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
+        isomerMsClarityId: process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
       }}
       meta={{
         // TODO: fixup all the typing errors
