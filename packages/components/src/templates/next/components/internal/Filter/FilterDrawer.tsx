@@ -126,7 +126,7 @@ const FilterDrawerContent = ({
       {/* Sticky action bottom bar */}
       <div className="sticky bottom-0 left-0 right-0 flex flex-col gap-3 border-t border-t-divider-medium bg-white px-6 pb-12 pt-8 md:px-10">
         <Button
-          className="w-full"
+          className="w-full justify-center"
           variant="solid"
           size="lg"
           onPress={handleApplyFilters}
@@ -135,7 +135,7 @@ const FilterDrawerContent = ({
         </Button>
         <Button
           size="lg"
-          className="w-full"
+          className="w-full justify-center"
           variant="outline"
           onPress={handleClearFilter}
         >

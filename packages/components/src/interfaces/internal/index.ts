@@ -33,13 +33,6 @@ export {
 export type { PillProps } from "./Pill"
 export type { SearchProps } from "./Search"
 export {
-  SearchableTableSchema,
-  type SearchableTableProps,
-  type SearchableTableClientProps,
-  type NativeSearchableTableProps,
-  type DGSSearchableTableProps,
-} from "./SearchableTable"
-export {
   SearchSGSearchSchema,
   type SearchSGInputBoxProps,
 } from "./SearchSGInputBox"
