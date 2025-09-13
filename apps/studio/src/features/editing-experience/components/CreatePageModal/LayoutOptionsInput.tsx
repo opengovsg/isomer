@@ -124,6 +124,7 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
                 labels.length > 0 &&
                 labels.map((label) => (
                   <Badge
+                    key={label}
                     h="min-content"
                     colorScheme="sub"
                     variant="subtle"
