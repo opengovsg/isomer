@@ -38,7 +38,7 @@ export const VicaStylesheet = ({ environment }: VicaStylesheetProps) => {
       return
     }
 
-    if (isSafari) {
+    if (isSafari()) {
       if (document.readyState === "complete") {
         loadStylesheet()
       } else {
