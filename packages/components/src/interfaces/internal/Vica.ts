@@ -65,7 +65,7 @@ export interface VicaWidgetClientProps extends VicaProps {
 }
 
 export interface VicaWidgetProps extends VicaProps {
-  site: IsomerSiteProps
+  site: Pick<IsomerSiteProps, "environment" | "siteMap" | "assetsBaseUrl">
   ScriptComponent: ScriptComponentType
 }
 

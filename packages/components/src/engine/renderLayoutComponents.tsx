@@ -1,4 +1,4 @@
-import type { IsomerPageSchemaType, ScriptComponentType } from "~/types"
+import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 import {
   AskgovWidget,
   FontPreload,
@@ -10,7 +10,8 @@ import {
   Wogaa,
 } from "../templates/next/components/internal"
 
-type RenderLayoutComponentsProps = Pick<IsomerPageSchemaType, "site"> & {
+interface RenderLayoutComponentsProps {
+  site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
   ScriptComponent: ScriptComponentType
 }
 
