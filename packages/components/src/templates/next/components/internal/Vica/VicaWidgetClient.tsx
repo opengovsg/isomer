@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 
 import type { VicaWidgetClientProps } from "~/interfaces"
+import { isSafari } from "../utils/isSafari"
 
 export const VicaWidgetClient = ({
   environment,
@@ -41,11 +42,22 @@ export const VicaWidgetClient = ({
     // Purpose: so that it does not affect Total Blocking Time (TBT)
     if ("requestIdleCallback" in window) {
       window.requestIdleCallback(reloadVicaScript)
-    } else {
-      // fallback for browsers without requestIdleCallback
-      // Use a longer delay to ensure page is fully loaded
-      setTimeout(reloadVicaScript, 2000)
+      return
     }
+
+    // requestIdleCallback is not supported in Safari
+    if (isSafari) {
+      if (document.readyState === "complete") {
+        reloadVicaScript()
+      } else {
+        ;(window as Window).addEventListener("load", reloadVicaScript)
+        return () => window.removeEventListener("load", reloadVicaScript)
+      }
+    }
+
+    // fallback for browsers without requestIdleCallback
+    // Use a longer delay to ensure page is fully loaded
+    setTimeout(reloadVicaScript, 2000)
   }, [])
 
   return <div id="webchat" {...vicaProps} />

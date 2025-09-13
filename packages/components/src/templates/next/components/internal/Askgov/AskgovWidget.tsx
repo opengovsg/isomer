@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 
 import type { AskgovWidgetProps } from "~/interfaces"
+import { isSafari } from "../utils/isSafari"
 
 // Reference: https://github.com/opengovsg/askgov-widget
 export const AskgovWidget = ({
@@ -40,11 +41,21 @@ export const AskgovWidget = ({
     // Purpose: so that it does not affect Total Blocking Time (TBT)
     if ("requestIdleCallback" in window) {
       window.requestIdleCallback(reloadAskgovScript)
-    } else {
-      // fallback for browsers without requestIdleCallback
-      // Use a longer delay to ensure page is fully loaded
-      setTimeout(reloadAskgovScript, 2000)
+      return
     }
+
+    if (isSafari) {
+      if (document.readyState === "complete") {
+        reloadAskgovScript()
+      } else {
+        ;(window as Window).addEventListener("load", reloadAskgovScript)
+        return () => window.removeEventListener("load", reloadAskgovScript)
+      }
+    }
+
+    // fallback for browsers without requestIdleCallback
+    // Use a longer delay to ensure page is fully loaded
+    setTimeout(reloadAskgovScript, 2000)
   }, [])
 
   return <div id="askgov-widget" {...askgovProps} />
