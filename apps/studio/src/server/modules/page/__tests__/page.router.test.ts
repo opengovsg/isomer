@@ -1158,6 +1158,47 @@ describe("page.router", async () => {
       })
     })
 
+    it("should create a new page with Database layout successfully", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const expectedPageArgs = {
+        siteId: site.id,
+        title: "Test Database Page",
+        permalink: "test-database-page",
+      }
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.createPage({
+        ...expectedPageArgs,
+        layout: "database",
+      })
+
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
+        .where("Resource.id", "=", result.pageId)
+        .select(["title", "permalink", "type", "siteId", "Blob.content"])
+        .executeTakeFirstOrThrow()
+      expect(result).toMatchObject({
+        pageId: expect.any(String),
+      })
+      expect(actual).toMatchObject({
+        ...expectedPageArgs,
+        content: createDefaultPage({ layout: "database" }),
+      })
+      await assertAuditLogRows(1)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(1)
+      expect(auditLog[0]).toMatchObject({
+        delta: { before: null, after: { blob: { content: actual.content } } },
+      })
+    })
+
     it("should create a new page with default Content layout if layout is not provided", async () => {
       // Arrange
       const { site } = await setupSite()

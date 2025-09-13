@@ -5,6 +5,7 @@ import {
   Button,
   Flex,
   Icon,
+  Link,
   Text,
   useDisclosure,
   VStack,
@@ -14,6 +15,7 @@ import { Infobox, useToast } from "@opengovsg/design-system-react"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
+import { TbDatabase } from "react-icons/tb"
 
 import { Disable } from "~/components/Disable"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
@@ -45,6 +47,10 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
   content: {
     label: "Content page header",
     description: "Summary, Button label, and Button destination",
+  },
+  database: {
+    label: "Database page header",
+    description: "Summary, Button label, and Button URL",
   },
   index: {
     label: "Header",
@@ -293,6 +299,23 @@ export default function RootStateDrawer() {
               </Text>
             </Infobox>
           )}
+          {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Database && (
+            <Infobox
+              size="sm"
+              border="1px solid"
+              borderColor="utility.feedback.info"
+              borderRadius="0.25rem"
+            >
+              <Text textStyle="body-2">
+                You are using a beta layout. We’d love to hear about how you’re
+                using this layout, so that we can make it more useful for you.{" "}
+                {/* To update this link */}
+                <Link href="https://www.isomer.gov.sg" target="_blank">
+                  Share your thoughts
+                </Link>
+              </Text>
+            </Infobox>
+          )}
           {isPreviewingIndexPage && (
             <Infobox
               size="sm"
@@ -329,6 +352,25 @@ export default function RootStateDrawer() {
                     description="Title, subtitle, and Call-to-Action"
                     icon={TYPE_TO_ICON.hero}
                   />
+                ) : pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Database ? (
+                  <VStack gap="1rem" w="100%" align="start">
+                    <BaseBlock
+                      onClick={() => {
+                        setDrawerState({ state: "metadataEditor" })
+                      }}
+                      label="Page header"
+                      description="Summary, Button label, and Button URL"
+                      icon={BiPin}
+                    />
+                    <BaseBlock
+                      onClick={() => {
+                        setDrawerState({ state: "databaseEditor" })
+                      }}
+                      label="Database"
+                      description="Link your dataset from Data.gov.sg"
+                      icon={TbDatabase}
+                    />
+                  </VStack>
                 ) : (
                   <BaseBlock
                     onClick={() => {

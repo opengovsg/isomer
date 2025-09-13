@@ -1,4 +1,5 @@
 import type { DatabasePageSchemaType } from "~/engine"
+import { SEARCHABLE_TABLE_TYPE } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import {
   getBreadcrumbFromSiteMap,
@@ -75,7 +76,11 @@ const DatabaseLayout = ({
         )}
 
         <div className={compoundStyles.table()}>
-          <SearchableTable {...page.database} site={site} />
+          <SearchableTable
+            type={SEARCHABLE_TABLE_TYPE}
+            {...page.database}
+            site={site}
+          />
         </div>
       </div>
     </Skeleton>

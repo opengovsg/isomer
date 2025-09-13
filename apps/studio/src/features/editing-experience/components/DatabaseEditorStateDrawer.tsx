@@ -1,11 +1,14 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type {
+  DatabasePageSchemaType,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { useCallback } from "react"
-import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
-import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
+import { Box, Flex, useDisclosure } from "@chakra-ui/react"
+import { Button, useToast } from "@opengovsg/design-system-react"
 import {
-  getLayoutPageSchema,
-  ISOMER_USABLE_PAGE_LAYOUTS,
+  getComponentSchema,
+  SEARCHABLE_TABLE_TYPE,
 } from "@opengovsg/isomer-components"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
@@ -22,14 +25,7 @@ import { DrawerHeader } from "./Drawer/DrawerHeader"
 import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
 
-const HEADER_LABELS: Record<string, string> = {
-  article: "Edit article page header",
-  content: "Edit content page header",
-  index: "Edit index page header",
-  database: "Edit page header",
-}
-
-export default function MetadataEditorStateDrawer(): JSX.Element {
+export default function DatabaseEditorStateDrawer(): JSX.Element {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -50,7 +46,6 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
       toast({
         status: "success",
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
@@ -59,23 +54,12 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     },
   })
 
-  const metadataSchema = getLayoutPageSchema(previewPageState.layout)
-
-  const filteredSchema =
-    // For database layout, exclude the database field from metadata editing
-    // since it's handled by the separate database editor (DatabaseEditorStateDrawer)
-    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Database
-      ? {
-          ...metadataSchema,
-          properties: Object.fromEntries(
-            Object.entries(
-              metadataSchema.properties as Record<string, unknown>,
-            ).filter(([key]) => key !== "database"),
-          ),
-        }
-      : metadataSchema
-
-  const validateFn = ajv.compile<Static<typeof metadataSchema>>(filteredSchema)
+  const searchableTableSchema = getComponentSchema({
+    component: SEARCHABLE_TABLE_TYPE,
+  })
+  const validateFn = ajv.compile<Static<typeof searchableTableSchema>>(
+    searchableTableSchema,
+  )
 
   const handleSaveChanges = useCallback(() => {
     setSavedPageState(previewPageState)
@@ -99,10 +83,12 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   ])
 
   const handleChange = (data: unknown) => {
-    // TODO: Perform actual validation on the data
     const newPageState = {
       ...previewPageState,
-      page: data,
+      page: {
+        ...previewPageState.page,
+        database: data,
+      },
     } as IsomerSchema
 
     setPreviewPageState(newPageState)
@@ -132,34 +118,19 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               handleDiscardChanges()
             }
           }}
-          label={
-            HEADER_LABELS[savedPageState.layout] || "Edit header information"
-          }
+          label="Edit database"
         />
 
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
-            {savedPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Index && (
-              <Box pb="1rem">
-                <Infobox
-                  size="sm"
-                  borderRadius="0.25rem"
-                  border="1px solid"
-                  borderColor="utility.feedback.info"
-                >
-                  <Text textStyle="body-2">
-                    To change the page title, go to the folder and click on
-                    "Folder Settings"
-                  </Text>
-                </Infobox>
-              </Box>
-            )}
-
             <Box mb="1rem">
-              <FormBuilder<Static<typeof metadataSchema>>
-                schema={filteredSchema}
+              <FormBuilder<Static<typeof searchableTableSchema>>
+                schema={searchableTableSchema}
                 validateFn={validateFn}
-                data={previewPageState.page}
+                data={
+                  (previewPageState as unknown as DatabasePageSchemaType).page
+                    .database
+                }
                 handleChange={(data) => handleChange(data)}
               />
             </Box>
@@ -170,7 +141,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             py="1.5rem"
             px="2rem"
           >
-            <SaveButton isLoading={isPending} onClick={handleSaveChanges} />
+            <SaveButton onClick={handleSaveChanges} isLoading={isPending} />
           </Box>
         </ErrorProvider>
       </Flex>

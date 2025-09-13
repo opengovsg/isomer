@@ -9,9 +9,10 @@ import { generateBasePermalinkSchema } from "./common"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
-const NEW_PAGE_LAYOUT_VALUES = [
-  "article",
+export const NEW_PAGE_LAYOUT_VALUES = [
   "content",
+  "article",
+  "database",
 ] as const satisfies readonly PrismaJson.BlobJsonContent["layout"][]
 
 export const MAX_TITLE_LENGTH = 150

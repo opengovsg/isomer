@@ -58,6 +58,28 @@ export const SelectPageLayout: Story = {
   },
 }
 
+export const SelectArticleLayout: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const screen = within(canvasElement.ownerDocument.body)
+    await SelectPageLayout.play?.(context)
+
+    const articleLayoutCard = await screen.findByText(/Article layout/i)
+    await userEvent.click(articleLayoutCard)
+  },
+}
+
+export const SelectDatabaseLayout: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const screen = within(canvasElement.ownerDocument.body)
+    await SelectPageLayout.play?.(context)
+
+    const databaseLayoutCard = await screen.findByText(/Database layout/i)
+    await userEvent.click(databaseLayoutCard)
+  },
+}
+
 export const EnterPageDetails: Story = {
   play: async (context) => {
     const { canvasElement } = context

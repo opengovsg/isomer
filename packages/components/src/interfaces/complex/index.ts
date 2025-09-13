@@ -54,6 +54,7 @@ export {
   type ChildrenPagesProps,
 } from "./ChildrenPages"
 export {
+  SEARCHABLE_TABLE_TYPE,
   SearchableTableSchema,
   type SearchableTableProps,
   type SearchableTableClientProps,
