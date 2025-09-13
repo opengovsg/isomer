@@ -7,6 +7,7 @@ import {
   GoogleTagManagerHeader,
   GoogleTagManagerPreload,
   Masthead,
+  MicrosoftClarity,
   Navbar,
   Notification,
   ScrollToTop,
@@ -46,9 +47,17 @@ export const Skeleton = ({
           <GoogleTagManagerHeader
             siteGtmId={site.siteGtmId}
             isomerGtmId={site.isomerGtmId}
+            usePartytown={site.usePartytown}
             ScriptComponent={ScriptComponent}
           />
         </>
+      )}
+
+      {!!site.isomerMsClarityId && (
+        <MicrosoftClarity
+          ScriptComponent={ScriptComponent}
+          msClarityId={site.isomerMsClarityId}
+        />
       )}
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
