@@ -80,7 +80,9 @@ export const DatabaseModal: Story = {
     const editButton = await screen.findByRole("button", { name: /edit/i })
     await userEvent.click(editButton)
 
-    await screen.findByText(/Valid CSV dataset/, { timeout: 3000 })
+    await waitFor(() => screen.findByText(/Valid CSV dataset/), {
+      timeout: 3000,
+    })
   },
 }
 
@@ -104,7 +106,9 @@ export const DatabaseModalEmptyString: Story = {
       await userEvent.clear(input)
     }
 
-    await screen.findByText("Dataset URL is required", { timeout: 3000 })
+    await waitFor(() => screen.findByText("Dataset URL is required"), {
+      timeout: 3000,
+    })
   },
 }
 
@@ -116,9 +120,10 @@ export const DatabaseModalInvalidDatasetUrl: Story = {
     const input = await screen.findByPlaceholderText("Paste dataset URL here")
     await userEvent.type(input, "https://studio.isomer.gov.sg/")
 
-    await screen.findByText(
-      "This doesn't look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
-      { timeout: 3000 },
+    await waitFor(() =>
+      screen.findByText(
+        "This doesn't look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
+      ),
     )
   },
 }
@@ -134,7 +139,9 @@ export const DatabaseModalValidSearchUrl: Story = {
       "https://data.gov.sg/datasets?sort=downloadsCount&resultId=d_11e68bba3b3c76733475a72d09759eeb&page=1",
     )
 
-    await screen.findByText(/Valid CSV dataset/, { timeout: 3000 })
+    await waitFor(() => screen.findByText(/Valid CSV dataset/), {
+      timeout: 3000,
+    })
   },
 }
 
@@ -146,7 +153,9 @@ export const DatabaseModalValidDatasetId: Story = {
     const input = await screen.findByPlaceholderText("Paste dataset URL here")
     await userEvent.type(input, "d_3f960c10fed6145404ca7b821f263b87")
 
-    await screen.findByText(/Valid CSV dataset/, { timeout: 3000 })
+    await waitFor(() => screen.findByText(/Valid CSV dataset/), {
+      timeout: 3000,
+    })
   },
 }
 
@@ -161,9 +170,10 @@ export const DatabaseModalNonCsvDataset: Story = {
       "https://data.gov.sg/datasets/d_e25662f1a062dd046453926aa284ba64/view",
     )
 
-    await screen.findByText(
-      "You can only link CSV datasets. Please check the dataset ID and try again.",
-      { timeout: 3000 },
+    await waitFor(() =>
+      screen.findByText(
+        "You can only link CSV datasets. Please check the dataset ID and try again.",
+      ),
     )
   },
 }
