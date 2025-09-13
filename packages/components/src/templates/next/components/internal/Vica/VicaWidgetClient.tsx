@@ -46,7 +46,7 @@ export const VicaWidgetClient = ({
     }
 
     // requestIdleCallback is not supported in Safari
-    if (isSafari) {
+    if (isSafari()) {
       if (document.readyState === "complete") {
         reloadVicaScript()
       } else {

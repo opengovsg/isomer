@@ -44,7 +44,7 @@ export const AskgovWidget = ({
       return
     }
 
-    if (isSafari) {
+    if (isSafari()) {
       if (document.readyState === "complete") {
         reloadAskgovScript()
       } else {
