@@ -1,4 +1,4 @@
-import type { IsomerPageSchemaType } from "~/types"
+import type { IsomerPageSchemaType, ScriptComponentType } from "~/types"
 import {
   AskgovWidget,
   FontPreload,
@@ -10,10 +10,9 @@ import {
   Wogaa,
 } from "../templates/next/components/internal"
 
-type RenderLayoutComponentsProps = Pick<
-  IsomerPageSchemaType,
-  "site" | "ScriptComponent"
->
+type RenderLayoutComponentsProps = Pick<IsomerPageSchemaType, "site"> & {
+  ScriptComponent: ScriptComponentType
+}
 
 export const RenderLayoutComponents = ({
   site,
