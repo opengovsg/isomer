@@ -47,6 +47,7 @@ export const Skeleton = ({
           <GoogleTagManagerHeader
             siteGtmId={site.siteGtmId}
             isomerGtmId={site.isomerGtmId}
+            usePartytown={site.usePartytown}
             ScriptComponent={ScriptComponent}
           />
         </>

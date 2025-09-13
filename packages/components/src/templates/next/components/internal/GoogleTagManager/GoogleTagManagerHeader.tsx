@@ -5,6 +5,7 @@ import type {
 
 const GoogleTagManagerHeaderScript = ({
   gtmId,
+  usePartytown = false,
   ScriptComponent,
 }: GoogleTagManagerHeaderScriptProps) => {
   return (
@@ -18,7 +19,7 @@ const GoogleTagManagerHeaderScript = ({
 					'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
         })(window,document,'script','dataLayer','${gtmId}');`,
       }}
-      type="text/partytown"
+      {...(usePartytown ? { type: "text/partytown" } : {})}
     />
   )
 }
@@ -26,21 +27,15 @@ const GoogleTagManagerHeaderScript = ({
 export const GoogleTagManagerHeader = ({
   siteGtmId,
   isomerGtmId,
-  ScriptComponent,
+  ...rest
 }: GoogleTagManagerHeaderProps) => {
   return (
     <>
       {!!siteGtmId && (
-        <GoogleTagManagerHeaderScript
-          gtmId={siteGtmId}
-          ScriptComponent={ScriptComponent}
-        />
+        <GoogleTagManagerHeaderScript gtmId={siteGtmId} {...rest} />
       )}
       {!!isomerGtmId && (
-        <GoogleTagManagerHeaderScript
-          gtmId={isomerGtmId}
-          ScriptComponent={ScriptComponent}
-        />
+        <GoogleTagManagerHeaderScript gtmId={isomerGtmId} {...rest} />
       )}
     </>
   )

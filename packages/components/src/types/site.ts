@@ -75,6 +75,7 @@ export interface IsomerGeneratedSiteProps {
   assetsBaseUrl?: string
   isomerGtmId?: string
   isomerMsClarityId?: string
+  usePartytown?: boolean // for partial rollout and testing purposes, to remove once we verify it is working with no regressions
 }
 
 export interface IsomerSiteWideComponentsProps {
