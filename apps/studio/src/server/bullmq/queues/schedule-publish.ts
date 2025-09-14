@@ -118,9 +118,8 @@ const publishScheduledResource = async ({
         return null
       }
       // Double-check that we're within the buffer time of the scheduledAt time
-      // This is to prevent publishing if the job was significantly delayed (e.g. due to worker downtime)
+      // This is to prevent publishing if the job was rescheduled to a later time, and not removed from the queue
       // We only do this check on the first attempt, as subsequent attempts are likely due to transient failures
-      // and we don't want to block those from going through if the timing is slightly off
       if (
         attemptsMade === 0 && // only check on first attempt
         Math.abs(differenceInSeconds(page.scheduledAt, new Date())) >
