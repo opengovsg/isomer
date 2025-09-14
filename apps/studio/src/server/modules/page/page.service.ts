@@ -1,9 +1,17 @@
+import type pino from "pino"
 import type { UnwrapTagged } from "type-fest"
 import {
   DEFAULT_CHILDREN_PAGES_BLOCK,
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
+
+import type { ScheduledPublishJobData } from "~/server/bullmq/queues/schedule-publish"
+import {
+  getJobIdFromResourceId,
+  getJobOptionsFromScheduledAt,
+  scheduledPublishQueue,
+} from "~/server/bullmq/queues"
 
 export const createDefaultPage = ({
   layout,
@@ -60,4 +68,50 @@ export const createFolderIndexPage = (title: string) => {
     },
     content: [DEFAULT_CHILDREN_PAGES_BLOCK],
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
+}
+
+export const schedulePublishResource = async (
+  logger: pino.Logger<string>,
+  data: ScheduledPublishJobData,
+  scheduledAt: Date,
+) => {
+  const jobId = getJobIdFromResourceId(data.resourceId.toString())
+  const existingJob = await scheduledPublishQueue.getJob(jobId)
+  if (existingJob) {
+    // If a job already exists for this resource, we update its scheduled time
+    logger.info(
+      { resourceId: data.resourceId, scheduledAt },
+      "Rescheduling existing job",
+    )
+    await existingJob.updateData(data)
+    await existingJob.changeDelay(scheduledAt.getTime() - Date.now())
+    return
+  }
+  // If no existing job, we create a new one
+  logger.info(
+    { resourceId: data.resourceId, scheduledAt },
+    "Scheduling new publish job",
+  )
+  await scheduledPublishQueue.add(
+    "schedule-publish",
+    data,
+    getJobOptionsFromScheduledAt(data.resourceId.toString(), scheduledAt),
+  )
+}
+
+export const unschedulePublishResource = async (
+  logger: pino.Logger<string>,
+  resourceId: number,
+) => {
+  const jobId = getJobIdFromResourceId(resourceId.toString())
+  const existingJob = await scheduledPublishQueue.getJob(jobId)
+  if (existingJob) {
+    logger.info({ resourceId }, "Removing scheduled publish job")
+    await existingJob.remove()
+  } else {
+    logger.info(
+      { resourceId },
+      "No scheduled publish job found to remove, skipping",
+    )
+  }
 }
