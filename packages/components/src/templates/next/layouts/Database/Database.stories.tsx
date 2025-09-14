@@ -946,14 +946,6 @@ export const DGSSearchableTableWithHeaders: Story = {
         { label: "School", key: "school" },
         { label: "Degree", key: "degree" },
         { label: "Monthly Median", key: "gross_monthly_median" },
-        {
-          label: "Monthly 25th Percentile",
-          key: "gross_mthly_25_percentile",
-        },
-        {
-          label: "Monthly 75th Percentile",
-          key: "gross_mthly_75_percentile",
-        },
       ],
     },
   }),

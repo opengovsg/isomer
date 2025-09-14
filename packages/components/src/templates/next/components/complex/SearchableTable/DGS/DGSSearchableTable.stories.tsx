@@ -20,36 +20,30 @@ const meta: Meta<DGSSearchableTableProps> = {
 export default meta
 type Story = StoryObj<typeof DGSSearchableTable>
 
-const commonArgs = {
+const commonArgs: Partial<DGSSearchableTableProps> = {
   type: "searchabletable",
   title: "Sample DGS Table",
   dataSource: {
     type: "dgs",
     resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
   },
-  headers: [
-    { label: "Year", key: "year" },
-    { label: "University", key: "university" },
-    { label: "School", key: "school" },
-    { label: "Degree", key: "degree" },
-    { label: "Monthly Median", key: "gross_monthly_median" },
-    {
-      label: "Monthly 25th Percentile",
-      key: "gross_mthly_25_percentile",
-    },
-    {
-      label: "Monthly 75th Percentile",
-      key: "gross_mthly_75_percentile",
-    },
-  ],
-} as DGSSearchableTableProps
+}
 
 export const Default: Story = {
-  args: omit(commonArgs, "headers"),
+  args: commonArgs,
 }
 
 export const SelectedHeaders: Story = {
-  args: commonArgs,
+  args: {
+    ...commonArgs,
+    headers: [
+      { label: "Year", key: "year" },
+      { label: "University", key: "university" },
+      { label: "School", key: "school" },
+      { label: "Degree", key: "degree" },
+      { label: "Monthly Median", key: "gross_monthly_median" },
+    ],
+  },
 }
 
 export const DefaultTitleWhenUnspecified: Story = {
