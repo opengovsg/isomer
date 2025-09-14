@@ -1,9 +1,7 @@
 "use client"
 
-import { useEffect } from "react"
-
 import type { AskgovWidgetProps } from "~/interfaces"
-import { isSafari } from "../utils/isSafari"
+import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader"
 
 // Reference: https://github.com/opengovsg/askgov-widget
 export const AskgovWidget = ({
@@ -15,48 +13,7 @@ export const AskgovWidget = ({
       ? "https://script.ask.gov.sg/widget.js"
       : "https://script-staging.ask.gov.sg/widget.js"
 
-  const reloadAskgovScript = () => {
-    const scriptId = "isomer-askgov-script"
-
-    const existingScriptTag = document.getElementById(scriptId)
-    if (existingScriptTag) {
-      existingScriptTag.remove()
-    }
-
-    const scriptTag = document.createElement("script")
-    scriptTag.id = scriptId
-    scriptTag.async = true
-    scriptTag.type = "text/javascript"
-    scriptTag.src = scriptUrl
-    scriptTag.referrerPolicy = "origin"
-    document.body.appendChild(scriptTag)
-  }
-
-  useEffect(() => {
-    // to not render during static site generation on the server
-    if (typeof window === "undefined") return
-
-    // Use requestIdleCallback for better performance when available
-    // This ensures the widget loads only when the browser is idle
-    // Purpose: so that it does not affect Total Blocking Time (TBT)
-    if ("requestIdleCallback" in window) {
-      window.requestIdleCallback(reloadAskgovScript)
-      return
-    }
-
-    if (isSafari()) {
-      if (document.readyState === "complete") {
-        reloadAskgovScript()
-      } else {
-        ;(window as Window).addEventListener("load", reloadAskgovScript)
-        return () => window.removeEventListener("load", reloadAskgovScript)
-      }
-    }
-
-    // fallback for browsers without requestIdleCallback
-    // Use a longer delay to ensure page is fully loaded
-    setTimeout(reloadAskgovScript, 2000)
-  }, [])
+  useInteractionScriptLoader({ src: scriptUrl })
 
   return <div id="askgov-widget" {...askgovProps} />
 }
