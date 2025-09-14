@@ -11,7 +11,7 @@ import {
   getJobIdFromResourceId,
   getJobOptionsFromScheduledAt,
   scheduledPublishQueue,
-} from "~/server/bullmq/queues"
+} from "~/server/bullmq/queues/schedule-publish"
 
 export const createDefaultPage = ({
   layout,

@@ -1,6 +1,6 @@
 import type { Job, JobsOptions } from "bullmq"
 import type { Lock } from "redlock"
-import { Worker } from "bullmq"
+import { Queue, Worker } from "bullmq"
 import { differenceInSeconds } from "date-fns"
 import { ResourceLockedError } from "redlock"
 
@@ -14,23 +14,33 @@ import {
   publishPageResource,
   updatePageById,
 } from "~/server/modules/resource/resource.service"
+import { handleSignal } from "../utils"
 import {
   BACKOFF,
+  defaultOpts,
   LOCK_TTL,
   REDLOCK_SETTINGS,
   REMOVE_ON_COMPLETE_BUFFER,
   REMOVE_ON_FAIL_BUFFER,
-  scheduledPublishQueue,
+  SCHEDULED_PUBLISH_QUEUE_NAME,
   WORKER_CONCURRENCY,
   WORKER_RETRY_LIMIT,
-} from "."
-import { handleSignal } from "../utils"
+} from "./constants"
 
 export interface ScheduledPublishJobData {
   resourceId: number // the id of the resource to be scheduled for publish
   siteId: number // the id of the site which the page belongs to
   userId: string // the id of the user who scheduled the publish
 }
+
+/** BullMQ Queue for scheduling publish jobs */
+export const scheduledPublishQueue = new Queue<ScheduledPublishJobData>(
+  SCHEDULED_PUBLISH_QUEUE_NAME,
+  {
+    connection: RedisClient,
+    defaultJobOptions: defaultOpts,
+  },
+)
 
 const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
 const BUFFER_IN_SECONDS = 60 // seconds buffer to allow for slight delays in job processing
