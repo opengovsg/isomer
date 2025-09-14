@@ -21,6 +21,7 @@ import {
   Button,
   FormErrorMessage,
   FormLabel,
+  Infobox,
   Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
@@ -188,6 +189,20 @@ const DgsDatasetIdModal = ({
 
               <FeedbackMessage />
             </FormControl>
+
+            {/* We are working on this, thus decided to not overcomplicate
+                with frontend/backend validation on this
+                This UI is mostly to manage user expectations */}
+            <Infobox size="sm" variant="info" mt="1.25rem">
+              <Box>
+                <Text fontSize="sm" color="base.content.medium">
+                  During this beta period, only datasets under <b>4MB</b> are
+                  supported.
+                  <br />
+                  We're working on supporting larger datasets soon!
+                </Text>
+              </Box>
+            </Infobox>
           </ModalBody>
 
           <ModalFooter>
