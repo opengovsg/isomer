@@ -40,6 +40,11 @@ export const DGSSearchableTable = ({
     return []
   }, [headers, metadata?.columnMetadata])
 
+  const labels = useMemo(
+    () => resolvedHeaders.map((header) => header.label ?? header.key),
+    [resolvedHeaders],
+  )
+
   const isDatasetUnderMaxSize =
     metadata?.size && metadata.size < DGS_REQUEST_MAX_BYTES
 
@@ -53,6 +58,7 @@ export const DGSSearchableTable = ({
         headers={resolvedHeaders}
         site={site}
         LinkComponent={LinkComponent}
+        labels={labels}
         isMetadataLoading={isMetadataLoading}
         isMetadataError={isMetadataError}
       />

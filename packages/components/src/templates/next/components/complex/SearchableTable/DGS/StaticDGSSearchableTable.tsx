@@ -12,6 +12,7 @@ import { SearchableTableClient } from "../shared"
 
 interface StaticDGSSearchableTableProps extends DGSSearchableTableProps {
   headers: NonNullable<DGSSearchableTableProps["headers"]>
+  labels: SearchableTableClientProps["headers"]
   isMetadataLoading: boolean
   isMetadataError: boolean
 }
@@ -23,6 +24,7 @@ export const StaticDGSSearchableTable = ({
   headers,
   site,
   LinkComponent,
+  labels,
   isMetadataLoading,
   isMetadataError,
 }: StaticDGSSearchableTableProps) => {
@@ -48,11 +50,6 @@ export const StaticDGSSearchableTable = ({
     ...params,
     fetchAll: true,
   })
-
-  const labels = useMemo(
-    () => headers.map((header) => header.label ?? header.key),
-    [headers],
-  )
 
   const items: SearchableTableClientProps["items"] = useMemo(() => {
     const keys = headers.map((header) => header.key)
