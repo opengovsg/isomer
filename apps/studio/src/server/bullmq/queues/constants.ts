@@ -1,10 +1,5 @@
 import type { BackoffOptions, JobsOptions } from "bullmq"
 import type { Settings } from "redlock"
-import { Queue } from "bullmq"
-
-import { RedisClient } from "@isomer/redis"
-
-import type { ScheduledPublishJobData } from "./schedule-publish"
 
 /** Queue & worker settings */
 export const SCHEDULED_PUBLISH_QUEUE_NAME = "scheduled-publish-queue"
@@ -18,21 +13,12 @@ export const BACKOFF: BackoffOptions = {
   delay: 10_000, // 10s, then 20s, then 40s etc
 }
 
-const defaultOpts: JobsOptions = {
+export const defaultOpts: JobsOptions = {
   removeOnComplete: true,
   failParentOnFailure: true,
   attempts: WORKER_RETRY_LIMIT,
   backoff: BACKOFF,
 }
-
-/** BullMQ Queue for scheduling publish jobs */
-export const scheduledPublishQueue = new Queue<ScheduledPublishJobData>(
-  SCHEDULED_PUBLISH_QUEUE_NAME,
-  {
-    connection: RedisClient,
-    defaultJobOptions: defaultOpts,
-  },
-)
 
 /** Redlock settings */
 export const LOCK_TTL = 30_000 // 30 seconds

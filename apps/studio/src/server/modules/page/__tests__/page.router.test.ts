@@ -32,7 +32,7 @@ import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import {
   getJobIdFromResourceId,
   scheduledPublishQueue,
-} from "~/server/bullmq/queues"
+} from "~/server/bullmq/queues/schedule-publish"
 import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db } from "../../database"

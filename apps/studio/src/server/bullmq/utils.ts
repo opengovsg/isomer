@@ -1,7 +1,7 @@
 import type { Worker } from "bullmq"
 import type pino from "pino"
 
-import { WORKER_SHUTDOWN_TIMEOUT } from "./queues"
+import { WORKER_SHUTDOWN_TIMEOUT } from "./queues/constants"
 
 /**
  * Gracefully shuts down the worker on receiving termination signals. Shut down the worker
