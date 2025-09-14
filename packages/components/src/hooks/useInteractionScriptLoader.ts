@@ -10,6 +10,7 @@ export const useInteractionScriptLoader = ({
   timeout = 3000,
 }: UseInteractionScriptLoaderOptions) => {
   const loadedRef = useRef(false)
+  const loadingRef = useRef(false)
   const scriptRef = useRef<HTMLScriptElement | null>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const listenersRef = useRef<(() => void) | null>(null)
@@ -29,14 +30,10 @@ export const useInteractionScriptLoader = ({
   }, [])
 
   const loadScript = useCallback(() => {
-    if (loadedRef.current) return
+    if (loadedRef.current || loadingRef.current) return
 
+    loadingRef.current = true
     const scriptId = src
-
-    const existingScript = document.getElementById(scriptId)
-    if (existingScript) {
-      existingScript.remove()
-    }
 
     const script = document.createElement("script")
     script.id = scriptId
@@ -46,11 +43,13 @@ export const useInteractionScriptLoader = ({
     script.referrerPolicy = "origin"
     script.onload = () => {
       loadedRef.current = true
+      loadingRef.current = false
       scriptRef.current = script
       clearListenersRef()
       clearTimeoutRef()
     }
     script.onerror = () => {
+      loadingRef.current = false
       clearListenersRef()
       clearTimeoutRef()
     }
@@ -62,9 +61,9 @@ export const useInteractionScriptLoader = ({
     if (typeof window === "undefined") return
     if (loadedRef.current) return
 
-    window.addEventListener("scroll", loadScript)
-    window.addEventListener("click", loadScript)
-    window.addEventListener("touchstart", loadScript)
+    window.addEventListener("scroll", loadScript, { passive: true })
+    window.addEventListener("click", loadScript) // no passive as it might need to call preventDefault
+    window.addEventListener("touchstart", loadScript, { passive: true })
 
     // Fallback timeout to ensure script loads even without interaction
     timeoutRef.current = setTimeout(loadScript, timeout)
