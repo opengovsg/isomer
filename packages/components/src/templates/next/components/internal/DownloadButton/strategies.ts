@@ -81,7 +81,7 @@ interface RenderDownloadTextProps {
   size: number | undefined
 }
 const renderDownloadText = ({ format, size }: RenderDownloadTextProps) => {
-  const formattedSize = size ? formatBytes(size) : String(size)
+  const formattedSize = size !== undefined ? formatBytes(size) : null
   if (format && formattedSize) {
     return `Download ${format} (${formattedSize})`
   } else if (format) {
