@@ -1,4 +1,5 @@
 import type { BackoffOptions, JobsOptions } from "bullmq"
+import type { Settings } from "redlock"
 import { Queue } from "bullmq"
 
 import { RedisClient } from "@isomer/redis"
@@ -35,6 +36,11 @@ export const scheduledPublishQueue = new Queue<ScheduledPublishJobData>(
 
 /** Redlock settings */
 export const LOCK_TTL = 30_000 // 30 seconds
+export const REDLOCK_SETTINGS: Partial<Settings> = {
+  retryCount: 0,
+  retryDelay: 0,
+  retryJitter: 0,
+}
 
 /** Job settings to be used by the caller */
 export const getJobOptionsFromScheduledAt = (
