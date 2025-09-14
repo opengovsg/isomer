@@ -2,6 +2,7 @@ import {
   fetchDgsFileDownloadUrl,
   fetchDgsMetadata,
   fetchFileMetadata,
+  formatBytes,
   getDgsIdFromDgsLink,
 } from "~/utils"
 
@@ -55,7 +56,10 @@ export const directDownloadStrategy: DownloadStrategy = {
     try {
       const metadata = await fetchFileMetadata({ url })
       if (metadata) {
-        return renderDownloadText(metadata)
+        return renderDownloadText({
+          format: metadata.format,
+          size: metadata.size,
+        })
       }
     } catch (error) {
       console.error("Error fetching file metadata:", error)
@@ -74,15 +78,16 @@ export const defaultDownloadStrategies: DownloadStrategy[] = [
 
 interface RenderDownloadTextProps {
   format: string | undefined
-  size: string | undefined
+  size: number | undefined
 }
 const renderDownloadText = ({ format, size }: RenderDownloadTextProps) => {
-  if (format && size) {
-    return `Download ${format} (${size})`
+  const formattedSize = size ? formatBytes(size) : String(size)
+  if (format && formattedSize) {
+    return `Download ${format} (${formattedSize})`
   } else if (format) {
     return `Download ${format}`
-  } else if (size) {
-    return `Download (${size})`
+  } else if (formattedSize) {
+    return `Download (${formattedSize})`
   } else {
     return "Download"
   }

@@ -1,5 +1,3 @@
-import { formatBytes } from "../formatBytes"
-
 interface FetchDgsMetadataProps {
   resourceId: string
 }
@@ -29,7 +27,7 @@ export type FetchDgsMetadataOutput = Pick<
   FetchDgsMetadataResponse["data"],
   "name" | "format"
 > & {
-  size: string | undefined
+  size: FetchDgsMetadataResponse["data"]["datasetSize"]
   columnMetadata:
     | [string, string][] // 1st string is column field key, 2nd string is column title
     | undefined
@@ -53,7 +51,7 @@ export const fetchDgsMetadata = async ({
     return {
       name: data.data.name,
       format: data.data.format,
-      size: formatBytes(data.data.datasetSize),
+      size: data.data.datasetSize,
       columnMetadata: extractColumnMetadata(data),
     }
   } catch (error) {
