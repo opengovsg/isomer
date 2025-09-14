@@ -1,6 +1,7 @@
-import type { Job } from "bullmq"
+import type { Job, JobsOptions } from "bullmq"
 import type { Lock } from "redlock"
 import { Worker } from "bullmq"
+import { differenceInSeconds } from "date-fns"
 import { ResourceLockedError } from "redlock"
 
 import { RedisClient, RedlockClient } from "@isomer/redis"
@@ -14,6 +15,7 @@ import {
   updatePageById,
 } from "~/server/modules/resource/resource.service"
 import {
+  BACKOFF,
   LOCK_TTL,
   REDLOCK_SETTINGS,
   REMOVE_ON_COMPLETE_BUFFER,
@@ -31,7 +33,36 @@ export interface ScheduledPublishJobData {
 }
 
 const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
+const BUFFER_IN_SECONDS = 60 // seconds buffer to allow for slight delays in job processing
 
+/**
+ * Get job options for a scheduled publish job
+ * @param resourceId The id of the resource to be published
+ * @param scheduledAt The date and time when the job is scheduled to run
+ * @returns The job options for the scheduled publish job
+ */
+export const getJobOptionsFromScheduledAt = (
+  resourceId: string,
+  scheduledAt: Date,
+): JobsOptions => {
+  const delayInMs = scheduledAt.getTime() - Date.now()
+  return {
+    attempts: WORKER_RETRY_LIMIT,
+    backoff: BACKOFF,
+    removeOnComplete: { age: REMOVE_ON_COMPLETE_BUFFER },
+    removeOnFail: { age: REMOVE_ON_FAIL_BUFFER },
+    delay: delayInMs,
+    jobId: getJobIdFromResourceId(resourceId),
+  }
+}
+
+export const getJobIdFromResourceId = (resourceId: string) =>
+  `resource-${resourceId}`
+
+/**
+ * Creates and returns a Worker that processes scheduled publish jobs
+ * @returns A Worker that processes scheduled publish jobs
+ */
 export const createScheduledPublishWorker = () => {
   const worker = new Worker<ScheduledPublishJobData>(
     scheduledPublishQueue.name,
@@ -52,6 +83,7 @@ export const createScheduledPublishWorker = () => {
 const publishScheduledResource = async ({
   id: jobId,
   data: { resourceId, siteId, userId },
+  attemptsMade,
 }: Job<ScheduledPublishJobData>) => {
   let lock: Lock | null = null
   try {
@@ -75,9 +107,17 @@ const publishScheduledResource = async ({
         })
         return null
       }
-      if (page.scheduledAt > new Date()) {
+      // Double-check that we're within the buffer time of the scheduledAt time
+      // This is to prevent publishing if the job was significantly delayed (e.g. due to worker downtime)
+      // We only do this check on the first attempt, as subsequent attempts are likely due to transient failures
+      // and we don't want to block those from going through if the timing is slightly off
+      if (
+        attemptsMade === 0 && // only check on first attempt
+        Math.abs(differenceInSeconds(page.scheduledAt, new Date())) >
+          BUFFER_IN_SECONDS
+      ) {
         logger.info({
-          message: `Page with id ${resourceId} is scheduled for publishing at a later time (${page.scheduledAt.toISOString()}). Exiting job.`,
+          message: `Page with id ${resourceId} is scheduled for publishing outside the buffer time. Exiting job.`,
         })
         return null
       }
