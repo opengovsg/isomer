@@ -38,10 +38,6 @@ import {
   updatePageMetaSchema,
 } from "~/schemas/page"
 import { scheduledPublishServerSchema } from "~/schemas/schedule"
-import {
-  getJobOptionsFromScheduledAt,
-  scheduledPublishQueue,
-} from "~/server/bullmq/queues"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -63,7 +59,12 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import {
+  createDefaultPage,
+  createFolderIndexPage,
+  schedulePublishResource,
+  unschedulePublishResource,
+} from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -402,10 +403,10 @@ export const pageRouter = router({
           })
         }
         // add to the scheduled publish queue so it's processed by the worker at the scheduled time
-        await scheduledPublishQueue.add(
-          "schedule-publish",
+        await schedulePublishResource(
+          ctx.logger,
           { resourceId: pageId, siteId, userId: ctx.user.id },
-          getJobOptionsFromScheduledAt(pageId.toString(), scheduledAt),
+          scheduledAt,
         )
         await logResourceEvent(tx, {
           siteId,
@@ -470,9 +471,8 @@ export const pageRouter = router({
             message: "Failed to cancel page schedule",
           })
         }
-        // remove the job from the scheduled publish queue, if the resource is still in a 'scheduled' state
-        const job = await scheduledPublishQueue.getJob(updatedPage.id)
-        if (job) await job.remove()
+        // remove from the scheduled publish queue
+        await unschedulePublishResource(ctx.logger, pageId)
         await logResourceEvent(tx, {
           siteId,
           by,

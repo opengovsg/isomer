@@ -15,9 +15,10 @@ import {
 } from "~/server/modules/resource/resource.service"
 import {
   LOCK_TTL,
+  REDLOCK_SETTINGS,
   REMOVE_ON_COMPLETE_BUFFER,
   REMOVE_ON_FAIL_BUFFER,
-  SCHEDULED_PUBLISH_QUEUE_NAME,
+  scheduledPublishQueue,
   WORKER_CONCURRENCY,
   WORKER_RETRY_LIMIT,
 } from "."
@@ -31,20 +32,25 @@ export interface ScheduledPublishJobData {
 
 const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
 
-const worker = new Worker<ScheduledPublishJobData>(
-  SCHEDULED_PUBLISH_QUEUE_NAME,
-  async (job: Job<ScheduledPublishJobData>) => {
-    await publishScheduledResource(job)
-  },
-  {
-    connection: RedisClient,
-    removeOnComplete: { age: REMOVE_ON_COMPLETE_BUFFER },
-    removeOnFail: { age: REMOVE_ON_FAIL_BUFFER },
-    concurrency: WORKER_CONCURRENCY,
-  },
-)
+export const createScheduledPublishWorker = () => {
+  const worker = new Worker<ScheduledPublishJobData>(
+    scheduledPublishQueue.name,
+    async (job: Job<ScheduledPublishJobData>) => {
+      await publishScheduledResource(job)
+      return job.id
+    },
+    {
+      connection: RedisClient,
+      removeOnComplete: { age: REMOVE_ON_COMPLETE_BUFFER },
+      removeOnFail: { age: REMOVE_ON_FAIL_BUFFER },
+      concurrency: WORKER_CONCURRENCY,
+    },
+  )
+  return worker
+}
 
 const publishScheduledResource = async ({
+  id: jobId,
   data: { resourceId, siteId, userId },
 }: Job<ScheduledPublishJobData>) => {
   let lock: Lock | null = null
@@ -53,6 +59,7 @@ const publishScheduledResource = async ({
     lock = await RedlockClient.acquire(
       [`locks:resource:${resourceId}`],
       LOCK_TTL,
+      REDLOCK_SETTINGS,
     )
     const page = await db.transaction().execute(async (tx) => {
       const page = await getPageById(tx, { resourceId, siteId })
@@ -65,6 +72,12 @@ const publishScheduledResource = async ({
       if (!page.scheduledAt) {
         logger.info({
           message: `Page with id ${resourceId} is no longer scheduled for publishing. Exiting job.`,
+        })
+        return null
+      }
+      if (page.scheduledAt > new Date()) {
+        logger.info({
+          message: `Page with id ${resourceId} is scheduled for publishing at a later time (${page.scheduledAt.toISOString()}). Exiting job.`,
         })
         return null
       }
@@ -82,9 +95,7 @@ const publishScheduledResource = async ({
     })
     // Publish the page outside of the transaction to avoid long-running transactions
     if (page) {
-      logger.error({
-        message: `Page with id ${resourceId} not found or does not belong to site ${siteId}.`,
-      })
+      logger.info({ message: `Publishing scheduled page ${resourceId}` })
       await publishPageResource({
         logger,
         siteId,
@@ -93,11 +104,10 @@ const publishScheduledResource = async ({
       })
     }
   } catch (err) {
-    // If we fail to acquire the lock, it means another worker is processing this resource
-    // We log this and exit gracefully
+    // If we fail to acquire the lock, it means another worker is processing this resource and we can exit gracefully
     if (err instanceof ResourceLockedError) {
       logger.info({
-        message: `Failed to acquire lock for resource ${resourceId} as another worker is processing it.`,
+        message: `Failed to acquire lock for resource ${resourceId} as another worker is processing it. Exiting job ${jobId}.`,
         error: err,
       })
       return
@@ -116,8 +126,10 @@ const publishScheduledResource = async ({
   }
 }
 
+export const scheduledPublishWorker = createScheduledPublishWorker()
+
 // Handle failed jobs
-worker.on(
+scheduledPublishWorker.on(
   "failed",
   (job: Job<ScheduledPublishJobData> | undefined, err: Error) => {
     void (async () => {
@@ -163,7 +175,7 @@ worker.on(
 )
 
 // Handle worker-level errors
-worker.on("error", (err: Error) => {
+scheduledPublishWorker.on("error", (err: Error) => {
   logger.error({
     message: "Error occurred in worker process",
     error: err,
@@ -171,5 +183,9 @@ worker.on("error", (err: Error) => {
 })
 
 // Handle graceful shutdown
-process.on("SIGINT", () => handleSignal(worker, logger, "SIGINT"))
-process.on("SIGTERM", () => handleSignal(worker, logger, "SIGTERM"))
+process.on("SIGINT", () =>
+  handleSignal(scheduledPublishWorker, logger, "SIGINT"),
+)
+process.on("SIGTERM", () =>
+  handleSignal(scheduledPublishWorker, logger, "SIGTERM"),
+)
