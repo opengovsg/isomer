@@ -100,12 +100,10 @@ export const DGSSearchableTable = ({
       site={site}
       LinkComponent={LinkComponent}
       isLoading={
-        hasUserProvidedHeaders
-          ? isDataLoading
-          : isMetadataLoading || isDataLoading
+        shouldFetchMetadata ? isMetadataLoading || isDataLoading : isDataLoading
       }
       isError={
-        hasUserProvidedHeaders ? isDataError : isMetadataError || isDataError
+        shouldFetchMetadata ? isMetadataError || isDataError : isDataError
       }
     />
   )
