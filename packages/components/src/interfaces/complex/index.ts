@@ -55,6 +55,7 @@ export {
 } from "./ChildrenPages"
 export {
   CONTACT_INFORMATION_TYPE,
+  CONTACT_INFORMATION_SUPPORT_METHODS,
   ContactInformationSchema,
   type ContactInformationProps,
   type ContactInformationUIProps,

@@ -10,10 +10,10 @@ import {
   BiUser,
 } from "react-icons/bi"
 
-import type { SUPPORT_METHODS } from "~/interfaces/complex/ContactInformation"
+import type { CONTACT_INFORMATION_SUPPORT_METHODS } from "~/interfaces"
 
 type MethodMapping = Record<
-  (typeof SUPPORT_METHODS)[number],
+  (typeof CONTACT_INFORMATION_SUPPORT_METHODS)[number],
   {
     label: string
     Icon: IconType

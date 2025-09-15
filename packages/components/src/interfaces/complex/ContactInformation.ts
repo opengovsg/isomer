@@ -11,7 +11,7 @@ import { createDgsSchema, NativeDataSourceSchema } from "../integration"
 
 export const CONTACT_INFORMATION_TYPE = "contactinformation"
 
-export const SUPPORT_METHODS = [
+export const CONTACT_INFORMATION_SUPPORT_METHODS = [
   "telephone",
   "fax",
   "email",
@@ -47,7 +47,7 @@ const BaseContactInformationSchema = Type.Object({
   whitelistedMethods: Type.Optional(
     Type.Array(
       Type.Union(
-        SUPPORT_METHODS.map((method) =>
+        CONTACT_INFORMATION_SUPPORT_METHODS.map((method) =>
           Type.Literal(method, { default: method }),
         ),
         {
@@ -76,7 +76,7 @@ const InjectableContactInformationSchema = Type.Object(
       Type.Object({
         method: Type.Optional(
           Type.Union(
-            SUPPORT_METHODS.map((method) =>
+            CONTACT_INFORMATION_SUPPORT_METHODS.map((method) =>
               Type.Literal(method, {
                 title:
                   method.charAt(0).toUpperCase() +
