@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { ContactInformationProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 import { NativeContactInformation } from "./NativeContactInformation"
 
 const meta: Meta<ContactInformationProps> = {
@@ -17,35 +18,7 @@ const meta: Meta<ContactInformationProps> = {
       themeOverride: "Isomer Next",
     },
   },
-  args: {
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      url: "https://www.isomer.gov.sg",
-      logoUrl: "/isomer-logo.svg",
-      lastUpdated: "2021-10-01",
-      navbar: { items: [] },
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-    },
-  },
+  args: generateSiteConfig(),
 }
 export default meta
 type Story = StoryObj<typeof NativeContactInformation>
