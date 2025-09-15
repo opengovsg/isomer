@@ -57,10 +57,12 @@ export {
   CONTACT_INFORMATION_TYPE,
   CONTACT_INFORMATION_SUPPORT_METHODS,
   ContactInformationSchema,
+  InjectableContactInformationKeys,
   type ContactInformationProps,
   type ContactInformationUIProps,
   type NativeContactInformationProps,
   type DgsContactInformationProps,
+  type DgsTransformedContactInformationProps,
 } from "./ContactInformation"
 export {
   DYNAMIC_COMPONENT_LIST_TYPE,

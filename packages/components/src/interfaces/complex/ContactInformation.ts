@@ -1,7 +1,8 @@
 import type { Static } from "@sinclair/typebox"
-import type { SimplifyDeep } from "type-fest"
+import type { Except, SimplifyDeep } from "type-fest"
 import { Type } from "@sinclair/typebox"
 
+import type { DgsApiDatasetSearchResponseSuccess } from "~/hooks/useDgsData/types"
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
@@ -182,3 +183,9 @@ export type ContactInformationProps = Static<typeof ContactInformationSchema> &
   AdditionalContactInformationTypeProps & {
     site: IsomerSiteProps
   }
+
+export interface DgsTransformedContactInformationProps
+  extends Except<DgsContactInformationProps, "dataSource"> {
+  record: DgsApiDatasetSearchResponseSuccess["result"]["records"][number]
+  isLoading?: ContactInformationUIProps["isLoading"]
+}

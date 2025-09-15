@@ -4,16 +4,14 @@ import { useMemo } from "react"
 import omit from "lodash/omit"
 import pick from "lodash/pick"
 
-import type {
-  DgsApiDatasetSearchParams,
-  DgsApiDatasetSearchResponseSuccess,
-} from "~/hooks/useDgsData/types"
+import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type {
   ContactInformationUIProps,
   DgsContactInformationProps,
-} from "~/interfaces/complex/ContactInformation"
+  DgsTransformedContactInformationProps,
+} from "~/interfaces"
 import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
-import { InjectableContactInformationKeys } from "~/interfaces/complex/ContactInformation"
+import { InjectableContactInformationKeys } from "~/interfaces"
 import { safeJsonParse } from "~/utils"
 import { ContactInformationUI } from "../components"
 
@@ -59,11 +57,6 @@ export const DgsContactInformation = ({
   return <DgsTransformedContactInformation {...rest} record={record} />
 }
 
-interface DgsTransformedContactInformationProps
-  extends Omit<DgsContactInformationProps, "dataSource"> {
-  record: DgsApiDatasetSearchResponseSuccess["result"]["records"][number]
-  isLoading?: ContactInformationUIProps["isLoading"]
-}
 export const DgsTransformedContactInformation = ({
   record,
   isLoading,
@@ -94,7 +87,8 @@ export const DgsTransformedContactInformation = ({
       description={description}
       methods={methods ?? []}
       otherInformation={otherInformation}
-      {...pick(rest, "type", "layout", "LinkComponent")}
+      type={rest.type}
+      layout={rest.layout}
       {...omit(rest, InjectableContactInformationKeys)}
       acceptHtmlTags
     />
