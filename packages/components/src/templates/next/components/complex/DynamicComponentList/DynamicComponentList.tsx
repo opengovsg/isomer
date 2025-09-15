@@ -13,7 +13,6 @@ import { DgsTransformedContactInformation } from "../ContactInformation"
 const DEFAULT_NUMBER_OF_RECORDS_FOR_LOADING = 1
 
 const DynamicComponentList = ({
-  type: _type,
   dataSource: { resourceId, sort, filters },
   component,
   layout,
