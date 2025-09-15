@@ -62,15 +62,13 @@ export const DynamicSearchableTableClient = ({
     fetchAll: false,
   })
 
-  const filteredItems = records?.map((record) => Object.values(record)) ?? []
-
-  const paginatedItems = filteredItems
+  const items = records?.map((record) => Object.values(record)) ?? []
 
   const isInitiallyEmpty =
     typeof total === "number" && (total === 0 || maxNoOfColumns === 0)
 
   const isFilteredEmpty =
-    typeof total === "number" && total !== 0 && filteredItems.length === 0
+    typeof total === "number" && total !== 0 && items.length === 0
 
   return (
     <SearchableTableClientUI
@@ -86,7 +84,7 @@ export const DynamicSearchableTableClient = ({
       isInitiallyEmpty={isInitiallyEmpty}
       isFilteredEmpty={isFilteredEmpty}
       maxNoOfColumns={maxNoOfColumns}
-      paginatedItems={paginatedItems}
+      paginatedItems={items}
       filteredItemsLength={total ?? 0}
     />
   )
