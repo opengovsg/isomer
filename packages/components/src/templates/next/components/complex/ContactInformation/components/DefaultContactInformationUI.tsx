@@ -73,7 +73,7 @@ export const DefaultContactInformationUI = ({
 
       <div className={compoundStyles.contactMethodsContainer()}>
         {isLoading
-          ? Array.from({ length: 4 }).map((_, index) => (
+          ? Array(4).map((_, index) => (
               <LoadingContactMethod
                 key={`loading-contact-method-${index}`}
                 styles={contactMethodStyles}
