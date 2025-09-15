@@ -9,8 +9,8 @@ import type {
 } from "~/interfaces"
 import { useDebounce } from "~/hooks/useDebounce"
 import { useDgsData } from "~/hooks/useDgsData"
-import { PAGINATION_MAX_ITEMS } from "./constants"
-import { SearchableTableClientUI } from "./SearchableTableClientUI"
+import { PAGINATION_MAX_ITEMS } from "../shared/constants"
+import { SearchableTableClientUI } from "../shared/SearchableTableClientUI"
 
 interface DynamicSearchableTableClientProps
   extends Omit<DGSSearchableTableProps, "items" | "headers"> {
@@ -20,7 +20,7 @@ interface DynamicSearchableTableClientProps
   isMetadataError: boolean
 }
 
-export const DynamicSearchableTableClient = ({
+export const DynamicDGSSearchableTable = ({
   type,
   dataSource: { resourceId, filters, sort },
   title,

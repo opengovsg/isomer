@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import type { DGSSearchableTableProps } from "~/interfaces"
 import { useDgsMetadata } from "~/hooks/useDgsMetadata"
 import { DGS_REQUEST_MAX_BYTES } from "~/utils/dgs"
-import { DynamicSearchableTableClient } from "../shared"
+import { DynamicDGSSearchableTable } from "./DynamicDGSSearchableTable"
 import { StaticDGSSearchableTable } from "./StaticDGSSearchableTable"
 
 export const DGSSearchableTable = ({
@@ -65,7 +65,7 @@ export const DGSSearchableTable = ({
     // This is for datasets that are too large to load into memory,
     // so we need to fetch the data on the server side, using DGS API
     return (
-      <DynamicSearchableTableClient
+      <DynamicDGSSearchableTable
         type={type}
         dataSource={dataSource}
         title={resolvedTitle}
