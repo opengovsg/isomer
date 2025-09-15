@@ -58,6 +58,7 @@ const launch = async () => {
 
     await confirm({ message: "Have you ran `npm run db:connect`?" })
     await migrate(repo, siteId)
+    await migrateTagsOfSite(siteId)
 
     await s3sync(siteId)
 
