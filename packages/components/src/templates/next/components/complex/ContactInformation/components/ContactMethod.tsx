@@ -66,6 +66,7 @@ export const ContactMethod = ({
                 <Link
                   key={value}
                   href={`mailto:${value}`}
+                  LinkComponent={LinkComponent}
                   className={styles.value({
                     isLink: true,
                     className: focusVisibleHighlight(),
@@ -80,6 +81,7 @@ export const ContactMethod = ({
                 <Link
                   key={value}
                   href={`tel:${sanitizePhoneNumber(value)}`}
+                  LinkComponent={LinkComponent}
                   className={styles.value({
                     isLink: true,
                     className: focusVisibleHighlight(),
