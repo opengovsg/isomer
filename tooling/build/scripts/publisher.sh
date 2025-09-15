@@ -168,11 +168,14 @@ if [ ! -d "./out" ]; then
   exit 1
 fi
 
-# Create partytown folder and scripts
-echo "Creating partytown folder and scripts..."
-start_time=$(date +%s)
-npm run partytown
-calculate_duration $start_time
+# for partial rollout and testing purposes, to remove conditional statements
+# once we verify it is working with no regressions
+if [ "$NEXT_PUBLIC_USE_PARTYTOWN" = "true" ]; then
+  echo "Creating partytown folder and scripts..."
+  start_time=$(date +%s)
+  npm run partytown
+  calculate_duration $start_time
+fi
 
 ls -al
 find ./out -type f | wc -l
