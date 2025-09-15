@@ -33,9 +33,7 @@ export const Skeleton = ({
 >) => {
   const isStaging = site.environment === "staging"
 
-  const shouldIncludeGTM =
-    site.environment === "production" &&
-    (!!site.siteGtmId || !!site.isomerGtmId)
+  const shouldIncludeGTM = !!site.siteGtmId || !!site.isomerGtmId
 
   return (
     <>
