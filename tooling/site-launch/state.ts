@@ -6,7 +6,7 @@ import { SimplifyDeep } from "type-fest"
 import _state from "./state.json"
 
 // NOTE: assumed that `isomer` is rooted at ~
-const STATE_PATH = "~/isomer/tooling/site-launch/state.json"
+const STATE_PATH = "./state.json"
 
 export const SharedSteps = {
   __type: "Shared",
@@ -44,7 +44,7 @@ type Step = SimplifyDeep<
 >
 
 type SiteLaunchState = {
-  [step in Step]: string
+  [step in Step]?: string
 }
 
 type State = Record<string, SiteLaunchState>
@@ -77,8 +77,9 @@ async function writeToState(
   step: Step,
 ) {
   const result = await f()
+  if (!state[domain]) state[domain] = {}
   state[domain]![step] = result
-  writeFileSync(STATE_PATH, JSON.stringify(state))
+  writeFileSync(STATE_PATH, JSON.stringify(state, null, 2))
   return result
 }
 

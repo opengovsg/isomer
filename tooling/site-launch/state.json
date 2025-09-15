@@ -1,1 +1,10 @@
-{}
+{
+  "www.nmrc.sg": {
+    "Domain": "www.nmrc.sg",
+    "Acm": "_c497800b320c2959dc98a76129960928.www.nmrc.sg.   CNAME   _a1577bdfa48d887bf8aea7f948a10619.xlfgrmvvlj.acm-validations.aws.",
+    "LongName": "National Medical Research Council",
+    "CodeBuildId": "moh-nmrc",
+    "GithubName": "moh-nmrc-next"
+  }
+}
+

@@ -118,15 +118,11 @@ export const addSearchJson = async (repo: string) => {
 }
 
 export const archiveRepo = async (repo: string) => {
-  try {
-    await octokit.rest.repos.update({
-      owner,
-      repo,
-      archived: true,
-    })
-    console.log(`Repository ${repo} has been archived`)
-    return true
-  } catch (error) {
-    console.error(`Error archiving ${repo}:`, error)
-  }
+  await octokit.rest.repos.update({
+    owner,
+    repo,
+    archived: true,
+  })
+  console.log(`Repository ${repo} has been archived`)
+  return true
 }
