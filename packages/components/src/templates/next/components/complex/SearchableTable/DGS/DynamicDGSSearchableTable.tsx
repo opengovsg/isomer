@@ -5,7 +5,7 @@ import { useMemo, useState } from "react"
 import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type {
   DGSSearchableTableProps,
-  NativeSearchableTableProps,
+  SearchableTableClientProps,
 } from "~/interfaces"
 import { useDebounce } from "~/hooks/useDebounce"
 import { useDgsData } from "~/hooks/useDgsData"
@@ -14,10 +14,10 @@ import { SearchableTableClientUI } from "../shared/SearchableTableClientUI"
 
 interface DynamicSearchableTableClientProps
   extends Omit<DGSSearchableTableProps, "items" | "headers"> {
-  headers: NativeSearchableTableProps["headers"]
-  maxNoOfColumns: number
+  headers: SearchableTableClientProps["headers"]
   isMetadataLoading: boolean
   isMetadataError: boolean
+  maxNoOfColumns: number
 }
 
 export const DynamicDGSSearchableTable = ({
@@ -27,9 +27,9 @@ export const DynamicDGSSearchableTable = ({
   headers,
   site,
   LinkComponent,
-  maxNoOfColumns, // not using MAX_NUMBER_OF_COLUMNS as we should not arbitrarily slice the columns
   isMetadataLoading,
   isMetadataError,
+  maxNoOfColumns, // not using MAX_NUMBER_OF_COLUMNS as we should not arbitrarily slice the columns
 }: DynamicSearchableTableClientProps) => {
   const [_search, setSearch] = useState("")
   const search = useDebounce({ value: _search, delay: 300 })
