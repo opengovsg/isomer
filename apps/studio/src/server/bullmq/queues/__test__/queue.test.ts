@@ -1,7 +1,7 @@
 import type { User } from "@prisma/client"
 import type { Job } from "bullmq"
 import { QueueEvents } from "bullmq"
-import { addMilliseconds } from "date-fns"
+import { addMilliseconds, addSeconds } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -14,6 +14,7 @@ import type { ScheduledPublishJobData } from "../schedule-publish"
 import { db } from "~/server/modules/database"
 import * as resourceService from "~/server/modules/resource/resource.service"
 import {
+  BUFFER_IN_SECONDS,
   createScheduledPublishWorker,
   getJobIdFromResourceId,
   scheduledPublishQueue,
@@ -87,6 +88,36 @@ describe("bullMq.scheduledPublishQueue", async () => {
         siteId: site.id,
       })
       expect(updatedPage!.scheduledAt).toBeNull()
+    })
+    it("exists the job if the scheduledAt is not within the BUFFER_TIME", async () => {
+      // Arrange
+      const scheduleDate = addSeconds(FIXED_NOW, BUFFER_IN_SECONDS * 2)
+      const { site, page: expectedPage } = await setupPageResource({
+        resourceType: "Page",
+        scheduledAt: scheduleDate,
+      })
+      const jobData: ScheduledPublishJobData = {
+        resourceId: Number(expectedPage.id),
+        siteId: site.id,
+        userId: user.id,
+      }
+      const job = await scheduledPublishQueue.add(
+        "scheduled-publish",
+        jobData,
+        { delay: 0 }, // make job immediately available, even though the scheduledAt is 2 * BUFFER_IN_SECONDS in the future
+      )
+
+      // Act
+      await job.waitUntilFinished(queueEvents, 2000)
+
+      // Assert
+      expect(resourceService.publishPageResource).not.toHaveBeenCalled()
+      const updatedPage = await resourceService.getPageById(db, {
+        resourceId: Number(expectedPage.id),
+        siteId: site.id,
+      })
+      // scheduledAt should remain unchanged, since the job should exit early without publishing
+      expect(updatedPage!.scheduledAt).toEqual(scheduleDate)
     })
     it("multiple workers process the job only once", async () => {
       // Arrange
