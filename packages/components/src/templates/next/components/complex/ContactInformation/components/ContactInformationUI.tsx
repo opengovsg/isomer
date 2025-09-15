@@ -13,6 +13,6 @@ export const ContactInformationUI = (props: ContactInformationUIProps) => {
       return <HomepageContactInformationUI {...props} />
     default:
       const _exhaustiveCheck: never = simplifiedLayout
-      return null
+      return _exhaustiveCheck
   }
 }
