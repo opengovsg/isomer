@@ -82,6 +82,9 @@ const createHomepageContactMethodStyles = tv({
   },
 })
 
+type NumberOfContactMethods =
+  keyof typeof createHomepageContactMethodStyles.variants.numberOfContactMethods
+
 const MAX_CONTACT_METHODS_FOR_HOMEPAGE = 3
 
 export const HomepageContactInformationUI = ({
@@ -101,7 +104,7 @@ export const HomepageContactInformationUI = ({
       )
     : methods
 
-  const numberOfContactMethods = isLoading
+  const numberOfContactMethods: NumberOfContactMethods = isLoading
     ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
     : filteredMethods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
       ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
