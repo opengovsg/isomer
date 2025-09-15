@@ -147,7 +147,7 @@ export const ContactInformationSchema = Type.Intersect([
 
 export const InjectableContactInformationKeys = Object.keys(
   InjectableContactInformationSchema.properties,
-)
+) as (keyof typeof InjectableContactInformationSchema.properties)[]
 
 interface AdditionalContactInformationTypeProps {
   layout: IsomerPageLayoutType
