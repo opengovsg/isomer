@@ -1,4 +1,5 @@
 import type { Static } from "@sinclair/typebox"
+import type { SimplifyDeep } from "type-fest"
 import { Type } from "@sinclair/typebox"
 
 import type {
@@ -154,8 +155,10 @@ interface AdditionalContactInformationTypeProps {
   LinkComponent?: LinkComponentType
 }
 
-type BaseContactInformationType = Static<typeof BaseContactInformationSchema> &
-  AdditionalContactInformationTypeProps
+type BaseContactInformationType = SimplifyDeep<
+  Static<typeof BaseContactInformationSchema> &
+    AdditionalContactInformationTypeProps
+>
 
 export type ContactInformationUIProps = Omit<
   BaseContactInformationType,
@@ -167,11 +170,13 @@ export type ContactInformationUIProps = Omit<
     acceptHtmlTags?: boolean
   }
 
-export type NativeContactInformationProps = BaseContactInformationType &
-  Static<typeof NativeContactInformationSchema>
+export type NativeContactInformationProps = SimplifyDeep<
+  BaseContactInformationType & Static<typeof NativeContactInformationSchema>
+>
 
-export type DgsContactInformationProps = BaseContactInformationType &
-  Static<typeof DgsContactInformationSchema>
+export type DgsContactInformationProps = SimplifyDeep<
+  BaseContactInformationType & Static<typeof DgsContactInformationSchema>
+>
 
 export type ContactInformationProps = Static<typeof ContactInformationSchema> &
   AdditionalContactInformationTypeProps & {
