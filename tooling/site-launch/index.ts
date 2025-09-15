@@ -32,7 +32,7 @@ const launch = async () => {
     message: "Enter the domain (FQDN) of the site (eg: www.isomer.gov.sg):",
   })
 
-  await toStateFile(domain, "Domain", async () => domain)
+  await skipIfExists(domain, "Domain", async () => domain)
 
   await skipIfExists(domain, Steps.Acm, () => requestAcmViaClient(domain))
 
@@ -57,6 +57,10 @@ const launch = async () => {
   )
 
   if (!!repo) {
+    await skipIfExists(domain, Steps.Archived, async () => {
+      await archiveRepo(repo)
+      return "true"
+    })
     const status = await checkLastBuild(codebuildId)
     if (status !== "SUCCEED") {
       console.log("The last build of the site failed - please fix!")
