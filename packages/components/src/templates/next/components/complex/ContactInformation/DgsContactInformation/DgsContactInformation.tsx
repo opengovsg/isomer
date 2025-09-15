@@ -1,3 +1,5 @@
+"use client"
+
 import { useMemo } from "react"
 import omit from "lodash/omit"
 import pick from "lodash/pick"
