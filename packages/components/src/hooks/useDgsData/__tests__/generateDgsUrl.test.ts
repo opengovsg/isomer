@@ -146,6 +146,7 @@ describe("generateDgsUrl", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {
       resourceId: "test-resource-123",
+      q: undefined,
       limit: undefined,
       offset: undefined,
       filters: undefined,
@@ -178,6 +179,54 @@ describe("generateDgsUrl", () => {
     // Assert
     expect(result).toBe(
       "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&filters=%7B%22year%22%3A%222023%22%2C%22count%22%3A%22100%22%2C%22active%22%3A%22true%22%7D",
+    )
+  })
+
+  it("should generate URL with q parameter", () => {
+    // Arrange
+    const params: DgsApiDatasetSearchParams = {
+      resourceId: "test-resource-123",
+      q: "transport",
+    }
+
+    // Act
+    const result = generateDgsUrl(params)
+
+    // Assert
+    expect(result).toBe(
+      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&q=transport",
+    )
+  })
+
+  it("should handle q parameter with special characters", () => {
+    // Arrange
+    const params: DgsApiDatasetSearchParams = {
+      resourceId: "test-resource-123",
+      q: "transport & logistics",
+    }
+
+    // Act
+    const result = generateDgsUrl(params)
+
+    // Assert
+    expect(result).toBe(
+      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&q=transport+%26+logistics",
+    )
+  })
+
+  it("should handle q parameter with spaces and punctuation", () => {
+    // Arrange
+    const params: DgsApiDatasetSearchParams = {
+      resourceId: "test-resource-123",
+      q: "Singapore's population data 2023",
+    }
+
+    // Act
+    const result = generateDgsUrl(params)
+
+    // Assert
+    expect(result).toBe(
+      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&q=Singapore%27s+population+data+2023",
     )
   })
 })

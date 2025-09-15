@@ -14,6 +14,7 @@ interface UseDgsData extends DgsApiDatasetSearchParams {
 
 export const useDgsData = ({
   fetchAll = false,
+  q,
   resourceId,
   limit,
   offset,
@@ -30,13 +31,14 @@ export const useDgsData = ({
   // which will cause infinite re-renders for the subsequent useCallback hooks.
   const memoizedParams = useMemo(
     () => ({
+      q,
       resourceId,
       limit,
       offset,
       filters,
       sort,
     }),
-    [resourceId, limit, offset, filters, sort],
+    [q, resourceId, limit, offset, filters, sort],
   )
 
   const fetchAllRecords = useCallback(async () => {
@@ -98,6 +100,7 @@ export const useDgsData = ({
 
   return {
     records: data?.result.records,
+    total: data?.result.total,
     isLoading,
     isError,
   }
