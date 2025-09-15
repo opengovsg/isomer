@@ -47,6 +47,7 @@ export const ContactMethod = ({
               const isExternalLink = isExternalUrl(value)
               return (
                 <Link
+                  key={value}
                   href={value}
                   isExternal={isExternalLink}
                   showExternalIcon={isExternalLink}
@@ -63,6 +64,7 @@ export const ContactMethod = ({
             if (isEmail(value)) {
               return (
                 <Link
+                  key={value}
                   href={`mailto:${value}`}
                   className={styles.value({
                     isLink: true,
@@ -76,6 +78,7 @@ export const ContactMethod = ({
             if (isPhoneNumber(value)) {
               return (
                 <Link
+                  key={value}
                   href={`tel:${sanitizePhoneNumber(value)}`}
                   className={styles.value({
                     isLink: true,
