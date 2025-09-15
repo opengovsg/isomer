@@ -2,6 +2,7 @@
 // as DGS returns errors for invalid fields,
 // which can change unpredictably if admins update the dataset schema.
 export interface DgsApiDatasetSearchParams {
+  q?: string // query string
   resourceId: string
   limit?: number
   offset?: number

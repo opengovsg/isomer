@@ -50,6 +50,16 @@ export const DefaultTitleWhenUnspecified: Story = {
   args: omit(commonArgs, "title"),
 }
 
+export const LargeDataset: Story = {
+  args: {
+    type: "searchabletable",
+    dataSource: {
+      type: "dgs",
+      resourceId: "d_8b84c4ee58e3cfc0ece0d773c8ca6abc", // hardcoded
+    },
+  },
+}
+
 export const Loading: Story = {
   args: commonArgs,
   parameters: {
