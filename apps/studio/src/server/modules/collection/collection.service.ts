@@ -44,7 +44,6 @@ export const createCollectionLinkJson = ({}: {
     version: "0.1.0",
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
-
 export const createCollectionIndexJson = (title: string) => {
   return {
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,

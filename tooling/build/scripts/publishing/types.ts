@@ -15,9 +15,19 @@ interface Tag {
   category: string
 }
 
+interface Tagged {
+  label: string
+  id: string
+}
+
+type TagCategory = Tagged & {
+  options: Tagged[]
+}
+
 interface CollectionPagePageProps {
   defaultSortBy?: string
   defaultSortDirection?: string
+  tagCategories?: TagCategory[]
 }
 
 export type SitemapEntry = Pick<
@@ -36,6 +46,7 @@ export type SitemapEntry = Pick<
   ref?: string
   children?: SitemapEntry[]
   tags?: Tag[]
+  tagged?: Tagged[]
   collectionPagePageProps?: CollectionPagePageProps
 }
 

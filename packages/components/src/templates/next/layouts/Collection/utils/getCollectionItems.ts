@@ -2,6 +2,7 @@ import type { IsomerSiteProps } from "~/engine"
 import type { AllCardProps } from "~/interfaces"
 import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate, getSitemapAsArray } from "~/utils"
+import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
 
 const CATEGORY_OTHERS = "Others"
@@ -11,6 +12,7 @@ export interface GetCollectionItemsProps {
   permalink: string
   sortBy?: CollectionPagePageProps["defaultSortBy"]
   sortDirection?: CollectionPagePageProps["defaultSortDirection"]
+  tagCategories?: CollectionPagePageProps["tagCategories"]
 }
 
 export const getCollectionItems = ({
@@ -18,6 +20,7 @@ export const getCollectionItems = ({
   permalink,
   sortBy,
   sortDirection,
+  tagCategories,
 }: GetCollectionItemsProps): AllCardProps[] => {
   let currSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
@@ -64,14 +67,17 @@ export const getCollectionItems = ({
       const baseItem = {
         type: "collectionCard" as const,
         id: item.permalink,
-        rawDate: date,
-        lastUpdated: date?.toISOString(),
+        date,
+        lastModified: item.lastModified,
         category: item.category || CATEGORY_OTHERS,
         title: item.title,
         description: item.summary,
         image: item.image,
         site,
-        tags: item.tags,
+        tags:
+          tagCategories && item.tagged
+            ? getTagsFromTagged(item.tagged, tagCategories)
+            : item.tags,
       }
 
       if (item.layout === "file") {

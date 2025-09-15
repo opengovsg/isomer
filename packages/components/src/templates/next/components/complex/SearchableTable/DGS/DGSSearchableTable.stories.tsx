@@ -6,7 +6,7 @@ import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { DGSSearchableTable } from "./DGSSearchableTable"
 
 const meta: Meta<DGSSearchableTableProps> = {
-  title: "Next/Internal Components/SearchableTable/DGS",
+  title: "Next/Components/SearchableTable/DGS",
   component: DGSSearchableTable,
   argTypes: {},
   parameters: {

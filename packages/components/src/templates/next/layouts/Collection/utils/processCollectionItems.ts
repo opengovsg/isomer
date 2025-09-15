@@ -11,7 +11,7 @@ export const processCollectionItems = (
       id,
       site,
       variant,
-      lastUpdated,
+      date,
       category,
       title,
       description,
@@ -22,7 +22,7 @@ export const processCollectionItems = (
     const file = variant === "file" ? item.fileDetails : null
     return {
       id,
-      lastUpdated,
+      date,
       category,
       title,
       description,

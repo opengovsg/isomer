@@ -1,4 +1,5 @@
 import type { UnwrapTagged } from "type-fest"
+import { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash"
 
@@ -7,6 +8,7 @@ import {
   createCollectionSchema,
   editLinkSchema,
   getCollectionsSchema,
+  getCollectionTagsSchema,
   readLinkSchema,
 } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
@@ -332,7 +334,17 @@ export const collectionRouter = router({
     .input(editLinkSchema)
     .mutation(
       async ({
-        input: { date, category, linkId, siteId, description, ref, image },
+        input: {
+          date,
+          category,
+          linkId,
+          siteId,
+          description,
+          ref,
+          image,
+          tags,
+          tagged,
+        },
         ctx,
       }) => {
         // Things that aren't working yet:
@@ -370,14 +382,14 @@ export const collectionRouter = router({
             )
 
           const oldBlob = await getBlobOfResource({
-            tx,
+            db: tx,
             resourceId: resource.id,
           })
 
           const blob = await updateBlobById(tx, {
             content: {
               ...content,
-              page: { description, ref, date, category, image },
+              page: { description, ref, date, category, image, tags, tagged },
             },
             pageId: linkId,
             siteId,
@@ -397,6 +409,92 @@ export const collectionRouter = router({
         })
       },
     ),
+
+  getCollectionTags: protectedProcedure
+    .input(getCollectionTagsSchema)
+    .query(async ({ ctx, input: { resourceId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+        resourceIds: [String(resourceId)],
+      })
+
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("type", "=", ResourceType.IndexPage)
+        .where("parentId", "=", (eb) =>
+          eb
+            .selectFrom("Resource")
+            .where("id", "=", String(resourceId))
+            .where("siteId", "=", siteId)
+            .select("parentId"),
+        )
+        .select("id")
+        .executeTakeFirst()
+
+      if (!indexPage) {
+        return []
+      }
+
+      const { draftBlobId, publishedVersionId } = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(indexPage.id))
+        .select(["draftBlobId", "publishedVersionId"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "The specified resource could not be found",
+            }),
+        )
+
+      if (publishedVersionId) {
+        const { content } = await db
+          .selectFrom("Blob")
+          .where("id", "=", (qb) =>
+            qb
+              .selectFrom("Version")
+              .where("id", "=", publishedVersionId)
+              .select("blobId"),
+          )
+          .selectAll()
+          // NOTE: Guaranteed to exist since this is a foreign key
+          .executeTakeFirstOrThrow()
+
+        return (
+          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
+          []
+        )
+      }
+
+      if (draftBlobId) {
+        const { content } = await db
+          .selectFrom("Blob")
+          .where("id", "=", draftBlobId)
+          .selectAll()
+          // NOTE: Guaranteed to exist since this is a foreign key
+          .executeTakeFirstOrThrow()
+
+        return (
+          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
+          []
+        )
+      }
+
+      return []
+
+      // FIXME: we cannot do this yet because we still use `Type.Composite`
+      // over `Type.Intersect`, which causes typing errors above.
+      // Once we swap over to using `Type.Intersect`, we can uncomment this
+      // and the typing will work properly
+      // if (content.layout === "collection") {
+      //   return content.page.tagCategories
+      // }
+      //
+      // return []
+    }),
+
   getCollections: protectedProcedure
     .input(getCollectionsSchema)
     .query(async ({ ctx, input: { siteId, hasChildren } }) => {

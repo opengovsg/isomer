@@ -54,6 +54,7 @@ export const DEFAULT_CHILDREN_PAGES_BLOCK = Value.Parse(
 )
 
 export interface ChildrenPagesProps extends Static<typeof ChildrenPagesSchema> {
+  shouldLazyLoad?: boolean
   permalink: string
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType

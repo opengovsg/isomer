@@ -1,6 +1,5 @@
 import type { Filter } from "../../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
-import { getParsedDate } from "~/utils"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
 
 export const getYearFilter = (
@@ -9,9 +8,9 @@ export const getYearFilter = (
   const years: Record<string, number> = {}
   let numberOfUndefinedDates = 0
 
-  items.forEach(({ lastUpdated }) => {
-    if (lastUpdated) {
-      const year = getParsedDate(lastUpdated).getFullYear().toString()
+  items.forEach(({ date }) => {
+    if (date) {
+      const year = date.getFullYear().toString()
       if (year in years && years[year]) {
         years[year] += 1
       } else {

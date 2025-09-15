@@ -21,13 +21,13 @@ export const doesComponentHaveImage = ({
     case "callout":
     case "infobar":
     case "infocols":
-    case "infopic":
     case "prose":
     case DYNAMIC_DATA_BANNER_TYPE:
     case CONTACT_INFORMATION_TYPE:
     case DYNAMIC_COMPONENT_LIST_TYPE: // The content are fetched, so they eager load has no impact
       return false
     case "image":
+    case "infopic":
     case "formsg":
     case "hero":
     case "logocloud":
