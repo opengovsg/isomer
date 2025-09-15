@@ -60,7 +60,8 @@ const DynamicComponentList = ({
       ))
 
     default:
-      return null
+      const _exhaustiveCheck: never = component.type
+      return _exhaustiveCheck
   }
 }
 
