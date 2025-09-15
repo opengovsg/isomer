@@ -80,29 +80,13 @@ export const SearchableTableClientUI = ({
     })
   }
 
-  return (
-    <div className={compoundStyles.container()} ref={sectionTopRef}>
-      {!!title && (
-        <h2 id={titleId} className={compoundStyles.title()}>
-          {title}
-        </h2>
-      )}
+  const Content = () => {
+    if (isInitiallyEmpty || isLoading || isError) {
+      return <FallbackEmptyState isLoading={isLoading} isError={isError} />
+    }
 
-      <SearchField
-        aria-label="Search table"
-        placeholder="Enter a search term"
-        value={searchInput}
-        onChange={(value) => {
-          setSearch(value)
-          setCurrPage(1)
-        }}
-      />
-
-      {(isInitiallyEmpty || isLoading || isError) && (
-        <FallbackEmptyState isLoading={isLoading} isError={isError} />
-      )}
-
-      {isFilteredEmpty && (
+    if (isFilteredEmpty) {
+      return (
         <EmptyState
           search={deferredSearch}
           onClick={() => {
@@ -110,9 +94,11 @@ export const SearchableTableClientUI = ({
             setCurrPage(1)
           }}
         />
-      )}
+      )
+    }
 
-      {paginatedItems.length > 0 && (
+    if (paginatedItems.length > 0) {
+      return (
         <div className={compoundStyles.tableContainer()} tabIndex={0}>
           <table
             className={compoundStyles.table()}
@@ -157,7 +143,31 @@ export const SearchableTableClientUI = ({
             </tbody>
           </table>
         </div>
+      )
+    }
+
+    return null
+  }
+
+  return (
+    <div className={compoundStyles.container()} ref={sectionTopRef}>
+      {!!title && (
+        <h2 id={titleId} className={compoundStyles.title()}>
+          {title}
+        </h2>
       )}
+
+      <SearchField
+        aria-label="Search table"
+        placeholder="Enter a search term"
+        value={searchInput}
+        onChange={(value) => {
+          setSearch(value)
+          setCurrPage(1)
+        }}
+      />
+
+      <Content />
 
       {filteredItemsLength > 0 && (
         <div className={compoundStyles.pagination()}>
