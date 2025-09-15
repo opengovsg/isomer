@@ -149,12 +149,13 @@ export const InjectableContactInformationKeys = Object.keys(
   InjectableContactInformationSchema.properties,
 )
 
-type BaseContactInformationType = Static<
-  typeof BaseContactInformationSchema
-> & {
+interface AdditionalContactInformationTypeProps {
   layout: IsomerPageLayoutType
   LinkComponent?: LinkComponentType
 }
+
+type BaseContactInformationType = Static<typeof BaseContactInformationSchema> &
+  AdditionalContactInformationTypeProps
 
 export type ContactInformationUIProps = Omit<
   BaseContactInformationType,
@@ -172,10 +173,7 @@ export type NativeContactInformationProps = BaseContactInformationType &
 export type DgsContactInformationProps = BaseContactInformationType &
   Static<typeof DgsContactInformationSchema>
 
-export type ContactInformationProps = Pick<
-  BaseContactInformationType,
-  "layout" | "LinkComponent"
-> &
-  Static<typeof ContactInformationSchema> & {
+export type ContactInformationProps = Static<typeof ContactInformationSchema> &
+  AdditionalContactInformationTypeProps & {
     site: IsomerSiteProps
   }
