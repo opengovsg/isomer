@@ -49,9 +49,11 @@ export const DynamicSearchableTableClient = ({
     [resourceId, filters, sort],
   )
 
+  const { total } = useDgsData({ ...params, fetchAll: false })
+
   const {
     records,
-    total,
+    total: numberOfRecords,
     isLoading: isDataLoading,
     isError: isDataError,
   } = useDgsData({
@@ -85,7 +87,7 @@ export const DynamicSearchableTableClient = ({
       isFilteredEmpty={isFilteredEmpty}
       maxNoOfColumns={maxNoOfColumns}
       paginatedItems={items}
-      filteredItemsLength={total ?? 0}
+      filteredItemsLength={numberOfRecords ?? 0}
     />
   )
 }
