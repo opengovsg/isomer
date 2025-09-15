@@ -69,6 +69,7 @@ const launch = async () => {
     await updateCodebuildId(siteId, codebuildId)
 
     await migrate(repo, siteId)
+    await migrateTagsOfSite(siteId)
 
     await s3sync(siteId)
 
