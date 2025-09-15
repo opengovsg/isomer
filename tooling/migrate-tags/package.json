@@ -2,8 +2,7 @@
   "name": "@isomer/migrate-tags",
   "type": "module",
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc"
+    "dev": "tsc --watch"
   },
   "exports": {
     ".": "./index.ts"
