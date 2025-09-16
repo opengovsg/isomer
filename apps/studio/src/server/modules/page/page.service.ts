@@ -8,7 +8,7 @@ import { format } from "date-fns"
 
 import type { ScheduledPublishJobData } from "~/server/bullmq/queues/schedule-publish"
 import {
-  getJobIdFromResourceId,
+  getJobIdFromResourceIdAndScheduledAt,
   getJobOptionsFromScheduledAt,
   scheduledPublishQueue,
 } from "~/server/bullmq/queues/schedule-publish"
@@ -70,40 +70,37 @@ export const createFolderIndexPage = (title: string) => {
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
 
+/**
+ * Schedules a publish job for a resource at a specified date
+ * @param logger Pino logger instance
+ * @param data Scheduled publish job data
+ * @param scheduledAt The date at which the job should be processed
+ */
 export const schedulePublishResource = async (
   logger: pino.Logger<string>,
   data: ScheduledPublishJobData,
   scheduledAt: Date,
 ) => {
-  const jobId = getJobIdFromResourceId(data.resourceId.toString())
-  const existingJob = await scheduledPublishQueue.getJob(jobId)
-  if (existingJob) {
-    // If a job already exists for this resource, we update its scheduled time
-    logger.info(
-      { resourceId: data.resourceId, scheduledAt },
-      "Rescheduling existing job",
-    )
-    await existingJob.updateData(data)
-    await existingJob.changeDelay(scheduledAt.getTime() - Date.now())
-    return
-  }
-  // If no existing job, we create a new one
-  logger.info(
-    { resourceId: data.resourceId, scheduledAt },
-    "Scheduling new publish job",
-  )
   await scheduledPublishQueue.add(
     "schedule-publish",
     data,
     getJobOptionsFromScheduledAt(data.resourceId.toString(), scheduledAt),
+  )
+  logger.info(
+    { resourceId: data.resourceId, scheduledAt },
+    "Scheduling new publish job",
   )
 }
 
 export const unschedulePublishResource = async (
   logger: pino.Logger<string>,
   resourceId: number,
+  scheduledAt: Date,
 ) => {
-  const jobId = getJobIdFromResourceId(resourceId.toString())
+  const jobId = getJobIdFromResourceIdAndScheduledAt(
+    resourceId.toString(),
+    scheduledAt,
+  )
   const existingJob = await scheduledPublishQueue.getJob(jobId)
   if (existingJob) {
     logger.info({ resourceId }, "Removing scheduled publish job")

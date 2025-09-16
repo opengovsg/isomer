@@ -1,10 +1,11 @@
 import type { BackoffOptions, JobsOptions } from "bullmq"
 import type { Settings } from "redlock"
 
+const DAY_IN_SECONDS = 60 * 60 * 24
 /** Queue & worker settings */
 export const SCHEDULED_PUBLISH_QUEUE_NAME = "{scheduled-publish-queue}"
-export const REMOVE_ON_COMPLETE_BUFFER = 60 * 60 * 24 // 1 day in seconds
-export const REMOVE_ON_FAIL_BUFFER = 60 * 60 * 24 * 4 // 4 days in seconds
+export const REMOVE_ON_COMPLETE_BUFFER = DAY_IN_SECONDS // 1 day in seconds
+export const REMOVE_ON_FAIL_BUFFER = DAY_IN_SECONDS * 4 // 4 days in seconds
 export const WORKER_CONCURRENCY = 5
 export const WORKER_RETRY_LIMIT = 3
 export const WORKER_SHUTDOWN_TIMEOUT = 30_000 // 30 seconds
