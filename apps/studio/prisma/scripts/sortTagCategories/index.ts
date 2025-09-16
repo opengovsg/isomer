@@ -28,10 +28,7 @@ const getAllIndexPagesWithTagCategories = async () => {
     ])
     .where("type", "=", "IndexPage")
     .where("parentId", "in", (eb) =>
-      eb
-        .selectFrom("Resource")
-        .where("type", "=", "Collection")
-        .select("parentId"),
+      eb.selectFrom("Resource").where("type", "=", "Collection").select("id"),
     )
     .where((eb) =>
       eb.or([
