@@ -472,7 +472,11 @@ export const pageRouter = router({
           })
         }
         // remove from the scheduled publish queue
-        await unschedulePublishResource(ctx.logger, pageId)
+        await unschedulePublishResource(
+          ctx.logger,
+          pageId,
+          resource.scheduledAt,
+        )
         await logResourceEvent(tx, {
           siteId,
           by,

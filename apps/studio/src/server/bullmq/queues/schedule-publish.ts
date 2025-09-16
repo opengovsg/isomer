@@ -65,12 +65,23 @@ export const getJobOptionsFromScheduledAt = (
     removeOnComplete: { age: REMOVE_ON_COMPLETE_BUFFER },
     removeOnFail: { age: REMOVE_ON_FAIL_BUFFER },
     delay: delayInMs,
-    jobId: getJobIdFromResourceId(resourceId),
+    jobId: getJobIdFromResourceIdAndScheduledAt(resourceId, scheduledAt),
   }
 }
 
-export const getJobIdFromResourceId = (resourceId: string) =>
-  `resource-${resourceId}`
+/**
+ * Get the job ID for a scheduled publish job
+ * NOTE: job IDs must be unique per queue, so we include the scheduledAt timestamp to ensure uniqueness
+ * This is because we might enqueue jobs which are STILL active (ie publishing is in progress), since
+ * we 'claim' the job before the publishing completes
+ * @param resourceId The id of the resource to be published
+ * @param scheduledAt The date and time when the job is scheduled to run
+ * @returns The job ID for the scheduled publish job
+ */
+export const getJobIdFromResourceIdAndScheduledAt = (
+  resourceId: string,
+  scheduledAt: Date,
+) => `resource-${resourceId}-${scheduledAt.getTime()}`
 
 /**
  * Creates and returns a Worker that processes scheduled publish jobs

@@ -128,7 +128,6 @@
     "flat": "^6.0.1",
     "fuzzysort": "^3.1.0",
     "inter-ui": "^4.1.0",
-    "ioredis": "^5.7.0",
     "iron-session": "^8.0.4",
     "isomorphic-dompurify": "^2.25.0",
     "jose": "^6.0.11",
