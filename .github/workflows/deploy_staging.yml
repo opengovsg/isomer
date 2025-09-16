@@ -15,10 +15,6 @@ jobs:
     name: Deploy app to staging
     uses: ./.github/workflows/aws_deploy.yml
     # NOTE: deploy in `staging` env to set env specific secrets
-    secrets:
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-      SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
-      SLACK_NOTIFY_TEAM_ID: ${{ secrets.SLACK_NOTIFY_TEAM_ID }}
     with:
       aws-region: "ap-southeast-1"
       aws-account-id: "058264420411"
