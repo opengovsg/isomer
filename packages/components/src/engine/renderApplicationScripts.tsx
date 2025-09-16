@@ -26,21 +26,20 @@ export const RenderApplicationScripts = ({
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
 
-      {!!site.siteGtmId ||
-        (!!site.isomerGtmId && (
-          <>
-            <GoogleTagManagerPreload />
-            <GoogleTagManagerHeader
-              siteGtmId={site.siteGtmId}
-              isomerGtmId={site.isomerGtmId}
-              ScriptComponent={ScriptComponent}
-            />
-            <GoogleTagManagerBody
-              siteGtmId={site.siteGtmId}
-              isomerGtmId={site.isomerGtmId}
-            />
-          </>
-        ))}
+      {(!!site.siteGtmId || site.isomerGtmId) && (
+        <>
+          <GoogleTagManagerPreload />
+          <GoogleTagManagerHeader
+            siteGtmId={site.siteGtmId}
+            isomerGtmId={site.isomerGtmId}
+            ScriptComponent={ScriptComponent}
+          />
+          <GoogleTagManagerBody
+            siteGtmId={site.siteGtmId}
+            isomerGtmId={site.isomerGtmId}
+          />
+        </>
+      )}
 
       {!!site.isomerMsClarityId && (
         <MicrosoftClarity
