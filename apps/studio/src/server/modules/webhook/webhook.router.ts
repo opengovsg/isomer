@@ -8,7 +8,7 @@ import { codeBuildWebhookSchema } from "~/schemas/webhook"
 import { router, webhookProcedure } from "~/server/trpc"
 import { db } from "../database"
 
-export const resourceRouter = router({
+export const webhookRouter = router({
   updateCodebuildWebhook: webhookProcedure
     .input(codeBuildWebhookSchema)
     .mutation(
