@@ -39,12 +39,11 @@ export const generateMetadata = async (
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
     // TODO: fixup all the typing errors
-    // @ts-ignore to fix when types are proper
+    // @ts-expect-error to fix when types are proper
     siteMap: sitemap,
-    // @ts-ignore to fix when types are proper
     navbar: navbar,
     // TODO: fixup all the typing errors
-    // @ts-ignore to fix when types are proper
+    // @ts-expect-error to fix when types are proper
     footerItems: footer,
     lastUpdated,
     assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
@@ -67,12 +66,12 @@ const NotFound = () => {
           ...config.site,
           environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
           // TODO: fixup all the typing errors
-          // @ts-ignore to fix when types are proper
+          // @ts-expect-error to fix when types are proper
+
           siteMap: sitemap,
-          // @ts-ignore to fix when types are proper
           navbar: navbar,
           // TODO: fixup all the typing errors
-          // @ts-ignore to fix when types are proper
+          // @ts-expect-error to fix when types are proper
           footerItems: footer,
           assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
           isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
