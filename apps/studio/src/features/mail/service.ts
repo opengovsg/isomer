@@ -9,6 +9,7 @@ import type {
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
+  SuccessfulSchedulePublishTemplateData,
 } from "./templates"
 import { createBaseLogger } from "~/lib/logger"
 import { isValidEmail } from "~/utils/email"
@@ -98,6 +99,16 @@ export async function sendFailedSchedulePublishEmail(
     data,
     template: templates.failedSchedulePublish(data),
     emailType: "failed schedule publish",
+  })
+}
+
+export async function sendSuccessfulScheduledPublishEmail(
+  data: SuccessfulSchedulePublishTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.successfulScheduledPublish(data),
+    emailType: "successful scheduled publish",
   })
 }
 
