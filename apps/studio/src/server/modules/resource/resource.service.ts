@@ -600,6 +600,20 @@ export const publishPageResource = async (
 
   // Step 2: Trigger a publish of the site
   const build = await publishSite(logger, siteId)
+
+  // Step 3: Save the build info if the build was triggered
+  if (build)
+    await tx
+      .insertInto("CodeBuildJobs")
+      .values({
+        siteId,
+        userId: user.id,
+        buildId: build.buildId,
+        startedAt: build.startTime,
+        status: "IN_PROGRESS", // default to in progress, will be updated by webhook
+      })
+      .execute()
+
   return { version, build }
 }
 
