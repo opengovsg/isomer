@@ -245,9 +245,7 @@ export const protectedProcedure = baseProcedure.use(authMiddleware)
  * but still need to be protected via an API key
  * e.g. CodeBuild webhook
  * */
-export const webhookProcedure = baseProcedure
-  .use(baseMiddleware)
-  .use(webhookMiddleware)
+export const webhookProcedure = baseProcedure.use(webhookMiddleware)
 
 /**
  * @see https://trpc.io/docs/v10/middlewares
