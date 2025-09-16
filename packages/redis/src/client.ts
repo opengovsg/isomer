@@ -87,7 +87,7 @@ type RedisAndRedlockOptions =
  * @returns An object containing the Redis client, Redlock instance, and keyspace.
  */
 export const getRedisWithRedlock = (
-  options: RedisAndRedlockOptions
+  options: RedisAndRedlockOptions,
 ): RedisWithRedlock => {
   return {
     redis: getRedisClient(options.bullmqCompatible ? "" : options.keyspace),
