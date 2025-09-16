@@ -599,8 +599,9 @@ export const publishPageResource = async (
   })
 
   // Step 2: Trigger a publish of the site
-  await publishSite(logger, siteId)
-  return version
+  const build = await publishSite(logger, siteId)
+
+  return { version, build }
 }
 
 // NOTE: The distinction here between `publishResource` and `publishPageResource` is that
