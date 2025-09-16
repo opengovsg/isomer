@@ -41,3 +41,11 @@ export const AuditLogEvent = {
   NavbarUpdate: "NavbarUpdate",
 } as const
 export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent]
+export const BuildStatusType = {
+  IN_PROGRESS: "IN_PROGRESS",
+  SUCCEEDED: "SUCCEEDED",
+  FAILED: "FAILED",
+  STOPPED: "STOPPED",
+} as const
+export type BuildStatusType =
+  (typeof BuildStatusType)[keyof typeof BuildStatusType]
