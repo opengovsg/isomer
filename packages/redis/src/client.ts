@@ -6,7 +6,6 @@ import { env } from "./env";
 export interface RedisWithRedlock {
   redis: Redis | Cluster;
   redlock: Redlock;
-  keyspace: string;
 }
 
 /* Singleton pattern using global for dev hot reload */
@@ -15,8 +14,14 @@ const globalForRedis = global as unknown as {
   redlockClients: Record<string, Redlock>;
 };
 
+/**
+ * Create a Redis client for a specific keyspace.
+ * NOTE: The key MUST be empty string "" if using with bullmq, as bullmq uses its own key prefixing scheme
+ * https://docs.bullmq.io/guide/connections
+ * @param keyspace A string to prefix all Redis keys with, to avoid collisions between different parts of the app.
+ * @returns A Redis client instance.
+ */
 const createRedisClient = (keyspace: string) => {
-  /** Redis client used for BullMQ jobs */
   const RedisClient: Redis | Cluster =
     env.NODE_ENV === "production"
       ? // MemoryDB cluster in deployed envs
@@ -26,13 +31,13 @@ const createRedisClient = (keyspace: string) => {
           redisOptions: {
             tls: {},
             maxRetriesPerRequest: null,
-            keyPrefix: `${keyspace}:`,
+            keyPrefix: !!keyspace ? `${keyspace}:` : undefined,
           },
         })
       : // in development or testing just use same docker instance for convenience
         new Redis(env.REDIS_URL, {
           maxRetriesPerRequest: null,
-          keyPrefix: `${keyspace}:`,
+          keyPrefix: !!keyspace ? `${keyspace}:` : undefined,
         });
 
   RedisClient.on("error", (err) => console.error("Redis client error", err));
@@ -55,16 +60,38 @@ const getRedlockClient = (keyspace: string): Redlock => {
   return client;
 };
 
+interface RedisAndRedlockBullmqCompatibleOptions {
+  bullmqCompatible: true;
+}
+
+interface RedisAndRedlockCustomKeyspaceOptions {
+  bullmqCompatible: false;
+  keyspace: string;
+}
+
+/**
+ * Options for getRedisWithRedlock function.
+ * If bullmqCompatible is true, the keyspace will be set to "" to be compatible with bullmq.
+ * If bullmqCompatible is false, a custom non-empty keyspace must be provided.
+ */
+type RedisAndRedlockOptions =
+  | RedisAndRedlockBullmqCompatibleOptions
+  | RedisAndRedlockCustomKeyspaceOptions;
+
 /**
  * Get a Redis client and a Redlock instance for a specific keyspace.
  * @param keyspace A string to prefix all Redis keys with, to avoid collisions between different parts of the app.
+ * NOTE: The key is not considered when bullmqCompatible is true as bullmq uses its own key prefixing scheme
+ * Passing an empty string "" uses the default non-key-prefixed namespace
+ * https://docs.bullmq.io/guide/connections
  * @returns An object containing the Redis client, Redlock instance, and keyspace.
  */
-export const getRedisWithRedlock = (keyspace: string): RedisWithRedlock => {
+export const getRedisWithRedlock = (
+  options: RedisAndRedlockOptions
+): RedisWithRedlock => {
   return {
-    redis: getRedisClient(keyspace),
-    redlock: getRedlockClient(keyspace),
-    keyspace,
+    redis: getRedisClient(options.bullmqCompatible ? "" : options.keyspace),
+    redlock: getRedlockClient(options.bullmqCompatible ? "" : options.keyspace),
   };
 };
 

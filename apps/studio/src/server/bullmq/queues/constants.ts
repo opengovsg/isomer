@@ -27,6 +27,3 @@ export const REDLOCK_SETTINGS: Partial<Settings> = {
   retryDelay: 0,
   retryJitter: 0,
 }
-
-/** Keyspace prefixes used for redis & redlock */
-export const SCHEDULED_PUBLISH_KEYSPACE = "schedule-publish"
