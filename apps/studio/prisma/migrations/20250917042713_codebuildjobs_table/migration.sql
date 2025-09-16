@@ -3,17 +3,15 @@ CREATE TYPE "BuildStatusType" AS ENUM ('IN_PROGRESS', 'SUCCEEDED', 'FAILED', 'ST
 
 -- CreateTable
 CREATE TABLE "CodeBuildJobs" (
-    "id" BIGSERIAL NOT NULL,
+    "buildId" TEXT NOT NULL,
     "siteId" INTEGER NOT NULL,
     "userId" TEXT NOT NULL,
-    "buildId" TEXT NOT NULL,
     "status" "BuildStatusType" NOT NULL DEFAULT 'IN_PROGRESS',
     "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "completedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "CodeBuildJobs_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "CodeBuildJobs_pkey" PRIMARY KEY ("buildId")
 );
 
 -- CreateIndex
