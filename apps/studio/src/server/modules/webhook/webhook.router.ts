@@ -61,7 +61,7 @@ export const webhookRouter = router({
           .executeTakeFirst()
 
         if (!user?.email) {
-          logger.error(
+          logger.warn(
             { userIdToSendNotification },
             `User with ID ${String(userIdToSendNotification)} not found or email not available. Cannot send build notification.`,
           )
