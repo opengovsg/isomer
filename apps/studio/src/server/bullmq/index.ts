@@ -1,8 +1,11 @@
-import { RedisClient } from "@isomer/redis"
+import { getRedisWithRedlock } from "@isomer/redis"
 
 import { createBaseLogger } from "~/lib/logger"
+import { SCHEDULED_PUBLISH_KEYSPACE } from "./queues/constants"
 
 const logger = createBaseLogger({ path: "bullmq:index" })
+
+const { redis: RedisClient } = getRedisWithRedlock(SCHEDULED_PUBLISH_KEYSPACE)
 
 RedisClient.on("connect", () => {
   logger.info({ message: "Initiating connection to Redis" })
