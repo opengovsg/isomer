@@ -195,16 +195,6 @@ export const publishScheduledResource = async (
           )
           return
         }
-        await tx
-          .insertInto("CodeBuildJobs")
-          .values({
-            siteId,
-            userId: user.id,
-            buildId: build.buildId,
-            startedAt: build.startTime,
-            status: "IN_PROGRESS", // default to in progress, will be updated by webhook
-          })
-          .execute()
         return version
       })
   } catch (error) {
