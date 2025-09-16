@@ -1,7 +1,6 @@
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
 import type { Metadata, ResolvingMetadata } from "next"
 import Link from "next/link"
-import Script from "next/script"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
@@ -74,7 +73,6 @@ const NotFound = () => {
           // @ts-expect-error to fix when types are proper
           footerItems: footer,
           assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
-          isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
         }}
         layout="notfound"
         meta={{
@@ -88,7 +86,6 @@ const NotFound = () => {
         }}
         content={[]}
         LinkComponent={Link}
-        ScriptComponent={Script}
       />
     </>
   )

@@ -127,7 +127,6 @@ type BaseNavbarProps = NavbarSchemaType & {
   layout: IsomerPageLayoutType
   search?: LocalSearchProps | SearchSGInputBoxProps
   LinkComponent?: LinkComponentType
-  ScriptComponent?: ScriptComponentType
 }
 
 export type NavbarProps = BaseNavbarProps & {
