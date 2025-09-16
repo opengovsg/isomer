@@ -160,12 +160,29 @@ const publishScheduledResource = async ({
     // Publish the page outside of the transaction to avoid long-running transactions
     if (page) {
       logger.info({ message: `Publishing scheduled page ${resourceId}` })
-      await publishPageResource({
-        logger,
-        siteId,
-        resourceId: page.id,
-        userId,
-      })
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", userId)
+        .selectAll()
+        .executeTakeFirst()
+      if (!user) {
+        // if the user no longer exists, we log an error and exit, since we don't have a user to attribute the publish to
+        logger.error({
+          message: `User with id ${userId} not found. Cannot continue with publish of resource ${resourceId}.`,
+        })
+        return
+      }
+      await db
+        .transaction()
+        .setIsolationLevel("serializable")
+        .execute(async (tx) => {
+          await publishPageResource(tx, {
+            logger,
+            siteId,
+            resourceId: page.id,
+            user,
+          })
+        })
     }
   } catch (err) {
     // If we fail to acquire the lock, it means another worker is processing this resource and we can exit gracefully
