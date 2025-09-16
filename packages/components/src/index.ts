@@ -4,6 +4,7 @@ export * from "./presets"
 export * from "./types"
 export * from "./interfaces"
 export {
+  FORMSG_EMBED_URL_REGEXES,
   MAPS_EMBED_URL_REGEXES,
   VIDEO_EMBED_URL_REGEXES,
   getResourceIdFromReferenceLink,

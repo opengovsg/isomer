@@ -5,11 +5,8 @@ import {
   getTableOfContents,
   getTransformedPageContent,
 } from "~/utils"
-import {
-  ContentPageHeader,
-  SearchableTable,
-  TableOfContents,
-} from "../../components/internal"
+import { SearchableTable } from "../../components/complex"
+import { ContentPageHeader, TableOfContents } from "../../components/internal"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
@@ -30,7 +27,6 @@ const DatabaseLayout = ({
   layout,
   content,
   LinkComponent,
-  ScriptComponent,
 }: DatabasePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
@@ -46,7 +42,6 @@ const DatabaseLayout = ({
       page={page}
       layout={layout}
       LinkComponent={LinkComponent}
-      ScriptComponent={ScriptComponent}
     >
       <ContentPageHeader
         {...page.contentPageHeader}

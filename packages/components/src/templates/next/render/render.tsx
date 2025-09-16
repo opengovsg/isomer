@@ -17,6 +17,7 @@ import {
   CollectionBlock,
   Contentpic,
   DynamicDataBanner,
+  FormSG,
   Hero,
   Iframe,
   Image,
@@ -68,6 +69,8 @@ export const renderComponent = ({
       return <Callout key={elementKey} {...component} {...rest} />
     case "contentpic":
       return <Contentpic key={elementKey} {...component} {...rest} />
+    case "formsg":
+      return <FormSG key={elementKey} {...component} {...rest} />
     case "hero":
       return <Hero key={elementKey} {...component} {...rest} />
     case "iframe":
@@ -113,13 +116,11 @@ export const renderComponent = ({
 
 export const renderLayout = ({
   LinkComponent = "a",
-  ScriptComponent = "script",
   ...rest
 }: IsomerPageSchemaType) => {
   const props = {
     ...rest,
     LinkComponent,
-    ScriptComponent,
   }
 
   switch (props.layout) {

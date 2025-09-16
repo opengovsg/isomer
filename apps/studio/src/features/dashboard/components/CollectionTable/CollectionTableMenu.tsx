@@ -74,19 +74,21 @@ export const CollectionTableMenu = ({
           >
             Move to...
           </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setValue({
-                title,
-                resourceId,
-                resourceType,
-              })
-            }}
-            colorScheme="critical"
-            icon={<BiTrash fontSize="1rem" />}
-          >
-            Delete
-          </MenuItem>
+          {resourceType !== ResourceType.IndexPage && (
+            <MenuItem
+              onClick={() => {
+                setValue({
+                  title,
+                  resourceId,
+                  resourceType,
+                })
+              }}
+              colorScheme="critical"
+              icon={<BiTrash fontSize="1rem" />}
+            >
+              Delete
+            </MenuItem>
+          )}
         </MenuList>
       </Portal>
     </Menu>

@@ -4,6 +4,7 @@ import { jsonObjectFrom } from "kysely/helpers/postgres"
 import get from "lodash/get"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
+import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -227,23 +228,10 @@ export const resourceRouter = router({
         let query = db
           .selectFrom("Resource")
           .select(["title", "permalink", "type", "id", "parentId"])
-          .where("Resource.type", "in", [
-            ResourceType.Page,
-            ResourceType.Folder,
-            ResourceType.Collection,
-            ResourceType.CollectionPage,
-            ResourceType.IndexPage,
-          ])
+          .where("Resource.type", "in", USER_LINKABLE_RESOURCE_TYPES)
           .where("Resource.siteId", "=", Number(siteId))
           .$narrowType<{
-            type: Extract<
-              ResourceType,
-              | typeof ResourceType.Page
-              | typeof ResourceType.Folder
-              | typeof ResourceType.Collection
-              | typeof ResourceType.CollectionPage
-              | typeof ResourceType.IndexPage
-            >
+            type: (typeof USER_LINKABLE_RESOURCE_TYPES)[number]
           }>()
           .orderBy("type", "asc")
           .orderBy("title", "asc")
@@ -508,15 +496,36 @@ export const resourceRouter = router({
         siteId: Number(siteId),
       })
 
+      let resourceType: null | ResourceType = null
+
+      if (resourceId) {
+        const { type } = await db
+          .selectFrom("Resource")
+          .where("id", "=", String(resourceId))
+          .select("type")
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "NOT_FOUND",
+                message: "Resource not found",
+              }),
+          )
+
+        resourceType = type
+      }
+
       // TODO(perf): If too slow, consider caching this count, but 4-5 million rows should be fine
       let query = db
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", ResourceType.RootPage)
-        .where("Resource.type", "!=", ResourceType.IndexPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .select((eb) => [eb.fn.countAll().as("totalCount")])
+
+      if (resourceType !== ResourceType.Collection) {
+        query = query.where("Resource.type", "!=", ResourceType.IndexPage)
+      }
 
       if (resourceId) {
         query = query.where("Resource.parentId", "=", String(resourceId))

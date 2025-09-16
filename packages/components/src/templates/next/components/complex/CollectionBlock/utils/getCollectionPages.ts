@@ -2,10 +2,7 @@ import type { GetCollectionItemsProps } from "../../../../layouts/Collection/uti
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { IsomerSiteProps } from "~/types"
 import type { IsomerCollectionPageSitemap } from "~/types/sitemap"
-import {
-  COLLECTION_PAGE_DEFAULT_SORT_BY,
-  COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
-} from "~/types"
+import { COLLECTION_PAGE_DEFAULT_SORT_DIRECTION } from "~/types"
 import {
   getCollectionItems,
   processCollectionItems,
@@ -27,9 +24,7 @@ export const getCollectionPages = ({
   const items = getCollectionItems({
     site,
     permalink: collectionParent.permalink,
-    sortBy:
-      collectionParent.collectionPagePageProps?.defaultSortBy ??
-      COLLECTION_PAGE_DEFAULT_SORT_BY,
+    sortBy: collectionParent.collectionPagePageProps?.defaultSortBy,
     sortDirection:
       collectionParent.collectionPagePageProps?.defaultSortDirection ??
       COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,

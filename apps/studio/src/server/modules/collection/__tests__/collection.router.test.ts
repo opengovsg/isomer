@@ -218,7 +218,7 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -252,7 +252,7 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -286,7 +286,7 @@ describe("collection.router", async () => {
       })
       expect(actualCollection.parentId).toEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -297,7 +297,7 @@ describe("collection.router", async () => {
       expect(auditEntry.userId).toBe(session.userId)
     })
 
-    it("should create a nested collection if `parentFolderId` is provided and hte user is not an admin", async () => {
+    it("should create a nested collection if `parentFolderId` is provided and the user is not an admin", async () => {
       // Arrange
       const permalinkToUse = "test-collection-777"
       const { folder: parent, site } = await setupFolder()
@@ -321,7 +321,7 @@ describe("collection.router", async () => {
       })
       expect(actualCollection.parentId).toEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
-      await assertAuditLogRows(2)
+      await assertAuditLogRows(3)
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -1119,7 +1119,7 @@ describe("collection.router", async () => {
       // Act
       const originalBlob = await db
         .transaction()
-        .execute((tx) => getBlobOfResource({ tx, resourceId: page.id }))
+        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
 
       // Assert
       const expected = await caller.updateCollectionLink({
@@ -1156,7 +1156,7 @@ describe("collection.router", async () => {
       })
       const originalBlob = await db
         .transaction()
-        .execute((tx) => getBlobOfResource({ tx, resourceId: page.id }))
+        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
 
       // Act

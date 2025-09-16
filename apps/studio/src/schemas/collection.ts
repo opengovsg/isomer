@@ -34,6 +34,15 @@ export const editLinkSchema = z.object({
   siteId: z.number().min(1),
   description: z.string().optional(),
   ref: z.string().min(1),
+  tags: z
+    .array(
+      z.object({
+        category: z.string(),
+        selected: z.array(z.string()).optional(),
+      }),
+    )
+    .optional(),
+  tagged: z.array(z.string()).optional(),
   image: z
     .object({
       src: z.string(),
@@ -64,6 +73,11 @@ export const createCollectionSchema = z.object({
   siteId: z.number().min(1),
   // Nullable for top level folder
   parentFolderId: z.number().optional(),
+})
+
+export const getCollectionTagsSchema = z.object({
+  resourceId: z.number().min(1),
+  siteId: z.number().min(1),
 })
 
 export const getCollectionsSchema = z.object({

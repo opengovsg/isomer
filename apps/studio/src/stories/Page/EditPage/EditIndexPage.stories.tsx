@@ -128,3 +128,11 @@ export const CustomIndexPage: Story = {
     },
   },
 }
+
+export const CollectionIndexPage: Story = {
+  parameters: {
+    msw: {
+      handlers: [pageHandlers.readPageAndBlob.collection(), ...COMMON_HANDLERS],
+    },
+  },
+}

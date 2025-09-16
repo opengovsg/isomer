@@ -26,7 +26,7 @@ import { useZodForm } from "~/lib/form"
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type NextPageWithLayout } from "~/lib/types"
 import { createSiteSchema } from "~/schemas/site"
-import { AdminLayout } from "~/templates/layouts/AdminLayout"
+import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
 
 const GodModeCreateSitePage: NextPageWithLayout = () => {
@@ -141,6 +141,6 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
   )
 }
 
-GodModeCreateSitePage.getLayout = AdminLayout
+GodModeCreateSitePage.getLayout = AuthenticatedLayout
 
 export default GodModeCreateSitePage

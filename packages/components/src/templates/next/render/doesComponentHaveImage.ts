@@ -19,11 +19,12 @@ export const doesComponentHaveImage = ({
     case "callout":
     case "infobar":
     case "infocols":
-    case "infopic":
     case "prose":
     case DYNAMIC_DATA_BANNER_TYPE:
       return false
     case "image":
+    case "infopic":
+    case "formsg":
     case "hero":
     case "logocloud":
     case "contentpic":

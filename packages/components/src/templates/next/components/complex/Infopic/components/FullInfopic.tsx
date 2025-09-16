@@ -4,6 +4,9 @@ import { getReferenceLinkHref } from "~/utils"
 import { LinkButton } from "../../../internal/LinkButton"
 import { infopicStyles } from "../common"
 
+// backgroundImage cannot be lazy loaded
+type FullInfopicProps = Omit<InfopicProps, "variant" | "shouldLazyLoad">
+
 export const FullInfopic = ({
   id,
   imageSrc,
@@ -14,7 +17,7 @@ export const FullInfopic = ({
   isTextOnRight,
   site,
   LinkComponent,
-}: Omit<InfopicProps, "variant">) => {
+}: FullInfopicProps) => {
   const compoundStyles = infopicStyles({
     isTextOnRight,
     variant: InfopicVariants.Full.value,
