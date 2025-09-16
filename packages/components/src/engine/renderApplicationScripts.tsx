@@ -26,7 +26,7 @@ export const RenderApplicationScripts = ({
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
 
-      {(!!site.siteGtmId || site.isomerGtmId) && (
+      {(!!site.siteGtmId || !!site.isomerGtmId) && (
         <>
           <GoogleTagManagerPreload />
           <GoogleTagManagerHeader
