@@ -10,15 +10,15 @@ import {
   Wogaa,
 } from "../templates/next/components/internal"
 
-interface RenderLayoutComponentsProps {
+interface RenderApplicationScriptsProps {
   site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
   ScriptComponent: ScriptComponentType
 }
 
-export const RenderLayoutComponents = ({
+export const RenderApplicationScripts = ({
   site,
   ScriptComponent,
-}: RenderLayoutComponentsProps) => {
+}: RenderApplicationScriptsProps) => {
   const shouldIncludeGTM =
     site.environment === "production" &&
     (!!site.siteGtmId || !!site.isomerGtmId)
