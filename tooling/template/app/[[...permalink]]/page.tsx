@@ -1,7 +1,6 @@
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
 import type { Metadata, ResolvingMetadata } from "next"
 import Link from "next/link"
-import Script from "next/script"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
@@ -32,6 +31,7 @@ const getPatchedPermalink = async (
   props: DynamicPageProps,
 ): Promise<ParamsContent["permalink"]> => {
   const params = await props.params
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return params.permalink ?? [""]
 }
 
@@ -47,6 +47,7 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const joinedPermalink: string = permalink.join("/")
 
   const schema = (await import(`@/schema/${joinedPermalink}.json`)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     .then((module) => module.default)
     // NOTE: If the initial import is missing,
     // this might be the case where the file is an index page
@@ -54,13 +55,16 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
     // so we have to do another import w the appended index path
     .catch(async () => {
       if (joinedPermalink === "") {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`).then(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
           (module) => module.default,
         )
       }
-
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return import(
         `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       ).then((module) => module.default)
     })) as IsomerPageSchemaType
 
@@ -96,12 +100,11 @@ export const generateMetadata = async (
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
     // TODO: fixup all the typing errors
-    // @ts-ignore to fix when types are proper
+    // @ts-expect-error to fix when types are proper
     siteMap: sitemap,
-    // @ts-ignore to fix when types are proper
     navbar: navbar,
     // TODO: fixup all the typing errors
-    // @ts-ignore to fix when types are proper
+    // @ts-expect-error to fix when types are proper
     footerItems: footer,
     lastUpdated,
     assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
@@ -121,28 +124,22 @@ const Page = async (props: DynamicPageProps) => {
         ...config.site,
         environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
         // TODO: fixup all the typing errors
-        // @ts-ignore to fix when types are proper
+        // @ts-expect-error to fix when types are proper
         siteMap: sitemap,
-        // @ts-ignore to fix when types are proper
         navbar: navbar,
         // TODO: fixup all the typing errors
-        // @ts-ignore to fix when types are proper
+        // @ts-expect-error to fix when types are proper
         footerItems: footer,
         lastUpdated,
         assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
-        isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
-        isomerMsClarityId: process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
-        usePartytown: process.env.NEXT_PUBLIC_USE_PARTYTOWN === "true",
       }}
       meta={{
         // TODO: fixup all the typing errors
-        // @ts-ignore to fix when types are proper
         noIndex: shouldBlockIndexing(
           process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
         ),
       }}
       LinkComponent={Link}
-      ScriptComponent={Script}
     />
   )
 }

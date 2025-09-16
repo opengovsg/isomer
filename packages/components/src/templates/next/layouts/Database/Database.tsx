@@ -27,7 +27,6 @@ const DatabaseLayout = ({
   layout,
   content,
   LinkComponent,
-  ScriptComponent,
 }: DatabasePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
@@ -43,7 +42,6 @@ const DatabaseLayout = ({
       page={page}
       layout={layout}
       LinkComponent={LinkComponent}
-      ScriptComponent={ScriptComponent}
     >
       <ContentPageHeader
         {...page.contentPageHeader}

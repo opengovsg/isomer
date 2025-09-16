@@ -1,21 +1,12 @@
 import type { IsomerPageSchemaType } from "~/engine"
 import {
-  AskgovWidget,
-  FontPreload,
   Footer,
-  GoogleTagManagerBody,
-  GoogleTagManagerHeader,
-  GoogleTagManagerPreload,
   Masthead,
-  MicrosoftClarity,
   Navbar,
   Notification,
   ScrollToTop,
   SkipToContent,
   UnsupportedBrowserBanner,
-  VicaStylesheet,
-  VicaWidget,
-  Wogaa,
 } from "../../components/internal"
 import { SKIP_TO_CONTENT_ANCHOR_ID } from "../../constants"
 
@@ -23,45 +14,14 @@ export const Skeleton = ({
   site,
   layout,
   LinkComponent,
-  ScriptComponent,
   children,
 }: React.PropsWithChildren<
-  Pick<
-    IsomerPageSchemaType,
-    "site" | "page" | "layout" | "LinkComponent" | "ScriptComponent"
-  >
+  Pick<IsomerPageSchemaType, "site" | "page" | "layout" | "LinkComponent">
 >) => {
   const isStaging = site.environment === "staging"
 
-  const shouldIncludeGTM = !!site.siteGtmId || !!site.isomerGtmId
-
   return (
     <>
-      <FontPreload />
-
-      {shouldIncludeGTM && (
-        <>
-          <GoogleTagManagerPreload />
-          <GoogleTagManagerHeader
-            siteGtmId={site.siteGtmId}
-            isomerGtmId={site.isomerGtmId}
-            usePartytown={site.usePartytown}
-            ScriptComponent={ScriptComponent}
-          />
-        </>
-      )}
-
-      {!!site.isomerMsClarityId && (
-        <MicrosoftClarity
-          ScriptComponent={ScriptComponent}
-          msClarityId={site.isomerMsClarityId}
-        />
-      )}
-
-      {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
-
-      {site.vica && <VicaStylesheet environment={site.environment} />}
-
       <ScrollToTop />
 
       <header>
@@ -107,20 +67,6 @@ export const Skeleton = ({
         LinkComponent={LinkComponent}
         {...site.footerItems}
       />
-
-      {shouldIncludeGTM && (
-        <GoogleTagManagerBody
-          siteGtmId={site.siteGtmId}
-          isomerGtmId={site.isomerGtmId}
-        />
-      )}
-
-      {/* Ensures that the webchat widget only loads after the page has loaded */}
-      {/* Note: did not account for both being added to the config as it's a very unlikely scenario and there's "correct" way to handle this */}
-      {site.vica && <VicaWidget site={site} {...site.vica} />}
-      {site.askgov && (
-        <AskgovWidget environment={site.environment} {...site.askgov} />
-      )}
     </>
   )
 }

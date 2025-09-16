@@ -10,7 +10,6 @@ const NotFoundLayout = ({
   page,
   layout,
   LinkComponent,
-  ScriptComponent,
 }: NotFoundPageSchemaType) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const infobarStyles = createInfobarStyles({
@@ -27,7 +26,6 @@ const NotFoundLayout = ({
       page={page}
       layout={layout}
       LinkComponent={LinkComponent}
-      ScriptComponent={ScriptComponent}
     >
       <div
         // ComponentContent = "component-content" (customCssClass.ts) is imported by all Homepage components,
