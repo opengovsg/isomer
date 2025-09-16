@@ -165,24 +165,26 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
 
 /**
  * Webhook middleware to protect endpoints that do not need a user context
- * but still need to be protected via an API key
- * e.g. CodeBuild webhook
+ * but still need to be protected via an API key. We still check the session
+ * in case the request is made by a logged in user (via the FE), and to allow for easier testing.
  * */
 const webhookMiddleware = t.middleware(async ({ next, ctx }) => {
-  const apiKey = ctx.req.headers["x-api-key"]
-  // Ensure that the API key is set in the env
-  if (!env.WEBHOOK_API_KEY) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Webhook API key is not configured",
-    })
-  }
-  // Ensure that the API key is valid and matches
-  if (!apiKey || apiKey !== env.WEBHOOK_API_KEY) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Invalid Webhook API key provided",
-    })
+  if (!ctx.session?.userId) {
+    const apiKey = ctx.req.headers["x-api-key"]
+    // Ensure that the API key is set in the env
+    if (!env.WEBHOOK_API_KEY) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Webhook API key is not configured",
+      })
+    }
+    // Ensure that the API key is valid and matches
+    if (!apiKey || apiKey !== env.WEBHOOK_API_KEY) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Invalid Webhook API key provided",
+      })
+    }
   }
   return next()
 })
