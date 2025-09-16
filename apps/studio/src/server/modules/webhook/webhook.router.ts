@@ -14,40 +14,31 @@ export const webhookRouter = router({
     .mutation(
       async ({ ctx: { logger }, input: { siteId, buildId, buildStatus } }) => {
         // Update the build status of the site according to the webhook payload
-        const userIdToSendNotification = await db
-          .transaction()
-          .execute(async (tx) => {
-            const codebuildJob = await tx
-              .selectFrom("CodeBuildJobs")
-              .selectAll()
-              .where("siteId", "=", siteId)
-              .where("buildId", "=", buildId)
-              .executeTakeFirst()
-            // If no job is found, throw an error
-            // We might expect this to happen when we first release this feature if there are any builds in progress
-            if (!codebuildJob) {
-              throw new TRPCError({
-                code: "NOT_FOUND",
-                message: `CodeBuild job could not be found for siteId ${String(siteId)} with buildId ${String(buildId)}`,
-              })
-            }
-            // Only update if the job is still in progress, in case we receive multiple webhooks for the same build
-            if (codebuildJob.status !== "IN_PROGRESS") {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: `CodeBuild job for siteId ${String(siteId)} with buildId ${String(buildId)} is not in progress`,
-              })
-            }
-            // Update the build status of the job
-            await tx
-              .updateTable("CodeBuildJobs")
-              .set({
-                status: buildStatus,
-              })
-              .where("id", "=", codebuildJob.id)
-              .executeTakeFirst()
-            return codebuildJob.userId
-          })
+        const codebuildJob = await db.transaction().execute(async (tx) => {
+          const codebuildJob = await tx
+            .selectFrom("CodeBuildJobs")
+            .selectAll()
+            .where("siteId", "=", siteId)
+            .where("buildId", "=", buildId)
+            .executeTakeFirst()
+          // If no job is found, throw an error
+          // We might expect this to happen when we first release this feature if there are any builds in progress
+          if (!codebuildJob) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `CodeBuild job could not be found for siteId ${String(siteId)} with buildId ${String(buildId)}`,
+            })
+          }
+          // Update the build status of the job
+          await tx
+            .updateTable("CodeBuildJobs")
+            .set({
+              status: buildStatus,
+            })
+            .where("buildId", "=", codebuildJob.buildId)
+            .executeTakeFirst()
+          return codebuildJob
+        })
         // log the webhook receipt and send notification based on the build status
         logger.info(
           { siteId, buildId, buildStatus },
@@ -57,13 +48,21 @@ export const webhookRouter = router({
         const user = await db
           .selectFrom("User")
           .selectAll()
-          .where("id", "=", userIdToSendNotification)
+          .where("id", "=", codebuildJob.userId)
           .executeTakeFirst()
 
         if (!user?.email) {
           logger.warn(
-            { userIdToSendNotification },
-            `User with ID ${String(userIdToSendNotification)} not found or email not available. Cannot send build notification.`,
+            { userId: codebuildJob.userId },
+            `User with ID ${String(codebuildJob.userId)} not found or email not available. Cannot send build notification.`,
+          )
+          return
+        }
+        // no status change, do nothing
+        if (codebuildJob.status === buildStatus) {
+          logger.info(
+            { buildStatus, siteId, buildId },
+            `No status change for build status ${String(buildStatus)} for siteId ${String(siteId)} and buildId ${String(buildId)}.`,
           )
           return
         }
