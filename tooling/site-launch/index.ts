@@ -10,6 +10,7 @@ import { requestAcmViaClient } from "request-acm"
 import { s3sync } from "s3"
 import { createBaseSiteInStudio } from "site"
 
+import { migrateTagsOfSite } from "@isomer/migrate-tags"
 import { cleanup, main as migrate } from "@isomer/seed-from-repo"
 
 const profile = process.env.AWS_PROFILE
@@ -57,6 +58,7 @@ const launch = async () => {
 
     await confirm({ message: "Have you ran `npm run db:connect`?" })
     await migrate(repo, siteId)
+    await migrateTagsOfSite(siteId)
 
     await s3sync(siteId)
 
