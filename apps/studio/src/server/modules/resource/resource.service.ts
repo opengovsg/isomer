@@ -18,7 +18,6 @@ import type {
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE } from "~/lib/growthbook"
 import {
   getSitemapTree,
   injectTagMappings,
@@ -26,7 +25,6 @@ import {
   overwriteCollectionChildrenForCollectionBlock,
 } from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
-import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { incrementVersion } from "../version/version.service"
@@ -552,94 +550,57 @@ export const getResourceFullPermalink = async (
 
 interface PublishPageResourceArgs {
   logger: Logger<string>
+  user: User
   siteId: number
   resourceId: string
-  userId: string
   isSingpassEnabled?: boolean
 }
 
-export const publishPageResource = async ({
-  logger,
-  siteId,
-  resourceId,
-  userId,
-  isSingpassEnabled = IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
-}: PublishPageResourceArgs) => {
+export const publishPageResource = async (
+  tx: Transaction<DB>,
+  { logger, siteId, resourceId, user }: PublishPageResourceArgs,
+) => {
   // Step 1: Create a new version
-  const by = await db
-    .selectFrom("User")
-    .selectAll()
-    .where("id", "=", userId)
-    .executeTakeFirstOrThrow(
-      () =>
-        new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Please ensure that you have logged in",
-        }),
-    )
+  const fullResource = await getFullPageById(tx, {
+    resourceId: Number(resourceId),
+    siteId,
+  })
 
-  const addedVersionResult = await db
-    .transaction()
-    .setIsolationLevel("serializable")
-    .execute(async (tx) => {
-      const fullResource = await getFullPageById(tx, {
-        resourceId: Number(resourceId),
-        siteId,
-      })
-
-      if (!fullResource) {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message:
-            "Please ensure you are attempting to publish a page that exists",
-        })
-      }
-
-      const version = await incrementVersion({
-        tx,
-        siteId,
-        resourceId,
-        userId,
-      })
-
-      const previousVersion = await tx
-        .selectFrom("Version")
-        .where("Version.versionNum", "=", Number(version.versionNum) - 1)
-        .where("Version.resourceId", "=", resourceId)
-        .select("Version.id")
-        .executeTakeFirst()
-
-      await logPublishEvent(tx, {
-        siteId,
-        by,
-        delta: {
-          before: previousVersion?.id
-            ? { versionId: previousVersion.id }
-            : null,
-          after: version,
-        },
-        eventType: AuditLogEvent.Publish,
-        metadata: fullResource,
-      })
-
-      return version
-    })
-
-  // Step 2: Trigger a publish of the site
-  await publishSite(logger, siteId)
-
-  // Step 3: Send publish alert emails to all site admins minus the current user
-  // if Singpass has been disabled
-  if (!isSingpassEnabled) {
-    await alertPublishWhenSingpassDisabled({
-      siteId,
-      resourceId,
-      publisherId: by.id,
-      publisherEmail: by.email,
+  if (!fullResource) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "Please ensure you are attempting to publish a page that exists",
     })
   }
 
-  return addedVersionResult
+  const version = await incrementVersion({
+    tx,
+    siteId,
+    resourceId,
+    userId: user.id,
+  })
+
+  const previousVersion = await tx
+    .selectFrom("Version")
+    .where("Version.versionNum", "=", Number(version.versionNum) - 1)
+    .where("Version.resourceId", "=", resourceId)
+    .select("Version.id")
+    .executeTakeFirst()
+
+  await logPublishEvent(tx, {
+    siteId,
+    by: user,
+    delta: {
+      before: previousVersion?.id ? { versionId: previousVersion.id } : null,
+      after: version,
+    },
+    eventType: AuditLogEvent.Publish,
+    metadata: fullResource,
+  })
+
+  // Step 2: Trigger a publish of the site
+  await publishSite(logger, siteId)
+  return version
 }
 
 // NOTE: The distinction here between `publishResource` and `publishPageResource` is that
