@@ -121,7 +121,7 @@ const publishScheduledResource = async ({
       const page = await getPageById(tx, { resourceId, siteId })
       if (!page) {
         logger.error({
-          message: `Page with id ${resourceId} not found or does not belong to site ${siteId}.`,
+          message: `Page with id ${resourceId} not found or does not belong to site ${siteId}. Exiting job.`,
         })
         return null
       }
@@ -157,33 +157,49 @@ const publishScheduledResource = async ({
         tx,
       )
     })
+    // No page found or not scheduled, exit (logging handled above)
+    if (!page) return
     // Publish the page outside of the transaction to avoid long-running transactions
-    if (page) {
-      logger.info({ message: `Publishing scheduled page ${resourceId}` })
-      const user = await db
-        .selectFrom("User")
-        .where("id", "=", userId)
-        .selectAll()
-        .executeTakeFirst()
-      if (!user) {
-        // if the user no longer exists, we log an error and exit, since we don't have a user to attribute the publish to
-        logger.error({
-          message: `User with id ${userId} not found. Cannot continue with publish of resource ${resourceId}.`,
-        })
-        return
-      }
-      await db
-        .transaction()
-        .setIsolationLevel("serializable")
-        .execute(async (tx) => {
-          await publishPageResource(tx, {
-            logger,
-            siteId,
-            resourceId: page.id,
-            user,
-          })
-        })
+    logger.info({ message: `Publishing scheduled page ${resourceId}` })
+    // Get the user who scheduled the publish from the database
+    const user = await db
+      .selectFrom("User")
+      .where("id", "=", userId)
+      .selectAll()
+      .executeTakeFirst()
+    // if the user no longer exists, we log an error and exit, since we don't have a user to attribute the publish to
+    if (!user) {
+      logger.error({
+        message: `User with id ${userId} not found. Cannot continue with publish of resource ${resourceId}.`,
+      })
+      return
     }
+    await db
+      .transaction()
+      .setIsolationLevel("serializable")
+      .execute(async (tx) => {
+        const { build } = await publishPageResource(tx, {
+          logger,
+          siteId,
+          resourceId: page.id,
+          user,
+        })
+        if (!build) {
+          // this is not an error, since not all publishes trigger a build
+          logger.info(`No build was triggered for this publish: ${resourceId}`)
+          return
+        }
+        await tx
+          .insertInto("CodeBuildJobs")
+          .values({
+            siteId,
+            userId: user.id,
+            buildId: build.buildId,
+            startedAt: build.startTime,
+            status: "IN_PROGRESS", // default to in progress, will be updated by webhook
+          })
+          .execute()
+      })
   } catch (err) {
     // If we fail to acquire the lock, it means another worker is processing this resource and we can exit gracefully
     if (err instanceof ResourceLockedError) {
