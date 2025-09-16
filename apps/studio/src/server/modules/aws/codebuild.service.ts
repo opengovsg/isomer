@@ -7,6 +7,7 @@ import {
   StartBuildCommand,
   StopBuildCommand,
 } from "@aws-sdk/client-codebuild"
+import { TRPCError } from "@trpc/server"
 
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 
@@ -17,10 +18,7 @@ const client = new CodeBuildClient({ region: "ap-southeast-1" })
 // build would have already captured the latest changes
 const RECENT_BUILD_THRESHOLD_SECONDS = 30
 
-export const publishSite = async (
-  logger: Logger<string>,
-  siteId: number,
-): Promise<void> => {
+export const publishSite = async (logger: Logger<string>, siteId: number) => {
   // Step 1: Get the CodeBuild ID associated with the site
   const site = await getSiteNameAndCodeBuildId(siteId)
   const { codeBuildId } = site
@@ -43,7 +41,23 @@ export const publishSite = async (
   }
 
   // Step 3: Start a new build
-  await startProjectById(logger, codeBuildId)
+  const { build } = await startProjectById(logger, codeBuildId)
+  // in theory build should always be defined, but adding a check just in case
+  if (!build?.id || !build.startTime) {
+    logger.error(
+      { siteId, codeBuildId, build },
+      `Failed to obtain codebuild metadata for siteId ${siteId} with CodeBuild ID ${codeBuildId}`,
+    )
+    // slightly strict here as we dont want the build to silently fail when we send via the sdk
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to obtain codebuild metadata",
+    })
+  }
+  return {
+    buildId: build.id,
+    startTime: build.startTime,
+  }
 }
 
 export const shouldStartNewBuild = async (

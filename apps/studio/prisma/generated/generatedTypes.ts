@@ -2,6 +2,7 @@ import type { ColumnType, GeneratedAlways } from "kysely"
 
 import type {
   AuditLogEvent,
+  BuildStatusType,
   ResourceState,
   ResourceType,
   RoleType,
@@ -13,7 +14,7 @@ export type Generated<T> =
     : ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-export interface AuditLog {
+export type AuditLog = {
   id: GeneratedAlways<string>
   userId: string
   siteId: number | null
@@ -28,7 +29,7 @@ export interface AuditLog {
   delta: PrismaJson.AuditLogDeltaJsonContent
   ipAddress: string | null
 }
-export interface Blob {
+export type Blob = {
   id: GeneratedAlways<string>
   /**
    * @kyselyType(PrismaJson.BlobJsonContent)
@@ -38,7 +39,18 @@ export interface Blob {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface Footer {
+export type CodeBuildJobs = {
+  id: GeneratedAlways<string>
+  siteId: number
+  userId: string
+  buildId: string
+  status: Generated<BuildStatusType>
+  startedAt: Generated<Timestamp>
+  completedAt: Timestamp | null
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
+export type Footer = {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -49,7 +61,7 @@ export interface Footer {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface Navbar {
+export type Navbar = {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -60,12 +72,12 @@ export interface Navbar {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface RateLimiterFlexible {
+export type RateLimiterFlexible = {
   key: string
   points: number
   expire: Timestamp | null
 }
-export interface Resource {
+export type Resource = {
   id: GeneratedAlways<string>
   title: string
   permalink: string
@@ -79,7 +91,7 @@ export interface Resource {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface ResourcePermission {
+export type ResourcePermission = {
   id: GeneratedAlways<string>
   userId: string
   siteId: number
@@ -89,7 +101,7 @@ export interface ResourcePermission {
   updatedAt: Generated<Timestamp>
   deletedAt: Timestamp | null
 }
-export interface Site {
+export type Site = {
   id: GeneratedAlways<number>
   name: string
   /**
@@ -106,7 +118,7 @@ export interface Site {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface User {
+export type User = {
   id: string
   name: string
   email: string
@@ -117,13 +129,13 @@ export interface User {
   deletedAt: Timestamp | null
   lastLoginAt: Timestamp | null
 }
-export interface VerificationToken {
+export type VerificationToken = {
   identifier: string
   token: string
   attempts: Generated<number>
   expires: Timestamp
 }
-export interface Version {
+export type Version = {
   id: GeneratedAlways<string>
   versionNum: number
   resourceId: string
@@ -132,16 +144,17 @@ export interface Version {
   publishedBy: string
   updatedAt: Generated<Timestamp>
 }
-export interface Whitelist {
+export type Whitelist = {
   id: GeneratedAlways<number>
   email: string
   expiry: Timestamp | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface DB {
+export type DB = {
   AuditLog: AuditLog
   Blob: Blob
+  CodeBuildJobs: CodeBuildJobs
   Footer: Footer
   Navbar: Navbar
   RateLimiterFlexible: RateLimiterFlexible
