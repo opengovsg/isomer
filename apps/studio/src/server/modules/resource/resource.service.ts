@@ -600,7 +600,6 @@ export const publishPageResource = async (
 
   // Step 2: Trigger a publish of the site
   const build = await publishSite(logger, siteId)
-
   return { version, build }
 }
 
