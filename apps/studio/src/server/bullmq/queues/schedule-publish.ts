@@ -1,10 +1,9 @@
 import type { Job, JobsOptions } from "bullmq"
-import type { Lock } from "redlock"
 import { Queue, Worker } from "bullmq"
 import { differenceInSeconds } from "date-fns"
-import { ResourceLockedError } from "redlock"
 
-import { getRedisWithRedlock } from "@isomer/redis"
+import type { Lock } from "@isomer/redis"
+import { getRedisWithRedlock, ResourceLockedError } from "@isomer/redis"
 
 import { sendFailedSchedulePublishEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
@@ -22,7 +21,6 @@ import {
   REDLOCK_SETTINGS,
   REMOVE_ON_COMPLETE_BUFFER,
   REMOVE_ON_FAIL_BUFFER,
-  SCHEDULED_PUBLISH_KEYSPACE,
   SCHEDULED_PUBLISH_QUEUE_NAME,
   WORKER_CONCURRENCY,
   WORKER_RETRY_LIMIT,
@@ -34,9 +32,9 @@ export interface ScheduledPublishJobData {
   userId: string // the id of the user who scheduled the publish
 }
 
-const { redis: RedisClient, redlock: RedlockClient } = getRedisWithRedlock(
-  SCHEDULED_PUBLISH_KEYSPACE,
-)
+const { redis: RedisClient, redlock: RedlockClient } = getRedisWithRedlock({
+  bullmqCompatible: true,
+})
 
 /** BullMQ Queue for scheduling publish jobs */
 export const scheduledPublishQueue = new Queue<ScheduledPublishJobData>(
