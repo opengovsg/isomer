@@ -132,6 +132,7 @@ model User {
   ResourcePermission ResourcePermission[]
   versions           Version[]
   AuditLog           AuditLog[]
+  CodeBuildJobs      CodeBuildJobs[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -162,6 +163,7 @@ model Site {
   updatedAt          DateTime             @default(now()) @updatedAt
   ResourcePermission ResourcePermission[]
   AuditLog           AuditLog[]
+  CodeBuildJobs      CodeBuildJobs[]
 }
 
 model Navbar {
@@ -265,4 +267,32 @@ model AuditLog {
   /// [AuditLogDeltaJsonContent]
   delta     Json
   ipAddress String?       @db.Inet
+}
+
+// Stores CodeBuild job information for auditing and tracking purposes
+// Each time a site is published, a new entry is created in this table
+// When the webhook from CodeBuild is received, the corresponding entry is updated and the email etc is sent
+enum BuildStatusType {
+  IN_PROGRESS
+  SUCCEEDED
+  FAILED
+  STOPPED
+}
+
+model CodeBuildJobs {
+  id          BigInt          @id @default(autoincrement())
+  siteId      Int
+  site        Site            @relation(fields: [siteId], references: [id])
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  buildId     String
+  status      BuildStatusType @default(IN_PROGRESS)
+  startedAt   DateTime        @default(now())
+  completedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @default(now()) @updatedAt
+
+  @@index([siteId])
+  @@index([userId])
+  @@index([buildId])
 }
