@@ -8,6 +8,7 @@ import { getRedisWithRedlock, ResourceLockedError } from "@isomer/redis"
 import { sendFailedSchedulePublishEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
 import { db } from "~/server/modules/database"
+import { bulkValidateUserPermissionsForResources } from "~/server/modules/permissions/permissions.service"
 import {
   getPageById,
   publishPageResource,
@@ -80,7 +81,7 @@ export const createScheduledPublishWorker = () => {
   const worker = new Worker<ScheduledPublishJobData>(
     scheduledPublishQueue.name,
     async (job: Job<ScheduledPublishJobData>) => {
-      await publishScheduledResource(job)
+      await publishScheduledResource(job.id, job.data, job.attemptsMade)
       return job.id
     },
     {
@@ -93,13 +94,19 @@ export const createScheduledPublishWorker = () => {
   return worker
 }
 
-const publishScheduledResource = async ({
-  id: jobId,
-  data: { resourceId, siteId, userId },
-  attemptsMade,
-}: Job<ScheduledPublishJobData>) => {
+export const publishScheduledResource = async (
+  jobId: string | undefined,
+  { resourceId, siteId, userId }: ScheduledPublishJobData,
+  attemptsMade: number,
+) => {
   let lock: Lock | null = null
   try {
+    // verify user still has permission to publish on the site
+    await bulkValidateUserPermissionsForResources({
+      siteId,
+      action: "publish",
+      userId,
+    })
     // Acquire a lock for this resourceId to prevent concurrent processing
     lock = await RedlockClient.acquire(
       [`locks:resource:${resourceId}`],
@@ -109,15 +116,17 @@ const publishScheduledResource = async ({
     const page = await db.transaction().execute(async (tx) => {
       const page = await getPageById(tx, { resourceId, siteId })
       if (!page) {
-        logger.error({
-          message: `Page with id ${resourceId} not found or does not belong to site ${siteId}. Exiting job.`,
-        })
+        logger.error(
+          { resourceId, siteId, jobId, userId },
+          `Page with id ${resourceId} not found or does not belong to site ${siteId}. Exiting job.`,
+        )
         return null
       }
       if (!page.scheduledAt) {
-        logger.info({
-          message: `Page with id ${resourceId} is no longer scheduled for publishing. Exiting job.`,
-        })
+        logger.info(
+          { resourceId, jobId, userId },
+          `Page with id ${resourceId} is no longer scheduled for publishing. Exiting job.`,
+        )
         return null
       }
       // Double-check that we're within the buffer time of the scheduledAt time
@@ -129,9 +138,10 @@ const publishScheduledResource = async ({
         Math.abs(differenceInSeconds(page.scheduledAt, new Date())) >
           BUFFER_IN_SECONDS
       ) {
-        logger.info({
-          message: `Page with id ${resourceId} is scheduled for publishing outside the buffer time. Exiting job.`,
-        })
+        logger.info(
+          { resourceId, jobId, userId },
+          `Page with id ${resourceId} is scheduled for publishing outside the buffer time. Exiting job.`,
+        )
         return null
       }
       // NOTE: once it's been claimed, we unset scheduledAt even if publish fails
@@ -149,7 +159,10 @@ const publishScheduledResource = async ({
     // No page found or not scheduled, exit (logging handled above)
     if (!page) return
     // Publish the page outside of the transaction to avoid long-running transactions
-    logger.info({ message: `Publishing scheduled page ${resourceId}` })
+    logger.info(
+      { resourceId, jobId, userId },
+      `Publishing scheduled page ${resourceId}`,
+    )
     // Get the user who scheduled the publish from the database
     const user = await db
       .selectFrom("User")
@@ -158,16 +171,17 @@ const publishScheduledResource = async ({
       .executeTakeFirst()
     // if the user no longer exists, we log an error and exit, since we don't have a user to attribute the publish to
     if (!user) {
-      logger.error({
-        message: `User with id ${userId} not found. Cannot continue with publish of resource ${resourceId}.`,
-      })
+      logger.error(
+        { resourceId, jobId, userId },
+        `User with id ${userId} not found. Cannot continue with publish of resource ${resourceId}.`,
+      )
       return
     }
-    await db
+    return await db
       .transaction()
       .setIsolationLevel("serializable")
       .execute(async (tx) => {
-        const { build } = await publishPageResource(tx, {
+        const { build, version } = await publishPageResource(tx, {
           logger,
           siteId,
           resourceId: page.id,
@@ -175,7 +189,10 @@ const publishScheduledResource = async ({
         })
         if (!build) {
           // this is not an error, since not all publishes trigger a build
-          logger.info(`No build was triggered for this publish: ${resourceId}`)
+          logger.info(
+            { resourceId, jobId, userId },
+            `No build was triggered for this publish: ${resourceId}`,
+          )
           return
         }
         await tx
@@ -188,25 +205,26 @@ const publishScheduledResource = async ({
             status: "IN_PROGRESS", // default to in progress, will be updated by webhook
           })
           .execute()
+        return version
       })
-  } catch (err) {
+  } catch (error) {
     // If we fail to acquire the lock, it means another worker is processing this resource and we can exit gracefully
-    if (err instanceof ResourceLockedError) {
-      logger.info({
-        message: `Failed to acquire lock for resource ${resourceId} as another worker is processing it. Exiting job ${jobId}.`,
-        error: err,
-      })
+    if (error instanceof ResourceLockedError) {
+      logger.info(
+        { resourceId, jobId, userId, error },
+        `Could not acquire lock for resource ${resourceId}. It is likely being processed by another worker. Exiting job.`,
+      )
       return
     }
-    throw err
+    throw error
   } finally {
     // Ensure the lock is released if it was acquired
     if (lock) {
-      await lock.release().catch((err: Error) => {
-        logger.warn({
-          message: `Failed to release lock for resource ${resourceId}. Lock may have expired.`,
-          error: err,
-        })
+      await lock.release().catch((error: Error) => {
+        logger.warn(
+          { resourceId, jobId, userId, error },
+          `Failed to release lock for resource ${resourceId}. Lock may have expired.`,
+        )
       })
     }
   }
