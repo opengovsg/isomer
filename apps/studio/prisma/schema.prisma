@@ -280,17 +280,15 @@ enum BuildStatusType {
 }
 
 model CodeBuildJobs {
-  id          BigInt          @id @default(autoincrement())
-  siteId      Int
-  site        Site            @relation(fields: [siteId], references: [id])
-  userId      String
-  user        User            @relation(fields: [userId], references: [id])
-  buildId     String
-  status      BuildStatusType @default(IN_PROGRESS)
-  startedAt   DateTime        @default(now())
-  completedAt DateTime?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @default(now()) @updatedAt
+  buildId   String          @id
+  siteId    Int
+  site      Site            @relation(fields: [siteId], references: [id])
+  userId    String
+  user      User            @relation(fields: [userId], references: [id])
+  status    BuildStatusType @default(IN_PROGRESS)
+  startedAt DateTime        @default(now())
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @default(now()) @updatedAt
 
   @@index([siteId])
   @@index([userId])

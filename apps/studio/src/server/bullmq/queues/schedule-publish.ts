@@ -47,7 +47,7 @@ export const scheduledPublishQueue = new Queue<ScheduledPublishJobData>(
 )
 
 const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
-const BUFFER_IN_SECONDS = 60 // seconds buffer to allow for slight delays in job processing
+export const BUFFER_IN_SECONDS = 60 // seconds buffer to allow for slight delays in job processing
 
 /**
  * Get job options for a scheduled publish job
