@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 
-import { webhookHandlers } from "~/schemas/webhook"
+import { webhookHandlers } from "~/server/webhooks"
 
 export default async function handler(
   req: NextApiRequest,
