@@ -18,11 +18,20 @@ export const metadata: Metadata = {
 }
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
+  const usePartytown = process.env.NEXT_PUBLIC_USE_PARTYTOWN === "true"
+
   return (
     <html lang="en" data-theme={config.site.theme || "isomer-next"}>
-      <head>
-        <Partytown debug={false} forward={["dataLayer.push", "fbq"]} />
-      </head>
+      {usePartytown && (
+        <head>
+          <Partytown
+            debug={
+              process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT !== "production"
+            }
+            forward={["dataLayer.push", "fbq"]}
+          />
+        </head>
+      )}
       <body className="antialiased">
         {children}
         <RenderApplicationScripts
@@ -36,7 +45,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
             isomerMsClarityId:
               process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
-            usePartytown: process.env.NEXT_PUBLIC_USE_PARTYTOWN === "true",
+            usePartytown,
           }}
           ScriptComponent={Script}
         />
