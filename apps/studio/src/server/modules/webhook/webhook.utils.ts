@@ -3,8 +3,8 @@ import type pino from "pino"
 import _ from "lodash"
 
 import {
-  sendFailedSchedulePublishEmail,
-  sendSuccessfulScheduledPublishEmail,
+  sendFailedPublishEmail,
+  sendSuccessfulPublishEmail,
 } from "~/features/mail/service"
 import { db } from "../database"
 
@@ -115,7 +115,8 @@ const sendEmails = async (buildId: string, buildStatus: BuildStatusType) => {
         case "SUCCEEDED":
           return {
             id: info.id, // codebuild job id
-            promise: sendSuccessfulScheduledPublishEmail({
+            promise: sendSuccessfulPublishEmail({
+              isScheduled: info.isScheduled,
               recipientEmail: info.email,
               publishTime: new Date(), // use current time as publish time, no need to use exact time from codebuild
             }),
@@ -123,7 +124,8 @@ const sendEmails = async (buildId: string, buildStatus: BuildStatusType) => {
         case "FAILED":
           return {
             id: info.id, // codebuild job id
-            promise: sendFailedSchedulePublishEmail({
+            promise: sendFailedPublishEmail({
+              isScheduled: info.isScheduled,
               recipientEmail: info.email,
             }),
           }
