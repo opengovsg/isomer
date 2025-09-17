@@ -6,7 +6,7 @@ import type {
   SearchSGInputBoxProps,
 } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
-import { useSearchSGScript } from "./useSearchSGScript"
+import { useSearchSGScript } from "../../../../../hooks/useSearchSGScript"
 
 interface BaseSearchSGInputBoxProps {
   clientId: SearchSGInputBoxProps["clientId"]

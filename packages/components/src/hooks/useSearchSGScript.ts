@@ -2,14 +2,14 @@
 
 import { useEffect } from "react"
 
-import { SearchSGInputBoxProps } from "~/interfaces"
-
 interface UseSearchSGScriptProps {
-  clientId: SearchSGInputBoxProps["clientId"]
+  pageType?: "default" | "search"
+  clientId: string
   shouldLoad: boolean
 }
 
 export const useSearchSGScript = ({
+  pageType = "default",
   clientId,
   shouldLoad,
 }: UseSearchSGScriptProps) => {
@@ -29,7 +29,8 @@ export const useSearchSGScript = ({
     // Create and append new script
     const scriptTag = document.createElement("script")
     scriptTag.id = SEARCHSG_CONFIG_ID
-    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${clientId}`
+    const pageParam = pageType === "search" ? "&page=result" : ""
+    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${clientId}${pageParam}`
     scriptTag.setAttribute("defer", "")
     document.body.appendChild(scriptTag)
   }, [clientId, shouldLoad])
