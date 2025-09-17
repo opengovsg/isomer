@@ -50,7 +50,7 @@ npm cache clean --force
 # Install dependencies
 echo "Installing dependencies..."
 start_time=$(date +%s)
-npm i
+npm ci
 echo "Dependencies installed"
 calculate_duration $start_time
 
