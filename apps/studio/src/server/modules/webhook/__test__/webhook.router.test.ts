@@ -9,8 +9,8 @@ import {
 import { setupCodeBuildJob, setupUser } from "tests/integration/helpers/seed"
 
 import {
-  sendFailedSchedulePublishEmail,
-  sendSuccessfulScheduledPublishEmail,
+  sendFailedPublishEmail,
+  sendSuccessfulPublishEmail,
 } from "~/features/mail/service"
 import { createCallerFactory } from "~/server/trpc"
 import { db } from "../../database"
@@ -18,8 +18,8 @@ import { webhookRouter } from "../webhook.router"
 
 // Mock the publishSite function to avoid sending emails
 vi.mock("~/features/mail/service", () => ({
-  sendSuccessfulScheduledPublishEmail: vi.fn(),
-  sendFailedSchedulePublishEmail: vi.fn(),
+  sendSuccessfulPublishEmail: vi.fn(),
+  sendFailedPublishEmail: vi.fn(),
 }))
 
 const createCaller = createCallerFactory(webhookRouter)
@@ -65,8 +65,8 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulScheduledPublishEmail).toHaveBeenCalledOnce()
-      expect(sendSuccessfulScheduledPublishEmail).toHaveBeenCalledWith({
+      expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
+      expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
         publishTime: FIXED_NOW,
       })
@@ -102,8 +102,8 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendFailedSchedulePublishEmail).toHaveBeenCalledOnce()
-      expect(sendFailedSchedulePublishEmail).toHaveBeenCalledWith({
+      expect(sendFailedPublishEmail).toHaveBeenCalledOnce()
+      expect(sendFailedPublishEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
       })
       // check the codebuildjobs table to see if the status has been updated
@@ -140,7 +140,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulScheduledPublishEmail).not.toHaveBeenCalled()
+      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
     })
   })
 })
