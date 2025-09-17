@@ -66,6 +66,7 @@ describe("webhook", () => {
         userId: user.id,
         buildId: "test-build-id",
         startedAt: new Date(),
+        isScheduled: true,
       })
       const { req, res } = createMockRequest({
         siteId: site.id,
@@ -85,6 +86,7 @@ describe("webhook", () => {
         userId: user.id,
         buildId: "test-build-id",
         startedAt: new Date(),
+        isScheduled: true,
       })
       const { req, res } = createMockRequest({
         siteId: site.id,
