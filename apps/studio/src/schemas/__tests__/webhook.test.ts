@@ -40,7 +40,6 @@ const createMockRequest = ({
     projectName: "test-project",
     siteId,
     buildId,
-    buildNumber: 1,
     buildStatus: "SUCCEEDED",
   }
   const { req, res }: { req: NextApiRequest; res: NextApiResponse } =
