@@ -69,6 +69,7 @@ export const createSearchSgClientForGithub = async ({
   name,
   repo,
 }: CreateSearchSgClientParams & { repo: string }) => {
+  console.log("Creating searchsg")
   const { content: siteConfig, sha } = await readSiteConfig(repo)
 
   // TODO: add validation via zod
@@ -94,6 +95,7 @@ export const createSearchSgClientForGithub = async ({
 
   await updateSiteConfig(repo, siteConfig, sha)
   await addSearchJson(repo)
+  return applicationId
 }
 
 interface SearchSgConfig {
@@ -198,6 +200,8 @@ export const createSearchSgClientForStudio = async ({
   await confirm({
     message: `Have you added the contents of \`search.json\` to the site via Admin mode on Studio?`,
   })
+
+  return applicationId
 }
 
 const askForDomainAndName = async ({

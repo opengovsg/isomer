@@ -1,4 +1,4 @@
-import { confirm, input } from "@inquirer/prompts"
+import { confirm, input, search, select } from "@inquirer/prompts"
 import { checkLastBuild } from "amplify"
 import {
   createSearchSgClientForGithub,
@@ -9,10 +9,84 @@ import { createIndirection } from "indirection"
 import { requestAcmViaClient } from "request-acm"
 import { s3sync } from "s3"
 import { createBaseSiteInStudio } from "site"
+import { readStateFile, skipIfExists, Step, Steps, toStateFile } from "state"
 
 import { cleanup, main as migrate } from "@isomer/seed-from-repo"
 
 const profile = process.env.AWS_PROFILE
+
+// TODO: set up monitoring automatically via uptime robot
+// TODO: add redirection automatically (low priority cos so ez already and it's launch blocker)
+const HANDLERS = {
+  [Steps.Domain]: {
+    name: "Enter the domain (FQDN) of the site (eg: www.isomer.gov.sg):",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.Acm]: {
+    name: "Do you need to generate the first window record for this domain?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.Archived]: {
+    name: "Do you want to archive the github repo?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.CodeBuildId]: {
+    name: "Enter the code-build name of the site (eg: ogp-corp)",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.GithubName]: {
+    name: "Enter the github repo for the site (eg: `isomer-corp`):",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.Imported]: {
+    name: "Import the site into Studio?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.IndirectionCreated]: {
+    name: "Create indirection record?",
+    execute: (site: string) => {
+      const state = readStateFile()
+      const siteState = state[site]
+      createIndirection(siteState!.Domain!, siteState!.CodeBuildId!)
+    },
+  },
+  [Steps.LongName]: {
+    name: "Enter the long name of the site:",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.S3Sync]: {
+    name: "Should the local `assets` folder be synced to s3?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.SearchSg]: {
+    name: "Create searchsg client?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.StudioSiteId]: {
+    name: "Create the site in studio?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+}
 
 const launch = async () => {
   await confirm({
@@ -24,49 +98,79 @@ const launch = async () => {
   const domain = await input({
     message: "Enter the domain (FQDN) of the site (eg: www.isomer.gov.sg):",
   })
-  const needsAcm = await confirm({
-    message: `Do you need to generate the first window record for this domain?`,
+
+  await skipIfExists(domain, "Domain", async () => domain)
+
+  await skipIfExists(domain, Steps.Acm, async () => {
+    return requestAcmViaClient(domain)
   })
 
-  if (needsAcm) await requestAcmViaClient(domain)
+  const long = await skipIfExists(domain, Steps.LongName, () =>
+    input({ message: "Enter the long name of the site:" }),
+  )
 
-  const long = await input({ message: "Enter the long name of the site:" })
-  const codebuildId = await input({
-    message: "Enter the code-build name of the site (eg: ogp-corp)",
-  })
+  const codebuildId = await skipIfExists(domain, Steps.CodeBuildId, () =>
+    input({
+      message: "Enter the code-build name of the site (eg: ogp-corp)",
+    }),
+  )
 
-  const isGithub = await confirm({
-    message: `Is this a Github site?`,
-  })
+  // TODO: Shard out into separate pipelines so we can skip this
+  const repo = await skipIfExists(domain, Steps.GithubName, () =>
+    input({
+      message: "Enter the github repo for the site (eg: `isomer-corp-next`):",
+    }),
+  )
 
-  if (isGithub) {
-    const repo = await input({
-      message: "Enter the github repo for the site (eg: `isomer-corp`):",
-    })
-    await archiveRepo(repo)
+  if (!!repo) {
     const status = await checkLastBuild(codebuildId)
     if (status !== "SUCCEED") {
       console.log("The last build of the site failed - please fix!")
     }
 
-    await createSearchSgClientForGithub({ domain, name: long, repo })
-    const siteId = await createBaseSiteInStudio({
-      name: long,
-      codeBuildId: codebuildId,
-    })
+    await skipIfExists(
+      domain,
+      Steps.SearchSg,
+      async () =>
+        await createSearchSgClientForGithub({ domain, name: long, repo }),
+    )
 
     await confirm({ message: "Have you ran `npm run db:connect`?" })
-    await migrate(repo, siteId)
 
-    await s3sync(siteId)
+    const siteId = await skipIfExists(
+      domain,
+      Steps.StudioSiteId,
+      async () =>
+        await createBaseSiteInStudio({
+          name: long,
+          codeBuildId: codebuildId,
+        }),
+    )
 
-    const canCleanup = await confirm({
-      message: `Have the assets been uploaded to s3?`,
+    await skipIfExists(domain, Steps.Archived, async () => {
+      await archiveRepo(repo)
+      return "true"
     })
 
-    if (canCleanup) cleanup(repo)
+    // NOTE: End users should be able to retry here because this isn't idempotent
+    // and the side effect might be intended (overriding rows)
+    await toStateFile(domain, Steps.Imported, async () => {
+      await migrate(repo, Number(siteId))
+      return "true"
+    })
+
+    // NOTE: End users should be able to retry here because this isn't idempotent
+    // and the side effect might be intended (uploading to s3)
+    await toStateFile(domain, Steps.S3Sync, async () => {
+      await s3sync(Number(siteId))
+      const canCleanup = await confirm({
+        message: `Have the assets been uploaded to s3?`,
+      })
+
+      if (canCleanup) cleanup(repo)
+      return "true"
+    })
   } else {
-    // TODO: create site
     await createSearchSgClientForStudio({ domain, name: long })
   }
 
@@ -76,12 +180,56 @@ const launch = async () => {
 
   if (hasInfra) {
     await createIndirection(domain, codebuildId)
-  } else {
-    // tell the user to re-up and pause here?
   }
-  // TODO: await startCodeBuild(codebuildId)
+
+  // await startCodeBuild(codebuildId)
   // TODO: add admins
   // await addUsersToSite({ siteId, users })
 }
 
-await launch()
+const main = async () => {
+  const shouldCarryOn = await confirm({
+    message: "Should we carry on from a previous launch state?",
+  })
+
+  if (shouldCarryOn) {
+    const state = readStateFile()
+    const sites = Object.keys(state)
+
+    const site = await search({
+      message: "Select a site",
+      source: async (input) => {
+        if (!input) {
+          return sites
+        }
+
+        return sites.filter((site) => site.includes(input.toLowerCase()))
+      },
+    })
+
+    await step(site as string)
+  } else {
+    await launch()
+  }
+}
+
+const step = async (site: string) => {
+  const state = readStateFile()
+  const curSiteState = state[site]
+
+  const answer = await select({
+    message: "Select a site launch step",
+    choices: Object.entries(HANDLERS)
+      .filter(([key]) => {
+        return curSiteState?.[key as Step] === undefined
+      })
+      .map(([key, { name }]) => ({
+        name,
+        value: key,
+      })),
+  })
+
+  return HANDLERS[answer as Step].execute(site)
+}
+
+await main()
