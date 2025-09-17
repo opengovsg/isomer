@@ -453,4 +453,24 @@ export const sitesHandlers = {
       })
     },
   },
+
+  getNotification: {
+    default: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return "This is a test notification"
+      })
+    },
+
+    empty: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return ""
+      })
+    },
+
+    long: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return "This is a test notification that is very long, it should be exactly 100 characters long in fact pog."
+      })
+    },
+  },
 }

@@ -1,19 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { userEvent, within } from "@storybook/test"
-import { meHandlers } from "tests/msw/handlers/me"
-import { resourceHandlers } from "tests/msw/handlers/resource"
-import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
 
 import UsersPage from "~/pages/sites/[siteId]/users"
 import { ResetRemoveUserModalDecorator } from "~/stories/decorators/resetModalState"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
+import { COMMON_HANDLERS } from "../handlers"
 
-const COMMON_HANDLERS = [
-  meHandlers.me(),
-  resourceHandlers.getRolesFor.admin(),
-  sitesHandlers.getSiteName.default(),
-  userHandlers.count.default(),
+const SHARED_HANDLERS = [
+  ...COMMON_HANDLERS,
   userHandlers.list.removeUserModal(),
   userHandlers.getUser.default(),
 ]
@@ -25,7 +20,7 @@ const meta: Meta<typeof UsersPage> = {
     getLayout: UsersPage.getLayout,
     growthbook: [createSingpassEnabledGbParameters(true)],
     msw: {
-      handlers: COMMON_HANDLERS,
+      handlers: SHARED_HANDLERS,
     },
     nextjs: {
       router: {
@@ -44,7 +39,7 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   parameters: {
     msw: {
-      handlers: COMMON_HANDLERS,
+      handlers: SHARED_HANDLERS,
     },
   },
   play: async ({ canvasElement }) => {
@@ -66,7 +61,7 @@ export const Default: Story = {
 export const Loading: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS, userHandlers.delete.loading()],
+      handlers: [...SHARED_HANDLERS, userHandlers.delete.loading()],
     },
   },
   play: async (context) => {
@@ -83,7 +78,7 @@ export const Loading: Story = {
 export const Success: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS, userHandlers.delete.success()],
+      handlers: [...SHARED_HANDLERS, userHandlers.delete.success()],
     },
   },
   play: async (context) => {

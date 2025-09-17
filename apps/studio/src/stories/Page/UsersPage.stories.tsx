@@ -6,13 +6,7 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
 
 import UsersPage from "~/pages/sites/[siteId]/users"
-
-const COMMON_HANDLERS = [
-  meHandlers.me(),
-  resourceHandlers.getRolesFor.admin(),
-  sitesHandlers.getSiteName.default(),
-  userHandlers.count.default(),
-]
+import { COMMON_HANDLERS } from "../handlers"
 
 const meta: Meta<typeof UsersPage> = {
   title: "Pages/Site Management/Users Page",

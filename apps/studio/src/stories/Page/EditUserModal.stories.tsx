@@ -1,21 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { expect, userEvent, within } from "@storybook/test"
-import { meHandlers } from "tests/msw/handlers/me"
-import { resourceHandlers } from "tests/msw/handlers/resource"
-import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
 
 import UsersPage from "~/pages/sites/[siteId]/users"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
 import { ResetEditUserModalDecorator } from "../decorators/resetModalState"
-
-const COMMON_HANDLERS = [
-  meHandlers.me(),
-  resourceHandlers.getRolesFor.admin(),
-  sitesHandlers.getSiteName.default(),
-  userHandlers.count.default(),
-  userHandlers.list.users(),
-]
+import { COMMON_HANDLERS } from "../handlers"
 
 const meta: Meta<typeof UsersPage> = {
   title: "Pages/Site Management/Users Page/Edit User Modal",
