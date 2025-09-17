@@ -1,5 +1,5 @@
 import type { User } from "@prisma/client"
-import { AuditLogEvent } from "@prisma/client"
+import { AuditLogEvent, ResourceType } from "@prisma/client"
 import { addSeconds } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
@@ -58,7 +58,7 @@ describe("scheduled-publish", async () => {
     it("publishes a resource and updates the codebuildjobs table", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
-        resourceType: "Page",
+        resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
       })
       await setupPublisherPermissions({
@@ -115,7 +115,7 @@ describe("scheduled-publish", async () => {
     it("does not publish the resource IF the scheduledAt time is outside the buffer", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
-        resourceType: "Page",
+        resourceType: ResourceType.Page,
         scheduledAt: addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1), // beyond the buffer
       })
       await setupPublisherPermissions({
@@ -158,7 +158,7 @@ describe("scheduled-publish", async () => {
     it("publishes the resource IF the scheduledAt time is outside the buffer, but previous attempts have been made", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
-        resourceType: "Page",
+        resourceType: ResourceType.Page,
         scheduledAt: addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1), // beyond the buffer
       })
       await setupPublisherPermissions({
@@ -180,7 +180,7 @@ describe("scheduled-publish", async () => {
     it("fails to publish the resource if the user does not have the right permissions when the job executes", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
-        resourceType: "Page",
+        resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
       })
 

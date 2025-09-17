@@ -22,7 +22,7 @@ const createWebhookContext = async (
     req: opts.req,
     res: opts.res,
     gb: await createGrowthBookContext(),
-    session: undefined, // since this is a public webhook endpoint without a logged-in user, we don't have a session
+    session: undefined, // no session since api key auth
   }
 }
 
