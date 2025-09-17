@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
-import SiteSettingsPage from "~/pages/sites/[siteId]/settings/settingsv2"
+import AgencySettingsPage from "~/pages/sites/[siteId]/settings/agency"
 import { COMMON_HANDLERS } from "~/stories/handlers"
 
-const meta: Meta<typeof SiteSettingsPage> = {
-  title: "Pages/Site Management/Site Settings v2",
-  component: SiteSettingsPage,
+const meta: Meta<typeof AgencySettingsPage> = {
+  title: "Pages/Site Management/Agency Settings Page",
+  component: AgencySettingsPage,
   parameters: {
-    getLayout: SiteSettingsPage.getLayout,
+    getLayout: AgencySettingsPage.getLayout,
     msw: {
       handlers: [...COMMON_HANDLERS, sitesHandlers.getNotification.default()],
     },
