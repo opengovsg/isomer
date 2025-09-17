@@ -4,6 +4,7 @@ import type {
   IsomerSiteWideComponentsProps,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { z } from "zod"
 
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import {
@@ -89,6 +90,59 @@ export const siteRouter = router({
         action: "read",
       })
       return getSiteConfig(db, id)
+    }),
+  saveConfig: protectedProcedure
+    .input(
+      z.object({
+        siteId: z.number(),
+        siteName: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input: { siteId, siteName } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+      const {
+        user: { id: userId },
+      } = ctx
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", userId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      // TODO: audit log
+      return await db.transaction().execute(async (tx) => {
+        const site = await tx
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+
+        const { config } = site
+
+        const updatedSite = await tx
+          .updateTable("Site")
+          .set({ config: jsonb({ ...config, siteName }) })
+          .where("id", "=", siteId)
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await logConfigEvent(tx, {
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: {
+            before: site,
+            after: updatedSite,
+          },
+          by: user,
+          siteId,
+        })
+
+        return updatedSite.config
+      })
     }),
   getTheme: protectedProcedure
     .input(getConfigSchema)
