@@ -69,6 +69,7 @@ export const createSearchSgClientForGithub = async ({
   name,
   repo,
 }: CreateSearchSgClientParams & { repo: string }) => {
+  console.log("Creating searchsg")
   const { content: siteConfig, sha } = await readSiteConfig(repo)
 
   // TODO: add validation via zod

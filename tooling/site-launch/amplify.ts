@@ -49,6 +49,7 @@ const listApps = async () => {
 export const checkLastBuild = async (codebuildId: string) => {
   const apps = await listApps()
   const matchingApp = apps.find((app) => app.name === `${codebuildId}-next`)
+  console.log("Checking last build status")
 
   if (!matchingApp) {
     console.log(`No matching app found for codebuildId: ${codebuildId}`)

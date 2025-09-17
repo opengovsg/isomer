@@ -4,7 +4,12 @@
     "Acm": "_c497800b320c2959dc98a76129960928.www.nmrc.sg.   CNAME   _a1577bdfa48d887bf8aea7f948a10619.xlfgrmvvlj.acm-validations.aws.",
     "LongName": "National Medical Research Council",
     "CodeBuildId": "moh-nmrc",
-    "GithubName": "moh-nmrc-next"
+    "GithubName": "moh-nmrc-next",
+    "SearchSg": "ed9be89b-fbec-4746-978b-b7ee015ae406",
+    "StudioSiteId": "151",
+    "Archived": "true",
+    "Imported": "true",
+    "S3Sync": "true"
   }
 }
 
