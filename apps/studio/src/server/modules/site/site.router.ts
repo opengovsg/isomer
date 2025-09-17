@@ -4,6 +4,7 @@ import type {
   IsomerSiteWideComponentsProps,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { z } from "zod"
 
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import {
@@ -15,6 +16,7 @@ import {
   publishSiteSchema,
   setNotificationSchema,
   setSiteConfigByAdminSchema,
+  updateSiteConfigSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -28,6 +30,7 @@ import {
   getNavBar,
   publishSiteConfig,
 } from "../resource/resource.service"
+import { updateSearchsgConfig } from "../searchsg/searchsg.service"
 import {
   clearSiteNotification,
   createSite,
@@ -89,6 +92,67 @@ export const siteRouter = router({
         action: "read",
       })
       return getSiteConfig(db, id)
+    }),
+  updateSiteConfig: protectedProcedure
+    .input(updateSiteConfigSchema)
+    .mutation(async ({ ctx, input: { siteId, siteName } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+      const {
+        user: { id: userId },
+      } = ctx
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", userId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      // TODO: audit log
+      const updatedConfig = await db.transaction().execute(async (tx) => {
+        const site = await tx
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+
+        const { config } = site
+
+        const updatedSite = await tx
+          .updateTable("Site")
+          .set({ config: jsonb({ ...config, siteName }) })
+          .where("id", "=", siteId)
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        const { config: updatedConfig } = updatedSite
+
+        // NOTE: We want to put this in the `tx` as the 2 updates should be together;
+        // if either one fails, we should fail to update the db
+        if (updatedConfig.search?.type === "searchSG")
+          void updateSearchsgConfig(
+            { name: siteName },
+            updatedConfig.search.clientId,
+            new URL(updatedConfig.url),
+          )
+
+        await logConfigEvent(tx, {
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: {
+            before: site,
+            after: updatedSite,
+          },
+          by: user,
+          siteId,
+        })
+
+        return updatedSite.config
+      })
+
+      return updatedConfig
     }),
   getTheme: protectedProcedure
     .input(getConfigSchema)
