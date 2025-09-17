@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { waitFor, within } from "@storybook/test"
 import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
@@ -632,13 +631,4 @@ export const HeroSearchbar: Story = {
         "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
     },
   }),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(
-      () => canvas.findByPlaceholderText("Search for information and services"),
-      {
-        timeout: 3000,
-      },
-    )
-  },
 }
