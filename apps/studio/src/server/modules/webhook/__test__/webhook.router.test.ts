@@ -26,10 +26,11 @@ vi.mock("~/features/mail/service", () => ({
 
 const getCallerWithMockGrowthbook = (
   session: Session,
+  mockReturnValue = true,
 ): ReturnType<typeof createCaller> => {
   const mockRequest = createMockRequest(session)
   const mockGrowthBook: Partial<GrowthBook> = {
-    isOn: vi.fn().mockReturnValue(true),
+    isOn: vi.fn().mockReturnValue(mockReturnValue),
   }
   mockRequest.gb = mockGrowthBook as GrowthBook
   return createCaller(mockRequest)
@@ -160,6 +161,103 @@ describe("webhook.router", async () => {
 
       // Assert
       expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+    })
+    it("sends a success email with the correct isScheduled flag", async () => {
+      // Arrange
+      const { site, codebuildJob } = await setupCodeBuildJob({
+        userId: user.id,
+        buildId: "test-build-id",
+        buildStatus: "IN_PROGRESS",
+        startedAt: FIXED_NOW,
+        isScheduled: false, // not a scheduled publish
+      })
+      const caller = getCallerWithMockGrowthbook(session)
+
+      // Act
+      await caller.updateCodebuildWebhook({
+        projectName: "test-project",
+        siteId: site.id,
+        buildId: codebuildJob.buildId,
+        buildStatus: "SUCCEEDED",
+      })
+
+      // Assert
+      expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
+      expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        publishTime: FIXED_NOW,
+        isScheduled: false,
+      })
+    })
+    it("sends a failure email with the correct isScheduled flag", async () => {
+      // Arrange
+      const { site, codebuildJob } = await setupCodeBuildJob({
+        userId: user.id,
+        buildId: "test-build-id",
+        buildStatus: "IN_PROGRESS",
+        startedAt: FIXED_NOW,
+        isScheduled: false, // not a scheduled publish
+      })
+      const caller = getCallerWithMockGrowthbook(session)
+
+      // Act
+      await caller.updateCodebuildWebhook({
+        projectName: "test-project",
+        siteId: site.id,
+        buildId: codebuildJob.buildId,
+        buildStatus: "FAILED",
+      })
+
+      // Assert
+      expect(sendFailedPublishEmail).toHaveBeenCalledOnce()
+      expect(sendFailedPublishEmail).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        isScheduled: false,
+      })
+    })
+    it("does not send a success email if the feature flag is disabled", async () => {
+      // Arrange
+      const { site, codebuildJob } = await setupCodeBuildJob({
+        userId: user.id,
+        buildId: "test-build-id",
+        buildStatus: "IN_PROGRESS",
+        startedAt: FIXED_NOW,
+        isScheduled: true,
+      })
+      const caller = getCallerWithMockGrowthbook(session, false) // feature flag disabled
+
+      // Act
+      await caller.updateCodebuildWebhook({
+        projectName: "test-project",
+        siteId: site.id,
+        buildId: codebuildJob.buildId,
+        buildStatus: "SUCCEEDED",
+      })
+
+      // Assert
+      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+    })
+    it("does not send a failure email if the feature flag is disabled", async () => {
+      // Arrange
+      const { site, codebuildJob } = await setupCodeBuildJob({
+        userId: user.id,
+        buildId: "test-build-id",
+        buildStatus: "IN_PROGRESS",
+        startedAt: FIXED_NOW,
+        isScheduled: true,
+      })
+      const caller = getCallerWithMockGrowthbook(session, false) // feature flag disabled
+
+      // Act
+      await caller.updateCodebuildWebhook({
+        projectName: "test-project",
+        siteId: site.id,
+        buildId: codebuildJob.buildId,
+        buildStatus: "FAILED",
+      })
+
+      // Assert
+      expect(sendFailedPublishEmail).not.toHaveBeenCalled()
     })
   })
 })
