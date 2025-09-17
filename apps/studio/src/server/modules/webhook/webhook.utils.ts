@@ -130,6 +130,7 @@ const sendEmails = async (
               promise: sendSuccessfulPublishEmail({
                 isScheduled: info.isScheduled,
                 recipientEmail: info.email,
+                title: info.title,
                 publishTime: new Date(), // use current time as publish time, no need to use exact time from codebuild
               }),
             }
@@ -139,6 +140,7 @@ const sendEmails = async (
               promise: sendFailedPublishEmail({
                 isScheduled: info.isScheduled,
                 recipientEmail: info.email,
+                resource: info,
               }),
             }
           default:

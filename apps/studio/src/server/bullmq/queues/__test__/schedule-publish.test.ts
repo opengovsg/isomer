@@ -20,7 +20,7 @@ import {
 // Mock the publishSite function to avoid making actual AWS SDK calls during tests
 vi.mock("~/server/modules/aws/codebuild.service.ts", () => ({
   publishSite: vi.fn().mockResolvedValue({
-    buildId: "test-build-id",
+    buildId: "build/test-id",
     // this date is the same as FIXED_NOW below, but since this call is hoisted we need to redefine it here
     startTime: new Date("2024-01-01T00:00:00.000Z"),
   }),
@@ -94,7 +94,7 @@ describe("scheduled-publish", async () => {
       expect(codebuildjobs[0]).toMatchObject({
         siteId: site.id,
         userId: user.id,
-        buildId: "test-build-id",
+        buildId: "build/test-id",
         startedAt: FIXED_NOW,
         status: "IN_PROGRESS",
       })
