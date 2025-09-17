@@ -4,6 +4,7 @@ interface CreateBaseSiteProps {
   name: string
   codeBuildId: string
 }
+
 export const createBaseSiteInStudio = async ({
   name,
   codeBuildId,
