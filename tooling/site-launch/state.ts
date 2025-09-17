@@ -34,7 +34,7 @@ export const Steps = _.omit(
   "__type",
 )
 
-type Step = SimplifyDeep<
+export type Step = SimplifyDeep<
   Exclude<
     | keyof typeof GithubSteps
     | keyof typeof StudioSteps
@@ -43,9 +43,7 @@ type Step = SimplifyDeep<
   >
 >
 
-type SiteLaunchState = {
-  [step in Step]?: string
-}
+type SiteLaunchState = Partial<Record<Step, string>>
 
 type State = Record<string, SiteLaunchState>
 const state = _state as State
@@ -94,4 +92,8 @@ export const skipIfExists = async (
   }
 
   return writeToState(f, state, domain, step)
+}
+
+export const readStateFile = () => {
+  return state
 }
