@@ -91,7 +91,7 @@ export const siteRouter = router({
       })
       return getSiteConfig(db, id)
     }),
-  saveConfig: protectedProcedure
+  updateSiteConfig: protectedProcedure
     .input(
       z.object({
         siteId: z.number(),

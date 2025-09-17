@@ -6,11 +6,13 @@ interface SettingsHeaderProps {
   title: string
   icon: IconType
   canPublish?: boolean
+  isLoading?: boolean
 }
 export const SettingsHeader = ({
   title,
   icon,
   canPublish,
+  isLoading,
 }: SettingsHeaderProps) => {
   return (
     <Flex justifyContent="space-between" w="100%">
@@ -30,7 +32,7 @@ export const SettingsHeader = ({
           {title}
         </Text>
       </Flex>
-      <Button type="submit" isDisabled={!canPublish}>
+      <Button type="submit" isDisabled={!canPublish} isLoading={isLoading}>
         <Text>Publish changes</Text>
       </Button>
     </Flex>

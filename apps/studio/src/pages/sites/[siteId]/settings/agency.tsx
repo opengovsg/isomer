@@ -5,12 +5,14 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
+  useToast,
 } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiWrench } from "react-icons/bi"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
@@ -32,6 +34,27 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   const [{ siteName, agencyName }] = trpc.site.getConfig.useSuspenseQuery({
     id: siteId,
   })
+  const trpcUtils = trpc.useUtils()
+  const toast = useToast()
+
+  const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
+    onSuccess: async ({ siteName }) => {
+      toast({
+        title: `Site ${siteName} updated successfully`,
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+      await trpcUtils.site.getConfig.invalidate({ id: siteId })
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to create site",
+        description: error.message,
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
+  })
 
   useEffect(() => {
     if (!isEnabled) {
@@ -43,18 +66,26 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   const isOpen = !!nextUrl
 
   const {
+    handleSubmit,
     watch,
     register,
     formState: { isDirty, errors },
   } = useZodForm({
     // TODO: Share this across frontend and backend
-    schema: z.object({ siteName: z.string(), agencyName: z.string() }),
-    defaultValues: { siteName, agencyName },
+    schema: z.object({ siteName: z.string() }),
+    defaultValues: { siteName },
   })
 
   const updatedSiteName = watch("siteName")
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+
+  const onSubmit = handleSubmit((data) => {
+    updateSiteConfigMutation.mutate({
+      siteName: data.siteName,
+      siteId,
+    })
+  })
 
   return (
     <>
@@ -63,13 +94,14 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <chakra.form overflow="auto" height={0} minH="100%">
+      <chakra.form overflow="auto" height={0} minH="100%" onSubmit={onSubmit}>
         <SimpleGrid columns={9} h="100%">
           <SettingsEditingLayout>
             <SettingsHeader
               title="Name and agency"
               icon={BiWrench}
               canPublish={updatedSiteName !== siteName}
+              isLoading={updateSiteConfigMutation.isPending}
             />
             <FormControl isRequired isInvalid={!!errors.siteName}>
               <FormLabel
@@ -82,13 +114,13 @@ const AgencySettingsPage: NextPageWithLayout = () => {
               <Input {...register("siteName")} />
               <FormErrorMessage>{errors.siteName?.message}</FormErrorMessage>
             </FormControl>
-            <FormControl isRequired isInvalid={!!errors.agencyName}>
+            <FormControl isRequired>
               <FormLabel
                 description={"This isn't displayed anywhere on your site"}
               >
                 Website is owned by
               </FormLabel>
-              <Input {...register("agencyName")} disabled />
+              <Input value={agencyName ?? "No agency name set"} disabled />
             </FormControl>
           </SettingsEditingLayout>
           <Box gridColumn="6 / 10">
