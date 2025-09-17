@@ -92,6 +92,7 @@ export const updateCodebuildStatusAndSendEmails = async (
                 recipientEmail: info.email,
                 publishTime: new Date(), // use current time as publish time, no need to use exact time from codebuild
                 isScheduled: info.isScheduled,
+                title: info.title,
               }),
             ]
           case "FAILED":
@@ -99,6 +100,7 @@ export const updateCodebuildStatusAndSendEmails = async (
               sendFailedPublishEmail({
                 recipientEmail: info.email,
                 isScheduled: info.isScheduled,
+                resource: info,
               }),
             ]
           default:
