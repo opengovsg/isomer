@@ -1,9 +1,33 @@
 import type { HeroProps } from "~/interfaces/complex/Hero"
-import { HomepageSearchSGInputBox } from "../../internal"
+import { HomepageSearchSGInputBox, LocalSearchInputBox } from "../../internal"
 import { ComponentContent } from "../../internal/customCssClass"
 
 export const HeroSearchbar = ({ title, subtitle, site }: HeroProps) => {
-  const clientId = site.search?.type === "searchSG" && site.search?.clientId
+  const SearchInputBox = () => {
+    const commonProps = {
+      className: "w-full pt-3",
+    }
+    switch (site.search?.type) {
+      case "searchSG":
+        if (!site.search?.clientId) return null
+        return (
+          <HomepageSearchSGInputBox
+            clientId={site.search?.clientId}
+            {...commonProps}
+          />
+        )
+      case "localSearch":
+        if (!site.search?.searchUrl) return null
+        return (
+          <LocalSearchInputBox
+            searchUrl={site.search?.searchUrl}
+            {...commonProps}
+          />
+        )
+      default:
+        return null
+    }
+  }
 
   return (
     <section
@@ -23,12 +47,7 @@ export const HeroSearchbar = ({ title, subtitle, site }: HeroProps) => {
               {subtitle}
             </p>
           )}
-          {!!clientId && (
-            <HomepageSearchSGInputBox
-              clientId={clientId}
-              className="w-full pt-3"
-            />
-          )}
+          <SearchInputBox />
         </div>
       </div>
     </section>
