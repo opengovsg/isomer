@@ -56,6 +56,7 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
               borderColor="base.divider.medium"
               px="0.75rem"
               align="start"
+              w="100%"
             >
               {items.map((item) => (
                 <SettingsItem

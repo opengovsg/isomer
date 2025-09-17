@@ -15,6 +15,10 @@ export const SettingsItem = ({ isActive, label, href }: SettingsItemProps) => {
       textDecoration="none"
       px="0.5rem"
       py="0.25rem"
+      w="100%"
+      _hover={{
+        bgColor: "interaction.muted.main.hover",
+      }}
     >
       <Text
         textStyle="subhead-2"
