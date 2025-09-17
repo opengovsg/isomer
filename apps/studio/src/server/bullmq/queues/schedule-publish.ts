@@ -6,7 +6,9 @@ import type { Lock } from "@isomer/redis"
 import { getRedisWithRedlock, ResourceLockedError } from "@isomer/redis"
 
 import { sendFailedPublishEmail } from "~/features/mail/service"
+import { ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY } from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
+import { createGrowthBookContext } from "~/server/context"
 import { db } from "~/server/modules/database"
 import { bulkValidateUserPermissionsForResources } from "~/server/modules/permissions/permissions.service"
 import {
@@ -256,10 +258,14 @@ scheduledPublishWorker.on(
             .select("User.email")
             .executeTakeFirstOrThrow()
 
-          await sendFailedPublishEmail({
-            recipientEmail: email,
-            isScheduled: true,
-          })
+          // check the growthbook feature flag to see if we should send emails for scheduled publishes
+          const gb = await createGrowthBookContext()
+          if (gb.isOn(ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY)) {
+            await sendFailedPublishEmail({
+              recipientEmail: email,
+              isScheduled: true,
+            })
+          }
         }
       } catch (emailErr) {
         logger.error({
