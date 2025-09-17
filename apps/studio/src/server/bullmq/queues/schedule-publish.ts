@@ -5,7 +5,7 @@ import { differenceInSeconds } from "date-fns"
 import type { Lock } from "@isomer/redis"
 import { getRedisWithRedlock, ResourceLockedError } from "@isomer/redis"
 
-import { sendFailedSchedulePublishEmail } from "~/features/mail/service"
+import { sendFailedPublishEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
 import { db } from "~/server/modules/database"
 import { bulkValidateUserPermissionsForResources } from "~/server/modules/permissions/permissions.service"
@@ -256,11 +256,14 @@ scheduledPublishWorker.on(
             .select("User.email")
             .executeTakeFirstOrThrow()
 
-          await sendFailedSchedulePublishEmail({ recipientEmail: email })
+          await sendFailedPublishEmail({
+            recipientEmail: email,
+            isScheduled: true,
+          })
         }
       } catch (emailErr) {
         logger.error({
-          message: `Failed to send failed schedule publish email to ${userId} for resource ${resourceId}`,
+          message: `Failed to send failed publish email to ${userId} for resource ${resourceId}`,
           error: emailErr,
         })
       }
