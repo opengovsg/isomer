@@ -30,17 +30,17 @@ vi.mock("~/features/mail/service", () => ({
 
 const createMockRequest = ({
   siteId,
-  buildId,
+  arn,
   apiKey = "test-webhook-api-key",
 }: {
   siteId: number
-  buildId: string
+  arn: string
   apiKey?: string
 }) => {
-  const body: z.infer<typeof codeBuildWebhookSchema> = {
+  const body: z.input<typeof codeBuildWebhookSchema> = {
     projectName: "test-project",
     siteId,
-    buildId,
+    arn,
     buildStatus: "SUCCEEDED",
   }
   const { req, res }: { req: NextApiRequest; res: NextApiResponse } =
@@ -63,15 +63,15 @@ describe("webhook", () => {
     it("should process valid webhook payload", async () => {
       // Arrange
       const user = await setupUser(createTestUser())
-      const { codebuildJob, site } = await setupCodeBuildJob({
+      const { site } = await setupCodeBuildJob({
         userId: user.id,
-        buildId: "test-build-id",
+        arn: "build/test-id",
         startedAt: new Date(),
         isScheduled: true,
       })
       const { req, res } = createMockRequest({
         siteId: site.id,
-        buildId: codebuildJob.buildId,
+        arn: "build/test-id",
       })
 
       // Act
@@ -83,15 +83,15 @@ describe("webhook", () => {
     it("providing an incorrect API key causes a 401", async () => {
       // Arrange
       const user = await setupUser(createTestUser())
-      const { codebuildJob, site } = await setupCodeBuildJob({
+      const { site } = await setupCodeBuildJob({
         userId: user.id,
-        buildId: "test-build-id",
+        arn: "build/test-id",
         startedAt: new Date(),
         isScheduled: true,
       })
       const { req, res } = createMockRequest({
         siteId: site.id,
-        buildId: codebuildJob.buildId,
+        arn: "build/test-id",
         apiKey: "wrong-api-key",
       })
 

@@ -9,6 +9,8 @@ import { nanoid } from "nanoid"
 import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 
+import { buildIdFromArn } from "~/schemas/webhook"
+
 interface SetupPermissionsProps {
   userId?: string
   siteId: number
@@ -636,19 +638,23 @@ export const setupFullSite = async () => {
 
 export const setupCodeBuildJob = async ({
   userId,
-  buildId,
   startedAt,
   buildStatus = "IN_PROGRESS",
   emailSent = false,
   isScheduled,
+  arn,
 }: {
   userId: CodeBuildJobs["userId"]
-  buildId: CodeBuildJobs["buildId"]
   startedAt: CodeBuildJobs["startedAt"]
   buildStatus?: CodeBuildJobs["status"]
   emailSent?: CodeBuildJobs["emailSent"]
   isScheduled?: CodeBuildJobs["isScheduled"]
+  arn: string
 }) => {
+  const buildId = buildIdFromArn(arn)
+  if (!buildId) {
+    throw new Error(`Invalid buildId format: ${arn}`)
+  }
   const { page, site } = await setupPageResource({
     resourceType: ResourceType.Page,
   })

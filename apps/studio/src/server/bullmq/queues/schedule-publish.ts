@@ -261,16 +261,23 @@ scheduledPublishWorker.on(
           // check the growthbook feature flag to see if we should send emails for scheduled publishes
           const gb = await createGrowthBookContext()
           if (gb.isOn(ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY)) {
+            // get the resource that was being published
+            const resource = await getPageById(db, {
+              resourceId,
+              siteId: job.data.siteId,
+            })
+            if (!resource) throw new Error("The resource no longer exists")
             await sendFailedPublishEmail({
               recipientEmail: email,
               isScheduled: true,
+              resource,
             })
           }
         }
-      } catch (emailErr) {
+      } catch (error) {
         logger.error({
           message: `Failed to send failed publish email to ${userId} for resource ${resourceId}`,
-          error: emailErr,
+          error,
         })
       }
     })()
