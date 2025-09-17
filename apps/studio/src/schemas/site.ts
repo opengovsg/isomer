@@ -42,3 +42,8 @@ export const createSiteSchema = z.object({
 export const publishSiteSchema = z.object({
   siteId: z.number().min(1),
 })
+
+export const updateSiteConfigSchema = z.object({
+  siteId: z.number(),
+  siteName: z.string(),
+})

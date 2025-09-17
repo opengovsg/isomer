@@ -55,15 +55,17 @@ function SuspendablePreview({
     },
   })
 
+  const renderedSiteProps = merge(siteConfig, renderProps.site, overrides.site)
+
   return (
     <RenderEngine
       {...renderProps}
-      // TODO: fixup all the typing errors
-      // @ts-expect-error to fix when types are proper
       site={{
+        // TODO: fixup all the typing errors
+        // @ts-expect-error to fix when types are proper
         siteMap,
         environment: "production",
-        ...siteConfig,
+        ...renderedSiteProps,
         search: {
           type: "localSearch",
           searchUrl: "/search",
