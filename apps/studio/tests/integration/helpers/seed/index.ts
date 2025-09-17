@@ -1,4 +1,4 @@
-import type { BuildStatusType } from "@prisma/client"
+import type { CodeBuildJobs } from "@prisma/client"
 import {
   ResourceState,
   ResourceType,
@@ -640,29 +640,25 @@ export const setupCodeBuildJob = async ({
   buildStatus = "IN_PROGRESS",
   startedAt,
 }: {
-  userId: string
-  buildId: string
-  startedAt: Date
-  buildStatus?: BuildStatusType
+  userId: CodeBuildJobs["userId"]
+  buildId: CodeBuildJobs["buildId"]
+  startedAt: CodeBuildJobs["startedAt"]
+  buildStatus?: CodeBuildJobs["status"]
 }) => {
   const { page, site } = await setupPageResource({
-    resourceType: "Page",
+    resourceType: ResourceType.Page,
   })
-  await db
+  const codebuildJob = await db
     .insertInto("CodeBuildJobs")
     .values({
       siteId: site.id,
       userId,
       buildId,
       startedAt,
+      resourceId: page.id,
       status: buildStatus,
     })
-    .executeTakeFirstOrThrow()
-
-  const codebuildJob = await db
-    .selectFrom("CodeBuildJobs")
-    .where("buildId", "=", buildId)
-    .selectAll()
+    .returningAll()
     .executeTakeFirstOrThrow()
 
   return { site, page, codebuildJob }
