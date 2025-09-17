@@ -10,6 +10,12 @@
     "Archived": "true",
     "Imported": "true",
     "S3Sync": "true"
+  },
+  "www.digitalgateway.gov.sg": {
+    "Domain": "www.digitalgateway.gov.sg",
+    "Acm": "_b5504f771de5cd2eb778ea2267ef1fbb.www.digitalgateway.gov.sg.   CNAME   _6365655fe04d72ba2d52d9de2df02f02.xlfgrmvvlj.acm-validations.aws.",
+    "LongName": "SG Digital Gateway",
+    "CodeBuildId": "mddi-sgdc",
+    "GithubName": ""
   }
 }
-
