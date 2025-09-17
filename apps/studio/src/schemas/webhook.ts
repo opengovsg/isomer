@@ -8,8 +8,7 @@ import { z } from "zod"
  */
 export const codeBuildWebhookSchema = z.object({
   projectName: z.string(),
-  siteId: z.number(),
+  siteId: z.coerce.number(),
   buildId: z.string(),
-  buildNumber: z.number(),
   buildStatus: z.nativeEnum(BuildStatusType),
 })
