@@ -8,12 +8,13 @@ import type {
   BaseEmailTemplateData,
   CancelSchedulePageTemplateData,
   EmailTemplate,
+  FailedPublishTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
-  SuccessfulSchedulePublishTemplateData,
+  SuccessfulPublishTemplateData,
 } from "./types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
@@ -114,27 +115,27 @@ export const cancelSchedulePageTemplate = (
   }
 }
 
-export const failedSchedulePublishTemplate = (
-  data: BaseEmailTemplateData,
+export const failedPublishTemplate = (
+  data: FailedPublishTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail } = data
+  const { recipientEmail, isScheduled } = data
   return {
-    subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
+    subject: `[Isomer Studio] We couldn’t publish your ${isScheduled ? "scheduled page" : "page"}`,
     body: `<p>Hi ${recipientEmail},</p>
-    <p>We couldn’t publish the page that you scheduled. Please log in to Isomer Studio at ${constructStudioRedirect()} and try publishing the page again.</p>
+    <p>We couldn’t publish the page ${isScheduled ? "that you scheduled" : "that you tried to publish"}. Please log in to Isomer Studio at ${constructStudioRedirect()} and try publishing the page again.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
   }
 }
 
-export const successfulScheduledPublishTemplate = (
-  data: SuccessfulSchedulePublishTemplateData,
+export const successfulPublishTemplate = (
+  data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, publishTime } = data
+  const { recipientEmail, publishTime, isScheduled } = data
   return {
-    subject: `[Isomer Studio] Your page was published as scheduled`,
+    subject: `[Isomer Studio] ${isScheduled ? "Your page was published as scheduled" : "Changes you published are now live"}`,
     body: `<p>Hi ${recipientEmail},</p>
-    <p>Your page was successfully published on ${format(toZonedTime(publishTime, "Asia/Singapore"), "MMMM d, yyyy hh:mm a")} as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
+    <p>${isScheduled ? `Your page was successfully published on ${format(toZonedTime(publishTime, "Asia/Singapore"), "MMMM d, yyyy hh:mm a")} as scheduled. It will be live on your site in approximately 5-10 minutes.` : `Your changes have been successfully published and will be live on your site in approximately 5-10 minutes.`}</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
   }
@@ -239,10 +240,10 @@ export const templates = {
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
   cancelSchedulePage:
     cancelSchedulePageTemplate satisfies EmailTemplateFunction<CancelSchedulePageTemplateData>,
-  failedSchedulePublish:
-    failedSchedulePublishTemplate satisfies EmailTemplateFunction<BaseEmailTemplateData>,
-  successfulScheduledPublish:
-    successfulScheduledPublishTemplate satisfies EmailTemplateFunction<SuccessfulSchedulePublishTemplateData>,
+  failedPublish:
+    failedPublishTemplate satisfies EmailTemplateFunction<FailedPublishTemplateData>,
+  successfulPublish:
+    successfulPublishTemplate satisfies EmailTemplateFunction<SuccessfulPublishTemplateData>,
   schedulePage:
     schedulePageTemplate satisfies EmailTemplateFunction<SchedulePageTemplateData>,
   publishAlertSiteAdmin:
