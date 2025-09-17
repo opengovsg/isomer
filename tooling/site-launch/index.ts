@@ -58,25 +58,21 @@ const launch = async () => {
   )
 
   if (!!repo) {
-    await skipIfExists(domain, Steps.Archived, async () => {
-      await archiveRepo(repo)
-      return "true"
-    })
     const status = await checkLastBuild(codebuildId)
     if (status !== "SUCCEED") {
       console.log("The last build of the site failed - please fix!")
     }
 
-    await archiveRepo(repo)
-
-    skipIfExists(
+    await skipIfExists(
       domain,
       Steps.SearchSg,
       async () =>
         await createSearchSgClientForGithub({ domain, name: long, repo }),
     )
 
-    const siteId = skipIfExists(
+    await confirm({ message: "Have you ran `npm run db:connect`?" })
+
+    const siteId = await skipIfExists(
       domain,
       Steps.StudioSiteId,
       async () =>
@@ -86,7 +82,12 @@ const launch = async () => {
         }),
     )
 
-    await updateCodebuildId(siteId, codebuildId)
+    await updateCodebuildId(Number(siteId), codebuildId)
+
+    await skipIfExists(domain, Steps.Archived, async () => {
+      await archiveRepo(repo)
+      return "true"
+    })
 
     // NOTE: End users should be able to retry here because this isn't idempotent
     // and the side effect might be intended (overriding rows)
@@ -98,7 +99,7 @@ const launch = async () => {
 
     // NOTE: End users should be able to retry here because this isn't idempotent
     // and the side effect might be intended (uploading to s3)
-    await toStateFile(domain, Steps.Imported, async () => {
+    await toStateFile(domain, Steps.S3Sync, async () => {
       await s3sync(Number(siteId))
       const canCleanup = await confirm({
         message: `Have the assets been uploaded to s3?`,

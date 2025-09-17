@@ -60,7 +60,7 @@ export const toStateFile = async (
 
   if (prevResult) {
     const shouldOverridePrevious = await confirm({
-      message: `Previoous result for step ${step} found: ${prevResult}. Proceed to override?`,
+      message: `Previous result for step ${step} found: ${prevResult}. Proceed to override?`,
     })
     if (shouldOverridePrevious) {
       return writeToState(f, state, domain, step)
