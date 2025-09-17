@@ -3,8 +3,7 @@ import { HomepageSearchSGInputBox } from "../../internal"
 import { ComponentContent } from "../../internal/customCssClass"
 
 export const HeroSearchbar = ({ title, subtitle, site }: HeroProps) => {
-  const clientId =
-    (site.search?.type === "searchSG" && site.search?.clientId) || ""
+  const clientId = site.search?.type === "searchSG" && site.search?.clientId
 
   return (
     <section className="flex w-full flex-col bg-[linear-gradient(275deg,theme(colors.white)_6.27%,theme(colors.brand.canvas.DEFAULT)_100%)]">
@@ -18,10 +17,12 @@ export const HeroSearchbar = ({ title, subtitle, site }: HeroProps) => {
               {subtitle}
             </p>
           )}
-          <HomepageSearchSGInputBox
-            clientId={clientId}
-            className="w-full pt-3"
-          />
+          {!!clientId && (
+            <HomepageSearchSGInputBox
+              clientId={clientId}
+              className="w-full pt-3"
+            />
+          )}
         </div>
       </div>
     </section>
