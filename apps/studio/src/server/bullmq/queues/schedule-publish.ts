@@ -193,6 +193,7 @@ export const publishScheduledResource = async (
       siteId,
       resourceId: page.id,
       user,
+      isScheduled: true,
     })
     return version
   } catch (error) {
