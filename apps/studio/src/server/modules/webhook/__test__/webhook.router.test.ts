@@ -1,3 +1,4 @@
+import type { GrowthBook } from "@growthbook/growthbook/dist/GrowthBook"
 import type { User } from "@prisma/client"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
@@ -8,6 +9,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import { setupCodeBuildJob, setupUser } from "tests/integration/helpers/seed"
 
+import type { Session } from "~/lib/types/session"
 import {
   sendFailedPublishEmail,
   sendSuccessfulPublishEmail,
@@ -22,16 +24,25 @@ vi.mock("~/features/mail/service", () => ({
   sendFailedPublishEmail: vi.fn(),
 }))
 
+const getCallerWithMockGrowthbook = (
+  session: Session,
+): ReturnType<typeof createCaller> => {
+  const mockRequest = createMockRequest(session)
+  const mockGrowthBook: Partial<GrowthBook> = {
+    isOn: vi.fn().mockReturnValue(true),
+  }
+  mockRequest.gb = mockGrowthBook as GrowthBook
+  return createCaller(mockRequest)
+}
+
 const createCaller = createCallerFactory(webhookRouter)
 const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
 
 describe("webhook.router", async () => {
-  let caller: ReturnType<typeof createCaller>
   const session = await applyAuthedSession()
   let user: User
   beforeEach(async () => {
     vi.clearAllMocks()
-    caller = createCaller(createMockRequest(session))
     await resetTables("CodeBuildJobs", "User", "Resource", "Site")
     user = await setupUser({
       userId: session.userId,
@@ -54,7 +65,9 @@ describe("webhook.router", async () => {
         userId: user.id,
         buildId: "test-build-id",
         startedAt: FIXED_NOW,
+        isScheduled: true,
       })
+      const caller = getCallerWithMockGrowthbook(session)
 
       // Act
       await caller.updateCodebuildWebhook({
@@ -69,6 +82,7 @@ describe("webhook.router", async () => {
       expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
         publishTime: FIXED_NOW,
+        isScheduled: true,
       })
 
       // check the codebuildjobs table to see if the status has been updated
@@ -91,7 +105,9 @@ describe("webhook.router", async () => {
         userId: user.id,
         buildId: "test-build-id",
         startedAt: FIXED_NOW,
+        isScheduled: true,
       })
+      const caller = getCallerWithMockGrowthbook(session)
 
       // Act
       await caller.updateCodebuildWebhook({
@@ -104,6 +120,7 @@ describe("webhook.router", async () => {
       // Assert
       expect(sendFailedPublishEmail).toHaveBeenCalledOnce()
       expect(sendFailedPublishEmail).toHaveBeenCalledWith({
+        isScheduled: true,
         recipientEmail: user.email,
       })
       // check the codebuildjobs table to see if the status has been updated
@@ -129,7 +146,9 @@ describe("webhook.router", async () => {
         buildStatus: "SUCCEEDED", // already succeeded
         startedAt: FIXED_NOW,
         emailSent: true, // email already sent
+        isScheduled: true,
       })
+      const caller = getCallerWithMockGrowthbook(session)
 
       // Act
       await caller.updateCodebuildWebhook({

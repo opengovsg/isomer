@@ -640,12 +640,14 @@ export const setupCodeBuildJob = async ({
   startedAt,
   buildStatus = "IN_PROGRESS",
   emailSent = false,
+  isScheduled,
 }: {
   userId: CodeBuildJobs["userId"]
   buildId: CodeBuildJobs["buildId"]
   startedAt: CodeBuildJobs["startedAt"]
   buildStatus?: CodeBuildJobs["status"]
-  emailSent?: boolean
+  emailSent?: CodeBuildJobs["emailSent"]
+  isScheduled?: CodeBuildJobs["isScheduled"]
 }) => {
   const { page, site } = await setupPageResource({
     resourceType: ResourceType.Page,
@@ -660,6 +662,7 @@ export const setupCodeBuildJob = async ({
       resourceId: page.id,
       status: buildStatus,
       emailSent,
+      isScheduled,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
