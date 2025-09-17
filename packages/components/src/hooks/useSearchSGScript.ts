@@ -33,5 +33,13 @@ export const useSearchSGScript = ({
     scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${clientId}${pageParam}`
     scriptTag.setAttribute("defer", "")
     document.body.appendChild(scriptTag)
-  }, [clientId, shouldLoad])
+
+    // Cleanup function
+    return () => {
+      const scriptToRemove = document.getElementById(SEARCHSG_CONFIG_ID)
+      if (scriptToRemove) {
+        document.body.removeChild(scriptToRemove)
+      }
+    }
+  }, [clientId, shouldLoad, pageType])
 }

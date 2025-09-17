@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useSearchSGScript } from "../../hooks/useSearchSGScript"
 
 export const SEARCHSG_TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
 
@@ -10,28 +10,11 @@ interface WithSearchSgSetupProps {
 export const withSearchSgSetup =
   ({ pageType }: WithSearchSgSetupProps = { pageType: "default" }) =>
   (Story: any) => {
-    useEffect(() => {
-      // Remove any existing SearchSG script
-      const existingScriptTag = document.getElementById("searchsg-config")
-      if (existingScriptTag) {
-        existingScriptTag.remove()
-      }
-
-      const scriptTag = document.createElement("script")
-      scriptTag.id = "searchsg-config"
-      const pageParam = pageType === "search" ? "&page=result" : ""
-      scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${SEARCHSG_TEST_CLIENT_ID}${pageParam}`
-      scriptTag.setAttribute("defer", "")
-      document.body.appendChild(scriptTag)
-
-      // Cleanup function
-      return () => {
-        const scriptToRemove = document.getElementById("searchsg-config")
-        if (scriptToRemove) {
-          document.body.removeChild(scriptToRemove)
-        }
-      }
-    }, [pageType])
+    useSearchSGScript({
+      pageType,
+      clientId: SEARCHSG_TEST_CLIENT_ID,
+      shouldLoad: true,
+    })
 
     return <Story />
   }
