@@ -3,10 +3,10 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import {
-  generateSiteConfig,
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
-} from "~/stories/helpers"
+} from "~/stories/decorators"
+import { generateSiteConfig } from "~/stories/helpers"
 import Hero from "./Hero"
 
 const meta: Meta<typeof Hero> = {
@@ -138,7 +138,7 @@ export const FloatingShortText: Story = {
 }
 
 export const Searchbar: Story = {
-  decorators: [withSearchSgSetup],
+  decorators: [withSearchSgSetup()],
   args: {
     site: generateSiteConfig({
       search: {

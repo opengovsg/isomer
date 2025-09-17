@@ -1,31 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { useEffect } from "react"
 import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { HomePageSchemaType } from "~/engine"
 import type { HeroProps } from "~/interfaces/complex/Hero"
+import { withSearchSgSetup } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import Homepage from "./Homepage"
 
-// Template for stories
-const Template = (props: HomePageSchemaType) => {
-  // Note: This is needed because the script tag is not rendered in the storybook
-  useEffect(() => {
-    const scriptTag = document.createElement("script")
-    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${TEST_CLIENT_ID}`
-    scriptTag.setAttribute("defer", "")
-    document.body.appendChild(scriptTag)
-  }, [])
-  return <Homepage {...props} />
-}
-
 const meta: Meta<typeof Homepage> = {
   title: "Next/Layouts/Homepage",
   component: Homepage,
-  render: Template,
+  decorators: [withSearchSgSetup()],
   argTypes: {},
   tags: ["!autodocs"],
   parameters: {
