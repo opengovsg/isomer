@@ -1,5 +1,5 @@
 import type { HeroProps } from "~/interfaces/complex/Hero"
-import { SearchSGInputBox } from "../../internal"
+import { HomepageSearchSGInputBox } from "../../internal"
 import { ComponentContent } from "../../internal/customCssClass"
 
 export const HeroSearchbar = ({ title, subtitle, site }: HeroProps) => {
@@ -18,7 +18,10 @@ export const HeroSearchbar = ({ title, subtitle, site }: HeroProps) => {
               {subtitle}
             </p>
           )}
-          <SearchSGInputBox clientId={clientId} className="w-full pt-3" />
+          <HomepageSearchSGInputBox
+            clientId={clientId}
+            className="w-full pt-3"
+          />
         </div>
       </div>
     </section>

@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
-import type { SearchSGInputBoxProps } from "~/interfaces"
+import type { NavbarSearchSGInputBoxProps } from "~/interfaces"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
 } from "~/stories/decorators"
-import SearchSGInputBox from "./SearchSGInputBox"
+import { NavbarSearchSGInputBox } from "./SearchSGInputBox"
 
-const meta: Meta<SearchSGInputBoxProps> = {
+const meta: Meta<NavbarSearchSGInputBoxProps> = {
   title: "Next/Internal Components/SearchSGInputBox",
-  component: SearchSGInputBox,
+  component: NavbarSearchSGInputBox,
   decorators: [withSearchSgSetup()],
   argTypes: {},
   args: {
@@ -22,6 +22,6 @@ const meta: Meta<SearchSGInputBoxProps> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof SearchSGInputBox>
+type Story = StoryObj<typeof NavbarSearchSGInputBox>
 
 export const Default: Story = {}

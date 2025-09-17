@@ -9,7 +9,14 @@ export const SearchSGSearchSchema = Type.Object({
   }),
 })
 
-export type SearchSGInputBoxProps = Static<typeof SearchSGSearchSchema> & {
+export type NavbarSearchSGInputBoxProps = Static<
+  typeof SearchSGSearchSchema
+> & {
   isOpen?: boolean
+}
+
+export type HomepageSearchSGInputBoxProps = Static<
+  typeof SearchSGSearchSchema
+> & {
   className?: string
 }
