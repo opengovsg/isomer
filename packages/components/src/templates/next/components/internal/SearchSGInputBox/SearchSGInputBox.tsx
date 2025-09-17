@@ -1,60 +1,49 @@
 "use client"
 
-import { useEffect } from "react"
-
 import type {
   HomepageSearchSGInputBoxProps,
   NavbarSearchSGInputBoxProps,
+  SearchSGInputBoxProps,
 } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
+import { useSearchSGScript } from "./useSearchSGScript"
 
-const SEARCHSG_CONFIG_ID = "searchsg-config"
+interface BaseSearchSGInputBoxProps {
+  clientId: SearchSGInputBoxProps["clientId"]
+  className?: string
+  shouldLoadScript?: boolean
+}
+const BaseSearchSGInputBox = ({
+  clientId,
+  className,
+  shouldLoadScript = true,
+}: BaseSearchSGInputBoxProps) => {
+  useSearchSGScript({ clientId, shouldLoad: shouldLoadScript })
+
+  return (
+    <div
+      id="searchsg-searchbar"
+      className={twMerge("h-[3.25rem] lg:h-16", className)}
+    />
+  )
+}
 
 export const NavbarSearchSGInputBox = ({
   clientId,
-  isOpen,
+  isOpen = false,
 }: Omit<NavbarSearchSGInputBoxProps, "type">) => {
-  useEffect(() => {
-    if (!isOpen) {
-      return
-    }
-
-    const existingScriptTag = document.getElementById(SEARCHSG_CONFIG_ID)
-    if (existingScriptTag) {
-      existingScriptTag.remove()
-    }
-
-    const scriptTag = document.createElement("script")
-    scriptTag.id = SEARCHSG_CONFIG_ID
-    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${clientId}`
-    scriptTag.setAttribute("defer", "")
-    document.body.appendChild(scriptTag)
-  }, [clientId, isOpen])
-
-  return <div id="searchsg-searchbar" className="h-[3.25rem] lg:h-16" />
+  return <BaseSearchSGInputBox clientId={clientId} shouldLoadScript={isOpen} />
 }
 
 export const HomepageSearchSGInputBox = ({
   clientId,
   className,
 }: Omit<HomepageSearchSGInputBoxProps, "type">) => {
-  useEffect(() => {
-    const existingScriptTag = document.getElementById(SEARCHSG_CONFIG_ID)
-    if (existingScriptTag) {
-      existingScriptTag.remove()
-    }
-
-    const scriptTag = document.createElement("script")
-    scriptTag.id = SEARCHSG_CONFIG_ID
-    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${clientId}`
-    scriptTag.setAttribute("defer", "")
-    document.body.appendChild(scriptTag)
-  }, [clientId])
-
   return (
-    <div
-      id="searchsg-searchbar"
-      className={twMerge("h-[3.25rem] lg:h-16", className)}
+    <BaseSearchSGInputBox
+      clientId={clientId}
+      className={className}
+      shouldLoadScript={true}
     />
   )
 }

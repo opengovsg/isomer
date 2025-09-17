@@ -34,6 +34,7 @@ export type { PillProps } from "./Pill"
 export type { SearchProps } from "./Search"
 export {
   SearchSGSearchSchema,
+  type SearchSGInputBoxProps,
   type NavbarSearchSGInputBoxProps,
   type HomepageSearchSGInputBoxProps,
 } from "./SearchSGInputBox"
