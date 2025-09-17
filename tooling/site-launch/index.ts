@@ -15,6 +15,8 @@ import { cleanup, main as migrate } from "@isomer/seed-from-repo"
 
 const profile = process.env.AWS_PROFILE
 
+// TODO: set up monitoring automatically via uptime robot
+// TODO: add redirection automatically (low priority cos so ez already and it's launch blocker)
 const HANDLERS = {
   [Steps.Domain]: {
     name: "Enter the domain (FQDN) of the site (eg: www.isomer.gov.sg):",
