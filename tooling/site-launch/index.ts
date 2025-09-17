@@ -1,5 +1,5 @@
-import { confirm, input } from "@inquirer/prompts"
-import { skipIfExists, Steps, toStateFile } from "state"
+import { confirm, input, search, select } from "@inquirer/prompts"
+import { readStateFile, skipIfExists, Step, Steps, toStateFile } from "state"
 
 import { migrateTagsOfSite } from "@isomer/migrate-tags"
 import { cleanup, main as migrate } from "@isomer/seed-from-repo"
@@ -22,6 +22,77 @@ import {
 
 const profile = env.AWS_PROFILE
 
+const HANDLERS = {
+  [Steps.Domain]: {
+    name: "Enter the domain (FQDN) of the site (eg: www.isomer.gov.sg):",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.Acm]: {
+    name: "Do you need to generate the first window record for this domain?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.Archived]: {
+    name: "Do you want to archive the github repo?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.CodeBuildId]: {
+    name: "Enter the code-build name of the site (eg: ogp-corp)",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.GithubName]: {
+    name: "Enter the github repo for the site (eg: `isomer-corp`):",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.Imported]: {
+    name: "Import the site into Studio?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.IndirectionCreated]: {
+    name: "Create indirection record?",
+    execute: (site: string) => {
+      const state = readStateFile()
+      const siteState = state[site]
+      createIndirection(siteState!.Domain!, siteState!.CodeBuildId!)
+    },
+  },
+  [Steps.LongName]: {
+    name: "Enter the long name of the site:",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.S3Sync]: {
+    name: "Should the local `assets` folder be synced to s3?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.SearchSg]: {
+    name: "Create searchsg client?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+  [Steps.StudioSiteId]: {
+    name: "Create the site in studio?",
+    execute: async (site: string) => {
+      throw new Error("Not implemented")
+    },
+  },
+}
+
 const launch = async () => {
   await confirm({
     message: `Please ensure that this is your $AWS_PROFILE: \`${profile}\` and you have executed \`aws sso login\``,
@@ -35,7 +106,9 @@ const launch = async () => {
 
   await skipIfExists(domain, "Domain", async () => domain)
 
-  await skipIfExists(domain, Steps.Acm, () => requestAcmViaClient(domain))
+  await skipIfExists(domain, Steps.Acm, async () => {
+    return requestAcmViaClient(domain)
+  })
 
   const long = await skipIfExists(domain, Steps.LongName, () =>
     input({
@@ -53,7 +126,7 @@ const launch = async () => {
   // TODO: Shard out into separate pipelines so we can skip this
   const repo = await skipIfExists(domain, Steps.GithubName, () =>
     input({
-      message: "Enter the github repo for the site (eg: `isomer-corp`):",
+      message: "Enter the github repo for the site (eg: `isomer-corp-next`):",
     }),
   )
 
@@ -137,4 +210,49 @@ const launch = async () => {
   // await addUsersToSite({ siteId, users })
 }
 
-await launch()
+const main = async () => {
+  const shouldCarryOn = await confirm({
+    message: "Should we carry on from a previous launch state?",
+  })
+
+  if (shouldCarryOn) {
+    const state = readStateFile()
+    const sites = Object.keys(state)
+
+    const site = await search({
+      message: "Select a site",
+      source: async (input) => {
+        if (!input) {
+          return sites
+        }
+
+        return sites.filter((site) => site.includes(input.toLowerCase()))
+      },
+    })
+
+    await step(site as string)
+  } else {
+    await launch()
+  }
+}
+
+const step = async (site: string) => {
+  const state = readStateFile()
+  const curSiteState = state[site]
+
+  const answer = await select({
+    message: "Select a site launch step",
+    choices: Object.entries(HANDLERS)
+      .filter(([key]) => {
+        return curSiteState?.[key as Step] === undefined
+      })
+      .map(([key, { name }]) => ({
+        name,
+        value: key,
+      })),
+  })
+
+  return HANDLERS[answer as Step].execute(site)
+}
+
+await main()
