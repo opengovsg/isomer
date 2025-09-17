@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { chakra, FormControl } from "@chakra-ui/react"
+import { Box, chakra, FormControl, SimpleGrid } from "@chakra-ui/react"
 import {
   FormErrorMessage,
   FormLabel,
@@ -54,28 +54,31 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         nextUrl={nextUrl}
       />
       <chakra.form overflow="auto" height={0} minH="100%">
-        <SettingsEditingLayout>
-          <SettingsHeader title="Name and agency" icon={BiWrench} />
-          <FormControl isInvalid={!!errors.name}>
-            <FormLabel
-              description={
-                "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage."
-              }
-            >
-              Site name
-            </FormLabel>
-            <Input {...register("name")} />
-            <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
-          </FormControl>
-          <FormControl isInvalid={!!errors.owner}>
-            <FormLabel
-              description={"This isn't displayed anywhere on your site"}
-            >
-              Website is owned by
-            </FormLabel>
-            <Input value="test" disabled />
-          </FormControl>
-        </SettingsEditingLayout>
+        <SimpleGrid columns={9}>
+          <SettingsEditingLayout>
+            <SettingsHeader title="Name and agency" icon={BiWrench} />
+            <FormControl isInvalid={!!errors.name}>
+              <FormLabel
+                description={
+                  "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage."
+                }
+              >
+                Site name
+              </FormLabel>
+              <Input {...register("name")} />
+              <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+            </FormControl>
+            <FormControl isInvalid={!!errors.owner}>
+              <FormLabel
+                description={"This isn't displayed anywhere on your site"}
+              >
+                Website is owned by
+              </FormLabel>
+              <Input value="test" disabled />
+            </FormControl>
+          </SettingsEditingLayout>
+          <Box gridColumn="6 / 10">preview</Box>
+        </SimpleGrid>
       </chakra.form>
     </>
   )
