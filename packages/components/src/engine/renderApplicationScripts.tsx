@@ -34,6 +34,7 @@ export const RenderApplicationScripts = ({
           <GoogleTagManagerHeader
             siteGtmId={site.siteGtmId}
             isomerGtmId={site.isomerGtmId}
+            usePartytown={site.usePartytown}
             ScriptComponent={ScriptComponent}
           />
           <GoogleTagManagerBody
