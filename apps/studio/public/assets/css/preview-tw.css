@@ -1459,6 +1459,10 @@ video {
   -webkit-line-clamp: 3;
 }
 
+.\!block {
+  display: block !important;
+}
+
 .block {
   display: block;
 }
@@ -1479,12 +1483,20 @@ video {
   display: inline-flex;
 }
 
+.\!table {
+  display: table !important;
+}
+
 .table {
   display: table;
 }
 
 .table-row {
   display: table-row;
+}
+
+.\!grid {
+  display: grid !important;
 }
 
 .grid {
@@ -2745,6 +2757,16 @@ video {
   --tw-bg-opacity: 0.25;
 }
 
+.bg-\[linear-gradient\(275deg\2c
+  theme\(colors\.white\)_6\.27\%\2c
+  theme\(colors\.brand\.canvas\.DEFAULT\)_100\%\)\] {
+  background-image: linear-gradient(
+    275deg,
+    #fff 6.27%,
+    var(--color-brand-canvas-default) 100%
+  );
+}
+
 .bg-gradient-to-r {
   background-image: linear-gradient(to right, var(--tw-gradient-stops));
 }
@@ -3138,6 +3160,10 @@ video {
 
 .pt-24 {
   padding-top: 6rem;
+}
+
+.pt-3 {
+  padding-top: 0.75rem;
 }
 
 .pt-4 {
@@ -4005,6 +4031,10 @@ video {
 
 .\[--color\:theme\(colors\.red\.700\)\] {
   --color: #b91c1c;
+}
+
+.\[a-zA-Z0-9\:\\\\-\\\\\._\$\] {
+  a-z-a--z0-9: \\-\\.$;
 }
 
 .\[dgs\:123456\] {
@@ -6066,6 +6096,10 @@ video {
     padding-bottom: 4rem;
   }
 
+  .lg\:pb-24 {
+    padding-bottom: 6rem;
+  }
+
   .lg\:pl-10 {
     padding-left: 2.5rem;
   }
@@ -6092,6 +6126,10 @@ video {
 
   .lg\:pt-12 {
     padding-top: 3rem;
+  }
+
+  .lg\:pt-16 {
+    padding-top: 4rem;
   }
 
   .lg\:text-\[0\.875rem\] {
