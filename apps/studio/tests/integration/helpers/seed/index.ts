@@ -655,6 +655,7 @@ export const setupCodeBuildJob = async ({
       userId,
       buildId,
       startedAt,
+      resourceId: page.id,
       status: buildStatus,
     })
     .executeTakeFirstOrThrow()
