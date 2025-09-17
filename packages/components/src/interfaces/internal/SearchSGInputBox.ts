@@ -11,4 +11,5 @@ export const SearchSGSearchSchema = Type.Object({
 
 export type SearchSGInputBoxProps = Static<typeof SearchSGSearchSchema> & {
   isOpen?: boolean
+  className?: string
 }

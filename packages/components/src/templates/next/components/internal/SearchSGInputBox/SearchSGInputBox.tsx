@@ -3,10 +3,12 @@
 import { useEffect } from "react"
 
 import type { SearchSGInputBoxProps } from "~/interfaces"
+import { twMerge } from "~/lib/twMerge"
 
 const SearchSGInputBox = ({
   clientId,
   isOpen,
+  className,
 }: Omit<SearchSGInputBoxProps, "type">) => {
   useEffect(() => {
     if (!isOpen) {
@@ -25,7 +27,12 @@ const SearchSGInputBox = ({
     document.body.appendChild(scriptTag)
   }, [clientId, isOpen])
 
-  return <div id="searchsg-searchbar" className="h-[3.25rem] lg:h-16" />
+  return (
+    <div
+      id="searchsg-searchbar"
+      className={twMerge("h-[3.25rem] lg:h-16", className)}
+    />
+  )
 }
 
 export default SearchSGInputBox
