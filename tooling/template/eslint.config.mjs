@@ -10,4 +10,15 @@ export default [
   ...baseConfig,
   ...reactConfig,
   ...nextjsConfig,
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    rules: {
+      "@typescript-eslint/ban-ts-comment": [
+        "error",
+        {
+          "ts-ignore": "allow-with-description",
+        },
+      ],
+    },
+  },
 ]
