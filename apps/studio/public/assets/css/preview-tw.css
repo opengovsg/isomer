@@ -2757,16 +2757,6 @@ video {
   --tw-bg-opacity: 0.25;
 }
 
-.bg-\[linear-gradient\(275deg\2c
-  theme\(colors\.white\)_6\.27\%\2c
-  theme\(colors\.brand\.canvas\.DEFAULT\)_100\%\)\] {
-  background-image: linear-gradient(
-    275deg,
-    #fff 6.27%,
-    var(--color-brand-canvas-default) 100%
-  );
-}
-
 .bg-gradient-to-r {
   background-image: linear-gradient(to right, var(--tw-gradient-stops));
 }
