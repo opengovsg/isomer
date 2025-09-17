@@ -118,11 +118,11 @@ export const cancelSchedulePageTemplate = (
 export const failedPublishTemplate = (
   data: FailedPublishTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, isScheduled } = data
+  const { recipientEmail, isScheduled, resource } = data
   return {
-    subject: `[Isomer Studio] We couldn’t publish your ${isScheduled ? "scheduled page" : "page"}`,
+    subject: `[Isomer Studio] We couldn’t publish your ${isScheduled ? "scheduled page" : "page"} ${resource.title}`,
     body: `<p>Hi ${recipientEmail},</p>
-    <p>We couldn’t publish the page ${isScheduled ? "that you scheduled" : "that you tried to publish"}. Please log in to Isomer Studio at ${constructStudioRedirect()} and try publishing the page again.</p>
+    <p>We couldn’t publish the page ${resource.title} ${isScheduled ? "that you scheduled" : "that you tried to publish"}. Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
   }
@@ -131,11 +131,11 @@ export const failedPublishTemplate = (
 export const successfulPublishTemplate = (
   data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, publishTime, isScheduled } = data
+  const { recipientEmail, publishTime, isScheduled, title } = data
   return {
-    subject: `[Isomer Studio] ${isScheduled ? "Your page was published as scheduled" : "Changes you published are now live"}`,
+    subject: `[Isomer Studio] ${isScheduled ? `The page ${title} was published as scheduled` : `Changes you published to ${title} are now live`}`,
     body: `<p>Hi ${recipientEmail},</p>
-    <p>${isScheduled ? `Your page was successfully published on ${format(toZonedTime(publishTime, "Asia/Singapore"), "MMMM d, yyyy hh:mm a")} as scheduled. It will be live on your site in approximately 5-10 minutes.` : `Your changes have been successfully published and will be live on your site in approximately 5-10 minutes.`}</p>
+    <p>${isScheduled ? `Your page ${title} was successfully published on ${format(toZonedTime(publishTime, "Asia/Singapore"), "MMMM d, yyyy hh:mm a")} as scheduled. It will be live on your site in approximately 5-10 minutes.` : `Your changes to page ${title} have been successfully published and will be live on your site in approximately 5-10 minutes.`}</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
   }
