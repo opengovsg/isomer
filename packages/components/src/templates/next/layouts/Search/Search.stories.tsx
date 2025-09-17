@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { withSearchSgSetup } from "~/stories/decorators"
+import {
+  SEARCHSG_TEST_CLIENT_ID,
+  withSearchSgSetup,
+} from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 import SearchLayout from "./Search"
 
@@ -23,8 +26,6 @@ const meta: Meta<typeof SearchLayout> = {
 export default meta
 type Story = StoryObj<typeof SearchLayout>
 
-const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
-
 export const SearchSG: Story = {
   name: "SearchSG",
   args: {
@@ -32,7 +33,7 @@ export const SearchSG: Story = {
     site: generateSiteConfig({
       search: {
         type: "searchSG",
-        clientId: TEST_CLIENT_ID,
+        clientId: SEARCHSG_TEST_CLIENT_ID,
       },
     }),
     meta: {
