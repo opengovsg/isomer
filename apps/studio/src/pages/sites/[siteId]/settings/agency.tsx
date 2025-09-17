@@ -43,14 +43,16 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   const isOpen = !!nextUrl
 
   const {
+    watch,
     register,
     formState: { isDirty, errors },
   } = useZodForm({
     // TODO: Share this across frontend and backend
     schema: z.object({ siteName: z.string(), agencyName: z.string() }),
-    // TODO: fetch data from backend for owner
     defaultValues: { siteName, agencyName },
   })
+
+  const updatedSiteName = watch("siteName")
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
@@ -64,7 +66,11 @@ const AgencySettingsPage: NextPageWithLayout = () => {
       <chakra.form overflow="auto" height={0} minH="100%">
         <SimpleGrid columns={9} h="100%">
           <SettingsEditingLayout>
-            <SettingsHeader title="Name and agency" icon={BiWrench} />
+            <SettingsHeader
+              title="Name and agency"
+              icon={BiWrench}
+              canPublish={updatedSiteName !== siteName}
+            />
             <FormControl isRequired isInvalid={!!errors.siteName}>
               <FormLabel
                 description={

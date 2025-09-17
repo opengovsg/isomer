@@ -1,4 +1,4 @@
-import { Box, Center, Flex, Icon, Text } from "@chakra-ui/react"
+import { Center, Flex, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { IconType } from "react-icons"
 
@@ -30,7 +30,7 @@ export const SettingsHeader = ({
           {title}
         </Text>
       </Flex>
-      <Button type="submit" disabled={!canPublish}>
+      <Button type="submit" isDisabled={!canPublish}>
         <Text>Publish changes</Text>
       </Button>
     </Flex>
