@@ -4,19 +4,35 @@ interface FetchDgsMetadataProps {
   resourceId: string
 }
 
+interface MetaMappingType {
+  // e.g. employment_rate_overall
+  name: string
+  // e.g. Overall Employment Rate (%)
+  columnTitle: string
+  // This is the ordering index (yes, this is a string not number)
+  // e.g. 4 means the 5th column
+  index: string
+}
+
 interface FetchDgsMetadataResponse {
   data: {
     name: string
     format: string
     datasetSize: number // in bytes
+    columnMetadata: {
+      metaMapping: Record<string, MetaMappingType>
+    }
   }
 }
 
-type FetchDgsMetadataOutput = Pick<
+export type FetchDgsMetadataOutput = Pick<
   FetchDgsMetadataResponse["data"],
   "name" | "format"
 > & {
   size: string | undefined
+  columnMetadata:
+    | [string, string][] // 1st string is column field key, 2nd string is column title
+    | undefined
 }
 
 export const fetchDgsMetadata = async ({
@@ -38,9 +54,28 @@ export const fetchDgsMetadata = async ({
       name: data.data.name,
       format: data.data.format,
       size: formatBytes(data.data.datasetSize),
+      columnMetadata: extractColumnMetadata(data),
     }
   } catch (error) {
     console.error("Error fetching DGS metadata:", error)
+    return undefined
+  }
+}
+
+const extractColumnMetadata = (
+  data: FetchDgsMetadataResponse,
+): FetchDgsMetadataOutput["columnMetadata"] => {
+  try {
+    return Object.values(data.data.columnMetadata.metaMapping)
+      .sort((a, b) => Number(a.index) - Number(b.index))
+      .reduce<NonNullable<FetchDgsMetadataOutput["columnMetadata"]>>(
+        (acc, mapping) => {
+          acc.push([mapping.name, mapping.columnTitle])
+          return acc
+        },
+        [],
+      )
+  } catch {
     return undefined
   }
 }

@@ -25,7 +25,6 @@ describe("generateDgsUrl", () => {
       resourceId: "test-resource-123",
       limit: 10,
       offset: 20,
-      fields: "field1,field2,field3",
       filters: {
         category: "transport",
         year: "2023",
@@ -38,7 +37,7 @@ describe("generateDgsUrl", () => {
 
     // Assert
     expect(result).toBe(
-      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&limit=10&offset=20&fields=field1%2Cfield2%2Cfield3&filters=%7B%22category%22%3A%22transport%22%2C%22year%22%3A%222023%22%7D&sort=field4+desc",
+      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&limit=10&offset=20&filters=%7B%22category%22%3A%22transport%22%2C%22year%22%3A%222023%22%7D&sort=field4+desc",
     )
   })
 
@@ -92,22 +91,6 @@ describe("generateDgsUrl", () => {
     // Assert
     expect(result).toBe(
       "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&filters=%7B%22location%22%3A%22Singapore+%26+Malaysia%22%2C%22category%22%3A%22transport+%26+logistics%22%2C%22status%22%3A%22active%22%7D",
-    )
-  })
-
-  it("should handle fields with spaces and special characters", () => {
-    // Arrange
-    const params: DgsApiDatasetSearchParams = {
-      resourceId: "test-resource-123",
-      fields: "field 1,field-2,field_3",
-    }
-
-    // Act
-    const result = generateDgsUrl(params)
-
-    // Assert
-    expect(result).toBe(
-      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&fields=field+1%2Cfield-2%2Cfield_3",
     )
   })
 
@@ -165,7 +148,6 @@ describe("generateDgsUrl", () => {
       resourceId: "test-resource-123",
       limit: undefined,
       offset: undefined,
-      fields: undefined,
       filters: undefined,
       sort: undefined,
     }

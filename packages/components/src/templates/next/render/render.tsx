@@ -8,6 +8,7 @@ import {
   COLLECTION_BLOCK_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
+  SEARCHABLE_TABLE_TYPE,
 } from "~/interfaces"
 import {
   Accordion,
@@ -30,6 +31,7 @@ import {
   LogoCloud,
   Map,
   Prose,
+  SearchableTable,
   Video,
 } from "../components"
 import {
@@ -108,6 +110,8 @@ export const renderComponent = ({
       return <CollectionBlock key={elementKey} {...component} {...rest} />
     case IMAGE_GALLERY_TYPE:
       return <ImageGallery key={elementKey} {...component} {...rest} />
+    case SEARCHABLE_TABLE_TYPE:
+      return <SearchableTable key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
       return <></>

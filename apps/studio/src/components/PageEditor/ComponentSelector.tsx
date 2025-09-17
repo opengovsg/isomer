@@ -23,6 +23,7 @@ import {
   ARTICLE_ALLOWED_BLOCKS,
   BLOCK_TO_META,
   CONTENT_ALLOWED_BLOCKS,
+  DATABASE_ALLOWED_BLOCKS,
   DEFAULT_BLOCKS,
   HOMEPAGE_ALLOWED_BLOCKS,
 } from "./constants"
@@ -172,6 +173,8 @@ function ComponentSelector() {
           return CONTENT_ALLOWED_BLOCKS
         } else if (savedPageState.layout === "article") {
           return ARTICLE_ALLOWED_BLOCKS
+        } else if (savedPageState.layout === "database") {
+          return DATABASE_ALLOWED_BLOCKS
         }
         throw new Error(`Unsupported page layout: ${savedPageState.layout}`)
       case ResourceType.CollectionPage:

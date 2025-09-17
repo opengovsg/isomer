@@ -4,6 +4,7 @@ import {
   DEFAULT_CHILDREN_PAGES_BLOCK,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
+  SEARCHABLE_TABLE_TYPE,
 } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
@@ -263,6 +264,13 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
+  [SEARCHABLE_TABLE_TYPE]: {
+    type: `${SEARCHABLE_TABLE_TYPE}`,
+    dataSource: {
+      type: "dgs",
+      resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+    },
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -399,6 +407,13 @@ export const BLOCK_TO_META: Record<
       "Get mailing list sign-ups or quick feedback by embedding a form directly on your page.",
     imageSrc: "/assets/block-images/FormSG.png",
   },
+  [SEARCHABLE_TABLE_TYPE]: {
+    // Not allowed to add in the component selector, just adding for type completeness
+    // TODO: Add image source
+    label: "Searchable Table",
+    description: "Display a searchable table with data from a DGS dataset",
+    usageText: "Display a searchable table.",
+  },
 }
 
 type AllowedBlockSections = {
@@ -441,6 +456,10 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   },
   { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
+
+export const DATABASE_ALLOWED_BLOCKS: AllowedBlockSections =
+  CONTENT_ALLOWED_BLOCKS
+
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Add a new section",
