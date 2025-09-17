@@ -22,12 +22,16 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
+import { trpc } from "~/utils/trpc"
 
 const AgencySettingsPage: NextPageWithLayout = () => {
   const isEnabled = useNewSettingsPage()
   const router = useRouter()
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
+  const [{ siteName, agencyName }] = trpc.site.getConfig.useSuspenseQuery({
+    id: siteId,
+  })
 
   useEffect(() => {
     if (!isEnabled) {
@@ -42,7 +46,10 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     register,
     formState: { isDirty, errors },
   } = useZodForm({
-    schema: z.object({ name: z.string(), owner: z.string() }),
+    // TODO: Share this across frontend and backend
+    schema: z.object({ siteName: z.string(), agencyName: z.string() }),
+    // TODO: fetch data from backend for owner
+    defaultValues: { siteName, agencyName },
   })
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
@@ -58,7 +65,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         <SimpleGrid columns={9} h="100%">
           <SettingsEditingLayout>
             <SettingsHeader title="Name and agency" icon={BiWrench} />
-            <FormControl isInvalid={!!errors.name}>
+            <FormControl isRequired isInvalid={!!errors.siteName}>
               <FormLabel
                 description={
                   "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage."
@@ -66,16 +73,16 @@ const AgencySettingsPage: NextPageWithLayout = () => {
               >
                 Site name
               </FormLabel>
-              <Input {...register("name")} />
-              <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+              <Input {...register("siteName")} />
+              <FormErrorMessage>{errors.siteName?.message}</FormErrorMessage>
             </FormControl>
-            <FormControl isInvalid={!!errors.owner}>
+            <FormControl isRequired isInvalid={!!errors.agencyName}>
               <FormLabel
                 description={"This isn't displayed anywhere on your site"}
               >
                 Website is owned by
               </FormLabel>
-              <Input value="test" disabled />
+              <Input {...register("agencyName")} disabled />
             </FormControl>
           </SettingsEditingLayout>
           <Box gridColumn="6 / 10">
