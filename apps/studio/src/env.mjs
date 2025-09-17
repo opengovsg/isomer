@@ -63,6 +63,7 @@ const server = z
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
     REDIS_HOST: z.string(),
     REDIS_PORT: z.coerce.number().default(6379),
+    SEARCHSG_API_KEY: z.string(),
   })
   .merge(s3Schema)
   .merge(singpassSchema)
@@ -108,6 +109,7 @@ const processEnv = {
   NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
     process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   NEXT_PUBLIC_INTERCOM_APP_ID: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
+  SEARCHSG_API_KEY: process.env.SEARCHSG_API_KEY,
 }
 
 // Don't touch the part below
