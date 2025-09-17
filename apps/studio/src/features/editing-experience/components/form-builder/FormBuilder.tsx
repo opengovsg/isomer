@@ -31,6 +31,8 @@ import {
   jsonFormsDateControlTester,
   JsonFormsDgsDatasetIdControl,
   jsonFormsDgsDatasetIdControlTester,
+  JsonFormsDisabledControl,
+  jsonFormsDisabledControlTester,
   JsonFormsEmbedControl,
   jsonFormsEmbedControlTester,
   JsonFormsEnumControl,
@@ -76,6 +78,10 @@ import {
 } from "./renderers"
 
 export const renderers: JsonFormsRendererRegistryEntry[] = [
+  {
+    renderer: JsonFormsDisabledControl,
+    tester: jsonFormsDisabledControlTester,
+  },
   {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,

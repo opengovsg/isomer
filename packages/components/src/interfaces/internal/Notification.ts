@@ -10,15 +10,18 @@ export const NotificationSchema = Type.Object(
       Type.String({
         title: "Notification title",
         description: "The title of the notification",
+        format: "hidden",
       }),
     ),
     content: Type.Array(TextSchema, {
       title: "Notification content",
       description: "The content of the notification",
+      format: "hidden",
     }),
   },
   {
     title: "Notification component",
+    format: "hidden",
   },
 )
 
