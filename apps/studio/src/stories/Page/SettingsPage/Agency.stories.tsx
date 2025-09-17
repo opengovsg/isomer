@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { pageHandlers } from "tests/msw/handlers/page"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import AgencySettingsPage from "~/pages/sites/[siteId]/settings/agency"
@@ -10,7 +11,17 @@ const meta: Meta<typeof AgencySettingsPage> = {
   parameters: {
     getLayout: AgencySettingsPage.getLayout,
     msw: {
-      handlers: [...COMMON_HANDLERS, sitesHandlers.getNotification.default()],
+      handlers: [
+        ...COMMON_HANDLERS,
+        sitesHandlers.getNotification.default(),
+        sitesHandlers.getTheme.default(),
+        pageHandlers.getRootPage.default(),
+        pageHandlers.readPageAndBlob.homepage(),
+        sitesHandlers.getLocalisedSitemap.default(),
+        sitesHandlers.getConfig.default(),
+        sitesHandlers.getFooter.default(),
+        sitesHandlers.getNavbar.default(),
+      ],
     },
     nextjs: {
       router: {

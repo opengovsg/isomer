@@ -11,6 +11,7 @@ import { BiWrench } from "react-icons/bi"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
@@ -54,7 +55,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         nextUrl={nextUrl}
       />
       <chakra.form overflow="auto" height={0} minH="100%">
-        <SimpleGrid columns={9}>
+        <SimpleGrid columns={9} h="100%">
           <SettingsEditingLayout>
             <SettingsHeader title="Name and agency" icon={BiWrench} />
             <FormControl isInvalid={!!errors.name}>
@@ -77,7 +78,9 @@ const AgencySettingsPage: NextPageWithLayout = () => {
               <Input value="test" disabled />
             </FormControl>
           </SettingsEditingLayout>
-          <Box gridColumn="6 / 10">preview</Box>
+          <Box gridColumn="6 / 10">
+            <EditSettingsPreview />
+          </Box>
         </SimpleGrid>
       </chakra.form>
     </>
