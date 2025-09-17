@@ -69,7 +69,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     handleSubmit,
     watch,
     register,
-    formState: { isDirty, errors },
+    formState: { errors },
   } = useZodForm({
     // TODO: Share this across frontend and backend
     schema: z.object({ siteName: z.string() }),
@@ -77,6 +77,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   })
 
   const updatedSiteName = watch("siteName")
+  const isDirty = updatedSiteName !== siteName
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
@@ -100,7 +101,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
             <SettingsHeader
               title="Name and agency"
               icon={BiWrench}
-              canPublish={updatedSiteName !== siteName}
+              canPublish={isDirty}
               isLoading={updateSiteConfigMutation.isPending}
             />
             <FormControl isRequired isInvalid={!!errors.siteName}>
