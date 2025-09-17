@@ -7,17 +7,14 @@ import {
 } from "~/stories/decorators"
 import SearchSGInputBox from "./SearchSGInputBox"
 
-// Template for stories
-const Template = (props: Omit<SearchSGInputBoxProps, "clientId">) => {
-  return <SearchSGInputBox clientId={SEARCHSG_TEST_CLIENT_ID} {...props} />
-}
-
 const meta: Meta<SearchSGInputBoxProps> = {
   title: "Next/Internal Components/SearchSGInputBox",
   component: SearchSGInputBox,
-  render: Template,
   decorators: [withSearchSgSetup()],
   argTypes: {},
+  args: {
+    clientId: SEARCHSG_TEST_CLIENT_ID,
+  },
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
