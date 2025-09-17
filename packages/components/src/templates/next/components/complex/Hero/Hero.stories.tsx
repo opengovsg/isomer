@@ -2,6 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
+import {
+  SEARCHSG_TEST_CLIENT_ID,
+  withSearchSgSetup,
+} from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 import Hero from "./Hero"
 
@@ -130,5 +134,21 @@ export const FloatingShortText: Story = {
     secondaryButtonLabel: "Explore now",
     secondaryButtonUrl: "/",
     variant: "floating",
+  },
+}
+
+export const Searchbar: Story = {
+  decorators: [withSearchSgSetup()],
+  args: {
+    site: generateSiteConfig({
+      search: {
+        type: "searchSG",
+        clientId: SEARCHSG_TEST_CLIENT_ID,
+      },
+    }),
+    title: "Temasek Polytechnic",
+    subtitle:
+      "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
+    variant: "searchbar",
   },
 }

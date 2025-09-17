@@ -64,6 +64,10 @@ function SuspendablePreview({
         siteMap,
         environment: "production",
         ...siteConfig,
+        search: {
+          type: "localSearch",
+          searchUrl: "/search",
+        },
         navbar: navbar,
         footerItems: footer,
         assetsBaseUrl: ASSETS_BASE_URL,
