@@ -14,15 +14,27 @@ export const createIndirection = async (
   const client = new CloudFrontClient({})
   const command = new ListDistributionsCommand({})
   const resp = await client.send(command)
-  const matching = resp.DistributionList?.Items?.find(({ Origins }) => {
-    return Origins?.Items?.some(({ OriginPath }) =>
-      OriginPath?.startsWith(`/${codebuildId}/`),
-    )
+  let matching = resp.DistributionList?.Items?.find(({ Origins }) => {
+    return Origins?.Items?.some(({ OriginPath }) => {
+      return OriginPath?.startsWith(`/${codebuildId}/`)
+    })
   })
+
+  while (!matching && resp.DistributionList?.NextMarker) {
+    const command = new ListDistributionsCommand({
+      Marker: resp.DistributionList?.NextMarker,
+    })
+    const nextResp = await client.send(command)
+    matching = nextResp.DistributionList?.Items?.find(({ Origins }) => {
+      return Origins?.Items?.some(({ OriginPath }) => {
+        return OriginPath?.startsWith(`/${codebuildId}/`)
+      })
+    })
+  }
 
   if (!matching) {
     throw new Error(
-      `Expected 1 cloudfront distribution to have domain: ${domain} but found none`,
+      `Expected 1 cloudfront distribution to have origin: /${codebuildId}/ but found none`,
     )
   }
 
@@ -34,7 +46,7 @@ import { CLOUDFRONT_HOSTED_ZONE_ID } from "../constants";
 
 export const createRecords = (zoneId: string): Record[] => {
   const records = [
-    new Record("${domain.replace(/^www\./, "")} A", {
+    new Record("${domain} A", {
       name: "${indirectionDomain}",
       type: "A",
       zoneId: zoneId,
