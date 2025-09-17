@@ -2,8 +2,8 @@ import type { BuildStatusType } from "@prisma/client"
 import type pino from "pino"
 
 import {
-  sendFailedSchedulePublishEmail,
-  sendSuccessfulScheduledPublishEmail,
+  sendFailedPublishEmail,
+  sendSuccessfulPublishEmail,
 } from "~/features/mail/service"
 import { db } from "../database"
 
@@ -77,15 +77,17 @@ export const updateCodebuildStatusAndSendEmails = async (
         switch (buildStatus) {
           case "SUCCEEDED":
             return [
-              sendSuccessfulScheduledPublishEmail({
+              sendSuccessfulPublishEmail({
                 recipientEmail: info.email,
                 publishTime: new Date(), // use current time as publish time, no need to use exact time from codebuild
+                isScheduled: info.isScheduled,
               }),
             ]
           case "FAILED":
             return [
-              sendFailedSchedulePublishEmail({
+              sendFailedPublishEmail({
                 recipientEmail: info.email,
+                isScheduled: info.isScheduled,
               }),
             ]
           default:
