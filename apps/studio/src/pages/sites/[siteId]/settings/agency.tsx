@@ -1,38 +1,26 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import {
-  Button,
-  Center,
-  chakra,
-  FormControl,
-  HStack,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { chakra, FormControl } from "@chakra-ui/react"
 import {
   FormErrorMessage,
-  Infobox,
+  FormLabel,
   Input,
-  Toggle,
-  useToast,
 } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiWrench } from "react-icons/bi"
+import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
+import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
-import { setNotificationSchema } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
-import { trpc } from "~/utils/trpc"
 
 const AgencySettingsPage: NextPageWithLayout = () => {
   const isEnabled = useNewSettingsPage()
@@ -46,47 +34,17 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     }
   }, [])
 
-  const toast = useToast()
-  const trpcUtils = trpc.useUtils()
-
-  // NOTE: Refining the setNotificationSchema here instead of in site.ts since omit does not work after refine
-  const { register, handleSubmit, watch, formState, reset } = useZodForm({
-    schema: setNotificationSchema
-      .omit({ siteId: true })
-      .refine((data) => !data.notificationEnabled || data.notification, {
-        message: "Notification must not be empty",
-        path: ["notification"],
-      }),
-  })
-
-  const [notificationEnabled, notification] = watch([
-    "notificationEnabled",
-    "notification",
-  ])
-
-  const { isDirty, errors } = formState
-
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
 
-  useEffect(() => {
-    const handleRouteChange = (url: string) => {
-      if (isDirty) {
-        router.events.off("routeChangeStart", handleRouteChange)
-        setNextUrl(url)
-        router.events.emit("routeChangeError")
-        // eslint-disable-next-line @typescript-eslint/only-throw-error
-        throw "Error to abort router route change. Ignore this!"
-      }
-    }
+  const {
+    register,
+    formState: { isDirty, errors },
+  } = useZodForm({
+    schema: z.object({ name: z.string(), owner: z.string() }),
+  })
 
-    if (!isOpen) {
-      router.events.on("routeChangeStart", handleRouteChange)
-    }
-    return () => {
-      router.events.off("routeChangeStart", handleRouteChange)
-    }
-  }, [isOpen, router.events, isDirty])
+  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
   return (
     <>
@@ -95,14 +53,28 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <chakra.form
-        // onSubmit={onClickUpdate}
-        overflow="auto"
-        height={0}
-        minH="100%"
-      >
+      <chakra.form overflow="auto" height={0} minH="100%">
         <SettingsEditingLayout>
           <SettingsHeader title="Name and agency" icon={BiWrench} />
+          <FormControl isInvalid={!!errors.name}>
+            <FormLabel
+              description={
+                "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage."
+              }
+            >
+              Site name
+            </FormLabel>
+            <Input {...register("name")} />
+            <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+          </FormControl>
+          <FormControl isInvalid={!!errors.owner}>
+            <FormLabel
+              description={"This isn't displayed anywhere on your site"}
+            >
+              Website is owned by
+            </FormLabel>
+            <Input value="test" disabled />
+          </FormControl>
         </SettingsEditingLayout>
       </chakra.form>
     </>
