@@ -639,11 +639,13 @@ export const setupCodeBuildJob = async ({
   buildId,
   buildStatus = "IN_PROGRESS",
   startedAt,
+  isScheduled,
 }: {
   userId: string
   buildId: string
   startedAt: Date
   buildStatus?: BuildStatusType
+  isScheduled: boolean
 }) => {
   const { page, site } = await setupPageResource({
     resourceType: "Page",
@@ -657,6 +659,7 @@ export const setupCodeBuildJob = async ({
       startedAt,
       resourceId: page.id,
       status: buildStatus,
+      isScheduled,
     })
     .executeTakeFirstOrThrow()
 
