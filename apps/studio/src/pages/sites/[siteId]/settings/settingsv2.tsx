@@ -38,16 +38,16 @@ const siteSettingsSchema = z.object({
 const SiteSettingsPage: NextPageWithLayout = () => {
   const isEnabled = useNewSettingsPage()
   const router = useRouter()
+  const { siteId } = useQueryParse(siteSettingsSchema)
 
   useEffect(() => {
     if (!isEnabled) {
-      router.push("/settings")
+      router.push(`/sites/${siteId}/settings`)
     }
   })
 
   const toast = useToast()
   const trpcUtils = trpc.useUtils()
-  const { siteId } = useQueryParse(siteSettingsSchema)
 
   const notificationMutation = trpc.site.setNotification.useMutation({
     onSuccess: async () => {

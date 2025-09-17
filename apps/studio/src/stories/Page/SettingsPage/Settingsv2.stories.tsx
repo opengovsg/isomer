@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
-import SiteSettingsPage from "~/pages/sites/[siteId]/settingsv2"
+import SiteSettingsPage from "~/pages/sites/[siteId]/settings/settingsv2"
 import { COMMON_HANDLERS } from "~/stories/handlers"
 
 const meta: Meta<typeof SiteSettingsPage> = {
