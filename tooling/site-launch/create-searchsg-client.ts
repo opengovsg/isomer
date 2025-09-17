@@ -70,6 +70,7 @@ export const createSearchSgClientForGithub = async ({
   name,
   repo,
 }: CreateSearchSgClientParams & { repo: string }) => {
+  console.log("Creating searchsg")
   const { content: siteConfig, sha } = await readSiteConfig(repo)
   if (siteConfig.site?.search === "searchSG") {
     const existingClientId = siteConfig.site?.search?.clientId
