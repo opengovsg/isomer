@@ -1,5 +1,6 @@
 import { RoleType } from "~prisma/generated/generatedEnums"
 import { format } from "date-fns"
+import { toZonedTime } from "date-fns-tz"
 
 import type {
   AccountDeactivationEmailTemplateData,
@@ -84,10 +85,14 @@ export const schedulePageTemplate = (
   data: SchedulePageTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, resource, scheduledAt } = data
+  const scheduledAtTimezone = format(
+    toZonedTime(scheduledAt, "Asia/Singapore"),
+    "MMMM d, yyyy hh:mm a",
+  )
   return {
     subject: `[Isomer Studio] You scheduled ${resource.title} to be published`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${format(scheduledAt, "MMMM d, yyyy hh:mm a")}</strong>.</p>
+<p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${scheduledAtTimezone}</strong>.</p>
 <p>Log in to Isomer Studio at ${constructStudioRedirect()} to change or cancel this.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
@@ -105,6 +110,19 @@ export const cancelSchedulePageTemplate = (
 <p>Log in to Isomer Studio at ${constructStudioRedirect()} to manage your content.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
+  }
+}
+
+export const failedSchedulePublishTemplate = (
+  data: BaseEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail } = data
+  return {
+    subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
+    body: `<p>Hi ${recipientEmail},</p>
+    <p>We couldn’t publish the page that you scheduled. Please log in to Isomer Studio at ${constructStudioRedirect()} and try publishing the page again.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
   }
 }
 
@@ -207,6 +225,8 @@ export const templates = {
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
   cancelSchedulePage:
     cancelSchedulePageTemplate satisfies EmailTemplateFunction<CancelSchedulePageTemplateData>,
+  failedSchedulePublish:
+    failedSchedulePublishTemplate satisfies EmailTemplateFunction<BaseEmailTemplateData>,
   schedulePage:
     schedulePageTemplate satisfies EmailTemplateFunction<SchedulePageTemplateData>,
   publishAlertSiteAdmin:
