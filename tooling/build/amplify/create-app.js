@@ -86,28 +86,23 @@ const createApp = (appName) => {
       )
     })
     .then(() => {
-      console.log(`✅ Main branch created with production environment`)
-    })
-    .then(() => {
       // Step 3: Create staging branch
-      console.log(`🌿 Creating staging branch...`)
+      console.log(`🌿 Creating staging branch with basic auth credentials...`)
       return amplifyClient.send(
         new CreateBranchCommand({
           appId,
           branchName: "staging",
           framework: "Next.js - SSG",
           enableAutoBuild: true,
+          enableBasicAuth: true,
           basicAuthCredentials: Buffer.from(`user:${password}`).toString(
             "base64",
-          ),
+          ), // username is "user" by default
         }),
       )
     })
     .then(() => {
-      console.log(`✅ Staging branch created with basic auth credentials`)
-    })
-    .then(() => {
-      // Step 4: Start build jobs
+      // Step 4: Start build jobs (main branch)
       console.log(`🔨 Starting build job for main branch...`)
       return amplifyClient.send(
         new StartJobCommand({
@@ -118,9 +113,7 @@ const createApp = (appName) => {
       )
     })
     .then(() => {
-      console.log(`✅ Build job started for main branch`)
-    })
-    .then(() => {
+      // Step 5: Start build jobs (staging branch)
       console.log(`🔨 Starting build job for staging branch...`)
       return amplifyClient.send(
         new StartJobCommand({
@@ -131,7 +124,6 @@ const createApp = (appName) => {
       )
     })
     .then(() => {
-      console.log(`✅ Build job started for staging branch`)
       console.log(`🎉 Amplify app setup complete!`)
 
       // Return app information for output file
