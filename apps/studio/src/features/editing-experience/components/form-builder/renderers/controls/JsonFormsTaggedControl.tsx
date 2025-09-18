@@ -1,13 +1,14 @@
 import { FormControl, Skeleton, VStack } from "@chakra-ui/react"
-import {
+import type {
   ControlProps,
-  RankedTester,
+  RankedTester} from "@jsonforms/core";
+import {
   rankWith,
   schemaMatches,
 } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, MultiSelect } from "@opengovsg/design-system-react"
-import { ArticlePagePageProps } from "@opengovsg/isomer-components"
+import type { ArticlePagePageProps } from "@opengovsg/isomer-components"
 
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
