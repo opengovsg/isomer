@@ -2,7 +2,6 @@ const {
   AmplifyClient,
   CreateAppCommand,
   CreateBranchCommand,
-  UpdateBranchCommand,
   StartJobCommand,
 } = require("@aws-sdk/client-amplify")
 const fs = require("fs")
@@ -70,16 +69,17 @@ const createApp = (appName) => {
     .then(() => {
       // Step 2: Create main branch
       console.log(`🌿 Creating main branch...`)
-      const mainBranchParams = new CreateBranchCommand({
-        appId,
-        branchName: "main",
-        framework: "Next.js - SSG",
-        enableAutoBuild: true,
-        environmentVariables: {
-          NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "production",
-        },
-      })
-      return amplifyClient.send(mainBranchParams)
+      return amplifyClient.send(
+        new CreateBranchCommand({
+          appId,
+          branchName: "main",
+          framework: "Next.js - SSG",
+          enableAutoBuild: true,
+          environmentVariables: {
+            NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "production",
+          },
+        }),
+      )
     })
     .then(() => {
       console.log(`✅ Main branch created with production environment`)
@@ -93,20 +93,6 @@ const createApp = (appName) => {
           branchName: "staging",
           framework: "Next.js - SSG",
           enableAutoBuild: true,
-        }),
-      )
-    })
-    .then(() => {
-      console.log(`✅ Staging branch created`)
-    })
-    .then(() => {
-      // Step 4: Enable basic auth for staging
-      console.log(`🔐 Enabling basic authentication for staging branch...`)
-      return amplifyClient.send(
-        new UpdateBranchCommand({
-          appId,
-          branchName: "staging",
-          enableBasicAuth: true,
           basicAuthCredentials: Buffer.from(`user:${password}`).toString(
             "base64",
           ),
@@ -114,10 +100,10 @@ const createApp = (appName) => {
       )
     })
     .then(() => {
-      console.log(`✅ Basic authentication enabled for staging`)
+      console.log(`✅ Staging branch created with basic auth credentials`)
     })
     .then(() => {
-      // Step 5: Start build jobs
+      // Step 4: Start build jobs
       console.log(`🔨 Starting build job for main branch...`)
       return amplifyClient.send(
         new StartJobCommand({
