@@ -140,7 +140,7 @@ const publishScheduledResource = async ({
         Math.abs(differenceInSeconds(page.scheduledAt, new Date())) >
           BUFFER_IN_SECONDS
       ) {
-        logger.info({
+        logger.error({
           message: `Page with id ${resourceId} is scheduled for publishing outside the buffer time. Exiting job.`,
         })
         return null
@@ -221,12 +221,13 @@ scheduledPublishWorker.on(
         if (job.attemptsMade >= WORKER_RETRY_LIMIT) {
           // Get the email of the user who scheduled the publish from the database
           // We do not pass this in the job data to avoid stale data if the user has been deleted/modified
-          const user = await db
+          const { email } = await db
             .selectFrom("User")
             .where("id", "=", userId)
-            .selectAll()
+            .select("User.email")
             .executeTakeFirstOrThrow()
-          await sendFailedSchedulePublishEmail({ recipientEmail: user.email })
+
+          await sendFailedSchedulePublishEmail({ recipientEmail: email })
         }
       } catch (emailErr) {
         logger.error({

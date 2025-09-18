@@ -1,4 +1,4 @@
-import { Cluster, Redis } from "ioredis";
+import { Cluster, Redis, type RedisOptions } from "ioredis";
 import Redlock from "redlock";
 import { env } from "./env";
 
@@ -22,23 +22,23 @@ const globalForRedis = global as unknown as {
  * @returns A Redis client instance.
  */
 const createRedisClient = (keyspace: string) => {
+  // Common options for both Cluster and Redis clients
+  const redisOptions: RedisOptions = {
+    maxRetriesPerRequest: null,
+    keyPrefix: !!keyspace ? `${keyspace}:` : undefined,
+    tls: env.NODE_ENV === "production" ? {} : undefined,
+  };
+
   const RedisClient: Redis | Cluster =
     env.NODE_ENV === "production"
       ? // MemoryDB cluster in deployed envs
         new Cluster([{ host: env.REDIS_HOST, port: env.REDIS_PORT }], {
           // To prevent errors with invalid certs: https://github.com/redis/ioredis?tab=readme-ov-file#special-note-aws-elasticache-clusters-with-tls
           dnsLookup: (address, callback) => callback(null, address),
-          redisOptions: {
-            tls: {},
-            maxRetriesPerRequest: null,
-            keyPrefix: !!keyspace ? `${keyspace}:` : undefined,
-          },
+          redisOptions,
         })
       : // in development or testing just use same docker instance for convenience
-        new Redis(env.REDIS_URL, {
-          maxRetriesPerRequest: null,
-          keyPrefix: !!keyspace ? `${keyspace}:` : undefined,
-        });
+        new Redis(env.REDIS_URL, redisOptions);
 
   RedisClient.on("error", (err) => console.error("Redis client error", err));
 

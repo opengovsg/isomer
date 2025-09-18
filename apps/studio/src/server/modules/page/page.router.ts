@@ -402,7 +402,6 @@ export const pageRouter = router({
             message: "Failed to schedule page",
           })
         }
-        // add to the scheduled publish queue so it's processed by the worker at the scheduled time
         await schedulePublishResource(
           ctx.logger,
           { resourceId: pageId, siteId, userId: ctx.user.id },
@@ -471,7 +470,6 @@ export const pageRouter = router({
             message: "Failed to cancel page schedule",
           })
         }
-        // remove from the scheduled publish queue
         await unschedulePublishResource(
           ctx.logger,
           pageId,
