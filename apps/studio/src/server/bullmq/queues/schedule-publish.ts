@@ -188,26 +188,13 @@ export const publishScheduledResource = async (
       )
       return
     }
-    return await db
-      .transaction()
-      .setIsolationLevel("serializable")
-      .execute(async (tx) => {
-        const { build, version } = await publishPageResource(tx, {
-          logger,
-          siteId,
-          resourceId: page.id,
-          user,
-        })
-        if (!build) {
-          // this is not an error, since not all publishes trigger a build
-          logger.info(
-            { resourceId, jobId, userId },
-            `No build was triggered for this publish: ${resourceId}`,
-          )
-          return
-        }
-        return version
-      })
+    const { version } = await publishPageResource({
+      logger,
+      siteId,
+      resourceId: page.id,
+      user,
+    })
+    return version
   } catch (error) {
     // If we fail to acquire the lock, it means another worker is processing this resource and we can exit gracefully
     if (error instanceof ResourceLockedError) {

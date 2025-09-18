@@ -1,4 +1,3 @@
-import type { StartBuildCommandOutput } from "@aws-sdk/client-codebuild"
 import type { Logger } from "pino"
 import {
   BatchGetBuildsCommand,
@@ -41,19 +40,8 @@ export const publishSite = async (logger: Logger<string>, siteId: number) => {
   }
 
   // Step 3: Start a new build
-  const { build } = await startProjectById(logger, codeBuildId)
-  // in theory build should always be defined, but adding a check just in case
-  if (!build?.id || !build.startTime) {
-    logger.error(
-      { siteId, codeBuildId, build },
-      `Failed to obtain codebuild metadata for siteId ${siteId} with CodeBuild ID ${codeBuildId}`,
-    )
-    // slightly strict here as we dont want the build to silently fail when we send via the sdk
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to obtain codebuild metadata",
-    })
-  }
+  const build = await startProjectById(logger, codeBuildId)
+
   return {
     buildId: build.id,
     startTime: build.startTime,
@@ -157,16 +145,27 @@ export const shouldStartNewBuild = async (
 export const startProjectById = async (
   logger: Logger<string>,
   projectId: string,
-): Promise<StartBuildCommandOutput> => {
+) => {
   try {
     // Start a new build
     const command = new StartBuildCommand({ projectName: projectId })
-    const response = await client.send(command)
-    return response
+    const { build } = await client.send(command)
+    // in theory build should always be defined, but adding a check just in case
+    if (!build?.id || !build.startTime) {
+      logger.error(
+        { build },
+        `Failed to obtain codebuild metadata for ${projectId}`,
+      )
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Failed to obtain codebuild metadata for ${projectId}`,
+      })
+    }
+    return { id: build.id, startTime: build.startTime }
   } catch (error) {
     logger.error(
       { projectId, error },
-      "Unexpected error when starting CodeBuild project run",
+      `Unexpected error when starting CodeBuild project run for ${projectId}`,
     )
     throw error
   }
