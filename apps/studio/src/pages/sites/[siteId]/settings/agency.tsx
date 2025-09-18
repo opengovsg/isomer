@@ -54,6 +54,8 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
       })
+
+      resetField("siteName")
     },
   })
 
@@ -67,6 +69,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   const isOpen = !!nextUrl
 
   const {
+    resetField,
     handleSubmit,
     watch,
     register,
