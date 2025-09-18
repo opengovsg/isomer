@@ -49,7 +49,10 @@ export interface CodeBuildJobs {
   startedAt: Generated<Timestamp>
   emailSent: Generated<boolean>
   isScheduled: Generated<boolean>
+<<<<<<< HEAD
   supersededByBuildId: string | null
+=======
+>>>>>>> b4ccac74 (fix: set stopped status and superseded logic)
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
