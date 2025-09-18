@@ -29,6 +29,7 @@ import {
   getNavBar,
   publishSiteConfig,
 } from "../resource/resource.service"
+import { updateSearchsgConfig } from "../searchsg/searchsg.service"
 import {
   clearSiteNotification,
   createSite,
@@ -115,7 +116,7 @@ export const siteRouter = router({
         .executeTakeFirstOrThrow()
 
       // TODO: audit log
-      return await db.transaction().execute(async (tx) => {
+      const updatedConfig = await db.transaction().execute(async (tx) => {
         const site = await tx
           .selectFrom("Site")
           .where("id", "=", siteId)
@@ -143,6 +144,14 @@ export const siteRouter = router({
 
         return updatedSite.config
       })
+
+      if (updatedConfig.search?.type === "searchSG")
+        await updateSearchsgConfig(
+          { name: siteName },
+          updatedConfig.search.clientId,
+        )
+
+      return updatedConfig
     }),
   getTheme: protectedProcedure
     .input(getConfigSchema)
