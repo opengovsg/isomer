@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-amplify": "^3.606.0"
+    "@aws-sdk/client-amplify": "^3.606.0",
+     "dotenv": "^16.3.1"
   }
 }
