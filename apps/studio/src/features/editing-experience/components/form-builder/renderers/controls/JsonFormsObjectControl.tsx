@@ -1,5 +1,6 @@
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
-import type { ComponentType} from "react";
+import type { JsonFormsStateContext } from "@jsonforms/react"
+import type { ComponentType } from "react"
 import { memo, useLayoutEffect, useMemo } from "react"
 import {
   findUISchema,
@@ -7,8 +8,6 @@ import {
   isObjectControl,
   rankWith,
 } from "@jsonforms/core"
-import type {
-  JsonFormsStateContext} from "@jsonforms/react";
 import {
   ctxDispatchToControlProps,
   ctxToControlWithDetailProps,
