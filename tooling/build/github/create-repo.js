@@ -19,6 +19,10 @@ class GitHubRepoCreator {
     })
   }
 
+  async delay(seconds = 2) {
+    await new Promise((resolve) => setTimeout(resolve, seconds * 1000))
+  }
+
   async createRepositoryFromTemplate(repoName) {
     try {
       console.log(`🚀 Creating repository: ${repoName}`)
@@ -34,12 +38,15 @@ class GitHubRepoCreator {
         })
 
       console.log(`✅ Repository created: ${createRepoResponse.data.html_url}`)
+      await this.delay()
 
       // Step 2: Add collaborator group
       await this.addTeamToRepository(repoName)
+      await this.delay()
 
       // Step 3: Create staging branch and set as default
       await this.createStagingBranch(repoName)
+      await this.delay()
 
       console.log(`🎉 Repository setup complete!`)
       console.log(`📋 Repository URL: ${createRepoResponse.data.html_url}`)
