@@ -703,20 +703,14 @@ export const pageRouter = router({
               message: "Please ensure that you have logged in",
             }),
         )
-      const version = await db
-        .transaction()
-        .setIsolationLevel("serializable")
-        .execute(async (tx) => {
-          // Publish the page, note that we do NOT update the codebuildjobs table here
-          // since that is only for scheduled publishes which are triggered via the worker
-          const { version } = await publishPageResource(tx, {
-            logger: ctx.logger,
-            siteId,
-            resourceId: String(pageId),
-            user,
-          })
-          return version
-        })
+
+      const { version } = await publishPageResource({
+        logger: ctx.logger,
+        siteId,
+        resourceId: String(pageId),
+        user,
+      })
+
       // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
       if (!ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)) {
         await alertPublishWhenSingpassDisabled({

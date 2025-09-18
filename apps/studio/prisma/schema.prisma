@@ -281,22 +281,26 @@ enum BuildStatusType {
 }
 
 model CodeBuildJobs {
-  buildId     String          @id
-  siteId      Int
-  site        Site            @relation(fields: [siteId], references: [id])
-  userId      String
-  user        User            @relation(fields: [userId], references: [id])
-  status      BuildStatusType @default(IN_PROGRESS)
+  id                  BigInt          @id @default(autoincrement())
+  buildId             String
+  siteId              Int
+  site                Site            @relation(fields: [siteId], references: [id])
+  userId              String
+  user                User            @relation(fields: [userId], references: [id])
+  status              BuildStatusType @default(IN_PROGRESS)
   // the resource that triggered this build
-  resourceId  BigInt
-  resource    Resource        @relation(fields: [resourceId], references: [id])
-  startedAt   DateTime        @default(now())
+  resourceId          BigInt
+  resource            Resource        @relation(fields: [resourceId], references: [id])
+  startedAt           DateTime        @default(now())
   // Whether the email notification has successfully been sent (can be retried if failed)
-  emailSent   Boolean         @default(false)
+  emailSent           Boolean         @default(false)
   // Is the build triggered by a scheduled publish or a manual publish
-  isScheduled Boolean         @default(false)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @default(now()) @updatedAt
+  isScheduled         Boolean         @default(false)
+  // Has the build been superseded by a later build for the same site
+  supersededByBuildId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@index([siteId])
   @@index([userId])
