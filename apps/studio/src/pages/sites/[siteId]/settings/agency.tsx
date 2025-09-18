@@ -45,6 +45,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
       await trpcUtils.site.getConfig.invalidate({ id: siteId })
+      await trpcUtils.site.getSiteName.invalidate({ siteId })
     },
     onError: (error) => {
       toast({
@@ -125,7 +126,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
             </FormControl>
           </SettingsEditingLayout>
           <Box gridColumn="6 / 10">
-            <EditSettingsPreview />
+            <EditSettingsPreview siteName={updatedSiteName} />
           </Box>
         </SimpleGrid>
       </chakra.form>

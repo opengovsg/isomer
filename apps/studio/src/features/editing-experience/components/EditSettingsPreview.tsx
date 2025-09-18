@@ -4,7 +4,12 @@ import { siteSchema } from "../schema"
 import Preview from "./Preview"
 import { ViewportContainer } from "./ViewportContainer"
 
-export const EditSettingsPreview = (): JSX.Element => {
+// TODO: need to add overrides
+export const EditSettingsPreview = ({
+  siteName,
+}: {
+  siteName: string
+}): JSX.Element => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
   const [{ id }] = trpc.page.getRootPage.useSuspenseQuery({
@@ -26,6 +31,7 @@ export const EditSettingsPreview = (): JSX.Element => {
         content={content.content}
         layout="homepage"
         page={content.page}
+        overrides={{ site: { siteName } }}
       />
     </ViewportContainer>
   )
