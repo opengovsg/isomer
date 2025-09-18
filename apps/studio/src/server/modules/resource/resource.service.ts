@@ -556,54 +556,65 @@ interface PublishPageResourceArgs {
   isSingpassEnabled?: boolean
 }
 
-export const publishPageResource = async (
-  tx: Transaction<DB>,
-  { logger, siteId, resourceId, user }: PublishPageResourceArgs,
-) => {
-  // Step 1: Create a new version
-  const fullResource = await getFullPageById(tx, {
-    resourceId: Number(resourceId),
-    siteId,
-  })
+export const publishPageResource = async ({
+  logger,
+  siteId,
+  resourceId,
+  user,
+}: PublishPageResourceArgs) => {
+  const version = await db
+    .transaction()
+    .setIsolationLevel("serializable")
+    .execute(async (tx) => {
+      // Step 1: Create a new version
+      const fullResource = await getFullPageById(tx, {
+        resourceId: Number(resourceId),
+        siteId,
+      })
 
-  if (!fullResource) {
-    throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "Please ensure you are attempting to publish a page that exists",
+      if (!fullResource) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "Please ensure you are attempting to publish a page that exists",
+        })
+      }
+
+      const version = await incrementVersion({
+        tx,
+        siteId,
+        resourceId,
+        userId: user.id,
+      })
+
+      const previousVersion = await tx
+        .selectFrom("Version")
+        .where("Version.versionNum", "=", Number(version.versionNum) - 1)
+        .where("Version.resourceId", "=", resourceId)
+        .select("Version.id")
+        .executeTakeFirst()
+
+      await logPublishEvent(tx, {
+        siteId,
+        by: user,
+        delta: {
+          before: previousVersion?.id
+            ? { versionId: previousVersion.id }
+            : null,
+          after: version,
+        },
+        eventType: AuditLogEvent.Publish,
+        metadata: fullResource,
+      })
+      return version
     })
-  }
-
-  const version = await incrementVersion({
-    tx,
-    siteId,
-    resourceId,
-    userId: user.id,
-  })
-
-  const previousVersion = await tx
-    .selectFrom("Version")
-    .where("Version.versionNum", "=", Number(version.versionNum) - 1)
-    .where("Version.resourceId", "=", resourceId)
-    .select("Version.id")
-    .executeTakeFirst()
-
-  await logPublishEvent(tx, {
-    siteId,
-    by: user,
-    delta: {
-      before: previousVersion?.id ? { versionId: previousVersion.id } : null,
-      after: version,
-    },
-    eventType: AuditLogEvent.Publish,
-    metadata: fullResource,
-  })
 
   // Step 2: Trigger a publish of the site
   const build = await publishSite(logger, siteId)
 
   // Step 3: Save the build info if the build was triggered
   if (build)
-    await tx
+    await db
       .insertInto("CodeBuildJobs")
       .values({
         siteId,
@@ -615,7 +626,7 @@ export const publishPageResource = async (
       })
       .execute()
 
-  return { version, build }
+  return { version }
 }
 
 // NOTE: The distinction here between `publishResource` and `publishPageResource` is that
