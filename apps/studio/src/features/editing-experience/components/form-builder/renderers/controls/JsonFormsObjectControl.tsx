@@ -1,16 +1,18 @@
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
-import { ComponentType, memo, useLayoutEffect, useMemo } from "react"
+import type { ComponentType} from "react";
+import { memo, useLayoutEffect, useMemo } from "react"
 import {
   findUISchema,
   Generate,
   isObjectControl,
   rankWith,
 } from "@jsonforms/core"
+import type {
+  JsonFormsStateContext} from "@jsonforms/react";
 import {
   ctxDispatchToControlProps,
   ctxToControlWithDetailProps,
   JsonFormsDispatch,
-  JsonFormsStateContext,
   withJsonFormsContext,
 } from "@jsonforms/react"
 import isEmpty from "lodash/isEmpty"

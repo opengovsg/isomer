@@ -1,7 +1,8 @@
 import { useEffect, useMemo } from "react"
-import {
+import type {
   ControlProps,
-  RankedTester,
+  RankedTester} from "@jsonforms/core";
+import {
   rankWith,
   schemaMatches,
 } from "@jsonforms/core"
