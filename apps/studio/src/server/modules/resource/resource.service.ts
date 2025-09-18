@@ -612,7 +612,7 @@ export const publishPageResource = async ({
     })
 
   // Step 2: Trigger a publish of the site
-  const build = await publishSite(logger, siteId)
+  const build = await publishSite(tx, logger, siteId)
 
   // Step 3: Save the build info if the build was triggered
   if (build)
@@ -664,7 +664,7 @@ export const publishResource = async (
       metadata: resource,
     })
 
-    await publishSite(logger, resource.siteId)
+    await publishSite(tx, logger, resource.siteId)
   })
 }
 
@@ -700,7 +700,7 @@ export const publishSiteConfig = async (
       metadata: { site, ...rest },
     })
 
-    await publishSite(logger, site.id)
+    await publishSite(tx, logger, site.id)
   })
 }
 
