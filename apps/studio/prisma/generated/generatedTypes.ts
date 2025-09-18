@@ -44,7 +44,10 @@ export interface CodeBuildJobs {
   siteId: number
   userId: string
   status: Generated<BuildStatusType>
+  resourceId: string
   startedAt: Generated<Timestamp>
+  emailSent: Generated<boolean>
+  isScheduled: Generated<boolean>
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }

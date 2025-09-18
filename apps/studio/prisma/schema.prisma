@@ -74,6 +74,7 @@ model Resource {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   ResourcePermission ResourcePermission[]
+  CodeBuildJobs      CodeBuildJobs[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -280,15 +281,22 @@ enum BuildStatusType {
 }
 
 model CodeBuildJobs {
-  buildId   String          @id
-  siteId    Int
-  site      Site            @relation(fields: [siteId], references: [id])
-  userId    String
-  user      User            @relation(fields: [userId], references: [id])
-  status    BuildStatusType @default(IN_PROGRESS)
-  startedAt DateTime        @default(now())
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @default(now()) @updatedAt
+  buildId     String          @id
+  siteId      Int
+  site        Site            @relation(fields: [siteId], references: [id])
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  status      BuildStatusType @default(IN_PROGRESS)
+  // the resource that triggered this build
+  resourceId  BigInt
+  resource    Resource        @relation(fields: [resourceId], references: [id])
+  startedAt   DateTime        @default(now())
+  // Whether the email notification has successfully been sent (can be retried if failed)
+  emailSent   Boolean         @default(false)
+  // Is the build triggered by a scheduled publish or a manual publish
+  isScheduled Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @default(now()) @updatedAt
 
   @@index([siteId])
   @@index([userId])

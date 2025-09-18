@@ -610,6 +610,7 @@ export const publishPageResource = async (
         userId: user.id,
         buildId: build.buildId,
         startedAt: build.startTime,
+        resourceId,
         status: "IN_PROGRESS", // default to in progress, will be updated by webhook
       })
       .execute()
