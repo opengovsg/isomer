@@ -37,8 +37,11 @@ const generatePassword = () => {
     .substring(0, 12)
 }
 
-const createApp = async (appName) => {
-  console.log("Creating app:", appName)
+// Helper function to add delays between API calls
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const createApp = (appName) => {
+  console.log(`🚀 Creating Amplify app: ${appName}`)
   let appId = ""
   const password = generatePassword()
 
@@ -59,11 +62,18 @@ const createApp = async (appName) => {
     ],
   })
 
-  await amplifyClient
+  // Step 1: Create the Amplify app
+  console.log(`📱 Creating Amplify app from repository...`)
+  return amplifyClient
     .send(params)
     .then((appInfo) => {
       appId = appInfo.app?.appId
-
+      console.log(`✅ Amplify app created with ID: ${appId}`)
+      return delay(2000)
+    })
+    .then(() => {
+      // Step 2: Create main branch
+      console.log(`🌿 Creating main branch...`)
       const mainBranchParams = new CreateBranchCommand({
         appId,
         branchName: "main",
@@ -73,21 +83,32 @@ const createApp = async (appName) => {
           NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "production",
         },
       })
-
       return amplifyClient.send(mainBranchParams)
     })
-    .then(() =>
-      amplifyClient.send(
+    .then(() => {
+      console.log(`✅ Main branch created with production environment`)
+      return delay(2000)
+    })
+    .then(() => {
+      // Step 3: Create staging branch
+      console.log(`🌿 Creating staging branch...`)
+      return amplifyClient.send(
         new CreateBranchCommand({
           appId,
           branchName: "staging",
           framework: "Next.js - SSG",
           enableAutoBuild: true,
         }),
-      ),
-    )
-    .then(() =>
-      amplifyClient.send(
+      )
+    })
+    .then(() => {
+      console.log(`✅ Staging branch created`)
+      return delay(2000)
+    })
+    .then(() => {
+      // Step 4: Enable basic auth for staging
+      console.log(`🔐 Enabling basic authentication for staging branch...`)
+      return amplifyClient.send(
         new UpdateBranchCommand({
           appId,
           branchName: "staging",
@@ -96,59 +117,138 @@ const createApp = async (appName) => {
             "base64",
           ),
         }),
-      ),
-    )
-    .then(() =>
-      amplifyClient.send(
+      )
+    })
+    .then(() => {
+      console.log(`✅ Basic authentication enabled for staging`)
+      return delay(2000)
+    })
+    .then(() => {
+      // Step 5: Start build jobs
+      console.log(`🔨 Starting build job for main branch...`)
+      return amplifyClient.send(
         new StartJobCommand({
           appId,
           branchName: "main",
           jobType: "RELEASE",
         }),
-      ),
-    )
-    .then(() =>
-      amplifyClient.send(
+      )
+    })
+    .then(() => {
+      console.log(`✅ Build job started for main branch`)
+      return delay(2000)
+    })
+    .then(() => {
+      console.log(`🔨 Starting build job for staging branch...`)
+      return amplifyClient.send(
         new StartJobCommand({
           appId,
           branchName: "staging",
           jobType: "RELEASE",
         }),
-      ),
-    )
+      )
+    })
+    .then(() => {
+      console.log(`✅ Build job started for staging branch`)
+      console.log(`🎉 Amplify app setup complete!`)
 
-  // Return app information for output file
-  return {
-    repoName: appName,
-    appId: appId,
-    password: password,
-  }
+      // Return app information for output file
+      return {
+        repoName: appName,
+        appId: appId,
+        password: password,
+      }
+    })
+    .catch((error) => {
+      console.error(`❌ Error creating Amplify app: ${error.message}`)
+      throw error
+    })
 }
 
 const main = async () => {
+  // Check for required environment variables
+  if (!process.env.GITHUB_TOKEN) {
+    console.error("❌ Error: GITHUB_TOKEN environment variable is required")
+    console.log("Please set your GitHub personal access token:")
+    console.log("export GITHUB_TOKEN=your_token_here")
+    console.log("Or create a .env file with: GITHUB_TOKEN=your_token_here")
+    process.exit(1)
+  }
+
   // TODO: UPDATE THIS TO THE ACTUAL APPS
   const apps = ["hello-adrian-test-script-next"]
 
+  if (apps.length === 0) {
+    console.error("❌ Error: No app names defined in apps array")
+    process.exit(1)
+  }
+
   const appResults = []
 
-  for (const app of apps) {
-    try {
-      const result = await createApp(app)
-      appResults.push(result)
-      console.log(`Successfully created app: ${app}`)
-    } catch (error) {
-      console.error(`Failed to create app ${app}:`, error)
+  console.log(`🚀 Starting creation of ${apps.length} Amplify apps...`)
+  console.log(`📋 Apps to create: ${apps.join(", ")}`)
+  console.log("")
+
+  // Process each app sequentially using promises
+  let currentIndex = 0
+
+  const processNextApp = () => {
+    if (currentIndex >= apps.length) {
+      // All apps processed, generate output
+      generateOutput()
+      return
+    }
+
+    const app = apps[currentIndex]
+    console.log(`\n📦 Processing: ${app}`)
+    console.log("=".repeat(50))
+
+    createApp(app)
+      .then((result) => {
+        appResults.push(result)
+        console.log(`✅ Successfully created app: ${app}`)
+        currentIndex++
+
+        // Wait 5 seconds between apps to avoid rate limiting
+        if (currentIndex < apps.length) {
+          console.log(`⏳ Waiting 5 seconds before processing next app...`)
+          return delay(5000)
+        }
+      })
+      .then(() => {
+        processNextApp()
+      })
+      .catch((error) => {
+        console.error(`❌ Failed to create app ${app}:`, error.message)
+        currentIndex++
+        processNextApp()
+      })
+  }
+
+  const generateOutput = () => {
+    console.log(`\n🎉 Batch processing complete!`)
+    console.log(`📊 Processed ${apps.length} apps`)
+
+    // Generate output file
+    if (appResults.length > 0) {
+      const outputContent = appResults
+        .map(
+          (result) => `${result.repoName},${result.appId},${result.password}`,
+        )
+        .join("\n")
+
+      fs.writeFileSync("amplify-apps-output.txt", outputContent)
+      console.log(`\n📄 Output file generated: amplify-apps-output.txt`)
+      console.log(`📋 Format: REPO_NAME,AMPLIFY_APP_ID,STAGING_PASSWORD`)
+      console.log(
+        `📊 Successfully created ${appResults.length} out of ${apps.length} apps`,
+      )
+    } else {
+      console.log(`\n⚠️  No apps were successfully created`)
     }
   }
 
-  // Generate output file
-  const outputContent = appResults
-    .map((result) => `${result.repoName},${result.appId},${result.password}`)
-    .join("\n")
-
-  fs.writeFileSync("amplify-apps-output.txt", outputContent)
-  console.log("Output file generated: amplify-apps-output.txt")
-  console.log("Format: REPO_NAME,AMPLIFY_APP_ID,STAGING_PASSWORD")
+  processNextApp()
 }
 
 main()
