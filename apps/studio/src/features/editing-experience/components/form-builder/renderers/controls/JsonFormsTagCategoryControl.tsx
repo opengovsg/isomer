@@ -1,6 +1,7 @@
-import {
+import type {
   ArrayLayoutProps,
-  RankedTester,
+  RankedTester} from "@jsonforms/core";
+import {
   rankWith,
   schemaMatches,
 } from "@jsonforms/core"
