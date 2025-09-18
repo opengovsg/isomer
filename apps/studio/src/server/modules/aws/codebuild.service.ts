@@ -189,6 +189,13 @@ export const startProjectById = async (
   }
 }
 
+/**
+ * Mark a stopped build and any builds it has superseded as being superseded by
+ * the newly started build.
+ * @param tx Transaction
+ * @param stoppedBuildId The build ID of the stopped build
+ * @param startedBuildId The build ID of the newly started build
+ */
 const markSupersededBuild = async (
   tx: Transaction<DB>,
   {
@@ -199,9 +206,18 @@ const markSupersededBuild = async (
     startedBuildId: string
   },
 ) => {
+  // Find all builds that have been superseded by the stopped build and replace them as being superseded
+  // by the newly started build. This is to handle multi-superseded A -> B - > C scenarios
+  const buildsSupersededByStoppedBuild = await tx
+    .selectFrom("CodeBuildJobs")
+    .select("buildId")
+    .where("supersededByBuildId", "=", stoppedBuildId)
+    .execute()
+    .then((rows) => rows.map((row) => row.buildId))
+
   await tx
     .updateTable("CodeBuildJobs")
-    .set({ supersededByBuildId: startedBuildId, status: "STOPPED" })
-    .where("buildId", "=", stoppedBuildId)
+    .set({ supersededByBuildId: startedBuildId })
+    .where("buildId", "in", [stoppedBuildId, ...buildsSupersededByStoppedBuild])
     .execute()
 }
