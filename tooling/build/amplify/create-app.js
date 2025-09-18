@@ -25,7 +25,11 @@ frontend:
       - '**/*'
 `
 
-const amplifyClient = new AmplifyClient({ region: "ap-southeast-1" })
+const amplifyClient = new AmplifyClient({
+  region: "ap-southeast-1",
+  retryMode: "standard",
+  maxAttempts: 3,
+})
 
 // Function to generate a secure random password using Node.js crypto module
 const generatePassword = () => {
