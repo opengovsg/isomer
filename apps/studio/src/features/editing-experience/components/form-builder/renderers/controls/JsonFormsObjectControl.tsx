@@ -1,5 +1,8 @@
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
-import { ComponentType, memo, useLayoutEffect, useMemo } from "react"
+import type { JsonFormsStateContext } from "@jsonforms/react"
+import type { ComponentType } from "react"
+import { memo, useLayoutEffect, useMemo, useState } from "react"
+import { FormControl, HStack, Text, VStack } from "@chakra-ui/react"
 import {
   findUISchema,
   Generate,
@@ -10,9 +13,9 @@ import {
   ctxDispatchToControlProps,
   ctxToControlWithDetailProps,
   JsonFormsDispatch,
-  JsonFormsStateContext,
   withJsonFormsContext,
 } from "@jsonforms/react"
+import { Checkbox } from "@opengovsg/design-system-react"
 import isEmpty from "lodash/isEmpty"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -30,11 +33,15 @@ export function JsonFormsObjectControl({
   cells,
   schema,
   enabled,
+  label,
+  description,
+  required,
   uischema,
   uischemas,
   rootSchema,
   handleChange,
 }: ControlWithDetailProps) {
+  const [isChecked, setIsChecked] = useState(!isEmpty(data))
   const detailUiSchema = useMemo(
     () =>
       findUISchema(
@@ -60,7 +67,7 @@ export function JsonFormsObjectControl({
     return null
   }
 
-  return (
+  const FormsDispatch = () => (
     <JsonFormsDispatch
       visible={visible}
       enabled={enabled}
@@ -71,6 +78,41 @@ export function JsonFormsObjectControl({
       cells={cells}
     />
   )
+
+  if (!required) {
+    return (
+      <HStack spacing="0.5rem" alignItems="flex-start">
+        <Checkbox
+          w="fit-content"
+          isChecked={isChecked}
+          onChange={() => setIsChecked((prev) => !prev)}
+          _focusWithin={{
+            outline: "unset",
+          }}
+        />
+
+        <VStack w="full" gap="0.75rem" pt="0.5rem" alignItems="start">
+          <FormControl display="flex" alignItems="center" isDisabled={!enabled}>
+            <VStack gap="0.25rem" alignItems="start">
+              <Text textStyle="subhead-2" textColor="base.content.strong">
+                {label}
+              </Text>
+
+              {description && (
+                <Text textStyle="body-2" textColor="base.content.strong">
+                  {description}
+                </Text>
+              )}
+            </VStack>
+          </FormControl>
+
+          {isChecked && <FormsDispatch />}
+        </VStack>
+      </HStack>
+    )
+  }
+
+  return <FormsDispatch />
 }
 
 // NOTE: This is a custom handrolled higher order component.
