@@ -95,9 +95,9 @@ const createApp = (appName) => {
           framework: "Next.js - SSG",
           enableAutoBuild: true,
           enableBasicAuth: true,
-          basicAuthCredentials: Buffer.from(`user:${password}`).toString(
-            "base64",
-          ), // username is "user" by default
+          basicAuthCredentials: Buffer.from(
+            `${process.env.AMPLIFY_BASIC_AUTH_USERNAME}:${password}`,
+          ).toString("base64"),
         }),
       )
     })
@@ -141,11 +141,33 @@ const createApp = (appName) => {
 
 const main = async () => {
   // Check for required environment variables
-  if (!process.env.GITHUB_TOKEN) {
-    console.error("❌ Error: GITHUB_TOKEN environment variable is required")
-    console.log("Please set your GitHub personal access token:")
-    console.log("export GITHUB_TOKEN=your_token_here")
-    console.log("Or create a .env file with: GITHUB_TOKEN=your_token_here")
+  const requiredEnvVars = [
+    {
+      name: "GITHUB_TOKEN",
+      description: "GitHub personal access token",
+      example: "export GITHUB_TOKEN=your_token_here",
+    },
+    {
+      name: "AMPLIFY_BASIC_AUTH_USERNAME",
+      description: "Username for Amplify basic authentication",
+      example: "export AMPLIFY_BASIC_AUTH_USERNAME=your_username",
+    },
+  ]
+
+  const missingEnvVars = requiredEnvVars.filter(
+    (envVar) => !process.env[envVar.name],
+  )
+
+  if (missingEnvVars.length > 0) {
+    console.error("❌ Error: Missing required environment variables:")
+    missingEnvVars.forEach((envVar) => {
+      console.error(`   - ${envVar.name}: ${envVar.description}`)
+    })
+    console.log("\nPlease set the missing environment variables:")
+    missingEnvVars.forEach((envVar) => {
+      console.log(envVar.example)
+    })
+    console.log("Or create a .env file with all required variables")
     process.exit(1)
   }
 
