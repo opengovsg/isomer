@@ -37,9 +37,6 @@ const generatePassword = () => {
     .substring(0, 12)
 }
 
-// Helper function to add delays between API calls
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-
 const createApp = (appName) => {
   console.log(`🚀 Creating Amplify app: ${appName}`)
   let appId = ""
@@ -69,7 +66,6 @@ const createApp = (appName) => {
     .then((appInfo) => {
       appId = appInfo.app?.appId
       console.log(`✅ Amplify app created with ID: ${appId}`)
-      return delay(2000)
     })
     .then(() => {
       // Step 2: Create main branch
@@ -87,7 +83,6 @@ const createApp = (appName) => {
     })
     .then(() => {
       console.log(`✅ Main branch created with production environment`)
-      return delay(2000)
     })
     .then(() => {
       // Step 3: Create staging branch
@@ -103,7 +98,6 @@ const createApp = (appName) => {
     })
     .then(() => {
       console.log(`✅ Staging branch created`)
-      return delay(2000)
     })
     .then(() => {
       // Step 4: Enable basic auth for staging
@@ -121,7 +115,6 @@ const createApp = (appName) => {
     })
     .then(() => {
       console.log(`✅ Basic authentication enabled for staging`)
-      return delay(2000)
     })
     .then(() => {
       // Step 5: Start build jobs
@@ -136,7 +129,6 @@ const createApp = (appName) => {
     })
     .then(() => {
       console.log(`✅ Build job started for main branch`)
-      return delay(2000)
     })
     .then(() => {
       console.log(`🔨 Starting build job for staging branch...`)
@@ -208,12 +200,6 @@ const main = async () => {
         appResults.push(result)
         console.log(`✅ Successfully created app: ${app}`)
         currentIndex++
-
-        // Wait 5 seconds between apps to avoid rate limiting
-        if (currentIndex < apps.length) {
-          console.log(`⏳ Waiting 5 seconds before processing next app...`)
-          return delay(5000)
-        }
       })
       .then(() => {
         processNextApp()
