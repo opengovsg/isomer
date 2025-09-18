@@ -8,6 +8,9 @@ const fs = require("fs")
 const crypto = require("crypto")
 require("dotenv").config()
 
+// TODO: UPDATE THIS TO THE ACTUAL APPS
+const REPO_NAMES = ["hello-adrian-test-script-next"]
+
 const AMPLIFY_BUILD_SPEC = `
 version: 1
 frontend:
@@ -171,31 +174,28 @@ const main = async () => {
     process.exit(1)
   }
 
-  // TODO: UPDATE THIS TO THE ACTUAL APPS
-  const apps = ["hello-adrian-test-script-next"]
-
-  if (apps.length === 0) {
+  if (REPO_NAMES.length === 0) {
     console.error("❌ Error: No app names defined in apps array")
     process.exit(1)
   }
 
   const appResults = []
 
-  console.log(`🚀 Starting creation of ${apps.length} Amplify apps...`)
-  console.log(`📋 Apps to create: ${apps.join(", ")}`)
+  console.log(`🚀 Starting creation of ${REPO_NAMES.length} Amplify apps...`)
+  console.log(`📋 Apps to create: ${REPO_NAMES.join(", ")}`)
   console.log("")
 
   // Process each app sequentially using promises
   let currentIndex = 0
 
   const processNextApp = () => {
-    if (currentIndex >= apps.length) {
+    if (currentIndex >= REPO_NAMES.length) {
       // All apps processed, generate output
       generateOutput()
       return
     }
 
-    const app = apps[currentIndex]
+    const app = REPO_NAMES[currentIndex]
     console.log(`\n📦 Processing: ${app}`)
     console.log("=".repeat(50))
 
@@ -217,7 +217,7 @@ const main = async () => {
 
   const generateOutput = () => {
     console.log(`\n🎉 Batch processing complete!`)
-    console.log(`📊 Processed ${apps.length} apps`)
+    console.log(`📊 Processed ${REPO_NAMES.length} apps`)
 
     // Generate output file
     if (appResults.length > 0) {
@@ -227,11 +227,15 @@ const main = async () => {
         )
         .join("\n")
 
-      fs.writeFileSync("amplify-apps-output.txt", outputContent)
-      console.log(`\n📄 Output file generated: amplify-apps-output.txt`)
-      console.log(`📋 Format: REPO_NAME,AMPLIFY_APP_ID,STAGING_PASSWORD`)
+      // Create timestamped filename
+      const now = new Date()
+      const timestamp = now.toISOString().replace(/[:.]/g, "-").slice(0, -5) // Format: YYYY-MM-DDTHH-MM-SS
+      const filename = `amplify-apps-output-${timestamp}.csv`
+
+      fs.writeFileSync(filename, outputContent)
+      console.log(`\n📄 Output file generated: ${filename}`)
       console.log(
-        `📊 Successfully created ${appResults.length} out of ${apps.length} apps`,
+        `📊 Successfully created ${appResults.length} out of ${REPO_NAMES.length} apps`,
       )
     } else {
       console.log(`\n⚠️  No apps were successfully created`)
