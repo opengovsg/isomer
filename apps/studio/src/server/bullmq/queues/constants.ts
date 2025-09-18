@@ -12,7 +12,7 @@ export const WORKER_SHUTDOWN_TIMEOUT = 30_000 // 30 seconds
 export const BACKOFF: BackoffOptions = {
   type: "exponential",
   delay: 10_000, // 10s, then 20s, then 40s etc
-}
+} as const
 
 export const defaultOpts: JobsOptions = {
   removeOnComplete: true,

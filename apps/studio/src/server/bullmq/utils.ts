@@ -26,10 +26,10 @@ const gracefulShutdown = async (
       ),
     ])
     logger.info({ message: "Worker shut down cleanly" })
-    process.exit(0)
+    process.exitCode = 0
   } catch (err) {
     logger.error({ err }, "Error during graceful shutdown")
-    process.exit(1)
+    process.exitCode = 1
   }
 }
 
