@@ -378,7 +378,7 @@ export const siteRouter = router({
           metadata: {},
           siteId,
         })
-        await publishSite(ctx.logger, siteId)
+        await publishSite(tx, ctx.logger, siteId)
       })
     }),
   publishAll: protectedProcedure.mutation(async ({ ctx }) => {
@@ -419,7 +419,7 @@ export const siteRouter = router({
               metadata: {},
               siteId: site.id,
             })
-            await publishSite(ctx.logger, site.id)
+            await publishSite(tx, ctx.logger, site.id)
           })
         } catch (error) {
           ctx.logger.error({
