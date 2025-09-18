@@ -4,17 +4,50 @@ import wretch from "wretch"
 const SEARCHSG_BASE_URL = "api.services.search.gov.sg/admin"
 const ISOMER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
 const SearchSgApi = {
-  Auth: `${SEARCHSG_BASE_URL}/v1/token`,
-  App: `${SEARCHSG_BASE_URL}/bootstrap/applications`,
-}
+  Auth: `https://${SEARCHSG_BASE_URL}/v1/auth/token`,
+  App: `https://${SEARCHSG_BASE_URL}/v1/bootstrap/applications`,
+} as const
 
 const generateSearchsgParams = ({
   name,
   config,
-}: UpdateSearchsgConfigProps & { config: SearchsgConfig["data"] }) => {
-  const updatedConfig = set(config, "name", name)
-
-  return updatedConfig
+  url,
+}: UpdateSearchsgConfigProps & {
+  config: SearchsgConfig["data"]
+  url: string
+}) => {
+  return {
+    name,
+    tenant: {
+      adminList: ["isomer@open.gov.sg"],
+    },
+    index: {
+      dataSource: {
+        web: [
+          {
+            domain: `https://${url}`,
+            documentIndexConfig: {
+              indexWhitelist: [],
+              indexBlacklist: [],
+            },
+          },
+        ],
+        api: [],
+      },
+    },
+    application: {
+      siteDomain: url,
+      environment: "production",
+      config: {
+        search: {
+          theme: {
+            primary: config.application.config.search.theme.primary,
+            fontFamily: "Inter",
+          },
+        },
+      },
+    },
+  }
 }
 
 interface UpdateSearchsgConfigProps {
@@ -22,11 +55,13 @@ interface UpdateSearchsgConfigProps {
 }
 
 const requestSearchSgToken = async () => {
-  const { data } = await wretch(SearchSgApi.Auth)
+  const data = await wretch(SearchSgApi.Auth)
     .auth(`Basic ${searchsgApiKey}`)
-    .headers({ UserAgent: ISOMER_UA })
+    .headers({
+      "User-Agent": ISOMER_UA,
+    })
     .post()
-    .res<{ data: { accessToken: string; tokenType: string } }>()
+    .json<{ accessToken: string; tokenType: string }>()
 
   return data
 }
@@ -34,6 +69,7 @@ const requestSearchSgToken = async () => {
 export const updateSearchsgConfig = async (
   props: UpdateSearchsgConfigProps,
   searchsgClientId: string,
+  url: URL,
 ) => {
   const { accessToken, tokenType } = await requestSearchSgToken()
 
@@ -44,18 +80,24 @@ export const updateSearchsgConfig = async (
     searchsgClientId,
     `${tokenType} ${accessToken}`,
   )
-  const updatedConfig = generateSearchsgParams({ ...props, config })
 
-  const res = await wretch(
-    `https://${SEARCHSG_BASE_URL}/v1/bootstrap/applications/${searchsgClientId}`,
-  )
+  const updatedConfig = generateSearchsgParams({
+    ...props,
+    config,
+    url: url.host,
+  })
+
+  const res = await wretch(`${SearchSgApi.App}/${searchsgClientId}`)
     .auth(`${tokenType} ${accessToken}`)
     .headers({
       "Content-Type": "application/json",
+      Accept: "*/*",
       "User-Agent": ISOMER_UA,
     })
-    .post(updatedConfig)
+    .json(updatedConfig)
+    .put()
     .res()
+
   return res
 }
 
@@ -68,6 +110,13 @@ interface SearchsgConfig {
     }
     application: {
       siteDomain: string
+      config: {
+        search: {
+          theme: {
+            primary: string
+          }
+        }
+      }
     }
   }
 }
@@ -76,9 +125,7 @@ const fetchSearchsgConfig = async (
   searchsgClientId: string,
   auth: string,
 ): Promise<SearchsgConfig> => {
-  return wretch(
-    `https://${SEARCHSG_BASE_URL}/v1/bootstrap/applications/${searchsgClientId}`,
-  )
+  return wretch(`${SearchSgApi.App}/${searchsgClientId}`)
     .auth(auth)
     .headers({
       "Content-Type": "application/json",

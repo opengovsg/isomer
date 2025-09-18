@@ -49,7 +49,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     },
     onError: (error) => {
       toast({
-        title: "Failed to create site",
+        title: "Failed to update site",
         description: error.message,
         status: "error",
         ...BRIEF_TOAST_SETTINGS,

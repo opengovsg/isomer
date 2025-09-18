@@ -132,6 +132,17 @@ export const siteRouter = router({
           .returningAll()
           .executeTakeFirstOrThrow()
 
+        const { config: updatedConfig } = updatedSite
+
+        // NOTE: We want to put this in the `tx` as the 2 updates should be together;
+        // if either one fails, we should fail to update the db
+        if (updatedConfig.search?.type === "searchSG")
+          await updateSearchsgConfig(
+            { name: siteName },
+            updatedConfig.search.clientId,
+            new URL(updatedConfig.url),
+          )
+
         await logConfigEvent(tx, {
           eventType: AuditLogEvent.SiteConfigUpdate,
           delta: {
@@ -144,12 +155,6 @@ export const siteRouter = router({
 
         return updatedSite.config
       })
-
-      if (updatedConfig.search?.type === "searchSG")
-        await updateSearchsgConfig(
-          { name: siteName },
-          updatedConfig.search.clientId,
-        )
 
       return updatedConfig
     }),
