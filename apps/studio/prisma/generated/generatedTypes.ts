@@ -40,6 +40,7 @@ export interface Blob {
   updatedAt: Generated<Timestamp>
 }
 export interface CodeBuildJobs {
+  id: GeneratedAlways<string>
   buildId: string
   siteId: number
   userId: string
@@ -48,6 +49,7 @@ export interface CodeBuildJobs {
   startedAt: Generated<Timestamp>
   emailSent: Generated<boolean>
   isScheduled: Generated<boolean>
+  supersededByBuildId: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
