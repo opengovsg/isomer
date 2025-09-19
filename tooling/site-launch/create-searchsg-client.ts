@@ -45,7 +45,6 @@ const generateRequestData = ({
     },
     application: {
       siteDomain,
-      // TODO: change back to production
       environment: "production",
       config: {
         search: {
