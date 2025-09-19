@@ -688,9 +688,7 @@ function getIndexPageContent(title: string) {
   };
 }
 
-export const cleanup = (siteName: string) => {
+export const cleanup = () => {
   const assetsDir = path.join(__dirname, "assets");
-  const assetsCsv = path.join(__dirname, `asset-mappings-${siteName}.csv`);
   fs.rmdirSync(assetsDir);
-  fs.rmSync(assetsCsv);
 };
