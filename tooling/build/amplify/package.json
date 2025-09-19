@@ -4,12 +4,13 @@
   "description": "",
   "main": "create-app.js",
   "scripts": {
+    "create-apps": "node create-app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-amplify": "^3.606.0",
-     "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1"
   }
 }
