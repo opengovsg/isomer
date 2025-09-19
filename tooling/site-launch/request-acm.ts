@@ -29,7 +29,10 @@ export const requestAcm = async (domain: string) => {
   // NOTE: sleep for 1s so records are confirm generated
   await new Promise((resolve) => setTimeout(resolve, 1000))
 
-  const { Name, Type, Value } = JSON.parse(rawCert)
+  const { Name: _Name, Type: _Type, Value: _Value } = JSON.parse(rawCert)
+  const Name = _Name.slice(0, -1)
+  const Type = _Type.slice(0, -1)
+  const Value = _Value.slice(0, -1)
   console.log(`${Name}   ${Type}   ${Value}`)
 
   fs.writeFileSync(`./${domain}.ssl.conf`, `${Name}   ${Type}   ${Value}`)
