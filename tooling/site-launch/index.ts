@@ -51,12 +51,13 @@ const launch = async () => {
 
     await archiveRepo(repo)
     await createSearchSgClientForGithub({ domain, name: long, repo })
+
+    await confirm({ message: "Have you ran `npm run db:connect`?" })
     const siteId = await createBaseSiteInStudio({
       name: long,
       codeBuildId: codebuildId,
     })
 
-    await confirm({ message: "Have you ran `npm run db:connect`?" })
     await migrate(repo, siteId)
 
     await s3sync(siteId)
