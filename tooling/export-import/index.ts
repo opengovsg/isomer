@@ -1,5 +1,5 @@
 import { confirm, number, select } from "@inquirer/prompts";
-import { exec as base } from "node:child_process";
+import { exec as base, execFile as baseFile } from "node:child_process";
 import { promisify } from "node:util";
 import { Client } from "pg";
 import { ENVIRONMENT_CHOICES } from "./constants";
@@ -9,6 +9,7 @@ import path from "node:path";
 import { migrate } from "./migrate";
 
 const exec = promisify(base);
+const execFile = promisify(baseFile);
 
 const getDbConnectCommand = (env: string) => {
   const lowerEnv = env.toLocaleLowerCase();
@@ -159,7 +160,8 @@ const main = async () => {
     fs.writeFileSync(queryFilePath, modifiedQueryFile, "utf-8");
   }
 
-  await exec(`cd ${exportDir} && npm run start`, {
+  await exec(`npm run start`, {
+    cwd: exportDir,
     env: {
       ...process.env,
       SITE_ID: sourceSiteId.toString(),
@@ -212,17 +214,33 @@ const main = async () => {
   }
   fs.mkdirSync(tempDir);
 
-  await exec(`mv ${exportDir}/data ${tempDir}/data`);
-  await exec(`mv ${exportDir}/schema ${tempDir}/schema`);
-  await exec(`mv ${exportDir}/sitemap.json ${tempDir}/sitemap.json`);
+  await execFile("mv", [
+    path.join(exportDir, "data"),
+    path.join(tempDir, "data"),
+  ]);
+  await execFile("mv", [
+    path.join(exportDir, "schema"),
+    path.join(tempDir, "schema"),
+  ]);
+  await execFile("mv", [
+    path.join(exportDir, "sitemap.json"),
+    path.join(tempDir, "sitemap.json"),
+  ]);
 
   // Step 2: Export the assets from the S3 bucket
   if (sourceEnv !== "LOCAL") {
     console.log(`Exporting assets for site ${sourceSiteId}...`);
     const bucketName = process.env[`${sourceEnv}_AWS_S3_ASSETS_BUCKET_NAME`];
-    await exec(
-      `cd ${exportDir} && aws s3 sync s3://${bucketName}/${sourceSiteId} ${tempDir}/public/${sourceSiteId}`,
+    await execFile(
+      "aws",
+      [
+        "s3",
+        "sync",
+        `s3://${bucketName}/${sourceSiteId}`,
+        `${tempDir}/public/${sourceSiteId}`,
+      ],
       {
+        cwd: exportDir,
         env: {
           ...process.env,
           AWS_PROFILE: process.env[`${sourceEnv}_AWS_PROFILE`],
@@ -288,9 +306,16 @@ const main = async () => {
       `Importing assets into site ${finalDestSiteId} in ${destEnv}...`
     );
     const bucketName = process.env[`${destEnv}_AWS_S3_ASSETS_BUCKET_NAME`];
-    await exec(
-      `cd ${tempDir} && aws s3 sync public/${sourceSiteId} s3://${bucketName}/${finalDestSiteId}`,
+    await execFile(
+      "aws",
+      [
+        "s3",
+        "sync",
+        `public/${sourceSiteId}`,
+        `s3://${bucketName}/${finalDestSiteId}`,
+      ],
       {
+        cwd: tempDir,
         env: {
           ...process.env,
           AWS_PROFILE: process.env[`${destEnv}_AWS_PROFILE`],
