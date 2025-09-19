@@ -20,7 +20,6 @@ import {
 import type { Resource } from "../../database"
 import { db, ResourceState } from "../../database"
 import {
-  addCodeBuildAndMarkSupersededBuild,
   getBatchAncestryWithSelfQuery,
   getFullPageById,
   getLocalisedSitemap,
@@ -29,6 +28,7 @@ import {
   getSiteResourceById,
   updateBlobById,
   updatePageById,
+  updateStoppedBuild,
 } from "../resource.service"
 import { PAGE_BLOB } from "./constants"
 
@@ -1293,7 +1293,7 @@ describe("resource.service", () => {
       expect(collection2Node?.summary).toBe("Hello im the index page")
     })
   })
-  describe("markSupersededBuild", () => {
+  describe("updateStoppedBuild", () => {
     let user: User
     const FIXED_NOW = new Date("2024-01-01T00:15:00.000Z")
     afterEach(() => {
@@ -1327,16 +1327,9 @@ describe("resource.service", () => {
       // Act
       // stop the main build (1) and mark it and the builds it has superseded (4) as being
       // superseded by the newly started build
-      await db.transaction().execute(async (tx) => {
-        await addCodeBuildAndMarkSupersededBuild(tx, {
-          stoppedBuildId: codebuildJob.buildId,
-          startedBuildId: NEWLY_STARTED_BUILD_ID,
-          startedAt: FIXED_NOW,
-          resourceId: pageForMainBuild.id,
-          siteId: pageForMainBuild.siteId,
-          userId: user.id,
-          isScheduled: true,
-        })
+      await updateStoppedBuild({
+        stoppedBuildId: codebuildJob.buildId,
+        startedBuildId: NEWLY_STARTED_BUILD_ID,
       })
 
       // Assert
@@ -1350,15 +1343,6 @@ describe("resource.service", () => {
       allSupersededBuilds.forEach((build) => {
         expect(build.status).toEqual("STOPPED")
       })
-      // expect the newly started build to not be marked as superseded
-      const newlyStartedBuild = await db
-        .selectFrom("CodeBuildJobs")
-        .selectAll()
-        .where("buildId", "=", NEWLY_STARTED_BUILD_ID)
-        .executeTakeFirst()
-      expect(newlyStartedBuild?.supersededByBuildId).toBeNull()
-      expect(newlyStartedBuild?.status).toEqual("IN_PROGRESS")
-      expect(newlyStartedBuild?.startedAt).toEqual(FIXED_NOW)
     })
   })
   describe.skip("getResourcePermalinkTree", () => {})
