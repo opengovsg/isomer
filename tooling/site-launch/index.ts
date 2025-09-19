@@ -63,7 +63,7 @@ const launch = async () => {
     await s3sync(siteId)
 
     const canCleanup = await confirm({
-      message: `Have the assets been uploaded to s3?`,
+      message: `Have the assets been uploaded to s3 and the asset-mappings passed to prod ops?`,
     })
 
     if (canCleanup) cleanup(repo)
