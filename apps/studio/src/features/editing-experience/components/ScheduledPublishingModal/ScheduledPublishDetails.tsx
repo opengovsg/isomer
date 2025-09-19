@@ -80,6 +80,7 @@ export const SchedulePublishDetails = () => {
               <TimeSelect
                 {...field}
                 earliestAllowableTime={earliestAllowableTime}
+                minutesStep={15}
               />
             )}
           />
