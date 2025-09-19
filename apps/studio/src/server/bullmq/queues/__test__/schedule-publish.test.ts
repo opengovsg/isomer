@@ -20,11 +20,11 @@ import {
 // Mock the publishSite function to avoid making actual AWS SDK calls during tests
 vi.mock("~/server/modules/aws/codebuild.service.ts", () => ({
   publishSite: vi.fn().mockResolvedValue({
+    isNewBuildNeeded: true,
     startedBuild: {
-      id: "started-test-id",
+      id: "test-id",
       startTime: new Date("2024-01-01T00:00:00.000Z"),
     },
-    stoppedBuild: { id: "stopped-test-id" },
   }),
 }))
 
@@ -87,21 +87,20 @@ describe("scheduled-publish", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(resource.scheduledAt).toBeNull()
-      // TODO: move this out to a separate test
-      // // expect the codebuildjobs table to be updated with the new build
-      // const codebuildjobs = await db
-      //   .selectFrom("CodeBuildJobs")
-      //   .where("siteId", "=", site.id)
-      //   .selectAll()
-      //   .execute()
-      // expect(codebuildjobs).toHaveLength(1)
-      // expect(codebuildjobs[0]).toMatchObject({
-      //   siteId: site.id,
-      //   userId: user.id,
-      //   buildId: "build/started-test-id",
-      //   startedAt: FIXED_NOW,
-      //   status: "IN_PROGRESS",
-      // })
+      // expect the codebuildjobs table to be updated with the new build
+      const codebuildjobs = await db
+        .selectFrom("CodeBuildJobs")
+        .where("siteId", "=", site.id)
+        .selectAll()
+        .execute()
+      expect(codebuildjobs).toHaveLength(1)
+      expect(codebuildjobs[0]).toMatchObject({
+        siteId: site.id,
+        userId: user.id,
+        buildId: "build/test-id",
+        startedAt: FIXED_NOW,
+        status: "IN_PROGRESS",
+      })
       // expect the audit log to be created with the correct info
       const auditLogs = await db
         .selectFrom("AuditLog")
