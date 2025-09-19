@@ -1,17 +1,8 @@
-import type {
-  Expression,
-  Kysely,
-  RawBuilder,
-  Simplify,
-  Transaction,
-} from "kysely"
-import type pino from "pino"
+import type { Expression, RawBuilder, Simplify } from "kysely"
 import { sql } from "kysely"
 import { type DrainOuterGeneric } from "kysely/dist/cjs/util/type-utils"
 import { jsonArrayFrom, jsonObjectFrom } from "kysely/helpers/postgres"
 import { type Tagged } from "type-fest"
-
-import type { DB } from "./types"
 
 export type DateTimeString = Tagged<string, "DateTimeString">
 
@@ -67,65 +58,4 @@ export function jsonb<T>(value: T): RawBuilder<Tagged<T, "JSONB">> {
 
 export function integer(value: number): RawBuilder<number> {
   return sql`CAST(${value} AS INTEGER)`
-}
-
-/**
- * Adds transaction with retry logic for transient errors like serialization failures and deadlocks.
- * @param db  DB instance
- * @param fn  Function to execute within the transaction
- * @param param2  Additional parameters for the function
- * @returns  Result of the function execution
- */
-export const withTransactionRetry = async <T>(
-  db: Kysely<DB>,
-  logger: pino.Logger<string>,
-  fn: (tx: Transaction<DB>) => Promise<T>,
-  {
-    maxAttempts = 5,
-    baseDelayMs = 100,
-    maxDelayMs = 2000,
-    jitter = true,
-  }: {
-    maxAttempts?: number
-    baseDelayMs?: number
-    maxDelayMs?: number
-    jitter?: boolean
-  } = {},
-): Promise<T> => {
-  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
-  const toRetry = (err: unknown, attempt: number) =>
-    isTransientDbError(err) && attempt < maxAttempts
-  let attempt = 0
-  while (true) {
-    attempt++
-    try {
-      return await db.transaction().execute(fn)
-    } catch (err) {
-      logger.warn(
-        { err, attempt, maxAttempts, toRetry: toRetry(err, attempt) },
-        "Transaction failed",
-      )
-      if (toRetry(err, attempt)) {
-        // Exponential backoff with optional jitter
-        let delay = Math.min(baseDelayMs * 2 ** (attempt - 1), maxDelayMs)
-        if (jitter) {
-          // Random between 50% and 100% of delay
-          delay = delay / 2 + Math.random() * (delay / 2)
-        }
-        await sleep(delay)
-        continue
-      }
-      throw err
-    }
-  }
-}
-
-/**
- * Checks if the error is a transient database error.
- * @param err The error object to check
- * @returns True if the error is a transient database error, false otherwise
- */
-const isTransientDbError = (err: unknown): boolean => {
-  const pgcode = (err as { code?: string }).code
-  return pgcode === "40001" || pgcode === "40P01"
 }
