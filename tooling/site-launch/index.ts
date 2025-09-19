@@ -63,10 +63,15 @@ const launch = async () => {
     await s3sync(siteId)
 
     const canCleanup = await confirm({
-      message: `Have the assets been uploaded to s3 and the asset-mappings passed to prod ops?`,
+      message: `Have the assets been uploaded to s3?`,
     })
 
-    if (canCleanup) cleanup(repo)
+    if (canCleanup) cleanup()
+
+    await confirm({
+      message:
+        "Remember to remove the `assets-mapping.csv` after you have passed the file to prod-ops!",
+    })
   } else {
     // TODO: create site
     await createSearchSgClientForStudio({ domain, name: long })
