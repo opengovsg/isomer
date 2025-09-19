@@ -1,3 +1,4 @@
+import type { Build } from "@aws-sdk/client-codebuild"
 import {
   type IsomerPageSchemaType,
   type IsomerSiteProps,
@@ -24,3 +25,18 @@ export interface SearchResultResource {
   lastUpdatedAt: Date | null
   fullPermalink: string
 }
+
+export interface PublishSiteWithNewBuild {
+  startedBuild: Pick<Build, "id" | "startTime">
+  stoppedBuild?: Pick<Build, "id" | "startTime">
+  isNewBuildNeeded: true
+}
+
+export interface PublishSiteWithoutNewBuild {
+  latestRunningBuild?: Pick<Build, "id" | "startTime">
+  isNewBuildNeeded: false
+}
+
+export type PublishSiteResult =
+  | PublishSiteWithNewBuild
+  | PublishSiteWithoutNewBuild
