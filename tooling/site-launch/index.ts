@@ -1,16 +1,17 @@
 import { confirm, input } from "@inquirer/prompts"
-import { checkLastBuild } from "amplify"
+
+import { cleanup, main as migrate } from "@isomer/seed-from-repo"
+
+import { checkLastBuild } from "./amplify"
 import {
   createSearchSgClientForGithub,
   createSearchSgClientForStudio,
-} from "create-searchsg-client"
-import { archiveRepo } from "github"
-import { createIndirection } from "indirection"
-import { requestAcmViaClient } from "request-acm"
-import { s3sync } from "s3"
-import { createBaseSiteInStudio } from "site"
-
-import { cleanup, main as migrate } from "@isomer/seed-from-repo"
+} from "./create-searchsg-client"
+import { archiveRepo } from "./github"
+import { createIndirection } from "./indirection"
+import { requestAcmViaClient } from "./request-acm"
+import { s3sync } from "./s3"
+import { createBaseSiteInStudio } from "./site"
 
 const profile = process.env.AWS_PROFILE
 
