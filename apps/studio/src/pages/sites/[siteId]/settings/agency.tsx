@@ -61,7 +61,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (!isEnabled) {
-      router.push(`/sites/${siteId}/settings`)
+      void router.push(`/sites/${siteId}/settings`)
     }
   }, [])
 

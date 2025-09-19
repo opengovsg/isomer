@@ -1,6 +1,5 @@
-import { Box, HStack, Icon, Text } from "@chakra-ui/react"
+import { HStack, Icon, Text } from "@chakra-ui/react"
 import { IconType } from "react-icons"
-import { BiWrench } from "react-icons/bi"
 
 interface HeaderRowProps {
   label: string
