@@ -193,14 +193,13 @@ export const publishScheduledResource = async (
       )
       return
     }
-    const { version } = await publishPageResource({
+    return await publishPageResource({
       logger,
       siteId,
       resourceId: page.id,
       user,
       isScheduled: true,
     })
-    return version
   } catch (error) {
     // If we fail to acquire the lock, it means another worker is processing this resource and we can exit gracefully
     if (error instanceof ResourceLockedError) {
