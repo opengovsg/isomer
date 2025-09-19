@@ -1,5 +1,6 @@
 import type { GrowthBook } from "@growthbook/growthbook/dist/GrowthBook"
 import type { User } from "@prisma/client"
+import type { Mock } from "vitest"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -7,7 +8,12 @@ import {
   applyAuthedSession,
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
-import { setupCodeBuildJob, setupUser } from "tests/integration/helpers/seed"
+import {
+  createSupersededBuildRows,
+  setupCodeBuildJob,
+  setupPageResource,
+  setupUser,
+} from "tests/integration/helpers/seed"
 
 import type { Session } from "~/lib/types/session"
 import {
@@ -262,6 +268,86 @@ describe("webhook.router", async () => {
 
       // Assert
       expect(sendFailedPublishEmail).not.toHaveBeenCalled()
+    })
+    it("sends a success email to multiple users if multiple builds are superseded by the same build id", async () => {
+      // Arrange
+      const NUMBER_SUPERSEDED_BUILDS = 4
+
+      const {
+        codebuildJob,
+        site,
+        page: pageForMainBuild,
+      } = await setupCodeBuildJob({
+        userId: user.id,
+        arn: "build/test-id",
+        buildStatus: "IN_PROGRESS",
+        startedAt: FIXED_NOW,
+        isScheduled: true,
+      })
+      // create 4 more builds that are superseded by the above build, but belong to a different user
+      const { page: pageForSupersededBuild } = await setupPageResource({
+        resourceType: "Page",
+      })
+      const userForSupersededBuilds = await setupUser({})
+      await createSupersededBuildRows({
+        numberOfSupersededBuilds: NUMBER_SUPERSEDED_BUILDS,
+        supersedingBuild: codebuildJob,
+        resourceId: pageForSupersededBuild.id,
+        userId: userForSupersededBuilds.id,
+      })
+      const caller = getCallerWithMockGrowthbook(session)
+
+      // Act
+      await caller.updateCodebuildWebhook({
+        projectName: "test-project",
+        siteId: site.id,
+        arn: "build/test-id",
+        buildStatus: "SUCCEEDED",
+      })
+
+      // Assert
+      expect(sendSuccessfulPublishEmail).toHaveBeenCalledTimes(5) // once for the original build + 4 for the superseded builds
+      const calls = (sendSuccessfulPublishEmail as Mock).mock.calls
+      // check that an email was sent to the original user
+      const callsWithOriginalUser = calls
+        .map(([arg]) => arg as Parameters<typeof sendSuccessfulPublishEmail>[0])
+        .filter((call) => {
+          return call.recipientEmail === user.email
+        })
+      // check that emails were sent to the user with the superseded builds
+      const callsWithSupersededUser = calls
+        .map(([arg]) => arg as Parameters<typeof sendSuccessfulPublishEmail>[0])
+        .filter((call) => {
+          return call.recipientEmail === userForSupersededBuilds.email
+        })
+      expect(callsWithOriginalUser.length).toEqual(1)
+      expect(callsWithSupersededUser.length).toEqual(NUMBER_SUPERSEDED_BUILDS)
+      // assert that the calls contain the correct parameters
+      callsWithOriginalUser.forEach((call) => {
+        expect(call).toEqual({
+          recipientEmail: user.email,
+          publishTime: FIXED_NOW,
+          isScheduled: codebuildJob.isScheduled,
+          title: pageForMainBuild.title, // title from the original build
+        })
+      })
+      callsWithSupersededUser.forEach((call) => {
+        expect(call).toEqual({
+          recipientEmail: userForSupersededBuilds.email,
+          publishTime: FIXED_NOW,
+          isScheduled: codebuildJob.isScheduled,
+          title: pageForSupersededBuild.title, // title from the superseded builds
+        })
+      })
+      // check that the codebuild job is updated with the emailSent flag
+      const updatedCodebuildJob = await db
+        .selectFrom("CodeBuildJobs")
+        .selectAll()
+        .execute()
+      expect(updatedCodebuildJob.length).toBe(NUMBER_SUPERSEDED_BUILDS + 1) // +1 for the original build
+      updatedCodebuildJob.forEach((job) => {
+        expect(job.emailSent).toBe(true) // all jobs should have emailSent = true
+      })
     })
   })
 })
