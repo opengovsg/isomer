@@ -5,7 +5,6 @@ import {
   DescribeCertificateCommand,
   RequestCertificateCommand,
 } from "@aws-sdk/client-acm"
-import { confirm } from "@inquirer/prompts"
 import { exec } from "utils"
 
 export const requestAcm = async (domain: string) => {
@@ -34,18 +33,10 @@ export const requestAcm = async (domain: string) => {
   console.log(`${Name}   ${Type}   ${Value}`)
 
   fs.writeFileSync(`./${domain}.ssl.conf`, `${Name}   ${Type}   ${Value}`)
-  const canDelete = await confirm({
-    message:
-      "Have you copied down the cert configuration above and passed it to prodops?",
-  })
 
-  if (canDelete) {
-    await exec(
-      `aws acm delete-certificate --certificate-arn ${certArn} --region "us-east-1"`,
-    )
-    // NOTE: Leave file on disk as failsafe
-    console.log(`Deleted certificate with arn: ${certArn}`)
-  }
+  await exec(
+    `aws acm delete-certificate --certificate-arn ${certArn} --region "us-east-1"`,
+  )
 }
 
 export const requestAcmViaClient = async (domain: string) => {
@@ -80,17 +71,10 @@ export const requestAcmViaClient = async (domain: string) => {
   fs.writeFileSync(`./${domain}.ssl.conf`, `${Name}   ${Type}   ${Value}`)
 
   // Step 4: Confirm with user and delete certificate if confirmed
-  const canDelete = await confirm({
-    message:
-      "Have you copied down the cert configuration above and passed it to prodops?",
+  const deleteCommand = new DeleteCertificateCommand({
+    CertificateArn: certArn,
   })
 
-  if (canDelete) {
-    const deleteCommand = new DeleteCertificateCommand({
-      CertificateArn: certArn,
-    })
-
-    await client.send(deleteCommand)
-    console.log(`Deleted certificate with arn: ${certArn}`)
-  }
+  await client.send(deleteCommand)
+  console.log(`Deleted certificate with arn: ${certArn}`)
 }
