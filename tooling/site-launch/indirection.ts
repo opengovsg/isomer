@@ -28,13 +28,14 @@ export const createIndirection = async (
 
   console.log(`Found matching cloudfront distribution`)
   const cfDomain = matching.DomainName
+  const recordDomain = domain.replace(/^www\./, "")
 
   const content = `import { Record } from "@pulumi/aws/route53";
 import { CLOUDFRONT_HOSTED_ZONE_ID } from "../constants";
 
 export const createRecords = (zoneId: string): Record[] => {
   const records = [
-    new Record("${domain.replace(/^www\./, "")} A", {
+    new Record("${recordDomain} A", {
       name: "${indirectionDomain}",
       type: "A",
       zoneId: zoneId,
@@ -47,7 +48,7 @@ export const createRecords = (zoneId: string): Record[] => {
       ],
     }),
 
-    new Record("${domain} AAAA", {
+    new Record("${recordDomain} AAAA", {
       name: "${indirectionDomain}",
       type: "AAAA",
       zoneId: zoneId,
