@@ -135,39 +135,42 @@ export const publishScheduledResource = async (
         )
         return null
       }
-      if (!page.scheduledAt) {
-        logger.info(
-          { resourceId, jobId, userId },
-          `Page with id ${resourceId} is no longer scheduled for publishing. Exiting job.`,
-        )
-        return null
-      }
-      // Double-check that we're within the buffer time of the scheduledAt time
-      // This is to prevent publishing if the job was significantly delayed (e.g. due to worker downtime)
-      // We only do this check on the first attempt, as subsequent attempts are likely due to transient failures
-      // and we don't want to block those from going through if the timing is slightly off
-      if (
-        attemptsMade === 0 && // only check on first attempt
-        Math.abs(differenceInSeconds(page.scheduledAt, new Date())) >
+      // If multiple attempts have been made, we skip the scheduledAt time checks since the scheduledAt
+      // may have been cleared on the first attempt
+      if (attemptsMade === 0) {
+        if (!page.scheduledAt) {
+          logger.info(
+            { resourceId, jobId, userId },
+            `Page with id ${resourceId} is no longer scheduled for publishing. Exiting job.`,
+          )
+          return null
+        }
+        // Double-check that we're within the buffer time of the scheduledAt time
+        // This is to prevent publishing if the job was significantly delayed (e.g. due to worker downtime)
+        // We only do this check on the first attempt, as subsequent attempts are likely due to transient failures
+        // and we don't want to block those from going through if the timing is slightly off
+        if (
+          Math.abs(differenceInSeconds(page.scheduledAt, new Date())) >
           BUFFER_IN_SECONDS
-      ) {
-        logger.error(
-          { resourceId, jobId, userId },
-          `Page with id ${resourceId} is scheduled for publishing outside the buffer time. Exiting job.`,
+        ) {
+          logger.error(
+            { resourceId, jobId, userId },
+            `Page with id ${resourceId} is scheduled for publishing outside the buffer time. Exiting job.`,
+          )
+          return null
+        }
+        // NOTE: once it's been claimed, we unset scheduledAt even if publish fails
+        // The scheduledAt field currently blocks the editing flow so we want to
+        // ensure it's unset even if publish fails, to avoid blocking the user from making further edits
+        return await updatePageById(
+          {
+            id: resourceId,
+            siteId,
+            scheduledAt: null,
+          },
+          tx,
         )
-        return null
       }
-      // NOTE: once it's been claimed, we unset scheduledAt even if publish fails
-      // The scheduledAt field currently blocks the editing flow so we want to
-      // ensure it's unset even if publish fails, to avoid blocking the user from making further edits
-      return await updatePageById(
-        {
-          id: resourceId,
-          siteId,
-          scheduledAt: null,
-        },
-        tx,
-      )
     })
     // No page found or not scheduled, exit (logging handled above)
     if (!page) return
