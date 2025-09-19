@@ -9,7 +9,6 @@ import {
 } from "@aws-sdk/client-codebuild"
 import { TRPCError } from "@trpc/server"
 
-import type { DB, Transaction } from "../database"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 
 const client = new CodeBuildClient({ region: "ap-southeast-1" })
@@ -19,11 +18,7 @@ const client = new CodeBuildClient({ region: "ap-southeast-1" })
 // build would have already captured the latest changes
 const RECENT_BUILD_THRESHOLD_SECONDS = 30
 
-export const publishSite = async (
-  tx: Transaction<DB>,
-  logger: Logger<string>,
-  siteId: number,
-) => {
+export const publishSite = async (logger: Logger<string>, siteId: number) => {
   // Step 1: Get the CodeBuild ID associated with the site
   const site = await getSiteNameAndCodeBuildId(siteId)
   const { codeBuildId } = site
@@ -51,18 +46,9 @@ export const publishSite = async (
   // Step 3: Start a new build
   const build = await startProjectById(logger, codeBuildId)
 
-  // Step 4: Mark the stopped build (if any) as being superseded by the newly
-  // started build
-  if (stoppedBuild?.id) {
-    await markSupersededBuild(tx, {
-      stoppedBuildId: stoppedBuild.id,
-      startedBuildId: build.id,
-    })
-  }
-
   return {
-    buildId: build.id,
-    startTime: build.startTime,
+    startedBuild: build,
+    stoppedBuild: stoppedBuild,
   }
 }
 
@@ -187,37 +173,4 @@ export const startProjectById = async (
     )
     throw error
   }
-}
-
-/**
- * Mark a stopped build and any builds it has superseded as being superseded by
- * the newly started build.
- * @param tx Transaction
- * @param stoppedBuildId The build ID of the stopped build
- * @param startedBuildId The build ID of the newly started build
- */
-const markSupersededBuild = async (
-  tx: Transaction<DB>,
-  {
-    stoppedBuildId,
-    startedBuildId,
-  }: {
-    stoppedBuildId: string
-    startedBuildId: string
-  },
-) => {
-  // Find all builds that have been superseded by the stopped build and replace them as being superseded
-  // by the newly started build. This is to handle multi-superseded A -> B - > C scenarios
-  const buildsSupersededByStoppedBuild = await tx
-    .selectFrom("CodeBuildJobs")
-    .select("buildId")
-    .where("supersededByBuildId", "=", stoppedBuildId)
-    .execute()
-    .then((rows) => rows.map((row) => row.buildId))
-
-  await tx
-    .updateTable("CodeBuildJobs")
-    .set({ supersededByBuildId: startedBuildId })
-    .where("buildId", "in", [stoppedBuildId, ...buildsSupersededByStoppedBuild])
-    .execute()
 }
