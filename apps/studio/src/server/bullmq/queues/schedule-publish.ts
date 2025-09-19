@@ -165,18 +165,18 @@ export const publishScheduledResource = async (
           )
           return null
         }
-        // NOTE: once it's been claimed, we unset scheduledAt even if publish fails
-        // The scheduledAt field currently blocks the editing flow so we want to
-        // ensure it's unset even if publish fails, to avoid blocking the user from making further edits
-        return await updatePageById(
-          {
-            id: resourceId,
-            siteId,
-            scheduledAt: null,
-          },
-          tx,
-        )
       }
+      // NOTE: once it's been claimed, we unset scheduledAt even if publish fails
+      // The scheduledAt field currently blocks the editing flow so we want to
+      // ensure it's unset even if publish fails, to avoid blocking the user from making further edits
+      return await updatePageById(
+        {
+          id: resourceId,
+          siteId,
+          scheduledAt: null,
+        },
+        tx,
+      )
     })
     // No page found or not scheduled, exit (logging handled above)
     if (!page) return
@@ -199,7 +199,7 @@ export const publishScheduledResource = async (
       )
       return
     }
-    const { version } = await publishPageResource({
+    return await publishPageResource({
       logger,
       siteId,
       resourceId: page.id,
@@ -207,7 +207,6 @@ export const publishScheduledResource = async (
       isScheduled: true,
       addCodebuildJobRow: gb.isOn(ENABLE_CODEBUILD_JOBS),
     })
-    return version
   } catch (error) {
     // If we fail to acquire the lock, it means another worker is processing this resource and we can exit gracefully
     if (error instanceof ResourceLockedError) {
