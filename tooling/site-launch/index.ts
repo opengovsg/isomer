@@ -44,12 +44,12 @@ const launch = async () => {
     const repo = await input({
       message: "Enter the github repo for the site (eg: `isomer-corp`):",
     })
-    await archiveRepo(repo)
     const status = await checkLastBuild(codebuildId)
     if (status !== "SUCCEED") {
       console.log("The last build of the site failed - please fix!")
     }
 
+    await archiveRepo(repo)
     await createSearchSgClientForGithub({ domain, name: long, repo })
     const siteId = await createBaseSiteInStudio({
       name: long,
