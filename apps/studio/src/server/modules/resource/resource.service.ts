@@ -612,23 +612,29 @@ export const publishPageResource = async ({
     })
 
   // Step 2: Trigger a publish of the site
-  const build = await publishSite(tx, logger, siteId)
+  const buildChanges = await publishSite(logger, siteId)
 
   // Step 3: Save the build info if the build was triggered
-  if (build)
-    await db
-      .insertInto("CodeBuildJobs")
-      .values({
-        siteId,
-        userId: user.id,
-        buildId: build.buildId,
-        startedAt: build.startTime,
-        resourceId,
-        status: "IN_PROGRESS", // default to in progress, will be updated by webhook
-        isScheduled,
+  // mark the superseded build if applicable
+  if (buildChanges) {
+    const { startedBuild, stoppedBuild } = buildChanges
+    if (!startedBuild?.startTime || !startedBuild.id) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message:
+          "An unexpected error occurred when trying to start a new build",
       })
-      .execute()
-
+    }
+    await addCodeBuildAndMarkSupersededBuild({
+      stoppedBuildId: stoppedBuild?.id,
+      startedBuildId: startedBuild.id,
+      startedAt: startedBuild.startTime,
+      resourceId,
+      siteId,
+      userId: user.id,
+      isScheduled,
+    })
+  }
   return { version }
 }
 
@@ -664,7 +670,7 @@ export const publishResource = async (
       metadata: resource,
     })
 
-    await publishSite(tx, logger, resource.siteId)
+    await publishSite(logger, resource.siteId)
   })
 }
 
@@ -700,7 +706,7 @@ export const publishSiteConfig = async (
       metadata: { site, ...rest },
     })
 
-    await publishSite(tx, logger, site.id)
+    await publishSite(logger, site.id)
   })
 }
 
@@ -977,4 +983,66 @@ export const getFullResourceByVersion = (versionId: string) => {
     .where("Version.id", "=", versionId)
     .select(defaultResourceWithBlobSelect)
     .executeTakeFirst()
+}
+
+/**
+ * Mark a stopped build and any builds it has superseded as being superseded by
+ * the newly started build.
+ * @param tx Transaction
+ * @param stoppedBuildId The build ID of the stopped build
+ * @param startedBuildId The build ID of the newly started build
+ */
+export const addCodeBuildAndMarkSupersededBuild = async ({
+  stoppedBuildId,
+  startedBuildId,
+  startedAt,
+  resourceId,
+  siteId,
+  userId,
+  isScheduled,
+}: {
+  stoppedBuildId?: string
+  startedBuildId: string
+  startedAt: Date
+  resourceId: string
+  siteId: number
+  userId: string
+  isScheduled: boolean
+}) => {
+  await db.transaction().execute(async (tx) => {
+    // Add the newly started build to the codebuild jobs table
+    await tx
+      .insertInto("CodeBuildJobs")
+      .values({
+        siteId,
+        userId,
+        buildId: startedBuildId,
+        startedAt,
+        resourceId,
+        isScheduled,
+      })
+      .execute()
+
+    if (!stoppedBuildId) return // No stopped build to mark as superseded
+
+    // Find all builds that have been superseded by the stopped build and replace them as being superseded
+    // by the newly started build. This is to handle multi-superseded A -> B - > C scenarios
+    const buildsSupersededByStoppedBuild = await tx
+      .selectFrom("CodeBuildJobs")
+      .select("buildId")
+      .where("supersededByBuildId", "=", stoppedBuildId)
+      .execute()
+      .then((rows) => rows.map((row) => row.buildId))
+
+    await tx
+      .updateTable("CodeBuildJobs")
+      // Mark the stopped build and any builds it has superseded as being superseded by the newly started build
+      // and mark them as stopped
+      .set({ supersededByBuildId: startedBuildId, status: "STOPPED" })
+      .where("buildId", "in", [
+        stoppedBuildId,
+        ...buildsSupersededByStoppedBuild,
+      ])
+      .execute()
+  })
 }
