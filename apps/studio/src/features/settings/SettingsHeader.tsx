@@ -5,13 +5,11 @@ import { IconType } from "react-icons"
 interface SettingsHeaderProps {
   title: string
   icon: IconType
-  canPublish?: boolean
   isLoading?: boolean
 }
 export const SettingsHeader = ({
   title,
   icon,
-  canPublish,
   isLoading,
 }: SettingsHeaderProps) => {
   return (
@@ -32,7 +30,7 @@ export const SettingsHeader = ({
           {title}
         </Text>
       </Flex>
-      <Button type="submit" isDisabled={!canPublish} isLoading={isLoading}>
+      <Button type="submit" isLoading={isLoading}>
         <Text>Publish changes</Text>
       </Button>
     </Flex>

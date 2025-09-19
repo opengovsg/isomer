@@ -13,45 +13,54 @@ import { NotificationSchema } from "~/interfaces/internal/Notification"
 
 export const SiteConfigSchema = Type.Object({
   siteName: Type.String({
-    title: "Name of the site",
-    description: "The name of the site, displayed in the footer.",
+    title: "Site name",
+    description:
+      "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage.",
   }),
   url: Type.String({
     title: "Base URL of the site",
     description: "The base URL of the site.",
+    format: "hidden",
   }),
   agencyName: Type.Optional(
     Type.String({
-      title: "Agency name",
-      description:
-        "The name of the agency, displayed in the copyright footer for non-Government websites.",
+      title: "Website is owned by",
+      description: "This isn't displayed anywhere on your site",
+      format: "disabled",
     }),
   ),
   theme: Type.Union(
     [Type.Literal("isomer-classic"), Type.Literal("isomer-next")],
-    { default: "isomer-next" },
+    {
+      default: "isomer-next",
+      format: "hidden",
+    },
   ),
   logoUrl: Type.String({
     title: "Logo URL",
     description: "The URL of the logo to be displayed in the navbar.",
+    format: "hidden",
   }),
   isGovernment: Type.Optional(
     Type.Boolean({
       title: "Is this a Government site?",
       description:
         "Whether the site is a Government site, affects the display of the masthead and the copyright footer.",
+      format: "hidden",
     }),
   ),
   favicon: Type.Optional(
     Type.String({
       title: "Favicon URL",
       description: "The URL of the favicon to be displayed in the browser tab.",
+      format: "hidden",
     }),
   ),
   search: Type.Optional(
     Type.Union([LocalSearchSchema, SearchSGSearchSchema], {
       title: "Search configuration",
       description: "Configuration for the search functionality of the site.",
+      format: "hidden",
     }),
   ),
   notification: Type.Optional(NotificationSchema),
@@ -60,6 +69,7 @@ export const SiteConfigSchema = Type.Object({
       title: "Google Tag Manager ID",
       description:
         "The Google Tag Manager ID for the site, used for tracking and analytics.",
+      format: "hidden",
     }),
   ),
   vica: Type.Optional(VicaSchema),
