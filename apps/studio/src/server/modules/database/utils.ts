@@ -5,6 +5,7 @@ import type {
   Simplify,
   Transaction,
 } from "kysely"
+import type pino from "pino"
 import { sql } from "kysely"
 import { type DrainOuterGeneric } from "kysely/dist/cjs/util/type-utils"
 import { jsonArrayFrom, jsonObjectFrom } from "kysely/helpers/postgres"
@@ -77,6 +78,7 @@ export function integer(value: number): RawBuilder<number> {
  */
 export const withTransactionRetry = async <T>(
   db: Kysely<DB>,
+  logger: pino.Logger<string>,
   fn: (tx: Transaction<DB>) => Promise<T>,
   {
     maxAttempts = 5,
@@ -91,13 +93,19 @@ export const withTransactionRetry = async <T>(
   } = {},
 ): Promise<T> => {
   const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+  const toRetry = (err: unknown, attempt: number) =>
+    isTransientDbError(err) && attempt < maxAttempts
   let attempt = 0
   while (true) {
     attempt++
     try {
       return await db.transaction().execute(fn)
     } catch (err) {
-      if (attempt < maxAttempts) {
+      logger.warn(
+        { err, attempt, maxAttempts, toRetry: toRetry(err, attempt) },
+        "Transaction failed",
+      )
+      if (toRetry(err, attempt)) {
         // Exponential backoff with optional jitter
         let delay = Math.min(baseDelayMs * 2 ** (attempt - 1), maxDelayMs)
         if (jitter) {
@@ -110,4 +118,14 @@ export const withTransactionRetry = async <T>(
       throw err
     }
   }
+}
+
+/**
+ * Checks if the error is a transient database error.
+ * @param err The error object to check
+ * @returns True if the error is a transient database error, false otherwise
+ */
+const isTransientDbError = (err: unknown): boolean => {
+  const pgcode = (err as { code?: string }).code
+  return pgcode === "40001" || pgcode === "40P01"
 }
