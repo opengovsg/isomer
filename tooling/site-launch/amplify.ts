@@ -46,12 +46,12 @@ const listApps = async () => {
   return all
 }
 
-export const checkLastBuild = async (codebuildId: string) => {
+export const checkLastBuild = async (repo: string) => {
   const apps = await listApps()
-  const matchingApp = apps.find((app) => app.name === `${codebuildId}-next`)
+  const matchingApp = apps.find((app) => app.name === repo)
 
   if (!matchingApp) {
-    console.log(`No matching app found for codebuildId: ${codebuildId}`)
+    console.log(`No matching app found for codebuildId: ${repo}`)
     console.log(
       "Please ensure that the CodeBuild ID is correct and check the last build on amplify manually",
     )
