@@ -4,10 +4,10 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 
 import SitePage from "~/pages/sites/[siteId]"
-import { COMMON_HANDLERS } from "../handlers"
+import { ADMIN_HANDLERS } from "../handlers"
 
 const SHARED_HANDLERS = [
-  ...COMMON_HANDLERS,
+  ...ADMIN_HANDLERS,
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
   pageHandlers.countWithoutRoot.default(),

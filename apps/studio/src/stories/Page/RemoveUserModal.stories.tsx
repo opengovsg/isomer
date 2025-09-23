@@ -5,10 +5,10 @@ import { userHandlers } from "tests/msw/handlers/user"
 import UsersPage from "~/pages/sites/[siteId]/users"
 import { ResetRemoveUserModalDecorator } from "~/stories/decorators/resetModalState"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
-import { COMMON_HANDLERS } from "../handlers"
+import { ADMIN_HANDLERS } from "../handlers"
 
 const SHARED_HANDLERS = [
-  ...COMMON_HANDLERS,
+  ...ADMIN_HANDLERS,
   userHandlers.list.removeUserModal(),
   userHandlers.getUser.default(),
 ]

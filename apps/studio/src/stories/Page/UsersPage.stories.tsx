@@ -6,7 +6,7 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
 
 import UsersPage from "~/pages/sites/[siteId]/users"
-import { COMMON_HANDLERS } from "../handlers"
+import { ADMIN_HANDLERS } from "../handlers"
 
 const meta: Meta<typeof UsersPage> = {
   title: "Pages/Site Management/Users Page",
@@ -14,7 +14,7 @@ const meta: Meta<typeof UsersPage> = {
   parameters: {
     getLayout: UsersPage.getLayout,
     msw: {
-      handlers: COMMON_HANDLERS,
+      handlers: ADMIN_HANDLERS,
     },
     nextjs: {
       router: {
@@ -34,7 +34,7 @@ export const Admin: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...ADMIN_HANDLERS,
         resourceHandlers.getRolesFor.admin(),
         userHandlers.list.users(),
       ],
@@ -46,7 +46,7 @@ export const Publisher: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...ADMIN_HANDLERS,
         resourceHandlers.getRolesFor.publisher(),
         userHandlers.list.users(),
       ],
@@ -58,7 +58,7 @@ export const Editor: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...ADMIN_HANDLERS,
         resourceHandlers.getRolesFor.editor(),
         userHandlers.list.users(),
       ],
@@ -70,7 +70,7 @@ export const ExpandedMenu: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...ADMIN_HANDLERS,
         resourceHandlers.getRolesFor.admin(),
         userHandlers.list.users(),
       ],
@@ -89,7 +89,7 @@ export const IsomerAdminsTab: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...ADMIN_HANDLERS,
         resourceHandlers.getRolesFor.admin(),
         userHandlers.list.isomerAdmins(),
       ],

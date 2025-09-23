@@ -5,7 +5,7 @@ import { userHandlers } from "tests/msw/handlers/user"
 import UsersPage from "~/pages/sites/[siteId]/users"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
 import { ResetEditUserModalDecorator } from "../decorators/resetModalState"
-import { COMMON_HANDLERS } from "../handlers"
+import { ADMIN_HANDLERS } from "../handlers"
 
 const meta: Meta<typeof UsersPage> = {
   title: "Pages/Site Management/Users Page/Edit User Modal",
@@ -14,7 +14,7 @@ const meta: Meta<typeof UsersPage> = {
     getLayout: UsersPage.getLayout,
     growthbook: [createSingpassEnabledGbParameters(true)],
     msw: {
-      handlers: COMMON_HANDLERS,
+      handlers: ADMIN_HANDLERS,
     },
     nextjs: {
       router: {
@@ -67,7 +67,7 @@ export const AdminWarningBanner: Story = {
 export const Loading: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS, userHandlers.update.loading()],
+      handlers: [...ADMIN_HANDLERS, userHandlers.update.loading()],
     },
   },
   play: async (context) => {
@@ -84,7 +84,7 @@ export const Loading: Story = {
 export const ToastAfterEditingUser: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS, userHandlers.update.success()],
+      handlers: [...ADMIN_HANDLERS, userHandlers.update.success()],
     },
   },
   play: async (context) => {

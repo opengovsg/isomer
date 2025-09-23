@@ -3,7 +3,7 @@ import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
 
-export const COMMON_HANDLERS = [
+export const ADMIN_HANDLERS = [
   meHandlers.me(),
   resourceHandlers.getRolesFor.admin(),
   sitesHandlers.getSiteName.default(),
