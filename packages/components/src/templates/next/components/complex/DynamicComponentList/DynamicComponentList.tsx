@@ -43,7 +43,6 @@ const DynamicComponentList = ({
 
   switch (component.type) {
     // Disabling for now so its easier to extend in the future
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     case CONTACT_INFORMATION_TYPE:
       return (
         records ?? Array.from({ length: DEFAULT_NUMBER_OF_RECORDS_FOR_LOADING })
@@ -60,7 +59,7 @@ const DynamicComponentList = ({
 
     default:
       const _exhaustiveCheck: never = component.type
-      return _exhaustiveCheck
+      return <></>
   }
 }
 
