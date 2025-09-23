@@ -73,7 +73,6 @@ const launch = async () => {
         "Remember to remove the `assets-mapping.csv` after you have passed the file to prod-ops!",
     })
   } else {
-    // TODO: create site
     await createSearchSgClientForStudio({ domain, name: long })
   }
 

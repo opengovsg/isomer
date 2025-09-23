@@ -247,7 +247,10 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
   await importFooter(client, siteId, siteName);
 }
 
-async function createBlob(client: Client, content: any): Promise<number> {
+export async function createBlob(
+  client: Client,
+  content: any,
+): Promise<number> {
   if (!content.page) {
     // For _meta.json
     const result = await client.query(
@@ -270,7 +273,7 @@ async function createBlob(client: Client, content: any): Promise<number> {
   return result.rows[0].id;
 }
 
-async function createResource(
+export async function createResource(
   client: Client,
   {
     title,
@@ -301,7 +304,7 @@ async function createResource(
   return result.rows[0].id;
 }
 
-async function createVersion(
+export async function createVersion(
   client: Client,
   resourceId: number,
   blobId: number,

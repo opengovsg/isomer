@@ -1,5 +1,13 @@
 import { Client } from "pg"
 
+import {
+  createBlob,
+  createResource,
+  createVersion,
+} from "@isomer/seed-from-repo"
+
+import searchJson from "./search.json"
+
 interface CreateBaseSiteProps {
   name: string
   codeBuildId: string
@@ -90,7 +98,7 @@ export const getSiteConfig = async (siteId: number) => {
   })
 }
 
-export const createSearchPageForSite = async (
+export const updateSiteConfigWithSearch = async (
   siteId: number,
   url: string,
   clientId: string,
@@ -114,5 +122,39 @@ export const createSearchPageForSite = async (
 
     console.log(result.rows[0])
     return result.rows[0]
+  })
+}
+
+const getSearchResourceForSite = async (siteId: number) => {
+  return await runDbAction(async (client) => {
+    return client.query(
+      `SELECT id from public."Resource" where "Resource"."permalink" = 'search' and "Resource"."siteId" = $1`,
+      [siteId],
+    )
+  })
+}
+
+export const createSearchPageForSite = async (siteId: number) => {
+  const existingSearchResource = await getSearchResourceForSite(siteId)
+  if (
+    existingSearchResource &&
+    existingSearchResource.rowCount &&
+    existingSearchResource.rowCount > 0
+  )
+    return existingSearchResource.rows[0].id as string
+
+  await runDbAction<number>(async (client) => {
+    const blobId = await createBlob(client, searchJson)
+    const resourceId = await createResource(client, {
+      title: "Search",
+      permalink: "search",
+      type: "Page",
+      siteId,
+      parentId: null,
+    })
+
+    await createVersion(client, resourceId, blobId)
+
+    return resourceId
   })
 }

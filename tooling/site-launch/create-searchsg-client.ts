@@ -2,7 +2,11 @@ import { writeFileSync } from "fs"
 import { confirm, input } from "@inquirer/prompts"
 import axios from "axios"
 import { addSearchJson, readSiteConfig, updateSiteConfig } from "github"
-import { createSearchPageForSite, getSiteTheme } from "site"
+import {
+  createSearchPageForSite,
+  getSiteTheme,
+  updateSiteConfigWithSearch,
+} from "site"
 
 const BASE_SEARCHSG_URL = "https://api.services.search.gov.sg/admin/v1"
 const ISOMER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
@@ -153,7 +157,6 @@ export const createSearchSgClientForStudio = async ({
   domain,
   name,
 }: CreateSearchSgClientParams) => {
-  // TODO: validate this to be #[0-9A-F]{6}
   const rawSiteId = await input({
     message: "Enter the `siteId` of the site:",
   })
@@ -176,7 +179,8 @@ export const createSearchSgClientForStudio = async ({
 
   const url = `https://${domain}`
 
-  await createSearchPageForSite(siteId, url, applicationId)
+  await updateSiteConfigWithSearch(siteId, url, applicationId)
+  await createSearchPageForSite(siteId)
 }
 
 const askForDomainAndName = async ({
