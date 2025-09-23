@@ -6,6 +6,7 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import type { DatabasePageSchemaType } from "~/engine"
 import { generateSiteConfig } from "~/stories/helpers"
 import Database from "./Database"
+import { HARDCODED_SMALL_DATASET_RESOURCE_ID } from "../../components/complex/SearchableTable/DGS/DGSSearchableTable.stories"
 
 const meta: Meta<typeof Database> = {
   title: "Next/Layouts/Database",
@@ -913,7 +914,7 @@ export const DGSSearchableTable: Story = {
       title: "Sample DGS Table",
       dataSource: {
         type: "dgs",
-        resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+        resourceId: HARDCODED_SMALL_DATASET_RESOURCE_ID,
       },
     },
   }),
@@ -925,7 +926,7 @@ export const DGSSearchableTableWithDefaultTitle: Story = {
     database: {
       dataSource: {
         type: "dgs",
-        resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+        resourceId: HARDCODED_SMALL_DATASET_RESOURCE_ID,
       },
     },
   }),
@@ -938,7 +939,7 @@ export const DGSSearchableTableWithHeaders: Story = {
       title: "Sample DGS Table",
       dataSource: {
         type: "dgs",
-        resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+        resourceId: HARDCODED_SMALL_DATASET_RESOURCE_ID,
       },
       headers: [
         { label: "Year", key: "year" },
