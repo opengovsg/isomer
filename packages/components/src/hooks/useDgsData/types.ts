@@ -1,9 +1,10 @@
+// Reference: https://guide.data.gov.sg/developer-guide/dataset-apis/search-and-filter-within-dataset
 // not using "fields" to prevent runtime errors,
 // as DGS returns errors for invalid fields,
 // which can change unpredictably if admins update the dataset schema.
 export interface DgsApiDatasetSearchParams {
-  q?: string // query string
   resourceId: string
+  q?: string // query string
   limit?: number
   offset?: number
   // fields?: string // comma separated list of fields to fetch
