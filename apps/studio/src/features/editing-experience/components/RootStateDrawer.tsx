@@ -13,8 +13,7 @@ import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
-import { TbDatabase } from "react-icons/tb"
+import { BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
 import { Disable } from "~/components/Disable"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
@@ -350,7 +349,7 @@ export default function RootStateDrawer() {
                       }}
                       label="Database"
                       description="Link your dataset from Data.gov.sg"
-                      icon={TbDatabase}
+                      icon={BiData}
                     />
                   </VStack>
                 ) : (
