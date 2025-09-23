@@ -56,10 +56,7 @@ export const directDownloadStrategy: DownloadStrategy = {
     try {
       const metadata = await fetchFileMetadata({ url })
       if (metadata) {
-        return renderDownloadText({
-          format: metadata.format,
-          size: metadata.size,
-        })
+        return renderDownloadText(metadata)
       }
     } catch (error) {
       console.error("Error fetching file metadata:", error)
