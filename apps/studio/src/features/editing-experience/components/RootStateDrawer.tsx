@@ -5,7 +5,6 @@ import {
   Button,
   Flex,
   Icon,
-  Link,
   Text,
   useDisclosure,
   VStack,
@@ -296,23 +295,6 @@ export default function RootStateDrawer() {
               <Text textStyle="body-2">
                 This page is scheduled for publishing. To make changes, cancel
                 the schedule first.
-              </Text>
-            </Infobox>
-          )}
-          {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Database && (
-            <Infobox
-              size="sm"
-              border="1px solid"
-              borderColor="utility.feedback.info"
-              borderRadius="0.25rem"
-            >
-              <Text textStyle="body-2">
-                You are using a beta layout. We’d love to hear about how you’re
-                using this layout, so that we can make it more useful for you.{" "}
-                {/* To update this link */}
-                <Link href="https://www.isomer.gov.sg" target="_blank">
-                  Share your thoughts
-                </Link>
               </Text>
             </Infobox>
           )}
