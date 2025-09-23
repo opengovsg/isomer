@@ -5,8 +5,8 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { DatabasePageSchemaType } from "~/engine"
 import { generateSiteConfig } from "~/stories/helpers"
-import Database from "./Database"
 import { HARDCODED_SMALL_DATASET_RESOURCE_ID } from "../../components/complex/SearchableTable/DGS/DGSSearchableTable.stories"
+import Database from "./Database"
 
 const meta: Meta<typeof Database> = {
   title: "Next/Layouts/Database",
