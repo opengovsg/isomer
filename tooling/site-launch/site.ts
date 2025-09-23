@@ -158,3 +158,18 @@ export const createSearchPageForSite = async (siteId: number) => {
     return resourceId
   })
 }
+
+export const updateCodebuildId = async (
+  siteId: number,
+  codebuildId: string,
+) => {
+  return await runDbAction<string>(async (client) => {
+    const result = await client.query(
+      `UPDATE public."Site" SET codeBuildId = $1 WHERE "id" = $2 RETURNING config`,
+      [codebuildId, siteId],
+    )
+
+    console.log(result.rows[0])
+    return result.rows[0]
+  })
+}

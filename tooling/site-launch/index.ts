@@ -11,7 +11,11 @@ import { archiveRepo } from "./github"
 import { createIndirection } from "./indirection"
 import { requestAcmViaClient } from "./request-acm"
 import { s3sync } from "./s3"
-import { createBaseSiteInStudio } from "./site"
+import {
+  createBaseSiteInStudio,
+  createSearchPageForSite,
+  updateCodebuildId,
+} from "./site"
 
 const profile = process.env.AWS_PROFILE
 
@@ -58,6 +62,8 @@ const launch = async () => {
       codeBuildId: codebuildId,
     })
 
+    await updateCodebuildId(siteId, codebuildId)
+
     await migrate(repo, siteId)
 
     await s3sync(siteId)
@@ -73,7 +79,14 @@ const launch = async () => {
         "Remember to remove the `assets-mapping.csv` after you have passed the file to prod-ops!",
     })
   } else {
-    await createSearchSgClientForStudio({ domain, name: long })
+    const rawSiteId = await input({
+      message: "Enter the `siteId` of the site:",
+    })
+
+    const siteId = Number(rawSiteId)
+    await createSearchSgClientForStudio({ siteId, domain, name: long })
+    await updateCodebuildId(siteId, codebuildId)
+    await createSearchPageForSite(siteId)
   }
 
   const hasInfra = await confirm({
