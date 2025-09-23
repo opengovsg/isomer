@@ -2,7 +2,7 @@ import { writeFileSync } from "fs"
 import { confirm, input } from "@inquirer/prompts"
 import axios from "axios"
 import { addSearchJson, readSiteConfig, updateSiteConfig } from "github"
-import { getSiteTheme } from "site"
+import { createSearchPageForSite, getSiteTheme } from "site"
 
 const BASE_SEARCHSG_URL = "https://api.services.search.gov.sg/admin/v1"
 const ISOMER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
@@ -154,11 +154,13 @@ export const createSearchSgClientForStudio = async ({
   name,
 }: CreateSearchSgClientParams) => {
   // TODO: validate this to be #[0-9A-F]{6}
-  const siteId = await input({
+  const rawSiteId = await input({
     message: "Enter the `siteId` of the site:",
   })
 
-  const { theme } = await getSiteTheme(Number(siteId))
+  const siteId = Number(rawSiteId)
+
+  const { theme } = await getSiteTheme(siteId)
 
   const { displayedName, dataDomain } = await askForDomainAndName({
     domain,
@@ -172,33 +174,9 @@ export const createSearchSgClientForStudio = async ({
     primary: theme.colors.brand.canvas.inverse,
   })
 
-  const searchConfigJson = {
-    search: {
-      type: "searchSG",
-      clientId: applicationId,
-    },
-  }
+  const url = `https://${domain}`
 
-  const urlJson = {
-    url: `https://${domain}`,
-  }
-
-  const searchJsonRelativePath = `${domain}.search.json`
-  writeFileSync(`./${searchJsonRelativePath}`, JSON.stringify(searchConfigJson))
-
-  const urlRelativePath = `${domain}.url.json`
-  writeFileSync(`./${urlRelativePath}`, JSON.stringify(urlJson))
-
-  // TODO: Write to db
-  await confirm({
-    message: `Have you added the contents of ${searchJsonRelativePath} to Site.config?`,
-  })
-  await confirm({
-    message: `Have you added the contents of ${urlRelativePath} to Site.config?`,
-  })
-  await confirm({
-    message: `Have you added the contents of \`search.json\` to the site via Admin mode on Studio?`,
-  })
+  await createSearchPageForSite(siteId, url, applicationId)
 }
 
 const askForDomainAndName = async ({
