@@ -13,7 +13,6 @@ const ArticleLayout = ({
   layout,
   content,
   LinkComponent,
-  ScriptComponent,
 }: ArticlePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
@@ -37,7 +36,6 @@ const ArticleLayout = ({
       page={page}
       layout={layout}
       LinkComponent={LinkComponent}
-      ScriptComponent={ScriptComponent}
     >
       <div className="mx-auto flex max-w-[47.8rem] flex-col gap-7 px-6 md:px-10">
         <ArticlePageHeader

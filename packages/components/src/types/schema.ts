@@ -1,6 +1,6 @@
 import type { Static } from "@sinclair/typebox"
+import type { SimplifyDeep } from "type-fest"
 import { Type } from "@sinclair/typebox"
-import { SimplifyDeep } from "type-fest"
 
 import type { NotFoundPageMetaProps, SearchPageMetaProps } from "./meta"
 import type { IsomerSiteProps } from "./site"
@@ -14,7 +14,6 @@ import type {
   LinkComponentType,
   LinkRefPageProps,
   NotFoundPagePageProps,
-  ScriptComponentType,
   SearchPagePageProps,
 } from "~/types"
 import { IsomerComponentsSchemas } from "./components"
@@ -260,7 +259,6 @@ export type IsomerSchema = SimplifyDeep<Static<typeof IsomerPageSchema>>
 interface BasePageAdditionalProps {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
-  ScriptComponent?: ScriptComponentType
 }
 
 export interface NotFoundPageSchemaType extends BasePageAdditionalProps {
