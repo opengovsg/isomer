@@ -73,12 +73,14 @@ export const DefaultContactInformationUI = ({
 
       <div className={compoundStyles.contactMethodsContainer()}>
         {isLoading
-          ? Array(4).map((_, index) => (
-              <LoadingContactMethod
-                key={`loading-contact-method-${index}`}
-                styles={contactMethodStyles}
-              />
-            ))
+          ? Array(4)
+              .fill(null)
+              .map((_, index) => (
+                <LoadingContactMethod
+                  key={`loading-contact-method-${index}`}
+                  styles={contactMethodStyles}
+                />
+              ))
           : filteredMethods.map((method, index) => {
               return (
                 <ContactMethod
