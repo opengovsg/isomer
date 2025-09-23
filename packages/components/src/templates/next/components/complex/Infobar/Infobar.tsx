@@ -63,7 +63,7 @@ export const createInfobarStyles = tv({
       colorScheme: "light",
       layout: "homepage",
       className: {
-        outerContainer: "text-base-content",
+        outerContainer: "text-base-content-strong",
       },
     },
     {
