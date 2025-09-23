@@ -62,6 +62,11 @@ const BaseContactInformationSchema = Type.Object({
   ),
 })
 
+// arbitrary limit for now to prevent abuse
+// currently, in DGS case, having [dgs:XXX] means XXX (the column name)
+// is max length 24 (30-6)
+const CHARACTER_LIMIT = 30
+
 const InjectableContactInformationSchema = Type.Object(
   {
     title: Type.Optional(
@@ -94,19 +99,19 @@ const InjectableContactInformationSchema = Type.Object(
         label: Type.Optional(
           Type.String({
             title: "Label",
-            maxLength: 30, // arbitrarily low limit for now to prevent abuse
+            maxLength: CHARACTER_LIMIT,
           }),
         ),
         values: Type.Array(
           Type.String({
-            maxLength: 30, // arbitrarily low limit for now to prevent abuse
+            maxLength: CHARACTER_LIMIT,
           }),
           { minItems: 1 },
         ),
         caption: Type.Optional(
           Type.String({
             title: "Caption",
-            maxLength: 30, // arbitrarily low limit for now to prevent abuse
+            maxLength: CHARACTER_LIMIT,
           }),
         ),
       }),
