@@ -4,7 +4,6 @@ import type {
   IsomerSiteWideComponentsProps,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { z } from "zod"
 
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import {
