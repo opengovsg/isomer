@@ -39,7 +39,7 @@ export const requestAcmViaClient = async (domain: string) => {
   // Step 3: Write DNS record to file
   fs.writeFileSync(`./${domain}.ssl.conf`, `${Name}   ${Type}   ${Value}`)
 
-  // Step 4: Confirm with user and delete certificate if confirmed
+  // Step 4: Delete certificate for cleanliness
   const deleteCommand = new DeleteCertificateCommand({
     CertificateArn: certArn,
   })
