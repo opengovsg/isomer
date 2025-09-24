@@ -637,13 +637,15 @@ export const setupFullSite = async () => {
 export const setupCodeBuildJob = async ({
   userId,
   buildId,
-  buildStatus = "IN_PROGRESS",
   startedAt,
+  buildStatus = "IN_PROGRESS",
+  emailSent = false,
 }: {
   userId: CodeBuildJobs["userId"]
   buildId: CodeBuildJobs["buildId"]
   startedAt: CodeBuildJobs["startedAt"]
   buildStatus?: CodeBuildJobs["status"]
+  emailSent?: boolean
 }) => {
   const { page, site } = await setupPageResource({
     resourceType: ResourceType.Page,
@@ -657,6 +659,7 @@ export const setupCodeBuildJob = async ({
       startedAt,
       resourceId: page.id,
       status: buildStatus,
+      emailSent,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
