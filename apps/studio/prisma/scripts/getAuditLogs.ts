@@ -12,6 +12,7 @@ const __dirname = dirname(__filename)
 const SITES_WITH_AUDIT_LOGS = [
   1, // stb.gov.sg
   41, // ssg.gov.sg
+  46, // sportsingapore.gov.sg
   48, // muis.gov.sg
   50, // knowledgehub.clc.gov.sg
   53, // clc.gov.sg
