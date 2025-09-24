@@ -1,10 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { expect, userEvent, waitFor, within } from "@storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { DatabasePageSchemaType } from "~/engine"
-import { generateSiteConfig } from "~/stories/helpers"
+import {
+  DGS_SMALL_DATASET_RESOURCE_ID,
+  generateSiteConfig,
+} from "~/stories/helpers"
 import Database from "./Database"
 
 const meta: Meta<typeof Database> = {
@@ -899,10 +902,23 @@ export const NoSearchResults: Story = {
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
+
     const searchElem = screen.getByRole("searchbox", {
       name: /Search table/i,
     })
+
+    await expect(searchElem).toHaveAttribute(
+      "placeholder",
+      "Enter a search term",
+    )
+
     await userEvent.type(searchElem, "some whacky search term")
+
+    await waitFor(() => {
+      screen.getByText(
+        "Check if you have a spelling error or try a different search term.",
+      )
+    })
   },
 }
 
@@ -913,7 +929,7 @@ export const DGSSearchableTable: Story = {
       title: "Sample DGS Table",
       dataSource: {
         type: "dgs",
-        resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
       },
     },
   }),
@@ -925,7 +941,7 @@ export const DGSSearchableTableWithDefaultTitle: Story = {
     database: {
       dataSource: {
         type: "dgs",
-        resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
       },
     },
   }),
@@ -938,7 +954,7 @@ export const DGSSearchableTableWithHeaders: Story = {
       title: "Sample DGS Table",
       dataSource: {
         type: "dgs",
-        resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
       },
       headers: [
         { label: "Year", key: "year" },

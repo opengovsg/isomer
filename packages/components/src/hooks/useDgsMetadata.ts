@@ -7,13 +7,9 @@ import { fetchDgsMetadata } from "~/utils/dgs/fetchDgsMetadata"
 
 interface UseDgsMetadataProps {
   resourceId: string
-  enabled?: boolean
 }
 
-export const useDgsMetadata = ({
-  resourceId,
-  enabled = true,
-}: UseDgsMetadataProps) => {
+export const useDgsMetadata = ({ resourceId }: UseDgsMetadataProps) => {
   const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState(false)
   const [metadata, setMetadata] = useState<FetchDgsMetadataOutput | undefined>(
@@ -21,10 +17,6 @@ export const useDgsMetadata = ({
   )
 
   useEffect(() => {
-    if (!enabled) {
-      return
-    }
-
     const fetchMetadata = async () => {
       setIsLoading(true)
       try {
@@ -39,7 +31,7 @@ export const useDgsMetadata = ({
     }
 
     void fetchMetadata()
-  }, [resourceId, enabled])
+  }, [resourceId])
 
   return {
     metadata,
