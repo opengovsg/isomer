@@ -22,7 +22,9 @@ Before using this tool, ensure you have:
    - `AWS_PROFILE`: Your AWS profile name
    - `SEARCHSG_API_KEY`: API key for SearchSG integration. This is the base64 of the
    - `GITHUB_TOKEN`: GitHub personal access token with repo permissions
-   - `S3_URI`: The URI of the s3 bucket to upload to after the assets are migrated onto Studio
+   - `S3_BUCKET_URI`: The URI of the s3 bucket to upload to after the assets are migrated onto Studio
+   - `PUBLISHER_USER_ID`: This is the user ID of the user to assign as the publisher of all pages
+   - `DATABASE_URL`: This is the database connection string to the Studio database
 4. **Database connection** (for GitHub sites): Run `npm run db:connect` in the main project
 5. **Permissions**: Access to AWS ACM, CloudFront, and GitHub repositories
 
