@@ -29,9 +29,8 @@ export const requestAcm = async (domain: string) => {
   // NOTE: sleep for 1s so records are confirm generated
   await new Promise((resolve) => setTimeout(resolve, 1000))
 
-  const { Name: _Name, Type: _Type, Value: _Value } = JSON.parse(rawCert)
+  const { Name: _Name, Type, Value: _Value } = JSON.parse(rawCert)
   const Name = _Name.slice(0, -1)
-  const Type = _Type.slice(0, -1)
   const Value = _Value.slice(0, -1)
   console.log(`${Name}   ${Type}   ${Value}`)
 
@@ -67,7 +66,9 @@ export const requestAcmViaClient = async (domain: string) => {
     throw new Error("No DNS validation record found")
   }
 
-  const { Name, Type, Value } = resourceRecord
+  const { Name: _Name, Type, Value: _Value } = resourceRecord
+  const Name = _Name?.slice(0, -1)
+  const Value = _Value?.slice(0, -1)
   console.log(`${Name}   ${Type}   ${Value}`)
 
   // Step 3: Write DNS record to file
