@@ -104,14 +104,14 @@ describe("webhook", () => {
     it("requests missing an API key causes a 401", async () => {
       // Arrange
       const user = await setupUser(createTestUser())
-      const { codebuildJob, site } = await setupCodeBuildJob({
+      const { site } = await setupCodeBuildJob({
         userId: user.id,
-        buildId: "test-build-id",
+        arn: "build/test-id",
         startedAt: new Date(),
       })
       const { req, res } = createMockRequest({
         siteId: site.id,
-        buildId: codebuildJob.buildId,
+        arn: "build/test-id",
         apiKey: "wrong-api-key",
       })
 
