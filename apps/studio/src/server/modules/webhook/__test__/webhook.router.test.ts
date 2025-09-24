@@ -13,6 +13,7 @@ import {
   sendSuccessfulScheduledPublishEmail,
 } from "~/features/mail/service"
 import { createCallerFactory } from "~/server/trpc"
+import { db } from "../../database"
 import { webhookRouter } from "../webhook.router"
 
 // Mock the publishSite function to avoid sending emails
@@ -69,6 +70,21 @@ describe("webhook.router", async () => {
         recipientEmail: user.email,
         publishTime: FIXED_NOW,
       })
+      // check the codebuildjobs table to see if the status has been updated
+      await db
+        .selectFrom("CodeBuildJobs")
+        .where("buildId", "=", codebuildJob.buildId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+        .then((job) => {
+          // expect the job status to be updated to SUCCEEDED, and emailSent to be true
+          expect(job).toEqual(
+            expect.objectContaining({
+              status: "SUCCEEDED",
+              emailSent: true,
+            }),
+          )
+        })
     })
     it("updates the codebuildjobs table based on the received webhook - failure", async () => {
       // Arrange
@@ -91,6 +107,21 @@ describe("webhook.router", async () => {
       expect(sendFailedSchedulePublishEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
       })
+      // check the codebuildjobs table to see if the status has been updated
+      await db
+        .selectFrom("CodeBuildJobs")
+        .where("buildId", "=", codebuildJob.buildId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+        .then((job) => {
+          // expect the job status to be updated to SUCCEEDED, and emailSent to be true
+          expect(job).toEqual(
+            expect.objectContaining({
+              status: "FAILED",
+              emailSent: true,
+            }),
+          )
+        })
     })
     it("do not send an email if the status has not changed", async () => {
       // Arrange
