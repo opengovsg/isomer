@@ -5,50 +5,18 @@ const {
   StartJobCommand,
 } = require("@aws-sdk/client-amplify")
 const fs = require("fs")
-const crypto = require("crypto")
 require("dotenv").config()
+const { generatePassword } = require("./utils")
+const { AMPLIFY_BUILD_SPEC } = require("./constants")
 
 // TODO: UPDATE THIS TO THE ACTUAL APPS
 const REPO_NAMES = ["hello-adrian-test-script-next"]
-
-const AMPLIFY_BUILD_SPEC = `
-version: 1
-frontend:
-  phases:
-    preBuild:
-      commands:
-        - rm -rf node_modules && rm -rf .next
-        - curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash
-    build:
-      commands:
-        - curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/build.sh | bash
-  artifacts:
-    baseDirectory: out
-    files:
-      - '**/*'
-`
 
 const amplifyClient = new AmplifyClient({
   region: "ap-southeast-1",
   retryMode: "standard",
   maxAttempts: 3,
 })
-
-// Function to generate a secure random password using Node.js crypto module
-const generatePassword = () => {
-  let password = ""
-
-  // Keep generating until we have at least 12 characters
-  while (password.length < 12) {
-    const randomString = crypto
-      .randomBytes(16)
-      .toString("base64")
-      .replace(/[+/=]/g, "")
-    password += randomString
-  }
-
-  return password.substring(0, 12)
-}
 
 const createApp = (appName) => {
   console.log(`🚀 Creating Amplify app: ${appName}`)
