@@ -25,32 +25,32 @@ async function getLastBuild(appId: string, branchName = "staging") {
   return response.jobSummaries?.[0] // Returns the latest build job
 }
 
-const listApps = async () => {
-  const all = []
-  let hasNext = true
+const findAppByName = async (name: string) => {
   let token: string | undefined
 
-  while (hasNext) {
+  while (true) {
     const { apps, nextToken } = await client.send(
       new ListAppsCommand({ maxResults: 100, nextToken: token }),
     )
+
+    const matchingApp = apps?.find((app) => app.name === name)
+
+    if (matchingApp) return matchingApp
 
     if (!nextToken) {
       break
     }
 
-    all.push(...(apps ?? []))
     token = nextToken
   }
 
-  return all
+  return
 }
 
 export const checkLastBuild = async (repo: string) => {
-  const apps = await listApps()
-  const matchingApp = apps.find((app) => app.name === repo)
+  const app = await findAppByName(repo)
 
-  if (!matchingApp) {
+  if (!app) {
     console.log(`No matching app found for codebuildId: ${repo}`)
     console.log(
       "Please ensure that the CodeBuild ID is correct and check the last build on amplify manually",
@@ -59,7 +59,7 @@ export const checkLastBuild = async (repo: string) => {
     return
   }
 
-  const lastBuild = await getLastBuild(matchingApp.appId!)
+  const lastBuild = await getLastBuild(app.appId!)
 
   return lastBuild?.status
 }
