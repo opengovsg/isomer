@@ -151,7 +151,7 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
             type: "IndexPage",
             siteId,
           });
-          await createVersion(client, resourceId, blobId);
+          await createFirstVersion(client, resourceId, blobId);
 
           await processDirectory(fullPath, folderResourceId, true);
         } else {
@@ -172,7 +172,7 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
             type: "IndexPage",
             siteId,
           });
-          await createVersion(client, resourceId, blobId);
+          await createFirstVersion(client, resourceId, blobId);
 
           await processDirectory(fullPath, folderResourceId);
         }
@@ -195,7 +195,7 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
           type: "IndexPage",
           siteId,
         });
-        await createVersion(client, resourceId, blobId);
+        await createFirstVersion(client, resourceId, blobId);
 
         await processDirectory(fullPath, folderResourceId);
       }
@@ -235,7 +235,7 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
               : "Page",
         siteId,
       });
-      await createVersion(client, resourceId, blobId);
+      await createFirstVersion(client, resourceId, blobId);
     }
   }
 
@@ -304,7 +304,7 @@ export async function createResource(
   return result.rows[0].id;
 }
 
-export async function createVersion(
+export async function createFirstVersion(
   client: Client,
   resourceId: number,
   blobId: number,

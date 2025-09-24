@@ -2,8 +2,8 @@ import { Client } from "pg"
 
 import {
   createBlob,
+  createFirstVersion,
   createResource,
-  createVersion,
 } from "@isomer/seed-from-repo"
 
 import searchJson from "./search.json"
@@ -153,7 +153,7 @@ export const createSearchPageForSite = async (siteId: number) => {
       parentId: null,
     })
 
-    await createVersion(client, resourceId, blobId)
+    await createFirstVersion(client, resourceId, blobId)
 
     return resourceId
   })
