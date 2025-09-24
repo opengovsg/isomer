@@ -31,6 +31,8 @@ import {
   OrderedListSchema,
   ParagraphSchema,
   ProseSchema,
+  SEARCHABLE_TABLE_TYPE,
+  SearchableTableSchema,
   TableSchema,
   UnorderedListSchema,
   VideoSchema,
@@ -57,6 +59,7 @@ export const IsomerComplexComponentsMap = {
   logocloud: LogoCloudSchema,
   [COLLECTION_BLOCK_TYPE]: CollectionBlockSchema,
   [IMAGE_GALLERY_TYPE]: ImageGallerySchema,
+  [SEARCHABLE_TABLE_TYPE]: SearchableTableSchema,
 }
 
 export const IsomerNativeComponentsMap = {

@@ -4,11 +4,13 @@ import {
   COLLECTION_BLOCK_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
+  SEARCHABLE_TABLE_TYPE,
 } from "@opengovsg/isomer-components"
 import {
   BiChevronDown,
   BiCloud,
   BiCrown,
+  BiData,
   BiHash,
   BiImage,
   BiImages,
@@ -18,10 +20,11 @@ import {
   BiMoviePlay,
   BiPointer,
   BiSolidQuoteAltLeft,
+  BiTable,
   BiText,
 } from "react-icons/bi"
 import { FaYoutube } from "react-icons/fa"
-import { TbApi, TbDatabase } from "react-icons/tb"
+import { TbApi } from "react-icons/tb"
 
 import { ContentpicIcon } from "./components/icons/Contentpic"
 import { FormSGIcon } from "./components/icons/FormSG"
@@ -51,7 +54,8 @@ export const TYPE_TO_ICON: Record<
   logocloud: BiCloud,
   blockquote: BiMessageDots,
   [DYNAMIC_DATA_BANNER_TYPE]: TbApi,
-  [COLLECTION_BLOCK_TYPE]: TbDatabase,
+  [COLLECTION_BLOCK_TYPE]: BiData,
   [IMAGE_GALLERY_TYPE]: BiImages,
   childrenpages: BiListUl,
+  [SEARCHABLE_TABLE_TYPE]: BiTable,
 }

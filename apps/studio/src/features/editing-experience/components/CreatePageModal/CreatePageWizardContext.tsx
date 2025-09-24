@@ -7,6 +7,7 @@ import { merge } from "lodash"
 
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
+import databaseLayoutPreview from "~/features/editing-experience/data/databaseLayoutPreview.json"
 import { useZodForm } from "~/lib/form"
 import { createPageSchema } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
@@ -75,8 +76,18 @@ const useCreatePageWizardContext = ({
     )
 
   const layoutPreviewJson: IsomerSchema = useMemo(() => {
-    const jsonPreview =
-      layout === "content" ? contentLayoutPreview : articleLayoutPreview
+    let jsonPreview
+    switch (layout) {
+      case "content":
+        jsonPreview = contentLayoutPreview
+        break
+      case "article":
+        jsonPreview = articleLayoutPreview
+        break
+      case "database":
+        jsonPreview = databaseLayoutPreview
+        break
+    }
     return merge(jsonPreview, {
       page: {
         title: title || "Page title here",

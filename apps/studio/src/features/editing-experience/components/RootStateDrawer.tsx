@@ -13,7 +13,7 @@ import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
+import { BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
 import { Disable } from "~/components/Disable"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
@@ -45,6 +45,10 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
   content: {
     label: "Content page header",
     description: "Summary, Button label, and Button destination",
+  },
+  database: {
+    label: "Database page header",
+    description: "Summary, Button label, and Button URL",
   },
   index: {
     label: "Header",
@@ -329,6 +333,25 @@ export default function RootStateDrawer() {
                     description="Title, subtitle, and Call-to-Action"
                     icon={TYPE_TO_ICON.hero}
                   />
+                ) : pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Database ? (
+                  <VStack gap="1rem" w="100%" align="start">
+                    <BaseBlock
+                      onClick={() => {
+                        setDrawerState({ state: "metadataEditor" })
+                      }}
+                      label="Page header"
+                      description="Summary, Button label, and Button URL"
+                      icon={BiPin}
+                    />
+                    <BaseBlock
+                      onClick={() => {
+                        setDrawerState({ state: "databaseEditor" })
+                      }}
+                      label="Database"
+                      description="Link your dataset from Data.gov.sg"
+                      icon={BiData}
+                    />
+                  </VStack>
                 ) : (
                   <BaseBlock
                     onClick={() => {
