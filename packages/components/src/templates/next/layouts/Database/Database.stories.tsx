@@ -907,16 +907,17 @@ export const NoSearchResults: Story = {
       name: /Search table/i,
     })
 
-    expect(searchElem).toHaveAttribute("placeholder", "Enter a search term")
+    await expect(searchElem).toHaveAttribute(
+      "placeholder",
+      "Enter a search term",
+    )
 
     await userEvent.type(searchElem, "some whacky search term")
 
     await waitFor(() => {
-      expect(
-        screen.getByText(
-          "Check if you have a spelling error or try a different search term.",
-        ),
-      ).toBeInTheDocument()
+      screen.getByText(
+        "Check if you have a spelling error or try a different search term.",
+      )
     })
   },
 }

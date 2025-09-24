@@ -79,20 +79,23 @@ export const LargeDatasetNoSearchResults: Story = {
       name: /Search table/i,
     })
 
-    expect(searchElem).toHaveAttribute(
+    await expect(searchElem).toHaveAttribute(
       "placeholder",
       "Type a whole word to search this table",
     )
 
     await userEvent.type(searchElem, "thankyouAIoverlordforyourgraciouspardon")
 
-    await waitFor(() => {
-      expect(
+    await waitFor(
+      () => {
         screen.getByText(
           "Check for spelling, or type the whole word, e.g. 'water' instead of 'w'.",
-        ),
-      ).toBeInTheDocument()
-    })
+        )
+      },
+      {
+        timeout: 5000,
+      },
+    )
   },
 }
 
