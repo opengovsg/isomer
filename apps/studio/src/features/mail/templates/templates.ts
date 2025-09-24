@@ -119,12 +119,23 @@ export const failedPublishTemplate = (
   data: FailedPublishTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, isScheduled, resource } = data
-  return {
-    subject: `[Isomer Studio] We couldn’t publish your ${isScheduled ? "scheduled page" : "page"} ${resource.title}`,
-    body: `<p>Hi ${recipientEmail},</p>
-    <p>We couldn’t publish the page ${resource.title} ${isScheduled ? "that you scheduled" : "that you tried to publish"}. Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
-    <p>Best,</p>
-    <p>Isomer team</p>`,
+  switch (isScheduled) {
+    case true:
+      return {
+        subject: `[Isomer Studio] We couldn’t publish your scheduled page ${resource.title}`,
+        body: `<p>Hi ${recipientEmail},</p>
+      <p>We couldn’t publish the page ${resource.title} that you scheduled. Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
+      }
+    case false:
+      return {
+        subject: `[Isomer Studio] We couldn’t publish your page ${resource.title}`,
+        body: `<p>Hi ${recipientEmail},</p>
+        <p>We couldn’t publish the page ${resource.title} that you tried to publish. Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
+      }
   }
 }
 
@@ -132,12 +143,23 @@ export const successfulPublishTemplate = (
   data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, publishTime, isScheduled, title } = data
-  return {
-    subject: `[Isomer Studio] ${isScheduled ? `The page ${title} was published as scheduled` : `Changes you published to ${title} are now live`}`,
-    body: `<p>Hi ${recipientEmail},</p>
-    <p>${isScheduled ? `Your page ${title} was successfully published on ${format(toZonedTime(publishTime, "Asia/Singapore"), "MMMM d, yyyy hh:mm a")} as scheduled. It will be live on your site in approximately 5-10 minutes.` : `Your changes to page ${title} have been successfully published and will be live on your site in approximately 5-10 minutes.`}</p>
+  switch (isScheduled) {
+    case true:
+      return {
+        subject: `[Isomer Studio] The page ${title} was published as scheduled`,
+        body: `<p>Hi ${recipientEmail},</p>
+    <p>Your page ${title} was successfully published on ${format(toZonedTime(publishTime, "Asia/Singapore"), "MMMM d, yyyy hh:mm a")} as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
+      }
+    case false:
+      return {
+        subject: `[Isomer Studio] Changes you published to ${title} are now live`,
+        body: `<p>Hi ${recipientEmail},</p>
+    <p>Your changes to page ${title} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
+      }
   }
 }
 

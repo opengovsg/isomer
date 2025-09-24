@@ -25,12 +25,17 @@ export const TimeSelect = React.forwardRef<
     }: TimeSelectProps,
     ref,
   ) => {
+    // Validate and constrain minutesStep to be between 1 and 60, and round up to nearest integer
+    const validatedMinutesStep = Math.max(
+      1,
+      Math.min(60, Math.ceil(minutesStep)),
+    ) // constrain to 1-60
     // Based on the granularity, determine how many time slots to generate
-    const totalSlots = (24 * 60) / (minutesStep === 0 ? 1 : minutesStep)
+    const totalSlots = (24 * 60) / validatedMinutesStep
 
     // Generate all time slots in a day
     const options = Array.from({ length: totalSlots }).flatMap((_, i) => {
-      const minutesOfDay = i * minutesStep
+      const minutesOfDay = i * validatedMinutesStep
       const optionTime = set(new Date(), {
         hours: Math.floor(minutesOfDay / 60),
         minutes: minutesOfDay % 60,

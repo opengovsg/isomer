@@ -236,7 +236,7 @@ scheduledPublishWorker.on(
         return
       }
       const {
-        data: { resourceId, userId },
+        data: { resourceId, userId, siteId },
       } = job
       // Log differently based on number of attempts made
       logger.error({
@@ -264,7 +264,7 @@ scheduledPublishWorker.on(
             // get the resource that was being published
             const resource = await getPageById(db, {
               resourceId,
-              siteId: job.data.siteId,
+              siteId,
             })
             if (!resource) throw new Error("The resource no longer exists")
             await sendFailedPublishEmail({
