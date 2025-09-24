@@ -1,5 +1,6 @@
 import { confirm, input } from "@inquirer/prompts"
 
+import { migrateTagsOfSite } from "@isomer/migrate-tags"
 import { cleanup, main as migrate } from "@isomer/seed-from-repo"
 
 import { checkLastBuild } from "./amplify"
@@ -68,6 +69,7 @@ const launch = async () => {
     await updateCodebuildId(siteId, codebuildId)
 
     await migrate(repo, siteId)
+    await migrateTagsOfSite(siteId)
 
     await s3sync(siteId)
 
