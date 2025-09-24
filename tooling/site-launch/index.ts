@@ -35,7 +35,9 @@ const launch = async () => {
 
   if (needsAcm) await requestAcmViaClient(domain)
 
-  const long = await input({ message: "Enter the long name of the site:" })
+  const long = await input({
+    message: "Enter the long name of the site (eg: Open Government Products):",
+  })
   const codebuildId = await input({
     message: "Enter the code-build name of the site (eg: ogp-corp)",
   })
