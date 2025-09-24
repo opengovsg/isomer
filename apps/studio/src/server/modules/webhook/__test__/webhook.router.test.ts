@@ -123,13 +123,14 @@ describe("webhook.router", async () => {
           )
         })
     })
-    it("do not send an email if the status has not changed", async () => {
+    it("do not send an email if the the email has already been sent", async () => {
       // Arrange
       const { site, codebuildJob } = await setupCodeBuildJob({
         userId: user.id,
         buildId: "test-build-id",
-        buildStatus: "SUCCEEDED", // initial status is SUCCEEDED
+        buildStatus: "SUCCEEDED", // already succeeded
         startedAt: FIXED_NOW,
+        emailSent: true, // email already sent
       })
 
       // Act
@@ -137,7 +138,7 @@ describe("webhook.router", async () => {
         projectName: "test-project",
         siteId: site.id,
         buildId: codebuildJob.buildId,
-        buildStatus: "SUCCEEDED", // same status as before
+        buildStatus: "SUCCEEDED",
       })
 
       // Assert
