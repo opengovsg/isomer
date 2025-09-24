@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { expect, userEvent, waitFor, within } from "@storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -902,10 +902,22 @@ export const NoSearchResults: Story = {
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
+
     const searchElem = screen.getByRole("searchbox", {
       name: /Search table/i,
     })
+
+    expect(searchElem).toHaveAttribute("placeholder", "Enter a search term")
+
     await userEvent.type(searchElem, "some whacky search term")
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Check if you have a spelling error or try a different search term.",
+        ),
+      ).toBeInTheDocument()
+    })
   },
 }
 

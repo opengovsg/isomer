@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { expect, userEvent, waitFor, within } from "@storybook/test"
 import { omit } from "lodash"
 import { http, HttpResponse } from "msw"
 
@@ -61,6 +62,37 @@ export const LargeDataset: Story = {
       type: "dgs",
       resourceId: DGS_LARGE_DATASET_RESOURCE_ID,
     },
+  },
+}
+
+export const LargeDatasetNoSearchResults: Story = {
+  args: {
+    type: "searchabletable",
+    dataSource: {
+      type: "dgs",
+      resourceId: DGS_LARGE_DATASET_RESOURCE_ID,
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const searchElem = screen.getByRole("searchbox", {
+      name: /Search table/i,
+    })
+
+    expect(searchElem).toHaveAttribute(
+      "placeholder",
+      "Type a whole word to search this table",
+    )
+
+    await userEvent.type(searchElem, "thankyouAIoverlordforyourgraciouspardon")
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Check for spelling, or type the whole word, e.g. 'water' instead of 'w'.",
+        ),
+      ).toBeInTheDocument()
+    })
   },
 }
 
