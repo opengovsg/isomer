@@ -5,41 +5,6 @@ import {
   DescribeCertificateCommand,
   RequestCertificateCommand,
 } from "@aws-sdk/client-acm"
-import { exec } from "utils"
-
-export const requestAcm = async (domain: string) => {
-  const { stdout: certArn } = await exec(
-    `aws acm request-certificate --domain-name ${domain} --validation-method DNS --query "CertificateArn" --region "us-east-1"`,
-  )
-
-  console.log(`ARN of created certificate: ${certArn}`)
-
-  const cmd =
-    `aws acm describe-certificate --certificate-arn ${certArn} --query 'Certificate.DomainValidationOptions | [0].ResourceRecord' --region "us-east-1"`.replace(
-      // NOTE: Replacing because when the `cmd` is too long,
-      // there is a line break inserted
-      "\n",
-      "",
-    )
-
-  // NOTE: This is an object with
-  // Name, Type, Value
-  const { stdout: rawCert } = await exec(cmd)
-
-  // NOTE: sleep for 1s so records are confirm generated
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-
-  const { Name: _Name, Type, Value: _Value } = JSON.parse(rawCert)
-  const Name = _Name.slice(0, -1)
-  const Value = _Value.slice(0, -1)
-  console.log(`${Name}   ${Type}   ${Value}`)
-
-  fs.writeFileSync(`./${domain}.ssl.conf`, `${Name}   ${Type}   ${Value}`)
-
-  await exec(
-    `aws acm delete-certificate --certificate-arn ${certArn} --region "us-east-1"`,
-  )
-}
 
 export const requestAcmViaClient = async (domain: string) => {
   const client = new ACMClient({ region: "us-east-1" })
