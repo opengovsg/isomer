@@ -25,8 +25,8 @@
     "format:fix": "turbo format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache  --ignore-path ./.prettierignore",
     "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
-    "lint:ws": "npx sherif@0.10.0 -i next",
-    "lint:ws:fix": "npx sherif@0.10.0 --fix",
+    "lint:ws": "npx sherif -i next",
+    "lint:ws:fix": "npx sherif --fix",
     "postinstall": "npm run lint:ws"
   },
   "workspaces": [
@@ -37,6 +37,7 @@
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
+    "sherif": "^1.6.1",
     "turbo": "^2.5.4"
   },
   "packageManager": "npm@10.2.3"
