@@ -366,10 +366,6 @@ async function importNavbar(client: Client, siteId: number, siteName: string) {
     `INSERT INTO public."Navbar" ("siteId", content) VALUES ($1, $2)`,
     [siteId, navbar],
   );
-  // await client.query(
-  //   `UPDATE public."Navbar" SET content = $2 WHERE "siteId" = $1`,
-  //   [siteId, navbar]
-  // );
 }
 
 async function importFooter(client: Client, siteId: number, siteName: string) {
@@ -387,10 +383,6 @@ async function importFooter(client: Client, siteId: number, siteName: string) {
     `INSERT INTO public."Footer" ("siteId", content) VALUES ($1, $2)`,
     [siteId, footer],
   );
-  // await client.query(
-  //   `UPDATE public."Footer" SET content = $2 WHERE "siteId" = $1`,
-  //   [siteId, footer]
-  // );
 }
 
 async function studioifySite(client: Client, siteId: number, siteName: string) {
