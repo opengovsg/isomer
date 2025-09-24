@@ -1,4 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next"
+import { TRPCError } from "@trpc/server"
+import { getHTTPStatusCodeFromError } from "@trpc/server/dist/unstable-core-do-not-import.d-C3Q2YPxP.cjs"
 
 import { webhookHandlers } from "~/server/webhooks"
 
@@ -11,8 +13,15 @@ export default async function handler(
     const result = await webhookHandlers.updateCodebuildWebhook(req, res)
     res.status(200).json(result)
   } catch (err) {
-    res.status(500).json({
-      error: err instanceof Error ? err.message : "Unknown error encountered",
-    })
+    if (err instanceof TRPCError) {
+      const httpCode = getHTTPStatusCodeFromError(err)
+      return res.status(httpCode).json({
+        error: err.message,
+      })
+    } else {
+      res.status(500).json({
+        error: err instanceof Error ? err.message : "Unknown error encountered",
+      })
+    }
   }
 }
