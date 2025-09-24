@@ -168,10 +168,7 @@ const sendEmails = async (
  * @param isScheduled Whether the publish is scheduled
  * @returns Whether email functionality is active
  */
-export const isEmailFunctionalityActive = (
-  gb: GrowthBook,
-  isScheduled: boolean,
-) => {
+const isEmailFunctionalityActive = (gb: GrowthBook, isScheduled: boolean) => {
   if (isScheduled) {
     return gb.isOn(ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY)
   } else {
