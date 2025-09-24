@@ -69,6 +69,13 @@ export const createSearchSgClientForGithub = async ({
   repo,
 }: CreateSearchSgClientParams & { repo: string }) => {
   const { content: siteConfig, sha } = await readSiteConfig(repo)
+  if (siteConfig.site?.search === "searchSG") {
+    const existingClientId = siteConfig.site?.search?.clientId
+    console.log(
+      `Discovered an existing searchSG clientId: ${existingClientId} for site ${name}`,
+    )
+    return existingClientId
+  }
 
   // TODO: add validation via zod
   const primary = (siteConfig as any).colors?.brand?.canvas?.inverse

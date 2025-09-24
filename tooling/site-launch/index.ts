@@ -55,8 +55,8 @@ const launch = async () => {
       console.log("The last build of the site failed - please fix!")
     }
 
-    await archiveRepo(repo)
     await createSearchSgClientForGithub({ domain, name: long, repo })
+    await archiveRepo(repo)
 
     await confirm({ message: "Have you ran `npm run db:connect`?" })
     const siteId = await createBaseSiteInStudio({
