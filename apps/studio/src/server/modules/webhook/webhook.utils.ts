@@ -70,6 +70,8 @@ export const updateCodebuildStatusAndSendEmails = async (
     // only send email if the user has an email and emailSent is false
     .filter((build) => build.email && !build.emailSent)
 
+  // tracks the number of emails that were actually sent
+  let sentEmails = 0
   try {
     // Map and send the emails in parallel
     const emailPromisesSettled = await Promise.allSettled(
@@ -102,15 +104,15 @@ export const updateCodebuildStatusAndSendEmails = async (
         return emailPromise?.status === "fulfilled"
       })
 
-    const uniqueBuildIds = [...new Set(buildIdsForSentEmails)]
+    sentEmails = buildIdsForSentEmails.length
 
-    if (uniqueBuildIds.length > 0) {
+    if (buildIdsForSentEmails.length > 0) {
       await db
         .updateTable("CodeBuildJobs")
         .set({
           emailSent: true,
         })
-        .where("buildId", "in", uniqueBuildIds)
+        .where("buildId", "in", [...new Set(buildIdsForSentEmails)])
         .execute()
     }
     logger.info(
@@ -118,12 +120,12 @@ export const updateCodebuildStatusAndSendEmails = async (
         buildId,
         buildStatus,
         updated: buildsToUpdate.length,
-        sentEmails: uniqueBuildIds.length,
+        sentEmails,
       },
       `Webhook executed for buildId ${String(buildId)}`,
     )
     return {
-      sentEmails: uniqueBuildIds.length,
+      sentEmails,
     }
   } catch (error) {
     // emails are sent on a best-effort basis, so we log the error but do not fail the entire process
@@ -136,7 +138,7 @@ export const updateCodebuildStatusAndSendEmails = async (
       `Failed to send notification emails for build status ${String(buildStatus)} for buildId ${String(buildId)}.`,
     )
     return {
-      sentEmails: 0,
+      sentEmails,
     }
   }
 }
