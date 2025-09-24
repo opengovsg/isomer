@@ -128,7 +128,7 @@ export const updateSiteConfigWithSearch = async (
 const getSearchResourceForSite = async (siteId: number) => {
   return await runDbAction(async (client) => {
     return client.query(
-      `SELECT id from public."Resource" where "Resource"."permalink" = 'search' and "Resource"."siteId" = $1`,
+      `SELECT id from public."Resource" where "Resource"."permalink" = 'search' and "Resource"."siteId" = $1 and "Resource"."parentId" IS NULL`,
       [siteId],
     )
   })
