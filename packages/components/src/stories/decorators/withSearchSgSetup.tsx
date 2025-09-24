@@ -1,3 +1,5 @@
+import type { ReactNode } from "react"
+
 import { useSearchSGScript } from "../../hooks/useSearchSGScript"
 
 export const SEARCHSG_TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
@@ -9,7 +11,7 @@ interface WithSearchSgSetupProps {
 }
 export const withSearchSgSetup =
   ({ pageType }: WithSearchSgSetupProps = { pageType: "default" }) =>
-  (Story: any) => {
+  (Story: () => ReactNode) => {
     useSearchSGScript({
       pageType,
       clientId: SEARCHSG_TEST_CLIENT_ID,
