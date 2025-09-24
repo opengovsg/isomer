@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import { TRPCError } from "@trpc/server"
-import { getHTTPStatusCodeFromError } from "@trpc/server/dist/unstable-core-do-not-import.d-C3Q2YPxP.cjs"
+import { getHTTPStatusCodeFromError } from '@trpc/server/http';
 
 import { webhookHandlers } from "~/server/webhooks"
 
