@@ -1,7 +1,9 @@
 import { Octokit } from "@octokit/rest"
 
+import { env } from "./env"
+
 const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
+  auth: env.GITHUB_TOKEN,
 })
 
 const owner = "isomerpages"

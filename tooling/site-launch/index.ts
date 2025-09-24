@@ -7,6 +7,7 @@ import {
   createSearchSgClientForGithub,
   createSearchSgClientForStudio,
 } from "./create-searchsg-client"
+import { env } from "./env"
 import { archiveRepo } from "./github"
 import { createIndirection } from "./indirection"
 import { requestAcmViaClient } from "./request-acm"
@@ -17,7 +18,7 @@ import {
   updateCodebuildId,
 } from "./site"
 
-const profile = process.env.AWS_PROFILE
+const profile = env.AWS_PROFILE
 
 const launch = async () => {
   await confirm({

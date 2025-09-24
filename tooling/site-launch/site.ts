@@ -6,6 +6,7 @@ import {
   createResource,
 } from "@isomer/seed-from-repo"
 
+import { env } from "./env"
 import searchJson from "./search.json"
 
 interface CreateBaseSiteProps {
@@ -46,7 +47,7 @@ type DbAction<T> = (client: Client) => Promise<T>
 
 const runDbAction = async <T>(cb: DbAction<T>) => {
   const client = new Client({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: env.DATABASE_URL,
   })
   await client.connect()
   console.log(`Connected to database`)

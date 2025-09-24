@@ -3,6 +3,8 @@ import axios from "axios"
 import { addSearchJson, readSiteConfig, updateSiteConfig } from "github"
 import { getSiteTheme, updateSiteConfigWithSearch } from "site"
 
+import { env } from "./env"
+
 const BASE_SEARCHSG_URL = "https://api.services.search.gov.sg/admin/v1"
 const ISOMER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
 
@@ -114,7 +116,7 @@ const createSearchSgClient = async ({
   displayedName,
   primary,
 }: SearchSgConfig) => {
-  const authToken = process.env.SEARCHSG_API_KEY
+  const authToken = env.SEARCHSG_API_KEY
 
   const {
     data: { accessToken, tokenType },
