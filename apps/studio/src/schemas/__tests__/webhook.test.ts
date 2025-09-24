@@ -78,7 +78,7 @@ describe("webhook", () => {
       // Assert
       expect(res.statusCode).toBe(200)
     })
-    it("providing an incorrect API key causes a 500", async () => {
+    it("providing an incorrect API key causes a 401", async () => {
       // Arrange
       const user = await setupUser(createTestUser())
       const { codebuildJob, site } = await setupCodeBuildJob({
@@ -96,7 +96,27 @@ describe("webhook", () => {
       await handler(req, res)
 
       // Assert
-      expect(res.statusCode).toBe(500)
+      expect(res.statusCode).toBe(401)
+    })
+    it("requests missing an API key causes a 401", async () => {
+      // Arrange
+      const user = await setupUser(createTestUser())
+      const { codebuildJob, site } = await setupCodeBuildJob({
+        userId: user.id,
+        buildId: "test-build-id",
+        startedAt: new Date(),
+      })
+      const { req, res } = createMockRequest({
+        siteId: site.id,
+        buildId: codebuildJob.buildId,
+        apiKey: "wrong-api-key",
+      })
+
+      // Act
+      await handler(req, res)
+
+      // Assert
+      expect(res.statusCode).toBe(401)
     })
   })
 })
