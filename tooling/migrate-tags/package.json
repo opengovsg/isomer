@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "@isomer/tsconfig": "*",
-    "@types/node": "^24.0.10",
+    "@types/node": "^22.15.21",
     "typescript": "latest"
   },
   "dependencies": {
