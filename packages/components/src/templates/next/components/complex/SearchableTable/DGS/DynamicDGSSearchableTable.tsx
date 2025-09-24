@@ -88,6 +88,7 @@ export const DynamicDGSSearchableTable = ({
       maxNoOfColumns={maxNoOfColumns}
       paginatedItems={items}
       filteredItemsLength={numberOfRecords ?? 0}
+      searchMatchType="fullTextMatch"
     />
   )
 }
