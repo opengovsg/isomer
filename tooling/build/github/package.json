@@ -1,16 +1,16 @@
 {
-  "name": "amplify",
+  "name": "github",
   "version": "1.0.0",
-  "description": "",
-  "main": "create-app.js",
+  "description": "GitHub repository creation automation script",
+  "main": "create-repo.js",
   "scripts": {
-    "create-apps": "node create-app.js",
+    "create-repo": "node create-repo.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-amplify": "^3.606.0",
+    "@octokit/rest": "^20.0.2",
     "dotenv": "^16.3.1"
   }
 }
