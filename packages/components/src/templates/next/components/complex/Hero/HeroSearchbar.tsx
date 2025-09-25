@@ -9,18 +9,18 @@ export const HeroSearchbar = ({ title, subtitle, site }: HeroProps) => {
     }
     switch (site.search?.type) {
       case "searchSG":
-        if (!site.search?.clientId) return null
+        if (!site.search.clientId) return null
         return (
           <HomepageSearchSGInputBox
-            clientId={site.search?.clientId}
+            clientId={site.search.clientId}
             {...commonProps}
           />
         )
       case "localSearch":
-        if (!site.search?.searchUrl) return null
+        if (!site.search.searchUrl) return null
         return (
           <LocalSearchInputBox
-            searchUrl={site.search?.searchUrl}
+            searchUrl={site.search.searchUrl}
             {...commonProps}
           />
         )
