@@ -2,8 +2,10 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { Box, chakra, SimpleGrid } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-import { SiteConfigSchema } from "@opengovsg/isomer-components"
-import { Static, Type } from "@sinclair/typebox"
+import {
+  AgencySettings,
+  AgencySettingsSchema,
+} from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiWrench } from "react-icons/bi"
 
@@ -36,12 +38,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   })
   const trpcUtils = trpc.useUtils()
   const toast = useToast()
-  const agencySettingsSchema = Type.Pick(
-    SiteConfigSchema,
-    Type.Union([Type.Literal("siteName"), Type.Literal("agencyName")]),
-  )
-  type AgencySettings = Static<typeof agencySettingsSchema>
-  const validateFn = ajv.compile<AgencySettings>(agencySettingsSchema)
+  const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
 
   const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
     onSuccess: async ({ siteName }) => {
@@ -109,7 +106,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
 
             <ErrorProvider>
               <FormBuilder<AgencySettings>
-                schema={agencySettingsSchema}
+                schema={AgencySettingsSchema}
                 validateFn={validateFn}
                 data={state}
                 handleChange={(data) => {
