@@ -74,6 +74,13 @@ export const Default: Story = {
         label: "Operating Hours",
         values: ["Mon - Fri", "8.30 am to 1.00 pm", "2.00 pm to 5.00 pm"],
       },
+      {
+        method: "website",
+        label: "Website",
+        values: [
+          "https://this-is-a-super-long-website-url-that-should-be-wrapped-in-the-browser.hello.com",
+        ],
+      },
     ],
     otherInformation: {
       label: "This is a customized header of a Other Information field",
