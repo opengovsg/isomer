@@ -4,7 +4,8 @@ import type {
   DropTargetLocalizedData,
   ElementDragType,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types"
-import { useEffect, useRef, useState } from "react"
+import type { ErrorObject } from "ajv"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   attachClosestEdge,
   extractClosestEdge,
@@ -24,14 +25,29 @@ import {
   VStack,
 } from "@chakra-ui/react"
 
+import {
+  DEFAULT_NAVBAR_ITEM_DESCRIPTION,
+  DEFAULT_NAVBAR_ITEM_TITLE,
+  NAVBAR_ITEM_ERROR_DESCRIPTION,
+} from "./constants"
 import { DeleteGroupModal } from "./DeleteGroupModal"
 import { DeleteSubItemModal } from "./DeleteSubItemModal"
 import { NavbarItemBox } from "./NavbarItemBox"
-import { getNavbarItemPath } from "./utils"
+import { getInstancePathFromNavbarItemPath, getNavbarItemPath } from "./utils"
+
+const getNumberOfErrors = (
+  errors: ErrorObject<string, Record<string, any>, unknown>[],
+  path: string,
+) => {
+  const instancePath = `/${path.replace(/\./g, "/")}`
+  return errors.filter((error) => error.instancePath.startsWith(instancePath))
+    .length
+}
 
 interface StackableNavbarItemProps {
   name: string
   index: number
+  errors: ErrorObject<string, Record<string, any>, unknown>[]
   onEdit: (subItemIndex?: number) => void
   removeItem: (subItemIndex?: number) => void
   description?: string
@@ -41,6 +57,7 @@ interface StackableNavbarItemProps {
 export const StackableNavbarItem = ({
   name,
   index,
+  errors,
   onEdit,
   removeItem,
   description,
@@ -67,6 +84,24 @@ export const StackableNavbarItem = ({
   const subItemsDroppableZoneRef = useRef<HTMLDivElement | null>(null)
 
   const hasSubItems = !!subItems && subItems.length > 0
+
+  const numberOfErrors = getNumberOfErrors(errors, getNavbarItemPath(index))
+  const itemDescription = useMemo(() => {
+    const instancePath = getInstancePathFromNavbarItemPath(
+      getNavbarItemPath(index),
+    )
+    const isSubItemInvalid = errors.some((error) =>
+      error.instancePath.startsWith(`${instancePath}/`),
+    )
+
+    if (isSubItemInvalid) {
+      return "Expand to see errors"
+    } else if (numberOfErrors > 0) {
+      return NAVBAR_ITEM_ERROR_DESCRIPTION
+    }
+
+    return description || DEFAULT_NAVBAR_ITEM_DESCRIPTION
+  }, [description, errors, index, numberOfErrors])
 
   // This useEffect sets up the drag and drop functionality for this particular
   // navbar item
@@ -163,11 +198,7 @@ export const StackableNavbarItem = ({
       // Subitems dropzone, for subitems within the same group to be rearranged
       dropTargetForElements({
         element: subItemsDroppableZoneElement,
-        canDrop: () => {
-          // TODO: Add logic to only allow dropping of subitems that have the
-          // same parent as this item
-          return true
-        },
+        canDrop: () => true,
         getIsSticky: () => true,
       }),
     )
@@ -215,7 +246,7 @@ export const StackableNavbarItem = ({
         <Box>
           <NavbarItemBox
             name={name}
-            description={description}
+            description={itemDescription}
             subItems={subItems}
             index={index}
             itemDragHandleRef={mainItemDragHandleRef}
@@ -224,6 +255,7 @@ export const StackableNavbarItem = ({
             onDeleteItem={onDeleteGroupModalOpen}
             isItemBeingDraggedOver={isItemBeingDraggedOver}
             setIsItemBeingDraggedOver={setIsItemBeingDraggedOver}
+            isInvalid={numberOfErrors > 0}
           />
 
           {hasSubItems && (
@@ -236,21 +268,34 @@ export const StackableNavbarItem = ({
               w="full"
             >
               <VStack spacing="0.75rem">
-                {subItems.map((subItem, idx) => (
-                  <NavbarItemBox
-                    key={JSON.stringify(subItem)}
-                    name={subItem.name}
-                    description={subItem.description}
-                    index={idx}
-                    parentIndex={index}
-                    isSubItem
-                    onEditItem={() => onEdit(idx)}
-                    onDeleteItem={() => {
-                      setSubItemToDelete(idx)
-                      onDeleteSubItemModalOpen()
-                    }}
-                  />
-                ))}
+                {subItems.map((subItem, idx) => {
+                  const numberOfSubItemErrors = getNumberOfErrors(
+                    errors,
+                    getNavbarItemPath(index, idx),
+                  )
+                  const isInvalid = numberOfSubItemErrors > 0
+
+                  return (
+                    <NavbarItemBox
+                      key={JSON.stringify(subItem)}
+                      name={subItem.name || DEFAULT_NAVBAR_ITEM_TITLE}
+                      description={
+                        isInvalid
+                          ? "Fix errors before publishing"
+                          : subItem.description
+                      }
+                      index={idx}
+                      parentIndex={index}
+                      isSubItem
+                      onEditItem={() => onEdit(idx)}
+                      onDeleteItem={() => {
+                        setSubItemToDelete(idx)
+                        onDeleteSubItemModalOpen()
+                      }}
+                      isInvalid={isInvalid}
+                    />
+                  )
+                })}
               </VStack>
             </AccordionPanel>
           )}
