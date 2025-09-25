@@ -5,7 +5,7 @@ import { ComponentContent } from "../../internal/customCssClass"
 export const HeroSearchbar = ({ title, subtitle, site }: HeroProps) => {
   const SearchInputBox = () => {
     const commonProps = {
-      className: "w-full pt-3",
+      className: "w-full mt-3",
     }
     switch (site.search?.type) {
       case "searchSG":
