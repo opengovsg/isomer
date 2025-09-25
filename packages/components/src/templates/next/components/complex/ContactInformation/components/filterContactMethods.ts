@@ -13,13 +13,15 @@ export const filterContactMethods = ({
     return methods
   }
 
-  const filteredMethodsInOrder = whitelistedMethods.map((whitelistedMethod) =>
-    methods.find((method) => method.method === whitelistedMethod),
+  // Filter methods that have a valid method type and are whitelisted
+  const filteredMethods = methods.filter(
+    (method) => method.method && whitelistedMethods.includes(method.method),
   )
 
-  const definedFilteredMethods = filteredMethodsInOrder.filter(
-    (method): method is NonNullable<typeof method> => method !== undefined,
+  // Sort the filtered methods according to the order in whitelistedMethods
+  const sortedMethods = whitelistedMethods.flatMap((whitelistedMethod) =>
+    filteredMethods.filter((method) => method.method === whitelistedMethod),
   )
 
-  return definedFilteredMethods
+  return sortedMethods
 }
