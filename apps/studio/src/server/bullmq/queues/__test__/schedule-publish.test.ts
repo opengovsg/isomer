@@ -97,7 +97,7 @@ describe("scheduled-publish", async () => {
       expect(codebuildjobs[0]).toMatchObject({
         siteId: site.id,
         userId: user.id,
-        buildId: "build/test-id",
+        buildId: "test-id",
         startedAt: FIXED_NOW,
         status: "IN_PROGRESS",
       })
