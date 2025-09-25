@@ -9,7 +9,7 @@ export const IMAGE_GALLERY_TYPE = "imagegallery"
 const SingleImageSchema = Type.Object({
   src: ImageSrcSchema,
   alt: AltTextSchema,
-  caption: Type.Optional(Type.String({})),
+  caption: Type.Optional(Type.String()),
 })
 
 export const ImageGallerySchema = Type.Object(
