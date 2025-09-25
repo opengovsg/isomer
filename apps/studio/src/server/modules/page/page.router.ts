@@ -709,6 +709,7 @@ export const pageRouter = router({
         siteId,
         resourceId: String(pageId),
         user,
+        isScheduled: false,
       })
 
       // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
