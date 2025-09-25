@@ -36,6 +36,7 @@ import {
   BiDotsHorizontalRounded,
   BiGridVertical,
   BiPencil,
+  BiSolidErrorCircle,
   BiTrash,
 } from "react-icons/bi"
 
@@ -54,6 +55,7 @@ interface NavbarItemBoxProps {
   onDeleteItem: () => void
   isItemBeingDraggedOver?: boolean
   setIsItemBeingDraggedOver?: Dispatch<SetStateAction<boolean>>
+  isInvalid?: boolean
 }
 
 export const NavbarItemBox = ({
@@ -69,6 +71,7 @@ export const NavbarItemBox = ({
   onDeleteItem,
   isItemBeingDraggedOver,
   setIsItemBeingDraggedOver,
+  isInvalid,
 }: NavbarItemBoxProps) => {
   const itemRef = useRef<HTMLDivElement | null>(null)
   const itemDefaultDragHandleRef = useRef<HTMLDivElement | null>(null)
@@ -169,8 +172,10 @@ export const NavbarItemBox = ({
 
       <Box
         ref={itemRef}
+        aria-invalid={isInvalid || undefined}
         data-id={getNavbarItemPath(index, parentIndex)}
-        border="1px solid"
+        borderWidth="1px"
+        borderStyle="solid"
         borderColor={
           isItemBeingDraggedOver ? "base.divider.brand" : "base.divider.medium"
         }
@@ -205,6 +210,11 @@ export const NavbarItemBox = ({
                 shadow: "0px 1px 6px 0px #1361F026",
               }
         }
+        _invalid={{
+          borderWidth: "1.5px",
+          borderColor: "utility.feedback.critical",
+          bgColor: "utility.feedback.critical-subtle",
+        }}
         onDragOver={(e) => {
           e.preventDefault()
           setIsItemBeingDraggedOver?.(true)
@@ -280,13 +290,27 @@ export const NavbarItemBox = ({
                   {name}
                 </Text>
 
-                <Text
-                  textStyle="caption-2"
-                  textColor="interaction.support.placeholder"
-                  noOfLines={1}
-                >
-                  {description || "Add a description for this link"}
-                </Text>
+                <HStack gap="0.25rem" justifyContent="center">
+                  {isInvalid && (
+                    <Icon
+                      as={BiSolidErrorCircle}
+                      fontSize="1rem"
+                      color="utility.feedback.critical"
+                    />
+                  )}
+
+                  <Text
+                    textStyle="caption-2"
+                    textColor={
+                      isInvalid
+                        ? "utility.feedback.critical"
+                        : "interaction.support.placeholder"
+                    }
+                    noOfLines={1}
+                  >
+                    {description || "Add a description for this link"}
+                  </Text>
+                </HStack>
               </VStack>
 
               <Spacer />
