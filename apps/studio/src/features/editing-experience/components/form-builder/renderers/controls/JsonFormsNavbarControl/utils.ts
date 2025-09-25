@@ -1,23 +1,29 @@
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
-import type { NavbarItemsSchema } from "@opengovsg/isomer-components"
-import type { Static } from "@sinclair/typebox"
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
 import cloneDeep from "lodash/cloneDeep"
 import get from "lodash/get"
 import set from "lodash/set"
 
-export type NavbarItems = Static<typeof NavbarItemsSchema>
+import type { NavbarItemPath, NavbarItems } from "./types"
 
 // Helper function to get the JSON Forms path of a navbar item or subitem
-export const getNavbarItemPath = (index: number, parentIndex?: number) => {
+export const getNavbarItemPath = (
+  index: number,
+  parentIndex?: number,
+): NavbarItemPath => {
   if (parentIndex !== undefined) {
-    return `items.${parentIndex}.items.${index}`
+    return `items.${parentIndex}.items.${index}` as NavbarItemPath
   }
 
-  return `items.${index}`
+  return `items.${index}` as NavbarItemPath
 }
 
-export const isSubItemPath = (path: string) => path.includes(".items.")
+export const isSubItemPath = (path: string): path is NavbarItemPath =>
+  path.includes(".items.")
+
+export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) => {
+  return `/${path.replace(/\./g, "/")}`
+}
 
 // Helper function to extract the indices from the navbar item path in the
 // format "items.{index}" or "items.{parentIndex}.items.{index}"
