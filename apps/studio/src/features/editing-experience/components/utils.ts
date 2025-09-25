@@ -67,11 +67,10 @@ export const uploadModifiedAssets = async ({
   const assetsToUpload = modifiedAssets.filter(
     (asset) => !!asset.file && asset.file.name !== PLACEHOLDER_IMAGE_FILENAME,
   )
-
   return Promise.allSettled(
     assetsToUpload.map(({ path, file }) => {
       if (!file) {
-        return
+        return Promise.resolve(undefined)
       }
 
       return uploadAsset({ file }).then((res) => {

@@ -67,7 +67,7 @@ export class PinoLogger {
     return PinoLogger.getInstance().child({
       path,
       clientIp,
-      id: nanoid(),
+      id: nanoid<string>(),
     })
   }
 }

@@ -127,12 +127,10 @@ export const ImageGalleryClient = ({
     if (currentIndex !== 0) return
 
     // In which case we need to preload the last few images in the preview sequence
-    void Promise.all(
-      getEndingPreviewIndices({
-        numberOfImages: images.length,
-        maxPreviewImages,
-      }).map((index: number) => preloadImage(index)),
-    )
+    getEndingPreviewIndices({
+      numberOfImages: images.length,
+      maxPreviewImages,
+    }).map((index: number) => preloadImage(index))
   }
 
   const handlePreviewImageEngagement = (index: number) => {
