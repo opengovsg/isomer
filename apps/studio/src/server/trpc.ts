@@ -95,14 +95,20 @@ const loggerWithVersionMiddleware = loggerMiddleware.unstable_pipe(
     const clientVersion = req.headers[APP_VERSION_HEADER_KEY.toLowerCase()]
 
     if (clientVersion && serverVersion !== clientVersion) {
-      logger.warn("Application version mismatch", {
-        clientVersion,
-        serverVersion,
-      })
+      logger.warn(
+        {
+          clientVersion,
+          serverVersion,
+        },
+        "Application version mismatch",
+      )
     } else if (!clientVersion) {
-      logger.warn("Client version not available", {
-        serverVersion,
-      })
+      logger.warn(
+        {
+          serverVersion,
+        },
+        "Client version not available",
+      )
     }
 
     res.setHeader(APP_VERSION_HEADER_KEY, serverVersion)
