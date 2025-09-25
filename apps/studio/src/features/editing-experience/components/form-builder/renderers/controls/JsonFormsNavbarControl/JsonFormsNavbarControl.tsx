@@ -1,5 +1,6 @@
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
+import type { PartialDeep } from "type-fest"
 import { useCallback, useEffect, useState } from "react"
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
@@ -20,6 +21,7 @@ import {
   composePaths,
   createDefaultValue,
   findUISchema,
+  getSubErrorsAt,
   rankWith,
   schemaMatches,
 } from "@jsonforms/core"
@@ -27,9 +29,10 @@ import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import get from "lodash/get"
 import { BiPlusCircle } from "react-icons/bi"
 
-import type { NavbarItems } from "./utils"
+import type { NavbarItems } from "./types"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getParentPath } from "../utils"
+import { DEFAULT_NAVBAR_ITEM_TITLE } from "./constants"
 import { EditNavbarItem } from "./EditNavbarItem"
 import { StackableNavbarItem } from "./StackableNavbarItem"
 import { handleMoveItem, isSubItemPath } from "./utils"
@@ -52,7 +55,6 @@ export function JsonFormsNavbarControl({
   cells,
   uischemas,
   uischema,
-  // config,
 }: ArrayLayoutProps): JSX.Element {
   const ctx = useJsonForms()
   const [selectedPath, setSelectedPath] = useState<string>()
@@ -248,21 +250,23 @@ export function JsonFormsNavbarControl({
               >
                 {[...Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, String(index))
+                  const arrayErrors = getSubErrorsAt(
+                    childPath,
+                    schema,
+                  )({ jsonforms: ctx })
 
                   const childItem = get(
                     ctx.core?.data,
                     childPath,
-                  ) as NavbarItems["items"][number]
+                  ) as PartialDeep<NavbarItems["items"][number]>
 
                   return (
                     <StackableNavbarItem
                       key={JSON.stringify(childItem)}
                       index={index}
-                      name={childItem.name || "Navbar item"}
-                      description={
-                        childItem.description ||
-                        "Add a description for this link"
-                      }
+                      name={childItem.name || DEFAULT_NAVBAR_ITEM_TITLE}
+                      errors={arrayErrors}
+                      description={childItem.description}
                       onEdit={(subItemIndex) => {
                         if (subItemIndex !== undefined) {
                           setSelectedPath(
