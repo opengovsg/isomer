@@ -94,7 +94,8 @@ const InfoCardsBaseSchema = Type.Object({
   subtitle: Type.Optional(
     Type.String({
       title: "Description",
-      maxLength: 200,
+      description:
+        "To make sure your description is readable, keep it under 200 characters.",
     }),
   ),
   maxColumns: Type.Optional(
