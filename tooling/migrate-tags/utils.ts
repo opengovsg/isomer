@@ -69,27 +69,29 @@ export const migrateTags = (collatedTags: {
 }) => {
   const labelToCategoryToId: Record<string, Record<string, UUID>> = {}
 
-  const tagCategories: TagCategories = _.entries(collatedTags.mappings).map(
-    ([categoryLabel, categoryOptions]) => {
+  const tagCategories: TagCategories = _.entries(collatedTags.mappings)
+    .map(([categoryLabel, categoryOptions]) => {
       const categoryId = randomUUID()
 
-      const options = Array.from(categoryOptions.values()).map((option) => {
-        const id = randomUUID()
-        const label = option
-        if (!labelToCategoryToId[label]) {
-          labelToCategoryToId[label] = {}
-        }
-        labelToCategoryToId[label][categoryLabel] = id
+      const options = Array.from(categoryOptions.values())
+        .map((option) => {
+          const id = randomUUID()
+          const label = option
+          if (!labelToCategoryToId[label]) {
+            labelToCategoryToId[label] = {}
+          }
+          labelToCategoryToId[label][categoryLabel] = id
 
-        return {
-          id,
-          label,
-        }
-      })
+          return {
+            id,
+            label,
+          }
+        })
+        .sort(sortFn)
 
       return { id: categoryId, options, label: categoryLabel }
-    },
-  )
+    })
+    .sort(sortFn)
 
   return {
     tagCategories,
@@ -196,4 +198,13 @@ export const getCollatedTags = async (
   }, baseTags)
 
   return collatedTags
+}
+
+interface WithLabel {
+  label: string
+}
+const sortFn = (a: WithLabel, b: WithLabel) => {
+  return a.label.localeCompare(b.label, undefined, {
+    numeric: true,
+  })
 }
