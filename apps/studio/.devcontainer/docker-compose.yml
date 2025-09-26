@@ -17,7 +17,14 @@ services:
 
     # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
-
+    depends_on:
+      - postgres
+      - redis
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - 6379:6379
   postgres:
     extends:
       file: ../docker-compose.yml

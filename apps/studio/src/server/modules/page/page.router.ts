@@ -59,7 +59,12 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import {
+  createDefaultPage,
+  createFolderIndexPage,
+  schedulePublishResource,
+  unschedulePublishResource,
+} from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -397,7 +402,11 @@ export const pageRouter = router({
             message: "Failed to schedule page",
           })
         }
-        // TODO: add logic to add the job to the job queue
+        await schedulePublishResource(
+          ctx.logger,
+          { resourceId: pageId, siteId, userId: ctx.user.id },
+          scheduledAt,
+        )
         await logResourceEvent(tx, {
           siteId,
           by,
@@ -461,8 +470,11 @@ export const pageRouter = router({
             message: "Failed to cancel page schedule",
           })
         }
-        // TODO: add logic to remove the scheduledAt job in the job queue
-        // if execution has not started
+        await unschedulePublishResource(
+          ctx.logger,
+          pageId,
+          resource.scheduledAt,
+        )
         await logResourceEvent(tx, {
           siteId,
           by,

@@ -13,19 +13,25 @@ export const deactivateInactiveUsersJob = () => {
     () => {
       const runJob = async (): Promise<void> => {
         try {
-          logger.info("Deactivate inactive users job started", {
-            timestamp: new Date().toISOString(),
-            jobName: `deactivateInactiveUsersJob`,
-          })
+          logger.info(
+            {
+              timestamp: new Date().toISOString(),
+              jobName: `deactivateInactiveUsersJob`,
+            },
+            "Deactivate inactive users job started",
+          )
 
           await bulkDeactivateInactiveUsers()
 
           logger.info(`deactivateInactiveUsersJob completed successfully`)
         } catch (error) {
-          logger.error(`deactivateInactiveUsersJob failed`, {
-            error: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
-          })
+          logger.error(
+            {
+              error: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : undefined,
+            },
+            `deactivateInactiveUsersJob failed`,
+          )
         }
       }
       void runJob() // Fire and forget - we don't need to await this

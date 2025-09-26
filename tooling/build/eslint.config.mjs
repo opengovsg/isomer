@@ -29,6 +29,7 @@ export default [
       "@typescript-eslint/no-unsafe-member-access": "warn",
       "@typescript-eslint/no-unsafe-return": "warn",
       "@typescript-eslint/no-unsafe-argument": "warn",
+      "@typescript-eslint/await-thenable": "warn",
       "@typescript-eslint/prefer-nullish-coalescing": [
         "error",
         { ignorePrimitives: true },
