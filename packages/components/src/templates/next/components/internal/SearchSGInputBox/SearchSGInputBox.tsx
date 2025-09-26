@@ -1,31 +1,49 @@
 "use client"
 
-import { useEffect } from "react"
+import type {
+  HomepageSearchSGInputBoxProps,
+  NavbarSearchSGInputBoxProps,
+  SearchSGInputBoxProps,
+} from "~/interfaces"
+import { twMerge } from "~/lib/twMerge"
+import { useSearchSGScript } from "../../../../../hooks/useSearchSGScript"
 
-import type { SearchSGInputBoxProps } from "~/interfaces"
-
-const SearchSGInputBox = ({
+interface BaseSearchSGInputBoxProps {
+  clientId: SearchSGInputBoxProps["clientId"]
+  className?: string
+  shouldLoadScript?: boolean
+}
+const BaseSearchSGInputBox = ({
   clientId,
-  isOpen,
-}: Omit<SearchSGInputBoxProps, "type">) => {
-  useEffect(() => {
-    if (!isOpen) {
-      return
-    }
+  className,
+  shouldLoadScript = true,
+}: BaseSearchSGInputBoxProps) => {
+  useSearchSGScript({ clientId, shouldLoad: shouldLoadScript })
 
-    const existingScriptTag = document.getElementById("searchsg-config")
-    if (existingScriptTag) {
-      existingScriptTag.remove()
-    }
-
-    const scriptTag = document.createElement("script")
-    scriptTag.id = "searchsg-config"
-    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${clientId}`
-    scriptTag.setAttribute("defer", "")
-    document.body.appendChild(scriptTag)
-  }, [clientId, isOpen])
-
-  return <div id="searchsg-searchbar" className="h-[3.25rem] lg:h-16" />
+  return (
+    <div
+      id="searchsg-searchbar"
+      className={twMerge("h-[3.25rem] lg:h-16", className)}
+    />
+  )
 }
 
-export default SearchSGInputBox
+export const NavbarSearchSGInputBox = ({
+  clientId,
+  isOpen = false,
+}: Omit<NavbarSearchSGInputBoxProps, "type">) => {
+  return <BaseSearchSGInputBox clientId={clientId} shouldLoadScript={isOpen} />
+}
+
+export const HomepageSearchSGInputBox = ({
+  clientId,
+  className,
+}: Omit<HomepageSearchSGInputBoxProps, "type">) => {
+  return (
+    <BaseSearchSGInputBox
+      clientId={clientId}
+      className={className}
+      shouldLoadScript={true}
+    />
+  )
+}

@@ -8,7 +8,7 @@ import type { NavbarClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
-import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
+import { LocalSearchInputBox, NavbarSearchSGInputBox } from "../../internal"
 import { LinkButton } from "../../internal/LinkButton"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
@@ -239,7 +239,7 @@ export const NavbarClient = ({
           )}
 
           {search.type === "searchSG" && (
-            <SearchSGInputBox
+            <NavbarSearchSGInputBox
               clientId={search.clientId}
               isOpen={isSearchOpen}
             />
