@@ -3862,6 +3862,10 @@ video {
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
 
+.tailwindv3-wrap-anywhere {
+  overflow-wrap: anywhere;
+}
+
 .text-heading-01 {
   font-size: 2.75rem;
   line-height: 3.25rem;
@@ -4056,6 +4060,10 @@ video {
 
 .\[dgs\:TestID123\] {
   dgs: TestID123;
+}
+
+.\[dgs\:XXX\] {
+  dgs: XXX;
 }
 
 .\[dgs\:___\] {
