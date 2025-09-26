@@ -31,7 +31,7 @@ export const commonContactMethodStyles = tv({
     label: "prose-headline-lg-semibold text-base-content",
     valuesAndCaptionContainer: "flex w-full flex-col items-start gap-1",
     value:
-      "tailwindv3-wrap-anywhere prose-headline-lg-medium text-left text-base-content",
+      "prose-headline-lg-medium text-left text-base-content tailwindv3-wrap-anywhere",
     caption: "prose-body-sm text-base-content",
   },
   variants: {
