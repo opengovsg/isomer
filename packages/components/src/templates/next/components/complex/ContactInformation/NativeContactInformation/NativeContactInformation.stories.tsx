@@ -74,6 +74,20 @@ export const Default: Story = {
         label: "Operating Hours",
         values: ["Mon - Fri", "8.30 am to 1.00 pm", "2.00 pm to 5.00 pm"],
       },
+      {
+        method: "website",
+        label: "Website",
+        values: [
+          "https://www.exteriores.gob.es/Embajadas/singapur/es/Paginas/index.aspx",
+        ],
+      },
+      {
+        method: "address",
+        label: "Address",
+        values: [
+          "This is a really really really long address that should be wrapped in the browser so please please please wrap it thank you",
+        ],
+      },
     ],
     otherInformation: {
       label: "This is a customized header of a Other Information field",

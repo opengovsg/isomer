@@ -139,6 +139,16 @@ const config: Config = {
         },
       })
     }),
+    plugin(function ({ addUtilities }) {
+      const newUtilities = {
+        // Using tailwind v3 which lacks "wrap-anywhere" utility (only from v4)
+        // https://tailwindcss.com/docs/overflow-wrap#wrapping-anywhere
+        ".tailwindv3-wrap-anywhere": {
+          "overflow-wrap": "anywhere",
+        },
+      }
+      addUtilities(newUtilities)
+    }),
     // !! @deprecated, use isomerTypography plugin instead
     // Delete after no components are using these classes anymore,
     plugin(({ addBase, addUtilities, theme }) => {
