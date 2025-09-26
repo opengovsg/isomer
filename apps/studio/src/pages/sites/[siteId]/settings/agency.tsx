@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { Box, chakra, FormControl, SimpleGrid } from "@chakra-ui/react"
+import { Box, chakra, SimpleGrid } from "@chakra-ui/react"
+import { useToast } from "@opengovsg/design-system-react"
 import {
-  FormErrorMessage,
-  FormLabel,
-  Input,
-  useToast,
-} from "@opengovsg/design-system-react"
+  AgencySettings,
+  AgencySettingsSchema,
+} from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiWrench } from "react-icons/bi"
-import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
+import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
+import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
@@ -25,6 +25,7 @@ import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
 import { updateSiteConfigSchema } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
+import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
 const AgencySettingsPage: NextPageWithLayout = () => {
@@ -37,6 +38,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   })
   const trpcUtils = trpc.useUtils()
   const toast = useToast()
+  const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
 
   const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
     onSuccess: async ({ siteName }) => {
@@ -55,8 +57,6 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
       })
-
-      resetField("siteName")
     },
   })
 
@@ -66,31 +66,27 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     }
   }, [])
 
-  const [nextUrl, setNextUrl] = useState("")
-  const isOpen = !!nextUrl
-
-  const {
-    resetField,
-    handleSubmit,
-    watch,
-    register,
-    formState: { errors },
-  } = useZodForm({
+  const { handleSubmit } = useZodForm({
     schema: updateSiteConfigSchema.omit({ siteId: true }),
     defaultValues: { siteName },
   })
 
-  const updatedSiteName = watch("siteName")
-  const isDirty = updatedSiteName !== siteName
+  const [nextUrl, setNextUrl] = useState("")
+  const isOpen = !!nextUrl
+  const [state, setState] = useState<AgencySettings>({
+    siteName,
+    agencyName,
+  })
+  const isDirty = state.siteName !== siteName
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
-  const onSubmit = handleSubmit((data) => {
+  const onSubmit = handleSubmit(() =>
     updateSiteConfigMutation.mutate({
-      siteName: data.siteName,
+      siteName: state.siteName,
       siteId,
-    })
-  })
+    }),
+  )
 
   return (
     <>
@@ -105,31 +101,22 @@ const AgencySettingsPage: NextPageWithLayout = () => {
             <SettingsHeader
               title="Name and agency"
               icon={BiWrench}
-              canPublish={isDirty}
               isLoading={updateSiteConfigMutation.isPending}
             />
-            <FormControl isRequired isInvalid={!!errors.siteName}>
-              <FormLabel
-                description={
-                  "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage."
-                }
-              >
-                Site name
-              </FormLabel>
-              <Input {...register("siteName")} />
-              <FormErrorMessage>{errors.siteName?.message}</FormErrorMessage>
-            </FormControl>
-            <FormControl isRequired>
-              <FormLabel
-                description={"This isn't displayed anywhere on your site"}
-              >
-                Website is owned by
-              </FormLabel>
-              <Input value={agencyName ?? "No agency name set"} disabled />
-            </FormControl>
+
+            <ErrorProvider>
+              <FormBuilder<AgencySettings>
+                schema={AgencySettingsSchema}
+                validateFn={validateFn}
+                data={state}
+                handleChange={(data) => {
+                  setState(data)
+                }}
+              />
+            </ErrorProvider>
           </SettingsEditingLayout>
           <Box gridColumn="6 / 10">
-            <EditSettingsPreview siteName={updatedSiteName} />
+            <EditSettingsPreview siteName={state.siteName} />
           </Box>
         </SimpleGrid>
       </chakra.form>
