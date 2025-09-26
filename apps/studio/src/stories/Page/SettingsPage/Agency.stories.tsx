@@ -3,7 +3,7 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import AgencySettingsPage from "~/pages/sites/[siteId]/settings/agency"
-import { COMMON_HANDLERS } from "~/stories/handlers"
+import { ADMIN_HANDLERS } from "~/stories/handlers"
 
 const meta: Meta<typeof AgencySettingsPage> = {
   title: "Pages/Site Management/Agency Settings Page",
@@ -12,7 +12,7 @@ const meta: Meta<typeof AgencySettingsPage> = {
     getLayout: AgencySettingsPage.getLayout,
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...ADMIN_HANDLERS,
         sitesHandlers.getNotification.default(),
         sitesHandlers.getTheme.default(),
         pageHandlers.getRootPage.default(),
@@ -46,7 +46,7 @@ export const Disabled: Story = {
   args: {},
   parameters: {
     msw: {
-      handlers: [sitesHandlers.getNotification.empty(), ...COMMON_HANDLERS],
+      handlers: [sitesHandlers.getNotification.empty(), ...ADMIN_HANDLERS],
     },
   },
 }
@@ -55,7 +55,7 @@ export const Long: Story = {
   args: {},
   parameters: {
     msw: {
-      handlers: [sitesHandlers.getNotification.long(), ...COMMON_HANDLERS],
+      handlers: [sitesHandlers.getNotification.long(), ...ADMIN_HANDLERS],
     },
   },
 }
