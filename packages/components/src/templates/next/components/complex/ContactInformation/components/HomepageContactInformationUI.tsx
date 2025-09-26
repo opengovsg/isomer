@@ -8,6 +8,7 @@ import {
   commonContactMethodStyles,
 } from "./common"
 import { ContactMethod, LoadingContactMethod } from "./ContactMethod"
+import { filterContactMethods } from "./filterContactMethods"
 
 const createHomepageContactInformationStyles = tv({
   extend: commonContactInformationStyles,
@@ -98,11 +99,7 @@ export const HomepageContactInformationUI = ({
   isLoading,
   acceptHtmlTags = false,
 }: ContactInformationUIProps) => {
-  const filteredMethods = whitelistedMethods
-    ? methods.filter(
-        (method) => method.method && whitelistedMethods.includes(method.method),
-      )
-    : methods
+  const filteredMethods = filterContactMethods({ methods, whitelistedMethods })
 
   const numberOfContactMethods: NumberOfContactMethods = isLoading
     ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
