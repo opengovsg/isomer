@@ -5,23 +5,25 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import AgencySettingsPage from "~/pages/sites/[siteId]/settings/agency"
 import { ADMIN_HANDLERS } from "~/stories/handlers"
 
+const COMMON_HANDLERS = [
+  ...ADMIN_HANDLERS,
+  sitesHandlers.getNotification.default(),
+  sitesHandlers.getTheme.default(),
+  pageHandlers.getRootPage.default(),
+  pageHandlers.readPageAndBlob.homepage(),
+  sitesHandlers.getLocalisedSitemap.default(),
+  sitesHandlers.getConfig.default(),
+  sitesHandlers.getFooter.default(),
+  sitesHandlers.getNavbar.default(),
+]
+
 const meta: Meta<typeof AgencySettingsPage> = {
-  title: "Pages/Site Management/Agency Settings Page",
+  title: "Pages/Site Management/Agency Settings Page/Agency",
   component: AgencySettingsPage,
   parameters: {
     getLayout: AgencySettingsPage.getLayout,
     msw: {
-      handlers: [
-        ...ADMIN_HANDLERS,
-        sitesHandlers.getNotification.default(),
-        sitesHandlers.getTheme.default(),
-        pageHandlers.getRootPage.default(),
-        pageHandlers.readPageAndBlob.homepage(),
-        sitesHandlers.getLocalisedSitemap.default(),
-        sitesHandlers.getConfig.default(),
-        sitesHandlers.getFooter.default(),
-        sitesHandlers.getNavbar.default(),
-      ],
+      handlers: COMMON_HANDLERS,
     },
     nextjs: {
       router: {
@@ -40,22 +42,4 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {},
-}
-
-export const Disabled: Story = {
-  args: {},
-  parameters: {
-    msw: {
-      handlers: [sitesHandlers.getNotification.empty(), ...ADMIN_HANDLERS],
-    },
-  },
-}
-
-export const Long: Story = {
-  args: {},
-  parameters: {
-    msw: {
-      handlers: [sitesHandlers.getNotification.long(), ...ADMIN_HANDLERS],
-    },
-  },
 }
