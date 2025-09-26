@@ -31,14 +31,14 @@ export const commonContactMethodStyles = tv({
     label: "prose-headline-lg-semibold text-base-content",
     valuesAndCaptionContainer: "flex w-full flex-col items-start gap-1",
     value:
-      "prose-headline-lg-medium break-words break-all text-left text-base-content",
+      "tailwindv3-wrap-anywhere prose-headline-lg-medium text-left text-base-content",
     caption: "prose-body-sm text-base-content",
   },
   variants: {
     isLink: {
       true: {
         value:
-          "break-words break-all text-hyperlink underline visited:text-hyperlink-visited hover:text-hyperlink-hover",
+          "text-hyperlink underline visited:text-hyperlink-visited hover:text-hyperlink-hover",
       },
       false: {
         value: "text-base-content",
