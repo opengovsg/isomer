@@ -16,8 +16,8 @@ export const SettingsHeader = ({
     <Flex justifyContent="space-between" w="100%">
       <Flex align="center">
         <Center
-          w="1.5rem"
-          h="1.5rem"
+          w="2rem"
+          h="2rem"
           bgColor="brand.secondary.100"
           borderRadius="6px"
           mr="0.75rem"
