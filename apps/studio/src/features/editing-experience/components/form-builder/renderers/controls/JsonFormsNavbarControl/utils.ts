@@ -4,7 +4,12 @@ import cloneDeep from "lodash/cloneDeep"
 import get from "lodash/get"
 import set from "lodash/set"
 
-import type { NavbarItemPath, NavbarItems } from "./types"
+import type {
+  MoveItemOperation,
+  NavbarItemIndices,
+  NavbarItemPath,
+  NavbarItems,
+} from "./types"
 
 // Helper function to get the JSON Forms path of a navbar item or subitem
 export const getNavbarItemPath = (
@@ -27,7 +32,7 @@ export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) => {
 
 // Helper function to extract the indices from the navbar item path in the
 // format "items.{index}" or "items.{parentIndex}.items.{index}"
-const getNavbarItemIndices = (path: string) => {
+const getNavbarItemIndices = (path: string): NavbarItemIndices => {
   const pathSegments = path.split(".")
 
   if (pathSegments.length === 2) {
@@ -44,6 +49,26 @@ const getNavbarItemIndices = (path: string) => {
   }
 
   throw new Error(`Invalid navbar item path: ${path}`)
+}
+
+// Helper function to determine the final index to be dropped into
+const getFinishIndex = (
+  moveItemIndices: NavbarItemIndices,
+  targetLocationIndices: NavbarItemIndices,
+  closestEdge?: Edge | null,
+) => {
+  const startIndex = moveItemIndices.index
+  const finishIndex = targetLocationIndices.index
+
+  if (closestEdge === "top" && startIndex < finishIndex) {
+    return finishIndex - 1
+  }
+
+  if (closestEdge === "bottom" && startIndex > finishIndex) {
+    return finishIndex + 1
+  }
+
+  return finishIndex
 }
 
 // Helper function to insert a subitem into the navbar items at the specified
@@ -64,6 +89,175 @@ const insertSubItem = (
   return data
 }
 
+// Helper function to determine the move item operation type, based on the
+// parameters provided
+export const getMoveItemOperation = (
+  originalPath: string,
+  newPath: string,
+  instruction?: "reorder-before" | "reorder-after" | "combine",
+): MoveItemOperation => {
+  const isItemASubitem = isSubItemPath(originalPath)
+  const isNewPathASubitem = isSubItemPath(newPath)
+  const isCombineOperation = instruction === "combine"
+  const isInstructionProvided = instruction !== undefined
+
+  if (
+    !isCombineOperation &&
+    isNewPathASubitem &&
+    originalPath.split(".items.")[0] === newPath.split(".items.")[0]
+  ) {
+    return "ReorderWithinSameList"
+  }
+
+  if (!isCombineOperation && !isItemASubitem && !isNewPathASubitem) {
+    return "ReorderMainItems"
+  }
+
+  if (!isCombineOperation && isItemASubitem && !isNewPathASubitem) {
+    return "MoveSubitemToBecomeMainItem"
+  }
+
+  if (
+    // Case when someone drags the subitem over the unexpanded main item
+    (isCombineOperation && isItemASubitem && !isNewPathASubitem) ||
+    // Case when someone drags the subitem over the expanded main item
+    (!isInstructionProvided && isItemASubitem && isNewPathASubitem)
+  ) {
+    return "CombineSubitemToMainItem"
+  }
+
+  if (
+    // Case when someone drags the main item over the unexpanded main item
+    (isCombineOperation && !isItemASubitem) ||
+    // Case when someone drags the main item over the expanded main item
+    (!isInstructionProvided && !isItemASubitem && isNewPathASubitem)
+  ) {
+    return "MoveSingleMainItemToBecomeSubitem"
+  }
+
+  return "InvalidMove"
+}
+
+// Handle moving main items to become a subitem of another main item
+const moveSingleMainItemToBecomeSubitem = (
+  data: NavbarItems["items"],
+  originalPath: string,
+  moveItemIndices: NavbarItemIndices,
+  targetLocationIndices: NavbarItemIndices,
+) => {
+  const itemToMove = get({ items: data }, originalPath) as
+    | NavbarItems["items"][number]
+    | undefined
+
+  if (
+    !itemToMove ||
+    (itemToMove.items !== undefined && itemToMove.items.length > 0)
+  ) {
+    return data
+  }
+
+  const newData = insertSubItem(
+    data,
+    targetLocationIndices.parentIndex ?? targetLocationIndices.index,
+    itemToMove,
+  )
+  newData.splice(moveItemIndices.index, 1)
+  return newData
+}
+
+// Handle moving subitem from one parent to another
+const moveSubItemToBecomeSubItemOfAnother = (
+  data: NavbarItems["items"],
+  moveItemIndices: NavbarItemIndices,
+  targetLocationIndices: NavbarItemIndices,
+) => {
+  if (moveItemIndices.parentIndex === undefined) {
+    return data
+  }
+
+  const itemToMove = data[moveItemIndices.parentIndex]?.items?.splice(
+    moveItemIndices.index,
+    1,
+  )[0]
+
+  if (!itemToMove) {
+    return data
+  }
+
+  return insertSubItem(
+    data,
+    targetLocationIndices.parentIndex ?? targetLocationIndices.index,
+    itemToMove,
+  )
+}
+
+// Handle reordering a subitem within the same parent list
+const reorderWithinSameList = (
+  data: NavbarItems["items"],
+  moveItemIndices: NavbarItemIndices,
+  startIndex: number,
+  finishIndex: number,
+) =>
+  data.map((item, parentIndex) => {
+    if (parentIndex === moveItemIndices.parentIndex) {
+      return {
+        ...item,
+        items: reorder({
+          list: item.items ?? [],
+          startIndex,
+          finishIndex,
+        }),
+      }
+    }
+
+    return item
+  })
+
+// Handle moving a subitem to become a main item
+const moveSubItemToBecomeMainItem = (
+  data: NavbarItems["items"],
+  originalPath: string,
+  moveItemIndices: NavbarItemIndices,
+  targetLocationIndices: NavbarItemIndices,
+  closestEdge?: Edge | null,
+) => {
+  const itemToMove = get({ items: data }, originalPath) as
+    | NavbarItems["items"][number]
+    | undefined
+
+  if (!itemToMove) {
+    return data
+  }
+
+  const newData = [
+    ...data.map((item, parentIndex) => {
+      if (parentIndex === moveItemIndices.parentIndex) {
+        return {
+          ...item,
+          items: item.items?.filter(
+            (_, subItemIndex) => subItemIndex !== moveItemIndices.index,
+          ),
+        }
+      }
+
+      return item
+    }),
+    itemToMove,
+  ]
+
+  const finishIndex = getFinishIndex(
+    { index: newData.length - 1 },
+    targetLocationIndices,
+    closestEdge,
+  )
+
+  return reorder({
+    list: newData,
+    startIndex: newData.length - 1,
+    finishIndex,
+  })
+}
+
 // Helper function to handle moving navbar items and subitems based on
 // drag-and-drop operations. Returns the updated navbar items array.
 export const handleMoveItem = (
@@ -73,163 +267,60 @@ export const handleMoveItem = (
   instruction?: "reorder-before" | "reorder-after" | "combine",
   closestEdge?: Edge | null,
 ) => {
-  // NOTE: A move is valid when:
-  // 1. Moving subitems within the same parent list (reorder)
-  // 2. Moving main items within the main list (reorder)
-  // 3. Moving a subitem to become a main item (reorder)
-  // 4. Moving a subitem to become a subitem of another main item (combine)
-  // 5. Moving a main item to become a subitem of another main item, if
-  //    the main item does not have any subitems (combine)
-  // All other moves are invalid, and we should not update the data
-  const isItemASubitem = isSubItemPath(originalPath)
-  const isNewPathASubitem = isSubItemPath(newPath)
-  const isCombineOperation = instruction === "combine"
-  const isInstructionProvided = instruction !== undefined
+  const operation = getMoveItemOperation(originalPath, newPath, instruction)
 
-  const isReorderingWithinSameList =
-    !isCombineOperation &&
-    isNewPathASubitem &&
-    originalPath.split(".items.")[0] === newPath.split(".items.")[0]
-  const isReorderingMainItems =
-    !isCombineOperation && !isItemASubitem && !isNewPathASubitem
-  const isMovingSubitemToBecomeMainItem =
-    !isCombineOperation && isItemASubitem && !isNewPathASubitem
-  const isCombiningSubitemToMainItem =
-    // Case when someone drags the subitem over the unexpanded main item
-    (isCombineOperation && isItemASubitem && !isNewPathASubitem) ||
-    // Case when someone drags the subitem over the expanded main item
-    (!isInstructionProvided &&
-      isItemASubitem &&
-      isNewPathASubitem &&
-      !isReorderingWithinSameList)
-  const isMovingSingleMainItemToBecomeSubitem =
-    // Case when someone drags the main item over the unexpanded main item
-    (isCombineOperation && !isItemASubitem) ||
-    // Case when someone drags the main item over the expanded main item
-    (!isInstructionProvided && !isItemASubitem && isNewPathASubitem)
-
-  if (
-    !isReorderingWithinSameList &&
-    !isReorderingMainItems &&
-    !isMovingSubitemToBecomeMainItem &&
-    !isCombiningSubitemToMainItem &&
-    !isMovingSingleMainItemToBecomeSubitem
-  ) {
+  if (operation === "InvalidMove") {
     return existingData
   }
 
   const data = cloneDeep<NavbarItems["items"]>(existingData)
   const moveItemIndices = getNavbarItemIndices(originalPath)
   const targetLocationIndices = getNavbarItemIndices(newPath)
-
-  // Handle the combine case separately from reordering
-  if (isMovingSingleMainItemToBecomeSubitem) {
-    // Moving a main item to become a subitem of another main item
-    const itemToMove = get({ items: data }, originalPath) as
-      | NavbarItems["items"][number]
-      | undefined
-
-    if (
-      !itemToMove ||
-      (itemToMove.items !== undefined && itemToMove.items.length > 0)
-    ) {
-      return data
-    }
-
-    const newData = insertSubItem(
-      data,
-      targetLocationIndices.parentIndex ?? targetLocationIndices.index,
-      itemToMove,
-    )
-    newData.splice(moveItemIndices.index, 1)
-    return newData
-  }
-
-  if (isCombiningSubitemToMainItem && moveItemIndices.parentIndex) {
-    // Moving a subitem to become a subitem of another main item,
-    const itemToMove = data[moveItemIndices.parentIndex]?.items?.splice(
-      moveItemIndices.index,
-      1,
-    )[0]
-
-    if (!itemToMove) {
-      return data
-    }
-
-    return insertSubItem(
-      data,
-      targetLocationIndices.parentIndex ?? targetLocationIndices.index,
-      itemToMove,
-    )
-  }
-
-  // Handle reordering cases
+  // Used for reordering operations
   const startIndex = moveItemIndices.index
-  const finishIndex =
-    instruction === "reorder-before" ||
-    (instruction === undefined && closestEdge === "top")
-      ? targetLocationIndices.index
-      : targetLocationIndices.index + 1
+  const finishIndex = getFinishIndex(
+    moveItemIndices,
+    targetLocationIndices,
+    closestEdge,
+  )
 
-  if (isReorderingWithinSameList) {
-    return data.map((item, parentIndex) => {
-      if (parentIndex === moveItemIndices.parentIndex) {
-        return {
-          ...item,
-          items: reorder({
-            list: item.items ?? [],
-            startIndex,
-            finishIndex,
-          }),
-        }
-      }
-
-      return item
-    })
-  }
-
-  if (isReorderingMainItems) {
-    // Reordering main items within the main list
-    return reorder({
-      list: data,
-      startIndex,
-      finishIndex,
-    })
-  }
-
-  if (isMovingSubitemToBecomeMainItem) {
-    // Moving a subitem to become a main item
-    const itemToMove = get({ items: data }, originalPath) as
-      | NavbarItems["items"][number]
-      | undefined
-
-    if (!itemToMove) {
+  switch (operation) {
+    case "MoveSingleMainItemToBecomeSubitem":
+      return moveSingleMainItemToBecomeSubitem(
+        data,
+        originalPath,
+        moveItemIndices,
+        targetLocationIndices,
+      )
+    case "CombineSubitemToMainItem":
+      return moveSubItemToBecomeSubItemOfAnother(
+        data,
+        moveItemIndices,
+        targetLocationIndices,
+      )
+    case "ReorderWithinSameList":
+      return reorderWithinSameList(
+        data,
+        moveItemIndices,
+        startIndex,
+        finishIndex,
+      )
+    case "ReorderMainItems":
+      return reorder({
+        list: data,
+        startIndex,
+        finishIndex,
+      })
+    case "MoveSubitemToBecomeMainItem":
+      return moveSubItemToBecomeMainItem(
+        data,
+        originalPath,
+        moveItemIndices,
+        targetLocationIndices,
+        closestEdge,
+      )
+    default:
+      const _: never = operation
       return data
-    }
-
-    const newData = [
-      ...data.map((item, parentIndex) => {
-        if (parentIndex === moveItemIndices.parentIndex) {
-          return {
-            ...item,
-            items: item.items?.filter(
-              (_, subItemIndex) => subItemIndex !== moveItemIndices.index,
-            ),
-          }
-        }
-
-        return item
-      }),
-      itemToMove,
-    ]
-
-    return reorder({
-      list: newData,
-      startIndex: newData.length - 1,
-      finishIndex,
-    })
   }
-
-  // Exhausted all cases
-  return data
 }
