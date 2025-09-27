@@ -6,8 +6,10 @@ import type {
   UISchemaElement,
 } from "@jsonforms/core"
 import { Box, HStack, Icon, Text, VStack } from "@chakra-ui/react"
+import { computeChildLabel } from "@jsonforms/core"
 import {
   JsonFormsDispatch,
+  useJsonForms,
   withJsonFormsMasterListItemProps,
 } from "@jsonforms/react"
 import { Button } from "@opengovsg/design-system-react"
@@ -24,19 +26,6 @@ interface EditNavbarItemProps {
   handleRemoveItem: () => void
 }
 
-const NavbarItemLabel = withJsonFormsMasterListItemProps(
-  ({ childLabel }: StatePropsOfMasterItem) => (
-    <Text
-      as="h2"
-      textStyle="h3"
-      textColor="base.content.default"
-      textOverflow="ellipsis"
-    >
-      {childLabel || "Add a new link"}
-    </Text>
-  ),
-)
-
 export const EditNavbarItem = ({
   renderers,
   cells,
@@ -47,6 +36,17 @@ export const EditNavbarItem = ({
   onBack,
   handleRemoveItem,
 }: EditNavbarItemProps) => {
+  const ctx = useJsonForms()
+  const label = computeChildLabel(
+    ctx.core?.data,
+    path,
+    "",
+    schema,
+    ctx.core?.schema ?? {},
+    ctx.i18n?.translate ?? ((s) => s),
+    uischema,
+  )
+
   return (
     <VStack
       position="absolute"
@@ -72,7 +72,7 @@ export const EditNavbarItem = ({
           variant="link"
           leftIcon={<BiLeftArrowAlt fontSize="1.25rem" />}
           onClick={onBack}
-          textStyle="subhead-1"
+          textStyle="subhead-2"
         >
           Back to navigation menu
         </Button>
@@ -88,17 +88,14 @@ export const EditNavbarItem = ({
             <Icon as={BiSitemap} fontSize="1rem" />
           </Box>
 
-          <NavbarItemLabel
-            index={Number(path.split(".").pop() ?? 0)}
-            selected={false}
-            path={path.split(".").slice(0, -1).join(".")}
-            enabled={true}
-            schema={schema}
-            uischema={uischema}
-            handleSelect={() => () => undefined}
-            removeItem={() => () => undefined}
-            translations={{}}
-          />
+          <Text
+            as="h2"
+            textStyle="h3"
+            textColor="base.content.default"
+            textOverflow="ellipsis"
+          >
+            {label || "Add a new link"}
+          </Text>
         </HStack>
       </VStack>
 

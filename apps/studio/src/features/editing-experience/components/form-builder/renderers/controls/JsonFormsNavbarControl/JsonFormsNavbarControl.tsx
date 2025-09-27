@@ -23,6 +23,7 @@ import get from "lodash/get"
 import { BiPlusCircle } from "react-icons/bi"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { getParentPath } from "../utils"
 import { EditNavbarItem } from "./EditNavbarItem"
 import { StackableNavbarItem } from "./StackableNavbarItem"
 
@@ -90,7 +91,7 @@ export function JsonFormsNavbarControl({
         onBack={() => setSelectedPath(undefined)}
         handleRemoveItem={() =>
           handleRemove(
-            selectedPath.split(".").slice(0, -1).join("."),
+            getParentPath(selectedPath),
             Number(selectedPath.split(".").pop()),
           )
         }
@@ -140,7 +141,7 @@ export function JsonFormsNavbarControl({
               >
                 {[...Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, String(index))
-                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                   const childItem = get(
                     ctx.core?.data,
                     childPath,
@@ -149,10 +150,8 @@ export function JsonFormsNavbarControl({
                   return (
                     <StackableNavbarItem
                       key={JSON.stringify(childItem)}
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                       name={childItem.name || "Navbar item"}
                       description={
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                         childItem.description ||
                         "Add a description for this link"
                       }
@@ -178,7 +177,6 @@ export function JsonFormsNavbarControl({
                           handleRemove(path, index)
                         }
                       }}
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                       subItems={childItem.items}
                     />
                   )
