@@ -1,3 +1,5 @@
+import type { Except } from "type-fest"
+
 import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 import {
   AskgovWidget,
@@ -5,13 +7,14 @@ import {
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
   GoogleTagManagerPreload,
+  MicrosoftClarity,
   VicaStylesheet,
   VicaWidget,
   Wogaa,
 } from "../templates/next/components/internal"
 
 interface RenderApplicationScriptsProps {
-  site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
+  site: Except<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
   ScriptComponent: ScriptComponentType
 }
 
@@ -19,22 +22,19 @@ export const RenderApplicationScripts = ({
   site,
   ScriptComponent,
 }: RenderApplicationScriptsProps) => {
-  const shouldIncludeGTM =
-    site.environment === "production" &&
-    (!!site.siteGtmId || !!site.isomerGtmId)
-
   return (
     <>
       <FontPreload />
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
 
-      {shouldIncludeGTM && (
+      {(!!site.siteGtmId || !!site.isomerGtmId) && (
         <>
           <GoogleTagManagerPreload />
           <GoogleTagManagerHeader
             siteGtmId={site.siteGtmId}
             isomerGtmId={site.isomerGtmId}
+            usePartytown={site.usePartytown}
             ScriptComponent={ScriptComponent}
           />
           <GoogleTagManagerBody
@@ -42,6 +42,13 @@ export const RenderApplicationScripts = ({
             isomerGtmId={site.isomerGtmId}
           />
         </>
+      )}
+
+      {!!site.isomerMsClarityId && (
+        <MicrosoftClarity
+          ScriptComponent={ScriptComponent}
+          msClarityId={site.isomerMsClarityId}
+        />
       )}
 
       {/* Ensures that the webchat widget only loads after the page has loaded */}

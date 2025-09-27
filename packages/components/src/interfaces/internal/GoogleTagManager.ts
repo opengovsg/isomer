@@ -1,11 +1,12 @@
-import type { ScriptComponentType } from "~/types"
+import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 
 interface GoogleTagManagerScriptProps {
   gtmId: string
 }
 
 export interface GoogleTagManagerHeaderScriptProps
-  extends GoogleTagManagerScriptProps {
+  extends GoogleTagManagerScriptProps,
+    Pick<IsomerSiteProps, "usePartytown"> {
   ScriptComponent?: ScriptComponentType
 }
 
@@ -16,7 +17,9 @@ interface GoogleTagManagerProps {
   isomerGtmId?: GoogleTagManagerScriptProps["gtmId"]
 }
 
-export interface GoogleTagManagerHeaderProps extends GoogleTagManagerProps {
+export interface GoogleTagManagerHeaderProps
+  extends GoogleTagManagerProps,
+    Pick<IsomerSiteProps, "usePartytown"> {
   ScriptComponent?: ScriptComponentType
 }
 
