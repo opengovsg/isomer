@@ -40,35 +40,39 @@ import {
   BiTrash,
 } from "react-icons/bi"
 
+import {
+  DEFAULT_NAVBAR_ITEM_DESCRIPTION,
+  DEFAULT_NAVBAR_ITEM_TITLE,
+} from "./constants"
 import { getNavbarItemPath } from "./utils"
 
 interface NavbarItemBoxProps {
-  name: string
+  index: number
+  onEditItem: () => void
+  onDeleteItem: () => void
+  name?: string
   description?: string
   subItems?: Pick<NavbarItemBoxProps, "name" | "description">[]
-  index: number
   parentIndex?: number
   itemDragHandleRef?: React.RefObject<HTMLDivElement>
   isNavbarItemDragging?: boolean
   isSubItem?: boolean
-  onEditItem: () => void
-  onDeleteItem: () => void
   isItemBeingDraggedOver?: boolean
   setIsItemBeingDraggedOver?: Dispatch<SetStateAction<boolean>>
   isInvalid?: boolean
 }
 
 export const NavbarItemBox = ({
-  name,
-  description,
-  subItems,
   index,
+  onEditItem,
+  onDeleteItem,
+  name = DEFAULT_NAVBAR_ITEM_TITLE,
+  description = DEFAULT_NAVBAR_ITEM_DESCRIPTION,
+  subItems,
   parentIndex,
   itemDragHandleRef,
   isNavbarItemDragging,
   isSubItem,
-  onEditItem,
-  onDeleteItem,
   isItemBeingDraggedOver,
   setIsItemBeingDraggedOver,
   isInvalid,
@@ -308,7 +312,7 @@ export const NavbarItemBox = ({
                     }
                     noOfLines={1}
                   >
-                    {description || "Add a description for this link"}
+                    {description}
                   </Text>
                 </HStack>
               </VStack>
