@@ -196,8 +196,8 @@ export const StackableNavbarItem = ({
             </HStack>
           </Box>
 
-          <AccordionPanel pt="0.75rem" pb={0} pl="3rem" pr={0} w="full">
-            {subItems && subItems.length > 0 && (
+          {subItems && subItems.length > 0 && (
+            <AccordionPanel pt="0.75rem" pb={0} pl="3rem" pr={0} w="full">
               <VStack spacing="0.75rem">
                 {subItems.map((subItem, idx) => (
                   <Box
@@ -333,8 +333,8 @@ export const StackableNavbarItem = ({
                   </Box>
                 ))}
               </VStack>
-            )}
-          </AccordionPanel>
+            </AccordionPanel>
+          )}
         </Box>
       </AccordionItem>
     </>
