@@ -41,7 +41,6 @@ export const DeleteGroupModal = ({
         <ModalCloseButton size="lg" />
 
         <ModalBody>
-          {/* NOTE: We  */}
           <Text textStyle="body-1">
             You’re about to delete {totalLinksToDelete} {linkSingularPlural}{" "}
             from the navigation menu. This doesn’t remove any actual pages.
