@@ -172,7 +172,7 @@ export const NavbarItemBox = ({
 
       <Box
         ref={itemRef}
-        aria-invalid={isInvalid || undefined}
+        aria-invalid={isInvalid && !isItemBeingDraggedOver}
         data-id={getNavbarItemPath(index, parentIndex)}
         borderWidth="1px"
         borderStyle="solid"

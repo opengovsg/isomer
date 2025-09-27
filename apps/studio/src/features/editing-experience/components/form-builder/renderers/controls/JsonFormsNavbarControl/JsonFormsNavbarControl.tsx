@@ -246,7 +246,7 @@ export function JsonFormsNavbarControl({
                 display="flex"
                 flexDir="column"
                 gap="0.75rem"
-                allowMultiple
+                allowToggle
               >
                 {[...Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, String(index))
@@ -262,7 +262,6 @@ export function JsonFormsNavbarControl({
 
                   return (
                     <StackableNavbarItem
-                      key={JSON.stringify(childItem)}
                       index={index}
                       name={childItem.name || DEFAULT_NAVBAR_ITEM_TITLE}
                       errors={arrayErrors}
