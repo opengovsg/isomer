@@ -176,9 +176,11 @@ export const StackableNavbarItem = ({
                 input,
                 element,
                 operations: {
-                  "reorder-before": "available",
-                  "reorder-after": "available",
                   combine: "available",
+                  // We don't want reordering to happen when dropping directly
+                  // on top of the item
+                  "reorder-before": "blocked",
+                  "reorder-after": "blocked",
                 },
               },
             ),
@@ -258,7 +260,7 @@ export const StackableNavbarItem = ({
             isInvalid={numberOfErrors > 0}
           />
 
-          {hasSubItems && (
+          {hasSubItems ? (
             <AccordionPanel
               ref={subItemsDroppableZoneRef}
               pt="0.75rem"
@@ -271,13 +273,12 @@ export const StackableNavbarItem = ({
                 {subItems.map((subItem, idx) => {
                   const numberOfSubItemErrors = getNumberOfErrors(
                     errors,
-                    getNavbarItemPath(index, idx),
+                    getNavbarItemPath(idx, index),
                   )
                   const isInvalid = numberOfSubItemErrors > 0
 
                   return (
                     <NavbarItemBox
-                      key={JSON.stringify(subItem)}
                       name={subItem.name || DEFAULT_NAVBAR_ITEM_TITLE}
                       description={
                         isInvalid
@@ -298,6 +299,8 @@ export const StackableNavbarItem = ({
                 })}
               </VStack>
             </AccordionPanel>
+          ) : (
+            <Box ref={subItemsDroppableZoneRef} />
           )}
         </Box>
       </AccordionItem>
