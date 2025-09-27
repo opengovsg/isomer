@@ -36,6 +36,7 @@ import { NavbarItemBox } from "./NavbarItemBox"
 import { getInstancePathFromNavbarItemPath, getNavbarItemPath } from "./utils"
 
 const getNumberOfErrors = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   errors: ErrorObject<string, Record<string, any>, unknown>[],
   path: string,
 ) => {
@@ -45,21 +46,22 @@ const getNumberOfErrors = (
 }
 
 interface StackableNavbarItemProps {
-  name: string
   index: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   errors: ErrorObject<string, Record<string, any>, unknown>[]
   onEdit: (subItemIndex?: number) => void
   removeItem: (subItemIndex?: number) => void
+  name?: string
   description?: string
   subItems?: Pick<StackableNavbarItemProps, "name" | "description">[]
 }
 
 export const StackableNavbarItem = ({
-  name,
   index,
   errors,
   onEdit,
   removeItem,
+  name,
   description,
   subItems,
 }: StackableNavbarItemProps) => {
@@ -209,7 +211,7 @@ export const StackableNavbarItem = ({
   return (
     <>
       <DeleteGroupModal
-        label={name}
+        label={name || DEFAULT_NAVBAR_ITEM_TITLE}
         subItemsCount={subItems ? subItems.length : 0}
         isOpen={isDeleteGroupModalOpen}
         onClose={onDeleteGroupModalClose}
@@ -221,7 +223,9 @@ export const StackableNavbarItem = ({
 
       {hasSubItems && (
         <DeleteSubItemModal
-          label={subItems[subItemToDelete ?? 0]?.name ?? ""}
+          label={
+            subItems[subItemToDelete ?? 0]?.name ?? DEFAULT_NAVBAR_ITEM_TITLE
+          }
           isOpen={isDeleteSubItemModalOpen}
           onClose={onDeleteSubItemModalClose}
           onDelete={() => {
@@ -279,7 +283,7 @@ export const StackableNavbarItem = ({
 
                   return (
                     <NavbarItemBox
-                      name={subItem.name || DEFAULT_NAVBAR_ITEM_TITLE}
+                      name={subItem.name}
                       description={
                         isInvalid
                           ? "Fix errors before publishing"

@@ -32,7 +32,6 @@ import { BiPlusCircle } from "react-icons/bi"
 import type { NavbarItems } from "./types"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getParentPath } from "../utils"
-import { DEFAULT_NAVBAR_ITEM_TITLE } from "./constants"
 import { EditNavbarItem } from "./EditNavbarItem"
 import { StackableNavbarItem } from "./StackableNavbarItem"
 import { handleMoveItem, isSubItemPath } from "./utils"
@@ -263,7 +262,7 @@ export function JsonFormsNavbarControl({
                   return (
                     <StackableNavbarItem
                       index={index}
-                      name={childItem.name || DEFAULT_NAVBAR_ITEM_TITLE}
+                      name={childItem.name}
                       errors={arrayErrors}
                       description={childItem.description}
                       onEdit={(subItemIndex) => {

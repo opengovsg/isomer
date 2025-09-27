@@ -112,28 +112,24 @@ export const NavbarEditor = ({ siteId }: NavbarEditorProps) => {
 
           <TabPanels px="0.5rem" flex={1} overflowY="auto">
             <TabPanel>
-              <Box px="1.5rem">
-                <Box mb="1rem" h="full">
-                  <FormBuilder<Static<typeof NavbarItemsSchema>>
-                    schema={NavbarItemsSchema}
-                    validateFn={validateItemsFn}
-                    data={navbar?.content}
-                    handleChange={handleItemsChange}
-                  />
-                </Box>
+              <Box px="1.5rem" mb="1rem" h="full">
+                <FormBuilder<Static<typeof NavbarItemsSchema>>
+                  schema={NavbarItemsSchema}
+                  validateFn={validateItemsFn}
+                  data={navbar?.content}
+                  handleChange={handleItemsChange}
+                />
               </Box>
             </TabPanel>
 
             <TabPanel>
-              <Box px="1.5rem" pt="1rem">
-                <Box mb="1rem" h="full">
-                  <FormBuilder<Static<typeof NavbarAddonsSchema>>
-                    schema={NavbarAddonsSchema}
-                    validateFn={validateAddonsFn}
-                    data={navbar?.content}
-                    handleChange={handleAddonsChange}
-                  />
-                </Box>
+              <Box px="1.5rem" pt="1rem" mb="1rem" h="full">
+                <FormBuilder<Static<typeof NavbarAddonsSchema>>
+                  schema={NavbarAddonsSchema}
+                  validateFn={validateAddonsFn}
+                  data={navbar?.content}
+                  handleChange={handleAddonsChange}
+                />
               </Box>
             </TabPanel>
           </TabPanels>
