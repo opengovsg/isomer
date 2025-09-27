@@ -12,7 +12,10 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, Tab, Tabs } from "@opengovsg/design-system-react"
-import { NavbarItemsSchema } from "@opengovsg/isomer-components"
+import {
+  NavbarAddonsSchema,
+  NavbarItemsSchema,
+} from "@opengovsg/isomer-components"
 import { BiDirections } from "react-icons/bi"
 
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
@@ -31,10 +34,16 @@ export const NavbarEditor = ({ siteId }: NavbarEditorProps) => {
     id: siteId,
   })
 
-  const validateFn =
+  const validateItemsFn =
     ajv.compile<Static<typeof NavbarItemsSchema>>(NavbarItemsSchema)
+  const validateAddonsFn =
+    ajv.compile<Static<typeof NavbarAddonsSchema>>(NavbarAddonsSchema)
 
-  const handleChange = (data: Static<typeof NavbarItemsSchema>) => {
+  const handleItemsChange = (data: Static<typeof NavbarItemsSchema>) => {
+    console.log(data)
+  }
+
+  const handleAddonsChange = (data: Static<typeof NavbarAddonsSchema>) => {
     console.log(data)
   }
 
@@ -94,19 +103,26 @@ export const NavbarEditor = ({ siteId }: NavbarEditorProps) => {
 
           <TabPanels px="0.5rem" flex={1} overflowY="auto">
             <TabPanel>
-              <Box px="1.5rem">
-                <Box mb="1rem" h="full">
-                  <FormBuilder<Static<typeof NavbarItemsSchema>>
-                    schema={NavbarItemsSchema}
-                    validateFn={validateFn}
-                    data={navbar?.content}
-                    handleChange={handleChange}
-                  />
-                </Box>
+              <Box px="1.5rem" mb="1rem" h="full">
+                <FormBuilder<Static<typeof NavbarItemsSchema>>
+                  schema={NavbarItemsSchema}
+                  validateFn={validateItemsFn}
+                  data={navbar?.content}
+                  handleChange={handleItemsChange}
+                />
               </Box>
             </TabPanel>
 
-            <TabPanel>Work in progress</TabPanel>
+            <TabPanel>
+              <Box px="1.5rem" pt="1rem" mb="1rem" h="full">
+                <FormBuilder<Static<typeof NavbarAddonsSchema>>
+                  schema={NavbarAddonsSchema}
+                  validateFn={validateAddonsFn}
+                  data={navbar?.content}
+                  handleChange={handleAddonsChange}
+                />
+              </Box>
+            </TabPanel>
           </TabPanels>
         </Tabs>
       </ErrorProvider>

@@ -2,16 +2,11 @@ import type {
   JsonFormsCellRendererRegistryEntry,
   JsonFormsRendererRegistryEntry,
   JsonSchema,
-  StatePropsOfMasterItem,
   UISchemaElement,
 } from "@jsonforms/core"
 import { Box, HStack, Icon, Text, VStack } from "@chakra-ui/react"
 import { computeChildLabel } from "@jsonforms/core"
-import {
-  JsonFormsDispatch,
-  useJsonForms,
-  withJsonFormsMasterListItemProps,
-} from "@jsonforms/react"
+import { JsonFormsDispatch, useJsonForms } from "@jsonforms/react"
 import { Button } from "@opengovsg/design-system-react"
 import { BiLeftArrowAlt, BiSitemap, BiTrash } from "react-icons/bi"
 
