@@ -13,6 +13,7 @@ import {
   getNameSchema,
   getNotificationSchema,
   publishSiteSchema,
+  setFooterSchema,
   setNavbarSchema,
   setNotificationSchema,
   setSiteConfigByAdminSchema,
@@ -111,6 +112,93 @@ export const siteRouter = router({
         action: "read",
       })
       return getFooter(db, id)
+    }),
+  setFooter: protectedProcedure
+    .input(setFooterSchema)
+    .mutation(async ({ ctx, input: { siteId, footer } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+
+      await db.transaction().execute(async (tx) => {
+        const user = await tx
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!user) {
+          // NOTE: This shouldn't happen as the user is already logged in
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The user could not be found.",
+          })
+        }
+
+        const site = await tx
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!site) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The site could not be found.",
+          })
+        }
+
+        const oldFooter = await tx
+          .selectFrom("Footer")
+          .where("siteId", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!oldFooter) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The footer for the site could not be found.",
+          })
+        }
+
+        const newFooter = await tx
+          .updateTable("Footer")
+          .set({
+            content: jsonb(
+              safeJsonParse(
+                footer,
+              ) as IsomerSiteWideComponentsProps["footerItems"],
+            ),
+          })
+          .where("siteId", "=", siteId)
+          .returningAll()
+          .executeTakeFirst()
+
+        if (!newFooter) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site footer.",
+          })
+        }
+
+        await logConfigEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.FooterUpdate,
+          delta: {
+            before: oldFooter,
+            after: newFooter,
+          },
+          by: user,
+        })
+
+        await publishSiteConfig(
+          ctx.user.id,
+          { site, footer: newFooter },
+          ctx.logger,
+        )
+      })
     }),
   getNavbar: protectedProcedure
     .input(getConfigSchema)
