@@ -13,6 +13,7 @@ import {
   getNameSchema,
   getNotificationSchema,
   publishSiteSchema,
+  setNavbarSchema,
   setNotificationSchema,
   setSiteConfigByAdminSchema,
 } from "~/schemas/site"
@@ -120,6 +121,92 @@ export const siteRouter = router({
         action: "read",
       })
       return getNavBar(db, id)
+    }),
+  setNavbar: protectedProcedure
+    .input(setNavbarSchema)
+    .mutation(async ({ ctx, input: { siteId, navbar } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+
+      await db.transaction().execute(async (tx) => {
+        const user = await tx
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!user) {
+          // NOTE: This shouldn't happen as the user is already logged in
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The user could not be found.",
+          })
+        }
+
+        const site = await tx
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!site) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The site could not be found.",
+          })
+        }
+
+        // Update Navbar contents
+        const oldNavbar = await tx
+          .selectFrom("Navbar")
+          .where("siteId", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!oldNavbar) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The navbar for the site could not be found.",
+          })
+        }
+
+        const newNavbar = await tx
+          .updateTable("Navbar")
+          .set({
+            content: jsonb(
+              safeJsonParse(navbar) as IsomerSiteWideComponentsProps["navbar"],
+            ),
+          })
+          .where("siteId", "=", siteId)
+          .returningAll()
+          .executeTakeFirst()
+
+        if (!newNavbar) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site navbar.",
+          })
+        }
+
+        await logConfigEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.NavbarUpdate,
+          delta: {
+            before: oldNavbar,
+            after: newNavbar,
+          },
+          by: user,
+        })
+
+        await publishSiteConfig(
+          ctx.user.id,
+          { site, navbar: newNavbar },
+          ctx.logger,
+        )
+      })
     }),
   getLocalisedSitemap: protectedProcedure
     .input(getLocalisedSitemapSchema)

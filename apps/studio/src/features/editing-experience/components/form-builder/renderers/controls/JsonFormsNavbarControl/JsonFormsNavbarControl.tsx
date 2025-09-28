@@ -14,6 +14,7 @@ import {
   HStack,
   Icon,
   Text,
+  Tooltip,
   VStack,
 } from "@chakra-ui/react"
 import {
@@ -223,20 +224,31 @@ export function JsonFormsNavbarControl({
                   )}
                 </Text>
 
-                <Button
-                  variant="clear"
-                  size="xs"
-                  leftIcon={<Icon as={BiPlusCircle} />}
-                  onClick={addItem(
-                    path,
-                    createDefaultValue(schema, rootSchema),
-                  )}
-                  isDisabled={
-                    arraySchema.maxItems ? data >= arraySchema.maxItems : false
+                <Tooltip
+                  label={
+                    arraySchema.maxItems && data >= arraySchema.maxItems
+                      ? `You can only place up to ${arraySchema.maxItems} links on the first level.`
+                      : undefined
                   }
+                  hasArrow
                 >
-                  Add a link
-                </Button>
+                  <Button
+                    variant="clear"
+                    size="xs"
+                    leftIcon={<Icon as={BiPlusCircle} />}
+                    onClick={addItem(
+                      path,
+                      createDefaultValue(schema, rootSchema),
+                    )}
+                    isDisabled={
+                      arraySchema.maxItems
+                        ? data >= arraySchema.maxItems
+                        : false
+                    }
+                  >
+                    Add a link
+                  </Button>
+                </Tooltip>
               </HStack>
 
               <Accordion
