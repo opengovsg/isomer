@@ -22,15 +22,7 @@ import { trpc } from "~/utils/trpc"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
 import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"
-
-const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
-  switch (pageType) {
-    case LINK_TYPES.File:
-      return href.split("/").pop()
-    default:
-      return href
-  }
-}
+import { parseHref } from "./utils/parseHref"
 
 interface SuspendableLabelProps {
   siteId: number
