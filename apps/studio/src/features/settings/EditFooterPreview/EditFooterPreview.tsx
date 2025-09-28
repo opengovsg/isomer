@@ -1,3 +1,4 @@
+import type { FooterSchemaType } from "@opengovsg/isomer-components"
 import merge from "lodash/merge"
 
 import type { IframeCallbackFnProps } from "~/types/dom"
@@ -9,9 +10,13 @@ import { FOOTER_QUERY_SELECTOR } from "../constants"
 
 interface EditFooterPreviewProps {
   siteId: number
+  previewFooterState?: FooterSchemaType
 }
 
-export const EditFooterPreview = ({ siteId }: EditFooterPreviewProps) => {
+export const EditFooterPreview = ({
+  siteId,
+  previewFooterState,
+}: EditFooterPreviewProps) => {
   const handleIframeMount = async ({ document }: IframeCallbackFnProps) => {
     if (document) {
       await waitForElement(document, FOOTER_QUERY_SELECTOR)
@@ -37,6 +42,11 @@ export const EditFooterPreview = ({ siteId }: EditFooterPreviewProps) => {
     <ViewportContainer siteId={siteId} callback={handleIframeMount}>
       <Preview
         {...merge(content, { page: { title } })}
+        overrides={{
+          site: {
+            footerItems: previewFooterState,
+          },
+        }}
         siteId={siteId}
         resourceId={pageId}
         permalink="/"
