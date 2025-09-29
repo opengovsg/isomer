@@ -1,8 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { Box, chakra, FormControl, HStack, SimpleGrid } from "@chakra-ui/react"
-import { FormLabel, Toggle, useToast } from "@opengovsg/design-system-react"
+import { Box, chakra, SimpleGrid } from "@chakra-ui/react"
+import { useToast } from "@opengovsg/design-system-react"
 import { NotificationSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiWrench } from "react-icons/bi"
@@ -72,13 +72,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   })
 
   // NOTE: Refining the setNotificationSchema here instead of in site.ts since omit does not work after refine
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-    reset,
-  } = useZodForm({
+  const { handleSubmit, watch, reset } = useZodForm({
     schema: setNotificationSchema
       .extend({ description: z.string() })
       .omit({ siteId: true })
@@ -135,27 +129,6 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
               icon={BiWrench}
               isLoading={notificationMutation.isPending}
             />
-            <HStack
-              w="full"
-              justifyContent="space-between"
-              alignItems="flex-start"
-            >
-              <FormLabel
-                description={
-                  "The site notification will always be visible on the site until it is dismissed by the user."
-                }
-                isRequired
-              >
-                Display a banner
-              </FormLabel>
-              {/* NOTE: for reasons unknown, if we put the form control  */}
-              {/* over the toggle and the label,  */}
-              {/* clicking on the label will also adjust the toggle */}
-              <FormControl isInvalid={!!errors.notification} w="fit-content">
-                <Toggle label="" {...register("notificationEnabled")} />
-              </FormControl>
-            </HStack>
-
             <ErrorProvider>
               <FormBuilder<Notification>
                 schema={NotificationSchema}
@@ -168,7 +141,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             </ErrorProvider>
           </SettingsEditingLayout>
           <Box gridColumn="6 / 10">
-            <EditSettingsPreview siteName={name} />
+            <EditSettingsPreview siteName={name} notification={state} />
           </Box>
         </SimpleGrid>
       </chakra.form>
