@@ -374,14 +374,14 @@ describe("inactiveUsers.service", () => {
       expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
     })
 
-    it("should not include isomer admins and migrators in the email", async () => {
+    it("should NOT include isomer admins and migrators in the email", async () => {
       // Arrange
       const userToDeactivate = await setupUserWrapper({
         siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
       })
-      await Promise.all(
+      const isomerAdminsAndMigrators = await Promise.all(
         ISOMER_ADMINS_AND_MIGRATORS_EMAILS.map((email) =>
           setupUserWrapper({
             siteId: site.id,
@@ -391,15 +391,23 @@ describe("inactiveUsers.service", () => {
           }),
         ),
       )
+      const allUsers = [userToDeactivate, ...isomerAdminsAndMigrators]
 
       // Act
       await bulkDeactivateInactiveUsers()
 
       // Assert
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1) // send to deactivated user
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(
+        allUsers.length, // should still send emails to all users
+      )
       expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
         recipientEmail: userToDeactivate.email,
-        sitesAndAdmins: expect.any(Array),
+        sitesAndAdmins: expect.arrayContaining([
+          {
+            siteName: site.name,
+            adminEmails: [], // does not include isomer admins and migrators
+          },
+        ]),
       })
     })
 
@@ -717,9 +725,9 @@ describe("inactiveUsers.service", () => {
       expect(inactiveUsers[0]?.id).toBe(user.id)
     })
 
-    it("should NOT select isomer admins and migrators", async () => {
+    it("should also select isomer admins and migrators", async () => {
       // Arrange
-      await Promise.all(
+      const isomerAdminsAndMigrators = await Promise.all(
         ISOMER_ADMINS_AND_MIGRATORS_EMAILS.map((email) =>
           setupUserWrapper({
             siteId: site.id,
@@ -736,7 +744,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Assert
-      expect(inactiveUsers).toHaveLength(0)
+      expect(inactiveUsers).toHaveLength(isomerAdminsAndMigrators.length)
     })
 
     it("should filter users by fromDaysAgo when provided", async () => {
