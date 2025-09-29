@@ -2,22 +2,18 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { ProseSchema } from "../native"
+import { ProseValueSchema } from "../native/Prose"
 
 export const NotificationSchema = Type.Object(
   {
-    title: Type.Optional(
-      Type.String({
-        title: "Notification title",
-        description: "The title of the notification",
-        format: "hidden",
-      }),
-    ),
-    content: ProseSchema,
+    title: Type.String({
+      title: "Notification title",
+      description: "The title of the notification",
+    }),
+    content: Type.Optional(ProseValueSchema),
   },
   {
     title: "Notification component",
-    format: "hidden",
   },
 )
 
