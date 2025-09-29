@@ -47,16 +47,28 @@ export const CollectionBlockSchema = Type.Object(
       description:
         "Clicking this button will open the main collection. You can’t change its destination.",
     }),
-    highlightedCategories: Type.Optional(
-      Type.Array(
-        Type.String({
-          title: "Highlighted category",
-        }),
+    highlights: Type.Optional(
+      Type.Object(
         {
-          title: "Highlighted categories",
+          categories: Type.Optional(
+            Type.Array(
+              Type.String({
+                title: "Highlighted category",
+              }),
+              {
+                title: "Highlighted categories",
+                description:
+                  "The categories to highlight. If not provided, all collection pages will be displayed.",
+              },
+            ),
+          ),
+          // so that we can add other highlights in the future, like tags
+        },
+        {
+          title: "Highlights",
           description:
-            "The categories to highlight. If not provided, all collection pages will be displayed.",
-          format: "hidden", // Only for selected agencies, as we should pull this from list of collection tags once that is available
+            "Filtering the collection by selected attributes to display",
+          format: "hidden", // Only for selected agencies for now
         },
       ),
     ),
