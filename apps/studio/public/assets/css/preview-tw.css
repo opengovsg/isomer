@@ -3221,11 +3221,6 @@ video {
   vertical-align: middle;
 }
 
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
-}
-
 .text-2xl\/6 {
   font-size: 1.5rem;
   line-height: 1.5rem;
@@ -6168,6 +6163,10 @@ video {
     padding-bottom: 4rem;
   }
 
+  .lg\:pb-24 {
+    padding-bottom: 6rem;
+  }
+
   .lg\:pl-10 {
     padding-left: 2.5rem;
   }
@@ -6194,6 +6193,10 @@ video {
 
   .lg\:pt-12 {
     padding-top: 3rem;
+  }
+
+  .lg\:pt-16 {
+    padding-top: 4rem;
   }
 
   .lg\:text-\[0\.875rem\] {
