@@ -1,27 +1,10 @@
+import type { Static } from "@sinclair/typebox"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import {
-  Box,
-  Button,
-  chakra,
-  FormControl,
-  HStack,
-  SimpleGrid,
-  Text,
-  Textarea,
-  VStack,
-} from "@chakra-ui/react"
-import {
-  FormErrorMessage,
-  FormHelperText,
-  FormLabel,
-  Infobox,
-  Input,
-  Toggle,
-  useToast,
-} from "@opengovsg/design-system-react"
+import { Box, chakra, FormControl, HStack, SimpleGrid } from "@chakra-ui/react"
+import { FormLabel, Toggle, useToast } from "@opengovsg/design-system-react"
+import { NotificationSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { errors } from "openid-client"
 import { BiWrench } from "react-icons/bi"
 import { z } from "zod"
 
@@ -29,6 +12,8 @@ import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
+import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
+import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
@@ -40,17 +25,26 @@ import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
 import { setNotificationSchema } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
+import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
-const AgencySettingsPage: NextPageWithLayout = () => {
+type Notification = Static<typeof NotificationSchema>
+
+const NotificationSettingsPage: NextPageWithLayout = () => {
   const isEnabled = useNewSettingsPage()
   const router = useRouter()
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
   const trpcUtils = trpc.useUtils()
   const toast = useToast()
-  // TODO: Hook this to our backend
-  const description = "default"
+  const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
+    siteId: Number(siteId),
+  })
+  const validateFn = ajv.compile<Notification>(NotificationSchema)
+  const [state, setState] = useState<Notification>({
+    title: "",
+    content: { type: "prose", content: [] },
+  })
 
   const notificationMutation = trpc.site.setNotification.useMutation({
     onSuccess: async () => {
@@ -118,15 +112,13 @@ const AgencySettingsPage: NextPageWithLayout = () => {
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
-  const onSubmit = handleSubmit(
-    ({ notificationEnabled, notification, description }) => {
-      notificationMutation.mutate({
-        siteId,
-        notification: notificationEnabled ? notification : "",
-        notificationEnabled: notificationEnabled,
-      })
-    },
-  )
+  const onSubmit = handleSubmit(({ notificationEnabled, notification }) => {
+    notificationMutation.mutate({
+      siteId,
+      notification: notificationEnabled ? notification : "",
+      notificationEnabled: notificationEnabled,
+    })
+  })
 
   return (
     <>
@@ -141,7 +133,6 @@ const AgencySettingsPage: NextPageWithLayout = () => {
             <SettingsHeader
               title="Notification banner"
               icon={BiWrench}
-              canPublish={isDirty}
               isLoading={notificationMutation.isPending}
             />
             <HStack
@@ -165,53 +156,19 @@ const AgencySettingsPage: NextPageWithLayout = () => {
               </FormControl>
             </HStack>
 
-            <FormControl>
-              <FormLabel isRequired>Banner title</FormLabel>
-
-              <Input
-                placeholder="Notification should be succinct and clear"
-                maxLength={200}
-                value={notification}
-                {...register("notification", {})}
-                mb="0.5rem"
+            <ErrorProvider>
+              <FormBuilder<Notification>
+                schema={NotificationSchema}
+                validateFn={validateFn}
+                data={state}
+                handleChange={(data) => {
+                  setState(data)
+                }}
               />
-
-              {errors.notification?.message ? (
-                <FormErrorMessage>
-                  {errors.notification.message}
-                </FormErrorMessage>
-              ) : (
-                <FormHelperText color="base.content.medium">
-                  {/* TODO: add this as a const when designer confirms */}
-                  {200 - notification.length} characters left
-                </FormHelperText>
-              )}
-            </FormControl>
-
-            <FormControl>
-              <FormLabel>Banner description</FormLabel>
-
-              <Textarea
-                placeholder="Placeholder text"
-                value={description}
-                {...register("description", {})}
-                mb="0.5rem"
-              />
-
-              {errors.description?.message ? (
-                <FormErrorMessage>
-                  {errors.description.message}
-                </FormErrorMessage>
-              ) : (
-                <FormHelperText color="base.content.medium">
-                  {/* TODO: add this as a const when designer confirms */}
-                  {200 - description.length} characters left
-                </FormHelperText>
-              )}
-            </FormControl>
+            </ErrorProvider>
           </SettingsEditingLayout>
           <Box gridColumn="6 / 10">
-            <EditSettingsPreview />
+            <EditSettingsPreview siteName={name} />
           </Box>
         </SimpleGrid>
       </chakra.form>
@@ -219,7 +176,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   )
 }
 
-AgencySettingsPage.getLayout = (page) => {
+NotificationSettingsPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
@@ -228,4 +185,4 @@ AgencySettingsPage.getLayout = (page) => {
   )
 }
 
-export default AgencySettingsPage
+export default NotificationSettingsPage
