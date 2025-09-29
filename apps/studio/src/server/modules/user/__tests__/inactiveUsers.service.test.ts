@@ -374,6 +374,7 @@ describe("inactiveUsers.service", () => {
       expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
     })
 
+    // we don't want them to request reactivation permissions from isomer admins and migrators
     it("should NOT include isomer admins and migrators in the email", async () => {
       // Arrange
       const userToDeactivate = await setupUserWrapper({
@@ -381,6 +382,34 @@ describe("inactiveUsers.service", () => {
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
       })
+      await Promise.all(
+        ISOMER_ADMINS_AND_MIGRATORS_EMAILS.map((email) =>
+          setupUserWrapper({
+            siteId: site.id,
+            email,
+            createdDaysAgo: 91,
+            lastLoginDaysAgo: null,
+          }),
+        ),
+      )
+
+      // Act
+      await bulkDeactivateInactiveUsers()
+
+      // Assert
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
+        recipientEmail: userToDeactivate.email,
+        sitesAndAdmins: expect.arrayContaining([
+          {
+            siteName: site.name,
+            adminEmails: [], // does not include isomer admins and migrators
+          },
+        ]),
+      })
+    })
+
+    it("should also send emails to isomer admins and migrators", async () => {
+      // Arrange
       const isomerAdminsAndMigrators = await Promise.all(
         ISOMER_ADMINS_AND_MIGRATORS_EMAILS.map((email) =>
           setupUserWrapper({
@@ -391,23 +420,23 @@ describe("inactiveUsers.service", () => {
           }),
         ),
       )
-      const allUsers = [userToDeactivate, ...isomerAdminsAndMigrators]
-
       // Act
       await bulkDeactivateInactiveUsers()
 
       // Assert
       expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(
-        allUsers.length, // should still send emails to all users
+        isomerAdminsAndMigrators.length, // should still send emails to all users
       )
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
-        recipientEmail: userToDeactivate.email,
-        sitesAndAdmins: expect.arrayContaining([
-          {
-            siteName: site.name,
-            adminEmails: [], // does not include isomer admins and migrators
-          },
-        ]),
+      isomerAdminsAndMigrators.forEach((user) => {
+        expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
+          recipientEmail: user.email,
+          sitesAndAdmins: expect.arrayContaining([
+            {
+              siteName: site.name,
+              adminEmails: [], // does not include isomer admins and migrators
+            },
+          ]),
+        })
       })
     })
 
