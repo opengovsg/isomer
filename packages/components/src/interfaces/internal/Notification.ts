@@ -2,7 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { TextSchema } from "../native/Text"
+import { ProseSchema } from "../native"
 
 export const NotificationSchema = Type.Object(
   {
@@ -13,11 +13,7 @@ export const NotificationSchema = Type.Object(
         format: "hidden",
       }),
     ),
-    content: Type.Array(TextSchema, {
-      title: "Notification content",
-      description: "The content of the notification",
-      format: "hidden",
-    }),
+    content: ProseSchema,
   },
   {
     title: "Notification component",
