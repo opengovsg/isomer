@@ -55,7 +55,7 @@ function SuspendablePreview({
     },
   })
 
-  const renderedSiteProps = merge(siteConfig, renderProps.site, overrides.site)
+  const renderedSiteProps = { ...siteConfig, ...overrides.site }
 
   return (
     <RenderEngine
