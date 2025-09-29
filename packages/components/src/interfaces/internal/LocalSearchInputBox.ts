@@ -12,4 +12,6 @@ export const LocalSearchSchema = Type.Object({
   }),
 })
 
-export type LocalSearchProps = Static<typeof LocalSearchSchema>
+export type LocalSearchProps = Static<typeof LocalSearchSchema> & {
+  className?: string
+}

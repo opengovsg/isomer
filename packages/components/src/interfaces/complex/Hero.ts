@@ -10,6 +10,7 @@ export const HERO_STYLE = {
   block: "block",
   largeImage: "largeImage",
   floating: "floating",
+  searchbar: "searchbar",
 } as const
 
 const HeroHeadingSchema = Type.Object({
@@ -84,6 +85,10 @@ export const HeroSchema = Type.Composite(
           }),
           Type.Literal(HERO_STYLE.floating, {
             title: "Floating",
+          }),
+          Type.Literal(HERO_STYLE.searchbar, {
+            title: "Search bar",
+            format: "hidden",
           }),
         ],
         {

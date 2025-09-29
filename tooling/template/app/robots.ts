@@ -22,11 +22,11 @@ export default function robots(): MetadataRoute.Robots {
       ...config.site,
       environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
       // TODO: fixup all the typing errors
-      // @ts-expect-error to fix when types are proper
+      // @ts-ignore to fix when types are proper
       siteMap: sitemap,
       navbar: navbar,
       // TODO: fixup all the typing errors
-      // @ts-expect-error to fix when types are proper
+      // @ts-ignore to fix when types are proper
       footerItems: footer,
       lastUpdated,
     },

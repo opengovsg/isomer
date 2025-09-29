@@ -1,23 +1,20 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { userEvent, within } from "@storybook/test"
-import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
-import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import SitePage from "~/pages/sites/[siteId]"
+import { ADMIN_HANDLERS } from "../handlers"
 
-const COMMON_HANDLERS = [
-  meHandlers.me(),
+const SHARED_HANDLERS = [
+  ...ADMIN_HANDLERS,
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
   pageHandlers.countWithoutRoot.default(),
   pageHandlers.readPage.content(),
   pageHandlers.updateSettings.collection(),
   pageHandlers.getPermalinkTree.withParent(),
-  sitesHandlers.getSiteName.default(),
   resourceHandlers.getChildrenOf.default(),
-  resourceHandlers.getRolesFor.admin(),
   resourceHandlers.getWithFullPermalink.default(),
   resourceHandlers.getAncestryStack.default(),
   resourceHandlers.getMetadataById.content(),
@@ -46,7 +43,7 @@ export const Default: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...SHARED_HANDLERS,
         resourceHandlers.getBatchAncestryWithSelf.foldersOnly(),
       ],
     },
@@ -70,7 +67,7 @@ export const SingleClick: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...SHARED_HANDLERS,
         resourceHandlers.getBatchAncestryWithSelf.foldersOnly(),
       ],
     },
@@ -91,7 +88,7 @@ export const EmptyFolder: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...SHARED_HANDLERS,
         resourceHandlers.getBatchAncestryWithSelf.noResults(),
       ],
     },
@@ -119,7 +116,7 @@ export const Search: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...SHARED_HANDLERS,
         resourceHandlers.getBatchAncestryWithSelf.foldersOnly(),
       ],
     },
@@ -135,7 +132,7 @@ export const SearchLoading: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...SHARED_HANDLERS,
         resourceHandlers.getBatchAncestryWithSelf.foldersOnly(),
         resourceHandlers.search.loading(),
       ],
@@ -152,7 +149,7 @@ export const SearchNoResults: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...SHARED_HANDLERS,
         resourceHandlers.getBatchAncestryWithSelf.noResults(),
       ],
     },

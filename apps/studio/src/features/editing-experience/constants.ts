@@ -2,6 +2,8 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { IconType } from "react-icons"
 import {
   COLLECTION_BLOCK_TYPE,
+  CONTACT_INFORMATION_TYPE,
+  DYNAMIC_COMPONENT_LIST_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
 } from "@opengovsg/isomer-components"
@@ -16,6 +18,7 @@ import {
   BiMap,
   BiMessageDots,
   BiMoviePlay,
+  BiPhoneCall,
   BiPointer,
   BiSolidQuoteAltLeft,
   BiText,
@@ -53,5 +56,7 @@ export const TYPE_TO_ICON: Record<
   [DYNAMIC_DATA_BANNER_TYPE]: TbApi,
   [COLLECTION_BLOCK_TYPE]: TbDatabase,
   [IMAGE_GALLERY_TYPE]: BiImages,
+  [CONTACT_INFORMATION_TYPE]: BiPhoneCall,
+  [DYNAMIC_COMPONENT_LIST_TYPE]: BiListUl,
   childrenpages: BiListUl,
 }
