@@ -35,7 +35,8 @@ const SingleCardNoImageSchema = Type.Object({
   description: Type.Optional(
     Type.String({
       title: "Description",
-      maxLength: 150,
+      description:
+        "To make sure your description is readable, keep it under 150 characters.",
     }),
   ),
   url: Type.Optional(
@@ -94,8 +95,7 @@ const InfoCardsBaseSchema = Type.Object({
   subtitle: Type.Optional(
     Type.String({
       title: "Description",
-      description:
-        "To make sure your description is readable, keep it under 200 characters.",
+      maxLength: 200,
     }),
   ),
   maxColumns: Type.Optional(
