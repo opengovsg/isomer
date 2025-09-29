@@ -41,7 +41,6 @@ export const getInactiveUsers = async ({
     .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
     .where("User.deletedAt", "is", null)
     .where("ResourcePermission.deletedAt", "is", null)
-    .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // needed to provide support for agencies
     .where((eb) =>
       eb.or([
         // Users who have never logged in
@@ -84,7 +83,6 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
       .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
       .innerJoin("Site", "Site.id", "ResourcePermission.siteId")
       .where("User.id", "in", userIds)
-      .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
       .where("User.deletedAt", "is", null)
       .where("ResourcePermission.deletedAt", "is", null)
       .select([
@@ -188,7 +186,7 @@ const getSiteAndAdmins = async ({ userId, siteIds }: GetSiteAndAdminsProps) => {
           .where("ResourcePermission.userId", "!=", userId) // don't want to ask users to ask themselves for permissions
           .where("ResourcePermission.deletedAt", "is", null)
           .where("ResourcePermission.role", "=", RoleType.Admin) // should only give the admin emails to request reactivation permissions from
-          .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
+          .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want them to request reactivation permissions from isomer admins and migrators
           .select([
             "Site.id as siteId",
             db.fn.agg<string[]>("array_agg", ["User.email"]).as("adminEmails"),
