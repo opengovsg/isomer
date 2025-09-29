@@ -11,7 +11,11 @@ export { getTableOfContents } from "./getTableOfContents"
 export { getTailwindVariantLayout } from "./getTailwindVariantLayout"
 export { getTextAsHtml } from "./getTextAsHtml"
 export { getTransformedPageContent } from "./getTransformedPageContent"
+export { isEmail } from "./isEmail"
+export { isPhoneNumber, sanitizePhoneNumber } from "./isPhoneNumber"
+export { isUrl } from "./isUrl"
 export { isExternalUrl } from "./isExternalUrl"
+export { safeJsonParse } from "./safeJsonParse"
 export {
   fetchDgsFileDownloadUrl,
   fetchDgsMetadata,

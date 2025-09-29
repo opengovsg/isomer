@@ -313,6 +313,69 @@ export const Default: Story = {
         imageSrc: "https://placehold.co/600x600",
         imageAlt: "This is the alt text",
       },
+      {
+        type: "contactinformation",
+        title: "This is the title e.g. Office Name 123",
+        description: "This is the description e.g. Established in 1965",
+        methods: [
+          {
+            method: "person",
+            label: "Ambassador (Non-Resident)",
+            values: ["Mr John Doe"],
+          },
+          {
+            method: "address",
+            label: "Chancery",
+            values: [
+              "c/o Ministry of Isomer",
+              "Lazada One",
+              "Singapore 123456",
+            ],
+          },
+          {
+            method: "telephone",
+            label: "Telephone",
+            values: ["+65-12345678 (MFA)"],
+          },
+          {
+            method: "fax",
+            label: "Fax (MFA)",
+            values: ["+65-64747885"],
+            caption: "Recommended to email instead",
+          },
+          {
+            method: "email",
+            label: "Email",
+            values: ["hello@isomer.gov.sg", "hello-too@isomer.gov.sg"],
+          },
+          {
+            method: "website",
+            label: "Website",
+            values: [
+              "https://www.isomer.gov.sg",
+              "https://sample.isomer.gov.sg",
+            ],
+          },
+          {
+            method: "emergency_contact",
+            label: "In the case of emergency",
+            values: ["+65 5678 1234"],
+            caption: "(after hours)",
+          },
+          {
+            method: "operating_hours",
+            label: "Operating Hours",
+            values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
+          },
+        ],
+        otherInformation: {
+          label: "Other Information",
+          value:
+            "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
+        },
+        url: "/",
+        label: "I can't even help myself",
+      },
     ],
   },
 }
