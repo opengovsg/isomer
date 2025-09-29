@@ -3,7 +3,10 @@ import { Prose } from "../../native"
 import NotificationClient from "./NotificationClient"
 
 const Notification = ({
-  content,
+  content = {
+    type: "prose",
+    content: [],
+  },
   title,
   LinkComponent,
   site,
