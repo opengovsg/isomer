@@ -6,6 +6,14 @@ import { ProseValueSchema } from "../native/Prose"
 
 export const NotificationSchema = Type.Object(
   {
+    enabled: Type.Optional(
+      Type.Boolean({
+        title: "Display a banner",
+        description:
+          "The site notification will always be visible on the site until it is dismissed by the user.",
+        default: false,
+      }),
+    ),
     title: Type.String({
       title: "Notification title",
       description: "The title of the notification",
