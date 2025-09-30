@@ -1,12 +1,11 @@
-import type { Static } from "@sinclair/typebox"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { Box, chakra, SimpleGrid } from "@chakra-ui/react"
+import { Box, SimpleGrid } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { NotificationSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+import { isEqual } from "lodash"
 import { BiWrench } from "react-icons/bi"
-import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
@@ -21,14 +20,11 @@ import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
-import { setNotificationSchema } from "~/schemas/site"
+import { Notification } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-
-type Notification = Static<typeof NotificationSchema>
 
 const NotificationSettingsPage: NextPageWithLayout = () => {
   const isEnabled = useNewSettingsPage()
@@ -41,17 +37,12 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     siteId: Number(siteId),
   })
   const validateFn = ajv.compile<Notification>(NotificationSchema)
-  const [state, setState] = useState<Notification>({
-    title: "",
-    content: { type: "prose", content: [] },
-  })
 
   const notificationMutation = trpc.site.setNotification.useMutation({
     onSuccess: async () => {
-      reset({ notificationEnabled, notification })
       await trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
-        title: "Saved site settings!",
+        title: "Saved site notification!",
         description: "Check your site in 5-10 minutes to view it live.",
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
@@ -59,7 +50,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     },
     onError: () => {
       toast({
-        title: "Error saving site settings!",
+        title: "Error saving site notification!",
         description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
@@ -67,30 +58,17 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     },
   })
 
-  const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
-    siteId,
-  })
-
-  // NOTE: Refining the setNotificationSchema here instead of in site.ts since omit does not work after refine
-  const { handleSubmit, watch, reset } = useZodForm({
-    schema: setNotificationSchema
-      .extend({ description: z.string() })
-      .omit({ siteId: true })
-      .refine((data) => !data.notificationEnabled || data.notification, {
-        message: "Notification must not be empty",
-        path: ["notification"],
-      }),
-    defaultValues: {
-      notificationEnabled: previousNotification !== "",
-      notification: previousNotification ? previousNotification : "",
-      description: "",
+  const [{ notification: previousNotification }] =
+    trpc.site.getNotification.useSuspenseQuery({
+      siteId,
+    })
+  const [state, setState] = useState<Notification>(
+    previousNotification ?? {
+      enabled: false,
+      title: "",
+      content: { type: "prose", content: [] },
     },
-  })
-
-  const [notificationEnabled, notification] = watch([
-    "notificationEnabled",
-    "notification",
-  ])
+  )
 
   useEffect(() => {
     if (!isEnabled) {
@@ -101,18 +79,15 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
 
-  // TODO: Need to update this to include everything
-  const isDirty = previousNotification !== notification
+  const isDirty = !isEqual(state, previousNotification)
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
-  const onSubmit = handleSubmit(({ notificationEnabled, notification }) => {
+  const onSubmit = () =>
     notificationMutation.mutate({
       siteId,
-      notification: notificationEnabled ? notification : "",
-      notificationEnabled: notificationEnabled,
+      ...state,
     })
-  })
 
   return (
     <>
@@ -121,10 +96,11 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <chakra.form overflow="auto" height={0} minH="100%" onSubmit={onSubmit}>
+      <Box overflow="auto" height={0} minH="100%" onSubmit={onSubmit}>
         <SimpleGrid columns={9} h="100%">
           <SettingsEditingLayout>
             <SettingsHeader
+              onClick={onSubmit}
               title="Notification banner"
               icon={BiWrench}
               isLoading={notificationMutation.isPending}
@@ -144,7 +120,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             <EditSettingsPreview siteName={name} notification={state} />
           </Box>
         </SimpleGrid>
-      </chakra.form>
+      </Box>
     </>
   )
 }

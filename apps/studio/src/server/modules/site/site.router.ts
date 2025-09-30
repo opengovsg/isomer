@@ -202,13 +202,12 @@ export const siteRouter = router({
         userId: ctx.user.id,
         action: "read",
       })
-      const notification = await getNotification(siteId)
-      return notification
+
+      return await getNotification(siteId)
     }),
   setNotification: protectedProcedure
     .input(setNotificationSchema)
-    .mutation(async ({ ctx, input }) => {
-      const { siteId, notification, notificationEnabled } = input
+    .mutation(async ({ ctx, input: { siteId, title, content, enabled } }) => {
       await validateUserPermissionsForSite({
         siteId,
         userId: ctx.user.id,
@@ -216,25 +215,19 @@ export const siteRouter = router({
       })
 
       const site = await db.transaction().execute(async (tx) => {
-        if (notificationEnabled) {
-          return await setSiteNotification({
-            tx,
-            siteId,
-            userId: ctx.user.id,
-            notification,
-          })
-        } else {
-          return await clearSiteNotification({
-            tx,
-            siteId,
-            userId: ctx.user.id,
-          })
-        }
+        return await setSiteNotification({
+          tx,
+          siteId,
+          userId: ctx.user.id,
+          title,
+          content,
+          enabled: !!enabled,
+        })
       })
 
       await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
 
-      return input
+      return site.config.notification
     }),
   setSiteConfigByAdmin: protectedProcedure
     .input(setSiteConfigByAdminSchema)
