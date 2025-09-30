@@ -70,7 +70,7 @@ export const uploadModifiedAssets = async ({
   return Promise.allSettled(
     assetsToUpload.map(({ path, file }) => {
       if (!file) {
-        return Promise.resolve(undefined)
+        return Promise.resolve()
       }
 
       return uploadAsset({ file }).then((res) => {
