@@ -34,8 +34,7 @@ export const setNotificationSchema = z.object({
   siteId: z.number().min(1),
   title: z
     .string()
-    .max(100, { message: "Notification must be 100 characters or less" })
-    .optional(),
+    .max(100, { message: "Notification must be 100 characters or less" }),
   enabled: z.boolean().default(false),
   content: z
     .custom<Notification["content"]>((value) => {
