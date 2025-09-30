@@ -43,6 +43,8 @@ export function JsonFormsBooleanControl({
             {label}
           </FormLabel>
           <Switch
+            defaultValue={schema.default}
+            defaultChecked={schema.default}
             id={id}
             isDisabled={!enabled}
             isChecked={!!data}
