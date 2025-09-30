@@ -88,7 +88,6 @@ export const HeroSchema = Type.Composite(
           }),
           Type.Literal(HERO_STYLE.searchbar, {
             title: "Search bar",
-            format: "hidden",
           }),
         ],
         {
