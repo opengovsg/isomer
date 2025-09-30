@@ -12,14 +12,27 @@ import { bulkValidateUserPermissionsForResources } from "../permissions/permissi
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
-// Permissions for assets share the same permissions as resources
-// because the underlying assumption is that the asset is tied to the resource
+// Permissions for assets share the same permissions as resources preferentially
+// because the underlying assumption is that the asset is tied to the resource,
+// otherwise it will default to the root level permissions of the site
 export const validateUserPermissionsForAsset = async ({
   resourceId,
   action,
   userId,
   siteId,
 }: AssetPermissionsProps) => {
+  if (!resourceId) {
+    // No resourceId means that this is a site-level asset
+    // so we check for site-level permissions
+    await bulkValidateUserPermissionsForResources({
+      resourceIds: [],
+      action,
+      userId,
+      siteId,
+    })
+    return
+  }
+
   const resource = await db
     .selectFrom("Resource")
     .where("id", "=", resourceId)
