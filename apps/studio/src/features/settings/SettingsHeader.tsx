@@ -6,11 +6,13 @@ interface SettingsHeaderProps {
   title: string
   icon: IconType
   isLoading?: boolean
+  onClick: () => void
 }
 export const SettingsHeader = ({
   title,
   icon,
   isLoading,
+  onClick,
 }: SettingsHeaderProps) => {
   return (
     <Flex justifyContent="space-between" w="100%">
@@ -30,7 +32,7 @@ export const SettingsHeader = ({
           {title}
         </Text>
       </Flex>
-      <Button type="submit" isLoading={isLoading}>
+      <Button type="submit" isLoading={isLoading} onClick={onClick}>
         Publish changes
       </Button>
     </Flex>
