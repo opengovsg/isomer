@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { Box, chakra, SimpleGrid } from "@chakra-ui/react"
+import { Box, SimpleGrid } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
   AgencySettings,
@@ -21,9 +21,7 @@ import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
-import { updateSiteConfigSchema } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -66,11 +64,6 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     }
   }, [])
 
-  const { handleSubmit } = useZodForm({
-    schema: updateSiteConfigSchema.omit({ siteId: true }),
-    defaultValues: { siteName },
-  })
-
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
   const [state, setState] = useState<AgencySettings>({
@@ -81,12 +74,11 @@ const AgencySettingsPage: NextPageWithLayout = () => {
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
-  const onSubmit = handleSubmit(() =>
+  const onSubmit = () =>
     updateSiteConfigMutation.mutate({
       siteName: state.siteName,
       siteId,
-    }),
-  )
+    })
 
   return (
     <>
@@ -95,13 +87,14 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <chakra.form overflow="auto" height={0} minH="100%" onSubmit={onSubmit}>
+      <Box overflow="auto" height={0} minH="100%" onSubmit={onSubmit}>
         <SimpleGrid columns={9} h="100%">
           <SettingsEditingLayout>
             <SettingsHeader
               title="Name and agency"
               icon={BiWrench}
               isLoading={updateSiteConfigMutation.isPending}
+              onClick={onSubmit}
             />
 
             <ErrorProvider>
@@ -119,7 +112,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
             <EditSettingsPreview siteName={state.siteName} />
           </Box>
         </SimpleGrid>
-      </chakra.form>
+      </Box>
     </>
   )
 }
