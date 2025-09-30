@@ -3,10 +3,7 @@ import { Prose } from "../../native"
 import NotificationClient from "./NotificationClient"
 
 const Notification = ({
-  content = {
-    type: "prose",
-    content: [],
-  },
+  content,
   title,
   LinkComponent,
   site,
@@ -18,7 +15,9 @@ const Notification = ({
       // avoiding large sitemap transfers needed by BaseParagraph.
       // TODO: more robust refactor is required for BaseParagraph component
       baseParagraph={
-        <Prose {...content} site={site} LinkComponent={LinkComponent} />
+        !!content && (
+          <Prose {...content} site={site} LinkComponent={LinkComponent} />
+        )
       }
     />
   )
