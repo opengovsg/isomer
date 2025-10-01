@@ -29,7 +29,7 @@ import {
   getNavBar,
   publishSiteConfig,
 } from "../resource/resource.service"
-import { updateSearchsgConfig } from "../searchsg/searchsg.service"
+import { updateSearchSGConfig } from "../searchsg/searchsg.service"
 import {
   clearSiteNotification,
   createSite,
@@ -130,7 +130,7 @@ export const siteRouter = router({
         const { config: updatedConfig } = updatedSite
 
         if (updatedConfig.search?.type === "searchSG")
-          void updateSearchsgConfig(
+          void updateSearchSGConfig(
             { name: siteName },
             updatedConfig.search.clientId,
             new URL(updatedConfig.url),
