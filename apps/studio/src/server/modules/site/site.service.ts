@@ -89,29 +89,16 @@ export const getNotification = async (siteId: number) => {
   return result
 }
 
-interface SetSiteNotificationParams {
+type SetSiteNotificationParams = Notification & {
   siteId: number
   userId: string
-  title: string
-  content: Notification["content"]
-  enabled: boolean
 }
 
 export const setSiteNotification = async ({
   siteId,
   userId,
-  title,
-  content,
-  enabled,
+  notification,
 }: SetSiteNotificationParams) => {
-  const notification = {
-    notification: {
-      content,
-      title,
-      enabled,
-    },
-  }
-
   return await db.transaction().execute(async (tx) => {
     const user = await tx
       .selectFrom("User")
@@ -143,8 +130,11 @@ export const setSiteNotification = async ({
     const newSite = await tx
       .updateTable("Site")
       .set((eb) => ({
-        // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
-        config: eb("Site.config", "||", jsonb(notification)),
+        config: notification
+          ? // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+            eb("Site.config", "||", jsonb({ notification }))
+          : // @ts-expect-error JSON remove operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+            eb("Site.config", "-", "notification"),
       }))
       .where("id", "=", siteId)
       .returningAll()
