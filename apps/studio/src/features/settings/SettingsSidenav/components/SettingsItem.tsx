@@ -22,9 +22,11 @@ export const SettingsItem = ({ isActive, label, href }: SettingsItemProps) => {
     >
       <Text
         textStyle="subhead-2"
-        textColor={
-          isActive ? "interaction.main.default" : "base.content.default"
-        }
+        aria-current={isActive && "page"}
+        _activeLink={{
+          textColor: "interaction.main.default",
+        }}
+        textColor={"base.content.default"}
       >
         {label}
       </Text>
