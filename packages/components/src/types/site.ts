@@ -21,7 +21,7 @@ export const AgencySettingsSchema = Type.Object({
     Type.String({
       title: "Website is owned by",
       description: "This isn't displayed anywhere on your site",
-      format: "disabled",
+      readOnly: true,
     }),
   ),
 })

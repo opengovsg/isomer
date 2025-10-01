@@ -79,10 +79,6 @@ import {
 
 export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
-    renderer: JsonFormsDisabledControl,
-    tester: jsonFormsDisabledControlTester,
-  },
-  {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,
   },
