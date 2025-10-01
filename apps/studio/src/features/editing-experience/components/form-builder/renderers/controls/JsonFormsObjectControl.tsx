@@ -1,5 +1,8 @@
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
-import { ComponentType, memo, useLayoutEffect, useMemo } from "react"
+import type { JsonFormsStateContext } from "@jsonforms/react"
+import type { ComponentType } from "react"
+import { memo, useLayoutEffect, useMemo, useState } from "react"
+import { FormControl, HStack, Text, VStack } from "@chakra-ui/react"
 import {
   findUISchema,
   Generate,
@@ -10,9 +13,9 @@ import {
   ctxDispatchToControlProps,
   ctxToControlWithDetailProps,
   JsonFormsDispatch,
-  JsonFormsStateContext,
   withJsonFormsContext,
 } from "@jsonforms/react"
+import { Switch } from "@opengovsg/design-system-react"
 import isEmpty from "lodash/isEmpty"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -30,11 +33,26 @@ export function JsonFormsObjectControl({
   cells,
   schema,
   enabled,
+  label,
+  description,
+  required,
   uischema,
   uischemas,
   rootSchema,
   handleChange,
 }: ControlWithDetailProps) {
+  const [isChecked, setIsChecked] = useState(!isEmpty(data))
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const [dataSnapshot, setDataSnapshot] = useState(data)
+  const handleToggle = () => {
+    if (isChecked) {
+      setDataSnapshot(data)
+      handleChange(path, undefined)
+    } else {
+      handleChange(path, dataSnapshot)
+    }
+    setIsChecked((prev) => !prev)
+  }
   const detailUiSchema = useMemo(
     () =>
       findUISchema(
@@ -58,6 +76,52 @@ export function JsonFormsObjectControl({
 
   if (!visible) {
     return null
+  }
+
+  if (!required) {
+    return (
+      <HStack spacing="0.5rem" alignItems="flex-start">
+        <VStack w="full" gap="0.75rem" pt="0.5rem" alignItems="start">
+          <HStack alignItems="space-between" w="full" spacing="1rem">
+            <FormControl
+              display="flex"
+              alignItems="center"
+              isDisabled={!enabled}
+            >
+              <VStack gap="0.25rem" alignItems="start">
+                <Text textStyle="subhead-2" textColor="base.content.strong">
+                  {label}
+                </Text>
+
+                {description && (
+                  <Text textStyle="body-2" textColor="base.content.strong">
+                    {description}
+                  </Text>
+                )}
+              </VStack>
+            </FormControl>
+
+            <Switch
+              isChecked={isChecked}
+              onChange={handleToggle}
+              isDisabled={!enabled}
+            />
+          </HStack>
+
+          {isChecked && (
+            <JsonFormsDispatch
+              visible={visible}
+              enabled={enabled && isChecked}
+              schema={schema}
+              uischema={detailUiSchema}
+              path={path}
+              renderers={renderers}
+              cells={cells}
+            />
+          )}
+        </VStack>
+      </HStack>
+    )
   }
 
   return (
