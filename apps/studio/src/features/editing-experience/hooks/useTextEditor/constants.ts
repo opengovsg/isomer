@@ -64,13 +64,6 @@ export const BASE_EXTENSIONS: Extensions = [
     openOnClick: false,
   }),
   Bold,
-  BulletList.extend({
-    name: "unorderedList",
-  }).configure({
-    HTMLAttributes: {
-      class: "list-disc",
-    },
-  }),
   Document.extend({
     name: "prose",
   }),
@@ -87,11 +80,24 @@ export const BASE_EXTENSIONS: Extensions = [
       }
     },
   }),
+  History,
+  Italic,
+  Paragraph,
+  Text,
+  Underline,
+]
+
+export const BASE_PROSE_EXTENSIONS: Extensions = [
+  BulletList.extend({
+    name: "unorderedList",
+  }).configure({
+    HTMLAttributes: {
+      class: "list-disc",
+    },
+  }),
   HorizontalRule.extend({
     name: "divider",
   }),
-  History,
-  Italic,
   ListItem.extend({
     content: "paragraph list*",
   }).configure({
@@ -105,12 +111,9 @@ export const BASE_EXTENSIONS: Extensions = [
       class: "list-decimal",
     },
   }),
-  Paragraph,
   Strike,
   Superscript,
   Subscript,
-  Text,
-  Underline,
 ]
 
 export const IsomerTable = Table.extend({

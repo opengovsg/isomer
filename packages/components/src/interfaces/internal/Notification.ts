@@ -2,7 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { ProseValueSchema } from "../native/Prose"
+import { SimpleProseSchema } from "../native/Prose"
 
 export const NotificationSchema = Type.Object(
   {
@@ -17,7 +17,7 @@ export const NotificationSchema = Type.Object(
       description: "The title of the notification",
       maxLength: 100,
     }),
-    content: Type.Optional(ProseValueSchema),
+    content: Type.Optional(SimpleProseSchema),
   },
   {
     title: "Notification component",
