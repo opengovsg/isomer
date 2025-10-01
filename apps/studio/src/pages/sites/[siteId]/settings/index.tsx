@@ -12,7 +12,7 @@ const siteSettingsSchema = z.object({
 const SiteSettingsPage: NextPageWithLayout = () => {
   const router = useRouter()
   const { siteId } = useQueryParse(siteSettingsSchema)
-  void router.replace(`sites/${siteId}/settings/agency`)
+  void router.replace(`/sites/${siteId}/settings/agency`)
 
   return <FullscreenSpinner />
 }

@@ -8,7 +8,7 @@ export const LocalSearchSchema = Type.Object({
     title: "Search URL",
     description:
       "The URL to which the search query will be sent. This should point to a local search endpoint.",
-    format: "link",
+    format: "hidden",
   }),
 })
 
