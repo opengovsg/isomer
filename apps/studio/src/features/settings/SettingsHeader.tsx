@@ -26,12 +26,12 @@ export const SettingsHeader = ({
         >
           <Icon as={icon} boxSize="1rem" />
         </Center>
-        <Text as="h3" textStyle="h3">
+        <Text as="h1" textStyle="h3">
           {title}
         </Text>
       </Flex>
       <Button type="submit" isLoading={isLoading}>
-        <Text>Publish changes</Text>
+        Publish changes
       </Button>
     </Flex>
   )
