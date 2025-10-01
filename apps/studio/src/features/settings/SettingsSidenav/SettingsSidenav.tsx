@@ -62,6 +62,7 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
                 <SettingsItem
                   {...item}
                   isActive={router.asPath === item.href}
+                  key={item.href}
                 />
               ))}
             </VStack>
