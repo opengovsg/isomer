@@ -29,8 +29,6 @@ import {
   jsonFormsConstControlTester,
   JsonFormsDateControl,
   jsonFormsDateControlTester,
-  JsonFormsDisabledControl,
-  jsonFormsDisabledControlTester,
   JsonFormsEmbedControl,
   jsonFormsEmbedControlTester,
   jsonFormsGroupLayoutRenderer,
@@ -68,10 +66,6 @@ import {
 } from "./renderers"
 
 export const renderers: JsonFormsRendererRegistryEntry[] = [
-  {
-    renderer: JsonFormsDisabledControl,
-    tester: jsonFormsDisabledControlTester,
-  },
   {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,

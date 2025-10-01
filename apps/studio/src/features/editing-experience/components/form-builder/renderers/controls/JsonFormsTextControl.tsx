@@ -34,6 +34,7 @@ export function JsonFormsTextControl({
   required,
   errors,
   schema,
+  enabled,
 }: ControlProps) {
   const { maxLength } = schema
   const remainingCharacterCount = maxLength
@@ -51,7 +52,11 @@ export function JsonFormsTextControl({
 
   return (
     <Box>
-      <FormControl isRequired={required} isInvalid={!!errors}>
+      <FormControl
+        isDisabled={!enabled}
+        isRequired={required}
+        isInvalid={!!errors}
+      >
         <FormLabel description={description} mb={0}>
           {label}
         </FormLabel>
