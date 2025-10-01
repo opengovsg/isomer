@@ -10,12 +10,12 @@ const SearchSgApi = {
   App: `/v1/bootstrap/applications`,
 } as const
 
-const generateSearchsgParams = ({
+const generateSearchSGParams = ({
   name,
   config,
   url,
-}: UpdateSearchsgConfigProps & {
-  config: SearchsgConfig["data"]
+}: UpdateSearchSGConfigProps & {
+  config: SearchSGConfig["data"]
   url: string
 }) => {
   return {
@@ -52,11 +52,11 @@ const generateSearchsgParams = ({
   }
 }
 
-interface UpdateSearchsgConfigProps {
+interface UpdateSearchSGConfigProps {
   name: string
 }
 
-const requestSearchSgClient = async () => {
+const requestSearchSGClient = async () => {
   const { accessToken, tokenType } = await wretch(
     `${SEARCHSG_BASE_URL}${SearchSgApi.Auth}`,
   )
@@ -75,21 +75,21 @@ const requestSearchSgClient = async () => {
     })
 }
 
-export const updateSearchsgConfig = async (
-  props: UpdateSearchsgConfigProps,
+export const updateSearchSGConfig = async (
+  props: UpdateSearchSGConfigProps,
   searchsgClientId: string,
   url: URL,
 ) => {
-  const client = await requestSearchSgClient()
+  const client = await requestSearchSGClient()
 
   // NOTE: doing fetch before post to avoid cases
   // where the search domain and data domains
   // are not direct deriviatives of `site.url`
   const { data: config } = await client
     .get(`/${searchsgClientId}`)
-    .json<SearchsgConfig>()
+    .json<SearchSGConfig>()
 
-  const updatedConfig = generateSearchsgParams({
+  const updatedConfig = generateSearchSGParams({
     ...props,
     config,
     url: url.host,
@@ -104,7 +104,7 @@ export const updateSearchsgConfig = async (
   return res
 }
 
-interface SearchsgConfig {
+interface SearchSGConfig {
   data: {
     index: {
       dataSource: {
