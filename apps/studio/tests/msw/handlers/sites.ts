@@ -457,19 +457,149 @@ export const sitesHandlers = {
   getNotification: {
     default: () => {
       return trpcMsw.site.getNotification.query(() => {
-        return "This is a test notification"
+        return {
+          notification: {
+            title: "hello world",
+            enabled: true,
+            content: {
+              type: "prose",
+              content: [
+                {
+                  type: "paragraph",
+                  attrs: {
+                    dir: "ltr",
+                  },
+                  content: [
+                    {
+                      text: "i love ",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "bold",
+                        },
+                      ],
+                    },
+                    {
+                      text: "Isomer ",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "bold",
+                        },
+                        {
+                          type: "italic",
+                        },
+                      ],
+                    },
+                    {
+                      text: "alot ",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "italic",
+                        },
+                      ],
+                    },
+                    {
+                      text: "because ",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "italic",
+                        },
+                        {
+                          type: "underline",
+                        },
+                      ],
+                    },
+                    {
+                      text: "the ui ",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "underline",
+                        },
+                      ],
+                    },
+                    {
+                      text: "is nice",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "italic",
+                        },
+                        {
+                          type: "underline",
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        }
+      })
+    },
+
+    title: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return {
+          notification: {
+            title: "hello world",
+            enabled: true,
+            content: {
+              type: "prose",
+              content: [],
+            },
+          },
+        }
+      })
+    },
+
+    disabled: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return {
+          notification: {
+            title: "hello world",
+            enabled: false,
+            content: {
+              type: "prose",
+              content: [],
+            },
+          },
+        }
       })
     },
 
     empty: () => {
       return trpcMsw.site.getNotification.query(() => {
-        return ""
+        return {
+          notification: {
+            title: "",
+            enabled: true,
+            content: {
+              type: "prose",
+              content: [],
+            },
+          },
+        }
       })
     },
 
     long: () => {
       return trpcMsw.site.getNotification.query(() => {
-        return "This is a test notification that is very long, it should be exactly 100 characters long in fact pog."
+        return {
+          notification: {
+            title:
+              "This is a very long title that should be exactly 100 words long - i am just typing random stuff here",
+            enabled: true,
+            content: {
+              type: "prose",
+              content: [],
+            },
+          },
+        }
       })
     },
   },
