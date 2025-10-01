@@ -44,7 +44,16 @@ export const Default: Story = {
   args: {},
 }
 
-export const Disabled: Story = {
+export const TitleOnly: Story = {
+  args: {},
+  parameters: {
+    msw: {
+      handlers: [sitesHandlers.getNotification.title(), ...COMMON_HANDLERS],
+    },
+  },
+}
+
+export const Empty: Story = {
   args: {},
   parameters: {
     msw: {
@@ -58,6 +67,15 @@ export const Long: Story = {
   parameters: {
     msw: {
       handlers: [sitesHandlers.getNotification.long(), ...COMMON_HANDLERS],
+    },
+  },
+}
+
+export const Disabled: Story = {
+  args: {},
+  parameters: {
+    msw: {
+      handlers: [sitesHandlers.getNotification.disabled(), ...COMMON_HANDLERS],
     },
   },
 }
