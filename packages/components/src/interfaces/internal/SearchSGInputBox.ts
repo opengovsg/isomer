@@ -6,6 +6,7 @@ export const SearchSGSearchSchema = Type.Object({
   clientId: Type.String({
     title: "Client ID for SearchSG",
     description: "The client ID for SearchSG integration.",
+    readOnly: true,
   }),
 })
 
