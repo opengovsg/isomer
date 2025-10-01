@@ -10,14 +10,7 @@ import { TableSchema } from "./Table"
 import { UnorderedListSchema } from "./UnorderedList"
 
 const PROSE_CONTENT_VALUE_SCHEMA = Type.Array(
-  Type.Union([
-    DividerSchema,
-    HeadingSchema,
-    OrderedListSchema,
-    ParagraphSchema,
-    TableSchema,
-    UnorderedListSchema,
-  ]),
+  Type.Union([DividerSchema, ParagraphSchema]),
 )
 
 const PROSE_CONTENT_SCHEMA = Type.Array(
@@ -44,6 +37,7 @@ export type ComponentsWithProse =
   | "accordion"
   | "callout"
   | "contentpic"
+  | "simple-prose"
 
 const generateProseSchema = ({
   id,
@@ -74,12 +68,12 @@ const generateProseSchema = ({
 // because our original prose schema uses `Type.Ref`,
 // these sections of our codebase are unable to extract the reference
 // leading to errors
-export const ProseValueSchema = Type.Object(
+export const SimpleProseSchema = Type.Object(
   {
     type: Type.Literal("prose"),
     content: PROSE_CONTENT_VALUE_SCHEMA,
   },
-  { format: "prose" },
+  { format: "simple-prose" },
 )
 
 export const ProseSchema = generateProseSchema({
