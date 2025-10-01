@@ -5,6 +5,7 @@ import TextDirection from "tiptap-text-direction"
 
 import {
   BASE_EXTENSIONS,
+  BASE_PROSE_EXTENSIONS,
   HEADING_TYPE,
   IsomerHeading,
   IsomerTable,
@@ -46,6 +47,7 @@ export const useTextEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
     extensions: [
+      ...BASE_PROSE_EXTENSIONS,
       TableRow,
       IsomerTable,
       IsomerTableCell,
@@ -57,17 +59,30 @@ export const useTextEditor = (props: BaseEditorProps) =>
 export const useCalloutEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
-    extensions: [],
+    extensions: BASE_PROSE_EXTENSIONS,
   })
 
 export const useAccordionEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
-    extensions: [TableRow, IsomerTable, IsomerTableCell, IsomerTableHeader],
+    extensions: [
+      ...BASE_PROSE_EXTENSIONS,
+      TableRow,
+      IsomerTable,
+      IsomerTableCell,
+      IsomerTableHeader,
+    ],
   })
 
 export const useProseEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
-    extensions: [IsomerHeading],
+    extensions: [...BASE_PROSE_EXTENSIONS, IsomerHeading],
+  })
+
+// NOTE: The same for now because no extra extensions
+export const useSimpleProseEditor = (props: BaseEditorProps) =>
+  useBaseEditor({
+    ...props,
+    extensions: [],
   })
