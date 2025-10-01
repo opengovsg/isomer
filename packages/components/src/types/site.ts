@@ -9,7 +9,7 @@ import {
   SearchSGSearchSchema,
   VicaSchema,
 } from "~/interfaces"
-import { NotificationSchema } from "~/interfaces/internal/Notification"
+import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
 
 export const AgencySettingsSchema = Type.Object({
   siteName: Type.String({
@@ -27,8 +27,38 @@ export const AgencySettingsSchema = Type.Object({
   ),
 })
 
+export const SimpleIntegrationsSettingsSchema = Type.Object({
+  siteGtmId: Type.Optional(
+    Type.String({
+      title: "Google Tag Manager (GTM) ID",
+      description:
+        "You can locate your GTM ID on your Google Tag Manager account. It should start with “GTM-”.",
+    }),
+  ),
+  search: Type.Optional(
+    Type.Union([LocalSearchSchema, SearchSGSearchSchema], {
+      title: "Search configuration",
+      description: "Configuration for the search functionality of the site.",
+      // NOTE: Overriding the default `Union` with this because we should
+      // not be showing the `localSearch` option to our agency users
+      format: "searchsg",
+    }),
+  ),
+})
+
+export const ComplexIntegrationsSettingsSchema = Type.Object({
+  askgov: Type.Optional(AskgovSchema),
+  vica: Type.Optional(VicaSchema),
+})
+
+export const IntegrationsSettingsSchema = Type.Intersect([
+  ComplexIntegrationsSettingsSchema,
+  SimpleIntegrationsSettingsSchema,
+])
+
 export const SiteConfigSchema = Type.Intersect([
   AgencySettingsSchema,
+  IntegrationsSettingsSchema,
   Type.Object({
     url: Type.String({
       title: "Base URL of the site",
@@ -63,25 +93,8 @@ export const SiteConfigSchema = Type.Intersect([
         format: "hidden",
       }),
     ),
-    search: Type.Optional(
-      Type.Union([LocalSearchSchema, SearchSGSearchSchema], {
-        title: "Search configuration",
-        description: "Configuration for the search functionality of the site.",
-        format: "hidden",
-      }),
-    ),
-    notification: Type.Optional(NotificationSchema),
-    siteGtmId: Type.Optional(
-      Type.String({
-        title: "Google Tag Manager ID",
-        description:
-          "The Google Tag Manager ID for the site, used for tracking and analytics.",
-        format: "hidden",
-      }),
-    ),
-    vica: Type.Optional(VicaSchema),
-    askgov: Type.Optional(AskgovSchema),
   }),
+  NotificationSettingsSchema,
 ])
 
 export type IsomerSiteConfigProps = Static<typeof SiteConfigSchema>
@@ -104,3 +117,12 @@ export type IsomerSiteProps = IsomerGeneratedSiteProps &
   IsomerSiteConfigProps
 
 export type AgencySettings = Static<typeof AgencySettingsSchema>
+export type IntegrationsSettings = Static<typeof IntegrationsSettingsSchema>
+export type SimpleIntegrationsSettings = Static<
+  typeof SimpleIntegrationsSettingsSchema
+>
+export type ComplexIntegrationsSettings = Static<
+  typeof ComplexIntegrationsSettingsSchema
+>
+
+export type ComplexIntegrations = keyof ComplexIntegrationsSettings

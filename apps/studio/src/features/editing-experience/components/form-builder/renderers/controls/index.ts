@@ -118,3 +118,11 @@ export {
   default as JsonFormsEnumControl,
   jsonFormsEnumControlTester,
 } from "./JsonFormsEnumControl"
+export {
+  default as JsonFormsSearchSGControl,
+  jsonFormsSearchSGControlTester,
+} from "./JsonFormsSearchSGControl"
+export {
+  default as JsonFormsWidgetIntegrationControl,
+  jsonFormsWidgetIntegrationControlTester,
+} from "./JsonFormsWidgetIntegrationControl"

@@ -38,6 +38,10 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
           label: "Notification banner",
           href: `/sites/${siteId}/settings/notification`,
         },
+        {
+          label: "Integrations",
+          href: `/sites/${siteId}/settings/integrations`,
+        },
       ],
     },
   ]

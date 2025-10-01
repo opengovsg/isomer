@@ -577,8 +577,9 @@ describe("site.router", async () => {
       // Act
       const result = unauthedCaller.setNotification({
         siteId: 1,
-        title: "foo",
-        enabled: true,
+        notification: {
+          notification: { title: "foo" },
+        },
       })
 
       // Assert
@@ -599,8 +600,9 @@ describe("site.router", async () => {
       // Act
       const result = caller.setNotification({
         siteId: site.id,
-        title: "foo",
-        enabled: true,
+        notification: {
+          notification: { title: "foo" },
+        },
       })
 
       // Assert
@@ -639,8 +641,9 @@ describe("site.router", async () => {
       // Act
       await caller.setNotification({
         siteId: site.id,
-        title: "foo",
-        enabled: true,
+        notification: {
+          notification: { title: "foo" },
+        },
       })
 
       // Assert
@@ -682,8 +685,9 @@ describe("site.router", async () => {
       // Act
       await caller.setNotification({
         siteId: site.id,
-        title: "foo",
-        enabled: true,
+        notification: {
+          notification: { title: "foo" },
+        },
       })
 
       // Assert
@@ -729,8 +733,7 @@ describe("site.router", async () => {
       // Act
       await caller.setNotification({
         siteId: site.id,
-        title: "foo",
-        enabled: false,
+        notification: {},
       })
 
       // Assert

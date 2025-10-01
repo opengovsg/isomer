@@ -29,6 +29,7 @@ export {
 } from "./Navbar"
 export {
   NotificationSchema,
+  NotificationSettingsSchema,
   type NotificationProps,
   type NotificationClientProps,
 } from "./Notification"

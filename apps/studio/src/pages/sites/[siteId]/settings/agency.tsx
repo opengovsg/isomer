@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
+import { useState } from "react"
 import { Grid, GridItem } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
@@ -19,7 +18,6 @@ import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
-import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
@@ -29,8 +27,6 @@ import { trpc } from "~/utils/trpc"
 const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
 
 const AgencySettingsPage: NextPageWithLayout = () => {
-  const isEnabled = useNewSettingsPage()
-  const router = useRouter()
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
   const [{ siteName, agencyName }] = trpc.site.getConfig.useSuspenseQuery({
@@ -57,12 +53,6 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     },
   })
 
-  useEffect(() => {
-    if (!isEnabled) {
-      void router.push(`/sites/${siteId}/settings`)
-    }
-  }, [])
-
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
   const [state, setState] = useState<AgencySettings>({
@@ -80,7 +70,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     })
 
   return (
-    <>
+    <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
         onClose={() => setNextUrl("")}
@@ -115,7 +105,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
           <EditSettingsPreview siteName={state.siteName} />
         </GridItem>
       </Grid>
-    </>
+    </ErrorProvider>
   )
 }
 
