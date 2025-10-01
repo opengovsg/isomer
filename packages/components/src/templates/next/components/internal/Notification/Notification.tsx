@@ -1,5 +1,6 @@
 import type { NotificationProps } from "~/interfaces"
 import { Prose } from "../../native"
+import { hasContent } from "../../native/Prose/utils"
 import NotificationClient from "./NotificationClient"
 
 const Notification = ({
@@ -15,7 +16,8 @@ const Notification = ({
       // avoiding large sitemap transfers needed by BaseParagraph.
       // TODO: more robust refactor is required for BaseParagraph component
       baseParagraph={
-        !!content && (
+        !!content &&
+        hasContent(content.content) && (
           <Prose {...content} site={site} LinkComponent={LinkComponent} />
         )
       }
