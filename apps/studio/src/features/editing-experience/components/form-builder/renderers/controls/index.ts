@@ -102,3 +102,7 @@ export {
   default as JsonFormsNavbarControl,
   jsonFormsNavbarControlTester,
 } from "./JsonFormsNavbarControl/JsonFormsNavbarControl"
+export {
+  default as JsonFormsLinkArrayControl,
+  jsonFormsLinkArrayControlTester,
+} from "./JsonFormsLinkArrayControl"
