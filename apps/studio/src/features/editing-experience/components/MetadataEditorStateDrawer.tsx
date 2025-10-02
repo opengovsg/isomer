@@ -68,7 +68,8 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Database
       ? getScopedSchema({
           layout: ISOMER_USABLE_PAGE_LAYOUTS.Database,
-          scope: "page.contentPageHeader",
+          scope: "page",
+          exclude: ["database"],
         })
       : metadataSchema
 

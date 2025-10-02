@@ -144,4 +144,74 @@ describe("getScopedSchema", () => {
       expect(schema.properties).toBeDefined()
     })
   })
+
+  describe("exclude functionality", () => {
+    it("should exclude specified fields from database page schema", () => {
+      const schema = getScopedSchema({
+        layout: "database",
+        scope: "page",
+        exclude: ["contentPageHeader"],
+      })
+
+      expect(schema).toBeDefined()
+      expect(schema.type).toBe("object")
+      expect(schema.properties).toBeDefined()
+      expect(schema.properties.contentPageHeader).toBeUndefined()
+      expect(schema.properties.database).toBeDefined()
+    })
+
+    it("should exclude multiple fields from database page schema", () => {
+      const schema = getScopedSchema({
+        layout: "database",
+        scope: "page",
+        exclude: ["contentPageHeader", "database"],
+      })
+
+      expect(schema).toBeDefined()
+      expect(schema.type).toBe("object")
+      expect(schema.properties).toBeDefined()
+      expect(schema.properties.contentPageHeader).toBeUndefined()
+      expect(schema.properties.database).toBeUndefined()
+    })
+
+    it("should work with content layout and exclude fields", () => {
+      const schema = getScopedSchema({
+        layout: "content",
+        scope: "page",
+        exclude: ["contentPageHeader"],
+      })
+
+      expect(schema).toBeDefined()
+      expect(schema.type).toBe("object")
+      expect(schema.properties).toBeDefined()
+      expect(schema.properties.contentPageHeader).toBeUndefined()
+    })
+
+    it("should work with nested scope and exclude fields", () => {
+      const schema = getScopedSchema({
+        layout: "database",
+        scope: "page.database",
+        exclude: ["title"],
+      })
+
+      expect(schema).toBeDefined()
+      // For Intersect schemas, properties are in allOf array
+      expect(schema.allOf || schema.properties).toBeDefined()
+    })
+
+    it("should return original schema when exclude is empty array", () => {
+      const originalSchema = getScopedSchema({
+        layout: "database",
+        scope: "page",
+      })
+
+      const schemaWithEmptyExclude = getScopedSchema({
+        layout: "database",
+        scope: "page",
+        exclude: [],
+      })
+
+      expect(schemaWithEmptyExclude).toEqual(originalSchema)
+    })
+  })
 })

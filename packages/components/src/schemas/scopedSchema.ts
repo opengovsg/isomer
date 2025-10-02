@@ -71,25 +71,48 @@ interface ScopeLayoutMap {
 
  * // ❌ Type error - "page.database" doesn't exist in ArticlePageSchema
  * const schema = getScopedSchema({ layout: "article", scope: "page.database" })
+ * 
+ * // ✅ Exclude specific fields from the schema
+ * const schema = getScopedSchema({ 
+ *   layout: "database", 
+ *   scope: "page", 
+ *   exclude: ["contentPageHeader", "database"] 
+ * })
  * ```
  */
 export function getScopedSchema<T extends ScopedSchemaLayout>({
   layout,
   scope,
+  exclude,
 }: {
   layout: T
   scope: T extends keyof ScopeLayoutMap ? ScopeLayoutMap[T] : never
+  exclude?: string[]
 }): TSchema {
   let currentSchema = LAYOUT_SCHEMA_MAP[layout] // root schema
 
   for (const part of scope.split(".")) {
     // just in case runtime error occurs (should not be since we control what's passed in)
-    if (!currentSchema.properties || !currentSchema.properties[part]) {
+    if (!currentSchema.properties?.[part]) {
       throw new Error(
         `Invalid scope path: "${scope}". Property "${part}" not found in schema for layout "${layout}"`,
       )
     }
     currentSchema = currentSchema.properties[part] as TSchema
+  }
+
+  // If exclude is provided, remove the specified fields from the schema
+  if (exclude && exclude.length > 0 && currentSchema.properties) {
+    const filteredProperties = { ...currentSchema.properties }
+
+    for (const fieldToExclude of exclude) {
+      delete filteredProperties[fieldToExclude]
+    }
+
+    return {
+      ...currentSchema,
+      properties: filteredProperties,
+    } as TSchema
   }
 
   return currentSchema
