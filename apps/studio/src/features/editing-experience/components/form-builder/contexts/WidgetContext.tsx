@@ -4,13 +4,15 @@ import { createContext, useContext, useState } from "react"
 import { Box } from "@chakra-ui/react"
 import { SimplifyDeep } from "type-fest"
 
+import { AskgovLogo } from "~/components/Svg/Askgov"
+
 interface Widget {
   icon: JSX.Element
   label: string
 }
 export const WIDGET_CONFIG: { [w in WidgetType]: Widget } = {
   askgov: {
-    icon: <Box>askgov logo</Box>,
+    icon: <AskgovLogo />,
     label: "AskGov",
   },
   vica: {
@@ -33,7 +35,9 @@ export const WidgetProvider = ({
   children,
   activeWidget: currentActiveWidget,
 }: PropsWithChildren<Pick<UseWidgetContextReturn, "activeWidget">>) => {
-  const [activeWidget, setActiveWidget] = useState<WidgetType | null>(null)
+  const [activeWidget, setActiveWidget] = useState<WidgetType | null>(
+    currentActiveWidget,
+  )
   const getNextWidget = (widget: WidgetType) => {
     if (!activeWidget) return widget
 
