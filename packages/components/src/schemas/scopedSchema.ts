@@ -87,7 +87,7 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
 }: {
   layout: T
   scope: T extends keyof ScopeLayoutMap ? ScopeLayoutMap[T] : never
-  exclude?: string[]
+  exclude?: string[] // no typing as it complex and expensive to derive + this is a best-effort argument that is tolerant to invalid inputs
 }): TSchema {
   let currentSchema = LAYOUT_SCHEMA_MAP[layout] // root schema
 
