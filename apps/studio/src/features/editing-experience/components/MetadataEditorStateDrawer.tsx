@@ -5,6 +5,7 @@ import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getLayoutPageSchema,
+  getScopedSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import isEmpty from "lodash/isEmpty"
@@ -65,14 +66,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     // For database layout, exclude the database field from metadata editing
     // since it's handled by the separate database editor (DatabaseEditorStateDrawer)
     previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Database
-      ? {
-          ...metadataSchema,
-          properties: Object.fromEntries(
-            Object.entries(
-              metadataSchema.properties as Record<string, unknown>,
-            ).filter(([key]) => key !== "database"),
-          ),
-        }
+      ? getScopedSchema({
+          layout: ISOMER_USABLE_PAGE_LAYOUTS.Database,
+          scope: "page",
+          exclude: ["database"],
+        })
       : metadataSchema
 
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(filteredSchema)

@@ -7,8 +7,8 @@ import { useCallback } from "react"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import {
-  getComponentSchema,
-  SEARCHABLE_TABLE_TYPE,
+  getScopedSchema,
+  ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
@@ -24,6 +24,15 @@ import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
 import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
+
+const databasePageDatabaseSchema = getScopedSchema({
+  layout: ISOMER_USABLE_PAGE_LAYOUTS.Database,
+  scope: "page.database",
+})
+
+const validateFn = ajv.compile<Static<typeof databasePageDatabaseSchema>>(
+  databasePageDatabaseSchema,
+)
 
 export default function DatabaseEditorStateDrawer(): JSX.Element {
   const {
@@ -53,13 +62,6 @@ export default function DatabaseEditorStateDrawer(): JSX.Element {
       })
     },
   })
-
-  const searchableTableSchema = getComponentSchema({
-    component: SEARCHABLE_TABLE_TYPE,
-  })
-  const validateFn = ajv.compile<Static<typeof searchableTableSchema>>(
-    searchableTableSchema,
-  )
 
   const handleSaveChanges = useCallback(() => {
     setSavedPageState(previewPageState)
@@ -124,8 +126,8 @@ export default function DatabaseEditorStateDrawer(): JSX.Element {
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
             <Box mb="1rem">
-              <FormBuilder<Static<typeof searchableTableSchema>>
-                schema={searchableTableSchema}
+              <FormBuilder<Static<typeof databasePageDatabaseSchema>>
+                schema={databasePageDatabaseSchema}
                 validateFn={validateFn}
                 data={
                   (previewPageState as unknown as DatabasePageSchemaType).page
