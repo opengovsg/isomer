@@ -148,6 +148,7 @@ const config = {
         "dd-trace": "dd-trace",
       })
     }
+    return config
   },
   transpilePackages: ["@sinclair/typebox"],
   /** We run eslint as a separate task in CI */
