@@ -26,7 +26,7 @@ export const AgencySettingsSchema = Type.Object({
   ),
 })
 
-export const IntegrationsSettingsSchema = Type.Object({
+export const SimpleIntegrationsSettingsSchema = Type.Object({
   siteGtmId: Type.Optional(
     Type.String({
       title: "Google Tag Manager (GTM) ID",
@@ -43,9 +43,17 @@ export const IntegrationsSettingsSchema = Type.Object({
       format: "searchsg",
     }),
   ),
+})
+
+export const ComplexIntegrationsSettingsSchema = Type.Object({
   vica: Type.Optional(VicaSchema),
   askgov: Type.Optional(AskgovSchema),
 })
+
+export const IntegrationsSettingsSchema = Type.Intersect([
+  ComplexIntegrationsSettingsSchema,
+  SimpleIntegrationsSettingsSchema,
+])
 
 export const SiteConfigSchema = Type.Intersect([
   AgencySettingsSchema,
@@ -109,3 +117,9 @@ export type IsomerSiteProps = IsomerGeneratedSiteProps &
 
 export type AgencySettings = Static<typeof AgencySettingsSchema>
 export type IntegrationsSettings = Static<typeof IntegrationsSettingsSchema>
+export type SimpleIntegrationsSettings = Static<
+  typeof SimpleIntegrationsSettingsSchema
+>
+export type ComplexIntegrationsSettings = Static<
+  typeof ComplexIntegrationsSettingsSchema
+>

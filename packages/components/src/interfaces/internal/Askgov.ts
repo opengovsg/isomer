@@ -19,6 +19,8 @@ export const AskgovSchema = Type.Object(
   {
     title: "Askgov Widget",
     description: "Schema for the Askgov widget integration.",
+    format: "widget-integration",
+    variant: "askgov",
   },
 )
 
