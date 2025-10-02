@@ -6,7 +6,6 @@ import {
   DYNAMIC_COMPONENT_LIST_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
-  SEARCHABLE_TABLE_TYPE,
 } from "@opengovsg/isomer-components"
 import {
   BiChevronDown,
@@ -23,7 +22,6 @@ import {
   BiPhoneCall,
   BiPointer,
   BiSolidQuoteAltLeft,
-  BiTable,
   BiText,
 } from "react-icons/bi"
 import { FaYoutube } from "react-icons/fa"
@@ -62,5 +60,4 @@ export const TYPE_TO_ICON: Record<
   [CONTACT_INFORMATION_TYPE]: BiPhoneCall,
   [DYNAMIC_COMPONENT_LIST_TYPE]: BiListUl,
   childrenpages: BiListUl,
-  [SEARCHABLE_TABLE_TYPE]: BiTable,
 }

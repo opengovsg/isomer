@@ -12,7 +12,6 @@ import { useDgsMetadata } from "~/hooks/useDgsMetadata"
 import { SearchableTableClient } from "../shared"
 
 export const DGSSearchableTable = ({
-  type,
   dataSource: { resourceId, filters, sort },
   title,
   headers,
@@ -93,7 +92,6 @@ export const DGSSearchableTable = ({
 
   return (
     <SearchableTableClient
-      type={type}
       title={resolvedTitle}
       headers={labels}
       items={items}

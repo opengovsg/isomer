@@ -6,7 +6,6 @@ import {
   DYNAMIC_COMPONENT_LIST_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
-  SEARCHABLE_TABLE_TYPE,
 } from "~/interfaces"
 
 function getTextContentOfProse(content: ProseContent): string {
@@ -124,8 +123,6 @@ export function renderComponentPreviewText({
       )
     case IMAGE_GALLERY_TYPE:
       return "Image Gallery"
-    case SEARCHABLE_TABLE_TYPE:
-      return component.title || "Database"
     case CONTACT_INFORMATION_TYPE:
       return component.title || "Contact Information"
     case DYNAMIC_COMPONENT_LIST_TYPE:

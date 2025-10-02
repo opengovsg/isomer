@@ -5,7 +5,6 @@ import type { CollectionVariant } from "./variants"
 import {
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
-  SEARCHABLE_TABLE_TYPE,
   SearchableTableSchema,
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
@@ -207,15 +206,7 @@ export const IndexPagePageSchema = Type.Composite([
 
 export const DatabasePagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,
-  database: Type.Intersect([
-    SearchableTableSchema,
-    // needed this for backward compatibility as it was not included in the schema before
-    Type.Object({
-      type: Type.Literal(SEARCHABLE_TABLE_TYPE, {
-        default: SEARCHABLE_TABLE_TYPE,
-      }),
-    }),
-  ]),
+  database: SearchableTableSchema,
 })
 
 export const HomePagePageSchema = Type.Object({})

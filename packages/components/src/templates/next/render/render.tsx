@@ -10,7 +10,6 @@ import {
   DYNAMIC_COMPONENT_LIST_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
-  SEARCHABLE_TABLE_TYPE,
 } from "~/interfaces"
 import {
   Accordion,
@@ -114,8 +113,6 @@ export const renderComponent = ({
       return <CollectionBlock key={elementKey} {...component} {...rest} />
     case IMAGE_GALLERY_TYPE:
       return <ImageGallery key={elementKey} {...component} {...rest} />
-    case SEARCHABLE_TABLE_TYPE:
-      return <SearchableTable key={elementKey} {...component} {...rest} />
     case CONTACT_INFORMATION_TYPE:
       return <ContactInformation key={elementKey} {...component} {...rest} />
     case DYNAMIC_COMPONENT_LIST_TYPE:

@@ -1,5 +1,4 @@
 import type { DatabasePageSchemaType } from "~/engine"
-import { SEARCHABLE_TABLE_TYPE } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import {
   getBreadcrumbFromSiteMap,

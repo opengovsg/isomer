@@ -21,7 +21,6 @@ export default meta
 type Story = StoryObj<typeof DGSSearchableTable>
 
 const commonArgs: Partial<DGSSearchableTableProps> = {
-  type: "searchabletable",
   title: "Sample DGS Table",
   dataSource: {
     type: "dgs",

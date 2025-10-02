@@ -5,7 +5,6 @@ import {
   DYNAMIC_COMPONENT_LIST_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
-  SEARCHABLE_TABLE_TYPE,
 } from "~/interfaces"
 
 export const doesComponentHaveImage = ({
@@ -24,7 +23,6 @@ export const doesComponentHaveImage = ({
     case "infocols":
     case "prose":
     case DYNAMIC_DATA_BANNER_TYPE:
-    case SEARCHABLE_TABLE_TYPE:
     case CONTACT_INFORMATION_TYPE:
     case DYNAMIC_COMPONENT_LIST_TYPE: // The content are fetched, so they eager load has no impact
       return false
