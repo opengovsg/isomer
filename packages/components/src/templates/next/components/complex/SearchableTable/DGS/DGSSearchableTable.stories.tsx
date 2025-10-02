@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { omit } from "lodash"
 import { http, HttpResponse } from "msw"
 
 import type { DGSSearchableTableProps } from "~/interfaces"
@@ -14,71 +15,75 @@ const meta: Meta<DGSSearchableTableProps> = {
       themeOverride: "Isomer Next",
     },
   },
+}
+
+export default meta
+type Story = StoryObj<typeof DGSSearchableTable>
+
+const commonArgs: Partial<DGSSearchableTableProps> = {
+  title: "Sample DGS Table",
+  dataSource: {
+    type: "dgs",
+    resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+  },
+}
+
+export const Default: Story = {
+  args: commonArgs,
+}
+
+export const SelectedHeaders: Story = {
   args: {
-    title: "Sample DGS Table",
-    dataSource: {
-      type: "dgs",
-      resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
-    },
+    ...commonArgs,
     headers: [
       { label: "Year", key: "year" },
       { label: "University", key: "university" },
       { label: "School", key: "school" },
       { label: "Degree", key: "degree" },
       { label: "Monthly Median", key: "gross_monthly_median" },
-      {
-        label: "Monthly 25th Percentile",
-        key: "gross_mthly_25_percentile",
-      },
-      {
-        label: "Monthly 75th Percentile",
-        key: "gross_mthly_75_percentile",
-      },
     ],
   },
 }
 
-const DgsUrl = generateDgsUrl({
-  resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
-  fields: [
-    "year",
-    "university",
-    "school",
-    "degree",
-    "gross_monthly_median",
-    "gross_mthly_25_percentile",
-    "gross_mthly_75_percentile",
-  ].join(","),
-})
-
-export default meta
-type Story = StoryObj<typeof DGSSearchableTable>
-
-export const Default: Story = {}
+export const DefaultTitleWhenUnspecified: Story = {
+  args: omit(commonArgs, "title"),
+}
 
 export const Loading: Story = {
+  args: commonArgs,
   parameters: {
     msw: {
       handlers: [
-        http.get(DgsUrl, () => {
-          return new Promise(() => {
-            // Never resolve the promise
-          })
-        }),
+        http.get(
+          generateDgsUrl({
+            resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+          }),
+          () => {
+            return new Promise(() => {
+              // Never resolve the promise
+            })
+          },
+        ),
       ],
     },
   },
 }
 
 export const Error: Story = {
+  args: commonArgs,
   parameters: {
     msw: {
       handlers: [
-        http.get(DgsUrl, () => {
-          return new HttpResponse(null, {
-            status: 500,
-          })
-        }),
+        http.get(
+          generateDgsUrl({
+            resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+          }),
+          () => {
+            return new HttpResponse(null, {
+              status: 500,
+            })
+          },
+        ),
       ],
     },
   },

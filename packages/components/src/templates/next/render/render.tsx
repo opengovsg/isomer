@@ -34,6 +34,7 @@ import {
   LogoCloud,
   Map,
   Prose,
+  SearchableTable,
   Video,
 } from "../components"
 import {

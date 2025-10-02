@@ -17,11 +17,10 @@ export const useDgsData = ({
   resourceId,
   limit,
   offset,
-  fields,
   filters,
   sort,
 }: UseDgsData) => {
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState(false)
   const [data, setData] = useState<DgsApiDatasetSearchResponseSuccess | null>(
     null,
@@ -34,11 +33,10 @@ export const useDgsData = ({
       resourceId,
       limit,
       offset,
-      fields,
       filters,
       sort,
     }),
-    [resourceId, limit, offset, fields, filters, sort],
+    [resourceId, limit, offset, filters, sort],
   )
 
   const fetchAllRecords = useCallback(async () => {
@@ -80,12 +78,14 @@ export const useDgsData = ({
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true)
       try {
         if (fetchAll) {
           await fetchAllRecords()
         } else {
           await fetchRecords()
         }
+        setIsError(false)
       } catch {
         setIsError(true)
       } finally {

@@ -480,6 +480,10 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   },
   { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
+
+export const DATABASE_ALLOWED_BLOCKS: AllowedBlockSections =
+  CONTENT_ALLOWED_BLOCKS
+
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Add a new section",
