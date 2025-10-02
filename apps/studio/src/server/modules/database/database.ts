@@ -1,5 +1,5 @@
 import { type DB } from "~prisma/generated/generatedTypes"
-import { Span, tracer } from "dd-trace"
+import ddTrace from "dd-trace"
 import {
   KyselyPlugin,
   PluginTransformQueryArgs,
@@ -16,17 +16,24 @@ import { Kysely } from "./types"
 const connectionString = `${env.DATABASE_URL}`
 
 class TracingPlugin implements KyselyPlugin {
-  private spanMap = new WeakMap<PluginTransformQueryArgs["queryId"], Span>()
+  private spanMap = new WeakMap<
+    PluginTransformQueryArgs["queryId"],
+    ddTrace.Span
+  >()
   transformQuery(args: PluginTransformQueryArgs) {
     const queryId = args.queryId
-    const span = tracer.startSpan("kysely_query", {
-      childOf: tracer.scope().active() ?? undefined,
-      tags: {
-        "kysely.query_id": queryId,
-        "kysely.kind": args.node.kind,
-      },
-    })
-    this.spanMap.set(queryId, span)
+    // only create spans if dd-trace is properly initialized, which is NOT the case if running in a seed script
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (ddTrace?.tracer) {
+      const span = ddTrace.tracer.startSpan(`kysely_${args.node.kind}`, {
+        childOf: ddTrace.tracer.scope().active() ?? undefined,
+        tags: {
+          "kysely.query_id": queryId,
+          "kysely.kind": args.node.kind,
+        },
+      })
+      this.spanMap.set(queryId, span)
+    }
     return args.node
   }
   transformResult(
