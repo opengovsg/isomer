@@ -6,10 +6,13 @@ import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 // We can only pass in string values to the Vica script
 // as React omit boolean props when spreading onto a DOM element,
 // so they won't appear as attributes in the rendered HTML.
-const BooleanStringOptions = Type.Union([
-  Type.Literal("true", { format: "hidden" }),
-  Type.Literal("false", { format: "hidden" }),
-])
+const BooleanStringOptions = Type.Union(
+  [
+    Type.Literal("true", { format: "hidden" }),
+    Type.Literal("false", { format: "hidden" }),
+  ],
+  { format: "hidden" },
+)
 
 const HiddenOptionalString = Type.Optional(Type.String({ format: "hidden" }))
 
@@ -19,7 +22,11 @@ const HiddenOptionalString = Type.Optional(Type.String({ format: "hidden" }))
 export const VicaSchema = Type.Object(
   {
     // UI Theme
-    "app-id": Type.String(),
+    "app-id": Type.String({
+      title: "Vica ID",
+      description:
+        "You can get this from Vica support after onboarding. If the widget doesn’t appear, check that you have the correct ID.",
+    }),
     "app-name": Type.String(),
     "app-icon": HiddenOptionalString,
     "app-subtitle": HiddenOptionalString, // configuration disabled (according to docs)

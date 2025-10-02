@@ -46,8 +46,8 @@ export const SimpleIntegrationsSettingsSchema = Type.Object({
 })
 
 export const ComplexIntegrationsSettingsSchema = Type.Object({
-  vica: Type.Optional(VicaSchema),
   askgov: Type.Optional(AskgovSchema),
+  vica: Type.Optional(VicaSchema),
 })
 
 export const IntegrationsSettingsSchema = Type.Intersect([
@@ -123,3 +123,5 @@ export type SimpleIntegrationsSettings = Static<
 export type ComplexIntegrationsSettings = Static<
   typeof ComplexIntegrationsSettingsSchema
 >
+
+export type ComplexIntegrations = keyof ComplexIntegrationsSettings
