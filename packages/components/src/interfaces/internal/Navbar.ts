@@ -3,12 +3,11 @@ import { Type } from "@sinclair/typebox"
 
 import type { ImageClientProps } from "./Image"
 import type { LocalSearchProps } from "./LocalSearchInputBox"
-import type { SearchSGInputBoxProps } from "./SearchSGInputBox"
+import type { NavbarSearchSGInputBoxProps } from "./SearchSGInputBox"
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
-  ScriptComponentType,
 } from "~/types"
 
 const NavbarItemSchema = Type.Object({
@@ -125,9 +124,8 @@ export type NavbarSchemaType = Static<typeof NavbarSchema>
 
 type BaseNavbarProps = NavbarSchemaType & {
   layout: IsomerPageLayoutType
-  search?: LocalSearchProps | SearchSGInputBoxProps
+  search?: LocalSearchProps | NavbarSearchSGInputBoxProps
   LinkComponent?: LinkComponentType
-  ScriptComponent?: ScriptComponentType
 }
 
 export type NavbarProps = BaseNavbarProps & {

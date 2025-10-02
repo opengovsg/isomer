@@ -26,7 +26,6 @@ export default meta
 type Story = StoryObj<typeof DGSSearchableTable>
 
 const commonArgs: Partial<DGSSearchableTableProps> = {
-  type: "searchabletable",
   title: "Sample DGS Table",
   dataSource: {
     type: "dgs",
@@ -57,7 +56,6 @@ export const DefaultTitleWhenUnspecified: Story = {
 
 export const LargeDataset: Story = {
   args: {
-    type: "searchabletable",
     dataSource: {
       type: "dgs",
       resourceId: DGS_LARGE_DATASET_RESOURCE_ID,
@@ -67,7 +65,6 @@ export const LargeDataset: Story = {
 
 export const LargeDatasetNoSearchResults: Story = {
   args: {
-    type: "searchabletable",
     dataSource: {
       type: "dgs",
       resourceId: DGS_LARGE_DATASET_RESOURCE_ID,

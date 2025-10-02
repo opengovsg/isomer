@@ -14,7 +14,7 @@ import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
 
 type MobileNavMenuProps = Omit<
   NavbarClientProps,
-  "layout" | "imageClientProps" | "ScriptComponent"
+  "layout" | "imageClientProps"
 > & {
   top: number | undefined
   openNavItemIdx: number

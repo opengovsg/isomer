@@ -9,7 +9,6 @@ import { DynamicDGSSearchableTable } from "./DynamicDGSSearchableTable"
 import { StaticDGSSearchableTable } from "./StaticDGSSearchableTable"
 
 export const DGSSearchableTable = ({
-  type,
   dataSource,
   title,
   headers,
@@ -50,7 +49,6 @@ export const DGSSearchableTable = ({
     // Load all the data into memory, so we can display and filter on the client side
     return (
       <StaticDGSSearchableTable
-        type={type}
         dataSource={dataSource}
         title={resolvedTitle}
         headers={resolvedHeaders}
@@ -66,7 +64,6 @@ export const DGSSearchableTable = ({
     // so we need to fetch the data on the server side, using DGS API
     return (
       <DynamicDGSSearchableTable
-        type={type}
         dataSource={dataSource}
         title={resolvedTitle}
         headers={labels}

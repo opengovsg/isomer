@@ -1,5 +1,4 @@
 import type { DatabasePageSchemaType } from "~/engine"
-import { SEARCHABLE_TABLE_TYPE } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import {
   getBreadcrumbFromSiteMap,
@@ -28,7 +27,6 @@ const DatabaseLayout = ({
   layout,
   content,
   LinkComponent,
-  ScriptComponent,
 }: DatabasePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
@@ -44,7 +42,6 @@ const DatabaseLayout = ({
       page={page}
       layout={layout}
       LinkComponent={LinkComponent}
-      ScriptComponent={ScriptComponent}
     >
       <ContentPageHeader
         {...page.contentPageHeader}
@@ -76,11 +73,7 @@ const DatabaseLayout = ({
         )}
 
         <div className={compoundStyles.table()}>
-          <SearchableTable
-            type={SEARCHABLE_TABLE_TYPE}
-            {...page.database}
-            site={site}
-          />
+          <SearchableTable {...page.database} site={site} />
         </div>
       </div>
     </Skeleton>

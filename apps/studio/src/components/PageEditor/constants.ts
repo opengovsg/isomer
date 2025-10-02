@@ -1,10 +1,11 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
   COLLECTION_BLOCK_TYPE,
+  CONTACT_INFORMATION_TYPE,
   DEFAULT_CHILDREN_PAGES_BLOCK,
+  DYNAMIC_COMPONENT_LIST_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
-  SEARCHABLE_TABLE_TYPE,
 } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
@@ -264,11 +265,29 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
-  [SEARCHABLE_TABLE_TYPE]: {
-    type: `${SEARCHABLE_TABLE_TYPE}`,
+  [CONTACT_INFORMATION_TYPE]: {
+    type: `${CONTACT_INFORMATION_TYPE}`,
+    title: "Contact us",
+    methods: [
+      {
+        method: "email",
+        label: "Email",
+        values: ["contact@example.com"],
+      },
+    ],
+  },
+  [DYNAMIC_COMPONENT_LIST_TYPE]: {
+    type: `${DYNAMIC_COMPONENT_LIST_TYPE}`,
     dataSource: {
       type: "dgs",
-      resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+    },
+    component: {
+      type: "contactinformation",
+      title: "[dgs:entity_name]",
+      description: "[dgs:description]",
+      methods: "[dgs:methods]",
+      otherInformation: "[dgs:other_information]",
     },
   },
 }
@@ -400,19 +419,24 @@ export const BLOCK_TO_META: Record<
     usageText: "Highlight an important quote. You can add an optional image.",
     imageSrc: "/assets/block-images/Blockquote.png",
   },
+  [CONTACT_INFORMATION_TYPE]: {
+    label: "Contact information",
+    description: "Display contact information",
+    usageText: "Showcase contact information for your agency.",
+    // TODO: Add imageSrc
+  },
+  [DYNAMIC_COMPONENT_LIST_TYPE]: {
+    label: "Dynamic component list",
+    description: "Display a list of dynamic components",
+    usageText: "Showcase a list of dynamic components.",
+    // TODO: Add imageSrc
+  },
   formsg: {
     label: "FormSG",
     description: "Embed a form to collect data",
     usageText:
       "Get mailing list sign-ups or quick feedback by embedding a form directly on your page.",
     imageSrc: "/assets/block-images/FormSG.png",
-  },
-  [SEARCHABLE_TABLE_TYPE]: {
-    // Not allowed to add in the component selector, just adding for type completeness
-    // TODO: Add image source
-    label: "Searchable Table",
-    description: "Display a searchable table with data from a DGS dataset",
-    usageText: "Display a searchable table.",
   },
 }
 

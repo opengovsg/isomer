@@ -18,7 +18,6 @@ interface StaticDGSSearchableTableProps extends DGSSearchableTableProps {
 }
 
 export const StaticDGSSearchableTable = ({
-  type,
   dataSource: { resourceId, filters, sort },
   title,
   headers,
@@ -66,7 +65,6 @@ export const StaticDGSSearchableTable = ({
 
   return (
     <SearchableTableClient
-      type={type}
       title={title}
       headers={labels}
       items={items}

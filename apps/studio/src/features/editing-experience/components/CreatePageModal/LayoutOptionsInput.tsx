@@ -38,8 +38,7 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
     const input = getInputProps(undefined, ref)
     const checkbox = getRadioProps()
 
-    const { title, description, imageSrc, altText, labels } =
-      LAYOUT_RENDER_DATA[value]
+    const { title, description, imageSrc, altText } = LAYOUT_RENDER_DATA[value]
 
     const isSelected = !!input.checked
 
@@ -120,19 +119,6 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
               >
                 {title}
               </Text>
-              {labels &&
-                labels.length > 0 &&
-                labels.map((label) => (
-                  <Badge
-                    key={label}
-                    h="min-content"
-                    colorScheme="sub"
-                    variant="subtle"
-                    size="xs"
-                  >
-                    {label}
-                  </Badge>
-                ))}
               {isSelected && (
                 <Badge h="min-content" variant="subtle" size="xs">
                   Previewing

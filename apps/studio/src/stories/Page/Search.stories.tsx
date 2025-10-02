@@ -1,23 +1,20 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { userEvent, within } from "@storybook/test"
-import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
-import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import SitePage from "~/pages/sites/[siteId]"
+import { ADMIN_HANDLERS } from "../handlers"
 
-const COMMON_HANDLERS = [
-  meHandlers.me(),
+const SHARED_HANDLERS = [
+  ...ADMIN_HANDLERS,
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
   pageHandlers.countWithoutRoot.default(),
   pageHandlers.readPage.content(),
   pageHandlers.updateSettings.collection(),
   pageHandlers.getPermalinkTree.withParent(),
-  sitesHandlers.getSiteName.default(),
   resourceHandlers.getChildrenOf.default(),
-  resourceHandlers.getRolesFor.admin(),
 ]
 
 const meta: Meta<typeof SitePage> = {
@@ -42,7 +39,7 @@ type Story = StoryObj<typeof meta>
 export const Initial: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS, resourceHandlers.search.initial()],
+      handlers: [...SHARED_HANDLERS, resourceHandlers.search.initial()],
     },
   },
   play: async ({ canvasElement }) => {
@@ -58,7 +55,7 @@ export const WithRecentlyViewed: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...COMMON_HANDLERS,
+        ...SHARED_HANDLERS,
         resourceHandlers.search.initial(),
         resourceHandlers.searchWithResourceIds.default(),
       ],
@@ -76,7 +73,7 @@ export const WithRecentlyViewed: Story = {
 export const Results: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS, resourceHandlers.search.results()],
+      handlers: [...SHARED_HANDLERS, resourceHandlers.search.results()],
     },
   },
   play: async ({ canvasElement }) => {
@@ -92,7 +89,7 @@ export const Results: Story = {
 export const Loading: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS, resourceHandlers.search.loading()],
+      handlers: [...SHARED_HANDLERS, resourceHandlers.search.loading()],
     },
   },
   play: async ({ canvasElement }) => {
@@ -108,7 +105,7 @@ export const Loading: Story = {
 export const NoResults: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS, resourceHandlers.search.initial()],
+      handlers: [...SHARED_HANDLERS, resourceHandlers.search.initial()],
     },
   },
   play: async ({ canvasElement }) => {
@@ -124,7 +121,7 @@ export const NoResults: Story = {
 export const ShowHint: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS, resourceHandlers.search.results()],
+      handlers: [...SHARED_HANDLERS, resourceHandlers.search.results()],
     },
   },
   play: async ({ canvasElement }) => {

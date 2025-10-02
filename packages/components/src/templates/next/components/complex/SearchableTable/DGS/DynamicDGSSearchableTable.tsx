@@ -21,7 +21,6 @@ interface DynamicSearchableTableClientProps
 }
 
 export const DynamicDGSSearchableTable = ({
-  type,
   dataSource: { resourceId, filters, sort },
   title,
   headers,
@@ -74,7 +73,6 @@ export const DynamicDGSSearchableTable = ({
 
   return (
     <SearchableTableClientUI
-      type={type}
       title={title}
       headers={headers}
       site={site}

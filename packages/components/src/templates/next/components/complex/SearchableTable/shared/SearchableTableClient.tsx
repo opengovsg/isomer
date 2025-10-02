@@ -9,7 +9,6 @@ import { getPaginatedItems } from "./getPaginatedItems"
 import { SearchableTableClientUI } from "./SearchableTableClientUI"
 
 export const SearchableTableClient = ({
-  type,
   title,
   headers,
   items,
@@ -53,7 +52,6 @@ export const SearchableTableClient = ({
 
   return (
     <SearchableTableClientUI
-      type={type}
       title={title}
       headers={headers}
       site={site}

@@ -9,7 +9,6 @@ export const LAYOUT_RENDER_DATA: Record<
     description: string
     imageSrc: string
     altText: string
-    labels?: string[]
   }
 > = {
   content: {
@@ -30,6 +29,5 @@ export const LAYOUT_RENDER_DATA: Record<
     description: "Link your dataset from Data.gov.sg.",
     imageSrc: "/assets/layout-card/database_layout_card.png",
     altText: "Image preview of Database layout",
-    labels: ["Beta"],
   },
 }
