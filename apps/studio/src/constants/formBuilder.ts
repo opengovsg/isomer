@@ -12,6 +12,7 @@ export const JSON_FORMS_RANKING = {
   TextControl: 1,
   // NOTE: has to be higher than `TextControl`
   UuidControl: 2,
+  WidgetControl: 3,
   ObjectControl: 2,
   // NOTE: needs to have higher priority than anyof
   ChildrenPagesControl: 4,
