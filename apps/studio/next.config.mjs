@@ -140,6 +140,15 @@ const config = {
   publicRuntimeConfig: {
     NODE_ENV: env.NODE_ENV,
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.externals = config.externals || []
+      config.externals.push({
+        // don't bundle `dd-trace` on the client side
+        "dd-trace": "dd-trace",
+      })
+    }
+  },
   transpilePackages: ["@sinclair/typebox"],
   /** We run eslint as a separate task in CI */
   eslint: { ignoreDuringBuilds: true },
