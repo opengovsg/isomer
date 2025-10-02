@@ -1,4 +1,5 @@
 import { tv } from "~/lib/tv"
+import { COPYWRITING_MAPPING } from "./constants"
 
 const createEmptyStateStyles = tv({
   slots: {
@@ -27,9 +28,14 @@ export const styles = createEmptyStateStyles()
 interface EmptyStateProps {
   search: string
   onClick: () => void
+  searchMatchType: keyof typeof COPYWRITING_MAPPING
 }
 
-export const EmptyState = ({ search, onClick }: EmptyStateProps) => {
+export const EmptyState = ({
+  search,
+  onClick,
+  searchMatchType,
+}: EmptyStateProps) => {
   return (
     <div className={styles.container()}>
       <div className={styles.headings()}>
@@ -39,7 +45,7 @@ export const EmptyState = ({ search, onClick }: EmptyStateProps) => {
         </p>
 
         <p className={styles.subtitle()}>
-          Check if you have a spelling error or try a different search term.
+          {COPYWRITING_MAPPING[searchMatchType].noResultsSubtitle}
         </p>
       </div>
 
