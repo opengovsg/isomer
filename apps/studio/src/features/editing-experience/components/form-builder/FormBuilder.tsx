@@ -49,6 +49,8 @@ import {
   jsonFormsProseControlTester,
   JsonFormsRefControl,
   jsonFormsRefControlTester,
+  JsonFormsSearchSGControl,
+  jsonFormsSearchSGControlTester,
   JsonFormsTagCategoriesControl,
   jsonFormsTagCategoriesControlTester,
   JsonFormsTaggedControl,
@@ -66,6 +68,10 @@ import {
 } from "./renderers"
 
 export const renderers: JsonFormsRendererRegistryEntry[] = [
+  {
+    renderer: JsonFormsSearchSGControl,
+    tester: jsonFormsSearchSGControlTester,
+  },
   {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,

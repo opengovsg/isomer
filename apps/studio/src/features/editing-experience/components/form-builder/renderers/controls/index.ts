@@ -98,3 +98,7 @@ export {
   jsonFormsTagCategoriesControlTester,
   default as JsonFormsTagCategoriesControl,
 } from "./JsonFormsTagCategoryControl"
+export {
+  default as JsonFormsSearchSGControl,
+  jsonFormsSearchSGControlTester,
+} from "./JsonFormsSearchSGControl"
