@@ -20,7 +20,7 @@ class TracingPlugin implements KyselyPlugin {
   transformQuery(args: PluginTransformQueryArgs) {
     const queryId = args.queryId
     const span = tracer.startSpan("kysely_query", {
-      childOf: tracer.scope().active() || undefined,
+      childOf: tracer.scope().active() ?? undefined,
       tags: {
         "kysely.query_id": queryId,
         "kysely.kind": args.node.kind,
