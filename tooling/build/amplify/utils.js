@@ -1,6 +1,6 @@
 const crypto = require("crypto")
 
-export const generatePassword = () => {
+const generatePassword = () => {
   let password = ""
 
   // Keep generating until we have at least 12 characters
@@ -14,3 +14,5 @@ export const generatePassword = () => {
 
   return password.substring(0, 12)
 }
+
+module.exports = { generatePassword }
