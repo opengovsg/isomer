@@ -1,9 +1,11 @@
 import type { DestinationStream } from "pino"
+import { NextApiRequest } from "next"
 import { nanoid } from "nanoid"
 import pino from "pino"
 import pinoPretty from "pino-pretty"
 
 import { env } from "~/env.mjs"
+import getIP from "~/utils/getClientIp"
 
 // use syslog protocol levels as per https://datatracker.ietf.org/doc/html/rfc5424#page-10
 const levels: Record<string, number> = {
@@ -19,7 +21,7 @@ const levels: Record<string, number> = {
 
 interface LoggerOptions {
   path: string
-  clientIp?: string
+  req?: NextApiRequest
 }
 
 export class PinoLogger {
@@ -63,11 +65,12 @@ export class PinoLogger {
   The logger we use inherits the bindings and transport from the parent singleton instance
   Use child loggers to avoid creating a new instance for every trpc call
   */
-  public static logger = ({ path, clientIp }: LoggerOptions) => {
+  public static logger = ({ path, req }: LoggerOptions) => {
     return PinoLogger.getInstance().child({
       path,
-      clientIp,
+      clientIp: req && getIP(req),
       id: nanoid(),
+      trace_id: req?.headers["x-datadog-trace-id"],
     })
   }
 }
