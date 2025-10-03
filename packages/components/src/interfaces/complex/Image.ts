@@ -46,7 +46,8 @@ export const ImageSchema = Type.Object(
     caption: Type.Optional(
       Type.String({
         title: "Caption",
-        maxLength: 250,
+        description:
+          "Describe the image or add attributions. To make sure your caption is readable, keep it under 250 characters.",
         format: "textarea",
       }),
     ),
