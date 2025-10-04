@@ -20,32 +20,18 @@ export enum PublishMode {
 }
 
 /**
- * The schema for publishing the page immediately
- */
-const nowPublishClientSchema = basePageSchema.extend({
-  publishMode: z.enum([PublishMode.NOW]),
-})
-
-/**
  * This schema includes the publish date and time for the scheduled publication
  */
-export const schedulePublishClientSchema = basePageSchema.extend({
-  publishMode: z.enum([PublishMode.SCHEDULED]),
-  publishDate: z.date(),
-  publishTime: z.string().refine((time) => {
-    // check that time is in HH:mm format
-    const parsed = parse(time, "HH:mm", new Date())
-    return isValid(parsed) && format(parsed, "HH:mm") === time
-  }),
-})
-
-export const publishClientSchema = z
-  .discriminatedUnion("publishMode", [
-    nowPublishClientSchema,
-    schedulePublishClientSchema,
-  ])
+export const schedulePublishClientSchema = basePageSchema
+  .extend({
+    publishDate: z.date(),
+    publishTime: z.string().refine((time) => {
+      // check that time is in HH:mm format
+      const parsed = parse(time, "HH:mm", new Date())
+      return isValid(parsed) && format(parsed, "HH:mm") === time
+    }),
+  })
   .transform((schema) => {
-    if (schema.publishMode === PublishMode.NOW) return schema
     const { publishDate, publishTime, ...rest } = schema
     // combine publishDate and publishTime into a single Date object
     const [hours, minutes] = publishTime.split(":").map(Number)
@@ -63,7 +49,6 @@ export const publishClientSchema = z
     }
   })
   .superRefine((schema, ctx) => {
-    if (schema.publishMode === PublishMode.NOW) return
     const { scheduledAt } = schema
     const earliestScheduleTime = add(new Date(), {
       minutes: MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
