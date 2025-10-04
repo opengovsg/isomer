@@ -132,12 +132,13 @@ const SuspendablePublishButton = ({
                       <Menu>
                         <MenuButton
                           as={IconButton}
-                          isLoading={isPending}
                           aria-label="More options"
                           icon={<Icon as={BiChevronDown} boxSize="1rem" />}
                           size="sm"
                           variant="solid"
-                          isDisabled={!isChangesPendingPublish || isDisabled}
+                          isDisabled={
+                            !isChangesPendingPublish || isDisabled || isPending
+                          }
                           borderLeftRadius={0}
                         />
                         <MenuList>
