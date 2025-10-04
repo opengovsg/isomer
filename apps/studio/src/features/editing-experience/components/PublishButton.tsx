@@ -1,11 +1,24 @@
 import type { ButtonProps } from "@opengovsg/design-system-react"
-import { Skeleton, useDisclosure } from "@chakra-ui/react"
+import {
+  Divider,
+  HStack,
+  Icon,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Skeleton,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react"
 import { useFeatureIsOn } from "@growthbook/growthbook-react"
 import {
   Button,
   TouchableTooltip,
   useToast,
 } from "@opengovsg/design-system-react"
+import { BiChevronDown, BiTimeFive } from "react-icons/bi"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { Can } from "~/features/permissions"
@@ -92,23 +105,61 @@ const SuspendablePublishButton = ({
                   scheduledAt={currPage.scheduledAt}
                 />
               ) : (
-                <Button
-                  isDisabled={!isChangesPendingPublish || isDisabled}
-                  variant="solid"
-                  size="sm"
-                  onClick={(e) => {
-                    if (enableScheduledPublishing) {
-                      scheduledPublishingDisclosure.onOpen()
-                    } else {
+                <HStack spacing={0} position="relative">
+                  <Button
+                    variant="solid"
+                    size="sm"
+                    isDisabled={!isChangesPendingPublish || isDisabled}
+                    isLoading={isPending}
+                    borderRightRadius={
+                      enableScheduledPublishing ? 0 : undefined
+                    }
+                    onClick={(e) => {
                       mutate({ pageId, siteId })
                       onClick?.(e)
-                    }
-                  }}
-                  isLoading={isPending}
-                  {...rest}
-                >
-                  Publish
-                </Button>
+                    }}
+                    {...rest}
+                  >
+                    Publish
+                  </Button>
+                  {enableScheduledPublishing && (
+                    <>
+                      <Divider
+                        orientation="vertical"
+                        borderColor="base.canvas.default"
+                        height="auto"
+                      />
+                      <Menu>
+                        <MenuButton
+                          as={IconButton}
+                          isLoading={isPending}
+                          aria-label="More options"
+                          icon={<Icon as={BiChevronDown} boxSize="1rem" />}
+                          size="sm"
+                          variant="solid"
+                          isDisabled={!isChangesPendingPublish || isDisabled}
+                          borderLeftRadius={0}
+                        />
+                        <MenuList>
+                          <MenuItem
+                            onClick={scheduledPublishingDisclosure.onOpen}
+                            isDisabled={!enableScheduledPublishing}
+                          >
+                            <HStack spacing="0.5rem" alignItems="center">
+                              <Icon as={BiTimeFive} boxSize="1rem" />
+                              <Text
+                                textStyle="body-2"
+                                color="base.content.strong"
+                              >
+                                Schedule for later
+                              </Text>
+                            </HStack>
+                          </MenuItem>
+                        </MenuList>
+                      </Menu>
+                    </>
+                  )}
+                </HStack>
               )}
             </>
           )}
