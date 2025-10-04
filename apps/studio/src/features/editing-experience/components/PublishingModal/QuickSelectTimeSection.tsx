@@ -42,7 +42,7 @@ export const QuickSelectTimeSection = ({
   return (
     <>
       {optionsToShow.length > 0 && (
-        <VStack align="stretch" spacing="0.5rem">
+        <VStack align="stretch" spacing="0.25rem">
           <Text textStyle="caption-2">Quick select a time?</Text>
           <HStack spacing="0.5rem">
             {optionsToShow.map((time) => {

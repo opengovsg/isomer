@@ -20,7 +20,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { format, parse } from "date-fns"
 import { FormProvider, useFormContext } from "react-hook-form"
-import { BiCalendarCheck } from "react-icons/bi"
+import { BiHourglass } from "react-icons/bi"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
@@ -137,7 +137,7 @@ const SchedulePublishBanner = () => {
       borderRadius="0.25rem"
       p="0.75rem"
     >
-      <Icon as={BiCalendarCheck} boxSize="1rem" color="base.content.default" />
+      <Icon as={BiHourglass} boxSize="1rem" color="base.content.default" />
       <Text textStyle="body-2" color="base.content.strong" display="inline">
         We will publish this page at{" "}
         <Text display="inline" textStyle="subhead-2">
