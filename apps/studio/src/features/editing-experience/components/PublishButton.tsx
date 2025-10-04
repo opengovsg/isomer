@@ -25,8 +25,8 @@ import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
-import { ScheduledPublishingModal } from "./ScheduledPublishingModal"
-import { CancelSchedulePublishIndicator } from "./ScheduledPublishingModal/CancelSchedulePublishIndicator"
+import { PublishingModal, ScheduledPublishingModal } from "./PublishingModal"
+import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
 
 interface PublishButtonProps extends ButtonProps {
   pageId: number
@@ -37,35 +37,35 @@ const SuspendablePublishButton = ({
   pageId,
   siteId,
   isDisabled,
-  onClick,
   ...rest
 }: PublishButtonProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
+  // the current disclosures for the publish modals
+  const publishNowDisclosure = useDisclosure()
   const scheduledPublishingDisclosure = useDisclosure()
   const enableScheduledPublishing = useFeatureIsOn(
     ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY,
   )
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
+  const isChangesPendingPublish = !!currPage.draftBlobId
 
   const { mutate, isPending } = trpc.page.publishPage.useMutation({
     onSettled: async () => {
       await utils.page.readPage.refetch({ pageId, siteId })
-      if (scheduledPublishingDisclosure.isOpen) {
-        scheduledPublishingDisclosure.onClose()
-      }
-    },
-    onSuccess: async () => {
-      toast({
-        status: "success",
-        title: "Page published successfully",
-        ...BRIEF_TOAST_SETTINGS,
-      })
       await utils.page.getCategories.invalidate({ pageId, siteId })
       await utils.site.getLocalisedSitemap.invalidate({
         resourceId: pageId,
         siteId,
       })
+    },
+    onSuccess: () => {
+      toast({
+        status: "success",
+        title: "Page published successfully",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+      if (publishNowDisclosure.isOpen) publishNowDisclosure.onClose()
     },
     onError: (error) => {
       console.error(`Error occurred when publishing page: ${error.message}`)
@@ -76,8 +76,6 @@ const SuspendablePublishButton = ({
       })
     },
   })
-
-  const isChangesPendingPublish = !!currPage.draftBlobId
 
   return (
     <Can do="publish" on="Resource" passThrough>
@@ -91,11 +89,18 @@ const SuspendablePublishButton = ({
               {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
               {scheduledPublishingDisclosure.isOpen && (
                 <ScheduledPublishingModal
-                  {...scheduledPublishingDisclosure}
                   siteId={siteId}
                   pageId={pageId}
+                  {...scheduledPublishingDisclosure}
+                />
+              )}
+              {publishNowDisclosure.isOpen && (
+                <PublishingModal
+                  pageId={pageId}
+                  siteId={siteId}
                   onPublishNow={(pageId, siteId) => mutate({ pageId, siteId })}
                   isPublishingNow={isPending}
+                  {...publishNowDisclosure}
                 />
               )}
               {currPage.scheduledAt ? (
@@ -114,9 +119,12 @@ const SuspendablePublishButton = ({
                     borderRightRadius={
                       enableScheduledPublishing ? 0 : undefined
                     }
-                    onClick={(e) => {
-                      mutate({ pageId, siteId })
-                      onClick?.(e)
+                    onClick={() => {
+                      if (enableScheduledPublishing) {
+                        publishNowDisclosure.onOpen()
+                      } else {
+                        mutate({ pageId, siteId })
+                      }
                     }}
                     {...rest}
                   >

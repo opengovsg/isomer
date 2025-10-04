@@ -20,58 +20,47 @@ import {
 } from "@opengovsg/design-system-react"
 import { format, parse } from "date-fns"
 import { FormProvider, useFormContext } from "react-hook-form"
-import { BiCalendarCheck, BiRocket, BiTimeFive } from "react-icons/bi"
+import { BiCalendarCheck } from "react-icons/bi"
 
-import type { schedulePublishClientSchema } from "~/schemas/schedule"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
-import { publishClientSchema, PublishMode } from "~/schemas/schedule"
+import { schedulePublishClientSchema } from "~/schemas/schedule"
 import { trpc } from "~/utils/trpc"
-import { PublishModeCard } from "./PublishModeCard"
 import { SchedulePublishDetails } from "./ScheduledPublishDetails"
 
 interface ScheduledPublishingModalProps extends UseDisclosureReturn {
   pageId: number
   siteId: number
-  // callback invoked to handle the publishing process now
-  onPublishNow: (pageId: number, siteId: number) => void
-  // used for the loading state of the publish button
-  isPublishingNow?: boolean
 }
 
 export const ScheduledPublishingModal = ({
   pageId,
   siteId,
   onClose,
-  onPublishNow,
-  isPublishingNow,
   ...rest
 }: ScheduledPublishingModalProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
   const [isScheduledPublishValid, setIsScheduledPublishValid] = useState(false)
 
-  const methods = useZodForm<typeof publishClientSchema>({
-    schema: publishClientSchema,
+  const methods = useZodForm<typeof schedulePublishClientSchema>({
+    schema: schedulePublishClientSchema,
     defaultValues: {
-      publishMode: PublishMode.NOW,
       pageId,
       siteId,
     },
   })
-  const publishMode = methods.watch("publishMode")
-  // Validate form when publish mode changes or when the date/time selected changes
+  // Validate form when the date/time selected changes
   // so the banner can be shown to the users. Do NOT use trigger() since that
   // triggers validation and causes error messages to appear
   useEffect(() => {
     const validateForm = () => {
-      if (publishMode === PublishMode.NOW) setIsScheduledPublishValid(false)
-      const valid = publishClientSchema.safeParse(methods.getValues())
+      const valid = schedulePublishClientSchema.safeParse(methods.getValues())
       setIsScheduledPublishValid(valid.success)
     }
     const subscription = methods.watch(() => void validateForm())
     return () => subscription.unsubscribe()
-  }, [methods, publishMode])
+  }, [methods])
 
   const { mutate: schedulePageMutation, isPending: isScheduling } =
     trpc.page.schedulePage.useMutation({
@@ -99,63 +88,21 @@ export const ScheduledPublishingModal = ({
     <Modal onClose={onClose} {...rest}>
       <form
         onSubmit={methods.handleSubmit(
-          (res: z.output<typeof publishClientSchema>) => {
-            // publish immediately if publish mode is now, else schedule publish
-            switch (res.publishMode) {
-              case PublishMode.NOW:
-                onPublishNow(res.pageId, res.siteId)
-                break
-              case PublishMode.SCHEDULED:
-                schedulePageMutation(res)
-                break
-              default:
-                const _exhaustiveCheck: never = res
-                throw new Error(
-                  `Unknown publish mode. Please check the publish mode type`,
-                )
-            }
-          },
+          (res: z.output<typeof schedulePublishClientSchema>) =>
+            schedulePageMutation(res),
         )}
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader mr="3.5rem">Publish this page?</ModalHeader>
+          <ModalHeader mr="3.5rem">
+            When should we publish this page?
+          </ModalHeader>
           <ModalCloseButton size="lg" />
           <ModalBody>
             <FormProvider {...methods}>
               <VStack align="stretch" spacing="1.5rem">
-                <VStack spacing="1rem" align="stretch">
-                  <VStack align="stretch" spacing="0.75rem">
-                    <Text textStyle="subhead-1">
-                      When should we publish this page?
-                    </Text>
-                    <VStack spacing="0.75rem" align="stretch">
-                      <PublishModeCard
-                        icon={BiRocket}
-                        title="Publish now"
-                        description="Changes will be live on your site in approximately 5-10 minutes."
-                        isSelected={publishMode === PublishMode.NOW}
-                        onSelect={() =>
-                          methods.setValue("publishMode", PublishMode.NOW)
-                        }
-                      />
-                      <PublishModeCard
-                        icon={BiTimeFive}
-                        title="Publish later"
-                        description="Let us know when the page should start publishing."
-                        isSelected={publishMode === PublishMode.SCHEDULED}
-                        onSelect={() =>
-                          methods.setValue("publishMode", PublishMode.SCHEDULED)
-                        }
-                      />
-                    </VStack>
-                  </VStack>
-                  {publishMode === PublishMode.SCHEDULED && (
-                    <SchedulePublishDetails />
-                  )}
-                </VStack>
-                {publishMode === PublishMode.SCHEDULED &&
-                  isScheduledPublishValid && <SchedulePublishBanner />}
+                <SchedulePublishDetails />
+                {isScheduledPublishValid && <SchedulePublishBanner />}
               </VStack>
             </FormProvider>
           </ModalBody>
@@ -166,31 +113,16 @@ export const ScheduledPublishingModal = ({
               variant="clear"
               color="base.content.strong"
             >
-              No, don't publish
+              Cancel
             </Button>
-            <Button type="submit" isLoading={isPublishingNow || isScheduling}>
-              {getPublishButtonLabel(publishMode)}
+            <Button type="submit" isLoading={isScheduling}>
+              Schedule publish
             </Button>
           </ModalFooter>
         </ModalContent>
       </form>
     </Modal>
   )
-}
-
-const getPublishButtonLabel = (publishMode: PublishMode): string => {
-  switch (publishMode) {
-    case PublishMode.NOW:
-      return "Publish now"
-    case PublishMode.SCHEDULED:
-      return "Schedule publish"
-    default:
-      // Exhaustive check: ensures all enum values are handled
-      const _exhaustiveCheck: never = publishMode
-      throw new Error(
-        `Unknown publish mode. Please check the publish mode type`,
-      )
-  }
 }
 
 const SchedulePublishBanner = () => {
