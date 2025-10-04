@@ -60,6 +60,8 @@ export const SchedulePublishDetails = () => {
             render={({ field }) => (
               <DatePicker
                 {...field}
+                size="sm"
+                shouldSetDateOnTodayButtonClick={true}
                 isDateUnavailable={(date) => {
                   return isBefore(
                     startOfDay(date),
@@ -79,6 +81,7 @@ export const SchedulePublishDetails = () => {
             render={({ field }) => (
               <TimeSelect
                 {...field}
+                size="sm"
                 earliestAllowableTime={earliestAllowableTime}
               />
             )}
