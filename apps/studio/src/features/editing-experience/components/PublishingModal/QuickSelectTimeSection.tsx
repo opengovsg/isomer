@@ -24,17 +24,15 @@ const QUICK_SELECT_TIMES: QuickSelectTime[] = [
 export const QuickSelectTimeSection = ({
   earliestAllowableTime,
 }: {
-  earliestAllowableTime: QuickSelectTime | null
+  earliestAllowableTime: Date | null
 }) => {
   // filter out the time if it is before the earliest allowable time
   // since both are kept as {hours, minutes}, we don't need to convert them to Date objects
   const optionsToShow = QUICK_SELECT_TIMES.filter(({ hours, minutes }) => {
     if (!earliestAllowableTime) return true
-    return (
-      hours > earliestAllowableTime.hours ||
-      (hours === earliestAllowableTime.hours &&
-        minutes >= earliestAllowableTime.minutes)
-    )
+    const date = new Date()
+    date.setHours(hours, minutes, 0, 0)
+    return date >= earliestAllowableTime
   })
 
   const { setValue } =

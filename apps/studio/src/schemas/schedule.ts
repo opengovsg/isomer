@@ -1,23 +1,11 @@
-import {
-  add,
-  format,
-  isBefore,
-  isValid,
-  parse,
-  set,
-  startOfDay,
-} from "date-fns"
+import { add, format, isBefore, isValid, set, startOfDay } from "date-fns"
 import { fromZonedTime } from "date-fns-tz"
 import { z } from "zod"
 
+import { parseTimeStringToDate } from "~/components/Select/TimeSelect"
 import { basePageSchema } from "./page"
 
-export const MINIMUM_SCHEDULE_LEAD_TIME_MINUTES = 10
-
-export enum PublishMode {
-  NOW = "Now",
-  SCHEDULED = "Scheduled",
-}
+export const MINIMUM_SCHEDULE_LEAD_TIME_MINUTES = 2
 
 /**
  * This schema includes the publish date and time for the scheduled publication
@@ -27,7 +15,7 @@ export const schedulePublishClientSchema = basePageSchema
     publishDate: z.date(),
     publishTime: z.string().refine((time) => {
       // check that time is in HH:mm format
-      const parsed = parse(time, "HH:mm", new Date())
+      const parsed = parseTimeStringToDate(time)
       return isValid(parsed) && format(parsed, "HH:mm") === time
     }),
   })

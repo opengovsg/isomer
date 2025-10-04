@@ -18,10 +18,11 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { format, parse } from "date-fns"
+import { format } from "date-fns"
 import { FormProvider, useFormContext } from "react-hook-form"
 import { BiHourglass } from "react-icons/bi"
 
+import { parseTimeStringToDate } from "~/components/Select/TimeSelect"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 import { schedulePublishClientSchema } from "~/schemas/schedule"
@@ -141,10 +142,7 @@ const SchedulePublishBanner = () => {
       <Text textStyle="body-2" color="base.content.strong" display="inline">
         We will publish this page at{" "}
         <Text display="inline" textStyle="subhead-2">
-          {format(
-            parse(getValues("publishTime"), "HH:mm", new Date()),
-            "hh:mm a",
-          )}
+          {format(parseTimeStringToDate(getValues("publishTime")), "hh:mm a")}
         </Text>
         , Singapore Standard Time, on{" "}
         <Text display="inline" textStyle="subhead-2">
