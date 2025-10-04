@@ -1,3 +1,4 @@
+import type { CodeBuildJobs } from "@prisma/client"
 import {
   ResourceState,
   ResourceType,
@@ -631,4 +632,37 @@ export const setupFullSite = async () => {
     collectionLink,
     collectionIndex,
   }
+}
+
+export const setupCodeBuildJob = async ({
+  userId,
+  buildId,
+  startedAt,
+  buildStatus = "IN_PROGRESS",
+  emailSent = false,
+}: {
+  userId: CodeBuildJobs["userId"]
+  buildId: CodeBuildJobs["buildId"]
+  startedAt: CodeBuildJobs["startedAt"]
+  buildStatus?: CodeBuildJobs["status"]
+  emailSent?: boolean
+}) => {
+  const { page, site } = await setupPageResource({
+    resourceType: ResourceType.Page,
+  })
+  const codebuildJob = await db
+    .insertInto("CodeBuildJobs")
+    .values({
+      siteId: site.id,
+      userId,
+      buildId,
+      startedAt,
+      resourceId: page.id,
+      status: buildStatus,
+      emailSent,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  return { site, page, codebuildJob }
 }
