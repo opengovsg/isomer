@@ -12,7 +12,7 @@ import { z } from "zod"
 
 import { basePageSchema } from "./page"
 
-export const MINIMUM_SCHEDULE_LEAD_TIME_MINUTES = 10
+export const MINIMUM_SCHEDULE_LEAD_TIME_MINUTES = 2
 
 export enum PublishMode {
   NOW = "Now",

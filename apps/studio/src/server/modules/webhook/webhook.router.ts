@@ -5,7 +5,14 @@ import { updateCodebuildStatusAndSendEmails } from "./webhook.utils"
 export const webhookRouter = router({
   updateCodebuildWebhook: webhookProcedure
     .input(codeBuildWebhookSchema)
-    .mutation(async ({ ctx: { logger }, input: { buildId, buildStatus } }) => {
-      await updateCodebuildStatusAndSendEmails(logger, buildId, buildStatus)
-    }),
+    .mutation(
+      async ({ ctx: { logger, gb }, input: { buildId, buildStatus } }) => {
+        await updateCodebuildStatusAndSendEmails(
+          logger,
+          gb,
+          buildId,
+          buildStatus,
+        )
+      },
+    ),
 })
