@@ -576,6 +576,7 @@ export const resourceRouter = router({
           "Resource.type",
           "Resource.parentId",
           "Resource.updatedAt",
+          "Resource.scheduledAt",
         ])
         .execute()
     }),
