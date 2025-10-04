@@ -12,7 +12,7 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react"
-import { useFeatureIsOn } from "@growthbook/growthbook-react"
+import { useFeatureValue } from "@growthbook/growthbook-react"
 import {
   Button,
   TouchableTooltip,
@@ -23,7 +23,7 @@ import { BiChevronDown, BiTimeFive } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
-import { ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY } from "~/lib/growthbook"
+import { SCHEDULED_PUBLISHING_SITES_FEATURE_KEY } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
 import { PublishingModal, ScheduledPublishingModal } from "./PublishingModal"
 import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
@@ -44,9 +44,14 @@ const SuspendablePublishButton = ({
   // the current disclosures for the publish modals
   const publishNowDisclosure = useDisclosure()
   const scheduledPublishingDisclosure = useDisclosure()
-  const enableScheduledPublishing = useFeatureIsOn(
-    ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY,
+  // determine if the scheduled publishing feature is enabled for this site
+  const scheduledPublishingSites = useFeatureValue<{ enabledSites: string[] }>(
+    SCHEDULED_PUBLISHING_SITES_FEATURE_KEY,
+    { enabledSites: [] },
   )
+  const enableScheduledPublishing =
+    scheduledPublishingSites.enabledSites.includes(siteId.toString())
+
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
   const isChangesPendingPublish = !!currPage.draftBlobId
 
