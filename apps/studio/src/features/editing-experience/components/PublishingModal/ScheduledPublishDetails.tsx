@@ -6,11 +6,14 @@ import {
   FormErrorMessage,
   FormLabel,
 } from "@opengovsg/design-system-react"
-import { add, isBefore, parse, startOfDay } from "date-fns"
+import { add, isBefore, startOfDay } from "date-fns"
 import { Controller, useFormContext } from "react-hook-form"
 
 import type { schedulePublishClientSchema } from "~/schemas/schedule"
-import { TimeSelect } from "~/components/Select/TimeSelect"
+import {
+  parseTimeStringToDate,
+  TimeSelect,
+} from "~/components/Select/TimeSelect"
 import { MINIMUM_SCHEDULE_LEAD_TIME_MINUTES } from "~/schemas/schedule"
 import { QuickSelectTimeSection } from "./QuickSelectTimeSection"
 import { getEarliestAllowableTime } from "./utils"
@@ -39,7 +42,7 @@ export const SchedulePublishDetails = () => {
     if (
       earliestAllowableTime &&
       publishTime &&
-      isBefore(parse(publishTime, "HH:mm", new Date()), earliestSchedule)
+      isBefore(parseTimeStringToDate(publishTime), earliestSchedule)
     ) {
       resetField("publishTime")
     }
@@ -80,9 +83,9 @@ export const SchedulePublishDetails = () => {
             control={control}
             render={({ field }) => (
               <TimeSelect
-                {...field}
-                size="sm"
                 earliestAllowableTime={earliestAllowableTime}
+                size="sm"
+                {...field}
               />
             )}
           />
