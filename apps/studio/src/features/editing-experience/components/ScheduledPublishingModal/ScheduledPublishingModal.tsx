@@ -125,7 +125,7 @@ export const ScheduledPublishingModal = ({
             <FormProvider {...methods}>
               <VStack align="stretch" spacing="1.5rem">
                 <VStack spacing="1rem" align="stretch">
-                  <VStack align="stretch" spacing="1.5rem">
+                  <VStack align="stretch" spacing="0.75rem">
                     <Text textStyle="subhead-1">
                       When should we publish this page?
                     </Text>

@@ -75,7 +75,7 @@ export const publishClientSchema = z
       ctx.addIssue({
         path: isDateBeforeToday ? ["publishDate"] : ["publishTime"],
         code: z.ZodIssueCode.custom,
-        message: `Earliest publish time allowable is ${format(earliestScheduleTime, "MMMM d, yyyy hh:mm a")}`,
+        message: "Date can't be in the past",
       })
     }
   })
