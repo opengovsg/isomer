@@ -52,19 +52,21 @@ export const FooterSchema = Type.Object(
           // TODO: Change this to Type.Enum when we upgrade to TypeBox v1
           type: Type.Unsafe<SocialMediaType>(
             Type.String({
-              title: "Social media type",
+              title: "Social media",
               enum: SocialMediaTypes,
+              default: "facebook",
             }),
           ),
           url: Type.String({
-            title: "URL of the social media link",
-            format: "link",
+            title: "Link",
+            description: "Make sure you are linking an official account",
+            pattern: LINK_HREF_PATTERN,
           }),
         }),
         {
           title: "Social media links",
           description: "Let the public connect with you.",
-          format: "linkArray",
+          format: "socialMedia",
         },
       ),
     ),
