@@ -31,6 +31,8 @@ import {
   jsonFormsDateControlTester,
   JsonFormsEmbedControl,
   jsonFormsEmbedControlTester,
+  JsonFormsEnumControl,
+  jsonFormsEnumControlTester,
   jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
   JsonFormsHiddenControl,
@@ -55,6 +57,8 @@ import {
   jsonFormsRefControlTester,
   JsonFormsSearchSGControl,
   jsonFormsSearchSGControlTester,
+  JsonFormsSocialMediaControl,
+  jsonFormsSocialMediaControlTester,
   JsonFormsTagCategoriesControl,
   jsonFormsTagCategoriesControlTester,
   JsonFormsTaggedControl,
@@ -101,6 +105,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     tester: jsonFormsLinkArrayControlTester,
   },
   {
+    renderer: JsonFormsSocialMediaControl,
+    tester: jsonFormsSocialMediaControlTester,
+  },
+  {
     tester: jsonFormsProseControlTester,
     renderer: JsonFormsProseControl,
   },
@@ -118,6 +126,7 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
   { tester: jsonFormsLinkControlTester, renderer: JsonFormsLinkControl },
+  { tester: jsonFormsEnumControlTester, renderer: JsonFormsEnumControl },
   {
     tester: jsonFormsTextAreaControlTester,
     renderer: JsonFormsTextAreaControl,
