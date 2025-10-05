@@ -7,6 +7,12 @@ describe("getCustomErrorMessage", () => {
     )
   })
 
+  it("should return 'is not in the correct format' when error starts with 'must match pattern'", () => {
+    expect(getCustomErrorMessage("must match pattern ^https?://")).toBe(
+      "is not in the correct format",
+    )
+  })
+
   it("should return empty string when error is undefined", () => {
     expect(getCustomErrorMessage(undefined)).toBe("")
   })

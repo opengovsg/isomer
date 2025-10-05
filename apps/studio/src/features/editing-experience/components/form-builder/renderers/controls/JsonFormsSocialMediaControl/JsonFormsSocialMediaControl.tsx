@@ -1,4 +1,3 @@
-import type { DropResult } from "@hello-pangea/dnd"
 import type {
   ArrayLayoutProps,
   JsonFormsCellRendererRegistryEntry,
@@ -10,6 +9,7 @@ import type {
 import { useCallback, useState } from "react"
 import {
   Box,
+  Button,
   Flex,
   HStack,
   Icon,
@@ -24,7 +24,6 @@ import {
   Tooltip,
   VStack,
 } from "@chakra-ui/react"
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,
   computeChildLabel,
@@ -38,7 +37,6 @@ import {
   useJsonForms,
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
-import { Button } from "@opengovsg/design-system-react"
 import {
   BiLeftArrowAlt,
   BiPlusCircle,
@@ -47,15 +45,16 @@ import {
 } from "react-icons/bi"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useBuilderErrors } from "../../ErrorProvider"
-import DraggableLinkButton from "./DraggableLinkButton"
+import { useBuilderErrors } from "../../../ErrorProvider"
+import { SOCIAL_MEDIA_LINKS } from "./constants"
+import { SocialMediaLink } from "./SocialMediaLink"
 
-export const jsonFormsLinkArrayControlTester: RankedTester = rankWith(
-  JSON_FORMS_RANKING.LinkArrayControl,
-  schemaMatches((schema) => schema.format === "linkArray"),
+export const jsonFormsSocialMediaControlTester: RankedTester = rankWith(
+  JSON_FORMS_RANKING.SocialMediaControl,
+  schemaMatches((schema) => schema.format === "socialMedia"),
 )
 
-interface EditLinkItemProps {
+interface EditSocialMediaLinkItemProps {
   renderers?: JsonFormsRendererRegistryEntry[]
   cells?: JsonFormsCellRendererRegistryEntry[]
   visible: boolean
@@ -66,7 +65,7 @@ interface EditLinkItemProps {
   handleRemoveItem: () => void
 }
 
-const EditLinkItem = ({
+const EditSocialMediaLinkItem = ({
   renderers,
   cells,
   visible,
@@ -75,9 +74,9 @@ const EditLinkItem = ({
   path,
   onBack,
   handleRemoveItem,
-}: EditLinkItemProps) => {
+}: EditSocialMediaLinkItemProps) => {
   const ctx = useJsonForms()
-  const label = computeChildLabel(
+  const value = computeChildLabel(
     ctx.core?.data,
     path,
     "",
@@ -86,6 +85,7 @@ const EditLinkItem = ({
     ctx.i18n?.translate ?? ((s) => s),
     uischema,
   )
+  const label = SOCIAL_MEDIA_LINKS.find((link) => link.type === value)?.label
 
   return (
     <VStack
@@ -134,7 +134,7 @@ const EditLinkItem = ({
             textColor="base.content.default"
             textOverflow="ellipsis"
           >
-            {label || "Add a new link"}
+            {label || "Add a social media link"}
           </Text>
         </HStack>
       </VStack>
@@ -167,7 +167,7 @@ const EditLinkItem = ({
   )
 }
 
-interface DeleteLinkModalProps {
+interface DeleteSocialMediaLinkModalProps {
   isOpen: boolean
   onClose: () => void
   onDelete: () => void
@@ -176,16 +176,16 @@ interface DeleteLinkModalProps {
   uischema: UISchemaElement
 }
 
-const DeleteLinkModal = ({
+const DeleteSocialMediaLinkModal = ({
   isOpen,
   onClose,
   onDelete,
   path,
   schema,
   uischema,
-}: DeleteLinkModalProps) => {
+}: DeleteSocialMediaLinkModalProps) => {
   const ctx = useJsonForms()
-  const label = computeChildLabel(
+  const value = computeChildLabel(
     ctx.core?.data,
     path,
     "",
@@ -194,20 +194,20 @@ const DeleteLinkModal = ({
     ctx.i18n?.translate ?? ((s) => s),
     uischema,
   )
+  const label = SOCIAL_MEDIA_LINKS.find((link) => link.type === value)?.label
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
 
       <ModalContent>
-        <ModalHeader mr="3.5rem">Delete “{label}”?</ModalHeader>
+        <ModalHeader mr="3.5rem">Delete {label} link?</ModalHeader>
 
         <ModalCloseButton size="lg" />
 
         <ModalBody>
           <Text textStyle="body-1">
-            You’re about to delete 1 link from the footer. This doesn’t remove
-            any actual pages.
+            You’re about to delete 1 social media link from the footer.
           </Text>
         </ModalBody>
 
@@ -226,15 +226,13 @@ const DeleteLinkModal = ({
   )
 }
 
-export function JsonFormsArrayLinkControl({
+export const JsonFormsSocialMediaControl = ({
   data,
   path,
   visible,
   label,
   addItem,
   removeItems,
-  moveUp,
-  moveDown,
   arraySchema,
   schema,
   rootSchema,
@@ -243,17 +241,15 @@ export function JsonFormsArrayLinkControl({
   uischemas,
   uischema,
   description,
-}: ArrayLayoutProps) {
+}: ArrayLayoutProps) => {
   const { hasErrorAt } = useBuilderErrors()
   const [selectedIndex, setSelectedIndex] = useState<number>()
   const [selectedPathForDeletion, setSelectedPathForDeletion] =
     useState<string>()
 
-  const isRemoveItemDisabled =
-    arraySchema.minItems !== undefined && data <= arraySchema.minItems
   const handleRemoveItem = useCallback(
     (path: string, index: number) => () => {
-      if (!removeItems || isRemoveItemDisabled) {
+      if (!removeItems) {
         return
       }
 
@@ -267,28 +263,13 @@ export function JsonFormsArrayLinkControl({
         setSelectedIndex(selectedIndex - 1)
       }
     },
-    [isRemoveItemDisabled, removeItems, selectedIndex],
+    [removeItems, selectedIndex],
   )
-  const handleMoveItem = useCallback(
-    (path: string, originalIndex: number, newIndex: number) => {
-      if (originalIndex === newIndex || !moveDown || !moveUp) {
-        return
-      }
 
-      if (originalIndex < newIndex) {
-        for (let i = originalIndex; i < newIndex; i++) {
-          moveDown(path, i)()
-        }
-      } else {
-        for (let i = originalIndex; i > newIndex; i--) {
-          moveUp(path, i)()
-        }
-      }
-    },
-    [moveUp, moveDown],
-  )
   const handleDeleteItem = () => {
-    if (selectedPathForDeletion === undefined) return
+    if (selectedPathForDeletion === undefined) {
+      return
+    }
 
     const index = Number(selectedPathForDeletion.split(".").pop())
     handleRemoveItem(path, index)()
@@ -309,19 +290,11 @@ export function JsonFormsArrayLinkControl({
       ),
     [uischemas, schema, uischema, rootSchema],
   )
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) {
-      return
-    }
-    const originalIndex = result.source.index
-    const newIndex = result.destination.index
-    handleMoveItem(path, originalIndex, newIndex)
-  }
 
   if (selectedIndex !== undefined) {
     return (
       <>
-        <DeleteLinkModal
+        <DeleteSocialMediaLinkModal
           isOpen={!!selectedPathForDeletion}
           onClose={() => setSelectedPathForDeletion(undefined)}
           onDelete={handleDeleteItem}
@@ -330,14 +303,13 @@ export function JsonFormsArrayLinkControl({
           uischema={getChildUiSchema(selectedPathForDeletion ?? "")}
         />
 
-        <EditLinkItem
+        <EditSocialMediaLinkItem
           renderers={renderers}
           cells={cells}
           visible={visible}
           schema={schema}
           uischema={getChildUiSchema(composePaths(path, `${selectedIndex}`))}
           path={composePaths(path, `${selectedIndex}`)}
-          // handleRemoveItem={handleRemoveItem(path, selectedIndex)}
           handleRemoveItem={() =>
             setSelectedPathForDeletion(composePaths(path, `${selectedIndex}`))
           }
@@ -349,7 +321,7 @@ export function JsonFormsArrayLinkControl({
 
   return (
     <>
-      <DeleteLinkModal
+      <DeleteSocialMediaLinkModal
         isOpen={!!selectedPathForDeletion}
         onClose={() => setSelectedPathForDeletion(undefined)}
         onDelete={handleDeleteItem}
@@ -367,12 +339,6 @@ export function JsonFormsArrayLinkControl({
               {description && (
                 <Text textStyle="body-2" textColor="base.content.default">
                   {description}
-                </Text>
-              )}
-
-              {arraySchema.maxItems && (
-                <Text textStyle="body-2" textColor="base.content.medium">
-                  {data}/{arraySchema.maxItems} links added
                 </Text>
               )}
             </VStack>
@@ -399,77 +365,46 @@ export function JsonFormsArrayLinkControl({
             </Tooltip>
           </HStack>
         </VStack>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="blocks">
-            {({ droppableProps, innerRef, placeholder }) => (
-              <VStack
-                {...droppableProps}
-                align="baseline"
-                w="100%"
-                h="100%"
-                spacing={0}
-                ref={innerRef}
-                mt="-0.25rem"
+        <VStack align="baseline" w="100%" h="100%" spacing={0} mt="-0.25rem">
+          {data === 0 ? (
+            <Flex
+              alignItems="center"
+              flexDir="column"
+              px="1.5rem"
+              p="3.75rem"
+              mt="0.25rem"
+              justifyContent="center"
+              w="100%"
+            >
+              <Text
+                textStyle="subhead-1"
+                textColor="base.content.default"
+                textAlign="center"
               >
-                {data === 0 && (
-                  <Flex
-                    alignItems="center"
-                    flexDir="column"
-                    px="1.5rem"
-                    p="3.75rem"
-                    mt="0.25rem"
-                    justifyContent="center"
-                    w="100%"
-                  >
-                    <Text
-                      textStyle="subhead-1"
-                      textColor="base.content.default"
-                      textAlign="center"
-                    >
-                      Items you add will appear here
-                    </Text>
-                  </Flex>
-                )}
+                Items you add will appear here
+              </Text>
+            </Flex>
+          ) : (
+            <VStack gap="0.5rem" mt="1rem" w="full">
+              {[...Array(data).keys()].map((index) => {
+                const childPath = composePaths(path, `${index}`)
+                const hasError = hasErrorAt(childPath)
 
-                {[...Array(data).keys()].map((index) => {
-                  const childPath = composePaths(path, `${index}`)
-                  const hasError = hasErrorAt(childPath)
-
-                  return (
-                    <Draggable
-                      key={childPath}
-                      draggableId={childPath}
-                      disableInteractiveElementBlocking
-                      index={index}
-                    >
-                      {({ draggableProps, dragHandleProps, innerRef }) => (
-                        <DraggableLinkButton
-                          draggableProps={draggableProps}
-                          dragHandleProps={dragHandleProps}
-                          isError={hasError}
-                          ref={innerRef}
-                          index={index}
-                          path={childPath}
-                          schema={schema}
-                          uischema={getChildUiSchema(childPath)}
-                          setSelectedIndex={setSelectedIndex}
-                          onDeleteItem={() =>
-                            setSelectedPathForDeletion(childPath)
-                          }
-                        />
-                      )}
-                    </Draggable>
-                  )
-                })}
-
-                {placeholder}
-              </VStack>
-            )}
-          </Droppable>
-        </DragDropContext>
+                return (
+                  <SocialMediaLink
+                    path={childPath}
+                    isInvalid={hasError}
+                    onDelete={() => setSelectedPathForDeletion(childPath)}
+                    onEdit={() => setSelectedIndex(index)}
+                  />
+                )
+              })}
+            </VStack>
+          )}
+        </VStack>
       </VStack>
     </>
   )
 }
 
-export default withJsonFormsArrayLayoutProps(JsonFormsArrayLinkControl)
+export default withJsonFormsArrayLayoutProps(JsonFormsSocialMediaControl)
