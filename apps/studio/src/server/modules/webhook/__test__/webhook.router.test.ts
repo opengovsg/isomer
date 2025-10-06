@@ -88,9 +88,8 @@ describe("webhook.router", async () => {
       expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
       expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
-        publishTime: FIXED_NOW,
         isScheduled: true,
-        title: page.title,
+        resource: expect.objectContaining(page),
       })
 
       // check the codebuildjobs table to see if the status has been updated
@@ -193,9 +192,8 @@ describe("webhook.router", async () => {
       expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
       expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
-        publishTime: FIXED_NOW,
         isScheduled: false,
-        title: page.title,
+        resource: expect.objectContaining(page),
       })
     })
     it("sends a failure email with the correct isScheduled flag", async () => {
@@ -326,17 +324,15 @@ describe("webhook.router", async () => {
       callsWithOriginalUser.forEach((call) => {
         expect(call).toEqual({
           recipientEmail: user.email,
-          publishTime: FIXED_NOW,
           isScheduled: codebuildJob.isScheduled,
-          title: pageForMainBuild.title, // title from the original build
+          resource: expect.objectContaining(pageForMainBuild),
         })
       })
       callsWithSupersededUser.forEach((call) => {
         expect(call).toEqual({
           recipientEmail: userForSupersededBuilds.email,
-          publishTime: FIXED_NOW,
           isScheduled: codebuildJob.isScheduled,
-          title: pageForSupersededBuild.title, // title from the superseded builds
+          resource: expect.objectContaining(pageForSupersededBuild),
         })
       })
       // check that the codebuild job is updated with the emailSent flag
