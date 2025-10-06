@@ -1,5 +1,4 @@
 import type { BackoffOptions, JobsOptions } from "bullmq"
-import type { Settings } from "redlock"
 
 const DAY_IN_SECONDS = 60 * 60 * 24
 /** Queue & worker settings */
@@ -19,12 +18,4 @@ export const defaultOpts: JobsOptions = {
   failParentOnFailure: true,
   attempts: WORKER_RETRY_LIMIT,
   backoff: BACKOFF,
-}
-
-/** Redlock settings */
-export const LOCK_TTL = 30_000 // 30 seconds
-export const REDLOCK_SETTINGS: Partial<Settings> = {
-  retryCount: 0,
-  retryDelay: 0,
-  retryJitter: 0,
 }
