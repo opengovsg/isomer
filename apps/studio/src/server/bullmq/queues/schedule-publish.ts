@@ -2,8 +2,7 @@ import type { Job, JobsOptions } from "bullmq"
 import { Queue, Worker } from "bullmq"
 import { differenceInSeconds } from "date-fns"
 
-import type { Lock } from "@isomer/redis"
-import { getRedisWithRedlock, ResourceLockedError } from "@isomer/redis"
+import { getRedisWithRedlock, withRedlock } from "@isomer/redis"
 
 import { sendFailedPublishEmail } from "~/features/mail/service"
 import { ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY } from "~/lib/growthbook"
@@ -20,8 +19,6 @@ import { handleSignal } from "../utils"
 import {
   BACKOFF,
   defaultOpts,
-  LOCK_TTL,
-  REDLOCK_SETTINGS,
   REMOVE_ON_COMPLETE_BUFFER,
   REMOVE_ON_FAIL_BUFFER,
   SCHEDULED_PUBLISH_QUEUE_NAME,
@@ -94,7 +91,21 @@ export const createScheduledPublishWorker = () => {
   const worker = new Worker<ScheduledPublishJobData>(
     scheduledPublishQueue.name,
     async (job: Job<ScheduledPublishJobData>) => {
-      await publishScheduledResource(job.id, job.data, job.attemptsMade)
+      // verify user still has permission to publish on the site
+      await bulkValidateUserPermissionsForResources({
+        siteId: job.data.siteId,
+        userId: job.data.userId,
+        action: "publish",
+      })
+      // Use Redlock to ensure that only one worker can process the job for a given resourceId at a time
+      await withRedlock(
+        RedlockClient,
+        job.data.resourceId.toString(),
+        async () => {
+          await publishScheduledResource(job.id, job.data, job.attemptsMade)
+        },
+        logger,
+      )
       return job.id
     },
     {
@@ -112,115 +123,80 @@ export const publishScheduledResource = async (
   { resourceId, siteId, userId }: ScheduledPublishJobData,
   attemptsMade: number,
 ) => {
-  let lock: Lock | null = null
-  try {
-    // verify user still has permission to publish on the site
-    await bulkValidateUserPermissionsForResources({
-      siteId,
-      action: "publish",
-      userId,
-    })
-    // Acquire a lock for this resourceId to prevent concurrent processing
-    lock = await RedlockClient.acquire(
-      [`locks:resource:${resourceId}`],
-      LOCK_TTL,
-      REDLOCK_SETTINGS,
-    )
-    const page = await db.transaction().execute(async (tx) => {
-      const page = await getPageById(tx, { resourceId, siteId })
-      if (!page) {
-        logger.error(
-          { resourceId, siteId, jobId, userId },
-          `Page with id ${resourceId} not found or does not belong to site ${siteId}. Exiting job.`,
+  const page = await db.transaction().execute(async (tx) => {
+    const page = await getPageById(tx, { resourceId, siteId })
+    if (!page) {
+      logger.error(
+        { resourceId, siteId, jobId, userId },
+        `Page with id ${resourceId} not found or does not belong to site ${siteId}. Exiting job.`,
+      )
+      return null
+    }
+    // If multiple attempts have been made, we skip the scheduledAt time checks since the scheduledAt
+    // may have been cleared on the first attempt
+    if (attemptsMade === 0) {
+      if (!page.scheduledAt) {
+        logger.info(
+          { resourceId, jobId, userId },
+          `Page with id ${resourceId} is no longer scheduled for publishing. Exiting job.`,
         )
         return null
       }
-      // If multiple attempts have been made, we skip the scheduledAt time checks since the scheduledAt
-      // may have been cleared on the first attempt
-      if (attemptsMade === 0) {
-        if (!page.scheduledAt) {
-          logger.info(
-            { resourceId, jobId, userId },
-            `Page with id ${resourceId} is no longer scheduled for publishing. Exiting job.`,
-          )
-          return null
-        }
-        // Double-check that we're within the buffer time of the scheduledAt time
-        // This is to prevent publishing if the job was significantly delayed (e.g. due to worker downtime)
-        // We only do this check on the first attempt, as subsequent attempts are likely due to transient failures
-        // and we don't want to block those from going through if the timing is slightly off
-        if (
-          Math.abs(differenceInSeconds(page.scheduledAt, new Date())) >
-          BUFFER_IN_SECONDS
-        ) {
-          logger.error(
-            { resourceId, jobId, userId },
-            `Page with id ${resourceId} is scheduled for publishing outside the buffer time. Exiting job.`,
-          )
-          return null
-        }
-      }
-      // NOTE: once it's been claimed, we unset scheduledAt even if publish fails
-      // The scheduledAt field currently blocks the editing flow so we want to
-      // ensure it's unset even if publish fails, to avoid blocking the user from making further edits
-      return await updatePageById(
-        {
-          id: resourceId,
-          siteId,
-          scheduledAt: null,
-        },
-        tx,
-      )
-    })
-    // No page found or not scheduled, exit (logging handled above)
-    if (!page) return
-    // Publish the page outside of the transaction to avoid long-running transactions
-    logger.info(
-      { resourceId, jobId, userId },
-      `Publishing scheduled page ${resourceId}`,
-    )
-    // Get the user who scheduled the publish from the database
-    const user = await db
-      .selectFrom("User")
-      .where("id", "=", userId)
-      .selectAll()
-      .executeTakeFirst()
-    // if the user no longer exists, we log an error and exit, since we don't have a user to attribute the publish to
-    if (!user) {
-      logger.error(
-        { resourceId, jobId, userId },
-        `User with id ${userId} not found. Cannot continue with publish of resource ${resourceId}.`,
-      )
-      return
-    }
-    return await publishPageResource({
-      logger,
-      siteId,
-      resourceId: page.id,
-      user,
-      isScheduled: true,
-    })
-  } catch (error) {
-    // If we fail to acquire the lock, it means another worker is processing this resource and we can exit gracefully
-    if (error instanceof ResourceLockedError) {
-      logger.info(
-        { resourceId, jobId, userId, error },
-        `Could not acquire lock for resource ${resourceId}. It is likely being processed by another worker. Exiting job.`,
-      )
-      return
-    }
-    throw error
-  } finally {
-    // Ensure the lock is released if it was acquired
-    if (lock) {
-      await lock.release().catch((error: Error) => {
-        logger.warn(
-          { resourceId, jobId, userId, error },
-          `Failed to release lock for resource ${resourceId}. Lock may have expired.`,
+      // Double-check that we're within the buffer time of the scheduledAt time
+      // This is to prevent publishing if the job was significantly delayed (e.g. due to worker downtime)
+      // We only do this check on the first attempt, as subsequent attempts are likely due to transient failures
+      // and we don't want to block those from going through if the timing is slightly off
+      if (
+        Math.abs(differenceInSeconds(page.scheduledAt, new Date())) >
+        BUFFER_IN_SECONDS
+      ) {
+        logger.error(
+          { resourceId, jobId, userId },
+          `Page with id ${resourceId} is scheduled for publishing outside the buffer time. Exiting job.`,
         )
-      })
+        return null
+      }
     }
+    // NOTE: once it's been claimed, we unset scheduledAt even if publish fails
+    // The scheduledAt field currently blocks the editing flow so we want to
+    // ensure it's unset even if publish fails, to avoid blocking the user from making further edits
+    return await updatePageById(
+      {
+        id: resourceId,
+        siteId,
+        scheduledAt: null,
+      },
+      tx,
+    )
+  })
+  // No page found or not scheduled, exit (logging handled above)
+  if (!page) return
+  // Publish the page outside of the transaction to avoid long-running transactions
+  logger.info(
+    { resourceId, jobId, userId },
+    `Publishing scheduled page ${resourceId}`,
+  )
+  // Get the user who scheduled the publish from the database
+  const user = await db
+    .selectFrom("User")
+    .where("id", "=", userId)
+    .selectAll()
+    .executeTakeFirst()
+  // if the user no longer exists, we log an error and exit, since we don't have a user to attribute the publish to
+  if (!user) {
+    logger.error(
+      { resourceId, jobId, userId },
+      `User with id ${userId} not found. Cannot continue with publish of resource ${resourceId}.`,
+    )
+    return
   }
+  return await publishPageResource({
+    logger,
+    siteId,
+    resourceId: page.id,
+    user,
+    isScheduled: true,
+  })
 }
 
 export const scheduledPublishWorker = createScheduledPublishWorker()
