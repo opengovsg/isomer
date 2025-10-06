@@ -142,21 +142,22 @@ export const failedPublishTemplate = (
 export const successfulPublishTemplate = (
   data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, publishTime, isScheduled, title } = data
+  const { recipientEmail, isScheduled, resource } = data
   switch (isScheduled) {
     case true:
       return {
-        subject: `[Isomer Studio] The page ${title} was published as scheduled`,
+        subject: `[Isomer Studio] The page ${resource.title} was published as scheduled`,
         body: `<p>Hi ${recipientEmail},</p>
-    <p>Your page ${title} was successfully published on ${format(toZonedTime(publishTime, "Asia/Singapore"), "MMMM d, yyyy hh:mm a")} as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
-    <p>Best,</p>
-    <p>Isomer team</p>`,
+        <p>Your page ${resource.title} was successfully published as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
+        <p> You can view or edit your published content on Isomer Studio at ${getStudioResourceUrl(resource)}.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
       }
     case false:
       return {
-        subject: `[Isomer Studio] Changes you published to ${title} are now live`,
+        subject: `[Isomer Studio] Changes you published to ${resource.title} are now live`,
         body: `<p>Hi ${recipientEmail},</p>
-    <p>Your changes to page ${title} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
+    <p>Your changes to page ${resource.title} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
       }
