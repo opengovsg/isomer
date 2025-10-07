@@ -24,7 +24,6 @@ export const buildIdFromArn = (arn: string) => {
 export const codeBuildWebhookSchema = z
   .object({
     projectName: z.string(),
-    siteId: z.coerce.number(),
     arn: z.string(),
     status: z.nativeEnum(BuildStatusType),
   })
