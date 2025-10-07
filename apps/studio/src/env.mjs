@@ -61,7 +61,7 @@ const server = z
     POSTMAN_API_KEY: z.string().optional(),
     SESSION_SECRET: z.string().min(32),
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
-    WEBHOOK_API_KEY: z.string().optional(),
+    STUDIO_SSM_WEBHOOK_API_KEY: z.string().optional(),
     REDIS_HOST: z.string(),
     REDIS_PORT: z.coerce.number().default(6379),
   })
@@ -99,7 +99,7 @@ const processEnv = {
   SINGPASS_SIGNING_KEY_ALG: process.env.SINGPASS_SIGNING_KEY_ALG,
   REDIS_HOST: process.env.REDIS_HOST,
   REDIS_PORT: process.env.REDIS_PORT,
-  WEBHOOK_API_KEY: process.env.WEBHOOK_API_KEY,
+  STUDIO_SSM_WEBHOOK_API_KEY: process.env.STUDIO_SSM_WEBHOOK_API_KEY,
   // Client-side env vars
   NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,

@@ -16,7 +16,7 @@ vi.mock("~/env.mjs", async () => {
     env: {
       ...actual,
       // override some env variables for testing
-      WEBHOOK_API_KEY: "test-webhook-api-key",
+      STUDIO_SSM_WEBHOOK_API_KEY: "test-webhook-api-key",
       GROWTHBOOK_CLIENT_KEY: "test-growthbook-client-key",
     },
   }
