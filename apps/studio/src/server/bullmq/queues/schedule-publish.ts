@@ -91,12 +91,6 @@ export const createScheduledPublishWorker = () => {
   const worker = new Worker<ScheduledPublishJobData>(
     scheduledPublishQueue.name,
     async (job: Job<ScheduledPublishJobData>) => {
-      // verify user still has permission to publish on the site
-      await bulkValidateUserPermissionsForResources({
-        siteId: job.data.siteId,
-        userId: job.data.userId,
-        action: "publish",
-      })
       // Use Redlock to ensure that only one worker can process the job for a given resourceId at a time
       await withRedlock(
         RedlockClient,
@@ -123,6 +117,12 @@ export const publishScheduledResource = async (
   { resourceId, siteId, userId }: ScheduledPublishJobData,
   attemptsMade: number,
 ) => {
+  // verify user still has permission to publish on the site
+  await bulkValidateUserPermissionsForResources({
+    siteId,
+    userId,
+    action: "publish",
+  })
   const page = await db.transaction().execute(async (tx) => {
     const page = await getPageById(tx, { resourceId, siteId })
     if (!page) {
