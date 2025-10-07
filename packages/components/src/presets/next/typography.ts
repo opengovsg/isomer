@@ -40,7 +40,7 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     },
     ".prose-title-md": {
       letterSpacing: "0",
-      "@apply text-[1.0625rem] lg:text-[1.25rem] leading-[1.3]": {},
+      "@apply text-[1.0625rem] lg:text-[1.25rem] leading-[1.3] min-h-[1.5]": {},
     },
     ".prose-title-md-semibold": {
       fontWeight: theme("fontWeight.semibold"),
@@ -54,7 +54,7 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     // Attention to specific part of section
     ".prose-headline-lg": {
       letterSpacing: "0",
-      "@apply text-[1.0625rem] lg:text-[1.125rem] leading-[1.3]": {},
+      "@apply text-[1.0625rem] lg:text-[1.125rem] leading-[1.3] min-h-[1.5]": {},
     },
     ".prose-headline-lg-semibold": {
       fontWeight: theme("fontWeight.semibold"),
@@ -70,7 +70,7 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     },
     ".prose-headline-base": {
       letterSpacing: "0",
-      "@apply text-[0.9375rem] lg:text-[1rem] leading-[1.4]": {},
+      "@apply text-[0.9375rem] lg:text-[1rem] leading-[1.4] min-h-[1.5]": {},
     },
     ".prose-headline-base-semibold": {
       fontWeight: theme("fontWeight.semibold"),
@@ -85,13 +85,13 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     ".prose-body-base": {
       fontWeight: theme("fontWeight.normal"),
       letterSpacing: "0",
-      "@apply text-[0.9375rem] lg:text-[1rem] leading-[1.5]": {},
+      "@apply text-[0.9375rem] lg:text-[1rem] leading-[1.5] min-h-[1.5]": {},
     },
     ".prose-body-sm": {
       fontWeight: theme("fontWeight.normal"),
       letterSpacing: "0",
       // Intentionally larger than desktop/tablet size. This is to ensure readability on mobile.
-      "@apply text-[0.9375rem] lg:text-[0.875rem] leading-[1.5]": {},
+      "@apply text-[0.9375rem] lg:text-[0.875rem] leading-[1.5] min-h-[1.5]": {},
     },
     // Label
     // Single-line explanatory text
@@ -99,6 +99,7 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
       letterSpacing: "0",
       fontSize: "0.875rem",
       lineHeight: "1.5",
+      minHeight: "1.5rem",
     },
     ".prose-label-md-medium": {
       fontWeight: theme("fontWeight.medium"),
@@ -112,6 +113,7 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
       letterSpacing: "0",
       fontSize: "0.75rem",
       lineHeight: "1.5",
+      minHeight: "1.5rem",
     },
     ".prose-label-sm-medium": {
       fontWeight: theme("fontWeight.medium"),
