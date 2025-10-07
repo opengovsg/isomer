@@ -70,21 +70,20 @@ describe("webhook.router", async () => {
         recipientEmail: user.email,
         publishTime: FIXED_NOW,
       })
+
       // check the codebuildjobs table to see if the status has been updated
-      await db
+      const job = await db
         .selectFrom("CodeBuildJobs")
         .where("buildId", "=", codebuildJob.buildId)
         .selectAll()
         .executeTakeFirstOrThrow()
-        .then((job) => {
-          // expect the job status to be updated to SUCCEEDED, and emailSent to be true
-          expect(job).toEqual(
-            expect.objectContaining({
-              status: "SUCCEEDED",
-              emailSent: true,
-            }),
-          )
-        })
+
+      expect(job).toEqual(
+        expect.objectContaining({
+          status: "SUCCEEDED",
+          emailSent: true,
+        }),
+      )
     })
     it("it should update the codebuildjobs table if the received build status is failed", async () => {
       // Arrange
@@ -108,20 +107,19 @@ describe("webhook.router", async () => {
         recipientEmail: user.email,
       })
       // check the codebuildjobs table to see if the status has been updated
-      await db
+      const job = await db
         .selectFrom("CodeBuildJobs")
         .where("buildId", "=", codebuildJob.buildId)
         .selectAll()
         .executeTakeFirstOrThrow()
-        .then((job) => {
-          // expect the job status to be updated to SUCCEEDED, and emailSent to be true
-          expect(job).toEqual(
-            expect.objectContaining({
-              status: "FAILED",
-              emailSent: true,
-            }),
-          )
-        })
+
+      // expect the job status to be updated to SUCCEEDED, and emailSent to be true
+      expect(job).toEqual(
+        expect.objectContaining({
+          status: "FAILED",
+          emailSent: true,
+        }),
+      )
     })
     it("do not send an email if the the email has already been sent", async () => {
       // Arrange
