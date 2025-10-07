@@ -48,7 +48,7 @@ describe("webhook.router", async () => {
     afterEach(() => {
       MockDate.reset() // Reset time after each test
     })
-    it("updates the codebuildjobs table based on the received webhook - success", async () => {
+    it("it should update the codebuildjobs table if the received build status is successful", async () => {
       // Arrange
       const { site, codebuildJob } = await setupCodeBuildJob({
         userId: user.id,
@@ -86,7 +86,7 @@ describe("webhook.router", async () => {
           )
         })
     })
-    it("updates the codebuildjobs table based on the received webhook - failure", async () => {
+    it("it should update the codebuildjobs table if the received build status is failed", async () => {
       // Arrange
       const { site, codebuildJob } = await setupCodeBuildJob({
         userId: user.id,

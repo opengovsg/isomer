@@ -7,6 +7,7 @@ import { setupCodeBuildJob, setupUser } from "tests/integration/helpers/seed"
 
 import type { codeBuildWebhookSchema } from "../webhook"
 import handler from "~/pages/api/webhooks/updateCodebuildWebhook"
+import { WEBHOOK_X_API_KEY_HEADER } from "~/server/trpc"
 
 vi.mock("~/env.mjs", async () => {
   // Import the real module first to get all default values
@@ -47,7 +48,7 @@ const createMockRequest = ({
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": apiKey,
+        [WEBHOOK_X_API_KEY_HEADER]: apiKey,
       },
       body,
     })

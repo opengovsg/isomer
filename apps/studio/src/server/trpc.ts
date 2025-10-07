@@ -176,9 +176,12 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
  * but still need to be protected via an API key. We still check the session
  * in case the request is made by a logged in user (via the FE), and to allow for easier testing.
  * */
+
+export const WEBHOOK_X_API_KEY_HEADER = "x-api-key"
+
 const webhookMiddleware = t.middleware(async ({ next, ctx }) => {
   if (!ctx.session?.userId) {
-    const apiKey = ctx.req.headers["x-api-key"]
+    const apiKey = ctx.req.headers[WEBHOOK_X_API_KEY_HEADER]
     // Ensure that the API key is set in the env
     if (!env.WEBHOOK_API_KEY) {
       throw new TRPCError({
