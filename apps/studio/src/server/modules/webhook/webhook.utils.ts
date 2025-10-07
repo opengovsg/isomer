@@ -48,18 +48,18 @@ export const updateCodebuildStatusAndSendEmails = async (
   logger: pino.Logger<string>,
   gb: GrowthBook,
   buildId: string,
-  buildStatus: BuildStatusType,
+  status: BuildStatusType,
 ): Promise<{ codebuildJobIdsForSentEmails: string[] }> => {
   // tracks the ids of builds for which emails were sent successfully
   let codebuildJobIdsForSentEmails: string[] = []
-  await updateCurrentAndSupersededBuilds(buildId, buildStatus)
+  await updateCurrentAndSupersededBuilds(buildId, status)
   // send notification emails on a best-effort basis, so we catch any errors and log them
   try {
-    codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, buildStatus)
+    codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, status)
     logger.info(
       {
         buildId,
-        buildStatus,
+        status,
         codebuildJobIdsForSentEmails,
       },
       `Emails sent for buildId ${String(buildId)}`,
@@ -68,10 +68,10 @@ export const updateCodebuildStatusAndSendEmails = async (
     logger.error(
       {
         buildId,
-        buildStatus,
+        status,
         error,
       },
-      `Failed to send notification emails for build status ${String(buildStatus)} for buildId ${String(buildId)}.`,
+      `Failed to send notification emails for build status ${String(status)} for buildId ${String(buildId)}.`,
     )
   }
   // mark the builds for which emails were sent successfully as having had their email sent
