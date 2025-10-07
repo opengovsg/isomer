@@ -29,7 +29,7 @@ describe("updateStoppedBuild", () => {
     const { codebuildJob, page: pageForMainBuild } = await setupCodeBuildJob({
       userId: user.id,
       arn: "build/test-id",
-      buildStatus: "IN_PROGRESS",
+      status: "IN_PROGRESS",
       startedAt: FIXED_NOW,
       isScheduled: true,
     })
