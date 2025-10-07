@@ -16,6 +16,7 @@ import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
 import { BiDirections } from "react-icons/bi"
 
+import { FORM_BUILDER_PARENT_ID } from "~/features/editing-experience/components/form-builder/constants"
 import {
   ErrorProvider,
   useBuilderErrors,
@@ -59,6 +60,7 @@ export const FooterEditor = ({
   return (
     <ErrorProvider>
       <VStack
+        id={FORM_BUILDER_PARENT_ID}
         py="1.5rem"
         h="100%"
         w="full"

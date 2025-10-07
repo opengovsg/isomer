@@ -7,7 +7,7 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   Box,
   Flex,
@@ -47,6 +47,7 @@ import {
 } from "react-icons/bi"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { FORM_BUILDER_PARENT_ID } from "../../constants"
 import { useBuilderErrors } from "../../ErrorProvider"
 import DraggableLinkButton from "./DraggableLinkButton"
 
@@ -87,13 +88,29 @@ const EditLinkItem = ({
     uischema,
   )
 
+  // Disable scrolling on parent container when editing a link item, as this
+  // is an absolutely-positioned overlay
+  useEffect(() => {
+    const parent = document.getElementById(FORM_BUILDER_PARENT_ID)
+    if (parent) {
+      parent.scrollTop = 0
+      parent.style.overflow = "hidden"
+    }
+
+    return () => {
+      if (parent) {
+        parent.style.overflow = "auto"
+      }
+    }
+  }, [])
+
   return (
     <VStack
       position="absolute"
       top={0}
       left={0}
       w="full"
-      h="200%"
+      h="100%"
       zIndex={1}
       bg="grey.50"
       alignItems="start"
