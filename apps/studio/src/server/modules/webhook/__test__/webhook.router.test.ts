@@ -12,7 +12,6 @@ import {
   createSupersededBuildRows,
   setupCodeBuildJob,
   setupPageResource,
-  setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
 
