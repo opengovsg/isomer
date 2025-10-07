@@ -183,14 +183,14 @@ const webhookMiddleware = t.middleware(async ({ next, ctx }) => {
   if (!ctx.session?.userId) {
     const apiKey = ctx.req.headers[WEBHOOK_X_API_KEY_HEADER]
     // Ensure that the API key is set in the env
-    if (!env.WEBHOOK_API_KEY) {
+    if (!env.STUDIO_SSM_WEBHOOK_API_KEY) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Webhook API key is not configured",
       })
     }
     // Ensure that the API key is valid and matches
-    if (!apiKey || apiKey !== env.WEBHOOK_API_KEY) {
+    if (!apiKey || apiKey !== env.STUDIO_SSM_WEBHOOK_API_KEY) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
         message: "Invalid Webhook API key provided",
