@@ -250,3 +250,40 @@ export const WithDirectionNull: Story = {
     ],
   },
 }
+
+// Mobile link hard break should not trigger 24px touch target violation
+export const MobileLinkHardBreak: Story = {
+  args: {
+    content: [
+      {
+        type: "text",
+        marks: [
+          {
+            type: "link",
+            attrs: {
+              href: "https://example.com/first-link",
+              target: "_blank",
+            },
+          },
+        ],
+        text: "First Link",
+      },
+      {
+        type: "hardBreak",
+      },
+      {
+        type: "text",
+        marks: [
+          {
+            type: "link",
+            attrs: {
+              href: "https://example.com/second-link",
+              target: "_blank",
+            },
+          },
+        ],
+        text: "Second Link",
+      },
+    ],
+  },
+}
