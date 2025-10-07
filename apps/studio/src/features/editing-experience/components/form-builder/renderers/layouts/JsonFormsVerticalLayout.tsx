@@ -13,7 +13,6 @@ import { isVerticalLayout } from "~/types/schema"
 
 type UISchemaElementWithScope = UISchemaElement & {
   scope?: string
-  label?: string
   elements?: UISchemaElementWithScope[]
 }
 
