@@ -114,6 +114,7 @@ const sendEmails = async (
           eb("CodeBuildJobs.supersededByBuildId", "=", buildId),
         ]),
         eb("CodeBuildJobs.emailSent", "=", false), // only consider builds that haven't had an email sent yet
+        eb("Resource.type", "=", ResourceType.Page), // only consider page resources for sending emails
         eb("User.email", "is not", null), // only consider users with an email
       ])
     })
