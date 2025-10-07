@@ -22,14 +22,14 @@ export const withRedlock = async <T>(
   resource_name: string,
   fn: () => Promise<T>,
   logger: pino.Logger<string>,
-  opts?: RedlockOptions
+  opts?: RedlockOptions,
 ) => {
   let lock: Lock | null = null;
   try {
     lock = await client.acquire(
       [`locks:resource:${resource_name}`],
       opts?.lock_ttl_ms ?? DEFAULT_REDLOCK_TTL_MS,
-      opts
+      opts,
     );
     await fn();
   } catch (error) {
@@ -37,7 +37,7 @@ export const withRedlock = async <T>(
     if (error instanceof ResourceLockedError) {
       logger.info(
         { resource_name, error },
-        `Could not acquire lock for resource ${resource_name}`
+        `Could not acquire lock for resource ${resource_name}`,
       );
       return;
     }
@@ -48,7 +48,7 @@ export const withRedlock = async <T>(
       await lock.release().catch((error: Error) => {
         logger.warn(
           { resource_name, error },
-          `Failed to release lock for resource ${resource_name}`
+          `Failed to release lock for resource ${resource_name}`,
         );
       });
     }
