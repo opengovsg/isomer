@@ -15,7 +15,7 @@ import type {
   Transaction,
   User,
 } from "../database"
-import type { PublishSiteResult, SearchResultResource } from "./resource.types"
+import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
@@ -613,25 +613,25 @@ export const publishPageResource = async ({
     })
 
   // Step 2: Trigger a publish of the site
-  const publishSiteResult = await publishSite(logger, siteId)
+  await publishSite(logger, {
+    siteId,
+    userId: user.id,
+    resourceId,
+    isScheduled,
+  })
 
-  // Step 3: Add the new build to the codebuildjobs table, along with any stopped builds if needed
-  if (publishSiteResult) {
-    await addCodeBuildAndMarkSupersededBuild({
-      publishSiteResult,
-      resourceId,
-      siteId,
-      userId: user.id,
-      isScheduled,
-    })
-  }
-
-  return { version, publishSiteResult }
+  return version
 }
 
-// NOTE: The distinction here between `publishResource` and `publishPageResource` is that
-// this should be used for publishes that do not incur a change to `Blob.content`
-// and hence, don't incur a log to the `Version` table
+/**
+ * NOTE: The distinction here between `publishResource` and `publishPageResource` is that
+ * this should be used for publishes that do not incur a change to `Blob.content`
+ * and hence, don't incur a log to the `Version` table
+ * @param by The user who is publishing the resource
+ * @param resource Resource to be published
+ * @param logger Logger instance
+ * @returns
+ */
 export const publishResource = async (
   by: User["id"],
   resource: Resource,
@@ -661,7 +661,11 @@ export const publishResource = async (
       metadata: resource,
     })
 
-    await publishSite(logger, resource.siteId)
+    await publishSite(logger, {
+      siteId: resource.siteId,
+      userId: byUser.id,
+      resourceId: resource.id,
+    })
   })
 }
 
@@ -697,7 +701,7 @@ export const publishSiteConfig = async (
       metadata: { site, ...rest },
     })
 
-    await publishSite(logger, site.id)
+    await publishSite(logger, { siteId: site.id, userId: byUser.id })
   })
 }
 
@@ -974,84 +978,4 @@ export const getFullResourceByVersion = (versionId: string) => {
     .where("Version.id", "=", versionId)
     .select(defaultResourceWithBlobSelect)
     .executeTakeFirst()
-}
-
-/**
- * Adds a new CodeBuildJob entry for the newly started build,
- * and marks any stopped builds as superseded by the new build
- * @param tx Transaction
- * @param stoppedBuildId The build ID of the stopped build
- * @param startedBuildId The build ID of the newly started build
- */
-const addCodeBuildAndMarkSupersededBuild = async ({
-  publishSiteResult,
-  resourceId,
-  siteId,
-  userId,
-  isScheduled,
-}: {
-  publishSiteResult: PublishSiteResult
-  resourceId: string
-  siteId: number
-  userId: string
-  isScheduled: boolean
-}) => {
-  const buildIdToLink = publishSiteResult.isNewBuildNeeded
-    ? publishSiteResult.startedBuild.id
-    : publishSiteResult.latestRunningBuild.id
-  const buildStartTime = publishSiteResult.isNewBuildNeeded
-    ? publishSiteResult.startedBuild.startTime
-    : publishSiteResult.latestRunningBuild.startTime
-
-  // Insert a new row into CodeBuildJobs to link the resourceId, userId, siteId to the build
-  await db
-    .insertInto("CodeBuildJobs")
-    .values({
-      siteId,
-      userId,
-      buildId: buildIdToLink,
-      startedAt: buildStartTime,
-      resourceId,
-      isScheduled,
-    })
-    .execute()
-  // If a new build was started, mark the stopped build (if any) as being superseded by the new build
-  if (
-    publishSiteResult.isNewBuildNeeded &&
-    publishSiteResult.stoppedBuild?.id
-  ) {
-    await updateStoppedBuild({
-      startedBuildId: buildIdToLink,
-      stoppedBuildId: publishSiteResult.stoppedBuild.id,
-    })
-  }
-}
-
-export const updateStoppedBuild = async ({
-  startedBuildId,
-  stoppedBuildId,
-}: {
-  startedBuildId: string
-  stoppedBuildId: string
-}) => {
-  // Find all builds that have been superseded by the stopped build and replace them as being superseded
-  // by the newly started build. This is to handle multi-superseded A -> B - > C scenarios
-  await db
-    .updateTable("CodeBuildJobs")
-    .set({
-      supersededByBuildId: startedBuildId,
-      status: "STOPPED",
-    })
-    .where(
-      "buildId",
-      "in",
-      db
-        .selectFrom("CodeBuildJobs")
-        .select("buildId")
-        .where("supersededByBuildId", "=", stoppedBuildId)
-        .unionAll(
-          db.selectNoFrom((eb) => [eb.val(stoppedBuildId).as("buildId")]),
-        ),
-    )
-    .execute()
 }
