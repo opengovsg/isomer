@@ -37,7 +37,7 @@ export const setNotificationSchema = z.object({
     .max(100, { message: "Notification must be 100 characters or less" }),
   enabled: z.boolean().default(false),
   content: z
-    .custom<Notification["content"]>((value) => {
+    .custom<Notification["content"]>((value: unknown) => {
       return notificationContentValidator({ content: value })
     }, "Invalid notification content")
     .optional(),

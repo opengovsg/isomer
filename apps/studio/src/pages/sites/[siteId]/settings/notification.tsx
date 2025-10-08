@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { Box, Grid, GridItem, SimpleGrid } from "@chakra-ui/react"
+import { Grid, GridItem } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { NotificationSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -40,7 +40,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   })
 
   const notificationMutation = trpc.site.setNotification.useMutation({
-    onSuccess: async () => {
+    onSuccess: () => {
       void trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
         title: "Saved site notification!",
@@ -71,7 +71,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (!isEnabled) {
-      router.push(`/sites/${siteId}/settings`)
+      void router.push(`/sites/${siteId}/settings`)
     }
   }, [])
 
