@@ -87,7 +87,7 @@ export const BASE_EXTENSIONS: Extensions = [
   Underline,
 ]
 
-export const BASE_PROSE_EXTENSIONS: Extensions = [
+export const PROSE_EXTENSIONS: Extensions = [
   BulletList.extend({
     name: "unorderedList",
   }).configure({

@@ -90,7 +90,6 @@ export const getNotification = async (siteId: number) => {
 }
 
 interface SetSiteNotificationParams {
-  tx: Transaction<DB>
   siteId: number
   userId: string
   title: string
@@ -99,7 +98,6 @@ interface SetSiteNotificationParams {
 }
 
 export const setSiteNotification = async ({
-  tx,
   siteId,
   userId,
   title,
@@ -114,61 +112,63 @@ export const setSiteNotification = async ({
     },
   }
 
-  const user = await tx
-    .selectFrom("User")
-    .where("id", "=", userId)
-    .selectAll()
-    .executeTakeFirst()
+  return await db.transaction().execute(async (tx) => {
+    const user = await tx
+      .selectFrom("User")
+      .where("id", "=", userId)
+      .selectAll()
+      .executeTakeFirst()
 
-  if (!user) {
-    // NOTE: This shouldn't happen as the user is already logged in
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "The user could not be found",
+    if (!user) {
+      // NOTE: This shouldn't happen as the user is already logged in
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "The user could not be found",
+      })
+    }
+
+    const oldSite = await tx
+      .selectFrom("Site")
+      .where("id", "=", siteId)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!oldSite) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "The site could not be found",
+      })
+    }
+
+    const newSite = await tx
+      .updateTable("Site")
+      .set((eb) => ({
+        // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+        config: eb("Site.config", "||", jsonb(notification)),
+      }))
+      .where("id", "=", siteId)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!newSite) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update site configuration",
+      })
+    }
+
+    await logConfigEvent(tx, {
+      siteId,
+      eventType: AuditLogEvent.SiteConfigUpdate,
+      delta: {
+        before: oldSite,
+        after: newSite,
+      },
+      by: user,
     })
-  }
 
-  const oldSite = await tx
-    .selectFrom("Site")
-    .where("id", "=", siteId)
-    .selectAll()
-    .executeTakeFirst()
-
-  if (!oldSite) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "The site could not be found",
-    })
-  }
-
-  const newSite = await tx
-    .updateTable("Site")
-    .set((eb) => ({
-      // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
-      config: eb("Site.config", "||", jsonb(notification)),
-    }))
-    .where("id", "=", siteId)
-    .returningAll()
-    .executeTakeFirst()
-
-  if (!newSite) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to update site configuration",
-    })
-  }
-
-  await logConfigEvent(tx, {
-    siteId,
-    eventType: AuditLogEvent.SiteConfigUpdate,
-    delta: {
-      before: oldSite,
-      after: newSite,
-    },
-    by: user,
+    return newSite
   })
-
-  return newSite
 }
 
 interface CreateSiteProps {

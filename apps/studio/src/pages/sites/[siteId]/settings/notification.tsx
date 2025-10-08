@@ -26,26 +26,26 @@ import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
+const validateFn = ajv.compile<Notification>(NotificationSchema)
+
 const NotificationSettingsPage: NextPageWithLayout = () => {
   const isEnabled = useNewSettingsPage()
   const router = useRouter()
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
   const trpcUtils = trpc.useUtils()
-  const toast = useToast()
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
   const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
-    siteId: Number(siteId),
+    siteId,
   })
-  const validateFn = ajv.compile<Notification>(NotificationSchema)
 
   const notificationMutation = trpc.site.setNotification.useMutation({
     onSuccess: async () => {
-      await trpcUtils.site.getNotification.invalidate({ siteId })
+      void trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
         title: "Saved site notification!",
         description: "Check your site in 5-10 minutes to view it live.",
         status: "success",
-        ...BRIEF_TOAST_SETTINGS,
       })
     },
     onError: () => {
@@ -53,7 +53,6 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
         title: "Error saving site notification!",
         description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
-        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
