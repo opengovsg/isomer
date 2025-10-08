@@ -1,23 +1,30 @@
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/router"
 import { Grid, GridItem } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+import isEqual from "lodash/isEqual"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { EditFooterPreview } from "~/features/settings/EditFooterPreview"
 import { FooterEditor } from "~/features/settings/FooterEditor"
+import { useNavigationEffect } from "~/hooks/useNavigationEffect"
+import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
 
 const FooterSettingsPage: NextPageWithLayout = () => {
+  const isNewSettingsPageEnabled = useNewSettingsPage()
+  const router = useRouter()
   const { siteId } = useQueryParse(siteSchema)
   const utils = trpc.useUtils()
   const toast = useToast()
+  const [nextUrl, setNextUrl] = useState("")
 
   const [{ content }] = trpc.site.getFooter.useSuspenseQuery({
     id: Number(siteId),
@@ -38,11 +45,21 @@ const FooterSettingsPage: NextPageWithLayout = () => {
   const [previewFooterState, setPreviewFooterState] = useState<
     FooterSchemaType | undefined
   >(content)
+  const isOpen = !!nextUrl
+  const isDirty = !isEqual(content, previewFooterState)
 
   const handleSaveFooter = (data?: FooterSchemaType) => {
     if (!data) return
     saveFooter({ siteId: Number(siteId), footer: JSON.stringify(data) })
   }
+
+  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+
+  useEffect(() => {
+    if (!isNewSettingsPageEnabled) {
+      void router.push(`/sites/${siteId}/settings`)
+    }
+  }, [])
 
   return (
     <Grid h="full" w="100%" templateColumns="minmax(37.25rem, 1fr) 1fr" gap={0}>
