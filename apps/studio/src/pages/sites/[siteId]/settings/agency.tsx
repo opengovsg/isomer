@@ -87,19 +87,17 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         nextUrl={nextUrl}
       />
       <Grid
-        as={chakra.form}
         h="full"
         w="100%"
         templateColumns="minmax(37.25rem, 1fr) 1fr"
         gap={0}
-        onSubmit={onSubmit}
-        isLoading={updateSiteConfigMutation.isPending}
       >
         <GridItem as={SettingsEditingLayout} colSpan={1} overflow="auto">
           <SettingsHeader
             title="Name and agency"
             icon={BiWrench}
             isLoading={updateSiteConfigMutation.isPending}
+            onClick={onSubmit}
           />
 
           <ErrorProvider>
