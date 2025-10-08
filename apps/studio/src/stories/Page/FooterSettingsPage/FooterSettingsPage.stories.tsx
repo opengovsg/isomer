@@ -4,7 +4,7 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
-import FooterSettingsPage from "~/pages/sites/[siteId]/footer"
+import FooterSettingsPage from "~/pages/sites/[siteId]/settings/footer"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
