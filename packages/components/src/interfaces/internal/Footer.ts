@@ -36,15 +36,12 @@ export const FooterSchema = Type.Object(
   {
     siteNavItems: Type.Array(FooterItemSchema, {
       title: "Footer column 1",
-      // description:
-      //   "List of footer items to be displayed in the first column. This should consist of all the site navigation items.",
       maxItems: 6,
       format: "linkArray",
     }),
     customNavItems: Type.Optional(
       Type.Array(FooterItemSchema, {
         title: "Footer column 2",
-        // description: "List of footer items to be displayed in the second column.",
         maxItems: 6,
         format: "linkArray",
       }),
@@ -52,6 +49,7 @@ export const FooterSchema = Type.Object(
     socialMediaLinks: Type.Optional(
       Type.Array(
         Type.Object({
+          // TODO: Change this to Type.Enum when we upgrade to TypeBox v1
           type: Type.Unsafe<SocialMediaType>(
             Type.String({
               title: "Social media type",
