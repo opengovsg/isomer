@@ -25,6 +25,11 @@ export const getNameSchema = z.object({
   siteId: z.number().min(1),
 })
 
+export const setNavbarSchema = z.object({
+  siteId: z.number().min(1),
+  navbar: z.string(),
+})
+
 // NOTE: This is a temporary schema for editing the JSON content directly,
 // until the proper editing experience is implemented
 export const setSiteConfigByAdminSchema = z.object({
