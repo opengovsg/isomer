@@ -226,9 +226,9 @@ export function JsonFormsNavbarControl({
 
                 <Tooltip
                   label={
-                    arraySchema.maxItems && data >= arraySchema.maxItems
-                      ? `You can only place up to ${arraySchema.maxItems} links on the first level.`
-                      : undefined
+                    arraySchema.maxItems &&
+                    data >= arraySchema.maxItems &&
+                    `You can only place up to ${arraySchema.maxItems} links on the first level.`
                   }
                   hasArrow
                 >

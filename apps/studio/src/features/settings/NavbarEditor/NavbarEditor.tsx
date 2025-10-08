@@ -1,7 +1,7 @@
 import type { NavbarSchemaType } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import type { Dispatch, SetStateAction } from "react"
-import { useCallback, useState } from "react"
+import { useCallback, useMemo } from "react"
 import {
   Box,
   HStack,
@@ -37,6 +37,7 @@ const validateAddonsFn =
   ajv.compile<Static<typeof NavbarAddonsSchema>>(NavbarAddonsSchema)
 
 interface NavbarEditorProps {
+  savedNavbarState: NavbarSchemaType
   previewNavbarState?: NavbarSchemaType
   setPreviewNavbarState: Dispatch<SetStateAction<NavbarSchemaType | undefined>>
   onSave: (data?: NavbarSchemaType) => void
@@ -44,21 +45,26 @@ interface NavbarEditorProps {
 }
 
 export const NavbarEditor = ({
+  savedNavbarState,
   previewNavbarState,
   setPreviewNavbarState,
   onSave,
   isSaving,
 }: NavbarEditorProps) => {
   const theme = useTheme()
-  const [isDirty, setIsDirty] = useState(false)
+  const isDirty = useMemo(() => {
+    return !isEqual(previewNavbarState, savedNavbarState)
+  }, [previewNavbarState, savedNavbarState])
 
   const handleItemsChange = useCallback(
     (data: Static<typeof NavbarItemsSchema>) => {
       const updatedData = { ...previewNavbarState, ...data }
-      if (!isEqual(previewNavbarState, updatedData)) {
-        setPreviewNavbarState(updatedData)
-        setIsDirty(true)
+
+      if (isEqual(previewNavbarState, updatedData)) {
+        return
       }
+
+      setPreviewNavbarState(updatedData)
     },
     [previewNavbarState, setPreviewNavbarState],
   )
@@ -69,17 +75,18 @@ export const NavbarEditor = ({
         items: [...(previewNavbarState?.items ?? [])],
         ...data,
       }
-      if (!isEqual(previewNavbarState, updatedData)) {
-        setPreviewNavbarState(updatedData)
-        setIsDirty(true)
+
+      if (isEqual(previewNavbarState, updatedData)) {
+        return
       }
+
+      setPreviewNavbarState(updatedData)
     },
     [previewNavbarState, setPreviewNavbarState],
   )
 
   const handleSave = () => {
     onSave(previewNavbarState)
-    setIsDirty(false)
   }
 
   return (

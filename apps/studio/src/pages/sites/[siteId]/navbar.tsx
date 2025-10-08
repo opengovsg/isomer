@@ -5,6 +5,7 @@ import { useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { EditNavbarPreview } from "~/features/settings/EditNavbarPreview"
@@ -17,7 +18,7 @@ import { trpc } from "~/utils/trpc"
 const NavbarSettingsPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteSchema)
   const utils = trpc.useUtils()
-  const toast = useToast()
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
 
   const [{ content }] = trpc.site.getNavbar.useSuspenseQuery({
     id: Number(siteId),
@@ -30,7 +31,13 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
           status: "success",
           title: "Navigation menu saved successfully",
           description: "Check your site in 5-10 minutes to view it live.",
-          ...BRIEF_TOAST_SETTINGS,
+        })
+      },
+      onError: () => {
+        toast({
+          status: "error",
+          title: "Error saving navigation menu!",
+          description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         })
       },
     })
@@ -48,6 +55,7 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
     <Grid h="full" w="100%" templateColumns="minmax(37.25rem, 1fr) 1fr" gap={0}>
       <GridItem colSpan={1} overflow="auto" minW="30rem" h="full">
         <NavbarEditor
+          savedNavbarState={content}
           previewNavbarState={previewNavbarState}
           setPreviewNavbarState={setPreviewNavbarState}
           onSave={handleSaveNavbar}
