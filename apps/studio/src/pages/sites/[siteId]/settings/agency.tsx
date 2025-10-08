@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { Box, chakra, SimpleGrid } from "@chakra-ui/react"
+import { chakra, Grid, GridItem } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
   AgencySettings,
@@ -95,31 +95,36 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <chakra.form overflow="auto" height={0} minH="100%" onSubmit={onSubmit}>
-        <SimpleGrid columns={9} h="100%">
-          <SettingsEditingLayout>
-            <SettingsHeader
-              title="Name and agency"
-              icon={BiWrench}
-              isLoading={updateSiteConfigMutation.isPending}
-            />
+      <Grid
+        as={chakra.form}
+        h="full"
+        w="100%"
+        templateColumns="minmax(37.25rem, 1fr) 1fr"
+        gap={0}
+        onSubmit={onSubmit}
+      >
+        <GridItem as={SettingsEditingLayout} colSpan={1} overflow="auto">
+          <SettingsHeader
+            title="Name and agency"
+            icon={BiWrench}
+            isLoading={updateSiteConfigMutation.isPending}
+          />
 
-            <ErrorProvider>
-              <FormBuilder<AgencySettings>
-                schema={AgencySettingsSchema}
-                validateFn={validateFn}
-                data={state}
-                handleChange={(data) => {
-                  setState(data)
-                }}
-              />
-            </ErrorProvider>
-          </SettingsEditingLayout>
-          <Box gridColumn="6 / 10">
-            <EditSettingsPreview siteName={state.siteName} />
-          </Box>
-        </SimpleGrid>
-      </chakra.form>
+          <ErrorProvider>
+            <FormBuilder<AgencySettings>
+              schema={AgencySettingsSchema}
+              validateFn={validateFn}
+              data={state}
+              handleChange={(data) => {
+                setState(data)
+              }}
+            />
+          </ErrorProvider>
+        </GridItem>
+        <GridItem colSpan={1}>
+          <EditSettingsPreview siteName={state.siteName} />
+        </GridItem>
+      </Grid>
     </>
   )
 }
