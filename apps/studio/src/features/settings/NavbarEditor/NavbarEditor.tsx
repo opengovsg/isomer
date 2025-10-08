@@ -3,6 +3,7 @@ import {
   Box,
   HStack,
   Icon,
+  Skeleton,
   Spacer,
   TabList,
   TabPanel,
@@ -20,6 +21,9 @@ import FormBuilder from "~/features/editing-experience/components/form-builder/F
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
+const validateFn =
+  ajv.compile<Static<typeof NavbarItemsSchema>>(NavbarItemsSchema)
+
 interface NavbarEditorProps {
   siteId: number
 }
@@ -27,15 +31,20 @@ interface NavbarEditorProps {
 export const NavbarEditor = ({ siteId }: NavbarEditorProps) => {
   const theme = useTheme()
 
-  const { data: navbar } = trpc.site.getNavbar.useQuery({
+  const {
+    data: navbar,
+    isLoading,
+    isError,
+  } = trpc.site.getNavbar.useQuery({
     id: siteId,
   })
 
-  const validateFn =
-    ajv.compile<Static<typeof NavbarItemsSchema>>(NavbarItemsSchema)
-
   const handleChange = (data: Static<typeof NavbarItemsSchema>) => {
     console.log(data)
+  }
+
+  if (isLoading || isError) {
+    return <Skeleton h="full" w="full" />
   }
 
   return (

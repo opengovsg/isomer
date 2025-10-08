@@ -129,7 +129,15 @@ export function JsonFormsNavbarControl({
           {data !== 0 && (
             <>
               <Text textStyle="body-2" textColor="base.content.medium">
-                {data}/{arraySchema.maxItems} links added
+                {arraySchema.maxItems ? (
+                  <>
+                    {data}/{arraySchema.maxItems} links added
+                  </>
+                ) : (
+                  <>
+                    {data} link{data > 1 ? "s" : ""} added
+                  </>
+                )}
               </Text>
 
               <Accordion
