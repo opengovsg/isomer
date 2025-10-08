@@ -42,7 +42,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
 
   const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
-    onSuccess: async ({ siteName }) => {
+    onSuccess: ({ siteName }) => {
       toast({
         title: `Site ${siteName} updated successfully`,
         status: "success",

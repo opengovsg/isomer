@@ -108,7 +108,7 @@ export const updateSearchSGConfig = async (
     .url(`/${searchsgClientId}`)
     .put()
     .res()
-    .catch((error) => {
+    .catch((error: unknown) => {
       logger.error(
         { error },
         `[ERROR] Failed to update searchsg config for ${url} with searchsg client id: ${searchsgClientId}`,
