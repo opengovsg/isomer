@@ -22,6 +22,7 @@ export const AgencySettingsSchema = Type.Object({
       title: "Website is owned by",
       description: "This isn't displayed anywhere on your site",
       readOnly: true,
+      tooltip: "To change the agency name, contact Isomer Support",
     }),
   ),
 })
