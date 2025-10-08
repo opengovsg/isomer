@@ -28,6 +28,8 @@ import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
+const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
+
 const AgencySettingsPage: NextPageWithLayout = () => {
   const isEnabled = useNewSettingsPage()
   const router = useRouter()
@@ -37,25 +39,22 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     id: siteId,
   })
   const trpcUtils = trpc.useUtils()
-  const toast = useToast()
-  const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
 
   const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
     onSuccess: async ({ siteName }) => {
       toast({
         title: `Site ${siteName} updated successfully`,
         status: "success",
-        ...BRIEF_TOAST_SETTINGS,
       })
-      await trpcUtils.site.getConfig.invalidate({ id: siteId })
-      await trpcUtils.site.getSiteName.invalidate({ siteId })
+      void trpcUtils.site.getConfig.invalidate({ id: siteId })
+      void trpcUtils.site.getSiteName.invalidate({ siteId })
     },
     onError: (error) => {
       toast({
         title: "Failed to update site",
         description: error.message,
         status: "error",
-        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
