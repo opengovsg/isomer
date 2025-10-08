@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { Box, SimpleGrid } from "@chakra-ui/react"
+import { Box, Grid, GridItem, SimpleGrid } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { NotificationSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -95,31 +95,34 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <Box overflow="auto" height={0} minH="100%" onSubmit={onSubmit}>
-        <SimpleGrid columns={9} h="100%">
-          <SettingsEditingLayout>
-            <SettingsHeader
-              onClick={onSubmit}
-              title="Notification banner"
-              icon={BiWrench}
-              isLoading={notificationMutation.isPending}
+      <Grid
+        h="full"
+        w="100%"
+        templateColumns="minmax(37.25rem, 1fr) 1fr"
+        gap={0}
+      >
+        <GridItem as={SettingsEditingLayout} colSpan={1} overflow="auto">
+          <SettingsHeader
+            onClick={onSubmit}
+            title="Notification banner"
+            icon={BiWrench}
+            isLoading={notificationMutation.isPending}
+          />
+          <ErrorProvider>
+            <FormBuilder<Notification>
+              schema={NotificationSchema}
+              validateFn={validateFn}
+              data={state}
+              handleChange={(data) => {
+                setState(data)
+              }}
             />
-            <ErrorProvider>
-              <FormBuilder<Notification>
-                schema={NotificationSchema}
-                validateFn={validateFn}
-                data={state}
-                handleChange={(data) => {
-                  setState(data)
-                }}
-              />
-            </ErrorProvider>
-          </SettingsEditingLayout>
-          <Box gridColumn="6 / 10">
-            <EditSettingsPreview siteName={name} notification={state} />
-          </Box>
-        </SimpleGrid>
-      </Box>
+          </ErrorProvider>
+        </GridItem>
+        <GridItem colSpan={1}>
+          <EditSettingsPreview siteName={name} notification={state} />
+        </GridItem>
+      </Grid>
     </>
   )
 }
