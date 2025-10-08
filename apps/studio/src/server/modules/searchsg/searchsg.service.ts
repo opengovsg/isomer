@@ -1,6 +1,9 @@
 import wretch from "wretch"
 
 import { env } from "~/env.mjs"
+import { createBaseLogger } from "~/lib/logger"
+
+const logger = createBaseLogger({ path: "searchsg.service" })
 
 const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin"
 
@@ -78,9 +81,14 @@ const requestSearchSGClient = async () => {
 export const updateSearchSGConfig = async (
   props: UpdateSearchSGConfigProps,
   searchsgClientId: string,
-  url: URL,
+  url: string,
 ) => {
   const client = await requestSearchSGClient()
+  const actualUrl = new URL(url)
+  logger.info(
+    { ...props, searchsgClientId, url: actualUrl.host },
+    `[INFO] Updating searchsg config for ${url} with searchsg client id: ${searchsgClientId}`,
+  )
 
   // NOTE: doing fetch before post to avoid cases
   // where the search domain and data domains
@@ -92,7 +100,7 @@ export const updateSearchSGConfig = async (
   const updatedConfig = generateSearchSGParams({
     ...props,
     config,
-    url: url.host,
+    url: actualUrl.host,
   })
 
   const res = await client
@@ -100,6 +108,14 @@ export const updateSearchSGConfig = async (
     .url(`/${searchsgClientId}`)
     .put()
     .res()
+    .catch((error) => {
+      logger.error(
+        { error },
+        `[ERROR] Failed to update searchsg config for ${url} with searchsg client id: ${searchsgClientId}`,
+      )
+
+      throw error
+    })
 
   return res
 }
