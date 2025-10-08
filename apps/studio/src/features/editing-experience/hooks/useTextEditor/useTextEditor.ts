@@ -1,5 +1,6 @@
 import type { ControlProps } from "@jsonforms/core"
 import type { Extensions, JSONContent } from "@tiptap/react"
+import CharacterCount from "@tiptap/extension-character-count"
 import { useEditor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
 
@@ -84,5 +85,5 @@ export const useProseEditor = (props: BaseEditorProps) =>
 export const useSimpleProseEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
-    extensions: [],
+    extensions: [CharacterCount.configure({ limit: 250 })],
   })
