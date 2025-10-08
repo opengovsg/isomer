@@ -1,5 +1,5 @@
+import type { IconType } from "react-icons"
 import { HStack, Icon, Text } from "@chakra-ui/react"
-import { IconType } from "react-icons"
 
 interface HeaderRowProps {
   label: string
