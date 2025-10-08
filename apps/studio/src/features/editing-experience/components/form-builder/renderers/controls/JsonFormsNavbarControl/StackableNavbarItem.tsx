@@ -54,6 +54,7 @@ export const StackableNavbarItem = ({
     onClose: onDeleteSubItemModalClose,
   } = useDisclosure()
   const [subItemToDelete, setSubItemToDelete] = useState<number>()
+  const hasSubItems = !!subItems && subItems.length > 0
 
   return (
     <>
@@ -68,7 +69,7 @@ export const StackableNavbarItem = ({
         }}
       />
 
-      {!!subItems && (
+      {hasSubItems && (
         <DeleteSubItemModal
           label={subItems[subItemToDelete ?? 0]?.name ?? ""}
           isOpen={isDeleteSubItemModalOpen}
@@ -135,7 +136,7 @@ export const StackableNavbarItem = ({
 
                   <Box flexShrink={0}>
                     <Text textStyle="caption-2" textColor="base.content.medium">
-                      {!!subItems && subItems.length > 0
+                      {hasSubItems
                         ? `${subItems.length} nested ${subItems.length > 1 ? "links" : "link"}`
                         : "Single link"}
                     </Text>
@@ -178,7 +179,7 @@ export const StackableNavbarItem = ({
                 </MenuList>
               </Menu>
 
-              {!!subItems && subItems.length > 0 && (
+              {hasSubItems && (
                 <AccordionButton
                   h="1.5rem"
                   w="1.5rem"
