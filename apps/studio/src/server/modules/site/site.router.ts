@@ -102,41 +102,28 @@ export const siteRouter = router({
         userId: ctx.user.id,
         action: "update",
       })
-      const {
-        user: { id: userId },
-      } = ctx
 
       const user = await db
         .selectFrom("User")
-        .where("id", "=", userId)
+        .where("id", "=", ctx.user.id)
         .selectAll()
         .executeTakeFirstOrThrow()
 
-      // TODO: audit log
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", siteId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      const { config } = site
+
       const updatedConfig = await db.transaction().execute(async (tx) => {
-        const site = await tx
-          .selectFrom("Site")
-          .where("id", "=", siteId)
-          .selectAll()
-          .executeTakeFirstOrThrow()
-
-        const { config } = site
-
         const updatedSite = await tx
           .updateTable("Site")
           .set({ config: jsonb({ ...config, siteName }) })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()
-
-        const { config: updatedConfig } = updatedSite
-
-        if (updatedConfig.search?.type === "searchSG")
-          void updateSearchSGConfig(
-            { name: siteName },
-            updatedConfig.search.clientId,
-            new URL(updatedConfig.url),
-          )
 
         await logConfigEvent(tx, {
           eventType: AuditLogEvent.SiteConfigUpdate,
@@ -150,6 +137,21 @@ export const siteRouter = router({
 
         return updatedSite.config
       })
+
+      // NOTE: only update searchsg if either the agency name changed
+      // or if the search type changed.
+      // `void` here because this API call is slow
+      // and not super critical to update
+      if (
+        updatedConfig.search?.type === "searchSG" &&
+        (config.search?.type !== "searchSG" ||
+          config.siteName !== updatedConfig.siteName)
+      )
+        void updateSearchSGConfig(
+          { name: siteName },
+          updatedConfig.search.clientId,
+          updatedConfig.url,
+        )
 
       return updatedConfig
     }),
