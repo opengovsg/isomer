@@ -25,7 +25,20 @@ const _hasContent = (content: ProseProps["content"][number]): boolean => {
       })
     case "orderedList":
     case "unorderedList":
+      return !!content.content.some((listContent) =>
+        listContent.content.some((item) => _hasContent(item)),
+      )
     case "table":
-      return true
+      return !!content.content.some((tableRow) => {
+        return tableRow.content.some((tableCell) => {
+          return tableCell.content.some((cellContent) =>
+            _hasContent(cellContent),
+          )
+        })
+      })
+
+    default:
+      const missingType: never = content
+      throw new Error(`Unknown content type: ${JSON.stringify(missingType)}`)
   }
 }

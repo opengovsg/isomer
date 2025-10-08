@@ -31,7 +31,6 @@ import {
 } from "../resource/resource.service"
 import { updateSearchSGConfig } from "../searchsg/searchsg.service"
 import {
-  clearSiteNotification,
   createSite,
   getNotification,
   getSiteConfig,
@@ -216,7 +215,6 @@ export const siteRouter = router({
 
       const site = await db.transaction().execute(async (tx) => {
         return await setSiteNotification({
-          tx,
           siteId,
           userId: ctx.user.id,
           title,
