@@ -6,6 +6,7 @@ interface UseNavigationEffectProps {
   isDirty?: boolean
   callback: (url: string) => void
 }
+// NOTE: This hook is used to prevent navigation when there are unsaved changes (isDirty).
 export const useNavigationEffect = ({
   isOpen,
   isDirty,
