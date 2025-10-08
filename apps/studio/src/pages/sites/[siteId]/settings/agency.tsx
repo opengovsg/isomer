@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { Box, chakra, Grid, GridItem } from "@chakra-ui/react"
+import { Grid, GridItem } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
   AgencySettings,
