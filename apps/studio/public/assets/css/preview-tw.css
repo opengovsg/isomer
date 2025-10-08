@@ -1407,6 +1407,10 @@ video {
   -webkit-line-clamp: 3;
 }
 
+.\!block {
+  display: block !important;
+}
+
 .block {
   display: block;
 }
@@ -1427,8 +1431,20 @@ video {
   display: inline-flex;
 }
 
+.\!table {
+  display: table !important;
+}
+
 .table {
   display: table;
+}
+
+.table-row {
+  display: table-row;
+}
+
+.\!grid {
+  display: grid !important;
 }
 
 .grid {
@@ -3906,6 +3922,10 @@ video {
 
 .\[--color\:theme\(colors\.red\.700\)\] {
   --color: #b91c1c;
+}
+
+.\[a-zA-Z0-9\:\\\\-\\\\\._\$\] {
+  a-z-a--z0-9: \\-\\.$;
 }
 
 .\[dgs\:123456\] {

@@ -181,16 +181,19 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
                       </>
                     )}
 
-                    {!isError && linkType === LINK_TYPES.Page && (
-                      <Suspense fallback={<Skeleton w="100%" h="100%" />}>
-                        <SuspendableLabel
-                          siteId={Number(siteId)}
-                          resourceId={getResourceIdFromReferenceLink(
-                            displayedHref ?? "",
-                          )}
-                        />
-                      </Suspense>
-                    )}
+                    {!isError &&
+                      linkType === LINK_TYPES.Page &&
+                      displayedHref &&
+                      displayedHref !== "" && (
+                        <Suspense fallback={<Skeleton w="100%" h="100%" />}>
+                          <SuspendableLabel
+                            siteId={Number(siteId)}
+                            resourceId={getResourceIdFromReferenceLink(
+                              displayedHref,
+                            )}
+                          />
+                        </Suspense>
+                      )}
 
                     {!isError && linkType !== LINK_TYPES.Page && (
                       <Text
