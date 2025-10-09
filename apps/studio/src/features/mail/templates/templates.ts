@@ -8,12 +8,13 @@ import type {
   BaseEmailTemplateData,
   CancelSchedulePageTemplateData,
   EmailTemplate,
+  FailedPublishTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
-  SuccessfulSchedulePublishTemplateData,
+  SuccessfulPublishTemplateData,
 } from "./types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
@@ -114,29 +115,51 @@ export const cancelSchedulePageTemplate = (
   }
 }
 
-export const failedSchedulePublishTemplate = (
-  data: BaseEmailTemplateData,
+export const failedPublishTemplate = (
+  data: FailedPublishTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail } = data
-  return {
-    subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
-    body: `<p>Hi ${recipientEmail},</p>
-    <p>We couldn’t publish the page that you scheduled. Please log in to Isomer Studio at ${constructStudioRedirect()} and try publishing the page again.</p>
-    <p>Best,</p>
-    <p>Isomer team</p>`,
+  const { recipientEmail, isScheduled, resource } = data
+  switch (isScheduled) {
+    case true:
+      return {
+        subject: `[Isomer Studio] We couldn’t publish your scheduled page ${resource.title}`,
+        body: `<p>Hi ${recipientEmail},</p>
+      <p>We couldn’t publish the page ${resource.title} that you scheduled. Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
+      }
+    case false:
+      return {
+        subject: `[Isomer Studio] We couldn’t publish your page ${resource.title}`,
+        body: `<p>Hi ${recipientEmail},</p>
+        <p>We couldn’t publish the page ${resource.title} that you tried to publish. Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
+      }
   }
 }
 
-export const successfulScheduledPublishTemplate = (
-  data: SuccessfulSchedulePublishTemplateData,
+export const successfulPublishTemplate = (
+  data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, publishTime } = data
-  return {
-    subject: `[Isomer Studio] Your page was published as scheduled`,
-    body: `<p>Hi ${recipientEmail},</p>
-    <p>Your page was successfully published on ${format(toZonedTime(publishTime, "Asia/Singapore"), "MMMM d, yyyy hh:mm a")} as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
+  const { recipientEmail, publishTime, isScheduled, title } = data
+  switch (isScheduled) {
+    case true:
+      return {
+        subject: `[Isomer Studio] The page ${title} was published as scheduled`,
+        body: `<p>Hi ${recipientEmail},</p>
+    <p>Your page ${title} was successfully published on ${format(toZonedTime(publishTime, "Asia/Singapore"), "MMMM d, yyyy hh:mm a")} as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
+      }
+    case false:
+      return {
+        subject: `[Isomer Studio] Changes you published to ${title} are now live`,
+        body: `<p>Hi ${recipientEmail},</p>
+    <p>Your changes to page ${title} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
+      }
   }
 }
 
@@ -239,10 +262,10 @@ export const templates = {
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
   cancelSchedulePage:
     cancelSchedulePageTemplate satisfies EmailTemplateFunction<CancelSchedulePageTemplateData>,
-  failedSchedulePublish:
-    failedSchedulePublishTemplate satisfies EmailTemplateFunction<BaseEmailTemplateData>,
-  successfulScheduledPublish:
-    successfulScheduledPublishTemplate satisfies EmailTemplateFunction<SuccessfulSchedulePublishTemplateData>,
+  failedPublish:
+    failedPublishTemplate satisfies EmailTemplateFunction<FailedPublishTemplateData>,
+  successfulPublish:
+    successfulPublishTemplate satisfies EmailTemplateFunction<SuccessfulPublishTemplateData>,
   schedulePage:
     schedulePageTemplate satisfies EmailTemplateFunction<SchedulePageTemplateData>,
   publishAlertSiteAdmin:

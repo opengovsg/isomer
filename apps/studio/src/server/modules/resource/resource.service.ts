@@ -554,6 +554,7 @@ interface PublishPageResourceArgs {
   siteId: number
   resourceId: string
   isSingpassEnabled?: boolean
+  isScheduled: boolean
 }
 
 export const publishPageResource = async ({
@@ -561,6 +562,7 @@ export const publishPageResource = async ({
   siteId,
   resourceId,
   user,
+  isScheduled,
 }: PublishPageResourceArgs) => {
   const version = await db
     .transaction()
@@ -623,6 +625,7 @@ export const publishPageResource = async ({
         startedAt: build.startTime,
         resourceId,
         status: "IN_PROGRESS", // default to in progress, will be updated by webhook
+        isScheduled,
       })
       .execute()
 
