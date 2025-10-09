@@ -14,7 +14,7 @@ calculate_duration() {
 # Use the latest release tag unless one was provided in the env var
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   ##### This long command is used to get the latest release tag from the Isomer repository.
-  # git ls-remote: Lists references in a remote repository along with their commit hashes. 
+  # git ls-remote: Lists references in a remote repository along with their commit hashes.
   # --tags: Lists all tags in the repository.
   # --sort='v:refname': Sorts the tags by version number according to the semantic versioning scheme
   # tail -n1: Gets the last line of the output.
@@ -46,6 +46,7 @@ calculate_duration $start_time
 
 # Perform a clean of npm cache
 npm cache clean --force
+npm i sherif
 
 # Install dependencies
 echo "Installing dependencies..."
