@@ -26,11 +26,10 @@ export const CmsCollapsibleSidenav = ({
           <IconButton
             variant="clear"
             aria-label="Collapse sidebar"
-            h="1.25rem"
-            minH="1.25rem"
-            minW="1.25rem"
             icon={<CloseSidebarIcon />}
             onClick={onSidenavClose}
+            mt="-16px"
+            mb="-16px"
           />
         </Tooltip>
       </Flex>

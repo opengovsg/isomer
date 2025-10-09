@@ -6,12 +6,6 @@ import { SimpleProseSchema } from "../native/Prose"
 
 export const NotificationSchema = Type.Object(
   {
-    enabled: Type.Boolean({
-      title: "Display a banner",
-      description:
-        "The site notification will always be visible on the site until it is dismissed by the user.",
-      default: false,
-    }),
     title: Type.String({
       title: "Notification title",
       maxLength: 100,
@@ -19,7 +13,9 @@ export const NotificationSchema = Type.Object(
     content: Type.Optional(SimpleProseSchema),
   },
   {
-    title: "Notification component",
+    title: "Display a banner",
+    description:
+      "The site notification will always be visible on the site until it is dismissed by the user.",
   },
 )
 
@@ -34,3 +30,7 @@ export type NotificationClientProps = Pick<
 > & {
   baseParagraph: React.ReactNode
 }
+
+export const NotificationSettingsSchema = Type.Object({
+  notification: Type.Optional(NotificationSchema),
+})
