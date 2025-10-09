@@ -288,9 +288,9 @@ model CodeBuildJobs {
   userId              String
   user                User            @relation(fields: [userId], references: [id])
   status              BuildStatusType @default(IN_PROGRESS)
-  // the resource that triggered this build
-  resourceId          BigInt
-  resource            Resource        @relation(fields: [resourceId], references: [id])
+  // the resource that triggered this build, or null if it was a manual publish
+  resourceId          BigInt?
+  resource            Resource?       @relation(fields: [resourceId], references: [id])
   startedAt           DateTime        @default(now())
   // Whether the email notification has successfully been sent (can be retried if failed)
   emailSent           Boolean         @default(false)

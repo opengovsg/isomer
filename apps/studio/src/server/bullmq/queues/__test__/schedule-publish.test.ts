@@ -17,16 +17,21 @@ import {
   publishScheduledResource,
 } from "../schedule-publish"
 
-// Mock the publishSite function to avoid making actual AWS SDK calls during tests
-vi.mock("~/server/modules/aws/codebuild.service.ts", () => ({
-  publishSite: vi.fn().mockResolvedValue({
-    isNewBuildNeeded: true,
-    startedBuild: {
-      id: "test-id",
+vi.mock("~/server/modules/aws/utils.ts", async () => {
+  const actual = await vi.importActual<
+    typeof import("~/server/modules/aws/utils.ts")
+  >("~/server/modules/aws/utils.ts")
+  return {
+    ...actual,
+    // mock the buildChanges to always return that a new build is needed
+    computeBuildChanges: vi.fn().mockResolvedValue({ isNewBuildNeeded: true }),
+    // do not actually start a codebuild project
+    startProjectById: vi.fn().mockResolvedValue({
+      id: "test-build-id",
       startTime: new Date("2024-01-01T00:00:00.000Z"),
-    },
-  }),
-}))
+    }),
+  }
+})
 
 const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
 
@@ -51,6 +56,14 @@ describe("scheduled-publish", async () => {
     await auth(user)
   })
 
+  const addCodebuildProjectToSite = async (siteId: number) => {
+    await db
+      .updateTable("Site")
+      .set({ codeBuildId: "test-codebuild-project-id" })
+      .where("id", "=", siteId)
+      .execute()
+  }
+
   describe("publishScheduledResource", () => {
     beforeEach(() => {
       MockDate.set(FIXED_NOW) // Freeze time before each test
@@ -64,13 +77,14 @@ describe("scheduled-publish", async () => {
         resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
       })
+      await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
         userId: session.userId,
         siteId: site.id,
       })
 
       // Act
-      const res = await publishScheduledResource(
+      const version = await publishScheduledResource(
         "test-job-id",
         { resourceId: Number(page.id), siteId: site.id, userId: user.id },
         0,
@@ -78,8 +92,8 @@ describe("scheduled-publish", async () => {
 
       // Assert
       // expect a version to be created
-      expect(String(res?.version.versionId)).toEqual("1")
-      expect(String(res?.version.versionNum)).toEqual("1")
+      expect(String(version?.versionId)).toEqual("1")
+      expect(String(version?.versionNum)).toEqual("1")
       // expect the scheduledAt field to be cleared in the resource table
       const resource = await db
         .selectFrom("Resource")
@@ -88,16 +102,15 @@ describe("scheduled-publish", async () => {
         .executeTakeFirstOrThrow()
       expect(resource.scheduledAt).toBeNull()
       // expect the codebuildjobs table to be updated with the new build
-      const codebuildjobs = await db
+      const codebuildjob = await db
         .selectFrom("CodeBuildJobs")
-        .where("siteId", "=", site.id)
+        .where("buildId", "=", "test-build-id")
         .selectAll()
-        .execute()
-      expect(codebuildjobs).toHaveLength(1)
-      expect(codebuildjobs[0]).toMatchObject({
+        .executeTakeFirstOrThrow()
+      expect(codebuildjob).toMatchObject({
         siteId: site.id,
         userId: user.id,
-        buildId: "test-id",
+        buildId: "test-build-id",
         startedAt: FIXED_NOW,
         status: "IN_PROGRESS",
       })
@@ -120,6 +133,7 @@ describe("scheduled-publish", async () => {
         resourceType: ResourceType.Page,
         scheduledAt: addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1), // beyond the buffer
       })
+      await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -163,6 +177,7 @@ describe("scheduled-publish", async () => {
         resourceType: ResourceType.Page,
         scheduledAt: addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1), // beyond the buffer
       })
+      await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
         userId: session.userId,
         siteId: site.id,

@@ -703,7 +703,7 @@ export const pageRouter = router({
               message: "Please ensure that you have logged in",
             }),
         )
-      const { version } = await publishPageResource({
+      const version = await publishPageResource({
         logger: ctx.logger,
         siteId,
         resourceId: String(pageId),
