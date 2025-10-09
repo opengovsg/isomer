@@ -379,7 +379,7 @@ export function JsonFormsArrayLinkControl({
         <VStack justify="space-between" align="start" w="full">
           <HStack w="full" justifyContent="space-between">
             <VStack align="start" spacing="0.25rem">
-              <Text textStyle="subhead-1">{label}</Text>
+              <Text textStyle="subhead-2">{label}</Text>
 
               {description && (
                 <Text textStyle="body-2" textColor="base.content.default">
