@@ -12,7 +12,7 @@ import { useMergeRefs } from "@chakra-ui/react"
 // as it is not used elsewhere, we will keep it local to this file for now
 type ReactRef<T> = React.RefCallback<T> | React.MutableRefObject<T>
 
-function assignRef<T = any>(ref: ReactRef<T> | null | undefined, value: T) {
+function assignRef<T = unknown>(ref: ReactRef<T> | null | undefined, value: T) {
   if (ref == null) return
 
   if (typeof ref === "function") {
@@ -22,8 +22,10 @@ function assignRef<T = any>(ref: ReactRef<T> | null | undefined, value: T) {
 
   try {
     ref.current = value
-  } catch (error) {
-    throw new Error(`Cannot assign value '${value}' to ref '${ref}'`)
+  } catch {
+    throw new Error(
+      `Cannot assign value '${JSON.stringify(value)}' to ref '${JSON.stringify(ref)}'`,
+    )
   }
 }
 
