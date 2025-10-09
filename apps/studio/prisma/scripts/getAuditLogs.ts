@@ -32,7 +32,12 @@ interface GetAuditLogsQueryParams {
 
 type DisplayableAuditLogEvent = Exclude<
   AuditLogEvent,
-  "UserCreate" | "UserUpdate" | "UserDelete" | "PermissionUpdate"
+  | "UserCreate"
+  | "UserUpdate"
+  | "UserDelete"
+  | "PermissionUpdate"
+  | "SchedulePublish"
+  | "CancelSchedulePublish"
 >
 
 // NOTE: Only use these queries in the context of the getAuditLogQuery function,
@@ -81,6 +86,7 @@ const getAuditLogQuery = ({
         ])
         .where("rp.siteId", "=", siteId)
         .where("u.email", "not like", "%@open.gov.sg")
+        .where("rp.deletedAt", "is", null)
     case "events":
       return db
         .with("emailsFromPermissionChanges", (eb) =>
