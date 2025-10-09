@@ -61,6 +61,7 @@
     "@chakra-ui/anatomy": "^2.3.4",
     "@chakra-ui/react": "^2.10.5",
     "@chakra-ui/styled-system": "^2.9.2",
+    "@chakra-ui/system": "^2.6.2",
     "@chakra-ui/theme-tools": "^2.2.6",
     "@chakra-ui/utils": "^2.2.2",
     "@datadog/browser-rum": "^5.29.1",
