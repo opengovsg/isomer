@@ -531,6 +531,13 @@ export const sitesHandlers = {
                         {
                           type: "underline",
                         },
+                        {
+                          type: "link",
+                          attrs: {
+                            href: "[resource:4:16]",
+                            target: "_self",
+                          },
+                        },
                       ],
                     },
                   ],

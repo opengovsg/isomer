@@ -14,7 +14,6 @@ export const NotificationSchema = Type.Object(
     }),
     title: Type.String({
       title: "Notification title",
-      description: "The title of the notification",
       maxLength: 100,
     }),
     content: Type.Optional(SimpleProseSchema),
