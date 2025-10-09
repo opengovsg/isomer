@@ -46,7 +46,7 @@ calculate_duration $start_time
 
 # Perform a clean of npm cache
 npm cache clean --force
-npm i sherif
+npm i sherif@1.6.1
 
 # Install dependencies
 echo "Installing dependencies..."
