@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import { Flex, Portal } from "@chakra-ui/react"
 
 import type { ViewportOptions } from "./IframeToolbar"
+import type { IframeCallbackFnProps } from "~/types/dom"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { IframeToolbar } from "./IframeToolbar"
 import { PreviewIframe } from "./PreviewIframe"
@@ -21,10 +22,12 @@ const PortalIfFullscreen = ({
 
 interface ViewportContainerProps {
   siteId: number
+  callback?: (props: IframeCallbackFnProps) => void
 }
 export const ViewportContainer = ({
   children,
   siteId,
+  callback,
 }: PropsWithChildren<ViewportContainerProps>) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
 
@@ -73,7 +76,11 @@ export const ViewportContainer = ({
           width="100%"
           {...innerContainerProps}
         >
-          <PreviewIframe style={themeCssVars} viewport={viewport}>
+          <PreviewIframe
+            style={themeCssVars}
+            viewport={viewport}
+            callback={callback}
+          >
             {children}
           </PreviewIframe>
         </Flex>
