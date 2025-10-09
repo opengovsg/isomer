@@ -5,7 +5,7 @@ import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { SafeKysely, Transaction } from "../database"
 import { db } from "../database"
-import { getPageById, updatePageById } from "../resource/resource.service"
+import { updatePageById } from "../resource/resource.service"
 
 const defaultVersionSelect: SelectExpression<DB, "Version">[] = [
   "Version.id",
@@ -58,10 +58,14 @@ export const incrementVersion = async ({
   resourceId: string
   userId: string
 }) => {
-  const page = await getPageById(tx, {
-    siteId,
-    resourceId: Number(resourceId),
-  })
+  const page = await tx
+    .selectFrom("Resource")
+    .where("Resource.id", "=", resourceId)
+    .where("Resource.siteId", "=", siteId)
+    .selectAll()
+    .forUpdate()
+    .executeTakeFirst()
+
   if (!page) {
     throw new TRPCError({
       code: "NOT_FOUND",
