@@ -1,4 +1,3 @@
-import type { StartBuildCommandOutput } from "@aws-sdk/client-codebuild"
 import type { Logger } from "pino"
 import {
   BatchGetBuildsCommand,
@@ -7,6 +6,7 @@ import {
   StartBuildCommand,
   StopBuildCommand,
 } from "@aws-sdk/client-codebuild"
+import { TRPCError } from "@trpc/server"
 
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 
@@ -17,10 +17,7 @@ const client = new CodeBuildClient({ region: "ap-southeast-1" })
 // build would have already captured the latest changes
 const RECENT_BUILD_THRESHOLD_SECONDS = 30
 
-export const publishSite = async (
-  logger: Logger<string>,
-  siteId: number,
-): Promise<void> => {
+export const publishSite = async (logger: Logger<string>, siteId: number) => {
   // Step 1: Get the CodeBuild ID associated with the site
   const site = await getSiteNameAndCodeBuildId(siteId)
   const { codeBuildId } = site
@@ -43,7 +40,12 @@ export const publishSite = async (
   }
 
   // Step 3: Start a new build
-  await startProjectById(logger, codeBuildId)
+  const build = await startProjectById(logger, codeBuildId)
+
+  return {
+    buildId: build.id,
+    startTime: build.startTime,
+  }
 }
 
 export const shouldStartNewBuild = async (
@@ -143,16 +145,27 @@ export const shouldStartNewBuild = async (
 export const startProjectById = async (
   logger: Logger<string>,
   projectId: string,
-): Promise<StartBuildCommandOutput> => {
+) => {
   try {
     // Start a new build
     const command = new StartBuildCommand({ projectName: projectId })
-    const response = await client.send(command)
-    return response
+    const { build } = await client.send(command)
+    // in theory build should always be defined, but adding a check just in case
+    if (!build?.id || !build.startTime) {
+      logger.error(
+        { build },
+        `Failed to obtain codebuild metadata for ${projectId}`,
+      )
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Failed to obtain codebuild metadata for ${projectId}`,
+      })
+    }
+    return { id: build.id, startTime: build.startTime }
   } catch (error) {
     logger.error(
       { projectId, error },
-      "Unexpected error when starting CodeBuild project run",
+      `Unexpected error when starting CodeBuild project run for ${projectId}`,
     )
     throw error
   }
