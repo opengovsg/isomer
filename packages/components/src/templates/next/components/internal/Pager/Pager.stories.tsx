@@ -6,7 +6,6 @@ import { Pager } from "./Pager"
 const meta: Meta<PagerProps> = {
   title: "Next/Internal Components/Pager",
   component: Pager,
-  decorators: [(storyFn) => <div className="max-w-sm">{storyFn()}</div>],
   argTypes: {},
   parameters: {
     themes: {
@@ -26,6 +25,21 @@ export const Default: Story = {
     },
     nextPage: {
       title: "Apply for the research grant",
+      url: "/item-2",
+    },
+  },
+}
+
+export const LongPageTitles: Story = {
+  args: {
+    previousPage: {
+      title:
+        "Elevating Your Online Presence: The Essential Guide to Professional Websites",
+      url: "/item-1",
+    },
+    nextPage: {
+      title:
+        "From Concept to Launch: A Comprehensive Approach to Website Development",
       url: "/item-2",
     },
   },
