@@ -1,3 +1,4 @@
+export { getAdjacentPagesFromSitemap } from "./getAdjacentPagesFromSitemap"
 export { getBreadcrumbFromSiteMap } from "./getBreadcrumbFromSiteMap"
 export { getDigestFromText } from "./getDigestFromText"
 export { getFormattedDate } from "./getFormattedDate"

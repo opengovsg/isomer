@@ -1,6 +1,7 @@
 import type { ContentPageSchemaType } from "~/engine"
 import { tv } from "~/lib/tv"
 import {
+  getAdjacentPagesFromSitemap,
   getBreadcrumbFromSiteMap,
   getSiderailFromSiteMap,
   getTableOfContents,
@@ -9,6 +10,7 @@ import {
 import {
   BackToTopLink,
   ContentPageHeader,
+  Pager,
   Siderail,
   TableOfContents,
 } from "../../components/internal"
@@ -40,6 +42,8 @@ const ContentLayout = ({
   const sideRail = !isParentPageRoot
     ? getSiderailFromSiteMap(site.siteMap, page.permalink)
     : null
+
+  const pager = getAdjacentPagesFromSitemap(site.siteMap, page.permalink)
 
   // auto-inject ids for heading level 2 blocks if does not exist
   const transformedContent = getTransformedPageContent(content)
@@ -81,6 +85,7 @@ const ContentLayout = ({
               permalink: page.permalink,
             })}
           </div>
+          <Pager {...pager} LinkComponent={LinkComponent}></Pager>
         </div>
         <div className={compoundStyles.siderailContainer()}>
           {sideRail && <Siderail {...sideRail} LinkComponent={LinkComponent} />}

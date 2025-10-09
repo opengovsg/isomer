@@ -11,6 +11,7 @@ export { default as LocalSearchInputBox } from "./LocalSearchInputBox"
 export { default as Masthead } from "./Masthead"
 export { default as Navbar } from "./Navbar"
 export { default as Notification } from "./Notification"
+export { default as Pager } from "./Pager"
 export { PaginationControls } from "./PaginationControls"
 export { default as Pill } from "./Pill"
 export {
