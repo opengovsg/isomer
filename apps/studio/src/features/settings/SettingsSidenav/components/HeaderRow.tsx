@@ -8,7 +8,7 @@ interface HeaderRowProps {
 
 export const HeaderRow = ({ label, icon }: HeaderRowProps) => {
   return (
-    <HStack gap="0.5rem" display="flex" alignItems="center">
+    <HStack gap="0.5rem" display="flex" alignItems="center" mb="4px">
       <Icon fill="base.content.medium" as={icon} boxSize="1rem" />
       <Text textColor="base.content.medium" textStyle="body-2">
         {label}

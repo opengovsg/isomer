@@ -1,4 +1,18 @@
+import type { Static } from "@sinclair/typebox"
+import { NotificationSchema } from "@opengovsg/isomer-components"
+import { Type } from "@sinclair/typebox"
 import { z } from "zod"
+
+import { ajv } from "~/utils/ajv"
+
+export type Notification = Static<typeof NotificationSchema>
+const NotificationContentSchema = Type.Pick(
+  NotificationSchema,
+  Type.Literal("content"),
+)
+const notificationContentValidator = ajv.compile<Notification["content"]>(
+  NotificationContentSchema,
+)
 
 export const getConfigSchema = z.object({
   id: z.number().min(1),
@@ -13,12 +27,20 @@ export const getNotificationSchema = z.object({
   siteId: z.number().min(1),
 })
 
+// FIXME: This should all extend from `NotificationSchema`
+// with the exception of `siteId` so that we always rely on components
+// for our definitions
 export const setNotificationSchema = z.object({
   siteId: z.number().min(1),
-  notification: z
+  title: z
     .string()
     .max(100, { message: "Notification must be 100 characters or less" }),
-  notificationEnabled: z.boolean(),
+  enabled: z.boolean().default(false),
+  content: z
+    .custom<Notification["content"]>((value: unknown) => {
+      return notificationContentValidator({ content: value })
+    }, "Invalid notification content")
+    .optional(),
 })
 
 export const getNameSchema = z.object({

@@ -2,26 +2,24 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { TextSchema } from "../native/Text"
+import { SimpleProseSchema } from "../native/Prose"
 
 export const NotificationSchema = Type.Object(
   {
-    title: Type.Optional(
-      Type.String({
-        title: "Notification title",
-        description: "The title of the notification",
-        format: "hidden",
-      }),
-    ),
-    content: Type.Array(TextSchema, {
-      title: "Notification content",
-      description: "The content of the notification",
-      format: "hidden",
+    enabled: Type.Boolean({
+      title: "Display a banner",
+      description:
+        "The site notification will always be visible on the site until it is dismissed by the user.",
+      default: false,
     }),
+    title: Type.String({
+      title: "Notification title",
+      maxLength: 100,
+    }),
+    content: Type.Optional(SimpleProseSchema),
   },
   {
     title: "Notification component",
-    format: "hidden",
   },
 )
 

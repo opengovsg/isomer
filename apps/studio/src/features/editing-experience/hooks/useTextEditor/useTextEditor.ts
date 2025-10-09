@@ -1,5 +1,6 @@
 import type { ControlProps } from "@jsonforms/core"
 import type { Extensions, JSONContent } from "@tiptap/react"
+import CharacterCount from "@tiptap/extension-character-count"
 import { useEditor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
 
@@ -11,6 +12,7 @@ import {
   IsomerTableCell,
   IsomerTableHeader,
   PARAGRAPH_TYPE,
+  PROSE_EXTENSIONS,
   TableRow,
 } from "./constants"
 
@@ -46,6 +48,7 @@ export const useTextEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
     extensions: [
+      ...PROSE_EXTENSIONS,
       TableRow,
       IsomerTable,
       IsomerTableCell,
@@ -57,17 +60,30 @@ export const useTextEditor = (props: BaseEditorProps) =>
 export const useCalloutEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
-    extensions: [],
+    extensions: PROSE_EXTENSIONS,
   })
 
 export const useAccordionEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
-    extensions: [TableRow, IsomerTable, IsomerTableCell, IsomerTableHeader],
+    extensions: [
+      ...PROSE_EXTENSIONS,
+      TableRow,
+      IsomerTable,
+      IsomerTableCell,
+      IsomerTableHeader,
+    ],
   })
 
 export const useProseEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
-    extensions: [IsomerHeading],
+    extensions: [...PROSE_EXTENSIONS, IsomerHeading],
+  })
+
+// NOTE: The same for now because no extra extensions
+export const useSimpleProseEditor = (props: BaseEditorProps) =>
+  useBaseEditor({
+    ...props,
+    extensions: [CharacterCount.configure({ limit: 250 })],
   })
