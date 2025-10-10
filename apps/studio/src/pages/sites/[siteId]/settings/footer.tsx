@@ -59,7 +59,7 @@ const FooterSettingsPage: NextPageWithLayout = () => {
     if (!isNewSettingsPageEnabled) {
       void router.push(`/sites/${siteId}/settings`)
     }
-  }, [])
+  }, [isNewSettingsPageEnabled, router, siteId])
 
   return (
     <Grid h="full" w="100%" templateColumns="minmax(37.25rem, 1fr) 1fr" gap={0}>
