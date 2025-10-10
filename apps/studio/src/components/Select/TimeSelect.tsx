@@ -8,10 +8,9 @@ import type { BaseSelectOption, BaseSelectProps } from "./BaseSelect"
 import { BaseSelect } from "./BaseSelect"
 
 interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {
-  // the earliest time that can be selected, if any
   size: "sm" | "md" | "lg"
-  earliestAllowableTime?: Date | null
-  minutesStep?: number // e.g. 10, 15, 30, determines granularity of time options
+  earliestAllowableTime?: Date | null // the earliest time that can be selected, if any
+  minutesStep?: 5 | 10 | 15 | 20 | 30 | 60 // determines granularity of time options
 }
 
 export const TimeSelect = React.forwardRef<
@@ -27,9 +26,8 @@ export const TimeSelect = React.forwardRef<
     }: TimeSelectProps,
     ref,
   ) => {
-    // Ensure step is between 1 and 60
+    // Ensure step is between 1 and 60, and calculate total slots in a day
     const step = Math.max(1, Math.min(60, minutesStep))
-    // Based on the granularity, determine how many time slots to generate
     const totalSlots = (24 * 60) / step
 
     // Generate all time slots in a day
