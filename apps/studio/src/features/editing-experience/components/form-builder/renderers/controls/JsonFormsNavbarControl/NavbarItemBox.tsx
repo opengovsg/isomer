@@ -178,7 +178,7 @@ export const NavbarItemBox = ({
         ref={itemRef}
         aria-invalid={isInvalid && !isItemBeingDraggedOver}
         data-id={getNavbarItemPath(index, parentIndex)}
-        borderWidth="1px"
+        borderWidth="1.5px"
         borderStyle="solid"
         borderColor={
           isItemBeingDraggedOver ? "base.divider.brand" : "base.divider.medium"
@@ -240,7 +240,7 @@ export const NavbarItemBox = ({
             top={index === 0 ? "-24%" : "-80%"}
             bottom="57%"
             w="2px"
-            bg="base.divider.strong"
+            bg={isSubItemDragging ? "transparent" : "base.divider.strong"}
             sx={{
               // Hide the trunk line if a child item has the "hide-trunk-line"
               // class (used when dragging an item to avoid visual clutter)
@@ -263,7 +263,7 @@ export const NavbarItemBox = ({
                   left: "-1.5rem",
                   width: "1.5rem",
                   height: "2px",
-                  bg: "base.divider.strong",
+                  bg: isSubItemDragging ? "transparent" : "base.divider.strong",
                 }
               : undefined
           }
@@ -275,6 +275,7 @@ export const NavbarItemBox = ({
         >
           <HStack gap="0.75rem" w="full">
             <Box
+              display="flex"
               ref={itemDragHandleRef ?? itemDefaultDragHandleRef}
               cursor="grab"
               layerStyle="focusRing"
