@@ -26,14 +26,12 @@ export const TimeSelect = React.forwardRef<
     }: TimeSelectProps,
     ref,
   ) => {
-    // Ensure step is between 1 and 60, and calculate total slots in a day
-    const step = Math.max(1, Math.min(60, minutesStep))
-    const totalSlots = (24 * 60) / step
+    const totalSlots = (24 * 60) / minutesStep
 
     // Generate all time slots in a day
     const options = Array.from({ length: totalSlots })
       .flatMap((_, i) => {
-        const minutesOfDay = i * step
+        const minutesOfDay = i * minutesStep
         const optionTime = set(new Date(), {
           hours: Math.floor(minutesOfDay / 60),
           minutes: minutesOfDay % 60,
