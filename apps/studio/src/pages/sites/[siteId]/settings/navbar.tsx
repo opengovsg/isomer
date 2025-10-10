@@ -4,7 +4,6 @@ import { useRouter } from "next/router"
 import { Grid, GridItem } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import isEqual from "lodash/isEqual"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
@@ -53,7 +52,7 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
     NavbarSchemaType | undefined
   >(content)
   const isOpen = !!nextUrl
-  const isDirty = !isEqual(content, previewNavbarState)
+  const isDirty = JSON.stringify(previewNavbarState) !== JSON.stringify(content)
 
   const handleSaveNavbar = (data: NavbarSchemaType | undefined) => {
     if (!data) return

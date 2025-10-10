@@ -172,12 +172,13 @@ export function JsonFormsNavbarControl({
         uischema={getChildUiSchema(selectedPath)}
         path={selectedPath}
         onBack={() => setSelectedPath(undefined)}
-        handleRemoveItem={() =>
+        handleRemoveItem={() => {
           handleRemove(
             getParentPath(selectedPath),
             Number(selectedPath.split(".").pop()),
           )
-        }
+          setSelectedPath(undefined)
+        }}
       />
     )
   }
