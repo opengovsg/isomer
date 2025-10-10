@@ -4,7 +4,6 @@ import {
   HStack,
   Icon,
   IconButton,
-  Menu,
   MenuButton,
   MenuItem,
   MenuList,
@@ -15,6 +14,7 @@ import {
 import { useFeatureValue } from "@growthbook/growthbook-react"
 import {
   Button,
+  Menu,
   TouchableTooltip,
   useToast,
 } from "@opengovsg/design-system-react"
