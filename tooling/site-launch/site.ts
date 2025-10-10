@@ -166,7 +166,7 @@ export const updateCodebuildId = async (
 ) => {
   return await runDbAction<string>(async (client) => {
     const result = await client.query(
-      `UPDATE public."Site" SET codeBuildId = $1 WHERE "id" = $2 RETURNING config`,
+      `UPDATE public."Site" SET "codeBuildId" = $1 WHERE "id" = $2 RETURNING config`,
       [codebuildId, siteId],
     )
 

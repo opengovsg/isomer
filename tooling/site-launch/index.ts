@@ -1,5 +1,6 @@
+import type { Step } from "state"
 import { confirm, input, search, select } from "@inquirer/prompts"
-import { readStateFile, skipIfExists, Step, Steps, toStateFile } from "state"
+import { readStateFile, skipIfExists, Steps, toStateFile } from "state"
 
 import { migrateTagsOfSite } from "@isomer/migrate-tags"
 import { cleanup, main as migrate } from "@isomer/seed-from-repo"

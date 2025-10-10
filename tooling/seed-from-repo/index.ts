@@ -72,7 +72,7 @@ async function ensureSiteExists(
     });
 
     // Git clone the repository
-    const cloneDir = path.join(__dirname, "repos");
+    const cloneDir = path.join(process.cwd(), "repos");
     await new Promise<void>((resolve, reject) => {
       // NOTE: Do not touch this directly! This should be invoked as part of site migration
       exec(
@@ -240,7 +240,7 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
     }
   }
 
-  const schemaDir = path.join(__dirname, "repos", siteName, "schema");
+  const schemaDir = path.join(process.cwd(), "repos", siteName, "schema");
   await processDirectory(schemaDir, null);
 
   await importSiteConfig(client, siteId, siteName);
@@ -330,7 +330,7 @@ async function importSiteConfig(
 ) {
   console.log("Importing site config");
   const siteConfigPath = path.join(
-    __dirname,
+    process.cwd(),
     "repos",
     siteName,
     "data",
@@ -355,7 +355,7 @@ async function importSiteConfig(
 async function importNavbar(client: Client, siteId: number, siteName: string) {
   console.log("Importing navbar");
   const navbarPath = path.join(
-    __dirname,
+    process.cwd(),
     "repos",
     siteName,
     "data",
@@ -372,7 +372,7 @@ async function importNavbar(client: Client, siteId: number, siteName: string) {
 async function importFooter(client: Client, siteId: number, siteName: string) {
   console.log("Importing footer");
   const footerPath = path.join(
-    __dirname,
+    process.cwd(),
     "repos",
     siteName,
     "data",
@@ -390,7 +390,7 @@ async function studioifySite(client: Client, siteId: number, siteName: string) {
   const assetsMap = getAssetsMapping(siteId, siteName);
   const resourcesMap = await getResourceMapping(client, siteId);
   const pages = Object.keys(resourcesMap).filter((resourceId) => {
-    return resourcesMap[resourceId] && resourcesMap[resourceId].blobId !== null;
+    return resourcesMap[resourceId]?.blobId !== null;
   });
 
   for (const page of pages) {
@@ -440,7 +440,7 @@ async function studioifySite(client: Client, siteId: number, siteName: string) {
     .map(([original, newAsset]) => `${original},${newAsset}`)
     .join("\n");
   fs.writeFileSync(
-    path.join(__dirname, `asset-mappings-${siteName}.csv`),
+    path.join(process.cwd(), `asset-mappings-${siteName}.csv`),
     assetsCsvHeaders + assetsCsv,
     "utf-8",
   );
@@ -448,11 +448,11 @@ async function studioifySite(client: Client, siteId: number, siteName: string) {
 
 function getAssetsMapping(siteId: number, siteName: string) {
   // Get the list of images and files in the site
-  const siteDir = path.join(__dirname, "repos", siteName);
+  const siteDir = path.join(process.cwd(), "repos", siteName);
   const publicDir = path.join(siteDir, "public");
   const imagesDir = path.join(publicDir, "images");
   const filesDir = path.join(publicDir, "files");
-  const assetsDir = path.join(__dirname, "assets");
+  const assetsDir = path.join(process.cwd(), "assets");
 
   const images = getFiles(imagesDir).map((file) =>
     path.relative(publicDir, file),
@@ -685,6 +685,6 @@ function getIndexPageContent(title: string) {
 }
 
 export const cleanup = () => {
-  const assetsDir = path.join(__dirname, "assets");
+  const assetsDir = path.join(process.cwd(), "assets");
   fs.rmdirSync(assetsDir);
 };
