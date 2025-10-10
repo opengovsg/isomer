@@ -168,7 +168,7 @@ const launch = async () => {
     // and the side effect might be intended (overriding rows)
     await toStateFile(domain, Steps.Imported, async () => {
       await migrate(repo, Number(siteId))
-      await migrateTagsOfSite(siteId)
+      await migrateTagsOfSite(Number(siteId))
       return "true"
     })
 
