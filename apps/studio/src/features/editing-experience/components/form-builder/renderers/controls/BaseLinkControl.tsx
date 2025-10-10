@@ -108,7 +108,7 @@ export function BaseLinkControl({
               </>
             ) : (
               <>
-                <Text>{description}</Text>
+                <Text textStyle="body-2">{description}</Text>
                 <Button
                   onClick={onOpen}
                   variant="link"
