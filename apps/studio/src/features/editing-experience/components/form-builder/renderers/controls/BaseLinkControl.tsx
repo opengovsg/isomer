@@ -22,15 +22,7 @@ import { trpc } from "~/utils/trpc"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
 import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"
-
-const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
-  switch (pageType) {
-    case LINK_TYPES.File:
-      return href.split("/").pop()
-    default:
-      return href
-  }
-}
+import { parseHref } from "./utils/parseHref"
 
 interface SuspendableLabelProps {
   siteId: number
@@ -45,6 +37,7 @@ const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
 
   return (
     <Text
+      textStyle="body-2"
       textOverflow="ellipsis"
       whiteSpace="nowrap"
       overflow="auto"
@@ -92,7 +85,9 @@ export function BaseLinkControl({
             {!!data ? (
               <>
                 {pageType !== LINK_TYPES.Page && (
-                  <Text overflow="auto">{displayedHref}</Text>
+                  <Text overflow="auto" textStyle="body-2">
+                    {displayedHref}
+                  </Text>
                 )}
                 {pageType === LINK_TYPES.Page && dataString.length > 0 && (
                   <Suspense fallback={<Skeleton w="100%" h="100%" />}>
@@ -113,7 +108,7 @@ export function BaseLinkControl({
               </>
             ) : (
               <>
-                <Text>{description}</Text>
+                <Text textStyle="body-2">{description}</Text>
                 <Button
                   onClick={onOpen}
                   variant="link"
