@@ -8,7 +8,7 @@ import { Box, HStack, Icon, Text, VStack } from "@chakra-ui/react"
 import { computeChildLabel } from "@jsonforms/core"
 import { JsonFormsDispatch, useJsonForms } from "@jsonforms/react"
 import { Button } from "@opengovsg/design-system-react"
-import { BiLeftArrowAlt, BiSitemap, BiTrash } from "react-icons/bi"
+import { BiDirections, BiLeftArrowAlt, BiTrash } from "react-icons/bi"
 
 interface EditNavbarItemProps {
   renderers?: JsonFormsRendererRegistryEntry[]
@@ -80,7 +80,7 @@ export const EditNavbarItem = ({
             p="0.5rem"
             lineHeight="1rem"
           >
-            <Icon as={BiSitemap} fontSize="1rem" />
+            <Icon as={BiDirections} fontSize="1rem" />
           </Box>
 
           <Text

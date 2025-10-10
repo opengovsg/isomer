@@ -275,6 +275,7 @@ export const NavbarItemBox = ({
         >
           <HStack gap="0.75rem" w="full">
             <Box
+              display="flex"
               ref={itemDragHandleRef ?? itemDefaultDragHandleRef}
               cursor="grab"
               layerStyle="focusRing"
