@@ -4,7 +4,6 @@ import { useRouter } from "next/router"
 import { Grid, GridItem } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import isEqual from "lodash/isEqual"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -46,7 +45,7 @@ const FooterSettingsPage: NextPageWithLayout = () => {
     FooterSchemaType | undefined
   >(content)
   const isOpen = !!nextUrl
-  const isDirty = !isEqual(content, previewFooterState)
+  const isDirty = JSON.stringify(previewFooterState) !== JSON.stringify(content)
 
   const handleSaveFooter = (data?: FooterSchemaType) => {
     if (!data) return
