@@ -23,10 +23,7 @@ describe("ScheduledPublishingModal.utils", () => {
       const actual = getEarliestAllowableTime(selectedDate, earliestSchedule)
 
       // Assert
-      expect(actual).toEqual({
-        hours: FIXED_NOW.getHours() + hoursToAdd,
-        minutes: FIXED_NOW.getMinutes(),
-      })
+      expect(actual).toEqual(addHours(FIXED_NOW, hoursToAdd))
     })
     it("should return null for different days", () => {
       // Arrange
