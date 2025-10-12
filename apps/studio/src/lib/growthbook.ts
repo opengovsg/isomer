@@ -1,7 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook-react"
 
-export const ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY =
-  "enable-scheduled-publishing"
+export const SCHEDULED_PUBLISHING_SITES_FEATURE_KEY =
+  "scheduled-publishing-sites"
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const ISOMER_ADMIN_FEATURE_KEY = "isomer_admins"
 export const USE_NEW_SETTINGS_PAGE_FEATURE_KEY = "use-new-settings-page"
