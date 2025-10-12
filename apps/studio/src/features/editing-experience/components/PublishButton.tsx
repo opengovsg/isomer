@@ -142,7 +142,7 @@ const SuspendablePublishButton = ({
                         borderColor="base.canvas.default"
                         height="auto"
                       />
-                      <Menu>
+                      <Menu preventOverflow={true} isLazy>
                         <MenuButton
                           as={IconButton}
                           aria-label="More options"
