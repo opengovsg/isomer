@@ -996,30 +996,12 @@ const addCodeBuildAndMarkSupersededBuild = async ({
   userId: string
   isScheduled: boolean
 }) => {
-  let buildIdToLink: string
-  let buildStartTime: Date
-  if (publishSiteResult.isNewBuildNeeded) {
-    const { id: startedBuildId, startTime: startedBuildTime } =
-      publishSiteResult.startedBuild
-    if (!startedBuildId || !startedBuildTime)
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Started build ID or time is missing",
-      })
-    buildIdToLink = startedBuildId
-    buildStartTime = startedBuildTime
-  } else {
-    const { latestRunningBuild } = publishSiteResult
-    if (!latestRunningBuild?.id || !latestRunningBuild.startTime) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message:
-          "No new build was started, but there is no latest running build",
-      })
-    }
-    buildIdToLink = latestRunningBuild.id
-    buildStartTime = latestRunningBuild.startTime
-  }
+  const buildIdToLink = publishSiteResult.isNewBuildNeeded
+    ? publishSiteResult.startedBuild.id
+    : publishSiteResult.latestRunningBuild.id
+  const buildStartTime = publishSiteResult.isNewBuildNeeded
+    ? publishSiteResult.startedBuild.startTime
+    : publishSiteResult.latestRunningBuild.startTime
 
   // Insert a new row into CodeBuildJobs to link the resourceId, userId, siteId to the build
   await db
