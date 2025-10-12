@@ -27,13 +27,13 @@ export interface SearchResultResource {
 }
 
 export interface PublishSiteWithNewBuild {
-  startedBuild: Pick<Build, "id" | "startTime">
-  stoppedBuild?: Pick<Build, "id" | "startTime">
+  startedBuild: Required<Pick<Build, "id" | "startTime">>
+  stoppedBuild?: Required<Pick<Build, "id" | "startTime">>
   isNewBuildNeeded: true
 }
 
 export interface PublishSiteWithoutNewBuild {
-  latestRunningBuild?: Pick<Build, "id" | "startTime">
+  latestRunningBuild: Required<Pick<Build, "id" | "startTime">>
   isNewBuildNeeded: false
 }
 
