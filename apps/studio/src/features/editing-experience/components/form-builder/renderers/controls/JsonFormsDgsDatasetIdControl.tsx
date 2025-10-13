@@ -34,6 +34,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useDgsMetadata } from "~/features/editing-experience/components/form-builder/hooks/useDgsMetadata"
 import { getDgsIdFromString } from "~/features/editing-experience/utils"
 import { useZodForm } from "~/lib/form"
+import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsDgsDatasetIdControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextControl,
@@ -300,7 +301,7 @@ export function JsonFormsDgsDatasetIdControl({
           </HStack>
 
           <FormErrorMessage>
-            {label} {errors}
+            {label} {getCustomErrorMessage(errors)}
           </FormErrorMessage>
         </FormControl>
       </Box>
