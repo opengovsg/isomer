@@ -1,4 +1,5 @@
 import type { Static } from "@sinclair/typebox"
+import type { PropsWithChildren } from "react"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
@@ -27,9 +28,6 @@ export type NotificationProps = Static<typeof NotificationSchema> & {
   site: IsomerSiteProps
 }
 
-export type NotificationClientProps = Pick<
-  Static<typeof NotificationSchema>,
-  "title"
-> & {
-  baseParagraph: React.ReactNode
-}
+export type NotificationClientProps = PropsWithChildren<
+  Pick<Static<typeof NotificationSchema>, "title">
+>

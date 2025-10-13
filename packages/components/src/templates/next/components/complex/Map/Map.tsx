@@ -20,7 +20,7 @@ const createMapStyles = tv({
   },
 })
 
-export const Map = ({ title, url, site, LinkComponent }: MapProps) => {
+export const Map = ({ title, url, LinkComponent }: MapProps) => {
   if (!isValidMapEmbedUrl(url)) {
     return <></>
   }
@@ -37,7 +37,6 @@ export const Map = ({ title, url, site, LinkComponent }: MapProps) => {
         <BaseParagraph
           content={`You can also view the map below on <a href="${url}">Maps.gov.sg</a>.`}
           className={compoundStyles.paragraph()}
-          site={site}
           LinkComponent={LinkComponent}
         />
       )}

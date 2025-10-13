@@ -44,7 +44,6 @@ const ArticleLayout = ({
           category={page.category}
           title={page.title}
           date={page.date}
-          site={site}
           LinkComponent={LinkComponent}
           tags={resolvedTags}
         />
