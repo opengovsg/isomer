@@ -32,7 +32,6 @@ const Table = ({
         id={tableDescriptionId}
         content={caption}
         className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
-        site={site}
         LinkComponent={LinkComponent}
       />
       <div className="overflow-x-auto" tabIndex={0}>

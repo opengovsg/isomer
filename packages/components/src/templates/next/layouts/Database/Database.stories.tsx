@@ -149,7 +149,7 @@ export const Default: Story = {
       items: [
         [
           "Cell copy 1",
-          '=HYPERLINK("https://www.isomer.gov.sg", Cell copy)',
+          '<a href="https://www.isomer.gov.sg">Cell copy</a>',
           "Cell copy",
           "Cell copy",
           "Cell copy",
@@ -707,7 +707,7 @@ export const NoSearchResults: Story = {
       items: [
         [
           "Cell copy 1",
-          '=HYPERLINK("https://www.isomer.gov.sg", Cell copy)',
+          '<a href="https://www.isomer.gov.sg">Cell copy</a>',
           "Cell copy",
           "Cell copy",
           "Cell copy",

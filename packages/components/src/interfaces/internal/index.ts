@@ -2,6 +2,7 @@ export {
   ArticlePageHeaderSchema,
   type ArticlePageHeaderProps,
 } from "./ArticlePageHeader"
+export type { BaseParagraphProps } from "./BaseParagraph"
 export type { BreadcrumbProps } from "./Breadcrumb"
 export type {
   AllCardProps,
