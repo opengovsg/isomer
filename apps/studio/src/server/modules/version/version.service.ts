@@ -71,7 +71,6 @@ export const incrementVersion = async ({
   previousVersion: Version | null
   newVersion: Version
 } | null> => {
-  let previousVersion: Version | null = null
   const page = await getPageById(tx, {
     siteId,
     resourceId: Number(resourceId),
@@ -88,6 +87,7 @@ export const incrementVersion = async ({
   if (!page.draftBlobId) return null
 
   let newVersionNum = 1
+  let previousVersion: Version | null = null
   if (page.publishedVersionId) {
     previousVersion = await getVersionById({
       versionId: page.publishedVersionId,
