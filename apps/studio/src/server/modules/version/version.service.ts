@@ -91,7 +91,7 @@ export const incrementVersion = async ({
     previousVersion = await getVersionById({
       versionId: page.publishedVersionId,
     })
-    newVersionNum = Number(previousVersion.versionNum) + 1
+    newVersionNum = previousVersion.versionNum + 1
   }
 
   // Create the new version
