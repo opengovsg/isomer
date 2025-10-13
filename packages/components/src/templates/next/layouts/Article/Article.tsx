@@ -1,7 +1,7 @@
 import { type ArticlePageSchemaType } from "~/engine"
-import { getBreadcrumbFromSiteMap } from "~/utils"
+import { getAdjacentPagesFromSitemap, getBreadcrumbFromSiteMap } from "~/utils"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
-import { BackToTopLink } from "../../components/internal"
+import { BackToTopLink, Pager } from "../../components/internal"
 import ArticlePageHeader from "../../components/internal/ArticlePageHeader"
 import { renderPageContent } from "../../render"
 import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
@@ -23,11 +23,13 @@ const ArticleLayout = ({
   const tagged = page.tagged
   const tags = page.tags
 
+  const pager = getAdjacentPagesFromSitemap(site.siteMap, page.permalink)
+
   const resolvedTags =
     tagged &&
     parent?.layout === "collection" &&
     parent.collectionPagePageProps?.tagCategories
-      ? getTagsFromTagged(tagged, parent.collectionPagePageProps?.tagCategories)
+      ? getTagsFromTagged(tagged, parent.collectionPagePageProps.tagCategories)
       : tags
 
   return (
@@ -60,6 +62,7 @@ const ArticleLayout = ({
             })}
           </div>
           <BackToTopLink />
+          <Pager {...pager} LinkComponent={LinkComponent}></Pager>
         </div>
       </div>
     </Skeleton>
