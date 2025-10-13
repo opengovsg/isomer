@@ -243,7 +243,6 @@ export function JsonFormsDgsDatasetIdControl({
   description,
   required,
   errors,
-  schema: _schema,
 }: JsonFormsDgsDatasetIdControlProps) {
   const {
     isOpen: isDgsModalOpen,
