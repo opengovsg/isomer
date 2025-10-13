@@ -5,7 +5,12 @@ import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { SafeKysely, Transaction } from "../database"
 import { db } from "../database"
-import { updatePageById } from "../resource/resource.service"
+import { getPageById, updatePageById } from "../resource/resource.service"
+
+interface Version {
+  id: string
+  versionNum: number
+}
 
 const defaultVersionSelect: SelectExpression<DB, "Version">[] = [
   "Version.id",
@@ -30,7 +35,7 @@ const createVersion = async (
     blobId: string
     publisherId: string
   },
-) => {
+): Promise<Version> => {
   const { versionNum, resourceId, blobId, publisherId } = props
   const addedVersion = await db
     .insertInto("Version")
@@ -44,9 +49,14 @@ const createVersion = async (
     .returning(["Version.id", "Version.versionNum"])
     .executeTakeFirstOrThrow()
 
-  return { versionId: addedVersion.id, versionNum: addedVersion.versionNum }
+  return { id: addedVersion.id, versionNum: addedVersion.versionNum }
 }
 
+/**
+ * Increment the version of a resource, if the resource has a draft
+ * @param param0 Arguments to increment version
+ * @returns The new version and the previous version, or null if there was no draft to publish
+ */
 export const incrementVersion = async ({
   siteId,
   resourceId,
@@ -57,14 +67,15 @@ export const incrementVersion = async ({
   tx: Transaction<DB>
   resourceId: string
   userId: string
-}) => {
-  const page = await tx
-    .selectFrom("Resource")
-    .where("Resource.id", "=", resourceId)
-    .where("Resource.siteId", "=", siteId)
-    .selectAll()
-    .forUpdate()
-    .executeTakeFirst()
+}): Promise<{
+  previousVersion: Version | null
+  newVersion: Version
+} | null> => {
+  let previousVersion: Version | null = null
+  const page = await getPageById(tx, {
+    siteId,
+    resourceId: Number(resourceId),
+  })
 
   if (!page) {
     throw new TRPCError({
@@ -73,19 +84,14 @@ export const incrementVersion = async ({
     })
   }
 
-  if (!page.draftBlobId) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "No drafts to publish for this page",
-    })
-  }
+  if (!page.draftBlobId) return null
 
   let newVersionNum = 1
   if (page.publishedVersionId) {
-    const currentVersion = await getVersionById({
+    previousVersion = await getVersionById({
       versionId: page.publishedVersionId,
     })
-    newVersionNum = Number(currentVersion.versionNum) + 1
+    newVersionNum = Number(previousVersion.versionNum) + 1
   }
 
   // Create the new version
@@ -101,7 +107,7 @@ export const incrementVersion = async ({
     {
       ...page,
       id: parseInt(page.id),
-      publishedVersionId: newVersion.versionId,
+      publishedVersionId: newVersion.id,
       draftBlobId: null,
       state: ResourceState.Published,
       siteId,
@@ -109,5 +115,5 @@ export const incrementVersion = async ({
     },
     tx,
   )
-  return newVersion
+  return { newVersion, previousVersion }
 }
