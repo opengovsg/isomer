@@ -49,7 +49,7 @@ const createVersion = async (
     .returning(["Version.id", "Version.versionNum"])
     .executeTakeFirstOrThrow()
 
-  return { id: addedVersion.id, versionNum: addedVersion.versionNum }
+  return addedVersion
 }
 
 /**
@@ -84,6 +84,7 @@ export const incrementVersion = async ({
     })
   }
 
+  // If there's no draft, we don't create a new version
   if (!page.draftBlobId) return null
 
   let newVersionNum = 1
