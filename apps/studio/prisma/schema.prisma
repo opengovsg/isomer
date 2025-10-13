@@ -46,6 +46,8 @@ model Version {
   publisher   User       @relation(fields: [publishedBy], references: [id])
 
   updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([resourceId, versionNum])
 }
 
 model Resource {
