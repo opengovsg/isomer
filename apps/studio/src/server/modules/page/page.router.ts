@@ -703,14 +703,13 @@ export const pageRouter = router({
               message: "Please ensure that you have logged in",
             }),
         )
-      const version = await publishPageResource({
+      await publishPageResource({
         logger: ctx.logger,
         siteId,
         resourceId: String(pageId),
         user,
         isScheduled: false,
       })
-
       // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
       if (!ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)) {
         await alertPublishWhenSingpassDisabled({
@@ -720,7 +719,6 @@ export const pageRouter = router({
           publisherEmail: user.email,
         })
       }
-      return version
     }),
 
   updateMeta: protectedProcedure

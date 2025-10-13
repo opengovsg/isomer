@@ -564,7 +564,7 @@ export const publishPageResource = async ({
   user,
   isScheduled,
 }: PublishPageResourceArgs) => {
-  const { version } = await db.transaction().execute(async (tx) => {
+  await db.transaction().execute(async (tx) => {
     // Step 1: Create a new version
     const fullResource = await getFullPageById(tx, {
       resourceId: Number(resourceId),
@@ -586,25 +586,25 @@ export const publishPageResource = async ({
       userId: user.id,
     })
 
-    const previousVersion = await tx
-      .selectFrom("Version")
-      .where("Version.versionNum", "=", Number(version.versionNum) - 1)
-      .where("Version.resourceId", "=", resourceId)
-      .select("Version.id")
-      .executeTakeFirst()
+    if (!version) {
+      logger.warn(
+        `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
+      )
+      return
+    }
+
+    const { previousVersion, newVersion } = version
 
     await logPublishEvent(tx, {
       siteId,
       by: user,
       delta: {
-        before: previousVersion?.id ? { versionId: previousVersion.id } : null,
-        after: version,
+        before: previousVersion ? { versionId: previousVersion.id } : null,
+        after: { versionId: newVersion.id },
       },
       eventType: AuditLogEvent.Publish,
       metadata: fullResource,
     })
-
-    return { version }
   })
 
   // Step 2: Trigger a publish of the site
@@ -614,8 +614,6 @@ export const publishPageResource = async ({
     resourceId,
     isScheduled,
   })
-
-  return version
 }
 
 /**

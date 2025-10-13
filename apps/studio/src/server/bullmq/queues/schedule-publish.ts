@@ -190,7 +190,7 @@ export const publishScheduledResource = async (
     )
     return
   }
-  return await publishPageResource({
+  await publishPageResource({
     logger,
     siteId,
     resourceId: page.id,

@@ -19,6 +19,7 @@ import {
 
 vi.mock("~/server/modules/aws/utils.ts", async () => {
   const actual = await vi.importActual<
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
     typeof import("~/server/modules/aws/utils.ts")
   >("~/server/modules/aws/utils.ts")
   return {
@@ -41,12 +42,13 @@ describe("scheduled-publish", async () => {
   beforeEach(async () => {
     vi.clearAllMocks()
     await resetTables(
-      "Resource",
-      "User",
-      "ResourcePermission",
-      "Version",
       "AuditLog",
-      "CodeBuildJobs",
+      "ResourcePermission",
+      "Blob",
+      "Version",
+      "Resource",
+      "Site",
+      "User",
     )
     user = await setupUser({
       userId: session.userId,
@@ -84,16 +86,25 @@ describe("scheduled-publish", async () => {
       })
 
       // Act
-      const version = await publishScheduledResource(
+      await publishScheduledResource(
         "test-job-id",
         { resourceId: Number(page.id), siteId: site.id, userId: user.id },
         0,
       )
 
       // Assert
-      // expect a version to be created
-      expect(String(version?.versionId)).toEqual("1")
-      expect(String(version?.versionNum)).toEqual("1")
+      // expect a version to be created for the resource
+      const versions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(versions).toHaveLength(1)
+      expect(versions[0]).toMatchObject({
+        resourceId: page.id,
+        versionNum: 1,
+      })
+
       // expect the scheduledAt field to be cleared in the resource table
       const resource = await db
         .selectFrom("Resource")
@@ -182,17 +193,33 @@ describe("scheduled-publish", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      const previousVersions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .select("Version.versionNum")
+        .execute()
 
       // Act
-      const res = await publishScheduledResource(
+      await publishScheduledResource(
         "test-job-id",
         { resourceId: Number(page.id), siteId: site.id, userId: user.id },
         1, // previous attempts
       )
 
       // Assert
-      // expect the version to be created
-      expect(res).toBeDefined()
+      // expect a version to be created for the resource
+      const versions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+
+      expect(previousVersions).toHaveLength(0)
+      expect(versions).toHaveLength(1)
+      expect(versions[0]).toMatchObject({
+        resourceId: page.id,
+        versionNum: 1,
+      })
     })
     it("fails to publish the resource if the user does not have the right permissions when the job executes", async () => {
       // Arrange
