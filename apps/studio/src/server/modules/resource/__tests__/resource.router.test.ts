@@ -1753,6 +1753,7 @@ describe("resource.router", async () => {
       "type",
       "parentId",
       "updatedAt",
+      "scheduledAt",
     ] as const
 
     const testListComparable = (

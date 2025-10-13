@@ -1,5 +1,7 @@
 const ALLOWED_URL_REGEXES = {
   external: "^https:\\/\\/",
+  phone: "^tel:",
+  sms: "^sms:",
   mail: "^mailto:",
   internal: "^\\[resource:(\\d+):(\\d+)\\]$",
   // NOTE: This is taken with reference from `convertAssetLinks`
@@ -15,7 +17,7 @@ const ALLOWED_URL_REGEXES = {
 } as const
 
 export const LINK_HREF_PATTERN =
-  `(${ALLOWED_URL_REGEXES.external})|(${ALLOWED_URL_REGEXES.mail})|(${ALLOWED_URL_REGEXES.internal})|(${ALLOWED_URL_REGEXES.files})|(${ALLOWED_URL_REGEXES.legacy})` as const
+  `(${ALLOWED_URL_REGEXES.external})|(${ALLOWED_URL_REGEXES.phone})|(${ALLOWED_URL_REGEXES.sms})|(${ALLOWED_URL_REGEXES.mail})|(${ALLOWED_URL_REGEXES.internal})|(${ALLOWED_URL_REGEXES.files})|(${ALLOWED_URL_REGEXES.legacy})` as const
 export const REF_HREF_PATTERN =
   `(${ALLOWED_URL_REGEXES.external})|(${ALLOWED_URL_REGEXES.internal})|(${ALLOWED_URL_REGEXES.files})|(${ALLOWED_URL_REGEXES.legacy})` as const
 export const REF_INTERNAL_HREF_PATTERN =

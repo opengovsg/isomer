@@ -22,8 +22,8 @@ export const stopCronJobs = () => {
   cronJobs.forEach((job) => {
     try {
       job.stop()
-    } catch (error) {
-      logger.error("Error stopping cron job", { error })
+    } catch (error: unknown) {
+      logger.error({ error }, "Error stopping cron job")
     }
   })
 

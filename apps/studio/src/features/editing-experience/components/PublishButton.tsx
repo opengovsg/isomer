@@ -1,19 +1,32 @@
 import type { ButtonProps } from "@opengovsg/design-system-react"
-import { Skeleton, useDisclosure } from "@chakra-ui/react"
-import { useFeatureIsOn } from "@growthbook/growthbook-react"
+import {
+  Divider,
+  HStack,
+  Icon,
+  IconButton,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Skeleton,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react"
+import { useFeatureValue } from "@growthbook/growthbook-react"
 import {
   Button,
+  Menu,
   TouchableTooltip,
   useToast,
 } from "@opengovsg/design-system-react"
+import { BiChevronDown, BiTimeFive } from "react-icons/bi"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
-import { ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY } from "~/lib/growthbook"
+import { SCHEDULED_PUBLISHING_SITES_FEATURE_KEY } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
-import { ScheduledPublishingModal } from "./ScheduledPublishingModal"
-import { CancelSchedulePublishIndicator } from "./ScheduledPublishingModal/CancelSchedulePublishIndicator"
+import { PublishingModal, ScheduledPublishingModal } from "./PublishingModal"
+import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
 
 interface PublishButtonProps extends ButtonProps {
   pageId: number
@@ -24,35 +37,40 @@ const SuspendablePublishButton = ({
   pageId,
   siteId,
   isDisabled,
-  onClick,
   ...rest
 }: PublishButtonProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
+  // the current disclosures for the publish modals
+  const publishNowDisclosure = useDisclosure()
   const scheduledPublishingDisclosure = useDisclosure()
-  const enableScheduledPublishing = useFeatureIsOn(
-    ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY,
+  // determine if the scheduled publishing feature is enabled for this site
+  const scheduledPublishingSites = useFeatureValue<{ enabledSites: string[] }>(
+    SCHEDULED_PUBLISHING_SITES_FEATURE_KEY,
+    { enabledSites: [] },
   )
+  const enableScheduledPublishing =
+    scheduledPublishingSites.enabledSites.includes(siteId.toString())
+
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
+  const isChangesPendingPublish = !!currPage.draftBlobId
 
   const { mutate, isPending } = trpc.page.publishPage.useMutation({
     onSettled: async () => {
       await utils.page.readPage.refetch({ pageId, siteId })
-      if (scheduledPublishingDisclosure.isOpen) {
-        scheduledPublishingDisclosure.onClose()
-      }
-    },
-    onSuccess: async () => {
-      toast({
-        status: "success",
-        title: "Page published successfully",
-        ...BRIEF_TOAST_SETTINGS,
-      })
       await utils.page.getCategories.invalidate({ pageId, siteId })
       await utils.site.getLocalisedSitemap.invalidate({
         resourceId: pageId,
         siteId,
       })
+    },
+    onSuccess: () => {
+      toast({
+        status: "success",
+        title: "Page published successfully",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+      if (publishNowDisclosure.isOpen) publishNowDisclosure.onClose()
     },
     onError: (error) => {
       console.error(`Error occurred when publishing page: ${error.message}`)
@@ -63,8 +81,6 @@ const SuspendablePublishButton = ({
       })
     },
   })
-
-  const isChangesPendingPublish = !!currPage.draftBlobId
 
   return (
     <Can do="publish" on="Resource" passThrough>
@@ -78,11 +94,18 @@ const SuspendablePublishButton = ({
               {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
               {scheduledPublishingDisclosure.isOpen && (
                 <ScheduledPublishingModal
-                  {...scheduledPublishingDisclosure}
                   siteId={siteId}
                   pageId={pageId}
+                  {...scheduledPublishingDisclosure}
+                />
+              )}
+              {publishNowDisclosure.isOpen && (
+                <PublishingModal
+                  pageId={pageId}
+                  siteId={siteId}
                   onPublishNow={(pageId, siteId) => mutate({ pageId, siteId })}
                   isPublishingNow={isPending}
+                  {...publishNowDisclosure}
                 />
               )}
               {currPage.scheduledAt ? (
@@ -92,23 +115,65 @@ const SuspendablePublishButton = ({
                   scheduledAt={currPage.scheduledAt}
                 />
               ) : (
-                <Button
-                  isDisabled={!isChangesPendingPublish || isDisabled}
-                  variant="solid"
-                  size="sm"
-                  onClick={(e) => {
-                    if (enableScheduledPublishing) {
-                      scheduledPublishingDisclosure.onOpen()
-                    } else {
-                      mutate({ pageId, siteId })
-                      onClick?.(e)
+                <HStack spacing={0} position="relative">
+                  <Button
+                    variant="solid"
+                    size="sm"
+                    isDisabled={!isChangesPendingPublish || isDisabled}
+                    isLoading={isPending}
+                    borderRightRadius={
+                      enableScheduledPublishing ? 0 : undefined
                     }
-                  }}
-                  isLoading={isPending}
-                  {...rest}
-                >
-                  Publish
-                </Button>
+                    onClick={() => {
+                      if (enableScheduledPublishing) {
+                        publishNowDisclosure.onOpen()
+                      } else {
+                        mutate({ pageId, siteId })
+                      }
+                    }}
+                    {...rest}
+                  >
+                    Publish
+                  </Button>
+                  {enableScheduledPublishing && (
+                    <>
+                      <Divider
+                        orientation="vertical"
+                        borderColor="base.canvas.default"
+                        height="auto"
+                      />
+                      <Menu preventOverflow={true} isLazy>
+                        <MenuButton
+                          as={IconButton}
+                          aria-label="More options"
+                          icon={<Icon as={BiChevronDown} boxSize="1rem" />}
+                          size="sm"
+                          variant="solid"
+                          isDisabled={
+                            !isChangesPendingPublish || isDisabled || isPending
+                          }
+                          borderLeftRadius={0}
+                        />
+                        <MenuList>
+                          <MenuItem
+                            onClick={scheduledPublishingDisclosure.onOpen}
+                            isDisabled={!enableScheduledPublishing}
+                          >
+                            <HStack spacing="0.5rem" alignItems="center">
+                              <Icon as={BiTimeFive} boxSize="1rem" />
+                              <Text
+                                textStyle="body-2"
+                                color="base.content.strong"
+                              >
+                                Schedule for later
+                              </Text>
+                            </HStack>
+                          </MenuItem>
+                        </MenuList>
+                      </Menu>
+                    </>
+                  )}
+                </HStack>
               )}
             </>
           )}
