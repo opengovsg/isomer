@@ -3,9 +3,8 @@ import { CharacterCountStorage } from "@tiptap/extension-character-count"
 
 import { SimpleProseMenuBar } from "~/components/PageEditor/MenuBar"
 import { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
+import { BANNER_MAX_CHARACTERS } from "../../../constants"
 import { Editor } from "./components"
-
-const BANNER_MAX_CHARACTERS = 250
 
 export function TiptapSimpleProseEditor({
   editor,
