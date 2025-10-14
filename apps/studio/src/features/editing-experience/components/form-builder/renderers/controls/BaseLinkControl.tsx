@@ -113,6 +113,7 @@ export function BaseLinkControl({
                   onClick={onOpen}
                   variant="link"
                   aria-labelledby="button-label"
+                  py="0.5rem"
                 >
                   <Text id="button-label" textStyle="subhead-2">
                     Link something...
