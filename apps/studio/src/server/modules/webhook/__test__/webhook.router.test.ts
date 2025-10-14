@@ -12,6 +12,7 @@ import {
   createSupersededBuildRows,
   setupCodeBuildJob,
   setupPageResource,
+  setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
 
@@ -69,7 +70,7 @@ describe("webhook.router", async () => {
     })
     it("it should update the codebuildjobs table if the received build status is successful", async () => {
       // Arrange
-      const { page, codebuildJob } = await setupCodeBuildJob({
+      const { site, page, codebuildJob } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
         startedAt: FIXED_NOW,
@@ -80,6 +81,7 @@ describe("webhook.router", async () => {
       // Act
       await caller.updateCodebuildWebhook({
         projectName: "test-project",
+        siteId: site.id,
         arn: "build/test-id", // saved in the db
         status: "SUCCEEDED",
       })
@@ -108,6 +110,7 @@ describe("webhook.router", async () => {
     })
     it("it should update the codebuildjobs table when multiple resources specify the same buildId", async () => {
       // Arrange
+      const { site } = await setupSite()
       const NUM_RESOURCES_WITH_SAME_BUILD_ID = 3
       const ARN = "build/test-id"
       const buildId = buildIdFromArn(ARN)!
@@ -119,6 +122,8 @@ describe("webhook.router", async () => {
           arn: ARN,
           startedAt: FIXED_NOW,
           isScheduled: true,
+          siteId: site.id,
+          permalink: `test-page-${i}`, // so that the resource is unique
         })
       }
       const caller = getCallerWithMockGrowthbook(session)
@@ -126,6 +131,7 @@ describe("webhook.router", async () => {
       // Act
       await caller.updateCodebuildWebhook({
         projectName: "test-project",
+        siteId: site.id,
         arn: "build/test-id", // saved in the db
         status: "SUCCEEDED",
       })
@@ -149,7 +155,7 @@ describe("webhook.router", async () => {
     })
     it("it should update the codebuildjobs table if the received build status is failed", async () => {
       // Arrange
-      const { page, codebuildJob } = await setupCodeBuildJob({
+      const { site, page, codebuildJob } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
         startedAt: FIXED_NOW,
@@ -160,6 +166,7 @@ describe("webhook.router", async () => {
       // Act
       await caller.updateCodebuildWebhook({
         projectName: "test-project",
+        siteId: site.id,
         arn: "build/test-id", // saved in the db
         status: "FAILED",
       })
@@ -188,7 +195,7 @@ describe("webhook.router", async () => {
     })
     it("do not send an email if the the email has already been sent", async () => {
       // Arrange
-      await setupCodeBuildJob({
+      const { site } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
         status: "SUCCEEDED", // initial status is SUCCEEDED
@@ -201,6 +208,7 @@ describe("webhook.router", async () => {
       // Act
       await caller.updateCodebuildWebhook({
         projectName: "test-project",
+        siteId: site.id,
         arn: "build/test-id",
         status: "SUCCEEDED", // same status as before
       })
@@ -210,7 +218,7 @@ describe("webhook.router", async () => {
     })
     it("sends a success email with the correct isScheduled flag", async () => {
       // Arrange
-      const { page } = await setupCodeBuildJob({
+      const { site, page } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
         status: "IN_PROGRESS",
@@ -222,6 +230,7 @@ describe("webhook.router", async () => {
       // Act
       await caller.updateCodebuildWebhook({
         projectName: "test-project",
+        siteId: site.id,
         arn: "build/test-id",
         status: "SUCCEEDED",
       })
@@ -236,7 +245,7 @@ describe("webhook.router", async () => {
     })
     it("sends a failure email with the correct isScheduled flag", async () => {
       // Arrange
-      const { page } = await setupCodeBuildJob({
+      const { site, page } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
         status: "IN_PROGRESS",
@@ -248,6 +257,7 @@ describe("webhook.router", async () => {
       // Act
       await caller.updateCodebuildWebhook({
         projectName: "test-project",
+        siteId: site.id,
         arn: "build/test-id",
         status: "FAILED",
       })
@@ -262,7 +272,7 @@ describe("webhook.router", async () => {
     })
     it("does not send a success email if the feature flag is disabled", async () => {
       // Arrange
-      await setupCodeBuildJob({
+      const { site } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
         status: "IN_PROGRESS",
@@ -274,6 +284,7 @@ describe("webhook.router", async () => {
       // Act
       await caller.updateCodebuildWebhook({
         projectName: "test-project",
+        siteId: site.id,
         arn: "build/test-id",
         status: "SUCCEEDED",
       })
@@ -283,7 +294,7 @@ describe("webhook.router", async () => {
     })
     it("does not send a failure email if the feature flag is disabled", async () => {
       // Arrange
-      await setupCodeBuildJob({
+      const { site } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
         status: "IN_PROGRESS",
@@ -295,6 +306,7 @@ describe("webhook.router", async () => {
       // Act
       await caller.updateCodebuildWebhook({
         projectName: "test-project",
+        siteId: site.id,
         arn: "build/test-id",
         status: "FAILED",
       })
@@ -306,7 +318,11 @@ describe("webhook.router", async () => {
       // Arrange
       const NUMBER_SUPERSEDED_BUILDS = 4
 
-      const { codebuildJob, page: pageForMainBuild } = await setupCodeBuildJob({
+      const {
+        codebuildJob,
+        site,
+        page: pageForMainBuild,
+      } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
         status: "IN_PROGRESS",
@@ -329,6 +345,7 @@ describe("webhook.router", async () => {
       // Act
       await caller.updateCodebuildWebhook({
         projectName: "test-project",
+        siteId: site.id,
         arn: "build/test-id",
         status: "SUCCEEDED",
       })
@@ -377,7 +394,7 @@ describe("webhook.router", async () => {
     })
     it("does not send an email if the resource type is not page", async () => {
       // Arrange
-      const { codebuildJob } = await setupCodeBuildJob({
+      const { site, codebuildJob } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
         startedAt: FIXED_NOW,
@@ -389,6 +406,7 @@ describe("webhook.router", async () => {
       // Act
       await caller.updateCodebuildWebhook({
         projectName: "test-project",
+        siteId: site.id,
         arn: "build/test-id", // saved in the db
         status: "SUCCEEDED",
       })
