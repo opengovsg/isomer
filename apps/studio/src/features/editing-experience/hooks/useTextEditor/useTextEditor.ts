@@ -4,6 +4,7 @@ import CharacterCount from "@tiptap/extension-character-count"
 import { useEditor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
 
+import { BANNER_MAX_CHARACTERS } from "../../components/constants"
 import {
   BASE_EXTENSIONS,
   HEADING_TYPE,
@@ -85,5 +86,5 @@ export const useProseEditor = (props: BaseEditorProps) =>
 export const useSimpleProseEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
-    extensions: [CharacterCount.configure({ limit: 250 })],
+    extensions: [CharacterCount.configure({ limit: BANNER_MAX_CHARACTERS })],
   })
