@@ -278,6 +278,7 @@ enum BuildStatusType {
   SUCCEEDED
   FAILED
   STOPPED
+  PENDING // This is when the page is published but a site publish is not yet triggered
 }
 
 model CodeBuildJobs {
@@ -287,11 +288,11 @@ model CodeBuildJobs {
   site                Site            @relation(fields: [siteId], references: [id])
   userId              String
   user                User            @relation(fields: [userId], references: [id])
-  status              BuildStatusType @default(IN_PROGRESS)
+  status              BuildStatusType @default(PENDING)
   // the resource that triggered this build, or null if it was a manual publish
   resourceId          BigInt?
   resource            Resource?       @relation(fields: [resourceId], references: [id])
-  startedAt           DateTime        @default(now())
+  startedAt           DateTime?
   // Whether the email notification has successfully been sent (can be retried if failed)
   emailSent           Boolean         @default(false)
   // Is the build triggered by a scheduled publish or a manual publish

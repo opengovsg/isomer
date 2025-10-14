@@ -2,27 +2,12 @@ import type { Logger } from "pino"
 
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
-  addCodeBuildAndMarkSupersededBuild,
   computeBuildChanges,
   startProjectById,
+  updateCodejobsForSite,
 } from "./utils"
 
-export const publishSite = async (
-  logger: Logger<string>,
-  {
-    siteId,
-    userId,
-    resourceId,
-    isScheduled,
-    addCodebuildJobRow,
-  }: {
-    siteId: number
-    userId: string
-    isScheduled?: boolean
-    resourceId?: string
-    addCodebuildJobRow?: boolean
-  },
-) => {
+export const publishSite = async (logger: Logger<string>, siteId: number) => {
   // Step 1: Get the CodeBuild ID associated with the site
   const site = await getSiteNameAndCodeBuildId(siteId)
   const { codeBuildId } = site
@@ -40,14 +25,10 @@ export const publishSite = async (
   // Step 2: Determine if a new build should be started
   const buildChanges = await computeBuildChanges(logger, codeBuildId)
   if (!buildChanges.isNewBuildNeeded) {
-    if (addCodebuildJobRow)
-      await addCodeBuildAndMarkSupersededBuild({
-        buildChanges,
-        resourceId,
-        siteId,
-        userId,
-        isScheduled,
-      })
+    await updateCodejobsForSite({
+      buildChanges,
+      siteId,
+    })
     return
   }
 
@@ -61,15 +42,11 @@ export const publishSite = async (
     "Started new CodeBuild project run",
   )
 
-  if (addCodebuildJobRow)
-    await addCodeBuildAndMarkSupersededBuild({
-      buildChanges: {
-        ...buildChanges,
-        startedBuild,
-      },
-      resourceId,
-      siteId,
-      userId,
-      isScheduled,
-    })
+  await updateCodejobsForSite({
+    buildChanges: {
+      ...buildChanges,
+      startedBuild,
+    },
+    siteId,
+  })
 }
