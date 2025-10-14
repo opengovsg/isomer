@@ -81,7 +81,7 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
             isSaving={isSavingNavbar}
           />
         </GridItem>
-        <GridItem colSpan={1}>
+        <GridItem colSpan={1} overflowX="scroll">
           <EditNavbarPreview
             siteId={Number(siteId)}
             previewNavbarState={previewNavbarState}
