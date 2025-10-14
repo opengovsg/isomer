@@ -73,7 +73,7 @@ const FooterSettingsPage: NextPageWithLayout = () => {
             isSaving={isSavingFooter}
           />
         </GridItem>
-        <GridItem colSpan={1}>
+        <GridItem colSpan={1} overflowX="scroll">
           <EditFooterPreview
             siteId={Number(siteId)}
             previewFooterState={previewFooterState}
