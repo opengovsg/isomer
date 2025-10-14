@@ -6,6 +6,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { EditFooterPreview } from "~/features/settings/EditFooterPreview"
 import { FooterEditor } from "~/features/settings/FooterEditor"
@@ -51,22 +52,35 @@ const FooterSettingsPage: NextPageWithLayout = () => {
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
   return (
-    <Grid h="full" w="100%" templateColumns="minmax(37.25rem, 1fr) 1fr" gap={0}>
-      <GridItem colSpan={1} overflow="auto" minW="30rem">
-        <FooterEditor
-          previewFooterState={previewFooterState}
-          setPreviewFooterState={setPreviewFooterState}
-          onSave={handleSaveFooter}
-          isSaving={isSavingFooter}
-        />
-      </GridItem>
-      <GridItem colSpan={1}>
-        <EditFooterPreview
-          siteId={Number(siteId)}
-          previewFooterState={previewFooterState}
-        />
-      </GridItem>
-    </Grid>
+    <>
+      <UnsavedSettingModal
+        isOpen={isOpen}
+        onClose={() => setNextUrl("")}
+        nextUrl={nextUrl}
+      />
+
+      <Grid
+        h="full"
+        w="100%"
+        templateColumns="minmax(37.25rem, 1fr) 1fr"
+        gap={0}
+      >
+        <GridItem colSpan={1} overflow="auto" minW="30rem">
+          <FooterEditor
+            previewFooterState={previewFooterState}
+            setPreviewFooterState={setPreviewFooterState}
+            onSave={handleSaveFooter}
+            isSaving={isSavingFooter}
+          />
+        </GridItem>
+        <GridItem colSpan={1}>
+          <EditFooterPreview
+            siteId={Number(siteId)}
+            previewFooterState={previewFooterState}
+          />
+        </GridItem>
+      </Grid>
+    </>
   )
 }
 
