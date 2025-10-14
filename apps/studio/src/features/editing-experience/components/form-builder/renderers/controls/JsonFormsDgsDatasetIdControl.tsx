@@ -97,11 +97,6 @@ const DgsDatasetIdModal = ({
     reValidateMode: "onChange",
   })
 
-  // Update inputValue when initialValue changes (when modal opens)
-  useEffect(() => {
-    setInputValue(initialValueUrl)
-  }, [initialValueUrl])
-
   // Handle dataset validation
   useEffect(() => {
     if (isValidatingDataset || !datasetId) return
@@ -134,11 +129,6 @@ const DgsDatasetIdModal = ({
     }
   })
 
-  const handleClose = () => {
-    onClose()
-    setInputValue(initialValueUrl)
-  }
-
   const FeedbackMessage = () => {
     if (errors.datasetId) {
       return <FormErrorMessage>{errors.datasetId.message}</FormErrorMessage>
@@ -160,7 +150,7 @@ const DgsDatasetIdModal = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <form onSubmit={onSubmit}>
@@ -177,13 +167,11 @@ const DgsDatasetIdModal = ({
                 fontFamily="monospace"
                 placeholder="Paste dataset URL here"
                 value={inputValue}
+                {...register("datasetId")}
                 onChange={(e) => {
                   setInputValue(e.target.value)
                   void register("datasetId").onChange(e)
                 }}
-                onBlur={register("datasetId").onBlur}
-                name={register("datasetId").name}
-                ref={register("datasetId").ref}
                 isDisabled={isValidatingDataset}
                 aria-label={inputValue}
               />
@@ -211,7 +199,7 @@ const DgsDatasetIdModal = ({
               <Button
                 variant="clear"
                 color="base.content.default"
-                onClick={handleClose}
+                onClick={onClose}
               >
                 Cancel
               </Button>
@@ -256,12 +244,14 @@ export function JsonFormsDgsDatasetIdControl({
 
   return (
     <>
-      <DgsDatasetIdModal
-        isOpen={isDgsModalOpen}
-        onClose={onDgsModalClose}
-        onSave={(datasetId) => handleDatasetIdSave(datasetId)}
-        initialValue={data || ""}
-      />
+      {isDgsModalOpen && (
+        <DgsDatasetIdModal
+          isOpen={isDgsModalOpen}
+          onClose={onDgsModalClose}
+          onSave={(datasetId) => handleDatasetIdSave(datasetId)}
+          initialValue={data || ""}
+        />
+      )}
 
       <Box>
         <FormControl isRequired={required} isInvalid={!!errors}>
