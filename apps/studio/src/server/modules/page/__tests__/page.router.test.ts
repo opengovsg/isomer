@@ -29,10 +29,8 @@ import {
 
 import type { User } from "../../database"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
-import {
-  getJobIdFromResourceIdAndScheduledAt,
-  scheduledPublishQueue,
-} from "~/server/bullmq/queues/schedule-publish"
+import { scheduledPublishQueue } from "~/server/bullmq/queues/schedule-publish"
+import { getJobIdFromResourceIdAndScheduledAt } from "~/server/bullmq/queues/utils"
 import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db } from "../../database"
@@ -2110,6 +2108,7 @@ describe("page.router", async () => {
         resourceId: Number(expectedPage.id),
         siteId: site.id,
         userId: session.userId,
+        scheduledAt: scheduledAt.toISOString(),
       })
       expect(job!.opts.delay).toBeCloseTo(
         expectedDate.getTime() - FIXED_NOW.getTime(),
@@ -2124,7 +2123,7 @@ describe("page.router", async () => {
           before: omit(expectedPage, ["updatedAt", "createdAt"]),
           // NOTE: Need to convert expectedDate to ISO string as the comparison is done with the DB value which is in ISO format
           after: omit(
-            { ...expectedPage, scheduledAt: expectedDate.toISOString() },
+            { ...expectedPage, scheduledAt: scheduledAt.toISOString() },
             ["updatedAt", "createdAt"],
           ),
         },

@@ -75,9 +75,10 @@ describe("scheduled-publish", async () => {
     })
     it("publishes a resource and updates the codebuildjobs table", async () => {
       // Arrange
+      const scheduledAt = FIXED_NOW
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
-        scheduledAt: FIXED_NOW,
+        scheduledAt,
       })
       await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
@@ -88,7 +89,12 @@ describe("scheduled-publish", async () => {
       // Act
       await publishScheduledResource(
         "test-job-id",
-        { resourceId: Number(page.id), siteId: site.id, userId: user.id },
+        {
+          resourceId: Number(page.id),
+          siteId: site.id,
+          userId: user.id,
+          scheduledAt: scheduledAt.toISOString(),
+        },
         0,
       )
 
@@ -112,18 +118,20 @@ describe("scheduled-publish", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(resource.scheduledAt).toBeNull()
-      // expect the codebuildjobs table to be updated with the new build
-      const codebuildjob = await db
+      // expect the codebuildjobs table to be updated correctly
+      const codebuildjobs = await db
         .selectFrom("CodeBuildJobs")
-        .where("buildId", "=", "test-build-id")
+        .where("buildId", "is", null)
+        .where("siteId", "=", site.id)
         .selectAll()
-        .executeTakeFirstOrThrow()
+        .execute()
+      expect(codebuildjobs).toHaveLength(1)
+      const [codebuildjob] = codebuildjobs
       expect(codebuildjob).toMatchObject({
         siteId: site.id,
         userId: user.id,
-        buildId: "test-build-id",
-        startedAt: FIXED_NOW,
-        status: "IN_PROGRESS",
+        startedAt: null,
+        status: "PENDING",
       })
       // expect the audit log to be created with the correct info
       const auditLogs = await db
@@ -140,9 +148,10 @@ describe("scheduled-publish", async () => {
     })
     it("does not publish the resource IF the scheduledAt time is outside the buffer", async () => {
       // Arrange
+      const scheduledAt = addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1) // beyond the buffer
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
-        scheduledAt: addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1), // beyond the buffer
+        scheduledAt,
       })
       await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
@@ -153,7 +162,12 @@ describe("scheduled-publish", async () => {
       // Act
       const res = await publishScheduledResource(
         "test-job-id",
-        { resourceId: Number(page.id), siteId: site.id, userId: user.id },
+        {
+          resourceId: Number(page.id),
+          siteId: site.id,
+          userId: user.id,
+          scheduledAt: scheduledAt.toISOString(),
+        },
         0,
       )
 
@@ -184,9 +198,10 @@ describe("scheduled-publish", async () => {
     })
     it("publishes the resource IF the scheduledAt time is outside the buffer, but previous attempts have been made", async () => {
       // Arrange
+      const scheduledAt = addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1)
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
-        scheduledAt: addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1), // beyond the buffer
+        scheduledAt,
       })
       await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
@@ -202,7 +217,12 @@ describe("scheduled-publish", async () => {
       // Act
       await publishScheduledResource(
         "test-job-id",
-        { resourceId: Number(page.id), siteId: site.id, userId: user.id },
+        {
+          resourceId: Number(page.id),
+          siteId: site.id,
+          userId: user.id,
+          scheduledAt: scheduledAt.toISOString(),
+        },
         1, // previous attempts
       )
 
@@ -223,6 +243,7 @@ describe("scheduled-publish", async () => {
     })
     it("fails to publish the resource if the user does not have the right permissions when the job executes", async () => {
       // Arrange
+      const scheduledAt = FIXED_NOW
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
@@ -232,7 +253,12 @@ describe("scheduled-publish", async () => {
       await expect(
         publishScheduledResource(
           "test-job-id",
-          { resourceId: Number(page.id), siteId: site.id, userId: user.id },
+          {
+            resourceId: Number(page.id),
+            siteId: site.id,
+            userId: user.id,
+            scheduledAt: scheduledAt.toISOString(),
+          },
           0,
         ),
       ).rejects.toThrowError(

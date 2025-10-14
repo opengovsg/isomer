@@ -405,7 +405,12 @@ export const pageRouter = router({
         }
         await schedulePublishResource(
           ctx.logger,
-          { resourceId: pageId, siteId, userId: ctx.user.id },
+          {
+            resourceId: pageId,
+            siteId,
+            userId: ctx.user.id,
+            scheduledAt: scheduledAt.toISOString(),
+          },
           scheduledAt,
         )
         await logResourceEvent(tx, {

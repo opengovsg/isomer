@@ -7,11 +7,11 @@ import {
 import { format } from "date-fns"
 
 import type { ScheduledPublishJobData } from "~/server/bullmq/queues/schedule-publish"
+import { scheduledPublishQueue } from "~/server/bullmq/queues/schedule-publish"
 import {
   getJobIdFromResourceIdAndScheduledAt,
   getJobOptionsFromScheduledAt,
-  scheduledPublishQueue,
-} from "~/server/bullmq/queues/schedule-publish"
+} from "~/server/bullmq/queues/utils"
 
 export const createDefaultPage = ({
   layout,
@@ -84,7 +84,11 @@ export const schedulePublishResource = async (
   await scheduledPublishQueue.add(
     "schedule-publish",
     data,
-    getJobOptionsFromScheduledAt(data.resourceId.toString(), scheduledAt),
+    getJobOptionsFromScheduledAt(
+      data.resourceId.toString(),
+      scheduledAt,
+      scheduledAt.getTime() - Date.now(),
+    ),
   )
   logger.info(
     { resourceId: data.resourceId, scheduledAt },

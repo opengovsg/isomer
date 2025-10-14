@@ -2,25 +2,12 @@ import type { Logger } from "pino"
 
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
-  addCodeBuildAndMarkSupersededBuild,
   computeBuildChanges,
   startProjectById,
+  updateCodejobsForSite,
 } from "./utils"
 
-export const publishSite = async (
-  logger: Logger<string>,
-  {
-    siteId,
-    userId,
-    resourceId,
-    isScheduled,
-  }: {
-    siteId: number
-    userId: string
-    isScheduled?: boolean
-    resourceId?: string
-  },
-) => {
+export const publishSite = async (logger: Logger<string>, siteId: number) => {
   // Step 1: Get the CodeBuild ID associated with the site
   const site = await getSiteNameAndCodeBuildId(siteId)
   const { codeBuildId } = site
@@ -38,12 +25,9 @@ export const publishSite = async (
   // Step 2: Determine if a new build should be started
   const buildChanges = await computeBuildChanges(logger, codeBuildId)
   if (!buildChanges.isNewBuildNeeded) {
-    await addCodeBuildAndMarkSupersededBuild({
+    await updateCodejobsForSite({
       buildChanges,
-      resourceId,
       siteId,
-      userId,
-      isScheduled,
     })
     return
   }
@@ -58,14 +42,11 @@ export const publishSite = async (
     "Started new CodeBuild project run",
   )
 
-  await addCodeBuildAndMarkSupersededBuild({
+  await updateCodejobsForSite({
     buildChanges: {
       ...buildChanges,
       startedBuild,
     },
-    resourceId,
     siteId,
-    userId,
-    isScheduled,
   })
 }

@@ -1,4 +1,4 @@
-import type { Job, JobsOptions } from "bullmq"
+import type { Job } from "bullmq"
 import { Queue, Worker } from "bullmq"
 import { differenceInSeconds } from "date-fns"
 
@@ -17,7 +17,6 @@ import {
 } from "~/server/modules/resource/resource.service"
 import { handleSignal } from "../utils"
 import {
-  BACKOFF,
   defaultOpts,
   REMOVE_ON_COMPLETE_BUFFER,
   REMOVE_ON_FAIL_BUFFER,
@@ -25,8 +24,11 @@ import {
   WORKER_CONCURRENCY,
   WORKER_RETRY_LIMIT,
 } from "./constants"
+import { sitePublishQueue } from "./site-publish"
+import { getJobOptionsFromScheduledAt, handleFailedJob } from "./utils"
 
 export interface ScheduledPublishJobData {
+  scheduledAt: string // the date and time when the resource is scheduled to be published, in ISO format
   resourceId: number // the id of the resource to be scheduled for publish
   siteId: number // the id of the site which the page belongs to
   userId: string // the id of the user who scheduled the publish
@@ -49,41 +51,6 @@ const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
 export const BUFFER_IN_SECONDS = 60 // seconds buffer to allow for slight delays in job processing
 
 /**
- * Get job options for a scheduled publish job
- * @param resourceId The id of the resource to be published
- * @param scheduledAt The date and time when the job is scheduled to run
- * @returns The job options for the scheduled publish job
- */
-export const getJobOptionsFromScheduledAt = (
-  resourceId: string,
-  scheduledAt: Date,
-): JobsOptions => {
-  const delayInMs = scheduledAt.getTime() - Date.now()
-  return {
-    attempts: WORKER_RETRY_LIMIT,
-    backoff: BACKOFF,
-    removeOnComplete: { age: REMOVE_ON_COMPLETE_BUFFER },
-    removeOnFail: { age: REMOVE_ON_FAIL_BUFFER },
-    delay: delayInMs,
-    jobId: getJobIdFromResourceIdAndScheduledAt(resourceId, scheduledAt),
-  }
-}
-
-/**
- * Get the job ID for a scheduled publish job
- * NOTE: job IDs must be unique per queue, so we include the scheduledAt timestamp to ensure uniqueness
- * This is because we might enqueue jobs which are STILL active (ie publishing is in progress), since
- * we 'claim' the job before the publishing completes
- * @param resourceId The id of the resource to be published
- * @param scheduledAt The date and time when the job is scheduled to run
- * @returns The job ID for the scheduled publish job
- */
-export const getJobIdFromResourceIdAndScheduledAt = (
-  resourceId: string,
-  scheduledAt: Date,
-) => `resource-${resourceId}-${scheduledAt.getTime()}`
-
-/**
  * Creates and returns a Worker that processes scheduled publish jobs
  * @returns A Worker that processes scheduled publish jobs
  */
@@ -100,6 +67,17 @@ export const createScheduledPublishWorker = () => {
         },
         logger,
       )
+      await sitePublishQueue.add(
+        "site-publish",
+        { siteId: job.data.siteId },
+        getJobOptionsFromScheduledAt(
+          job.data.siteId.toString(),
+          new Date(job.data.scheduledAt),
+          // add a slight delay for site publish to allow for any eventual consistency issues
+          10_000,
+        ),
+      )
+
       return job.id
     },
     {
@@ -196,6 +174,9 @@ export const publishScheduledResource = async (
     resourceId: page.id,
     user,
     isScheduled: true,
+    // we do not start a site publish here, this should be delegated to a separate job
+    // to avoid race conditions where multiple workers try to start a site publish at the same time
+    startSitePublish: false,
   })
 }
 
@@ -205,60 +186,36 @@ export const scheduledPublishWorker = createScheduledPublishWorker()
 scheduledPublishWorker.on(
   "failed",
   (job: Job<ScheduledPublishJobData> | undefined, err: Error) => {
-    void (async () => {
-      if (!job) {
-        logger.error({
-          message: "Job is undefined in failed event",
-          error: err,
-        })
-        return
-      }
-      const {
-        data: { resourceId, userId, siteId },
-      } = job
-      // Log differently based on number of attempts made
-      logger.error({
-        message:
-          job.attemptsMade >= WORKER_RETRY_LIMIT
-            ? `Publish for page ${resourceId} has failed ${WORKER_RETRY_LIMIT} or more times`
-            : `Attempt ${job.attemptsMade} for ${resourceId} - publish failure`,
-        job,
-        error: err,
-      })
-      try {
-        // Send an email to the user to inform that the publish has failed >= WORKER_RETRY_LIMIT times
-        if (job.attemptsMade >= WORKER_RETRY_LIMIT) {
-          // Get the email of the user who scheduled the publish from the database
-          // We do not pass this in the job data to avoid stale data if the user has been deleted/modified
-          const { email } = await db
-            .selectFrom("User")
-            .where("id", "=", userId)
-            .select("User.email")
-            .executeTakeFirstOrThrow()
+    void handleFailedJob(job, logger, err, {
+      workerName: "ScheduledPublishWorker",
+      retryLimit: WORKER_RETRY_LIMIT,
+      onFinalFailure: async ({
+        data: { userId, resourceId, siteId },
+      }: Job<ScheduledPublishJobData>) => {
+        // Get the email of the user who scheduled the publish from the database
+        const { email } = await db
+          .selectFrom("User")
+          .where("id", "=", userId)
+          .select("User.email")
+          .executeTakeFirstOrThrow()
 
-          // check the growthbook feature flag to see if we should send emails for scheduled publishes
-          const gb = await createGrowthBookContext()
-          if (gb.isOn(ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY)) {
-            // get the resource that was being published
-            const resource = await getPageById(db, {
-              resourceId,
-              siteId,
-            })
-            if (!resource) throw new Error("The resource no longer exists")
-            await sendFailedPublishEmail({
-              recipientEmail: email,
-              isScheduled: true,
-              resource,
-            })
-          }
+        // check the growthbook feature flag to see if we should send emails for scheduled publishes
+        const gb = await createGrowthBookContext()
+        if (gb.isOn(ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY)) {
+          // get the resource that was being published
+          const resource = await getPageById(db, {
+            resourceId,
+            siteId,
+          })
+          if (!resource) throw new Error("The resource no longer exists")
+          await sendFailedPublishEmail({
+            recipientEmail: email,
+            isScheduled: true,
+            resource,
+          })
         }
-      } catch (error) {
-        logger.error({
-          message: `Failed to send failed publish email to ${userId} for resource ${resourceId}`,
-          error,
-        })
-      }
-    })()
+      },
+    })
   },
 )
 

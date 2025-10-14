@@ -555,6 +555,7 @@ interface PublishPageResourceArgs {
   resourceId: string
   isSingpassEnabled?: boolean
   isScheduled: boolean
+  startSitePublish?: boolean
 }
 
 export const publishPageResource = async ({
@@ -563,6 +564,7 @@ export const publishPageResource = async ({
   resourceId,
   user,
   isScheduled,
+  startSitePublish = true,
 }: PublishPageResourceArgs) => {
   await db.transaction().execute(async (tx) => {
     // Step 1: Create a new version
@@ -586,6 +588,16 @@ export const publishPageResource = async ({
       userId: user.id,
     })
 
+    await tx
+      .insertInto("CodeBuildJobs")
+      .values({
+        resourceId,
+        siteId,
+        userId: user.id,
+        isScheduled,
+      })
+      .execute()
+
     if (!version) {
       logger.warn(
         `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
@@ -607,13 +619,8 @@ export const publishPageResource = async ({
     })
   })
 
-  // Step 2: Trigger a publish of the site
-  await publishSite(logger, {
-    siteId,
-    userId: user.id,
-    resourceId,
-    isScheduled,
-  })
+  // Step 2: Trigger a publish of the site, if startSitePublish is true
+  if (startSitePublish) await publishSite(logger, siteId)
 }
 
 /**
@@ -654,11 +661,7 @@ export const publishResource = async (
       metadata: resource,
     })
 
-    await publishSite(logger, {
-      siteId: resource.siteId,
-      userId: byUser.id,
-      resourceId: resource.id,
-    })
+    await publishSite(logger, resource.siteId)
   })
 }
 
@@ -694,7 +697,7 @@ export const publishSiteConfig = async (
       metadata: { site, ...rest },
     })
 
-    await publishSite(logger, { siteId: site.id, userId: byUser.id })
+    await publishSite(logger, site.id)
   })
 }
 

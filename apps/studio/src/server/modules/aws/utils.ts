@@ -19,24 +19,18 @@ import { RECENT_BUILD_THRESHOLD_SECONDS } from "./constants"
 const client = new CodeBuildClient({ region: "ap-southeast-1" })
 
 /**
- * Adds a new CodeBuildJob entry for the newly started build,
- * and marks any stopped builds as superseded by the new build
- * @param tx Transaction
- * @param stoppedBuildId The build ID of the stopped build
- * @param startedBuildId The build ID of the newly started build
+ * This function updates CodeBuildJobs entries for a given site based on the provided build changes.
+ * It links the appropriate build to all pending CodeBuildJobs for the site and marks any stopped builds
+ * as being superseded by a newly started build if applicable.
+ * @param buildChanges The changes in build status indicating whether a new build was started or if an existing one is to be linked.
+ * @param siteId The ID of the site for which the CodeBuildJobs are to be updated.
  */
-export const addCodeBuildAndMarkSupersededBuild = async ({
+export const updateCodejobsForSite = async ({
   buildChanges,
-  resourceId,
   siteId,
-  userId,
-  isScheduled,
 }: {
   buildChanges: BuildChanges
   siteId: number
-  userId: string
-  isScheduled?: boolean
-  resourceId?: string
 }) => {
   let buildIdToLink: string | undefined
   let buildStartTime: Date | undefined
@@ -50,18 +44,18 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
     buildStartTime = buildChanges.latestRunningBuild?.startTime
   }
 
-  // Insert a new row into CodeBuildJobs to link the resourceId, userId, siteId to the build
+  // Link the build to all pending codebuild resources for the site
   await db
-    .insertInto("CodeBuildJobs")
-    .values({
-      siteId,
-      userId,
+    .updateTable("CodeBuildJobs")
+    .set({
       buildId: buildIdToLink,
+      status: "IN_PROGRESS",
       startedAt: buildStartTime,
-      resourceId,
-      isScheduled,
     })
+    .where("siteId", "=", siteId)
+    .where("buildId", "is", null)
     .execute()
+
   // If a new build was started, mark the stopped build (if any) as being superseded by the new build
   if (buildChanges.isNewBuildNeeded && buildChanges.stoppedBuild?.id) {
     await updateStoppedBuild({

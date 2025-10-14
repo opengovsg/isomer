@@ -110,20 +110,20 @@ describe("webhook.router", async () => {
     })
     it("it should update the codebuildjobs table when multiple resources specify the same buildId", async () => {
       // Arrange
-      const { site } = await setupSite()
       const NUM_RESOURCES_WITH_SAME_BUILD_ID = 3
       const ARN = "build/test-id"
       const buildId = buildIdFromArn(ARN)!
+      const { site } = await setupSite()
       // create another 2 builds with the same buildId to simulate multiple resources being published with the same build
-      // NOTE: these don't have to be for the same site
       for (let i = 0; i < NUM_RESOURCES_WITH_SAME_BUILD_ID; i++) {
         await setupCodeBuildJob({
           userId: user.id,
           arn: ARN,
           startedAt: FIXED_NOW,
-          isScheduled: true,
           siteId: site.id,
-          permalink: `test-page-${i}`, // so that the resource is unique
+          isScheduled: true,
+          // ensure unique permalink for each page, otherwise the db insert will fail due to unique constraint
+          permalink: `page-${i + 1}`,
         })
       }
       const caller = getCallerWithMockGrowthbook(session)

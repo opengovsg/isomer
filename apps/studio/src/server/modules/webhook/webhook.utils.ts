@@ -20,7 +20,8 @@ import { db } from "../database"
  * @param buildStatus The new status to set for the build.
  */
 const updateCurrentAndSupersededBuilds = async (
-  buildId: string,
+  buildId: string | null,
+  siteId: number,
   buildStatus: BuildStatusType,
 ) => {
   await db
@@ -29,9 +30,14 @@ const updateCurrentAndSupersededBuilds = async (
       status: buildStatus,
     })
     .where((eb) => {
-      return eb.or([
-        eb("CodeBuildJobs.buildId", "=", buildId),
-        eb("CodeBuildJobs.supersededByBuildId", "=", buildId),
+      return eb.and([
+        buildId
+          ? eb.or([
+              eb("CodeBuildJobs.buildId", "=", buildId),
+              eb("CodeBuildJobs.supersededByBuildId", "=", buildId),
+            ])
+          : eb("CodeBuildJobs.buildId", "is", null),
+        eb("CodeBuildJobs.siteId", "=", siteId),
       ])
     })
     .execute()
@@ -47,15 +53,16 @@ const updateCurrentAndSupersededBuilds = async (
 export const updateCodebuildStatusAndSendEmails = async (
   logger: pino.Logger<string>,
   gb: GrowthBook,
-  buildId: string,
+  buildId: string | null,
+  siteId: number,
   status: BuildStatusType,
 ): Promise<{ codebuildJobIdsForSentEmails: string[] }> => {
   // tracks the ids of builds for which emails were sent successfully
   let codebuildJobIdsForSentEmails: string[] = []
-  await updateCurrentAndSupersededBuilds(buildId, status)
+  await updateCurrentAndSupersededBuilds(buildId, siteId, status)
   // send notification emails on a best-effort basis, so we catch any errors and log them
   try {
-    codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, status)
+    codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, siteId, status)
     logger.info(
       {
         buildId,
@@ -100,7 +107,8 @@ export const updateCodebuildStatusAndSendEmails = async (
  */
 const sendEmails = async (
   gb: GrowthBook,
-  buildId: string,
+  buildId: string | null,
+  siteId: number,
   buildStatus: BuildStatusType,
 ) => {
   const buildsToSendEmails = await db
@@ -109,10 +117,13 @@ const sendEmails = async (
     .innerJoin("Resource", "Resource.id", "CodeBuildJobs.resourceId")
     .where((eb) => {
       return eb.and([
-        eb.or([
-          eb("CodeBuildJobs.buildId", "=", buildId),
-          eb("CodeBuildJobs.supersededByBuildId", "=", buildId),
-        ]),
+        buildId
+          ? eb.or([
+              eb("CodeBuildJobs.buildId", "=", buildId),
+              eb("CodeBuildJobs.supersededByBuildId", "=", buildId),
+            ])
+          : eb("CodeBuildJobs.buildId", "is", null),
+        eb("CodeBuildJobs.siteId", "=", siteId), // ensure we only consider builds for the current site
         eb("CodeBuildJobs.emailSent", "=", false), // only consider builds that haven't had an email sent yet
         eb("Resource.type", "=", ResourceType.Page), // only consider page resources for sending emails
         eb("User.email", "is not", null), // only consider users with an email
