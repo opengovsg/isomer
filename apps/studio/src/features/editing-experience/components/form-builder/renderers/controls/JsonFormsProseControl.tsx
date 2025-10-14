@@ -16,11 +16,13 @@ import {
   useCalloutEditor,
   useProseEditor,
 } from "~/features/editing-experience/hooks/useTextEditor"
+import { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
 import {
   TiptapAccordionEditor,
   TiptapCalloutEditor,
   TiptapProseEditor,
 } from "../TipTapEditor"
+import { TiptapSimpleProseEditor } from "../TipTapEditor/TiptapSimpleProseEditor"
 import { getCustomErrorMessage, isTiptapEditorEmpty } from "./utils"
 
 export const jsonFormsProseControlTester: RankedTester = rankWith(
@@ -31,7 +33,8 @@ export const jsonFormsProseControlTester: RankedTester = rankWith(
         schema.format === "prose" ||
         schema.format === "accordion" ||
         schema.format === "callout" ||
-        schema.format === "contentpic",
+        schema.format === "contentpic" ||
+        schema.format === "simple-prose",
     ),
   ),
 )
@@ -43,6 +46,11 @@ const getEditorHookAndEditor = (
   Editor: typeof TiptapProseEditor
 } => {
   switch (format) {
+    case "simple-prose":
+      return {
+        EditorHook: useSimpleProseEditor,
+        Editor: TiptapSimpleProseEditor,
+      }
     case "accordion":
       return { EditorHook: useAccordionEditor, Editor: TiptapAccordionEditor }
     case "callout":
