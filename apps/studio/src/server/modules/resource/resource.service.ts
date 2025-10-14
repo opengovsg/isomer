@@ -27,6 +27,7 @@ import {
 import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
+import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
 
@@ -590,7 +591,16 @@ export const publishPageResource = async ({
       userId: user.id,
     })
 
-    if (addCodebuildJobRow)
+    if (!version) {
+      logger.warn(
+        `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
+      )
+      return
+    }
+
+    // Only create a CodeBuild job if the site has a CodeBuild project associated with it
+    const { codeBuildId } = await getSiteNameAndCodeBuildId(siteId)
+    if (codeBuildId && addCodebuildJobRow) {
       await tx
         .insertInto("CodeBuildJobs")
         .values({
@@ -600,12 +610,6 @@ export const publishPageResource = async ({
           isScheduled,
         })
         .execute()
-
-    if (!version) {
-      logger.warn(
-        `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
-      )
-      return
     }
 
     const { previousVersion, newVersion } = version
