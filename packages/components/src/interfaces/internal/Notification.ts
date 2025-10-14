@@ -28,6 +28,9 @@ export type NotificationProps = Static<typeof NotificationSchema> & {
   site: IsomerSiteProps
 }
 
-export type NotificationClientProps = PropsWithChildren<
-  Pick<Static<typeof NotificationSchema>, "title">
->
+export type NotificationClientProps = Pick<
+  NotificationProps,
+  "title" | "LinkComponent"
+> & {
+  content: string
+}
