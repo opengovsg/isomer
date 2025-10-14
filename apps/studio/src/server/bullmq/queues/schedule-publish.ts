@@ -15,12 +15,15 @@ import {
   publishPageResource,
   updatePageById,
 } from "~/server/modules/resource/resource.service"
+import { getSiteNameAndCodeBuildId } from "~/server/modules/site/site.service"
 import { handleSignal } from "../utils"
 import {
-  defaultOpts,
   REMOVE_ON_COMPLETE_BUFFER,
   REMOVE_ON_FAIL_BUFFER,
+  SCHEDULED_AT_TOLERANCE_SECONDS,
   SCHEDULED_PUBLISH_QUEUE_NAME,
+  schedulePublishJobOpts,
+  SITE_PUBLISH_BUFFER_SECONDS,
   WORKER_CONCURRENCY,
   WORKER_RETRY_LIMIT,
 } from "./constants"
@@ -43,12 +46,11 @@ export const scheduledPublishQueue = new Queue<ScheduledPublishJobData>(
   SCHEDULED_PUBLISH_QUEUE_NAME,
   {
     connection: RedisClient,
-    defaultJobOptions: defaultOpts,
+    defaultJobOptions: schedulePublishJobOpts,
   },
 )
 
 const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
-export const BUFFER_IN_SECONDS = 60 // seconds buffer to allow for slight delays in job processing
 
 /**
  * Creates and returns a Worker that processes scheduled publish jobs
@@ -67,6 +69,15 @@ export const createScheduledPublishWorker = () => {
         },
         logger,
       )
+      const { codeBuildId } = await getSiteNameAndCodeBuildId(job.data.siteId)
+      if (!codeBuildId) {
+        // If there's no CodeBuild project associated with the site, we skip scheduling a site publish job since there's nothing to build
+        logger.info(
+          { siteId: job.data.siteId },
+          "No CodeBuild project ID has been configured for the site, skipping site publish",
+        )
+        return job.id
+      }
       await sitePublishQueue.add(
         "site-publish",
         { siteId: job.data.siteId },
@@ -74,7 +85,7 @@ export const createScheduledPublishWorker = () => {
           job.data.siteId.toString(),
           new Date(job.data.scheduledAt),
           // add a slight delay for site publish to allow for any eventual consistency issues
-          10_000,
+          SITE_PUBLISH_BUFFER_SECONDS * 1000,
         ),
       )
 
@@ -126,7 +137,7 @@ export const publishScheduledResource = async (
       // and we don't want to block those from going through if the timing is slightly off
       if (
         Math.abs(differenceInSeconds(page.scheduledAt, new Date())) >
-        BUFFER_IN_SECONDS
+        SCHEDULED_AT_TOLERANCE_SECONDS
       ) {
         logger.error(
           { resourceId, jobId, userId },

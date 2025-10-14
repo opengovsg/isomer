@@ -12,10 +12,8 @@ import {
 } from "tests/integration/helpers/seed"
 
 import { db } from "~/server/modules/database"
-import {
-  BUFFER_IN_SECONDS,
-  publishScheduledResource,
-} from "../schedule-publish"
+import { SCHEDULED_AT_TOLERANCE_SECONDS } from "../constants"
+import { publishScheduledResource } from "../schedule-publish"
 
 vi.mock("~/server/modules/aws/utils.ts", async () => {
   const actual = await vi.importActual<
@@ -148,7 +146,10 @@ describe("scheduled-publish", async () => {
     })
     it("does not publish the resource IF the scheduledAt time is outside the buffer", async () => {
       // Arrange
-      const scheduledAt = addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1) // beyond the buffer
+      const scheduledAt = addSeconds(
+        FIXED_NOW,
+        SCHEDULED_AT_TOLERANCE_SECONDS + 1,
+      ) // beyond the buffer
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
         scheduledAt,
@@ -198,7 +199,10 @@ describe("scheduled-publish", async () => {
     })
     it("publishes the resource IF the scheduledAt time is outside the buffer, but previous attempts have been made", async () => {
       // Arrange
-      const scheduledAt = addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1)
+      const scheduledAt = addSeconds(
+        FIXED_NOW,
+        SCHEDULED_AT_TOLERANCE_SECONDS + 1,
+      )
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
         scheduledAt,
