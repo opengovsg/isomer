@@ -35,7 +35,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getParentPath } from "../utils"
 import { EditNavbarItem } from "./EditNavbarItem"
 import { StackableNavbarItem } from "./StackableNavbarItem"
-import { handleMoveItem, isSubItemPath } from "./utils"
+import { handleMoveItem } from "./utils"
 
 export const jsonFormsNavbarControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.NavbarControl,
@@ -92,6 +92,7 @@ export function JsonFormsNavbarControl({
         Actions.update(path, (prevData) =>
           handleMoveItem(
             prevData as NavbarItems["items"],
+            !!(arraySchema.maxItems && data >= arraySchema.maxItems),
             originalPath,
             newPath,
             instruction,
@@ -100,7 +101,7 @@ export function JsonFormsNavbarControl({
         ),
       )
     },
-    [ctx, path],
+    [arraySchema.maxItems, ctx, data, path],
   )
 
   const getChildUiSchema = useCallback(
@@ -126,17 +127,6 @@ export function JsonFormsNavbarControl({
       // Navbar dropzone
       dropTargetForElements({
         element: droppableZoneElement,
-        canDrop: (args) => {
-          const originalPath = args.source.data.navbarId as string
-
-          // Disallow subitems from being dropped into the main navbar if the
-          // maxItems limit has been reached
-          return !(
-            isSubItemPath(originalPath) &&
-            arraySchema.maxItems &&
-            data >= arraySchema.maxItems
-          )
-        },
         onDrop: (args) => {
           // NOTE: The data on the navbar can be obtained from args.source.data.*
           // The dropzone can be found at args.location.current.dropTargets[0]
