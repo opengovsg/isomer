@@ -12,7 +12,7 @@ export const WORKER_RETRY_LIMIT = 3
 export const WORKER_SHUTDOWN_TIMEOUT = 30_000 // 30 seconds
 export const BACKOFF: BackoffOptions = {
   type: "exponential",
-  delay: 10_000, // 10s, then 20s, then 40s etc
+  delay: 1_000, // 1s, then 2s, then 4s etc
 } as const
 
 export const defaultOpts: JobsOptions = {
