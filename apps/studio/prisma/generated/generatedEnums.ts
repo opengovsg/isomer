@@ -46,6 +46,7 @@ export const BuildStatusType = {
   SUCCEEDED: "SUCCEEDED",
   FAILED: "FAILED",
   STOPPED: "STOPPED",
+  PENDING: "PENDING",
 } as const
 export type BuildStatusType =
   (typeof BuildStatusType)[keyof typeof BuildStatusType]
