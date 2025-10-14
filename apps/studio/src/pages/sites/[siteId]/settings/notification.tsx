@@ -103,6 +103,9 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             data={state}
             handleChange={(data) => {
               setState(data)
+              // NOTE: We have to set `isDismissed` here because
+              // we need to show the notification banner again when
+              // the user toggles it on
               if (isEmpty(data)) setIsDismissed(false)
             }}
           />
