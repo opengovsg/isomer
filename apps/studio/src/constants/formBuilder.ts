@@ -26,7 +26,7 @@ export const JSON_FORMS_RANKING = {
   // NOTE: needs to have higher priority than array
   SocialMediaControl: 5,
   AllOfControl: 3,
-  // NOTE: Needs to be avbove `AnyOfControl`
+  // NOTE: Needs to be above `AnyOfControl`
   SearchSGControl: 4,
   AnyOfControl: 3,
   CategoryControl: 3,
