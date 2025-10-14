@@ -7,6 +7,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { EditNavbarPreview } from "~/features/settings/EditNavbarPreview"
 import { NavbarEditor } from "~/features/settings/NavbarEditor"
@@ -58,23 +59,36 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
   return (
-    <Grid h="full" w="100%" templateColumns="minmax(37.25rem, 1fr) 1fr" gap={0}>
-      <GridItem colSpan={1} overflow="auto" minW="30rem" h="full">
-        <NavbarEditor
-          savedNavbarState={content}
-          previewNavbarState={previewNavbarState}
-          setPreviewNavbarState={setPreviewNavbarState}
-          onSave={handleSaveNavbar}
-          isSaving={isSavingNavbar}
-        />
-      </GridItem>
-      <GridItem colSpan={1}>
-        <EditNavbarPreview
-          siteId={Number(siteId)}
-          previewNavbarState={previewNavbarState}
-        />
-      </GridItem>
-    </Grid>
+    <>
+      <UnsavedSettingModal
+        isOpen={isOpen}
+        onClose={() => setNextUrl("")}
+        nextUrl={nextUrl}
+      />
+
+      <Grid
+        h="full"
+        w="100%"
+        templateColumns="minmax(37.25rem, 1fr) 1fr"
+        gap={0}
+      >
+        <GridItem colSpan={1} overflow="auto" minW="30rem" h="full">
+          <NavbarEditor
+            savedNavbarState={content}
+            previewNavbarState={previewNavbarState}
+            setPreviewNavbarState={setPreviewNavbarState}
+            onSave={handleSaveNavbar}
+            isSaving={isSavingNavbar}
+          />
+        </GridItem>
+        <GridItem colSpan={1}>
+          <EditNavbarPreview
+            siteId={Number(siteId)}
+            previewNavbarState={previewNavbarState}
+          />
+        </GridItem>
+      </Grid>
+    </>
   )
 }
 

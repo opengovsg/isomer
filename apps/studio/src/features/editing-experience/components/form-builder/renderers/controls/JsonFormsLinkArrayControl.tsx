@@ -354,7 +354,6 @@ export function JsonFormsArrayLinkControl({
           schema={schema}
           uischema={getChildUiSchema(composePaths(path, `${selectedIndex}`))}
           path={composePaths(path, `${selectedIndex}`)}
-          // handleRemoveItem={handleRemoveItem(path, selectedIndex)}
           handleRemoveItem={() =>
             setSelectedPathForDeletion(composePaths(path, `${selectedIndex}`))
           }
@@ -473,6 +472,9 @@ export function JsonFormsArrayLinkControl({
                           onDeleteItem={() =>
                             setSelectedPathForDeletion(childPath)
                           }
+                          resetLink={() => {
+                            handleRemoveItem(path, index)()
+                          }}
                         />
                       )}
                     </Draggable>
