@@ -94,14 +94,14 @@ export const NavbarAddonsSchema = Type.Object({
         label: Type.Optional(
           Type.String({
             title: "Label for links",
-            maxLength: 30,
+            maxLength: 50,
           }),
         ),
         items: Type.Array(
           Type.Object({
             name: Type.String({
               title: "Name of the utility link",
-              maxLength: 30,
+              maxLength: 50,
             }),
             url: Type.String({
               title: "URL destination of the utility link",
