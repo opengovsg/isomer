@@ -1,6 +1,3 @@
-// NOTE: This is a custom handrolled higher order component.
-// It is needed to provide both `uischemas` as well as the `handleChange` prop.
-// The implementation here is taken with reference from:
 import { ComponentType, memo } from "react"
 import { ControlWithDetailProps } from "@jsonforms/core"
 import {
@@ -10,7 +7,6 @@ import {
   withJsonFormsContext,
 } from "@jsonforms/react"
 
-// https://github.com/eclipsesource/jsonforms/blob/f815e1cde8794380d59e55c34beff17cf0ffb565/packages/react/src/JsonFormsContext.tsx
 export const withJsonFormsControlWithDetailProps = (
   Component: ComponentType<ControlWithDetailProps>,
 ) => {
@@ -19,6 +15,10 @@ export const withJsonFormsControlWithDetailProps = (
   )
 }
 
+// NOTE: This is a custom handrolled higher order component.
+// It is needed to provide both `uischemas` as well as the `handleChange` prop.
+// The implementation here is taken with reference from:
+// https://github.com/eclipsesource/jsonforms/blob/f815e1cde8794380d59e55c34beff17cf0ffb565/packages/react/src/JsonFormsContext.tsx
 const withContextToControlWithDetailProps = (
   Component: ComponentType<ControlWithDetailProps>,
 ) =>
