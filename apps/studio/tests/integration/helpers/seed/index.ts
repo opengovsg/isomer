@@ -640,6 +640,8 @@ type SetupCodeBuildJobParams = Pick<CodeBuildJobs, "userId" | "startedAt"> & {
   arn: string
 } & Partial<Pick<CodeBuildJobs, "status" | "emailSent" | "isScheduled">> & {
     omitResourceId?: boolean
+    siteId?: number
+    permalink?: string
   }
 
 export const setupCodeBuildJob = async ({
@@ -647,6 +649,8 @@ export const setupCodeBuildJob = async ({
   startedAt,
   isScheduled,
   arn,
+  siteId,
+  permalink,
   status = "IN_PROGRESS",
   emailSent = false,
   omitResourceId = false,
@@ -657,6 +661,8 @@ export const setupCodeBuildJob = async ({
   }
   const { page, site } = await setupPageResource({
     resourceType: ResourceType.Page,
+    siteId,
+    permalink,
   })
   const codebuildJob = await db
     .insertInto("CodeBuildJobs")
