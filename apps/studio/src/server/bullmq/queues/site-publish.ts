@@ -9,10 +9,10 @@ import { publishSite } from "~/server/modules/aws/codebuild.service"
 import { updateCodebuildStatusAndSendEmails } from "~/server/modules/webhook/webhook.utils"
 import { handleSignal } from "../utils"
 import {
-  defaultOpts,
   REMOVE_ON_COMPLETE_BUFFER,
   REMOVE_ON_FAIL_BUFFER,
   SITE_PUBLISH_QUEUE_NAME,
+  sitePublishJobOpts,
   WORKER_CONCURRENCY,
   WORKER_RETRY_LIMIT,
 } from "./constants"
@@ -31,7 +31,7 @@ export const sitePublishQueue = new Queue<SitePublishJobData>(
   SITE_PUBLISH_QUEUE_NAME,
   {
     connection: RedisClient,
-    defaultJobOptions: defaultOpts,
+    defaultJobOptions: sitePublishJobOpts,
   },
 )
 

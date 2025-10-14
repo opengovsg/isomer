@@ -31,7 +31,7 @@ export const getJobIdFromResourceIdAndScheduledAt = (
 export const getJobOptionsFromScheduledAt = (
   resourceId: string,
   scheduledAt: Date,
-  delay: number,
+  delayMs: number,
 ): JobsOptions => {
   return {
     attempts: WORKER_RETRY_LIMIT,
@@ -39,7 +39,7 @@ export const getJobOptionsFromScheduledAt = (
     removeOnComplete: { age: REMOVE_ON_COMPLETE_BUFFER },
     removeOnFail: { age: REMOVE_ON_FAIL_BUFFER },
     jobId: getJobIdFromResourceIdAndScheduledAt(resourceId, scheduledAt),
-    delay,
+    delay: delayMs,
   }
 }
 
