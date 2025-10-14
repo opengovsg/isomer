@@ -15,7 +15,7 @@ const Notification = ({
     content instanceof Array ? (
       <BaseParagraph
         content={getTextAsHtml({ site, content })}
-        className="prose-body-base [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
+        className="prose-body-base [&:not(:last-child)]:mb-0"
         site={site}
         LinkComponent={LinkComponent}
       />
