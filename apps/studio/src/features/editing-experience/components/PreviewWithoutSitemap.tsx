@@ -40,7 +40,7 @@ function SuspendablePreview({
   siteMap,
   ...props
 }: PreviewProps) {
-  const [siteConfig] = trpc.site.getConfig.useSuspenseQuery({ id: siteId })
+  const [baseSiteConfig] = trpc.site.getConfig.useSuspenseQuery({ id: siteId })
   const [{ content: footer }] = trpc.site.getFooter.useSuspenseQuery({
     id: siteId,
   })
@@ -55,21 +55,26 @@ function SuspendablePreview({
     },
   })
 
+  const siteConfig = {
+    ...baseSiteConfig,
+    navbar,
+    footerItems: footer,
+    ...overrides.site,
+  }
+
   return (
     <RenderEngine
       {...renderProps}
       // TODO: fixup all the typing errors
       // @ts-expect-error to fix when types are proper
       site={{
+        ...siteConfig,
         siteMap,
         environment: "production",
-        ...siteConfig,
         search: {
           type: "localSearch",
           searchUrl: "/search",
         },
-        navbar: navbar,
-        footerItems: footer,
         assetsBaseUrl: ASSETS_BASE_URL,
       }}
       LinkComponent={FakeLink}
