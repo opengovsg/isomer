@@ -79,7 +79,7 @@ export const getTagFilters = (
       items: filter.items.sort((a, b) => {
         const category = tagCategories.find((cat) => cat.label === filter.id)
         const tagOptionIds =
-          category?.options?.map((option) => option.label) || []
+          category?.options?.map((option) => option.label) ?? []
         return tagOptionIds.indexOf(a.id) - tagOptionIds.indexOf(b.id)
       }),
     }
