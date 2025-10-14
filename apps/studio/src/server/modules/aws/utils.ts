@@ -1,4 +1,3 @@
-import type { Build } from "@aws-sdk/client-codebuild"
 import type { Logger } from "pino"
 import {
   BatchGetBuildsCommand,
@@ -9,9 +8,13 @@ import {
 } from "@aws-sdk/client-codebuild"
 import { TRPCError } from "@trpc/server"
 
+import type {
+  BuildChanges,
+  RequiresNewBuild,
+  RequiresNoNewBuild,
+} from "./types"
 import { db } from "../database"
 import { RECENT_BUILD_THRESHOLD_SECONDS } from "./constants"
-import { BuildChanges } from "./types"
 
 const client = new CodeBuildClient({ region: "ap-southeast-1" })
 
@@ -35,29 +38,16 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
   isScheduled?: boolean
   resourceId?: string
 }) => {
-  let buildIdToLink: string
-  let buildStartTime: Date
+  let buildIdToLink: string | undefined
+  let buildStartTime: Date | undefined
   if (buildChanges.isNewBuildNeeded) {
     const { id: startedBuildId, startTime: startedBuildTime } =
       buildChanges.startedBuild
-    if (!startedBuildId || !startedBuildTime)
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Started build ID or time is missing",
-      })
     buildIdToLink = startedBuildId
     buildStartTime = startedBuildTime
   } else {
-    const { latestRunningBuild } = buildChanges
-    if (!latestRunningBuild?.id || !latestRunningBuild.startTime) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message:
-          "No new build was started, but there is no latest running build",
-      })
-    }
-    buildIdToLink = latestRunningBuild.id
-    buildStartTime = latestRunningBuild.startTime
+    buildIdToLink = buildChanges.latestRunningBuild?.id
+    buildStartTime = buildChanges.latestRunningBuild?.startTime
   }
 
   // Insert a new row into CodeBuildJobs to link the resourceId, userId, siteId to the build
@@ -75,7 +65,7 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
   // If a new build was started, mark the stopped build (if any) as being superseded by the new build
   if (buildChanges.isNewBuildNeeded && buildChanges.stoppedBuild?.id) {
     await updateStoppedBuild({
-      startedBuildId: buildIdToLink,
+      startedBuildId: buildChanges.startedBuild.id,
       stoppedBuildId: buildChanges.stoppedBuild.id,
     })
   }
@@ -118,10 +108,7 @@ export const updateStoppedBuild = async ({
 export const computeBuildChanges = async (
   logger: Logger<string>,
   projectId: string,
-): Promise<
-  | { stoppedBuild?: Build; isNewBuildNeeded: true }
-  | { latestRunningBuild?: Build; isNewBuildNeeded: false }
-> => {
+): Promise<Omit<RequiresNewBuild, "startedBuild"> | RequiresNoNewBuild> => {
   const now = new Date()
   const thresholdTimeAgo = new Date(
     now.getTime() - RECENT_BUILD_THRESHOLD_SECONDS * 1000,
@@ -184,7 +171,7 @@ export const computeBuildChanges = async (
         })
         .at(0)
 
-      if (!latestBuild) {
+      if (!latestBuild?.id || !latestBuild.startTime) {
         logger.error(
           { projectId },
           "Unable to determine the latest build to stop",
@@ -198,14 +185,31 @@ export const computeBuildChanges = async (
 
       await client.send(stopBuildCommand)
 
-      return { stoppedBuild: latestBuild, isNewBuildNeeded: true }
+      return {
+        stoppedBuild: {
+          ...latestBuild,
+          id: latestBuild.id,
+          startTime: latestBuild.startTime,
+        },
+        isNewBuildNeeded: true,
+      }
     }
 
     // Any other case, we should not start a new build
-    // Return the latest running build
+    const [runningBuild] = runningBuilds ?? []
+    if (!runningBuild?.id || !runningBuild.startTime) {
+      logger.error(
+        { projectId },
+        "Unable to determine the latest running build",
+      )
+      return { isNewBuildNeeded: true }
+    }
     return {
       isNewBuildNeeded: false,
-      latestRunningBuild: runningBuilds?.at(0),
+      latestRunningBuild: {
+        id: runningBuild.id,
+        startTime: runningBuild.startTime,
+      },
     }
   } catch (error) {
     logger.error(
