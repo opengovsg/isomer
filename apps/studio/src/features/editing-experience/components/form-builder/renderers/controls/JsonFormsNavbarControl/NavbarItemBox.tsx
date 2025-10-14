@@ -240,7 +240,7 @@ export const NavbarItemBox = ({
             top={index === 0 ? "-24%" : "-80%"}
             bottom="57%"
             w="2px"
-            bg={isSubItemDragging ? "transparent" : "base.divider.strong"}
+            bg="base.divider.strong"
             sx={{
               // Hide the trunk line if a child item has the "hide-trunk-line"
               // class (used when dragging an item to avoid visual clutter)
@@ -263,7 +263,7 @@ export const NavbarItemBox = ({
                   left: "-1.5rem",
                   width: "1.5rem",
                   height: "2px",
-                  bg: isSubItemDragging ? "transparent" : "base.divider.strong",
+                  bg: "base.divider.strong",
                 }
               : undefined
           }
