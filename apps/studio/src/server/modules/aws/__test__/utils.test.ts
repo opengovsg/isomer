@@ -6,7 +6,8 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 
-import { db, User } from "../../database"
+import type { User } from "../../database"
+import { db } from "../../database"
 import { updateStoppedBuild } from "../utils"
 
 describe("updateStoppedBuild", () => {
@@ -43,6 +44,9 @@ describe("updateStoppedBuild", () => {
     // Act
     // stop the main build (1) and mark it and the builds it has superseded (4) as being
     // superseded by the newly started build
+    if (!codebuildJob.buildId) {
+      throw new Error("Codebuild job has no buildId provided")
+    }
     await updateStoppedBuild({
       stoppedBuildId: codebuildJob.buildId,
       startedBuildId: NEWLY_STARTED_BUILD_ID,
