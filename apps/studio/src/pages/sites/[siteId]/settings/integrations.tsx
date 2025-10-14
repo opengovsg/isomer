@@ -3,7 +3,7 @@ import type {
   SimpleIntegrationsSettings,
 } from "@opengovsg/isomer-components"
 import { useState } from "react"
-import { Box, SimpleGrid, Text } from "@chakra-ui/react"
+import { Box, Grid, GridItem, Text } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
   ComplexIntegrationsSettingsSchema,
@@ -111,72 +111,75 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <Box overflow="auto" height={0} minH="100%" onSubmit={onSubmit}>
-        <SimpleGrid columns={9} h="100%">
-          <SettingsEditingLayout>
-            <SettingsHeader
-              // TODO: disabled state using same validator
-              onClick={onSubmit}
-              title="Integrations"
-              icon={BiWrench}
-              isLoading={updateSiteIntegrationsMutation.isPending}
+      <Grid
+        h="full"
+        w="100%"
+        templateColumns="minmax(37.25rem, 1fr) 1fr"
+        gap={0}
+      >
+        <GridItem as={SettingsEditingLayout} colSpan={1} overflow="auto">
+          <SettingsHeader
+            // TODO: disabled state using same validator
+            onClick={onSubmit}
+            title="Integrations"
+            icon={BiWrench}
+            isLoading={updateSiteIntegrationsMutation.isPending}
+          />
+          <Box w="100%">
+            <FormBuilder<SimpleIntegrationsSettings>
+              schema={SimpleIntegrationsSettingsSchema}
+              validateFn={simpleIntegrationSettingsValidateFn}
+              data={simpleIntegrationSettings}
+              handleChange={(data) => {
+                setSimpleIntegrationSettings(data)
+              }}
             />
-            <Box w="100%">
-              <FormBuilder<SimpleIntegrationsSettings>
-                schema={SimpleIntegrationsSettingsSchema}
-                validateFn={simpleIntegrationSettingsValidateFn}
-                data={simpleIntegrationSettings}
-                handleChange={(data) => {
-                  setSimpleIntegrationSettings(data)
-                }}
-              />
-            </Box>
+          </Box>
 
-            {/* NOTE: Technically we can use a literal for this
+          {/* NOTE: Technically we can use a literal for this
               and keep it entirely in json forms, but it feels off
               to keep rendering data in json forms.
             */}
-            <Box>
-              <Text textStyle="subhead-2" mb="0.25rem">
-                User support
-              </Text>
-              <Text textStyle="body-2">
-                You can choose from AskGov and VICA. Make sure you’re onboarded
-                to the platform before linking it to your site.
-              </Text>
-            </Box>
-            <WidgetProvider
-              activeWidget={(askgov && "askgov") ?? (vica && "vica") ?? null}
-            >
-              <FormBuilder<ComplexIntegrationsSettings>
-                schema={ComplexIntegrationsSettingsSchema}
-                validateFn={complexIntegrationSettingsValidateFn}
-                data={complexIntegrationSettings}
-                handleChange={(data) => {
-                  if (data.vica) {
-                    setComplexIntegrationSettings({
-                      ...data,
-                      vica: {
-                        ...data.vica,
-                        "app-name": agencyName || "",
-                      },
-                    })
-                  } else {
-                    setComplexIntegrationSettings(data)
-                  }
-                }}
-              />
-            </WidgetProvider>
-          </SettingsEditingLayout>
-          <Box gridColumn="6 / 10">
-            <EditSettingsPreview
-              siteName={name}
-              {...complexIntegrationSettings}
-              {...simpleIntegrationSettings}
-            />
+          <Box>
+            <Text textStyle="subhead-2" mb="0.25rem">
+              User support
+            </Text>
+            <Text textStyle="body-2">
+              You can choose from AskGov and VICA. Make sure you’re onboarded to
+              the platform before linking it to your site.
+            </Text>
           </Box>
-        </SimpleGrid>
-      </Box>
+          <WidgetProvider
+            activeWidget={(askgov && "askgov") ?? (vica && "vica") ?? null}
+          >
+            <FormBuilder<ComplexIntegrationsSettings>
+              schema={ComplexIntegrationsSettingsSchema}
+              validateFn={complexIntegrationSettingsValidateFn}
+              data={complexIntegrationSettings}
+              handleChange={(data) => {
+                if (data.vica) {
+                  setComplexIntegrationSettings({
+                    ...data,
+                    vica: {
+                      ...data.vica,
+                      "app-name": agencyName || "",
+                    },
+                  })
+                } else {
+                  setComplexIntegrationSettings(data)
+                }
+              }}
+            />
+          </WidgetProvider>
+        </GridItem>
+        <GridItem colSpan={1}>
+          <EditSettingsPreview
+            siteName={name}
+            {...complexIntegrationSettings}
+            {...simpleIntegrationSettings}
+          />
+        </GridItem>
+      </Grid>
     </ErrorProvider>
   )
 }
