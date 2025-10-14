@@ -13,7 +13,7 @@ import {
 } from "@jsonforms/core"
 import { JsonFormsDispatch } from "@jsonforms/react"
 import { Switch } from "@opengovsg/design-system-react"
-import { filter } from "lodash"
+import filter from "lodash/filter"
 
 import type { WidgetType } from "../../contexts/WidgetContext"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
