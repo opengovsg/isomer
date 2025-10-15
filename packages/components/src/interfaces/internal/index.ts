@@ -21,6 +21,8 @@ export { LocalSearchSchema, type LocalSearchProps } from "./LocalSearchInputBox"
 export type { MastheadProps } from "./Masthead"
 export {
   NavbarSchema,
+  NavbarAddonsSchema,
+  NavbarItemsSchema,
   type NavbarProps,
   type NavbarClientProps,
   type NavbarSchemaType,
