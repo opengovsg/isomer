@@ -1,14 +1,17 @@
+import type { AgencySettings } from "@opengovsg/isomer-components"
 import { useState } from "react"
-import { Grid, GridItem } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-import {
-  AgencySettings,
-  AgencySettingsSchema,
-} from "@opengovsg/isomer-components"
+import { AgencySettingsSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiWrench } from "react-icons/bi"
 
+import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import {
+  SettingsEditorGridItem,
+  SettingsGrid,
+  SettingsPreviewGridItem,
+} from "~/components/Settings"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
@@ -19,7 +22,6 @@ import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -76,13 +78,8 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <Grid
-        h="full"
-        w="100%"
-        templateColumns="minmax(37.25rem, 1fr) 1fr"
-        gap={0}
-      >
-        <GridItem as={SettingsEditingLayout} colSpan={1} overflow="auto">
+      <SettingsGrid>
+        <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader
             title="Name and agency"
             icon={BiWrench}
@@ -100,11 +97,11 @@ const AgencySettingsPage: NextPageWithLayout = () => {
               }}
             />
           </ErrorProvider>
-        </GridItem>
-        <GridItem colSpan={1}>
+        </SettingsEditorGridItem>
+        <SettingsPreviewGridItem>
           <EditSettingsPreview siteName={state.siteName} />
-        </GridItem>
-      </Grid>
+        </SettingsPreviewGridItem>
+      </SettingsGrid>
     </ErrorProvider>
   )
 }

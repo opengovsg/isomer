@@ -3,7 +3,7 @@ import type {
   SimpleIntegrationsSettings,
 } from "@opengovsg/isomer-components"
 import { useState } from "react"
-import { Box, Grid, GridItem, Text } from "@chakra-ui/react"
+import { Box, Text } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
   ComplexIntegrationsSettingsSchema,
@@ -16,6 +16,11 @@ import { BiWrench } from "react-icons/bi"
 
 import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import {
+  SettingsEditorGridItem,
+  SettingsGrid,
+  SettingsPreviewGridItem,
+} from "~/components/Settings"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { WidgetProvider } from "~/features/editing-experience/components/form-builder/contexts/WidgetContext"
@@ -111,13 +116,8 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <Grid
-        h="full"
-        w="100%"
-        templateColumns="minmax(37.25rem, 1fr) 1fr"
-        gap={0}
-      >
-        <GridItem as={SettingsEditingLayout} colSpan={1} overflow="auto">
+      <SettingsGrid>
+        <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader
             // TODO: disabled state using same validator
             onClick={onSubmit}
@@ -171,15 +171,15 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
               }}
             />
           </WidgetProvider>
-        </GridItem>
-        <GridItem colSpan={1}>
+        </SettingsEditorGridItem>
+        <SettingsPreviewGridItem>
           <EditSettingsPreview
             siteName={name}
             {...complexIntegrationSettings}
             {...simpleIntegrationSettings}
           />
-        </GridItem>
-      </Grid>
+        </SettingsPreviewGridItem>
+      </SettingsGrid>
     </ErrorProvider>
   )
 }

@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { Grid, GridItem } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { NotificationSettingsSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -10,6 +9,11 @@ import { useSessionStorage } from "usehooks-ts"
 import type { NextPageWithLayout } from "~/lib/types"
 import type { Notification } from "~/schemas/site"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import {
+  SettingsEditorGridItem,
+  SettingsGrid,
+  SettingsPreviewGridItem,
+} from "~/components/Settings"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
@@ -84,13 +88,8 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <Grid
-        h="full"
-        w="100%"
-        templateColumns="minmax(37.25rem, 1fr) 1fr"
-        gap={0}
-      >
-        <GridItem as={SettingsEditingLayout} colSpan={1} overflow="auto">
+      <SettingsGrid>
+        <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader
             onClick={onSubmit}
             title="Notification banner"
@@ -109,14 +108,14 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
               if (isEmpty(data)) setIsDismissed(false)
             }}
           />
-        </GridItem>
-        <GridItem colSpan={1}>
+        </SettingsEditorGridItem>
+        <SettingsPreviewGridItem>
           <EditSettingsPreview
             siteName={name}
             notification={state.notification}
           />
-        </GridItem>
-      </Grid>
+        </SettingsPreviewGridItem>
+      </SettingsGrid>
     </ErrorProvider>
   )
 }
