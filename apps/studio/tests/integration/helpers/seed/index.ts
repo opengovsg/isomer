@@ -675,3 +675,30 @@ export const setupCodeBuildJob = async ({
 
   return { site, page, codebuildJob }
 }
+
+export const createSupersededBuildRows = async ({
+  supersedingBuild,
+  resourceId,
+  userId,
+  numberOfSupersededBuilds = 1,
+}: {
+  supersedingBuild: Omit<CodeBuildJobs, "resourceId" | "userId" | "id">
+  resourceId: string // the resourceId does NOT need to be the same as the superseding build
+  userId: string // the userId does NOT need to be the same as the superseding build
+  numberOfSupersededBuilds?: number
+}) => {
+  await db
+    .insertInto("CodeBuildJobs")
+    .values(
+      Array.from({ length: numberOfSupersededBuilds }).map((_, i) => ({
+        buildId: "test-build-id-superseded-" + i,
+        siteId: supersedingBuild.siteId,
+        startedAt: supersedingBuild.startedAt,
+        isScheduled: supersedingBuild.isScheduled,
+        supersededByBuildId: supersedingBuild.buildId,
+        resourceId,
+        userId,
+      })),
+    )
+    .execute()
+}
