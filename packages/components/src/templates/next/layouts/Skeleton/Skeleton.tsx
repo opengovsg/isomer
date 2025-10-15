@@ -29,7 +29,7 @@ export const Skeleton = ({
 
         {site.isGovernment && <Masthead isStaging={isStaging} />}
 
-        {site.notification?.enabled && (
+        {site.notification?.title && (
           <Notification
             {...site.notification}
             LinkComponent={LinkComponent}

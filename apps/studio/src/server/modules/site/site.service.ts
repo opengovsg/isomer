@@ -10,7 +10,7 @@ import type {
   Version,
 } from "../database"
 import type { UserPermissionsProps } from "../permissions/permissions.type"
-import { Notification } from "~/schemas/site"
+import type { Notification } from "~/schemas/site"
 import {
   ResourceState,
   ResourceType,
@@ -72,7 +72,9 @@ export const getSiteNameAndCodeBuildId = async (siteId: number) => {
     .executeTakeFirstOrThrow()
 }
 
-export const getNotification = async (siteId: number) => {
+export const getNotification = async (
+  siteId: number,
+): Promise<Notification> => {
   const result = await db
     .selectFrom("Site")
     .select(({ ref }) =>
@@ -86,32 +88,49 @@ export const getNotification = async (siteId: number) => {
       message: "Site not found",
     })
   }
+
+  // NOTE: Handle no notification case
+  // We need to return an object because the json result
+  // will default to `null` if the key doesn't exist
+  if (!result.notification) {
+    return {}
+  }
+
+  // NOTE: Handle old array format
+  // Add in the `prose` wrapper
+  if (Array.isArray(result.notification.content)) {
+    return {
+      notification: {
+        ...result.notification,
+        content: {
+          type: "prose",
+          content: [
+            {
+              content: result.notification.content,
+              type: "paragraph",
+              attrs: {
+                dir: "ltr",
+              },
+            },
+          ],
+        },
+      },
+    }
+  }
+
   return result
 }
 
-interface SetSiteNotificationParams {
+type SetSiteNotificationParams = Notification & {
   siteId: number
   userId: string
-  title: string
-  content: Notification["content"]
-  enabled: boolean
 }
 
 export const setSiteNotification = async ({
   siteId,
   userId,
-  title,
-  content,
-  enabled,
+  notification,
 }: SetSiteNotificationParams) => {
-  const notification = {
-    notification: {
-      content,
-      title,
-      enabled,
-    },
-  }
-
   return await db.transaction().execute(async (tx) => {
     const user = await tx
       .selectFrom("User")
@@ -143,8 +162,11 @@ export const setSiteNotification = async ({
     const newSite = await tx
       .updateTable("Site")
       .set((eb) => ({
-        // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
-        config: eb("Site.config", "||", jsonb(notification)),
+        config: notification
+          ? // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+            eb("Site.config", "||", jsonb({ notification }))
+          : // @ts-expect-error JSON remove operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+            eb("Site.config", "-", "notification"),
       }))
       .where("id", "=", siteId)
       .returningAll()

@@ -1,15 +1,17 @@
-import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
-import { Grid, GridItem } from "@chakra-ui/react"
+import type { AgencySettings } from "@opengovsg/isomer-components"
+import { useState } from "react"
 import { useToast } from "@opengovsg/design-system-react"
-import {
-  AgencySettings,
-  AgencySettingsSchema,
-} from "@opengovsg/isomer-components"
+import { AgencySettingsSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiWrench } from "react-icons/bi"
 
+import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import {
+  SettingsEditorGridItem,
+  SettingsGrid,
+  SettingsPreviewGridItem,
+} from "~/components/Settings"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
@@ -19,9 +21,7 @@ import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
-import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -29,8 +29,6 @@ import { trpc } from "~/utils/trpc"
 const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
 
 const AgencySettingsPage: NextPageWithLayout = () => {
-  const isEnabled = useNewSettingsPage()
-  const router = useRouter()
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
   const [{ siteName, agencyName }] = trpc.site.getConfig.useSuspenseQuery({
@@ -57,12 +55,6 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     },
   })
 
-  useEffect(() => {
-    if (!isEnabled) {
-      void router.push(`/sites/${siteId}/settings`)
-    }
-  }, [])
-
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
   const [state, setState] = useState<AgencySettings>({
@@ -80,19 +72,14 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     })
 
   return (
-    <>
+    <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <Grid
-        h="full"
-        w="100%"
-        templateColumns="minmax(37.25rem, 1fr) 1fr"
-        gap={0}
-      >
-        <GridItem as={SettingsEditingLayout} colSpan={1} overflow="auto">
+      <SettingsGrid>
+        <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader
             title="Name and agency"
             icon={BiWrench}
@@ -110,12 +97,12 @@ const AgencySettingsPage: NextPageWithLayout = () => {
               }}
             />
           </ErrorProvider>
-        </GridItem>
-        <GridItem colSpan={1}>
+        </SettingsEditorGridItem>
+        <SettingsPreviewGridItem>
           <EditSettingsPreview siteName={state.siteName} />
-        </GridItem>
-      </Grid>
-    </>
+        </SettingsPreviewGridItem>
+      </SettingsGrid>
+    </ErrorProvider>
   )
 }
 
