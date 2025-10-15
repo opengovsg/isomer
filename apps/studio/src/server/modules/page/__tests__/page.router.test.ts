@@ -1439,26 +1439,32 @@ describe("page.router", async () => {
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
+      const previousVersions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+
+      expect(previousVersions.length).toEqual(0)
 
       // Act
-      const result = await caller.publishPage({
+      await caller.publishPage({
         siteId: site.id,
         pageId: Number(page.id),
       })
 
-      // Assert
-      expect(result).toEqual({
-        versionId: expect.any(String),
-        versionNum: expect.any(Number),
-      })
-
       // Assert - DB (Version)
-      const versions = await db
+      const newVersions = await db
         .selectFrom("Version")
-        .where("id", "=", result.versionId)
+        .where("resourceId", "=", page.id)
         .selectAll()
         .execute()
-      expect(versions.length).toEqual(1)
+
+      expect(newVersions.length).toEqual(1)
+      expect(newVersions[0]).toMatchObject({
+        resourceId: page.id,
+        versionNum: 1,
+      })
 
       // Assert - DB (AuditLog)
       const auditLogs = await db

@@ -41,11 +41,11 @@ export interface Blob {
 }
 export interface CodeBuildJobs {
   id: GeneratedAlways<string>
-  buildId: string
+  buildId: string | null
   siteId: number
   userId: string
   status: Generated<BuildStatusType>
-  resourceId: string
+  resourceId: string | null
   startedAt: Generated<Timestamp>
   emailSent: Generated<boolean>
   isScheduled: Generated<boolean>
