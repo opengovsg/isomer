@@ -1,3 +1,4 @@
+import type { GrowthBook } from "@growthbook/growthbook"
 import type { User } from "@prisma/client"
 import { BuildStatusType, ResourceType } from "@prisma/client"
 import { auth } from "tests/integration/helpers/auth"
@@ -8,6 +9,7 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 
+import { getIsScheduledPublishingEnabledForSite } from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
 import * as versionService from "~/server/modules/version/version.service"
 import { publishSite } from "../../aws/codebuild.service"
@@ -18,6 +20,13 @@ import { publishPageResource } from "../../resource/resource.service"
 vi.mock("~/server/modules/aws/codebuild.service.ts", () => ({
   publishSite: vi.fn(),
 }))
+
+const getMockGrowthbook = (mockReturnValue = true) => {
+  const mockGrowthBook: Partial<GrowthBook> = {
+    isOn: vi.fn().mockReturnValue(mockReturnValue),
+  }
+  return mockGrowthBook as GrowthBook
+}
 
 describe("page.service", () => {
   let user: User
@@ -58,6 +67,10 @@ describe("page.service", () => {
         user,
         isScheduled: false,
         startSitePublish: true,
+        addCodebuildJobRow: await getIsScheduledPublishingEnabledForSite({
+          gb: getMockGrowthbook(true),
+          siteId: site.id,
+        }),
       })
 
       // Assert
@@ -106,6 +119,10 @@ describe("page.service", () => {
         user,
         isScheduled: false,
         startSitePublish: false,
+        addCodebuildJobRow: await getIsScheduledPublishingEnabledForSite({
+          gb: getMockGrowthbook(true),
+          siteId: site.id,
+        }),
       })
 
       // Assert
@@ -136,6 +153,39 @@ describe("page.service", () => {
         user,
         isScheduled: false,
         startSitePublish: false,
+        addCodebuildJobRow: await getIsScheduledPublishingEnabledForSite({
+          gb: getMockGrowthbook(true),
+          siteId: site.id,
+        }),
+      })
+
+      // Assert
+      const codebuildJobs = await db
+        .selectFrom("CodeBuildJobs")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(codebuildJobs).toHaveLength(0)
+    })
+    it("should NOT insert a codebuildjob in the codebuildjobs table if getIsScheduledPublishingEnabledForSite return false", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await addCodebuildProjectToSite(site.id)
+
+      // Act
+      await publishPageResource({
+        logger,
+        siteId: site.id,
+        resourceId: page.id,
+        user,
+        isScheduled: false,
+        startSitePublish: false,
+        addCodebuildJobRow: await getIsScheduledPublishingEnabledForSite({
+          gb: getMockGrowthbook(false),
+          siteId: site.id,
+        }),
       })
 
       // Assert

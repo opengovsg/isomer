@@ -556,6 +556,7 @@ interface PublishPageResourceArgs {
   resourceId: string
   isSingpassEnabled?: boolean
   isScheduled: boolean
+  addCodebuildJobRow: boolean
   startSitePublish?: boolean
 }
 
@@ -565,6 +566,7 @@ export const publishPageResource = async ({
   resourceId,
   user,
   isScheduled,
+  addCodebuildJobRow,
   startSitePublish = true,
 }: PublishPageResourceArgs) => {
   // We wrap the following in a transaction to ensure that we don't end up with a version being created but not published
@@ -597,9 +599,9 @@ export const publishPageResource = async ({
       return
     }
 
-    const { codeBuildId } = await getSiteNameAndCodeBuildId(siteId)
     // Only create a CodeBuild job if the site has a CodeBuild project associated with it
-    if (codeBuildId) {
+    const { codeBuildId } = await getSiteNameAndCodeBuildId(siteId)
+    if (codeBuildId && addCodebuildJobRow) {
       await tx
         .insertInto("CodeBuildJobs")
         .values({

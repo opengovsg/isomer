@@ -1,5 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook-react"
 
+import { createGrowthBookContext } from "~/server/context"
+
 export const SCHEDULED_PUBLISHING_SITES_FEATURE_KEY =
   "scheduled-publishing-sites"
 export const ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY =
@@ -24,6 +26,28 @@ export const getIsSingpassEnabled = ({
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
   )
+}
+
+interface ScheduledPublishingSites {
+  enabledSites: string[]
+}
+
+export const getIsScheduledPublishingEnabledForSite = async ({
+  gb,
+  siteId,
+}: {
+  gb?: GrowthBook
+  siteId: number
+}) => {
+  // TODO: Initialise once since could introduce unnecessary latency
+  gb = gb ?? (await createGrowthBookContext())
+  const feature = gb.getFeatureValue<ScheduledPublishingSites>(
+    SCHEDULED_PUBLISHING_SITES_FEATURE_KEY,
+    {
+      enabledSites: [],
+    },
+  )
+  return feature.enabledSites.includes(siteId.toString())
 }
 
 // Growthbook has a constraint in the typings that requires the index signature

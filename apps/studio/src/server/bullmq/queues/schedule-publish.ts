@@ -5,7 +5,10 @@ import { differenceInSeconds } from "date-fns"
 import { getRedisWithRedlock } from "@isomer/redis"
 
 import { sendFailedPublishEmail } from "~/features/mail/service"
-import { ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY } from "~/lib/growthbook"
+import {
+  ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
+  getIsScheduledPublishingEnabledForSite,
+} from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { db } from "~/server/modules/database"
@@ -159,6 +162,9 @@ export const publishScheduledResource = async (
     user,
     isScheduled: true,
     startSitePublish: false,
+    addCodebuildJobRow: await getIsScheduledPublishingEnabledForSite({
+      siteId,
+    }),
   })
   // if the page publish succeeds and a codebuild project is provided,
   // we add a job to the site publish queue to kick off the site build

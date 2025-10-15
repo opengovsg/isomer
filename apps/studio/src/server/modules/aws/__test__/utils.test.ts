@@ -1,3 +1,4 @@
+import type { GrowthBook } from "@growthbook/growthbook"
 import { BuildStatusType, ResourceType } from "@prisma/client"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
@@ -11,6 +12,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import type { User } from "../../database"
+import { getIsScheduledPublishingEnabledForSite } from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
 import { db } from "../../database"
 import { publishPageResource } from "../../resource/resource.service"
@@ -33,6 +35,13 @@ vi.mock("~/server/modules/aws/utils.ts", async () => {
     }),
   }
 })
+
+const getMockGrowthbook = (mockReturnValue = true) => {
+  const mockGrowthBook: Partial<GrowthBook> = {
+    isOn: vi.fn().mockReturnValue(mockReturnValue),
+  }
+  return mockGrowthBook as GrowthBook
+}
 
 describe("codebuild.service", () => {
   let user: User
@@ -74,6 +83,10 @@ describe("codebuild.service", () => {
         resourceId: page.id,
         isScheduled: false,
         startSitePublish: false, // do not start site publish here
+        addCodebuildJobRow: await getIsScheduledPublishingEnabledForSite({
+          gb: getMockGrowthbook(true),
+          siteId: page.siteId,
+        }),
       })
       // At this point there should be a codebuildjob row with a null buildId
       const initialCodebuildJobs = await db
