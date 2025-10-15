@@ -122,5 +122,29 @@ describe("page.service", () => {
       // no site build should have been triggered
       expect(publishSite).not.toHaveBeenCalled()
     })
+    it("should NOT insert a codebuildjob in the codebuildjobs table if no codebuild projectId is provided", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+
+      // Act
+      await publishPageResource({
+        logger,
+        siteId: site.id,
+        resourceId: page.id,
+        user,
+        isScheduled: false,
+        startSitePublish: false,
+      })
+
+      // Assert
+      const codebuildJobs = await db
+        .selectFrom("CodeBuildJobs")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(codebuildJobs).toHaveLength(0)
+    })
   })
 })
