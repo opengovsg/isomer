@@ -429,5 +429,26 @@ describe("webhook.router", async () => {
           )
         })
     })
+    it("does NOT throw an error if the build arn is not found", async () => {
+      // Arrange
+      const { site } = await setupCodeBuildJob({
+        userId: user.id,
+        arn: "build/test-id",
+        startedAt: FIXED_NOW,
+        isScheduled: true,
+        omitResourceId: true, // this will create a codebuild job without a resourceId, simulating a site publish
+      })
+      const caller = getCallerWithMockGrowthbook(session)
+
+      // Act & Assert
+      await expect(
+        caller.updateCodebuildWebhook({
+          projectName: "test-project",
+          siteId: site.id,
+          arn: "build/wrong-arn", // saved in the db
+          status: "SUCCEEDED",
+        }),
+      ).resolves.not.toThrow()
+    })
   })
 })
