@@ -106,6 +106,10 @@ const DeleteResourceModalContent = ({
       // such that the invalidation logic is clear
       await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate()
+      await utils.resource.getWithFullPermalink.invalidate({
+        siteId,
+        resourceId,
+      })
       await utils.collection.list.invalidate()
       toast({
         title: `${upperFirst(label)} deleted!`,

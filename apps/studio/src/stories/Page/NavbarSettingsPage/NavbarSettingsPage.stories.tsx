@@ -4,7 +4,7 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
-import NavbarSettingsPage from "~/pages/sites/[siteId]/navbar"
+import NavbarSettingsPage from "~/pages/sites/[siteId]/settings/navbar"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),

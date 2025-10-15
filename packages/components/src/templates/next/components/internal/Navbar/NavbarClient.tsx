@@ -15,6 +15,11 @@ import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
 import { NavItem } from "./NavItem"
 
+interface Size {
+  width?: number
+  height?: number
+}
+
 const createNavbarStyles = tv({
   slots: {
     navbar: "relative flex flex-col",
@@ -75,8 +80,19 @@ export const NavbarClient = ({
   // Reference for the site header
   const siteHeaderRef = useRef<HTMLDivElement>(null)
 
-  const refreshMenuOffset = useCallback(() => {
+  const refreshMenuOffset = useCallback((size?: Size) => {
     setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
+
+    if (!size) {
+      return
+    }
+
+    if (size.width && size.width < 1024) {
+      // close any open nav items when resizing to mobile
+      setOpenNavItemIdx(-1)
+    } else {
+      setIsHamburgerOpen(false)
+    }
   }, [])
 
   useResizeObserver({

@@ -136,6 +136,7 @@ export const NavbarEditor = ({
           flex={1}
           overflow="hidden"
           position="unset"
+          size="sm"
         >
           <TabList
             // This is to allow the bottom border to overlap with the one coming

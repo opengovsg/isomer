@@ -178,7 +178,7 @@ export const NavbarItemBox = ({
         ref={itemRef}
         aria-invalid={isInvalid && !isItemBeingDraggedOver}
         data-id={getNavbarItemPath(index, parentIndex)}
-        borderWidth="1px"
+        borderWidth="1.5px"
         borderStyle="solid"
         borderColor={
           isItemBeingDraggedOver ? "base.divider.brand" : "base.divider.medium"
@@ -275,6 +275,7 @@ export const NavbarItemBox = ({
         >
           <HStack gap="0.75rem" w="full">
             <Box
+              display="flex"
               ref={itemDragHandleRef ?? itemDefaultDragHandleRef}
               cursor="grab"
               layerStyle="focusRing"

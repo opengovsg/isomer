@@ -37,6 +37,7 @@ const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
 
   return (
     <Text
+      textStyle="body-2"
       textOverflow="ellipsis"
       whiteSpace="nowrap"
       overflow="auto"
@@ -84,7 +85,9 @@ export function BaseLinkControl({
             {!!data ? (
               <>
                 {pageType !== LINK_TYPES.Page && (
-                  <Text overflow="auto">{displayedHref}</Text>
+                  <Text overflow="auto" textStyle="body-2">
+                    {displayedHref}
+                  </Text>
                 )}
                 {pageType === LINK_TYPES.Page && dataString.length > 0 && (
                   <Suspense fallback={<Skeleton w="100%" h="100%" />}>
@@ -105,11 +108,12 @@ export function BaseLinkControl({
               </>
             ) : (
               <>
-                <Text>{description}</Text>
+                <Text textStyle="body-2">{description}</Text>
                 <Button
                   onClick={onOpen}
                   variant="link"
                   aria-labelledby="button-label"
+                  py="0.5rem"
                 >
                   <Text id="button-label" textStyle="subhead-2">
                     Link something...
