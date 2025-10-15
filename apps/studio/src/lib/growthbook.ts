@@ -29,6 +29,26 @@ export const getIsSingpassEnabled = ({
   )
 }
 
+interface ScheduledPublishingSites {
+  enabledSites: string[]
+}
+
+export const getIsScheduledPublishingEnabledForSite = ({
+  gb,
+  siteId,
+}: {
+  gb: GrowthBook
+  siteId: number
+}) => {
+  const feature = gb.getFeatureValue<ScheduledPublishingSites>(
+    SCHEDULED_PUBLISHING_SITES_FEATURE_KEY,
+    {
+      enabledSites: [],
+    },
+  )
+  return feature.enabledSites.includes(siteId.toString())
+}
+
 // Growthbook has a constraint in the typings that requires the index signature
 // of the object to be defined as a string instead of being specific to the keys
 // that we want. Hence, we have to define it as a type instead of an interface.

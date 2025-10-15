@@ -6,7 +6,10 @@ import type { Lock } from "@isomer/redis"
 import { getRedisWithRedlock, ResourceLockedError } from "@isomer/redis"
 
 import { sendFailedPublishEmail } from "~/features/mail/service"
-import { ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY } from "~/lib/growthbook"
+import {
+  ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
+  getIsScheduledPublishingEnabledForSite,
+} from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { db } from "~/server/modules/database"
@@ -196,6 +199,10 @@ export const publishScheduledResource = async (
       resourceId: page.id,
       user,
       isScheduled: true,
+      addCodebuildJobRow: getIsScheduledPublishingEnabledForSite({
+        gb: await createGrowthBookContext(),
+        siteId,
+      }),
     })
     return version
   } catch (error) {
