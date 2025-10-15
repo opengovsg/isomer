@@ -3,7 +3,7 @@ import type { Job } from "bullmq"
 import { Queue, Worker } from "bullmq"
 import { differenceInSeconds } from "date-fns"
 
-import { getRedisWithRedlock, withRedlock } from "@isomer/redis"
+import { getRedisWithRedlock } from "@isomer/redis"
 
 import { sendFailedPublishEmail } from "~/features/mail/service"
 import {
@@ -41,7 +41,7 @@ export interface ScheduledPublishJobData {
   userId: string // the id of the user who scheduled the publish
 }
 
-const { redis: RedisClient, redlock: RedlockClient } = getRedisWithRedlock({
+const { redis: RedisClient } = getRedisWithRedlock({
   bullmqCompatible: true,
 })
 
@@ -65,15 +65,7 @@ export const createScheduledPublishWorker = () => {
     scheduledPublishQueue.name,
     async (job: Job<ScheduledPublishJobData>) => {
       const gb = await createGrowthBookContext()
-      // Use Redlock to ensure that only one worker can process the job for a given resourceId at a time
-      await withRedlock(
-        RedlockClient,
-        job.data.resourceId.toString(),
-        async () => {
-          await publishScheduledResource(gb, job.id, job.data, job.attemptsMade)
-        },
-        logger,
-      )
+      await publishScheduledResource(gb, job.id, job.data, job.attemptsMade)
       const { codeBuildId } = await getSiteNameAndCodeBuildId(job.data.siteId)
       if (!codeBuildId) {
         // If there's no CodeBuild project associated with the site, we skip scheduling a site publish job since there's nothing to build
@@ -191,8 +183,7 @@ export const publishScheduledResource = async (
     resourceId: page.id,
     user,
     isScheduled: true,
-    // we do not start a site publish here, this should be delegated to a separate job
-    // to avoid race conditions where multiple workers try to start a site publish at the same time
+    // we do not start a site publish here, this should be delegated to a separate job in the site publish queue
     startSitePublish: false,
     addCodebuildJobRow: gb.isOn(ENABLE_CODEBUILD_JOBS),
   })
