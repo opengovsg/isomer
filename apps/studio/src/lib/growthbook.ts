@@ -1,5 +1,6 @@
 import type { GrowthBook } from "@growthbook/growthbook-react"
 
+export const ENABLE_CODEBUILD_JOBS = "enable-codebuild-jobs"
 export const SCHEDULED_PUBLISHING_SITES_FEATURE_KEY =
   "scheduled-publishing-sites"
 export const ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY =

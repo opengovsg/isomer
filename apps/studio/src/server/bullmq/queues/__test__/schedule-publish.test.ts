@@ -1,3 +1,4 @@
+import type { GrowthBook } from "@growthbook/growthbook"
 import type { User } from "@prisma/client"
 import { AuditLogEvent, ResourceType } from "@prisma/client"
 import { addSeconds } from "date-fns"
@@ -25,6 +26,13 @@ vi.mock("~/server/modules/aws/codebuild.service.ts", () => ({
     startTime: new Date("2024-01-01T00:00:00.000Z"),
   }),
 }))
+
+const getMockGrowthbook = (mockReturnValue = true) => {
+  const mockGrowthBook: Partial<GrowthBook> = {
+    isOn: vi.fn().mockReturnValue(mockReturnValue),
+  }
+  return mockGrowthBook as GrowthBook
+}
 
 describe("scheduled-publish", async () => {
   const session = await applyAuthedSession()
@@ -68,6 +76,7 @@ describe("scheduled-publish", async () => {
 
       // Act
       const res = await publishScheduledResource(
+        getMockGrowthbook(),
         "test-job-id",
         { resourceId: Number(page.id), siteId: site.id, userId: user.id },
         0,
@@ -125,6 +134,7 @@ describe("scheduled-publish", async () => {
 
       // Act
       const res = await publishScheduledResource(
+        getMockGrowthbook(),
         "test-job-id",
         { resourceId: Number(page.id), siteId: site.id, userId: user.id },
         0,
@@ -168,6 +178,7 @@ describe("scheduled-publish", async () => {
 
       // Act
       const res = await publishScheduledResource(
+        getMockGrowthbook(),
         "test-job-id",
         { resourceId: Number(page.id), siteId: site.id, userId: user.id },
         1, // previous attempts
@@ -187,6 +198,7 @@ describe("scheduled-publish", async () => {
       // Act + Assert
       await expect(
         publishScheduledResource(
+          getMockGrowthbook(),
           "test-job-id",
           { resourceId: Number(page.id), siteId: site.id, userId: user.id },
           0,

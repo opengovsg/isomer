@@ -1,3 +1,4 @@
+import type { GrowthBook } from "@growthbook/growthbook"
 import type { Job, JobsOptions } from "bullmq"
 import { Queue, Worker } from "bullmq"
 import { differenceInSeconds } from "date-fns"
@@ -7,8 +8,8 @@ import { getRedisWithRedlock, ResourceLockedError } from "@isomer/redis"
 
 import { sendFailedPublishEmail } from "~/features/mail/service"
 import {
+  ENABLE_CODEBUILD_JOBS,
   ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
-  getIsScheduledPublishingEnabledForSite,
 } from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
@@ -97,7 +98,8 @@ export const createScheduledPublishWorker = () => {
   const worker = new Worker<ScheduledPublishJobData>(
     scheduledPublishQueue.name,
     async (job: Job<ScheduledPublishJobData>) => {
-      await publishScheduledResource(job.id, job.data, job.attemptsMade)
+      const gb = await createGrowthBookContext()
+      await publishScheduledResource(gb, job.id, job.data, job.attemptsMade)
       return job.id
     },
     {
@@ -111,6 +113,7 @@ export const createScheduledPublishWorker = () => {
 }
 
 export const publishScheduledResource = async (
+  gb: GrowthBook,
   jobId: string | undefined,
   { resourceId, siteId, userId }: ScheduledPublishJobData,
   attemptsMade: number,
@@ -199,10 +202,7 @@ export const publishScheduledResource = async (
       resourceId: page.id,
       user,
       isScheduled: true,
-      addCodebuildJobRow: getIsScheduledPublishingEnabledForSite({
-        gb: await createGrowthBookContext(),
-        siteId,
-      }),
+      addCodebuildJobRow: gb.isOn(ENABLE_CODEBUILD_JOBS),
     })
     return version
   } catch (error) {
