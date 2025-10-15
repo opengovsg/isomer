@@ -637,7 +637,7 @@ export const setupFullSite = async () => {
 }
 
 type SetupCodeBuildJobParams = Pick<CodeBuildJobs, "userId" | "startedAt"> & {
-  arn: string
+  arn: string | null
 } & Partial<Pick<CodeBuildJobs, "status" | "emailSent" | "isScheduled">> & {
     omitResourceId?: boolean
     siteId?: number
@@ -655,8 +655,8 @@ export const setupCodeBuildJob = async ({
   emailSent = false,
   omitResourceId = false,
 }: SetupCodeBuildJobParams) => {
-  const buildId = buildIdFromArn(arn)
-  if (!buildId) {
+  const buildId = arn ? buildIdFromArn(arn) : null
+  if (arn && !buildId) {
     throw new Error(`Invalid buildId format: ${arn}`)
   }
   const { page, site } = await setupPageResource({
@@ -706,5 +706,16 @@ export const createSupersededBuildRows = async ({
         userId,
       })),
     )
+    .execute()
+}
+
+export const addCodebuildProjectToSite = async (
+  siteId: number,
+  projectName = "test-codebuild-project",
+) => {
+  await db
+    .updateTable("Site")
+    .set({ codeBuildId: projectName })
+    .where("id", "=", siteId)
     .execute()
 }

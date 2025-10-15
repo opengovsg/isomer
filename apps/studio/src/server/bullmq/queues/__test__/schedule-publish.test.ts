@@ -6,6 +6,7 @@ import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import {
+  addCodebuildProjectToSite,
   setupPageResource,
   setupPublisherPermissions,
   setupUser,
@@ -55,14 +56,6 @@ describe("scheduled-publish", async () => {
     })
     await auth(user)
   })
-
-  const addCodebuildProjectToSite = async (siteId: number) => {
-    await db
-      .updateTable("Site")
-      .set({ codeBuildId: "test-codebuild-project-id" })
-      .where("id", "=", siteId)
-      .execute()
-  }
 
   describe("publishScheduledResource", () => {
     beforeEach(() => {
