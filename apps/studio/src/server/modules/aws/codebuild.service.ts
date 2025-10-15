@@ -4,7 +4,7 @@ import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
   computeBuildChanges,
   startProjectById,
-  updateCodejobsForSite,
+  updateCodebuildJobsForSite,
 } from "./utils"
 
 export const publishSite = async (logger: Logger<string>, siteId: number) => {
@@ -25,7 +25,7 @@ export const publishSite = async (logger: Logger<string>, siteId: number) => {
   // Step 2: Determine if a new build should be started
   const buildChanges = await computeBuildChanges(logger, codeBuildId)
   if (!buildChanges.isNewBuildNeeded) {
-    await updateCodejobsForSite({
+    await updateCodebuildJobsForSite({
       buildChanges,
       siteId,
     })
@@ -42,7 +42,7 @@ export const publishSite = async (logger: Logger<string>, siteId: number) => {
     "Started new CodeBuild project run",
   )
 
-  await updateCodejobsForSite({
+  await updateCodebuildJobsForSite({
     buildChanges: {
       ...buildChanges,
       startedBuild,
