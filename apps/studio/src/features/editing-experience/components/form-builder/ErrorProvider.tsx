@@ -17,7 +17,7 @@ export const ErrorProvider = ({ children }: PropsWithChildren) => {
       // Convert path in the form of x.y to /x/y.
       const convertedPath = `/${path.replace(/\./g, "/")}`
       return Object.keys(errors).some((errorPath) =>
-        errorPath.startsWith(convertedPath),
+        errorPath === convertedPath || errorPath.startsWith(convertedPath + "/"),
       )
     },
     [errors],
