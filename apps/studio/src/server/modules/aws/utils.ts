@@ -25,7 +25,7 @@ const client = new CodeBuildClient({ region: "ap-southeast-1" })
  * @param buildChanges The changes in build status indicating whether a new build was started or if an existing one is to be linked.
  * @param siteId The ID of the site for which the CodeBuildJobs are to be updated.
  */
-export const updateCodejobsForSite = async ({
+export const updateCodebuildJobsForSite = async ({
   buildChanges,
   siteId,
 }: {
