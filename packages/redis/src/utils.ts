@@ -4,7 +4,7 @@ import type Redlock from "redlock";
 import { DEFAULT_REDLOCK_TTL_MS } from "./constants";
 
 interface RedlockOptions extends Partial<Settings> {
-  lock_ttl_ms?: number; // Time to live for the lock in milliseconds
+  lock_ttl_ms: number; // Time to live for the lock in milliseconds
 }
 
 /**
@@ -22,14 +22,20 @@ export const withRedlock = async <T>(
   resource_name: string,
   fn: () => Promise<T>,
   logger: pino.Logger<string>,
-  opts?: RedlockOptions,
+  opts: RedlockOptions = {
+    lock_ttl_ms: DEFAULT_REDLOCK_TTL_MS,
+  },
 ) => {
   let lock: Lock | null = null;
   try {
     lock = await client.acquire(
       [`locks:resource:${resource_name}`],
-      opts?.lock_ttl_ms ?? DEFAULT_REDLOCK_TTL_MS,
+      opts.lock_ttl_ms,
       opts,
+    );
+    logger.info(
+      { resource_name },
+      `Acquired lock for resource ${resource_name}`,
     );
     await fn();
   } catch (error) {
@@ -44,7 +50,7 @@ export const withRedlock = async <T>(
     throw error;
   } finally {
     // Ensure the lock is released if it was acquired
-    if (lock) {
+    if (lock && lock.expiration > new Date().getTime()) {
       await lock.release().catch((error: Error) => {
         logger.warn(
           { resource_name, error },
