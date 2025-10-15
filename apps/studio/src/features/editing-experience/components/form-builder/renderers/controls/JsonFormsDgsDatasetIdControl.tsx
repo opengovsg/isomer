@@ -25,13 +25,15 @@ import {
   Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import { DGS_DATASET_ID_FORMAT } from "@opengovsg/isomer-components"
+import {
+  DGS_DATASET_ID_FORMAT,
+  useDgsMetadata,
+} from "@opengovsg/isomer-components"
 import { useDebounce } from "@uidotdev/usehooks"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useDgsMetadata } from "~/features/editing-experience/components/form-builder/hooks/useDgsMetadata"
 import { getDgsIdFromString } from "~/features/editing-experience/utils"
 import { useZodForm } from "~/lib/form"
 import { getCustomErrorMessage } from "./utils"
@@ -70,9 +72,11 @@ const DgsDatasetIdModal = ({
 
   const datasetId = getDgsIdFromString({ string: debouncedInputValue })
 
-  const { data: format, isLoading: isValidatingDataset } = useDgsMetadata({
-    datasetId,
+  const { metadata, isLoading: isValidatingDataset } = useDgsMetadata({
+    resourceId: datasetId ?? "",
+    enabled: !!datasetId,
   })
+  const format = metadata?.format
   const isValidDataset = format === "CSV"
 
   const isLoading = isValidatingDataset || isDebouncing
