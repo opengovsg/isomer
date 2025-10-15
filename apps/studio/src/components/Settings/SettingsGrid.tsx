@@ -1,4 +1,5 @@
-import { Grid, GridProps } from "@chakra-ui/react"
+import type { GridProps } from "@chakra-ui/react"
+import { Grid } from "@chakra-ui/react"
 
 export const SettingsGrid = (props: GridProps) => {
   return (
