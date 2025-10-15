@@ -2,7 +2,6 @@ import type { Job, JobsOptions } from "bullmq"
 import type pino from "pino"
 
 import {
-  BACKOFF,
   REMOVE_ON_COMPLETE_BUFFER,
   REMOVE_ON_FAIL_BUFFER,
   WORKER_RETRY_LIMIT,
@@ -35,7 +34,6 @@ export const getJobOptionsFromScheduledAt = (
 ): JobsOptions => {
   return {
     attempts: WORKER_RETRY_LIMIT,
-    backoff: BACKOFF,
     removeOnComplete: { age: REMOVE_ON_COMPLETE_BUFFER },
     removeOnFail: { age: REMOVE_ON_FAIL_BUFFER },
     jobId: getJobIdFromResourceIdAndScheduledAt(resourceId, scheduledAt),

@@ -34,7 +34,3 @@ export const sitePublishJobOpts: JobsOptions = {
     delay: 10_000, // 10s, then 20s, then 40s etc
   } as const,
 }
-
-/** Redlock keyspaces for resource locking */
-export const RESOURCE_REDIS_KEYSPACE = "resource-lock"
-export const SITE_REDIS_KEYSPACE = "site-lock"
