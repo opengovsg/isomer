@@ -23,7 +23,10 @@ import {
   sendCancelSchedulePageEmail,
   sendScheduledPageEmail,
 } from "~/features/mail/service"
-import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import {
+  getIsScheduledPublishingEnabledForSite,
+  IS_SINGPASS_ENABLED_FEATURE_KEY,
+} from "~/lib/growthbook"
 import {
   basePageSchema,
   createIndexPageSchema,
@@ -710,6 +713,10 @@ export const pageRouter = router({
         resourceId: String(pageId),
         user,
         isScheduled: false,
+        addCodebuildJobRow: getIsScheduledPublishingEnabledForSite({
+          gb: ctx.gb,
+          siteId,
+        }),
       })
 
       // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
