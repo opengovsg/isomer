@@ -5,7 +5,6 @@ export interface DgsApiDatasetSearchParams {
   resourceId: string
   limit?: number
   offset?: number
-  // fields?: string // comma separated list of fields to fetch
   filters?: Record<string, string>
   sort?: string
 }
