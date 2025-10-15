@@ -6,6 +6,8 @@ import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 import _ from "lodash"
 
+import { getRedisWithRedlock, withRedlock } from "@isomer/redis"
+
 import type {
   Footer,
   Navbar,
@@ -18,6 +20,7 @@ import type {
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { RESOURCE_REDIS_KEYSPACE } from "~/server/bullmq/queues/constants"
 import {
   getSitemapTree,
   injectTagMappings,
@@ -30,6 +33,11 @@ import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
+
+const { redlock: ResourceRedlockClient } = getRedisWithRedlock({
+  keyspace: RESOURCE_REDIS_KEYSPACE,
+  bullmqCompatible: false,
+})
 
 // Specify the default columns to return from the Resource table
 export const defaultResourceSelect = [
@@ -567,62 +575,71 @@ export const publishPageResource = async ({
   isScheduled,
   startSitePublish = true,
 }: PublishPageResourceArgs) => {
-  await db.transaction().execute(async (tx) => {
-    // Step 1: Create a new version
-    const fullResource = await getFullPageById(tx, {
-      resourceId: Number(resourceId),
-      siteId,
-    })
-
-    if (!fullResource) {
-      throw new TRPCError({
-        code: "PRECONDITION_FAILED",
-        message:
-          "Please ensure you are attempting to publish a page that exists",
-      })
-    }
-
-    const version = await incrementVersion({
-      tx,
-      siteId,
-      resourceId,
-      userId: user.id,
-    })
-
-    if (!version) {
-      logger.warn(
-        `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
-      )
-      return
-    }
-
-    const { codeBuildId } = await getSiteNameAndCodeBuildId(siteId)
-    // Only create a CodeBuild job if the site has a CodeBuild project associated with it
-    if (codeBuildId) {
-      await tx
-        .insertInto("CodeBuildJobs")
-        .values({
-          resourceId,
+  // TODO: Remove redlock after adding uniqueness constraint on (versionNum, resourceId)
+  await withRedlock(
+    ResourceRedlockClient,
+    resourceId.toString(),
+    async () => {
+      // We wrap the following in a transaction to ensure that we don't end up with a version being created but not published
+      await db.transaction().execute(async (tx) => {
+        // Step 1: Create a new version
+        const fullResource = await getFullPageById(tx, {
+          resourceId: Number(resourceId),
           siteId,
-          userId: user.id,
-          isScheduled,
         })
-        .execute()
-    }
 
-    const { previousVersion, newVersion } = version
+        if (!fullResource) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message:
+              "Please ensure you are attempting to publish a page that exists",
+          })
+        }
 
-    await logPublishEvent(tx, {
-      siteId,
-      by: user,
-      delta: {
-        before: previousVersion ? { versionId: previousVersion.id } : null,
-        after: { versionId: newVersion.id },
-      },
-      eventType: AuditLogEvent.Publish,
-      metadata: fullResource,
-    })
-  })
+        const version = await incrementVersion({
+          tx,
+          siteId,
+          resourceId,
+          userId: user.id,
+        })
+
+        if (!version) {
+          logger.warn(
+            `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
+          )
+          return
+        }
+
+        const { codeBuildId } = await getSiteNameAndCodeBuildId(siteId)
+        // Only create a CodeBuild job if the site has a CodeBuild project associated with it
+        if (codeBuildId) {
+          await tx
+            .insertInto("CodeBuildJobs")
+            .values({
+              resourceId,
+              siteId,
+              userId: user.id,
+              isScheduled,
+            })
+            .execute()
+        }
+
+        const { previousVersion, newVersion } = version
+
+        await logPublishEvent(tx, {
+          siteId,
+          by: user,
+          delta: {
+            before: previousVersion ? { versionId: previousVersion.id } : null,
+            after: { versionId: newVersion.id },
+          },
+          eventType: AuditLogEvent.Publish,
+          metadata: fullResource,
+        })
+      })
+    },
+    logger,
+  )
 
   // Step 2: Trigger a publish of the site, if startSitePublish is true
   if (startSitePublish) await publishSite(logger, siteId)
