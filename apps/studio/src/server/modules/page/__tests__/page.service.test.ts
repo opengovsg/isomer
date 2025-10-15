@@ -58,6 +58,7 @@ describe("page.service", () => {
         user,
         isScheduled: false,
         startSitePublish: true,
+        addCodebuildJobRow: true,
       })
 
       // Assert
@@ -106,6 +107,7 @@ describe("page.service", () => {
         user,
         isScheduled: false,
         startSitePublish: false,
+        addCodebuildJobRow: true,
       })
 
       // Assert
@@ -136,6 +138,33 @@ describe("page.service", () => {
         user,
         isScheduled: false,
         startSitePublish: false,
+        addCodebuildJobRow: true,
+      })
+
+      // Assert
+      const codebuildJobs = await db
+        .selectFrom("CodeBuildJobs")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(codebuildJobs).toHaveLength(0)
+    })
+    it("should NOT insert a codebuildjob in the codebuildjobs table if feature flag SCHEDULED_PUBLISHING_SITES_FEATURE_KEY is not enabled", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await addCodebuildProjectToSite(site.id)
+
+      // Act
+      await publishPageResource({
+        logger,
+        siteId: site.id,
+        resourceId: page.id,
+        user,
+        isScheduled: false,
+        startSitePublish: false,
+        addCodebuildJobRow: false,
       })
 
       // Assert

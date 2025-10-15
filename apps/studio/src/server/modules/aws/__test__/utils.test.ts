@@ -74,6 +74,7 @@ describe("codebuild.service", () => {
         resourceId: page.id,
         isScheduled: false,
         startSitePublish: false, // do not start site publish here
+        addCodebuildJobRow: true,
       })
       // At this point there should be a codebuildjob row with a null buildId
       const initialCodebuildJobs = await db

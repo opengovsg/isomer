@@ -27,7 +27,7 @@ export const getIsSingpassEnabled = ({
   )
 }
 
-interface ScheduledPublishingSites {
+export interface ScheduledPublishingSites {
   enabledSites: string[]
 }
 
