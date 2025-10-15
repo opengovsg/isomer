@@ -61,26 +61,6 @@ export const createScheduledPublishWorker = () => {
     scheduledPublishQueue.name,
     async (job: Job<ScheduledPublishJobData>) => {
       await publishScheduledResource(job.id, job.data, job.attemptsMade)
-      const { codeBuildId } = await getSiteNameAndCodeBuildId(job.data.siteId)
-      if (!codeBuildId) {
-        // If there's no CodeBuild project associated with the site, we skip scheduling a site publish job since there's nothing to build
-        logger.info(
-          { siteId: job.data.siteId },
-          "No CodeBuild project ID has been configured for the site, skipping site publish",
-        )
-        return job.id
-      }
-      await sitePublishQueue.add(
-        "site-publish",
-        { siteId: job.data.siteId },
-        getJobOptionsFromScheduledAt(
-          job.data.siteId.toString(),
-          new Date(job.data.scheduledAt),
-          // add a slight delay for site publish to allow for any eventual consistency issues
-          SITE_PUBLISH_BUFFER_SECONDS * 1000,
-        ),
-      )
-
       return job.id
     },
     {
@@ -95,7 +75,7 @@ export const createScheduledPublishWorker = () => {
 
 export const publishScheduledResource = async (
   jobId: string | undefined,
-  { resourceId, siteId, userId }: ScheduledPublishJobData,
+  { resourceId, siteId, userId, scheduledAt }: ScheduledPublishJobData,
   attemptsMade: number,
 ) => {
   // verify user still has permission to publish on the site
@@ -171,15 +151,36 @@ export const publishScheduledResource = async (
     )
     return
   }
+  // publish the page, without starting a site publish yet
   await publishPageResource({
     logger,
     siteId,
     resourceId: page.id,
     user,
     isScheduled: true,
-    // we do not start a site publish here, this should be delegated to a separate job in the site publish queue
     startSitePublish: false,
   })
+  // if the page publish succeeds and a codebuild project is provided,
+  // we add a job to the site publish queue to kick off the site build
+  const { codeBuildId } = await getSiteNameAndCodeBuildId(siteId)
+  if (!codeBuildId) {
+    // If there's no CodeBuild project associated with the site, we skip scheduling a site publish job since there's nothing to build
+    logger.info(
+      { siteId },
+      "No CodeBuild project ID has been configured for the site, skipping site publish",
+    )
+    return
+  }
+  await sitePublishQueue.add(
+    "site-publish",
+    { siteId },
+    getJobOptionsFromScheduledAt(
+      siteId.toString(),
+      new Date(scheduledAt),
+      // add a slight delay for site publish to allow for any eventual consistency issues
+      SITE_PUBLISH_BUFFER_SECONDS * 1000,
+    ),
+  )
 }
 
 export const scheduledPublishWorker = createScheduledPublishWorker()

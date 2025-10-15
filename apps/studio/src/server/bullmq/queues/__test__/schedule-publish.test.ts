@@ -9,12 +9,19 @@ import {
   addCodebuildProjectToSite,
   setupPageResource,
   setupPublisherPermissions,
+  setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
 
+import * as codebuildService from "~/server/modules/aws/codebuild.service"
 import { db } from "~/server/modules/database"
-import { SCHEDULED_AT_TOLERANCE_SECONDS } from "../constants"
+import {
+  SCHEDULED_AT_TOLERANCE_SECONDS,
+  SITE_PUBLISH_BUFFER_SECONDS,
+} from "../constants"
 import { publishScheduledResource } from "../schedule-publish"
+import { sitePublishQueue } from "../site-publish"
+import { getJobIdFromResourceIdAndScheduledAt } from "../utils"
 
 vi.mock("~/server/modules/aws/utils.ts", async () => {
   const actual = await vi.importActual<
@@ -55,6 +62,8 @@ describe("scheduled-publish", async () => {
       isDeleted: false,
     })
     await auth(user)
+    // clear any existing jobs in the site & scheduled queues
+    await sitePublishQueue.obliterate({ force: true })
   })
 
   describe("publishScheduledResource", () => {
@@ -260,6 +269,126 @@ describe("scheduled-publish", async () => {
         ),
       ).rejects.toThrowError(
         "You do not have sufficient permissions to perform this action",
+      )
+    })
+    it("pushes a job onto the site publish queue if the page publish succeeds", async () => {
+      // Arrange
+      const scheduledAt = FIXED_NOW
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt,
+      })
+      await addCodebuildProjectToSite(site.id)
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await publishScheduledResource(
+        "test-job-id",
+        {
+          resourceId: Number(page.id),
+          siteId: site.id,
+          userId: user.id,
+          scheduledAt: scheduledAt.toISOString(),
+        },
+        0, // previous attempts
+      )
+
+      // Assert
+      // The site has NOT been published yet
+      const publishSiteSpy = vi.spyOn(codebuildService, "publishSite")
+      expect(publishSiteSpy).not.toHaveBeenCalled()
+      // but a job has been added to the site publish queue with a delay of SITE_PUBLISH_BUFFER_SECONDS
+      const job = await sitePublishQueue.getJob(
+        getJobIdFromResourceIdAndScheduledAt(site.id.toString(), scheduledAt),
+      )
+      expect(job!.data).toEqual({
+        siteId: site.id,
+      })
+      expect(job!.opts.delay).toBeCloseTo(
+        SITE_PUBLISH_BUFFER_SECONDS * 1000,
+        -3, // rounding to the nearest second (3 decimal places)
+      )
+    })
+    it("does not push a job onto the site publish queue if the site does not have a codebuild project", async () => {
+      // Arrange
+      const scheduledAt = FIXED_NOW
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await publishScheduledResource(
+        "test-job-id",
+        {
+          resourceId: Number(page.id),
+          siteId: site.id,
+          userId: user.id,
+          scheduledAt: scheduledAt.toISOString(),
+        },
+        0, // previous attempts
+      )
+
+      // Assert
+      const job = await sitePublishQueue.getJob(
+        getJobIdFromResourceIdAndScheduledAt(site.id.toString(), scheduledAt),
+      )
+      expect(job).not.toBeDefined()
+    })
+    it("publishing many resources for the same site only creates ONE site publish job", async () => {
+      // Arrange
+      const scheduledAt = FIXED_NOW
+      const { site } = await setupSite()
+      await addCodebuildProjectToSite(site.id)
+      const PAGES_TO_PUBLISH = 5
+      const pageIds: string[] = []
+      for (let i = 0; i < PAGES_TO_PUBLISH; i++) {
+        const { page } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          scheduledAt,
+          siteId: site.id,
+          permalink: `page-${i}`, // ensure unique permalinks
+        })
+        pageIds.push(page.id)
+      }
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - publish all the pages
+      await Promise.all(
+        pageIds.map((pageId) =>
+          publishScheduledResource(
+            "test-job-id",
+            {
+              resourceId: Number(pageId),
+              siteId: site.id,
+              userId: user.id,
+              scheduledAt: scheduledAt.toISOString(),
+            },
+            0, // previous attempts
+          ),
+        ),
+      )
+
+      // Assert
+      const allJobs = await sitePublishQueue.getJobs()
+      expect(allJobs).toHaveLength(1)
+      const [job] = allJobs
+      expect(job!.data).toEqual({
+        siteId: site.id,
+      })
+      expect(job!.opts.delay).toBeCloseTo(
+        SITE_PUBLISH_BUFFER_SECONDS * 1000,
+        -3, // rounding to the nearest second (3 decimal places)
       )
     })
   })
