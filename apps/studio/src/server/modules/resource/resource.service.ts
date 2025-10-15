@@ -554,6 +554,8 @@ interface PublishPageResourceArgs {
   siteId: number
   resourceId: string
   isSingpassEnabled?: boolean
+  isScheduled: boolean
+  addCodebuildJobRow: boolean
 }
 
 export const publishPageResource = async ({
@@ -561,6 +563,8 @@ export const publishPageResource = async ({
   siteId,
   resourceId,
   user,
+  isScheduled,
+  addCodebuildJobRow,
 }: PublishPageResourceArgs) => {
   const version = await db
     .transaction()
@@ -613,7 +617,7 @@ export const publishPageResource = async ({
   const build = await publishSite(logger, siteId)
 
   // Step 3: Save the build info if the build was triggered
-  if (build)
+  if (build && addCodebuildJobRow)
     await db
       .insertInto("CodeBuildJobs")
       .values({
@@ -623,6 +627,7 @@ export const publishPageResource = async ({
         startedAt: build.startTime,
         resourceId,
         status: "IN_PROGRESS", // default to in progress, will be updated by webhook
+        isScheduled,
       })
       .execute()
 

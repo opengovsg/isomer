@@ -1,3 +1,4 @@
+import type { GrowthBook } from "@growthbook/growthbook"
 import type { Job, JobsOptions } from "bullmq"
 import { Queue, Worker } from "bullmq"
 import { differenceInSeconds } from "date-fns"
@@ -5,8 +6,13 @@ import { differenceInSeconds } from "date-fns"
 import type { Lock } from "@isomer/redis"
 import { getRedisWithRedlock, ResourceLockedError } from "@isomer/redis"
 
-import { sendFailedSchedulePublishEmail } from "~/features/mail/service"
+import { sendFailedPublishEmail } from "~/features/mail/service"
+import {
+  ENABLE_CODEBUILD_JOBS,
+  ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
+} from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
+import { createGrowthBookContext } from "~/server/context"
 import { db } from "~/server/modules/database"
 import { bulkValidateUserPermissionsForResources } from "~/server/modules/permissions/permissions.service"
 import {
@@ -92,7 +98,8 @@ export const createScheduledPublishWorker = () => {
   const worker = new Worker<ScheduledPublishJobData>(
     scheduledPublishQueue.name,
     async (job: Job<ScheduledPublishJobData>) => {
-      await publishScheduledResource(job.id, job.data, job.attemptsMade)
+      const gb = await createGrowthBookContext()
+      await publishScheduledResource(gb, job.id, job.data, job.attemptsMade)
       return job.id
     },
     {
@@ -106,6 +113,7 @@ export const createScheduledPublishWorker = () => {
 }
 
 export const publishScheduledResource = async (
+  gb: GrowthBook,
   jobId: string | undefined,
   { resourceId, siteId, userId }: ScheduledPublishJobData,
   attemptsMade: number,
@@ -193,6 +201,8 @@ export const publishScheduledResource = async (
       siteId,
       resourceId: page.id,
       user,
+      isScheduled: true,
+      addCodebuildJobRow: gb.isOn(ENABLE_CODEBUILD_JOBS),
     })
     return version
   } catch (error) {
@@ -233,7 +243,7 @@ scheduledPublishWorker.on(
         return
       }
       const {
-        data: { resourceId, userId },
+        data: { resourceId, userId, siteId },
       } = job
       // Log differently based on number of attempts made
       logger.error({
@@ -255,12 +265,26 @@ scheduledPublishWorker.on(
             .select("User.email")
             .executeTakeFirstOrThrow()
 
-          await sendFailedSchedulePublishEmail({ recipientEmail: email })
+          // check the growthbook feature flag to see if we should send emails for scheduled publishes
+          const gb = await createGrowthBookContext()
+          if (gb.isOn(ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY)) {
+            // get the resource that was being published
+            const resource = await getPageById(db, {
+              resourceId,
+              siteId,
+            })
+            if (!resource) throw new Error("The resource no longer exists")
+            await sendFailedPublishEmail({
+              recipientEmail: email,
+              isScheduled: true,
+              resource,
+            })
+          }
         }
-      } catch (emailErr) {
+      } catch (error) {
         logger.error({
-          message: `Failed to send failed schedule publish email to ${userId} for resource ${resourceId}`,
-          error: emailErr,
+          message: `Failed to send failed publish email to ${userId} for resource ${resourceId}`,
+          error,
         })
       }
     })()
