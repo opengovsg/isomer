@@ -26,6 +26,10 @@ export interface HeroEditorState {
   state: "heroEditor"
 }
 
+export interface DatabaseEditorState {
+  state: "databaseEditor"
+}
+
 export type DrawerState =
   | RootDrawerState
   | RawJsonEditorModeDrawerState
@@ -33,4 +37,5 @@ export type DrawerState =
   | NativeEditorState
   | ComplexEditorState
   | MetadataEditorState
+  | DatabaseEditorState
   | HeroEditorState

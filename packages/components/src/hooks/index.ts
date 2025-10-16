@@ -1,0 +1,1 @@
+export { useDgsMetadata } from "./useDgsMetadata"

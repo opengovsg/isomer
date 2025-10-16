@@ -4,7 +4,6 @@ export const generateDgsUrl = ({
   resourceId,
   limit,
   offset,
-  fields,
   filters,
   sort,
 }: DgsApiDatasetSearchParams) => {
@@ -20,10 +19,6 @@ export const generateDgsUrl = ({
 
   if (offset) {
     url.searchParams.set("offset", offset.toString())
-  }
-
-  if (fields) {
-    url.searchParams.set("fields", fields)
   }
 
   if (filters && Object.keys(filters).length > 0) {

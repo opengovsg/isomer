@@ -151,3 +151,12 @@ export const VIDEO_EMBED_URL_PATTERN = Object.values(VIDEO_EMBED_URL_REGEXES)
 // ❌ "" (empty string)
 // ❌ " " (only whitespace)
 export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
+
+// ✅ "d_a" (minimum 3 characters, starts with "d_")
+// ✅ "d_abc" (more than 3 characters, starts with "d_")
+// ❌ "d_" (only 2 characters)
+// ❌ "a_bc" (doesn't start with "d_")
+// ❌ "d" (only 1 character)
+// ❌ "d_ab c" (contains space)
+// ❌ "d_ab_c" (contains underscore after prefix)
+export const DGS_ID_STRING_REGEX = "^d_[a-zA-Z0-9]+$"
