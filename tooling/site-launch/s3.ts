@@ -8,7 +8,7 @@ import { env } from "./env"
 const S3_BUCKET_URI = env.S3_BUCKET_URI
 export const s3sync = async (siteId: number) => {
   const { stdout: logs } = await exec(
-    `aws s3 sync ../migrate-seed-isomer-next/assets/${siteId} ${S3_BUCKET_URI}/${siteId}`,
+    `aws s3 sync ${process.cwd()}/assets/${siteId} ${S3_BUCKET_URI}/${siteId}`,
   )
 
   console.log(logs)
