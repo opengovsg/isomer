@@ -28,7 +28,7 @@ export const TagCategoryUuidSchema = generateUuidSchema({
 // NOTE: single value for now but we might extend this in the future with additional metadata,
 // so we will leave it as is
 const DropdownItemSchema = Type.Object({
-  label: Type.String({ maxLength: 50 }),
+  label: Type.String({ maxLength: 70 }),
   id: TagOptionUuidSchema,
 })
 const TagOptionSchema = DropdownItemSchema

@@ -10,12 +10,9 @@ import { format, isSameDay } from "date-fns"
 export const getEarliestAllowableTime = (
   selectedDate: Date,
   earliestSchedule: Date,
-): { hours: number; minutes: number } | null => {
+): Date | null => {
   if (isSameDay(selectedDate, earliestSchedule)) {
-    return {
-      hours: earliestSchedule.getHours(),
-      minutes: earliestSchedule.getMinutes(),
-    }
+    return earliestSchedule
   }
   return null
 }

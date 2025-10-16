@@ -160,7 +160,7 @@ const SocialMediaSection = ({
                 site.assetsBaseUrl,
               )}
               isExternal
-              label={`${link.type} page`}
+              label={`${link.type === "twitter" ? "X" : link.type} page`}
               className={footerItemLinkStyle()}
               LinkComponent={LinkComponent}
               isWithFocusVisibleHighlight

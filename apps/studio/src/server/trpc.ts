@@ -16,7 +16,6 @@ import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
-import getIP from "~/utils/getClientIp"
 import { type Context } from "./context"
 import { db } from "./modules/database"
 import { defaultUserSelect } from "./modules/me/me.select"
@@ -57,7 +56,10 @@ const t = initTRPC
 const loggerMiddleware = t.middleware(
   async ({ path, next, ctx, type, getRawInput }) => {
     const start = Date.now()
-    const logger = createBaseLogger({ path, clientIp: getIP(ctx.req) })
+    const logger = createBaseLogger({
+      path,
+      req: ctx.req,
+    })
     const rawInput = await getRawInput()
 
     const result = await next({
