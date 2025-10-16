@@ -4,11 +4,13 @@ import { BiInfoCircle, BiX } from "react-icons/bi"
 import { useSessionStorage } from "usehooks-ts"
 
 import type { NotificationClientProps } from "~/interfaces"
+import BaseParagraph from "../BaseParagraph"
 import { IconButton } from "../IconButton"
 
 const NotificationClient = ({
   title,
-  baseParagraph,
+  content,
+  LinkComponent,
 }: NotificationClientProps) => {
   const [isDismissed, setIsDismissed] = useSessionStorage(
     "notification-dismissed",
@@ -26,7 +28,12 @@ const NotificationClient = ({
           <BiInfoCircle className="mt-0.5 h-6 w-6 shrink-0" />
           <div className="flex flex-1 flex-col gap-1">
             {!!title && <h2 className="prose-headline-lg-medium">{title}</h2>}
-            {baseParagraph}
+
+            <BaseParagraph
+              content={content}
+              className="prose-body-base [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
+              LinkComponent={LinkComponent}
+            />
           </div>
           <div aria-hidden className="flex h-6 w-6 shrink-0" />
           <IconButton

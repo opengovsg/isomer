@@ -3,7 +3,7 @@ import { isValidFormSGEmbedUrl } from "~/utils/validation"
 import { BaseParagraph } from "../../internal"
 import { ComponentContent } from "../../internal/customCssClass"
 
-export const FormSG = ({ title, url, site, LinkComponent }: FormSGProps) => {
+export const FormSG = ({ title, url, LinkComponent }: FormSGProps) => {
   if (!isValidFormSGEmbedUrl(url)) {
     return <></>
   }
@@ -13,7 +13,6 @@ export const FormSG = ({ title, url, site, LinkComponent }: FormSGProps) => {
       <BaseParagraph
         content={`If the form below is not loaded, you can also fill it in at <a href="${url}">here</a>.`}
         className="prose-body-base pb-2 pt-1 text-base-content opacity-90"
-        site={site}
         LinkComponent={LinkComponent}
       />
 
@@ -33,7 +32,6 @@ export const FormSG = ({ title, url, site, LinkComponent }: FormSGProps) => {
       <BaseParagraph
         content={`Powered by <a href="https://form.gov.sg">Form</a>.`}
         className="prose-body-base pb-2 pt-1 text-base-content opacity-50"
-        site={site}
         LinkComponent={LinkComponent}
       />
     </section>

@@ -14,7 +14,6 @@ export const DGSSearchableTable = ({
   dataSource: { resourceId, filters, sort },
   title,
   headers,
-  site,
   LinkComponent,
 }: DGSSearchableTableProps) => {
   const labels = useMemo(() => headers.map((header) => header.label), [headers])
@@ -62,7 +61,6 @@ export const DGSSearchableTable = ({
       title={title}
       headers={labels}
       items={items}
-      site={site}
       LinkComponent={LinkComponent}
       isLoading={isLoading}
       isError={isError}

@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { LinkComponentType } from "~/types"
 import { DgsDataSourceSchema, NativeDataSourceSchema } from "../integration"
 
 const BaseSearchableTableSchema = Type.Object({
@@ -48,13 +48,9 @@ export const SearchableTableSchema = Type.Intersect([
 type BaseSearchableTableClientProps = Static<
   typeof BaseSearchableTableSchema
 > & {
-  site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }
 
-// note: ideally we should not pass entire "site" object to the client component
-// as it can be quite large and increase page size
-// but since this is not a common component, we will allow it for now :(
 export type SearchableTableClientProps = BaseSearchableTableClientProps &
   Pick<NativeSearchableTableProps, "headers"> & {
     items: {
@@ -74,6 +70,6 @@ export type DGSSearchableTableProps = BaseSearchableTableClientProps &
 
 export type SearchableTableProps = Pick<
   BaseSearchableTableClientProps,
-  "site" | "LinkComponent"
+  "LinkComponent"
 > &
   Static<typeof SearchableTableSchema>
