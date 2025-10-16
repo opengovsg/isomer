@@ -87,6 +87,7 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
       letterSpacing: "0",
       // keeping text-[1rem] to ensure it has minimum height of 1.5rem, even on mobile
       // This is to ensure it does not violate WCAG 2.2 (https://dequeuniversity.com/rules/axe/4.10/target-size)
+      // Reference: https://github.com/opengovsg/isomer/pull/1640
       "@apply text-[1rem] leading-[1.5]": {},
     },
     ".prose-body-sm": {
