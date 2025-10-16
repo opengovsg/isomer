@@ -76,17 +76,7 @@ export const BASE_EXTENSIONS: Extensions = [
   }),
   Dropcursor,
   Gapcursor,
-  HardBreak.extend({
-    // Prevent the default behavior of the hard break and split it into a new paragraph instead
-    // Why: Hard break introduces touch targets of under 24px between lines
-    // This is a WCAG violation if the link is a clickable link
-    addKeyboardShortcuts() {
-      return {
-        "Mod-Enter": () => this.editor.commands.splitBlock(),
-        "Shift-Enter": () => this.editor.commands.splitBlock(),
-      }
-    },
-  }),
+  HardBreak,
   HorizontalRule.extend({
     name: "divider",
   }),
