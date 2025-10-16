@@ -43,7 +43,7 @@ describe("getCollectionParent", () => {
     lastModified: new Date("2021-01-01").toISOString(),
   }
 
-  it("should throw an error when collectionId does not match any siteMap child", () => {
+  it("should return `null` when collectionId does not match any siteMap child", () => {
     // Arrange
     const nonExistentCollectionId = `${collectionId}9999999`
     site = {
@@ -60,7 +60,7 @@ describe("getCollectionParent", () => {
         site,
         collectionId: nonExistentCollectionId,
       }),
-    ).toThrow()
+    ).toBeNull()
   })
 
   it("should return the collection node when collectionId matches a siteMap child", () => {

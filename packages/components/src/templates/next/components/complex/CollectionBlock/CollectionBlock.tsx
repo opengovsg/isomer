@@ -152,14 +152,19 @@ const SingleCard = ({
   )
 }
 
-const EmptyCollectionBlockSkeleton = () => {
+interface CollectionBlockSkeletonProps {
+  title: string
+  description: string
+}
+const CollectionBlockSkeleton = ({
+  title,
+  description,
+}: CollectionBlockSkeletonProps) => {
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
-        <h2 className={compoundStyles.headingTitle()}>
-          No collection selected
-        </h2>
-        <p>Choose a collection to display its content.</p>
+        <h2 className={compoundStyles.headingTitle()}>{title}</h2>
+        <p>{description}</p>
       </div>
     </section>
   )
@@ -180,10 +185,24 @@ export const CollectionBlock = ({
 
   // This happens when no collection is selected yet on Studio when the user just added the block
   if (collectionId === "") {
-    return <EmptyCollectionBlockSkeleton />
+    return (
+      <CollectionBlockSkeleton
+        title="No collection selected"
+        description="Choose a collection to display its content."
+      />
+    )
   }
 
   const collectionParent = getCollectionParent({ site, collectionId })
+
+  if (!collectionParent) {
+    return (
+      <CollectionBlockSkeleton
+        title="This collection does not appear to be part of any site"
+        description="Choose a collection to display its content."
+      />
+    )
+  }
 
   const collectionPages = getCollectionPages({
     site,
