@@ -9,5 +9,7 @@ export const Wogaa = ({
       ? "https://assets.wogaa.sg/scripts/wogaa.js"
       : "https://assets.dcube.cloud/scripts/wogaa.js"
 
-  return <ScriptComponent src={scriptUrl} />
+  // Wogaa needs to be loaded before the page loads so that it can track the page view
+  // While default recommendation is afterInteractive, it actually affected WOGAA's tracking
+  return <ScriptComponent src={scriptUrl} strategy="beforeInteractive" />
 }
