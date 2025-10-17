@@ -913,24 +913,20 @@ export const getSearchResults = async ({
   }
   orderedResources = orderedResources.orderBy("lastUpdatedAt", "desc")
 
-  const resourcesToReturn: SearchResultResource[] = (await orderedResources
-    .offset(offset)
-    .limit(limit)
-    .execute()) as SearchResultResource[]
-
-  const totalCount: number = (
-    await db
+  const [resourcesToReturn, totalCountResult] = await Promise.all([
+    orderedResources.offset(offset).limit(limit).execute(),
+    db
       .with("queriedResources", () => queriedResources)
       .selectFrom("queriedResources")
       .select(db.fn.countAll().as("total_count"))
-      .executeTakeFirstOrThrow()
-  ).total_count as number // needed to cast as the type can be `bigint`
+      .executeTakeFirstOrThrow(),
+  ])
 
   return {
-    totalCount,
     resources: await getResourcesWithFullPermalink({
-      resources: resourcesToReturn,
+      resources: resourcesToReturn as SearchResultResource[],
     }),
+    totalCount: totalCountResult.total_count as number,
   }
 }
 
