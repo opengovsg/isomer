@@ -26,7 +26,12 @@ export const RenderApplicationScripts = ({
     <>
       <FontPreload />
 
-      {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
+      {site.isGovernment && (
+        <Wogaa
+          environment={site.environment}
+          ScriptComponent={ScriptComponent}
+        />
+      )}
 
       {(!!site.siteGtmId || !!site.isomerGtmId) && (
         <>

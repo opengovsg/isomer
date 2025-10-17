@@ -54,11 +54,7 @@ export const SearchableTableClient = ({
   const [currPage, setCurrPage] = useState(1)
   const titleId = useId()
 
-  const maxNoOfColumns = Math.min(
-    headers.length,
-    ...items.map((row) => row.row.length),
-    MAX_NUMBER_OF_COLUMNS,
-  )
+  const maxNoOfColumns = Math.min(headers.length, MAX_NUMBER_OF_COLUMNS)
   const filteredItems = useMemo(
     () =>
       getFilteredItems({
