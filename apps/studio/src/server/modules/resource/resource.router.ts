@@ -697,20 +697,6 @@ export const resourceRouter = router({
         siteId: Number(siteId),
       })
 
-      const resource = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", resourceId)
-        .select(["siteId", "id"])
-        .executeTakeFirst()
-
-      if (!resource) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Resource not found",
-        })
-      }
-
       const result = await getWithFullPermalink({ resourceIds: [resourceId] })
 
       if (result.length === 0 || !result[0]) {
