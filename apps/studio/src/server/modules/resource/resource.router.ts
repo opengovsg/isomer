@@ -711,13 +711,13 @@ export const resourceRouter = router({
         })
       }
 
-      const result = await getWithFullPermalink({ resourceId })
+      const result = await getWithFullPermalink({ resourceIds: [resourceId] })
 
-      if (!result) {
+      if (result.length === 0 || !result[0]) {
         throw new TRPCError({ code: "NOT_FOUND" })
       }
 
-      return result
+      return result[0]
     }),
 
   getRolesFor: protectedProcedure

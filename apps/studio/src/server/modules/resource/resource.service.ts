@@ -772,10 +772,14 @@ export const getBatchAncestryWithSelfQuery = async ({
 }
 
 export const getWithFullPermalink = async ({
-  resourceId,
+  resourceIds,
 }: {
-  resourceId: string
+  resourceIds: string[]
 }) => {
+  if (resourceIds.length === 0) {
+    return []
+  }
+
   const result = await db
     .withRecursive("resourcePath", (eb) =>
       eb
@@ -805,8 +809,8 @@ export const getWithFullPermalink = async ({
     )
     .selectFrom("resourcePath as rp")
     .select(["rp.id", "rp.title", "rp.fullPermalink"])
-    .where("rp.id", "=", resourceId)
-    .executeTakeFirst()
+    .where("rp.id", "in", resourceIds)
+    .execute()
 
   return result
 }
@@ -833,14 +837,15 @@ const getResourcesWithFullPermalink = async ({
 }: {
   resources: Omit<SearchResultResource, "fullPermalink">[]
 }): Promise<SearchResultResource[]> => {
-  return await Promise.all(
-    resources.map(async (resource) => ({
-      ...resource,
-      fullPermalink: await getWithFullPermalink({
-        resourceId: resource.id,
-      }).then((r) => r?.fullPermalink ?? ""),
-    })),
-  )
+  const result = await getWithFullPermalink({
+    resourceIds: resources.map((resource) => resource.id),
+  })
+
+  return resources.map((resource) => ({
+    ...resource,
+    fullPermalink:
+      result.find((r) => r.id === resource.id)?.fullPermalink ?? "",
+  }))
 }
 
 export const getSearchResults = async ({
