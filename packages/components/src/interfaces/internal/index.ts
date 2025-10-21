@@ -65,3 +65,4 @@ export {
   type AskgovProps,
 } from "./Askgov"
 export type { ImageClientProps } from "./Image"
+export type { MicrosoftClarityProps } from "./MicrosoftClarity"

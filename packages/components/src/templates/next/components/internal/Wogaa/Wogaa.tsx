@@ -9,5 +9,5 @@ export const Wogaa = ({
       ? "https://assets.wogaa.sg/scripts/wogaa.js"
       : "https://assets.dcube.cloud/scripts/wogaa.js"
 
-  return <ScriptComponent src={scriptUrl} />
+  return <ScriptComponent src={scriptUrl} strategy="beforeInteractive" />
 }
