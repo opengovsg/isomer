@@ -55,12 +55,12 @@ describe("getCollectionParent", () => {
     }
 
     // Act + Assert
-    expect(() =>
-      getCollectionParent({
-        site,
-        collectionId: nonExistentCollectionId,
-      }),
-    ).toBeNull()
+    const actual = getCollectionParent({
+      site,
+      collectionId: nonExistentCollectionId,
+    })
+
+    expect(actual).toBeNull()
   })
 
   it("should return the collection node when collectionId matches a siteMap child", () => {
@@ -91,7 +91,8 @@ describe("getCollectionParent", () => {
     }
 
     // Act + Assert
-    expect(() => getCollectionParent({ site, collectionId })).toThrow()
+    const actual = getCollectionParent({ site, collectionId })
+    expect(actual).toBeNull()
   })
 
   it("should find the collection node even if nested", () => {

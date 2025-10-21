@@ -72,7 +72,8 @@ describe("getCollectionPages", () => {
     }
 
     // Act + Assert
-    expect(() => getCollectionPages({ site, collectionParent })).toBe([])
+    const actual = getCollectionPages({ site, collectionParent })
+    expect(actual).toStrictEqual([])
   })
 
   it("should return 3 items", () => {
