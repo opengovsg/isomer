@@ -1,11 +1,10 @@
-// not using "fields" to prevent runtime errors,
+// NOTE: not using "fields" to prevent runtime errors,
 // as DGS returns errors for invalid fields,
 // which can change unpredictably if admins update the dataset schema.
 export interface DgsApiDatasetSearchParams {
   resourceId: string
   limit?: number
   offset?: number
-  // fields?: string // comma separated list of fields to fetch
   filters?: Record<string, string>
   sort?: string
 }

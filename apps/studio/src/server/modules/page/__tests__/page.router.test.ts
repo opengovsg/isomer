@@ -29,6 +29,10 @@ import {
 
 import type { User } from "../../database"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
+import {
+  getJobIdFromResourceIdAndScheduledAt,
+  scheduledPublishQueue,
+} from "~/server/bullmq/queues/schedule-publish"
 import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db } from "../../database"
@@ -44,6 +48,7 @@ describe("page.router", async () => {
   let user: User
 
   beforeEach(async () => {
+    await scheduledPublishQueue.obliterate({ force: true })
     await resetTables(
       "AuditLog",
       "ResourcePermission",
@@ -2100,6 +2105,12 @@ describe("page.router", async () => {
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
       })
+      const scheduledAt = set(addDays(FIXED_NOW, 1), {
+        hours: 10,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
       await setupPublisherPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
@@ -2109,12 +2120,7 @@ describe("page.router", async () => {
       await caller.schedulePage({
         siteId: site.id,
         pageId: Number(expectedPage.id),
-        scheduledAt: set(addDays(FIXED_NOW, 1), {
-          hours: 10,
-          minutes: 0,
-          seconds: 0,
-          milliseconds: 0,
-        }),
+        scheduledAt,
       })
 
       // Assert
@@ -2131,6 +2137,19 @@ describe("page.router", async () => {
         milliseconds: 0,
       })
       expect(actual.scheduledAt).toEqual(expectedDate)
+      // expect a job to be created in the scheduledPublishQueue, with the correct id, delay and data
+      const job = await scheduledPublishQueue.getJob(
+        getJobIdFromResourceIdAndScheduledAt(expectedPage.id, scheduledAt),
+      )
+      expect(job!.data).toEqual({
+        resourceId: Number(expectedPage.id),
+        siteId: site.id,
+        userId: session.userId,
+      })
+      expect(job!.opts.delay).toBeCloseTo(
+        expectedDate.getTime() - FIXED_NOW.getTime(),
+        -3, // rounding to the nearest second (3 decimal places)
+      )
       // expect the audit log to be created, with the updated scheduledAt time
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
@@ -2173,6 +2192,9 @@ describe("page.router", async () => {
         siteId: site.id,
       })
       expect(pageById?.scheduledAt).toBeNull()
+      // Since the request fails, expect no job to be created in the queue
+      const jobs = await scheduledPublishQueue.getJobs()
+      expect(jobs).toHaveLength(0)
       // Since the request fails, expect no audit log to be created
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(0)
@@ -2259,14 +2281,15 @@ describe("page.router", async () => {
     // TODO: check that the request fails if the job is already active - requires mocking the job queue
     it("cancelling a scheduled publish works correctly", async () => {
       // Arrange
+      const scheduledAt = set(addDays(FIXED_NOW, 1), {
+        hours: 10,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
-        scheduledAt: set(addDays(FIXED_NOW, 1), {
-          hours: 10,
-          minutes: 0,
-          seconds: 0,
-          milliseconds: 0,
-        }),
+        scheduledAt,
       })
       await setupPublisherPermissions({
         userId: session.userId ?? undefined,
@@ -2274,19 +2297,23 @@ describe("page.router", async () => {
       })
 
       // Act
-      // This should null out the the scheduledAt field
       await caller.cancelSchedulePage({
         siteId: site.id,
         pageId: Number(expectedPage.id),
       })
 
       // Assert
+      // The scheduledAt field of the page should be null and the job should be removed from the job queue
       const actual = await db
         .selectFrom("Resource")
         .where("id", "=", expectedPage.id)
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(actual.scheduledAt).toBeNull()
+      const job = await scheduledPublishQueue.getJob(
+        getJobIdFromResourceIdAndScheduledAt(expectedPage.id, scheduledAt),
+      )
+      expect(job).toBeUndefined()
     })
     it("cancelling a scheduled publish throws an error if the page is not scheduled", async () => {
       // Arrange

@@ -1,4 +1,4 @@
-import baseConfig from "@isomer/eslint-config/base";
+import baseConfig from "@isomer/eslint-config/base"
 
 /** @type {import('typescript-eslint').Config} */
 export default [
@@ -17,6 +17,9 @@ export default [
       "@typescript-eslint/no-unsafe-member-access": "warn",
       "@typescript-eslint/no-unsafe-return": "warn",
       "@typescript-eslint/no-unsafe-argument": "warn",
+      "@typescript-eslint/no-non-null-assertion": "warn",
+      "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
+      "@typescript-eslint/prefer-optional-chain": "warn",
       "@typescript-eslint/prefer-nullish-coalescing": [
         "error",
         { ignorePrimitives: true },
@@ -24,4 +27,4 @@ export default [
       "@typescript-eslint/no-unnecessary-condition": "warn",
     },
   },
-];
+]

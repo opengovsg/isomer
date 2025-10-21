@@ -4,7 +4,7 @@ import type { StartedNetwork, StartedTestContainer } from "testcontainers"
 import { GenericContainer, Wait } from "testcontainers"
 import { z } from "zod"
 
-type ContainerType = "database" | "mockpass"
+type ContainerType = "database" | "mockpass" | "redis"
 export const CONTAINER_CONFIGURATIONS: Record<
   ContainerType,
   ContainerConfiguration
@@ -34,6 +34,13 @@ export const CONTAINER_CONFIGURATIONS: Record<
         "http://host.docker.internal:3000/api/sign-in/singpass/jwks",
       SINGPASS_CLIENT_PROFILE: "direct",
     },
+    wait: { type: "PORT" },
+    type: "image",
+  },
+  redis: {
+    name: "redis",
+    image: "redis:latest",
+    ports: [{ container: 6379, host: 6379 }],
     wait: { type: "PORT" },
     type: "image",
   },

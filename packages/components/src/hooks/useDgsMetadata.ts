@@ -14,7 +14,7 @@ export const useDgsMetadata = ({
   resourceId,
   enabled = true,
 }: UseDgsMetadataProps) => {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(enabled)
   const [isError, setIsError] = useState(false)
   const [metadata, setMetadata] = useState<FetchDgsMetadataOutput | undefined>(
     undefined,
