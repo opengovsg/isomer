@@ -216,11 +216,18 @@ const reorderWithinSameList = (
 // Handle moving a subitem to become a main item
 const moveSubItemToBecomeMainItem = (
   data: NavbarItems["items"],
+  isMaxItemsReached: boolean,
   originalPath: string,
   moveItemIndices: NavbarItemIndices,
   targetLocationIndices: NavbarItemIndices,
   closestEdge?: Edge | null,
 ) => {
+  if (isMaxItemsReached) {
+    // Disallow subitems from being dropped into the main navbar if the
+    // maxItems limit has been reached
+    return data
+  }
+
   const itemToMove = get({ items: data }, originalPath) as
     | NavbarItems["items"][number]
     | undefined
@@ -262,6 +269,7 @@ const moveSubItemToBecomeMainItem = (
 // drag-and-drop operations. Returns the updated navbar items array.
 export const handleMoveItem = (
   existingData: NavbarItems["items"],
+  isMaxItemsReached: boolean,
   originalPath: string,
   newPath: string,
   instruction?: "reorder-before" | "reorder-after" | "combine",
@@ -314,6 +322,7 @@ export const handleMoveItem = (
     case "MoveSubitemToBecomeMainItem":
       return moveSubItemToBecomeMainItem(
         data,
+        isMaxItemsReached,
         originalPath,
         moveItemIndices,
         targetLocationIndices,

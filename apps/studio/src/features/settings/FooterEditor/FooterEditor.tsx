@@ -98,7 +98,7 @@ export const FooterEditor = ({
           />
         </HStack>
 
-        <VStack w="full" gap={0} alignItems="start" px="1.5rem">
+        <VStack w="full" gap={0} alignItems="start" px="2rem">
           <Text textStyle="subhead-1" textColor="base.content.strong">
             Custom links
           </Text>
