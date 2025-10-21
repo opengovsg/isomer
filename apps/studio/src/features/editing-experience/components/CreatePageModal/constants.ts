@@ -2,7 +2,7 @@ import type { NEW_PAGE_LAYOUT_VALUES } from "~/schemas/page"
 
 export type Layout = (typeof NEW_PAGE_LAYOUT_VALUES)[number]
 
-export const LAYOUT_RENDER_DATA: Record<
+export type LayoutRenderDataType = Record<
   Layout,
   {
     title: string
@@ -10,7 +10,9 @@ export const LAYOUT_RENDER_DATA: Record<
     imageSrc: string
     altText: string
   }
-> = {
+>
+
+export const LAYOUT_RENDER_DATA: LayoutRenderDataType = {
   content: {
     title: "Default layout",
     description: "This is the most basic layout for your content.",
