@@ -41,7 +41,7 @@ const addVariant = (schema: JsonSchema): SchemaWithVariant => {
 
 export const jsonFormsWidgetIntegrationControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.WidgetControl,
-  schemaMatches((schema) => schema.format === "widget-integration"),
+  schemaMatches((schema) => !!schema.format?.startsWith("widget-integration/")),
 )
 
 export function JsonFormsWidgetIntegrationControl({
