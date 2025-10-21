@@ -15,7 +15,8 @@ import { BiShow } from "react-icons/bi"
 
 import type { Layout } from "./constants"
 import { NextImage } from "~/components/NextImage"
-import { LAYOUT_RENDER_DATA, LAYOUT_TYPES } from "./constants"
+import { NEW_PAGE_LAYOUT_VALUES } from "~/schemas/page"
+import { LAYOUT_RENDER_DATA } from "./constants"
 
 interface LayoutTileProps extends UseRadioProps {
   value: Layout
@@ -124,9 +125,11 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
                 </Badge>
               )}
             </Stack>
-            <Text textStyle="body-1" color="base.content.default">
-              {description}
-            </Text>
+            {isSelected && (
+              <Text textStyle="body-1" color="base.content.default">
+                {description}
+              </Text>
+            )}
           </Stack>
         </VStack>
       </Box>
@@ -146,7 +149,7 @@ export const LayoutOptionsInput = forwardRef<
 
   return (
     <Stack {...group} gap="2rem">
-      {LAYOUT_TYPES.map((value, index) => {
+      {NEW_PAGE_LAYOUT_VALUES.map((value, index) => {
         const radio = getRadioProps({ value })
         return (
           <LayoutOptionRadio

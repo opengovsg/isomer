@@ -8,6 +8,7 @@ import type {
   SearchableTableClientProps,
 } from "~/interfaces"
 import { useDgsData } from "~/hooks/useDgsData"
+import { useDgsMetadata } from "~/hooks/useDgsMetadata"
 import { SearchableTableClient } from "../shared"
 
 export const DGSSearchableTable = ({
@@ -17,17 +18,38 @@ export const DGSSearchableTable = ({
   site,
   LinkComponent,
 }: DGSSearchableTableProps) => {
-  const labels = useMemo(() => headers.map((header) => header.label), [headers])
+  // If user provided headers/title, we use them,
+  // otherwise we fetch the metadata from DGS to display as default
+  const hasUserProvidedTitle = !!title
+  const hasUserProvidedHeaders = headers && headers.length > 0
+  const shouldFetchMetadata = !hasUserProvidedTitle || !hasUserProvidedHeaders
 
-  const fieldKeys = useMemo(
-    () => headers.map((header) => header.key),
-    [headers],
-  )
+  const {
+    metadata,
+    isLoading: isMetadataLoading,
+    isError: isMetadataError,
+  } = useDgsMetadata({ resourceId, enabled: shouldFetchMetadata })
+
+  const resolvedTitle = useMemo(() => {
+    if (hasUserProvidedTitle) {
+      return title
+    }
+    return metadata?.name
+  }, [title, metadata?.name, hasUserProvidedTitle])
+
+  const resolvedHeaders = useMemo(() => {
+    if (hasUserProvidedHeaders) {
+      return headers
+    }
+    if (metadata?.columnMetadata) {
+      return metadata.columnMetadata.map(([key, label]) => ({ key, label }))
+    }
+    return []
+  }, [headers, hasUserProvidedHeaders, metadata?.columnMetadata])
 
   const params = useMemo(
     () => ({
       resourceId,
-      fields: fieldKeys.join(","),
       filters: filters?.reduce<
         NonNullable<DgsApiDatasetSearchParams["filters"]>
       >((acc, filter) => {
@@ -36,36 +58,51 @@ export const DGSSearchableTable = ({
       }, {}),
       sort,
     }),
-    [resourceId, filters, sort, fieldKeys],
+    [resourceId, filters, sort],
   )
+
   // TODO: Consider implementing pagination or virtualization instead of fetchAll for large datasets.
   // Currently, we fetch all records at once, which may not scale well.
-  const { records, isLoading, isError } = useDgsData({
+  const {
+    records,
+    isLoading: isDataLoading,
+    isError: isDataError,
+  } = useDgsData({
     ...params,
     fetchAll: true,
   })
 
-  const items: SearchableTableClientProps["items"] = useMemo(
-    () =>
+  const labels = useMemo(
+    () => resolvedHeaders.map((header) => header.label ?? header.key),
+    [resolvedHeaders],
+  )
+
+  const items: SearchableTableClientProps["items"] = useMemo(() => {
+    const keys = resolvedHeaders.map((header) => header.key)
+    return (
       records?.map((record) => {
-        const content = fieldKeys.map((field) => String(record[field] ?? ""))
+        const content = keys.map((field) => String(record[field] ?? ""))
         return {
           key: content.join(" ").toLowerCase(),
           row: content,
         }
-      }) ?? [],
-    [records, fieldKeys],
-  )
+      }) ?? []
+    )
+  }, [records, resolvedHeaders])
 
   return (
     <SearchableTableClient
-      title={title}
+      title={resolvedTitle}
       headers={labels}
       items={items}
       site={site}
       LinkComponent={LinkComponent}
-      isLoading={isLoading}
-      isError={isError}
+      isLoading={
+        shouldFetchMetadata ? isMetadataLoading || isDataLoading : isDataLoading
+      }
+      isError={
+        shouldFetchMetadata ? isMetadataError || isDataError : isDataError
+      }
     />
   )
 }

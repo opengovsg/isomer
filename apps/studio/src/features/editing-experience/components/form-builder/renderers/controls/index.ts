@@ -59,6 +59,10 @@ export {
   jsonFormsEmbedControlTester,
 } from "./JsonFormsEmbedControl"
 export {
+  default as JsonFormsDgsDatasetIdControl,
+  jsonFormsDgsDatasetIdControlTester,
+} from "./JsonFormsDgsDatasetIdControl"
+export {
   default as JsonFormsHiddenControl,
   jsonFormsHiddenControlTester,
 } from "./JsonFormsHiddenControl"
