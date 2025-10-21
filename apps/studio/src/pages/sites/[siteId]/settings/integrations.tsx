@@ -46,22 +46,21 @@ export const DEFAULT_COMPLEX_INTEGRATION_SETTINGS = Value.Parse(
   Value.Default(ComplexIntegrationsSettingsSchema, {}),
 )
 
+const complexIntegrationSettingsValidateFn =
+  ajv.compile<ComplexIntegrationsSettings>(ComplexIntegrationsSettingsSchema)
+const simpleIntegrationSettingsValidateFn =
+  ajv.compile<SimpleIntegrationsSettings>(SimpleIntegrationsSettingsSchema)
+
 const IntegrationsSettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
   const trpcUtils = trpc.useUtils()
-  const toast = useToast()
-  const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
-    siteId: Number(siteId),
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
+  const [
+    { vica, askgov, siteGtmId, search, agencyName, url, siteName, ...rest },
+  ] = trpc.site.getConfig.useSuspenseQuery({
+    id: siteId,
   })
-  const complexIntegrationSettingsValidateFn =
-    ajv.compile<ComplexIntegrationsSettings>(ComplexIntegrationsSettingsSchema)
-  const simpleIntegrationSettingsValidateFn =
-    ajv.compile<SimpleIntegrationsSettings>(SimpleIntegrationsSettingsSchema)
-  const [{ vica, askgov, siteGtmId, search, agencyName, url, ...rest }] =
-    trpc.site.getConfig.useSuspenseQuery({
-      id: siteId,
-    })
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
@@ -82,7 +81,6 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
         toast({
           title: `Site ${siteName} updated successfully`,
           status: "success",
-          ...BRIEF_TOAST_SETTINGS,
         })
         await trpcUtils.site.getConfig.invalidate({ id: siteId })
       },
@@ -91,7 +89,6 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
           title: "Failed to update site",
           description: error.message,
           status: "error",
-          ...BRIEF_TOAST_SETTINGS,
         })
       },
     })
@@ -105,6 +102,7 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
         ...rest,
         ...simpleIntegrationSettings,
         ...complexIntegrationSettings,
+        siteName,
         url: url || `https://sample.isomer.gov.sg`,
       },
     })
@@ -162,7 +160,7 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
                     ...data,
                     vica: {
                       ...data.vica,
-                      "app-name": agencyName || "",
+                      "app-name": agencyName ?? siteName,
                     },
                   })
                 } else {
@@ -174,7 +172,7 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
           <EditSettingsPreview
-            siteName={name}
+            siteName={siteName}
             {...complexIntegrationSettings}
             {...simpleIntegrationSettings}
           />

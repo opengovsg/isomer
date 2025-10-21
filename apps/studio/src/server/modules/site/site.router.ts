@@ -163,14 +163,9 @@ export const siteRouter = router({
         userId: ctx.user.id,
         action: "update",
       })
-
-      const {
-        user: { id: userId },
-      } = ctx
-
       const user = await db
         .selectFrom("User")
-        .where("id", "=", userId)
+        .where("id", "=", ctx.user.id)
         .selectAll()
         .executeTakeFirstOrThrow()
 

@@ -1,8 +1,4 @@
-import type {
-  ControlWithDetailProps,
-  JsonSchema,
-  RankedTester,
-} from "@jsonforms/core"
+import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
 import { useEffect, useMemo, useState } from "react"
 import { Box, Collapse, Flex, Spacer, Text, VStack } from "@chakra-ui/react"
 import {
@@ -19,25 +15,6 @@ import type { WidgetType } from "../../contexts/WidgetContext"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { withJsonFormsControlWithDetailProps } from "../../contexts/JsonFormsContext"
 import { useWidget, WIDGET_CONFIG } from "../../contexts/WidgetContext"
-
-type SchemaWithVariant = JsonSchema & { variant: WidgetType }
-
-const isSchemaWithVariant = (
-  schema: JsonSchema,
-): schema is SchemaWithVariant => {
-  return (schema as { variant?: WidgetType }).variant !== undefined
-}
-
-const addVariant = (schema: JsonSchema): SchemaWithVariant => {
-  if (isSchemaWithVariant(schema)) {
-    return schema
-  }
-
-  return {
-    ...schema,
-    variant: "askgov" satisfies WidgetType,
-  }
-}
 
 export const jsonFormsWidgetIntegrationControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.WidgetControl,
@@ -74,15 +51,13 @@ export function JsonFormsWidgetIntegrationControl({
     [uischemas, schema, uischema, path, rootSchema],
   )
 
-  const schemaWithVariant = addVariant(schema)
-
   useEffect(() => {
     // NOTE: sync data with snapshot
     // if data exists
     if (data) setSnapshot(data)
   }, [data])
 
-  const variant = schemaWithVariant.variant
+  const variant = extractVariantFromFormat(schema.format?.split("/")[1])
   const isChecked = activeWidget === variant
 
   useEffect(() => {
@@ -142,3 +117,19 @@ export function JsonFormsWidgetIntegrationControl({
 export default withJsonFormsControlWithDetailProps(
   JsonFormsWidgetIntegrationControl,
 )
+
+function extractVariantFromFormat(format?: string): WidgetType {
+  const possibleFormat = format?.split("/")[1]
+  if (!possibleFormat) return "askgov"
+
+  switch (possibleFormat) {
+    case "askgov":
+    case "vica":
+      return possibleFormat
+
+    default:
+      // NOTE: cannot do exhaustive check as the string split
+      // will return a string type
+      return "askgov"
+  }
+}

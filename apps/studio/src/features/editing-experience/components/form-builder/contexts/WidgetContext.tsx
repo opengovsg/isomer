@@ -1,7 +1,6 @@
 import type { ComplexIntegrations } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { createContext, useContext, useState } from "react"
-import { SimplifyDeep } from "type-fest"
 
 import { AskgovLogo } from "~/components/Svg/Askgov"
 import { VicaLogo } from "~/components/Svg/Vica"
@@ -21,7 +20,7 @@ export const WIDGET_CONFIG: Record<WidgetType, Widget> = {
   },
 }
 
-export type WidgetType = SimplifyDeep<ComplexIntegrations>
+export type WidgetType = ComplexIntegrations
 
 interface UseWidgetContextReturn {
   activeWidget: WidgetType | null
@@ -38,8 +37,8 @@ export const WidgetProvider = ({
   const [activeWidget, setActiveWidget] = useState<WidgetType | null>(
     currentActiveWidget,
   )
-  const getNextWidget = (widget: WidgetType) => {
-    if (!activeWidget) return widget
+  const getNextWidget = (curWidget: WidgetType) => {
+    if (!activeWidget) return curWidget
 
     return activeWidget === "askgov" ? "vica" : "askgov"
   }
