@@ -1,5 +1,6 @@
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/router"
 import { useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -15,6 +16,7 @@ import { siteSchema } from "~/features/editing-experience/schema"
 import { EditFooterPreview } from "~/features/settings/EditFooterPreview"
 import { FooterEditor } from "~/features/settings/FooterEditor"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
+import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
@@ -22,6 +24,8 @@ import { trpc } from "~/utils/trpc"
 
 const FooterSettingsPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteSchema)
+  const router = useRouter()
+  const isEnabled = useNewSettingsPage()
   const utils = trpc.useUtils()
   const toast = useToast()
   const [nextUrl, setNextUrl] = useState("")
@@ -54,6 +58,12 @@ const FooterSettingsPage: NextPageWithLayout = () => {
   }
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+
+  useEffect(() => {
+    if (!isEnabled) {
+      void router.push(`/sites/${siteId}/settings`)
+    }
+  }, [isEnabled, router, siteId])
 
   return (
     <>
