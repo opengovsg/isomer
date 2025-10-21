@@ -2,42 +2,35 @@
 
 import { useMemo } from "react"
 
-import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
-import type {
-  DGSSearchableTableProps,
-  SearchableTableClientProps,
-} from "~/interfaces"
-import { useDgsData } from "~/hooks/useDgsData"
+import type { DGSSearchableTableProps } from "~/interfaces"
 import { useDgsMetadata } from "~/hooks/useDgsMetadata"
-import { SearchableTableClient } from "../shared"
+import { DGS_REQUEST_MAX_BYTES } from "~/utils/dgs"
+import { DynamicDGSSearchableTable } from "./DynamicDGSSearchableTable"
+import { StaticDGSSearchableTable } from "./StaticDGSSearchableTable"
 
 export const DGSSearchableTable = ({
-  dataSource: { resourceId, filters, sort },
+  dataSource,
   title,
   headers,
   site,
   LinkComponent,
 }: DGSSearchableTableProps) => {
-  // If user provided headers/title, we use them,
-  // otherwise we fetch the metadata from DGS to display as default
-  const hasUserProvidedTitle = !!title
-  const hasUserProvidedHeaders = headers && headers.length > 0
-  const shouldFetchMetadata = !hasUserProvidedTitle || !hasUserProvidedHeaders
-
   const {
     metadata,
     isLoading: isMetadataLoading,
     isError: isMetadataError,
-  } = useDgsMetadata({ resourceId, enabled: shouldFetchMetadata })
+  } = useDgsMetadata({ resourceId: dataSource.resourceId })
 
   const resolvedTitle = useMemo(() => {
+    const hasUserProvidedTitle = !!title
     if (hasUserProvidedTitle) {
       return title
     }
     return metadata?.name
-  }, [title, metadata?.name, hasUserProvidedTitle])
+  }, [title, metadata?.name])
 
   const resolvedHeaders = useMemo(() => {
+    const hasUserProvidedHeaders = headers && headers.length > 0
     if (hasUserProvidedHeaders) {
       return headers
     }
@@ -45,64 +38,41 @@ export const DGSSearchableTable = ({
       return metadata.columnMetadata.map(([key, label]) => ({ key, label }))
     }
     return []
-  }, [headers, hasUserProvidedHeaders, metadata?.columnMetadata])
-
-  const params = useMemo(
-    () => ({
-      resourceId,
-      filters: filters?.reduce<
-        NonNullable<DgsApiDatasetSearchParams["filters"]>
-      >((acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      }, {}),
-      sort,
-    }),
-    [resourceId, filters, sort],
-  )
-
-  // TODO: Consider implementing pagination or virtualization instead of fetchAll for large datasets.
-  // Currently, we fetch all records at once, which may not scale well.
-  const {
-    records,
-    isLoading: isDataLoading,
-    isError: isDataError,
-  } = useDgsData({
-    ...params,
-    fetchAll: true,
-  })
+  }, [headers, metadata?.columnMetadata])
 
   const labels = useMemo(
     () => resolvedHeaders.map((header) => header.label ?? header.key),
     [resolvedHeaders],
   )
 
-  const items: SearchableTableClientProps["items"] = useMemo(() => {
-    const keys = resolvedHeaders.map((header) => header.key)
+  if (metadata?.size && metadata.size < DGS_REQUEST_MAX_BYTES) {
+    // Load all the data into memory, so we can display and filter on the client side
     return (
-      records?.map((record) => {
-        const content = keys.map((field) => String(record[field] ?? ""))
-        return {
-          key: content.join(" ").toLowerCase(),
-          row: content,
-        }
-      }) ?? []
+      <StaticDGSSearchableTable
+        dataSource={dataSource}
+        title={resolvedTitle}
+        headers={resolvedHeaders}
+        site={site}
+        LinkComponent={LinkComponent}
+        labels={labels}
+        isMetadataLoading={isMetadataLoading}
+        isMetadataError={isMetadataError}
+      />
     )
-  }, [records, resolvedHeaders])
-
-  return (
-    <SearchableTableClient
-      title={resolvedTitle}
-      headers={labels}
-      items={items}
-      site={site}
-      LinkComponent={LinkComponent}
-      isLoading={
-        shouldFetchMetadata ? isMetadataLoading || isDataLoading : isDataLoading
-      }
-      isError={
-        shouldFetchMetadata ? isMetadataError || isDataError : isDataError
-      }
-    />
-  )
+  } else {
+    // This is for datasets that are too large to load into memory,
+    // so we need to fetch the data on the server side, using DGS API
+    return (
+      <DynamicDGSSearchableTable
+        dataSource={dataSource}
+        title={resolvedTitle}
+        headers={labels}
+        site={site}
+        LinkComponent={LinkComponent}
+        isMetadataLoading={isMetadataLoading}
+        isMetadataError={isMetadataError}
+        maxNoOfColumns={labels.length}
+      />
+    )
+  }
 }
