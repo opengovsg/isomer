@@ -20,7 +20,7 @@ export const useDgsData = ({
   filters,
   sort,
 }: UseDgsData) => {
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState(false)
   const [data, setData] = useState<DgsApiDatasetSearchResponseSuccess | null>(
     null,
