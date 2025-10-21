@@ -956,6 +956,31 @@ export const DGSSearchableTableWithHeaders: Story = {
         type: "dgs",
         resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
       },
+    },
+  }),
+}
+
+export const DGSSearchableTableWithDefaultTitle: Story = {
+  name: "DGS Searchable Table (with default title)",
+  args: generateArgs({
+    database: {
+      dataSource: {
+        type: "dgs",
+        resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+      },
+    },
+  }),
+}
+
+export const DGSSearchableTableWithHeaders: Story = {
+  name: "DGS Searchable Table (with headers)",
+  args: generateArgs({
+    database: {
+      title: "Sample DGS Table",
+      dataSource: {
+        type: "dgs",
+        resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+      },
       headers: [
         { label: "Year", key: "year" },
         { label: "University", key: "university" },

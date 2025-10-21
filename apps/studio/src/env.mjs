@@ -61,6 +61,8 @@ const server = z
     POSTMAN_API_KEY: z.string().optional(),
     SESSION_SECRET: z.string().min(32),
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
+    REDIS_HOST: z.string(),
+    REDIS_PORT: z.coerce.number().default(6379),
   })
   .merge(s3Schema)
   .merge(singpassSchema)
@@ -94,6 +96,8 @@ const processEnv = {
   SINGPASS_ENCRYPTION_KEY_ALG: process.env.SINGPASS_ENCRYPTION_KEY_ALG,
   SINGPASS_SIGNING_PRIVATE_KEY: process.env.SINGPASS_SIGNING_PRIVATE_KEY,
   SINGPASS_SIGNING_KEY_ALG: process.env.SINGPASS_SIGNING_KEY_ALG,
+  REDIS_HOST: process.env.REDIS_HOST,
+  REDIS_PORT: process.env.REDIS_PORT,
   // Client-side env vars
   NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,

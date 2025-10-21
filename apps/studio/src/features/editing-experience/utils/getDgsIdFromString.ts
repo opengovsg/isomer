@@ -26,27 +26,47 @@ export const getDgsIdFromString = ({
     }
 
     // Handle full URL format: https://data.gov.sg/datasets/d_abc123/view
-    if (parsedUrl.pathname.startsWith("/datasets/")) {
-      const pathParts = parsedUrl.pathname.split("/")
-      if (pathParts.length === 4 && pathParts[3] === "view" && pathParts[2]) {
-        const datasetId = pathParts[2]
-        if (DgsDatasetIdSchema.safeParse(datasetId).success) {
-          return datasetId
-        }
-      }
-    }
+    const viewUrlResult = extractDatasetIdFromViewUrl(parsedUrl)
+    if (viewUrlResult) return viewUrlResult
 
     // Ideally user don't input this format, but just in case they copy from the browser URL
     // Handle resultId parameter format: https://data.gov.sg/datasets?resultId=d_8b84c4ee58e3cfc0ece0d773c8ca6abc
-    if (parsedUrl.pathname === "/datasets") {
-      const resultId = parsedUrl.searchParams.get("resultId")
-      if (resultId && DgsDatasetIdSchema.safeParse(resultId).success) {
-        return resultId
-      }
-    }
+    const resultIdResult = extractDatasetIdFromResultId(parsedUrl)
+    if (resultIdResult) return resultIdResult
 
     return null
   } catch {
     return null
   }
+}
+
+const extractDatasetIdFromViewUrl = (parsedUrl: URL): string | null => {
+  if (!parsedUrl.pathname.startsWith("/datasets/")) {
+    return null
+  }
+
+  const pathParts = parsedUrl.pathname.split("/")
+  if (pathParts.length !== 4 || pathParts[3] !== "view" || !pathParts[2]) {
+    return null
+  }
+
+  const datasetId = pathParts[2]
+  if (!DgsDatasetIdSchema.safeParse(datasetId).success) {
+    return null
+  }
+
+  return datasetId
+}
+
+const extractDatasetIdFromResultId = (parsedUrl: URL): string | null => {
+  if (parsedUrl.pathname !== "/datasets") {
+    return null
+  }
+
+  const resultId = parsedUrl.searchParams.get("resultId")
+  if (!resultId || !DgsDatasetIdSchema.safeParse(resultId).success) {
+    return null
+  }
+
+  return resultId
 }

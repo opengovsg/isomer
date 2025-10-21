@@ -8,6 +8,7 @@ export const JSON_FORMS_RANKING = {
   HiddenControl: 99999999999, // Always rendered first
   ImageControl: 2,
   IntegerControl: 4,
+  EnumControl: 2,
   TextAreaControl: 1,
   TextControl: 1,
   // NOTE: has to be higher than `TextControl`
@@ -17,6 +18,12 @@ export const JSON_FORMS_RANKING = {
   ChildrenPagesControl: 4,
   // NOTE: needs to have higher priority than array
   ChildrenPagesOrderingControl: 5,
+  // NOTE: needs to have higher priority than array
+  NavbarControl: 5,
+  // NOTE: needs to have higher priority than array
+  LinkArrayControl: 5,
+  // NOTE: needs to have higher priority than array
+  SocialMediaControl: 5,
   AllOfControl: 3,
   AnyOfControl: 3,
   CategoryControl: 3,

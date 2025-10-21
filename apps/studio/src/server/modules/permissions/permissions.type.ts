@@ -42,6 +42,6 @@ export interface UserPermissionsProps extends PermissionsProps {
 
 export interface AssetPermissionsProps
   extends Pick<PermissionsProps, "siteId" | "userId"> {
-  resourceId: string
+  resourceId?: string
   action: "create" | "delete"
 }

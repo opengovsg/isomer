@@ -24,6 +24,7 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     type: "Collection",
     parentId: null,
     updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+    scheduledAt: null,
   },
   {
     id: "4",
@@ -34,6 +35,7 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     type: "Page",
     parentId: null,
     updatedAt: new Date("2024-09-12T07:00:10.000Z"),
+    scheduledAt: null,
   },
   {
     id: "5",
@@ -44,6 +46,7 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     type: "Page",
     parentId: null,
     updatedAt: new Date("2024-09-12T07:00:20.000Z"),
+    scheduledAt: null,
   },
   {
     id: "6",
@@ -54,6 +57,7 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     type: "Folder",
     parentId: null,
     updatedAt: new Date("2024-09-12T07:00:30.000Z"),
+    scheduledAt: null,
   },
 ]
 

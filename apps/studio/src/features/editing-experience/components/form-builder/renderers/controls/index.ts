@@ -102,3 +102,19 @@ export {
   jsonFormsTagCategoriesControlTester,
   default as JsonFormsTagCategoriesControl,
 } from "./JsonFormsTagCategoryControl"
+export {
+  default as JsonFormsNavbarControl,
+  jsonFormsNavbarControlTester,
+} from "./JsonFormsNavbarControl/JsonFormsNavbarControl"
+export {
+  default as JsonFormsLinkArrayControl,
+  jsonFormsLinkArrayControlTester,
+} from "./JsonFormsLinkArrayControl"
+export {
+  default as JsonFormsSocialMediaControl,
+  jsonFormsSocialMediaControlTester,
+} from "./JsonFormsSocialMediaControl/JsonFormsSocialMediaControl"
+export {
+  default as JsonFormsEnumControl,
+  jsonFormsEnumControlTester,
+} from "./JsonFormsEnumControl"

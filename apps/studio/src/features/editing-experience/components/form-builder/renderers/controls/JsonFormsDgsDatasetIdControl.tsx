@@ -24,15 +24,18 @@ import {
   Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import { DGS_DATASET_ID_FORMAT } from "@opengovsg/isomer-components"
+import {
+  DGS_DATASET_ID_FORMAT,
+  useDgsMetadata,
+} from "@opengovsg/isomer-components"
 import { useDebounce } from "@uidotdev/usehooks"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useDgsMetadata } from "~/features/editing-experience/components/form-builder/hooks/useDgsMetadata"
 import { getDgsIdFromString } from "~/features/editing-experience/utils"
 import { useZodForm } from "~/lib/form"
+import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsDgsDatasetIdControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextControl,
@@ -68,9 +71,11 @@ const DgsDatasetIdModal = ({
 
   const datasetId = getDgsIdFromString({ string: debouncedInputValue })
 
-  const { data: format, isLoading: isValidatingDataset } = useDgsMetadata({
-    datasetId,
+  const { metadata, isLoading: isValidatingDataset } = useDgsMetadata({
+    resourceId: datasetId ?? "",
+    enabled: !!datasetId,
   })
+  const format = metadata?.format
   const isValidDataset = format === "CSV"
 
   const isLoading = isValidatingDataset || isDebouncing
@@ -94,11 +99,6 @@ const DgsDatasetIdModal = ({
     }),
     reValidateMode: "onChange",
   })
-
-  // Update inputValue when initialValue changes (when modal opens)
-  useEffect(() => {
-    setInputValue(initialValueUrl)
-  }, [initialValueUrl])
 
   // Handle dataset validation
   useEffect(() => {
@@ -132,11 +132,6 @@ const DgsDatasetIdModal = ({
     }
   })
 
-  const handleClose = () => {
-    onClose()
-    setInputValue(initialValueUrl)
-  }
-
   const FeedbackMessage = () => {
     if (errors.datasetId) {
       return <FormErrorMessage>{errors.datasetId.message}</FormErrorMessage>
@@ -158,7 +153,7 @@ const DgsDatasetIdModal = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <form onSubmit={onSubmit}>
@@ -175,13 +170,11 @@ const DgsDatasetIdModal = ({
                 fontFamily="monospace"
                 placeholder="Paste dataset URL here"
                 value={inputValue}
+                {...register("datasetId")}
                 onChange={(e) => {
                   setInputValue(e.target.value)
                   void register("datasetId").onChange(e)
                 }}
-                onBlur={register("datasetId").onBlur}
-                name={register("datasetId").name}
-                ref={register("datasetId").ref}
                 isDisabled={isValidatingDataset}
                 aria-label={inputValue}
               />
@@ -195,7 +188,7 @@ const DgsDatasetIdModal = ({
               <Button
                 variant="clear"
                 color="base.content.default"
-                onClick={handleClose}
+                onClick={onClose}
               >
                 Cancel
               </Button>
@@ -227,7 +220,6 @@ export function JsonFormsDgsDatasetIdControl({
   description,
   required,
   errors,
-  schema: _schema,
 }: JsonFormsDgsDatasetIdControlProps) {
   const {
     isOpen: isDgsModalOpen,
@@ -241,12 +233,14 @@ export function JsonFormsDgsDatasetIdControl({
 
   return (
     <>
-      <DgsDatasetIdModal
-        isOpen={isDgsModalOpen}
-        onClose={onDgsModalClose}
-        onSave={(datasetId) => handleDatasetIdSave(datasetId)}
-        initialValue={data || ""}
-      />
+      {isDgsModalOpen && (
+        <DgsDatasetIdModal
+          isOpen={isDgsModalOpen}
+          onClose={onDgsModalClose}
+          onSave={(datasetId) => handleDatasetIdSave(datasetId)}
+          initialValue={data || ""}
+        />
+      )}
 
       <Box>
         <FormControl isRequired={required} isInvalid={!!errors}>
@@ -285,7 +279,7 @@ export function JsonFormsDgsDatasetIdControl({
           </HStack>
 
           <FormErrorMessage>
-            {label} {errors}
+            {label} {getCustomErrorMessage(errors)}
           </FormErrorMessage>
         </FormControl>
       </Box>

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { expect, within } from "@storybook/test"
 
 import { generateSiteConfig } from "~/stories/helpers"
 import Paragraph from "./Paragraph"
@@ -248,5 +249,59 @@ export const WithDirectionNull: Story = {
         text: "نص لوريم إيبسوم القياسي والمستخدم null منذ القرن الخامس عشر",
       },
     ],
+  },
+}
+
+// Mobile link hard break should not trigger 24px touch target violation
+export const MobileLinkHardBreak: Story = {
+  args: {
+    content: [
+      {
+        type: "text",
+        marks: [
+          {
+            type: "link",
+            attrs: {
+              href: "https://example.com/first-link",
+              target: "_blank",
+            },
+          },
+        ],
+        text: "First Link",
+      },
+      {
+        type: "hardBreak",
+      },
+      {
+        type: "text",
+        marks: [
+          {
+            type: "link",
+            attrs: {
+              href: "https://example.com/second-link",
+              target: "_blank",
+            },
+          },
+        ],
+        text: "Second Link",
+      },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    const firstLink = await canvas.findByText("First Link")
+    const secondLink = await canvas.findByText("Second Link")
+
+    const firstLinkStyle = getComputedStyle(firstLink)
+    const secondLinkStyle = getComputedStyle(secondLink)
+
+    // Assert line height for both links (should be at least 24px to meet touch target requirements)
+    await expect(parseFloat(firstLinkStyle.lineHeight)).toBeGreaterThanOrEqual(
+      24,
+    )
+    await expect(parseFloat(secondLinkStyle.lineHeight)).toBeGreaterThanOrEqual(
+      24,
+    )
   },
 }
