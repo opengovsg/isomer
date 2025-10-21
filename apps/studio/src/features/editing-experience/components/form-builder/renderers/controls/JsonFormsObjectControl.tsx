@@ -89,7 +89,7 @@ export function JsonFormsObjectControl({
               isDisabled={!enabled}
             >
               <VStack gap="0.25rem" alignItems="start">
-                <Text textStyle="subhead-2" textColor="base.content.strong">
+                <Text textStyle="subhead-1" textColor="base.content.strong">
                   {label}
                 </Text>
 
