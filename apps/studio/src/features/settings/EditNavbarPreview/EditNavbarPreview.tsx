@@ -1,3 +1,4 @@
+import type { NavbarSchemaType } from "@opengovsg/isomer-components"
 import merge from "lodash/merge"
 
 import type { IframeCallbackFnProps } from "~/types/dom"
@@ -9,9 +10,13 @@ import { MOBILE_NAVIGATION_MENU_QUERY_SELECTOR } from "../constants"
 
 interface EditNavbarPreviewProps {
   siteId: number
+  previewNavbarState?: NavbarSchemaType
 }
 
-export const EditNavbarPreview = ({ siteId }: EditNavbarPreviewProps) => {
+export const EditNavbarPreview = ({
+  siteId,
+  previewNavbarState,
+}: EditNavbarPreviewProps) => {
   const handleIframeMount = async ({ document }: IframeCallbackFnProps) => {
     if (document) {
       await waitForElement(document, MOBILE_NAVIGATION_MENU_QUERY_SELECTOR)
@@ -39,6 +44,11 @@ export const EditNavbarPreview = ({ siteId }: EditNavbarPreviewProps) => {
     <ViewportContainer siteId={siteId} callback={handleIframeMount}>
       <Preview
         {...merge(content, { page: { title } })}
+        overrides={{
+          site: {
+            navbar: previewNavbarState,
+          },
+        }}
         siteId={siteId}
         resourceId={pageId}
         permalink="/"

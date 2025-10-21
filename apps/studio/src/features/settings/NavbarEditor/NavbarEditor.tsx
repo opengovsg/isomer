@@ -1,14 +1,17 @@
+import type { NavbarSchemaType } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
+import type { Dispatch, SetStateAction } from "react"
+import { useCallback, useMemo } from "react"
 import {
   Box,
   HStack,
   Icon,
-  Skeleton,
   Spacer,
   TabList,
   TabPanel,
   TabPanels,
   Text,
+  Tooltip,
   useTheme,
   VStack,
 } from "@chakra-ui/react"
@@ -17,12 +20,16 @@ import {
   NavbarAddonsSchema,
   NavbarItemsSchema,
 } from "@opengovsg/isomer-components"
+import isEmpty from "lodash/isEmpty"
+import isEqual from "lodash/isEqual"
 import { BiDirections } from "react-icons/bi"
 
-import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
+import {
+  ErrorProvider,
+  useBuilderErrors,
+} from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { ajv } from "~/utils/ajv"
-import { trpc } from "~/utils/trpc"
 
 const validateItemsFn =
   ajv.compile<Static<typeof NavbarItemsSchema>>(NavbarItemsSchema)
@@ -30,66 +37,98 @@ const validateAddonsFn =
   ajv.compile<Static<typeof NavbarAddonsSchema>>(NavbarAddonsSchema)
 
 interface NavbarEditorProps {
-  siteId: number
+  savedNavbarState: NavbarSchemaType
+  previewNavbarState?: NavbarSchemaType
+  setPreviewNavbarState: Dispatch<SetStateAction<NavbarSchemaType | undefined>>
+  onSave: (data?: NavbarSchemaType) => void
+  isSaving: boolean
 }
 
-export const NavbarEditor = ({ siteId }: NavbarEditorProps) => {
+export const NavbarEditor = ({
+  savedNavbarState,
+  previewNavbarState,
+  setPreviewNavbarState,
+  onSave,
+  isSaving,
+}: NavbarEditorProps) => {
   const theme = useTheme()
+  const isDirty = useMemo(() => {
+    return !isEqual(previewNavbarState, savedNavbarState)
+  }, [previewNavbarState, savedNavbarState])
 
-  const {
-    data: navbar,
-    isLoading,
-    isError,
-  } = trpc.site.getNavbar.useQuery({
-    id: siteId,
-  })
+  const handleItemsChange = useCallback(
+    (data: Static<typeof NavbarItemsSchema>) => {
+      const updatedData = { ...previewNavbarState, ...data }
 
-  const handleItemsChange = (data: Static<typeof NavbarItemsSchema>) => {
-    console.log(data)
-  }
+      if (isEqual(previewNavbarState, updatedData)) {
+        return
+      }
 
-  const handleAddonsChange = (data: Static<typeof NavbarAddonsSchema>) => {
-    console.log(data)
-  }
+      setPreviewNavbarState(updatedData)
+    },
+    [previewNavbarState, setPreviewNavbarState],
+  )
 
-  if (isLoading || isError) {
-    return <Skeleton h="full" w="full" />
+  const handleAddonsChange = useCallback(
+    (data: Static<typeof NavbarAddonsSchema>) => {
+      const updatedData = {
+        items: [...(previewNavbarState?.items ?? [])],
+        ...data,
+      }
+
+      if (isEqual(previewNavbarState, updatedData)) {
+        return
+      }
+
+      setPreviewNavbarState(updatedData)
+    },
+    [previewNavbarState, setPreviewNavbarState],
+  )
+
+  const handleSave = () => {
+    onSave(previewNavbarState)
   }
 
   return (
-    <VStack
-      py="1.5rem"
-      h="100%"
-      w="full"
-      alignItems="start"
-      position="relative"
-    >
-      {/* Header section */}
-      <HStack px="2rem" gap="0.75rem" w="full">
-        <Box
-          aria-hidden
-          bg="brand.secondary.100"
-          borderRadius="0.375rem"
-          p="0.5rem"
-        >
-          <Icon as={BiDirections} />
-        </Box>
+    <ErrorProvider>
+      <VStack
+        py="1.5rem"
+        h="100%"
+        w="full"
+        alignItems="start"
+        position="relative"
+        gap="1.5rem"
+      >
+        {/* Header section */}
+        <HStack px="2rem" gap="0.75rem" w="full">
+          <Box
+            aria-hidden
+            bg="brand.secondary.100"
+            borderRadius="0.375rem"
+            p="0.5rem"
+            lineHeight="0.75rem"
+          >
+            <Icon as={BiDirections} />
+          </Box>
 
-        <Text
-          as="h2"
-          textStyle="h3"
-          textColor="base.content.default"
-          textOverflow="ellipsis"
-        >
-          Navigation menu
-        </Text>
+          <Text
+            as="h2"
+            textStyle="h3"
+            textColor="base.content.default"
+            textOverflow="ellipsis"
+          >
+            Navigation menu
+          </Text>
 
-        <Spacer />
+          <Spacer />
 
-        <Button>Publish changes</Button>
-      </HStack>
+          <PublishButton
+            isDirty={isDirty}
+            isSaving={isSaving}
+            onClick={handleSave}
+          />
+        </HStack>
 
-      <ErrorProvider>
         <Tabs
           w="full"
           display="flex"
@@ -116,7 +155,7 @@ export const NavbarEditor = ({ siteId }: NavbarEditorProps) => {
                 <FormBuilder<Static<typeof NavbarItemsSchema>>
                   schema={NavbarItemsSchema}
                   validateFn={validateItemsFn}
-                  data={navbar?.content}
+                  data={previewNavbarState}
                   handleChange={handleItemsChange}
                 />
               </Box>
@@ -127,14 +166,47 @@ export const NavbarEditor = ({ siteId }: NavbarEditorProps) => {
                 <FormBuilder<Static<typeof NavbarAddonsSchema>>
                   schema={NavbarAddonsSchema}
                   validateFn={validateAddonsFn}
-                  data={navbar?.content}
+                  data={previewNavbarState}
                   handleChange={handleAddonsChange}
                 />
               </Box>
             </TabPanel>
           </TabPanels>
         </Tabs>
-      </ErrorProvider>
-    </VStack>
+      </VStack>
+    </ErrorProvider>
+  )
+}
+
+const PublishButton = ({
+  isDirty,
+  isSaving,
+  onClick,
+}: {
+  isDirty: boolean
+  isSaving: boolean
+  onClick: () => void
+}) => {
+  const { errors } = useBuilderErrors()
+  const isSchemaValid = isEmpty(errors)
+
+  return (
+    <Tooltip
+      label={
+        !isSchemaValid
+          ? "There are errors in your navigation menu. Fix them before publishing."
+          : undefined
+      }
+      hasArrow
+    >
+      <Button
+        size="xs"
+        onClick={onClick}
+        isLoading={isSaving}
+        isDisabled={!isDirty || !isSchemaValid}
+      >
+        Publish changes
+      </Button>
+    </Tooltip>
   )
 }
