@@ -196,12 +196,7 @@ export const CollectionBlock = ({
   const collectionParent = getCollectionParent({ site, collectionId })
 
   if (!collectionParent) {
-    return (
-      <CollectionBlockSkeleton
-        title="This collection does not appear to be part of any site"
-        description="Choose a collection to display its content."
-      />
-    )
+    return <></>
   }
 
   const collectionPages = getCollectionPages({
