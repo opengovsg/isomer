@@ -1,20 +1,27 @@
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
-import type { NavbarItemsSchema } from "@opengovsg/isomer-components"
-import type { Static } from "@sinclair/typebox"
-import { useCallback, useState } from "react"
+import type { PartialDeep } from "type-fest"
+import { useCallback, useEffect, useState } from "react"
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
+import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine"
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 import {
   Accordion,
   Box,
   Button,
   FormControl,
+  HStack,
   Icon,
   Text,
   VStack,
 } from "@chakra-ui/react"
 import {
+  Actions,
   composePaths,
   createDefaultValue,
   findUISchema,
+  getSubErrorsAt,
   rankWith,
   schemaMatches,
 } from "@jsonforms/core"
@@ -22,12 +29,12 @@ import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import get from "lodash/get"
 import { BiPlusCircle } from "react-icons/bi"
 
+import type { NavbarItems } from "./types"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getParentPath } from "../utils"
 import { EditNavbarItem } from "./EditNavbarItem"
 import { StackableNavbarItem } from "./StackableNavbarItem"
-
-type NavbarItems = Static<typeof NavbarItemsSchema>
+import { handleMoveItem, isSubItemPath } from "./utils"
 
 export const jsonFormsNavbarControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.NavbarControl,
@@ -40,8 +47,6 @@ export function JsonFormsNavbarControl({
   visible,
   addItem,
   removeItems,
-  // moveUp,
-  // moveDown,
   arraySchema,
   schema,
   rootSchema,
@@ -49,10 +54,20 @@ export function JsonFormsNavbarControl({
   cells,
   uischemas,
   uischema,
-  // config,
 }: ArrayLayoutProps): JSX.Element {
   const ctx = useJsonForms()
   const [selectedPath, setSelectedPath] = useState<string>()
+  const [droppableZoneElement, setDroppableZoneElement] =
+    useState<HTMLDivElement | null>(null)
+
+  const droppableZoneCallbackRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (node !== null) {
+        setDroppableZoneElement(node)
+      }
+    },
+    [],
+  )
 
   const handleRemove = useCallback(
     (path: string, index: number) => {
@@ -63,6 +78,28 @@ export function JsonFormsNavbarControl({
       removeItems(path, [index])()
     },
     [removeItems],
+  )
+
+  const handleMove = useCallback(
+    (
+      originalPath: string,
+      newPath: string,
+      instruction?: "reorder-before" | "reorder-after" | "combine",
+      closestEdge?: Edge | null,
+    ) => {
+      ctx.dispatch?.(
+        Actions.update(path, (prevData) =>
+          handleMoveItem(
+            prevData as NavbarItems["items"],
+            originalPath,
+            newPath,
+            instruction,
+            closestEdge,
+          ),
+        ),
+      )
+    },
+    [ctx, path],
   )
 
   const getChildUiSchema = useCallback(
@@ -78,6 +115,51 @@ export function JsonFormsNavbarControl({
       ),
     [rootSchema, schema, uischema, uischemas],
   )
+
+  useEffect(() => {
+    if (!droppableZoneElement) {
+      return
+    }
+
+    return combine(
+      // Navbar dropzone
+      dropTargetForElements({
+        element: droppableZoneElement,
+        canDrop: (args) => {
+          const originalPath = args.source.data.navbarId as string
+
+          // Disallow subitems from being dropped into the main navbar if the
+          // maxItems limit has been reached
+          return !(
+            isSubItemPath(originalPath) &&
+            arraySchema.maxItems &&
+            data >= arraySchema.maxItems
+          )
+        },
+        onDrop: (args) => {
+          // NOTE: The data on the navbar can be obtained from args.source.data.*
+          // The dropzone can be found at args.location.current.dropTargets[0]
+          const originalPath = args.source.data.navbarId as string
+          const newDestination = args.location.current.dropTargets[0]?.data
+
+          if (!newDestination) {
+            return
+          }
+
+          const newPath = newDestination.dropTargetId as string | undefined
+          const closestEdge = extractClosestEdge(newDestination)
+          const instruction = extractInstruction(newDestination)
+
+          if (newPath === undefined) {
+            return
+          }
+
+          handleMove(originalPath, newPath, instruction?.operation, closestEdge)
+        },
+        getIsSticky: () => true,
+      }),
+    )
+  }, [arraySchema.maxItems, data, droppableZoneElement, handleMove])
 
   if (selectedPath !== undefined) {
     return (
@@ -128,41 +210,61 @@ export function JsonFormsNavbarControl({
 
           {data !== 0 && (
             <>
-              <Text textStyle="body-2" textColor="base.content.medium">
-                {arraySchema.maxItems ? (
-                  <>
-                    {data}/{arraySchema.maxItems} links added
-                  </>
-                ) : (
-                  <>
-                    {data} link{data > 1 ? "s" : ""} added
-                  </>
-                )}
-              </Text>
+              <HStack w="full" justifyContent="space-between">
+                <Text textStyle="body-2" textColor="base.content.medium">
+                  {arraySchema.maxItems ? (
+                    <>
+                      {data}/{arraySchema.maxItems} links added
+                    </>
+                  ) : (
+                    <>
+                      {data} link{data > 1 ? "s" : ""} added
+                    </>
+                  )}
+                </Text>
+
+                <Button
+                  variant="clear"
+                  size="xs"
+                  leftIcon={<Icon as={BiPlusCircle} />}
+                  onClick={addItem(
+                    path,
+                    createDefaultValue(schema, rootSchema),
+                  )}
+                  isDisabled={
+                    arraySchema.maxItems ? data >= arraySchema.maxItems : false
+                  }
+                >
+                  Add a link
+                </Button>
+              </HStack>
 
               <Accordion
+                ref={droppableZoneCallbackRef}
                 w="full"
                 display="flex"
                 flexDir="column"
                 gap="0.75rem"
-                allowMultiple
+                allowToggle
               >
                 {[...Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, String(index))
+                  const arrayErrors = getSubErrorsAt(
+                    childPath,
+                    schema,
+                  )({ jsonforms: ctx })
 
                   const childItem = get(
                     ctx.core?.data,
                     childPath,
-                  ) as NavbarItems["items"][number]
+                  ) as PartialDeep<NavbarItems["items"][number]>
 
                   return (
                     <StackableNavbarItem
-                      key={JSON.stringify(childItem)}
-                      name={childItem.name || "Navbar item"}
-                      description={
-                        childItem.description ||
-                        "Add a description for this link"
-                      }
+                      index={index}
+                      name={childItem.name}
+                      errors={arrayErrors}
+                      description={childItem.description}
                       onEdit={(subItemIndex) => {
                         if (subItemIndex !== undefined) {
                           setSelectedPath(
@@ -190,19 +292,6 @@ export function JsonFormsNavbarControl({
                   )
                 })}
               </Accordion>
-
-              <Button
-                variant="clear"
-                size="xs"
-                leftIcon={<Icon as={BiPlusCircle} />}
-                w="full"
-                onClick={addItem(path, createDefaultValue(schema, rootSchema))}
-                isDisabled={
-                  arraySchema.maxItems ? data >= arraySchema.maxItems : false
-                }
-              >
-                Add a link
-              </Button>
             </>
           )}
         </VStack>
