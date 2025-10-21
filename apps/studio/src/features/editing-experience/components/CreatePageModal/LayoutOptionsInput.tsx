@@ -17,7 +17,6 @@ import type { Layout } from "./constants"
 import { NextImage } from "~/components/NextImage"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { NEW_PAGE_LAYOUT_VALUES } from "~/schemas/page"
 import { LAYOUT_RENDER_DATA } from "./constants"
 import { useLayoutOptions } from "./useLayoutOptions"
 
