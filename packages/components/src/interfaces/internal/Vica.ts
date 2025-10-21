@@ -69,7 +69,7 @@ export const VicaSchema = Type.Object(
     "app-translation-languages": HiddenOptionalString,
     "app-enable-hide-translation": Type.Optional(BooleanStringOptions),
   },
-  { format: "widget-integration", variant: "vica" },
+  { format: "widget-integration/vica" },
 )
 
 export type VicaProps = Static<typeof VicaSchema>
