@@ -90,6 +90,7 @@ export function CmsContainer({
         <Box
           height={0}
           minH="100%"
+          overflow="auto"
           borderTop="1px solid"
           borderColor="base.divider.medium"
         >
