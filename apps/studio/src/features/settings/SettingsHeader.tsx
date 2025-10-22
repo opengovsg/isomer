@@ -43,6 +43,7 @@ export const SettingsHeader = ({
         isLoading={isLoading}
         onClick={onClick}
         isDisabled={isDisabled}
+        size="xs"
       >
         Publish changes
       </Button>
