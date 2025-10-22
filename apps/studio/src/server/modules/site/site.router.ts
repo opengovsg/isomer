@@ -17,6 +17,7 @@ import {
   setNavbarSchema,
   setNotificationSchema,
   setSiteConfigByAdminSchema,
+  updateSiteConfigSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -30,6 +31,7 @@ import {
   getNavBar,
   publishSiteConfig,
 } from "../resource/resource.service"
+import { updateSearchSGConfig } from "../searchsg/searchsg.service"
 import {
   clearSiteNotification,
   createSite,
@@ -91,6 +93,67 @@ export const siteRouter = router({
         action: "read",
       })
       return getSiteConfig(db, id)
+    }),
+  updateSiteConfig: protectedProcedure
+    .input(updateSiteConfigSchema)
+    .mutation(async ({ ctx, input: { siteId, siteName } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", siteId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      const { config } = site
+
+      const updatedConfig = await db.transaction().execute(async (tx) => {
+        const updatedSite = await tx
+          .updateTable("Site")
+          .set({ config: jsonb({ ...config, siteName }) })
+          .where("id", "=", siteId)
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await logConfigEvent(tx, {
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: {
+            before: site,
+            after: updatedSite,
+          },
+          by: user,
+          siteId,
+        })
+
+        return updatedSite.config
+      })
+
+      // NOTE: only update searchsg if either the agency name changed
+      // or if the search type changed.
+      // `void` here because this API call is slow
+      // and not super critical to update
+      if (
+        updatedConfig.search?.type === "searchSG" &&
+        (config.search?.type !== "searchSG" ||
+          config.siteName !== updatedConfig.siteName)
+      )
+        void updateSearchSGConfig(
+          { name: siteName },
+          updatedConfig.search.clientId,
+          updatedConfig.url,
+        )
+
+      return updatedConfig
     }),
   getTheme: protectedProcedure
     .input(getConfigSchema)
