@@ -25,22 +25,22 @@ export const IframeToolbar = ({
     switch (viewport) {
       case "mobile":
         return {
-          mode: "Toggle the mode to preview in full screen",
+          mode: "Preview in different screen sizes before you publish",
           viewport: "Mobile",
         }
       case "tablet":
         return {
-          mode: "Toggle the mode to preview in full screen",
+          mode: "Preview in different screen sizes before you publish",
           viewport: "Tablet",
         }
       case "responsive":
         return {
-          mode: "Toggle the mode to preview in full screen",
+          mode: "Preview in different screen sizes before you publish",
           viewport: "Default mode",
         }
       case "fullscreen":
         return {
-          mode: "You’re in full screen preview mode.",
+          mode: "Preview in different screen sizes before you publish",
           viewport: "Full screen",
         }
     }
