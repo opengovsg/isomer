@@ -824,7 +824,7 @@ const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) => {
       "Resource.type",
       "Resource.parentId",
       // To handle cases where either the resource or the blob is updated
-      sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
+      sql<Date | null>`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
         "lastUpdatedAt",
       ),
     ])
@@ -924,7 +924,7 @@ export const getSearchResults = async ({
 
   return {
     resources: await getResourcesWithFullPermalink({
-      resources: resourcesToReturn as SearchResultResource[],
+      resources: resourcesToReturn,
     }),
     totalCount: totalCountResult.total_count,
   }
@@ -938,7 +938,7 @@ export const getSearchRecentlyEdited = async ({
   limit?: number
 }): Promise<SearchResultResource[]> => {
   return await getResourcesWithFullPermalink({
-    resources: (await getResourcesWithLastUpdatedAt({
+    resources: await getResourcesWithLastUpdatedAt({
       siteId: Number(siteId),
     })
       .where("Resource.type", "in", [
@@ -949,7 +949,7 @@ export const getSearchRecentlyEdited = async ({
       ])
       .limit(limit)
       .orderBy("lastUpdatedAt", "desc")
-      .execute()) as SearchResultResource[],
+      .execute(),
   })
 }
 
