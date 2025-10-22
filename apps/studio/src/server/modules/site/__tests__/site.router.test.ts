@@ -548,7 +548,7 @@ describe("site.router", async () => {
       )
     })
 
-    it("should return empty string if site notification is not set", async () => {
+    it("should return empty object if site notification is not set", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
@@ -560,7 +560,54 @@ describe("site.router", async () => {
       const result = await caller.getNotification({ siteId: site.id })
 
       // Assert
-      expect(result).toEqual("")
+      expect(result).toEqual({})
+    })
+
+    it("should parse the old format successfully and return `prose` content", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await db
+        .updateTable("Site")
+        .set((eb) => ({
+          config: eb(
+            "Site.config",
+            "||",
+            // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+            jsonb({
+              notification: { content: [{ type: "text", text: "bar" }] },
+            }),
+          ),
+        }))
+        .where("id", "=", site.id)
+        .execute()
+
+      // Act
+      const result = await caller.getNotification({ siteId: site.id })
+
+      // Assert
+      expect(result).toEqual({
+        notification: {
+          content: {
+            content: [
+              {
+                attrs: { dir: "ltr" },
+                content: [
+                  {
+                    text: "bar",
+                    type: "text",
+                  },
+                ],
+                type: "paragraph",
+              },
+            ],
+            type: "prose",
+          },
+        },
+      })
     })
   })
 
@@ -652,9 +699,7 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toEqual({
-        content: [{ type: "text", text: "foo" }],
-      })
+      expect(newSite.config.notification?.title).toEqual("foo")
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
@@ -696,9 +741,7 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toEqual({
-        content: [{ type: "text", text: "foo" }],
-      })
+      expect(newSite.config.notification?.title).toEqual("foo")
       const auditLog = await db
         .selectFrom("AuditLog")
         .selectAll()
