@@ -43,7 +43,12 @@ export const CmsContainerWrapper = ({
       label: "Collaborators",
       href: `/sites/${siteId}/users`,
     },
-    { icon: BiCog, label: "Settings", href: `/sites/${siteId}/settings` },
+    {
+      icon: BiCog,
+      label: "Settings",
+      href: `/sites/${siteId}/settings`,
+      isActive: router.asPath.startsWith(`/sites/${siteId}/settings`),
+    },
     ...(isUserIsomerAdmin
       ? [
           {
