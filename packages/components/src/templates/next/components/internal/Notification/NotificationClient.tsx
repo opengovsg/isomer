@@ -23,7 +23,7 @@ const NotificationClient = ({
           <BiInfoCircle className="mt-0.5 h-6 w-6 shrink-0" />
           <div className="flex flex-1 flex-col gap-1">
             {!!title && <h2 className="prose-headline-lg-medium">{title}</h2>}
-            <div className="[&_p]:!mt-0 [&_p]:!mb-0">{baseParagraph}</div>
+            <div className="[&_p]:!mb-0 [&_p]:!mt-0">{baseParagraph}</div>
           </div>
           <div aria-hidden className="flex h-6 w-6 shrink-0" />
           <IconButton
