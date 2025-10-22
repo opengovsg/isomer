@@ -93,7 +93,7 @@ export const DefaultContactInformationUI = ({
             })}
       </div>
 
-      {!!otherInformation && (
+      {!!otherInformation && !!otherInformation.value && (
         <div className={compoundStyles.otherInformationContainer()}>
           <h3 className={compoundStyles.otherInformationTitle()}>
             {otherInformation.label ?? "Other Information"}
