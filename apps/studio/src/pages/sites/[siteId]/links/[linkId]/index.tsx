@@ -1,6 +1,9 @@
+import { useState } from "react"
 import { Grid, GridItem } from "@chakra-ui/react"
+import { format } from "date-fns"
 import { z } from "zod"
 
+import { CollectionLinkProps } from "~/features/editing-experience/atoms"
 import { EditCollectionLinkPreview } from "~/features/editing-experience/components/EditLinkPreview"
 import { LinkEditorDrawer } from "~/features/editing-experience/components/LinkEditorDrawer"
 import { LinkEditingLayout } from "~/templates/layouts/LinkEditingLayout"
@@ -11,6 +14,14 @@ export const editLinkSchema = z.object({
 })
 
 export const EditLink = () => {
+  const [link, setLink] = useState<CollectionLinkProps>({
+    ref: "",
+    description: "",
+    date: format(new Date(), "dd/mm/yyyy"),
+    category: "",
+    title: "",
+  })
+
   return (
     <Grid
       h="full"
@@ -20,10 +31,10 @@ export const EditLink = () => {
       maxH="calc(100vh - 57px)"
     >
       <GridItem colSpan={1} overflow="auto" minW="30rem">
-        <LinkEditorDrawer />
+        <LinkEditorDrawer link={link} setLink={(props) => setLink(props)} />
       </GridItem>
       <GridItem colSpan={2}>
-        <EditCollectionLinkPreview />
+        <EditCollectionLinkPreview link={link} />
       </GridItem>
     </Grid>
   )

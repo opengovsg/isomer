@@ -1,24 +1,18 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { useAtomValue } from "jotai"
 
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { trpc } from "~/utils/trpc"
-import { linkAtom } from "../atoms"
+import { CollectionLinkProps } from "../atoms"
 import PreviewWithoutSitemap from "./PreviewWithoutSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
-export const EditCollectionLinkPreview = (): JSX.Element => {
-  const {
-    description: summary,
-    date,
-    title,
-    category,
-    ref,
-    image,
-    tagged,
-  } = useAtomValue(linkAtom)
+export const EditCollectionLinkPreview = ({
+  link,
+}: {
+  link: CollectionLinkProps
+}): JSX.Element => {
   const { linkId, siteId } = useQueryParse(editLinkSchema)
   const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
     {
@@ -60,16 +54,11 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
         children: [
           {
             id: "9999999",
-            title,
-            image,
-            date,
-            ref,
-            summary: summary ?? "",
+            summary: link.description ?? "",
             layout: "link",
             permalink,
             lastModified: new Date().toString(),
-            category,
-            tagged,
+            ...link,
           },
         ],
       },
