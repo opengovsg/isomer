@@ -163,22 +163,16 @@ const DrawerState = (
 interface LinkEditorDrawerProps {
   link: CollectionLinkProps
   setLink: (link: CollectionLinkProps) => void
+  initialLinkState: IsomerLinkSchema
 }
-export const LinkEditorDrawer = ({ link, setLink }: LinkEditorDrawerProps) => {
+export const LinkEditorDrawer = ({
+  initialLinkState,
+  link,
+  setLink,
+}: LinkEditorDrawerProps) => {
   const { linkId, siteId } = useQueryParse(editLinkSchema)
   const utils = trpc.useUtils()
   const toast = useToast()
-
-  const [{ content, title }] =
-    trpc.collection.readCollectionLink.useSuspenseQuery(
-      {
-        linkId,
-        siteId,
-      },
-      {
-        refetchOnWindowFocus: false,
-      },
-    )
 
   const { mutate, isPending } =
     trpc.collection.updateCollectionLink.useMutation({
@@ -193,18 +187,13 @@ export const LinkEditorDrawer = ({ link, setLink }: LinkEditorDrawerProps) => {
       },
     })
 
-  const savedPageState = {
-    ...(content.page as CollectionLinkProps),
-    title,
-  }
-
   return (
     <ErrorProvider>
       <DrawerState
-        savedPageState={savedPageState}
+        savedPageState={initialLinkState}
         previewPageState={link}
         isLoading={isPending}
-        handleChange={(data) => setLink({ ...link, ...data })}
+        handleChange={(data) => setLink(data)}
         handleSaveChanges={() => mutate({ siteId, linkId, ...link })}
       />
     </ErrorProvider>

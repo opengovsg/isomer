@@ -1,4 +1,5 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
+import { useMemo } from "react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -8,11 +9,16 @@ import { CollectionLinkProps } from "../atoms"
 import PreviewWithoutSitemap from "./PreviewWithoutSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
+const currentDate = new Date().toString()
+
+interface EditCollectionLinkPreviewProps {
+  link: CollectionLinkProps
+  title: string
+}
 export const EditCollectionLinkPreview = ({
   link,
-}: {
-  link: CollectionLinkProps
-}): JSX.Element => {
+  title,
+}: EditCollectionLinkPreviewProps): JSX.Element => {
   const { linkId, siteId } = useQueryParse(editLinkSchema)
   const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
     {
@@ -32,38 +38,53 @@ export const EditCollectionLinkPreview = ({
     siteId,
   })
 
-  const parentPermalink = permalink.split("/").slice(0, -1).join("/")
-  const parentTitle = parent?.title || ResourceType.Collection
+  const parentPermalink = useMemo(
+    () => permalink.split("/").slice(0, -1).join("/"),
+    [permalink],
+  )
+  const parentTitle = useMemo(
+    () => parent?.title || ResourceType.Collection,
+    [parent?.title],
+  )
 
-  const siteMap = {
-    id: "root",
-    permalink: "/",
-    lastModified: "2024-10-14T07:05:08.803Z",
-    layout: "homepage",
-    title: "An Isomer Site",
-    summary: "",
-    children: [
-      {
-        id: "collection",
-        permalink: parentPermalink,
-        lastModified: "02 May 2023",
-        layout: "collection",
-        title: parentTitle,
+  console.log(link)
+
+  const siteMap = useMemo(
+    () =>
+      ({
+        id: "root",
+        permalink: "/",
+        lastModified: "2024-10-14T07:05:08.803Z",
+        layout: "homepage",
+        title: "An Isomer Site",
         summary: "",
-        collectionPagePageProps: { tagCategories },
         children: [
           {
-            id: "9999999",
-            summary: link.description ?? "",
-            layout: "link",
-            permalink,
-            lastModified: new Date().toString(),
-            ...link,
+            id: "collection",
+            permalink: parentPermalink,
+            lastModified: "02 May 2023",
+            layout: "collection",
+            title: parentTitle,
+            summary: "",
+            collectionPagePageProps: { tagCategories },
+            children: [
+              {
+                id: "9999999",
+                title,
+                summary: link.description ?? "",
+                layout: "link",
+                permalink,
+                lastModified: currentDate,
+                ...link,
+              },
+            ],
           },
         ],
-      },
-    ],
-  } satisfies IsomerSitemap
+      }) satisfies IsomerSitemap,
+    [parentPermalink, parentTitle, tagCategories, link, permalink, title],
+  )
+
+  console.log(title)
 
   return (
     <ViewportContainer siteId={siteId}>
