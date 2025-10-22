@@ -90,6 +90,7 @@ export function JsonFormsObjectControl({
             </FormControl>
 
             <Switch
+              size="lg"
               isChecked={isChecked}
               onChange={handleToggle}
               isDisabled={!enabled}
