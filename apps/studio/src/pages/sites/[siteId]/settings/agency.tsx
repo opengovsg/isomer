@@ -93,6 +93,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
             icon={BiWrench}
             isLoading={updateSiteConfigMutation.isPending}
             onClick={onSubmit}
+            isDisabled={!isDirty}
           />
 
           <ErrorProvider>

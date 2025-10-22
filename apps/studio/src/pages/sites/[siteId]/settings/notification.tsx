@@ -104,6 +104,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             title="Notification banner"
             icon={BiWrench}
             isLoading={notificationMutation.isPending}
+            isDisabled={!isDirty}
           />
           <FormBuilder<Notification>
             schema={NotificationSettingsSchema}

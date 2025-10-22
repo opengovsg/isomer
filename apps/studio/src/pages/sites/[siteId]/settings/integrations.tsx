@@ -125,11 +125,11 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
       <SettingsGrid>
         <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader
-            // TODO: disabled state using same validator
             onClick={onSubmit}
             title="Integrations"
             icon={BiWrench}
             isLoading={updateSiteIntegrationsMutation.isPending}
+            isDisabled={!isDirty}
           />
           <Box w="100%">
             <FormBuilder<SimpleIntegrationsSettings>
