@@ -918,7 +918,7 @@ export const getSearchResults = async ({
     db
       .with("queriedResources", () => queriedResources)
       .selectFrom("queriedResources")
-      .select(db.fn.countAll().as("total_count"))
+      .select(db.fn.countAll<number>().as("total_count")) // needed to cast as the type can be `bigint`
       .executeTakeFirstOrThrow(),
   ])
 
@@ -926,7 +926,7 @@ export const getSearchResults = async ({
     resources: await getResourcesWithFullPermalink({
       resources: resourcesToReturn as SearchResultResource[],
     }),
-    totalCount: totalCountResult.total_count as number,
+    totalCount: totalCountResult.total_count,
   }
 }
 
