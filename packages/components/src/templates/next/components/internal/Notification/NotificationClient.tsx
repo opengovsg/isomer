@@ -1,19 +1,16 @@
 "use client"
 
 import { BiInfoCircle, BiX } from "react-icons/bi"
-import { useSessionStorage } from "usehooks-ts"
 
 import type { NotificationClientProps } from "~/interfaces"
+import { useIsNotificationDismissed } from "~/hooks/useIsNotificationDismissed"
 import { IconButton } from "../IconButton"
 
 const NotificationClient = ({
   title,
   baseParagraph,
 }: NotificationClientProps) => {
-  const [isDismissed, setIsDismissed] = useSessionStorage(
-    "notification-dismissed",
-    false,
-  )
+  const [isDismissed, setIsDismissed] = useIsNotificationDismissed()
 
   const onDismiss = () => {
     setIsDismissed(true)
