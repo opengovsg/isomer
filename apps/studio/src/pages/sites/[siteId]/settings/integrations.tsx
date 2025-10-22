@@ -147,7 +147,7 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
               to keep rendering data in json forms.
             */}
           <Box>
-            <Text textStyle="subhead-2" mb="0.25rem">
+            <Text textStyle="subhead-1" mb="0.25rem">
               User support
             </Text>
             <Text textStyle="body-2">
