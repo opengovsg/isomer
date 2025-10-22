@@ -1,10 +1,12 @@
 import { useState } from "react"
 import { useToast } from "@opengovsg/design-system-react"
-import { NotificationSettingsSchema } from "@opengovsg/isomer-components"
+import {
+  NotificationSettingsSchema,
+  useIsNotificationDismissed,
+} from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { isEmpty, isEqual } from "lodash"
 import { BiWrench } from "react-icons/bi"
-import { useSessionStorage } from "usehooks-ts"
 
 import type { NextPageWithLayout } from "~/lib/types"
 import type { Notification } from "~/schemas/site"
@@ -40,7 +42,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     siteId,
   })
 
-  const [, setIsDismissed] = useSessionStorage("notification-dismissed", false)
+  const [, setIsDismissed] = useIsNotificationDismissed()
 
   const notificationMutation = trpc.site.setNotification.useMutation({
     onSuccess: () => {
