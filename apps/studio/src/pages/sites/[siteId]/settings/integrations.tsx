@@ -2,7 +2,8 @@ import type {
   ComplexIntegrationsSettings,
   SimpleIntegrationsSettings,
 } from "@opengovsg/isomer-components"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/router"
 import { Box, Text } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
@@ -31,6 +32,7 @@ import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
+import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
@@ -54,6 +56,8 @@ const simpleIntegrationSettingsValidateFn =
 const IntegrationsSettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
+  const router = useRouter()
+  const isEnabled = useNewSettingsPage()
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const [
@@ -61,6 +65,10 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
   ] = trpc.site.getConfig.useSuspenseQuery({
     id: siteId,
   })
+
+  useEffect(() => {
+    if (!isEnabled) void router.replace(`/sites/${siteId}/settings`)
+  }, [isEnabled, router, siteId])
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
@@ -117,11 +125,11 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
       <SettingsGrid>
         <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader
-            // TODO: disabled state using same validator
             onClick={onSubmit}
             title="Integrations"
             icon={BiWrench}
             isLoading={updateSiteIntegrationsMutation.isPending}
+            isDisabled={!isDirty}
           />
           <Box w="100%">
             <FormBuilder<SimpleIntegrationsSettings>
@@ -139,7 +147,7 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
               to keep rendering data in json forms.
             */}
           <Box>
-            <Text textStyle="subhead-2" mb="0.25rem">
+            <Text textStyle="subhead-1" mb="0.25rem">
               User support
             </Text>
             <Text textStyle="body-2">

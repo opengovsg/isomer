@@ -85,7 +85,7 @@ export function JsonFormsWidgetIntegrationControl({
             <Text textStyle="subhead-2">{`Enable your ${widgetLabel} widget on this website`}</Text>
           </Box>
           <Spacer />
-          <Switch isChecked={isChecked} onChange={handleToggle} />
+          <Switch isChecked={isChecked} onChange={handleToggle} size="lg" />
         </Flex>
       </VStack>
       {/* NOTE: we need this box because we want it to take up space */}
