@@ -12,7 +12,7 @@ import {
 import { DGSSearchableTable } from "./DGSSearchableTable"
 
 const meta: Meta<DGSSearchableTableProps> = {
-  title: "Next/Components/SearchableTable/DGS",
+  title: "Next/Internal Components/SearchableTable/DGS",
   component: DGSSearchableTable,
   argTypes: {},
   parameters: {
