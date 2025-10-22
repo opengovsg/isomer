@@ -2,10 +2,10 @@ import { useMemo, useState } from "react"
 import { Grid, GridItem } from "@chakra-ui/react"
 import { z } from "zod"
 
-import { CollectionLinkProps } from "~/features/editing-experience/atoms"
 import { EditCollectionLinkPreview } from "~/features/editing-experience/components/EditLinkPreview"
 import { LinkEditorDrawer } from "~/features/editing-experience/components/LinkEditorDrawer"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { CollectionLinkProps } from "~/schemas/collection"
 import { LinkEditingLayout } from "~/templates/layouts/LinkEditingLayout"
 import { trpc } from "~/utils/trpc"
 
