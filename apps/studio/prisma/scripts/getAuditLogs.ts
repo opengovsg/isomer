@@ -17,7 +17,7 @@ const SITES_WITH_AUDIT_LOGS = [
   48, // muis.gov.sg
   50, // knowledgehub.clc.gov.sg
   53, // clc.gov.sg
-  63, // ipos.gov.sg
+  61, // ipos.gov.sg
   109, // agc.gov.sg
   145, // ite.edu.sg
 ]
