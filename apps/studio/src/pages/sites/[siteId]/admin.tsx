@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/router"
 import {
   Button,
@@ -23,6 +23,7 @@ import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { ADMIN_ROLE } from "~/lib/growthbook"
@@ -135,24 +136,7 @@ const SiteAdminPage: NextPageWithLayout = () => {
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
 
-  useEffect(() => {
-    const handleRouteChange = (url: string) => {
-      if (isDirty) {
-        router.events.off("routeChangeStart", handleRouteChange)
-        setNextUrl(url)
-        router.events.emit("routeChangeError")
-        // eslint-disable-next-line @typescript-eslint/only-throw-error
-        throw "Error to abort router route change. Ignore this!"
-      }
-    }
-
-    if (!isOpen) {
-      router.events.on("routeChangeStart", handleRouteChange)
-    }
-    return () => {
-      router.events.off("routeChangeStart", handleRouteChange)
-    }
-  }, [isOpen, router.events, isDirty])
+  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
   const onClickUpdate = handleSubmit((input) => {
     mutate({
