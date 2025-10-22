@@ -2,9 +2,9 @@ import type { DgsApiDatasetSearchParams } from "./types"
 
 export const generateDgsUrl = ({
   resourceId,
+  q,
   limit,
   offset,
-  fields,
   filters,
   sort,
 }: DgsApiDatasetSearchParams) => {
@@ -13,6 +13,10 @@ export const generateDgsUrl = ({
   // Set the required resource_id parameter
   url.searchParams.set("resource_id", resourceId)
 
+  if (q) {
+    url.searchParams.set("q", q)
+  }
+
   // Set optional parameters if they exist
   if (limit) {
     url.searchParams.set("limit", limit.toString())
@@ -20,10 +24,6 @@ export const generateDgsUrl = ({
 
   if (offset) {
     url.searchParams.set("offset", offset.toString())
-  }
-
-  if (fields) {
-    url.searchParams.set("fields", fields)
   }
 
   if (filters && Object.keys(filters).length > 0) {

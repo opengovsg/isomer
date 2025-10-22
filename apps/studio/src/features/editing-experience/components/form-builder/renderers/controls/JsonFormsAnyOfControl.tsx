@@ -83,9 +83,21 @@ export function JsonFormsAnyOfControl({
   }
 
   useEffect(() => {
-    setVariant(options[indexOfFittingSchema]?.label || "")
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    // Do nothing if there are no options
+    if (options.length === 0) {
+      return
+    }
+
+    if (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]) {
+      setVariant(options[indexOfFittingSchema].label)
+      return
+    }
+
+    // Fallback to first option
+    if (options[0]) {
+      setVariant(options[0].label)
+    }
+  }, [options, indexOfFittingSchema])
 
   return (
     <>

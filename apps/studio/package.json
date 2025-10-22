@@ -53,6 +53,8 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
     "@aws-sdk/client-codebuild": "^3.835.0",
     "@aws-sdk/client-s3": "3.837.0",
     "@aws-sdk/s3-request-presigner": "3.837.0",
@@ -209,7 +211,7 @@
     "testcontainers": "^10.13.1",
     "tsx": "^4.20.4",
     "typescript": "^5.9.2",
-    "vite": "^5.4.20",
+    "vite": "^5.4.21",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^2.1.1",
     "webpack-cli": "^6.0.1",
