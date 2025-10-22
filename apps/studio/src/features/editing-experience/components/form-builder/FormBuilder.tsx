@@ -31,8 +31,6 @@ import {
   jsonFormsDateControlTester,
   JsonFormsDgsDatasetIdControl,
   jsonFormsDgsDatasetIdControlTester,
-  JsonFormsDisabledControl,
-  jsonFormsDisabledControlTester,
   JsonFormsEmbedControl,
   jsonFormsEmbedControlTester,
   JsonFormsEnumControl,

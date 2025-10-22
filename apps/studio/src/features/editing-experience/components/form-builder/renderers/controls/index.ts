@@ -118,7 +118,3 @@ export {
   default as JsonFormsEnumControl,
   jsonFormsEnumControlTester,
 } from "./JsonFormsEnumControl"
-export {
-  default as JsonFormsDisabledControl,
-  jsonFormsDisabledControlTester,
-} from "./JsonFormsDisabledControl"
