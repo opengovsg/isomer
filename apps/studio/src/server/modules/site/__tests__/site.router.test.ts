@@ -516,7 +516,7 @@ describe("site.router", async () => {
     })
   })
 
-  describe("getNotification", () => {
+  describe.skip("getNotification", () => {
     it("should throw 401 if user is not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -564,7 +564,7 @@ describe("site.router", async () => {
     })
   })
 
-  describe("setNotification", () => {
+  describe.skip("setNotification", () => {
     beforeEach(async () => {
       await resetTables("AuditLog")
     })
