@@ -57,7 +57,7 @@ export function JsonFormsWidgetIntegrationControl({
     if (data) setSnapshot(data)
   }, [data])
 
-  const variant = extractVariantFromFormat(schema.format?.split("/")[1])
+  const variant = extractVariantFromFormat(schema.format)
   const isChecked = activeWidget === variant
 
   useEffect(() => {
