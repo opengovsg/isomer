@@ -1,7 +1,7 @@
 import type { Expression, RawBuilder, Simplify } from "kysely"
+import type { Tagged } from "type-fest"
 import { sql } from "kysely"
 import { jsonArrayFrom } from "kysely/helpers/postgres"
-import { type Tagged } from "type-fest"
 
 export type DateTimeString = Tagged<string, "DateTimeString">
 
