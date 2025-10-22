@@ -42,11 +42,15 @@ export const DefaultContactInformationUI = ({
     isLoading,
   })
 
+  const nonEmptyFields = methods.filter(
+    (method) => method.values.filter((value) => value.trim() !== "").length > 0,
+  )
+
   const filteredMethods = whitelistedMethods
-    ? methods.filter(
+    ? nonEmptyFields.filter(
         (method) => method.method && whitelistedMethods.includes(method.method),
       )
-    : methods
+    : nonEmptyFields
 
   const descriptionText = isLoading ? "" : (description ?? "")
 
