@@ -2,7 +2,7 @@ import { ProseProps } from "~/interfaces"
 
 export const hasContent = (content: ProseProps["content"]) => {
   // NOTE: top level is always `prose`
-  return content.map(_hasContent).every(Boolean)
+  return content.map(_hasContent).some(Boolean)
 }
 
 const _hasContent = (content: ProseProps["content"][number]): boolean => {
