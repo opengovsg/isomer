@@ -209,5 +209,69 @@ describe("filterContactMethods", () => {
       expect(result[0]?.method).toBe("telephone")
       expect(result[1]?.method).toBe("email")
     })
+
+    // Additional tests for invalid or empty values since data can be from external sources
+    it("should filter out methods with invalid or empty values", () => {
+      // Arrange
+      const methods: ContactInformationUIProps["methods"] = [
+        {
+          method: "telephone",
+          label: "Phone",
+          values: ["+65-1234-5678"],
+        },
+        {
+          method: "telephone",
+          label: "Phone with whitespace",
+          values: ["   "],
+        },
+        {
+          method: "telephone",
+          label: "Phone with empty string",
+          values: [""],
+        },
+        {
+          method: "telephone",
+          label: "Phone with empty array",
+          values: [],
+        },
+        {
+          method: "telephone",
+          label: "Phone with undefined",
+          values: undefined as unknown as string[], // this is intentional to test undefined values
+        },
+        {
+          method: "telephone",
+          label: "Phone with null",
+          values: null as unknown as string[], // this is intentional to test null values
+        },
+        {
+          method: "telephone",
+          label: "Phone with boolean",
+          values: [undefined as unknown as string], // this is intentional to test undefined values
+        },
+        {
+          method: "telephone",
+          label: "Phone with object",
+          values: [{}] as unknown as string[], // this is intentional to test object values
+        },
+        {
+          method: "telephone",
+          label: "Phone with boolean",
+          values: [true as unknown as string], // this is intentional to test boolean values
+        },
+        {
+          method: "telephone",
+          label: "Phone with nested array",
+          values: [["+65-1234-5678"] as unknown as string], // this is intentional to test array values
+        },
+      ]
+
+      // Act
+      const result = filterContactMethods({ methods })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]?.values).toEqual(["+65-1234-5678"])
+    })
   })
 })

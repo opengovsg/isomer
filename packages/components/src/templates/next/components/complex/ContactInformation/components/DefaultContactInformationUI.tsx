@@ -8,6 +8,7 @@ import {
   commonContactMethodStyles,
 } from "./common"
 import { ContactMethod, LoadingContactMethod } from "./ContactMethod"
+import { filterContactMethods } from "./filterContactMethods"
 
 const createDefaultContactInformationStyles = tv({
   extend: commonContactInformationStyles,
@@ -42,15 +43,10 @@ export const DefaultContactInformationUI = ({
     isLoading,
   })
 
-  const nonEmptyFields = methods.filter(
-    (method) => method.values.filter((value) => value.trim() !== "").length > 0,
-  )
-
-  const filteredMethods = whitelistedMethods
-    ? nonEmptyFields.filter(
-        (method) => method.method && whitelistedMethods.includes(method.method),
-      )
-    : nonEmptyFields
+  const filteredMethods = filterContactMethods({
+    methods,
+    whitelistedMethods,
+  })
 
   const descriptionText = isLoading ? "" : (description ?? "")
 

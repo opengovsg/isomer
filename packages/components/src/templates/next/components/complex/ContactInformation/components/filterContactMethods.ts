@@ -9,12 +9,20 @@ export const filterContactMethods = ({
   methods,
   whitelistedMethods,
 }: FilterContactMethodsProps) => {
+  const nonEmptyMethods = methods.filter(
+    (method) =>
+      Array.isArray(method.values) &&
+      method.values.filter(
+        (value) => typeof value === "string" && value.trim() !== "",
+      ).length > 0,
+  )
+
   if (!whitelistedMethods) {
-    return methods
+    return nonEmptyMethods
   }
 
   // Filter methods that have a valid method type and are whitelisted
-  const filteredMethods = methods.filter(
+  const filteredMethods = nonEmptyMethods.filter(
     (method) => method.method && whitelistedMethods.includes(method.method),
   )
 
