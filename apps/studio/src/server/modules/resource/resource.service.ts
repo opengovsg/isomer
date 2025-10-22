@@ -772,10 +772,14 @@ export const getBatchAncestryWithSelfQuery = async ({
 }
 
 export const getWithFullPermalink = async ({
-  resourceId,
+  resourceIds,
 }: {
-  resourceId: string
+  resourceIds: string[]
 }) => {
+  if (resourceIds.length === 0) {
+    return []
+  }
+
   const result = await db
     .withRecursive("resourcePath", (eb) =>
       eb
@@ -805,8 +809,8 @@ export const getWithFullPermalink = async ({
     )
     .selectFrom("resourcePath as rp")
     .select(["rp.id", "rp.title", "rp.fullPermalink"])
-    .where("rp.id", "=", resourceId)
-    .executeTakeFirst()
+    .where("rp.id", "in", resourceIds)
+    .execute()
 
   return result
 }
@@ -820,7 +824,7 @@ const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) => {
       "Resource.type",
       "Resource.parentId",
       // To handle cases where either the resource or the blob is updated
-      sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
+      sql<Date | null>`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
         "lastUpdatedAt",
       ),
     ])
@@ -833,14 +837,15 @@ const getResourcesWithFullPermalink = async ({
 }: {
   resources: Omit<SearchResultResource, "fullPermalink">[]
 }): Promise<SearchResultResource[]> => {
-  return await Promise.all(
-    resources.map(async (resource) => ({
-      ...resource,
-      fullPermalink: await getWithFullPermalink({
-        resourceId: resource.id,
-      }).then((r) => r?.fullPermalink ?? ""),
-    })),
-  )
+  const result = await getWithFullPermalink({
+    resourceIds: resources.map((resource) => resource.id),
+  })
+
+  return resources.map((resource) => ({
+    ...resource,
+    fullPermalink:
+      result.find((r) => r.id === resource.id)?.fullPermalink ?? "",
+  }))
 }
 
 export const getSearchResults = async ({
@@ -908,24 +913,20 @@ export const getSearchResults = async ({
   }
   orderedResources = orderedResources.orderBy("lastUpdatedAt", "desc")
 
-  const resourcesToReturn: SearchResultResource[] = (await orderedResources
-    .offset(offset)
-    .limit(limit)
-    .execute()) as SearchResultResource[]
-
-  const totalCount: number = (
-    await db
+  const [resourcesToReturn, totalCountResult] = await Promise.all([
+    orderedResources.offset(offset).limit(limit).execute(),
+    db
       .with("queriedResources", () => queriedResources)
       .selectFrom("queriedResources")
-      .select(db.fn.countAll().as("total_count"))
-      .executeTakeFirstOrThrow()
-  ).total_count as number // needed to cast as the type can be `bigint`
+      .select(db.fn.countAll<number>().as("total_count")) // needed to cast as the type can be `bigint`
+      .executeTakeFirstOrThrow(),
+  ])
 
   return {
-    totalCount,
     resources: await getResourcesWithFullPermalink({
       resources: resourcesToReturn,
     }),
+    totalCount: totalCountResult.total_count,
   }
 }
 
@@ -937,7 +938,7 @@ export const getSearchRecentlyEdited = async ({
   limit?: number
 }): Promise<SearchResultResource[]> => {
   return await getResourcesWithFullPermalink({
-    resources: (await getResourcesWithLastUpdatedAt({
+    resources: await getResourcesWithLastUpdatedAt({
       siteId: Number(siteId),
     })
       .where("Resource.type", "in", [
@@ -948,7 +949,7 @@ export const getSearchRecentlyEdited = async ({
       ])
       .limit(limit)
       .orderBy("lastUpdatedAt", "desc")
-      .execute()) as SearchResultResource[],
+      .execute(),
   })
 }
 
