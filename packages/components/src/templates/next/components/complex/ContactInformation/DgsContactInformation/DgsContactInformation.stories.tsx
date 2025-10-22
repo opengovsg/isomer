@@ -174,12 +174,12 @@ export const EmptyFields: Story = {
                     {
                       method: "fax",
                       label: "This should also not be shown",
-                      values: [""],
+                      values: ["  "],
                     },
                   ]),
                   other_information: JSON.stringify({
                     label: "Other Information",
-                    value: "",
+                    value: "  ",
                   }),
                 },
               ],
