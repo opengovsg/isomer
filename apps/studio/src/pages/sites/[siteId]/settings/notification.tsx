@@ -2,14 +2,13 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { Grid, GridItem } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-import {
-  AgencySettings,
-  AgencySettingsSchema,
-} from "@opengovsg/isomer-components"
+import { NotificationSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+import { isEqual } from "lodash"
 import { BiWrench } from "react-icons/bi"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
@@ -22,40 +21,53 @@ import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
+import { Notification } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
-const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
+const validateFn = ajv.compile<Notification>(NotificationSchema)
 
-const AgencySettingsPage: NextPageWithLayout = () => {
+const NotificationSettingsPage: NextPageWithLayout = () => {
   const isEnabled = useNewSettingsPage()
   const router = useRouter()
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
-  const [{ siteName, agencyName }] = trpc.site.getConfig.useSuspenseQuery({
-    id: siteId,
-  })
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
+  const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
+    siteId,
+  })
 
-  const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
-    onSuccess: ({ siteName }) => {
+  const notificationMutation = trpc.site.setNotification.useMutation({
+    onSuccess: () => {
+      void trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
-        title: `Site ${siteName} updated successfully`,
+        title: "Saved site notification!",
+        description: "Check your site in 5-10 minutes to view it live.",
         status: "success",
       })
-      void trpcUtils.site.getConfig.invalidate({ id: siteId })
-      void trpcUtils.site.getSiteName.invalidate({ siteId })
     },
-    onError: (error) => {
+    onError: () => {
       toast({
-        title: "Failed to update site",
-        description: error.message,
+        title: "Error saving site notification!",
+        description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
       })
     },
   })
+
+  const [{ notification: previousNotification }] =
+    trpc.site.getNotification.useSuspenseQuery({
+      siteId,
+    })
+  const [state, setState] = useState<Notification>(
+    previousNotification ?? {
+      enabled: false,
+      title: "",
+      content: { type: "prose", content: [] },
+    },
+  )
 
   useEffect(() => {
     if (!isEnabled) {
@@ -65,18 +77,15 @@ const AgencySettingsPage: NextPageWithLayout = () => {
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
-  const [state, setState] = useState<AgencySettings>({
-    siteName,
-    agencyName,
-  })
-  const isDirty = state.siteName !== siteName
+
+  const isDirty = !isEqual(state, previousNotification)
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
   const onSubmit = () =>
-    updateSiteConfigMutation.mutate({
-      siteName: state.siteName,
+    notificationMutation.mutate({
       siteId,
+      ...state,
     })
 
   return (
@@ -94,15 +103,14 @@ const AgencySettingsPage: NextPageWithLayout = () => {
       >
         <GridItem as={SettingsEditingLayout} colSpan={1} overflow="auto">
           <SettingsHeader
-            title="Name and agency"
-            icon={BiWrench}
-            isLoading={updateSiteConfigMutation.isPending}
             onClick={onSubmit}
+            title="Notification banner"
+            icon={BiWrench}
+            isLoading={notificationMutation.isPending}
           />
-
           <ErrorProvider>
-            <FormBuilder<AgencySettings>
-              schema={AgencySettingsSchema}
+            <FormBuilder<Notification>
+              schema={NotificationSchema}
               validateFn={validateFn}
               data={state}
               handleChange={(data) => {
@@ -112,14 +120,14 @@ const AgencySettingsPage: NextPageWithLayout = () => {
           </ErrorProvider>
         </GridItem>
         <GridItem colSpan={1}>
-          <EditSettingsPreview siteName={state.siteName} />
+          <EditSettingsPreview siteName={name} notification={state} />
         </GridItem>
       </Grid>
     </>
   )
 }
 
-AgencySettingsPage.getLayout = (page) => {
+NotificationSettingsPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
@@ -128,4 +136,4 @@ AgencySettingsPage.getLayout = (page) => {
   )
 }
 
-export default AgencySettingsPage
+export default NotificationSettingsPage

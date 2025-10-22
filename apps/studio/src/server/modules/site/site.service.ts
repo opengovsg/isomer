@@ -10,13 +10,14 @@ import type {
   Version,
 } from "../database"
 import type { UserPermissionsProps } from "../permissions/permissions.type"
+import { Notification } from "~/schemas/site"
 import {
   ResourceState,
   ResourceType,
   RoleType,
 } from "~/server/modules/database"
 import { logConfigEvent } from "../audit/audit.service"
-import { AuditLogEvent, db, jsonb, sql } from "../database"
+import { AuditLogEvent, db, jsonb } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
 import {
   FOOTER,
@@ -75,8 +76,7 @@ export const getNotification = async (siteId: number) => {
   const result = await db
     .selectFrom("Site")
     .select(({ ref }) =>
-      // TODO: Return whole notification once frontend refactored to accept Tiptap editor
-      ref("Site.config", "->").key("notification").key("content").as("content"),
+      ref("Site.config", "->").key("notification").as("notification"),
     )
     .where("id", "=", siteId)
     .executeTakeFirst()
@@ -86,150 +86,89 @@ export const getNotification = async (siteId: number) => {
       message: "Site not found",
     })
   }
-  // NOTE: Empty string denotes absence of notification on site.
-  return result.content?.[0]?.text ?? ""
+  return result
 }
 
 interface SetSiteNotificationParams {
-  tx: Transaction<DB>
   siteId: number
   userId: string
-  notification: string // TODO: Replace this with Tiptap schema once frontend refactored
+  title: string
+  content: Notification["content"]
+  enabled: boolean
 }
 
 export const setSiteNotification = async ({
-  tx,
   siteId,
   userId,
-  notification,
+  title,
+  content,
+  enabled,
 }: SetSiteNotificationParams) => {
-  // TODO: Remove tiptap schema coercion when tiptap editor is used on the frontend.
-  const notificationSchema = {
+  const notification = {
     notification: {
-      content: [{ type: "text", text: notification }],
+      content,
+      title,
+      enabled,
     },
   }
 
-  const user = await tx
-    .selectFrom("User")
-    .where("id", "=", userId)
-    .selectAll()
-    .executeTakeFirst()
+  return await db.transaction().execute(async (tx) => {
+    const user = await tx
+      .selectFrom("User")
+      .where("id", "=", userId)
+      .selectAll()
+      .executeTakeFirst()
 
-  if (!user) {
-    // NOTE: This shouldn't happen as the user is already logged in
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "The user could not be found",
+    if (!user) {
+      // NOTE: This shouldn't happen as the user is already logged in
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "The user could not be found",
+      })
+    }
+
+    const oldSite = await tx
+      .selectFrom("Site")
+      .where("id", "=", siteId)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!oldSite) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "The site could not be found",
+      })
+    }
+
+    const newSite = await tx
+      .updateTable("Site")
+      .set((eb) => ({
+        // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+        config: eb("Site.config", "||", jsonb(notification)),
+      }))
+      .where("id", "=", siteId)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!newSite) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update site configuration",
+      })
+    }
+
+    await logConfigEvent(tx, {
+      siteId,
+      eventType: AuditLogEvent.SiteConfigUpdate,
+      delta: {
+        before: oldSite,
+        after: newSite,
+      },
+      by: user,
     })
-  }
 
-  const oldSite = await tx
-    .selectFrom("Site")
-    .where("id", "=", siteId)
-    .selectAll()
-    .executeTakeFirst()
-
-  if (!oldSite) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "The site could not be found",
-    })
-  }
-
-  const newSite = await tx
-    .updateTable("Site")
-    .set((eb) => ({
-      // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
-      config: eb("Site.config", "||", jsonb(notificationSchema)),
-    }))
-    .where("id", "=", siteId)
-    .returningAll()
-    .executeTakeFirst()
-
-  if (!newSite) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to update site configuration",
-    })
-  }
-
-  await logConfigEvent(tx, {
-    siteId,
-    eventType: AuditLogEvent.SiteConfigUpdate,
-    delta: {
-      before: oldSite,
-      after: newSite,
-    },
-    by: user,
+    return newSite
   })
-
-  return newSite
-}
-
-interface ClearSiteNotificationParams {
-  tx: Transaction<DB>
-  siteId: number
-  userId: string
-}
-
-export const clearSiteNotification = async ({
-  tx,
-  siteId,
-  userId,
-}: ClearSiteNotificationParams) => {
-  const user = await tx
-    .selectFrom("User")
-    .where("id", "=", userId)
-    .selectAll()
-    .executeTakeFirst()
-
-  if (!user) {
-    // NOTE: This shouldn't happen as the user is already logged in
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "The user could not be found",
-    })
-  }
-
-  const oldSite = await tx
-    .selectFrom("Site")
-    .where("id", "=", siteId)
-    .selectAll()
-    .executeTakeFirst()
-
-  if (!oldSite) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "The site could not be found",
-    })
-  }
-
-  const newSite = await tx
-    .updateTable("Site")
-    .set({ config: sql`config - 'notification'` })
-    .where("id", "=", siteId)
-    .returningAll()
-    .executeTakeFirst()
-
-  if (!newSite) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to update site configuration",
-    })
-  }
-
-  await logConfigEvent(tx, {
-    siteId,
-    eventType: AuditLogEvent.SiteConfigUpdate,
-    delta: {
-      before: oldSite,
-      after: newSite,
-    },
-    by: user,
-  })
-
-  return newSite
 }
 
 interface CreateSiteProps {
