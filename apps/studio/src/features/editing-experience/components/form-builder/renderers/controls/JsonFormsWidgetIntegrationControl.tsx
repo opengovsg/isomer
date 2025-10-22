@@ -9,7 +9,6 @@ import {
 } from "@jsonforms/core"
 import { JsonFormsDispatch } from "@jsonforms/react"
 import { Switch } from "@opengovsg/design-system-react"
-import filter from "lodash/filter"
 
 import type { WidgetType } from "../../contexts/WidgetContext"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -77,17 +76,13 @@ export function JsonFormsWidgetIntegrationControl({
 
   const { icon, label: widgetLabel } = WIDGET_CONFIG[variant]
 
-  const otherWidgets = filter(WIDGET_CONFIG, (_v, k) => k !== variant)
-  const otherLabels = otherWidgets.map((widget) => widget.label).join(", ")
-
   return (
     <>
       <VStack gap="0.5rem" alignItems="flex-start">
         <Box>{icon}</Box>
         <Flex w="full">
           <Box>
-            <Text textStyle="subhead-2">{`${widgetLabel} is enabled on this website`}</Text>
-            <Text textStyle="body-2">{`You can't enable ${otherLabels} if you enable ${widgetLabel}`}</Text>
+            <Text textStyle="subhead-2">{`Enable your ${widgetLabel} widget on this website`}</Text>
           </Box>
           <Spacer />
           <Switch isChecked={isChecked} onChange={handleToggle} />
