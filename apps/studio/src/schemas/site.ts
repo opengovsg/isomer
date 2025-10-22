@@ -1,17 +1,17 @@
 import type { Static } from "@sinclair/typebox"
-import { NotificationSchema } from "@opengovsg/isomer-components"
-import { Type } from "@sinclair/typebox"
+import {
+  IsomerSiteConfigProps,
+  NotificationSettingsSchema,
+  SiteConfigSchema,
+} from "@opengovsg/isomer-components"
 import { z } from "zod"
 
 import { ajv } from "~/utils/ajv"
 
-export type Notification = Static<typeof NotificationSchema>
-const NotificationContentSchema = Type.Pick(
-  NotificationSchema,
-  Type.Literal("content"),
-)
-const notificationContentValidator = ajv.compile<Notification["content"]>(
-  NotificationContentSchema,
+export type Notification = Static<typeof NotificationSettingsSchema>
+
+export const notificationValidator = ajv.compile<Notification>(
+  NotificationSettingsSchema,
 )
 
 export const getConfigSchema = z.object({
@@ -32,15 +32,9 @@ export const getNotificationSchema = z.object({
 // for our definitions
 export const setNotificationSchema = z.object({
   siteId: z.number().min(1),
-  title: z
-    .string()
-    .max(100, { message: "Notification must be 100 characters or less" }),
-  enabled: z.boolean().default(false),
-  content: z
-    .custom<Notification["content"]>((value: unknown) => {
-      return notificationContentValidator({ content: value })
-    }, "Invalid notification content")
-    .optional(),
+  notification: z.custom<Notification>((value) => {
+    return notificationValidator(value)
+  }, "Invalid notification content"),
 })
 
 export const getNameSchema = z.object({
@@ -78,4 +72,14 @@ export const publishSiteSchema = z.object({
 export const updateSiteConfigSchema = z.object({
   siteId: z.number(),
   siteName: z.string(),
+})
+
+const isomerSiteConfigValidator =
+  ajv.compile<IsomerSiteConfigProps>(SiteConfigSchema)
+export const updateSiteIntegrationsSchema = z.object({
+  siteId: z.number().min(1),
+  data: z.custom<IsomerSiteConfigProps>((value) => {
+    const res = isomerSiteConfigValidator(value)
+    return res
+  }, "Invalid integration settings"),
 })

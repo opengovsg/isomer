@@ -1,6 +1,9 @@
 import { Center, Flex, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
+import { isEmpty } from "lodash"
 import { IconType } from "react-icons"
+
+import { useBuilderErrors } from "../editing-experience/components/form-builder/ErrorProvider"
 
 interface SettingsHeaderProps {
   title: string
@@ -14,6 +17,9 @@ export const SettingsHeader = ({
   isLoading,
   onClick,
 }: SettingsHeaderProps) => {
+  const { errors } = useBuilderErrors()
+  const isDisabled = !isEmpty(errors)
+
   return (
     <Flex justifyContent="space-between" w="100%">
       <Flex align="center">
@@ -32,7 +38,12 @@ export const SettingsHeader = ({
           {title}
         </Text>
       </Flex>
-      <Button type="submit" isLoading={isLoading} onClick={onClick}>
+      <Button
+        type="submit"
+        isLoading={isLoading}
+        onClick={onClick}
+        isDisabled={isDisabled}
+      >
         Publish changes
       </Button>
     </Flex>

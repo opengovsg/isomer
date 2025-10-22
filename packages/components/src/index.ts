@@ -12,3 +12,4 @@ export {
   REFERENCE_LINK_REGEX,
   NON_EMPTY_STRING_REGEX,
 } from "./utils"
+export { useIsNotificationDismissed } from "./hooks/useIsNotificationDismissed"

@@ -11,7 +11,6 @@ export const SettingsEditingLayout = (props: PropsWithChildren<StackProps>) => {
       py="1.5rem"
       w="100%"
       h="100%"
-      gridColumn="1 / 6"
     />
   )
 }
