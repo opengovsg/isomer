@@ -237,32 +237,32 @@ describe("filterContactMethods", () => {
         {
           method: "telephone",
           label: "Phone with undefined",
-          values: undefined as unknown as string[], // this is intentional to test undefined values
+          values: undefined as unknown as string[],
         },
         {
           method: "telephone",
           label: "Phone with null",
-          values: null as unknown as string[], // this is intentional to test null values
+          values: null as unknown as string[],
         },
         {
           method: "telephone",
           label: "Phone with boolean",
-          values: [undefined as unknown as string], // this is intentional to test undefined values
+          values: [undefined as unknown as string],
         },
         {
           method: "telephone",
           label: "Phone with object",
-          values: [{}] as unknown as string[], // this is intentional to test object values
+          values: [{}] as unknown as string[],
         },
         {
           method: "telephone",
           label: "Phone with boolean",
-          values: [true as unknown as string], // this is intentional to test boolean values
+          values: [true as unknown as string],
         },
         {
           method: "telephone",
           label: "Phone with nested array",
-          values: [["+65-1234-5678"] as unknown as string], // this is intentional to test array values
+          values: [["+65-1234-5678"] as unknown as string],
         },
       ]
 
