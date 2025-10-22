@@ -46,7 +46,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
           top,
         }}
       >
-        <FocusScope contain restoreFocus>
+        <FocusScope restoreFocus>
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
             {!!callToAction && (
               <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">

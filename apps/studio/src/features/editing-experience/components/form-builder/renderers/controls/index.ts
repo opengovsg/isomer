@@ -59,6 +59,10 @@ export {
   jsonFormsEmbedControlTester,
 } from "./JsonFormsEmbedControl"
 export {
+  default as JsonFormsDgsDatasetIdControl,
+  jsonFormsDgsDatasetIdControlTester,
+} from "./JsonFormsDgsDatasetIdControl"
+export {
   default as JsonFormsHiddenControl,
   jsonFormsHiddenControlTester,
 } from "./JsonFormsHiddenControl"
@@ -98,3 +102,27 @@ export {
   jsonFormsTagCategoriesControlTester,
   default as JsonFormsTagCategoriesControl,
 } from "./JsonFormsTagCategoryControl"
+export {
+  default as JsonFormsNavbarControl,
+  jsonFormsNavbarControlTester,
+} from "./JsonFormsNavbarControl/JsonFormsNavbarControl"
+export {
+  default as JsonFormsLinkArrayControl,
+  jsonFormsLinkArrayControlTester,
+} from "./JsonFormsLinkArrayControl"
+export {
+  default as JsonFormsSocialMediaControl,
+  jsonFormsSocialMediaControlTester,
+} from "./JsonFormsSocialMediaControl/JsonFormsSocialMediaControl"
+export {
+  default as JsonFormsEnumControl,
+  jsonFormsEnumControlTester,
+} from "./JsonFormsEnumControl"
+export {
+  default as JsonFormsSearchSGControl,
+  jsonFormsSearchSGControlTester,
+} from "./JsonFormsSearchSGControl"
+export {
+  default as JsonFormsWidgetIntegrationControl,
+  jsonFormsWidgetIntegrationControlTester,
+} from "./JsonFormsWidgetIntegrationControl"

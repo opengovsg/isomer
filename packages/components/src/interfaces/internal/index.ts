@@ -21,12 +21,15 @@ export { LocalSearchSchema, type LocalSearchProps } from "./LocalSearchInputBox"
 export type { MastheadProps } from "./Masthead"
 export {
   NavbarSchema,
+  NavbarAddonsSchema,
+  NavbarItemsSchema,
   type NavbarProps,
   type NavbarClientProps,
   type NavbarSchemaType,
 } from "./Navbar"
 export {
   NotificationSchema,
+  NotificationSettingsSchema,
   type NotificationProps,
   type NotificationClientProps,
 } from "./Notification"
@@ -63,3 +66,10 @@ export {
   type AskgovProps,
 } from "./Askgov"
 export type { ImageClientProps } from "./Image"
+export {
+  SearchableTableSchema,
+  type SearchableTableProps,
+  type SearchableTableClientProps,
+  type NativeSearchableTableProps,
+  type DGSSearchableTableProps,
+} from "./SearchableTable"

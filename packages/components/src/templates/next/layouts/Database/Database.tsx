@@ -5,8 +5,11 @@ import {
   getTableOfContents,
   getTransformedPageContent,
 } from "~/utils"
-import { SearchableTable } from "../../components/complex"
-import { ContentPageHeader, TableOfContents } from "../../components/internal"
+import {
+  ContentPageHeader,
+  SearchableTable,
+  TableOfContents,
+} from "../../components/internal"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 

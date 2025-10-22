@@ -29,8 +29,12 @@ import {
   jsonFormsConstControlTester,
   JsonFormsDateControl,
   jsonFormsDateControlTester,
+  JsonFormsDgsDatasetIdControl,
+  jsonFormsDgsDatasetIdControlTester,
   JsonFormsEmbedControl,
   jsonFormsEmbedControlTester,
+  JsonFormsEnumControl,
+  jsonFormsEnumControlTester,
   jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
   JsonFormsHiddenControl,
@@ -39,16 +43,24 @@ import {
   jsonFormsImageControlTester,
   JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
+  JsonFormsLinkArrayControl,
+  jsonFormsLinkArrayControlTester,
   JsonFormsLinkControl,
   jsonFormsLinkControlTester,
   JsonFormsMetaImageControl,
   jsonFormsMetaImageControlTester,
+  JsonFormsNavbarControl,
+  jsonFormsNavbarControlTester,
   JsonFormsObjectControl,
   jsonFormsObjectControlTester,
   JsonFormsProseControl,
   jsonFormsProseControlTester,
   JsonFormsRefControl,
   jsonFormsRefControlTester,
+  JsonFormsSearchSGControl,
+  jsonFormsSearchSGControlTester,
+  JsonFormsSocialMediaControl,
+  jsonFormsSocialMediaControlTester,
   JsonFormsTagCategoriesControl,
   jsonFormsTagCategoriesControlTester,
   JsonFormsTaggedControl,
@@ -63,9 +75,19 @@ import {
   jsonFormsUuidControlTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
+  JsonFormsWidgetIntegrationControl,
+  jsonFormsWidgetIntegrationControlTester,
 } from "./renderers"
 
 export const renderers: JsonFormsRendererRegistryEntry[] = [
+  {
+    renderer: JsonFormsWidgetIntegrationControl,
+    tester: jsonFormsWidgetIntegrationControlTester,
+  },
+  {
+    renderer: JsonFormsSearchSGControl,
+    tester: jsonFormsSearchSGControlTester,
+  },
   {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,
@@ -75,6 +97,18 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     renderer: JsonFormsChildrenPagesOrderingControl,
     tester: jsonFormsChildrenPagesOrderingControlTester,
+  },
+  {
+    renderer: JsonFormsNavbarControl,
+    tester: jsonFormsNavbarControlTester,
+  },
+  {
+    renderer: JsonFormsLinkArrayControl,
+    tester: jsonFormsLinkArrayControlTester,
+  },
+  {
+    renderer: JsonFormsSocialMediaControl,
+    tester: jsonFormsSocialMediaControlTester,
   },
   {
     tester: jsonFormsProseControlTester,
@@ -90,10 +124,15 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsUnionRootControl,
   },
   { tester: jsonFormsEmbedControlTester, renderer: JsonFormsEmbedControl },
+  {
+    tester: jsonFormsDgsDatasetIdControlTester,
+    renderer: JsonFormsDgsDatasetIdControl,
+  },
   { tester: jsonFormsHiddenControlTester, renderer: JsonFormsHiddenControl },
   { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
   { tester: jsonFormsLinkControlTester, renderer: JsonFormsLinkControl },
+  { tester: jsonFormsEnumControlTester, renderer: JsonFormsEnumControl },
   {
     tester: jsonFormsTextAreaControlTester,
     renderer: JsonFormsTextAreaControl,

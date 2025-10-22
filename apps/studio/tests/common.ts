@@ -23,7 +23,7 @@ export const CONTAINER_CONFIGURATIONS: Record<
   },
   mockpass: {
     name: "mockpass",
-    image: "opengovsg/mockpass:latest",
+    image: "opengovsg/mockpass:4.5.1",
     ports: [{ container: 5156, host: 5156 }],
     extraHosts: [{ host: "host.docker.internal", ipAddress: "host-gateway" }],
     environment: {

@@ -35,7 +35,8 @@ const SingleCardNoImageSchema = Type.Object({
   description: Type.Optional(
     Type.String({
       title: "Description",
-      maxLength: 150,
+      description:
+        "To make sure your description is readable, keep it under 150 characters.",
     }),
   ),
   url: Type.Optional(

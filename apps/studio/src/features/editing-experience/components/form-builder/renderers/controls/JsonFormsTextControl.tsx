@@ -25,6 +25,13 @@ const getRemainingCharacterCount = (maxLength: number, data?: string) => {
   return Math.max(0, maxLength - data.length)
 }
 
+// NOTE: Typeguard so ts doesn't complain
+const isSchemaWithTooltip = (
+  schema: ControlProps["schema"],
+): schema is ControlProps["schema"] & { tooltip: string } => {
+  return (schema as unknown as { tooltip?: string }).tooltip !== undefined
+}
+
 export function JsonFormsTextControl({
   data,
   label,
@@ -34,6 +41,7 @@ export function JsonFormsTextControl({
   required,
   errors,
   schema,
+  enabled,
 }: ControlProps) {
   const { maxLength } = schema
   const remainingCharacterCount = maxLength
@@ -49,13 +57,16 @@ export function JsonFormsTextControl({
     }
   }
 
+  const { tooltip } = isSchemaWithTooltip(schema) ? schema : {}
+
   return (
     <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
-        <FormLabel description={description} mb={0}>
+        <FormLabel description={description} mb={0} tooltipText={tooltip}>
           {label}
         </FormLabel>
         <Input
+          isDisabled={!enabled}
           type="text"
           value={String(data || "")}
           onChange={onChange}
