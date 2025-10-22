@@ -2,6 +2,7 @@ import fs from "fs"
 import path, { dirname } from "path"
 import { fileURLToPath } from "url"
 import type { RawBuilder } from "kysely"
+import { endOfMonth, format, parse, startOfMonth, subMonths } from "date-fns"
 
 import { AuditLogEvent, db, sql } from "~/server/modules/database"
 
@@ -16,6 +17,7 @@ const SITES_WITH_AUDIT_LOGS = [
   48, // muis.gov.sg
   50, // knowledgehub.clc.gov.sg
   53, // clc.gov.sg
+  63, // ipos.gov.sg
   109, // agc.gov.sg
   145, // ite.edu.sg
 ]
@@ -64,14 +66,10 @@ const getAuditLogQuery = ({
   type,
   monthYear,
 }: GetAuditLogsQueryParams) => {
-  // Use start of month from the monthYear, the start of the previous month from today if not provided
-  const startDate = new Date(`${monthYear}-01T00:00:00.000Z`)
-  // Use end of month from the monthYear, the end of the previous month from today if not provided
-  const endDate = new Date(
-    new Date(`${monthYear}-01T00:00:00.000Z`).setMonth(
-      startDate.getMonth() + 1,
-    ) - 1,
-  )
+  // Parse the date from the given monthYear
+  const date = parse(monthYear, "yyyy-MM", new Date())
+  const startDate = startOfMonth(date)
+  const endDate = endOfMonth(date)
 
   switch (type) {
     case "users":
@@ -260,16 +258,10 @@ const getStringifiedValue = (value: unknown) => {
 
 const getAuditLogsForSite = async () => {
   // If MONTH_YEAR is provided, use that, else get the previous month from today
-  const previousMonth = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth() - 1,
-  )
+  const now = new Date()
+  const previousMonth = subMonths(now, 1)
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const monthYear = MONTH_YEAR
-    ? MONTH_YEAR
-    : `${previousMonth.getFullYear()}-${String(
-        previousMonth.getMonth() + 1,
-      ).padStart(2, "0")}`
+  const monthYear = MONTH_YEAR ? MONTH_YEAR : format(previousMonth, "yyyy-MM")
 
   for (const siteId of SITES_WITH_AUDIT_LOGS) {
     console.log(`Getting audit logs for siteId: ${siteId}`)
