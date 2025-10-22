@@ -76,7 +76,7 @@ const DatabaseLayout = ({
         )}
 
         <div className={compoundStyles.table()}>
-          <SearchableTable {...page.database} site={site} />
+          <SearchableTable {...page.database} />
         </div>
       </div>
     </Skeleton>
