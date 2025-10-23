@@ -22,7 +22,10 @@ import {
   SettingsGrid,
   SettingsPreviewGridItem,
 } from "~/components/Settings"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  BRIEF_TOAST_SETTINGS,
+  SETTINGS_TOAST_MESSAGES,
+} from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { WidgetProvider } from "~/features/editing-experience/components/form-builder/contexts/WidgetContext"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
@@ -85,9 +88,9 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
 
   const updateSiteIntegrationsMutation =
     trpc.site.updateSiteIntegrations.useMutation({
-      onSuccess: async ({ name: siteName }) => {
+      onSuccess: async () => {
         toast({
-          title: `Site ${siteName} updated successfully`,
+          ...SETTINGS_TOAST_MESSAGES.success,
           status: "success",
         })
         await trpcUtils.site.getConfig.invalidate({ id: siteId })

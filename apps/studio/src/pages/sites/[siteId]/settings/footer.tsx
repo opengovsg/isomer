@@ -10,7 +10,10 @@ import {
   SettingsGrid,
   SettingsPreviewGridItem,
 } from "~/components/Settings"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  BRIEF_TOAST_SETTINGS,
+  SETTINGS_TOAST_MESSAGES,
+} from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { EditFooterPreview } from "~/features/settings/EditFooterPreview"
@@ -39,8 +42,7 @@ const FooterSettingsPage: NextPageWithLayout = () => {
         await utils.site.getFooter.invalidate({ id: Number(siteId) })
         toast({
           status: "success",
-          title: "Footer saved successfully",
-          description: "Check your site in 5-10 minutes to view it live.",
+          ...SETTINGS_TOAST_MESSAGES.success,
           ...BRIEF_TOAST_SETTINGS,
         })
       },
