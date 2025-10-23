@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
+import { Box } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
   NotificationSettingsSchema,
@@ -108,6 +109,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             isLoading={notificationMutation.isPending}
             isDisabled={!isDirty}
           />
+          <Box mb="-0.5rem" />
           <FormBuilder<Notification>
             schema={NotificationSettingsSchema}
             validateFn={validateFn}
