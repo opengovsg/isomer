@@ -41,7 +41,7 @@
     "services:setup": {
       "cache": false
     },
-    "setup:test": {},
+    "setup:test": { "cache": false },
     "storybook": {
       "cache": false
     },
