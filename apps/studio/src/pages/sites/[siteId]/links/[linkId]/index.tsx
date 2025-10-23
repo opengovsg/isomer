@@ -34,7 +34,7 @@ export const EditLink = () => {
       category: "",
       ...content.page,
     }),
-    [content.page, title],
+    [content.page],
   )
 
   const [link, setLink] = useState<CollectionLinkProps>(initialLinkState)

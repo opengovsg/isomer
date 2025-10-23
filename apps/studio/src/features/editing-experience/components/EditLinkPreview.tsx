@@ -47,8 +47,6 @@ export const EditCollectionLinkPreview = ({
     [parent?.title],
   )
 
-  console.log(link)
-
   const siteMap = useMemo(
     () =>
       ({
@@ -83,8 +81,6 @@ export const EditCollectionLinkPreview = ({
       }) satisfies IsomerSitemap,
     [parentPermalink, parentTitle, tagCategories, link, permalink, title],
   )
-
-  console.log(title)
 
   return (
     <ViewportContainer siteId={siteId}>
