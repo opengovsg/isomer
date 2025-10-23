@@ -146,8 +146,12 @@ export const NavbarEditor = ({
             boxSizing="border-box"
             px="2rem"
           >
-            <Tab mx={0}>Menu Links</Tab>
-            <Tab mx={0}>Customise</Tab>
+            <Tab mx={0}>
+              <Text textStyle="subhead-3">Menu Links</Text>
+            </Tab>
+            <Tab mx={0}>
+              <Text textStyle="subhead-3">Customise</Text>
+            </Tab>
           </TabList>
 
           <TabPanels px="0.5rem" flex={1} overflowY="auto">
