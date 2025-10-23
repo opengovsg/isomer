@@ -15,6 +15,7 @@ interface CmsContainerWrapperProps {
   siteId: string
   sidenav?: React.ReactElement
   onSidenavOpen?: UseDisclosureReturn["onOpen"]
+  variant?: "gsib" | "basic"
 }
 
 export const CmsContainerWrapper = ({
@@ -22,6 +23,7 @@ export const CmsContainerWrapper = ({
   sidenav,
   onSidenavOpen,
   children,
+  variant,
 }: PropsWithChildren<CmsContainerWrapperProps>) => {
   const router = useRouter()
 
@@ -86,6 +88,7 @@ export const CmsContainerWrapper = ({
       pos="relative"
     >
       <CmsContainer
+        variant={variant}
         sidebar={
           <CmsSidebar
             topNavItems={pageNavItems}
