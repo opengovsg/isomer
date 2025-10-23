@@ -18,7 +18,10 @@ import {
   SettingsPreviewGridItem,
 } from "~/components/Settings"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  BRIEF_TOAST_SETTINGS,
+  SETTINGS_TOAST_MESSAGES,
+} from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
@@ -55,8 +58,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     onSuccess: () => {
       void trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
-        title: "Saved site notification!",
-        description: "Check your site in 5-10 minutes to view it live.",
+        ...SETTINGS_TOAST_MESSAGES.success,
         status: "success",
       })
     },

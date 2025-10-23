@@ -20,6 +20,7 @@ export const SiteSettingsLayout: GetLayout = (page) => {
     <EnforceLoginStatePageWrapper>
       <LayoutHead />
       <CmsContainerWrapper
+        variant="gsib"
         siteId={siteId}
         sidenav={
           isSidenavOpen ? (

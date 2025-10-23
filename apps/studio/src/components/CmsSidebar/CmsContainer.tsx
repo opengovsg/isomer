@@ -6,6 +6,19 @@ export interface CmsContainerProps {
   sidebar: ReactElement
   header: ReactElement
   sidenav?: ReactElement
+  variant?: "gsib" | "basic"
+}
+
+const getGridTemplateCols = (isGsibVariant: boolean, hasSideNav: boolean) => {
+  if (isGsibVariant && hasSideNav) {
+    return { base: "auto 14rem 1fr", "2xl": "auto 20rem 1fr" }
+  }
+
+  if (hasSideNav) {
+    return "auto 18.75rem 1fr"
+  }
+
+  return "auto 1fr"
 }
 
 export function CmsContainer({
@@ -13,13 +26,14 @@ export function CmsContainer({
   sidebar,
   header,
   sidenav,
+  variant,
 }: CmsContainerProps) {
   const gridTemplateAreas = !!sidenav
     ? `'header header header'
       'sidebar sidenav main'`
     : `'header header'
       'sidebar main'`
-  const gridTemplateColumns = !!sidenav ? "auto 18.75rem 1fr" : "auto 1fr"
+  const gridTemplateColumns = getGridTemplateCols(variant === "gsib", !!sidenav)
 
   return (
     <Grid

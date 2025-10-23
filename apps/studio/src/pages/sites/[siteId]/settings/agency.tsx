@@ -13,7 +13,10 @@ import {
   SettingsGrid,
   SettingsPreviewGridItem,
 } from "~/components/Settings"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  BRIEF_TOAST_SETTINGS,
+  SETTINGS_TOAST_MESSAGES,
+} from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
@@ -46,9 +49,9 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   }, [isEnabled, router, siteId])
 
   const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
-    onSuccess: ({ siteName }) => {
+    onSuccess: () => {
       toast({
-        title: `Site ${siteName} updated successfully`,
+        ...SETTINGS_TOAST_MESSAGES.success,
         status: "success",
       })
       void trpcUtils.site.getConfig.invalidate({ id: siteId })
