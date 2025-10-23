@@ -642,6 +642,23 @@ export const Dark: Story = {
   }),
 }
 
+export const HeroBlock: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "block",
+      backgroundUrl: "/hero-banner.png",
+      title: "Authorisations for new initiatives",
+      subtitle:
+        "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
+      buttonLabel: "Explore now",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Explore now",
+      secondaryButtonUrl: "/",
+    },
+  }),
+}
+
 export const HeroLargeImage: Story = {
   args: generateArgs({
     heroProps: {
