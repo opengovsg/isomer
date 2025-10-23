@@ -1,38 +1,42 @@
-import { Flex } from "@chakra-ui/react"
-
 export const AskgovWidget = () => {
   return (
-    <Flex
-      position="fixed"
-      bottom="4"
-      right="4"
-      zIndex={999998}
-      h="72px"
-      flexDir="row"
-      align="center"
-      justify="center"
-      gap={2}
-      borderRadius="32px"
-      border="2px"
-      borderColor="#c1d2ef"
-      bg="whiteAlpha.500"
-      p={4}
-      shadow="md"
-      backdropFilter="blur(16px)"
+    <div
+      style={{
+        position: "fixed",
+        bottom: "1rem",
+        right: "1rem",
+        zIndex: 999998,
+        display: "flex",
+        height: "72px",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "0.5rem",
+        borderRadius: "32px",
+        border: "2px solid #c1d2ef",
+        backgroundColor: "rgba(255, 255, 255, 0.5)",
+        padding: "1rem",
+        boxShadow:
+          "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+        backdropFilter: "blur(16px)",
+      }}
     >
-      <Flex
-        position="relative"
-        w="50px"
-        h="50px"
-        flexShrink={0}
-        flexDir="column"
-        align="center"
-        justify="center"
-        gap="5px"
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          width: "50px",
+          height: "50px",
+          flexShrink: 0,
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "5px",
+        }}
       >
         <ChatButtonIcon />
-      </Flex>
-    </Flex>
+      </div>
+    </div>
   )
 }
 
