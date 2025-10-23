@@ -72,7 +72,7 @@ export function JsonFormsTextControl({
           onChange={onChange}
           placeholder={label}
           maxLength={maxLength}
-          my="0.5rem"
+          mt="0.5rem"
         />
         {maxLength && !errors && (
           <FormHelperText>
