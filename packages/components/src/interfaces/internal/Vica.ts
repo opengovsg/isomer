@@ -25,7 +25,7 @@ export const VicaSchema = Type.Object(
     "app-id": Type.String({
       title: "Vica ID",
       description:
-        "You can get this from Vica support after onboarding. If the widget doesn’t appear on your site, check that you have the correct ID.",
+        "You can get this from [VICA support](https://www.vica.gov.sg/contact-us/) after onboarding. If the widget doesn’t appear on your site, check that you have the correct ID.",
     }),
     "app-name": HiddenOptionalString,
     "app-icon": HiddenOptionalString,
