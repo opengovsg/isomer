@@ -12,7 +12,6 @@ import {
 import {
   Button,
   FormErrorMessage,
-  FormHelperText,
   FormLabel,
 } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
