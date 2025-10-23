@@ -36,13 +36,13 @@ export const FooterSchema = Type.Object(
   {
     siteNavItems: Type.Array(FooterItemSchema, {
       title: "Footer column 1",
-      maxItems: 6,
+      maxItems: 8,
       format: "linkArray",
     }),
     customNavItems: Type.Optional(
       Type.Array(FooterItemSchema, {
         title: "Footer column 2",
-        maxItems: 6,
+        maxItems: 8,
         format: "linkArray",
       }),
     ),

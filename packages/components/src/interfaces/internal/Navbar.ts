@@ -62,7 +62,7 @@ export const NavbarItemsSchema = Type.Object({
     description: "List of items to be displayed in the navbar",
     format: "navbar",
     minItems: 1,
-    maxItems: 7,
+    maxItems: 8,
   }),
 })
 
