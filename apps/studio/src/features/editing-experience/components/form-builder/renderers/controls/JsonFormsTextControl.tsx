@@ -80,7 +80,7 @@ export function JsonFormsTextControl({
             {remainingCharacterCount === 1 ? "character" : "characters"} left
           </FormHelperText>
         )}
-        <FormErrorMessage>
+        <FormErrorMessage mt={0}>
           {label} {getCustomErrorMessage(errors)}
         </FormErrorMessage>
       </FormControl>
