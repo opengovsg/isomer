@@ -3,6 +3,8 @@ import type {
   IsomerSiteProps,
 } from "@opengovsg/isomer-components"
 
+import { AskgovWidget } from "~/components/Askgov"
+import { VicaWidget } from "~/components/Vica"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { siteSchema } from "../schema"
@@ -39,6 +41,8 @@ export const EditSettingsPreview = ({
         page={content.page}
         overrides={{ site: { siteName, ...rest } }}
       />
+      {!!rest.askgov && <AskgovWidget />}
+      {!!rest.vica && <VicaWidget />}
     </ViewportContainer>
   )
 }
