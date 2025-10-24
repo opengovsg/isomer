@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, FormControl } from "@chakra-ui/react"
+import { Box, FormControl, useToken } from "@chakra-ui/react"
 import { isStringControl, rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
@@ -8,6 +8,7 @@ import {
   FormLabel,
   Input,
 } from "@opengovsg/design-system-react"
+import Markdown from "react-markdown"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getCustomErrorMessage } from "./utils"
@@ -43,6 +44,12 @@ export function JsonFormsTextControl({
   schema,
   enabled,
 }: ControlProps) {
+  const [linkColor, linkHoverColor, linkActiveColor] = useToken("colors", [
+    "interaction.links.default",
+    "interaction.links.hover",
+    "utility.focus-default",
+  ])
+
   const { maxLength } = schema
   const remainingCharacterCount = maxLength
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
@@ -62,7 +69,25 @@ export function JsonFormsTextControl({
   return (
     <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
-        <FormLabel description={description} mb={0} tooltipText={tooltip}>
+        <FormLabel
+          description={<Markdown>{description}</Markdown>}
+          mb={0}
+          tooltipText={tooltip}
+          sx={{
+            "& a": {
+              color: linkColor,
+              textDecoration: "underline",
+              _hover: {
+                color: linkHoverColor,
+                textDecoration: "none",
+              },
+              _active: {
+                color: linkActiveColor,
+                textDecoration: "none",
+              },
+            },
+          }}
+        >
           {label}
         </FormLabel>
         <Input
