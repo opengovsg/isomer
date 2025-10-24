@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { MapProps } from "~/interfaces"
-import { generateSiteConfig } from "~/stories/helpers"
 import { Map } from "./Map"
 
 const meta: Meta<MapProps> = {
@@ -12,9 +11,6 @@ const meta: Meta<MapProps> = {
     themes: {
       themeOverride: "Isomer Next",
     },
-  },
-  args: {
-    site: generateSiteConfig(),
   },
 }
 export default meta

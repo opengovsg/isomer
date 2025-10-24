@@ -1,7 +1,6 @@
-import DOMPurify from "isomorphic-dompurify"
-
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { BaseParagraph } from "../../../internal"
 import { LinkButton } from "../../../internal/LinkButton"
 import {
   commonContactInformationStyles,
@@ -58,13 +57,10 @@ export const DefaultContactInformationUI = ({
         )}
         {(!!description || isLoading) &&
           (acceptHtmlTags ? (
-            <p
+            <BaseParagraph
+              content={descriptionText}
+              allowedTags={["br"]}
               className={compoundStyles.description()}
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(descriptionText, {
-                  ALLOWED_TAGS: ["br"],
-                }),
-              }}
             />
           ) : (
             <p className={compoundStyles.description()}>{descriptionText}</p>
@@ -99,13 +95,12 @@ export const DefaultContactInformationUI = ({
             {otherInformation.label ?? "Other Information"}
           </h3>
           {acceptHtmlTags ? (
-            <div
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(otherInformation.value, {
-                  ALLOWED_TAGS: ["b"],
-                }),
-              }}
-            />
+            <div>
+              <BaseParagraph
+                content={otherInformation.value}
+                allowedTags={["b"]}
+              />
+            </div>
           ) : (
             <div>{otherInformation.value}</div>
           )}

@@ -12,7 +12,6 @@ export const SearchableTableClient = ({
   title,
   headers,
   items,
-  site,
   LinkComponent,
   isLoading = false,
   isError = false,
@@ -50,7 +49,6 @@ export const SearchableTableClient = ({
     <SearchableTableClientUI
       title={title}
       headers={headers}
-      site={site}
       LinkComponent={LinkComponent}
       isLoading={isLoading}
       isError={isError}

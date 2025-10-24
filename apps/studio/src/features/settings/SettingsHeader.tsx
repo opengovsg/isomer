@@ -10,12 +10,14 @@ interface SettingsHeaderProps {
   icon: IconType
   isLoading?: boolean
   onClick: () => void
+  isDisabled?: boolean
 }
 export const SettingsHeader = ({
   title,
   icon,
   isLoading,
   onClick,
+  isDisabled: isDisabledProp,
 }: SettingsHeaderProps) => {
   const { errors } = useBuilderErrors()
   const isDisabled = !isEmpty(errors)
@@ -42,7 +44,8 @@ export const SettingsHeader = ({
         type="submit"
         isLoading={isLoading}
         onClick={onClick}
-        isDisabled={isDisabled}
+        isDisabled={isDisabledProp || isDisabled}
+        size="xs"
       >
         Publish changes
       </Button>

@@ -1,5 +1,6 @@
 import type { AgencySettings } from "@opengovsg/isomer-components"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/router"
 import { useToast } from "@opengovsg/design-system-react"
 import { AgencySettingsSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -12,7 +13,10 @@ import {
   SettingsGrid,
   SettingsPreviewGridItem,
 } from "~/components/Settings"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  BRIEF_TOAST_SETTINGS,
+  SETTINGS_TOAST_MESSAGES,
+} from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
@@ -21,6 +25,7 @@ import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
+import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
@@ -30,17 +35,23 @@ const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
 
 const AgencySettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
+  const isEnabled = useNewSettingsPage()
   const siteId = Number(rawSiteId)
   const [{ siteName, agencyName }] = trpc.site.getConfig.useSuspenseQuery({
     id: siteId,
   })
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isEnabled) void router.replace(`/sites/${siteId}/settings`)
+  }, [isEnabled, router, siteId])
 
   const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
-    onSuccess: ({ siteName }) => {
+    onSuccess: () => {
       toast({
-        title: `Site ${siteName} updated successfully`,
+        ...SETTINGS_TOAST_MESSAGES.success,
         status: "success",
       })
       void trpcUtils.site.getConfig.invalidate({ id: siteId })
@@ -85,6 +96,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
             icon={BiWrench}
             isLoading={updateSiteConfigMutation.isPending}
             onClick={onSubmit}
+            isDisabled={!isDirty}
           />
 
           <ErrorProvider>

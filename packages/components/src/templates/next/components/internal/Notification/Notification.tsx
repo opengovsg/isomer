@@ -15,8 +15,7 @@ const Notification = ({
     content instanceof Array ? (
       <BaseParagraph
         content={getTextAsHtml({ site, content })}
-        className="prose-body-base [&:not(:last-child)]:mb-0"
-        site={site}
+        className="prose-body-base"
         LinkComponent={LinkComponent}
       />
     ) : (
@@ -27,13 +26,9 @@ const Notification = ({
     )
 
   return (
-    <NotificationClient
-      title={title}
-      // Temporary solution for server-side rendering to optimize performance by
-      // avoiding large sitemap transfers needed by BaseParagraph.
-      // TODO: more robust refactor is required for BaseParagraph component
-      baseParagraph={!!content && <Paragraph />}
-    />
+    <NotificationClient title={title}>
+      <Paragraph />
+    </NotificationClient>
   )
 }
 

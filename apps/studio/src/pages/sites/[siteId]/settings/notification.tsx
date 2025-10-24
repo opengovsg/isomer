@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/router"
 import { useToast } from "@opengovsg/design-system-react"
 import {
   NotificationSettingsSchema,
@@ -17,7 +18,10 @@ import {
   SettingsPreviewGridItem,
 } from "~/components/Settings"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  BRIEF_TOAST_SETTINGS,
+  SETTINGS_TOAST_MESSAGES,
+} from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
@@ -26,6 +30,7 @@ import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
+import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { notificationValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
@@ -35,12 +40,17 @@ const validateFn = notificationValidator
 
 const NotificationSettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
+  const router = useRouter()
   const siteId = Number(rawSiteId)
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
     siteId,
   })
+  const isEnabled = useNewSettingsPage()
+  useEffect(() => {
+    if (!isEnabled) void router.replace(`/sites/${siteId}/settings`)
+  }, [isEnabled, router, siteId])
 
   const [, setIsDismissed] = useIsNotificationDismissed()
 
@@ -48,8 +58,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     onSuccess: () => {
       void trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
-        title: "Saved site notification!",
-        description: "Check your site in 5-10 minutes to view it live.",
+        ...SETTINGS_TOAST_MESSAGES.success,
         status: "success",
       })
     },
@@ -97,6 +106,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             title="Notification banner"
             icon={BiWrench}
             isLoading={notificationMutation.isPending}
+            isDisabled={!isDirty}
           />
           <FormBuilder<Notification>
             schema={NotificationSettingsSchema}

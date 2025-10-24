@@ -15,6 +15,7 @@ interface CmsContainerWrapperProps {
   siteId: string
   sidenav?: React.ReactElement
   onSidenavOpen?: UseDisclosureReturn["onOpen"]
+  variant?: "gsib" | "basic"
 }
 
 export const CmsContainerWrapper = ({
@@ -22,6 +23,7 @@ export const CmsContainerWrapper = ({
   sidenav,
   onSidenavOpen,
   children,
+  variant,
 }: PropsWithChildren<CmsContainerWrapperProps>) => {
   const router = useRouter()
 
@@ -46,7 +48,7 @@ export const CmsContainerWrapper = ({
     {
       icon: BiCog,
       label: "Settings",
-      href: `/sites/${siteId}/settings/agency`,
+      href: `/sites/${siteId}/settings`,
       isActive: router.asPath.startsWith(`/sites/${siteId}/settings`),
     },
     ...(isUserIsomerAdmin
@@ -86,6 +88,7 @@ export const CmsContainerWrapper = ({
       pos="relative"
     >
       <CmsContainer
+        variant={variant}
         sidebar={
           <CmsSidebar
             topNavItems={pageNavItems}
