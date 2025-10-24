@@ -8,7 +8,9 @@ export const generateDgsUrl = ({
   filters,
   sort,
 }: DgsApiDatasetSearchParams) => {
-  const url = new URL("https://data.gov.sg/api/action/datastore_search")
+  const url = new URL(
+    "https://api-public-staging.data.gov.sg/api/action/datastore_search",
+  )
 
   // Set the required resource_id parameter
   url.searchParams.set("resource_id", resourceId)
