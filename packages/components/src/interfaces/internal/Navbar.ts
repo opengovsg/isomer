@@ -34,12 +34,12 @@ const NavbarItemSchema = Type.Object({
       Type.Object({
         name: Type.String({
           title: "Name of the sub-item",
-          maxLength: 30,
+          maxLength: 60,
         }),
         description: Type.Optional(
           Type.String({
             title: "Description of the sub-item",
-            maxLength: 120,
+            maxLength: 240,
           }),
         ),
         url: Type.String({

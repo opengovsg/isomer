@@ -7,6 +7,7 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  Spacer,
   Text,
 } from "@chakra-ui/react"
 import { useJsonForms } from "@jsonforms/react"
@@ -85,11 +86,12 @@ export const SocialMediaLink = ({
           as="button"
           gap="0.5rem"
           w="full"
+          maxW="calc(100% - 1.75rem)"
           textAlign="start"
           onClick={onEdit}
         >
           {socialMediaLink && (
-            <HStack gap="0.75rem">
+            <HStack gap="0.75rem" w="full">
               <HStack gap="0.5rem" minW="6.25rem">
                 {socialMediaLink.icon}
 
@@ -114,7 +116,11 @@ export const SocialMediaLink = ({
                   </Text>
                 </Box>
               ) : (
-                <Text textStyle="caption-2" textColor="base.content.medium">
+                <Text
+                  textStyle="caption-2"
+                  textColor="base.content.medium"
+                  noOfLines={1}
+                >
                   {url || socialMediaLink.placeholder}
                 </Text>
               )}

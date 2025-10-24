@@ -107,7 +107,7 @@ export const FooterEditor = ({
             appear as two columns.
           </Text>
 
-          <Box pt="0.75rem" w="full">
+          <Box pt="1.5rem" w="full">
             <Box mb="1rem" h="full">
               <FormBuilder<FooterSchemaType>
                 schema={FooterSchema}

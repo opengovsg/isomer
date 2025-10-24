@@ -291,7 +291,11 @@ export const NavbarItemBox = ({
               onClick={() => onEditItem()}
             >
               <VStack gap="0.25rem" alignItems="start">
-                <Text textStyle="subhead-2" textColor="base.content.default">
+                <Text
+                  textStyle="subhead-2"
+                  textColor="base.content.default"
+                  noOfLines={1}
+                >
                   {name}
                 </Text>
 
