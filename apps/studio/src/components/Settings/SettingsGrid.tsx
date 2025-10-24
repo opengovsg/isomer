@@ -6,7 +6,7 @@ export const SettingsGrid = (props: GridProps) => {
     <Grid
       h="full"
       w="100%"
-      templateColumns="minmax(auto, 1fr) minmax(23rem, 2fr)"
+      templateColumns="minmax(auto, 2fr) minmax(23rem, 3fr)"
       gap={0}
       {...props}
     />
