@@ -3,6 +3,7 @@ import {
   IsomerSiteConfigProps,
   NotificationSettingsSchema,
   SiteConfigSchema,
+  SiteThemeSchema,
 } from "@opengovsg/isomer-components"
 import { z } from "zod"
 
@@ -13,6 +14,9 @@ export type Notification = Static<typeof NotificationSettingsSchema>
 export const notificationValidator = ajv.compile<Notification>(
   NotificationSettingsSchema,
 )
+
+export type SiteTheme = Static<typeof SiteThemeSchema>
+export const siteThemeValidator = ajv.compile<SiteTheme>(SiteThemeSchema)
 
 export const getConfigSchema = z.object({
   id: z.number().min(1),
