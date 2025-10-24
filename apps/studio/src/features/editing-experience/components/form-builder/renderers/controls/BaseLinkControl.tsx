@@ -76,7 +76,6 @@ export function BaseLinkControl({
     pageType as LinkTypesWithHrefFormat,
   )
   const { siteId } = useQueryParse(sitePageSchema)
-  console.log(errors)
 
   return (
     <>
