@@ -5,30 +5,12 @@ import {
 } from "./converter";
 import { getHtmlFromMarkdown } from "./markdown";
 import { getManualReviewItems, getResourceRoomFileType } from "./utils";
+import { GetIsomerSchemaFromJekyllResponse } from "./types";
 
 interface GetIsomerSchemaFromJekyllParams {
   content: string;
   path: string;
 }
-
-type GetIsomerSchemaFromJekyllResponse =
-  | {
-      status: "not_converted";
-      permalink: any;
-    }
-  | {
-      status: "converted";
-      content: any;
-      permalink: any;
-      third_nav_title?: any;
-    }
-  | {
-      status: "manual_review";
-      content: any;
-      permalink: any;
-      third_nav_title?: any;
-      reviewItems: string[];
-    };
 
 export const getIsomerSchemaFromJekyll = async ({
   content,
@@ -51,6 +33,7 @@ export const getIsomerSchemaFromJekyll = async ({
     // Page will need to be flagged for manual conversion
     return {
       status: "not_converted",
+      title,
       permalink,
     };
   }
@@ -76,6 +59,7 @@ export const getIsomerSchemaFromJekyll = async ({
   if (layout === "post" && (!fileType || fileType === "post")) {
     return {
       status,
+      title,
       permalink,
       reviewItems,
       content: {
@@ -130,6 +114,7 @@ export const getIsomerSchemaFromJekyll = async ({
 
     return {
       status,
+      title,
       permalink,
       reviewItems,
       content: {
@@ -149,6 +134,7 @@ export const getIsomerSchemaFromJekyll = async ({
 
   return {
     status,
+    title,
     permalink,
     content: {
       version: "0.1.0",

@@ -12,3 +12,32 @@ export interface MigrationRequest {
   // Whether to include orphan pages in the migration
   isOrphansIncluded?: boolean;
 }
+
+export type GetIsomerSchemaFromJekyllResponse =
+  | {
+      status: "not_converted";
+      title: string;
+      permalink: string;
+    }
+  | {
+      status: "converted";
+      content: any; // Isomer Schema object
+      title: string;
+      permalink: string;
+      third_nav_title?: string;
+    }
+  | {
+      status: "manual_review";
+      content: any; // Isomer Schema object
+      title: string;
+      permalink: string;
+      third_nav_title?: string;
+      reviewItems: string[];
+    };
+
+export type ReportRow = Pick<
+  GetIsomerSchemaFromJekyllResponse,
+  "status" | "title" | "permalink"
+> & {
+  reviewItems?: string[];
+};
