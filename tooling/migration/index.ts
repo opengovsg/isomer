@@ -6,7 +6,7 @@ import {
   getRecursiveTree,
   getResourceRoomName,
 } from "./github";
-import { MigrationRequest } from "./types";
+import { MigrationRequest, ReportRow } from "./types";
 import { config } from "./config";
 import {
   getCollectionFolderName,
@@ -230,8 +230,8 @@ const migrate = async ({
   );
 
   // Migrate all non-resource room pages
-  const finishedPages: any[] = [];
-  const finishedResourceRoomPages: any[] = [];
+  const finishedPages: ReportRow[] = [];
+  const finishedResourceRoomPages: ReportRow[] = [];
 
   // NOTE: We are doing it slowly here to avoid the secondary GitHub rate limit
   for (const path of allPages) {
@@ -311,7 +311,16 @@ const migrate = async ({
     `Saving migrated pages information into a CSV file (migrated-pages-${site}.csv)`
   );
   const csvHeaders = "Permalink,Status,Review items\n";
-  const csvRows = [...finishedPages, ...finishedResourceRoomPages]
+  const csvRows = [
+    ...finishedPages,
+    ...finishedResourceRoomPages,
+    ...EXCLUDED_PATHS.map<ReportRow>((path) => ({
+      status: "not_converted" as const,
+      title: path.replace(".md", ""),
+      permalink: `/${path.replace(".md", "")}`,
+      reviewItems: undefined,
+    })),
+  ]
     .filter((pages) => pages?.permalink !== undefined)
     .map(
       (content) =>

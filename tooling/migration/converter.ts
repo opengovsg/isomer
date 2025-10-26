@@ -644,6 +644,10 @@ const getCleanedSchema = (schema: any) => {
   const findTableHeader = (schema: any) => {
     schema.forEach((component: any) => {
       if (component.type === "table") {
+        if (component.content.length === 0) {
+          return;
+        }
+
         const tableHeader = component.content[0].content;
 
         if (!tableHeader) {
