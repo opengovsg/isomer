@@ -120,6 +120,7 @@
     "@trpc/react-query": "^11.4.4",
     "@trpc/server": "^11.4.4",
     "@uidotdev/usehooks": "^2.4.1",
+    "@uiw/react-color": "^2.9.1",
     "ajv": "^8.17.1",
     "ajv-errors": "^3.0.0",
     "bullmq": "^5.58.5",
