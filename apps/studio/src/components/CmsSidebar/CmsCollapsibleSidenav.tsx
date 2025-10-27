@@ -26,7 +26,7 @@ export const CmsCollapsibleSidenav = ({
           <IconButton
             variant="clear"
             aria-label="Collapse sidebar"
-            icon={<CloseSidebarIcon />}
+            icon={<CloseSidebarIcon fill="base.content.default" />}
             onClick={onSidenavClose}
             mt="-16px"
             mb="-16px"
