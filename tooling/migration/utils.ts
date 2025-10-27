@@ -6,6 +6,7 @@ import {
   PLACEHOLDER_ALT_TEXT,
   PLACEHOLDER_GOOGLE_SLIDES_TEXT,
   PLACEHOLDER_IMAGE_IN_TABLE_TEXT,
+  PLACEHOLDER_INSTAGRAM_LINK_TEXT,
 } from "./constants";
 import path from "path";
 
@@ -252,7 +253,7 @@ export const getManualReviewItems = (
   }
 
   // Remove Instagram embeds
-  if (stringifiedContent.includes("View post on Instagram.")) {
+  if (stringifiedContent.includes(PLACEHOLDER_INSTAGRAM_LINK_TEXT)) {
     // Already replaced in the converter script, but highlighting for manual review
     reviewItems.push("Contains Instagram embeds");
   }

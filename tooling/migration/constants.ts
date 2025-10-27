@@ -7,6 +7,8 @@ export const PLACEHOLDER_IMAGE_IN_TABLE_TEXT =
 export const PLACEHOLDER_GOOGLE_SLIDES_TEXT =
   "See the full deck on Google Slides";
 
+export const PLACEHOLDER_INSTAGRAM_LINK_TEXT = "View post on Instagram.";
+
 export const PLACEHOLDER_CARD_LINK_TEXT = "Click to explore";
 
 export const NON_CONTENT_LAYOUTS = ["post", "link", "file"];

@@ -56,7 +56,7 @@ export const getIsomerSchemaFromJekyll = async ({
   const fileType = getResourceRoomFileType(path);
 
   // Map to Isomer Schema
-  if (layout === "post" && (!fileType || fileType === "post")) {
+  if (!fileType || (layout === "post" && fileType === "post")) {
     return {
       status,
       title,
