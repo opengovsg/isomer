@@ -289,8 +289,9 @@ const migrate = async ({
     const resourceCategorySlug = path.split("/_posts")[0];
 
     const permalinkToUse =
-      content.content.layout === "article"
-        ? content.permalink
+      content.content.layout === "article" ||
+      content.content.layout === "content"
+        ? (content.permalink ?? `${resourceCategorySlug}/${tempPermalink}`)
         : `${resourceCategorySlug}/${tempPermalink}`;
 
     saveContentsToFile({

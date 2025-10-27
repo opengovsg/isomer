@@ -40,6 +40,7 @@ import {
   PLACEHOLDER_CARD_LINK_TEXT,
   PLACEHOLDER_GOOGLE_SLIDES_TEXT,
   PLACEHOLDER_IMAGE_IN_TABLE_TEXT,
+  PLACEHOLDER_INSTAGRAM_LINK_TEXT,
 } from "./constants";
 
 const { JSDOM } = jsdom;
@@ -369,7 +370,7 @@ const convertFromTiptap = (schema: any) => {
                     },
                   },
                 ],
-                text: "View post on Instagram.",
+                text: PLACEHOLDER_INSTAGRAM_LINK_TEXT,
               },
             ],
           },
