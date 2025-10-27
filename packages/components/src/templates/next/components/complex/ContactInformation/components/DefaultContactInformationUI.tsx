@@ -93,24 +93,26 @@ export const DefaultContactInformationUI = ({
             })}
       </div>
 
-      {!!otherInformation && otherInformation.value.trim() !== "" && (
-        <div className={compoundStyles.otherInformationContainer()}>
-          <h3 className={compoundStyles.otherInformationTitle()}>
-            {otherInformation.label ?? "Other Information"}
-          </h3>
-          {acceptHtmlTags ? (
-            <div
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(otherInformation.value, {
-                  ALLOWED_TAGS: ["b"],
-                }),
-              }}
-            />
-          ) : (
-            <div>{otherInformation.value}</div>
-          )}
-        </div>
-      )}
+      {!!otherInformation &&
+        !!otherInformation.value &&
+        otherInformation.value.trim() !== "" && (
+          <div className={compoundStyles.otherInformationContainer()}>
+            <h3 className={compoundStyles.otherInformationTitle()}>
+              {otherInformation.label ?? "Other Information"}
+            </h3>
+            {acceptHtmlTags ? (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(otherInformation.value, {
+                    ALLOWED_TAGS: ["b"],
+                  }),
+                }}
+              />
+            ) : (
+              <div>{otherInformation.value}</div>
+            )}
+          </div>
+        )}
 
       {!!referenceLinkHref && !!label && !isLoading && (
         <div className={compoundStyles.urlButtonContainer()}>
