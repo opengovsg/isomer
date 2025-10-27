@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, FormControl, useToken } from "@chakra-ui/react"
+import { Box, FormControl } from "@chakra-ui/react"
 import { isStringControl, rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
@@ -8,7 +8,6 @@ import {
   FormLabel,
   Input,
 } from "@opengovsg/design-system-react"
-import Markdown from "react-markdown"
 
 import { MarkdownLabel } from "~/components/MarkdownLabel"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
