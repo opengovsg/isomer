@@ -7,6 +7,7 @@ import {
   commonContactMethodStyles,
 } from "./common"
 import { ContactMethod, LoadingContactMethod } from "./ContactMethod"
+import { filterContactMethods } from "./filterContactMethods"
 
 const createDefaultContactInformationStyles = tv({
   extend: commonContactInformationStyles,
@@ -41,11 +42,10 @@ export const DefaultContactInformationUI = ({
     isLoading,
   })
 
-  const filteredMethods = whitelistedMethods
-    ? methods.filter(
-        (method) => method.method && whitelistedMethods.includes(method.method),
-      )
-    : methods
+  const filteredMethods = filterContactMethods({
+    methods,
+    whitelistedMethods,
+  })
 
   const descriptionText = isLoading ? "" : (description ?? "")
 
@@ -89,23 +89,23 @@ export const DefaultContactInformationUI = ({
             })}
       </div>
 
-      {!!otherInformation && (
-        <div className={compoundStyles.otherInformationContainer()}>
-          <h3 className={compoundStyles.otherInformationTitle()}>
-            {otherInformation.label ?? "Other Information"}
-          </h3>
-          {acceptHtmlTags ? (
-            <div>
+      {!!otherInformation &&
+        !!otherInformation.value &&
+        otherInformation.value.trim() !== "" && (
+          <div className={compoundStyles.otherInformationContainer()}>
+            <h3 className={compoundStyles.otherInformationTitle()}>
+              {otherInformation.label ?? "Other Information"}
+            </h3>
+            {acceptHtmlTags ? (
               <BaseParagraph
                 content={otherInformation.value}
                 allowedTags={["b"]}
               />
-            </div>
-          ) : (
-            <div>{otherInformation.value}</div>
-          )}
-        </div>
-      )}
+            ) : (
+              <div>{otherInformation.value}</div>
+            )}
+          </div>
+        )}
 
       {!!referenceLinkHref && !!label && !isLoading && (
         <div className={compoundStyles.urlButtonContainer()}>
