@@ -7,7 +7,6 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  Spacer,
   Text,
 } from "@chakra-ui/react"
 import { useJsonForms } from "@jsonforms/react"
