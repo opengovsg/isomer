@@ -10,6 +10,7 @@ import {
 } from "@opengovsg/design-system-react"
 import Markdown from "react-markdown"
 
+import { MarkdownLabel } from "~/components/MarkdownLabel"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getCustomErrorMessage } from "./utils"
 
@@ -44,12 +45,6 @@ export function JsonFormsTextControl({
   schema,
   enabled,
 }: ControlProps) {
-  const [linkColor, linkHoverColor, linkActiveColor] = useToken("colors", [
-    "interaction.links.default",
-    "interaction.links.hover",
-    "utility.focus-default",
-  ])
-
   const { maxLength } = schema
   const remainingCharacterCount = maxLength
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
@@ -70,23 +65,9 @@ export function JsonFormsTextControl({
     <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel
-          description={<Markdown>{description}</Markdown>}
+          description={<MarkdownLabel description={description} />}
           mb={0}
           tooltipText={tooltip}
-          sx={{
-            "& a": {
-              color: linkColor,
-              textDecoration: "underline",
-              _hover: {
-                color: linkHoverColor,
-                textDecoration: "none",
-              },
-              _active: {
-                color: linkActiveColor,
-                textDecoration: "none",
-              },
-            },
-          }}
         >
           {label}
         </FormLabel>
