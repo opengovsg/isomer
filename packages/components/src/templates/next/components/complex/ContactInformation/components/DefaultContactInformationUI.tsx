@@ -110,46 +110,6 @@ export const DefaultContactInformationUI = ({
             </div>
           )}
 
-        <div className={compoundStyles.contactMethodsContainer()}>
-          {isLoading
-            ? Array(4)
-                .fill(null)
-                .map((_, index) => (
-                  <LoadingContactMethod
-                    key={`loading-contact-method-${index}`}
-                    styles={contactMethodStyles}
-                  />
-                ))
-            : filteredMethods.map((method, index) => {
-                return (
-                  <ContactMethod
-                    key={`contact-method-${index}`}
-                    {...method}
-                    LinkComponent={LinkComponent}
-                    styles={contactMethodStyles}
-                  />
-                )
-              })}
-        </div>
-
-        {!!otherInformation && (
-          <div className={compoundStyles.otherInformationContainer()}>
-            <h3 className={compoundStyles.otherInformationTitle()}>
-              {otherInformation.label ?? "Other Information"}
-            </h3>
-            {acceptHtmlTags ? (
-              <div>
-                <BaseParagraph
-                  content={otherInformation.value}
-                  allowedTags={["b"]}
-                />
-              </div>
-            ) : (
-              <div>{otherInformation.value}</div>
-            )}
-          </div>
-        )}
-
         {!!referenceLinkHref && !!label && !isLoading && (
           <div className={compoundStyles.urlButtonContainer()}>
             <LinkButton
