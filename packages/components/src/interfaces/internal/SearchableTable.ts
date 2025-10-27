@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { LinkComponentType } from "~/types"
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { DgsDataSourceSchema, NativeDataSourceSchema } from "../integration"
 
@@ -75,7 +75,6 @@ export const SearchableTableSchema = Type.Intersect(
 type BaseSearchableTableClientProps = Static<
   typeof BaseSearchableTableSchema
 > & {
-  site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }
 
@@ -101,6 +100,6 @@ export type DGSSearchableTableProps = BaseSearchableTableClientProps &
 
 export type SearchableTableProps = Pick<
   BaseSearchableTableClientProps,
-  "site" | "LinkComponent"
+  "LinkComponent"
 > &
   Static<typeof SearchableTableSchema>

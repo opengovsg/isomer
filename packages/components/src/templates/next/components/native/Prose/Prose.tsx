@@ -39,7 +39,6 @@ const ProseComponent = ({
           })}
           className="prose-body-base text-base-content"
           attrs={component.attrs}
-          site={site}
           LinkComponent={LinkComponent}
         />
       )

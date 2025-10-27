@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, FormControl, HStack, Icon } from "@chakra-ui/react"
+import { Box, FormControl } from "@chakra-ui/react"
 import { isStringControl, rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
@@ -7,10 +7,9 @@ import {
   FormHelperText,
   FormLabel,
   Input,
-  TouchableTooltip,
 } from "@opengovsg/design-system-react"
-import { BiSolidHelpCircle } from "react-icons/bi"
 
+import { MarkdownLabel } from "~/components/MarkdownLabel"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getCustomErrorMessage } from "./utils"
 
@@ -63,22 +62,16 @@ export function JsonFormsTextControl({
 
   return (
     <Box>
-      <FormControl
-        isDisabled={!enabled}
-        isRequired={required}
-        isInvalid={!!errors}
-      >
-        <HStack gap="0.5rem" alignItems="start">
-          <FormLabel description={description} mb={0}>
-            {label}
-          </FormLabel>
-          {tooltip && (
-            <TouchableTooltip label={tooltip} placement="right" gutter={20}>
-              <Icon as={BiSolidHelpCircle} />
-            </TouchableTooltip>
-          )}
-        </HStack>
+      <FormControl isRequired={required} isInvalid={!!errors}>
+        <FormLabel
+          description={<MarkdownLabel description={description} />}
+          mb={0}
+          tooltipText={tooltip}
+        >
+          {label}
+        </FormLabel>
         <Input
+          isDisabled={!enabled}
           type="text"
           value={String(data || "")}
           onChange={onChange}

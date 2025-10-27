@@ -25,30 +25,22 @@ export const IframeToolbar = ({
     switch (viewport) {
       case "mobile":
         return {
-          mode: "You’re in editing mode.",
-          caption:
-            "Use the dropdown to see what the page might look like for various devices.",
+          mode: "Preview in different screen sizes before you publish",
           viewport: "Mobile",
         }
       case "tablet":
         return {
-          mode: "You’re in editing mode.",
-          caption:
-            "Use the dropdown to see what the page might look like for various devices.",
+          mode: "Preview in different screen sizes before you publish",
           viewport: "Tablet",
         }
       case "responsive":
         return {
-          mode: "You’re in editing mode.",
-          caption:
-            "Use the dropdown to see what the page might look like for various devices.",
+          mode: "Preview in different screen sizes before you publish",
           viewport: "Default mode",
         }
       case "fullscreen":
         return {
-          mode: "You’re in full screen preview mode.",
-          caption:
-            "If you adjust the size of this browser, you can see what the page looks like in different sizes.",
+          mode: "Preview in different screen sizes before you publish",
           viewport: "Full screen",
         }
     }
@@ -88,9 +80,6 @@ export const IframeToolbar = ({
             {toolbarTextLabels.mode}
           </Text>
         </Flex>
-        <Text as="span" textStyle="caption-2" color="base.content.medium">
-          {toolbarTextLabels.caption}
-        </Text>
       </Flex>
       {viewport === "fullscreen" ? (
         <Button

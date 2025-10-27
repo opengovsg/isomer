@@ -7,7 +7,6 @@ import { tv } from "~/lib/tv"
 import BaseParagraph from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
 import { SearchField } from "../../../internal/Search"
-import { CellContent } from "./CellContent"
 import { COPYWRITING_MAPPING, PAGINATION_MAX_ITEMS } from "./constants"
 import { EmptyState, FallbackEmptyState } from "./EmptyState"
 
@@ -60,7 +59,6 @@ interface SearchableTableClientUIProps
 export const SearchableTableClientUI = ({
   title,
   headers,
-  site,
   LinkComponent,
   isLoading = false,
   isError = false,
@@ -116,7 +114,6 @@ export const SearchableTableClientUI = ({
                   >
                     <BaseParagraph
                       content={String(header)}
-                      site={site}
                       LinkComponent={LinkComponent}
                     />
                   </th>
@@ -133,9 +130,10 @@ export const SearchableTableClientUI = ({
                           isHeader: false,
                         })}
                       >
-                        <CellContent
-                          content={cell}
-                          site={site}
+                        {/* NOTE: Reference links are NOT supported within
+                            SearchableTable cell contents */}
+                        <BaseParagraph
+                          content={String(cell)}
                           LinkComponent={LinkComponent}
                         />
                       </td>

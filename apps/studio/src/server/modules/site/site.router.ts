@@ -18,6 +18,7 @@ import {
   setNotificationSchema,
   setSiteConfigByAdminSchema,
   updateSiteConfigSchema,
+  updateSiteIntegrationsSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -33,7 +34,6 @@ import {
 } from "../resource/resource.service"
 import { updateSearchSGConfig } from "../searchsg/searchsg.service"
 import {
-  clearSiteNotification,
   createSite,
   getNotification,
   getSiteConfig,
@@ -154,6 +154,47 @@ export const siteRouter = router({
         )
 
       return updatedConfig
+    }),
+  updateSiteIntegrations: protectedProcedure
+    .input(updateSiteIntegrationsSchema)
+    .mutation(async ({ ctx, input: { siteId, data } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      return await db.transaction().execute(async (tx) => {
+        const site = await tx
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+
+        const updatedSite = await tx
+          .updateTable("Site")
+          .set({ config: jsonb(data) })
+          .where("id", "=", siteId)
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await logConfigEvent(tx, {
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: {
+            before: site,
+            after: updatedSite,
+          },
+          by: user,
+          siteId,
+        })
+
+        return updatedSite
+      })
     }),
   getTheme: protectedProcedure
     .input(getConfigSchema)
@@ -377,40 +418,36 @@ export const siteRouter = router({
         userId: ctx.user.id,
         action: "read",
       })
-      const notification = await getNotification(siteId)
-      return notification
+
+      return await getNotification(siteId)
     }),
-  setNotification: protectedProcedure
-    .input(setNotificationSchema)
-    .mutation(async ({ ctx, input }) => {
-      const { siteId, notification, notificationEnabled } = input
+  setNotification: protectedProcedure.input(setNotificationSchema).mutation(
+    async ({
+      ctx,
+      input: {
+        siteId,
+        notification: { notification },
+      },
+    }) => {
       await validateUserPermissionsForSite({
         siteId,
         userId: ctx.user.id,
         action: "update",
       })
 
-      const site = await db.transaction().execute(async (tx) => {
-        if (notificationEnabled) {
-          return await setSiteNotification({
-            tx,
-            siteId,
-            userId: ctx.user.id,
-            notification,
-          })
-        } else {
-          return await clearSiteNotification({
-            tx,
-            siteId,
-            userId: ctx.user.id,
-          })
-        }
+      const site = await db.transaction().execute(async () => {
+        return await setSiteNotification({
+          siteId,
+          userId: ctx.user.id,
+          notification,
+        })
       })
 
       await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
 
-      return input
-    }),
+      return site.config.notification
+    },
+  ),
   setSiteConfigByAdmin: protectedProcedure
     .input(setSiteConfigByAdminSchema)
     .mutation(

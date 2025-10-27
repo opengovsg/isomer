@@ -360,7 +360,10 @@ export const NavbarItemBox = ({
                 >
                   <Icon as={BiTrash} />
                   <Text textStyle="body-2">
-                    Delete {isSubItem ? "link" : "group"}
+                    Delete{" "}
+                    {isSubItem || !subItems || subItems.length === 0
+                      ? "link"
+                      : "group"}
                   </Text>
                 </Flex>
               </MenuItem>

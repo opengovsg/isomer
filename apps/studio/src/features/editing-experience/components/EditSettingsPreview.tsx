@@ -1,14 +1,23 @@
+import type {
+  IsomerSiteConfigProps,
+  IsomerSiteProps,
+} from "@opengovsg/isomer-components"
+
+import { AskgovWidget } from "~/components/Askgov"
+import { VicaWidget } from "~/components/Vica"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { siteSchema } from "../schema"
 import Preview from "./Preview"
 import { ViewportContainer } from "./ViewportContainer"
 
+type EditSettingsPreviewProps = Partial<IsomerSiteConfigProps> &
+  Pick<IsomerSiteProps, "siteName">
+
 export const EditSettingsPreview = ({
   siteName,
-}: {
-  siteName: string
-}): JSX.Element => {
+  ...rest
+}: EditSettingsPreviewProps): JSX.Element => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
   const [{ id }] = trpc.page.getRootPage.useSuspenseQuery({
@@ -30,8 +39,10 @@ export const EditSettingsPreview = ({
         content={content.content}
         layout="homepage"
         page={content.page}
-        overrides={{ site: { siteName } }}
+        overrides={{ site: { siteName, ...rest } }}
       />
+      {!!rest.askgov && <AskgovWidget />}
+      {!!rest.vica && <VicaWidget />}
     </ViewportContainer>
   )
 }

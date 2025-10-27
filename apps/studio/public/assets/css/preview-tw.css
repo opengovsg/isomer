@@ -750,7 +750,7 @@ video {
   line-height: 1.2;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1240px) {
   .prose-display-xl {
     font-size: 4.25rem;
     line-height: 1.1;
@@ -1879,8 +1879,8 @@ video {
   max-width: 47.8rem;
 }
 
-.max-w-\[532px\] {
-  max-width: 532px;
+.max-w-\[548px\] {
+  max-width: 548px;
 }
 
 .max-w-\[54rem\] {
@@ -2415,6 +2415,10 @@ video {
 
 .whitespace-pre-wrap {
   white-space: pre-wrap;
+}
+
+.text-balance {
+  text-wrap: balance;
 }
 
 .text-pretty {
@@ -6161,12 +6165,12 @@ video {
     padding-right: 2.5rem;
   }
 
-  .lg\:pr-12 {
-    padding-right: 3rem;
-  }
-
   .lg\:pr-24 {
     padding-right: 6rem;
+  }
+
+  .lg\:pr-8 {
+    padding-right: 2rem;
   }
 
   .lg\:pt-10 {
@@ -6203,10 +6207,6 @@ video {
 
   .lg\:text-\[3rem\] {
     font-size: 3rem;
-  }
-
-  .lg\:text-\[4\.25rem\] {
-    font-size: 4.25rem;
   }
 
   .lg\:text-base {
@@ -6257,6 +6257,14 @@ video {
     --tw-gradient-from: rgba(0, 0, 0, 100%) var(--tw-gradient-from-position);
     --tw-gradient-to: rgba(0, 0, 0, 0) var(--tw-gradient-to-position);
     --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+
+  .xl\:text-\[4\.25rem\] {
+    font-size: 4.25rem;
+  }
+
+  .xl\:leading-\[1\.1\] {
+    line-height: 1.1;
   }
 }
 
@@ -6528,6 +6536,14 @@ video {
 
 .\[\&_ol\]\:ps-5 ol {
   padding-inline-start: 1.25rem;
+}
+
+.\[\&_p\]\:\!mb-0 p {
+  margin-bottom: 0px !important;
+}
+
+.\[\&_p\]\:\!mt-0 p {
+  margin-top: 0px !important;
 }
 
 .\[\&_ul\]\:mt-0 ul {

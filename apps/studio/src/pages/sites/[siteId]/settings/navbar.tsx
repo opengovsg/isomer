@@ -11,7 +11,10 @@ import {
   SettingsPreviewGridItem,
 } from "~/components/Settings"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  BRIEF_TOAST_SETTINGS,
+  SETTINGS_TOAST_MESSAGES,
+} from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { EditNavbarPreview } from "~/features/settings/EditNavbarPreview"
@@ -40,9 +43,8 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
       onSuccess: async () => {
         await utils.site.getNavbar.invalidate({ id: Number(siteId) })
         toast({
+          ...SETTINGS_TOAST_MESSAGES.success,
           status: "success",
-          title: "Navigation menu saved successfully",
-          description: "Check your site in 5-10 minutes to view it live.",
         })
       },
       onError: () => {

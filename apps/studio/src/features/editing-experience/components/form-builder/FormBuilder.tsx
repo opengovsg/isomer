@@ -57,6 +57,8 @@ import {
   jsonFormsProseControlTester,
   JsonFormsRefControl,
   jsonFormsRefControlTester,
+  JsonFormsSearchSGControl,
+  jsonFormsSearchSGControlTester,
   JsonFormsSocialMediaControl,
   jsonFormsSocialMediaControlTester,
   JsonFormsTagCategoriesControl,
@@ -73,9 +75,19 @@ import {
   jsonFormsUuidControlTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
+  JsonFormsWidgetIntegrationControl,
+  jsonFormsWidgetIntegrationControlTester,
 } from "./renderers"
 
 export const renderers: JsonFormsRendererRegistryEntry[] = [
+  {
+    renderer: JsonFormsWidgetIntegrationControl,
+    tester: jsonFormsWidgetIntegrationControlTester,
+  },
+  {
+    renderer: JsonFormsSearchSGControl,
+    tester: jsonFormsSearchSGControlTester,
+  },
   {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,

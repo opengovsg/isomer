@@ -1,32 +1,25 @@
-import { useState } from "react"
-import {
-  Button,
-  Center,
-  chakra,
-  FormControl,
-  HStack,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
-import {
-  FormErrorMessage,
-  Infobox,
-  Input,
-  Toggle,
-  useToast,
-} from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/router"
+import { Button, Center, HStack, Text, VStack } from "@chakra-ui/react"
+import { Infobox, useToast } from "@opengovsg/design-system-react"
+import { NotificationSettingsSchema } from "@opengovsg/isomer-components"
+import { ResourceType } from "@prisma/client"
+import { isEqual } from "lodash"
 import { z } from "zod"
 
+import type { NextPageWithLayout } from "~/lib/types"
+import type { Notification } from "~/schemas/site"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { FullscreenSpinner } from "~/components/FullscreenSpinner"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
+import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
+import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { useZodForm } from "~/lib/form"
-import { type NextPageWithLayout } from "~/lib/types"
-import { setNotificationSchema } from "~/schemas/site"
+import { notificationValidator } from "~/schemas/site"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 import { trpc } from "~/utils/trpc"
 
@@ -34,28 +27,30 @@ const siteSettingsSchema = z.object({
   siteId: z.coerce.number(),
 })
 
+const validateFn = notificationValidator
+
 const SiteSettingsPage: NextPageWithLayout = () => {
-  const toast = useToast()
-  const trpcUtils = trpc.useUtils()
+  const router = useRouter()
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { siteId } = useQueryParse(siteSettingsSchema)
+  const isEnabled = useNewSettingsPage()
+  const trpcUtils = trpc.useUtils()
+  const [nextUrl, setNextUrl] = useState("")
 
   const notificationMutation = trpc.site.setNotification.useMutation({
-    onSuccess: async () => {
-      reset({ notificationEnabled, notification })
-      await trpcUtils.site.getNotification.invalidate({ siteId })
+    onSuccess: () => {
+      void trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
-        title: "Saved site settings!",
+        title: "Saved site notification!",
         description: "Check your site in 5-10 minutes to view it live.",
         status: "success",
-        ...BRIEF_TOAST_SETTINGS,
       })
     },
     onError: () => {
       toast({
-        title: "Error saving site settings!",
+        title: "Error saving site notification!",
         description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
-        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
@@ -64,143 +59,79 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     siteId,
   })
 
-  // NOTE: Refining the setNotificationSchema here instead of in site.ts since omit does not work after refine
-  const { register, handleSubmit, watch, formState, reset } = useZodForm({
-    schema: setNotificationSchema
-      .omit({ siteId: true })
-      .refine((data) => !data.notificationEnabled || data.notification, {
-        message: "Notification must not be empty",
-        path: ["notification"],
-      }),
-    defaultValues: {
-      notificationEnabled: previousNotification !== "",
-      notification: previousNotification ? previousNotification : "",
-    },
-  })
+  const [state, setState] = useState<Notification>(
+    previousNotification.notification?.title ? previousNotification : {},
+  )
 
-  const [notificationEnabled, notification] = watch([
-    "notificationEnabled",
-    "notification",
-  ])
+  useEffect(() => {
+    if (isEnabled) void router.replace(`/sites/${siteId}/settings/agency`)
+  }, [isEnabled, router, siteId])
 
-  const { isDirty, errors } = formState
+  const onSubmit = () =>
+    notificationMutation.mutate({
+      siteId,
+      notification: state,
+    })
 
-  const [nextUrl, setNextUrl] = useState("")
+  const isDirty = !isEqual(state, previousNotification)
   const isOpen = !!nextUrl
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
-  const onClickUpdate = handleSubmit(
-    ({ notificationEnabled, notification }) => {
-      notificationMutation.mutate({
-        siteId,
-        notification: notificationEnabled ? notification : "",
-        notificationEnabled: notificationEnabled,
-      })
-    },
-  )
-
-  return (
+  return isEnabled ? (
+    <FullscreenSpinner />
+  ) : (
     <>
       <UnsavedSettingModal
         isOpen={isOpen}
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <chakra.form
-        onSubmit={onClickUpdate}
-        overflow="auto"
-        height={0}
-        minH="100%"
-      >
-        <Center py="5.5rem" px="2rem">
-          <VStack w="48rem" alignItems="flex-start" spacing="1.5rem">
-            <FormControl isInvalid={!!errors.notification}>
-              <Text w="full" textStyle="h3-semibold">
-                Manage site settings
-              </Text>
-              <Infobox
-                variant="warning"
-                textStyle="body-2"
-                size="sm"
-                mt="1.75rem"
-              >
-                Isomer Next is currently in Beta. To manage site settings that
-                are not displayed here, contact Isomer Support.
-              </Infobox>
-              <VStack
-                w="full"
-                alignItems="flex-start"
-                mt="3rem"
-                spacing="0.75rem"
-              >
-                <Text textStyle="h4">General</Text>
-                <HStack w="full" justifyContent="space-between" pt="0.5rem">
-                  <Text textColor="base.content.strong" textStyle="subhead-1">
-                    Display site notification
-                  </Text>
-
-                  <Toggle
-                    w="full"
-                    label=""
-                    {...register("notificationEnabled")}
-                  />
-                </HStack>
-                <Text textColor="base.content.medium" textStyle="body-2">
-                  The site notification will always be visible on the site until
-                  it is dismissed by the user. <br />
-                  Use a notification to inform users of key alerts. Do not use a
-                  notification to advertise an event or a promotion.
-                </Text>
-                {notificationEnabled && (
-                  <>
-                    <Text
-                      textColor="base.content.strong"
-                      textStyle="subhead-1"
-                      pt="0.5rem"
-                    >
-                      Notification text
-                    </Text>
-
-                    <Input
-                      isDisabled={!notificationEnabled}
-                      placeholder="Notification should be succinct and clear"
-                      maxLength={100}
-                      value={notification}
-                      {...register("notification", {})}
-                    />
-                    {!errors.notification?.message && (
-                      <Text textColor="base.content.medium" textStyle="body-2">
-                        {100 - notification.length} characters left
-                      </Text>
-                    )}
-                    <FormErrorMessage>
-                      {errors.notification?.message}
-                    </FormErrorMessage>
-                  </>
-                )}
-              </VStack>
-              <HStack justifyContent="flex-end" w="full" gap="1.5rem" pt="4rem">
-                <Text textColor="base.content.medium" textStyle="caption-2">
-                  Changes will be reflected on your site immediately.
-                </Text>
-
-                <Button
-                  type="submit"
-                  isLoading={notificationMutation.isPending}
-                  // NOTE: we only validate that it is non empty
-                  // because zod form prevents us from going over 100 characters.
-                  isDisabled={
-                    (notificationEnabled && !notification) || !isDirty
-                  }
-                >
-                  Save settings
-                </Button>
-              </HStack>
-            </FormControl>
+      <Center px="2rem" py="3rem">
+        <VStack w="48rem" alignItems="flex-start" spacing="1.5rem">
+          <Text w="full" textStyle="h3-semibold">
+            Manage site settings
+          </Text>
+          <Infobox variant="warning" textStyle="body-2" size="sm">
+            Isomer Next is currently in Beta. To manage site settings that are
+            not displayed here, contact Isomer Support.
+          </Infobox>
+          <VStack w="full" alignItems="flex-start" spacing="0.75rem">
+            <Text textStyle="h4">General</Text>
+            <Text textColor="base.content.medium" textStyle="body-2">
+              The site notification will always be visible on the site until it
+              is dismissed by the user. <br />
+              Use a notification to inform users of key alerts. Do not use a
+              notification to advertise an event or a promotion.
+            </Text>
+            <ErrorProvider>
+              <FormBuilder<Notification>
+                schema={NotificationSettingsSchema}
+                validateFn={validateFn}
+                data={state}
+                handleChange={(data) => {
+                  setState(data)
+                }}
+              />
+            </ErrorProvider>
           </VStack>
-        </Center>
-      </chakra.form>
+          <HStack justifyContent="flex-end" w="full" gap="1.5rem">
+            <Text textColor="base.content.medium" textStyle="caption-2">
+              Changes will be reflected on your site immediately.
+            </Text>
+
+            <Button
+              onClick={onSubmit}
+              isLoading={notificationMutation.isPending}
+              // NOTE: we only validate that it is non empty
+              // because zod form prevents us from going over 100 characters.
+              isDisabled={!state.notification?.title || !isDirty}
+            >
+              Save settings
+            </Button>
+          </HStack>
+        </VStack>
+      </Center>
     </>
   )
 }

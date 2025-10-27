@@ -24,7 +24,6 @@ export const DynamicDGSSearchableTable = ({
   dataSource: { resourceId, filters, sort },
   title,
   headers,
-  site,
   LinkComponent,
   isMetadataLoading,
   isMetadataError,
@@ -75,7 +74,6 @@ export const DynamicDGSSearchableTable = ({
     <SearchableTableClientUI
       title={title}
       headers={headers}
-      site={site}
       LinkComponent={LinkComponent}
       isLoading={isMetadataLoading || isDataLoading}
       isError={isMetadataError || isDataError}

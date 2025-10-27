@@ -6,19 +6,22 @@ import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 export const AskgovSchema = Type.Object(
   {
     "data-agency": Type.String({
-      title: "Agency Identifier",
-      description: "The agency identifier for Askgov integration.",
+      title: "AskGov ID",
+      description:
+        "You can get this from [AskGov support](https://form.gov.sg/689d8bf8bd05b72ca8a21d6b) after onboarding. If the widget doesn’t appear on your site, check that you have the correct ID.",
     }),
     "data-topic": Type.Optional(
       Type.String({
         title: "Topic Identifier",
         description: "The topic identifier for Askgov integration.",
+        format: "hidden",
       }),
     ),
   },
   {
     title: "Askgov Widget",
     description: "Schema for the Askgov widget integration.",
+    format: "widget-integration/askgov",
   },
 )
 

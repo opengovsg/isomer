@@ -21,7 +21,6 @@ export const StaticDGSSearchableTable = ({
   dataSource: { resourceId, filters, sort },
   title,
   headers,
-  site,
   LinkComponent,
   labels,
   isMetadataLoading,
@@ -68,7 +67,6 @@ export const StaticDGSSearchableTable = ({
       title={title}
       headers={labels}
       items={items}
-      site={site}
       LinkComponent={LinkComponent}
       isLoading={isMetadataLoading || isDataLoading}
       isError={isMetadataError || isDataError}
