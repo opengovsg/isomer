@@ -1,3 +1,5 @@
+import compact from "lodash/compact"
+
 import type { ContactInformationUIProps } from "~/interfaces"
 
 interface FilterContactMethodsProps {
@@ -9,12 +11,29 @@ export const filterContactMethods = ({
   methods,
   whitelistedMethods,
 }: FilterContactMethodsProps) => {
+  // First, filter out empty values from each method's values array
+  const methodsWithFilteredValues = methods
+    .filter((method) => Array.isArray(method.values))
+    .map((method) => ({
+      ...method,
+      values: compact(
+        method.values.filter(
+          (value) => typeof value === "string" && value.trim() !== "",
+        ),
+      ),
+    }))
+
+  // Then filter out methods that have no non-empty values
+  const nonEmptyMethods = methodsWithFilteredValues.filter(
+    (method) => method.values.length > 0,
+  )
+
   if (!whitelistedMethods) {
-    return methods
+    return nonEmptyMethods
   }
 
   // Filter methods that have a valid method type and are whitelisted
-  const filteredMethods = methods.filter(
+  const filteredMethods = nonEmptyMethods.filter(
     (method) => method.method && whitelistedMethods.includes(method.method),
   )
 
