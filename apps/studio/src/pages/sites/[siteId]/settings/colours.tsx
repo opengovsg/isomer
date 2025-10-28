@@ -112,7 +112,11 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
           </Box>
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
-          <EditSettingsPreview siteName={siteName} theme={siteTheme} />
+          <EditSettingsPreview
+            siteName={siteName}
+            theme={siteTheme}
+            previewMockContentPage
+          />
         </SettingsPreviewGridItem>
       </SettingsGrid>
     </ErrorProvider>
