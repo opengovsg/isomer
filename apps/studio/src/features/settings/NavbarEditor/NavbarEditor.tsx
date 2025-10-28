@@ -210,7 +210,7 @@ const PublishButton = ({
         isLoading={isSaving}
         isDisabled={!isDirty || !isSchemaValid}
       >
-        Publish changes
+        Publish
       </Button>
     </Tooltip>
   )
