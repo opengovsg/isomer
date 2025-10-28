@@ -12,7 +12,7 @@ import { getPresignedPutUrlSchema } from "~/schemas/asset"
 interface FileAttachmentProps {
   setHref: (href?: string) => void
   siteId: number
-  resourceId: string
+  resourceId?: string
   value?: File
   maxSizeInBytes: number
   acceptedFileTypes: Record<string, string>
