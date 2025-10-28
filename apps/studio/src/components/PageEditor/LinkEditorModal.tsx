@@ -236,7 +236,7 @@ const ModalLinkEditor = () => {
             maxSizeInBytes={MAX_FILE_SIZE_BYTES}
             acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
             siteId={Number(siteId)}
-            resourceId={String(pageId ?? linkId)}
+            resourceId={pageId ?? linkId ? String(pageId ?? linkId) : undefined}
             setHref={(href) => setHref(href ?? "")}
             shouldFetchResource={false}
           />
