@@ -52,7 +52,7 @@ export const EditCollectionLinkPreview = ({
       ({
         id: "root",
         permalink: "/",
-        lastModified: "2024-10-14T07:05:08.803Z",
+        lastModified: currentDate,
         layout: "homepage",
         title: "An Isomer Site",
         summary: "",
@@ -60,7 +60,7 @@ export const EditCollectionLinkPreview = ({
           {
             id: "collection",
             permalink: parentPermalink,
-            lastModified: "02 May 2023",
+            lastModified: currentDate,
             layout: "collection",
             title: parentTitle,
             summary: "",
