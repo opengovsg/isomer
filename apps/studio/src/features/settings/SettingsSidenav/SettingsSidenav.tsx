@@ -64,6 +64,10 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
           label: "Colours",
           href: `/sites/${siteId}/settings/colours`,
         },
+        {
+          label: "Logos and favicon",
+          href: `/sites/${siteId}/settings/logo`,
+        },
       ],
     },
   ]
