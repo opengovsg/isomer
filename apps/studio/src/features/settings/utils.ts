@@ -1,14 +1,9 @@
-import type { Static } from "@sinclair/typebox"
 import { CSSProperties } from "react"
-import {
-  IsomerSiteThemeProps,
-  SiteThemeSchema,
-} from "@opengovsg/isomer-components"
+import { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import { flatten } from "flat"
 import chunk from "lodash/chunk"
-import { Paths } from "type-fest"
 
-const normalizeHex = (color: string): string => {
+export const normalizeHex = (color: string): string => {
   let normalizedColor = color
   if (normalizedColor.startsWith("#")) {
     normalizedColor = normalizedColor.slice(1)
@@ -64,7 +59,7 @@ export const calculateRelativeLuminance = (color: string) => {
 }
 
 export const generateTheme = ({
-  tints: orignalTints,
+  tints: originalTints,
   colour,
   shades,
 }: {
@@ -72,7 +67,7 @@ export const generateTheme = ({
   colour: string
   shades: string[]
 }) => {
-  const tints = orignalTints.reverse()
+  const tints = originalTints.reverse()
 
   // TODO: add in implementation
   return {

@@ -10,7 +10,6 @@ import {
 } from "@chakra-ui/react"
 import {
   ControlProps,
-  JsonSchema,
   RankedTester,
   rankWith,
   schemaMatches,
@@ -20,7 +19,11 @@ import { FormLabel, Input } from "@opengovsg/design-system-react"
 import get from "lodash/get"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { convertHexToRgb, generateTheme } from "~/features/settings/utils"
+import {
+  convertHexToRgb,
+  generateTheme,
+  normalizeHex,
+} from "~/features/settings/utils"
 import { useColorPalette } from "~/hooks/useColorPalete"
 
 export const jsonFormsColourPickerControlTester: RankedTester = rankWith(
@@ -83,10 +86,7 @@ const JsonFormsColourPickerControl = ({
                 placeholder="FFFFFF"
                 w="86px"
                 onChange={(e) =>
-                  handleChange(
-                    path,
-                    `#${e.target.value.startsWith("#") ? e.target.value.slice(1) : e.target.value}`,
-                  )
+                  handleChange(path, `#${normalizeHex(e.target.value)}`)
                 }
               />
             </InputGroup>
