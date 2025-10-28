@@ -1,0 +1,1 @@
+export { NativeContactInformation } from "./NativeContactInformation"

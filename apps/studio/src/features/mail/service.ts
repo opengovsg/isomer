@@ -2,11 +2,13 @@ import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
   BaseEmailTemplateData,
+  CancelSchedulePageTemplateData,
   EmailTemplate,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
+  SchedulePageTemplateData,
 } from "./templates"
 import { createBaseLogger } from "~/lib/logger"
 import { isValidEmail } from "~/utils/email"
@@ -66,6 +68,36 @@ export async function sendLoginAlertEmail(
     data,
     template: templates.loginAlert(data),
     emailType: "login alert",
+  })
+}
+
+export async function sendScheduledPageEmail(
+  data: SchedulePageTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.schedulePage(data),
+    emailType: "scheduled page",
+  })
+}
+
+export async function sendCancelSchedulePageEmail(
+  data: CancelSchedulePageTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.cancelSchedulePage(data),
+    emailType: "cancel scheduled page",
+  })
+}
+
+export async function sendFailedSchedulePublishEmail(
+  data: BaseEmailTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.failedSchedulePublish(data),
+    emailType: "failed schedule publish",
   })
 }
 

@@ -1,4 +1,5 @@
 import type { Static } from "@sinclair/typebox"
+import type { SimplifyDeep } from "type-fest"
 import { Type } from "@sinclair/typebox"
 
 import type { NotFoundPageMetaProps, SearchPageMetaProps } from "./meta"
@@ -13,7 +14,6 @@ import type {
   LinkComponentType,
   LinkRefPageProps,
   NotFoundPagePageProps,
-  ScriptComponentType,
   SearchPagePageProps,
 } from "~/types"
 import { IsomerComponentsSchemas } from "./components"
@@ -34,6 +34,7 @@ import {
   DatabasePagePageSchema,
   FileRefPageSchema,
   HomePagePageSchema,
+  IndexPagePageSchema,
   LinkRefPageSchema,
   SearchPagePageSchema,
 } from "./page"
@@ -160,7 +161,7 @@ export const IndexPageSchema = Type.Object(
       default: ISOMER_PAGE_LAYOUTS.Index,
     }),
     meta: Type.Optional(ContentPageMetaSchema),
-    page: ContentPagePageSchema,
+    page: IndexPagePageSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),
@@ -251,14 +252,13 @@ export const IsomerPageSchema = Type.Composite([
   ]),
 ])
 
-export type IsomerSchema = Static<typeof IsomerPageSchema>
+export type IsomerSchema = SimplifyDeep<Static<typeof IsomerPageSchema>>
 
 // These props are required by the render engine, but are not enforced by the
 // JSON schema, as the data should be provided by the template directly
 interface BasePageAdditionalProps {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
-  ScriptComponent?: ScriptComponentType
 }
 
 export interface NotFoundPageSchemaType extends BasePageAdditionalProps {

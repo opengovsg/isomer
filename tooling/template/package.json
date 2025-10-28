@@ -5,14 +5,24 @@
   "scripts": {
     "dev": "PORT=3001 next",
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && npm run build",
-    "build:template": "next build",
+    "build:template": "node --stack_size=10240 ./node_modules/next/dist/bin/next build",
     "start": "next start",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "format:fix": "prettier --write . --ignore-path ../../.gitignore",
     "typecheck": "tsc --noEmit",
     "clean": "git clean -xdf .next .turbo node_modules out"
+  },
+  "overrides": {
+    "@next/swc-darwin-arm64": "15.2.3",
+    "@next/swc-darwin-x64": "15.2.3",
+    "@next/swc-linux-arm64-gnu": "15.2.3",
+    "@next/swc-linux-arm64-musl": "15.2.3",
+    "@next/swc-linux-x64-gnu": "15.2.3",
+    "@next/swc-linux-x64-musl": "15.2.3",
+    "@next/swc-win32-arm64-msvc": "15.2.3",
+    "@next/swc-win32-x64-msvc": "15.2.3"
   },
   "dependencies": {
     "@opengovsg/isomer-components": "*",

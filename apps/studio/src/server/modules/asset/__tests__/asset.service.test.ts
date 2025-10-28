@@ -16,6 +16,18 @@ describe("asset.service", () => {
       expect(result).toMatch(/^123\/[0-9a-f-]{36}\/test-file\.jpg$/)
     })
 
+    it("should handle attempts at path traversal", () => {
+      // Arrange
+      const siteId = 123
+      const fileName = "../../test.jpg"
+
+      // Act
+      const result = getFileKey({ siteId, fileName })
+
+      // Assert
+      expect(result).toMatch(/^123\/[0-9a-f-]{36}\/-..-test\.jpg$/)
+    })
+
     it("should handle unicode characters in filename", () => {
       // Arrange
       const siteId = 456

@@ -6,6 +6,7 @@ import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { ajv } from "~/utils/ajv"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
+import DatabaseEditorStateDrawer from "./DatabaseEditorStateDrawer"
 import HeroEditorDrawer from "./HeroEditorDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
 import RawJsonEditorModeStateDrawer from "./RawJsonEditorModeStateDrawer"
@@ -53,6 +54,8 @@ export function EditPageDrawer(): JSX.Element {
       return <ComplexEditorStateDrawer />
     case "metadataEditor":
       return <MetadataEditorStateDrawer />
+    case "databaseEditor":
+      return <DatabaseEditorStateDrawer />
     case "heroEditor":
       return <HeroEditorDrawer />
     default:

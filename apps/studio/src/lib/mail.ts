@@ -28,7 +28,7 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
         .post(params)
         .res()
 
-      if (response.status !== 200) {
+      if (response.status >= 300) {
         logger.error({
           error: "Postman API error",
           status: response.status,

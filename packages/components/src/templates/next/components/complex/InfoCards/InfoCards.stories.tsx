@@ -27,7 +27,7 @@ const generateArgs = ({
   isImageFitContain = false,
   hasCTA = false,
   variant = "cardsWithImages",
-  numCards = 5,
+  numCards = 6,
 }: {
   layout?: IsomerPageLayoutType
   maxColumns: "1" | "2" | "3"
@@ -76,6 +76,15 @@ const generateArgs = ({
       description: "This is an image that is added using a URL.",
       imageUrl:
         "https://images.unsplash.com/photo-1722260613137-f8f5ac432d69?q=80&w=3570&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      imageAlt: "alt text",
+      imageFit: "contain",
+      url: "https://www.google.com",
+    },
+    {
+      title: "A card with a very long description",
+      description:
+        "A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart. I am alone, and feel the charm of existence in this spot, which was created for the bliss of souls like mine. I am so happy, my dear friend, so absorbed in the exquisite sense of mere tranquil existence, that I neglect my talents. I should be incapable of drawing a single stroke at the present moment; and yet I feel that I never was a greater artist than now. When,.",
+      imageUrl: "https://placehold.co/500x500",
       imageAlt: "alt text",
       imageFit: "contain",
       url: "https://www.google.com",

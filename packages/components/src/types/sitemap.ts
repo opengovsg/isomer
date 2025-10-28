@@ -14,9 +14,10 @@ interface IsomerBaseSitemap {
   // so that the properties that are exclusive to, for example, `CollectionCard`
   // will only be available there
   image?: CollectionCardProps["image"]
-  date?: CollectionCardProps["lastUpdated"]
+  date?: string
   children?: IsomerSitemap[]
   tags?: CollectionCardProps["tags"]
+  tagged?: CollectionCardProps["tagged"]
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {
@@ -27,6 +28,7 @@ export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
   layout: Extract<IsomerPageLayoutType, "collection">
   // TODO: Reconsider how this is done as currently every item in the sitemap has the same props
   collectionPagePageProps?: {
+    tagCategories?: CollectionPagePageProps["tagCategories"]
     defaultSortBy?: CollectionPagePageProps["defaultSortBy"]
     defaultSortDirection?: CollectionPagePageProps["defaultSortDirection"]
   }

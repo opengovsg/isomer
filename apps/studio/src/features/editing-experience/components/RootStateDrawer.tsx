@@ -13,7 +13,7 @@ import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
+import { BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
 import { Disable } from "~/components/Disable"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
@@ -46,6 +46,10 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
     label: "Content page header",
     description: "Summary, Button label, and Button destination",
   },
+  database: {
+    label: "Database page header",
+    description: "Summary, Button label, and Button URL",
+  },
   index: {
     label: "Header",
     description: "Summary, Button label and Button URL",
@@ -69,12 +73,16 @@ export default function RootStateDrawer() {
     onClose: onConfirmConvertIndexPageModalClose,
   } = useDisclosure()
   const { pageId, siteId } = useQueryParse(pageSchema)
+  const [{ scheduledAt }] = trpc.page.readPage.useSuspenseQuery({
+    pageId,
+    siteId,
+  })
+  const disableBlocks = isPreviewingIndexPage || !!scheduledAt
   const utils = trpc.useUtils()
   const isUserIsomerAdmin = useIsUserIsomerAdmin({
     roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
   })
   const toast = useToast()
-
   const { mutate } = trpc.page.reorderBlock.useMutation({
     onSuccess: async () => {
       await utils.page.readPage.invalidate({ pageId, siteId })
@@ -223,6 +231,13 @@ export default function RootStateDrawer() {
     pageLayout !== "index" &&
     pageLayout !== "collection"
 
+  // NOTE: if a page has either of these `layouts`,
+  // we should disable them from adding blocks
+  // because folder index pages aren't intended to have
+  // content yet and components don't render content
+  // for collection index pages
+  const canAddBlocks = pageLayout !== "index" && pageLayout !== "collection"
+
   return (
     <Flex direction="column" h="full">
       <ConfirmConvertIndexPageModal
@@ -269,7 +284,19 @@ export default function RootStateDrawer() {
               </VStack>
             </Infobox>
           )}
-
+          {!!scheduledAt && (
+            <Infobox
+              size="sm"
+              border="1px solid"
+              borderColor="utility.feedback.info"
+              borderRadius="0.25rem"
+            >
+              <Text textStyle="body-2">
+                This page is scheduled for publishing. To make changes, cancel
+                the schedule first.
+              </Text>
+            </Infobox>
+          )}
           {isPreviewingIndexPage && (
             <Infobox
               size="sm"
@@ -285,7 +312,7 @@ export default function RootStateDrawer() {
           )}
 
           {/* Fixed Blocks Section */}
-          <Disable when={isPreviewingIndexPage}>
+          <Disable when={disableBlocks}>
             <VStack gap="1.5rem" flex={1} w="full">
               <VStack gap="1rem" w="100%" align="start">
                 <VStack gap="0.25rem" align="start">
@@ -306,6 +333,25 @@ export default function RootStateDrawer() {
                     description="Title, subtitle, and Call-to-Action"
                     icon={TYPE_TO_ICON.hero}
                   />
+                ) : pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Database ? (
+                  <VStack gap="1rem" w="100%" align="start">
+                    <BaseBlock
+                      onClick={() => {
+                        setDrawerState({ state: "metadataEditor" })
+                      }}
+                      label="Page header"
+                      description="Summary, Button label, and Button URL"
+                      icon={BiPin}
+                    />
+                    <BaseBlock
+                      onClick={() => {
+                        setDrawerState({ state: "databaseEditor" })
+                      }}
+                      label="Database"
+                      description="Link your dataset from Data.gov.sg"
+                      icon={BiData}
+                    />
+                  </VStack>
                 ) : (
                   <BaseBlock
                     onClick={() => {
@@ -329,13 +375,19 @@ export default function RootStateDrawer() {
                   {/* Custom Blocks Section */}
                   {/* Custom Blocks Section */}
                   <Flex flexDirection="row" w="100%">
-                    <VStack gap="0.25rem" align="start" flex={1}>
-                      <Text textStyle="subhead-1">Custom blocks</Text>
-                      <Text textStyle="caption-2" color="base.content.medium">
-                        Use blocks to display your content in various ways
-                      </Text>
-                    </VStack>
-                    {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Index && (
+                    {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
+                      <VStack gap="0.25rem" align="start" flex={1}>
+                        <Text textStyle="subhead-1">Custom blocks</Text>
+                        <Text textStyle="caption-2" color="base.content.medium">
+                          Use blocks to display your content in various ways
+                        </Text>
+                      </VStack>
+                    )}
+                    {/* TODO: we should swap over to using the `resource.type` */}
+                    {/* rather than the `page.layout` but we are unable to do so due */}
+                    {/* to the existence of custom index page that are `layout: */}
+                    {/* content` but have `resource.type: index` */}
+                    {canAddBlocks && (
                       <Button
                         size="xs"
                         flexShrink={0}
@@ -360,8 +412,7 @@ export default function RootStateDrawer() {
                               ((isHeroFixedBlock &&
                                 savedPageState.content.length === 1) ||
                                 (savedPageState.content.length === 0 &&
-                                  pageLayout !==
-                                    ISOMER_USABLE_PAGE_LAYOUTS.Index)) && (
+                                  canAddBlocks)) && (
                                 <>
                                   <VStack
                                     justifyContent="center"

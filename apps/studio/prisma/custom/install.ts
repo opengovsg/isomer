@@ -37,7 +37,11 @@ const custom = async () => {
     .filter((statement) => !!statement.length)
 
   for (const folder of folders) {
-    const filePath = path.join(folder.path, folder.name, MIGRATION_FILE_NAME)
+    const filePath = path.join(
+      folder.parentPath,
+      folder.name,
+      MIGRATION_FILE_NAME,
+    )
 
     const file = await fs.readFile(filePath)
 

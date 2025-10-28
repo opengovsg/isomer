@@ -12,7 +12,7 @@ export const getCollectionParent = ({
   site,
   collectionId,
   collectionPermalink,
-}: GetCollectionParentProps): IsomerCollectionPageSitemap => {
+}: GetCollectionParentProps): IsomerCollectionPageSitemap | null => {
   const sitemapArray = getSitemapAsArray(site.siteMap)
 
   const collectionParent = sitemapArray.find(
@@ -25,7 +25,7 @@ export const getCollectionParent = ({
     return collectionParent as IsomerCollectionPageSitemap
   }
 
-  throw new Error(
-    `CollectionBlock: No collection parent found for collection ID ${collectionId}`,
-  )
+  // NOTE: Signal an error to the caller that no parent could be found
+  // so that we can fail gracefully
+  return null
 }
