@@ -99,7 +99,7 @@ const LogoSettingsPage: NextPageWithLayout = () => {
           </Box>
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
-          <EditSettingsPreview siteName={siteName} />
+          <EditSettingsPreview siteName={siteName} {...logoSettings} />
         </SettingsPreviewGridItem>
       </SettingsGrid>
     </ErrorProvider>
