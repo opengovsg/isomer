@@ -22,6 +22,7 @@ import {
   useBuilderErrors,
 } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
+import { Can } from "~/features/permissions"
 import { ajv } from "~/utils/ajv"
 
 interface FooterEditorProps {
@@ -107,7 +108,7 @@ export const FooterEditor = ({
             appear as two columns.
           </Text>
 
-          <Box pt="0.75rem" w="full">
+          <Box pt="1.5rem" w="full">
             <Box mb="1rem" h="full">
               <FormBuilder<FooterSchemaType>
                 schema={FooterSchema}
@@ -136,22 +137,24 @@ const PublishButton = ({
   const isSchemaValid = isEmpty(errors)
 
   return (
-    <Tooltip
-      label={
-        !isSchemaValid
-          ? "There are errors in footer. Fix them before publishing."
-          : undefined
-      }
-      hasArrow
-    >
-      <Button
-        size="xs"
-        onClick={onClick}
-        isLoading={isSaving}
-        isDisabled={!isDirty || !isSchemaValid}
+    <Can do="create" on={{ parentId: null }}>
+      <Tooltip
+        label={
+          !isSchemaValid
+            ? "There are errors in footer. Fix them before publishing."
+            : undefined
+        }
+        hasArrow
       >
-        Publish changes
-      </Button>
-    </Tooltip>
+        <Button
+          size="xs"
+          onClick={onClick}
+          isLoading={isSaving}
+          isDisabled={!isDirty || !isSchemaValid}
+        >
+          Publish
+        </Button>
+      </Tooltip>
+    </Can>
   )
 }

@@ -111,7 +111,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
           </ErrorProvider>
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
-          <EditSettingsPreview siteName={state.siteName} />
+          <EditSettingsPreview siteName={state.siteName} jumpToFooter />
         </SettingsPreviewGridItem>
       </SettingsGrid>
     </ErrorProvider>
