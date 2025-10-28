@@ -1,4 +1,5 @@
 import type { FlexProps } from "@chakra-ui/react"
+import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { useMemo, useState } from "react"
 import { Flex, Portal } from "@chakra-ui/react"
@@ -6,6 +7,7 @@ import { Flex, Portal } from "@chakra-ui/react"
 import type { ViewportOptions } from "./IframeToolbar"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
+import { convertThemeToCss } from "~/features/settings/utils"
 import { IframeToolbar } from "./IframeToolbar"
 import { PreviewIframe } from "./PreviewIframe"
 
@@ -23,13 +25,18 @@ const PortalIfFullscreen = ({
 interface ViewportContainerProps {
   siteId: number
   callback?: (props: IframeCallbackFnProps) => void
+  theme?: IsomerSiteThemeProps
 }
 export const ViewportContainer = ({
   children,
   siteId,
   callback,
+  theme,
 }: PropsWithChildren<ViewportContainerProps>) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
+  const mergedTheme = theme
+    ? { ...themeCssVars, ...convertThemeToCss(theme) }
+    : themeCssVars
 
   const [viewport, setViewport] = useState<ViewportOptions>("responsive")
 
@@ -77,7 +84,7 @@ export const ViewportContainer = ({
           {...innerContainerProps}
         >
           <PreviewIframe
-            style={themeCssVars}
+            style={mergedTheme}
             viewport={viewport}
             callback={callback}
           >

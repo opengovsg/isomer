@@ -113,7 +113,6 @@ const JsonFormsColourPickerControl = ({
             {THEME_PATHS.map((p) => {
               const isFirst = p === "colors.brand.canvas.default"
               const isLast = p === "colors.brand.interaction.pressed"
-              console.log(get(ctx.core?.data, p), p)
 
               return (
                 <Box

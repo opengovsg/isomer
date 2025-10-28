@@ -1,5 +1,10 @@
 import type { Static } from "@sinclair/typebox"
-import { SiteThemeSchema } from "@opengovsg/isomer-components"
+import { CSSProperties } from "react"
+import {
+  IsomerSiteThemeProps,
+  SiteThemeSchema,
+} from "@opengovsg/isomer-components"
+import { flatten } from "flat"
 import chunk from "lodash/chunk"
 import { Paths } from "type-fest"
 
@@ -79,4 +84,19 @@ export const generateTheme = ({
     "colors.brand.interaction.hover": shades[1],
     "colors.brand.interaction.pressed": shades[2],
   }
+}
+
+export const convertThemeToCss = (theme: IsomerSiteThemeProps) => {
+  const flattenedVars: Record<string, string> = flatten(
+    { color: theme.colors },
+    { delimiter: "-" },
+  )
+
+  return Object.entries(flattenedVars).reduce(
+    (acc, [key, value]) => {
+      acc[`--${key}`] = value
+      return acc
+    },
+    {} as Record<string, string>,
+  ) as CSSProperties
 }

@@ -2,6 +2,7 @@ import type { CSSProperties } from "react"
 import { useMemo } from "react"
 import { flatten } from "flat"
 
+import { convertThemeToCss } from "~/features/settings/utils"
 import { trpc } from "~/utils/trpc"
 
 export const useSiteThemeCssVars = ({ siteId }: { siteId: number }) => {
@@ -9,17 +10,7 @@ export const useSiteThemeCssVars = ({ siteId }: { siteId: number }) => {
   const themeCssVars = useMemo(() => {
     if (!theme) return
     // convert theme to css vars
-    const flattenedVars: Record<string, string> = flatten(
-      { color: theme.colors },
-      { delimiter: "-" },
-    )
-    return Object.entries(flattenedVars).reduce(
-      (acc, [key, value]) => {
-        acc[`--${key}`] = value
-        return acc
-      },
-      {} as Record<string, string>,
-    ) as CSSProperties
+    return convertThemeToCss(theme)
   }, [theme])
 
   return themeCssVars

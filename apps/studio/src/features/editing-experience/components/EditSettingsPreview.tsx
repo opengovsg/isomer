@@ -1,6 +1,7 @@
 import type {
   IsomerSiteConfigProps,
   IsomerSiteProps,
+  IsomerSiteThemeProps,
 } from "@opengovsg/isomer-components"
 
 import { AskgovWidget } from "~/components/Askgov"
@@ -11,11 +12,14 @@ import { siteSchema } from "../schema"
 import Preview from "./Preview"
 import { ViewportContainer } from "./ViewportContainer"
 
-type EditSettingsPreviewProps = Partial<IsomerSiteConfigProps> &
-  Pick<IsomerSiteProps, "siteName">
+// NOTE: the theme in site config refers to the site-wide theme of
+// either `isomer-next` or `isomer-classic`
+type EditSettingsPreviewProps = Partial<Omit<IsomerSiteConfigProps, "theme">> &
+  Pick<IsomerSiteProps, "siteName"> & { theme?: IsomerSiteThemeProps }
 
 export const EditSettingsPreview = ({
   siteName,
+  theme,
   ...rest
 }: EditSettingsPreviewProps): JSX.Element => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
@@ -29,7 +33,7 @@ export const EditSettingsPreview = ({
   })
 
   return (
-    <ViewportContainer siteId={siteId}>
+    <ViewportContainer siteId={siteId} theme={theme}>
       <Preview
         siteId={siteId}
         resourceId={Number(id)}

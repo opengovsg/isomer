@@ -52,15 +52,8 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
-  const [siteTheme, setSiteTheme] = useState<SiteTheme>(
-    theme ?? {
-      colors: {
-        brand: {
-          canvas: { default: "", alt: "", backdrop: "", inverse: "" },
-          interaction: { default: "", hover: "", pressed: "" },
-        },
-      },
-    },
+  const [siteTheme, setSiteTheme] = useState<SiteTheme | undefined>(
+    theme ?? undefined,
   )
 
   const isDirty = !isEqual(theme, siteTheme)
@@ -115,7 +108,7 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
           </Box>
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
-          <EditSettingsPreview siteName={siteName} />
+          <EditSettingsPreview siteName={siteName} theme={siteTheme} />
         </SettingsPreviewGridItem>
       </SettingsGrid>
     </ErrorProvider>
