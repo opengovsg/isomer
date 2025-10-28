@@ -18,7 +18,6 @@ import {
   isPrimitiveArrayControl,
   or,
   rankWith,
-  Resolve,
 } from "@jsonforms/core"
 import {
   JsonFormsDispatch,
