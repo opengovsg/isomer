@@ -47,7 +47,7 @@ export const SettingsHeader = ({
         isDisabled={isDisabledProp || isDisabled}
         size="xs"
       >
-        Publish changes
+        Publish
       </Button>
     </Flex>
   )

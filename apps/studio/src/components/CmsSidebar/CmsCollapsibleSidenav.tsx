@@ -1,6 +1,6 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { PropsWithChildren } from "react"
-import { Flex, Text, Tooltip } from "@chakra-ui/react"
+import { Flex, Icon, Text, Tooltip } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
 
 import { CloseSidebarIcon } from "../Svg/CloseSidebarIcon"
@@ -26,7 +26,7 @@ export const CmsCollapsibleSidenav = ({
           <IconButton
             variant="clear"
             aria-label="Collapse sidebar"
-            icon={<CloseSidebarIcon />}
+            icon={<Icon as={CloseSidebarIcon} fill="base.content.default" />}
             onClick={onSidenavClose}
             mt="-16px"
             mb="-16px"

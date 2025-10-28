@@ -12,8 +12,10 @@ import { filterContactMethods } from "./filterContactMethods"
 const createDefaultContactInformationStyles = tv({
   extend: commonContactInformationStyles,
   slots: {
-    container: "gap-9 py-12",
-    titleAndDescriptionContainer: "lg:max-w-3xl",
+    screenWideOuterContainer: "mt-12 first:mt-0",
+    container: "gap-9",
+    titleAndDescriptionContainer: "gap-6 lg:max-w-3xl",
+    description: "prose-body-base",
     contactMethodsContainer: "md:grid md:grid-cols-2",
     urlButtonContainer: "block",
   },
@@ -50,76 +52,78 @@ export const DefaultContactInformationUI = ({
   const descriptionText = isLoading ? "" : (description ?? "")
 
   return (
-    <div className={compoundStyles.container()}>
-      <div className={compoundStyles.titleAndDescriptionContainer()}>
-        {(title || isLoading) && (
-          <h2 className={compoundStyles.title()}>{isLoading ? "" : title}</h2>
-        )}
-        {(!!description || isLoading) &&
-          (acceptHtmlTags ? (
-            <BaseParagraph
-              content={descriptionText}
-              allowedTags={["br"]}
-              className={compoundStyles.description()}
-            />
-          ) : (
-            <p className={compoundStyles.description()}>{descriptionText}</p>
-          ))}
-      </div>
-
-      <div className={compoundStyles.contactMethodsContainer()}>
-        {isLoading
-          ? Array(4)
-              .fill(null)
-              .map((_, index) => (
-                <LoadingContactMethod
-                  key={`loading-contact-method-${index}`}
-                  styles={contactMethodStyles}
-                />
-              ))
-          : filteredMethods.map((method, index) => {
-              return (
-                <ContactMethod
-                  key={`contact-method-${index}`}
-                  {...method}
-                  LinkComponent={LinkComponent}
-                  styles={contactMethodStyles}
-                />
-              )
-            })}
-      </div>
-
-      {!!otherInformation &&
-        !!otherInformation.value &&
-        otherInformation.value.trim() !== "" && (
-          <div className={compoundStyles.otherInformationContainer()}>
-            <h3 className={compoundStyles.otherInformationTitle()}>
-              {otherInformation.label ?? "Other Information"}
-            </h3>
-            {acceptHtmlTags ? (
+    <section className={compoundStyles.screenWideOuterContainer()}>
+      <div className={compoundStyles.container()}>
+        <div className={compoundStyles.titleAndDescriptionContainer()}>
+          {(title || isLoading) && (
+            <h2 className={compoundStyles.title()}>{isLoading ? "" : title}</h2>
+          )}
+          {(!!description || isLoading) &&
+            (acceptHtmlTags ? (
               <BaseParagraph
-                content={otherInformation.value}
-                allowedTags={["b"]}
+                content={descriptionText}
+                allowedTags={["br"]}
+                className={compoundStyles.description()}
               />
             ) : (
-              <div>{otherInformation.value}</div>
-            )}
+              <p className={compoundStyles.description()}>{descriptionText}</p>
+            ))}
+        </div>
+
+        <div className={compoundStyles.contactMethodsContainer()}>
+          {isLoading
+            ? Array(4)
+                .fill(null)
+                .map((_, index) => (
+                  <LoadingContactMethod
+                    key={`loading-contact-method-${index}`}
+                    styles={contactMethodStyles}
+                  />
+                ))
+            : filteredMethods.map((method, index) => {
+                return (
+                  <ContactMethod
+                    key={`contact-method-${index}`}
+                    {...method}
+                    LinkComponent={LinkComponent}
+                    styles={contactMethodStyles}
+                  />
+                )
+              })}
+        </div>
+
+        {!!otherInformation &&
+          !!otherInformation.value &&
+          otherInformation.value.trim() !== "" && (
+            <div className={compoundStyles.otherInformationContainer()}>
+              <h3 className={compoundStyles.otherInformationTitle()}>
+                {otherInformation.label ?? "Other Information"}
+              </h3>
+              {acceptHtmlTags ? (
+                <BaseParagraph
+                  content={otherInformation.value}
+                  allowedTags={["b"]}
+                />
+              ) : (
+                <div>{otherInformation.value}</div>
+              )}
+            </div>
+          )}
+
+        {!!referenceLinkHref && !!label && !isLoading && (
+          <div className={compoundStyles.urlButtonContainer()}>
+            <LinkButton
+              href={referenceLinkHref}
+              size="base"
+              variant="outline"
+              LinkComponent={LinkComponent}
+              isWithFocusVisibleHighlight
+            >
+              {label}
+            </LinkButton>
           </div>
         )}
-
-      {!!referenceLinkHref && !!label && !isLoading && (
-        <div className={compoundStyles.urlButtonContainer()}>
-          <LinkButton
-            href={referenceLinkHref}
-            size="base"
-            variant="outline"
-            LinkComponent={LinkComponent}
-            isWithFocusVisibleHighlight
-          >
-            {label}
-          </LinkButton>
-        </div>
-      )}
-    </div>
+      </div>
+    </section>
   )
 }

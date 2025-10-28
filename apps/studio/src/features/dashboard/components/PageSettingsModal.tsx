@@ -233,7 +233,7 @@ const PageSettingsModalContent = ({
         <Button mr={3} variant="clear" onClick={onClose}>
           Close
         </Button>
-        <Button onClick={onSubmit}>Publish changes immediately</Button>
+        <Button onClick={onSubmit}>Publish immediately</Button>
       </ModalFooter>
     </ModalContent>
   )
