@@ -93,7 +93,7 @@ export const StackableNavbarItem = ({
       getNavbarItemPath(index),
     )
     const isSubItemInvalid = errors.some((error) =>
-      error.instancePath.startsWith(`${instancePath}/`),
+      error.instancePath.startsWith(`${instancePath}/items/`),
     )
 
     if (isSubItemInvalid) {
