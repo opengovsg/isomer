@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Exit immediately if a command exits with a non-zero status.
-set -x
+set -ex
 
 # Helper function to calculate duration
 calculate_duration() {
