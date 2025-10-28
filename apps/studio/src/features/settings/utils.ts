@@ -1,4 +1,7 @@
+import type { Static } from "@sinclair/typebox"
+import { SiteThemeSchema } from "@opengovsg/isomer-components"
 import chunk from "lodash/chunk"
+import { Paths } from "type-fest"
 
 const normalizeHex = (color: string): string => {
   let normalizedColor = color
@@ -56,7 +59,7 @@ export const calculateRelativeLuminance = (color: string) => {
 }
 
 export const generateTheme = ({
-  tints,
+  tints: orignalTints,
   colour,
   shades,
 }: {
@@ -64,6 +67,16 @@ export const generateTheme = ({
   colour: string
   shades: string[]
 }) => {
+  const tints = orignalTints.reverse()
+
   // TODO: add in implementation
-  return [tints[2], tints[1], tints[0], colour, shades[0], shades[1], shades[2]]
+  return {
+    "colors.brand.canvas.default": tints[2],
+    "colors.brand.canvas.alt": tints[1],
+    "colors.brand.canvas.backdrop": tints[0],
+    "colors.brand.canvas.inverse": colour,
+    "colors.brand.interaction.default": shades[0],
+    "colors.brand.interaction.hover": shades[1],
+    "colors.brand.interaction.pressed": shades[2],
+  }
 }

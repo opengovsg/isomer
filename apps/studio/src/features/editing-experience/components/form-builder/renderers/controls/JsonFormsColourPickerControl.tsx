@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import {
   Box,
   Flex,
@@ -9,25 +10,33 @@ import {
 } from "@chakra-ui/react"
 import {
   ControlProps,
+  JsonSchema,
   RankedTester,
   rankWith,
   schemaMatches,
 } from "@jsonforms/core"
-import { withJsonFormsControlProps } from "@jsonforms/react"
+import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Input } from "@opengovsg/design-system-react"
+import get from "lodash/get"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import {
-  calculateRelativeLuminance,
-  convertHexToRgb,
-  generateTheme,
-} from "~/features/settings/utils"
+import { convertHexToRgb, generateTheme } from "~/features/settings/utils"
 import { useColorPalette } from "~/hooks/useColorPalete"
 
 export const jsonFormsColourPickerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ColourPickerControl,
   schemaMatches((schema) => schema.format === "color-picker"),
 )
+
+const THEME_PATHS = [
+  "colors.brand.canvas.default",
+  "colors.brand.canvas.alt",
+  "colors.brand.canvas.backdrop",
+  "colors.brand.canvas.inverse",
+  "colors.brand.interaction.default",
+  "colors.brand.interaction.hover",
+  "colors.brand.interaction.pressed",
+] as const
 
 const JsonFormsColourPickerControl = ({
   data,
@@ -41,9 +50,16 @@ const JsonFormsColourPickerControl = ({
   // NOTE: Tint is the colour brightened by 10% successively,
   // shades are the colour darkened by 10% successively
   const { tints, colour, shades } = useColorPalette(...convertHexToRgb(data))
-  // NOTE: only need 7 colours in total
-  // 3 tints, the original colour, and 3 shades is best
-  const _luminance = calculateRelativeLuminance(colour || "#FFFFFF")
+  const ctx = useJsonForms()
+
+  // NOTE: whenever data changes, write the corresponding correct tints and shades
+  useEffect(() => {
+    const otherPaths = THEME_PATHS.filter((p) => p !== path)
+    const palette = generateTheme({ tints, colour, shades })
+    otherPaths.map((p) => {
+      handleChange(p, palette[p] ?? "#FFFFFF")
+    })
+  }, [data])
 
   return (
     <Box>
@@ -94,12 +110,13 @@ const JsonFormsColourPickerControl = ({
             Color palette
           </FormLabel>
           <Flex mt="0.75rem" h="3rem">
-            {generateTheme({ tints, colour, shades }).map((val, idx) => {
-              const isFirst = idx === 0
-              const isLast = idx === 6
+            {THEME_PATHS.map((p) => {
+              const isFirst = p === "colors.brand.canvas.default"
+              const isLast = p === "colors.brand.interaction.pressed"
+              console.log(get(ctx.core?.data, p), p)
+
               return (
                 <Box
-                  bgColor={val}
                   h="full"
                   flex={1}
                   borderTop="2px solid"
@@ -109,21 +126,11 @@ const JsonFormsColourPickerControl = ({
                   borderColor="base.divider.medium"
                   borderLeftRadius={isFirst ? "6px" : "auto"}
                   borderRightRadius={isLast ? "6px" : "auto"}
-                />
+                  bgColor={get(ctx.core?.data, p)}
+                ></Box>
               )
             })}
           </Flex>
-        </Box>
-        {/* TODO: Check if we need to split this up into another schema */}
-        <Box alignSelf="flex-start">
-          <FormLabel
-            description={
-              "If your site uses colours that are naturally light (e.g., orange, yellow), you may choose the light theme."
-            }
-            mb={0}
-          >
-            Theme
-          </FormLabel>
         </Box>
       </VStack>
     </Box>
