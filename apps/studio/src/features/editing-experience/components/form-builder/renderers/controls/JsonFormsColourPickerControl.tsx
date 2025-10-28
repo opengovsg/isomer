@@ -83,6 +83,7 @@ const JsonFormsColourPickerControl = ({
                 #
               </InputLeftAddon>
               <Input
+                value={data.replace("#", "")}
                 placeholder="FFFFFF"
                 w="86px"
                 onChange={(e) =>

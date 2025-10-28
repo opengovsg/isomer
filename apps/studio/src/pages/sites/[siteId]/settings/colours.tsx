@@ -58,27 +58,31 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
 
   const isDirty = !isEqual(theme, siteTheme)
 
-  const updateSiteIntegrationsMutation =
-    trpc.site.updateSiteIntegrations.useMutation({
-      onSuccess: async () => {
-        toast({
-          ...SETTINGS_TOAST_MESSAGES.success,
-          status: "success",
-        })
-        await trpcUtils.site.getConfig.invalidate({ id: siteId })
-      },
-      onError: (error) => {
-        toast({
-          title: "Failed to update site",
-          description: error.message,
-          status: "error",
-        })
-      },
-    })
+  const setThemeMutation = trpc.site.setTheme.useMutation({
+    onSuccess: async () => {
+      toast({
+        ...SETTINGS_TOAST_MESSAGES.success,
+        status: "success",
+      })
+      await trpcUtils.site.getConfig.invalidate({ id: siteId })
+      await trpcUtils.site.getTheme.invalidate({ id: siteId })
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to update site",
+        description: error.message,
+        status: "error",
+      })
+    },
+  })
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
-  const onSubmit = () => console.log(siteTheme)
+  const onSubmit = () => {
+    if (!siteTheme) return
+
+    setThemeMutation.mutate({ siteId, theme: siteTheme })
+  }
 
   return (
     <ErrorProvider>
@@ -93,7 +97,7 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
             onClick={onSubmit}
             title="Colours"
             icon={BiPaint}
-            isLoading={updateSiteIntegrationsMutation.isPending}
+            isLoading={setThemeMutation.isPending}
             isDisabled={!isDirty}
           />
           <Box w="100%">
