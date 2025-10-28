@@ -1,5 +1,4 @@
 import type { IconBaseProps } from "react-icons"
-import { useToken } from "@chakra-ui/react"
 
 export const OpenSidebarIcon = (props: IconBaseProps) => {
   return (
