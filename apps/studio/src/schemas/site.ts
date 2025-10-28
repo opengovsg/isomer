@@ -87,3 +87,14 @@ export const updateSiteIntegrationsSchema = z.object({
     return res
   }, "Invalid integration settings"),
 })
+
+export const setThemeSchema = z
+  .object({
+    siteId: z.number().min(1),
+  })
+  .extend({
+    theme: z.custom<SiteTheme>((value) => {
+      const res = siteThemeValidator(value)
+      return res
+    }, "Invalid theme"),
+  })

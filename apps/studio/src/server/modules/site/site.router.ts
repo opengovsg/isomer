@@ -17,6 +17,7 @@ import {
   setNavbarSchema,
   setNotificationSchema,
   setSiteConfigByAdminSchema,
+  setThemeSchema,
   updateSiteConfigSchema,
   updateSiteIntegrationsSchema,
 } from "~/schemas/site"
@@ -206,6 +207,80 @@ export const siteRouter = router({
       })
       const theme = await getSiteTheme(id)
       return theme
+    }),
+  setTheme: protectedProcedure
+    .input(setThemeSchema)
+    .mutation(async ({ ctx, input: { siteId, theme } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+
+      await db.transaction().execute(async (tx) => {
+        const user = await tx
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!user) {
+          // NOTE: This shouldn't happen as the user is already logged in
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The user could not be found.",
+          })
+        }
+
+        const site = await tx
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!site) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The site could not be found.",
+          })
+        }
+
+        const oldTheme = site.theme
+
+        if (!oldTheme) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The theme for the site could not be found.",
+          })
+        }
+
+        const newSite = await tx
+          .updateTable("Site")
+          .set({
+            theme: jsonb(theme),
+          })
+          .where("id", "=", siteId)
+          .returningAll()
+          .executeTakeFirst()
+
+        if (!newSite)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site theme.",
+          })
+
+        await logConfigEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: {
+            before: site,
+            after: newSite,
+          },
+          by: user,
+        })
+
+        await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
+      })
     }),
   getFooter: protectedProcedure
     .input(getConfigSchema)
