@@ -33,5 +33,5 @@ export const useColorPalette = (r: number, g: number, b: number) => {
     return rgbToHex(red, green, blue)
   })
 
-  return { tints, colour: rgbToHex(r, g, b), shades }
+  return { tints: tints.reverse(), colour: rgbToHex(r, g, b), shades }
 }
