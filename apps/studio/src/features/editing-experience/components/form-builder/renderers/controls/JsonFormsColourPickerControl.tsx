@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import {
   Box,
   Flex,
@@ -54,6 +54,7 @@ const JsonFormsColourPickerControl = ({
   // shades are the colour darkened by 10% successively
   const { tints, colour, shades } = useColorPalette(...convertHexToRgb(data))
   const ctx = useJsonForms()
+  const [displayedColour, setDisplayedColour] = useState(data)
 
   // NOTE: whenever data changes, write the corresponding correct tints and shades
   useEffect(() => {
@@ -83,12 +84,16 @@ const JsonFormsColourPickerControl = ({
                 #
               </InputLeftAddon>
               <Input
-                value={data.replace("#", "")}
+                value={displayedColour.replace("#", "")}
                 placeholder="FFFFFF"
                 w="86px"
-                onChange={(e) =>
-                  handleChange(path, `#${normalizeHex(e.target.value)}`)
-                }
+                onChange={(e) => {
+                  const rawString = e.target.value
+                  const parsedHex = rawString.replace(/[^0-9A-Fa-f]/g, "")
+
+                  setDisplayedColour(parsedHex)
+                  handleChange(path, `#${normalizeHex(parsedHex)}`)
+                }}
               />
             </InputGroup>
             <Box
