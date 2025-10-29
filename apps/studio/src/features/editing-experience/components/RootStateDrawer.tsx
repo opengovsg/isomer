@@ -70,6 +70,10 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
 // for now, we do it on the page level so it only compiles once
 const validateFn = ajv.compile<IsomerSchema>(schema)
 
+const validateHeroComponentFn = ajv.compile<IsomerComponent>(
+  getComponentSchema({ component: "hero" }),
+)
+
 export default function RootStateDrawer() {
   const {
     type,
@@ -265,9 +269,7 @@ export default function RootStateDrawer() {
     const fixedBlock = savedPageState.content[0]
 
     if (isHeroFixedBlock) {
-      const subSchema = getComponentSchema({ component: "hero" })
-      const validateFn = ajv.compile<IsomerComponent>(subSchema)
-      const isValid = validateFn(fixedBlock)
+      const isValid = validateHeroComponentFn(fixedBlock)
       return (
         <BaseBlock
           onClick={() => {
