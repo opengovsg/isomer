@@ -4,11 +4,13 @@ export const SCHEDULED_PUBLISHING_SITES_FEATURE_KEY =
   "scheduled-publishing-sites"
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const ISOMER_ADMIN_FEATURE_KEY = "isomer_admins"
-export const USE_NEW_SETTINGS_PAGE_FEATURE_KEY = "use-new-settings-page"
+export const IS_NEW_SETTINGS_PAGE_ENABLED_FEATURE_KEY =
+  "is-new-settings-page-enabled"
 export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
-export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 export const ENABLE_DATABASE_LAYOUT_FEATURE_KEY = "enable-database-layout"
+
+export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
 interface GetIsSingpassEnabledProps {
   gb: GrowthBook
