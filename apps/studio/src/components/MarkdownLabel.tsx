@@ -7,7 +7,6 @@ export const MarkdownLabel = ({ description }: { description?: string }) => {
     "interaction.links.hover",
     "utility.focus-default",
   ])
-  console.log(description)
 
   return (
     <Box
