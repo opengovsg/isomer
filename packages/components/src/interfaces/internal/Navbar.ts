@@ -14,12 +14,12 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 const NavbarItemSchema = Type.Object({
   name: Type.String({
     title: "Menu item label",
-    maxLength: 30,
+    maxLength: 80,
   }),
   description: Type.Optional(
     Type.String({
       title: "Add an optional description",
-      maxLength: 120,
+      maxLength: 270,
     }),
   ),
   url: Type.String({
@@ -34,12 +34,12 @@ const NavbarItemSchema = Type.Object({
       Type.Object({
         name: Type.String({
           title: "Name of the sub-item",
-          maxLength: 60,
+          maxLength: 80,
         }),
         description: Type.Optional(
           Type.String({
             title: "Description of the sub-item",
-            maxLength: 240,
+            maxLength: 270,
           }),
         ),
         url: Type.String({
