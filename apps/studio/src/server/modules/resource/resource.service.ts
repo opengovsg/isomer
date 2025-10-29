@@ -21,6 +21,8 @@ import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE } from "~/lib/growthbook"
 import {
   getSitemapTree,
+  injectTagMappings,
+  isCollectionItem,
   overwriteCollectionChildrenForCollectionBlock,
 } from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
@@ -43,6 +45,7 @@ export const defaultResourceSelect = [
   "Resource.state",
   "Resource.createdAt",
   "Resource.updatedAt",
+  "Resource.scheduledAt",
 ] satisfies SelectExpression<DB, "Resource">[]
 
 const defaultResourceWithBlobSelect = [
@@ -168,17 +171,17 @@ export const updatePageById = (
     .set({ ...rest, ...(parentId && { parentId: String(parentId) }) })
     .where("siteId", "=", page.siteId)
     .where("id", "=", String(id))
-    .executeTakeFirstOrThrow()
+    .returningAll()
+    .executeTakeFirst()
 }
 
-export const getBlobOfResource = async ({
-  tx,
-  resourceId,
-}: {
-  tx: Transaction<DB>
+interface GetBlobProps {
+  db: SafeKysely
   resourceId: string
-}) => {
-  const { draftBlobId, publishedVersionId } = await tx
+}
+
+export const getBlobOfResource = async ({ db, resourceId }: GetBlobProps) => {
+  const { draftBlobId, publishedVersionId } = await db
     .selectFrom("Resource")
     .where("id", "=", resourceId)
     .select(["draftBlobId", "publishedVersionId"])
@@ -192,7 +195,7 @@ export const getBlobOfResource = async ({
 
   if (draftBlobId) {
     return (
-      tx
+      db
         .selectFrom("Blob")
         .where("id", "=", draftBlobId)
         .selectAll()
@@ -201,7 +204,7 @@ export const getBlobOfResource = async ({
     )
   }
 
-  return tx
+  return db
     .selectFrom("Blob")
     .selectAll()
     .where("Blob.id", "=", (eb) =>
@@ -211,6 +214,49 @@ export const getBlobOfResource = async ({
         .select("blobId"),
     )
     .executeTakeFirstOrThrow()
+}
+
+// NOTE: This function gets the published blob preferentially,
+// and if it fails to get a published blob (because the resource has never been published),
+// it will fall back to the draft blob
+export const getPublishedIndexBlobByParentId = async ({
+  db,
+  resourceId,
+}: GetBlobProps) => {
+  const { draftBlobId, publishedVersionId } = await db
+    .selectFrom("Resource")
+    .where("parentId", "=", resourceId)
+    .where("type", "=", ResourceType.IndexPage)
+    .select(["draftBlobId", "publishedVersionId"])
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "The specified resource could not be found",
+        }),
+    )
+
+  if (publishedVersionId) {
+    return db
+      .selectFrom("Blob")
+      .selectAll()
+      .where("Blob.id", "=", (eb) =>
+        eb
+          .selectFrom("Version")
+          .where("id", "=", publishedVersionId)
+          .select("blobId"),
+      )
+      .executeTakeFirstOrThrow()
+  }
+
+  return (
+    db
+      .selectFrom("Blob")
+      .where("id", "=", draftBlobId)
+      .selectAll()
+      // NOTE: Guaranteed to exist since this is a foreign key
+      .executeTakeFirstOrThrow()
+  )
 }
 
 export const updateBlobById = async (
@@ -439,6 +485,12 @@ export const getLocalisedSitemap = async (
   // Assumption: Collection Block is only being used on the root page
   if (resource.type === ResourceType.RootPage) {
     return overwriteCollectionChildrenForCollectionBlock(sitemapTree)
+  }
+
+  // NOTE: If the resource is part of a collection,
+  // we need to inject tag mappings for the preview
+  if (isCollectionItem(resource)) {
+    return injectTagMappings(sitemapTree, resource)
   }
 
   return sitemapTree
@@ -720,10 +772,14 @@ export const getBatchAncestryWithSelfQuery = async ({
 }
 
 export const getWithFullPermalink = async ({
-  resourceId,
+  resourceIds,
 }: {
-  resourceId: string
+  resourceIds: string[]
 }) => {
+  if (resourceIds.length === 0) {
+    return []
+  }
+
   const result = await db
     .withRecursive("resourcePath", (eb) =>
       eb
@@ -753,8 +809,8 @@ export const getWithFullPermalink = async ({
     )
     .selectFrom("resourcePath as rp")
     .select(["rp.id", "rp.title", "rp.fullPermalink"])
-    .where("rp.id", "=", resourceId)
-    .executeTakeFirst()
+    .where("rp.id", "in", resourceIds)
+    .execute()
 
   return result
 }
@@ -768,7 +824,7 @@ const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) => {
       "Resource.type",
       "Resource.parentId",
       // To handle cases where either the resource or the blob is updated
-      sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
+      sql<Date | null>`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
         "lastUpdatedAt",
       ),
     ])
@@ -781,14 +837,15 @@ const getResourcesWithFullPermalink = async ({
 }: {
   resources: Omit<SearchResultResource, "fullPermalink">[]
 }): Promise<SearchResultResource[]> => {
-  return await Promise.all(
-    resources.map(async (resource) => ({
-      ...resource,
-      fullPermalink: await getWithFullPermalink({
-        resourceId: resource.id,
-      }).then((r) => r?.fullPermalink ?? ""),
-    })),
-  )
+  const result = await getWithFullPermalink({
+    resourceIds: resources.map((resource) => resource.id),
+  })
+
+  return resources.map((resource) => ({
+    ...resource,
+    fullPermalink:
+      result.find((r) => r.id === resource.id)?.fullPermalink ?? "",
+  }))
 }
 
 export const getSearchResults = async ({
@@ -856,24 +913,20 @@ export const getSearchResults = async ({
   }
   orderedResources = orderedResources.orderBy("lastUpdatedAt", "desc")
 
-  const resourcesToReturn: SearchResultResource[] = (await orderedResources
-    .offset(offset)
-    .limit(limit)
-    .execute()) as SearchResultResource[]
-
-  const totalCount: number = (
-    await db
+  const [resourcesToReturn, totalCountResult] = await Promise.all([
+    orderedResources.offset(offset).limit(limit).execute(),
+    db
       .with("queriedResources", () => queriedResources)
       .selectFrom("queriedResources")
-      .select(db.fn.countAll().as("total_count"))
-      .executeTakeFirstOrThrow()
-  ).total_count as number // needed to cast as the type can be `bigint`
+      .select(db.fn.countAll<number>().as("total_count")) // needed to cast as the type can be `bigint`
+      .executeTakeFirstOrThrow(),
+  ])
 
   return {
-    totalCount,
     resources: await getResourcesWithFullPermalink({
       resources: resourcesToReturn,
     }),
+    totalCount: totalCountResult.total_count,
   }
 }
 
@@ -885,7 +938,7 @@ export const getSearchRecentlyEdited = async ({
   limit?: number
 }): Promise<SearchResultResource[]> => {
   return await getResourcesWithFullPermalink({
-    resources: (await getResourcesWithLastUpdatedAt({
+    resources: await getResourcesWithLastUpdatedAt({
       siteId: Number(siteId),
     })
       .where("Resource.type", "in", [
@@ -896,7 +949,7 @@ export const getSearchRecentlyEdited = async ({
       ])
       .limit(limit)
       .orderBy("lastUpdatedAt", "desc")
-      .execute()) as SearchResultResource[],
+      .execute(),
   })
 }
 

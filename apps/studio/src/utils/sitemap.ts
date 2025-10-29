@@ -1,10 +1,21 @@
-import type { IsomerSitemap } from "@opengovsg/isomer-components"
+import type {
+  ArticlePagePageProps,
+  CollectionPagePageProps,
+  FileRefPageProps,
+  IsomerSitemap,
+  LinkRefPageProps,
+} from "@opengovsg/isomer-components"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { Resource } from "~prisma/generated/selectableTypes"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { env } from "~/env.mjs"
+import { db } from "~/server/modules/database"
+import {
+  getBlobOfResource,
+  getPublishedIndexBlobByParentId,
+} from "~/server/modules/resource/resource.service"
 
 type ResourceDto = Omit<
   Resource,
@@ -14,6 +25,21 @@ type ResourceDto = Omit<
   parentId: string | null
   summary?: string
   thumbnail?: string
+}
+
+type CollectionItemResourceDto = Omit<ResourceDto, "type" | "parentId"> & {
+  type: typeof ResourceType.CollectionPage | typeof ResourceType.CollectionLink
+  parentId: string
+}
+
+export const isCollectionItem = (
+  resource: ResourceDto,
+): resource is CollectionItemResourceDto => {
+  return (
+    (resource.type === ResourceType.CollectionPage ||
+      resource.type === ResourceType.CollectionLink) &&
+    !!resource.parentId
+  )
 }
 
 const getSitemapTreeFromArray = (
@@ -117,6 +143,7 @@ export const getSitemapTree = (
 }
 
 const NUMBER_OF_CARDS_IN_COLLECTION_BLOCK = 3
+
 export const overwriteCollectionChildrenForCollectionBlock = (
   sitemap: IsomerSitemap,
 ): IsomerSitemap => {
@@ -156,5 +183,85 @@ export const overwriteCollectionChildrenForCollectionBlock = (
   return {
     ...sitemap,
     children: processedChildren,
+  }
+}
+
+export const injectTagMappings = async (
+  sitemapTree: IsomerSitemap,
+  resource: CollectionItemResourceDto,
+): Promise<IsomerSitemap> => {
+  // NOTE: if the resource's parent is a collection,
+  // we need to inject the tagged property into the returned sitemap
+  // as well as the `tagCategories` property on the parent
+  const draftBlobOfResource = await getBlobOfResource({
+    db,
+    resourceId: resource.id,
+  })
+
+  const publishedIndexBlob = await getPublishedIndexBlobByParentId({
+    db,
+    resourceId: resource.parentId,
+  })
+
+  return _injectTagMappings(
+    sitemapTree,
+    // NOTE: This cast is abit overkill,
+    // but earlier on we validated this item
+    // as only being part of a collection,
+    // not the exact type so for safety,
+    // we cast to all the possible `page` props
+    // of a collection item
+    (
+      draftBlobOfResource.content.page as
+        | ArticlePagePageProps
+        | FileRefPageProps
+        | LinkRefPageProps
+    ).tagged,
+    (publishedIndexBlob.content.page as unknown as CollectionPagePageProps)
+      .tagCategories,
+    resource.id,
+    resource.parentId,
+  )
+}
+
+// NOTE: Private helper method for `injectTagMappings`
+const _injectTagMappings = (
+  sitemap: IsomerSitemap,
+  tagged: ArticlePagePageProps["tagged"],
+  tagCategories: CollectionPagePageProps["tagCategories"],
+  childId: CollectionItemResourceDto["id"],
+  collectionId: CollectionItemResourceDto["parentId"],
+): IsomerSitemap => {
+  // NOTE: If the child id matches,
+  // just inject the tags
+  if (sitemap.id === childId) {
+    return { ...sitemap, tagged }
+  }
+
+  // NOTE: If the collection id matches,
+  // inject tag categories and process the children
+  if (
+    sitemap.layout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
+    sitemap.id === collectionId
+  ) {
+    return {
+      ...sitemap,
+      collectionPagePageProps: {
+        ...sitemap.collectionPagePageProps,
+        tagCategories,
+      },
+      children: sitemap.children?.map((child) =>
+        _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
+      ),
+    }
+  }
+
+  // NOTE: Otherwise, just continue traversing the tree
+  // until we hit the collection
+  return {
+    ...sitemap,
+    children: sitemap.children?.map((child) =>
+      _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
+    ),
   }
 }

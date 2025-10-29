@@ -4,6 +4,7 @@ export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export { CalloutSchema, type CalloutProps } from "./Callout"
 export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
+export { FormSGSchema, type FormSGProps } from "./FormSG"
 export { HERO_STYLE, HeroSchema, type HeroProps } from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"
 export {
@@ -52,3 +53,19 @@ export {
   CHILDREN_PAGES_LAYOUT_OPTIONS,
   type ChildrenPagesProps,
 } from "./ChildrenPages"
+export {
+  CONTACT_INFORMATION_TYPE,
+  CONTACT_INFORMATION_SUPPORT_METHODS,
+  ContactInformationSchema,
+  InjectableContactInformationKeys,
+  type ContactInformationProps,
+  type ContactInformationUIProps,
+  type NativeContactInformationProps,
+  type DgsContactInformationProps,
+  type DgsTransformedContactInformationProps,
+} from "./ContactInformation"
+export {
+  DYNAMIC_COMPONENT_LIST_TYPE,
+  DynamicComponentListSchema,
+  type DynamicComponentListProps,
+} from "./DynamicComponentList"

@@ -5,6 +5,8 @@
   "globalEnv": [
     "NODE_ENV",
     "DATABASE_URL",
+    "REDIS_HOST",
+    "REDIS_PORT",
     "CI",
     "SESSION_SECRET",
     "NEXT_PUBLIC_S3_REGION",
@@ -13,12 +15,25 @@
     "SINGPASS_CLIENT_ID",
     "SINGPASS_ISSUER_ENDPOINT",
     "SINGPASS_ENCRYPTION_PRIVATE_KEY",
-    "SINGPASS_SIGNING_PRIVATE_KEY"
+    "SINGPASS_SIGNING_PRIVATE_KEY",
+    "SEARCHSG_API_KEY"
   ],
   "tasks": {
     "build": {},
     "build:template": {},
     "clean": {},
+    "db:connect": {
+      "cache": false
+    },
+    "db:connect:staging": {
+      "cache": false
+    },
+    "db:connect:uat": {
+      "cache": false
+    },
+    "db:connect:vapt": {
+      "cache": false
+    },
     "dev": {
       "dependsOn": ["services:setup"],
       "cache": false,
@@ -27,11 +42,11 @@
     "services:setup": {
       "cache": false
     },
-    "setup:test": {},
+    "setup:test": { "cache": false },
     "storybook": {
       "cache": false
     },
-    "storybook:build": {
+    "build-storybook": {
       "inputs": ["!storybook-static/**"],
       "outputs": ["storybook-static/**"]
     },

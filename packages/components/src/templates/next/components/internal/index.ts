@@ -13,8 +13,10 @@ export { default as Navbar } from "./Navbar"
 export { default as Notification } from "./Notification"
 export { PaginationControls } from "./PaginationControls"
 export { default as Pill } from "./Pill"
-export { default as SearchableTable } from "./SearchableTable"
-export { default as SearchSGInputBox } from "./SearchSGInputBox"
+export {
+  NavbarSearchSGInputBox,
+  HomepageSearchSGInputBox,
+} from "./SearchSGInputBox"
 export { default as Siderail } from "./Siderail"
 export { SkipToContent } from "./SkipToContent"
 export { default as TableOfContents } from "./TableOfContents"
@@ -31,3 +33,4 @@ export { BlogCard } from "./BlogCard"
 export { FontPreload } from "./FontPreload"
 export { ScrollToTop } from "./ScrollToTop"
 export { AskgovWidget } from "./Askgov"
+export { SearchableTable } from "./SearchableTable"

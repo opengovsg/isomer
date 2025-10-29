@@ -1,31 +1,22 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { useEffect } from "react"
 import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { HomePageSchemaType } from "~/engine"
 import type { HeroProps } from "~/interfaces/complex/Hero"
+import {
+  SEARCHSG_TEST_CLIENT_ID,
+  withSearchSgSetup,
+} from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import Homepage from "./Homepage"
 
-// Template for stories
-const Template = (props: HomePageSchemaType) => {
-  // Note: This is needed because the script tag is not rendered in the storybook
-  useEffect(() => {
-    const scriptTag = document.createElement("script")
-    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${TEST_CLIENT_ID}`
-    scriptTag.setAttribute("defer", "")
-    document.body.appendChild(scriptTag)
-  }, [])
-  return <Homepage {...props} />
-}
-
 const meta: Meta<typeof Homepage> = {
   title: "Next/Layouts/Homepage",
   component: Homepage,
-  render: Template,
+  decorators: [withSearchSgSetup()],
   argTypes: {},
   tags: ["!autodocs"],
   parameters: {
@@ -60,8 +51,6 @@ const meta: Meta<typeof Homepage> = {
 }
 export default meta
 type Story = StoryObj<typeof Homepage>
-
-const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
 
 const generateArgs = ({
   heroProps,
@@ -266,7 +255,7 @@ const generateArgs = ({
       },
       search: {
         type: "searchSG",
-        clientId: TEST_CLIENT_ID,
+        clientId: SEARCHSG_TEST_CLIENT_ID,
       },
     }),
     meta: {
@@ -544,6 +533,76 @@ const generateArgs = ({
         imageSrc: "https://placehold.co/600x600",
         imageAlt: "This is the alt text",
       },
+      {
+        type: "contactinformation",
+        title: "Contact the High Commission of Canberra",
+        description:
+          "Click “More ways to contact us” to find our address, fax number, and other contact details.",
+        methods: [
+          {
+            method: "person",
+            label: "Ambassador (Non-Resident)",
+            values: ["Mr MOHAMMAD Alami Musa"],
+          },
+          {
+            method: "address",
+            label: "Chancery",
+            values: [
+              "c/o Ministry of Foreign Affairs",
+              "Tanglin",
+              "Singapore 248163",
+            ],
+          },
+          {
+            method: "telephone",
+            label: "Telephone",
+            values: ["+65-63798000 (MFA)"],
+          },
+          {
+            method: "fax",
+            label: "Fax",
+            values: ["+65-64747885 (MFA)"],
+            caption: "Got people use meh?",
+          },
+          {
+            method: "email",
+            label: "Email",
+            values: [
+              "do-not-reply@isomer.gov.sg",
+              "do-not-reply-pelase@isomer.gov.sg",
+            ],
+          },
+          {
+            method: "website",
+            label: "Website",
+            values: [
+              "https://www.isomer.gov.sg",
+              "https://sample.isomer.gov.sg",
+            ],
+          },
+          {
+            method: "emergency_contact",
+            label: "In the case of emergency",
+            values: ["+65 5678 1234"],
+            caption: "(after hours)",
+          },
+          {
+            method: "operating_hours",
+            label: "Operating Hours",
+            values: ["Mon - Fri", "8.30 am to 5.00 pm", "Sat & Sun - Closed"],
+          },
+          {
+            label: "Telegram",
+            values: ["https://t.me/isomer_gov_sg"],
+          },
+          {
+            label: "WhatsApp",
+            values: ["+65-63798000 (MFA)"],
+          },
+        ],
+        url: "/",
+        label: "More ways to contact us",
+      },
     ],
   }
 }
@@ -580,6 +639,23 @@ export const Dark: Story = {
       secondaryButtonUrl: "/",
     },
     isDarkVariant: true,
+  }),
+}
+
+export const HeroBlock: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "block",
+      backgroundUrl: "/hero-banner.png",
+      title: "Authorisations for new initiatives",
+      subtitle:
+        "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
+      buttonLabel: "Explore now",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Explore now",
+      secondaryButtonUrl: "/",
+    },
   }),
 }
 
@@ -629,6 +705,18 @@ export const HeroFloatingShortText: Story = {
       buttonUrl: "/",
       secondaryButtonLabel: "Explore now",
       secondaryButtonUrl: "/",
+    },
+  }),
+}
+
+export const HeroSearchbar: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "searchbar",
+      title: "Temasek Polytechnic",
+      subtitle:
+        "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
     },
   }),
 }

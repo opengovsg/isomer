@@ -1,7 +1,9 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
   COLLECTION_BLOCK_TYPE,
+  CONTACT_INFORMATION_TYPE,
   DEFAULT_CHILDREN_PAGES_BLOCK,
+  DYNAMIC_COMPONENT_LIST_TYPE,
   DYNAMIC_DATA_BANNER_TYPE,
   IMAGE_GALLERY_TYPE,
 } from "@opengovsg/isomer-components"
@@ -57,6 +59,11 @@ export const DEFAULT_BLOCKS: Record<
         },
       ],
     },
+  },
+  formsg: {
+    type: "formsg",
+    url: "https://form.gov.sg/686e73c1a1f7bf391ee2b3af",
+    title: "A feedback collection form",
   },
   hero: undefined,
   iframe: {
@@ -258,6 +265,31 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
+  [CONTACT_INFORMATION_TYPE]: {
+    type: `${CONTACT_INFORMATION_TYPE}`,
+    title: "Contact us",
+    methods: [
+      {
+        method: "email",
+        label: "Email",
+        values: ["contact@example.com"],
+      },
+    ],
+  },
+  [DYNAMIC_COMPONENT_LIST_TYPE]: {
+    type: `${DYNAMIC_COMPONENT_LIST_TYPE}`,
+    dataSource: {
+      type: "dgs",
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+    },
+    component: {
+      type: "contactinformation",
+      title: "[dgs:entity_name]",
+      description: "[dgs:description]",
+      methods: "[dgs:methods]",
+      otherInformation: "[dgs:other_information]",
+    },
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -387,6 +419,25 @@ export const BLOCK_TO_META: Record<
     usageText: "Highlight an important quote. You can add an optional image.",
     imageSrc: "/assets/block-images/Blockquote.png",
   },
+  [CONTACT_INFORMATION_TYPE]: {
+    label: "Contact information",
+    description: "Display contact information",
+    usageText: "Showcase contact information for your agency.",
+    // TODO: Add imageSrc
+  },
+  [DYNAMIC_COMPONENT_LIST_TYPE]: {
+    label: "Dynamic component list",
+    description: "Display a list of dynamic components",
+    usageText: "Showcase a list of dynamic components.",
+    // TODO: Add imageSrc
+  },
+  formsg: {
+    label: "FormSG",
+    description: "Embed a form to collect data",
+    usageText:
+      "Get mailing list sign-ups or quick feedback by embedding a form directly on your page.",
+    imageSrc: "/assets/block-images/FormSG.png",
+  },
 }
 
 type AllowedBlockSections = {
@@ -427,8 +478,12 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
     label: "Add a new section",
     types: ["infocards", "infocols", "keystatistics"],
   },
-  { label: "Embed external content", types: ["map", "video"] },
+  { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
+
+export const DATABASE_ALLOWED_BLOCKS: AllowedBlockSections =
+  CONTENT_ALLOWED_BLOCKS
+
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Add a new section",

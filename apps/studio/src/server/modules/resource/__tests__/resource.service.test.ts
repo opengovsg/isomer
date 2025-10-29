@@ -560,7 +560,7 @@ describe("resource.service", () => {
       )
 
       // Assert
-      expect(result.numUpdatedRows).toBe(BigInt(0))
+      expect(result).not.toBeDefined()
     })
 
     it("should update the page successfully", async () => {
@@ -585,7 +585,7 @@ describe("resource.service", () => {
         siteId: site.id,
       })
       expect(actualPage?.title).toBe("Updated Title")
-      expect(result.numUpdatedRows).toBe(BigInt(1))
+      expect(result).toBeDefined()
     })
 
     it("should do nothing when the page does not exist", async () => {
@@ -602,7 +602,7 @@ describe("resource.service", () => {
       )
 
       // Assert
-      expect(result.numUpdatedRows).toBe(BigInt(0))
+      expect(result).not.toBeDefined()
     })
 
     it("should fail when the parent does not exist", async () => {

@@ -1,5 +1,7 @@
 const ALLOWED_URL_REGEXES = {
   external: "^https:\\/\\/",
+  phone: "^tel:",
+  sms: "^sms:",
   mail: "^mailto:",
   internal: "^\\[resource:(\\d+):(\\d+)\\]$",
   // NOTE: This is taken with reference from `convertAssetLinks`
@@ -15,11 +17,33 @@ const ALLOWED_URL_REGEXES = {
 } as const
 
 export const LINK_HREF_PATTERN =
-  `(${ALLOWED_URL_REGEXES.external})|(${ALLOWED_URL_REGEXES.mail})|(${ALLOWED_URL_REGEXES.internal})|(${ALLOWED_URL_REGEXES.files})|(${ALLOWED_URL_REGEXES.legacy})` as const
+  `(${ALLOWED_URL_REGEXES.external})|(${ALLOWED_URL_REGEXES.phone})|(${ALLOWED_URL_REGEXES.sms})|(${ALLOWED_URL_REGEXES.mail})|(${ALLOWED_URL_REGEXES.internal})|(${ALLOWED_URL_REGEXES.files})|(${ALLOWED_URL_REGEXES.legacy})` as const
 export const REF_HREF_PATTERN =
   `(${ALLOWED_URL_REGEXES.external})|(${ALLOWED_URL_REGEXES.internal})|(${ALLOWED_URL_REGEXES.files})|(${ALLOWED_URL_REGEXES.legacy})` as const
 export const REF_INTERNAL_HREF_PATTERN =
   `(${ALLOWED_URL_REGEXES.internal})|(${ALLOWED_URL_REGEXES.legacy})` as const
+
+// Validation for form-related embed URLs
+export const isValidFormSGEmbedUrl = (url: string) => {
+  if (!url) {
+    return false
+  }
+
+  try {
+    const urlObject = new URL(url)
+    return urlObject.hostname === "form.gov.sg"
+  } catch (_) {
+    return false
+  }
+}
+
+export const FORMSG_EMBED_URL_REGEXES = {
+  formsg: "^https://form\\.gov\\.sg/[a-z0-9]*$",
+} as const
+
+export const FORMSG_EMBED_URL_PATTERN = Object.values(FORMSG_EMBED_URL_REGEXES)
+  .map((re) => `(${re})`)
+  .join("|")
 
 // Validation for map-related embed URLs
 const isValidGoogleMapsEmbedUrl = (urlObject: URL) => {
@@ -127,3 +151,12 @@ export const VIDEO_EMBED_URL_PATTERN = Object.values(VIDEO_EMBED_URL_REGEXES)
 // ❌ "" (empty string)
 // ❌ " " (only whitespace)
 export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
+
+// ✅ "d_a" (minimum 3 characters, starts with "d_")
+// ✅ "d_abc" (more than 3 characters, starts with "d_")
+// ❌ "d_" (only 2 characters)
+// ❌ "a_bc" (doesn't start with "d_")
+// ❌ "d" (only 1 character)
+// ❌ "d_ab c" (contains space)
+// ❌ "d_ab_c" (contains underscore after prefix)
+export const DGS_ID_STRING_REGEX = "^d_[a-zA-Z0-9]+$"

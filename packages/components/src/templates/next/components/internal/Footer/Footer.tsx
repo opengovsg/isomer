@@ -7,7 +7,13 @@ import {
   FaTiktok,
   FaYoutube,
 } from "react-icons/fa"
-import { FaTelegram, FaWhatsapp, FaXTwitter } from "react-icons/fa6"
+import {
+  FaFlickr,
+  FaTelegram,
+  FaThreads,
+  FaWhatsapp,
+  FaXTwitter,
+} from "react-icons/fa6"
 import { IoLogoGithub } from "react-icons/io"
 
 import type { FooterProps } from "~/interfaces"
@@ -38,6 +44,8 @@ const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   github: IoLogoGithub,
   tiktok: FaTiktok,
   whatsapp: FaWhatsapp,
+  flickr: FaFlickr,
+  threads: FaThreads,
 }
 
 const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
@@ -101,11 +109,13 @@ const NavSection = ({
           <FooterItem
             key={index}
             title={item.title}
-            url={getReferenceLinkHref(
-              item.url,
-              site.siteMap,
-              site.assetsBaseUrl,
-            )}
+            url={
+              getReferenceLinkHref(
+                item.url,
+                site.siteMap,
+                site.assetsBaseUrl,
+              ) ?? item.url
+            }
             LinkComponent={LinkComponent}
           />
         ))}
@@ -115,11 +125,13 @@ const NavSection = ({
           <FooterItem
             key={index}
             title={item.title}
-            url={getReferenceLinkHref(
-              item.url,
-              site.siteMap,
-              site.assetsBaseUrl,
-            )}
+            url={
+              getReferenceLinkHref(
+                item.url,
+                site.siteMap,
+                site.assetsBaseUrl,
+              ) ?? item.url
+            }
             LinkComponent={LinkComponent}
           />
         ))}
@@ -152,7 +164,7 @@ const SocialMediaSection = ({
                 site.assetsBaseUrl,
               )}
               isExternal
-              label={`${link.type} page`}
+              label={`${link.type === "twitter" ? "X" : link.type} page`}
               className={footerItemLinkStyle()}
               LinkComponent={LinkComponent}
               isWithFocusVisibleHighlight
@@ -180,22 +192,26 @@ const ContactUsSection = ({
       {contactUsLink && (
         <FooterItem
           title="Contact"
-          url={getReferenceLinkHref(
-            contactUsLink,
-            site.siteMap,
-            site.assetsBaseUrl,
-          )}
+          url={
+            getReferenceLinkHref(
+              contactUsLink,
+              site.siteMap,
+              site.assetsBaseUrl,
+            ) ?? contactUsLink
+          }
           LinkComponent={LinkComponent}
         />
       )}
       {feedbackFormLink && (
         <FooterItem
           title="Feedback"
-          url={getReferenceLinkHref(
-            feedbackFormLink,
-            site.siteMap,
-            site.assetsBaseUrl,
-          )}
+          url={
+            getReferenceLinkHref(
+              feedbackFormLink,
+              site.siteMap,
+              site.assetsBaseUrl,
+            ) ?? feedbackFormLink
+          }
           LinkComponent={LinkComponent}
         />
       )}
@@ -251,7 +267,6 @@ const LegalSection = ({
   | "lastUpdated"
   | "privacyStatementLink"
   | "termsOfUseLink"
-  | "siteMapLink"
 >) => {
   return (
     <div className="flex h-full">
@@ -272,22 +287,26 @@ const LegalSection = ({
           {privacyStatementLink && (
             <FooterItem
               title="Privacy Statement"
-              url={getReferenceLinkHref(
-                privacyStatementLink,
-                site.siteMap,
-                site.assetsBaseUrl,
-              )}
+              url={
+                getReferenceLinkHref(
+                  privacyStatementLink,
+                  site.siteMap,
+                  site.assetsBaseUrl,
+                ) ?? privacyStatementLink
+              }
               LinkComponent={LinkComponent}
             />
           )}
           {termsOfUseLink && (
             <FooterItem
               title="Terms of Use"
-              url={getReferenceLinkHref(
-                termsOfUseLink,
-                site.siteMap,
-                site.assetsBaseUrl,
-              )}
+              url={
+                getReferenceLinkHref(
+                  termsOfUseLink,
+                  site.siteMap,
+                  site.assetsBaseUrl,
+                ) ?? termsOfUseLink
+              }
               LinkComponent={LinkComponent}
             />
           )}
@@ -364,7 +383,6 @@ const FooterMobile = ({
   feedbackFormLink,
   privacyStatementLink,
   termsOfUseLink,
-  siteMapLink,
 }: FooterProps) => {
   return (
     <div className="flex flex-col gap-8 px-6 py-11 md:px-10 lg:hidden lg:py-16">
@@ -389,7 +407,6 @@ const FooterMobile = ({
           lastUpdated={lastUpdated}
           privacyStatementLink={privacyStatementLink}
           termsOfUseLink={termsOfUseLink}
-          siteMapLink={siteMapLink}
           site={site}
           LinkComponent={LinkComponent}
         />
@@ -414,7 +431,6 @@ const FooterDesktop = ({
   feedbackFormLink,
   privacyStatementLink,
   termsOfUseLink,
-  siteMapLink,
 }: FooterProps) => {
   return (
     <div className="hidden px-10 py-14 lg:block">
@@ -445,7 +461,6 @@ const FooterDesktop = ({
               lastUpdated={lastUpdated}
               privacyStatementLink={privacyStatementLink}
               termsOfUseLink={termsOfUseLink}
-              siteMapLink={siteMapLink}
               site={site}
               LinkComponent={LinkComponent}
             />

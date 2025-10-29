@@ -39,6 +39,34 @@ describe("validation", () => {
         })
     })
 
+    it("should allow tel links", () => {
+      const testCases = [
+        "tel:12345678",
+        "tel:+6512345678",
+        "tel:+65-1234-5678",
+        "tel:+65 1234 5678",
+        "tel:1800 123 4567",
+      ]
+
+      testCases.forEach((testCase) => {
+        const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
+        expect(result).toBe(true)
+      })
+    })
+
+    it("should allow sms links", () => {
+      const testCases = [
+        "sms:12345678",
+        "sms:+6512345678",
+        "sms:+6512345678?body=Hello",
+      ]
+
+      testCases.forEach((testCase) => {
+        const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
+        expect(result).toBe(true)
+      })
+    })
+
     it("should allow internal links", () => {
       const testCases = [
         "[resource:1:2]",
@@ -82,12 +110,8 @@ describe("validation", () => {
       })
     })
 
-    it("should not allow external links with protocols other than https and mailto", () => {
-      const testCases = [
-        "http://example.com",
-        "ftp://example.net",
-        "tel:12345678",
-      ]
+    it("should not allow external links with protocols other than https, tel, sms and mailto", () => {
+      const testCases = ["http://example.com", "ftp://example.net"]
 
       testCases.forEach((testCase) => {
         const result = new RegExp(LINK_HREF_PATTERN).test(testCase)

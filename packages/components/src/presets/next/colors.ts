@@ -58,6 +58,7 @@ export const colors = {
         faint: "#EAF2FF",
       },
       warning: "#FFCC15",
+      alert: "#B91C1C",
     },
   },
 }

@@ -34,7 +34,7 @@ const createInfoCardsStyles = tv({
       "aspect-[3/2] w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
     cardImage: "h-full w-full object-center",
     cardTextContainer: "flex flex-col gap-1.5 sm:gap-2",
-    cardLastUpdated: "prose-label-sm-medium text-base-content",
+    cardDate: "prose-label-sm-medium text-base-content",
     cardTitle:
       "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-canvas-inverse",
     cardTitleArrow:
@@ -82,7 +82,7 @@ const SingleCard = ({
   image,
   category,
   referenceLinkHref,
-  lastUpdated,
+  date,
   displayThumbnail,
   displayCategory,
   site,
@@ -128,9 +128,9 @@ const SingleCard = ({
     >
       {displayThumbnail && renderImage()}
       <div className={compoundStyles.cardTextContainer()}>
-        {lastUpdated && (
-          <p className={compoundStyles.cardLastUpdated()}>
-            {getFormattedDate(lastUpdated)}
+        {date && (
+          <p className={compoundStyles.cardDate()}>
+            {getFormattedDate(date.toISOString())}
           </p>
         )}
 
@@ -152,14 +152,19 @@ const SingleCard = ({
   )
 }
 
-const EmptyCollectionBlockSkeleton = () => {
+interface CollectionBlockSkeletonProps {
+  title: string
+  description: string
+}
+const CollectionBlockSkeleton = ({
+  title,
+  description,
+}: CollectionBlockSkeletonProps) => {
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
-        <h2 className={compoundStyles.headingTitle()}>
-          No collection selected
-        </h2>
-        <p>Choose a collection to display its content.</p>
+        <h2 className={compoundStyles.headingTitle()}>{title}</h2>
+        <p>{description}</p>
       </div>
     </section>
   )
@@ -180,10 +185,19 @@ export const CollectionBlock = ({
 
   // This happens when no collection is selected yet on Studio when the user just added the block
   if (collectionId === "") {
-    return <EmptyCollectionBlockSkeleton />
+    return (
+      <CollectionBlockSkeleton
+        title="No collection selected"
+        description="Choose a collection to display its content."
+      />
+    )
   }
 
   const collectionParent = getCollectionParent({ site, collectionId })
+
+  if (!collectionParent) {
+    return <></>
+  }
 
   const collectionPages = getCollectionPages({
     site,

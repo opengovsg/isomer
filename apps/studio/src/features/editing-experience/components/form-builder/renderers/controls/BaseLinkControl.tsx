@@ -9,7 +9,11 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react"
-import { Button, FormLabel } from "@opengovsg/design-system-react"
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+} from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { BiTrash } from "react-icons/bi"
 
@@ -22,15 +26,7 @@ import { trpc } from "~/utils/trpc"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
 import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"
-
-const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
-  switch (pageType) {
-    case LINK_TYPES.File:
-      return href.split("/").pop()
-    default:
-      return href
-  }
-}
+import { parseHref } from "./utils/parseHref"
 
 interface SuspendableLabelProps {
   siteId: number
@@ -45,6 +41,7 @@ const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
 
   return (
     <Text
+      textStyle="body-2"
       textOverflow="ellipsis"
       whiteSpace="nowrap"
       overflow="auto"
@@ -65,7 +62,11 @@ export function BaseLinkControl({
   path,
   linkTypes,
   description,
-}: Pick<ControlProps, "data" | "label" | "handleChange" | "path" | "required"> &
+  errors,
+}: Pick<
+  ControlProps,
+  "data" | "label" | "handleChange" | "path" | "required" | "errors"
+> &
   Pick<LinkEditorModalProps, "linkTypes"> & { description: string }) {
   const dataString = data && typeof data === "string" ? data : ""
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -78,7 +79,7 @@ export function BaseLinkControl({
 
   return (
     <>
-      <Box as={FormControl} isRequired={required}>
+      <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
         <FormLabel>{label}</FormLabel>
         <LinkErrorBoundary resetLink={() => handleChange(path, undefined)}>
           <Flex
@@ -92,7 +93,9 @@ export function BaseLinkControl({
             {!!data ? (
               <>
                 {pageType !== LINK_TYPES.Page && (
-                  <Text overflow="auto">{displayedHref}</Text>
+                  <Text overflow="auto" textStyle="body-2">
+                    {displayedHref}
+                  </Text>
                 )}
                 {pageType === LINK_TYPES.Page && dataString.length > 0 && (
                   <Suspense fallback={<Skeleton w="100%" h="100%" />}>
@@ -113,11 +116,12 @@ export function BaseLinkControl({
               </>
             ) : (
               <>
-                <Text>{description}</Text>
+                <Text textStyle="body-2">{description}</Text>
                 <Button
                   onClick={onOpen}
                   variant="link"
                   aria-labelledby="button-label"
+                  py="0.5rem"
                 >
                   <Text id="button-label" textStyle="subhead-2">
                     Link something...
@@ -126,6 +130,11 @@ export function BaseLinkControl({
               </>
             )}
           </Flex>
+          {required && (
+            <FormErrorMessage>
+              {label} {errors}
+            </FormErrorMessage>
+          )}
         </LinkErrorBoundary>
       </Box>
       <LinkEditorModal

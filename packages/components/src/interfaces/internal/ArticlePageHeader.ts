@@ -3,7 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
 import type { CollectionCardProps } from "./CollectionCard"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { LinkComponentType } from "~/types"
 
 export const ArticlePageHeaderSchema = Type.Object({
   summary: Type.String({
@@ -19,7 +19,6 @@ export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
   breadcrumb: BreadcrumbProps
   title: string
   category: CollectionCardProps["category"]
-  date: CollectionCardProps["lastUpdated"]
-  site: IsomerSiteProps
+  date?: string
   LinkComponent?: LinkComponentType
 }

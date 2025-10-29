@@ -15,9 +15,14 @@ import {
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
+import { format, isBefore } from "date-fns"
 import _, { get, isEmpty, isEqual } from "lodash"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import {
+  sendCancelSchedulePageEmail,
+  sendScheduledPageEmail,
+} from "~/features/mail/service"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   basePageSchema,
@@ -32,6 +37,7 @@ import {
   updatePageBlobSchema,
   updatePageMetaSchema,
 } from "~/schemas/page"
+import { scheduledPublishServerSchema } from "~/schemas/schedule"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -50,9 +56,15 @@ import {
   publishPageResource,
   publishResource,
   updateBlobById,
+  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import {
+  createDefaultPage,
+  createFolderIndexPage,
+  schedulePublishResource,
+  unschedulePublishResource,
+} from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -307,7 +319,7 @@ export const pageRouter = router({
         actualBlocks.splice(to, 0, movedBlock)
 
         const oldBlob = await getBlobOfResource({
-          tx,
+          db: tx,
           resourceId: String(pageId),
         })
         const updatedBlob = await updateBlobById(tx, {
@@ -332,7 +344,153 @@ export const pageRouter = router({
         return actualBlocks
       })
     }),
+  schedulePage: protectedProcedure
+    .input(scheduledPublishServerSchema)
+    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "publish",
+        userId: ctx.user.id,
+      })
+      // check if the input.scheduledAt is after the current time
+      if (isBefore(scheduledAt, new Date())) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Scheduled time must be in the future",
+        })
+      }
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
 
+      const updatedPage = await db.transaction().execute(async (tx) => {
+        // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
+        const resource = await getPageById(tx, {
+          resourceId: pageId,
+          siteId,
+        })
+        if (!resource) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
+        if (resource.scheduledAt) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Page is already scheduled to be published at ${format(
+              resource.scheduledAt,
+              "yyyy-MM-dd HH:mm",
+            )}`,
+          })
+        }
+        // update the resource's scheduled field
+        const updatedPage = await updatePageById(
+          {
+            id: pageId,
+            siteId,
+            scheduledAt,
+          },
+          tx,
+        )
+        // verify that the update was successful
+        if (!updatedPage) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to schedule page",
+          })
+        }
+        await schedulePublishResource(
+          ctx.logger,
+          { resourceId: pageId, siteId, userId: ctx.user.id },
+          scheduledAt,
+        )
+        await logResourceEvent(tx, {
+          siteId,
+          by,
+          delta: {
+            before: resource,
+            after: updatedPage,
+          },
+          eventType: AuditLogEvent.SchedulePublish,
+        })
+        return updatedPage
+      })
+      await sendScheduledPageEmail({
+        resource: updatedPage,
+        scheduledAt,
+        recipientEmail: by.email,
+      })
+    }),
+  cancelSchedulePage: protectedProcedure
+    .input(basePageSchema)
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "publish",
+        userId: ctx.user.id,
+      })
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const updatedPage = await db.transaction().execute(async (tx) => {
+        const resource = await getPageById(tx, {
+          resourceId: pageId,
+          siteId,
+        })
+        if (!resource) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
+        if (!resource.scheduledAt) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Unable to cancel schedule for a page that is not scheduled",
+          })
+        }
+        // update the resource's scheduled field
+        const updatedPage = await updatePageById(
+          {
+            id: pageId,
+            siteId,
+            scheduledAt: null,
+          },
+          tx,
+        )
+        if (!updatedPage) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to cancel page schedule",
+          })
+        }
+        await unschedulePublishResource(
+          ctx.logger,
+          pageId,
+          resource.scheduledAt,
+        )
+        await logResourceEvent(tx, {
+          siteId,
+          by,
+          delta: {
+            before: resource,
+            after: updatedPage,
+          },
+          eventType: AuditLogEvent.CancelSchedulePublish,
+        })
+        return updatedPage
+      })
+      await sendCancelSchedulePageEmail({
+        resource: updatedPage,
+        recipientEmail: by.email,
+      })
+    }),
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
@@ -368,7 +526,7 @@ export const pageRouter = router({
 
       await db.transaction().execute(async (tx) => {
         const oldBlob = await getBlobOfResource({
-          tx,
+          db: tx,
           resourceId: String(input.pageId),
         })
         const updatedBlob = await updateBlobById(tx, input)
@@ -613,7 +771,7 @@ export const pageRouter = router({
           ? rest
           : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
 
-        const oldBlob = await getBlobOfResource({ tx, resourceId })
+        const oldBlob = await getBlobOfResource({ db: tx, resourceId })
         const newBlob = await updateBlobById(tx, {
           pageId: Number(resourceId),
           content: newContent,

@@ -1,3 +1,4 @@
+import type pino from "pino"
 import type { UnwrapTagged } from "type-fest"
 import {
   DEFAULT_CHILDREN_PAGES_BLOCK,
@@ -5,10 +6,18 @@ import {
 } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
+import type { NEW_PAGE_LAYOUT_VALUES } from "~/schemas/page"
+import type { ScheduledPublishJobData } from "~/server/bullmq/queues/schedule-publish"
+import {
+  getJobIdFromResourceIdAndScheduledAt,
+  getJobOptionsFromScheduledAt,
+  scheduledPublishQueue,
+} from "~/server/bullmq/queues/schedule-publish"
+
 export const createDefaultPage = ({
   layout,
 }: {
-  layout: "content" | "article"
+  layout: (typeof NEW_PAGE_LAYOUT_VALUES)[number]
 }) => {
   switch (layout) {
     case "content": {
@@ -41,6 +50,34 @@ export const createDefaultPage = ({
 
       return articleDefaultPage
     }
+
+    case "database": {
+      const databaseDefaultPage = {
+        layout: ISOMER_USABLE_PAGE_LAYOUTS.Database,
+        page: {
+          title: "New database layout",
+          description:
+            "This is a layout where you can link your dataset from Data.gov.sg. Users can search through the table.",
+          database: {
+            dataSource: {
+              type: "dgs", // we only support DGS creation on studio for now
+              // Hardcoded: One of the most popular datasets on Data.gov.sg, so unlikely to be removed
+              // Either way, this is just a placeholder, unlikely agency will publish with this
+              resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352",
+            },
+          },
+        },
+        content: [],
+        version: "0.1.0",
+      } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
+
+      return databaseDefaultPage
+    }
+
+    default: {
+      const _exhaustiveCheck: never = layout
+      return _exhaustiveCheck
+    }
   }
 }
 
@@ -60,4 +97,47 @@ export const createFolderIndexPage = (title: string) => {
     },
     content: [DEFAULT_CHILDREN_PAGES_BLOCK],
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
+}
+
+/**
+ * Schedules a publish job for a resource at a specified date
+ * @param logger Pino logger instance
+ * @param data Scheduled publish job data
+ * @param scheduledAt The date at which the job should be processed
+ */
+export const schedulePublishResource = async (
+  logger: pino.Logger<string>,
+  data: ScheduledPublishJobData,
+  scheduledAt: Date,
+) => {
+  await scheduledPublishQueue.add(
+    "schedule-publish",
+    data,
+    getJobOptionsFromScheduledAt(data.resourceId.toString(), scheduledAt),
+  )
+  logger.info(
+    { resourceId: data.resourceId, scheduledAt },
+    "Scheduling new publish job",
+  )
+}
+
+export const unschedulePublishResource = async (
+  logger: pino.Logger<string>,
+  resourceId: number,
+  scheduledAt: Date,
+) => {
+  const jobId = getJobIdFromResourceIdAndScheduledAt(
+    resourceId.toString(),
+    scheduledAt,
+  )
+  const existingJob = await scheduledPublishQueue.getJob(jobId)
+  if (existingJob) {
+    logger.info({ resourceId }, "Removing scheduled publish job")
+    await existingJob.remove()
+  } else {
+    logger.info(
+      { resourceId },
+      "No scheduled publish job found to remove, skipping",
+    )
+  }
 }

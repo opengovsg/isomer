@@ -30,7 +30,6 @@ const DatabaseLayout = ({
   layout,
   content,
   LinkComponent,
-  ScriptComponent,
 }: DatabasePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
@@ -46,7 +45,6 @@ const DatabaseLayout = ({
       page={page}
       layout={layout}
       LinkComponent={LinkComponent}
-      ScriptComponent={ScriptComponent}
     >
       <ContentPageHeader
         {...page.contentPageHeader}
@@ -78,7 +76,7 @@ const DatabaseLayout = ({
         )}
 
         <div className={compoundStyles.table()}>
-          <SearchableTable {...page.database} site={site} />
+          <SearchableTable {...page.database} />
         </div>
       </div>
     </Skeleton>

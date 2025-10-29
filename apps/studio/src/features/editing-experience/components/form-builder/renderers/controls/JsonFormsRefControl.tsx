@@ -18,6 +18,7 @@ export function JsonFormsRefControl({
   path,
   label,
   required,
+  errors,
 }: ControlProps) {
   return (
     <BaseLinkControl
@@ -28,6 +29,7 @@ export function JsonFormsRefControl({
       path={path}
       linkTypes={omit(LINK_TYPES_MAPPING, LINK_TYPES.Email)}
       description="Choose a page or file to link this Collection item to"
+      errors={errors}
     />
   )
 }

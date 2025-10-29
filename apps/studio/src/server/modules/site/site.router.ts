@@ -13,8 +13,12 @@ import {
   getNameSchema,
   getNotificationSchema,
   publishSiteSchema,
+  setFooterSchema,
+  setNavbarSchema,
   setNotificationSchema,
   setSiteConfigByAdminSchema,
+  updateSiteConfigSchema,
+  updateSiteIntegrationsSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -28,8 +32,8 @@ import {
   getNavBar,
   publishSiteConfig,
 } from "../resource/resource.service"
+import { updateSearchSGConfig } from "../searchsg/searchsg.service"
 import {
-  clearSiteNotification,
   createSite,
   getNotification,
   getSiteConfig,
@@ -90,6 +94,112 @@ export const siteRouter = router({
       })
       return getSiteConfig(db, id)
     }),
+  updateSiteConfig: protectedProcedure
+    .input(updateSiteConfigSchema)
+    .mutation(async ({ ctx, input: { siteId, siteName } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", siteId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      const { config } = site
+
+      const updatedConfig = await db.transaction().execute(async (tx) => {
+        const updatedSite = await tx
+          .updateTable("Site")
+          .set({ config: jsonb({ ...config, siteName }) })
+          .where("id", "=", siteId)
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await logConfigEvent(tx, {
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: {
+            before: site,
+            after: updatedSite,
+          },
+          by: user,
+          siteId,
+        })
+
+        return updatedSite.config
+      })
+
+      await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
+
+      // NOTE: only update searchsg if either the agency name changed
+      // or if the search type changed.
+      // `void` here because this API call is slow
+      // and not super critical to update
+      if (
+        updatedConfig.search?.type === "searchSG" &&
+        (config.search?.type !== "searchSG" ||
+          config.siteName !== updatedConfig.siteName)
+      )
+        void updateSearchSGConfig(
+          { name: siteName },
+          updatedConfig.search.clientId,
+          updatedConfig.url,
+        )
+
+      return updatedConfig
+    }),
+  updateSiteIntegrations: protectedProcedure
+    .input(updateSiteIntegrationsSchema)
+    .mutation(async ({ ctx, input: { siteId, data } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      return await db.transaction().execute(async (tx) => {
+        const site = await tx
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+
+        const updatedSite = await tx
+          .updateTable("Site")
+          .set({ config: jsonb(data) })
+          .where("id", "=", siteId)
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await logConfigEvent(tx, {
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: {
+            before: site,
+            after: updatedSite,
+          },
+          by: user,
+          siteId,
+        })
+
+        await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
+
+        return updatedSite
+      })
+    }),
   getTheme: protectedProcedure
     .input(getConfigSchema)
     .query(async ({ ctx, input: { id } }) => {
@@ -111,6 +221,93 @@ export const siteRouter = router({
       })
       return getFooter(db, id)
     }),
+  setFooter: protectedProcedure
+    .input(setFooterSchema)
+    .mutation(async ({ ctx, input: { siteId, footer } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+
+      await db.transaction().execute(async (tx) => {
+        const user = await tx
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!user) {
+          // NOTE: This shouldn't happen as the user is already logged in
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The user could not be found.",
+          })
+        }
+
+        const site = await tx
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!site) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The site could not be found.",
+          })
+        }
+
+        const oldFooter = await tx
+          .selectFrom("Footer")
+          .where("siteId", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!oldFooter) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The footer for the site could not be found.",
+          })
+        }
+
+        const newFooter = await tx
+          .updateTable("Footer")
+          .set({
+            content: jsonb(
+              safeJsonParse(
+                footer,
+              ) as IsomerSiteWideComponentsProps["footerItems"],
+            ),
+          })
+          .where("siteId", "=", siteId)
+          .returningAll()
+          .executeTakeFirst()
+
+        if (!newFooter) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site footer.",
+          })
+        }
+
+        await logConfigEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.FooterUpdate,
+          delta: {
+            before: oldFooter,
+            after: newFooter,
+          },
+          by: user,
+        })
+
+        await publishSiteConfig(
+          ctx.user.id,
+          { site, footer: newFooter },
+          ctx.logger,
+        )
+      })
+    }),
   getNavbar: protectedProcedure
     .input(getConfigSchema)
     .query(async ({ ctx, input: { id } }) => {
@@ -120,6 +317,92 @@ export const siteRouter = router({
         action: "read",
       })
       return getNavBar(db, id)
+    }),
+  setNavbar: protectedProcedure
+    .input(setNavbarSchema)
+    .mutation(async ({ ctx, input: { siteId, navbar } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+
+      await db.transaction().execute(async (tx) => {
+        const user = await tx
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!user) {
+          // NOTE: This shouldn't happen as the user is already logged in
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The user could not be found.",
+          })
+        }
+
+        const site = await tx
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!site) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The site could not be found.",
+          })
+        }
+
+        // Update Navbar contents
+        const oldNavbar = await tx
+          .selectFrom("Navbar")
+          .where("siteId", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!oldNavbar) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The navbar for the site could not be found.",
+          })
+        }
+
+        const newNavbar = await tx
+          .updateTable("Navbar")
+          .set({
+            content: jsonb(
+              safeJsonParse(navbar) as IsomerSiteWideComponentsProps["navbar"],
+            ),
+          })
+          .where("siteId", "=", siteId)
+          .returningAll()
+          .executeTakeFirst()
+
+        if (!newNavbar) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site navbar.",
+          })
+        }
+
+        await logConfigEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.NavbarUpdate,
+          delta: {
+            before: oldNavbar,
+            after: newNavbar,
+          },
+          by: user,
+        })
+
+        await publishSiteConfig(
+          ctx.user.id,
+          { site, navbar: newNavbar },
+          ctx.logger,
+        )
+      })
     }),
   getLocalisedSitemap: protectedProcedure
     .input(getLocalisedSitemapSchema)
@@ -139,40 +422,36 @@ export const siteRouter = router({
         userId: ctx.user.id,
         action: "read",
       })
-      const notification = await getNotification(siteId)
-      return notification
+
+      return await getNotification(siteId)
     }),
-  setNotification: protectedProcedure
-    .input(setNotificationSchema)
-    .mutation(async ({ ctx, input }) => {
-      const { siteId, notification, notificationEnabled } = input
+  setNotification: protectedProcedure.input(setNotificationSchema).mutation(
+    async ({
+      ctx,
+      input: {
+        siteId,
+        notification: { notification },
+      },
+    }) => {
       await validateUserPermissionsForSite({
         siteId,
         userId: ctx.user.id,
         action: "update",
       })
 
-      const site = await db.transaction().execute(async (tx) => {
-        if (notificationEnabled) {
-          return await setSiteNotification({
-            tx,
-            siteId,
-            userId: ctx.user.id,
-            notification,
-          })
-        } else {
-          return await clearSiteNotification({
-            tx,
-            siteId,
-            userId: ctx.user.id,
-          })
-        }
+      const site = await db.transaction().execute(async () => {
+        return await setSiteNotification({
+          siteId,
+          userId: ctx.user.id,
+          notification,
+        })
       })
 
       await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
 
-      return input
-    }),
+      return site.config.notification
+    },
+  ),
   setSiteConfigByAdmin: protectedProcedure
     .input(setSiteConfigByAdminSchema)
     .mutation(

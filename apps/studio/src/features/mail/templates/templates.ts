@@ -1,19 +1,26 @@
 import { RoleType } from "~prisma/generated/generatedEnums"
+import { format } from "date-fns"
+import { toZonedTime } from "date-fns-tz"
 
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
   BaseEmailTemplateData,
+  CancelSchedulePageTemplateData,
   EmailTemplate,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
+  SchedulePageTemplateData,
 } from "./types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
 import { getStudioResourceUrl } from "~/utils/resources"
+
+const constructStudioRedirect = () =>
+  `<a target="_blank" href="${env.NEXT_PUBLIC_APP_URL}">${env.NEXT_PUBLIC_APP_URL?.replace("https://", "")}</a>`
 
 export const invitationTemplate = (
   data: InvitationEmailTemplateData,
@@ -42,7 +49,7 @@ export const invitationTemplate = (
     `<p>Hi ${recipientEmail},</p>
 <p>${inviterName} has invited you to edit ${siteName} on Isomer Studio as ${role}. As a ${role}, you can ${roleAction}.</p>
 <p></p>
-<p>To start editing, log in to Isomer Studio and activate your account: <a target="_blank" href="${env.NEXT_PUBLIC_APP_URL}">${env.NEXT_PUBLIC_APP_URL?.replace("https://", "")}</a></p>`,
+<p>To start editing, log in to Isomer Studio and activate your account: ${constructStudioRedirect()}</p>`,
     ...(isSingpassEnabled
       ? [
           `<p>You will need to set up Two-Factor Authentication (2FA) using Singpass. Please have your Singpass ready to complete activation.</p>`,
@@ -71,6 +78,51 @@ export const loginAlertTemplate = (
 <p><strong>Note:</strong> You're receiving this notification because your account was logged into during a Singpass authentication outage. If you are not the one who logged in, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
+  }
+}
+
+export const schedulePageTemplate = (
+  data: SchedulePageTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, resource, scheduledAt } = data
+  const scheduledAtTimezone = format(
+    toZonedTime(scheduledAt, "Asia/Singapore"),
+    "MMMM d, yyyy hh:mm a",
+  )
+  return {
+    subject: `[Isomer Studio] You scheduled ${resource.title} to be published`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${scheduledAtTimezone}</strong>.</p>
+<p>Log in to Isomer Studio at ${constructStudioRedirect()} to change or cancel this.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
+export const cancelSchedulePageTemplate = (
+  data: CancelSchedulePageTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, resource } = data
+  return {
+    subject: `[Isomer Studio] Your scheduled publish for ${resource.title} has been cancelled`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>Your scheduled publish for ${resource.title} has been cancelled.</p>
+<p>Log in to Isomer Studio at ${constructStudioRedirect()} to manage your content.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
+export const failedSchedulePublishTemplate = (
+  data: BaseEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail } = data
+  return {
+    subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
+    body: `<p>Hi ${recipientEmail},</p>
+    <p>We couldn’t publish the page that you scheduled. Please log in to Isomer Studio at ${constructStudioRedirect()} and try publishing the page again.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
   }
 }
 
@@ -113,7 +165,7 @@ export const accountDeactivationWarningTemplate = (
   return {
     subject: `[Isomer Studio] Account deactivation warning - ${inHowManyDays} days remaining`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>We noticed you haven’t logged in for a while. To keep your account active, please log in within the next ${inHowManyDays} days at <a href="${env.NEXT_PUBLIC_APP_URL}">${env.NEXT_PUBLIC_APP_URL?.replace("https://", "")}</a>.</p>
+<p>We noticed you haven’t logged in for a while. To keep your account active, please log in within the next ${inHowManyDays} days at ${constructStudioRedirect()}.</p>
 <p>This is a standard security measure to protect your sites and data.</p>
 <p>If your account becomes deactivated, you will lose access to the following sites:</p>
 <ul>${siteNames.map((site) => `<li>${site}</li>`).join("")}</ul>
@@ -171,6 +223,12 @@ export const templates = {
     loginAlertTemplate satisfies EmailTemplateFunction<LoginAlertEmailTemplateData>,
   publishAlertContentPublisher:
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
+  cancelSchedulePage:
+    cancelSchedulePageTemplate satisfies EmailTemplateFunction<CancelSchedulePageTemplateData>,
+  failedSchedulePublish:
+    failedSchedulePublishTemplate satisfies EmailTemplateFunction<BaseEmailTemplateData>,
+  schedulePage:
+    schedulePageTemplate satisfies EmailTemplateFunction<SchedulePageTemplateData>,
   publishAlertSiteAdmin:
     publishAlertSiteAdminTemplate satisfies EmailTemplateFunction<PublishAlertSiteAdminEmailTemplateData>,
   accountDeactivationWarning:

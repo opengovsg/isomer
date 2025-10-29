@@ -8,12 +8,17 @@ import type { NavbarClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
-import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
+import { LocalSearchInputBox, NavbarSearchSGInputBox } from "../../internal"
 import { LinkButton } from "../../internal/LinkButton"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
 import { NavItem } from "./NavItem"
+
+interface Size {
+  width?: number
+  height?: number
+}
 
 const createNavbarStyles = tv({
   slots: {
@@ -75,8 +80,19 @@ export const NavbarClient = ({
   // Reference for the site header
   const siteHeaderRef = useRef<HTMLDivElement>(null)
 
-  const refreshMenuOffset = useCallback(() => {
+  const refreshMenuOffset = useCallback((size?: Size) => {
     setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
+
+    if (!size) {
+      return
+    }
+
+    if (size.width && size.width < 1024) {
+      // close any open nav items when resizing to mobile
+      setOpenNavItemIdx(-1)
+    } else {
+      setIsHamburgerOpen(false)
+    }
   }, [])
 
   useResizeObserver({
@@ -239,7 +255,7 @@ export const NavbarClient = ({
           )}
 
           {search.type === "searchSG" && (
-            <SearchSGInputBox
+            <NavbarSearchSGInputBox
               clientId={search.clientId}
               isOpen={isSearchOpen}
             />

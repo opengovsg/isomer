@@ -1,10 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { expect, userEvent, waitFor, within } from "@storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { DatabasePageSchemaType } from "~/engine"
-import { generateSiteConfig } from "~/stories/helpers"
+import {
+  DGS_SMALL_DATASET_RESOURCE_ID,
+  generateSiteConfig,
+} from "~/stories/helpers"
 import Database from "./Database"
 
 const meta: Meta<typeof Database> = {
@@ -127,6 +130,7 @@ const generateArgs = ({
 }
 
 export const Default: Story = {
+  name: "Native Searchable Table",
   args: generateArgs({
     database: {
       title: "The Cancer Drug List (CDL)",
@@ -145,7 +149,7 @@ export const Default: Story = {
       items: [
         [
           "Cell copy 1",
-          '=HYPERLINK("https://www.isomer.gov.sg", Cell copy)',
+          '<a href="https://www.isomer.gov.sg">Cell copy</a>',
           "Cell copy",
           "Cell copy",
           "Cell copy",
@@ -703,7 +707,7 @@ export const NoSearchResults: Story = {
       items: [
         [
           "Cell copy 1",
-          '=HYPERLINK("https://www.isomer.gov.sg", Cell copy)',
+          '<a href="https://www.isomer.gov.sg">Cell copy</a>',
           "Cell copy",
           "Cell copy",
           "Cell copy",
@@ -898,9 +902,67 @@ export const NoSearchResults: Story = {
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
+
     const searchElem = screen.getByRole("searchbox", {
       name: /Search table/i,
     })
+
+    await expect(searchElem).toHaveAttribute(
+      "placeholder",
+      "Enter a search term",
+    )
+
     await userEvent.type(searchElem, "some whacky search term")
+
+    await waitFor(() => {
+      screen.getByText(
+        "Check if you have a spelling error or try a different search term.",
+      )
+    })
   },
+}
+
+export const DGSSearchableTable: Story = {
+  name: "DGS Searchable Table",
+  args: generateArgs({
+    database: {
+      title: "Sample DGS Table",
+      dataSource: {
+        type: "dgs",
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+      },
+    },
+  }),
+}
+
+export const DGSSearchableTableWithDefaultTitle: Story = {
+  name: "DGS Searchable Table (with default title)",
+  args: generateArgs({
+    database: {
+      dataSource: {
+        type: "dgs",
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+      },
+    },
+  }),
+}
+
+export const DGSSearchableTableWithHeaders: Story = {
+  name: "DGS Searchable Table (with headers)",
+  args: generateArgs({
+    database: {
+      title: "Sample DGS Table",
+      dataSource: {
+        type: "dgs",
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+      },
+      headers: [
+        { label: "Year", key: "year" },
+        { label: "University", key: "university" },
+        { label: "School", key: "school" },
+        { label: "Degree", key: "degree" },
+        { label: "Monthly Median", key: "gross_monthly_median" },
+      ],
+    },
+  }),
 }
