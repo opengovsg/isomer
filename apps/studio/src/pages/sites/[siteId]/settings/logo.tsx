@@ -2,10 +2,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { Box } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-import {
-  LogoSettingsSchema,
-  SiteThemeSchema,
-} from "@opengovsg/isomer-components"
+import { LogoSettingsSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { isEqual } from "lodash"
 import { BiPaint } from "react-icons/bi"
@@ -17,10 +14,7 @@ import {
   SettingsGrid,
   SettingsPreviewGridItem,
 } from "~/components/Settings"
-import {
-  BRIEF_TOAST_SETTINGS,
-  SETTINGS_TOAST_MESSAGES,
-} from "~/constants/toast"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
@@ -31,12 +25,7 @@ import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import {
-  LogoSettings,
-  logoSettingsValidator,
-  SiteTheme,
-  siteThemeValidator,
-} from "~/schemas/site"
+import { LogoSettings, logoSettingsValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
 
