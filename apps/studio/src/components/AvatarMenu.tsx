@@ -1,4 +1,6 @@
+import { useEffect } from "react"
 import { Divider, Flex, Text } from "@chakra-ui/react"
+import { useGrowthBook } from "@growthbook/growthbook-react"
 import {
   Menu,
   AvatarMenu as OgpAvatarMenu,
@@ -6,14 +8,24 @@ import {
 import { useSetAtom } from "jotai"
 import { BiLogOut, BiPencil, BiUser } from "react-icons/bi"
 
+import type { GrowthbookAttributes } from "~/types/growthbook"
 import { useMe } from "~/features/me/api"
 import { updateProfileModalOpenAtom } from "~/features/users/atoms"
 import { EditProfileModal } from "~/features/users/components"
 
 export const AvatarMenu = () => {
   const { me, logout } = useMe()
+  const gb = useGrowthBook()
 
   const setIsEditProfileModalOpen = useSetAtom(updateProfileModalOpenAtom)
+
+  useEffect(() => {
+    const newAttributes: Partial<GrowthbookAttributes> = {
+      email: me.email,
+    }
+
+    void gb.setAttributes(newAttributes)
+  }, [gb, me])
 
   return (
     <>
