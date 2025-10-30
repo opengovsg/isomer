@@ -53,7 +53,7 @@ const JsonFormsColourPickerControl = ({
   required,
   errors,
 }: ControlProps) => {
-  const data: string | undefined = _data ?? String(_data) ?? undefined
+  const data: string | undefined = typeof _data === "string" ? _data : undefined
   // NOTE: Tint is the colour brightened by 10% successively,
   // shades are the colour darkened by 10% successively
   const { tints, colour, shades } = data
@@ -148,7 +148,7 @@ const JsonFormsColourPickerControl = ({
                   borderColor="base.divider.medium"
                   borderLeftRadius={isFirst ? "6px" : "auto"}
                   borderRightRadius={isLast ? "6px" : "auto"}
-                  bgColor={get(ctx.core?.data, p)}
+                  bgColor={get(ctx.core?.data as string | undefined, p)}
                 ></Box>
               )
             })}
