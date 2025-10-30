@@ -151,7 +151,7 @@ export const siteRouter = router({
           config.siteName !== updatedConfig.siteName)
       )
         void updateSearchSGConfig(
-          { name: siteName },
+          { name: siteName, _kind: "name" },
           updatedConfig.search.clientId,
           updatedConfig.url,
         )
@@ -221,6 +221,28 @@ export const siteRouter = router({
         action: "update",
       })
 
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", siteId)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!site) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "The site could not be found.",
+        })
+      }
+
+      const oldTheme = site.theme
+
+      if (!oldTheme) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "The theme for the site could not be found.",
+        })
+      }
+
       await db.transaction().execute(async (tx) => {
         const user = await tx
           .selectFrom("User")
@@ -233,28 +255,6 @@ export const siteRouter = router({
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "The user could not be found.",
-          })
-        }
-
-        const site = await tx
-          .selectFrom("Site")
-          .where("id", "=", siteId)
-          .selectAll()
-          .executeTakeFirst()
-
-        if (!site) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "The site could not be found.",
-          })
-        }
-
-        const oldTheme = site.theme
-
-        if (!oldTheme) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "The theme for the site could not be found.",
           })
         }
 
@@ -285,6 +285,23 @@ export const siteRouter = router({
 
         await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
       })
+
+      // NOTE: if the users update their `canvas.inverse`
+      // we also need to update their searchsg theme settings
+      if (
+        site.config.search?.type === "searchSG" &&
+        oldTheme.colors.brand.canvas.inverse !==
+          theme.colors.brand.canvas.inverse
+      ) {
+        void updateSearchSGConfig(
+          {
+            colour: theme.colors.brand.canvas.inverse,
+            _kind: "colour",
+          },
+          site.config.search.clientId,
+          site.config.url,
+        )
+      }
     }),
   getFooter: protectedProcedure
     .input(getConfigSchema)
