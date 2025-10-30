@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/nextjs"
 import { delay, http, HttpResponse } from "msw"
+import { userEvent, within } from "storybook/test"
 import { assetHandler } from "tests/msw/handlers/asset"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"

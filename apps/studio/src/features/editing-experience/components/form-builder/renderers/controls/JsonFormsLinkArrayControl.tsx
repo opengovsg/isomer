@@ -40,9 +40,9 @@ import {
 } from "@jsonforms/react"
 import { Button } from "@opengovsg/design-system-react"
 import {
+  BiDirections,
   BiLeftArrowAlt,
   BiPlusCircle,
-  BiSitemap,
   BiTrash,
 } from "react-icons/bi"
 
@@ -142,7 +142,7 @@ const EditLinkItem = ({
             p="0.5rem"
             lineHeight="1rem"
           >
-            <Icon as={BiSitemap} fontSize="1rem" />
+            <Icon as={BiDirections} fontSize="1rem" />
           </Box>
 
           <Text

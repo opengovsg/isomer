@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
-import { userEvent, within } from "@storybook/test"
+import { userEvent, within } from "storybook/test"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
@@ -132,10 +132,8 @@ export const WithSomeSelected: Story = {
 }
 
 export const MobileFilterButton: Story = {
+  globals: { viewport: getViewportByMode("mobile") },
   parameters: {
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
     chromatic: withChromaticModes(["mobile"]),
   },
   args: WithSomeSelected.args,

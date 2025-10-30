@@ -105,7 +105,6 @@ export const TableSchema = Type.Object(
       caption: Type.String({
         title: "Table caption",
         description: "The caption of the table",
-        maxLength: 200,
       }),
     }),
     content: Type.Array(

@@ -1,6 +1,7 @@
 import type { ImageProps } from "~/interfaces"
 import type {
   ArticlePagePageProps,
+  FormattedDate,
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
@@ -59,6 +60,7 @@ export type CollectionCardProps = Pick<
   referenceLinkHref: string | undefined
   imageSrc: string | undefined
   itemTitle: string
+  formattedDate?: FormattedDate
 }
 
 // NOTE: This is to ensure no additional props are being passed to this component

@@ -26,12 +26,10 @@ const generateInfobarSchema = ({
       type: Type.Literal("infobar", { default: "infobar" }),
       title: Type.String({
         title: "Title",
-        maxLength: 100,
       }),
       description: Type.Optional(
         Type.String({
           title: "Description",
-          maxLength: 200,
         }),
       ),
       variant: Type.Optional(

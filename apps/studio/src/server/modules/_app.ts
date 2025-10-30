@@ -12,6 +12,7 @@ import { pageRouter } from "./page/page.router"
 import { resourceRouter } from "./resource/resource.router"
 import { siteRouter } from "./site/site.router"
 import { userRouter } from "./user/user.router"
+import { webhookRouter } from "./webhook/webhook.router"
 import { whitelistRouter } from "./whitelist/whitelist.router"
 
 export const appRouter = router({
@@ -26,6 +27,7 @@ export const appRouter = router({
   resource: resourceRouter,
   user: userRouter,
   whitelist: whitelistRouter,
+  webhook: webhookRouter,
 })
 
 export type AppRouter = typeof appRouter

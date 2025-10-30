@@ -1,7 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
-import { AuditLogEvent, RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
+import { AuditLogEvent, RoleType } from "~prisma/generated/generatedEnums"
 import get from "lodash/get"
 import partition from "lodash/partition"
 
@@ -256,6 +256,7 @@ export const updateUserSitewidePermission = async ({
       eventType: AuditLogEvent.PermissionDelete,
       by: byUser,
       delta: { before: sitePermissionToRemove, after: deletedSitePermission },
+      siteId,
     })
 
     const createdSitePermission = await tx
@@ -277,6 +278,7 @@ export const updateUserSitewidePermission = async ({
       eventType: AuditLogEvent.PermissionCreate,
       by: byUser,
       delta: { before: null, after: createdSitePermission },
+      siteId,
     })
 
     return createdSitePermission

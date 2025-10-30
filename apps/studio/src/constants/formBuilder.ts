@@ -10,6 +10,7 @@ export const JSON_FORMS_RANKING = {
   IntegerControl: 4,
   EnumControl: 2,
   TextAreaControl: 1,
+  ColourPickerControl: 2,
   TextControl: 1,
   // NOTE: has to be higher than `TextControl`
   UuidControl: 2,

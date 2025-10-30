@@ -1,7 +1,7 @@
+import type { IconType } from "react-icons"
 import { Center, Flex, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { isEmpty } from "lodash"
-import { IconType } from "react-icons"
 
 import { useBuilderErrors } from "../editing-experience/components/form-builder/ErrorProvider"
 
@@ -47,7 +47,7 @@ export const SettingsHeader = ({
         isDisabled={isDisabledProp || isDisabled}
         size="xs"
       >
-        Publish changes
+        Publish
       </Button>
     </Flex>
   )

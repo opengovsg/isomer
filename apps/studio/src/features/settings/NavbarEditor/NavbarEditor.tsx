@@ -29,6 +29,7 @@ import {
   useBuilderErrors,
 } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
+import { Can } from "~/features/permissions"
 import { ajv } from "~/utils/ajv"
 
 const validateItemsFn =
@@ -146,8 +147,12 @@ export const NavbarEditor = ({
             boxSizing="border-box"
             px="2rem"
           >
-            <Tab mx={0}>Menu Links</Tab>
-            <Tab mx={0}>Customise</Tab>
+            <Tab mx={0}>
+              <Text textStyle="subhead-3">Menu Links</Text>
+            </Tab>
+            <Tab mx={0}>
+              <Text textStyle="subhead-3">Customise</Text>
+            </Tab>
           </TabList>
 
           <TabPanels px="0.5rem" flex={1} overflowY="auto">
@@ -192,22 +197,24 @@ const PublishButton = ({
   const isSchemaValid = isEmpty(errors)
 
   return (
-    <Tooltip
-      label={
-        !isSchemaValid
-          ? "There are errors in your navigation menu. Fix them before publishing."
-          : undefined
-      }
-      hasArrow
-    >
-      <Button
-        size="xs"
-        onClick={onClick}
-        isLoading={isSaving}
-        isDisabled={!isDirty || !isSchemaValid}
+    <Can do="create" on={{ parentId: null }}>
+      <Tooltip
+        label={
+          !isSchemaValid
+            ? "There are errors in your navigation menu. Fix them before publishing."
+            : undefined
+        }
+        hasArrow
       >
-        Publish changes
-      </Button>
-    </Tooltip>
+        <Button
+          size="xs"
+          onClick={onClick}
+          isLoading={isSaving}
+          isDisabled={!isDirty || !isSchemaValid}
+        >
+          Publish
+        </Button>
+      </Tooltip>
+    </Can>
   )
 }
