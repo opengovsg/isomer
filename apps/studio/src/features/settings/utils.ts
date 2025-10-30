@@ -3,6 +3,15 @@ import { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import { flatten } from "flat"
 import chunk from "lodash/chunk"
 
+// NOTE: refer to this article for conversion from gamma compressed rgb values
+// to a linear rgb scale
+// Ref: https://en.wikipedia.org/wiki/Relative_luminance
+const LINEAR_RGB_FACTORS = {
+  red: 0.2126,
+  green: 0.7152,
+  blue: 0.0722,
+}
+
 export const normalizeHex = (color: string): string => {
   let normalizedColor = color
   if (normalizedColor.startsWith("#")) {
@@ -55,7 +64,11 @@ export const calculateRelativeLuminance = (color: string) => {
     return 0
   }
 
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  return (
+    LINEAR_RGB_FACTORS.red * r +
+    LINEAR_RGB_FACTORS.green * g +
+    LINEAR_RGB_FACTORS.blue * b
+  )
 }
 
 export const generateTheme = ({

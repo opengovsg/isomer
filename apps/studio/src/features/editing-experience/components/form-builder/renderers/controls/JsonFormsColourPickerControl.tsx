@@ -17,6 +17,7 @@ import {
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Input } from "@opengovsg/design-system-react"
 import get from "lodash/get"
+import { isHexadecimal } from "validator"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import {
@@ -89,7 +90,11 @@ const JsonFormsColourPickerControl = ({
                 w="86px"
                 onChange={(e) => {
                   const rawString = e.target.value
-                  const parsedHex = rawString.replace(/[^0-9A-Fa-f]/g, "")
+                  const parsedHex = rawString
+                    .split("")
+                    .filter((c) => isHexadecimal(c))
+                    .join("")
+                    .slice(0, 6) // limit to 6 characters
 
                   setDisplayedColour(parsedHex)
                   handleChange(path, `#${normalizeHex(parsedHex)}`)
@@ -117,8 +122,8 @@ const JsonFormsColourPickerControl = ({
           </FormLabel>
           <Flex mt="0.75rem" h="3rem">
             {THEME_PATHS.map((p) => {
-              const isFirst = p === "colors.brand.canvas.default"
-              const isLast = p === "colors.brand.interaction.pressed"
+              const isFirst = p === THEME_PATHS[0]
+              const isLast = p === THEME_PATHS[THEME_PATHS.length - 1]
 
               return (
                 <Box

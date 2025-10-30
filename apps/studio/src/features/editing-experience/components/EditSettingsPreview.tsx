@@ -4,8 +4,8 @@ import type {
   IsomerSiteThemeProps,
 } from "@opengovsg/isomer-components"
 import { useState } from "react"
-import { Box, TabList, TabPanels, Text } from "@chakra-ui/react"
-import { Switch, Tab, Tabs } from "@opengovsg/design-system-react"
+import { Box, TabList, Text } from "@chakra-ui/react"
+import { Tab, Tabs } from "@opengovsg/design-system-react"
 import { UnwrapTagged } from "type-fest"
 
 import { AskgovWidget } from "~/components/Askgov"
