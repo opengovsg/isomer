@@ -43,6 +43,15 @@ export const createContext = async (opts: CreateNextContextOptions) => {
     session,
   })
 
+  return {
+    ...innerContext,
+    req: opts.req,
+    res: opts.res,
+    gb: await createGrowthBookContext(),
+  }
+}
+
+export const createGrowthBookContext = async () => {
   const growthbookContext = new GrowthBook({
     apiHost: "https://cdn.growthbook.io",
     clientKey: env.GROWTHBOOK_CLIENT_KEY,
@@ -50,13 +59,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
     disableCache: true,
   })
   await growthbookContext.init({ timeout: 2000 })
-
-  return {
-    ...innerContext,
-    req: opts.req,
-    res: opts.res,
-    gb: growthbookContext,
-  }
+  return growthbookContext
 }
 
 export type Context = trpc.inferAsyncReturnType<typeof createContext>

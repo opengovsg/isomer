@@ -9,7 +9,11 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react"
-import { Button, FormLabel } from "@opengovsg/design-system-react"
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+} from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { BiTrash } from "react-icons/bi"
 
@@ -22,6 +26,7 @@ import { trpc } from "~/utils/trpc"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
 import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"
+import { getCustomErrorMessage } from "./utils"
 import { parseHref } from "./utils/parseHref"
 
 interface SuspendableLabelProps {
@@ -58,7 +63,11 @@ export function BaseLinkControl({
   path,
   linkTypes,
   description,
-}: Pick<ControlProps, "data" | "label" | "handleChange" | "path" | "required"> &
+  errors,
+}: Pick<
+  ControlProps,
+  "data" | "label" | "handleChange" | "path" | "required" | "errors"
+> &
   Pick<LinkEditorModalProps, "linkTypes"> & { description: string }) {
   const dataString = data && typeof data === "string" ? data : ""
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -71,7 +80,7 @@ export function BaseLinkControl({
 
   return (
     <>
-      <Box as={FormControl} isRequired={required}>
+      <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
         <FormLabel>{label}</FormLabel>
         <LinkErrorBoundary resetLink={() => handleChange(path, undefined)}>
           <Flex
@@ -122,6 +131,11 @@ export function BaseLinkControl({
               </>
             )}
           </Flex>
+          {required && (
+            <FormErrorMessage>
+              {label} {getCustomErrorMessage(errors)}
+            </FormErrorMessage>
+          )}
         </LinkErrorBoundary>
       </Box>
       <LinkEditorModal

@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, waitFor, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/nextjs"
 import { ResourceState } from "~prisma/generated/generatedEnums"
+import { userEvent, waitFor, within } from "storybook/test"
 import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"

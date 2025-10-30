@@ -41,6 +41,7 @@ import {
   getEmbedNameFromUrl,
   getIframeSrc,
 } from "../../../utils"
+import { getCustomErrorMessage } from "./utils"
 
 const SUPPORTED_FORMS = Object.keys(FORMSG_EMBED_URL_REGEXES).map(
   (key) => EMBED_NAME_MAPPING[key as keyof typeof FORMSG_EMBED_URL_REGEXES],
@@ -237,7 +238,7 @@ export function JsonFormsEmbedControl({
           </HStack>
 
           <FormErrorMessage>
-            {label} {errors}
+            {label} {getCustomErrorMessage(errors)}
           </FormErrorMessage>
         </FormControl>
       </Box>

@@ -20,6 +20,7 @@ export function JsonFormsLinkControl({
   handleChange,
   path,
   required,
+  errors,
 }: ControlProps) {
   return (
     <BaseLinkControl
@@ -30,6 +31,7 @@ export function JsonFormsLinkControl({
       path={path}
       linkTypes={LINK_TYPES_MAPPING}
       description="Link a page, file, external URL, or an email address"
+      errors={errors}
     />
   )
 }
