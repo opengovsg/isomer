@@ -126,14 +126,17 @@ const launch = async () => {
     }),
   )
 
-  // TODO: Shard out into separate pipelines so we can skip this
-  const repo = await skipIfExists(domain, Steps.GithubName, () =>
-    input({
-      message: "Enter the github repo for the site (eg: `isomer-corp-next`):",
-    }),
-  )
+  const isGithub = await confirm({
+    message: "Is the site hosted on Github?",
+  })
 
-  if (!!repo) {
+  if (!!isGithub) {
+    // TODO: Shard out into separate pipelines so we can skip this
+    const repo = await skipIfExists(domain, Steps.GithubName, () =>
+      input({
+        message: "Enter the github repo for the site (eg: `isomer-corp-next`):",
+      }),
+    )
     const status = await checkLastBuild(codebuildId)
     if (status !== "SUCCEED") {
       console.log("The last build of the site failed - please fix!")
@@ -190,12 +193,21 @@ const launch = async () => {
       return "true"
     })
   } else {
-    const rawSiteId = await input({
-      message: "Enter the `siteId` of the site:",
-    })
+    const rawSiteId = await skipIfExists(
+      domain,
+      Steps.StudioSiteId,
+      async () => {
+        const rawSiteId = await input({
+          message: "Enter the `siteId` of the site:",
+        })
 
+        return rawSiteId
+      },
+    )
     const siteId = Number(rawSiteId)
-    await createSearchSgClientForStudio({ siteId, domain, name: long })
+    await skipIfExists(domain, Steps.SearchSg, () =>
+      createSearchSgClientForStudio({ siteId, domain, name: long }),
+    )
     await updateCodebuildId(siteId, codebuildId)
     await createSearchPageForSite(siteId)
   }

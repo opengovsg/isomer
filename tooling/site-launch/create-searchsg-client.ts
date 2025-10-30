@@ -156,7 +156,7 @@ const createSearchSgClient = async ({
 
   console.log("Created search sg application with id:", applicationId)
 
-  return applicationId
+  return applicationId as string
 }
 
 export const createSearchSgClientForStudio = async ({
@@ -181,6 +181,7 @@ export const createSearchSgClientForStudio = async ({
   const url = `https://${domain}`
 
   await updateSiteConfigWithSearch(siteId, url, applicationId)
+  return applicationId
 }
 
 const askForDomainAndName = async ({

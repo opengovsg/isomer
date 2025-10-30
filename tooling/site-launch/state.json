@@ -17,5 +17,11 @@
     "LongName": "SG Digital Gateway",
     "CodeBuildId": "mddi-sgdc",
     "GithubName": ""
+  },
+  "www.thediary.sg": {
+    "Domain": "www.thediary.sg",
+    "Acm": "_740b2247285e151617db9299e28b9d87.www.thediary.sg   CNAME   _2181d0fecbbe87b90fa3e476c322adc0.jkddzztszm.acm-validations.aws",
+    "LongName": "DIARY@SGH",
+    "CodeBuildId": "singhealth-thediary"
   }
 }
