@@ -37,9 +37,10 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const isEnabled = useNewSettingsPage()
   const siteId = Number(rawSiteId)
-  const [{ siteName, agencyName }] = trpc.site.getConfig.useSuspenseQuery({
-    id: siteId,
-  })
+  const [{ siteName, agencyName, ...rest }] =
+    trpc.site.getConfig.useSuspenseQuery({
+      id: siteId,
+    })
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const router = useRouter()
@@ -80,6 +81,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     updateSiteConfigMutation.mutate({
       siteName: state.siteName,
       siteId,
+      ...rest,
     })
 
   return (
