@@ -14,7 +14,10 @@ import {
   SettingsGrid,
   SettingsPreviewGridItem,
 } from "~/components/Settings"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  BRIEF_TOAST_SETTINGS,
+  SETTINGS_TOAST_MESSAGES,
+} from "~/constants/toast"
 import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
@@ -36,7 +39,7 @@ const LogoSettingsPage: NextPageWithLayout = () => {
   const isEnabled = useNewSettingsPage()
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const [{ logoUrl, favicon }] = trpc.site.getConfig.useSuspenseQuery({
+  const [{ logoUrl, favicon, ...rest }] = trpc.site.getConfig.useSuspenseQuery({
     id: siteId,
   })
   const [{ name: siteName }] = trpc.site.getSiteName.useSuspenseQuery({
@@ -54,11 +57,36 @@ const LogoSettingsPage: NextPageWithLayout = () => {
     existingLogoSettings,
   )
 
+  const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
+    onSuccess: () => {
+      toast({
+        ...SETTINGS_TOAST_MESSAGES.success,
+        status: "success",
+      })
+      void trpcUtils.site.getConfig.invalidate({ id: siteId })
+      void trpcUtils.site.getSiteName.invalidate({ siteId })
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to update site",
+        description: error.message,
+        status: "error",
+      })
+    },
+  })
+
   const isDirty = !isEqual(logoSettings, existingLogoSettings)
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
-  const onSubmit = console.log
+  const onSubmit = () => {
+    if (!logoSettings) return
+    updateSiteConfigMutation.mutate({
+      ...logoSettings,
+      ...rest,
+      siteId,
+    })
+  }
 
   return (
     <ErrorProvider>
@@ -73,7 +101,7 @@ const LogoSettingsPage: NextPageWithLayout = () => {
             onClick={onSubmit}
             title="Logo and favicon"
             icon={BiPaint}
-            isLoading={false}
+            isLoading={updateSiteConfigMutation.isPending}
             isDisabled={!isDirty}
           />
           <Box w="100%">
@@ -88,7 +116,11 @@ const LogoSettingsPage: NextPageWithLayout = () => {
           </Box>
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
-          <EditSettingsPreview siteName={siteName} {...logoSettings} />
+          <EditSettingsPreview
+            siteName={siteName}
+            {...logoSettings}
+            showChromeTab
+          />
         </SettingsPreviewGridItem>
       </SettingsGrid>
     </ErrorProvider>

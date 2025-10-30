@@ -4,13 +4,14 @@ import type {
   IsomerSiteThemeProps,
 } from "@opengovsg/isomer-components"
 import type { UnwrapTagged } from "type-fest"
-import { useState } from "react"
+import { CSSProperties, PropsWithChildren, useState } from "react"
 import { Box, TabList, Text } from "@chakra-ui/react"
 import { Tab, Tabs } from "@opengovsg/design-system-react"
 
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { AskgovWidget } from "~/components/Askgov"
 import { VicaWidget } from "~/components/Vica"
+import { env } from "~/env.mjs"
 import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
 import { FOOTER_QUERY_SELECTOR } from "~/features/settings/constants"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -42,6 +43,75 @@ const SHARED_TAB_STYLES = {
   },
 } as const
 
+const BUTTON_COLOURS = ["red", "yellow", "green"]
+
+const WindowButtons = () => {
+  return (
+    <Box
+      style={{
+        background: "white",
+        display: "flex",
+        gap: "8px",
+        paddingLeft: "1rem",
+        paddingRight: "1rem",
+        paddingTop: "0.75rem",
+        paddingBottom: "0.75rem",
+        alignItems: "center",
+      }}
+    >
+      {BUTTON_COLOURS.map((color) => (
+        <Box
+          style={{
+            borderRadius: "50%",
+            background: color,
+            width: "16px",
+            height: "16px",
+          }}
+        />
+      ))}
+    </Box>
+  )
+}
+
+const ChromeTab = ({
+  children,
+  style,
+}: PropsWithChildren<{ style?: CSSProperties }>) => {
+  return (
+    <Box style={{ display: "flex", ...style }}>
+      <Box
+        style={{
+          height: "40px",
+          width: "40px",
+          borderRadius: "50%",
+          zIndex: -1,
+          boxShadow: "20px 20px aqua",
+        }}
+      />
+      <Box
+        style={{
+          borderTopLeftRadius: "8px",
+          borderTopRightRadius: "8px",
+          background: "aqua",
+          padding: "8px",
+          width: "fit-content",
+        }}
+      >
+        {children}
+      </Box>
+      <Box
+        style={{
+          height: "40px",
+          width: "40px",
+          borderRadius: "50%",
+          zIndex: -1,
+          boxShadow: "-20px 20px aqua",
+        }}
+      />
+    </Box>
+  )
+}
+
 // NOTE: the theme in site config refers to the site-wide theme of
 // either `isomer-next` or `isomer-classic`
 type EditSettingsPreviewProps = Partial<Omit<IsomerSiteConfigProps, "theme">> &
@@ -49,6 +119,7 @@ type EditSettingsPreviewProps = Partial<Omit<IsomerSiteConfigProps, "theme">> &
     theme?: IsomerSiteThemeProps
     previewMockContentPage?: boolean
     jumpToFooter?: boolean
+    showChromeTab?: boolean
   }
 
 export const EditSettingsPreview = ({
@@ -56,6 +127,7 @@ export const EditSettingsPreview = ({
   theme,
   previewMockContentPage = false,
   jumpToFooter,
+  showChromeTab = false,
   ...rest
 }: EditSettingsPreviewProps): JSX.Element => {
   const handleIframeMount = async ({ document }: IframeCallbackFnProps) => {
@@ -85,6 +157,8 @@ export const EditSettingsPreview = ({
       ? (contentLayoutPreview as UnwrapTagged<PrismaJson.BlobJsonContent>)
       : content
 
+  const s3Domain = env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+
   return (
     <Box bg="base.canvas.backdrop" h="full">
       <ViewportContainer
@@ -112,6 +186,44 @@ export const EditSettingsPreview = ({
           )
         }
       >
+        {showChromeTab && (
+          <Box
+            style={{
+              display: "flex",
+            }}
+          >
+            <WindowButtons />
+            <ChromeTab
+              style={{
+                marginLeft: "-24px",
+                marginTop: "8px",
+              }}
+            >
+              <Box
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                }}
+              >
+                <img
+                  style={{ width: "16px", height: "16px" }}
+                  src={`https://${s3Domain}${rest.favicon}`}
+                />
+                <Text
+                  style={{
+                    lineHeight: "1.25rem",
+                    fontSize: "0.875rem",
+                    fontWeight: 400,
+                    letterSpacing: 0,
+                  }}
+                >
+                  {siteName}
+                </Text>
+              </Box>
+            </ChromeTab>
+          </Box>
+        )}
         <Preview
           siteId={siteId}
           resourceId={Number(id)}

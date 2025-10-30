@@ -97,7 +97,7 @@ export const siteRouter = router({
     }),
   updateSiteConfig: protectedProcedure
     .input(updateSiteConfigSchema)
-    .mutation(async ({ ctx, input: { siteId, siteName } }) => {
+    .mutation(async ({ ctx, input: { siteId, siteName, ...rest } }) => {
       await validateUserPermissionsForSite({
         siteId,
         userId: ctx.user.id,
@@ -121,7 +121,7 @@ export const siteRouter = router({
       const updatedConfig = await db.transaction().execute(async (tx) => {
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ config: jsonb({ ...config, siteName }) })
+          .set({ config: jsonb({ ...rest, siteName }) })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()

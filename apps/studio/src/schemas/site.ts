@@ -78,13 +78,18 @@ export const publishSiteSchema = z.object({
   siteId: z.number().min(1),
 })
 
-export const updateSiteConfigSchema = z.object({
-  siteId: z.number(),
-  siteName: z.string(),
-})
-
 const isomerSiteConfigValidator =
   ajv.compile<IsomerSiteConfigProps>(SiteConfigSchema)
+
+export const updateSiteConfigSchema = z
+  .custom<IsomerSiteConfigProps>(isomerSiteConfigValidator)
+  .and(
+    z.object({
+      siteId: z.number(),
+      siteName: z.string(),
+    }),
+  )
+
 export const updateSiteIntegrationsSchema = z.object({
   siteId: z.number().min(1),
   data: z.custom<IsomerSiteConfigProps>((value) => {
