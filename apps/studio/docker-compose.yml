@@ -2,7 +2,7 @@ version: "3"
 
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:15.10
     ports:
       - 5432:5432
     environment:
@@ -17,7 +17,7 @@ services:
     ports:
       - 6379:6379
   mockpass:
-    image: opengovsg/mockpass:latest
+    image: opengovsg/mockpass:4.5.1
     ports:
       - "5156:5156"
     extra_hosts:

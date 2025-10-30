@@ -17,11 +17,51 @@ import {
 } from "tests/integration/helpers/seed"
 
 import type { User } from "../../database"
+import type { Notification } from "~/schemas/site"
 import { createCallerFactory } from "~/server/trpc"
 import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
 import { siteRouter } from "../site.router"
 
 const createCaller = createCallerFactory(siteRouter)
+
+const generateNotification = ({
+  title,
+  content,
+}: {
+  title: string
+  content?: string
+}) => {
+  const baseNotification = {
+    notification: {
+      title,
+    },
+  }
+
+  if (!content) return baseNotification satisfies Notification
+
+  return {
+    notification: {
+      ...baseNotification.notification,
+      content: {
+        type: "prose",
+        content: [
+          {
+            content: [
+              {
+                type: "text",
+                text: content,
+              },
+            ],
+            type: "paragraph",
+            attrs: {
+              dir: "ltr",
+            },
+          },
+        ],
+      },
+    },
+  } satisfies Notification
+}
 
 describe("site.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -548,7 +588,7 @@ describe("site.router", async () => {
       )
     })
 
-    it("should return empty string if site notification is not set", async () => {
+    it("should return empty object if site notification is not set", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
@@ -560,7 +600,43 @@ describe("site.router", async () => {
       const result = await caller.getNotification({ siteId: site.id })
 
       // Assert
-      expect(result).toEqual("")
+      expect(result).toEqual({})
+    })
+
+    it("should return the notification with the content in `prose` even if the base content is in `text` format", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const title = "hello"
+      const content = "world"
+      await db
+        .updateTable("Site")
+        .set((eb) => ({
+          config: eb(
+            "Site.config",
+            "||",
+            // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+            jsonb({
+              // NOTE: This is in the old format
+              notification: {
+                title,
+                content: [{ type: "text", text: content }],
+              },
+            }),
+          ),
+        }))
+        .where("id", "=", site.id)
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const expected = generateNotification({ title, content })
+
+      // Act
+      const actual = await caller.getNotification({ siteId: site.id })
+
+      // Assert
+      expect(actual).toEqual(expected)
     })
   })
 
@@ -577,8 +653,9 @@ describe("site.router", async () => {
       // Act
       const result = unauthedCaller.setNotification({
         siteId: 1,
-        notification: "foo",
-        notificationEnabled: true,
+        notification: {
+          notification: { title: "foo" },
+        },
       })
 
       // Assert
@@ -599,8 +676,9 @@ describe("site.router", async () => {
       // Act
       const result = caller.setNotification({
         siteId: site.id,
-        notification: "foo",
-        notificationEnabled: true,
+        notification: {
+          notification: { title: "foo" },
+        },
       })
 
       // Assert
@@ -635,12 +713,12 @@ describe("site.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      const notification = generateNotification({ title: "foo" })
 
       // Act
       await caller.setNotification({
         siteId: site.id,
-        notification: "foo",
-        notificationEnabled: true,
+        notification,
       })
 
       // Assert
@@ -649,9 +727,7 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toEqual({
-        content: [{ type: "text", text: "foo" }],
-      })
+      expect(newSite.config.notification).toEqual(notification.notification)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
@@ -678,12 +754,12 @@ describe("site.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      const notification = generateNotification({ title: "foo" })
 
       // Act
       await caller.setNotification({
         siteId: site.id,
-        notification: "foo",
-        notificationEnabled: true,
+        notification,
       })
 
       // Assert
@@ -692,9 +768,7 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toEqual({
-        content: [{ type: "text", text: "foo" }],
-      })
+      expect(newSite.config.notification).toEqual(notification.notification)
       const auditLog = await db
         .selectFrom("AuditLog")
         .selectAll()
@@ -729,8 +803,7 @@ describe("site.router", async () => {
       // Act
       await caller.setNotification({
         siteId: site.id,
-        notification: "foo",
-        notificationEnabled: false,
+        notification: {},
       })
 
       // Assert

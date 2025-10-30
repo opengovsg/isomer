@@ -2,6 +2,7 @@ export {
   ArticlePageHeaderSchema,
   type ArticlePageHeaderProps,
 } from "./ArticlePageHeader"
+export type { BaseParagraphProps } from "./BaseParagraph"
 export type { BreadcrumbProps } from "./Breadcrumb"
 export type {
   AllCardProps,
@@ -21,12 +22,15 @@ export { LocalSearchSchema, type LocalSearchProps } from "./LocalSearchInputBox"
 export type { MastheadProps } from "./Masthead"
 export {
   NavbarSchema,
+  NavbarAddonsSchema,
+  NavbarItemsSchema,
   type NavbarProps,
   type NavbarClientProps,
   type NavbarSchemaType,
 } from "./Navbar"
 export {
   NotificationSchema,
+  NotificationSettingsSchema,
   type NotificationProps,
   type NotificationClientProps,
 } from "./Notification"
@@ -64,3 +68,10 @@ export {
 } from "./Askgov"
 export type { ImageClientProps } from "./Image"
 export type { MicrosoftClarityProps } from "./MicrosoftClarity"
+export {
+  SearchableTableSchema,
+  type SearchableTableProps,
+  type SearchableTableClientProps,
+  type NativeSearchableTableProps,
+  type DGSSearchableTableProps,
+} from "./SearchableTable"

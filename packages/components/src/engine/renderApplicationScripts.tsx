@@ -26,12 +26,12 @@ export const RenderApplicationScripts = ({
     <>
       <FontPreload />
 
-      {site.isGovernment && (
-        <Wogaa
-          environment={site.environment}
-          ScriptComponent={ScriptComponent}
-        />
-      )}
+      {/* NOTE: we load in wogaa regardless of whether the site is  */}
+      {/* a government site as wogaa still requires the agency to register their site */}
+      {/* and wogaa is still gated behind techpass login. */}
+      {/* Additionally, wogaa will still load but not track metrics if the site  */}
+      {/* is not registered, so no end impact to user */}
+      <Wogaa environment={site.environment} ScriptComponent={ScriptComponent} />
 
       {(!!site.siteGtmId || !!site.isomerGtmId) && (
         <>

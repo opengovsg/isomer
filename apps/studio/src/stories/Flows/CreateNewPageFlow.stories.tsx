@@ -6,6 +6,7 @@ import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import SitePage from "~/pages/sites/[siteId]"
+import { createDatabaseLayoutGbParameters } from "../utils/growthbook"
 
 const meta: Meta<typeof SitePage> = {
   title: "Flows/Create New Page",
@@ -55,6 +56,31 @@ export const SelectPageLayout: Story = {
       name: /page/i,
     })
     await userEvent.click(menuItem)
+  },
+}
+
+export const SelectArticleLayout: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const screen = within(canvasElement.ownerDocument.body)
+    await SelectPageLayout.play?.(context)
+
+    const articleLayoutCard = await screen.findByText(/Article layout/i)
+    await userEvent.click(articleLayoutCard)
+  },
+}
+
+export const SelectDatabaseLayout: Story = {
+  parameters: {
+    growthbook: [createDatabaseLayoutGbParameters("1")],
+  },
+  play: async (context) => {
+    const { canvasElement } = context
+    const screen = within(canvasElement.ownerDocument.body)
+    await SelectPageLayout.play?.(context)
+
+    const databaseLayoutCard = await screen.findByText(/Database layout/i)
+    await userEvent.click(databaseLayoutCard)
   },
 }
 

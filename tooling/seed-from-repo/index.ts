@@ -390,7 +390,7 @@ async function studioifySite(client: Client, siteId: number, siteName: string) {
   const assetsMap = getAssetsMapping(siteId, siteName);
   const resourcesMap = await getResourceMapping(client, siteId);
   const pages = Object.keys(resourcesMap).filter((resourceId) => {
-    return resourcesMap[resourceId] && resourcesMap[resourceId].blobId !== null;
+    return resourcesMap[resourceId]?.blobId !== null;
   });
 
   for (const page of pages) {

@@ -41,13 +41,15 @@ export const HeroBlock = ({
   return (
     <section className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row">
       <div
-        className={`flex flex-row ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-12`}
+        className={`flex flex-row ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-8`}
       >
         <div
-          className={`flex w-full max-w-[532px] flex-col justify-center gap-9 ${heroTextColour}`}
+          className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
         >
           <div className="flex flex-col gap-6">
-            <h1 className="prose-display-xl break-words">{title}</h1>
+            <h1 className="wrap-break-word prose-display-xl text-balance">
+              {title}
+            </h1>
             {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
           </div>
           {buttonLabel && buttonUrl && (

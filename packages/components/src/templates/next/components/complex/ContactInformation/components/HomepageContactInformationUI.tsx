@@ -1,7 +1,6 @@
-import DOMPurify from "isomorphic-dompurify"
-
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { BaseParagraph } from "../../../internal"
 import { LinkButton } from "../../../internal/LinkButton"
 import {
   commonContactInformationStyles,
@@ -15,6 +14,8 @@ const createHomepageContactInformationStyles = tv({
   slots: {
     ...commonContactInformationStyles.slots,
     container: "gap-12 py-12 md:py-16",
+    titleAndDescriptionContainer: "gap-2.5",
+    description: "prose-headline-lg-regular",
     contactMethodsContainer: "grid grid-cols-1 gap-10",
   },
   variants: {
@@ -144,56 +145,55 @@ export const HomepageContactInformationUI = ({
   const descriptionText = isLoading ? "" : (description ?? "")
 
   return (
-    <div className={compoundStyles.container()}>
-      <div className={compoundStyles.titleAndDescriptionContainer()}>
-        {(title || isLoading) && (
-          <h3 className={compoundStyles.title()}>{isLoading ? "" : title}</h3>
-        )}
-        {(!!description || isLoading) &&
-          (acceptHtmlTags ? (
-            <p
-              className={compoundStyles.description()}
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(descriptionText, {
-                  ALLOWED_TAGS: ["br"],
-                }),
-              }}
-            />
-          ) : (
-            <p className={compoundStyles.description()}>{descriptionText}</p>
-          ))}
-        {!!referenceLinkHref && !!label && !isLoading && (
-          <CallToActionButton isBottomButton={false} />
-        )}
-      </div>
+    <section className={compoundStyles.screenWideOuterContainer()}>
+      <div className={compoundStyles.container()}>
+        <div className={compoundStyles.titleAndDescriptionContainer()}>
+          {(title || isLoading) && (
+            <h3 className={compoundStyles.title()}>{isLoading ? "" : title}</h3>
+          )}
+          {(!!description || isLoading) &&
+            (acceptHtmlTags ? (
+              <BaseParagraph
+                content={descriptionText}
+                allowedTags={["br"]}
+                className={compoundStyles.description()}
+              />
+            ) : (
+              <p className={compoundStyles.description()}>{descriptionText}</p>
+            ))}
+          {!!referenceLinkHref && !!label && !isLoading && (
+            <CallToActionButton isBottomButton={false} />
+          )}
+        </div>
 
-      <div className={compoundStyles.contactMethodsContainer()}>
-        {isLoading
-          ? Array.from({ length: MAX_CONTACT_METHODS_FOR_HOMEPAGE }).map(
-              (_, index) => (
-                <LoadingContactMethod
-                  key={`loading-contact-method-${index}`}
-                  styles={contactMethodStyles}
-                />
-              ),
-            )
-          : filteredMethods
-              .slice(0, MAX_CONTACT_METHODS_FOR_HOMEPAGE)
-              .map((method, index) => {
-                return (
-                  <ContactMethod
-                    key={`contact-method-${index}`}
-                    {...method}
-                    LinkComponent={LinkComponent}
+        <div className={compoundStyles.contactMethodsContainer()}>
+          {isLoading
+            ? Array.from({ length: MAX_CONTACT_METHODS_FOR_HOMEPAGE }).map(
+                (_, index) => (
+                  <LoadingContactMethod
+                    key={`loading-contact-method-${index}`}
                     styles={contactMethodStyles}
                   />
-                )
-              })}
-      </div>
+                ),
+              )
+            : filteredMethods
+                .slice(0, MAX_CONTACT_METHODS_FOR_HOMEPAGE)
+                .map((method, index) => {
+                  return (
+                    <ContactMethod
+                      key={`contact-method-${index}`}
+                      {...method}
+                      LinkComponent={LinkComponent}
+                      styles={contactMethodStyles}
+                    />
+                  )
+                })}
+        </div>
 
-      {!!referenceLinkHref && !!label && !isLoading && (
-        <CallToActionButton isBottomButton={true} />
-      )}
-    </div>
+        {!!referenceLinkHref && !!label && !isLoading && (
+          <CallToActionButton isBottomButton={true} />
+        )}
+      </div>
+    </section>
   )
 }

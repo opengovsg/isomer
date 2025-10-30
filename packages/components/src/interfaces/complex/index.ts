@@ -69,10 +69,3 @@ export {
   DynamicComponentListSchema,
   type DynamicComponentListProps,
 } from "./DynamicComponentList"
-export {
-  SearchableTableSchema,
-  type SearchableTableProps,
-  type SearchableTableClientProps,
-  type NativeSearchableTableProps,
-  type DGSSearchableTableProps,
-} from "./SearchableTable"

@@ -23,6 +23,7 @@ import {
 } from "@opengovsg/design-system-react"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsIntegerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.IntegerControl,
@@ -85,7 +86,7 @@ export function JsonFormsIntegerControl({
           </NumberInputStepper>
         </NumberInput>
         <FormErrorMessage>
-          {label} {errors}
+          {label} {getCustomErrorMessage(errors)}
         </FormErrorMessage>
       </FormControl>
     </Box>

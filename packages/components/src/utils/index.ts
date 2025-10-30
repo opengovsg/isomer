@@ -22,6 +22,7 @@ export {
   getDgsIdFromDgsLink,
 } from "./dgs"
 export { fetchFileMetadata } from "./fetchFileMetadata"
+export { formatBytes } from "./formatBytes"
 export { orderedListSchemaBuilder } from "./orderedListSchemaBuilder"
 export * from "./tailwind"
 export { unorderedListSchemaBuilder } from "./unorderedListSchemaBuilder"
@@ -35,4 +36,5 @@ export {
   MAPS_EMBED_URL_REGEXES,
   VIDEO_EMBED_URL_REGEXES,
   NON_EMPTY_STRING_REGEX,
+  DGS_ID_STRING_REGEX,
 } from "./validation"
