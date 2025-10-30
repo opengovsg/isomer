@@ -1,3 +1,4 @@
+import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { useEffect, useState } from "react"
 import {
   Box,
@@ -8,12 +9,7 @@ import {
   InputLeftAddon,
   VStack,
 } from "@chakra-ui/react"
-import {
-  ControlProps,
-  RankedTester,
-  rankWith,
-  schemaMatches,
-} from "@jsonforms/core"
+import { rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Input } from "@opengovsg/design-system-react"
 import get from "lodash/get"
@@ -43,7 +39,7 @@ const THEME_PATHS = [
 ] as const
 
 const JsonFormsColourPickerControl = ({
-  data,
+  data: _data,
   label,
   handleChange,
   path,
@@ -51,6 +47,7 @@ const JsonFormsColourPickerControl = ({
   required,
   errors,
 }: ControlProps) => {
+  const data = _data ?? String(_data) ?? undefined
   // NOTE: Tint is the colour brightened by 10% successively,
   // shades are the colour darkened by 10% successively
   const { tints, colour, shades } = useColorPalette(...convertHexToRgb(data))
@@ -61,10 +58,10 @@ const JsonFormsColourPickerControl = ({
   useEffect(() => {
     const otherPaths = THEME_PATHS.filter((p) => p !== path)
     const palette = generateTheme({ tints, colour, shades })
-    otherPaths.map((p) => {
+    otherPaths.forEach((p) => {
       handleChange(p, palette[p] ?? "#FFFFFF")
     })
-  }, [data])
+  }, [path, shades, tints, colour, handleChange])
 
   return (
     <Box>
