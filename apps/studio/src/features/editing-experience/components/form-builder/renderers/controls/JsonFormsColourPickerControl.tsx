@@ -18,10 +18,10 @@ import { isHexadecimal } from "validator"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import {
   convertHexToRgb,
+  generateColorPalette,
   generateTheme,
   normalizeHex,
 } from "~/features/settings/utils"
-import { useColorPalette } from "~/hooks/useColorPalete"
 
 export const jsonFormsColourPickerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ColourPickerControl,
@@ -38,6 +38,12 @@ const THEME_PATHS = [
   "colors.brand.interaction.pressed",
 ] as const
 
+const DEFAULT_COLOUR_PALETTE = {
+  tints: [""],
+  colour: "",
+  shades: [""],
+}
+
 const JsonFormsColourPickerControl = ({
   data: _data,
   label,
@@ -47,10 +53,13 @@ const JsonFormsColourPickerControl = ({
   required,
   errors,
 }: ControlProps) => {
-  const data = _data ?? String(_data) ?? undefined
+  const data: string | undefined = _data ?? String(_data) ?? undefined
   // NOTE: Tint is the colour brightened by 10% successively,
   // shades are the colour darkened by 10% successively
-  const { tints, colour, shades } = useColorPalette(...convertHexToRgb(data))
+  const { tints, colour, shades } = data
+    ? generateColorPalette(...convertHexToRgb(data))
+    : DEFAULT_COLOUR_PALETTE
+
   const ctx = useJsonForms()
   const [displayedColour, setDisplayedColour] = useState(data)
 
@@ -61,7 +70,7 @@ const JsonFormsColourPickerControl = ({
     otherPaths.forEach((p) => {
       handleChange(p, palette[p] ?? "#FFFFFF")
     })
-  }, [path, shades, tints, colour, handleChange])
+  }, [data])
 
   return (
     <Box>
@@ -82,7 +91,7 @@ const JsonFormsColourPickerControl = ({
                 #
               </InputLeftAddon>
               <Input
-                value={displayedColour.replace("#", "")}
+                value={displayedColour?.replace("#", "")}
                 placeholder="FFFFFF"
                 w="86px"
                 onChange={(e) => {
@@ -94,6 +103,12 @@ const JsonFormsColourPickerControl = ({
                     .slice(0, 6) // limit to 6 characters
 
                   setDisplayedColour(parsedHex)
+
+                  if (!rawString) {
+                    handleChange(path, undefined)
+                    return
+                  }
+
                   handleChange(path, `#${normalizeHex(parsedHex)}`)
                 }}
               />

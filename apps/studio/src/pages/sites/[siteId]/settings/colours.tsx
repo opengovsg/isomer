@@ -8,6 +8,7 @@ import { isEqual } from "lodash"
 import { BiPaint } from "react-icons/bi"
 
 import type { NextPageWithLayout } from "~/lib/types"
+import type { SiteTheme } from "~/schemas/site"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -28,7 +29,7 @@ import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { SiteTheme, siteThemeValidator } from "~/schemas/site"
+import { siteThemeValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
 
@@ -98,7 +99,7 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
             title="Colours"
             icon={BiPaint}
             isLoading={setThemeMutation.isPending}
-            isDisabled={!isDirty}
+            isDisabled={!isDirty || !siteTheme?.colors.brand.canvas.inverse}
           />
           <Box w="100%">
             <FormBuilder<SiteTheme>
