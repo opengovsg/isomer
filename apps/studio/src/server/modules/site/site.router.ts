@@ -139,6 +139,8 @@ export const siteRouter = router({
         return updatedSite.config
       })
 
+      await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
+
       // NOTE: only update searchsg if either the agency name changed
       // or if the search type changed.
       // `void` here because this API call is slow
@@ -193,6 +195,8 @@ export const siteRouter = router({
           by: user,
           siteId,
         })
+
+        await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
 
         return updatedSite
       })

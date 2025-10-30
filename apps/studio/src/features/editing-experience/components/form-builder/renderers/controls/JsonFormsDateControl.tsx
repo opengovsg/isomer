@@ -9,6 +9,7 @@ import {
 } from "@opengovsg/design-system-react"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsDateControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextControl,
@@ -37,7 +38,7 @@ export function JsonFormsDateControl({
           onInputValueChange={(date) => handleChange(path, date.toString())}
         />
         <FormErrorMessage>
-          {label} {errors}
+          {label} {getCustomErrorMessage(errors)}
         </FormErrorMessage>
       </FormControl>
     </Box>

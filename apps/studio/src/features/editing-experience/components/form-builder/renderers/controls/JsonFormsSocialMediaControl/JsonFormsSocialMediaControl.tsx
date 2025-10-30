@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react"
 import {
   Box,
   Button,
+  Divider,
   Flex,
   HStack,
   Icon,
@@ -347,6 +348,7 @@ export const JsonFormsSocialMediaControl = ({
         uischema={getChildUiSchema(selectedPathForDeletion ?? "")}
       />
 
+      <Divider />
       <VStack spacing="0.375rem" align="start">
         <VStack justify="space-between" align="start" w="full">
           <HStack w="full" justifyContent="space-between">

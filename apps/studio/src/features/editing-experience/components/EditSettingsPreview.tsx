@@ -11,7 +11,10 @@ import { UnwrapTagged } from "type-fest"
 import { AskgovWidget } from "~/components/Askgov"
 import { VicaWidget } from "~/components/Vica"
 import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
+import { FOOTER_QUERY_SELECTOR } from "~/features/settings/constants"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { IframeCallbackFnProps } from "~/types/dom"
+import { waitForElement } from "~/utils/dom"
 import { trpc } from "~/utils/trpc"
 import { siteSchema } from "../schema"
 import Preview from "./Preview"
@@ -45,14 +48,28 @@ type EditSettingsPreviewProps = Partial<Omit<IsomerSiteConfigProps, "theme">> &
   Pick<IsomerSiteProps, "siteName"> & {
     theme?: IsomerSiteThemeProps
     previewMockContentPage?: boolean
+    jumpToFooter?: boolean
   }
 
 export const EditSettingsPreview = ({
   siteName,
   theme,
   previewMockContentPage = false,
+  jumpToFooter,
   ...rest
 }: EditSettingsPreviewProps): JSX.Element => {
+  const handleIframeMount = async ({ document }: IframeCallbackFnProps) => {
+    if (document) {
+      await waitForElement(document, FOOTER_QUERY_SELECTOR)
+      const footer = document.querySelector(FOOTER_QUERY_SELECTOR)
+
+      // Jump to the footer section
+      if (footer) {
+        footer.scrollIntoView()
+      }
+    }
+  }
+
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
   const [{ id }] = trpc.page.getRootPage.useSuspenseQuery({
@@ -88,7 +105,11 @@ export const EditSettingsPreview = ({
           </TabList>
         </Tabs>
       )}
-      <ViewportContainer siteId={siteId} theme={theme}>
+      <ViewportContainer
+        siteId={siteId}
+        theme={theme}
+        callback={jumpToFooter ? handleIframeMount : undefined}
+      >
         <Preview
           siteId={siteId}
           resourceId={Number(id)}

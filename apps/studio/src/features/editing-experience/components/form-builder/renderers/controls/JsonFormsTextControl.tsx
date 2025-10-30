@@ -9,6 +9,7 @@ import {
   Input,
 } from "@opengovsg/design-system-react"
 
+import { MarkdownLabel } from "~/components/MarkdownLabel"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getCustomErrorMessage } from "./utils"
 
@@ -62,7 +63,11 @@ export function JsonFormsTextControl({
   return (
     <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
-        <FormLabel description={description} mb={0} tooltipText={tooltip}>
+        <FormLabel
+          description={<MarkdownLabel description={description} />}
+          mb={0}
+          tooltipText={tooltip}
+        >
           {label}
         </FormLabel>
         <Input
@@ -80,7 +85,7 @@ export function JsonFormsTextControl({
             {remainingCharacterCount === 1 ? "character" : "characters"} left
           </FormHelperText>
         )}
-        <FormErrorMessage>
+        <FormErrorMessage mt={0}>
           {label} {getCustomErrorMessage(errors)}
         </FormErrorMessage>
       </FormControl>
