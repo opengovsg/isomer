@@ -1,6 +1,4 @@
-import type { CSSProperties } from "react"
 import { useMemo } from "react"
-import { flatten } from "flat"
 
 import { convertThemeToCss } from "~/features/settings/utils"
 import { trpc } from "~/utils/trpc"
