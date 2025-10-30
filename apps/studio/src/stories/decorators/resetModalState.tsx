@@ -1,5 +1,5 @@
+import type { Decorator } from "@storybook/nextjs"
 import { useEffect } from "react"
-import { type Decorator } from "@storybook/react"
 import { useSetAtom } from "jotai"
 
 import {

@@ -126,3 +126,7 @@ export {
   default as JsonFormsWidgetIntegrationControl,
   jsonFormsWidgetIntegrationControlTester,
 } from "./JsonFormsWidgetIntegrationControl"
+export {
+  default as JsonFormsColourPickerControl,
+  jsonFormsColourPickerControlTester,
+} from "./JsonFormsColourPickerControl"

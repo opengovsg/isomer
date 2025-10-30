@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
+import { Box } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
   NotificationSettingsSchema,
@@ -108,18 +109,21 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             isLoading={notificationMutation.isPending}
             isDisabled={!isDirty}
           />
-          <FormBuilder<Notification>
-            schema={NotificationSettingsSchema}
-            validateFn={validateFn}
-            data={state}
-            handleChange={(data) => {
-              setState(data)
-              // NOTE: We have to set `isDismissed` here because
-              // we need to show the notification banner again when
-              // the user toggles it on
-              if (isEmpty(data)) setIsDismissed(false)
-            }}
-          />
+          <Box>
+            <Box mb="-0.5rem" />
+            <FormBuilder<Notification>
+              schema={NotificationSettingsSchema}
+              validateFn={validateFn}
+              data={state}
+              handleChange={(data) => {
+                setState(data)
+                // NOTE: We have to set `isDismissed` here because
+                // we need to show the notification banner again when
+                // the user toggles it on
+                if (isEmpty(data)) setIsDismissed(false)
+              }}
+            />
+          </Box>
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
           <EditSettingsPreview

@@ -30,7 +30,6 @@ const IMAGE_FIT = {
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
-    maxLength: 100,
   }),
   description: Type.Optional(
     Type.String({
@@ -86,7 +85,6 @@ const InfoCardsBaseSchema = Type.Object({
   ),
   title: Type.String({
     title: "Title",
-    maxLength: 100,
     pattern: NON_EMPTY_STRING_REGEX,
     errorMessage: {
       pattern: "cannot be empty or contain only spaces",
@@ -95,7 +93,6 @@ const InfoCardsBaseSchema = Type.Object({
   subtitle: Type.Optional(
     Type.String({
       title: "Description",
-      maxLength: 200,
     }),
   ),
   maxColumns: Type.Optional(
