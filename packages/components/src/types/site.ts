@@ -56,9 +56,27 @@ export const IntegrationsSettingsSchema = Type.Intersect([
   SimpleIntegrationsSettingsSchema,
 ])
 
+export const LogoSettingsSchema = Type.Object({
+  logoUrl: Type.String({
+    title: "Logo",
+    description:
+      "The logo appears on the navigation menu. It may also be used as a thumbnail if there’s no thumbnail set on a page.",
+    format: "image",
+  }),
+  favicon: Type.Optional(
+    Type.String({
+      title: "Favicon",
+      description:
+        "This appears on a browser tab to help people recognise your site. We recommend a minimum size of 24px by 24px, in .ico, .svg, or .png format.",
+      format: "image",
+    }),
+  ),
+})
+
 export const SiteConfigSchema = Type.Intersect([
   AgencySettingsSchema,
   IntegrationsSettingsSchema,
+  LogoSettingsSchema,
   Type.Object({
     url: Type.String({
       title: "Base URL of the site",
@@ -72,24 +90,11 @@ export const SiteConfigSchema = Type.Intersect([
         format: "hidden",
       },
     ),
-    logoUrl: Type.String({
-      title: "Logo URL",
-      description: "The URL of the logo to be displayed in the navbar.",
-      format: "hidden",
-    }),
     isGovernment: Type.Optional(
       Type.Boolean({
         title: "Is this a Government site?",
         description:
           "Whether the site is a Government site, affects the display of the masthead and the copyright footer.",
-        format: "hidden",
-      }),
-    ),
-    favicon: Type.Optional(
-      Type.String({
-        title: "Favicon URL",
-        description:
-          "The URL of the favicon to be displayed in the browser tab.",
         format: "hidden",
       }),
     ),

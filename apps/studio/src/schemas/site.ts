@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import {
   IsomerSiteConfigProps,
+  LogoSettingsSchema,
   NotificationSettingsSchema,
   SiteConfigSchema,
   SiteThemeSchema,
@@ -17,6 +18,10 @@ export const notificationValidator = ajv.compile<Notification>(
 
 export type SiteTheme = Static<typeof SiteThemeSchema>
 export const siteThemeValidator = ajv.compile<SiteTheme>(SiteThemeSchema)
+
+export type LogoSettings = Static<typeof LogoSettingsSchema>
+export const logoSettingsValidator =
+  ajv.compile<LogoSettings>(LogoSettingsSchema)
 
 export const getConfigSchema = z.object({
   id: z.number().min(1),
@@ -73,13 +78,18 @@ export const publishSiteSchema = z.object({
   siteId: z.number().min(1),
 })
 
-export const updateSiteConfigSchema = z.object({
-  siteId: z.number(),
-  siteName: z.string(),
-})
-
 const isomerSiteConfigValidator =
   ajv.compile<IsomerSiteConfigProps>(SiteConfigSchema)
+
+export const updateSiteConfigSchema = z
+  .custom<IsomerSiteConfigProps>(isomerSiteConfigValidator)
+  .and(
+    z.object({
+      siteId: z.number(),
+      siteName: z.string(),
+    }),
+  )
+
 export const updateSiteIntegrationsSchema = z.object({
   siteId: z.number().min(1),
   data: z.custom<IsomerSiteConfigProps>((value) => {
