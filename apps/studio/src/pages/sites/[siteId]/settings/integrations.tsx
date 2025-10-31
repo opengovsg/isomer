@@ -184,7 +184,6 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
         <SettingsPreviewGridItem>
           <EditSettingsPreview
             siteName={siteName}
-            jumpToFooter
             {...complexIntegrationSettings}
             {...simpleIntegrationSettings}
           />
