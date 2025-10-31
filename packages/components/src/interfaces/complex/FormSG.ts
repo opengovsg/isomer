@@ -16,7 +16,6 @@ export const FormSGSchema = Type.Object(
       title: "Describe your form",
       description:
         "This isn’t displayed anywhere, but can be read by screen readers",
-      maxLength: 100,
       default: "A feedback collection form",
     }),
   },
