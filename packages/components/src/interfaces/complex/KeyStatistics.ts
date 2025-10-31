@@ -20,18 +20,16 @@ export const KeyStatisticsSchema = Type.Object(
     ),
     title: Type.String({
       title: "Title",
-      maxLength: 100,
     }),
     statistics: Type.Array(
       Type.Object({
         label: Type.String({
           title: "Description",
-          maxLength: 100,
         }),
         value: Type.String({
           title: "Number",
           description: "Keep it succinct. E.g., 3.3%, $12M",
-          maxLength: 7,
+          maxLength: 20,
         }),
       }),
       {

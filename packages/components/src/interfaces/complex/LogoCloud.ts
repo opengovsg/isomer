@@ -22,7 +22,6 @@ export const LogoCloudSchema = Type.Object(
     title: Type.String({
       title: "Title for the logo cloud",
       description: "Upload the images for the logo cloud here or provide a url",
-      maxLength: 120,
     }),
   },
   {

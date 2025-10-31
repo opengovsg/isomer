@@ -12,12 +12,10 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 export const InfoBoxSchema = Type.Object({
   title: Type.String({
     title: "Title",
-    maxLength: 100,
   }),
   description: Type.Optional(
     Type.String({
       title: "Description",
-      maxLength: 200,
     }),
   ),
   icon: Type.Optional(
@@ -64,12 +62,10 @@ export const InfoColsSchema = Type.Object(
     ),
     title: Type.String({
       title: "Title",
-      maxLength: 100,
     }),
     subtitle: Type.Optional(
       Type.String({
         title: "Description",
-        maxLength: 150,
       }),
     ),
     infoBoxes: Type.Array(InfoBoxSchema, {

@@ -30,7 +30,6 @@ const IMAGE_FIT = {
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
-    maxLength: 100,
   }),
   description: Type.Optional(
     Type.String({
