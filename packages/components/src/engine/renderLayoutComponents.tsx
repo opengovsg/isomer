@@ -52,7 +52,7 @@ export const RenderApplicationScripts = ({
       {/* Note: did not account for both being added to the config as it's a very unlikely scenario and there's "correct" way to handle this */}
       {site.vica && (
         <>
-          <VicaStylesheet environment={site.environment} />
+          <VicaStylesheet useDevStagingScript={site.vica.useDevStagingScript} />
           <VicaWidget
             site={site}
             ScriptComponent={ScriptComponent}
