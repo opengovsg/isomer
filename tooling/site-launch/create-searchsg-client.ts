@@ -70,6 +70,7 @@ export const createSearchSgClientForGithub = async ({
   name,
   repo,
 }: CreateSearchSgClientParams & { repo: string }) => {
+  console.log("Creating searchsg")
   const { content: siteConfig, sha } = await readSiteConfig(repo)
   if (siteConfig.site?.search === "searchSG") {
     const existingClientId = siteConfig.site?.search?.clientId
@@ -102,6 +103,7 @@ export const createSearchSgClientForGithub = async ({
 
   await updateSiteConfig(repo, siteConfig, sha)
   await addSearchJson(repo)
+  return applicationId
 }
 
 interface SearchSgConfig {
@@ -154,7 +156,7 @@ const createSearchSgClient = async ({
 
   console.log("Created search sg application with id:", applicationId)
 
-  return applicationId
+  return applicationId as string
 }
 
 export const createSearchSgClientForStudio = async ({
@@ -179,6 +181,7 @@ export const createSearchSgClientForStudio = async ({
   const url = `https://${domain}`
 
   await updateSiteConfigWithSearch(siteId, url, applicationId)
+  return applicationId
 }
 
 const askForDomainAndName = async ({

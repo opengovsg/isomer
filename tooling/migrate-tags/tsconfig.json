@@ -1,10 +1,6 @@
 {
   "extends": "@isomer/tsconfig/base.json",
   "compilerOptions": {
-    "paths": {
-      "~server/*": ["../../apps/studio/src/server/*"],
-      "~prisma/*": ["../../apps/studio/prisma/*"]
-    },
     "outDir": "dist/cjs",
     "rootDirs": ["src"],
     "declaration": true,
@@ -33,6 +29,6 @@
     "typeRoots": ["node_modules/@types", "src/types"],
     "baseUrl": "./"
   },
-  "include": ["../../apps/studio/prisma/**/*.ts", "**/*"],
+  "include": ["../../**/*.ts"],
   "compileOnSave": false
 }

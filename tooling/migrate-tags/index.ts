@@ -1,17 +1,18 @@
-import { db, jsonb } from "~server/modules/database"
+import type { LegacyTag } from "utils"
+import _ from "lodash"
+
+import { db, jsonb } from "../../apps/studio/src/server/modules/database"
 import {
   getBlobOfResource,
   updateBlobById,
-} from "~server/modules/resource/resource.service"
-import _ from "lodash"
+} from "../../apps/studio/src/server/modules/resource/resource.service"
 import {
   generateUpdatedContent,
   getChildItemsWithTags,
   getCollatedTags,
   getCollectionsOfSiteWithTags,
-  LegacyTag,
   migrateTags,
-} from "utils"
+} from "./utils"
 
 export const migrateTagsOfSite = async (siteId: number) => {
   const collectionIds = await getCollectionsOfSiteWithTags(siteId)
