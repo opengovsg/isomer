@@ -12,7 +12,8 @@
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "format:fix": "prettier --write . --ignore-path ../../.gitignore",
     "typecheck": "tsc --noEmit",
-    "clean": "git clean -xdf .next .turbo node_modules out"
+    "clean": "git clean -xdf .next .turbo node_modules out",
+    "partytown": "partytown copylib out/~partytown"
   },
   "overrides": {
     "@next/swc-darwin-arm64": "15.2.3",
@@ -26,6 +27,7 @@
   },
   "dependencies": {
     "@opengovsg/isomer-components": "*",
+    "@qwik.dev/partytown": "^0.11.2",
     "next": "^15.2.3",
     "postcss": "^8.4.39",
     "postcss-preset-env": "^10.0.8",
