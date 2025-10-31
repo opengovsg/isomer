@@ -14,15 +14,15 @@ const SearchSgApi = {
 } as const
 
 const generateSearchSGParams = ({
-  name,
   config,
   url,
+  ...rest
 }: UpdateSearchSGConfigProps & {
   config: SearchSGConfig["data"]
   url: string
 }) => {
   return {
-    name: encodeURIComponent(name),
+    name: rest._kind === "name" ? encodeURIComponent(rest.name) : config.name,
     tenant: {
       adminList: ["isomer@open.gov.sg"],
     },
@@ -46,7 +46,10 @@ const generateSearchSGParams = ({
       config: {
         search: {
           theme: {
-            primary: config.application.config.search.theme.primary,
+            primary:
+              rest._kind === "colour"
+                ? rest.colour
+                : config.application.config.search.theme.primary,
             fontFamily: "Inter",
           },
         },
@@ -55,9 +58,19 @@ const generateSearchSGParams = ({
   }
 }
 
-interface UpdateSearchSGConfigProps {
+interface UpdateSearchSgSiteNameProps {
   name: string
+  _kind: "name"
 }
+
+interface UpdateSearchSgColourProps {
+  colour: string
+  _kind: "colour"
+}
+
+type UpdateSearchSGConfigProps =
+  | UpdateSearchSgSiteNameProps
+  | UpdateSearchSgColourProps
 
 const requestSearchSGClient = async () => {
   const { accessToken, tokenType } = await wretch(
@@ -122,6 +135,7 @@ export const updateSearchSGConfig = async (
 
 interface SearchSGConfig {
   data: {
+    name: string
     index: {
       dataSource: {
         web: { domain: string }[]

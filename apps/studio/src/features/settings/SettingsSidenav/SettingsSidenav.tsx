@@ -2,7 +2,7 @@ import type { UseDisclosureReturn } from "@chakra-ui/react"
 import { useRouter } from "next/router"
 import { VStack } from "@chakra-ui/react"
 import { IconType } from "react-icons"
-import { BiDirections, BiWrench } from "react-icons/bi"
+import { BiDirections, BiPaint, BiWrench } from "react-icons/bi"
 
 import { CmsCollapsibleSidenav } from "~/components/CmsSidebar/CmsCollapsibleSidenav"
 import { siteSchema } from "~/features/editing-experience/schema"
@@ -54,6 +54,15 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
         {
           label: "Footer",
           href: `/sites/${siteId}/settings/footer`,
+        },
+      ],
+    },
+    {
+      header: { label: "Branding", icon: BiPaint },
+      items: [
+        {
+          label: "Colours",
+          href: `/sites/${siteId}/settings/colours`,
         },
       ],
     },
