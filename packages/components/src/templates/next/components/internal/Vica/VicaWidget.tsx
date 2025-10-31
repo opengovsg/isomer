@@ -11,7 +11,6 @@ export const VicaWidget = ({
 }: VicaWidgetProps) => {
   return (
     <VicaWidgetClient
-      environment={site.environment}
       ScriptComponent={ScriptComponent}
       app-icon={
         appIcon
