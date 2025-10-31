@@ -8,6 +8,10 @@ import {
   IMAGE_GALLERY_TYPE,
 } from "@opengovsg/isomer-components"
 
+const DEFAULT_ALT_TEXT_INPUT = "Describe what the image is about."
+const DEFAULT_TITLE_INPUT = "Enter your title here."
+const DEFAULT_SUBTITLE_INPUT = "Elaborate on the title here."
+
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
   IsomerComponent["type"],
@@ -30,7 +34,7 @@ export const DEFAULT_BLOCKS: Record<
   childrenpages: DEFAULT_CHILDREN_PAGES_BLOCK,
   accordion: {
     type: "accordion",
-    summary: "Title for the accordion item",
+    summary: "Enter a descriptive title that makes readers want to expand the accordion.",
     details: {
       type: "prose",
       content: [],
@@ -39,9 +43,9 @@ export const DEFAULT_BLOCKS: Record<
   blockquote: {
     type: "blockquote",
     quote:
-      "Enforcing the gold standards of building government informational websites at Isomer (OGP)",
-    source: "Huaying Zhu",
-    imageAlt: "Portrait of Huaying Zhu",
+      "Enter your quote here.",
+    source: "Describe the quote in more detail.",
+    imageAlt: DEFAULT_ALT_TEXT_INPUT,
   },
   callout: {
     type: "callout",
@@ -53,7 +57,7 @@ export const DEFAULT_BLOCKS: Record<
           content: [
             {
               type: "text",
-              text: "Callout content",
+              text: "Highlight important notes or key changes here. Keep it to one or two sentences maximum.",
             },
           ],
         },
@@ -75,72 +79,72 @@ export const DEFAULT_BLOCKS: Record<
   image: {
     type: "image",
     src: "/placeholder_no_image.png",
-    alt: "Add your alt text here",
+    alt: DEFAULT_ALT_TEXT_INPUT,
     size: "default",
   },
   infobar: {
     type: "infobar",
-    title: "This is the main title",
-    description: "This is an optional description",
+    title: DEFAULT_TITLE_INPUT,
+    description: DEFAULT_SUBTITLE_INPUT,
   },
   infocards: {
     type: "infocards",
-    title: "This is an title of the Infocards component",
-    subtitle: "This is an optional subtitle for the Infocards component",
+    title: DEFAULT_TITLE_INPUT,
+    subtitle: DEFAULT_SUBTITLE_INPUT,
     variant: "cardsWithImages",
     maxColumns: "3",
     cards: [
       {
-        title: "This is the first card",
+        title: "Enter your title for the first card here",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "This is the alt text",
+        imageAlt: DEFAULT_ALT_TEXT_INPUT,
         imageFit: "cover",
       },
       {
-        title: "This is the second card",
+        title: "Enter your title for the second card here",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "This is the alt text",
+        imageAlt: DEFAULT_ALT_TEXT_INPUT,
         imageFit: "cover",
       },
       {
-        title: "This is the third card",
+        title: "Enter your title for the third card here",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "This is the alt text",
+        imageAlt: DEFAULT_ALT_TEXT_INPUT,
         imageFit: "cover",
       },
     ],
   },
   infocols: {
     type: "infocols",
-    title: "This is the main title of the InfoCols component",
-    subtitle: "This is an optional subtitle for the InfoCols component.",
+    title: DEFAULT_TITLE_INPUT,
+    subtitle: DEFAULT_SUBTITLE_INPUT,
     infoBoxes: [
       {
-        title: "This is the title of the first column",
-        description: "You can also add additional description here",
+        title: "Enter your title for the first column here",
+        description: DEFAULT_SUBTITLE_INPUT,
         icon: "office-building",
       },
       {
-        title: "This is the title of the second column",
-        description: "You can also add additional description here",
+        title: "Enter your title for the second column here",
+        description: DEFAULT_SUBTITLE_INPUT,
         icon: "stars",
       },
       {
-        title: "This is the title of the third column",
-        description: "You can also add additional description here",
+        title: "Enter your title for the third column here",
+        description: DEFAULT_SUBTITLE_INPUT,
         icon: "globe",
       },
     ],
   },
   infopic: {
     type: "infopic",
-    title: "This is an infopic",
-    description: "This is the description for the infopic component",
+    title: DEFAULT_TITLE_INPUT,
+    description: "Elaborate on the title here. You can add a button too.",
     imageSrc: "/placeholder_no_image.png",
-    imageAlt: "This is the alt text for the image",
+    imageAlt: DEFAULT_ALT_TEXT_INPUT,
   },
   contentpic: {
     type: "contentpic",
@@ -151,7 +155,7 @@ export const DEFAULT_BLOCKS: Record<
           type: "paragraph",
           content: [
             {
-              text: "Enter the content accompanying the image here",
+              text: "Enter content here.",
               type: "text",
             },
           ],
@@ -159,27 +163,27 @@ export const DEFAULT_BLOCKS: Record<
       ],
     },
     imageSrc: "/placeholder_no_image.png",
-    imageAlt: "This is the alt text for the image",
+    imageAlt: DEFAULT_ALT_TEXT_INPUT,
   },
   keystatistics: {
     type: "keystatistics",
-    title: "Irrationality in numbers",
+    title: DEFAULT_TITLE_INPUT,
     statistics: [
       {
-        label: "Average all nighters pulled in a typical calendar month",
-        value: "3",
+        label: "Feature striking KPIs",
+        value: "120 websites",
       },
       {
-        label: "Growth in tasks assigned Q4 2024 (YoY)",
+        label: "Show growth numbers",
         value: "+12.2%",
       },
       {
-        label: "Creative blocks met per single evening",
-        value: "89",
+        label: "Use commas for big numbers",
+        value: "12,830",
       },
       {
-        value: "4.0",
-        label: "Number of lies in this stat block",
+        label: "Highlight core values",
+        value: "Integrity",
       },
     ],
   },
@@ -190,7 +194,7 @@ export const DEFAULT_BLOCKS: Record<
   },
   video: {
     type: "video",
-    title: "Rick Astley - Never Gonna Give You Up",
+    title: "Rick Astley's Never Gonna Give You Up",
     url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
   },
   // TODO: Replace with actual working API endpoint
@@ -236,7 +240,7 @@ export const DEFAULT_BLOCKS: Record<
   logocloud: {
     type: "logocloud",
     images: [],
-    title: "With support from these agencies",
+    title: DEFAULT_TITLE_INPUT,
   },
   [COLLECTION_BLOCK_TYPE]: {
     type: `${COLLECTION_BLOCK_TYPE}`,
@@ -249,19 +253,19 @@ export const DEFAULT_BLOCKS: Record<
     type: `${IMAGE_GALLERY_TYPE}`,
     images: [
       {
-        caption: "This is the first image",
+        caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: DEFAULT_ALT_TEXT_INPUT,
       },
       {
-        caption: "This is the second image",
+        caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: DEFAULT_ALT_TEXT_INPUT,
       },
       {
-        caption: "This is the third image",
+        caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: DEFAULT_ALT_TEXT_INPUT,
       },
     ],
   },
