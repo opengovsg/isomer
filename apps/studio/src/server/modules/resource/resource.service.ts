@@ -18,7 +18,6 @@ import type {
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE } from "~/lib/growthbook"
 import {
   getSitemapTree,
   injectTagMappings,
@@ -26,7 +25,6 @@ import {
   overwriteCollectionChildrenForCollectionBlock,
 } from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
-import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { incrementVersion } from "../version/version.service"
@@ -552,9 +550,9 @@ export const getResourceFullPermalink = async (
 
 interface PublishPageResourceArgs {
   logger: Logger<string>
+  user: User
   siteId: number
   resourceId: string
-  userId: string
   isSingpassEnabled?: boolean
 }
 
@@ -562,26 +560,13 @@ export const publishPageResource = async ({
   logger,
   siteId,
   resourceId,
-  userId,
-  isSingpassEnabled = IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+  user,
 }: PublishPageResourceArgs) => {
-  // Step 1: Create a new version
-  const by = await db
-    .selectFrom("User")
-    .selectAll()
-    .where("id", "=", userId)
-    .executeTakeFirstOrThrow(
-      () =>
-        new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Please ensure that you have logged in",
-        }),
-    )
-
-  const addedVersionResult = await db
+  const version = await db
     .transaction()
     .setIsolationLevel("serializable")
     .execute(async (tx) => {
+      // Step 1: Create a new version
       const fullResource = await getFullPageById(tx, {
         resourceId: Number(resourceId),
         siteId,
@@ -599,7 +584,7 @@ export const publishPageResource = async ({
         tx,
         siteId,
         resourceId,
-        userId,
+        userId: user.id,
       })
 
       const previousVersion = await tx
@@ -611,7 +596,7 @@ export const publishPageResource = async ({
 
       await logPublishEvent(tx, {
         siteId,
-        by,
+        by: user,
         delta: {
           before: previousVersion?.id
             ? { versionId: previousVersion.id }
@@ -621,25 +606,27 @@ export const publishPageResource = async ({
         eventType: AuditLogEvent.Publish,
         metadata: fullResource,
       })
-
       return version
     })
 
   // Step 2: Trigger a publish of the site
-  await publishSite(logger, siteId)
+  const build = await publishSite(logger, siteId)
 
-  // Step 3: Send publish alert emails to all site admins minus the current user
-  // if Singpass has been disabled
-  if (!isSingpassEnabled) {
-    await alertPublishWhenSingpassDisabled({
-      siteId,
-      resourceId,
-      publisherId: by.id,
-      publisherEmail: by.email,
-    })
-  }
+  // Step 3: Save the build info if the build was triggered
+  if (build)
+    await db
+      .insertInto("CodeBuildJobs")
+      .values({
+        siteId,
+        userId: user.id,
+        buildId: build.buildId,
+        startedAt: build.startTime,
+        resourceId,
+        status: "IN_PROGRESS", // default to in progress, will be updated by webhook
+      })
+      .execute()
 
-  return addedVersionResult
+  return { version }
 }
 
 // NOTE: The distinction here between `publishResource` and `publishPageResource` is that
