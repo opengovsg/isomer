@@ -180,6 +180,7 @@ export const CollectionBlock = ({
   displayCategory,
   buttonLabel,
   shouldLazyLoad,
+  highlights,
 }: CollectionBlockProps): JSX.Element => {
   const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
 
@@ -202,6 +203,7 @@ export const CollectionBlock = ({
   const collectionPages = getCollectionPages({
     site,
     collectionParent,
+    categories: highlights?.categories,
   })
 
   if (collectionPages.length === 0) {
