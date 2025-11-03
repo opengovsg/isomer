@@ -5,6 +5,7 @@ import {
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
   GoogleTagManagerPreload,
+  MicrosoftClarity,
   VicaStylesheet,
   VicaWidget,
   Wogaa,
@@ -43,6 +44,13 @@ export const RenderApplicationScripts = ({
             isomerGtmId={site.isomerGtmId}
           />
         </>
+      )}
+
+      {!!site.isomerMsClarityId && (
+        <MicrosoftClarity
+          ScriptComponent={ScriptComponent}
+          msClarityId={site.isomerMsClarityId}
+        />
       )}
 
       {/* Ensures that the webchat widget only loads after the page has loaded */}
