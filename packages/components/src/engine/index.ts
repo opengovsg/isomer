@@ -1,5 +1,5 @@
 export { RenderEngine, renderComponentPreviewText } from "./render"
-export { RenderApplicationScripts } from "./renderLayoutComponents"
+export { RenderApplicationScripts } from "./renderApplicationScripts"
 export {
   getMetadata,
   shouldBlockIndexing,
