@@ -3,6 +3,7 @@ import type { Except } from "type-fest"
 import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 import {
   AskgovWidget,
+  CloudflareZaraz,
   FontPreload,
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
@@ -52,6 +53,13 @@ export const RenderApplicationScripts = ({
         <MicrosoftClarity
           ScriptComponent={ScriptComponent}
           msClarityId={site.isomerMsClarityId}
+        />
+      )}
+
+      {!!site.isomerCloudflareZarazBaseUrl && (
+        <CloudflareZaraz
+          ScriptComponent={ScriptComponent}
+          baseUrl={site.isomerCloudflareZarazBaseUrl}
         />
       )}
 
