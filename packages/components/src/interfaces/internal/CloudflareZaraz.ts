@@ -1,6 +1,6 @@
-import type { ScriptComponentType } from "~/types"
+import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 
 export interface CloudflareZarazProps {
-  hostname: string
+  baseUrl: NonNullable<IsomerSiteProps["isomerCloudflareZarazBaseUrl"]>
   ScriptComponent?: ScriptComponentType
 }
