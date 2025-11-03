@@ -19,13 +19,10 @@ export const RenderApplicationScripts = ({
   site,
   ScriptComponent,
 }: RenderApplicationScriptsProps) => {
-  const shouldIncludeGTM =
-    site.environment === "production" &&
-    (!!site.siteGtmId || !!site.isomerGtmId)
-
   return (
     <>
       <FontPreload />
+
       {/* NOTE: we load in wogaa regardless of whether the site is  */}
       {/* a government site as wogaa still requires the agency to register their site */}
       {/* and wogaa is still gated behind techpass login. */}
@@ -33,7 +30,7 @@ export const RenderApplicationScripts = ({
       {/* is not registered, so no end impact to user */}
       <Wogaa environment={site.environment} ScriptComponent={ScriptComponent} />
 
-      {shouldIncludeGTM && (
+      {(!!site.siteGtmId || !!site.isomerGtmId) && (
         <>
           <GoogleTagManagerPreload />
           <GoogleTagManagerHeader
