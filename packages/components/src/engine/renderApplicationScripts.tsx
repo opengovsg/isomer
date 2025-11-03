@@ -56,10 +56,10 @@ export const RenderApplicationScripts = ({
         />
       )}
 
-      {!!site.isomerCloudflareZarazBaseUrl && (
+      {!!site.isomerCfZarazBaseUrl && (
         <CloudflareZaraz
           ScriptComponent={ScriptComponent}
-          baseUrl={site.isomerCloudflareZarazBaseUrl}
+          baseUrl={site.isomerCfZarazBaseUrl}
         />
       )}
 

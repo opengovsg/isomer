@@ -106,7 +106,7 @@ export interface IsomerGeneratedSiteProps {
   assetsBaseUrl?: string
   isomerGtmId?: string
   isomerMsClarityId?: string
-  isomerCloudflareZarazBaseUrl?: string
+  isomerCfZarazBaseUrl?: string
 }
 
 export interface IsomerSiteWideComponentsProps {
