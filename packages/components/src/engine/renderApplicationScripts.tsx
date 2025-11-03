@@ -1,3 +1,5 @@
+import type { Except } from "type-fest"
+
 import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 import {
   AskgovWidget,
@@ -12,7 +14,7 @@ import {
 } from "../templates/next/components/internal"
 
 interface RenderApplicationScriptsProps {
-  site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
+  site: Except<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
   ScriptComponent: ScriptComponentType
 }
 
