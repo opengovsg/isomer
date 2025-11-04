@@ -256,6 +256,7 @@ export const updateUserSitewidePermission = async ({
       eventType: AuditLogEvent.PermissionDelete,
       by: byUser,
       delta: { before: sitePermissionToRemove, after: deletedSitePermission },
+      siteId,
     })
 
     const createdSitePermission = await tx
@@ -277,6 +278,7 @@ export const updateUserSitewidePermission = async ({
       eventType: AuditLogEvent.PermissionCreate,
       by: byUser,
       delta: { before: null, after: createdSitePermission },
+      siteId,
     })
 
     return createdSitePermission
