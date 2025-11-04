@@ -9,6 +9,7 @@ import {
 } from "@opengovsg/design-system-react"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsBooleanControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.BooleanControl,
@@ -50,7 +51,7 @@ export function JsonFormsBooleanControl({
             isChecked={!!data}
             onChange={(e) => handleChange(path, e.target.checked)}
           />
-          <FormErrorMessage>{errors}</FormErrorMessage>
+          <FormErrorMessage>{getCustomErrorMessage(errors)}</FormErrorMessage>
         </Flex>
       </FormControl>
     </Box>
