@@ -206,7 +206,10 @@ export const EditSettingsPreview = ({
       : content
 
   const isomerTheme = useTheme()
-  const bodyTextStyle = isomerTheme.textStyles["body-2"]
+  const bodyTextStyle = isomerTheme.textStyles["body-2"] as Record<
+    string,
+    string
+  >
 
   return (
     <Box bg="base.canvas.backdrop" h="full">
