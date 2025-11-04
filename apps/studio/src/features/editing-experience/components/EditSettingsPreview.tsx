@@ -87,28 +87,30 @@ export const EditSettingsPreview = ({
 
   return (
     <Box bg="base.canvas.backdrop" h="full">
-      {previewMockContentPage && (
-        <Tabs
-          pt="1.5rem"
-          px="2rem"
-          w="full"
-          display="flex"
-          onChange={(index) => setTabIndex(index)}
-        >
-          <TabList w="full" gap={0} textTransform="none">
-            <Tab borderLeftRadius="4px" {...SHARED_TAB_STYLES}>
-              <Text textStyle="subhead-2">Homepage</Text>
-            </Tab>
-            <Tab {...SHARED_TAB_STYLES} borderRightRadius="4px">
-              <Text textStyle="subhead-2">Content page</Text>
-            </Tab>
-          </TabList>
-        </Tabs>
-      )}
       <ViewportContainer
         siteId={siteId}
         theme={theme}
         callback={jumpToFooter ? handleIframeMount : undefined}
+        header={
+          previewMockContentPage && (
+            <Tabs
+              pt="1.5rem"
+              px="2rem"
+              w="full"
+              display="flex"
+              onChange={(index) => setTabIndex(index)}
+            >
+              <TabList w="full" gap={0} textTransform="none">
+                <Tab borderLeftRadius="4px" {...SHARED_TAB_STYLES}>
+                  <Text textStyle="subhead-2">Homepage</Text>
+                </Tab>
+                <Tab {...SHARED_TAB_STYLES} borderRightRadius="4px">
+                  <Text textStyle="subhead-2">Content page</Text>
+                </Tab>
+              </TabList>
+            </Tabs>
+          )
+        }
       >
         <Preview
           siteId={siteId}

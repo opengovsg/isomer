@@ -26,12 +26,14 @@ interface ViewportContainerProps {
   siteId: number
   callback?: (props: IframeCallbackFnProps) => void
   theme?: IsomerSiteThemeProps
+  header?: React.ReactNode
 }
 export const ViewportContainer = ({
   children,
   siteId,
   callback,
   theme,
+  header,
 }: PropsWithChildren<ViewportContainerProps>) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
   const mergedTheme = theme
@@ -73,6 +75,7 @@ export const ViewportContainer = ({
         flexDirection="column"
         {...containerProps}
       >
+        {!!header && header}
         <IframeToolbar viewport={viewport} setViewport={setViewport} />
         <Flex
           px="2rem"
