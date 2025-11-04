@@ -5,6 +5,7 @@ import "@/styles/globals.css"
 
 import type { Metadata } from "next"
 import Script from "next/script"
+import { GoogleTagManager } from "@next/third-parties/google"
 import { RenderApplicationScripts } from "@opengovsg/isomer-components"
 
 export const dynamic = "force-static"
@@ -36,6 +37,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
               process.env.NEXT_PUBLIC_ISOMER_CLOUDFLARE_ZARAZ_BASE_URL,
           }}
           ScriptComponent={Script}
+          GoogleTagManagerComponent={GoogleTagManager}
         />
       </body>
     </html>

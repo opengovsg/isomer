@@ -6,7 +6,12 @@ import type {
 const GoogleTagManagerHeaderScript = ({
   gtmId,
   ScriptComponent,
+  GoogleTagManagerComponent,
 }: GoogleTagManagerHeaderScriptProps) => {
+  if (GoogleTagManagerComponent) {
+    return <GoogleTagManagerComponent gtmId={gtmId} />
+  }
+
   return (
     <ScriptComponent
       id={`_next-gtm-init-${gtmId}`}
@@ -26,6 +31,7 @@ export const GoogleTagManagerHeader = ({
   siteGtmId,
   isomerGtmId,
   ScriptComponent,
+  GoogleTagManagerComponent,
 }: GoogleTagManagerHeaderProps) => {
   return (
     <>
@@ -33,12 +39,14 @@ export const GoogleTagManagerHeader = ({
         <GoogleTagManagerHeaderScript
           gtmId={siteGtmId}
           ScriptComponent={ScriptComponent}
+          GoogleTagManagerComponent={GoogleTagManagerComponent}
         />
       )}
       {!!isomerGtmId && (
         <GoogleTagManagerHeaderScript
           gtmId={isomerGtmId}
           ScriptComponent={ScriptComponent}
+          GoogleTagManagerComponent={GoogleTagManagerComponent}
         />
       )}
     </>

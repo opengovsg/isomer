@@ -10,3 +10,6 @@ export type LinkComponentType = any
 
 // This is the Next.js Script component that resembles the HTML anchor tag
 export type ScriptComponentType = any
+
+// This is the Next.js GoogleTagManager component that resembles the GoogleTagManager setup
+export type GoogleTagManagerComponentType = any

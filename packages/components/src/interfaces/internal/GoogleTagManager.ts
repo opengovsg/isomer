@@ -1,4 +1,7 @@
-import type { ScriptComponentType } from "~/types"
+import type {
+  GoogleTagManagerComponentType,
+  ScriptComponentType,
+} from "~/types"
 
 interface GoogleTagManagerScriptProps {
   gtmId: string
@@ -7,6 +10,7 @@ interface GoogleTagManagerScriptProps {
 export interface GoogleTagManagerHeaderScriptProps
   extends GoogleTagManagerScriptProps {
   ScriptComponent?: ScriptComponentType
+  GoogleTagManagerComponent?: GoogleTagManagerComponentType
 }
 
 export type GoogleTagManagerBodyScriptProps = GoogleTagManagerScriptProps
@@ -18,6 +22,7 @@ interface GoogleTagManagerProps {
 
 export interface GoogleTagManagerHeaderProps extends GoogleTagManagerProps {
   ScriptComponent?: ScriptComponentType
+  GoogleTagManagerComponent?: GoogleTagManagerComponentType
 }
 
 export type GoogleTagManagerBodyProps = GoogleTagManagerProps

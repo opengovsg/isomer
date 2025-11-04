@@ -1,6 +1,10 @@
 import type { Except } from "type-fest"
 
-import type { IsomerSiteProps, ScriptComponentType } from "~/types"
+import type {
+  GoogleTagManagerComponentType,
+  IsomerSiteProps,
+  ScriptComponentType,
+} from "~/types"
 import {
   AskgovWidget,
   CloudflareZaraz,
@@ -17,11 +21,13 @@ import {
 interface RenderApplicationScriptsProps {
   site: Except<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
   ScriptComponent: ScriptComponentType
+  GoogleTagManagerComponent: GoogleTagManagerComponentType
 }
 
 export const RenderApplicationScripts = ({
   site,
   ScriptComponent,
+  GoogleTagManagerComponent,
 }: RenderApplicationScriptsProps) => {
   return (
     <>
@@ -41,6 +47,7 @@ export const RenderApplicationScripts = ({
             siteGtmId={site.siteGtmId}
             isomerGtmId={site.isomerGtmId}
             ScriptComponent={ScriptComponent}
+            GoogleTagManagerComponent={GoogleTagManagerComponent}
           />
           <GoogleTagManagerBody
             siteGtmId={site.siteGtmId}
