@@ -1,3 +1,4 @@
+import type { ScopedSchemaLayout } from "@opengovsg/isomer-components"
 import { getScopedSchema } from "@opengovsg/isomer-components"
 import clone from "lodash/clone"
 
@@ -6,16 +7,16 @@ import { ajv } from "./ajv"
 // Global cache for compiled AJV schemas to avoid expensive recompilation
 const schemaCache = new Map<string, ReturnType<typeof ajv.compile>>()
 
-interface GetCachedScopedSchemaProps<T extends string> {
-  layout: T
+interface GetCachedScopedSchemaProps {
+  layout: ScopedSchemaLayout
   scope: string
   exclude?: string[]
 }
-export function getCachedScopedSchema<T extends string>(
-  props: GetCachedScopedSchemaProps<T>,
-): ReturnType<typeof ajv.compile> {
-  const { layout, scope, exclude } = props
-
+export function getCachedScopedSchema({
+  layout,
+  scope,
+  exclude,
+}: GetCachedScopedSchemaProps): ReturnType<typeof ajv.compile> {
   const sortedExclude = exclude ? clone(exclude).sort().join(",") : ""
   const cacheKey = `${layout}:${scope}:${sortedExclude}`
 

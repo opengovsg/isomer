@@ -15,6 +15,7 @@ import { Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getComponentSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
+  isScopedSchemaLayout,
 } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
@@ -242,6 +243,8 @@ export default function RootStateDrawer() {
     pageLayout !== "collection"
 
   const invalidBlockIndexes = useMemo(() => {
+    if (!isScopedSchemaLayout(pageLayout)) return new Set<number>()
+
     const validateFn = getCachedScopedSchema({
       layout: pageLayout,
       scope: "content",
