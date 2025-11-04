@@ -17,9 +17,8 @@ export function getCachedScopedSchema<T extends string>(
 
   const cacheKey = `${layout}:${scope}:${exclude?.sort().join(",") || ""}`
 
-  if (schemaCache.has(cacheKey)) {
-    return schemaCache.get(cacheKey)!
-  }
+  const cachedSchema = schemaCache.get(cacheKey)
+  if (cachedSchema) return cachedSchema
 
   const scopedSchema = getScopedSchema({
     layout: layout as any, // TODO: fix this any
