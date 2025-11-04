@@ -108,6 +108,7 @@ const JsonFormsColourPickerControl = ({
               "This palette makes your website accessibility compliant."
             }
             mb={0}
+            isRequired
           >
             Color palette
           </FormLabel>
