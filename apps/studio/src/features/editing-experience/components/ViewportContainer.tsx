@@ -75,7 +75,7 @@ export const ViewportContainer = ({
         flexDirection="column"
         {...containerProps}
       >
-        {!!header && header}
+        {!!header && viewport !== "fullscreen" && header}
         <IframeToolbar viewport={viewport} setViewport={setViewport} />
         <Flex
           px="2rem"
