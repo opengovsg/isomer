@@ -71,6 +71,7 @@ const JsonFormsColourPickerControl = ({
                   const rawString = e.target.value
                   if (!rawString) {
                     handleChange(path, undefined)
+                    setDisplayedColour(undefined)
                     return
                   }
 
