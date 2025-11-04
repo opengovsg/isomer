@@ -2,6 +2,7 @@ import type { ColumnType, GeneratedAlways } from "kysely"
 
 import type {
   AuditLogEvent,
+  BuildStatusType,
   ResourceState,
   ResourceType,
   RoleType,
@@ -35,6 +36,20 @@ export interface Blob {
    * [BlobJsonContent]
    */
   content: PrismaJson.BlobJsonContent
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
+export interface CodeBuildJobs {
+  id: GeneratedAlways<string>
+  buildId: string
+  siteId: number
+  userId: string
+  status: Generated<BuildStatusType>
+  resourceId: string
+  startedAt: Generated<Timestamp>
+  emailSent: Generated<boolean>
+  isScheduled: Generated<boolean>
+  supersededByBuildId: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
@@ -142,6 +157,7 @@ export interface Whitelist {
 export interface DB {
   AuditLog: AuditLog
   Blob: Blob
+  CodeBuildJobs: CodeBuildJobs
   Footer: Footer
   Navbar: Navbar
   RateLimiterFlexible: RateLimiterFlexible

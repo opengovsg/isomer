@@ -1,8 +1,8 @@
+import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import type { UnwrapTagged } from "type-fest"
 import {
   COLLECTION_PAGE_DEFAULT_SORT_BY,
   COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
-  CollectionPagePageProps,
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
