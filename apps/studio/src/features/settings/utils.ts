@@ -82,9 +82,9 @@ export const calculateRelativeLuminance = (color: string) => {
   const [r, g, b] = rgb.map((value) => normaliseRsRgb(value))
 
   return (
-    LINEAR_RGB_FACTORS.red * r! +
-    LINEAR_RGB_FACTORS.green * g! +
-    LINEAR_RGB_FACTORS.blue * b!
+    LINEAR_RGB_FACTORS.red * (r ?? 0) +
+    LINEAR_RGB_FACTORS.green * (g ?? 0) +
+    LINEAR_RGB_FACTORS.blue * (b ?? 0)
   )
 }
 
@@ -157,7 +157,10 @@ const pickColorsFromRange = (
   const selected: string[] = []
 
   for (let i = colors.length - 1; i >= firstPassingIndex; i -= interval) {
-    selected.push(colors[i] as string)
+    // NOTE: shouldn't happen - we are always within range
+    // this is guaranteed by the loop condition
+    // but we have a default to satisfy ts
+    selected.push(colors[i] ?? "#FFFFFF")
   }
 
   return selected

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest"
 
+import type {
+  Theme} from "../utils";
 import {
   BACKGROUND_COLOURS,
   calculateRelativeContrast,
@@ -7,8 +9,7 @@ import {
   generateColorPalette,
   getPalette,
   passesContrastCheck,
-  TEXT_COLOURS,
-  Theme,
+  TEXT_COLOURS
 } from "../utils"
 
 describe("settings.utils.ts", () => {

@@ -1,7 +1,7 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import { useRouter } from "next/router"
 import { VStack } from "@chakra-ui/react"
-import { IconType } from "react-icons"
+import type { IconType } from "react-icons"
 import { BiDirections, BiPaint, BiWrench } from "react-icons/bi"
 
 import { CmsCollapsibleSidenav } from "~/components/CmsSidebar/CmsCollapsibleSidenav"

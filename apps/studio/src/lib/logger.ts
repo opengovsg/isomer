@@ -1,5 +1,5 @@
 import type { DestinationStream } from "pino"
-import { NextApiRequest } from "next"
+import type { NextApiRequest } from "next"
 import { nanoid } from "nanoid"
 import pino from "pino"
 import pinoPretty from "pino-pretty"

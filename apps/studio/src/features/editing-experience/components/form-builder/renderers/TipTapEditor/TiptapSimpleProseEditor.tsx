@@ -1,8 +1,8 @@
 import { Text } from "@chakra-ui/react"
-import { CharacterCountStorage } from "@tiptap/extension-character-count"
+import type { CharacterCountStorage } from "@tiptap/extension-character-count"
 
 import { SimpleProseMenuBar } from "~/components/PageEditor/MenuBar"
-import { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
+import type { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
 import { BANNER_MAX_CHARACTERS } from "../../../constants"
 import { Editor } from "./components"
 
