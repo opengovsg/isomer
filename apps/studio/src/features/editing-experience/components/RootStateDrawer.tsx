@@ -1,6 +1,6 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import {
   Box,
   Button,
@@ -241,26 +241,28 @@ export default function RootStateDrawer() {
     pageLayout !== "index" &&
     pageLayout !== "collection"
 
-  const invalidBlockIndexes = new Set<number>()
+  const invalidBlockIndexes = useMemo(() => {
+    const validateFn = getCachedScopedSchema({
+      layout: pageLayout,
+      scope: "content",
+    })
 
-  const validateFn = getCachedScopedSchema({
-    layout: pageLayout,
-    scope: "content",
-  })
-  validateFn(savedPageState.content)
-  for (const error of validateFn.errors ?? []) {
-    // When validating content array directly, instancePath will be like "/0", "/1", "/2", etc.
-    // where the number is the index of the invalid component
-    if (error.instancePath) {
-      const pathParts = error.instancePath.split("/").filter(Boolean)
-      if (pathParts.length > 0) {
-        const blockIndex = pathParts[0]
-        if (blockIndex && !isNaN(parseInt(blockIndex))) {
-          invalidBlockIndexes.add(parseInt(blockIndex))
-        }
-      }
-    }
-  }
+    validateFn(savedPageState.content)
+
+    if (!validateFn.errors) return new Set<number>()
+
+    return new Set<number>(
+      validateFn.errors
+        .map((error) => {
+          // instancePath format: "/0", "/1", "/2", etc. where the number is the block index
+          const [firstSegment] =
+            error.instancePath?.split("/").filter(Boolean) ?? []
+          const blockIndex = Number(firstSegment)
+          return Number.isNaN(blockIndex) ? null : blockIndex
+        })
+        .filter((index): index is number => index !== null),
+    )
+  }, [pageLayout, savedPageState.content])
 
   const FixedBlock = () => {
     // Assuming only one fixedBlock can exist at a time for now
