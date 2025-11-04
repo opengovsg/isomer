@@ -28,8 +28,7 @@ export const KeyStatisticsSchema = Type.Object(
         }),
         value: Type.String({
           title: "Number",
-          description: "Keep it succinct. E.g., 3.3%, $12M",
-          maxLength: 20,
+          description: "Keep it succinct, e.g., 3.3%, 880,000, $12M",
         }),
       }),
       {

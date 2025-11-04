@@ -24,6 +24,7 @@ const HeroHeadingSchema = Type.Object({
       title: "Description",
       description: "The contents of the hero banner",
       format: "textarea",
+      maxLength: 300,
     }),
   ),
 })

@@ -12,6 +12,7 @@ export const ContentPageHeaderSchema = Type.Object(
       title: "Page summary",
       description: "Help users understand what this page is about",
       format: "textarea",
+      maxLength: 500,
     }),
     buttonLabel: Type.Optional(
       Type.String({

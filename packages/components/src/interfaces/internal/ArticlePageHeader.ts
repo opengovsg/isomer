@@ -10,6 +10,7 @@ export const ArticlePageHeaderSchema = Type.Object({
     title: "Article summary",
     description: "Help users understand what this page is about",
     format: "textarea",
+    maxLength: 500,
   }),
 })
 
