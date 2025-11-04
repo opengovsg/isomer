@@ -13,6 +13,7 @@ import type {
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
+  SuccessfulSchedulePublishTemplateData,
 } from "./types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
@@ -126,6 +127,19 @@ export const failedSchedulePublishTemplate = (
   }
 }
 
+export const successfulScheduledPublishTemplate = (
+  data: SuccessfulSchedulePublishTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, publishTime } = data
+  return {
+    subject: `[Isomer Studio] Your page was published as scheduled`,
+    body: `<p>Hi ${recipientEmail},</p>
+    <p>Your page was successfully published on ${format(toZonedTime(publishTime, "Asia/Singapore"), "MMMM d, yyyy hh:mm a")} as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
+  }
+}
+
 export const publishAlertContentPublisherTemplate = (
   data: PublishAlertContentPublisherEmailTemplateData,
 ): EmailTemplate => {
@@ -227,6 +241,8 @@ export const templates = {
     cancelSchedulePageTemplate satisfies EmailTemplateFunction<CancelSchedulePageTemplateData>,
   failedSchedulePublish:
     failedSchedulePublishTemplate satisfies EmailTemplateFunction<BaseEmailTemplateData>,
+  successfulScheduledPublish:
+    successfulScheduledPublishTemplate satisfies EmailTemplateFunction<SuccessfulSchedulePublishTemplateData>,
   schedulePage:
     schedulePageTemplate satisfies EmailTemplateFunction<SchedulePageTemplateData>,
   publishAlertSiteAdmin:
