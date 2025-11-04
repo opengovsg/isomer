@@ -21,7 +21,8 @@
       "~/*": ["./src/*"],
       "~prisma/*": ["./prisma/*"],
       "~server/db/*": ["./src/server/modules/database/*"],
-      "~server/db": ["./src/server/modules/database/index"]
+      "~server/db": ["./src/server/modules/database/index"],
+      "superjson": ["../../node_modules/superjson/dist/index.d.ts"]
     },
     "types": ["vitest/globals"]
   },
