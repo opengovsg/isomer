@@ -78,7 +78,7 @@
     "@jsonforms/react": "^3.5.1",
     "@opengovsg/design-system-react": "^1.31.0",
     "@opengovsg/isomer-components": "*",
-    "@opengovsg/starter-kitty-validators": "^1.2.11",
+    "@opengovsg/starter-kitty-validators": "^1.2.13",
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "5.10.2",
     "@tanstack/match-sorter-utils": "^8.19.4",
