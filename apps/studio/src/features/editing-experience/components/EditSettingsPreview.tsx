@@ -3,10 +3,18 @@ import type {
   IsomerSiteProps,
   IsomerSiteThemeProps,
 } from "@opengovsg/isomer-components"
+import type { CSSProperties, PropsWithChildren } from "react"
 import type { UnwrapTagged } from "type-fest"
-import { CSSProperties, PropsWithChildren, useState } from "react"
-import { Box, TabList, Text } from "@chakra-ui/react"
+import { useState } from "react"
+import { Box, Icon, TabList, Text, useTheme, useToken } from "@chakra-ui/react"
 import { Tab, Tabs } from "@opengovsg/design-system-react"
+import {
+  BiChevronLeft,
+  BiChevronRight,
+  BiGlobe,
+  BiRevision,
+  BiX,
+} from "react-icons/bi"
 
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { AskgovWidget } from "~/components/Askgov"
@@ -43,17 +51,15 @@ const SHARED_TAB_STYLES = {
   },
 } as const
 
-const BUTTON_COLOURS = ["red", "yellow", "green"]
+const BUTTON_COLOURS = ["#ff5f56", "#ffbd2e", "#27c93f"]
 
 const WindowButtons = () => {
   return (
     <Box
       style={{
-        background: "white",
         display: "flex",
         gap: "8px",
-        paddingLeft: "1rem",
-        paddingRight: "1rem",
+        paddingRight: "12px",
         paddingTop: "0.75rem",
         paddingBottom: "0.75rem",
         alignItems: "center",
@@ -76,38 +82,80 @@ const WindowButtons = () => {
 const ChromeTab = ({
   children,
   style,
-}: PropsWithChildren<{ style?: CSSProperties }>) => {
+  favicon,
+}: PropsWithChildren<{ style?: CSSProperties; favicon?: string }>) => {
+  const bgColor = useToken("colors", "utility.ui")
+  const s3Domain = env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+
   return (
-    <Box style={{ display: "flex", ...style }}>
+    <Box
+      style={{
+        display: "flex",
+        paddingTop: "8px",
+        paddingBottom: "8px",
+        paddingLeft: "16px",
+        paddingRight: "16px",
+        gap: "12px",
+        borderRadius: "10px 10px 0 0",
+        background: bgColor,
+        alignItems: "center",
+        ...style,
+      }}
+    >
+      {favicon ? (
+        <img
+          style={{ width: "16px", height: "16px" }}
+          src={`https://${s3Domain}${favicon}`}
+          aria-label="Site favicon"
+        />
+      ) : (
+        <Icon as={BiGlobe} />
+      )}
+      {children}
+      <Icon as={BiX} style={{ marginLeft: "2rem" }} />
+    </Box>
+  )
+}
+
+const AddressBar = ({
+  children,
+  style,
+}: PropsWithChildren<{ style?: CSSProperties }>) => {
+  const bgColor = useToken("colors", "utility.ui")
+  const iconColor = useToken("colors", "base.content.default")
+
+  return (
+    <Box
+      style={{
+        display: "flex",
+        paddingTop: "8px",
+        paddingBottom: "8px",
+        paddingLeft: "12px",
+        paddingRight: "12px",
+        gap: "12px",
+        borderRadius: "10px 10px 0 0",
+        background: bgColor,
+        alignItems: "center",
+        width: "100%",
+        ...style,
+      }}
+    >
+      <Box style={{ display: "flex", gap: "4px" }}>
+        {[BiChevronLeft, BiChevronRight, BiRevision].map((icon) => (
+          <Icon as={icon} style={{ margin: "8px", fill: iconColor }} />
+        ))}
+      </Box>
       <Box
         style={{
-          height: "40px",
-          width: "40px",
-          borderRadius: "50%",
-          zIndex: -1,
-          boxShadow: "20px 20px aqua",
-        }}
-      />
-      <Box
-        style={{
-          borderTopLeftRadius: "8px",
-          borderTopRightRadius: "8px",
-          background: "aqua",
-          padding: "8px",
-          width: "fit-content",
+          borderRadius: "16777200px",
+          border: "1px solid rgba(0, 0, 0, 0.00)",
+          background: " #F1F3F4",
+          padding: "8px 16px",
+          width: "100%",
         }}
       >
         {children}
       </Box>
-      <Box
-        style={{
-          height: "40px",
-          width: "40px",
-          borderRadius: "50%",
-          zIndex: -1,
-          boxShadow: "-20px 20px aqua",
-        }}
-      />
     </Box>
   )
 }
@@ -157,7 +205,8 @@ export const EditSettingsPreview = ({
       ? (contentLayoutPreview as UnwrapTagged<PrismaJson.BlobJsonContent>)
       : content
 
-  const s3Domain = env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+  const isomerTheme = useTheme()
+  const bodyTextStyle = isomerTheme.textStyles["body-2"]
 
   return (
     <Box bg="base.canvas.backdrop" h="full">
@@ -187,42 +236,29 @@ export const EditSettingsPreview = ({
         }
       >
         {showChromeTab && (
-          <Box
-            style={{
-              display: "flex",
-            }}
-          >
-            <WindowButtons />
-            <ChromeTab
+          <>
+            <Box
               style={{
-                marginLeft: "-24px",
-                marginTop: "8px",
+                display: "flex",
+                background: "#e8eaed",
+                paddingTop: "8px",
+                paddingLeft: "12px",
+                paddingRight: "12px",
               }}
             >
-              <Box
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
-              >
-                <img
-                  style={{ width: "16px", height: "16px" }}
-                  src={`https://${s3Domain}${rest.favicon}`}
-                />
-                <Text
-                  style={{
-                    lineHeight: "1.25rem",
-                    fontSize: "0.875rem",
-                    fontWeight: 400,
-                    letterSpacing: 0,
-                  }}
-                >
+              <WindowButtons />
+              <ChromeTab favicon={rest.favicon}>
+                <Text style={{ ...bodyTextStyle, fontFamily: "inherit" }}>
                   {siteName}
                 </Text>
-              </Box>
-            </ChromeTab>
-          </Box>
+              </ChromeTab>
+            </Box>
+            <AddressBar>
+              <Text style={{ ...bodyTextStyle, fontFamily: "inherit" }}>
+                {rest.url ?? "example.isomer.gov.sg"}
+              </Text>
+            </AddressBar>
+          </>
         )}
         <Preview
           siteId={siteId}
