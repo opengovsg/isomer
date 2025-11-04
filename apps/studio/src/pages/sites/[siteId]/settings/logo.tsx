@@ -8,6 +8,7 @@ import { isEqual } from "lodash"
 import { BiPaint } from "react-icons/bi"
 
 import type { NextPageWithLayout } from "~/lib/types"
+import type { LogoSettings } from "~/schemas/site"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -28,7 +29,6 @@ import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import type { LogoSettings} from "~/schemas/site";
 import { logoSettingsValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
@@ -120,6 +120,7 @@ const LogoSettingsPage: NextPageWithLayout = () => {
           <EditSettingsPreview
             siteName={siteName}
             {...logoSettings}
+            url={rest.url}
             showChromeTab
           />
         </SettingsPreviewGridItem>
