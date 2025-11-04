@@ -1,4 +1,5 @@
 import { getScopedSchema } from "@opengovsg/isomer-components"
+import clone from "lodash/clone"
 
 import { ajv } from "./ajv"
 
@@ -15,7 +16,8 @@ export function getCachedScopedSchema<T extends string>(
 ): ReturnType<typeof ajv.compile> {
   const { layout, scope, exclude } = props
 
-  const cacheKey = `${layout}:${scope}:${exclude?.sort().join(",") || ""}`
+  const sortedExclude = exclude ? clone(exclude).sort().join(",") : ""
+  const cacheKey = `${layout}:${scope}:${sortedExclude}`
 
   const cachedSchema = schemaCache.get(cacheKey)
   if (cachedSchema) return cachedSchema
