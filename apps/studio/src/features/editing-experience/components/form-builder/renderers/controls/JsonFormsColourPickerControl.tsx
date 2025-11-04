@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   Box,
   Flex,
@@ -20,8 +20,10 @@ import {
   convertHexToRgb,
   generateColorPalette,
   generateTheme,
+  getPalette,
   normalizeHex,
 } from "~/features/settings/utils"
+import { colours } from "~/theme/foundations/colours"
 
 export const jsonFormsColourPickerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ColourPickerControl,
@@ -31,18 +33,11 @@ export const jsonFormsColourPickerControlTester: RankedTester = rankWith(
 const THEME_PATHS = [
   "colors.brand.canvas.default",
   "colors.brand.canvas.alt",
-  "colors.brand.canvas.backdrop",
   "colors.brand.canvas.inverse",
   "colors.brand.interaction.default",
   "colors.brand.interaction.hover",
   "colors.brand.interaction.pressed",
 ] as const
-
-const DEFAULT_COLOUR_PALETTE = {
-  tints: [""],
-  colour: "",
-  shades: [""],
-}
 
 const JsonFormsColourPickerControl = ({
   data: _data,
@@ -54,23 +49,9 @@ const JsonFormsColourPickerControl = ({
   errors,
 }: ControlProps) => {
   const data: string | undefined = typeof _data === "string" ? _data : undefined
-  // NOTE: Tint is the colour brightened by 10% successively,
-  // shades are the colour darkened by 10% successively
-  const { tints, colour, shades } = data
-    ? generateColorPalette(...convertHexToRgb(data))
-    : DEFAULT_COLOUR_PALETTE
 
   const ctx = useJsonForms()
   const [displayedColour, setDisplayedColour] = useState(data)
-
-  // NOTE: whenever data changes, write the corresponding correct tints and shades
-  useEffect(() => {
-    const otherPaths = THEME_PATHS.filter((p) => p !== path)
-    const palette = generateTheme({ tints, colour, shades })
-    otherPaths.forEach((p) => {
-      handleChange(p, palette[p] ?? "#FFFFFF")
-    })
-  }, [data])
 
   return (
     <Box>
@@ -96,6 +77,11 @@ const JsonFormsColourPickerControl = ({
                 w="86px"
                 onChange={(e) => {
                   const rawString = e.target.value
+                  if (!rawString) {
+                    handleChange(path, undefined)
+                    return
+                  }
+
                   const parsedHex = rawString
                     .split("")
                     .filter((c) => isHexadecimal(c))
@@ -104,12 +90,11 @@ const JsonFormsColourPickerControl = ({
 
                   setDisplayedColour(parsedHex)
 
-                  if (!rawString) {
-                    handleChange(path, undefined)
-                    return
-                  }
+                  const palette = getPalette(parsedHex)
 
-                  handleChange(path, `#${normalizeHex(parsedHex)}`)
+                  THEME_PATHS.forEach((p) => {
+                    handleChange(p, palette[p] ?? "#FFFFFF")
+                  })
                 }}
               />
             </InputGroup>
@@ -117,7 +102,9 @@ const JsonFormsColourPickerControl = ({
               borderRadius="50%"
               border="1px solid"
               borderColor="base.divider.strong"
-              bgColor={colour}
+              bgColor={
+                displayedColour ? `#${normalizeHex(displayedColour)}` : "white"
+              }
               w="2rem"
               h="2rem"
             ></Box>
