@@ -7,16 +7,20 @@ import { ajv } from "./ajv"
 // Global cache for compiled AJV schemas to avoid expensive recompilation
 const schemaCache = new Map<string, ReturnType<typeof ajv.compile>>()
 
-interface GetCachedScopedSchemaProps {
-  layout: ScopedSchemaLayout
-  scope: string
+type GetScopedSchemaParams<T extends ScopedSchemaLayout> = Parameters<
+  typeof getScopedSchema<T>
+>[0]
+
+interface GetCachedScopedSchemaProps<T extends ScopedSchemaLayout> {
+  layout: T
+  scope: GetScopedSchemaParams<T>["scope"]
   exclude?: string[]
 }
-export function getCachedScopedSchema({
+export function getCachedScopedSchema<T extends ScopedSchemaLayout>({
   layout,
   scope,
   exclude,
-}: GetCachedScopedSchemaProps): ReturnType<typeof ajv.compile> {
+}: GetCachedScopedSchemaProps<T>): ReturnType<typeof ajv.compile> {
   const sortedExclude = exclude ? clone(exclude).sort().join(",") : ""
   const cacheKey = `${layout}:${scope}:${sortedExclude}`
 
@@ -24,7 +28,7 @@ export function getCachedScopedSchema({
   if (cachedSchema) return cachedSchema
 
   const scopedSchema = getScopedSchema({
-    layout: layout as any, // TODO: fix this any
+    layout,
     scope,
     exclude,
   })
