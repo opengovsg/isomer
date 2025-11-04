@@ -34,19 +34,27 @@ export const BaseBlock = ({
       w="100%"
       borderRadius="6px"
       border="1px solid"
-      borderColor={isInvalid ? "red.200" : "base.divider.medium"}
+      borderColor="base.divider.medium"
       transitionProperty="common"
       transitionDuration="normal"
+      aria-invalid={isInvalid}
       _hover={{
         bg: "interaction.muted.main.hover",
         borderColor: "interaction.main-subtle.hover",
+        _invalid: {
+          shadow: "0px 1px 6px 0px #C0343426",
+        },
       }}
       _active={{
         bg: "interaction.main-subtle.default",
         borderColor: "interaction.main-subtle.hover",
         shadow: "0px 1px 6px 0px #1361F026",
       }}
-      bg={isInvalid ? "red.50" : "white"}
+      _invalid={{
+        bg: "interaction.muted.critical.hover",
+        borderColor: "utility.feedback.critical",
+      }}
+      bg="white"
       py="0.75rem"
       px="0.75rem"
       flexDirection="row"
