@@ -1,11 +1,16 @@
+import type { GrowthBook } from "@growthbook/growthbook"
 import type { BuildStatusType } from "@prisma/client"
 import type pino from "pino"
 import _ from "lodash"
 
 import {
-  sendFailedSchedulePublishEmail,
-  sendSuccessfulScheduledPublishEmail,
+  sendFailedPublishEmail,
+  sendSuccessfulPublishEmail,
 } from "~/features/mail/service"
+import {
+  ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY,
+  ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
+} from "~/lib/growthbook"
 import { db } from "../database"
 
 /**
@@ -40,6 +45,7 @@ const updateCurrentAndSupersededBuilds = async (
  */
 export const updateCodebuildStatusAndSendEmails = async (
   logger: pino.Logger<string>,
+  gb: GrowthBook,
   buildId: string,
   buildStatus: BuildStatusType,
 ): Promise<{ codebuildJobIdsForSentEmails: string[] }> => {
@@ -48,7 +54,7 @@ export const updateCodebuildStatusAndSendEmails = async (
   await updateCurrentAndSupersededBuilds(buildId, buildStatus)
   // send notification emails on a best-effort basis, so we catch any errors and log them
   try {
-    codebuildJobIdsForSentEmails = await sendEmails(buildId, buildStatus)
+    codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, buildStatus)
     logger.info(
       {
         buildId,
@@ -91,7 +97,11 @@ export const updateCodebuildStatusAndSendEmails = async (
  * @param buildStatus The new status of the build.
  * @param buildsToUpdate Array of builds that have been updated, along with their associated resource and user details
  */
-const sendEmails = async (buildId: string, buildStatus: BuildStatusType) => {
+const sendEmails = async (
+  gb: GrowthBook,
+  buildId: string,
+  buildStatus: BuildStatusType,
+) => {
   const buildsToSendEmails = await db
     .selectFrom("CodeBuildJobs")
     .innerJoin("User", "User.id", "CodeBuildJobs.userId")
@@ -110,27 +120,33 @@ const sendEmails = async (buildId: string, buildStatus: BuildStatusType) => {
     .execute()
 
   const emailPromisesWithCodebuildJobId = _.compact(
-    buildsToSendEmails.map((info) => {
-      switch (buildStatus) {
-        case "SUCCEEDED":
-          return {
-            id: info.id, // codebuild job id
-            promise: sendSuccessfulScheduledPublishEmail({
-              recipientEmail: info.email,
-              publishTime: new Date(), // use current time as publish time, no need to use exact time from codebuild
-            }),
-          }
-        case "FAILED":
-          return {
-            id: info.id, // codebuild job id
-            promise: sendFailedSchedulePublishEmail({
-              recipientEmail: info.email,
-            }),
-          }
-        default:
-          return // no emails for other statuses
-      }
-    }),
+    buildsToSendEmails
+      .filter((build) => isEmailFunctionalityActive(gb, build.isScheduled))
+      .map((info) => {
+        switch (buildStatus) {
+          case "SUCCEEDED":
+            return {
+              id: info.id, // codebuild job id
+              promise: sendSuccessfulPublishEmail({
+                isScheduled: info.isScheduled,
+                recipientEmail: info.email,
+                title: info.title,
+                publishTime: new Date(), // use current time as publish time, no need to use exact time from codebuild
+              }),
+            }
+          case "FAILED":
+            return {
+              id: info.id, // codebuild job id
+              promise: sendFailedPublishEmail({
+                isScheduled: info.isScheduled,
+                recipientEmail: info.email,
+                resource: info,
+              }),
+            }
+          default:
+            return // no emails for other statuses
+        }
+      }),
   )
   const emailPromisesSettled = await Promise.allSettled(
     emailPromisesWithCodebuildJobId.map((t) => t.promise),
@@ -144,4 +160,18 @@ const sendEmails = async (buildId: string, buildStatus: BuildStatusType) => {
     })
 
   return codebuildJobIdsForSentEmails
+}
+
+/**
+ * Check if email functionality is active for the given Growthbook instance and scheduling status.
+ * @param gb Growthbook instance
+ * @param isScheduled Whether the publish is scheduled
+ * @returns Whether email functionality is active
+ */
+const isEmailFunctionalityActive = (gb: GrowthBook, isScheduled: boolean) => {
+  if (isScheduled) {
+    return gb.isOn(ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY)
+  } else {
+    return gb.isOn(ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY)
+  }
 }
