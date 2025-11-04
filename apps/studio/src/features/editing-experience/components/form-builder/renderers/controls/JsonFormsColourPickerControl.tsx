@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { useEffect, useMemo, useState } from "react"
+import { useState } from "react"
 import {
   Box,
   Flex,
@@ -16,14 +16,7 @@ import get from "lodash/get"
 import { isHexadecimal } from "validator"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import {
-  convertHexToRgb,
-  generateColorPalette,
-  generateTheme,
-  getPalette,
-  normalizeHex,
-} from "~/features/settings/utils"
-import { colours } from "~/theme/foundations/colours"
+import { getPalette, normalizeHex } from "~/features/settings/utils"
 
 export const jsonFormsColourPickerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ColourPickerControl,
@@ -45,7 +38,6 @@ const JsonFormsColourPickerControl = ({
   handleChange,
   path,
   description,
-  required,
   errors,
 }: ControlProps) => {
   const data: string | undefined = typeof _data === "string" ? _data : undefined
@@ -56,7 +48,7 @@ const JsonFormsColourPickerControl = ({
   return (
     <Box>
       <VStack gap="1.5rem">
-        <FormControl isRequired={required} isInvalid={!!errors}>
+        <FormControl isRequired isInvalid={!!errors}>
           <FormLabel description={description} mb={0}>
             {label}
           </FormLabel>
