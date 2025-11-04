@@ -250,7 +250,7 @@ export default function RootStateDrawer() {
       scope: "content",
     })
 
-    validateFn(savedPageState.content)
+    void validateFn(savedPageState.content)
 
     if (!validateFn.errors) return new Set<number>()
 
