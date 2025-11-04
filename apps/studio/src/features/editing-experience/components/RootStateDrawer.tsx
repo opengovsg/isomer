@@ -1,8 +1,5 @@
 import type { DropResult } from "@hello-pangea/dnd"
-import type {
-  IsomerComponent,
-  IsomerSchema,
-} from "@opengovsg/isomer-components"
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { useCallback, useState } from "react"
 import {
   Box,
@@ -18,7 +15,6 @@ import { Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getComponentSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
-  schema,
 } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
@@ -32,6 +28,7 @@ import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import { ajv } from "~/utils/ajv"
+import { getCachedScopedSchema } from "~/utils/schemaCache"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
 import { pageSchema } from "../schema"
@@ -64,11 +61,6 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
     description: "Summary, Button label and Button URL",
   },
 }
-
-// ideally, we should do validation on a component-level
-// however, ajv compilation is expensive, so we do it once and reuse it
-// for now, we do it on the page level so it only compiles once
-const validateFn = ajv.compile<IsomerSchema>(schema)
 
 const validateHeroComponentFn = ajv.compile<IsomerComponent>(
   getComponentSchema({ component: "hero" }),
@@ -250,12 +242,18 @@ export default function RootStateDrawer() {
     pageLayout !== "collection"
 
   const invalidBlockIndexes = new Set<number>()
-  validateFn(savedPageState)
+
+  const validateFn = getCachedScopedSchema({
+    layout: pageLayout,
+    scope: "content",
+  })
+  validateFn(savedPageState.content)
   for (const error of validateFn.errors ?? []) {
-    if (error.instancePath.startsWith("/content")) {
-      const pathAfterContent = error.instancePath.split("/content/")[1]
-      if (pathAfterContent) {
-        const pathParts = pathAfterContent.split("/")
+    // When validating content array directly, instancePath will be like "/0", "/1", "/2", etc.
+    // where the number is the index of the invalid component
+    if (error.instancePath) {
+      const pathParts = error.instancePath.split("/").filter(Boolean)
+      if (pathParts.length > 0) {
         const blockIndex = pathParts[0]
         if (blockIndex && !isNaN(parseInt(blockIndex))) {
           invalidBlockIndexes.add(parseInt(blockIndex))
