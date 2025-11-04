@@ -258,8 +258,7 @@ export default function RootStateDrawer() {
       validateFn.errors
         .map((error) => {
           // instancePath format: "/0", "/1", "/2", etc. where the number is the block index
-          const [firstSegment] =
-            error.instancePath?.split("/").filter(Boolean) ?? []
+          const [firstSegment] = error.instancePath.split("/").filter(Boolean)
           const blockIndex = Number(firstSegment)
           return Number.isNaN(blockIndex) ? null : blockIndex
         })
