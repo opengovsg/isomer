@@ -439,6 +439,116 @@ describe("site.router", async () => {
     })
   })
 
+  describe("setFooter", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+      const footerContent = JSON.stringify({ foo: "bar" })
+
+      // Act
+      const result = unauthedCaller.setFooter({
+        siteId: 1,
+        footer: footerContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+    })
+
+    it("should throw 403 if user does not have write access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const footerContent = JSON.stringify({ foo: "bar" })
+
+      // Act
+      const result = caller.setFooter({
+        siteId: site.id,
+        footer: footerContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+    })
+
+    it('should throw 403 if user has only "editor" access to the site', async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const footerContent = JSON.stringify({ foo: "bar" })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.setFooter({
+        siteId: site.id,
+        footer: footerContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+    })
+
+    it("should set the site footer successfully", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const footerContent = JSON.stringify({ foo: "bar" })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.setFooter({
+        siteId: site.id,
+        footer: footerContent,
+      })
+
+      // Assert
+      const newFooter = await db
+        .selectFrom("Footer")
+        .where("siteId", "=", site.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(newFooter.content).toEqual(footerContent)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(2)
+      expect(
+        auditLog.some(({ eventType }) => {
+          return eventType === AuditLogEvent.FooterUpdate
+        }),
+      ).toEqual(true)
+      expect(
+        auditLog.some(({ eventType }) => {
+          return eventType === AuditLogEvent.Publish
+        }),
+      ).toEqual(true)
+      expect(
+        auditLog.every(({ userId }) => {
+          return userId === session.userId
+        }),
+      ).toEqual(true)
+    })
+  })
+
   describe("getNavbar", () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange
@@ -488,6 +598,116 @@ describe("site.router", async () => {
         content: navbar.content,
         siteId: site.id,
       })
+    })
+  })
+
+  describe("setNavbar", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+      const navbarContent = JSON.stringify({ foo: "bar" })
+
+      // Act
+      const result = unauthedCaller.setNavbar({
+        siteId: 1,
+        navbar: navbarContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+    })
+
+    it("should throw 403 if user does not have write access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const navbarContent = JSON.stringify({ foo: "bar" })
+
+      // Act
+      const result = caller.setNavbar({
+        siteId: site.id,
+        navbar: navbarContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+    })
+
+    it('should throw 403 if user has only "editor" access to the site', async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const navbarContent = JSON.stringify({ foo: "bar" })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.setNavbar({
+        siteId: site.id,
+        navbar: navbarContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+    })
+
+    it("should set the site navbar successfully", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const navbarContent = JSON.stringify({ foo: "bar" })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.setNavbar({
+        siteId: site.id,
+        navbar: navbarContent,
+      })
+
+      // Assert
+      const newNavbar = await db
+        .selectFrom("Navbar")
+        .where("siteId", "=", site.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(newNavbar.content).toEqual(navbarContent)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(2)
+      expect(
+        auditLog.some(({ eventType }) => {
+          return eventType === AuditLogEvent.NavbarUpdate
+        }),
+      ).toEqual(true)
+      expect(
+        auditLog.some(({ eventType }) => {
+          return eventType === AuditLogEvent.Publish
+        }),
+      ).toEqual(true)
+      expect(
+        auditLog.every(({ userId }) => {
+          return userId === session.userId
+        }),
+      ).toEqual(true)
     })
   })
 
