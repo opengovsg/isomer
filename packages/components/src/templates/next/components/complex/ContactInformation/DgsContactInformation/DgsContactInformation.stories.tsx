@@ -3,12 +3,11 @@ import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { ContactInformationProps } from "~/interfaces"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 import { DgsContactInformation } from "./DgsContactInformation"
 
-const meta: Meta<ContactInformationProps> = {
+const meta: Meta<typeof DgsContactInformation> = {
   title: "Next/Components/ContactInformation/DGS",
   component: DgsContactInformation,
   argTypes: {},
