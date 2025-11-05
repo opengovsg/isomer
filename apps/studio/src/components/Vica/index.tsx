@@ -29,7 +29,7 @@ export const VicaWidget = () => {
               width: "55px",
             }}
             alt="Bot Launcher"
-            src="/assets/logos/VicaWidgetLogo.webp"
+            src="https://bucket-common.vica.gov.sg/unified_webchat_image_launcher.webp"
           />
         </div>
       </div>
