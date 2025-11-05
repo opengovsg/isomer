@@ -1,14 +1,11 @@
 import { describe, expect, it } from "vitest"
 
+import type { Theme } from "../utils"
 import {
   BACKGROUND_COLOURS,
-  calculateRelativeContrast,
-  calculateRelativeLuminance,
-  generateColorPalette,
   getPalette,
   passesContrastCheck,
   TEXT_COLOURS,
-  Theme,
 } from "../utils"
 
 describe("settings.utils.ts", () => {

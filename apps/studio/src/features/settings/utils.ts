@@ -82,9 +82,9 @@ export const calculateRelativeLuminance = (color: string) => {
   const [r, g, b] = rgb.map((value) => normaliseRsRgb(value))
 
   return (
-    LINEAR_RGB_FACTORS.red * r! +
-    LINEAR_RGB_FACTORS.green * g! +
-    LINEAR_RGB_FACTORS.blue * b!
+    LINEAR_RGB_FACTORS.red * (r ?? 0) +
+    LINEAR_RGB_FACTORS.green * (g ?? 0) +
+    LINEAR_RGB_FACTORS.blue * (b ?? 0)
   )
 }
 
