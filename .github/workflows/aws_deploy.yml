@@ -105,12 +105,6 @@ on:
         description: "Intercom app ID"
         required: false
         type: string
-      high-vuln-threshold:
-        description: "Number of high vulns that the app can have before the deploy fails"
-        default: 4
-        required: false
-        type: number
-
     secrets:
       SLACK_BOT_TOKEN:
         description: "Slack bot token with permissions to post messages"
@@ -197,7 +191,7 @@ jobs:
           artifact_type: "container"
           artifact_path: "${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
           critical_threshold: 0
-          high_threshold: ${{ inputs.high-vuln-threshold }}
+          high_threshold: 4
 
       # Display Inspector results in the GitHub Actions terminal
       - name: Display CycloneDX SBOM (JSON)
