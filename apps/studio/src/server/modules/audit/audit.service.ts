@@ -314,11 +314,12 @@ interface PermissionEventLogProps {
   delta: CreatePermissionDelta | DeletePermissionDelta | UpdatePermissionDelta
   metadata?: Record<string, unknown>
   ip?: string
+  siteId: Site["id"]
 }
 
 export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
   tx,
-  { eventType, by, delta, ip, metadata = {} },
+  { eventType, by, delta, ip, siteId, metadata = {} },
 ) => {
   await tx
     .insertInto("AuditLog")
@@ -327,6 +328,7 @@ export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
       delta,
       userId: by.id,
       ipAddress: ip,
+      siteId,
       metadata,
     })
     .execute()

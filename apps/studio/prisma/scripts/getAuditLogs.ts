@@ -201,7 +201,14 @@ const getAuditLogQuery = ({
                   AUDIT_LOGS_EVENTS_QUERIES,
                 ) as DisplayableAuditLogEvent[],
               ),
-              eb("al.siteId", "=", siteId),
+              eb.or([
+                eb.eb("al.siteId", "=", siteId),
+                eb.eb(
+                  sql<number>`"al".delta -> 'after' ->> 'siteId'`,
+                  "=",
+                  siteId,
+                ),
+              ]),
             ]),
             eb.and([
               eb("al.eventType", "=", AuditLogEvent.Login),

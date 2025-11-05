@@ -140,6 +140,7 @@ export const createUserWithPermission = async ({
       eventType: AuditLogEvent.PermissionCreate,
       by: byUser,
       delta: { before: null, after: resourcePermission },
+      siteId,
     })
 
     return resourcePermission
@@ -260,6 +261,7 @@ export const deleteUserPermission = async ({
         eventType: AuditLogEvent.PermissionDelete,
         by: byUser,
         delta: { before, after: deletedUserPermission },
+        siteId,
       })
     }
   })
