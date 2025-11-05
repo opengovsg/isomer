@@ -3,9 +3,9 @@ import { z } from "zod"
 import { generateBasePermalinkSchema } from "./common"
 import { offsetPaginationSchema } from "./pagination"
 
-export const MAX_FOLDER_TITLE_LENGTH = 100
-export const MAX_FOLDER_PERMALINK_LENGTH = 200
-export const MAX_FOLDER_DESCRIPTION_LENGTH = 300
+export const MAX_FOLDER_TITLE_LENGTH = 250
+export const MAX_FOLDER_PERMALINK_LENGTH = 500
+export const MAX_FOLDER_DESCRIPTION_LENGTH = 500
 
 const permalinkSchema = generateBasePermalinkSchema("folder")
   .min(1, { message: "Enter a URL for this folder" })
