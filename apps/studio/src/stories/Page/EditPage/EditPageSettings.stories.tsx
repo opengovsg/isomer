@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { userEvent, within } from "storybook/test"
 import { delay, http, HttpResponse } from "msw"
 import { assetHandler } from "tests/msw/handlers/asset"
 import { meHandlers } from "tests/msw/handlers/me"

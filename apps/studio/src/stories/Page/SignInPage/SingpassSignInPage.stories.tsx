@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/nextjs"
 import { authSingpassHandlers } from "tests/msw/handlers/auth/singpass"
 import { meHandlers } from "tests/msw/handlers/me"
 

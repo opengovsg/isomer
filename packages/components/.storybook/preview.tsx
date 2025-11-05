@@ -1,7 +1,7 @@
 // Replace your-framework with the framework you are using (e.g., react, vue3)
-import type { Decorator, Preview } from "@storybook/react"
+import type { Decorator, Preview } from "@storybook/react-vite"
 import { withThemeByDataAttribute } from "@storybook/addon-themes"
-import { MINIMAL_VIEWPORTS } from "@storybook/addon-viewport"
+import { MINIMAL_VIEWPORTS } from "storybook/viewport"
 import mockdate from "mockdate"
 import { initialize, mswLoader } from "msw-storybook-addon"
 
@@ -86,9 +86,10 @@ initialize({
 
 const preview: Preview = {
   loaders: [mswLoader],
+
   parameters: {
     viewport: {
-      viewports: {
+      options: {
         ...viewport.viewports,
         ...MINIMAL_VIEWPORTS,
         ...CUSTOM_GENERAL_VIEWPORTS,
@@ -110,6 +111,8 @@ const preview: Preview = {
       prefersReducedMotion: "reduce",
     },
   },
+
+  tags: ["autodocs"]
 }
 
 const LayoutDecorator: Decorator = (storyFn) => (

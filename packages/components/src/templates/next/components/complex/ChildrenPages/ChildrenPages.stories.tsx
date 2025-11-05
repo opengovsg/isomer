@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import type { ChildrenPagesProps } from "~/interfaces"
 import type { IsomerSiteProps } from "~/types"
