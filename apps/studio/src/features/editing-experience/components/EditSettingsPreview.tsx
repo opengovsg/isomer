@@ -6,6 +6,7 @@ import type {
 import type { CSSProperties, PropsWithChildren } from "react"
 import type { UnwrapTagged } from "type-fest"
 import { useState } from "react"
+import Image from "next/image"
 import { Box, Icon, TabList, Text, useTheme, useToken } from "@chakra-ui/react"
 import { Tab, Tabs } from "@opengovsg/design-system-react"
 import {
@@ -103,10 +104,12 @@ const ChromeTab = ({
       }}
     >
       {favicon ? (
-        <img
+        <Image
           style={{ width: "16px", height: "16px" }}
           src={`https://${s3Domain}${favicon}`}
-          aria-label="Site favicon"
+          alt="Site favicon"
+          width="16"
+          height="16"
         />
       ) : (
         <Icon as={BiGlobe} />
