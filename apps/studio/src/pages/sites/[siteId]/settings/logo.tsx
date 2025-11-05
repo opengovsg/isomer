@@ -54,9 +54,8 @@ const LogoSettingsPage: NextPageWithLayout = () => {
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
   const existingLogoSettings = { favicon, logoUrl }
-  const [logoSettings, setLogoSettings] = useState<LogoSettings | undefined>(
-    existingLogoSettings,
-  )
+  const [logoSettings, setLogoSettings] =
+    useState<LogoSettings>(existingLogoSettings)
 
   const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
     onSuccess: () => {
@@ -81,7 +80,6 @@ const LogoSettingsPage: NextPageWithLayout = () => {
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
   const onSubmit = () => {
-    if (!logoSettings) return
     updateSiteConfigMutation.mutate({
       ...logoSettings,
       ...rest,
