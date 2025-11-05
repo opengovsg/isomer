@@ -3,7 +3,7 @@ import { expect, userEvent, waitFor, within } from "@storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { DatabasePageSchemaType } from "~/engine"
+import type { DatabasePageSchemaType } from "~/types"
 import {
   DGS_SMALL_DATASET_RESOURCE_ID,
   generateSiteConfig,

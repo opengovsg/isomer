@@ -1,12 +1,6 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components/schema"
 import type { IconType } from "react-icons"
-import {
-  COLLECTION_BLOCK_TYPE,
-  CONTACT_INFORMATION_TYPE,
-  DYNAMIC_COMPONENT_LIST_TYPE,
-  DYNAMIC_DATA_BANNER_TYPE,
-  IMAGE_GALLERY_TYPE,
-} from "@opengovsg/isomer-components"
+import { COMPONENT_TYPES_MAP } from "@opengovsg/isomer-components"
 import {
   BiChevronDown,
   BiCloud,
@@ -54,10 +48,10 @@ export const TYPE_TO_ICON: Record<
   video: BiMoviePlay,
   logocloud: BiCloud,
   blockquote: BiMessageDots,
-  [DYNAMIC_DATA_BANNER_TYPE]: TbApi,
-  [COLLECTION_BLOCK_TYPE]: BiData,
-  [IMAGE_GALLERY_TYPE]: BiImages,
-  [CONTACT_INFORMATION_TYPE]: BiPhoneCall,
-  [DYNAMIC_COMPONENT_LIST_TYPE]: BiListUl,
+  [COMPONENT_TYPES_MAP.DynamicDataBanner]: TbApi,
+  [COMPONENT_TYPES_MAP.CollectionBlock]: BiData,
+  [COMPONENT_TYPES_MAP.ImageGallery]: BiImages,
+  [COMPONENT_TYPES_MAP.ContactInformation]: BiPhoneCall,
+  [COMPONENT_TYPES_MAP.DynamicComponentList]: BiListUl,
   childrenpages: BiListUl,
 }

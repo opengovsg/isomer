@@ -7,7 +7,7 @@ import {
   FormErrorMessage,
   FormLabel,
 } from "@opengovsg/design-system-react"
-import { META_IMAGE_FORMAT } from "@opengovsg/isomer-components"
+import { META_IMAGE_FORMAT } from "@opengovsg/isomer-components/schema"
 import uniq from "lodash/uniq"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"

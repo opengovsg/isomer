@@ -3,8 +3,8 @@ import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { HomePageSchemaType } from "~/engine"
 import type { HeroProps } from "~/interfaces/complex/Hero"
+import type { HomePageSchemaType } from "~/types"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,

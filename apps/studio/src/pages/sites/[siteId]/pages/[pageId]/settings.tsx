@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Box, chakra, Grid, GridItem, Text, VStack } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
+import { getLayoutMetadataSchema } from "@opengovsg/isomer-components/schema"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { Controller } from "react-hook-form"
 import { z } from "zod"

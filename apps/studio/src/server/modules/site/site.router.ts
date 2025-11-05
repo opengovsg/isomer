@@ -2,7 +2,7 @@ import type {
   IsomerSiteConfigProps,
   IsomerSiteThemeProps,
   IsomerSiteWideComponentsProps,
-} from "@opengovsg/isomer-components"
+} from "@opengovsg/isomer-components/schema"
 import { TRPCError } from "@trpc/server"
 
 import { ADMIN_ROLE } from "~/lib/growthbook"

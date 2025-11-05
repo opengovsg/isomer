@@ -1,7 +1,7 @@
 import type {
   IsomerComponent,
   IsomerGeneratedSiteProps,
-} from "@opengovsg/isomer-components"
+} from "@opengovsg/isomer-components/schema"
 import type { UseMutateAsyncFunction } from "@tanstack/react-query"
 import {
   FORMSG_EMBED_URL_REGEXES,

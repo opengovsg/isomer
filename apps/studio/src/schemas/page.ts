@@ -1,5 +1,5 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
-import { schema } from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components/schema"
+import { schema } from "@opengovsg/isomer-components/schema"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 

@@ -3,7 +3,7 @@ import {
   IsomerSiteConfigProps,
   NotificationSettingsSchema,
   SiteConfigSchema,
-} from "@opengovsg/isomer-components"
+} from "@opengovsg/isomer-components/schema"
 import { z } from "zod"
 
 import { ajv } from "~/utils/ajv"

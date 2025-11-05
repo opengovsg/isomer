@@ -1,15 +1,13 @@
 import type {
   DatabasePageSchemaType,
   IsomerSchema,
-} from "@opengovsg/isomer-components"
+} from "@opengovsg/isomer-components/schema"
 import type { Static } from "@sinclair/typebox"
 import { useCallback } from "react"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
-import {
-  getScopedSchema,
-  ISOMER_USABLE_PAGE_LAYOUTS,
-} from "@opengovsg/isomer-components"
+import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
+import { getScopedSchema } from "@opengovsg/isomer-components/schema"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
 

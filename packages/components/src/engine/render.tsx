@@ -1,4 +1,4 @@
-import type { IsomerPageSchemaType } from "~/engine"
+import type { IsomerPageSchemaType } from "~/types"
 import { renderLayout as renderNextLayout } from "~/templates/next"
 
 export { renderComponentPreviewText } from "~/templates/next"

@@ -4,13 +4,10 @@ import { useRef } from "react"
 
 import type { Filter as FilterType } from "../../types/Filter"
 import type {
-  CollectionPagePageProps,
-  CollectionPageSchemaType,
-} from "~/engine"
-import type {
   BreadcrumbProps,
   ProcessedCollectionCardProps,
 } from "~/interfaces"
+import type { CollectionPagePageProps, CollectionPageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
 import {
   BackToTopLink,

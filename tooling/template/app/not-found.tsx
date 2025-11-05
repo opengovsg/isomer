@@ -1,4 +1,4 @@
-import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
+import type { IsomerPageSchemaType } from "@opengovsg/isomer-components/schema"
 import type { Metadata, ResolvingMetadata } from "next"
 import Link from "next/link"
 import config from "@/data/config.json"

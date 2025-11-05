@@ -24,10 +24,8 @@ import {
   Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import {
-  DGS_DATASET_ID_FORMAT,
-  useDgsMetadata,
-} from "@opengovsg/isomer-components"
+import { useDgsMetadata } from "@opengovsg/isomer-components"
+import { DGS_DATASET_ID_FORMAT } from "@opengovsg/isomer-components/schema"
 import { useDebounce } from "@uidotdev/usehooks"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"

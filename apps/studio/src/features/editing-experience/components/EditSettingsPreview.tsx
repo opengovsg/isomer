@@ -1,7 +1,7 @@
 import type {
   IsomerSiteConfigProps,
   IsomerSiteProps,
-} from "@opengovsg/isomer-components"
+} from "@opengovsg/isomer-components/schema"
 
 import { AskgovWidget } from "~/components/Askgov"
 import { VicaWidget } from "~/components/Vica"

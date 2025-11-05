@@ -1,5 +1,5 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components/schema"
 import type { PropsWithChildren } from "react"
 import { createContext, useContext, useMemo, useState } from "react"
 import { useRouter } from "next/router"

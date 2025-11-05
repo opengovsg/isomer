@@ -1,16 +1,11 @@
 import type {
   IsomerComponent,
+  IsomerPageLayoutType,
   IsomerPageSchemaType,
   IsomerSiteProps,
-} from "~/engine"
-import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
-import {
-  COLLECTION_BLOCK_TYPE,
-  CONTACT_INFORMATION_TYPE,
-  DYNAMIC_COMPONENT_LIST_TYPE,
-  DYNAMIC_DATA_BANNER_TYPE,
-  IMAGE_GALLERY_TYPE,
-} from "~/interfaces"
+  LinkComponentType,
+} from "~/types"
+import { COMPONENT_TYPES_MAP } from "~/constants"
 import {
   Accordion,
   Blockquote,
@@ -106,15 +101,15 @@ export const renderComponent = ({
       )
     case "video":
       return <Video key={elementKey} {...component} {...rest} />
-    case DYNAMIC_DATA_BANNER_TYPE:
+    case COMPONENT_TYPES_MAP.DynamicDataBanner:
       return <DynamicDataBanner key={elementKey} {...component} {...rest} />
-    case COLLECTION_BLOCK_TYPE:
+    case COMPONENT_TYPES_MAP.CollectionBlock:
       return <CollectionBlock key={elementKey} {...component} {...rest} />
-    case IMAGE_GALLERY_TYPE:
+    case COMPONENT_TYPES_MAP.ImageGallery:
       return <ImageGallery key={elementKey} {...component} {...rest} />
-    case CONTACT_INFORMATION_TYPE:
+    case COMPONENT_TYPES_MAP.ContactInformation:
       return <ContactInformation key={elementKey} {...component} {...rest} />
-    case DYNAMIC_COMPONENT_LIST_TYPE:
+    case COMPONENT_TYPES_MAP.DynamicComponentList:
       return <DynamicComponentList key={elementKey} {...component} {...rest} />
     default:
       const _: never = component

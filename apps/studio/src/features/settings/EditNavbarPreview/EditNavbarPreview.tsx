@@ -1,4 +1,4 @@
-import type { NavbarSchemaType } from "@opengovsg/isomer-components"
+import type { NavbarSchemaType } from "@opengovsg/isomer-components/schema"
 import merge from "lodash/merge"
 
 import type { IframeCallbackFnProps } from "~/types/dom"

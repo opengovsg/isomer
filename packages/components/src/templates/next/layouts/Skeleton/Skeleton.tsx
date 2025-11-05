@@ -1,4 +1,4 @@
-import type { IsomerPageSchemaType } from "~/engine"
+import type { IsomerPageSchemaType } from "~/types"
 import {
   Footer,
   Masthead,

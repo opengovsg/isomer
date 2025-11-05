@@ -2,26 +2,22 @@ import type { TSchema } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerComponentTypes, IsomerPageLayoutType } from "~/types"
+import { COMPONENT_TYPES_MAP } from "~/constants"
 import {
   AccordionSchema,
   BlockquoteSchema,
   CalloutSchema,
   ChildrenPagesSchema,
-  COLLECTION_BLOCK_TYPE,
   CollectionBlockSchema,
-  CONTACT_INFORMATION_TYPE,
   ContactInformationSchema,
   ContentpicSchema,
   DividerSchema,
-  DYNAMIC_COMPONENT_LIST_TYPE,
-  DYNAMIC_DATA_BANNER_TYPE,
   DynamicComponentListSchema,
   DynamicDataBannerSchema,
   FormSGSchema,
   HeadingSchema,
   HeroSchema,
   IframeSchema,
-  IMAGE_GALLERY_TYPE,
   ImageGallerySchema,
   ImageSchema,
   InfobarDefaultSchema,
@@ -57,12 +53,12 @@ export const IsomerComplexComponentsMap = {
   map: MapSchema,
   video: VideoSchema,
   childrenpages: ChildrenPagesSchema,
-  [DYNAMIC_DATA_BANNER_TYPE]: DynamicDataBannerSchema,
+  [COMPONENT_TYPES_MAP.DynamicDataBanner]: DynamicDataBannerSchema,
   logocloud: LogoCloudSchema,
-  [COLLECTION_BLOCK_TYPE]: CollectionBlockSchema,
-  [IMAGE_GALLERY_TYPE]: ImageGallerySchema,
-  [CONTACT_INFORMATION_TYPE]: ContactInformationSchema,
-  [DYNAMIC_COMPONENT_LIST_TYPE]: DynamicComponentListSchema,
+  [COMPONENT_TYPES_MAP.CollectionBlock]: CollectionBlockSchema,
+  [COMPONENT_TYPES_MAP.ImageGallery]: ImageGallerySchema,
+  [COMPONENT_TYPES_MAP.ContactInformation]: ContactInformationSchema,
+  [COMPONENT_TYPES_MAP.DynamicComponentList]: DynamicComponentListSchema,
 }
 
 export const IsomerNativeComponentsMap = {

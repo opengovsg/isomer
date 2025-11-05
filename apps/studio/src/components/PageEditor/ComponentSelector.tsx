@@ -1,4 +1,4 @@
-import type { IsomerComponent } from "@opengovsg/isomer-components"
+import type { IsomerComponent } from "@opengovsg/isomer-components/schema"
 import { useMemo } from "react"
 import Image from "next/image"
 import {

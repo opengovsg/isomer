@@ -2,20 +2,14 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { COMPONENT_TYPES_MAP, DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/constants"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 import { TextSchema } from "../native/Text"
 
-export const DYNAMIC_DATA_BANNER_TYPE = "dynamicdatabanner"
-
-// Hardcoded for now because
-// 1. MUIS is the only use case and there's always 6 prayer timeslots
-// 2. No other known use cases have been identified
-export const DYNAMIC_DATA_BANNER_NUMBER_OF_DATA = 6
-
 export const DynamicDataBannerSchema = Type.Object(
   {
-    type: Type.Literal(DYNAMIC_DATA_BANNER_TYPE, {
-      default: DYNAMIC_DATA_BANNER_TYPE,
+    type: Type.Literal(COMPONENT_TYPES_MAP.DynamicDataBanner, {
+      default: COMPONENT_TYPES_MAP.DynamicDataBanner,
     }),
     apiEndpoint: Type.String({
       title: "API endpoint",

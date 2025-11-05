@@ -1,4 +1,4 @@
-import type { DatabasePageSchemaType } from "~/engine"
+import type { DatabasePageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
 import {
   getBreadcrumbFromSiteMap,

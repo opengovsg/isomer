@@ -1,10 +1,9 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
-import { Value } from "@sinclair/typebox/value"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { CHILDREN_PAGES_LAYOUT_OPTIONS } from "~/constants"
 
-export const CHILDREN_PAGES_LAYOUT_OPTIONS = { Boxes: "boxes", Rows: "rows" }
 export const ChildrenPagesSchema = Type.Object(
   {
     type: Type.Literal("childrenpages", { default: "childrenpages" }),
@@ -46,11 +45,6 @@ export const ChildrenPagesSchema = Type.Object(
     description:
       "The child page component is used to display information about pages inside this folder",
   },
-)
-
-export const DEFAULT_CHILDREN_PAGES_BLOCK = Value.Parse(
-  ChildrenPagesSchema,
-  Value.Default(ChildrenPagesSchema, {}),
 )
 
 export interface ChildrenPagesProps extends Static<typeof ChildrenPagesSchema> {

@@ -6,24 +6,20 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { COMPONENT_TYPES_MAP } from "~/constants"
 import { DgsDataSourceFieldsSchema } from "../integration"
-import {
-  CONTACT_INFORMATION_TYPE,
-  DgsContactInformationSchema,
-} from "./ContactInformation"
-
-export const DYNAMIC_COMPONENT_LIST_TYPE = "dynamiccomponentlist"
+import { DgsContactInformationSchema } from "./ContactInformation"
 
 const ContactInformationComponentSchema = Type.Intersect([
   Type.Object({
-    type: Type.Literal(CONTACT_INFORMATION_TYPE),
+    type: Type.Literal(COMPONENT_TYPES_MAP.ContactInformation),
   }),
   Omit(DgsContactInformationSchema, ["dataSource"]),
 ])
 
 export const DynamicComponentListSchema = Type.Object({
-  type: Type.Literal(DYNAMIC_COMPONENT_LIST_TYPE, {
-    default: DYNAMIC_COMPONENT_LIST_TYPE,
+  type: Type.Literal(COMPONENT_TYPES_MAP.DynamicComponentList, {
+    default: COMPONENT_TYPES_MAP.DynamicComponentList,
   }),
   dataSource: Type.Union([DgsDataSourceFieldsSchema]),
   component: Type.Union([ContactInformationComponentSchema]),

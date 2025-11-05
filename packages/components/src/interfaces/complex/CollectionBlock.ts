@@ -3,15 +3,14 @@ import { Type } from "@sinclair/typebox"
 
 import type { ProcessedCollectionCardProps } from "~/interfaces/internal/CollectionCard"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { COMPONENT_TYPES_MAP } from "~/constants"
 import { COLLECTION_DROPDOWN_FORMAT } from "~/interfaces/format"
 import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
 
-export const COLLECTION_BLOCK_TYPE = "collectionblock"
-
 export const CollectionBlockSchema = Type.Object(
   {
-    type: Type.Literal(COLLECTION_BLOCK_TYPE, {
-      default: COLLECTION_BLOCK_TYPE,
+    type: Type.Literal(COMPONENT_TYPES_MAP.CollectionBlock, {
+      default: COMPONENT_TYPES_MAP.CollectionBlock,
     }),
     collectionReferenceLink: Type.String({
       title: "Collection",

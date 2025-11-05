@@ -1,4 +1,4 @@
-import type { NavbarSchemaType } from "@opengovsg/isomer-components"
+import type { NavbarSchemaType } from "@opengovsg/isomer-components/schema"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { useToast } from "@opengovsg/design-system-react"

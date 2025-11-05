@@ -1,4 +1,4 @@
-import type { ProseProps } from "@opengovsg/isomer-components"
+import type { ProseProps } from "@opengovsg/isomer-components/schema"
 import type { JSONContent } from "@tiptap/react"
 import { Box, HStack, useDisclosure, VStack } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"

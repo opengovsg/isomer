@@ -2,7 +2,7 @@ import type {
   IsomerGeneratedSiteProps,
   IsomerPageSchemaType,
   IsomerSchema,
-} from "@opengovsg/isomer-components"
+} from "@opengovsg/isomer-components/schema"
 import type { PropsWithChildren } from "react"
 import type { PartialDeep } from "type-fest"
 import { forwardRef } from "react"

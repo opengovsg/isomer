@@ -5,7 +5,7 @@ import type { OrderedListProps } from "./OrderedList"
 import type { ParagraphProps } from "./Paragraph"
 import type { UnorderedListProps } from "./UnorderedList"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { orderedListSchemaBuilder, unorderedListSchemaBuilder } from "~/utils"
+import { orderedListSchemaBuilder, unorderedListSchemaBuilder } from "~/schemas"
 import { ParagraphSchema } from "./Paragraph"
 
 interface ListItem {

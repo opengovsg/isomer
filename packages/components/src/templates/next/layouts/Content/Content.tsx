@@ -1,4 +1,4 @@
-import type { ContentPageSchemaType } from "~/engine"
+import type { ContentPageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
 import {
   getBreadcrumbFromSiteMap,

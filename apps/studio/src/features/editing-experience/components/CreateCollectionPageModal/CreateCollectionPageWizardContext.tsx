@@ -1,5 +1,5 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components/schema"
 import type { PropsWithChildren } from "react"
 import type { z } from "zod"
 import { createContext, useContext, useMemo, useState } from "react"

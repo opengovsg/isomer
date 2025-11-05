@@ -4,8 +4,8 @@ import { useMemo } from "react"
 
 import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type { DynamicComponentListProps } from "~/interfaces"
+import { COMPONENT_TYPES_MAP } from "~/constants"
 import { useDgsData } from "~/hooks/useDgsData"
-import { CONTACT_INFORMATION_TYPE } from "~/interfaces"
 import { DgsTransformedContactInformation } from "../ContactInformation"
 
 // We do not know how many records will be returned
@@ -43,7 +43,7 @@ const DynamicComponentList = ({
 
   switch (component.type) {
     // Disabling for now so its easier to extend in the future
-    case CONTACT_INFORMATION_TYPE:
+    case COMPONENT_TYPES_MAP.ContactInformation:
       return (
         records ?? Array.from({ length: DEFAULT_NUMBER_OF_RECORDS_FOR_LOADING })
       ).map((record, index) => (

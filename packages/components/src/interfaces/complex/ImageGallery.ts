@@ -2,9 +2,8 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps } from "~/types"
+import { COMPONENT_TYPES_MAP } from "~/constants"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
-
-export const IMAGE_GALLERY_TYPE = "imagegallery"
 
 const SingleImageSchema = Type.Object({
   src: ImageSrcSchema,
@@ -14,7 +13,9 @@ const SingleImageSchema = Type.Object({
 
 export const ImageGallerySchema = Type.Object(
   {
-    type: Type.Literal(IMAGE_GALLERY_TYPE, { default: IMAGE_GALLERY_TYPE }),
+    type: Type.Literal(COMPONENT_TYPES_MAP.ImageGallery, {
+      default: COMPONENT_TYPES_MAP.ImageGallery,
+    }),
     images: Type.Array(SingleImageSchema, {
       title: "Images",
       minItems: 2,

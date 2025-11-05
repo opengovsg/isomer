@@ -84,6 +84,10 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     },
+    "./schema": {
+      "import": "./dist/esm/schema.js",
+      "require": "./dist/cjs/schema.js"
+    },
     "./templates/classic": {
       "import": "./dist/esm/templates/classic/index.js",
       "require": "./dist/cjs/templates/classic/index.js"
@@ -110,6 +114,7 @@
     "@govtechsg/sgds": "^2.3.6",
     "@govtechsg/sgds-react": "^2.7.6",
     "@headlessui/react": "^2.1.2",
+    "@rollup/rollup-darwin-arm64": "^4.52.5",
     "@sinclair/typebox": "^0.33.12",
     "date-fns": "^4.1.0",
     "interweave": "^13.1.0",

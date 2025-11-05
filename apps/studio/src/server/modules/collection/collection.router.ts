@@ -1,4 +1,4 @@
-import type { CollectionPageSchemaType } from "@opengovsg/isomer-components"
+import type { CollectionPageSchemaType } from "@opengovsg/isomer-components/schema"
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash"

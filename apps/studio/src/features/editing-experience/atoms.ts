@@ -1,4 +1,4 @@
-import type { LinkRefPageSchema } from "@opengovsg/isomer-components"
+import type { LinkRefPageSchema } from "@opengovsg/isomer-components/schema"
 import type { Static } from "@sinclair/typebox"
 import { format } from "date-fns"
 import { atom } from "jotai"
