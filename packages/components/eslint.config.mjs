@@ -44,6 +44,11 @@ export default [
               name: "next/navigation",
               message: "Please use export from next instead of next/navigation",
             },
+            {
+              name: "lodash",
+              message:
+                "Please import specific lodash utilities (e.g. lodash/omit) instead of the root lodash entrypoint",
+            },
           ],
         },
       ],
