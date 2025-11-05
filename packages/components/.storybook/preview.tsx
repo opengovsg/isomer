@@ -1,9 +1,9 @@
 // Replace your-framework with the framework you are using (e.g., react, vue3)
 import type { Decorator, Preview } from "@storybook/react-vite"
 import { withThemeByDataAttribute } from "@storybook/addon-themes"
-import { MINIMAL_VIEWPORTS } from "storybook/viewport"
 import mockdate from "mockdate"
 import { initialize, mswLoader } from "msw-storybook-addon"
+import { MINIMAL_VIEWPORTS } from "storybook/viewport"
 
 import "bootstrap-icons/font/bootstrap-icons.css"
 import "../src/index.css"
@@ -112,7 +112,7 @@ const preview: Preview = {
     },
   },
 
-  tags: ["autodocs"]
+  tags: ["autodocs"],
 }
 
 const LayoutDecorator: Decorator = (storyFn) => (
