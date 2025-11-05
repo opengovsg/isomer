@@ -1,10 +1,5 @@
-import type {
-  ArrayLayoutProps,
-  RankedTester} from "@jsonforms/core";
-import {
-  rankWith,
-  schemaMatches,
-} from "@jsonforms/core"
+import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
+import { rankWith, schemaMatches } from "@jsonforms/core"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"

@@ -49,7 +49,7 @@ export function JsonFormsImageControl({
           maxSizeInBytes={MAX_IMG_FILE_SIZE_BYTES}
           acceptedFileTypes={IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
           siteId={siteId}
-          resourceId={pageId ?? linkId ? String(pageId ?? linkId) : undefined}
+          resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
           setHref={(src) => handleChange(path, src)}
         />
       )}

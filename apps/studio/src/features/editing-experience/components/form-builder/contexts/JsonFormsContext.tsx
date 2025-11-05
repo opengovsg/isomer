@@ -1,8 +1,7 @@
-import type { ComponentType} from "react";
-import { memo } from "react"
 import type { ControlWithDetailProps } from "@jsonforms/core"
-import type {
-  JsonFormsStateContext} from "@jsonforms/react";
+import type { JsonFormsStateContext } from "@jsonforms/react"
+import type { ComponentType } from "react"
+import { memo } from "react"
 import {
   ctxDispatchToControlProps,
   ctxToControlWithDetailProps,

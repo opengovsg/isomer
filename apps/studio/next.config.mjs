@@ -150,7 +150,10 @@ const config = {
     }
     return config
   },
-  transpilePackages: ["@sinclair/typebox", "@opengovsg/starter-kitty-validators"],
+  transpilePackages: [
+    "@sinclair/typebox",
+    "@opengovsg/starter-kitty-validators",
+  ],
   /** We run eslint as a separate task in CI */
   eslint: { ignoreDuringBuilds: true },
   images: {

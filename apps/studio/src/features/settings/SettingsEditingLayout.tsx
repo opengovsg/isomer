@@ -1,5 +1,5 @@
+import type { StackProps } from "@chakra-ui/react"
 import type { PropsWithChildren } from "react"
-import type { StackProps} from "@chakra-ui/react";
 import { VStack } from "@chakra-ui/react"
 
 export const SettingsEditingLayout = (props: PropsWithChildren<StackProps>) => {
