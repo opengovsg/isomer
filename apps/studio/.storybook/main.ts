@@ -1,4 +1,4 @@
-import { dirname, join } from "path"
+import { dirname, join } from "node:path"
 import type { StorybookConfig } from "@storybook/nextjs"
 
 const config: StorybookConfig = {
@@ -8,7 +8,7 @@ const config: StorybookConfig = {
     getAbsolutePath("@storybook/addon-links"),
     getAbsolutePath("@storybook/addon-themes"),
     getAbsolutePath("@storybook/addon-a11y"),
-    getAbsolutePath("@storybook/addon-docs")
+    getAbsolutePath("@storybook/addon-docs"),
   ],
 
   framework: {
