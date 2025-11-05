@@ -16,8 +16,8 @@
     "publish-package": "rollup -c && npm run publish",
     "prebuild": "rimraf dist",
     "build": "run-p build:* && npm pack",
-    "build:main": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
-    "build:module": "tsc -p tsconfig.module.build.json && tsc-alias -p tsconfig.module.build.json",
+    "build:main": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json && node ./scripts/postbuild/add-cjs-package-json.mjs",
+    "build:module": "tsc -p tsconfig.module.build.json && tsc-alias -p tsconfig.module.build.json && ts-add-js-extension --dir dist/esm",
     "chromatic": "npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN",
     "clean": "git clean -xdf .turbo node_modules dist",
     "format": "prettier --check . --ignore-path ../../.gitignore",
@@ -70,6 +70,7 @@
     "storybook": "8.6.14",
     "storybook-addon-pseudo-states": "^4.0.2",
     "tailwindcss": "^3.4.4",
+    "ts-add-js-extension": "^1.6.6",
     "tsc-alias": "^1.8.16",
     "tslib": "^2.6.3",
     "typescript": "^5.9.2",
@@ -81,18 +82,22 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
+      "types": "./dist/esm/index.d.ts",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     },
     "./schema": {
+      "types": "./dist/esm/schema.d.ts",
       "import": "./dist/esm/schema.js",
       "require": "./dist/cjs/schema.js"
     },
     "./templates/classic": {
+      "types": "./dist/esm/templates/classic/index.d.ts",
       "import": "./dist/esm/templates/classic/index.js",
       "require": "./dist/cjs/templates/classic/index.js"
     },
     "./templates/next": {
+      "types": "./dist/esm/templates/next/index.d.ts",
       "import": "./dist/esm/templates/next/index.js",
       "require": "./dist/cjs/templates/next/index.js"
     }
@@ -105,7 +110,7 @@
     "!**/*.json",
     "README.md"
   ],
-  "types": "dist/cjs/index.d.ts",
+  "types": "dist/esm/index.d.ts",
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -114,7 +119,6 @@
     "@govtechsg/sgds": "^2.3.6",
     "@govtechsg/sgds-react": "^2.7.6",
     "@headlessui/react": "^2.1.2",
-    "@rollup/rollup-darwin-arm64": "^4.52.5",
     "@sinclair/typebox": "^0.33.12",
     "date-fns": "^4.1.0",
     "interweave": "^13.1.0",
