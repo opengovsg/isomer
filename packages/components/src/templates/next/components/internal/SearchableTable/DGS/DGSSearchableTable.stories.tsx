@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { expect, userEvent, waitFor, within } from "@storybook/test"
-import omit from "lodash/omit"
+import { omit } from "lodash-es"
 import { http, HttpResponse } from "msw"
 
 import type { DGSSearchableTableProps } from "~/interfaces"

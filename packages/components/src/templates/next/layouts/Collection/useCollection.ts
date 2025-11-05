@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react"
-import isEmpty from "lodash/isEmpty"
+import { isEmpty } from "lodash-es"
 
 import type { AppliedFilter } from "../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"

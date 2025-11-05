@@ -44,10 +44,12 @@ export default [
               name: "next/navigation",
               message: "Please use export from next instead of next/navigation",
             },
+          ],
+          patterns: [
             {
-              name: "lodash",
+              group: ["lodash-es/*"],
               message:
-                "Please import specific lodash utilities (e.g. lodash/omit) instead of the root lodash entrypoint",
+                "Import from `lodash-es` entrypoint only to preserve tree shaking.",
             },
           ],
         },

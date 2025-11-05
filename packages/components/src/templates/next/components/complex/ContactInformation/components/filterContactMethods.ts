@@ -1,4 +1,4 @@
-import compact from "lodash/compact"
+import { compact } from "lodash-es"
 
 import type { ContactInformationUIProps } from "~/interfaces"
 
