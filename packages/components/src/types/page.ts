@@ -90,7 +90,7 @@ const BaseRefPageSchema = Type.Composite([
         description:
           "Add a short description to explain what this collection item is about",
         format: "textarea",
-        maxLength: 120,
+        maxLength: 500,
       }),
     ),
   }),
