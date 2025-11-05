@@ -43,9 +43,6 @@ const LogoSettingsPage: NextPageWithLayout = () => {
   const [{ logoUrl, favicon, ...rest }] = trpc.site.getConfig.useSuspenseQuery({
     id: siteId,
   })
-  const [{ name: siteName }] = trpc.site.getSiteName.useSuspenseQuery({
-    siteId,
-  })
 
   useEffect(() => {
     if (!isEnabled) void router.replace(`/sites/${siteId}/settings`)
@@ -64,7 +61,6 @@ const LogoSettingsPage: NextPageWithLayout = () => {
         status: "success",
       })
       void trpcUtils.site.getConfig.invalidate({ id: siteId })
-      void trpcUtils.site.getSiteName.invalidate({ siteId })
     },
     onError: (error) => {
       toast({
@@ -116,7 +112,7 @@ const LogoSettingsPage: NextPageWithLayout = () => {
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
           <EditSettingsPreview
-            siteName={siteName}
+            siteName={rest.siteName}
             {...logoSettings}
             url={rest.url}
             showChromeTab
