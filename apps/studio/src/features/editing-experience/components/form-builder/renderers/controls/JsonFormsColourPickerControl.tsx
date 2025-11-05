@@ -111,7 +111,7 @@ const JsonFormsColourPickerControl = ({
           >
             Color palette
           </FormLabel>
-          <Flex mt="0.75rem" h="3rem">
+          <Flex mt="0.75rem" h="3rem" w="full">
             {THEME_PATHS.map((p) => {
               const isFirst = p === THEME_PATHS[0]
               const isLast = p === THEME_PATHS[THEME_PATHS.length - 1]
