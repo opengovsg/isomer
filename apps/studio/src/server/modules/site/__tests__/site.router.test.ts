@@ -12,6 +12,7 @@ import {
   setupAdminPermissions,
   setupEditorPermissions,
   setupPageResource,
+  setupPublisherPermissions,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
@@ -456,7 +457,7 @@ describe("site.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
     it("should throw 403 if user does not have write access to the site", async () => {
@@ -478,14 +479,14 @@ describe("site.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
-    it('should throw 403 if user has only "editor" access to the site', async () => {
+    it('should throw 403 if user has only "publisher" access to the site', async () => {
       // Arrange
       const { site } = await setupSite()
       const footerContent = JSON.stringify({ foo: "bar" })
-      await setupEditorPermissions({
+      await setupPublisherPermissions({
         userId: session.userId,
         siteId: site.id,
       })
@@ -504,13 +505,13 @@ describe("site.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
     it("should set the site footer successfully", async () => {
       // Arrange
       const { site } = await setupSite()
-      const footerContent = JSON.stringify({ foo: "bar" })
+      const footerContent = { foo: "bar" }
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -519,7 +520,7 @@ describe("site.router", async () => {
       // Act
       await caller.setFooter({
         siteId: site.id,
-        footer: footerContent,
+        footer: JSON.stringify(footerContent),
       })
 
       // Assert
@@ -618,7 +619,7 @@ describe("site.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
     it("should throw 403 if user does not have write access to the site", async () => {
@@ -640,14 +641,14 @@ describe("site.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
-    it('should throw 403 if user has only "editor" access to the site', async () => {
+    it('should throw 403 if user has only "publisher" access to the site', async () => {
       // Arrange
       const { site } = await setupSite()
       const navbarContent = JSON.stringify({ foo: "bar" })
-      await setupEditorPermissions({
+      await setupPublisherPermissions({
         userId: session.userId,
         siteId: site.id,
       })
@@ -666,13 +667,13 @@ describe("site.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
     it("should set the site navbar successfully", async () => {
       // Arrange
       const { site } = await setupSite()
-      const navbarContent = JSON.stringify({ foo: "bar" })
+      const navbarContent = { foo: "bar" }
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -681,7 +682,7 @@ describe("site.router", async () => {
       // Act
       await caller.setNavbar({
         siteId: site.id,
-        navbar: navbarContent,
+        navbar: JSON.stringify(navbarContent),
       })
 
       // Assert
@@ -882,7 +883,7 @@ describe("site.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
     it("should throw 403 if user does not have write access to the site", async () => {
@@ -909,7 +910,7 @@ describe("site.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
     it("should save changes to the site notification successfully if one exists", async () => {
@@ -1066,7 +1067,7 @@ describe("site.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
     it("should throw 403 if user is not an Isomer Core Admin", async () => {
