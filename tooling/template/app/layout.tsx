@@ -33,8 +33,6 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
             isomerMsClarityId:
               process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
-            isomerCfZarazBaseUrl:
-              process.env.NEXT_PUBLIC_ISOMER_CLOUDFLARE_ZARAZ_BASE_URL,
           }}
           ScriptComponent={Script}
           GoogleTagManagerComponent={GoogleTagManager}

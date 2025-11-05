@@ -7,7 +7,6 @@ import type {
 } from "~/types"
 import {
   AskgovWidget,
-  CloudflareZaraz,
   FontPreload,
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
@@ -60,13 +59,6 @@ export const RenderApplicationScripts = ({
         <MicrosoftClarity
           ScriptComponent={ScriptComponent}
           msClarityId={site.isomerMsClarityId}
-        />
-      )}
-
-      {!!site.isomerCfZarazBaseUrl && (
-        <CloudflareZaraz
-          ScriptComponent={ScriptComponent}
-          baseUrl={site.isomerCfZarazBaseUrl}
         />
       )}
 

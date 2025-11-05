@@ -106,7 +106,6 @@ export interface IsomerGeneratedSiteProps {
   assetsBaseUrl?: string
   isomerGtmId?: string
   isomerMsClarityId?: string
-  isomerCfZarazBaseUrl?: string
 }
 
 export interface IsomerSiteWideComponentsProps {

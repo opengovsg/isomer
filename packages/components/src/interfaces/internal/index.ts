@@ -74,5 +74,4 @@ export {
   type NativeSearchableTableProps,
   type DGSSearchableTableProps,
 } from "./SearchableTable"
-export type { CloudflareZarazProps } from "./CloudflareZaraz"
 export type { MicrosoftClarityProps } from "./MicrosoftClarity"
