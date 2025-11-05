@@ -100,6 +100,7 @@ const ChromeTab = ({
         borderRadius: "10px 10px 0 0",
         background: bgColor,
         alignItems: "center",
+        maxWidth: "33%",
         ...style,
       }}
     >
@@ -155,6 +156,7 @@ const AddressBar = ({
           background: " #F1F3F4",
           padding: "8px 16px",
           width: "100%",
+          overflow: "hidden",
         }}
       >
         {children}
@@ -253,13 +255,30 @@ export const EditSettingsPreview = ({
             >
               <WindowButtons />
               <ChromeTab favicon={rest.favicon}>
-                <Text style={{ ...bodyTextStyle, fontFamily: "inherit" }}>
+                <Text
+                  style={{
+                    ...bodyTextStyle,
+                    fontFamily: "inherit",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  noOfLines={1}
+                >
                   {siteName}
                 </Text>
               </ChromeTab>
             </Box>
             <AddressBar>
-              <Text style={{ ...bodyTextStyle, fontFamily: "inherit" }}>
+              <Text
+                style={{
+                  ...bodyTextStyle,
+                  fontFamily: "inherit",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {rest.url ?? "example.isomer.gov.sg"}
               </Text>
             </AddressBar>
