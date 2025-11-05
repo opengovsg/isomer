@@ -132,10 +132,8 @@ export const WithSomeSelected: Story = {
 }
 
 export const MobileFilterButton: Story = {
+  globals: { viewport: getViewportByMode("mobile") },
   parameters: {
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
     chromatic: withChromaticModes(["mobile"]),
   },
   args: WithSomeSelected.args,
