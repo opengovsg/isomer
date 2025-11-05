@@ -1,5 +1,4 @@
-import type { IsomerComponent } from "@opengovsg/isomer-components"
-import type { ProseProps } from "@opengovsg/isomer-components/dist/cjs/interfaces"
+import type { IsomerComponent, ProseProps } from "@opengovsg/isomer-components"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
