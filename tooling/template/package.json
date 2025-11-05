@@ -22,7 +22,8 @@
     "@next/swc-linux-x64-gnu": "15.2.3",
     "@next/swc-linux-x64-musl": "15.2.3",
     "@next/swc-win32-arm64-msvc": "15.2.3",
-    "@next/swc-win32-x64-msvc": "15.2.3"
+    "@next/swc-win32-x64-msvc": "15.2.3",
+    "@next/swc-win32-ia32-msvc": "15.2.3"
   },
   "dependencies": {
     "@opengovsg/isomer-components": "*",
