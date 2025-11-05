@@ -30,7 +30,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             // @ts-expect-error to fix when types are proper
             siteMap: sitemap,
             assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
-            isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
+            // isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
             isomerMsClarityId:
               process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
           }}
