@@ -15,6 +15,7 @@ export const NotificationSchema = Type.Object(
     content: Type.Optional(
       Type.Union([Type.Array(TextSchema), SimpleProseSchema], {
         format: "simple-prose",
+        maxLength: 300,
       }),
     ),
   },

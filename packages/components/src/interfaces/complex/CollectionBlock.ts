@@ -24,13 +24,11 @@ export const CollectionBlockSchema = Type.Object(
     customTitle: Type.Optional(
       Type.String({
         title: "Custom title",
-        maxLength: 100,
       }),
     ),
     customDescription: Type.Optional(
       Type.String({
         title: "Custom description",
-        maxLength: 200,
       }),
     ),
     displayThumbnail: Type.Boolean({
