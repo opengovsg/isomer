@@ -1,5 +1,3 @@
-"use client"
-
 import type { ElementType } from "react"
 import type { VariantProps } from "tailwind-variants"
 import { BiLinkExternal } from "react-icons/bi"
@@ -34,7 +32,7 @@ export const LinkButton = ({
       <Link
         {...props}
         className={twMerge(
-          buttonStyles({ variant, size, className, colorScheme }),
+          buttonStyles({ variant, size, colorScheme }),
           className,
         )}
         isExternal={isExternalLink}
@@ -49,7 +47,7 @@ export const LinkButton = ({
     <Link
       {...props}
       className={twMerge(
-        buttonStyles({ variant, size, className, colorScheme }),
+        buttonStyles({ variant, size, colorScheme }),
         className,
       )}
     />
