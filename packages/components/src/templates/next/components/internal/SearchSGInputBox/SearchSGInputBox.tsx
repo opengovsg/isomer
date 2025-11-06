@@ -1,12 +1,10 @@
-"use client"
-
 import type {
   HomepageSearchSGInputBoxProps,
   NavbarSearchSGInputBoxProps,
   SearchSGInputBoxProps,
 } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
-import { useSearchSGScript } from "../../../../../hooks/useSearchSGScript"
+import { SearchSGInputBoxClient } from "./SearchSGInputBoxClient"
 
 interface BaseSearchSGInputBoxProps {
   clientId: SearchSGInputBoxProps["clientId"]
@@ -18,12 +16,14 @@ const BaseSearchSGInputBox = ({
   className,
   shouldLoadScript = true,
 }: BaseSearchSGInputBoxProps) => {
-  useSearchSGScript({ clientId, shouldLoad: shouldLoadScript })
+  // Compute on server so twMerge is not bundled on the client
+  const mergedClassName = twMerge("h-[3.25rem] lg:h-16", className)
 
   return (
-    <div
-      id="searchsg-searchbar"
-      className={twMerge("h-[3.25rem] lg:h-16", className)}
+    <SearchSGInputBoxClient
+      clientId={clientId}
+      className={mergedClassName}
+      shouldLoadScript={shouldLoadScript}
     />
   )
 }
