@@ -2,6 +2,7 @@ import type { DynamicDataBannerProps } from "~/interfaces"
 import { getReferenceLinkHref, getTextAsHtml } from "~/utils"
 import BaseParagraph from "../../internal/BaseParagraph/BaseParagraph"
 import { DynamicDataBannerClient } from "./DynamicDataBannerClient"
+import { getDynamicDataBannerClassNames } from "./styles"
 
 export const DynamicDataBanner = ({
   apiEndpoint,
@@ -13,6 +14,9 @@ export const DynamicDataBanner = ({
   site,
   LinkComponent,
 }: DynamicDataBannerProps) => {
+  // Compute on server so tv/twMerge are not bundled on the client
+  const classNames = getDynamicDataBannerClassNames()
+
   return (
     <DynamicDataBannerClient
       apiEndpoint={apiEndpoint}
@@ -30,6 +34,7 @@ export const DynamicDataBanner = ({
           LinkComponent={LinkComponent}
         />
       }
+      classNames={classNames}
     />
   )
 }
