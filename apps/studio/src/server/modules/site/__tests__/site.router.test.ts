@@ -430,6 +430,58 @@ describe("site.router", async () => {
       // Assert
       await assertAuditLog(session.userId)
     })
+    it("should update searchsg if the update went through", async () => {
+      // Arrange
+      const mockSearch = {
+        search: {
+          type: "searchSG",
+          clientId: "i-love-searchsg",
+        },
+      } as const
+      const searchSpy = vi.spyOn(searchSgService, "updateSearchSGConfig")
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({
+          config: {
+            ...site.config,
+            ...mockSearch,
+          },
+        })
+        .execute()
+
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        ...mockSearch,
+      })
+
+      // Assert
+      expect(searchSpy).toHaveBeenCalledWith(
+        {
+          name: MOCK_SITE_NAME,
+          _kind: "name",
+        },
+        mockSearch.search.clientId,
+        result.url,
+      )
+      expect(result).toEqual({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "www.isomer.gov.sg",
+        theme: "isomer-next",
+        ...mockSearch,
+      })
+    })
   })
 
   describe("updateSiteIntegrations", () => {
