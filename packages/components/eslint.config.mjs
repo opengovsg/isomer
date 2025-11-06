@@ -45,6 +45,13 @@ export default [
               message: "Please use export from next instead of next/navigation",
             },
           ],
+          patterns: [
+            {
+              group: ["lodash-es/*"],
+              message:
+                "Import from `lodash-es` entrypoint only to preserve tree shaking.",
+            },
+          ],
         },
       ],
     },

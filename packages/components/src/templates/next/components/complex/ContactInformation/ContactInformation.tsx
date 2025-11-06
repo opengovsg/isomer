@@ -1,4 +1,4 @@
-import omit from "lodash/omit"
+import { omit } from "lodash-es"
 
 import type { ContactInformationProps } from "~/interfaces"
 import { DATA_SOURCE_TYPE } from "~/interfaces/integration"
