@@ -25,6 +25,9 @@ import { siteRouter } from "../site.router"
 
 const createCaller = createCallerFactory(siteRouter)
 
+const MOCK_SITE_NAME = "isobad"
+const MOCK_LOGO_URL = "https://isobad.com/logo.png"
+
 const generateNotification = ({
   title,
   content,
@@ -340,6 +343,98 @@ describe("site.router", async () => {
     })
   })
 
+  describe("updateSiteConfig", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: 1,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+    it("should throw 403 if the user does not have write access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should update the site config if the user is a site admin", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "www.isomer.gov.sg",
+        theme: "isomer-next",
+      })
+    })
+    it("should generate an audit log entry", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+      })
+
+      // Assert
+      await assertAuditLog(session.userId)
+    })
+  })
+
+  describe("updateSiteIntegrations", () => {})
+
+  describe("setTheme", () => {})
   describe("getTheme", () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange
