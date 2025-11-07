@@ -24,6 +24,11 @@ const createPaginationStyles = tv({
     separator: "flex h-6 w-6 items-center justify-center text-gray-500",
   },
   variants: {
+    isActive: {
+      true: {
+        button: "bg-base-content-subtle text-white",
+      },
+    },
     isDisabled: {
       true: {
         stepper: "text-gray-100",
@@ -78,6 +83,7 @@ const PaginationButton = forwardRef<HTMLButtonElement, PaginationButtonProps>(
       className={twMerge(
         button({
           className,
+          isActive,
           isDisabled,
         }),
       )}
