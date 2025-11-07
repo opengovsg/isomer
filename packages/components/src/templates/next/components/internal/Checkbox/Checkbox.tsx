@@ -181,12 +181,14 @@ function CheckboxRenderer({
   })
 
   // Keep onChange in inputProps - it's needed for both grouped and standalone checkboxes
-  // The label's onClick will prevent default and programmatically trigger the input click
+  // The label's onClick will prevent default and stop propagation to avoid double toggling
   const labelProps = mergeProps(pressProps, {
     onClick: (e: MouseEvent) => {
       // Prevent the label's default behavior (which would toggle the input)
+      // and stop propagation to prevent the click from bubbling to the input
       // We handle toggling via usePress instead, which programmatically clicks the input
       e.preventDefault()
+      e.stopPropagation()
     },
   })
 
