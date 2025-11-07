@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss"
+import racPlugin from "tailwindcss-react-aria-components"
 import defaultTheme from "tailwindcss/defaultTheme"
 import plugin from "tailwindcss/plugin"
 
@@ -129,6 +130,7 @@ const config: Config = {
     },
   },
   plugins: [
+    racPlugin,
     isomerTypography,
     plugin(({ addBase }) => {
       addBase({
