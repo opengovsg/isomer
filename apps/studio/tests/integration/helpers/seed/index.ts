@@ -119,14 +119,12 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
                 {
                   url: "/item-one/pa-network-one",
                   name: "PA's network one",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
+                  description: "This is a placeholder description.",
                 },
                 {
                   url: "/item-one/pa-network-two",
                   name: "PA's network two",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
+                  description: "This is a placeholder description.",
                 },
                 {
                   url: "/item-one/pa-network-three",
@@ -136,19 +134,18 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
                   url: "/item-one/pa-network-four",
                   name: "PA's network four",
                   description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    "This is a placeholder description. This one has a pretty long one",
                 },
                 {
                   url: "/item-one/pa-network-five",
                   name: "PA's network five",
                   description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    "This is a placeholder description. This one has a pretty long one",
                 },
                 {
                   url: "/item-one/pa-network-six",
                   name: "PA's network six",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
+                  description: "This is a placeholder description.",
                 },
               ],
             },

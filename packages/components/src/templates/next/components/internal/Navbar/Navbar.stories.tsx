@@ -102,8 +102,7 @@ const generateNavbarArgs = (
           {
             name: "A sub item",
             url: "/item-two/sub-item",
-            description:
-              "Click here and brace yourself for mild disappointment.",
+            description: "This is a placeholder description.",
           },
           {
             name: "Another sub item",
@@ -122,8 +121,7 @@ const generateNavbarArgs = (
           {
             name: "Another sub item",
             url: "/item-three/another-sub-item",
-            description:
-              "Click here and brace yourself for mild disappointment.",
+            description: "This is a placeholder description.",
           },
         ],
       },

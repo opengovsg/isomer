@@ -163,23 +163,23 @@ export const DEFAULT_BLOCKS: Record<
   },
   keystatistics: {
     type: "keystatistics",
-    title: "Irrationality in numbers",
+    title: "Key statistics of Isomer sites",
     statistics: [
       {
-        label: "Average all nighters pulled in a typical calendar month",
-        value: "3",
+        label: "Number of sites using Isomer",
+        value: "700+",
       },
       {
         label: "Growth in tasks assigned Q4 2024 (YoY)",
         value: "+12.2%",
       },
       {
-        label: "Creative blocks met per single evening",
-        value: "89",
+        label: "Number of engineers maintaining Isomer",
+        value: "3",
       },
       {
-        value: "4.0",
-        label: "Number of lies in this stat block",
+        label: "Number of designers that have built Isomer Next template",
+        value: "2",
       },
     ],
   },

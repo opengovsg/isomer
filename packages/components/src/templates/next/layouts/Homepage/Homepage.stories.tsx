@@ -139,14 +139,12 @@ const generateArgs = ({
               {
                 name: "PA's network one",
                 url: "/item-one/pa-network-one",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
+                description: "This is a placeholder description.",
               },
               {
                 name: "PA's network two",
                 url: "/item-one/pa-network-two",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
+                description: "This is a placeholder description.",
               },
               {
                 name: "PA's network three",
@@ -156,19 +154,18 @@ const generateArgs = ({
                 name: "PA's network four",
                 url: "/item-one/pa-network-four",
                 description:
-                  "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                  "This is a placeholder description. This one has a pretty long one",
               },
               {
                 name: "PA's network five",
                 url: "/item-one/pa-network-five",
                 description:
-                  "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                  "This is a placeholder description. This one has a pretty long one",
               },
               {
                 name: "PA's network six",
                 url: "/item-one/pa-network-six",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
+                description: "This is a placeholder description.",
               },
             ],
           },
@@ -180,8 +177,7 @@ const generateArgs = ({
               {
                 name: "A sub item",
                 url: "/item-two/sub-item",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
+                description: "This is a placeholder description.",
               },
               {
                 name: "Another sub item",
@@ -200,8 +196,7 @@ const generateArgs = ({
               {
                 name: "Another sub item",
                 url: "/item-three/another-sub-item",
-                description:
-                  "Click here and brace yourself for mild disappointment.",
+                description: "This is a placeholder description.",
               },
             ],
           },
