@@ -19,6 +19,7 @@ import {
 
 import type { User } from "../../database"
 import type { Notification } from "~/schemas/site"
+import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
 import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
 import { siteRouter } from "../site.router"
@@ -27,6 +28,40 @@ const createCaller = createCallerFactory(siteRouter)
 
 const MOCK_SITE_NAME = "isobad"
 const MOCK_LOGO_URL = "https://isobad.com/logo.png"
+const MOCK_ISOMER_THEME = {
+  colors: {
+    brand: {
+      canvas: {
+        default: "#123c5d",
+        alt: "#456789",
+        backdrop: "#abcdef",
+        inverse: "#fedcba",
+      },
+      interaction: {
+        default: "#123456",
+        hover: "#654321",
+        pressed: "#abcdef",
+      },
+    },
+  },
+}
+const MOCK_BLACK_THEME = {
+  colors: {
+    brand: {
+      canvas: {
+        default: "#000000",
+        alt: "#000000",
+        backdrop: "#000000",
+        inverse: "#000000",
+      },
+      interaction: {
+        default: "#000000",
+        hover: "#000000",
+        pressed: "#000000",
+      },
+    },
+  },
+}
 
 const generateNotification = ({
   title,
@@ -584,7 +619,153 @@ describe("site.router", async () => {
     })
   })
 
-  describe("setTheme", () => {})
+  describe("setTheme", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: 1,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+    it("should throw 403 if the user does not have write access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should throw 404 if the theme for the site could not be found", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "The theme for the site could not be found.",
+        }),
+      )
+    })
+    it("should update the site theme if the user is a site admin", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({ theme: jsonb(MOCK_BLACK_THEME) })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toMatchObject({
+        theme: MOCK_ISOMER_THEME,
+      })
+    })
+    it("should update searchsg if the user is a site admin", async () => {
+      // Arrange
+      const mockSearchSg = {
+        search: { type: "searchSG", clientId: "mock-client-id" },
+      } as const
+      const { site } = await setupSite()
+      const spy = vi.spyOn(searchSgService, "updateSearchSGConfig")
+      await db
+        .updateTable("Site")
+        .set({
+          theme: jsonb(MOCK_BLACK_THEME),
+          config: {
+            ...site.config,
+            ...mockSearchSg,
+          },
+        })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toMatchObject({
+        theme: MOCK_ISOMER_THEME,
+      })
+      expect(spy).toHaveBeenCalledWith(
+        {
+          _kind: "colour",
+          colour: MOCK_ISOMER_THEME.colors.brand.canvas.inverse,
+        },
+        mockSearchSg.search.clientId,
+        site.config.url,
+      )
+    })
+    it("should generate an audit log entry", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await db
+        .updateTable("Site")
+        .set({ theme: jsonb(MOCK_BLACK_THEME) })
+        .where("id", "=", site.id)
+        .execute()
+
+      // Act
+      await caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      await assertAuditLog(session.userId)
+    })
+  })
   describe("getTheme", () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange
