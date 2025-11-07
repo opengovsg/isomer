@@ -1,11 +1,13 @@
 "use client"
 
-import type { AriaButtonProps } from "react-aria"
+import type { AriaButtonProps } from "@react-aria/button"
 import type { IconType } from "react-icons"
 import type { VariantProps } from "tailwind-variants"
 import type { SetRequired } from "type-fest"
 import { forwardRef, useRef } from "react"
-import { mergeProps, useButton, useFocusRing } from "react-aria"
+import { useButton } from "@react-aria/button"
+import { useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
 
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"

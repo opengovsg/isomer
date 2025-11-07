@@ -1,9 +1,11 @@
 "use client"
 
+import type { AriaButtonProps } from "@react-aria/button"
 import type { PropsWithChildren } from "react"
-import type { AriaButtonProps } from "react-aria"
 import { createContext, useContext, useRef, useState } from "react"
-import { mergeProps, useButton, useFocusRing } from "react-aria"
+import { useButton } from "@react-aria/button"
+import { useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
 import { BiChevronDown } from "react-icons/bi"
 
 import type { MastheadProps } from "~/interfaces"

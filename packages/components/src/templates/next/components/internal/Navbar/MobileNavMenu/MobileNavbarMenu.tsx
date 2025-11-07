@@ -2,7 +2,9 @@
 
 import type { Dispatch, SetStateAction } from "react"
 import { forwardRef, useRef } from "react"
-import { FocusScope, mergeProps, useButton, useFocusRing } from "react-aria"
+import { useButton } from "@react-aria/button"
+import { FocusScope, useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
 import { useScrollLock } from "usehooks-ts"
 
 import type { NavbarClientProps } from "~/interfaces"

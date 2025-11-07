@@ -1,8 +1,10 @@
 "use client"
 
-import type { AriaTextFieldOptions } from "react-aria"
+import type { AriaTextFieldOptions } from "@react-aria/textfield"
 import { useRef, useState } from "react"
-import { mergeProps, useFocusRing, useTextField } from "react-aria"
+import { useFocusRing } from "@react-aria/focus"
+import { useTextField } from "@react-aria/textfield"
+import { mergeProps } from "@react-aria/utils"
 import { BiSearch, BiX } from "react-icons/bi"
 
 import type { ClassNames } from "~/utils/rac"

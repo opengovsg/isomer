@@ -1,17 +1,21 @@
 "use client"
 
+import type {
+  AriaCheckboxGroupProps,
+  AriaCheckboxProps,
+} from "@react-aria/checkbox"
 import type { CheckboxGroupState } from "@react-stately/checkbox"
 import type { ReactNode } from "react"
-import type { AriaCheckboxGroupProps, AriaCheckboxProps } from "react-aria"
-import { createContext, useContext, useEffect, useRef, useState } from "react"
-import { useCheckboxGroupState } from "@react-stately/checkbox"
+import { createContext, useContext, useRef } from "react"
 import {
-  mergeProps,
   useCheckbox,
   useCheckboxGroup,
   useCheckboxGroupItem,
-  useFocusRing,
-} from "react-aria"
+} from "@react-aria/checkbox"
+import { useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
+import { useCheckboxGroupState } from "@react-stately/checkbox"
+import { useToggleState } from "@react-stately/toggle"
 import { BiCheck, BiMinus } from "react-icons/bi"
 
 import { tv } from "~/lib/tv"
@@ -123,35 +127,6 @@ const boxStyles = tv({
 
 const iconStyles =
   "w-4 h-4 text-white group-disabled:text-gray-400 forced-colors:text-[HighlightText]"
-
-// Simple toggle state hook for standalone checkboxes
-function useToggleState(props: AriaCheckboxProps) {
-  const [isSelected, setIsSelected] = useState(props.isSelected ?? false)
-
-  // Sync with controlled prop
-  useEffect(() => {
-    if (props.isSelected !== undefined) {
-      setIsSelected(props.isSelected)
-    }
-  }, [props.isSelected])
-
-  const setSelected = (selected: boolean) => {
-    if (props.isSelected === undefined) {
-      setIsSelected(selected)
-    }
-    props.onChange?.(selected)
-  }
-
-  const toggle = () => {
-    setSelected(!isSelected)
-  }
-
-  return {
-    isSelected,
-    setSelected,
-    toggle,
-  }
-}
 
 export interface CheckboxProps extends AriaCheckboxProps {
   children?: ReactNode

@@ -1,7 +1,9 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { mergeProps, useButton, useFocusRing } from "react-aria"
+import { useButton } from "@react-aria/button"
+import { useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 
 import type { FilterProps } from "../../../types/Filter"

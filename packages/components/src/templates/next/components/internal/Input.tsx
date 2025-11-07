@@ -1,8 +1,8 @@
 "use client"
 
-import type { AriaTextFieldOptions } from "react-aria"
+import type { AriaTextFieldOptions } from "@react-aria/textfield"
 import { useRef } from "react"
-import { useTextField } from "react-aria"
+import { useTextField } from "@react-aria/textfield"
 
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"

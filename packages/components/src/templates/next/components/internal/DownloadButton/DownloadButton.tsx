@@ -1,9 +1,11 @@
 "use client"
 
-import type { AriaButtonProps } from "react-aria"
+import type { AriaButtonProps } from "@react-aria/button"
 import type { VariantProps } from "tailwind-variants"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { mergeProps, useButton, useFocusRing } from "react-aria"
+import { useButton } from "@react-aria/button"
+import { useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
 import { BiDownload, BiLoaderAlt } from "react-icons/bi"
 
 import { tv } from "~/lib/tv"
