@@ -1,34 +1,45 @@
 "use client"
 
-import type { ButtonProps as AriaButtonProps } from "react-aria-components"
+import type { AriaButtonProps } from "react-aria"
 import type { VariantProps } from "tailwind-variants"
-import { forwardRef } from "react"
-import { Button as AriaButton, composeRenderProps } from "react-aria-components"
+import { forwardRef, useRef } from "react"
+import { mergeProps, useButton, useFocusRing } from "react-aria"
 
+import { twMerge } from "~/lib/twMerge"
+import { mergeRefs } from "~/utils/rac"
 import { buttonStyles } from "./common"
 
 export interface ButtonProps
-  extends AriaButtonProps,
-    VariantProps<typeof buttonStyles> {}
+  extends AriaButtonProps<"button">,
+    VariantProps<typeof buttonStyles> {
+  className?: string
+}
 
 /**
  * You probaby do not want to use this component if you are rendering a link.
  * Use `LinkButton` component instead.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, colorScheme, size, ...props }, ref) => {
+  ({ className, variant, colorScheme, size, isDisabled, ...props }, ref) => {
+    const internalRef = useRef<HTMLButtonElement>(null)
+    const { buttonProps } = useButton({ ...props, isDisabled }, internalRef)
+    const { focusProps, isFocusVisible } = useFocusRing()
+
+    const mergedProps = mergeProps(buttonProps, focusProps)
+
     return (
-      <AriaButton
-        {...props}
-        ref={ref}
-        className={composeRenderProps(className, (className, renderProps) =>
+      <button
+        {...mergedProps}
+        ref={mergeRefs(internalRef, ref)}
+        className={twMerge(
           buttonStyles({
-            ...renderProps,
+            isFocusVisible,
+            isDisabled,
             variant,
             size,
-            className,
             colorScheme,
           }),
+          className,
         )}
       />
     )
