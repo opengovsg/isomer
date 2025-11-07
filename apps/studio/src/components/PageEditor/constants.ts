@@ -163,7 +163,7 @@ export const DEFAULT_BLOCKS: Record<
   },
   keystatistics: {
     type: "keystatistics",
-    title: "Key statistics of Isomer sites",
+    title: "Key statistics of Isomer",
     statistics: [
       {
         label: "Number of sites using Isomer",
