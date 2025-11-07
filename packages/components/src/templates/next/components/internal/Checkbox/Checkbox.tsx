@@ -5,7 +5,12 @@ import type {
   AriaCheckboxProps,
 } from "@react-aria/checkbox"
 import type { CheckboxGroupState } from "@react-stately/checkbox"
-import type { ReactNode } from "react"
+import type {
+  InputHTMLAttributes,
+  MouseEvent,
+  ReactNode,
+  RefObject,
+} from "react"
 import { createContext, useContext, useRef } from "react"
 import {
   useCheckbox,
@@ -13,6 +18,7 @@ import {
   useCheckboxGroupItem,
 } from "@react-aria/checkbox"
 import { useFocusRing } from "@react-aria/focus"
+import { usePress } from "@react-aria/interactions"
 import { mergeProps } from "@react-aria/utils"
 import { useCheckboxGroupState } from "@react-stately/checkbox"
 import { useToggleState } from "@react-stately/toggle"
@@ -113,11 +119,11 @@ const boxStyles = tv({
   variants: {
     isSelected: {
       false:
-        "border-[--color] bg-white [--color:theme(colors.base.divider.medium)] group-pressed:[--color:theme(colors.base.divider.strong)]",
-      true: "border-[--color] bg-[--color] [--color:theme(colors.brand.interaction.DEFAULT)] group-pressed:[--color:theme(colors.brand.interaction.pressed)] forced-colors:![--color:Highlight]",
+        "border-[--color] bg-white [--color:theme(colors.base.divider.medium)] group-data-[pressed]:[--color:theme(colors.base.divider.strong)]",
+      true: "border-[--color] bg-[--color] [--color:theme(colors.brand.interaction.DEFAULT)] group-data-[pressed]:[--color:theme(colors.brand.interaction.pressed)] forced-colors:![--color:Highlight]",
     },
     isInvalid: {
-      true: "[--color:theme(colors.red.700)] group-pressed:[--color:theme(colors.red.800)] forced-colors:![--color:Mark]",
+      true: "[--color:theme(colors.red.700)] group-data-[pressed]:[--color:theme(colors.red.800)] forced-colors:![--color:Mark]",
     },
     isDisabled: {
       true: "[--color:theme(colors.gray.200)] forced-colors:![--color:GrayText]",
@@ -133,67 +139,72 @@ export interface CheckboxProps extends AriaCheckboxProps {
   className?: string
 }
 
-export function Checkbox(props: CheckboxProps) {
-  const { children, className, ...checkboxProps } = props
-  const groupContext = useContext(CheckboxGroupContext)
+// Shared props for checkbox rendering
+interface CheckboxRenderProps {
+  children?: ReactNode
+  className?: string
+  inputProps: InputHTMLAttributes<HTMLInputElement>
+  inputRef: RefObject<HTMLInputElement>
+  isDisabled: boolean
+  isInvalid: boolean
+  isIndeterminate: boolean
+  isSelected: boolean
+}
 
-  const ref = useRef<HTMLInputElement>(null)
-  const isDisabled = checkboxProps.isDisabled ?? groupContext?.isDisabled
-  const isReadOnly = checkboxProps.isReadOnly ?? groupContext?.isReadOnly
-
-  // Always create standalone state (hooks must be called unconditionally)
-  const standaloneState = useToggleState(checkboxProps)
-
-  // Determine if we're in a group
-  const isInGroup = groupContext !== null && checkboxProps.value !== undefined
-
-  // For grouped checkboxes, useCheckboxGroupItem; for standalone, use useCheckbox
-  // We call both hooks unconditionally to satisfy React's rules, but only use the appropriate one
-  const standaloneResult = useCheckbox(
-    {
-      ...checkboxProps,
-      isDisabled,
-      isReadOnly,
-    },
-    standaloneState,
-    ref,
-  )
-
-  // useCheckboxGroupItem requires CheckboxGroupState and value to be defined
-  // When not in a group, we pass standaloneState as a fallback (won't be used)
-  const groupResult = useCheckboxGroupItem(
-    {
-      ...checkboxProps,
-      value: checkboxProps.value ?? "",
-      isDisabled,
-      isReadOnly,
-    },
-    (groupContext?.state ?? standaloneState) as CheckboxGroupState,
-    ref,
-  )
-
-  // Use the appropriate result based on context
-  const { inputProps, isPressed, isSelected } = isInGroup
-    ? groupResult
-    : standaloneResult
-
+// Shared rendering component for both standalone and grouped checkboxes
+function CheckboxRenderer({
+  children,
+  className,
+  inputProps,
+  inputRef,
+  isDisabled,
+  isInvalid,
+  isIndeterminate,
+  isSelected,
+}: CheckboxRenderProps) {
+  const labelRef = useRef<HTMLLabelElement>(null)
   const { focusProps, isFocusVisible } = useFocusRing()
   const mergedInputProps = mergeProps(inputProps, focusProps)
 
-  const isInvalid = checkboxProps.isInvalid ?? false
-  const isIndeterminate = checkboxProps.isIndeterminate ?? false
+  // Handle mouse clicks on the label for visual feedback
+  // Keyboard events are handled by the input element
+  const { pressProps, isPressed } = usePress({
+    isDisabled,
+    onPress: () => {
+      if (!isDisabled) {
+        // Programmatically click the input to trigger its onChange handler
+        // This ensures grouped checkboxes use inputProps.onChange from useCheckboxGroupItem
+        // and standalone checkboxes use inputProps.onChange from useCheckbox
+        inputRef.current?.click()
+      }
+    },
+  })
+
+  // Keep onChange in inputProps - it's needed for both grouped and standalone checkboxes
+  // The label's onClick will prevent default and programmatically trigger the input click
+  const labelProps = mergeProps(pressProps, {
+    onClick: (e: MouseEvent) => {
+      // Prevent the label's default behavior (which would toggle the input)
+      // We handle toggling via usePress instead, which programmatically clicks the input
+      e.preventDefault()
+    },
+  })
 
   return (
     <label
+      ref={labelRef}
+      {...labelProps}
       className={twMerge(
         checkboxStyles({ isDisabled: !!isDisabled }),
         className,
       )}
+      data-pressed={isPressed ? "true" : undefined}
     >
       <input
         {...mergedInputProps}
-        ref={ref}
+        ref={inputRef}
         type="checkbox"
+        checked={isSelected || isIndeterminate}
         className="sr-only"
       />
       <div
@@ -207,7 +218,6 @@ export function Checkbox(props: CheckboxProps) {
             isDisabled: !!isDisabled,
             isFocusVisible,
           })}
-          data-pressed={isPressed || undefined}
         >
           {isIndeterminate ? (
             <BiMinus aria-hidden className={iconStyles} />
@@ -219,4 +229,88 @@ export function Checkbox(props: CheckboxProps) {
       {children}
     </label>
   )
+}
+
+// Internal component for standalone checkboxes
+function StandaloneCheckbox(props: CheckboxProps) {
+  const { children, className, ...checkboxProps } = props
+  const ref = useRef<HTMLInputElement>(null)
+  const state = useToggleState(checkboxProps)
+  const { inputProps } = useCheckbox(checkboxProps, state, ref)
+
+  const isDisabled = checkboxProps.isDisabled ?? false
+  const isInvalid = checkboxProps.isInvalid ?? false
+  const isIndeterminate = checkboxProps.isIndeterminate ?? false
+  const isSelected = state.isSelected
+
+  return (
+    <CheckboxRenderer
+      children={children}
+      className={className}
+      inputProps={inputProps}
+      inputRef={ref}
+      isDisabled={isDisabled}
+      isInvalid={isInvalid}
+      isIndeterminate={isIndeterminate}
+      isSelected={isSelected}
+    />
+  )
+}
+
+// Internal component for grouped checkboxes
+// This component is only rendered when isInGroup is true, so groupContext is guaranteed to exist
+function GroupedCheckbox(props: CheckboxProps) {
+  const { children, className, ...checkboxProps } = props
+  const groupContext = useContext(CheckboxGroupContext)
+  const ref = useRef<HTMLInputElement>(null)
+
+  // groupContext is guaranteed to exist because this component is only rendered when isInGroup is true
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const context = groupContext!
+  const state = context.state
+
+  const isDisabled = checkboxProps.isDisabled ?? context.isDisabled ?? false
+  const isReadOnly = checkboxProps.isReadOnly ?? context.isReadOnly ?? false
+
+  const { inputProps } = useCheckboxGroupItem(
+    {
+      ...checkboxProps,
+      value: checkboxProps.value ?? "",
+      isDisabled,
+      isReadOnly,
+    },
+    state,
+    ref,
+  )
+
+  const isInvalid = checkboxProps.isInvalid ?? false
+  const isIndeterminate = checkboxProps.isIndeterminate ?? false
+  const value = checkboxProps.value ?? ""
+  const isSelected = state.isSelected(value)
+
+  return (
+    <CheckboxRenderer
+      children={children}
+      className={className}
+      inputProps={inputProps}
+      inputRef={ref}
+      isDisabled={isDisabled}
+      isInvalid={isInvalid}
+      isIndeterminate={isIndeterminate}
+      isSelected={isSelected}
+    />
+  )
+}
+
+export function Checkbox(props: CheckboxProps) {
+  const groupContext = useContext(CheckboxGroupContext)
+  const isInGroup = groupContext !== null && props.value !== undefined
+
+  // Conditionally render the appropriate component
+  // This allows us to only call useCheckboxGroupItem when actually in a group
+  if (isInGroup) {
+    return <GroupedCheckbox {...props} />
+  }
+
+  return <StandaloneCheckbox {...props} />
 }
