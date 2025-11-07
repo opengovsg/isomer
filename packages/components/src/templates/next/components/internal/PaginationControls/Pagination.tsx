@@ -1,7 +1,6 @@
 "use client"
 
 import React, { forwardRef } from "react"
-import { composeRenderProps } from "react-aria-components"
 import {
   BiChevronLeft,
   BiChevronRight,
@@ -10,6 +9,7 @@ import {
 
 import type { ButtonProps } from "../Button"
 import { tv } from "~/lib/tv"
+import { twMerge } from "~/lib/twMerge"
 import { dataAttr } from "~/utils/rac"
 import { Button } from "../Button"
 
@@ -66,7 +66,7 @@ type PaginationButtonProps = {
 } & ButtonProps
 
 const PaginationButton = forwardRef<HTMLButtonElement, PaginationButtonProps>(
-  ({ className, isActive, size, ...props }, ref) => (
+  ({ className, isActive, size, isDisabled, ...props }, ref) => (
     <Button
       {...props}
       ref={ref}
@@ -74,10 +74,11 @@ const PaginationButton = forwardRef<HTMLButtonElement, PaginationButtonProps>(
       data-current={dataAttr(isActive)}
       variant="unstyled"
       size={size}
-      className={composeRenderProps(className, (className, renderProps) =>
+      isDisabled={isDisabled}
+      className={twMerge(
         button({
           className,
-          ...renderProps,
+          isDisabled,
         }),
       )}
     />

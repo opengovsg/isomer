@@ -1,9 +1,10 @@
 "use client"
 
 import type { Dispatch, SetStateAction } from "react"
-import { forwardRef } from "react"
-import { FocusScope } from "react-aria"
-import { Button } from "react-aria-components"
+import { forwardRef, useRef } from "react"
+import { useButton } from "@react-aria/button"
+import { FocusScope, useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
 import { useScrollLock } from "usehooks-ts"
 
 import type { NavbarClientProps } from "~/interfaces"
@@ -37,6 +38,10 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     mobileMenuRef,
   ) => {
     useScrollLock()
+    const buttonRef = useRef<HTMLButtonElement>(null)
+    const { buttonProps } = useButton({ onPress: onCloseMenu }, buttonRef)
+    const { focusProps } = useFocusRing()
+    const mergedButtonProps = mergeProps(buttonProps, focusProps)
 
     return (
       <div
@@ -107,15 +112,16 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
               </div>
             )}
 
-            <Button
+            <button
+              {...mergedButtonProps}
+              ref={buttonRef}
               className={focusVisibleHighlight({
                 className:
                   "prose-headline-base-medium absolute -left-[100000px] flex h-[1px] w-[1px] items-center justify-between gap-6 overflow-hidden px-6 py-3 text-left text-base-content focus:static focus:h-auto focus:w-full",
               })}
-              onPress={onCloseMenu}
             >
               Exit navigation menu
-            </Button>
+            </button>
           </div>
         </FocusScope>
       </div>
