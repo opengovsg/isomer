@@ -11,7 +11,10 @@ import type { ClassNames } from "~/utils/rac"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { IconButton } from "./IconButton"
-import { inputStyles } from "./Input"
+
+const inputStyles = tv({
+  base: "prose-body-base min-w-0 flex-1 bg-white text-base-content outline outline-0 placeholder:text-interaction-support-placeholder disabled:text-interaction-support-placeholder",
+})
 
 const fieldGroupStyles = tv({
   base: "group flex items-center gap-4 overflow-hidden rounded bg-white py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
