@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { BiError } from "react-icons/bi"
 
-import type { getDynamicDataBannerClassNames } from "./styles"
+import type { DynamicDataBannerClassNames } from "./types"
 import type { DynamicDataBannerProps } from "~/interfaces"
 import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/interfaces"
 import { Link } from "../../internal/Link"
@@ -14,7 +14,7 @@ type DynamicDataBannerClientProps = Omit<
   "type" | "site" | "errorMessage"
 > & {
   errorMessageBaseParagraph?: React.ReactNode
-  classNames: ReturnType<typeof getDynamicDataBannerClassNames>
+  classNames: DynamicDataBannerClassNames
 }
 
 const DynamicDataBannerUI = ({
@@ -30,7 +30,7 @@ const DynamicDataBannerUI = ({
   "title" | "label" | "url" | "LinkComponent" | "errorMessageBaseParagraph"
 > & {
   data: { label: string; value?: string }[]
-  classNames: ReturnType<typeof getDynamicDataBannerClassNames>
+  classNames: DynamicDataBannerClassNames
 }) => {
   const shouldRenderUrl: boolean = !!url && !!label
   const renderUrl = ({ className }: { className: string }): React.ReactNode => {
