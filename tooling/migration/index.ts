@@ -16,16 +16,12 @@ import {
 } from "./utils";
 import fs from "fs";
 import path from "path";
+import { randomUUID } from "crypto";
 
 import * as dotenv from "dotenv";
 import { getIsomerSchemaFromJekyll } from "./page";
 
 dotenv.config();
-
-const EXCLUDED_PATHS = [
-  "index.md", // Home page
-  "contact-us.md", // Contact us page
-];
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
@@ -50,9 +46,14 @@ const getStatusName = (
 interface PageMigrationParams {
   site: string;
   path: string;
+  isResourceRoomPage: boolean;
 }
 
-const migratePage = async ({ site, path }: PageMigrationParams) => {
+const migratePage = async ({
+  site,
+  path,
+  isResourceRoomPage = false,
+}: PageMigrationParams) => {
   console.log("Migrating page", path);
   const content = await getFileContents({ site, path, octokit });
 
@@ -61,12 +62,23 @@ const migratePage = async ({ site, path }: PageMigrationParams) => {
     return;
   }
 
-  const conversionResponse = await getIsomerSchemaFromJekyll({ content, path });
+  const conversionResponse = await getIsomerSchemaFromJekyll({
+    content,
+    path,
+    isResourceRoomPage,
+  });
   return conversionResponse;
 };
 
-const migrateCollectionPage = async ({ site, path }: PageMigrationParams) => {
-  const migrationResponse = await migratePage({ site, path });
+const migrateCollectionPage = async ({
+  site,
+  path,
+}: Omit<PageMigrationParams, "isResourceRoomPage">) => {
+  const migrationResponse = await migratePage({
+    site,
+    path,
+    isResourceRoomPage: true,
+  });
 
   if (!migrationResponse) {
     return null;
@@ -115,8 +127,19 @@ const saveContentsToFile = async ({
     await fs.promises.mkdir(folderPath, { recursive: true });
   }
 
+  // Check if the file already exists, if yes, append a running number until it
+  // finds a free name
+  let finalFileName = fileName;
+  let counter = 1;
+  while (fs.existsSync(path.join(folderPath, finalFileName))) {
+    finalFileName = `${path
+      .basename(filePath)
+      .replace(".json", "")}-${counter}.json`;
+    counter += 1;
+  }
+
   // Write the schema to the file
-  await fs.promises.writeFile(path.join(folderPath, fileName), schema);
+  await fs.promises.writeFile(path.join(folderPath, finalFileName), schema);
 };
 
 const createIndexIfNotExists = async (
@@ -207,14 +230,12 @@ const migrate = async ({
     console.log("Orphan pages:", orphanPages.join(", "));
   }
 
-  const allPages = (
-    await getPathsToMigrate({
-      octokit,
-      site,
-      folders: migrationFolders,
-      orphanPages,
-    })
-  ).filter((path) => !EXCLUDED_PATHS.includes(path));
+  const allPages = await getPathsToMigrate({
+    octokit,
+    site,
+    folders: migrationFolders,
+    orphanPages,
+  });
 
   const allResourceRoomPages = !!resourceRoomName
     ? await getRecursiveTree({
@@ -235,7 +256,11 @@ const migrate = async ({
 
   // NOTE: We are doing it slowly here to avoid the secondary GitHub rate limit
   for (const path of allPages) {
-    const content = await migratePage({ site, path });
+    const content = await migratePage({
+      site,
+      path,
+      isResourceRoomPage: false,
+    });
 
     if (!content) {
       continue;
@@ -280,19 +305,17 @@ const migrate = async ({
       continue;
     }
 
-    const tempPermalink = Math.random()
-      .toString(36)
-      .split(".")
-      .pop()
-      ?.substring(0, 8);
-
-    const resourceCategorySlug = path.split("/_posts")[0];
-
+    const tempPermalink = randomUUID();
     const permalinkToUse =
       content.content.layout === "article" ||
       content.content.layout === "content"
-        ? (content.permalink ?? `${resourceCategorySlug}/${tempPermalink}`)
-        : `${resourceCategorySlug}/${tempPermalink}`;
+        ? `${resourceRoomName}/${
+            content.permalink
+              ?.split("/")
+              .filter((slug) => !!slug)
+              .pop() ?? tempPermalink
+          }`
+        : `${resourceRoomName}/${tempPermalink}`;
 
     saveContentsToFile({
       site,
@@ -300,7 +323,10 @@ const migrate = async ({
       permalink: getLegalPermalink(permalinkToUse),
     });
 
-    finishedResourceRoomPages.push(content);
+    finishedResourceRoomPages.push({
+      ...content,
+      permalink: content.permalink ?? `/${getLegalPermalink(permalinkToUse)}`,
+    });
   }
 
   if (resourceRoomName) {
@@ -311,21 +337,20 @@ const migrate = async ({
   console.log(
     `Saving migrated pages information into a CSV file (migrated-pages-${site}.csv)`
   );
-  const csvHeaders = "Permalink,Status,Review items\n";
+  const csvHeaders = "Permalink,Title,Status,Review items\n";
   const csvRows = [
     ...finishedPages,
     ...finishedResourceRoomPages,
-    ...EXCLUDED_PATHS.map<ReportRow>((path) => ({
-      status: "not_converted" as const,
-      title: path.replace(".md", ""),
-      permalink: `/${path.replace(".md", "")}`,
-      reviewItems: undefined,
-    })),
+    {
+      status: "not_converted",
+      permalink: "/",
+      title: "Home page",
+    } satisfies ReportRow,
   ]
     .filter((pages) => pages?.permalink !== undefined)
     .map(
       (content) =>
-        `${content?.permalink},${getStatusName(content?.status)},${content?.reviewItems ? '"' + content?.reviewItems.join(", ") + '"' : ""}\n`
+        `${content?.permalink},"${content.title}",${getStatusName(content?.status)},${content?.reviewItems ? '"' + content?.reviewItems.join(", ") + '"' : ""}\n`
     );
 
   const csvString = csvHeaders + csvRows.join("");

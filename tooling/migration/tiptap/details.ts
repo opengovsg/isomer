@@ -6,9 +6,10 @@ export const IsomerDetailsContent = Node.create({
   content: "block+",
   defining: true,
   selectable: false,
+
   addOptions: () => ({ HTMLAttributes: {} }),
   parseHTML() {
-    return [{ tag: `div[data-type="${this.name}"]` }];
+    return [{ tag: `div[data-type="${this.name}"]` }, { tag: `div` }];
   },
   renderHTML({ HTMLAttributes }) {
     return [
@@ -31,8 +32,10 @@ export const IsomerDetailsSummary = Node.create({
   defining: true,
   selectable: false,
   isolating: true,
+  priority: 200,
+
   addOptions: () => ({ HTMLAttributes: {} }),
-  parseHTML: () => [{ tag: "summary" }],
+  parseHTML: () => [{ tag: "summary" }, { tag: "label[for]" }],
   renderHTML({ HTMLAttributes }) {
     return [
       "summary",
@@ -49,6 +52,8 @@ export const IsomerDetails = Node.create({
   defining: true,
   isolating: true,
   allowGapCursor: false,
+  priority: 200,
+
   addAttributes() {
     return this.options.persist
       ? {
@@ -60,7 +65,8 @@ export const IsomerDetails = Node.create({
         }
       : [];
   },
-  parseHTML: () => [{ tag: "details" }],
+
+  parseHTML: () => [{ tag: "details" }, { tag: "li:has(> label)" }],
   renderHTML({ HTMLAttributes }) {
     return [
       "details",
@@ -86,6 +92,7 @@ export const IsomerDetailsGroup = Node.create<IsomerDetailGroupOptions>({
   definingForContext: true,
   isolating: true,
   allowGapCursor: false,
+  priority: 200,
 
   addAttributes() {
     return {
@@ -102,7 +109,10 @@ export const IsomerDetailsGroup = Node.create<IsomerDetailGroupOptions>({
   },
 
   parseHTML() {
-    return [{ tag: `div.isomer-accordion` }];
+    return [
+      { tag: "div.isomer-accordion" },
+      { tag: "ul.jekyllcodex_accordion" },
+    ];
   },
 
   renderHTML({ HTMLAttributes, node }) {
