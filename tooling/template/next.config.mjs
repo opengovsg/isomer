@@ -9,6 +9,7 @@ const nextConfig = {
   turbo: {
     moduleIdStrategy: "deterministic",
   },
+  staticPageGenerationTimeout: 300,
 }
 
 export default nextConfig
