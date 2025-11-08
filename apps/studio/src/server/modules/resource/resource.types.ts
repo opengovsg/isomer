@@ -1,7 +1,7 @@
 import {
   type IsomerPageSchemaType,
   type IsomerSiteProps,
-} from "@opengovsg/isomer-components/schema"
+} from "@opengovsg/isomer-components"
 
 import type { Resource, ResourceType } from "~server/db"
 

@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import type { ArticlePagePageProps } from "@opengovsg/isomer-components/schema"
+import type { ArticlePagePageProps } from "@opengovsg/isomer-components"
 import { FormControl, Skeleton, VStack } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"

@@ -2,8 +2,10 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { Box } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-import { useIsNotificationDismissed } from "@opengovsg/isomer-components"
-import { NotificationSettingsSchema } from "@opengovsg/isomer-components/schema"
+import {
+  NotificationSettingsSchema,
+  useIsNotificationDismissed,
+} from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { isEmpty, isEqual } from "lodash"
 import { BiWrench } from "react-icons/bi"

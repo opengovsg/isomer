@@ -1,4 +1,4 @@
-import type { FooterSchemaType } from "@opengovsg/isomer-components/schema"
+import type { FooterSchemaType } from "@opengovsg/isomer-components"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { useToast } from "@opengovsg/design-system-react"

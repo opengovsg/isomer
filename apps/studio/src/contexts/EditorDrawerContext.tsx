@@ -1,4 +1,4 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components/schema"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import {
   createContext,

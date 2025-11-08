@@ -1,4 +1,4 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components/schema"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 
 export const PAGE_BLOB: IsomerSchema = {
   version: "0.1.0",

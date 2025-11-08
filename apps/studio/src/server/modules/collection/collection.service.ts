@@ -1,10 +1,10 @@
-import type { CollectionPagePageProps } from "@opengovsg/isomer-components/schema"
+import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import type { UnwrapTagged } from "type-fest"
-import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import {
   COLLECTION_PAGE_DEFAULT_SORT_BY,
   COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
-} from "@opengovsg/isomer-components/schema"
+  ISOMER_USABLE_PAGE_LAYOUTS,
+} from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
 import type { ResourceType } from "../database"

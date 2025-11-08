@@ -1,7 +1,7 @@
 import type {
   ComplexIntegrationsSettings,
   SimpleIntegrationsSettings,
-} from "@opengovsg/isomer-components/schema"
+} from "@opengovsg/isomer-components"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { Box, Text } from "@chakra-ui/react"
@@ -9,7 +9,7 @@ import { useToast } from "@opengovsg/design-system-react"
 import {
   ComplexIntegrationsSettingsSchema,
   SimpleIntegrationsSettingsSchema,
-} from "@opengovsg/isomer-components/schema"
+} from "@opengovsg/isomer-components"
 import { Value } from "@sinclair/typebox/value"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { isEqual } from "lodash"

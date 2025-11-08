@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import type { ComponentsWithProse } from "@opengovsg/isomer-components/schema"
+import type { ComponentsWithProse } from "@opengovsg/isomer-components"
 import { useCallback, useEffect, useMemo } from "react"
 import { Box, FormControl } from "@chakra-ui/react"
 import { and, rankWith, schemaMatches } from "@jsonforms/core"

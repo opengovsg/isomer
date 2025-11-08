@@ -1,8 +1,5 @@
-import type {
-  IsomerComponent,
-  ProseProps,
-} from "@opengovsg/isomer-components/schema"
-import { getComponentSchema } from "@opengovsg/isomer-components/schema"
+import type { IsomerComponent, ProseProps } from "@opengovsg/isomer-components"
+import { getComponentSchema } from "@opengovsg/isomer-components"
 
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"

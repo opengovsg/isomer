@@ -1,14 +1,14 @@
 import type {
   CollectionPagePageProps,
   IsomerSchema,
-} from "@opengovsg/isomer-components/schema"
-import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
+} from "@opengovsg/isomer-components"
 import {
   COLLECTION_PAGE_DEFAULT_SORT_BY,
   COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
   getLayoutMetadataSchema,
+  ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
-} from "@opengovsg/isomer-components/schema"
+} from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import {
   AuditLogEvent,

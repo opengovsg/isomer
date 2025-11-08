@@ -1,4 +1,4 @@
-import type { IsomerSitemap } from "@opengovsg/isomer-components/schema"
+import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useAtomValue } from "jotai"
 

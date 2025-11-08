@@ -1,8 +1,8 @@
-import type { AgencySettings } from "@opengovsg/isomer-components/schema"
+import type { AgencySettings } from "@opengovsg/isomer-components"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { useToast } from "@opengovsg/design-system-react"
-import { AgencySettingsSchema } from "@opengovsg/isomer-components/schema"
+import { AgencySettingsSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiWrench } from "react-icons/bi"
 

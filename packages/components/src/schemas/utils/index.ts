@@ -1,2 +1,2 @@
-export * from "./orderedListSchemaBuilder"
-export * from "./unorderedListSchemaBuilder"
+export { orderedListSchemaBuilder } from "./orderedListSchemaBuilder"
+export { unorderedListSchemaBuilder } from "./unorderedListSchemaBuilder"

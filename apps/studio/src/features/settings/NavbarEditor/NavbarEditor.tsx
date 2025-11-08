@@ -1,4 +1,4 @@
-import type { NavbarSchemaType } from "@opengovsg/isomer-components/schema"
+import type { NavbarSchemaType } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import type { Dispatch, SetStateAction } from "react"
 import { useCallback, useMemo } from "react"
@@ -19,7 +19,7 @@ import { Button, Tab, Tabs } from "@opengovsg/design-system-react"
 import {
   NavbarAddonsSchema,
   NavbarItemsSchema,
-} from "@opengovsg/isomer-components/schema"
+} from "@opengovsg/isomer-components"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
 import { BiDirections } from "react-icons/bi"

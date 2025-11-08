@@ -1,4 +1,4 @@
-import type { ComplexIntegrations } from "@opengovsg/isomer-components/schema"
+import type { ComplexIntegrations } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { createContext, useContext, useState } from "react"
 

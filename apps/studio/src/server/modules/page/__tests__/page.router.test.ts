@@ -1,4 +1,4 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components/schema"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import { TRPCError } from "@trpc/server"
 import {

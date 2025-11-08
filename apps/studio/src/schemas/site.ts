@@ -1,9 +1,9 @@
-import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components/schema"
+import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import {
   NotificationSettingsSchema,
   SiteConfigSchema,
-} from "@opengovsg/isomer-components/schema"
+} from "@opengovsg/isomer-components"
 import { z } from "zod"
 
 import { ajv } from "~/utils/ajv"

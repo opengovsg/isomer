@@ -1,4 +1,4 @@
-import type { FooterSchemaType } from "@opengovsg/isomer-components/schema"
+import type { FooterSchemaType } from "@opengovsg/isomer-components"
 import type { Dispatch, SetStateAction } from "react"
 import { useCallback, useState } from "react"
 import {
@@ -11,7 +11,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { FooterSchema } from "@opengovsg/isomer-components/schema"
+import { FooterSchema } from "@opengovsg/isomer-components"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
 import { BiDirections } from "react-icons/bi"

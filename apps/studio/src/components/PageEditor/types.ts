@@ -1,4 +1,4 @@
-import { type IsomerComponent } from "@opengovsg/isomer-components/schema"
+import { type IsomerComponent } from "@opengovsg/isomer-components"
 
 // TODO: Add better types other than `any`
 export interface CustomRendererProps {

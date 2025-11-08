@@ -1,4 +1,4 @@
-import type { NavbarItemsSchema } from "@opengovsg/isomer-components/schema"
+import type { NavbarItemsSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import type { Tagged } from "type-fest"
 

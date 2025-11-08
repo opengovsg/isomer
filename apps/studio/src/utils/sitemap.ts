@@ -4,7 +4,7 @@ import type {
   FileRefPageProps,
   IsomerSitemap,
   LinkRefPageProps,
-} from "@opengovsg/isomer-components/schema"
+} from "@opengovsg/isomer-components"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 

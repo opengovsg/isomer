@@ -1,9 +1,11 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components/schema"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useMemo } from "react"
 import { VStack } from "@chakra-ui/react"
 import { Draggable } from "@hello-pangea/dnd"
-import { renderComponentPreviewText } from "@opengovsg/isomer-components"
-import { getComponentSchema } from "@opengovsg/isomer-components/schema"
+import {
+  getComponentSchema,
+  renderComponentPreviewText,
+} from "@opengovsg/isomer-components"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { TYPE_TO_ICON } from "../../constants"

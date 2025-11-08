@@ -1,4 +1,4 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components/schema"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { IconType } from "react-icons"
 import { COMPONENT_TYPES_MAP } from "@opengovsg/isomer-components"
 import {

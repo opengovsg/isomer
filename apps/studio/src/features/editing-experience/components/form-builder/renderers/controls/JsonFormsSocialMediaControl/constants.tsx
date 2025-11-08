@@ -1,4 +1,4 @@
-import type { FooterSchemaType } from "@opengovsg/isomer-components/schema"
+import type { FooterSchemaType } from "@opengovsg/isomer-components"
 import { Icon } from "@chakra-ui/react"
 import { AiFillTikTok } from "react-icons/ai"
 import {

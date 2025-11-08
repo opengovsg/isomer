@@ -1,4 +1,4 @@
-import type { IsomerComponent } from "@opengovsg/isomer-components/schema"
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
   COMPONENT_TYPES_MAP,
   DEFAULT_CHILDREN_PAGES_BLOCK,

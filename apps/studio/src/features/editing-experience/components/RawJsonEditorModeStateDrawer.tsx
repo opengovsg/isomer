@@ -1,7 +1,7 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components/schema"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useCallback, useMemo, useState } from "react"
 import { useToast } from "@opengovsg/design-system-react"
-import { schema } from "@opengovsg/isomer-components/schema"
+import { schema } from "@opengovsg/isomer-components"
 import isEqual from "lodash/isEqual"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
