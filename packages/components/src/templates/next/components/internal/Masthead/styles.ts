@@ -1,6 +1,6 @@
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { focusVisibleHighlight } from "~/utils/rac"
+import { focusVisibleHighlight } from "~/utils/tailwind"
 
 export const mastheadButtonStyle = tv({
   extend: focusVisibleHighlight,
