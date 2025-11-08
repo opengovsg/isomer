@@ -7,16 +7,15 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "types": "./dist/esm/index.d.ts",
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/cjs/index.d.ts"
     }
   },
   "files": [
     "dist/cjs",
     "dist/esm"
   ],
-  "types": "dist/esm/index.d.ts",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "run-p build:*",
