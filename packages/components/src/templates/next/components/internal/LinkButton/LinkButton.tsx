@@ -1,5 +1,3 @@
-"use client"
-
 import type { ElementType } from "react"
 import type { VariantProps } from "tailwind-variants"
 import { BiLinkExternal } from "react-icons/bi"
