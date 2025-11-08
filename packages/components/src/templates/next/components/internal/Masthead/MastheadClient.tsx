@@ -5,7 +5,7 @@ import { createContext, useContext, useState } from "react"
 import { Button, composeRenderProps } from "react-aria-components"
 import { BiChevronDown } from "react-icons/bi"
 
-import type { MastheadButtonClassNames } from "./types"
+import type { MastheadClientProps, RestrictedHeaderBarProps } from "./types"
 import type { MastheadProps } from "~/interfaces"
 import { Link } from "../Link"
 
@@ -80,11 +80,6 @@ const RestrictedHeaderBarContent = ({ children }: PropsWithChildren) => {
       </div>
     </>
   )
-}
-
-interface RestrictedHeaderBarProps extends PropsWithChildren {
-  mobileButtonClassNames: MastheadButtonClassNames
-  desktopButtonClassNames: MastheadButtonClassNames
 }
 
 const RestrictedHeaderBar = ({
@@ -248,11 +243,6 @@ const RestrictedContent = () => {
       </div>
     </div>
   )
-}
-
-interface MastheadClientProps extends Omit<MastheadProps, "type"> {
-  mobileButtonClassNames: MastheadButtonClassNames
-  desktopButtonClassNames: MastheadButtonClassNames
 }
 
 export const MastheadClient = ({
