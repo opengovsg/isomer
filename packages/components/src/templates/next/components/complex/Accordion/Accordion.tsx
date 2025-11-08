@@ -26,7 +26,7 @@ interface AccordionProps
   extends BaseAccordionProps,
     VariantProps<typeof createAccordionStyles> {}
 
-const Accordion = ({
+export const Accordion = ({
   summary,
   details,
   LinkComponent,
@@ -52,5 +52,3 @@ const Accordion = ({
     </details>
   )
 }
-
-export default Accordion

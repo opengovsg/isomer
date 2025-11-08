@@ -82,7 +82,7 @@ export const createInfobarStyles = tv({
   },
 })
 
-const Infobar = ({
+export const Infobar = ({
   variant,
   title,
   description,
@@ -161,5 +161,3 @@ const Infobar = ({
     </section>
   )
 }
-
-export default Infobar

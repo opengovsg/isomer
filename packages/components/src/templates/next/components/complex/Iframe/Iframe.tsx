@@ -28,7 +28,7 @@ const getPaddingForEmbed = (url: string | null) => {
 /**
  * @deprecated Replaced with individual website embed components
  */
-const Iframe = ({ title, content }: IframeProps) => {
+export const Iframe = ({ title, content }: IframeProps) => {
   const sanitizedIframe = getSanitizedIframeWithTitle(content, title)
   const iframeUrl = sanitizedIframe.getAttribute("src")
 
@@ -43,5 +43,3 @@ const Iframe = ({ title, content }: IframeProps) => {
     </section>
   )
 }
-
-export default Iframe

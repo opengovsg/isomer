@@ -12,7 +12,7 @@ import { DgsTransformedContactInformation } from "../ContactInformation"
 // thus we play safe and just return 1 for loading state
 const DEFAULT_NUMBER_OF_RECORDS_FOR_LOADING = 1
 
-const DynamicComponentList = ({
+export const DynamicComponentList = ({
   dataSource: { resourceId, sort, filters },
   component,
   layout,
@@ -62,5 +62,3 @@ const DynamicComponentList = ({
       return <></>
   }
 }
-
-export default DynamicComponentList
