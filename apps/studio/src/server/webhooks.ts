@@ -1,4 +1,4 @@
-import type { CreateNextContextOptions } from "@trpc/server/adapters/next"
+import type { CreateNextContextOptions } from "@trpc/server/dist/adapters/next.cjs"
 import type { NextApiRequest, NextApiResponse } from "next"
 
 import type { Context } from "~/server/context"

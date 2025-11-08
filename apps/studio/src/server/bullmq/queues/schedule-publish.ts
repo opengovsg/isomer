@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
-// TypeScript cannot verify types when re-exported through intermediate packages (@isomer/redis).
-// The types are correct (verified at runtime), but TypeScript's type checker sees them as "error types".
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { Job, JobsOptions } from "bullmq"
 import { Queue, Worker } from "bullmq"

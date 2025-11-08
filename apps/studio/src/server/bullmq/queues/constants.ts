@@ -1,5 +1,5 @@
 import type { BackoffOptions, JobsOptions } from "bullmq"
-import type Settings from "redlock"
+import type { Settings } from "redlock"
 
 const DAY_IN_SECONDS = 60 * 60 * 24
 /** Queue & worker settings */

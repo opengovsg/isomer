@@ -1,4 +1,4 @@
-import type { GrowthBook } from "@growthbook/growthbook"
+import type { GrowthBook } from "@growthbook/growthbook/dist/GrowthBook"
 import type { User } from "@prisma/client"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"

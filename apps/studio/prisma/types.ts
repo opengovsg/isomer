@@ -12,7 +12,7 @@ import type {
   IsomerSiteConfigProps as _IsomerSiteConfigProps,
   IsomerSiteThemeProps as _IsomerSiteThemeProps,
   IsomerSiteWideComponentsProps as _IsomerSiteWideComponentsProps,
-} from "@opengovsg/isomer-components/schema"
+} from "@opengovsg/isomer-components"
 import type { Tagged } from "type-fest"
 
 declare global {
