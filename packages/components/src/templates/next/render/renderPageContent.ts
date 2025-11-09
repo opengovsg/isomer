@@ -5,7 +5,7 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { doesComponentHaveImage } from "./doesComponentHaveImage"
-import { renderComponent } from "./render"
+import { renderComponent } from "./renderComponent"
 
 interface RenderPageContentParams {
   content: IsomerComponent[]
