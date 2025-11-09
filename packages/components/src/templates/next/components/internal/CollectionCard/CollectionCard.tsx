@@ -1,6 +1,6 @@
 import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
-import { getFormattedDate, isExternalUrl } from "~/utils"
+import { isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
 import { Tag } from "../Tag"
@@ -8,7 +8,6 @@ import { Title } from "./Title"
 
 export const CollectionCard = ({
   LinkComponent,
-  date,
   description,
   category,
   image,
@@ -18,6 +17,7 @@ export const CollectionCard = ({
   siteAssetsBaseUrl,
   shouldShowDate = true,
   tags = [],
+  formattedDate,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
@@ -34,7 +34,7 @@ export const CollectionCard = ({
     >
       {shouldShowDate && (
         <p className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
-          {date ? getFormattedDate(date.toISOString()) : "-"}
+          {formattedDate ? formattedDate : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
