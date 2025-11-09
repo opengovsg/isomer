@@ -58,5 +58,3 @@ export const BaseParagraph = ({
     />
   )
 }
-
-export default BaseParagraph

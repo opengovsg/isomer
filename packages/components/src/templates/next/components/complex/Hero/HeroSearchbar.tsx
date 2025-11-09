@@ -1,6 +1,7 @@
 import type { HeroProps } from "~/interfaces/complex/Hero"
-import { HomepageSearchSGInputBox, LocalSearchInputBox } from "../../internal"
 import { ComponentContent } from "../../internal/customCssClass"
+import { LocalSearchInputBox } from "../../internal/LocalSearchInputBox"
+import { HomepageSearchSGInputBox } from "../../internal/SearchSGInputBox"
 
 export const HeroSearchbar = ({ title, subtitle, site }: HeroProps) => {
   const SearchInputBox = () => {

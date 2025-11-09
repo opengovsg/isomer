@@ -1,5 +1,5 @@
 import type { UnorderedListProps } from "~/interfaces"
-import ListItem from "../ListItem"
+import { ListItem } from "../ListItem"
 
 const getUnorderedListType = (level?: number) => {
   // We rotate between disc, circle and square
@@ -12,7 +12,7 @@ const getUnorderedListType = (level?: number) => {
   }
 }
 
-const UnorderedList = ({
+export const UnorderedList = ({
   content,
   level,
   LinkComponent,
@@ -32,5 +32,3 @@ const UnorderedList = ({
     </ul>
   )
 }
-
-export default UnorderedList

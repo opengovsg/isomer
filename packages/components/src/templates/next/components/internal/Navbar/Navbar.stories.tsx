@@ -6,8 +6,8 @@ import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 import type { NavbarProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 import { Button } from "../Button"
-import Masthead from "../Masthead"
-import Navbar from "./Navbar"
+import { Masthead } from "../Masthead"
+import { Navbar } from "./Navbar"
 
 const Renderer = (props: NavbarProps) => {
   return (

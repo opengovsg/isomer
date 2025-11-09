@@ -1,1 +1,1 @@
-export { UnsupportedBrowserBanner as default } from "./UnsupportedBrowserBanner"
+export { UnsupportedBrowserBanner } from "./UnsupportedBrowserBanner"

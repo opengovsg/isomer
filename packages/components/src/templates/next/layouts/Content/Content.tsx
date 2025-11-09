@@ -6,12 +6,10 @@ import {
   getTableOfContents,
   getTransformedPageContent,
 } from "~/utils"
-import {
-  BackToTopLink,
-  ContentPageHeader,
-  Siderail,
-  TableOfContents,
-} from "../../components/internal"
+import { BackToTopLink } from "../../components/internal/BackToTopLink"
+import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
+import { Siderail } from "../../components/internal/Siderail"
+import { TableOfContents } from "../../components/internal/TableOfContents"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 

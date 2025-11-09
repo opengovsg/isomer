@@ -1,6 +1,6 @@
 import { type SearchPageSchemaType } from "~/types"
 import { Skeleton } from "../Skeleton"
-import SearchSG from "./SearchSG"
+import { SearchSG } from "./SearchSG"
 
 export const SearchLayout = ({
   site,

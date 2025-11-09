@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { TableOfContentsProps } from "~/interfaces"
-import TableOfContents from "./TableOfContents"
+import { TableOfContents } from "./TableOfContents"
 
 const meta: Meta<TableOfContentsProps> = {
   title: "Next/Internal Components/TableOfContents",

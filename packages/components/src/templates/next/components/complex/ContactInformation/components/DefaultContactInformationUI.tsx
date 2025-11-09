@@ -1,6 +1,6 @@
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { BaseParagraph } from "../../../internal"
+import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { LinkButton } from "../../../internal/LinkButton"
 import {
   commonContactInformationStyles,

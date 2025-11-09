@@ -2,7 +2,7 @@ import type { IndexPageSchemaType } from "~/types"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/constants"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils"
-import { ContentPageHeader } from "../../components/internal"
+import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 

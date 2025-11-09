@@ -1,8 +1,13 @@
 import type { ParagraphProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
-import { BaseParagraph } from "../../internal"
+import { BaseParagraph } from "../../internal/BaseParagraph"
 
-const Paragraph = ({ attrs, content, site, LinkComponent }: ParagraphProps) => {
+export const Paragraph = ({
+  attrs,
+  content,
+  site,
+  LinkComponent,
+}: ParagraphProps) => {
   return (
     <BaseParagraph
       content={getTextAsHtml({ site, content })}
@@ -12,5 +17,3 @@ const Paragraph = ({ attrs, content, site, LinkComponent }: ParagraphProps) => {
     />
   )
 }
-
-export default Paragraph

@@ -73,7 +73,7 @@ function BaseBreadcrumb({
   )
 }
 
-const Breadcrumb = ({
+export const Breadcrumb = ({
   links,
   LinkComponent,
   colorScheme = "default",
@@ -94,5 +94,3 @@ const Breadcrumb = ({
     </BaseBreadcrumbs>
   )
 }
-
-export default Breadcrumb

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import { generateSiteConfig } from "~/stories/helpers"
-import Table from "./Table"
+import { Table } from "./Table"
 
 const meta: Meta<typeof Table> = {
   title: "Next/Components/Table",

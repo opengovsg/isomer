@@ -2,7 +2,7 @@ import type { PropsWithChildren } from "react"
 
 import type { BreadcrumbProps } from "~/interfaces"
 import type { LinkComponentType } from "~/types"
-import { Breadcrumb } from "../../components/internal"
+import { Breadcrumb } from "../../components/internal/Breadcrumb"
 
 interface CollectionPageHeaderProps extends PropsWithChildren {
   breadcrumb: BreadcrumbProps
@@ -11,7 +11,7 @@ interface CollectionPageHeaderProps extends PropsWithChildren {
   LinkComponent?: LinkComponentType
 }
 
-const CollectionPageHeader = ({
+export const CollectionPageHeader = ({
   title,
   breadcrumb,
   subtitle,
@@ -33,5 +33,3 @@ const CollectionPageHeader = ({
     </div>
   )
 }
-
-export default CollectionPageHeader

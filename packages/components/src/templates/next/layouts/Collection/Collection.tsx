@@ -1,7 +1,7 @@
 import type { CollectionPageSchemaType } from "~/types"
 import { getBreadcrumbFromSiteMap } from "~/utils"
 import { Skeleton } from "../Skeleton"
-import CollectionClient from "./CollectionClient"
+import { CollectionClient } from "./CollectionClient"
 import {
   getAvailableFilters,
   getCollectionItems,

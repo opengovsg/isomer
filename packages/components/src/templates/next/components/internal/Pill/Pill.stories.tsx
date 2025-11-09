@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { PillProps } from "~/interfaces"
-import Pill from "./Pill"
+import { Pill } from "./Pill"
 
 const meta: Meta<PillProps> = {
   title: "Next/Internal Components/Pill",
