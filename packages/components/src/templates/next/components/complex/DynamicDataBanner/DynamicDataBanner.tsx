@@ -1,6 +1,6 @@
 import type { DynamicDataBannerProps } from "~/interfaces"
 import { getReferenceLinkHref, getTextAsHtml } from "~/utils"
-import BaseParagraph from "../../internal/BaseParagraph/BaseParagraph"
+import { BaseParagraph } from "../../internal/BaseParagraph"
 import { DynamicDataBannerClient } from "./DynamicDataBannerClient"
 
 export const DynamicDataBanner = ({

@@ -6,15 +6,9 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { DEFAULT_INFOBAR_VARIANT, INFOBAR_VARIANT } from "~/constants"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 import { ARRAY_RADIO_FORMAT } from "../format"
-
-const INFOBAR_VARIANT = {
-  light: "light",
-  dark: "dark",
-} as const
-
-export const DEFAULT_INFOBAR_VARIANT = INFOBAR_VARIANT.light
 
 const generateInfobarSchema = ({
   includeDarkVariant,

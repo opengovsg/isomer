@@ -146,7 +146,7 @@ const InfoBoxes = ({
   )
 }
 
-const InfoCols = ({
+export const InfoCols = ({
   id,
   title,
   subtitle,
@@ -187,5 +187,3 @@ const InfoCols = ({
     </section>
   )
 }
-
-export default InfoCols

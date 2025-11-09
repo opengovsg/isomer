@@ -6,4 +6,3 @@ export {
   getRobotsTxt,
   getSitemapXml,
 } from "./metadata"
-export * from "~/types"

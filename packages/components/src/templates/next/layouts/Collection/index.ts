@@ -1,1 +1,1 @@
-export { default } from "./Collection"
+export { CollectionLayout } from "./Collection"

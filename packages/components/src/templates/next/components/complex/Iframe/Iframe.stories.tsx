@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { IframeProps } from "~/interfaces"
-import Iframe from "./Iframe"
+import { Iframe } from "./Iframe"
 
 const meta: Meta<IframeProps> = {
   title: "Next/Components/Iframe",

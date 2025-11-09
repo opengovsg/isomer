@@ -1,8 +1,8 @@
 import type { ContentPageHeaderProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getFormattedDate, getReferenceLinkHref, isExternalUrl } from "~/utils"
-import { ImageClient } from "../../complex"
-import Breadcrumb from "../Breadcrumb"
+import { ImageClient } from "../../complex/Image"
+import { Breadcrumb } from "../Breadcrumb"
 import { LinkButton } from "../LinkButton"
 
 const createContentPageHeaderStyles = tv({
@@ -42,7 +42,7 @@ const createContentPageHeaderStyles = tv({
   },
 })
 
-const ContentPageHeader = ({
+export const ContentPageHeader = ({
   title,
   summary,
   lastUpdated,
@@ -116,5 +116,3 @@ const ContentPageHeader = ({
     </div>
   )
 }
-
-export default ContentPageHeader

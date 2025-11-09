@@ -1,7 +1,6 @@
 import type { ChildrenPagesProps, ImageClientProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types"
 import { tv } from "~/lib/tv"
-import { ImageClient } from "~/templates/next"
 import {
   getNodeFromSiteMap,
   getReferenceLinkHref,
@@ -10,6 +9,7 @@ import {
 } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
+import { ImageClient } from "../Image"
 import { mergeChildrenPages } from "./utils"
 
 const ChildpageImage = ({
@@ -237,7 +237,7 @@ const RowLayout = ({
   )
 }
 
-const ChildrenPages = ({
+export const ChildrenPages = ({
   childrenPagesOrdering = [],
   permalink,
   site,
@@ -295,5 +295,3 @@ const ChildrenPages = ({
     />
   )
 }
-
-export default ChildrenPages

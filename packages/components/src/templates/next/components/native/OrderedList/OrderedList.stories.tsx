@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { OrderedListProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
-import OrderedList from "./OrderedList"
+import { OrderedList } from "./OrderedList"
 
 // Template for stories
 const Template = (props: OrderedListProps) => (

@@ -1,12 +1,6 @@
 import type { OrderedListProps, ProseContent } from "~/interfaces"
 import type { IsomerSchema } from "~/types"
-import {
-  COLLECTION_BLOCK_TYPE,
-  CONTACT_INFORMATION_TYPE,
-  DYNAMIC_COMPONENT_LIST_TYPE,
-  DYNAMIC_DATA_BANNER_TYPE,
-  IMAGE_GALLERY_TYPE,
-} from "~/interfaces"
+import { COMPONENT_TYPES_MAP } from "~/constants"
 
 function getTextContentOfProse(content: ProseContent): string {
   const values: string[] = []
@@ -113,19 +107,19 @@ export function renderComponentPreviewText({
       return component.title || "Video embed"
     case "childrenpages":
       return "Child pages"
-    case DYNAMIC_DATA_BANNER_TYPE:
+    case COMPONENT_TYPES_MAP.DynamicDataBanner:
       return component.apiEndpoint
-    case COLLECTION_BLOCK_TYPE:
+    case COMPONENT_TYPES_MAP.CollectionBlock:
       return (
         component.customTitle ||
         component.customDescription ||
         `Collection block`
       )
-    case IMAGE_GALLERY_TYPE:
+    case COMPONENT_TYPES_MAP.ImageGallery:
       return "Image Gallery"
-    case CONTACT_INFORMATION_TYPE:
+    case COMPONENT_TYPES_MAP.ContactInformation:
       return component.title || "Contact Information"
-    case DYNAMIC_COMPONENT_LIST_TYPE:
+    case COMPONENT_TYPES_MAP.DynamicComponentList:
       return "Dynamic Component List"
     default:
       const _: never = component

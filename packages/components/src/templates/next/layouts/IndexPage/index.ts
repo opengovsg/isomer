@@ -1,1 +1,1 @@
-export { default } from "./IndexPage"
+export { IndexPageLayout } from "./IndexPage"

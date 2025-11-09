@@ -1,7 +1,8 @@
 import type { UseCollectionReturn } from "./useCollection"
 import type { CollectionPageSchemaType, CollectionVariant } from "~/types"
 import { tv } from "~/lib/tv"
-import { BlogCard, CollectionCard } from "../../components/internal"
+import { BlogCard } from "../../components/internal/BlogCard"
+import { CollectionCard } from "../../components/internal/CollectionCard"
 
 interface CollectionResultProps
   extends Pick<

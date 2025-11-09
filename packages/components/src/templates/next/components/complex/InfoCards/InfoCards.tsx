@@ -15,7 +15,7 @@ import {
 } from "./components"
 import { calculateGridDimensions } from "./utils"
 
-const InfoCards = ({
+export const InfoCards = ({
   id,
   title,
   subtitle,
@@ -145,5 +145,3 @@ const InfoCards = ({
     </section>
   )
 }
-
-export default InfoCards

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import UnsupportedBrowserBanner from "./UnsupportedBrowserBanner"
+import { UnsupportedBrowserBanner } from "./UnsupportedBrowserBanner"
 
 const meta: Meta = {
   title: "Next/Internal Components/UnsupportedBrowserBanner",

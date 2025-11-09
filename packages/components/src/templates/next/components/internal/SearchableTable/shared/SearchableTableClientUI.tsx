@@ -4,7 +4,7 @@ import { useId, useRef } from "react"
 
 import type { SearchableTableClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import BaseParagraph from "../../../internal/BaseParagraph"
+import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
 import { SearchField } from "../../../internal/Search"
 import { COPYWRITING_MAPPING, PAGINATION_MAX_ITEMS } from "./constants"

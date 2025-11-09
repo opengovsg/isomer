@@ -6,7 +6,10 @@ import type { NotificationClientProps } from "~/interfaces"
 import { useIsNotificationDismissed } from "~/hooks/useIsNotificationDismissed"
 import { IconButton } from "../IconButton"
 
-const NotificationClient = ({ title, children }: NotificationClientProps) => {
+export const NotificationClient = ({
+  title,
+  children,
+}: NotificationClientProps) => {
   const [isDismissed, setIsDismissed] = useIsNotificationDismissed()
 
   const onDismiss = () => {
@@ -34,5 +37,3 @@ const NotificationClient = ({ title, children }: NotificationClientProps) => {
     )
   )
 }
-
-export default NotificationClient

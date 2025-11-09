@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { NotFoundPageSchemaType } from "~/engine"
+import type { NotFoundPageSchemaType } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
-import NotFoundLayout from "./NotFound"
+import { NotFoundLayout } from "./NotFound"
 
-const meta: Meta<NotFoundPageSchemaType> = {
+const meta: Meta<typeof NotFoundLayout> = {
   title: "Next/Layouts/NotFound",
   component: NotFoundLayout,
   argTypes: {},
