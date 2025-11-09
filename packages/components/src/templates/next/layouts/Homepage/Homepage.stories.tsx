@@ -11,11 +11,11 @@ import {
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
-import Homepage from "./Homepage"
+import { HomepageLayout } from "./Homepage"
 
-const meta: Meta<typeof Homepage> = {
+const meta: Meta<typeof HomepageLayout> = {
   title: "Next/Layouts/Homepage",
-  component: Homepage,
+  component: HomepageLayout,
   decorators: [withSearchSgSetup()],
   argTypes: {},
   tags: ["!autodocs"],
@@ -50,7 +50,7 @@ const meta: Meta<typeof Homepage> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof Homepage>
+type Story = StoryObj<typeof HomepageLayout>
 
 const generateArgs = ({
   heroProps,

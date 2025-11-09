@@ -1,14 +1,12 @@
 import type { IsomerPageSchemaType } from "~/types"
-import {
-  ArticleLayout,
-  CollectionLayout,
-  ContentLayout,
-  DatabaseLayout,
-  HomepageLayout,
-  IndexPageLayout,
-  NotFoundLayout,
-  SearchLayout,
-} from "../layouts"
+import { ArticleLayout } from "../layouts/Article"
+import { CollectionLayout } from "../layouts/Collection"
+import { ContentLayout } from "../layouts/Content"
+import { DatabaseLayout } from "../layouts/Database"
+import { HomepageLayout } from "../layouts/Homepage"
+import { IndexPageLayout } from "../layouts/IndexPage"
+import { NotFoundLayout } from "../layouts/NotFound"
+import { SearchLayout } from "../layouts/Search"
 
 export const renderLayout = ({
   LinkComponent = "a",

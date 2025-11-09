@@ -24,7 +24,7 @@ const createDatabaseLayoutStyles = tv({
 
 const compoundStyles = createDatabaseLayoutStyles()
 
-const DatabaseLayout = ({
+export const DatabaseLayout = ({
   site,
   page,
   layout,
@@ -82,5 +82,3 @@ const DatabaseLayout = ({
     </Skeleton>
   )
 }
-
-export default DatabaseLayout

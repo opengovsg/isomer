@@ -7,7 +7,7 @@ import { renderPageContent } from "../../render"
 import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
 import { Skeleton } from "../Skeleton"
 
-const ArticleLayout = ({
+export const ArticleLayout = ({
   site,
   page,
   layout,
@@ -64,5 +64,3 @@ const ArticleLayout = ({
     </Skeleton>
   )
 }
-
-export default ArticleLayout

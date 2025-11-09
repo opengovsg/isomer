@@ -27,7 +27,7 @@ const createContentLayoutStyles = tv({
 
 const compoundStyles = createContentLayoutStyles()
 
-const ContentLayout = ({
+export const ContentLayout = ({
   site,
   page,
   layout,
@@ -90,5 +90,3 @@ const ContentLayout = ({
     </Skeleton>
   )
 }
-
-export default ContentLayout

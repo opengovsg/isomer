@@ -9,7 +9,7 @@ import {
   shouldShowDate,
 } from "./utils"
 
-const CollectionLayout = ({
+export const CollectionLayout = ({
   site,
   page,
   layout,
@@ -49,5 +49,3 @@ const CollectionLayout = ({
     </Skeleton>
   )
 }
-
-export default CollectionLayout

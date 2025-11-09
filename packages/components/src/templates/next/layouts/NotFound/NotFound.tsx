@@ -5,7 +5,7 @@ import { LinkButton } from "../../components/internal/LinkButton"
 import { Skeleton } from "../Skeleton"
 import { NotFoundSearchButton } from "./NotFoundSearchButton"
 
-const NotFoundLayout = ({
+export const NotFoundLayout = ({
   site,
   page,
   layout,
@@ -61,5 +61,3 @@ const NotFoundLayout = ({
     </Skeleton>
   )
 }
-
-export default NotFoundLayout

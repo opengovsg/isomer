@@ -17,7 +17,7 @@ const createIndexPageLayoutStyles = tv({
 
 const compoundStyles = createIndexPageLayoutStyles()
 
-const IndexPageLayout = ({
+export const IndexPageLayout = ({
   site,
   page,
   layout,
@@ -64,5 +64,3 @@ const IndexPageLayout = ({
     </Skeleton>
   )
 }
-
-export default IndexPageLayout
