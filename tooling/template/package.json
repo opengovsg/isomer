@@ -8,8 +8,8 @@
     "build:template": "node --stack_size=10240 ./node_modules/next/dist/bin/next build",
     "analyze:schema": "tsx scripts/analyze-schema.ts",
     "build:transform": "npm run build:transform:renderLayout && npm run build:transform:renderComponent",
-    "build:transform:renderLayout": "NODE_OPTIONS='--loader tsx/esm' jscodeshift -t scripts/transforms/renderLayout.ts node_modules/@opengovsg/isomer-components/dist/esm/templates/next/render/renderLayout.js",
-    "build:transform:renderComponent": "NODE_OPTIONS='--loader tsx/esm' jscodeshift -t scripts/transforms/renderComponent.ts node_modules/@opengovsg/isomer-components/dist/esm/templates/next/render/renderComponent.js",
+    "build:transform:renderLayout": "jscodeshift -t scripts/transforms/renderLayout.js node_modules/@opengovsg/isomer-components/dist/esm/templates/next/render/renderLayout.js",
+    "build:transform:renderComponent": "jscodeshift -t scripts/transforms/renderComponent.js node_modules/@opengovsg/isomer-components/dist/esm/templates/next/render/renderComponent.js",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -40,7 +40,6 @@
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
-    "@types/jscodeshift": "^17.3.0",
     "@types/node": "^22.15.21",
     "jscodeshift": "^17.3.0",
     "tsx": "^4.20.4"
