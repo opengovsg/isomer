@@ -4,7 +4,6 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
-import { COMPONENT_TYPES_MAP } from "~/constants"
 import { Accordion } from "../components/complex/Accordion"
 import { Blockquote } from "../components/complex/Blockquote"
 import { Callout } from "../components/complex/Callout"
@@ -88,15 +87,15 @@ export const renderComponent = ({
       )
     case "video":
       return <Video key={elementKey} {...component} {...rest} />
-    case COMPONENT_TYPES_MAP.DynamicDataBanner:
+    case "dynamicdatabanner":
       return <DynamicDataBanner key={elementKey} {...component} {...rest} />
-    case COMPONENT_TYPES_MAP.CollectionBlock:
+    case "collectionblock":
       return <CollectionBlock key={elementKey} {...component} {...rest} />
-    case COMPONENT_TYPES_MAP.ImageGallery:
+    case "imagegallery":
       return <ImageGallery key={elementKey} {...component} {...rest} />
-    case COMPONENT_TYPES_MAP.ContactInformation:
+    case "contactinformation":
       return <ContactInformation key={elementKey} {...component} {...rest} />
-    case COMPONENT_TYPES_MAP.DynamicComponentList:
+    case "dynamiccomponentlist":
       return <DynamicComponentList key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
