@@ -36,7 +36,8 @@
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21"
+    "@types/node": "^22.15.21",
+    "jscodeshift": "^17.3.0"
   },
   "prettier": "@isomer/prettier-config"
 }
