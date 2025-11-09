@@ -1,7 +1,7 @@
 import type { ContentPageHeaderProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getFormattedDate, getReferenceLinkHref, isExternalUrl } from "~/utils"
-import { ImageClient } from "../../complex"
+import { ImageClient } from "../../complex/Image"
 import Breadcrumb from "../Breadcrumb"
 import { LinkButton } from "../LinkButton"
 

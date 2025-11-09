@@ -6,31 +6,29 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { COMPONENT_TYPES_MAP } from "~/constants"
-import {
-  Accordion,
-  Blockquote,
-  Callout,
-  ChildrenPages,
-  CollectionBlock,
-  ContactInformation,
-  Contentpic,
-  DynamicComponentList,
-  DynamicDataBanner,
-  FormSG,
-  Hero,
-  Iframe,
-  Image,
-  ImageGallery,
-  Infobar,
-  InfoCards,
-  InfoCols,
-  Infopic,
-  KeyStatistics,
-  LogoCloud,
-  Map,
-  Prose,
-  Video,
-} from "../components"
+import { Accordion } from "../components/complex/Accordion"
+import { Blockquote } from "../components/complex/Blockquote"
+import { Callout } from "../components/complex/Callout"
+import { ChildrenPages } from "../components/complex/ChildrenPages"
+import { CollectionBlock } from "../components/complex/CollectionBlock"
+import { ContactInformation } from "../components/complex/ContactInformation"
+import { Contentpic } from "../components/complex/Contentpic"
+import { DynamicComponentList } from "../components/complex/DynamicComponentList"
+import { DynamicDataBanner } from "../components/complex/DynamicDataBanner"
+import { FormSG } from "../components/complex/FormSG"
+import { Hero } from "../components/complex/Hero"
+import { Iframe } from "../components/complex/Iframe"
+import { Image } from "../components/complex/Image"
+import { ImageGallery } from "../components/complex/ImageGallery"
+import { Infobar } from "../components/complex/Infobar"
+import { InfoCards } from "../components/complex/InfoCards"
+import { InfoCols } from "../components/complex/InfoCols"
+import { Infopic } from "../components/complex/Infopic"
+import { KeyStatistics } from "../components/complex/KeyStatistics"
+import { LogoCloud } from "../components/complex/LogoCloud"
+import { Map } from "../components/complex/Map"
+import { Video } from "../components/complex/Video"
+import Prose from "../components/native/Prose"
 import {
   ArticleLayout,
   CollectionLayout,

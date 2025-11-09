@@ -1,8 +1,5 @@
-import type {
-  ChildrenPagesProps,
-  ImageClientProps,
-  IsomerSitemap,
-} from "~/types"
+import type { ChildrenPagesProps, ImageClientProps } from "~/interfaces"
+import type { IsomerSitemap } from "~/types"
 import { tv } from "~/lib/tv"
 import {
   getNodeFromSiteMap,
