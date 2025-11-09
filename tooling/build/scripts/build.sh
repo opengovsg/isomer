@@ -57,6 +57,13 @@ if [ ! -f "schema/not-found.json" ]; then
   cp schema/_index.json schema/not-found.json
 fi
 
+# Analyzing and optimizing renderers
+echo "Analyzing and optimizing renderers..."
+start_time=$(date +%s)
+npm run analyze:schema
+npm run build:transform
+calculate_duration $start_time
+
 # Build the site
 echo "Building site..."
 start_time=$(date +%s)
