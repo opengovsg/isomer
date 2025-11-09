@@ -1,7 +1,7 @@
 "use client"
 
 import { forwardRef } from "react"
-import { FocusScope } from "react-aria"
+import { FocusScope } from "@react-aria/focus"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useScrollLock } from "usehooks-ts"
 
