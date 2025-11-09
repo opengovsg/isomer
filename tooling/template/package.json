@@ -7,7 +7,7 @@
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && npm run build",
     "build:template": "node --stack_size=10240 ./node_modules/next/dist/bin/next build",
     "analyze:schema": "tsx scripts/analyze-schema.ts",
-    "build:transform": "npm run build:transform:renderLayout && npm run build:transform:renderComponent",
+    "build:transform": "npx npm-run-all -p build:transform:renderLayout build:transform:renderComponent",
     "build:transform:renderLayout": "jscodeshift -t scripts/transforms/renderLayout.js node_modules/@opengovsg/isomer-components/dist/esm/templates/next/render/renderLayout.js",
     "build:transform:renderComponent": "jscodeshift -t scripts/transforms/renderComponent.js node_modules/@opengovsg/isomer-components/dist/esm/templates/next/render/renderComponent.js",
     "start": "next start",
