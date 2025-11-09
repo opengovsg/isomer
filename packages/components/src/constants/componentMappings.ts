@@ -1,0 +1,27 @@
+import type { IsomerComponentTypes } from "~/types"
+
+export const COMPONENT_MAPPINGS: Record<IsomerComponentTypes, string> = {
+  logocloud: "LogoCloud",
+  accordion: "Accordion",
+  blockquote: "Blockquote",
+  callout: "Callout",
+  contentpic: "Contentpic",
+  formsg: "FormSG",
+  hero: "Hero",
+  iframe: "Iframe",
+  image: "Image",
+  infobar: "Infobar",
+  infocards: "InfoCards",
+  infocols: "InfoCols",
+  infopic: "Infopic",
+  keystatistics: "KeyStatistics",
+  map: "Map",
+  childrenpages: "ChildrenPages",
+  prose: "Prose",
+  video: "Video",
+  collectionblock: "CollectionBlock",
+  contactinformation: "ContactInformation",
+  dynamiccomponentlist: "DynamicComponentList",
+  dynamicdatabanner: "DynamicDataBanner",
+  imagegallery: "ImageGallery",
+} as const
