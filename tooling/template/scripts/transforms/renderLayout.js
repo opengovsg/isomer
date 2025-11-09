@@ -44,6 +44,13 @@ usedLayouts.forEach((layout) => {
   }
 })
 
+// Always keep "notfound" layout as it's a special case
+const notfoundComponentName = LAYOUT_MAPPINGS.notfound
+if (notfoundComponentName) {
+  usedLayoutComponents.add(notfoundComponentName)
+  usedLayoutCases.add("notfound")
+}
+
 module.exports = function transformer(file, api) {
   try {
     // If no analysis data, skip transformation
