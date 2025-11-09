@@ -156,6 +156,13 @@ else
   calculate_duration $start_time
 fi
 
+# Analyzing and optimizing renderers
+echo "Analyzing and optimizing renderers..."
+start_time=$(date +%s)
+npm run analyze:schema
+npm run build:transform
+calculate_duration $start_time
+
 # Build
 echo "Building..."
 start_time=$(date +%s)
