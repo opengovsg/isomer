@@ -51,7 +51,7 @@ export const BaseBlock = ({
         shadow: "0px 1px 6px 0px #1361F026",
       }}
       _invalid={{
-        bg: "interaction.muted.critical.hover",
+        bg: "utility.feedback.critical-subtle",
         borderColor: "utility.feedback.critical",
       }}
       bg="white"
