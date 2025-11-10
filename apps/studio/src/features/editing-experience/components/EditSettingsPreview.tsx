@@ -3,11 +3,11 @@ import type {
   IsomerSiteProps,
 } from "@opengovsg/isomer-components"
 
+import type { IframeCallbackFnProps } from "~/types/dom"
 import { AskgovWidget } from "~/components/Askgov"
 import { VicaWidget } from "~/components/Vica"
 import { FOOTER_QUERY_SELECTOR } from "~/features/settings/constants"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { IframeCallbackFnProps } from "~/types/dom"
 import { waitForElement } from "~/utils/dom"
 import { trpc } from "~/utils/trpc"
 import { siteSchema } from "../schema"

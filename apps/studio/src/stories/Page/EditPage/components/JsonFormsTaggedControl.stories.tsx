@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/nextjs"
 import { Type } from "@sinclair/typebox"
 import { pageHandlers } from "tests/msw/handlers/page"
 

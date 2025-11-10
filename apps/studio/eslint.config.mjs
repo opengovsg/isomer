@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook"
+
 import baseConfig, { restrictEnvAccess } from "@isomer/eslint-config/base"
 import nextjsConfig from "@isomer/eslint-config/nextjs"
 import reactConfig from "@isomer/eslint-config/react"
@@ -39,4 +42,5 @@ export default [
       ],
     },
   },
+  ...storybook.configs["flat/recommended"],
 ]
