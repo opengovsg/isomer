@@ -30,7 +30,6 @@ export const BaseBlock = ({
   const actualDraggableProps = draggableProps ?? {}
 
   const Description = () => {
-    console.log("invalidProps", invalidProps)
     if (invalidProps) {
       return (
         <HStack gap="0.25rem">
