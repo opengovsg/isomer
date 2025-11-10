@@ -24,6 +24,7 @@ export { default as UnsupportedBrowserBanner } from "./UnsupportedBrowserBanner"
 export { Wogaa } from "./Wogaa"
 export { VicaStylesheet, VicaWidget } from "./Vica"
 export { BackToTopLink } from "./BackToTopLink"
+export { GoogleAnalytics } from "./GoogleAnalytics"
 export {
   GoogleTagManagerPreload,
   GoogleTagManagerHeader,

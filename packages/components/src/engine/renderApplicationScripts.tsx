@@ -1,7 +1,12 @@
-import type { IsomerSiteProps, ScriptComponentType } from "~/types"
+import type {
+  GoogleAnalyticsComponentType,
+  IsomerSiteProps,
+  ScriptComponentType,
+} from "~/types"
 import {
   AskgovWidget,
   FontPreload,
+  GoogleAnalytics,
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
   GoogleTagManagerPreload,
@@ -13,11 +18,13 @@ import {
 interface RenderApplicationScriptsProps {
   site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
   ScriptComponent: ScriptComponentType
+  GoogleAnalyticsComponent?: GoogleAnalyticsComponentType
 }
 
 export const RenderApplicationScripts = ({
   site,
   ScriptComponent,
+  GoogleAnalyticsComponent,
 }: RenderApplicationScriptsProps) => {
   return (
     <>
@@ -30,12 +37,12 @@ export const RenderApplicationScripts = ({
       {/* is not registered, so no end impact to user */}
       <Wogaa environment={site.environment} ScriptComponent={ScriptComponent} />
 
-      {(!!site.siteGtmId || !!site.isomerGtmId) && (
+      {!!site.siteGtmId && (
         <>
           <GoogleTagManagerPreload />
           <GoogleTagManagerHeader
             siteGtmId={site.siteGtmId}
-            isomerGtmId={site.isomerGtmId}
+            // isomerGtmId={site.isomerGtmId} // temporarily disabled for testing purposes
             ScriptComponent={ScriptComponent}
           />
           <GoogleTagManagerBody
@@ -43,6 +50,14 @@ export const RenderApplicationScripts = ({
             isomerGtmId={site.isomerGtmId}
           />
         </>
+      )}
+
+      {!!site.isomerGaId && (
+        <GoogleAnalytics
+          gaId={site.isomerGaId}
+          ScriptComponent={ScriptComponent}
+          GoogleAnalyticsComponent={GoogleAnalyticsComponent}
+        />
       )}
 
       {/* Ensures that the webchat widget only loads after the page has loaded */}
