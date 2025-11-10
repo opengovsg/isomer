@@ -1,5 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { expect, userEvent, waitFor, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { omit } from "lodash-es"
 import { http, HttpResponse } from "msw"
 import { expect, userEvent, waitFor, within } from "storybook/test"

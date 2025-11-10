@@ -2,10 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
+import type { NativeContactInformationProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 import { NativeContactInformation } from "./NativeContactInformation"
 
-const meta: Meta<typeof NativeContactInformation> = {
+const meta: Meta<NativeContactInformationProps> = {
   title: "Next/Components/ContactInformation/Native",
   component: NativeContactInformation,
   argTypes: {},

@@ -1,4 +1,4 @@
-import { ProseProps } from "~/interfaces"
+import type { ProseProps } from "~/interfaces"
 
 export const hasContent = (content: ProseProps["content"]) => {
   // NOTE: top level is always `prose`
