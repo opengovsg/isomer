@@ -2,9 +2,9 @@ import type { ButtonProps, StackProps } from "@chakra-ui/react"
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd"
 import type { IconType } from "react-icons"
 import { chakra, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
-import { BiGridVertical } from "react-icons/bi"
+import { BiGridVertical, BiSolidErrorCircle } from "react-icons/bi"
 
-interface BaseBlockProps {
+export interface BaseBlockProps {
   icon?: IconType
   dragHandle?: React.ReactNode
   label: string
@@ -12,7 +12,9 @@ interface BaseBlockProps {
   containerProps?: StackProps
   onClick?: () => void
   draggableProps?: DraggableProvidedDragHandleProps | null
-  isInvalid?: boolean
+  invalidProps?: {
+    description: string
+  }
 }
 
 export const BaseBlock = ({
@@ -23,9 +25,42 @@ export const BaseBlock = ({
   draggableProps,
   containerProps,
   onClick,
-  isInvalid = false,
+  invalidProps,
 }: BaseBlockProps): JSX.Element => {
   const actualDraggableProps = draggableProps ?? {}
+
+  const Description = () => {
+    console.log("invalidProps", invalidProps)
+    if (invalidProps) {
+      return (
+        <HStack gap="0.25rem">
+          <Icon
+            as={BiSolidErrorCircle}
+            fontSize="1rem"
+            color="utility.feedback.critical"
+          />
+          <Text textStyle="caption-1" color="utility.feedback.critical">
+            {invalidProps.description}
+          </Text>
+        </HStack>
+      )
+    }
+
+    if (description) {
+      return (
+        <Text
+          textStyle="caption-2"
+          color={
+            dragHandle
+              ? "interaction.support.placeholder"
+              : "base.content.default"
+          }
+        >
+          {description}
+        </Text>
+      )
+    }
+  }
 
   return (
     <HStack
@@ -37,7 +72,7 @@ export const BaseBlock = ({
       borderColor="base.divider.medium"
       transitionProperty="common"
       transitionDuration="normal"
-      aria-invalid={isInvalid}
+      aria-invalid={!!invalidProps}
       _hover={{
         bg: "interaction.muted.main.hover",
         borderColor: "interaction.main-subtle.hover",
@@ -79,18 +114,7 @@ export const BaseBlock = ({
         <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
           {label}
         </Text>
-        {description && (
-          <Text
-            textStyle="caption-2"
-            color={
-              dragHandle
-                ? "interaction.support.placeholder"
-                : "base.content.default"
-            }
-          >
-            {description}
-          </Text>
-        )}
+        <Description />
       </Stack>
     </HStack>
   )

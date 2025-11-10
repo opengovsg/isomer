@@ -9,14 +9,13 @@ import {
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { TYPE_TO_ICON } from "../../constants"
-import { BaseBlock, BaseBlockDragHandle } from "./BaseBlock"
+import { BaseBlock, BaseBlockDragHandle, BaseBlockProps } from "./BaseBlock"
 
-interface DraggableBlockProps {
+interface DraggableBlockProps extends Pick<BaseBlockProps, "invalidProps"> {
   block: IsomerSchema["content"][number]
   draggableId: string
   index: number
   onClick: () => void
-  isInvalid?: boolean
 }
 
 export const DraggableBlock = ({
@@ -24,7 +23,7 @@ export const DraggableBlock = ({
   draggableId,
   index,
   onClick,
-  isInvalid = false,
+  invalidProps,
 }: DraggableBlockProps): JSX.Element => {
   const icon = TYPE_TO_ICON[block.type]
 
@@ -72,7 +71,7 @@ export const DraggableBlock = ({
               }
               description={blockComponentName}
               icon={icon}
-              isInvalid={isInvalid}
+              invalidProps={invalidProps}
             />
           </VStack>
         )

@@ -67,6 +67,8 @@ const validateHeroComponentFn = ajv.compile<IsomerComponent>(
   getComponentSchema({ component: "hero" }),
 )
 
+const invalidBlockDescription = "Fix errors in this block to publish"
+
 export default function RootStateDrawer() {
   const {
     type,
@@ -281,7 +283,9 @@ export default function RootStateDrawer() {
           label="Hero banner"
           description="Title, subtitle, and Call-to-Action"
           icon={TYPE_TO_ICON.hero}
-          isInvalid={!isValid}
+          invalidProps={
+            !isValid ? { description: invalidBlockDescription } : undefined
+          }
         />
       )
     }
@@ -528,7 +532,14 @@ export default function RootStateDrawer() {
                                       // NOTE: SNAPSHOT
                                       setDrawerState({ state: nextState })
                                     }}
-                                    isInvalid={invalidBlockIndexes.has(index)}
+                                    invalidProps={
+                                      invalidBlockIndexes.has(index)
+                                        ? {
+                                            description:
+                                              invalidBlockDescription,
+                                          }
+                                        : undefined
+                                    }
                                   />
                                 )
                               })}
