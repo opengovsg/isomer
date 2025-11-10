@@ -1,8 +1,10 @@
 // @ts-nocheck
 /** @type {import('tailwindcss').Config} */
 import { isomerSiteTheme, NextPreset } from "@opengovsg/isomer-components"
-import plugin from "tailwindcss/plugin"
+
 import siteConfig from "./data/config.json"
+
+const plugin = require("tailwindcss/plugin")
 
 /** @type {import('tailwindcss').Config} */
 const config = {

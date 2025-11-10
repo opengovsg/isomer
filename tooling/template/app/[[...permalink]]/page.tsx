@@ -46,9 +46,7 @@ const lastUpdated =
 const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const joinedPermalink: string = permalink.join("/")
 
-  const schema = (await import(`@/schema/${joinedPermalink}.json`, {
-    with: { type: "json" },
-  })
+  const schema = (await import(`@/schema/${joinedPermalink}.json`)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     .then((module) => module.default)
     // NOTE: If the initial import is missing,
@@ -58,9 +56,7 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
     .catch(async () => {
       if (joinedPermalink === "") {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`, {
-          with: { type: "json" },
-        }).then(
+        return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`).then(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
           (module) => module.default,
         )
