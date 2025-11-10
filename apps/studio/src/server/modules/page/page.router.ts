@@ -23,7 +23,10 @@ import {
   sendCancelSchedulePageEmail,
   sendScheduledPageEmail,
 } from "~/features/mail/service"
-import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import {
+  ENABLE_CODEBUILD_JOBS,
+  IS_SINGPASS_ENABLED_FEATURE_KEY,
+} from "~/lib/growthbook"
 import {
   basePageSchema,
   createIndexPageSchema,
@@ -42,6 +45,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { logResourceEvent } from "../audit/audit.service"
+import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
@@ -691,13 +695,37 @@ export const pageRouter = router({
         action: "publish",
         userId: ctx.user.id,
       })
-      return publishPageResource({
+      const user = await db
+        .selectFrom("User")
+        .selectAll()
+        .where("id", "=", ctx.user.id)
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: "Please ensure that you have logged in",
+            }),
+        )
+
+      const { version } = await publishPageResource({
         logger: ctx.logger,
         siteId,
         resourceId: String(pageId),
-        userId: ctx.user.id,
-        isSingpassEnabled: ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY),
+        user,
+        isScheduled: false,
+        addCodebuildJobRow: ctx.gb.isOn(ENABLE_CODEBUILD_JOBS),
       })
+
+      // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
+      if (!ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)) {
+        await alertPublishWhenSingpassDisabled({
+          siteId,
+          resourceId: String(pageId),
+          publisherId: user.id,
+          publisherEmail: user.email,
+        })
+      }
+      return version
     }),
 
   updateMeta: protectedProcedure

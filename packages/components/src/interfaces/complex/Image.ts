@@ -28,7 +28,6 @@ export const ALT_TEXT_REGEX_PATTERN =
 
 export const AltTextSchema = Type.String({
   title: "Alternate text",
-  maxLength: 120,
   description:
     "Add a descriptive text so that visually impaired users can understand your image",
   pattern: ALT_TEXT_REGEX_PATTERN,
