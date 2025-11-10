@@ -10,6 +10,7 @@ import {
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
   GoogleTagManagerPreload,
+  MicrosoftClarity,
   VicaStylesheet,
   VicaWidget,
   Wogaa,
@@ -57,6 +58,13 @@ export const RenderApplicationScripts = ({
           gaId={site.isomerGaId}
           ScriptComponent={ScriptComponent}
           GoogleAnalyticsComponent={GoogleAnalyticsComponent}
+        />
+      )}
+
+      {!!site.isomerMsClarityId && (
+        <MicrosoftClarity
+          msClarityId={site.isomerMsClarityId}
+          ScriptComponent={ScriptComponent}
         />
       )}
 

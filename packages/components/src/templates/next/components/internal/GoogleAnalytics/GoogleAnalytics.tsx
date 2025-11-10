@@ -1,4 +1,4 @@
-import { GoogleAnalyticsScriptProps } from "~/interfaces/internal/GoogleAnalytics"
+import type { GoogleAnalyticsScriptProps } from "~/interfaces/internal/GoogleAnalytics"
 
 export const GoogleAnalytics = ({
   gaId,

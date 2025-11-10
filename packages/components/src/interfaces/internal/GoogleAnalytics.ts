@@ -1,7 +1,11 @@
-import type { GoogleAnalyticsComponentType, ScriptComponentType } from "~/types"
+import type {
+  GoogleAnalyticsComponentType,
+  IsomerSiteProps,
+  ScriptComponentType,
+} from "~/types"
 
 export interface GoogleAnalyticsScriptProps {
-  gaId: string
+  gaId: NonNullable<IsomerSiteProps["isomerGaId"]>
   ScriptComponent?: ScriptComponentType
   GoogleAnalyticsComponent?: GoogleAnalyticsComponentType
 }

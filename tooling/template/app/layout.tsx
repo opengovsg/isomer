@@ -32,6 +32,8 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
             isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
             isomerGaId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_ANALYTICS_ID,
+            isomerMsClarityId:
+              process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
           }}
           ScriptComponent={Script}
           GoogleAnalyticsComponent={GoogleAnalytics}

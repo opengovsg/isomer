@@ -30,6 +30,7 @@ export {
   GoogleTagManagerHeader,
   GoogleTagManagerBody,
 } from "./GoogleTagManager"
+export { MicrosoftClarity } from "./MicrosoftClarity"
 export { BlogCard } from "./BlogCard"
 export { FontPreload } from "./FontPreload"
 export { ScrollToTop } from "./ScrollToTop"
