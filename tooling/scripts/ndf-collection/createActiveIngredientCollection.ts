@@ -95,6 +95,7 @@ export const createActiveIngredientCollection = async () => {
       entry,
       "General Availability in  Public Healthcare Institutions_"
     );
+    const additionalInformation = entry["Additional Information"] ?? "";
     const matchingProductInfo = filteredProductInfoData.filter(
       (productInfo) => productInfo["Monograph Name"] === monographName
     );
@@ -107,6 +108,7 @@ export const createActiveIngredientCollection = async () => {
       postMarketingInfo,
       guidanceRecommendation,
       generalAvailability,
+      additionalInformation,
       matchingProductInfo,
       landingPageRelatedMonographs,
     });

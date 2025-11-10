@@ -104,7 +104,7 @@ export const createProductInformationCollection = async () => {
     const linkOutputPath = path.join(
       process.cwd(),
       "output",
-      "product-information-links",
+      "list-of-product-information",
       `${permalink}.json`
     );
     await fs.promises.mkdir(path.dirname(linkOutputPath), {

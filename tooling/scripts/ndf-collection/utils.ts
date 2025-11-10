@@ -291,7 +291,7 @@ export const getLandingPageRelatedMonographs = (
                 {
                   type: "link",
                   attrs: {
-                    href: `/about-drugs/monograph-mock/${monograph["Monograph ID"]}`,
+                    href: `/automated/active-ingredient/${monograph["Monograph ID"]}`,
                   },
                 },
               ],
@@ -333,11 +333,11 @@ export const getRouteOfAdministration = (
     const productsForRoute = matchingProductInfo.filter(
       (productInfo) => productInfo["Route of Administration"] === route
     );
-    const hasProductsWithoutClinicalInformation = productsForRoute.some(
+    const hasProductsWithClinicalInformation = productsForRoute.some(
       (productInfo) =>
-        productInfo.Indications === "NA" &&
-        productInfo.Dosage === "NA" &&
-        productInfo.Contraindications === "NA"
+        productInfo.Indications !== "NA" ||
+        productInfo.Dosage !== "NA" ||
+        productInfo.Contraindications !== "NA"
     );
 
     return [
@@ -360,10 +360,10 @@ export const getRouteOfAdministration = (
           const productName = productInfo["Product Name"] || "NA";
           const licenceNumber =
             productInfo["Licence number (SIN number)"] || "NA";
-          const hasNoClinicalInformation =
-            productInfo.Indications === "NA" &&
-            productInfo.Dosage === "NA" &&
-            productInfo.Contraindications === "NA";
+          const hasClinicalInformation =
+            productInfo.Indications !== "NA" ||
+            productInfo.Dosage !== "NA" ||
+            productInfo.Contraindications !== "NA";
 
           return {
             type: "listItem",
@@ -380,14 +380,14 @@ export const getRouteOfAdministration = (
                       {
                         type: "link",
                         attrs: {
-                          href: `/about-drugs/product-information-mock/${licenceNumber}`,
+                          href: `/automated/product-information/${licenceNumber}`,
                           target: "_self",
                           rel: "",
                           class: null,
                         },
                       },
                     ],
-                    text: `${productName} [${licenceNumber}]${hasNoClinicalInformation ? "*" : ""}`,
+                    text: `${productName} [${licenceNumber}]${hasClinicalInformation ? "*" : ""}`,
                   },
                 ],
               },
@@ -395,7 +395,7 @@ export const getRouteOfAdministration = (
           };
         }),
       },
-      ...(hasProductsWithoutClinicalInformation
+      ...(hasProductsWithClinicalInformation
         ? [
             {
               type: "paragraph",
@@ -410,7 +410,7 @@ export const getRouteOfAdministration = (
                       type: "italic",
                     },
                   ],
-                  text: "* The following products do not have any clinical information available",
+                  text: "* Clinical information is available for this product.",
                 },
               ],
             },
@@ -444,14 +444,4 @@ export const decodeHtmlEntities = (str: string) => {
   const txt = document.createElement("textarea");
   txt.innerHTML = str;
   return txt.value;
-};
-
-// Function to get HTML content as JSON with first <p><strong> converted to <h2>
-export const getHtmlAsJsonWithFirstPAsH2 = (html: string) => {
-  const convertedHtml = html.replaceAll(
-    /<p><strong>(.*?)<\/strong><\/p>/g,
-    "<h2>$1</h2>"
-  );
-
-  return getHtmlAsJson(convertedHtml).content;
 };

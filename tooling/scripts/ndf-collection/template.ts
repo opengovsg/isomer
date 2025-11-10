@@ -1,10 +1,10 @@
+import { getHtmlAsJson } from "./getHtmlAsJson";
 import {
   getJoinedParagraph,
   getDrugGuidance,
   getGeneralAvailability,
   getSubsidyInformation,
   decodeHtmlEntities,
-  getHtmlAsJsonWithFirstPAsH2,
   getRouteOfAdministration,
   getLandingPageRelatedMonographs,
 } from "./utils";
@@ -17,6 +17,7 @@ interface MonographPageProps {
   postMarketingInfo: string[];
   guidanceRecommendation: string[];
   generalAvailability: string[];
+  additionalInformation: string;
   matchingProductInfo: Record<string, string>[];
   landingPageRelatedMonographs: Record<string, string>[];
 }
@@ -28,6 +29,7 @@ export const getMonographPage = ({
   drugGuidance,
   postMarketingInfo,
   guidanceRecommendation,
+  additionalInformation,
   generalAvailability,
   matchingProductInfo,
   landingPageRelatedMonographs,
@@ -802,6 +804,133 @@ export const getMonographPage = ({
         },
         summary: "Drug Guidance for Subsidy",
       },
+      ...(postMarketingInfo.length
+        ? [
+            {
+              type: "accordion",
+              summary: "Post Marketing Information",
+              details: {
+                type: "prose",
+                content: [
+                  ...postMarketingInfo.flatMap(
+                    (info) => getHtmlAsJson(info).content[0].content
+                  ),
+                  {
+                    type: "divider",
+                  },
+                  {
+                    type: "paragraph",
+                    attrs: {
+                      dir: "ltr",
+                    },
+                    content: [
+                      {
+                        text: "Educational materials for healthcare professionals",
+                        type: "text",
+                        marks: [
+                          {
+                            type: "bold",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "paragraph",
+                    attrs: {
+                      dir: "ltr",
+                    },
+                    content: [
+                      {
+                        type: "text",
+                        text: "Educational materials highlight specific safety concerns associated with the use of selected therapeutic products and provide advice on the actions required to optimize safe and effective use of these products.",
+                      },
+                    ],
+                  },
+                  {
+                    type: "paragraph",
+                    attrs: {
+                      dir: "ltr",
+                    },
+                    content: [
+                      {
+                        type: "text",
+                        text: "Only educational materials approved by the Health Sciences Authority of Singapore (HSA) are listed. These materials are published with the agreement of the company responsible for producing them and are not intended to replace medical advice offered by healthcare professionals (HCP). As this website is updated monthly, please refer to ",
+                      },
+                      {
+                        type: "text",
+                        marks: [
+                          {
+                            type: "link",
+                            attrs: {
+                              href: "https://www.hsa.gov.sg/educational-materials-for-HCP",
+                              target: "_self",
+                              rel: "",
+                              class: null,
+                            },
+                          },
+                        ],
+                        text: "HSA website",
+                      },
+                      {
+                        type: "text",
+                        text: " for the most updated information.",
+                      },
+                    ],
+                  },
+                  {
+                    type: "paragraph",
+                    attrs: {
+                      dir: "ltr",
+                    },
+                    content: [
+                      {
+                        type: "text",
+                        marks: [
+                          {
+                            type: "bold",
+                          },
+                        ],
+                        text: "Dear Healthcare Professional Letters (DHCPLs)",
+                      },
+                    ],
+                  },
+                  {
+                    type: "paragraph",
+                    attrs: {
+                      dir: "ltr",
+                    },
+                    content: [
+                      {
+                        type: "text",
+                        text: "Dear Healthcare Professional Letters (DHCPL) are letters issued by a manufacturer or the HSA to healthcare professionals to communicate new or emerging safety, efficacy or quality information associated with the use of specific marketed therapeutic products.  As this website is updated monthly, please refer to ",
+                      },
+                      {
+                        type: "text",
+                        marks: [
+                          {
+                            type: "link",
+                            attrs: {
+                              href: "https://www.hsa.gov.sg/announcements?contenttype=dear%20healthcare%20professional%20letters)",
+                              target: "_self",
+                              rel: "",
+                              class: null,
+                            },
+                          },
+                        ],
+                        text: "HSA website ",
+                      },
+                      {
+                        type: "text",
+                        text: "for the most updated information.",
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          ]
+        : []),
       ...(generalAvailability.length
         ? [
             {
@@ -969,6 +1098,36 @@ export const getMonographPage = ({
             },
           ]
         : []),
+      ...(additionalInformation !== "NA"
+        ? [
+            {
+              type: "accordion",
+              summary: "Additional Information",
+              details: {
+                type: "prose",
+                content: [
+                  ...getHtmlAsJson(additionalInformation).content[0].content,
+
+                  {
+                    type: "divider",
+                  },
+                  {
+                    type: "paragraph",
+                    attrs: {
+                      dir: "ltr",
+                    },
+                    content: [
+                      {
+                        type: "text",
+                        text: "This section shows additional information related to the monograph such as drugs that are approved for funding under the Rare Disease Fund.",
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          ]
+        : []),
       ...(landingPageRelatedMonographs.length
         ? getLandingPageRelatedMonographs(landingPageRelatedMonographs)
         : [
@@ -1115,19 +1274,7 @@ export const getMonographPage = ({
                               content: [
                                 {
                                   type: "text",
-                                  text: "Information available here are product details as registered with the HSA. As this website is updated",
-                                },
-                              ],
-                            },
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  type: "text",
-                                  text: "monthly, please refer to ",
+                                  text: "Information available here are product details as registered with the HSA. As this website is updated monthly, please refer to ",
                                 },
                                 {
                                   type: "text",
@@ -1199,10 +1346,10 @@ export const getProductInformationPage = ({
   return {
     page: {
       contentPageHeader: {
-        summary: `Active ingredients: ${productName}`,
+        summary: `Active ingredients: ${decodeHtmlEntities(productName)}`,
         showThumbnail: false,
       },
-      title: `${productName} [${licenseNumber}]`,
+      title: `${decodeHtmlEntities(productName)} [${licenseNumber}]`,
     },
     layout: "content",
     content: [
@@ -1231,7 +1378,7 @@ export const getProductInformationPage = ({
             content: [
               {
                 type: "text",
-                text: productName,
+                text: decodeHtmlEntities(productName),
               },
             ],
           },
@@ -1612,10 +1759,74 @@ export const getProductInformationPage = ({
           },
         ],
       },
-      ...(indications !== "NA" ? getHtmlAsJsonWithFirstPAsH2(indications) : []),
-      ...(dosage !== "NA" ? getHtmlAsJsonWithFirstPAsH2(dosage) : []),
+      ...(indications !== "NA"
+        ? [
+            {
+              type: "prose",
+              content: [
+                {
+                  type: "heading",
+                  attrs: {
+                    dir: "ltr",
+                    level: 2,
+                  },
+                  content: [
+                    {
+                      text: "Indication",
+                      type: "text",
+                    },
+                  ],
+                },
+              ],
+            },
+            ...getHtmlAsJson(indications).content,
+          ]
+        : []),
+      ...(dosage !== "NA"
+        ? [
+            {
+              type: "prose",
+              content: [
+                {
+                  type: "heading",
+                  attrs: {
+                    dir: "ltr",
+                    level: 2,
+                  },
+                  content: [
+                    {
+                      text: "Dosing",
+                      type: "text",
+                    },
+                  ],
+                },
+              ],
+            },
+            ...getHtmlAsJson(dosage).content,
+          ]
+        : []),
       ...(contraindications !== "NA"
-        ? getHtmlAsJsonWithFirstPAsH2(contraindications)
+        ? [
+            {
+              type: "prose",
+              content: [
+                {
+                  type: "heading",
+                  attrs: {
+                    dir: "ltr",
+                    level: 2,
+                  },
+                  content: [
+                    {
+                      text: "Contraindications",
+                      type: "text",
+                    },
+                  ],
+                },
+              ],
+            },
+            ...getHtmlAsJson(contraindications).content,
+          ]
         : []),
     ],
     version: "0.1.0",
@@ -1657,9 +1868,9 @@ export const getProductInformationLink = ({
     version: "0.1.0",
     layout: "link",
     page: {
-      title: `${productName} [${licenseNumber}]"`,
-      ref: `/about-drugs/product-information-storage/${licenseNumber}`,
-      description: `Active ingredients: ${productName}`,
+      title: `${decodeHtmlEntities(productName)} [${licenseNumber}]"`,
+      ref: `/automated/product-information/${licenseNumber}`,
+      description: `Active ingredients: ${decodeHtmlEntities(productName)}`,
       category,
       tags: [
         {
