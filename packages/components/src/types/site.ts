@@ -104,8 +104,6 @@ export interface IsomerGeneratedSiteProps {
   environment?: string
   lastUpdated: string
   assetsBaseUrl?: string
-  isomerGtmId?: string
-  isomerGaId?: string
   isomerMsClarityId?: string
 }
 

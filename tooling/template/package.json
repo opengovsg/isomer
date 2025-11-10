@@ -25,7 +25,6 @@
     "@next/swc-win32-x64-msvc": "15.2.3"
   },
   "dependencies": {
-    "@next/third-parties": "^15.2.3",
     "@opengovsg/isomer-components": "*",
     "next": "^15.2.3",
     "postcss": "^8.4.39",

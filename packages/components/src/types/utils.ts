@@ -10,6 +10,3 @@ export type LinkComponentType = any
 
 // This is the Next.js Script component that resembles the HTML anchor tag
 export type ScriptComponentType = any
-
-// This is the Next.js Google Analytics component
-export type GoogleAnalyticsComponentType = any

@@ -55,12 +55,9 @@ export {
   type VicaStylesheetProps,
 } from "./Vica"
 export type {
-  GoogleTagManagerHeaderScriptProps,
   GoogleTagManagerHeaderProps,
-  GoogleTagManagerBodyScriptProps,
   GoogleTagManagerBodyProps,
 } from "./GoogleTagManager"
-export type { GoogleAnalyticsScriptProps } from "./GoogleAnalytics"
 export type { MicrosoftClarityProps } from "./MicrosoftClarity"
 export type { AttrsDirProps } from "./AttrsDir"
 export {

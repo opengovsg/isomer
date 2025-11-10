@@ -1,12 +1,7 @@
-import type {
-  GoogleAnalyticsComponentType,
-  IsomerSiteProps,
-  ScriptComponentType,
-} from "~/types"
+import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 import {
   AskgovWidget,
   FontPreload,
-  GoogleAnalytics,
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
   GoogleTagManagerPreload,
@@ -19,13 +14,11 @@ import {
 interface RenderApplicationScriptsProps {
   site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
   ScriptComponent: ScriptComponentType
-  GoogleAnalyticsComponent?: GoogleAnalyticsComponentType
 }
 
 export const RenderApplicationScripts = ({
   site,
   ScriptComponent,
-  GoogleAnalyticsComponent,
 }: RenderApplicationScriptsProps) => {
   return (
     <>
@@ -43,22 +36,10 @@ export const RenderApplicationScripts = ({
           <GoogleTagManagerPreload />
           <GoogleTagManagerHeader
             siteGtmId={site.siteGtmId}
-            // isomerGtmId={site.isomerGtmId} // temporarily disabled for testing purposes
             ScriptComponent={ScriptComponent}
           />
-          <GoogleTagManagerBody
-            siteGtmId={site.siteGtmId}
-            isomerGtmId={site.isomerGtmId}
-          />
+          <GoogleTagManagerBody siteGtmId={site.siteGtmId} />
         </>
-      )}
-
-      {!!site.isomerGaId && (
-        <GoogleAnalytics
-          gaId={site.isomerGaId}
-          ScriptComponent={ScriptComponent}
-          GoogleAnalyticsComponent={GoogleAnalyticsComponent}
-        />
       )}
 
       {!!site.isomerMsClarityId && (
