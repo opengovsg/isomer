@@ -1,4 +1,5 @@
 import type { Static } from "@sinclair/typebox"
+import type { Simplify } from "type-fest"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
@@ -148,30 +149,35 @@ export const HeroSchema = Type.Intersect(
   },
 )
 
-interface CommonProps {
+type CommonProps = Static<typeof HeroBaseSchema> & {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   theme?: "default" | "inverse"
 }
 
-export type HeroGradientProps = CommonProps &
-  Static<typeof HeroBaseSchema> &
-  Static<typeof HeroGradientSchema>
+export type HeroGradientProps = Simplify<
+  CommonProps & Static<typeof HeroGradientSchema>
+>
 
-export type HeroBlockProps = CommonProps &
-  Static<typeof HeroBaseSchema> &
-  Static<typeof HeroBlockSchema>
+export type HeroBlockProps = Simplify<
+  CommonProps & Static<typeof HeroBlockSchema>
+>
 
-export type HeroLargeImageProps = CommonProps &
-  Static<typeof HeroBaseSchema> &
-  Static<typeof HeroLargeImageSchema>
+export type HeroLargeImageProps = Simplify<
+  CommonProps & Static<typeof HeroLargeImageSchema>
+>
 
-export type HeroFloatingProps = CommonProps &
-  Static<typeof HeroBaseSchema> &
-  Static<typeof HeroFloatingSchema>
+export type HeroFloatingProps = Simplify<
+  CommonProps & Static<typeof HeroFloatingSchema>
+>
 
-export type HeroSearchbarProps = CommonProps &
-  Static<typeof HeroBaseSchema> &
-  Static<typeof HeroSearchbarSchema>
+export type HeroSearchbarProps = Simplify<
+  CommonProps & Static<typeof HeroSearchbarSchema>
+>
 
-export type HeroProps = CommonProps & Static<typeof HeroSchema>
+export type HeroProps =
+  | HeroGradientProps
+  | HeroBlockProps
+  | HeroLargeImageProps
+  | HeroFloatingProps
+  | HeroSearchbarProps
