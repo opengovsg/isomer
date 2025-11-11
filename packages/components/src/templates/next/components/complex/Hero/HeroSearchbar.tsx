@@ -1,34 +1,8 @@
 import type { HeroProps } from "~/interfaces/complex/Hero"
-import { HomepageSearchSGInputBox, LocalSearchInputBox } from "../../internal"
 import { ComponentContent } from "../../internal/customCssClass"
+import { SearchInputBox } from "./common/SearchInputBox"
 
 export const HeroSearchbar = ({ title, subtitle, site }: HeroProps) => {
-  const SearchInputBox = () => {
-    const commonProps = {
-      className: "w-full mt-3",
-    }
-    switch (site.search?.type) {
-      case "searchSG":
-        if (!site.search.clientId) return null
-        return (
-          <HomepageSearchSGInputBox
-            clientId={site.search.clientId}
-            {...commonProps}
-          />
-        )
-      case "localSearch":
-        if (!site.search.searchUrl) return null
-        return (
-          <LocalSearchInputBox
-            searchUrl={site.search.searchUrl}
-            {...commonProps}
-          />
-        )
-      default:
-        return null
-    }
-  }
-
   return (
     <section
       className="flex w-full flex-col"
@@ -47,7 +21,7 @@ export const HeroSearchbar = ({ title, subtitle, site }: HeroProps) => {
               {subtitle}
             </p>
           )}
-          <SearchInputBox />
+          {site.search && <SearchInputBox search={site.search} />}
         </div>
       </div>
     </section>
