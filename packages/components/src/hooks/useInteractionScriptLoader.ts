@@ -33,14 +33,14 @@ export const useInteractionScriptLoader = ({
     if (loadedRef.current || loadingRef.current) return
 
     loadingRef.current = true
-    const scriptId = src
 
     const script = document.createElement("script")
-    script.id = scriptId
+    script.id = src
     script.src = src
     script.async = true
     script.type = "text/javascript"
     script.referrerPolicy = "origin"
+
     script.onload = () => {
       loadedRef.current = true
       loadingRef.current = false
@@ -48,11 +48,13 @@ export const useInteractionScriptLoader = ({
       clearListenersRef()
       clearTimeoutRef()
     }
+
     script.onerror = () => {
       loadingRef.current = false
       clearListenersRef()
       clearTimeoutRef()
     }
+
     document.body.appendChild(script)
   }, [src, clearTimeoutRef, clearListenersRef])
 
@@ -77,7 +79,7 @@ export const useInteractionScriptLoader = ({
 
     return () => {
       clearTimeoutRef()
-      cleanup()
+      clearListenersRef()
     }
-  }, [loadScript, timeout, clearTimeoutRef])
+  }, [loadScript, timeout, clearTimeoutRef, clearListenersRef])
 }
