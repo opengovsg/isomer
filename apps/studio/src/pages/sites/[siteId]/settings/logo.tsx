@@ -1,12 +1,14 @@
-import type { AgencySettings } from "@opengovsg/isomer-components"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
+import { Box } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-import { AgencySettingsSchema } from "@opengovsg/isomer-components"
+import { LogoSettingsSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiWrench } from "react-icons/bi"
+import { isEqual } from "lodash"
+import { BiPaint } from "react-icons/bi"
 
 import type { NextPageWithLayout } from "~/lib/types"
+import type { LogoSettings } from "~/schemas/site"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -27,27 +29,30 @@ import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { logoSettingsValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
-import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
-const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
-
-const AgencySettingsPage: NextPageWithLayout = () => {
+const LogoSettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
-  const isEnabled = useNewSettingsPage()
   const siteId = Number(rawSiteId)
-  const [{ siteName, agencyName, ...rest }] =
-    trpc.site.getConfig.useSuspenseQuery({
-      id: siteId,
-    })
+  const router = useRouter()
+  const isEnabled = useNewSettingsPage()
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const router = useRouter()
+  const [{ logoUrl, favicon, ...rest }] = trpc.site.getConfig.useSuspenseQuery({
+    id: siteId,
+  })
 
   useEffect(() => {
     if (!isEnabled) void router.replace(`/sites/${siteId}/settings`)
   }, [isEnabled, router, siteId])
+
+  const [nextUrl, setNextUrl] = useState("")
+  const isOpen = !!nextUrl
+  const existingLogoSettings = { favicon, logoUrl }
+  const [logoSettings, setLogoSettings] =
+    useState<LogoSettings>(existingLogoSettings)
 
   const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
     onSuccess: () => {
@@ -56,7 +61,6 @@ const AgencySettingsPage: NextPageWithLayout = () => {
         status: "success",
       })
       void trpcUtils.site.getConfig.invalidate({ id: siteId })
-      void trpcUtils.site.getSiteName.invalidate({ siteId })
     },
     onError: (error) => {
       toast({
@@ -67,22 +71,17 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     },
   })
 
-  const [nextUrl, setNextUrl] = useState("")
-  const isOpen = !!nextUrl
-  const [state, setState] = useState<AgencySettings>({
-    siteName,
-    agencyName,
-  })
-  const isDirty = state.siteName !== siteName
+  const isDirty = !isEqual(logoSettings, existingLogoSettings)
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
-  const onSubmit = () =>
+  const onSubmit = () => {
     updateSiteConfigMutation.mutate({
-      siteName: state.siteName,
-      siteId,
+      ...logoSettings,
       ...rest,
+      siteId,
     })
+  }
 
   return (
     <ErrorProvider>
@@ -94,33 +93,37 @@ const AgencySettingsPage: NextPageWithLayout = () => {
       <SettingsGrid>
         <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader
-            title="Name and agency"
-            icon={BiWrench}
-            isLoading={updateSiteConfigMutation.isPending}
             onClick={onSubmit}
+            title="Logo and favicon"
+            icon={BiPaint}
+            isLoading={updateSiteConfigMutation.isPending}
             isDisabled={!isDirty}
           />
-
-          <ErrorProvider>
-            <FormBuilder<AgencySettings>
-              schema={AgencySettingsSchema}
-              validateFn={validateFn}
-              data={state}
+          <Box w="100%">
+            <FormBuilder<LogoSettings>
+              schema={LogoSettingsSchema}
+              validateFn={logoSettingsValidator}
+              data={logoSettings}
               handleChange={(data) => {
-                setState(data)
+                setLogoSettings(data)
               }}
             />
-          </ErrorProvider>
+          </Box>
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
-          <EditSettingsPreview siteName={state.siteName} jumpToFooter />
+          <EditSettingsPreview
+            siteName={rest.siteName}
+            {...logoSettings}
+            url={rest.url}
+            showChromeTab
+          />
         </SettingsPreviewGridItem>
       </SettingsGrid>
     </ErrorProvider>
   )
 }
 
-AgencySettingsPage.getLayout = (page) => {
+LogoSettingsPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
@@ -129,4 +132,4 @@ AgencySettingsPage.getLayout = (page) => {
   )
 }
 
-export default AgencySettingsPage
+export default LogoSettingsPage

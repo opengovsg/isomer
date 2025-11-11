@@ -1,12 +1,14 @@
-import type { AgencySettings } from "@opengovsg/isomer-components"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
+import { Box } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-import { AgencySettingsSchema } from "@opengovsg/isomer-components"
+import { SiteThemeSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiWrench } from "react-icons/bi"
+import { isEqual } from "lodash"
+import { BiPaint } from "react-icons/bi"
 
 import type { NextPageWithLayout } from "~/lib/types"
+import type { SiteTheme } from "~/schemas/site"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -27,36 +29,44 @@ import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { siteThemeValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
-import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
-const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
-
-const AgencySettingsPage: NextPageWithLayout = () => {
+const ColoursSettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
-  const isEnabled = useNewSettingsPage()
   const siteId = Number(rawSiteId)
-  const [{ siteName, agencyName, ...rest }] =
-    trpc.site.getConfig.useSuspenseQuery({
-      id: siteId,
-    })
+  const router = useRouter()
+  const isEnabled = useNewSettingsPage()
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const router = useRouter()
+  const [theme] = trpc.site.getTheme.useSuspenseQuery({
+    id: siteId,
+  })
+  const [{ name: siteName }] = trpc.site.getSiteName.useSuspenseQuery({
+    siteId,
+  })
 
   useEffect(() => {
     if (!isEnabled) void router.replace(`/sites/${siteId}/settings`)
   }, [isEnabled, router, siteId])
 
-  const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
-    onSuccess: () => {
+  const [nextUrl, setNextUrl] = useState("")
+  const isOpen = !!nextUrl
+  const [siteTheme, setSiteTheme] = useState<SiteTheme | undefined>(
+    theme ?? undefined,
+  )
+
+  const isDirty = !isEqual(theme, siteTheme)
+
+  const setThemeMutation = trpc.site.setTheme.useMutation({
+    onSuccess: async () => {
       toast({
         ...SETTINGS_TOAST_MESSAGES.success,
         status: "success",
       })
-      void trpcUtils.site.getConfig.invalidate({ id: siteId })
-      void trpcUtils.site.getSiteName.invalidate({ siteId })
+      await trpcUtils.site.getConfig.invalidate({ id: siteId })
+      await trpcUtils.site.getTheme.invalidate({ id: siteId })
     },
     onError: (error) => {
       toast({
@@ -67,22 +77,13 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     },
   })
 
-  const [nextUrl, setNextUrl] = useState("")
-  const isOpen = !!nextUrl
-  const [state, setState] = useState<AgencySettings>({
-    siteName,
-    agencyName,
-  })
-  const isDirty = state.siteName !== siteName
-
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
-  const onSubmit = () =>
-    updateSiteConfigMutation.mutate({
-      siteName: state.siteName,
-      siteId,
-      ...rest,
-    })
+  const onSubmit = () => {
+    if (!siteTheme) return
+
+    setThemeMutation.mutate({ siteId, theme: siteTheme })
+  }
 
   return (
     <ErrorProvider>
@@ -94,33 +95,36 @@ const AgencySettingsPage: NextPageWithLayout = () => {
       <SettingsGrid>
         <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader
-            title="Name and agency"
-            icon={BiWrench}
-            isLoading={updateSiteConfigMutation.isPending}
             onClick={onSubmit}
-            isDisabled={!isDirty}
+            title="Colours"
+            icon={BiPaint}
+            isLoading={setThemeMutation.isPending}
+            isDisabled={!isDirty || !siteTheme?.colors.brand.canvas.inverse}
           />
-
-          <ErrorProvider>
-            <FormBuilder<AgencySettings>
-              schema={AgencySettingsSchema}
-              validateFn={validateFn}
-              data={state}
+          <Box w="100%">
+            <FormBuilder<SiteTheme>
+              schema={SiteThemeSchema}
+              validateFn={siteThemeValidator}
+              data={siteTheme}
               handleChange={(data) => {
-                setState(data)
+                setSiteTheme(data)
               }}
             />
-          </ErrorProvider>
+          </Box>
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
-          <EditSettingsPreview siteName={state.siteName} jumpToFooter />
+          <EditSettingsPreview
+            siteName={siteName}
+            theme={siteTheme}
+            previewMockContentPage
+          />
         </SettingsPreviewGridItem>
       </SettingsGrid>
     </ErrorProvider>
   )
 }
 
-AgencySettingsPage.getLayout = (page) => {
+ColoursSettingsPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
@@ -129,4 +133,4 @@ AgencySettingsPage.getLayout = (page) => {
   )
 }
 
-export default AgencySettingsPage
+export default ColoursSettingsPage

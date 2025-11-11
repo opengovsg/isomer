@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import type { FooterProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
