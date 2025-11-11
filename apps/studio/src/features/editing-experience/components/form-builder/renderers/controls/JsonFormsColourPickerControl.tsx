@@ -106,12 +106,12 @@ const JsonFormsColourPickerControl = ({
         <Box alignSelf="flex-start">
           <FormLabel
             description={
-              "This palette makes your website accessibility compliant."
+              "We’ve generated this palette from your brand colour. It makes your website compliant with accessibility standards."
             }
             mb={0}
             isRequired
           >
-            Color palette
+            Generated colour palette
           </FormLabel>
           <Flex mt="0.75rem" h="3rem">
             {THEME_PATHS.map((p) => {
