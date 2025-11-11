@@ -1,6 +1,4 @@
 import type { GrowthBook } from "@growthbook/growthbook"
-import type { User } from "@prisma/client"
-import { AuditLogEvent, ResourceType } from "@prisma/client"
 import { addSeconds } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
@@ -12,7 +10,8 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 
-import { db } from "~/server/modules/database"
+import type { User } from "~/server/modules/database"
+import { AuditLogEvent, db, ResourceType } from "~/server/modules/database"
 import {
   BUFFER_IN_SECONDS,
   publishScheduledResource,

@@ -1,8 +1,8 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
-import { RoleType } from "@prisma/client"
 
 import type { ResourceAbility } from "./permissions.type"
 import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
+import { RoleType } from "../database/types"
 import { ALL_ACTIONS, CRUD_ACTIONS } from "./permissions.type"
 
 const giveBasePermissions = (

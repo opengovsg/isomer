@@ -1,4 +1,3 @@
-import type { User } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import pick from "lodash/pick"
 import { auth } from "tests/integration/helpers/auth"
@@ -10,6 +9,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import { setupUser } from "tests/integration/helpers/seed"
 
+import type { User } from "../../database"
 import { createCallerFactory } from "~/server/trpc"
 import { meRouter } from "../me.router"
 

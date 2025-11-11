@@ -1,6 +1,6 @@
-import { type User } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
+import type { User } from "~/server/modules/database"
 import {
   MOCK_STORY_DATE,
   MOCK_TEST_PHONE,

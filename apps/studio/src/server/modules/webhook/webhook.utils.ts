@@ -1,8 +1,8 @@
 import type { GrowthBook } from "@growthbook/growthbook"
-import type { BuildStatusType } from "@prisma/client"
 import type pino from "pino"
 import _ from "lodash"
 
+import type { BuildStatusType } from "../database"
 import {
   sendFailedPublishEmail,
   sendSuccessfulPublishEmail,
