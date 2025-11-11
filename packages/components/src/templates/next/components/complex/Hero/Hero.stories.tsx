@@ -185,6 +185,6 @@ export const SearchbarWithImage: Story = {
       "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
     backgroundUrl:
       "https://images.unsplash.com/photo-1594318142972-1e2ea7487a3e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1740",
-    variant: "searchbarWithImage",
+    variant: "searchbar",
   },
 }

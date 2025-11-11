@@ -1,4 +1,4 @@
-import type { HeroProps } from "~/interfaces/complex/Hero"
+import type { HeroSearchbarProps } from "~/interfaces/complex/Hero"
 import {
   HomepageSearchSGInputBox,
   LocalSearchInputBox,
@@ -6,7 +6,7 @@ import {
 import { ComponentContent } from "../../../internal/customCssClass"
 
 interface SearchInputBoxProps {
-  search: NonNullable<HeroProps["site"]["search"]>
+  search: NonNullable<HeroSearchbarProps["site"]["search"]>
 }
 const SearchInputBox = ({ search }: SearchInputBoxProps) => {
   const commonProps = {
@@ -29,7 +29,11 @@ const SearchInputBox = ({ search }: SearchInputBoxProps) => {
   }
 }
 
-export const SearchbarContent = ({ title, subtitle, site }: HeroProps) => {
+export const SearchbarContent = ({
+  title,
+  subtitle,
+  site,
+}: HeroSearchbarProps) => {
   return (
     <div
       className={`relative mx-auto flex w-full flex-col gap-6 px-6 pb-12 pt-11 md:gap-9 lg:pb-20 lg:pt-16 ${ComponentContent}`}

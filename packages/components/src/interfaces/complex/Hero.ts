@@ -11,10 +11,10 @@ export const HERO_STYLE = {
   largeImage: "largeImage",
   floating: "floating",
   searchbar: "searchbar",
-  searchbarWithImage: "searchbarWithImage",
 } as const
 
-const HeroHeadingSchema = Type.Object({
+const HeroBaseSchema = Type.Object({
+  type: Type.Literal("hero", { default: "hero" }),
   title: Type.String({
     title: "Hero text",
     description: "The title of the hero banner",
@@ -28,19 +28,16 @@ const HeroHeadingSchema = Type.Object({
       maxLength: 300,
     }),
   ),
-})
-
-const HeroButtonsSchema = Type.Object({
   buttonLabel: Type.Optional(
     Type.String({
-      title: "Button text",
+      title: "Primary call-to-action text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
     }),
   ),
   buttonUrl: Type.Optional(
     Type.String({
-      title: "Button destination",
+      title: "Primary call-to-action destination",
       description: "When this is clicked, open:",
       format: "link",
       pattern: LINK_HREF_PATTERN,
@@ -48,7 +45,7 @@ const HeroButtonsSchema = Type.Object({
   ),
   secondaryButtonLabel: Type.Optional(
     Type.String({
-      title: "Button text",
+      title: "Secondary call-to-action text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
     }),
@@ -63,72 +60,118 @@ const HeroButtonsSchema = Type.Object({
   ),
 })
 
-const HeroBackgroundImageSchema = Type.Object({
-  backgroundUrl: Type.String({
-    title: "Hero image",
-    format: "image",
-  }),
+const HeroBackgroundUrlSchema = Type.String({
+  title: "Hero image",
+  format: "image",
 })
 
-export const HeroSchema = Type.Composite(
-  [
-    HeroHeadingSchema,
-    HeroButtonsSchema,
-    HeroBackgroundImageSchema,
-    Type.Object({
-      type: Type.Literal("hero", { default: "hero" }),
-      variant: Type.Union(
-        [
-          Type.Literal(HERO_STYLE.gradient, { title: "Gradient (Default)" }),
-          Type.Literal(HERO_STYLE.block, { title: "Block" }),
-          Type.Literal(HERO_STYLE.largeImage, {
-            title: "Large image",
-          }),
-          Type.Literal(HERO_STYLE.floating, {
-            title: "Floating",
-          }),
-          Type.Literal(HERO_STYLE.searchbar, {
-            title: "Search bar",
-            format: "hidden",
-          }),
-          Type.Literal(HERO_STYLE.searchbarWithImage, {
-            title: "Search bar with image",
-            format: "hidden",
-          }),
-        ],
-        {
-          default: HERO_STYLE.gradient,
-          title: "Hero banner style",
-          format: ARRAY_RADIO_FORMAT,
-          type: "string",
-        },
-      ),
+const HeroGradientSchema = Type.Object(
+  {
+    variant: Type.Literal(HERO_STYLE.gradient, {
+      default: HERO_STYLE.gradient,
     }),
+    backgroundUrl: HeroBackgroundUrlSchema,
+  },
+  {
+    title: "Gradient (Default)",
+  },
+)
+
+const HeroBlockSchema = Type.Object(
+  {
+    variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
+    backgroundUrl: HeroBackgroundUrlSchema,
+  },
+  {
+    title: "Block hero",
+  },
+)
+
+const HeroLargeImageSchema = Type.Object(
+  {
+    variant: Type.Literal(HERO_STYLE.largeImage, {
+      default: HERO_STYLE.largeImage,
+    }),
+    backgroundUrl: HeroBackgroundUrlSchema,
+  },
+  {
+    title: "Large image",
+  },
+)
+
+const HeroFloatingSchema = Type.Object(
+  {
+    variant: Type.Literal(HERO_STYLE.floating, {
+      default: HERO_STYLE.floating,
+    }),
+    backgroundUrl: HeroBackgroundUrlSchema,
+  },
+  {
+    title: "Floating",
+  },
+)
+
+const HeroSearchbarSchema = Type.Object(
+  {
+    variant: Type.Literal(HERO_STYLE.searchbar, {
+      default: HERO_STYLE.searchbar,
+    }),
+    backgroundUrl: Type.Optional(HeroBackgroundUrlSchema),
+  },
+  {
+    title: "Search bar",
+    // format: "hidden",
+  },
+)
+
+export const HeroSchema = Type.Intersect(
+  [
+    HeroBaseSchema,
+    Type.Union(
+      [
+        HeroGradientSchema,
+        HeroBlockSchema,
+        HeroLargeImageSchema,
+        HeroFloatingSchema,
+        HeroSearchbarSchema,
+      ],
+      {
+        title: "Hero banner style",
+        format: ARRAY_RADIO_FORMAT,
+      },
+    ),
   ],
   {
-    groups: [
-      {
-        label: "Primary call-to-action",
-        fields: ["buttonLabel", "buttonUrl"],
-      },
-      {
-        label: "Secondary call-to-action",
-        fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
-      },
-      {
-        label: "Image",
-        fields: ["backgroundUrl"],
-      },
-    ],
     title: "Hero component",
     description:
       "The hero component is used to display a large banner at the top of the homepage.",
   },
 )
 
-export type HeroBackgroundImageProps = Static<typeof HeroBackgroundImageSchema>
-export type HeroProps = Static<typeof HeroSchema> & {
+type CommonProps = {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   theme?: "default" | "inverse"
 }
+
+export type HeroGradientProps = CommonProps &
+  Static<typeof HeroBaseSchema> &
+  Static<typeof HeroGradientSchema>
+
+export type HeroBlockProps = CommonProps &
+  Static<typeof HeroBaseSchema> &
+  Static<typeof HeroBlockSchema>
+
+export type HeroLargeImageProps = CommonProps &
+  Static<typeof HeroBaseSchema> &
+  Static<typeof HeroLargeImageSchema>
+
+export type HeroFloatingProps = CommonProps &
+  Static<typeof HeroBaseSchema> &
+  Static<typeof HeroFloatingSchema>
+
+export type HeroSearchbarProps = CommonProps &
+  Static<typeof HeroBaseSchema> &
+  Static<typeof HeroSearchbarSchema>
+
+export type HeroProps = CommonProps & Static<typeof HeroSchema>
