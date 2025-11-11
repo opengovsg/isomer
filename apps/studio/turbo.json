@@ -15,7 +15,10 @@
       "outputs": ["e2e/test-results/**"]
     },
     "generate": {
-      "dependsOn": ["@opengovsg/isomer-components#build"],
+      "dependsOn": [
+        "@opengovsg/isomer-components#build",
+        "@isomer/redis#build"
+      ],
       "inputs": ["prisma/schema.prisma"],
       "cache": false
     },
@@ -41,6 +44,7 @@
     "build": {
       "dependsOn": [
         "@opengovsg/isomer-components#build",
+        "@isomer/redis#build",
         "generate",
         "build:theme",
         "build:preview-tw"

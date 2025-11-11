@@ -222,6 +222,17 @@ export const resourceHandlers = {
           siteId: 1,
         }
       }),
+    database: () =>
+      trpcMsw.resource.getMetadataById.query(() => {
+        return {
+          id: "4",
+          type: "Page",
+          title: "database layout",
+          permalink: "database-layout",
+          parentId: null,
+          siteId: 1,
+        }
+      }),
   },
   search: {
     initial: () => {

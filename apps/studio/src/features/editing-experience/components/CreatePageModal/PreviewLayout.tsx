@@ -77,6 +77,9 @@ const SuspendableLayoutPreview = () => {
       case "content": {
         return {}
       }
+      case "database": {
+        return {}
+      }
     }
   }, [currentLayout])
   return (

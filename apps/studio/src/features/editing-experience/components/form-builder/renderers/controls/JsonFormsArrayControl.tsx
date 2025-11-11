@@ -18,7 +18,6 @@ import {
   isPrimitiveArrayControl,
   or,
   rankWith,
-  Resolve,
 } from "@jsonforms/core"
 import {
   JsonFormsDispatch,
@@ -151,7 +150,7 @@ export function JsonFormsArrayControl({
   removeItems,
   moveUp,
   moveDown,
-  minItems,
+  arraySchema,
   schema,
   rootSchema,
   renderers,
@@ -161,12 +160,8 @@ export function JsonFormsArrayControl({
 }: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const [selectedIndex, setSelectedIndex] = useState<number>()
-  const resolvedSchema = Resolve.schema(rootSchema, uischema.scope, rootSchema)
-  const maxItems =
-    // NOTE: resolvedSchema can potentially be undefined
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    resolvedSchema !== undefined ? resolvedSchema.maxItems : undefined
-  const isRemoveItemDisabled = minItems !== undefined && data <= minItems
+  const isRemoveItemDisabled =
+    arraySchema.minItems !== undefined && data <= arraySchema.minItems
   const handleRemoveItem = useCallback(
     (path: string, index: number) => () => {
       if (selectedIndex === undefined || !removeItems || isRemoveItemDisabled) {
@@ -252,7 +247,9 @@ export function JsonFormsArrayControl({
           variant="clear"
           size="xs"
           leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-          isDisabled={maxItems !== undefined && data >= maxItems}
+          isDisabled={
+            arraySchema.maxItems !== undefined && data >= arraySchema.maxItems
+          }
         >
           Add item
         </Button>

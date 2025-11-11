@@ -26,8 +26,10 @@ export const LogoCloud = ({
           {images.map((props) => (
             <ImageClient
               {...props}
-              width="100%"
-              className="inset-0 max-h-24 w-fit object-contain p-2"
+              // have to pass in here instead of w-fit because
+              // flex-wrap in parent div doesn't work well with w-fit for safari
+              width="auto"
+              className="inset-0 max-h-24 object-contain p-2"
               assetsBaseUrl={assetsBaseUrl}
             />
           ))}

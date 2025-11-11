@@ -1,0 +1,38 @@
+{
+  "extends": "@isomer/tsconfig/base.json",
+  "compilerOptions": {
+    "paths": {
+      "~server/*": ["../../apps/studio/src/server/*"],
+      "~prisma/*": ["../../apps/studio/prisma/*"]
+    },
+    "outDir": "dist/cjs",
+    "rootDirs": ["src"],
+    "declaration": true,
+    "jsx": "react-jsx",
+    "strictBindCallApply": true /* Enable strict 'bind', 'call', and 'apply' methods on functions. */,
+    /* Strict Type-Checking Options */
+    // "noImplicitAny": true,
+    // "strictNullChecks": true /* Enable strict null checks. */,
+    // "strictFunctionTypes": true /* Enable strict checking of function types. */,
+    // "strictPropertyInitialization": true /* Enable strict checking of property initialization in classes. */,
+    // "noImplicitThis": true /* Raise error on 'this' expressions with an implied 'any' type. */,
+    "alwaysStrict": true /* Parse in strict mode and emit "use strict" for each source file. */,
+
+    /* Additional Checks */
+    "noUnusedLocals": false /* Report errors on unused locals. */,
+    "noUnusedParameters": false /* Report errors on unused parameters. */,
+    // "noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
+    "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */,
+
+    /* Debugging Options */
+    "traceResolution": false /* Report module resolution log messages. */,
+    "listEmittedFiles": false /* Print names of generated files part of the compilation. */,
+    "listFiles": false /* Print names of files part of the compilation. */,
+    "pretty": true /* Stylize errors and messages using color and context. */,
+
+    "typeRoots": ["node_modules/@types", "src/types"],
+    "baseUrl": "./"
+  },
+  "include": ["../../apps/studio/prisma/**/*.ts", "**/*"],
+  "compileOnSave": false
+}

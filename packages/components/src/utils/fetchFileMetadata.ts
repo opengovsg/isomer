@@ -1,12 +1,10 @@
-import { formatBytes } from "./formatBytes"
-
 interface FetchFileMetadataProps {
   url: string
 }
 
 interface FetchFileMetadataOutput {
   format: string | undefined
-  size: string | undefined
+  size: number | undefined
 }
 
 export const fetchFileMetadata = async ({
@@ -56,11 +54,11 @@ export const fetchFileMetadata = async ({
   const contentLength = response.headers.get("content-length")
 
   // Parse content length safely, handling invalid values
-  let size: string | undefined
+  let size
   if (contentLength) {
     const parsedLength = parseInt(contentLength, 10)
     if (!isNaN(parsedLength) && parsedLength > 0) {
-      size = formatBytes(parsedLength)
+      size = parsedLength
     }
   }
 

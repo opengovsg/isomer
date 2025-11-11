@@ -111,6 +111,20 @@ export const sitesHandlers = {
         } as PrismaJson.SiteJsonConfig
       })
     },
+    withFavicon: () => {
+      return trpcMsw.site.getConfig.query(() => {
+        return {
+          theme: "isomer-next",
+          siteName: "Ministry of Test and Industry",
+          search: undefined,
+          agencyName: "Ministry of Test and Industry",
+          isGovernment: true,
+          url: "https://www.isomer.gov.sg",
+          logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+          favicon: "avatars.githubusercontent.com/u/40887764",
+        } as PrismaJson.SiteJsonConfig
+      })
+    },
   },
   getFooter: {
     default: () => {
@@ -449,6 +463,163 @@ export const sitesHandlers = {
               ],
             },
           ],
+        }
+      })
+    },
+  },
+
+  getNotification: {
+    default: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return {
+          notification: {
+            title: "hello world",
+            enabled: true,
+            content: {
+              type: "prose",
+              content: [
+                {
+                  type: "paragraph",
+                  attrs: {
+                    dir: "ltr",
+                  },
+                  content: [
+                    {
+                      text: "i love ",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "bold",
+                        },
+                      ],
+                    },
+                    {
+                      text: "Isomer ",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "bold",
+                        },
+                        {
+                          type: "italic",
+                        },
+                      ],
+                    },
+                    {
+                      text: "alot ",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "italic",
+                        },
+                      ],
+                    },
+                    {
+                      text: "because ",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "italic",
+                        },
+                        {
+                          type: "underline",
+                        },
+                      ],
+                    },
+                    {
+                      text: "the ui ",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "underline",
+                        },
+                      ],
+                    },
+                    {
+                      text: "is nice",
+                      type: "text",
+                      marks: [
+                        {
+                          type: "italic",
+                        },
+                        {
+                          type: "underline",
+                        },
+                        {
+                          type: "link",
+                          attrs: {
+                            href: "[resource:4:16]",
+                            target: "_self",
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        }
+      })
+    },
+
+    title: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return {
+          notification: {
+            title: "hello world",
+            enabled: true,
+            content: {
+              type: "prose",
+              content: [],
+            },
+          },
+        }
+      })
+    },
+
+    disabled: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return {
+          notification: {
+            title: "hello world",
+            enabled: false,
+            content: {
+              type: "prose",
+              content: [],
+            },
+          },
+        }
+      })
+    },
+
+    empty: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return {
+          notification: {
+            title: "",
+            enabled: true,
+            content: {
+              type: "prose",
+              content: [],
+            },
+          },
+        }
+      })
+    },
+
+    long: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return {
+          notification: {
+            title:
+              "This is a very long title that should be exactly 100 words long - i am just typing random stuff here",
+            enabled: true,
+            content: {
+              type: "prose",
+              content: [],
+            },
+          },
         }
       })
     },

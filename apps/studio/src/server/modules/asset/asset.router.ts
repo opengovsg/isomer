@@ -27,13 +27,13 @@ export const assetRouter = router({
       })
 
       ctx.logger.info(
-        `Generated presigned PUT URL for ${fileKey} for site ${siteId}`,
         {
           userId: ctx.session?.userId,
           siteId,
           fileName,
           fileKey,
         },
+        `Generated presigned PUT URL for ${fileKey} for site ${siteId}`,
       )
 
       return {

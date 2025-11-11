@@ -10,20 +10,21 @@ export const HERO_STYLE = {
   block: "block",
   largeImage: "largeImage",
   floating: "floating",
+  searchbar: "searchbar",
 } as const
 
 const HeroHeadingSchema = Type.Object({
   title: Type.String({
     title: "Hero text",
     description: "The title of the hero banner",
-    maxLength: 50,
+    maxLength: 100,
   }),
   subtitle: Type.Optional(
     Type.String({
       title: "Description",
       description: "The contents of the hero banner",
       format: "textarea",
-      maxLength: 250,
+      maxLength: 300,
     }),
   ),
 })
@@ -84,6 +85,10 @@ export const HeroSchema = Type.Composite(
           }),
           Type.Literal(HERO_STYLE.floating, {
             title: "Floating",
+          }),
+          Type.Literal(HERO_STYLE.searchbar, {
+            title: "Search bar",
+            format: "hidden",
           }),
         ],
         {

@@ -576,6 +576,7 @@ export const resourceRouter = router({
           "Resource.type",
           "Resource.parentId",
           "Resource.updatedAt",
+          "Resource.scheduledAt",
         ])
         .execute()
     }),
@@ -696,27 +697,13 @@ export const resourceRouter = router({
         siteId: Number(siteId),
       })
 
-      const resource = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", resourceId)
-        .select(["siteId", "id"])
-        .executeTakeFirst()
+      const result = await getWithFullPermalink({ resourceIds: [resourceId] })
 
-      if (!resource) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Resource not found",
-        })
-      }
-
-      const result = await getWithFullPermalink({ resourceId })
-
-      if (!result) {
+      if (result.length === 0 || !result[0]) {
         throw new TRPCError({ code: "NOT_FOUND" })
       }
 
-      return result
+      return result[0]
     }),
 
   getRolesFor: protectedProcedure

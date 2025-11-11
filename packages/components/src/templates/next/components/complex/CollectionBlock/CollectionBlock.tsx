@@ -11,7 +11,6 @@ import {
   getResourceIdFromReferenceLink,
   isExternalUrl,
 } from "~/utils"
-import { getFormattedDate } from "~/utils/getFormattedDate"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
@@ -82,13 +81,13 @@ const SingleCard = ({
   image,
   category,
   referenceLinkHref,
-  date,
   displayThumbnail,
   displayCategory,
   site,
   LinkComponent,
   shouldLazyLoad,
   numberOfCards,
+  formattedDate,
 }: CollectionBlockSingleCardProps): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
@@ -128,10 +127,8 @@ const SingleCard = ({
     >
       {displayThumbnail && renderImage()}
       <div className={compoundStyles.cardTextContainer()}>
-        {date && (
-          <p className={compoundStyles.cardDate()}>
-            {getFormattedDate(date.toISOString())}
-          </p>
+        {formattedDate && (
+          <p className={compoundStyles.cardDate()}>{formattedDate}</p>
         )}
 
         <h3 className={compoundStyles.cardTitle()}>
@@ -152,14 +149,19 @@ const SingleCard = ({
   )
 }
 
-const EmptyCollectionBlockSkeleton = () => {
+interface CollectionBlockSkeletonProps {
+  title: string
+  description: string
+}
+const CollectionBlockSkeleton = ({
+  title,
+  description,
+}: CollectionBlockSkeletonProps) => {
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
-        <h2 className={compoundStyles.headingTitle()}>
-          No collection selected
-        </h2>
-        <p>Choose a collection to display its content.</p>
+        <h2 className={compoundStyles.headingTitle()}>{title}</h2>
+        <p>{description}</p>
       </div>
     </section>
   )
@@ -180,10 +182,19 @@ export const CollectionBlock = ({
 
   // This happens when no collection is selected yet on Studio when the user just added the block
   if (collectionId === "") {
-    return <EmptyCollectionBlockSkeleton />
+    return (
+      <CollectionBlockSkeleton
+        title="No collection selected"
+        description="Choose a collection to display its content."
+      />
+    )
   }
 
   const collectionParent = getCollectionParent({ site, collectionId })
+
+  if (!collectionParent) {
+    return <></>
+  }
 
   const collectionPages = getCollectionPages({
     site,

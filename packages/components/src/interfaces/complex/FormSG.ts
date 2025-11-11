@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { LinkComponentType } from "~/types"
 import { FORMSG_EMBED_URL_PATTERN } from "~/utils/validation"
 
 export const FormSGSchema = Type.Object(
@@ -16,7 +16,6 @@ export const FormSGSchema = Type.Object(
       title: "Describe your form",
       description:
         "This isn’t displayed anywhere, but can be read by screen readers",
-      maxLength: 100,
       default: "A feedback collection form",
     }),
   },
@@ -28,6 +27,5 @@ export const FormSGSchema = Type.Object(
 )
 
 export type FormSGProps = Static<typeof FormSGSchema> & {
-  site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }

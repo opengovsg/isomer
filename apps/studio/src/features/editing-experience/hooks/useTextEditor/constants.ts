@@ -64,6 +64,20 @@ export const BASE_EXTENSIONS: Extensions = [
     openOnClick: false,
   }),
   Bold,
+  Document.extend({
+    name: "prose",
+  }),
+  Dropcursor,
+  Gapcursor,
+  HardBreak,
+  History,
+  Italic,
+  Paragraph,
+  Text,
+  Underline,
+]
+
+export const PROSE_EXTENSIONS: Extensions = [
   BulletList.extend({
     name: "unorderedList",
   }).configure({
@@ -71,27 +85,9 @@ export const BASE_EXTENSIONS: Extensions = [
       class: "list-disc",
     },
   }),
-  Document.extend({
-    name: "prose",
-  }),
-  Dropcursor,
-  Gapcursor,
-  HardBreak.extend({
-    // Prevent the default behavior of the hard break and split it into a new paragraph instead
-    // Why: Hard break introduces touch targets of under 24px between lines
-    // This is a WCAG violation if the link is a clickable link
-    addKeyboardShortcuts() {
-      return {
-        "Mod-Enter": () => this.editor.commands.splitBlock(),
-        "Shift-Enter": () => this.editor.commands.splitBlock(),
-      }
-    },
-  }),
   HorizontalRule.extend({
     name: "divider",
   }),
-  History,
-  Italic,
   ListItem.extend({
     content: "paragraph list*",
   }).configure({
@@ -105,12 +101,9 @@ export const BASE_EXTENSIONS: Extensions = [
       class: "list-decimal",
     },
   }),
-  Paragraph,
   Strike,
   Superscript,
   Subscript,
-  Text,
-  Underline,
 ]
 
 export const IsomerTable = Table.extend({

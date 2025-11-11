@@ -1,5 +1,13 @@
 import type { WogaaProps } from "~/interfaces"
 
-export const Wogaa = ({ ScriptComponent = "script" }: WogaaProps) => {
-  return <ScriptComponent src="https://assets.wogaa.sg/scripts/wogaa.js" />
+export const Wogaa = ({
+  environment,
+  ScriptComponent = "script",
+}: WogaaProps) => {
+  const scriptUrl =
+    environment === "production"
+      ? "https://assets.wogaa.sg/scripts/wogaa.js"
+      : "https://assets.dcube.cloud/scripts/wogaa.js"
+
+  return <ScriptComponent src={scriptUrl} />
 }

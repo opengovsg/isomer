@@ -23,7 +23,10 @@ import {
   sendCancelSchedulePageEmail,
   sendScheduledPageEmail,
 } from "~/features/mail/service"
-import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import {
+  ENABLE_CODEBUILD_JOBS,
+  IS_SINGPASS_ENABLED_FEATURE_KEY,
+} from "~/lib/growthbook"
 import {
   basePageSchema,
   createIndexPageSchema,
@@ -42,6 +45,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { logResourceEvent } from "../audit/audit.service"
+import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
@@ -59,7 +63,12 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import {
+  createDefaultPage,
+  createFolderIndexPage,
+  schedulePublishResource,
+  unschedulePublishResource,
+} from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -397,7 +406,11 @@ export const pageRouter = router({
             message: "Failed to schedule page",
           })
         }
-        // TODO: add logic to add the job to the job queue
+        await schedulePublishResource(
+          ctx.logger,
+          { resourceId: pageId, siteId, userId: ctx.user.id },
+          scheduledAt,
+        )
         await logResourceEvent(tx, {
           siteId,
           by,
@@ -461,8 +474,11 @@ export const pageRouter = router({
             message: "Failed to cancel page schedule",
           })
         }
-        // TODO: add logic to remove the scheduledAt job in the job queue
-        // if execution has not started
+        await unschedulePublishResource(
+          ctx.logger,
+          pageId,
+          resource.scheduledAt,
+        )
         await logResourceEvent(tx, {
           siteId,
           by,
@@ -679,13 +695,37 @@ export const pageRouter = router({
         action: "publish",
         userId: ctx.user.id,
       })
-      return publishPageResource({
+      const user = await db
+        .selectFrom("User")
+        .selectAll()
+        .where("id", "=", ctx.user.id)
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: "Please ensure that you have logged in",
+            }),
+        )
+
+      const { version } = await publishPageResource({
         logger: ctx.logger,
         siteId,
         resourceId: String(pageId),
-        userId: ctx.user.id,
-        isSingpassEnabled: ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY),
+        user,
+        isScheduled: false,
+        addCodebuildJobRow: ctx.gb.isOn(ENABLE_CODEBUILD_JOBS),
       })
+
+      // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
+      if (!ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)) {
+        await alertPublishWhenSingpassDisabled({
+          siteId,
+          resourceId: String(pageId),
+          publisherId: user.id,
+          publisherEmail: user.email,
+        })
+      }
+      return version
     }),
 
   updateMeta: protectedProcedure

@@ -8,7 +8,6 @@ const HomepageLayout = ({
   layout,
   content,
   LinkComponent,
-  ScriptComponent,
 }: HomePageSchemaType) => {
   return (
     <Skeleton
@@ -16,7 +15,6 @@ const HomepageLayout = ({
       page={page}
       layout={layout}
       LinkComponent={LinkComponent}
-      ScriptComponent={ScriptComponent}
     >
       <div
         // ComponentContent = "component-content" (customCssClass.ts) is imported by all Homepage components,

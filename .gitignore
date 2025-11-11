@@ -51,3 +51,6 @@ dist/
 **/*.tgz
 
 .aider*
+biome.json
+
+storybook-static/

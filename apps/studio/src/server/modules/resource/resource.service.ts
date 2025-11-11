@@ -18,7 +18,6 @@ import type {
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE } from "~/lib/growthbook"
 import {
   getSitemapTree,
   injectTagMappings,
@@ -26,7 +25,6 @@ import {
   overwriteCollectionChildrenForCollectionBlock,
 } from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
-import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { incrementVersion } from "../version/version.service"
@@ -552,36 +550,27 @@ export const getResourceFullPermalink = async (
 
 interface PublishPageResourceArgs {
   logger: Logger<string>
+  user: User
   siteId: number
   resourceId: string
-  userId: string
   isSingpassEnabled?: boolean
+  isScheduled: boolean
+  addCodebuildJobRow: boolean
 }
 
 export const publishPageResource = async ({
   logger,
   siteId,
   resourceId,
-  userId,
-  isSingpassEnabled = IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+  user,
+  isScheduled,
+  addCodebuildJobRow,
 }: PublishPageResourceArgs) => {
-  // Step 1: Create a new version
-  const by = await db
-    .selectFrom("User")
-    .selectAll()
-    .where("id", "=", userId)
-    .executeTakeFirstOrThrow(
-      () =>
-        new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Please ensure that you have logged in",
-        }),
-    )
-
-  const addedVersionResult = await db
+  const version = await db
     .transaction()
     .setIsolationLevel("serializable")
     .execute(async (tx) => {
+      // Step 1: Create a new version
       const fullResource = await getFullPageById(tx, {
         resourceId: Number(resourceId),
         siteId,
@@ -599,7 +588,7 @@ export const publishPageResource = async ({
         tx,
         siteId,
         resourceId,
-        userId,
+        userId: user.id,
       })
 
       const previousVersion = await tx
@@ -611,7 +600,7 @@ export const publishPageResource = async ({
 
       await logPublishEvent(tx, {
         siteId,
-        by,
+        by: user,
         delta: {
           before: previousVersion?.id
             ? { versionId: previousVersion.id }
@@ -621,25 +610,28 @@ export const publishPageResource = async ({
         eventType: AuditLogEvent.Publish,
         metadata: fullResource,
       })
-
       return version
     })
 
   // Step 2: Trigger a publish of the site
-  await publishSite(logger, siteId)
+  const build = await publishSite(logger, siteId)
 
-  // Step 3: Send publish alert emails to all site admins minus the current user
-  // if Singpass has been disabled
-  if (!isSingpassEnabled) {
-    await alertPublishWhenSingpassDisabled({
-      siteId,
-      resourceId,
-      publisherId: by.id,
-      publisherEmail: by.email,
-    })
-  }
+  // Step 3: Save the build info if the build was triggered
+  if (build && addCodebuildJobRow)
+    await db
+      .insertInto("CodeBuildJobs")
+      .values({
+        siteId,
+        userId: user.id,
+        buildId: build.buildId,
+        startedAt: build.startTime,
+        resourceId,
+        status: "IN_PROGRESS", // default to in progress, will be updated by webhook
+        isScheduled,
+      })
+      .execute()
 
-  return addedVersionResult
+  return { version }
 }
 
 // NOTE: The distinction here between `publishResource` and `publishPageResource` is that
@@ -772,10 +764,14 @@ export const getBatchAncestryWithSelfQuery = async ({
 }
 
 export const getWithFullPermalink = async ({
-  resourceId,
+  resourceIds,
 }: {
-  resourceId: string
+  resourceIds: string[]
 }) => {
+  if (resourceIds.length === 0) {
+    return []
+  }
+
   const result = await db
     .withRecursive("resourcePath", (eb) =>
       eb
@@ -805,8 +801,8 @@ export const getWithFullPermalink = async ({
     )
     .selectFrom("resourcePath as rp")
     .select(["rp.id", "rp.title", "rp.fullPermalink"])
-    .where("rp.id", "=", resourceId)
-    .executeTakeFirst()
+    .where("rp.id", "in", resourceIds)
+    .execute()
 
   return result
 }
@@ -820,7 +816,7 @@ const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) => {
       "Resource.type",
       "Resource.parentId",
       // To handle cases where either the resource or the blob is updated
-      sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
+      sql<Date | null>`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
         "lastUpdatedAt",
       ),
     ])
@@ -833,14 +829,15 @@ const getResourcesWithFullPermalink = async ({
 }: {
   resources: Omit<SearchResultResource, "fullPermalink">[]
 }): Promise<SearchResultResource[]> => {
-  return await Promise.all(
-    resources.map(async (resource) => ({
-      ...resource,
-      fullPermalink: await getWithFullPermalink({
-        resourceId: resource.id,
-      }).then((r) => r?.fullPermalink ?? ""),
-    })),
-  )
+  const result = await getWithFullPermalink({
+    resourceIds: resources.map((resource) => resource.id),
+  })
+
+  return resources.map((resource) => ({
+    ...resource,
+    fullPermalink:
+      result.find((r) => r.id === resource.id)?.fullPermalink ?? "",
+  }))
 }
 
 export const getSearchResults = async ({
@@ -908,24 +905,20 @@ export const getSearchResults = async ({
   }
   orderedResources = orderedResources.orderBy("lastUpdatedAt", "desc")
 
-  const resourcesToReturn: SearchResultResource[] = (await orderedResources
-    .offset(offset)
-    .limit(limit)
-    .execute()) as SearchResultResource[]
-
-  const totalCount: number = (
-    await db
+  const [resourcesToReturn, totalCountResult] = await Promise.all([
+    orderedResources.offset(offset).limit(limit).execute(),
+    db
       .with("queriedResources", () => queriedResources)
       .selectFrom("queriedResources")
-      .select(db.fn.countAll().as("total_count"))
-      .executeTakeFirstOrThrow()
-  ).total_count as number // needed to cast as the type can be `bigint`
+      .select(db.fn.countAll<number>().as("total_count")) // needed to cast as the type can be `bigint`
+      .executeTakeFirstOrThrow(),
+  ])
 
   return {
-    totalCount,
     resources: await getResourcesWithFullPermalink({
       resources: resourcesToReturn,
     }),
+    totalCount: totalCountResult.total_count,
   }
 }
 
@@ -937,7 +930,7 @@ export const getSearchRecentlyEdited = async ({
   limit?: number
 }): Promise<SearchResultResource[]> => {
   return await getResourcesWithFullPermalink({
-    resources: (await getResourcesWithLastUpdatedAt({
+    resources: await getResourcesWithLastUpdatedAt({
       siteId: Number(siteId),
     })
       .where("Resource.type", "in", [
@@ -948,7 +941,7 @@ export const getSearchRecentlyEdited = async ({
       ])
       .limit(limit)
       .orderBy("lastUpdatedAt", "desc")
-      .execute()) as SearchResultResource[],
+      .execute(),
   })
 }
 

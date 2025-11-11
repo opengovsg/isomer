@@ -52,7 +52,7 @@ describe("getCollectionPages", () => {
     date,
   })
 
-  it("should throw an error when the collection exists but has no items", () => {
+  it("should return an empty array when the collection exists but has no items", () => {
     // Arrange
     const collectionParent: IsomerSitemap = {
       id: collectionId,
@@ -72,7 +72,8 @@ describe("getCollectionPages", () => {
     }
 
     // Act + Assert
-    expect(() => getCollectionPages({ site, collectionParent })).toThrow()
+    const actual = getCollectionPages({ site, collectionParent })
+    expect(actual).toStrictEqual([])
   })
 
   it("should return 3 items", () => {

@@ -1,10 +1,18 @@
 import { BiSearch } from "react-icons/bi"
 
 import type { LocalSearchProps } from "~/interfaces"
+import { twMerge } from "~/lib/twMerge"
 
-const LocalSearchInputBox = ({ searchUrl }: Omit<LocalSearchProps, "type">) => {
+const LocalSearchInputBox = ({
+  searchUrl,
+  className,
+}: Omit<LocalSearchProps, "type">) => {
   return (
-    <form action={searchUrl} method="get" className="flex flex-row gap-2">
+    <form
+      action={searchUrl}
+      method="get"
+      className={twMerge("flex h-[3.25rem] flex-row gap-3 lg:h-16", className)}
+    >
       <input
         type="search"
         name="q"
@@ -13,7 +21,7 @@ const LocalSearchInputBox = ({ searchUrl }: Omit<LocalSearchProps, "type">) => {
       />
 
       <button type="submit" aria-label="Search this site">
-        <BiSearch className="mt-0.5 text-2xl" />
+        <BiSearch className="mt-0.5 text-3xl" />
       </button>
     </form>
   )

@@ -16,7 +16,6 @@ import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
-import getIP from "~/utils/getClientIp"
 import { type Context } from "./context"
 import { db } from "./modules/database"
 import { defaultUserSelect } from "./modules/me/me.select"
@@ -57,7 +56,10 @@ const t = initTRPC
 const loggerMiddleware = t.middleware(
   async ({ path, next, ctx, type, getRawInput }) => {
     const start = Date.now()
-    const logger = createBaseLogger({ path, clientIp: getIP(ctx.req) })
+    const logger = createBaseLogger({
+      path,
+      req: ctx.req,
+    })
     const rawInput = await getRawInput()
 
     const result = await next({
@@ -95,14 +97,20 @@ const loggerWithVersionMiddleware = loggerMiddleware.unstable_pipe(
     const clientVersion = req.headers[APP_VERSION_HEADER_KEY.toLowerCase()]
 
     if (clientVersion && serverVersion !== clientVersion) {
-      logger.warn("Application version mismatch", {
-        clientVersion,
-        serverVersion,
-      })
+      logger.warn(
+        {
+          clientVersion,
+          serverVersion,
+        },
+        "Application version mismatch",
+      )
     } else if (!clientVersion) {
-      logger.warn("Client version not available", {
-        serverVersion,
-      })
+      logger.warn(
+        {
+          serverVersion,
+        },
+        "Client version not available",
+      )
     }
 
     res.setHeader(APP_VERSION_HEADER_KEY, serverVersion)
@@ -163,6 +171,35 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
   })
 })
 
+/**
+ * Webhook middleware to protect endpoints that do not need a user context
+ * but still need to be protected via an API key. We still check the session
+ * in case the request is made by a logged in user (via the FE), and to allow for easier testing.
+ * */
+
+export const WEBHOOK_X_API_KEY_HEADER = "x-api-key"
+
+const webhookMiddleware = t.middleware(async ({ next, ctx }) => {
+  if (!ctx.session?.userId) {
+    const apiKey = ctx.req.headers[WEBHOOK_X_API_KEY_HEADER]
+    // Ensure that the API key is set in the env
+    if (!env.STUDIO_SSM_WEBHOOK_API_KEY) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Webhook API key is not configured",
+      })
+    }
+    // Ensure that the API key is valid and matches
+    if (!apiKey || apiKey !== env.STUDIO_SSM_WEBHOOK_API_KEY) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Invalid Webhook API key provided",
+      })
+    }
+  }
+  return next()
+})
+
 const rateLimitMiddleware = t.middleware(async ({ next, ctx, meta }) => {
   if (meta?.rateLimitOptions === undefined) {
     return next()
@@ -205,6 +242,13 @@ export const publicProcedure = baseProcedure.use(baseMiddleware)
  * Create a protected procedure
  * */
 export const protectedProcedure = baseProcedure.use(authMiddleware)
+
+/**
+ * Create a webhook procedure - for endpoint that do not need a user context
+ * but still need to be protected via an API key
+ * e.g. CodeBuild webhook
+ * */
+export const webhookProcedure = baseProcedure.use(webhookMiddleware)
 
 /**
  * @see https://trpc.io/docs/v10/middlewares

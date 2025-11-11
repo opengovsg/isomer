@@ -196,23 +196,20 @@ describe("editing-experience schemas", () => {
       }
     })
 
-    it("should reject when neither pageId nor linkId is provided", () => {
+    it("should still pass when neither pageId nor linkId is provided", () => {
       // Arrange + Act
       const result = pageOrLinkSchema.safeParse({
         siteId: "123",
       })
 
       // Assert
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.issues).toHaveLength(1)
-        expect(result.error.issues[0]?.message).toBe(
-          "At least one of pageId or linkId must be present",
-        )
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data).toEqual({ siteId: 123 })
       }
     })
 
-    it("should reject when both pageId and linkId are undefined", () => {
+    it("should still pass when both pageId and linkId are undefined", () => {
       // Arrange + Act
       const result = pageOrLinkSchema.safeParse({
         siteId: "123",
@@ -221,12 +218,9 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.issues).toHaveLength(1)
-        expect(result.error.issues[0]?.message).toBe(
-          "At least one of pageId or linkId must be present",
-        )
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data).toEqual({ siteId: 123 })
       }
     })
   })

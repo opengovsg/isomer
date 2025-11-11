@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import type { FooterProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
@@ -120,7 +120,6 @@ export const Default: Story = {
     feedbackFormLink: "https://www.google.com",
     privacyStatementLink: "/",
     termsOfUseLink: "/",
-    siteMapLink: "/",
   },
 }
 
@@ -216,7 +215,6 @@ export const NonGovernment: Story = {
     feedbackFormLink: "https://www.google.com",
     privacyStatementLink: "/",
     termsOfUseLink: "/",
-    siteMapLink: "/",
   },
 }
 
@@ -273,7 +271,6 @@ export const NoSocmed: Story = {
     feedbackFormLink: "https://www.google.com",
     privacyStatementLink: "/",
     termsOfUseLink: "/",
-    siteMapLink: "/",
   },
 }
 
@@ -312,6 +309,5 @@ export const NoCustomItems: Story = {
     feedbackFormLink: "https://www.google.com",
     privacyStatementLink: "/",
     termsOfUseLink: "/",
-    siteMapLink: "/",
   },
 }

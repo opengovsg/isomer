@@ -13,7 +13,7 @@ const ALLOWED_EXTENSIONS = [
 
 export const getPresignedPutUrlSchema = z.object({
   siteId: z.number().min(1),
-  resourceId: z.string(),
+  resourceId: z.string().optional(),
   fileName: z
     .string({
       required_error: "Missing file name",

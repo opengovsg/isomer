@@ -14,7 +14,6 @@ const CollectionLayout = ({
   page,
   layout,
   LinkComponent,
-  ScriptComponent,
 }: CollectionPageSchemaType) => {
   const { permalink, defaultSortBy, defaultSortDirection, tagCategories } = page
 
@@ -37,13 +36,12 @@ const CollectionLayout = ({
       page={page}
       layout={layout}
       LinkComponent={LinkComponent}
-      ScriptComponent={ScriptComponent}
     >
       <CollectionClient
         page={page}
         breadcrumb={breadcrumb}
         items={processedItems}
-        filters={getAvailableFilters(processedItems)}
+        filters={getAvailableFilters(processedItems, tagCategories)}
         shouldShowDate={shouldShowDate(processedItems)}
         siteAssetsBaseUrl={site.assetsBaseUrl}
         LinkComponent={LinkComponent}

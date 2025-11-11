@@ -3,11 +3,13 @@ import { colors } from "~/presets/next/colors"
 import { getReferenceLinkHref } from "~/utils"
 import { VicaWidgetClient } from "./VicaWidgetClient"
 
-export const VicaWidget = (props: VicaWidgetProps) => {
-  const { site, "app-icon": appIcon, ...rest } = props
+export const VicaWidget = ({
+  site,
+  "app-icon": appIcon,
+  ...rest
+}: VicaWidgetProps) => {
   return (
     <VicaWidgetClient
-      environment={site.environment}
       app-icon={
         appIcon
           ? getReferenceLinkHref(appIcon, site.siteMap, site.assetsBaseUrl)

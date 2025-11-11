@@ -5,7 +5,29 @@ import type {
   ReactNode,
 } from "react"
 import { forwardRef, useRef } from "react"
-import { assignRef, useMergeRefs } from "@chakra-ui/react"
+import { useMergeRefs } from "@chakra-ui/react"
+
+// NOTE: we do this because the existing assignRef function was removed
+// reference: https://github.com/chakra-ui/chakra-ui/blob/%40chakra-ui/react%402.4.9/packages/hooks/use-merge-refs/src/index.ts
+// as it is not used elsewhere, we will keep it local to this file for now
+type ReactRef<T> = React.RefCallback<T> | React.MutableRefObject<T>
+
+function assignRef<T = unknown>(ref: ReactRef<T> | null | undefined, value: T) {
+  if (ref == null) return
+
+  if (typeof ref === "function") {
+    ref(value)
+    return
+  }
+
+  try {
+    ref.current = value
+  } catch {
+    throw new Error(
+      `Cannot assign value '${JSON.stringify(value)}' to ref '${JSON.stringify(ref)}'`,
+    )
+  }
+}
 
 interface SingleFileButtonProps {
   value: File | null

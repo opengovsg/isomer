@@ -6,6 +6,8 @@ updates:
       interval: daily
     versioning-strategy: increase
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7 # to mitigate supply chain attacks
     groups:
       aws-sdk:
         applies-to: version-updates

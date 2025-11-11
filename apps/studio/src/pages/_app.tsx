@@ -43,6 +43,15 @@ datadogRum.init({
   trackResources: true,
   trackLongTasks: true,
   defaultPrivacyLevel: "mask-user-input",
+  // inject tracing information inside headers, to correlate RUM with backend traces
+  allowedTracingUrls: [
+    (url) => {
+      if (!env.NEXT_PUBLIC_APP_URL) {
+        return false
+      }
+      return url.includes(env.NEXT_PUBLIC_APP_URL)
+    },
+  ],
 })
 
 // Create a GrowthBook instance

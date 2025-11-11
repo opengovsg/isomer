@@ -1,13 +1,10 @@
 export const ISOMER_ADMINS = [
-  "alexander",
-  "jan",
   "jiachin",
   "sehyun",
   "harish",
   "zhongjun",
   "adriangoh",
   "shazli",
-  "jinhui",
   "rachellin",
   "gautam",
 ]
@@ -25,7 +22,13 @@ export const ISOMER_MIGRATORS = [
   "felicia",
 ]
 
-export const PAST_ISOMER_MEMBERS = ["kishore", "hanpu"] as const
+export const PAST_ISOMER_MEMBERS = [
+  "kishore",
+  "hanpu",
+  "alexander",
+  "jan",
+  "jinhui",
+] as const
 
 export const ISOMER_ADMINS_AND_MIGRATORS = [
   ...ISOMER_ADMINS,

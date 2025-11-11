@@ -25,6 +25,7 @@ const getColumns = ({ siteId }: CollectionTableProps) => [
     header: () => <TableHeader>Title</TableHeader>,
     cell: ({ row }) => (
       <TitleCell
+        scheduledAt={row.original.scheduledAt}
         siteId={siteId}
         id={row.original.id}
         title={row.original.title}
