@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { omit } from "lodash"
+import { omit } from "lodash-es"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"

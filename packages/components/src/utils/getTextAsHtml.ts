@@ -1,5 +1,5 @@
 import DOMPurify from "isomorphic-dompurify"
-import isEqual from "lodash/isEqual"
+import { isEqual } from "lodash-es"
 
 import type { HardBreakProps } from "~/interfaces"
 import type { Marks, TextProps } from "~/interfaces/native/Text"

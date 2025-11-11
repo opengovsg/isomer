@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { omit } from "lodash"
+import { expect, userEvent, waitFor, within } from "@storybook/test"
+import { omit } from "lodash-es"
 import { http, HttpResponse } from "msw"
-import { expect, userEvent, waitFor, within } from "storybook/test"
 
 import type { DGSSearchableTableProps } from "~/interfaces"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
