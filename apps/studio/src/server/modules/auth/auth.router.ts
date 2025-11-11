@@ -14,6 +14,7 @@ export const authRouter = router({
   logout: publicProcedure.mutation(async ({ ctx }) => {
     const { userId } = ctx.session
     ctx.session.destroy()
+    await ctx.gb.setAttributes({})
 
     if (!userId) {
       throw new TRPCError({ code: "BAD_REQUEST", message: "User not found" })

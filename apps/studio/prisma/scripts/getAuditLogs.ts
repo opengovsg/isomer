@@ -20,6 +20,7 @@ const SITES_WITH_AUDIT_LOGS = [
   61, // ipos.gov.sg
   109, // agc.gov.sg
   145, // ite.edu.sg
+  166, // mti.gov.sg
 ]
 
 // Month and year to get audit logs for, in the format of YYYY-MM,
@@ -200,7 +201,14 @@ const getAuditLogQuery = ({
                   AUDIT_LOGS_EVENTS_QUERIES,
                 ) as DisplayableAuditLogEvent[],
               ),
-              eb("al.siteId", "=", siteId),
+              eb.or([
+                eb.eb("al.siteId", "=", siteId),
+                eb.eb(
+                  sql<number>`"al".delta -> 'after' ->> 'siteId'`,
+                  "=",
+                  siteId,
+                ),
+              ]),
             ]),
             eb.and([
               eb("al.eventType", "=", AuditLogEvent.Login),

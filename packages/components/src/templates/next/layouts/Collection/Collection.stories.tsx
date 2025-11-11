@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { expect, userEvent, within } from "@storybook/test"
-import flatten from "lodash/flatten"
-import times from "lodash/times"
+import { flatten, times } from "lodash-es"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 

@@ -68,6 +68,12 @@ export const VicaSchema = Type.Object(
     "app-environment-override": HiddenOptionalString,
     "app-translation-languages": HiddenOptionalString,
     "app-enable-hide-translation": Type.Optional(BooleanStringOptions),
+    // Dev Testing
+    // note: this is only enabled so that VICA's engineering team can test changes to the script
+    // agency's users testing their draft bot should still use the production script
+    // with "app-environment-override"=draft
+    // Reference: https://opengovproducts.slack.com/archives/C087MUEJAMA/p1761820927407499?thread_ts=1761800290.229459&cid=C087MUEJAMA
+    useDevStagingScript: Type.Optional(Type.Boolean({ format: "hidden" })),
   },
   { format: "widget-integration/vica" },
 )
@@ -75,15 +81,12 @@ export const VicaSchema = Type.Object(
 export type VicaProps = Static<typeof VicaSchema>
 
 export interface VicaWidgetClientProps extends VicaProps {
-  environment: IsomerSiteProps["environment"]
   ScriptComponent: ScriptComponentType
 }
 
 export interface VicaWidgetProps extends VicaProps {
-  site: Pick<IsomerSiteProps, "environment" | "siteMap" | "assetsBaseUrl">
+  site: Pick<IsomerSiteProps, "siteMap" | "assetsBaseUrl">
   ScriptComponent: ScriptComponentType
 }
 
-export interface VicaStylesheetProps {
-  environment: IsomerSiteProps["environment"]
-}
+export type VicaStylesheetProps = Pick<VicaProps, "useDevStagingScript">
