@@ -120,7 +120,7 @@ const HeroSearchbarSchema = Type.Object(
   },
   {
     title: "Search bar",
-    // format: "hidden",
+    format: "hidden", // beta: we don't want to show this in the UI yet
   },
 )
 
@@ -148,7 +148,7 @@ export const HeroSchema = Type.Intersect(
   },
 )
 
-type CommonProps = {
+interface CommonProps {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   theme?: "default" | "inverse"
