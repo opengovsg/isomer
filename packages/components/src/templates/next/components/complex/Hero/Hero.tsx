@@ -5,6 +5,7 @@ import { HeroFloating } from "./HeroFloating"
 import { HeroGradient } from "./HeroGradient"
 import { HeroLargeImage } from "./HeroLargeImage/HeroLargeImage"
 import { HeroSearchbar } from "./HeroSearchbar"
+import { HeroSearchbarWithImage } from "./HeroSearchbarWithImage"
 
 const Hero = (props: HeroProps) => {
   switch (props.variant) {
@@ -18,6 +19,8 @@ const Hero = (props: HeroProps) => {
       return <HeroFloating {...props} />
     case HERO_STYLE.searchbar:
       return <HeroSearchbar {...props} />
+    case HERO_STYLE.searchbarWithImage:
+      return <HeroSearchbarWithImage {...props} />
     default:
       const _exhaustiveCheck: never = props.variant
       return _exhaustiveCheck
