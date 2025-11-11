@@ -7,7 +7,7 @@ interface UseInteractionScriptLoaderOptions {
 
 export const useInteractionScriptLoader = ({
   src,
-  timeout = 3000,
+  timeout = 3000, // minimum needed to avoid lighthouse TBT penalty by Wogaa after trial & testing
 }: UseInteractionScriptLoaderOptions) => {
   const loadedRef = useRef(false)
   const loadingRef = useRef(false)
