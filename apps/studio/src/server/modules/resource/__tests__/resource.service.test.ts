@@ -1,4 +1,3 @@
-import { ResourceType } from "@prisma/client"
 import { pick } from "lodash"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -14,7 +13,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import type { Resource } from "../../database"
-import { db, ResourceState } from "../../database"
+import { db, ResourceState, ResourceType } from "../../database"
 import {
   getBatchAncestryWithSelfQuery,
   getFullPageById,

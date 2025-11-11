@@ -1,7 +1,6 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { TRPCError } from "@trpc/server"
-import { AuditLogEvent, RoleType } from "~prisma/generated/generatedEnums"
 import get from "lodash/get"
 import partition from "lodash/partition"
 
@@ -16,7 +15,7 @@ import type {
 import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
 import { ADMIN_ROLE, ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
 import { logPermissionEvent } from "../audit/audit.service"
-import { db } from "../database"
+import { AuditLogEvent, db, RoleType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { CRUD_ACTIONS } from "./permissions.type"
 import {

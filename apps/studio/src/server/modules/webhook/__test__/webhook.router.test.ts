@@ -1,5 +1,4 @@
-import type { GrowthBook } from "@growthbook/growthbook/dist/GrowthBook"
-import type { User } from "@prisma/client"
+import type { GrowthBook } from "@growthbook/growthbook"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -9,6 +8,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import { setupCodeBuildJob, setupUser } from "tests/integration/helpers/seed"
 
+import type { User } from "../../database"
 import type { Session } from "~/lib/types/session"
 import {
   sendFailedPublishEmail,

@@ -1,4 +1,3 @@
-import type { CodeBuildJobs } from "@prisma/client"
 import {
   ResourceState,
   ResourceType,
@@ -9,6 +8,7 @@ import { nanoid } from "nanoid"
 import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 
+import type { CodeBuildJobs } from "~server/db"
 import { buildIdFromArn } from "~/schemas/webhook"
 
 interface SetupPermissionsProps {
