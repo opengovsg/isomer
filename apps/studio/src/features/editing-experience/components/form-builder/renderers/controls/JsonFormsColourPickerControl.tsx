@@ -11,7 +11,11 @@ import {
 } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
-import { FormLabel, Input } from "@opengovsg/design-system-react"
+import {
+  FormErrorMessage,
+  FormLabel,
+  Input,
+} from "@opengovsg/design-system-react"
 import get from "lodash/get"
 import { isHexadecimal } from "validator"
 
@@ -102,6 +106,11 @@ const JsonFormsColourPickerControl = ({
               h="2rem"
             ></Box>
           </HStack>
+          {!data && (
+            <FormErrorMessage>
+              Enter a hex code to generate a colour palette.
+            </FormErrorMessage>
+          )}
         </FormControl>
         <Box alignSelf="flex-start">
           <FormLabel
