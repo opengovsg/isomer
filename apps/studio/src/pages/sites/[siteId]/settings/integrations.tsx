@@ -12,7 +12,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { Value } from "@sinclair/typebox/value"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { isEqual } from "lodash"
+import { isEqual, pickBy } from "lodash"
 import { BiWrench } from "react-icons/bi"
 
 import type { NextPageWithLayout } from "~/lib/types"
@@ -82,8 +82,11 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
     useState<ComplexIntegrationsSettings>({ askgov, vica })
 
   const isDirty = !isEqual(
-    { siteGtmId, search, askgov, vica },
-    { ...simpleIntegrationSettings, ...complexIntegrationSettings },
+    pickBy({ siteGtmId, search, askgov, vica }, (val) => !!val),
+    pickBy(
+      { ...simpleIntegrationSettings, ...complexIntegrationSettings },
+      (val) => !!val,
+    ),
   )
 
   const updateSiteIntegrationsMutation =
