@@ -167,13 +167,19 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
               data={complexIntegrationSettings}
               handleChange={(data) => {
                 if (data.vica) {
-                  setComplexIntegrationSettings({
-                    ...data,
-                    vica: {
-                      ...data.vica,
-                      "app-name": agencyName ?? siteName,
-                    },
-                  })
+                  const newVicaState = {
+                    ...data.vica,
+                    "app-name": agencyName ?? siteName,
+                  }
+
+                  if (!isEqual(newVicaState, data.vica)) {
+                    setComplexIntegrationSettings({
+                      ...data,
+                      vica: newVicaState,
+                    })
+                  } else {
+                    setComplexIntegrationSettings(data)
+                  }
                 } else {
                   setComplexIntegrationSettings(data)
                 }
