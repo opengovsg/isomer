@@ -29,6 +29,9 @@ const HeroBaseSchema = Type.Object({
       maxLength: 300,
     }),
   ),
+})
+
+const CallToActionsSchema = Type.Object({
   buttonLabel: Type.Optional(
     Type.String({
       title: "Primary call-to-action text",
@@ -66,47 +69,59 @@ const BackgroundUrlSchema = Type.String({
   format: "image",
 })
 
-const HeroGradientSchema = Type.Object(
-  {
-    variant: Type.Literal(HERO_STYLE.gradient, {
-      default: HERO_STYLE.gradient,
+const HeroGradientSchema = Type.Composite(
+  [
+    Type.Object({
+      variant: Type.Literal(HERO_STYLE.gradient, {
+        default: HERO_STYLE.gradient,
+      }),
+      backgroundUrl: BackgroundUrlSchema,
     }),
-    backgroundUrl: BackgroundUrlSchema,
-  },
+    CallToActionsSchema,
+  ],
   {
     title: "Gradient (Default)",
   },
 )
 
-const HeroBlockSchema = Type.Object(
-  {
-    variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
-    backgroundUrl: BackgroundUrlSchema,
-  },
+const HeroBlockSchema = Type.Composite(
+  [
+    Type.Object({
+      variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
+      backgroundUrl: BackgroundUrlSchema,
+    }),
+    CallToActionsSchema,
+  ],
   {
     title: "Block hero",
   },
 )
 
-const HeroLargeImageSchema = Type.Object(
-  {
-    variant: Type.Literal(HERO_STYLE.largeImage, {
-      default: HERO_STYLE.largeImage,
+const HeroLargeImageSchema = Type.Composite(
+  [
+    Type.Object({
+      variant: Type.Literal(HERO_STYLE.largeImage, {
+        default: HERO_STYLE.largeImage,
+      }),
+      backgroundUrl: BackgroundUrlSchema,
     }),
-    backgroundUrl: BackgroundUrlSchema,
-  },
+    CallToActionsSchema,
+  ],
   {
     title: "Large image",
   },
 )
 
-const HeroFloatingSchema = Type.Object(
-  {
-    variant: Type.Literal(HERO_STYLE.floating, {
-      default: HERO_STYLE.floating,
+const HeroFloatingSchema = Type.Composite(
+  [
+    Type.Object({
+      variant: Type.Literal(HERO_STYLE.floating, {
+        default: HERO_STYLE.floating,
+      }),
+      backgroundUrl: BackgroundUrlSchema,
     }),
-    backgroundUrl: BackgroundUrlSchema,
-  },
+    CallToActionsSchema,
+  ],
   {
     title: "Floating",
   },
@@ -121,7 +136,7 @@ const HeroSearchbarSchema = Type.Object(
   },
   {
     title: "Search bar",
-    format: "hidden", // beta: we don't want to show this in the UI yet
+    // format: "hidden", // beta: we don't want to show this in the UI yet
   },
 )
 
