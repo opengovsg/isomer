@@ -196,7 +196,8 @@ const preview: Preview = {
   parameters: {
     // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
     layout: "fullscreen",
-    date: new Date(2021, 1, 1),
+    // MOH site launch!!! aka birth of Isomer Next hehe
+    date: new Date(2024, 10, 28),
     viewport,
     /**
      * If tablet view is needed, add it on a per-story basis.
