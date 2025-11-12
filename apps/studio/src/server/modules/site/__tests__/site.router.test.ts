@@ -420,6 +420,31 @@ describe("site.router", async () => {
         }),
       )
     })
+    it("should throw 403 if the user has publisher access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      // Act
+      const result = caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
     it("should update the site config if the user is a site admin", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -562,6 +587,28 @@ describe("site.router", async () => {
         }),
       )
     })
+    it("should throw 403 if the user has publisher access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      // Act
+      const result = caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: MOCK_INTEGRATION_DATA,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
     it("should update the site integrations if the user is a site admin", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -639,6 +686,35 @@ describe("site.router", async () => {
     it("should throw 403 if the user does not have write access to the site", async () => {
       // Arrange
       const { site } = await setupSite()
+
+      // Act
+      const result = caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should throw 403 if the user only has publisher access", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({ theme: jsonb(MOCK_BLACK_THEME) })
+        .where("id", "=", site.id)
+        .execute()
+
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.setTheme({
@@ -1316,6 +1392,33 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.setNotification({
+        siteId: site.id,
+        notification: {
+          notification: { title: "foo" },
+        },
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
+    })
+
+    it("should throw 403 if user has publisher access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPublisherPermissions({
         userId: session.userId,
         siteId: site.id,
       })
