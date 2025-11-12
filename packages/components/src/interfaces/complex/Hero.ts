@@ -93,7 +93,7 @@ const HeroBlockSchema = Type.Composite(
     CallToActionsSchema,
   ],
   {
-    title: "Block hero",
+    title: "Block",
   },
 )
 
