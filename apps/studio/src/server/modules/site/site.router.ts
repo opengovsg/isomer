@@ -243,7 +243,7 @@ export const siteRouter = router({
         })
       }
 
-      await db.transaction().execute(async (tx) => {
+      const updatedSite = await db.transaction().execute(async (tx) => {
         const user = await tx
           .selectFrom("User")
           .where("id", "=", ctx.user.id)
@@ -284,6 +284,7 @@ export const siteRouter = router({
         })
 
         await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
+        return newSite
       })
 
       // NOTE: if the users update their `canvas.inverse`
@@ -302,6 +303,8 @@ export const siteRouter = router({
           site.config.url,
         )
       }
+
+      return updatedSite
     }),
   getFooter: protectedProcedure
     .input(getConfigSchema)
