@@ -36,9 +36,9 @@ export const SearchbarContent = ({
 }: HeroSearchbarProps) => {
   return (
     <div
-      className={`relative mx-auto flex w-full flex-col gap-6 px-6 pb-12 pt-11 md:gap-9 lg:pb-20 lg:pt-16 ${ComponentContent}`}
+      className={`relative mx-auto flex w-full flex-col items-center gap-6 px-6 pb-12 pt-11 md:gap-9 lg:pb-20 lg:pt-16 ${ComponentContent}`}
     >
-      <div className="flex flex-col items-center gap-5 text-center md:gap-6 lg:mx-auto lg:max-w-[66.67%]">
+      <div className="flex w-full max-w-[760px] flex-col items-center gap-5 text-center md:gap-6">
         <h1 className="prose-display-lg w-full text-center">{title}</h1>
         {!!subtitle && (
           <p className="prose-title-lg-regular w-full text-center">

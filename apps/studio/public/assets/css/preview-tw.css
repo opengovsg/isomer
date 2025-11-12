@@ -1900,6 +1900,10 @@ video {
   max-width: 72.5rem;
 }
 
+.max-w-\[760px\] {
+  max-width: 760px;
+}
+
 .max-w-\[calc\(100\%-3rem\)\] {
   max-width: calc(100% - 3rem);
 }
