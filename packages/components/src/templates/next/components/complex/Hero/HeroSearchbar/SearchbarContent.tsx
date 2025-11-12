@@ -40,7 +40,7 @@ export const SearchbarContent = ({
     >
       <div className="flex flex-col items-center gap-5 text-center md:gap-6 lg:mx-auto lg:max-w-[66.67%]">
         <h1 className="prose-display-lg w-full text-center">{title}</h1>
-        {subtitle && (
+        {!!subtitle && (
           <p className="prose-title-lg-regular w-full text-center">
             {subtitle}
           </p>
