@@ -5,7 +5,7 @@ import { mockDateDecorator } from "storybook-mock-date-decorator"
 import "inter-ui/inter.css"
 
 import { useCallback, useState } from "react"
-import { Box, Skeleton, Stack } from "@chakra-ui/react"
+import { Skeleton, Stack } from "@chakra-ui/react"
 import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
@@ -19,9 +19,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
-import { format } from "date-fns/format"
 import { merge } from "lodash"
-import mockdate from "mockdate"
 import { initialize, mswLoader } from "msw-storybook-addon"
 import { ErrorBoundary } from "react-error-boundary"
 import superjson from "superjson"
@@ -143,41 +141,8 @@ const LoginStateDecorator: Decorator<Args> = (story, { parameters }) => {
   )
 }
 
-export const MockDateDecorator: Decorator<Args> = (story, { parameters }) => {
-  mockdate.reset()
-
-  if (!parameters.mockdate) {
-    return story()
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  mockdate.set(parameters.mockdate)
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  const mockedDate = format(parameters.mockdate, "dd-mm-yyyy HH:mma")
-
-  return (
-    <Box>
-      <Box
-        pos="fixed"
-        top={0}
-        right={0}
-        bg="white"
-        p="0.25rem"
-        fontSize="0.75rem"
-        lineHeight={1}
-        zIndex="docked"
-      >
-        Mocking date: {mockedDate}
-      </Box>
-      {story()}
-    </Box>
-  )
-}
-
 const decorators: Decorator[] = [
   WithLayoutDecorator,
-  // MockDateDecorator,
   SetupDecorator,
   StorybookEnvDecorator,
   withThemeFromJSXProvider<ReactRenderer>({
