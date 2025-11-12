@@ -69,6 +69,21 @@ const BackgroundUrlSchema = Type.String({
   format: "image",
 })
 
+const GROUPINGS = {
+  TEXT: {
+    label: "Hero content",
+    fields: ["title", "subtitle"],
+  },
+  PRIMARY_CALL_TO_ACTION: {
+    label: "Primary call-to-action",
+    fields: ["buttonLabel", "buttonUrl"],
+  },
+  SECONDARY_CALL_TO_ACTION: {
+    label: "Secondary call-to-action",
+    fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
+  },
+} as const
+
 const HeroGradientSchema = Type.Composite(
   [
     Type.Object({
@@ -83,18 +98,9 @@ const HeroGradientSchema = Type.Composite(
   {
     title: "Gradient (Default)",
     groups: [
-      {
-        label: "Text",
-        fields: ["title", "subtitle"],
-      },
-      {
-        label: "Primary call-to-action",
-        fields: ["buttonLabel", "buttonUrl"],
-      },
-      {
-        label: "Secondary call-to-action",
-        fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
-      },
+      GROUPINGS.TEXT,
+      GROUPINGS.PRIMARY_CALL_TO_ACTION,
+      GROUPINGS.SECONDARY_CALL_TO_ACTION,
     ],
   },
 )
@@ -111,18 +117,9 @@ const HeroBlockSchema = Type.Composite(
   {
     title: "Block",
     groups: [
-      {
-        label: "Text",
-        fields: ["title", "subtitle"],
-      },
-      {
-        label: "Primary call-to-action",
-        fields: ["buttonLabel", "buttonUrl"],
-      },
-      {
-        label: "Secondary call-to-action",
-        fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
-      },
+      GROUPINGS.TEXT,
+      GROUPINGS.PRIMARY_CALL_TO_ACTION,
+      GROUPINGS.SECONDARY_CALL_TO_ACTION,
     ],
   },
 )
@@ -141,18 +138,9 @@ const HeroLargeImageSchema = Type.Composite(
   {
     title: "Large image",
     groups: [
-      {
-        label: "Text",
-        fields: ["title", "subtitle"],
-      },
-      {
-        label: "Primary call-to-action",
-        fields: ["buttonLabel", "buttonUrl"],
-      },
-      {
-        label: "Secondary call-to-action",
-        fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
-      },
+      GROUPINGS.TEXT,
+      GROUPINGS.PRIMARY_CALL_TO_ACTION,
+      GROUPINGS.SECONDARY_CALL_TO_ACTION,
     ],
   },
 )
@@ -171,18 +159,9 @@ const HeroFloatingSchema = Type.Composite(
   {
     title: "Floating",
     groups: [
-      {
-        label: "Text",
-        fields: ["title", "subtitle"],
-      },
-      {
-        label: "Primary call-to-action",
-        fields: ["buttonLabel", "buttonUrl"],
-      },
-      {
-        label: "Secondary call-to-action",
-        fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
-      },
+      GROUPINGS.TEXT,
+      GROUPINGS.PRIMARY_CALL_TO_ACTION,
+      GROUPINGS.SECONDARY_CALL_TO_ACTION,
     ],
   },
 )
@@ -200,12 +179,7 @@ const HeroSearchbarSchema = Type.Composite(
   {
     title: "Search bar",
     // format: "hidden", // beta: we don't want to show this in the UI yet
-    groups: [
-      {
-        label: "Text",
-        fields: ["title", "subtitle"],
-      },
-    ],
+    groups: [GROUPINGS.TEXT],
   },
 )
 
