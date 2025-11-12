@@ -77,6 +77,7 @@ const HeroGradientSchema = Type.Composite(
       }),
       backgroundUrl: BackgroundUrlSchema,
     }),
+    HeroBaseSchema,
     CallToActionsSchema,
   ],
   {
@@ -90,6 +91,7 @@ const HeroBlockSchema = Type.Composite(
       variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
       backgroundUrl: BackgroundUrlSchema,
     }),
+    HeroBaseSchema,
     CallToActionsSchema,
   ],
   {
@@ -105,6 +107,7 @@ const HeroLargeImageSchema = Type.Composite(
       }),
       backgroundUrl: BackgroundUrlSchema,
     }),
+    HeroBaseSchema,
     CallToActionsSchema,
   ],
   {
@@ -120,6 +123,7 @@ const HeroFloatingSchema = Type.Composite(
       }),
       backgroundUrl: BackgroundUrlSchema,
     }),
+    HeroBaseSchema,
     CallToActionsSchema,
   ],
   {
@@ -127,13 +131,16 @@ const HeroFloatingSchema = Type.Composite(
   },
 )
 
-const HeroSearchbarSchema = Type.Object(
-  {
-    variant: Type.Literal(HERO_STYLE.searchbar, {
-      default: HERO_STYLE.searchbar,
+const HeroSearchbarSchema = Type.Composite(
+  [
+    Type.Object({
+      variant: Type.Literal(HERO_STYLE.searchbar, {
+        default: HERO_STYLE.searchbar,
+      }),
+      backgroundUrl: Type.Optional(BackgroundUrlSchema),
     }),
-    backgroundUrl: Type.Optional(BackgroundUrlSchema),
-  },
+    HeroBaseSchema,
+  ],
   {
     title: "Search bar",
     // format: "hidden", // beta: we don't want to show this in the UI yet
@@ -142,7 +149,6 @@ const HeroSearchbarSchema = Type.Object(
 
 export const HeroSchema = Type.Intersect(
   [
-    HeroBaseSchema,
     Type.Union(
       [
         HeroGradientSchema,
@@ -159,8 +165,6 @@ export const HeroSchema = Type.Intersect(
   ],
   {
     title: "Hero component",
-    description:
-      "The hero component is used to display a large banner at the top of the homepage.",
   },
 )
 
