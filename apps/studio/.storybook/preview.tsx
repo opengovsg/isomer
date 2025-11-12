@@ -1,4 +1,7 @@
 import "@fontsource/ibm-plex-mono"
+
+import { mockDateDecorator } from "storybook-mock-date-decorator"
+
 import "inter-ui/inter.css"
 
 import { useCallback, useState } from "react"
@@ -174,7 +177,7 @@ export const MockDateDecorator: Decorator<Args> = (story, { parameters }) => {
 
 const decorators: Decorator[] = [
   WithLayoutDecorator,
-  MockDateDecorator,
+  // MockDateDecorator,
   SetupDecorator,
   StorybookEnvDecorator,
   withThemeFromJSXProvider<ReactRenderer>({
@@ -184,6 +187,7 @@ const decorators: Decorator[] = [
     Provider: ThemeProvider,
   }) as Decorator, // FIXME: Remove this cast when types are fixed
   LoginStateDecorator,
+  mockDateDecorator,
 ]
 
 const preview: Preview = {
@@ -192,6 +196,7 @@ const preview: Preview = {
   parameters: {
     // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
     layout: "fullscreen",
+    date: new Date(2021, 1, 1),
     viewport,
     /**
      * If tablet view is needed, add it on a per-story basis.
