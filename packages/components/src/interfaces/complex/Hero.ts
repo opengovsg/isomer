@@ -61,7 +61,7 @@ const HeroBaseSchema = Type.Object({
   ),
 })
 
-const HeroBackgroundUrlSchema = Type.String({
+const BackgroundUrlSchema = Type.String({
   title: "Hero image",
   format: "image",
 })
@@ -71,7 +71,7 @@ const HeroGradientSchema = Type.Object(
     variant: Type.Literal(HERO_STYLE.gradient, {
       default: HERO_STYLE.gradient,
     }),
-    backgroundUrl: HeroBackgroundUrlSchema,
+    backgroundUrl: BackgroundUrlSchema,
   },
   {
     title: "Gradient (Default)",
@@ -81,7 +81,7 @@ const HeroGradientSchema = Type.Object(
 const HeroBlockSchema = Type.Object(
   {
     variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
-    backgroundUrl: HeroBackgroundUrlSchema,
+    backgroundUrl: BackgroundUrlSchema,
   },
   {
     title: "Block hero",
@@ -93,7 +93,7 @@ const HeroLargeImageSchema = Type.Object(
     variant: Type.Literal(HERO_STYLE.largeImage, {
       default: HERO_STYLE.largeImage,
     }),
-    backgroundUrl: HeroBackgroundUrlSchema,
+    backgroundUrl: BackgroundUrlSchema,
   },
   {
     title: "Large image",
@@ -105,7 +105,7 @@ const HeroFloatingSchema = Type.Object(
     variant: Type.Literal(HERO_STYLE.floating, {
       default: HERO_STYLE.floating,
     }),
-    backgroundUrl: HeroBackgroundUrlSchema,
+    backgroundUrl: BackgroundUrlSchema,
   },
   {
     title: "Floating",
@@ -117,7 +117,7 @@ const HeroSearchbarSchema = Type.Object(
     variant: Type.Literal(HERO_STYLE.searchbar, {
       default: HERO_STYLE.searchbar,
     }),
-    backgroundUrl: Type.Optional(HeroBackgroundUrlSchema),
+    backgroundUrl: Type.Optional(BackgroundUrlSchema),
   },
   {
     title: "Search bar",
