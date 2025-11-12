@@ -1,6 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { BuildStatusType } from "@prisma/client"
 import type pino from "pino"
+import { ResourceType } from "@prisma/client"
 import _ from "lodash"
 
 import {
@@ -47,18 +48,18 @@ export const updateCodebuildStatusAndSendEmails = async (
   logger: pino.Logger<string>,
   gb: GrowthBook,
   buildId: string,
-  buildStatus: BuildStatusType,
+  status: BuildStatusType,
 ): Promise<{ codebuildJobIdsForSentEmails: string[] }> => {
   // tracks the ids of builds for which emails were sent successfully
   let codebuildJobIdsForSentEmails: string[] = []
-  await updateCurrentAndSupersededBuilds(buildId, buildStatus)
+  await updateCurrentAndSupersededBuilds(buildId, status)
   // send notification emails on a best-effort basis, so we catch any errors and log them
   try {
-    codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, buildStatus)
+    codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, status)
     logger.info(
       {
         buildId,
-        buildStatus,
+        status,
         codebuildJobIdsForSentEmails,
       },
       `Emails sent for buildId ${String(buildId)}`,
@@ -67,10 +68,10 @@ export const updateCodebuildStatusAndSendEmails = async (
     logger.error(
       {
         buildId,
-        buildStatus,
+        status,
         error,
       },
-      `Failed to send notification emails for build status ${String(buildStatus)} for buildId ${String(buildId)}.`,
+      `Failed to send notification emails for build status ${String(status)} for buildId ${String(buildId)}.`,
     )
   }
   // mark the builds for which emails were sent successfully as having had their email sent
@@ -113,6 +114,7 @@ const sendEmails = async (
           eb("CodeBuildJobs.supersededByBuildId", "=", buildId),
         ]),
         eb("CodeBuildJobs.emailSent", "=", false), // only consider builds that haven't had an email sent yet
+        eb("Resource.type", "=", ResourceType.Page), // only consider page resources for sending emails
         eb("User.email", "is not", null), // only consider users with an email
       ])
     })
@@ -131,8 +133,7 @@ const sendEmails = async (
               promise: sendSuccessfulPublishEmail({
                 isScheduled: info.isScheduled,
                 recipientEmail: info.email,
-                title: info.title,
-                publishTime: new Date(), // use current time as publish time, no need to use exact time from codebuild
+                resource: info,
               }),
             }
           case "FAILED":
