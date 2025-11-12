@@ -82,6 +82,20 @@ const HeroGradientSchema = Type.Composite(
   ],
   {
     title: "Gradient (Default)",
+    groups: [
+      {
+        label: "Text",
+        fields: ["title", "subtitle"],
+      },
+      {
+        label: "Primary call-to-action",
+        fields: ["buttonLabel", "buttonUrl"],
+      },
+      {
+        label: "Secondary call-to-action",
+        fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
+      },
+    ],
   },
 )
 
@@ -96,6 +110,20 @@ const HeroBlockSchema = Type.Composite(
   ],
   {
     title: "Block",
+    groups: [
+      {
+        label: "Text",
+        fields: ["title", "subtitle"],
+      },
+      {
+        label: "Primary call-to-action",
+        fields: ["buttonLabel", "buttonUrl"],
+      },
+      {
+        label: "Secondary call-to-action",
+        fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
+      },
+    ],
   },
 )
 
@@ -112,6 +140,20 @@ const HeroLargeImageSchema = Type.Composite(
   ],
   {
     title: "Large image",
+    groups: [
+      {
+        label: "Text",
+        fields: ["title", "subtitle"],
+      },
+      {
+        label: "Primary call-to-action",
+        fields: ["buttonLabel", "buttonUrl"],
+      },
+      {
+        label: "Secondary call-to-action",
+        fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
+      },
+    ],
   },
 )
 
@@ -128,6 +170,20 @@ const HeroFloatingSchema = Type.Composite(
   ],
   {
     title: "Floating",
+    groups: [
+      {
+        label: "Text",
+        fields: ["title", "subtitle"],
+      },
+      {
+        label: "Primary call-to-action",
+        fields: ["buttonLabel", "buttonUrl"],
+      },
+      {
+        label: "Secondary call-to-action",
+        fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
+      },
+    ],
   },
 )
 
@@ -144,6 +200,12 @@ const HeroSearchbarSchema = Type.Composite(
   {
     title: "Search bar",
     // format: "hidden", // beta: we don't want to show this in the UI yet
+    groups: [
+      {
+        label: "Text",
+        fields: ["title", "subtitle"],
+      },
+    ],
   },
 )
 
