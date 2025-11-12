@@ -1,0 +1,7 @@
+-- AlterEnum
+ALTER TYPE "BuildStatusType" ADD VALUE 'PENDING';
+
+-- AlterTable
+ALTER TABLE "CodeBuildJobs" ALTER COLUMN "buildId" DROP NOT NULL;
+ALTER TABLE "CodeBuildJobs" ALTER COLUMN "startedAt" DROP NOT NULL,
+ALTER COLUMN "startedAt" DROP DEFAULT;

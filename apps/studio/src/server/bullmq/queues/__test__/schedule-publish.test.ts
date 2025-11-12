@@ -7,16 +7,22 @@ import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import {
+  addCodebuildProjectToSite,
   setupPageResource,
   setupPublisherPermissions,
+  setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
 
+import * as codebuildService from "~/server/modules/aws/codebuild.service"
 import { db } from "~/server/modules/database"
 import {
-  BUFFER_IN_SECONDS,
-  publishScheduledResource,
-} from "../schedule-publish"
+  SCHEDULED_AT_TOLERANCE_SECONDS,
+  SITE_PUBLISH_BUFFER_SECONDS,
+} from "../constants"
+import { publishScheduledResource } from "../schedule-publish"
+import { sitePublishQueue } from "../site-publish"
+import { getJobIdFromResourceIdAndScheduledAt } from "../utils"
 
 vi.mock("~/server/modules/aws/utils.ts", async () => {
   const actual = await vi.importActual<
@@ -63,15 +69,9 @@ describe("scheduled-publish", async () => {
       isDeleted: false,
     })
     await auth(user)
+    // clear any existing jobs in the site & scheduled queues
+    await sitePublishQueue.obliterate({ force: true })
   })
-
-  const addCodebuildProjectToSite = async (siteId: number) => {
-    await db
-      .updateTable("Site")
-      .set({ codeBuildId: "test-codebuild-project-id" })
-      .where("id", "=", siteId)
-      .execute()
-  }
 
   describe("publishScheduledResource", () => {
     beforeEach(() => {
@@ -82,9 +82,10 @@ describe("scheduled-publish", async () => {
     })
     it("publishes a resource and updates the codebuildjobs table", async () => {
       // Arrange
+      const scheduledAt = FIXED_NOW
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
-        scheduledAt: FIXED_NOW,
+        scheduledAt,
       })
       await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
@@ -96,7 +97,12 @@ describe("scheduled-publish", async () => {
       await publishScheduledResource(
         getMockGrowthbook(),
         "test-job-id",
-        { resourceId: Number(page.id), siteId: site.id, userId: user.id },
+        {
+          resourceId: Number(page.id),
+          siteId: site.id,
+          userId: user.id,
+          scheduledAt: scheduledAt.toISOString(),
+        },
         0,
       )
 
@@ -120,18 +126,20 @@ describe("scheduled-publish", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(resource.scheduledAt).toBeNull()
-      // expect the codebuildjobs table to be updated with the new build
-      const codebuildjob = await db
+      // expect the codebuildjobs table to be updated correctly
+      const codebuildjobs = await db
         .selectFrom("CodeBuildJobs")
-        .where("buildId", "=", "test-build-id")
+        .where("buildId", "is", null)
+        .where("siteId", "=", site.id)
         .selectAll()
-        .executeTakeFirstOrThrow()
+        .execute()
+      expect(codebuildjobs).toHaveLength(1)
+      const [codebuildjob] = codebuildjobs
       expect(codebuildjob).toMatchObject({
         siteId: site.id,
         userId: user.id,
-        buildId: "test-build-id",
-        startedAt: FIXED_NOW,
-        status: "IN_PROGRESS",
+        startedAt: null,
+        status: "PENDING",
       })
       // expect the audit log to be created with the correct info
       const auditLogs = await db
@@ -148,9 +156,13 @@ describe("scheduled-publish", async () => {
     })
     it("does not publish the resource IF the scheduledAt time is outside the buffer", async () => {
       // Arrange
+      const scheduledAt = addSeconds(
+        FIXED_NOW,
+        SCHEDULED_AT_TOLERANCE_SECONDS + 1,
+      ) // beyond the buffer
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
-        scheduledAt: addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1), // beyond the buffer
+        scheduledAt,
       })
       await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
@@ -162,7 +174,12 @@ describe("scheduled-publish", async () => {
       const res = await publishScheduledResource(
         getMockGrowthbook(),
         "test-job-id",
-        { resourceId: Number(page.id), siteId: site.id, userId: user.id },
+        {
+          resourceId: Number(page.id),
+          siteId: site.id,
+          userId: user.id,
+          scheduledAt: scheduledAt.toISOString(),
+        },
         0,
       )
 
@@ -193,9 +210,13 @@ describe("scheduled-publish", async () => {
     })
     it("publishes the resource IF the scheduledAt time is outside the buffer, but previous attempts have been made", async () => {
       // Arrange
+      const scheduledAt = addSeconds(
+        FIXED_NOW,
+        SCHEDULED_AT_TOLERANCE_SECONDS + 1,
+      )
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
-        scheduledAt: addSeconds(FIXED_NOW, BUFFER_IN_SECONDS + 1), // beyond the buffer
+        scheduledAt,
       })
       await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
@@ -212,7 +233,12 @@ describe("scheduled-publish", async () => {
       await publishScheduledResource(
         getMockGrowthbook(),
         "test-job-id",
-        { resourceId: Number(page.id), siteId: site.id, userId: user.id },
+        {
+          resourceId: Number(page.id),
+          siteId: site.id,
+          userId: user.id,
+          scheduledAt: scheduledAt.toISOString(),
+        },
         1, // previous attempts
       )
 
@@ -233,6 +259,7 @@ describe("scheduled-publish", async () => {
     })
     it("fails to publish the resource if the user does not have the right permissions when the job executes", async () => {
       // Arrange
+      const scheduledAt = FIXED_NOW
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
@@ -243,11 +270,139 @@ describe("scheduled-publish", async () => {
         publishScheduledResource(
           getMockGrowthbook(),
           "test-job-id",
-          { resourceId: Number(page.id), siteId: site.id, userId: user.id },
+          {
+            resourceId: Number(page.id),
+            siteId: site.id,
+            userId: user.id,
+            scheduledAt: scheduledAt.toISOString(),
+          },
           0,
         ),
       ).rejects.toThrowError(
         "You do not have sufficient permissions to perform this action",
+      )
+    })
+    it("pushes a job onto the site publish queue if the page publish succeeds", async () => {
+      // Arrange
+      const scheduledAt = FIXED_NOW
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt,
+      })
+      await addCodebuildProjectToSite(site.id)
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await publishScheduledResource(
+        getMockGrowthbook(),
+        "test-job-id",
+        {
+          resourceId: Number(page.id),
+          siteId: site.id,
+          userId: user.id,
+          scheduledAt: scheduledAt.toISOString(),
+        },
+        0, // previous attempts
+      )
+
+      // Assert
+      // The site has NOT been published yet
+      const publishSiteSpy = vi.spyOn(codebuildService, "publishSite")
+      expect(publishSiteSpy).not.toHaveBeenCalled()
+      // but a job has been added to the site publish queue with a delay of SITE_PUBLISH_BUFFER_SECONDS
+      const job = await sitePublishQueue.getJob(
+        getJobIdFromResourceIdAndScheduledAt(site.id.toString(), scheduledAt),
+      )
+      expect(job!.data).toEqual({
+        siteId: site.id,
+      })
+      expect(job!.opts.delay).toBeCloseTo(
+        SITE_PUBLISH_BUFFER_SECONDS * 1000,
+        -3, // rounding to the nearest second (3 decimal places)
+      )
+    })
+    it("does not push a job onto the site publish queue if the site does not have a codebuild project", async () => {
+      // Arrange
+      const scheduledAt = FIXED_NOW
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await publishScheduledResource(
+        getMockGrowthbook(),
+        "test-job-id",
+        {
+          resourceId: Number(page.id),
+          siteId: site.id,
+          userId: user.id,
+          scheduledAt: scheduledAt.toISOString(),
+        },
+        0, // previous attempts
+      )
+
+      // Assert
+      const job = await sitePublishQueue.getJob(
+        getJobIdFromResourceIdAndScheduledAt(site.id.toString(), scheduledAt),
+      )
+      expect(job).not.toBeDefined()
+    })
+    it("publishing many resources for the same site only creates ONE site publish job", async () => {
+      // Arrange
+      const scheduledAt = FIXED_NOW
+      const { site } = await setupSite()
+      await addCodebuildProjectToSite(site.id)
+      const PAGES_TO_PUBLISH = 5
+      const pageIds: string[] = []
+      for (let i = 0; i < PAGES_TO_PUBLISH; i++) {
+        const { page } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          scheduledAt,
+          siteId: site.id,
+          permalink: `page-${i}`, // ensure unique permalinks
+        })
+        pageIds.push(page.id)
+      }
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - publish all the pages
+      await Promise.all(
+        pageIds.map((pageId) =>
+          publishScheduledResource(
+            getMockGrowthbook(),
+            "test-job-id",
+            {
+              resourceId: Number(pageId),
+              siteId: site.id,
+              userId: user.id,
+              scheduledAt: scheduledAt.toISOString(),
+            },
+            0, // previous attempts
+          ),
+        ),
+      )
+
+      // Assert
+      const allJobs = await sitePublishQueue.getJobs()
+      expect(allJobs).toHaveLength(1)
+      const [job] = allJobs
+      expect(job!.data).toEqual({
+        siteId: site.id,
+      })
+      expect(job!.opts.delay).toBeCloseTo(
+        SITE_PUBLISH_BUFFER_SECONDS * 1000,
+        -3, // rounding to the nearest second (3 decimal places)
       )
     })
   })
