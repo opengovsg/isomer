@@ -388,7 +388,7 @@ describe("site.router", async () => {
       const result = unauthedCaller.updateSiteConfig({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "www.isomer.gov.sg",
+        url: "https://www.isomer.gov.sg",
         theme: "isomer-next",
         siteId: 1,
       })
@@ -406,7 +406,7 @@ describe("site.router", async () => {
       const result = caller.updateSiteConfig({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "www.isomer.gov.sg",
+        url: "https://www.isomer.gov.sg",
         theme: "isomer-next",
         siteId: site.id,
       })
@@ -431,7 +431,7 @@ describe("site.router", async () => {
       const result = caller.updateSiteConfig({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "www.isomer.gov.sg",
+        url: "https://www.isomer.gov.sg",
         theme: "isomer-next",
         siteId: site.id,
       })
@@ -457,7 +457,7 @@ describe("site.router", async () => {
       const result = await caller.updateSiteConfig({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "www.isomer.gov.sg",
+        url: "https://www.isomer.gov.sg",
         theme: "isomer-next",
         siteId: site.id,
       })
@@ -466,7 +466,7 @@ describe("site.router", async () => {
       expect(result).toEqual({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "www.isomer.gov.sg",
+        url: "https://www.isomer.gov.sg",
         theme: "isomer-next",
       })
     })
@@ -482,7 +482,7 @@ describe("site.router", async () => {
       await caller.updateSiteConfig({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "www.isomer.gov.sg",
+        url: "https://www.isomer.gov.sg",
         theme: "isomer-next",
         siteId: site.id,
       })
@@ -519,7 +519,7 @@ describe("site.router", async () => {
       const result = await caller.updateSiteConfig({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "www.isomer.gov.sg",
+        url: "https://www.isomer.gov.sg",
         theme: "isomer-next",
         siteId: site.id,
         ...mockSearch,
@@ -537,7 +537,7 @@ describe("site.router", async () => {
       expect(result).toEqual({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "www.isomer.gov.sg",
+        url: "https://www.isomer.gov.sg",
         theme: "isomer-next",
         ...mockSearch,
       })
@@ -549,7 +549,7 @@ describe("site.router", async () => {
       siteName: MOCK_SITE_NAME,
       logoUrl: MOCK_LOGO_URL,
       theme: "isomer-next",
-      url: "www.isomer.gov.sg",
+      url: "https://www.isomer.gov.sg",
     } as const
 
     it("should throw 401 if not logged in", async () => {
