@@ -240,8 +240,9 @@ export const getManualReviewItems = (
 
   // Accordions
   if (
-    stringifiedOriginalContent.includes("<summary>") &&
-    stringifiedOriginalContent.includes("<details")
+    (stringifiedOriginalContent.includes("<summary>") &&
+      stringifiedOriginalContent.includes("<details")) ||
+    stringifiedOriginalContent.includes("jekyllcodex_accordion")
   ) {
     reviewItems.push("Contains accordions");
   }
