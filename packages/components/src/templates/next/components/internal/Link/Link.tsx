@@ -30,9 +30,7 @@ export const Link = ({
   ...rest
 }: LinkProps) => {
   const cssStyles = twMerge(
-    isWithFocusVisibleHighlight
-      ? fvHighlightLinkStyles()
-      : linkStyles(),
+    isWithFocusVisibleHighlight ? fvHighlightLinkStyles() : linkStyles(),
     className,
   )
   const externalLinkProps = isExternal
