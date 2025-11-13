@@ -3,6 +3,7 @@ import { userEvent, within } from "storybook/test"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
+import { DEFAULT_CONTENT_INVERSE_COLOUR } from "~/features/editing-experience/components/form-builder/renderers/controls/JsonFormsColourPickerControl"
 import ColoursSettingsPage from "~/pages/sites/[siteId]/settings/colours"
 import { ADMIN_HANDLERS } from "~/stories/handlers"
 
@@ -61,7 +62,9 @@ export const DarkPalette: Story = {
   play: async ({ canvasElement }) => {
     const rootScreen = within(canvasElement.ownerDocument.body)
 
-    const colourInput = await rootScreen.findByPlaceholderText("FFFFFF")
+    const colourInput = await rootScreen.findByPlaceholderText(
+      DEFAULT_CONTENT_INVERSE_COLOUR,
+    )
 
     await userEvent.clear(colourInput)
     await userEvent.type(colourInput, "#000000")
@@ -72,10 +75,12 @@ export const LightPalette: Story = {
   play: async ({ canvasElement }) => {
     const rootScreen = within(canvasElement.ownerDocument.body)
 
-    const colourInput = await rootScreen.findByPlaceholderText("FFFFFF")
+    const colourInput = await rootScreen.findByPlaceholderText(
+      DEFAULT_CONTENT_INVERSE_COLOUR,
+    )
 
     await userEvent.clear(colourInput)
-    await userEvent.type(colourInput, "FFFFFF")
+    await userEvent.type(colourInput, DEFAULT_CONTENT_INVERSE_COLOUR)
   },
 }
 
@@ -83,7 +88,9 @@ export const Empty: Story = {
   play: async ({ canvasElement }) => {
     const rootScreen = within(canvasElement.ownerDocument.body)
 
-    const colourInput = await rootScreen.findByPlaceholderText("FFFFFF")
+    const colourInput = await rootScreen.findByPlaceholderText(
+      DEFAULT_CONTENT_INVERSE_COLOUR,
+    )
 
     await userEvent.clear(colourInput)
   },

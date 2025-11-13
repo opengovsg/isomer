@@ -27,6 +27,8 @@ export const jsonFormsColourPickerControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "color-picker"),
 )
 
+export const DEFAULT_CONTENT_INVERSE_COLOUR = "2164da"
+
 const THEME_PATHS = [
   "colors.brand.canvas.default",
   "colors.brand.canvas.alt",
@@ -69,7 +71,7 @@ const JsonFormsColourPickerControl = ({
               </InputLeftAddon>
               <Input
                 value={displayedColour?.replace("#", "")}
-                placeholder="FFFFFF"
+                placeholder={DEFAULT_CONTENT_INVERSE_COLOUR}
                 w="86px"
                 onChange={(e) => {
                   const rawString = e.target.value
@@ -90,7 +92,10 @@ const JsonFormsColourPickerControl = ({
                   const palette = getPalette(parsedHex)
 
                   THEME_PATHS.forEach((p) => {
-                    handleChange(p, palette[p] ?? "#FFFFFF")
+                    handleChange(
+                      p,
+                      palette[p] ?? `#${DEFAULT_CONTENT_INVERSE_COLOUR}`,
+                    )
                   })
                 }}
               />
@@ -100,7 +105,9 @@ const JsonFormsColourPickerControl = ({
               border="1px solid"
               borderColor="base.divider.strong"
               bgColor={
-                displayedColour ? `#${normalizeHex(displayedColour)}` : "white"
+                displayedColour
+                  ? `#${normalizeHex(displayedColour)}`
+                  : `#${DEFAULT_CONTENT_INVERSE_COLOUR}`
               }
               w="2rem"
               h="2rem"
@@ -138,7 +145,10 @@ const JsonFormsColourPickerControl = ({
                   borderColor="base.divider.medium"
                   borderLeftRadius={isFirst ? "6px" : "auto"}
                   borderRightRadius={isLast ? "6px" : "auto"}
-                  bgColor={get(ctx.core?.data as string | undefined, p)}
+                  bgColor={
+                    get(ctx.core?.data as string | undefined, p) ??
+                    `#${DEFAULT_CONTENT_INVERSE_COLOUR}`
+                  }
                 ></Box>
               )
             })}
