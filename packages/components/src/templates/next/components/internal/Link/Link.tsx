@@ -58,7 +58,7 @@ export const Link = ({
       {rest.children}
       {showExternalIcon && (
         <BiRightArrowAlt
-          className="ml-1 inline-block rotate-45"
+          className="ml-1 inline-block -rotate-45"
           aria-hidden="true"
         />
       )}
