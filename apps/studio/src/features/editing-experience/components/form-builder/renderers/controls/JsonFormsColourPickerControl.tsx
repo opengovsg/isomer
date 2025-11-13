@@ -146,7 +146,7 @@ const JsonFormsColourPickerControl = ({
                   borderLeftRadius={isFirst ? "6px" : "auto"}
                   borderRightRadius={isLast ? "6px" : "auto"}
                   bgColor={
-                    get(ctx.core?.data as string | undefined, p) ??
+                    get(ctx.core?.data as string | undefined, p) ||
                     `#${DEFAULT_CONTENT_INVERSE_COLOUR}`
                   }
                 ></Box>
