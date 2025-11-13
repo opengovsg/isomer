@@ -57,7 +57,8 @@ const migratePage = async ({
   console.log("Migrating page", path);
   const content = await getFileContents({ site, path, octokit });
 
-  if (!content) {
+  // Arbitrary length check to avoid empty files
+  if (!content || content.length < 5) {
     console.error(`Error reading file contents at ${path}`);
     return;
   }
@@ -108,12 +109,14 @@ interface SaveContentsToFileParams {
   site: string;
   content: any;
   permalink: string;
+  shouldOverwrite?: boolean;
 }
 
 const saveContentsToFile = async ({
   site,
   content,
   permalink,
+  shouldOverwrite = false,
 }: SaveContentsToFileParams) => {
   const schema = JSON.stringify(content, null, 2);
 
@@ -131,7 +134,10 @@ const saveContentsToFile = async ({
   // finds a free name
   let finalFileName = fileName;
   let counter = 1;
-  while (fs.existsSync(path.join(folderPath, finalFileName))) {
+  while (
+    fs.existsSync(path.join(folderPath, finalFileName)) &&
+    !shouldOverwrite
+  ) {
     finalFileName = `${path
       .basename(filePath)
       .replace(".json", "")}-${counter}.json`;
@@ -167,6 +173,7 @@ const createIndexIfNotExists = async (
     site,
     content: indexPage,
     permalink,
+    shouldOverwrite: true,
   });
 };
 
@@ -196,6 +203,7 @@ const createCollectionIndex = async (
     site,
     content: indexPage,
     permalink: resourceRoomName,
+    shouldOverwrite: true,
   });
 };
 

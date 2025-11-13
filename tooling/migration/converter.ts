@@ -642,6 +642,8 @@ const getCleanedSchema = (schema: any) => {
 
   // Recursively find table components and ensure that the first row contains
   // cells that are of type tableHeader, then return the schema
+  // NOTE: This is skipped so we don't force fit any existing content into table
+  // headers, as some tables may be left column as header instead of the top row
   const findTableHeader = (schema: any) => {
     schema.forEach((component: any) => {
       if (component.type === "table") {
@@ -791,8 +793,8 @@ const getCleanedSchema = (schema: any) => {
   return findIframe(
     findLink(
       removeEmptyParagraphs(
-        findTableHeader(
-          findHardBreak(findParagraphHardBreak(findTable(schema)))
+        findHardBreak(
+          findParagraphHardBreak(replaceTableImages(findTable(schema)))
         )
       )
     )
