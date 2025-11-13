@@ -29,7 +29,7 @@ const meta: Meta<typeof ColoursSettingsPage> = {
     },
     nextjs: {
       router: {
-        asPath: "/sites/1/settings/logo",
+        asPath: "/sites/1/settings/colours",
         query: {
           siteId: "1",
         },
