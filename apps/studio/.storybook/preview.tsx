@@ -27,13 +27,13 @@ import superjson from "superjson"
 import { viewport, withChromaticModes } from "@isomer/storybook-config"
 
 import type { EnvContextReturn } from "~/components/AppProviders"
+import type { AppRouter } from "~/server/modules/_app"
 import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider } from "~/components/AppProviders"
 import { DefaultFallback } from "~/components/ErrorBoundary"
 import Suspense from "~/components/Suspense"
 import { env } from "~/env.mjs"
 import { LoginStateContext } from "~/features/auth"
-import { type AppRouter } from "~/server/modules/_app"
 import { theme } from "~/theme"
 
 // Initialize MSW
@@ -149,7 +149,7 @@ const conditionalMockDateDecorator: Decorator = (story, context) => {
     return story()
   }
 
-  return mockDateDecorator(story, context)
+  return mockDateDecorator(story, context) as JSX.Element
 }
 
 const decorators: Decorator[] = [
