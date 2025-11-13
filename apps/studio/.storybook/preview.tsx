@@ -141,6 +141,17 @@ const LoginStateDecorator: Decorator<Args> = (story, { parameters }) => {
   )
 }
 
+const conditionalMockDateDecorator: Decorator = (story, context) => {
+  // NOTE: skip mockDateDecorator if explicitly disabled;
+  // this is because the decorator calls `MockDate.reset` under the hood
+  // which might interfere with renders in React
+  if (context.parameters.disableMockDate) {
+    return story()
+  }
+
+  return mockDateDecorator(story, context)
+}
+
 const decorators: Decorator[] = [
   WithLayoutDecorator,
   SetupDecorator,
@@ -152,7 +163,7 @@ const decorators: Decorator[] = [
     Provider: ThemeProvider,
   }) as Decorator, // FIXME: Remove this cast when types are fixed
   LoginStateDecorator,
-  mockDateDecorator,
+  conditionalMockDateDecorator,
 ]
 
 const preview: Preview = {
