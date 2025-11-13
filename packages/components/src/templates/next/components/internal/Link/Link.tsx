@@ -1,3 +1,5 @@
+import { BiRightArrowAlt } from "react-icons/bi"
+
 import type { LinkProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
@@ -8,21 +10,11 @@ import { generateAriaLabel } from "./utils/generateAriaLabel"
 const linkStyles = tv({
   extend: focusRing,
   base: "",
-  variants: {
-    showExternalIcon: {
-      true: `after:content-['_↗']`,
-    },
-  },
 })
 
 const fvHighlightLinkStyles = tv({
   extend: focusVisibleHighlight,
   base: "outline-none outline-0",
-  variants: {
-    showExternalIcon: {
-      true: `after:content-['_↗']`,
-    },
-  },
 })
 
 export const Link = ({
@@ -39,8 +31,8 @@ export const Link = ({
 }: LinkProps) => {
   const cssStyles = twMerge(
     isWithFocusVisibleHighlight
-      ? fvHighlightLinkStyles({ showExternalIcon })
-      : linkStyles({ showExternalIcon }),
+      ? fvHighlightLinkStyles()
+      : linkStyles(),
     className,
   )
   const externalLinkProps = isExternal
@@ -62,6 +54,14 @@ export const Link = ({
       aria-current={current}
       data-current={!!current || undefined}
       disabled={isDisabled}
-    />
+    >
+      {rest.children}
+      {showExternalIcon && (
+        <BiRightArrowAlt
+          className="ml-1 inline-block rotate-45"
+          aria-hidden="true"
+        />
+      )}
+    </ElementToRender>
   )
 }
