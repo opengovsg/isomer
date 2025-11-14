@@ -59,6 +59,7 @@ type Story = StoryObj<typeof EditPage>
 export const Default: Story = {}
 
 export const EditFixedBlockState: Story = {
+  parameters: { disableMockDate: true },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
@@ -69,6 +70,7 @@ export const EditFixedBlockState: Story = {
 }
 
 export const SaveToast: Story = {
+  parameters: { disableMockDate: true },
   play: async ({ canvasElement, ...rest }) => {
     await EditFixedBlockState.play?.({ canvasElement, ...rest })
     const canvas = within(canvasElement)

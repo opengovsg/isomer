@@ -122,6 +122,9 @@ export const NestedState: Story = {
 }
 
 export const ErrorNestedState: Story = {
+  parameters: {
+    disableMockDate: true, // Disable mockDateDecorator to prevent interference with error state
+  },
   play: async (context) => {
     await NestedState.play?.(context)
 

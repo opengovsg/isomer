@@ -83,6 +83,7 @@ export const Loading: Story = {
 
 export const ToastAfterEditingUser: Story = {
   parameters: {
+    disableMockDate: true,
     msw: {
       handlers: [...ADMIN_HANDLERS, userHandlers.update.success()],
     },
