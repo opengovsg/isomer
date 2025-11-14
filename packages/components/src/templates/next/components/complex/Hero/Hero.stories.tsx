@@ -7,7 +7,7 @@ import {
   withSearchSgSetup,
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
-import Hero from "./Hero"
+import { Hero } from "./Hero"
 
 const meta: Meta<typeof Hero> = {
   title: "Next/Components/Hero",

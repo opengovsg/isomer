@@ -4,8 +4,8 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
-import { renderComponent } from "~/templates/next/render"
 import { doesComponentHaveImage } from "./doesComponentHaveImage"
+import { renderComponent } from "./renderComponent"
 
 interface RenderPageContentParams {
   content: IsomerComponent[]

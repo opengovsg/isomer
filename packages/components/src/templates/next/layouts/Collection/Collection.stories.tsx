@@ -4,10 +4,10 @@ import { expect, userEvent, within } from "storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { IsomerSitemap } from "~/engine"
-import { type CollectionPageSchemaType } from "~/engine"
+import type { IsomerSitemap } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
-import CollectionLayout from "./Collection"
+import { type CollectionPageSchemaType } from "~/types"
+import { CollectionLayout } from "./Collection"
 
 const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
   times(10, (index) => [

@@ -1,4 +1,4 @@
-import type { IsomerSitemap } from "~/engine"
+import type { IsomerSitemap } from "~/types"
 
 export const getSitemapAsArray = (sitemap: IsomerSitemap) => {
   const result: IsomerSitemap[] = []

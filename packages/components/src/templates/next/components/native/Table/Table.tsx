@@ -2,11 +2,11 @@ import { useId } from "react"
 
 import type { TableProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import BaseParagraph from "../../internal/BaseParagraph"
-import Divider from "../Divider"
-import OrderedList from "../OrderedList"
-import Paragraph from "../Paragraph"
-import UnorderedList from "../UnorderedList"
+import { BaseParagraph } from "../../internal/BaseParagraph"
+import { Divider } from "../Divider"
+import { OrderedList } from "../OrderedList"
+import { Paragraph } from "../Paragraph"
+import { UnorderedList } from "../UnorderedList"
 
 const tableCellStyles = tv({
   base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top [&_li]:mb-4 [&_li]:mt-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
@@ -18,7 +18,7 @@ const tableCellStyles = tv({
   },
 })
 
-const Table = ({
+export const Table = ({
   attrs: { caption },
   content,
   LinkComponent,
@@ -104,5 +104,3 @@ const Table = ({
     </div>
   )
 }
-
-export default Table

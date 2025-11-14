@@ -1,1 +1,1 @@
-export { default } from "./ChildrenPages"
+export { ChildrenPages } from "./ChildrenPages"

@@ -59,5 +59,3 @@ export const UnsupportedBrowserBanner = ({
     </div>
   )
 }
-
-export default UnsupportedBrowserBanner

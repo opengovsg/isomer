@@ -56,7 +56,7 @@ const createKeyStatisticsStyles = tv({
 
 const compoundStyles = createKeyStatisticsStyles()
 
-const KeyStatistics = ({
+export const KeyStatistics = ({
   id,
   title,
   statistics,
@@ -107,5 +107,3 @@ const KeyStatistics = ({
     </section>
   )
 }
-
-export default KeyStatistics

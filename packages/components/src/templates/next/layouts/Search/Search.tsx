@@ -1,8 +1,8 @@
-import type { SearchPageSchemaType } from "~/engine"
+import { type SearchPageSchemaType } from "~/types"
 import { Skeleton } from "../Skeleton"
-import SearchSG from "./SearchSG"
+import { SearchSG } from "./SearchSG"
 
-const SearchLayout = ({
+export const SearchLayout = ({
   site,
   page,
   layout,
@@ -25,5 +25,3 @@ const SearchLayout = ({
     </Skeleton>
   )
 }
-
-export default SearchLayout

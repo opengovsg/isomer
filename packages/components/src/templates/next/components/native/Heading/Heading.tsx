@@ -1,7 +1,7 @@
 import type { HeadingProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils"
 
-const Heading = ({
+export const Heading = ({
   attrs: { id, level, dir },
   content,
   site,
@@ -80,5 +80,3 @@ const Heading = ({
     </h6>
   )
 }
-
-export default Heading

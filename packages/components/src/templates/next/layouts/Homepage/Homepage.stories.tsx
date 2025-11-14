@@ -3,19 +3,19 @@ import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { HomePageSchemaType } from "~/engine"
 import type { HeroProps } from "~/interfaces/complex/Hero"
+import type { HomePageSchemaType } from "~/types"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
-import Homepage from "./Homepage"
+import { HomepageLayout } from "./Homepage"
 
-const meta: Meta<typeof Homepage> = {
+const meta: Meta<typeof HomepageLayout> = {
   title: "Next/Layouts/Homepage",
-  component: Homepage,
+  component: HomepageLayout,
   decorators: [withSearchSgSetup()],
   argTypes: {},
   tags: ["!autodocs"],
@@ -50,7 +50,7 @@ const meta: Meta<typeof Homepage> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof Homepage>
+type Story = StoryObj<typeof HomepageLayout>
 
 const generateArgs = ({
   heroProps,

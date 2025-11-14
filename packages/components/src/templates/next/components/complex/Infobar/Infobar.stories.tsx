@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import type { InfobarProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
-import Infobar from "./Infobar"
+import { Infobar } from "./Infobar"
 
 const meta: Meta<InfobarProps> = {
   title: "Next/Components/Infobar",

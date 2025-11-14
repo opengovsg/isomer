@@ -249,5 +249,3 @@ export const Masthead = (props: Omit<MastheadProps, "type">) => {
     </MastheadProvider>
   )
 }
-
-export default Masthead

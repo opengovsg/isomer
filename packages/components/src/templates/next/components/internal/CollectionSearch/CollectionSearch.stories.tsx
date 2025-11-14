@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
 import type { CollectionSearchProps } from "../../../types/CollectionSearch"
-import CollectionSearch from "./CollectionSearch"
+import { CollectionSearch } from "./CollectionSearch"
 
 // Template for stories
 const Template = (

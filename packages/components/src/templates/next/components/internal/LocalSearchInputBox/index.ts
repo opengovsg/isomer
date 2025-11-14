@@ -1,1 +1,1 @@
-export { default } from "./LocalSearchInputBox"
+export { LocalSearchInputBox } from "./LocalSearchInputBox"

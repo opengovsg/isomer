@@ -6,7 +6,7 @@ import { getReferenceLinkHref } from "~/utils"
 import { DgsContactInformation } from "./DgsContactInformation"
 import { NativeContactInformation } from "./NativeContactInformation"
 
-const ContactInformation = ({
+export const ContactInformation = ({
   dataSource,
   ...rest
 }: ContactInformationProps) => {
@@ -35,5 +35,3 @@ const ContactInformation = ({
       return _exhaustiveCheck
   }
 }
-
-export default ContactInformation

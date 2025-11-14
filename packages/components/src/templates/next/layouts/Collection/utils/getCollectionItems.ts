@@ -1,5 +1,5 @@
-import type { IsomerSiteProps } from "~/engine"
 import type { AllCardProps } from "~/interfaces"
+import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate, getSitemapAsArray } from "~/utils"
 import { getTagsFromTagged } from "./getTagsFromTagged"
@@ -22,7 +22,7 @@ export const getCollectionItems = ({
   sortDirection,
   tagCategories,
 }: GetCollectionItemsProps): AllCardProps[] => {
-  let currSitemap = site.siteMap
+  let currSitemap: IsomerSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
 
   for (let i = 2; i <= permalinkParts.length; i++) {

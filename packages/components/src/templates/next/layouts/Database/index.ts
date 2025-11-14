@@ -1,1 +1,1 @@
-export { default } from "./Database"
+export { DatabaseLayout } from "./Database"
