@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, ScriptComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 
 // We can only pass in string values to the Vica script
 // as React omit boolean props when spreading onto a DOM element,
@@ -80,13 +80,10 @@ export const VicaSchema = Type.Object(
 
 export type VicaProps = Static<typeof VicaSchema>
 
-export interface VicaWidgetClientProps extends VicaProps {
-  ScriptComponent: ScriptComponentType
-}
+export type VicaWidgetClientProps = VicaProps
 
-export interface VicaWidgetProps extends VicaProps {
+export type VicaWidgetProps = VicaProps & {
   site: Pick<IsomerSiteProps, "siteMap" | "assetsBaseUrl">
-  ScriptComponent: ScriptComponentType
 }
 
 export type VicaStylesheetProps = Pick<VicaProps, "useDevStagingScript">

@@ -27,7 +27,6 @@ export const AskgovSchema = Type.Object(
 
 export type AskgovProps = Static<typeof AskgovSchema>
 
-export interface AskgovWidgetProps extends AskgovProps {
+export type AskgovWidgetProps = AskgovProps & {
   environment: IsomerSiteProps["environment"]
-  ScriptComponent: ScriptComponentType
 }

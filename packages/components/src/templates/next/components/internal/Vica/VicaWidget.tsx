@@ -5,13 +5,11 @@ import { VicaWidgetClient } from "./VicaWidgetClient"
 
 export const VicaWidget = ({
   site,
-  ScriptComponent,
   "app-icon": appIcon,
   ...rest
 }: VicaWidgetProps) => {
   return (
     <VicaWidgetClient
-      ScriptComponent={ScriptComponent}
       app-icon={
         appIcon
           ? getReferenceLinkHref(appIcon, site.siteMap, site.assetsBaseUrl)
