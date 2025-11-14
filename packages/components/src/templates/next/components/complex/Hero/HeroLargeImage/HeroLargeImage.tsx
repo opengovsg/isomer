@@ -1,4 +1,4 @@
-import type { HeroProps } from "~/interfaces/complex/Hero"
+import type { HeroLargeImageProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { ComponentContent } from "../../../internal/customCssClass"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
@@ -14,7 +14,7 @@ export const HeroLargeImage = ({
   backgroundUrl,
   site,
   LinkComponent,
-}: HeroProps) => {
+}: HeroLargeImageProps) => {
   const backgroundSrc =
     isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
       ? backgroundUrl

@@ -1,4 +1,4 @@
-import type { HeroProps } from "~/interfaces/complex/Hero"
+import type { HeroFloatingProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
@@ -34,7 +34,7 @@ export const HeroFloating = ({
   site,
   LinkComponent,
   theme = "default",
-}: HeroProps) => {
+}: HeroFloatingProps) => {
   const backgroundSrc =
     isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
       ? backgroundUrl

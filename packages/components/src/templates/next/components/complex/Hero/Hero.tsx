@@ -7,7 +7,8 @@ import { HeroLargeImage } from "./HeroLargeImage/HeroLargeImage"
 import { HeroSearchbar } from "./HeroSearchbar"
 
 const Hero = (props: HeroProps) => {
-  switch (props.variant) {
+  const { variant } = props
+  switch (variant) {
     case HERO_STYLE.gradient:
       return <HeroGradient {...props} />
     case HERO_STYLE.block:
@@ -19,8 +20,8 @@ const Hero = (props: HeroProps) => {
     case HERO_STYLE.searchbar:
       return <HeroSearchbar {...props} />
     default:
-      const _exhaustiveCheck: never = props.variant
-      return _exhaustiveCheck
+      const _exhaustiveCheck: never = variant
+      return null
   }
 }
 
