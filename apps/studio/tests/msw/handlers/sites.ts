@@ -111,6 +111,20 @@ export const sitesHandlers = {
         } as PrismaJson.SiteJsonConfig
       })
     },
+    withFavicon: () => {
+      return trpcMsw.site.getConfig.query(() => {
+        return {
+          theme: "isomer-next",
+          siteName: "Ministry of Test and Industry",
+          search: undefined,
+          agencyName: "Ministry of Test and Industry",
+          isGovernment: true,
+          url: "https://www.isomer.gov.sg",
+          logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+          favicon: "avatars.githubusercontent.com/u/40887764",
+        } as PrismaJson.SiteJsonConfig
+      })
+    },
   },
   getFooter: {
     default: () => {
