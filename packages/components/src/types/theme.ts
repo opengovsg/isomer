@@ -11,7 +11,8 @@ export const SiteThemeSchema = Type.Object(
           backdrop: Type.String({ format: "hidden" }),
           inverse: Type.String({
             title: "Main brand colour",
-            description: "Pick the main colour that represents your brand.",
+            description:
+              "Enter a hex code of a colour that best represents your brand. If you have a design system or branding guide, this might be your primary colour.",
             format: "color-picker",
           }),
         }),

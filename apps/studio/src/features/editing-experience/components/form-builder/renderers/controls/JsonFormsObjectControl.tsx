@@ -68,7 +68,7 @@ export function JsonFormsObjectControl({
 
   if (!required) {
     return (
-      <HStack spacing="0.5rem" alignItems="flex-start">
+      <HStack spacing="0.5rem" alignItems="flex-start" w="full">
         <VStack w="full" gap="0.75rem" pt="0.5rem" alignItems="start">
           <HStack alignItems="space-between" w="full" spacing="1rem">
             <FormControl

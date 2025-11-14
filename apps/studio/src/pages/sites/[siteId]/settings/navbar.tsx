@@ -3,7 +3,9 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+import isEqual from "lodash/isEqual"
 
+import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -22,7 +24,6 @@ import { NavbarEditor } from "~/features/settings/NavbarEditor"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
 
@@ -60,7 +61,7 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
     NavbarSchemaType | undefined
   >(content)
   const isOpen = !!nextUrl
-  const isDirty = JSON.stringify(previewNavbarState) !== JSON.stringify(content)
+  const isDirty = !isEqual(previewNavbarState, content)
 
   const handleSaveNavbar = (data: NavbarSchemaType | undefined) => {
     if (!data) return
