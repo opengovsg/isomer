@@ -11,8 +11,9 @@ import {
   IndexPageSchema,
   LinkRefSchema,
 } from "../types/schema"
+import { componentSchemaDefinitions } from "./components"
 
-type ScopedSchemaLayout =
+export type ScopedSchemaLayout =
   (typeof ISOMER_USABLE_PAGE_LAYOUTS)[keyof typeof ISOMER_USABLE_PAGE_LAYOUTS]
 
 const LAYOUT_SCHEMA_MAP: Record<ScopedSchemaLayout, TSchema> = {
@@ -25,6 +26,16 @@ const LAYOUT_SCHEMA_MAP: Record<ScopedSchemaLayout, TSchema> = {
   collection: CollectionPageSchema,
   file: FileRefSchema,
 } as const
+
+export const isScopedSchemaLayout = (
+  layout: string,
+): layout is ScopedSchemaLayout => {
+  const SCOPED_SCHEMA_LAYOUTS = Object.keys(
+    LAYOUT_SCHEMA_MAP,
+  ) as ScopedSchemaLayout[]
+
+  return SCOPED_SCHEMA_LAYOUTS.includes(layout as ScopedSchemaLayout)
+}
 
 // Utility type to extract all possible dot-separated paths from an object type
 // This recursively builds paths like "page", "page.database", "page.contentPageHeader", etc.
@@ -111,9 +122,13 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
 
     return {
       ...currentSchema,
+      ...componentSchemaDefinitions,
       properties: filteredProperties,
     } as TSchema
   }
 
-  return currentSchema
+  return {
+    ...currentSchema,
+    ...componentSchemaDefinitions,
+  } as TSchema
 }
