@@ -6,6 +6,7 @@ import {
 import { getHtmlFromMarkdown } from "./markdown";
 import { getManualReviewItems, getResourceRoomFileType } from "./utils";
 import { GetIsomerSchemaFromJekyllResponse } from "./types";
+import { isomerSchemaValidator } from "./schema";
 
 const WHITELISTED_LAYOUTS = [
   // From staging branch, for extremely old sites
@@ -20,6 +21,115 @@ const WHITELISTED_LAYOUTS = [
   "link",
   "file",
 ];
+
+interface GetPageContentProps {
+  layout: string | undefined;
+  fileType: string | undefined;
+  isResourceRoomPage: boolean;
+  title: string;
+  ref: string | undefined;
+  description: string;
+  image: string | undefined;
+  date: string | undefined;
+  updatedDate: string | undefined;
+  updatedContent: any[];
+}
+
+const getPageContent = ({
+  layout,
+  fileType,
+  isResourceRoomPage,
+  title,
+  ref,
+  description,
+  image,
+  date,
+  updatedDate,
+  updatedContent,
+}: GetPageContentProps) => {
+  if (
+    layout === "link" ||
+    fileType === "link" ||
+    layout === "file" ||
+    fileType === "file"
+  ) {
+    const convertedDate = moment(updatedDate).format("DD/MM/YYYY");
+
+    return {
+      version: "0.1.0",
+      layout: "link",
+      page: {
+        title,
+        ref,
+        category: "Placeholder", // Note: This will be changed to the actual category in the next step
+        date: convertedDate,
+      },
+      content: [],
+    };
+  }
+
+  if (
+    isResourceRoomPage &&
+    (!fileType || (layout === "post" && fileType === "post"))
+  ) {
+    return {
+      version: "0.1.0",
+      layout: "article",
+      content: [
+        {
+          type: "callout",
+          content: {
+            type: "prose",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "This article has been migrated from an earlier version of the site and may display formatting inconsistencies.",
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        ...updatedContent,
+      ],
+      page: {
+        title,
+        category: "Placeholder", // Note: This will be changed to the actual category in the next step
+        date: moment(date).format("DD/MM/YYYY"),
+        articlePageHeader: {
+          summary: description || "This is the page summary",
+        },
+      },
+      ...((description || image) && {
+        meta: {
+          description: description.slice(0, 160),
+          image: image || undefined,
+        },
+      }),
+    };
+  }
+
+  return {
+    version: "0.1.0",
+    layout: "content",
+    content: updatedContent,
+    page: {
+      title,
+      contentPageHeader: {
+        summary: description || "This is the page summary",
+      },
+    },
+    ...((description || image) && {
+      meta: {
+        description: description.slice(0, 160),
+        image: image || undefined,
+      },
+    }),
+  };
+};
 
 interface GetIsomerSchemaFromJekyllParams {
   content: string;
@@ -76,119 +186,43 @@ export const getIsomerSchemaFromJekyll = async ({
     layout
   );
 
-  const status = reviewItems.length === 0 ? "converted" : "manual_review";
-
-  const fileType = !!ref ? "link" : getResourceRoomFileType(path);
-
   // Extract date from filename if not present in frontmatter
   // First check if the filename has a date prefix of the form YYYY-MM-DD
   let dateFromFilenameMatch = path.match(/\/(\d{4}-\d{2}-\d{2})-/);
   const updatedDate =
     date || (dateFromFilenameMatch ? dateFromFilenameMatch[1] : undefined);
 
-  // Map to Isomer Schema
+  const schemaContent = getPageContent({
+    layout,
+    fileType: getResourceRoomFileType(path),
+    isResourceRoomPage,
+    title,
+    ref,
+    description,
+    image,
+    date,
+    updatedDate,
+    updatedContent,
+  });
 
-  if (
-    layout === "link" ||
-    fileType === "link" ||
-    layout === "file" ||
-    fileType === "file"
-  ) {
-    const convertedDate = moment(updatedDate).format("DD/MM/YYYY");
+  // Check if the page schema is valid
+  const isValidSchema = isomerSchemaValidator(schemaContent);
 
-    return {
-      status,
-      title,
-      permalink,
-      reviewItems,
-      content: {
-        version: "0.1.0",
-        layout: "link",
-        page: {
-          title,
-          ref,
-          category: "Placeholder", // Note: This will be changed to the actual category in the next step
-          date: convertedDate,
-        },
-        content: [],
-      },
-      ...rest,
-    };
+  if (!isValidSchema) {
+    // If schema is invalid, flag for manual review
+    reviewItems.push("Page schema is invalid");
   }
 
-  if (
-    isResourceRoomPage &&
-    (!fileType || (layout === "post" && fileType === "post"))
-  ) {
-    return {
-      status,
-      title,
-      permalink,
-      reviewItems,
-      content: {
-        version: "0.1.0",
-        layout: "article",
-        content: [
-          {
-            type: "callout",
-            content: {
-              type: "prose",
-              content: [
-                {
-                  type: "paragraph",
-                  content: [
-                    {
-                      type: "text",
-                      text: "This article has been migrated from an earlier version of the site and may display formatting inconsistencies.",
-                    },
-                  ],
-                },
-              ],
-            },
-          },
-          ...updatedContent,
-        ],
-        page: {
-          title,
-          category: "Placeholder", // Note: This will be changed to the actual category in the next step
-          date: moment(date).format("DD/MM/YYYY"),
-          articlePageHeader: {
-            summary: description || "This is the page summary",
-          },
-        },
-        ...((description || image) && {
-          meta: {
-            description: description.slice(0, 160),
-            image: image || undefined,
-          },
-        }),
-      },
-      ...rest,
-    };
-  }
+  const status = reviewItems.length === 0 ? "converted" : "manual_review";
+
+  const fileType = !!ref ? "link" : getResourceRoomFileType(path);
 
   return {
     status,
     title,
     permalink,
-    content: {
-      version: "0.1.0",
-      layout: "content",
-      content: updatedContent,
-      page: {
-        title,
-        contentPageHeader: {
-          summary: description || "This is the page summary",
-        },
-      },
-      ...((description || image) && {
-        meta: {
-          description: description.slice(0, 160),
-          image: image || undefined,
-        },
-      }),
-    },
     reviewItems,
+    content: schemaContent,
     ...rest,
   };
 };
