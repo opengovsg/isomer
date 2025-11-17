@@ -29,17 +29,27 @@ import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useNewCollectionEditingExperience } from "~/hooks/useNewCollectionEditingExperience"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
 import { pageSchema } from "../schema"
+import { getIsHeroFirstBlock } from "../utils/getIsHeroFirstFixedBlock"
 import { ActivateRawJsonEditorMode } from "./ActivateRawJsonEditorMode"
 import { BaseBlock } from "./Block/BaseBlock"
 import { DraggableBlock } from "./Block/DraggableBlock"
 import { ConfirmConvertIndexPageModal } from "./ConfirmConvertIndexPageModal"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
+
+const validateHeroComponentFn = ajv.compile<IsomerComponent>(
+  getComponentSchema({ component: "hero" }),
+)
+
+const validateFn = ajv.compile<IsomerSchema>(schema)
+
+const invalidBlockDescription = "Fix errors in this block to publish"
 
 interface FixedBlockContent {
   label: string
@@ -65,13 +75,88 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
   },
 }
 
-const validateHeroComponentFn = ajv.compile<IsomerComponent>(
-  getComponentSchema({ component: "hero" }),
-)
+const FixedBlock = () => {
+  const { setCurrActiveIdx, setDrawerState, previewPageState, savedPageState } =
+    useEditorDrawerContext()
+  const pageLayout = previewPageState.layout
+  const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, previewPageState)
+  const isNewEditingExperienceEnabled = useNewCollectionEditingExperience()
 
-const validateFn = ajv.compile<IsomerSchema>(schema)
+  if (isHeroFixedBlock) {
+    // Assuming only one fixedBlock can exist at a time for now
+    const fixedBlock = savedPageState.content[0]
+    const isValid = validateHeroComponentFn(fixedBlock)
+    return (
+      <BaseBlock
+        onClick={() => {
+          setCurrActiveIdx(0)
+          setDrawerState({ state: "heroEditor" })
+        }}
+        label="Hero banner"
+        description="Title, subtitle, and Call-to-Action"
+        icon={TYPE_TO_ICON.hero}
+        invalidProps={
+          !isValid ? { description: invalidBlockDescription } : undefined
+        }
+      />
+    )
+  }
 
-const invalidBlockDescription = "Fix errors in this block to publish"
+  if (
+    pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
+    isNewEditingExperienceEnabled
+  ) {
+    return (
+      <BaseBlock
+        onClick={() => {
+          setCurrActiveIdx(0)
+          setDrawerState({ state: "collectionEditor" })
+        }}
+        label="Collection settings"
+        description="Summary, style, categories and sorting"
+        icon={BiPin}
+      />
+    )
+  }
+
+  if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Database) {
+    return (
+      <VStack gap="1rem" w="100%" align="start">
+        <BaseBlock
+          onClick={() => {
+            setDrawerState({ state: "metadataEditor" })
+          }}
+          label="Page header"
+          description="Summary, Button label, and Button URL"
+          icon={BiPin}
+        />
+        <BaseBlock
+          onClick={() => {
+            setDrawerState({ state: "databaseEditor" })
+          }}
+          label="Database"
+          description="Link your dataset from Data.gov.sg"
+          icon={BiData}
+        />
+      </VStack>
+    )
+  }
+
+  return (
+    <BaseBlock
+      onClick={() => {
+        setDrawerState({ state: "metadataEditor" })
+      }}
+      label={
+        FIXED_BLOCK_CONTENT[pageLayout]?.label || "Page description and summary"
+      }
+      description={
+        FIXED_BLOCK_CONTENT[pageLayout]?.description || "Click to edit"
+      }
+      icon={BiPin}
+    />
+  )
+}
 
 export default function RootStateDrawer() {
   const {
@@ -238,10 +323,7 @@ export default function RootStateDrawer() {
   // and also becuase our underlying is just json,
   // it's not guaranteed that our `rootpage` will always
   // have a hero banner
-  const isHeroFixedBlock =
-    pageLayout === "homepage" &&
-    savedPageState.content.length > 0 &&
-    savedPageState.content[0]?.type === "hero"
+  const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, savedPageState)
 
   const isCustomContentIndexPage =
     type === ResourceType.IndexPage &&
@@ -260,68 +342,6 @@ export default function RootStateDrawer() {
       .filter(Boolean)
       .map(Number),
   )
-
-  const FixedBlock = () => {
-    // Assuming only one fixedBlock can exist at a time for now
-    const fixedBlock = savedPageState.content[0]
-
-    if (isHeroFixedBlock) {
-      const isValid = validateHeroComponentFn(fixedBlock)
-      return (
-        <BaseBlock
-          onClick={() => {
-            setCurrActiveIdx(0)
-            setDrawerState({ state: "heroEditor" })
-          }}
-          label="Hero banner"
-          description="Title, subtitle, and Call-to-Action"
-          icon={TYPE_TO_ICON.hero}
-          invalidProps={
-            !isValid ? { description: invalidBlockDescription } : undefined
-          }
-        />
-      )
-    }
-
-    if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Database) {
-      return (
-        <VStack gap="1rem" w="100%" align="start">
-          <BaseBlock
-            onClick={() => {
-              setDrawerState({ state: "metadataEditor" })
-            }}
-            label="Page header"
-            description="Summary, Button label, and Button URL"
-            icon={BiPin}
-          />
-          <BaseBlock
-            onClick={() => {
-              setDrawerState({ state: "databaseEditor" })
-            }}
-            label="Database"
-            description="Link your dataset from Data.gov.sg"
-            icon={BiData}
-          />
-        </VStack>
-      )
-    }
-
-    return (
-      <BaseBlock
-        onClick={() => {
-          setDrawerState({ state: "metadataEditor" })
-        }}
-        label={
-          FIXED_BLOCK_CONTENT[pageLayout]?.label ||
-          "Page description and summary"
-        }
-        description={
-          FIXED_BLOCK_CONTENT[pageLayout]?.description || "Click to edit"
-        }
-        icon={BiPin}
-      />
-    )
-  }
 
   // NOTE: if a page has either of these `layouts`,
   // we should disable them from adding blocks
@@ -403,9 +423,9 @@ export default function RootStateDrawer() {
             </Infobox>
           )}
 
-          {/* Fixed Blocks Section */}
           <Disable when={disableBlocks}>
             <VStack gap="1.5rem" flex={1} w="full">
+              {/* Fixed Blocks Section */}
               <VStack gap="1rem" w="100%" align="start">
                 <VStack gap="0.25rem" align="start">
                   <Text textStyle="subhead-1">Fixed blocks</Text>
@@ -413,13 +433,13 @@ export default function RootStateDrawer() {
                     These are built into the layout, so you can’t delete them.
                   </Text>
                 </VStack>
+
                 <FixedBlock />
               </VStack>
 
+              {/* Custom Blocks Section */}
               <VStack gap="1.5rem" w="100%">
                 <VStack w="100%" h="100%" gap="1rem">
-                  {/* Custom Blocks Section */}
-                  {/* Custom Blocks Section */}
                   <Flex flexDirection="row" w="100%">
                     {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
                       <VStack gap="0.25rem" align="start" flex={1}>
