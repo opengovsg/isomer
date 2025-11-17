@@ -160,7 +160,7 @@ export const getMonographPage = ({
                                   type: "link",
                                   attrs: {
                                     rel: "",
-                                    href: "https://staging-studio.isomer.gov.sg/sites/1/pages/18999#",
+                                    href: "https://www.moh.gov.sg/managing-expenses/schemes-and-subsidies/list-of-subsidised-drugs/",
                                     class:
                                       "focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:decoration-transparent focus-visible:shadow-focus-visible focus-visible:outline-0 focus-visible:transition-none focus-visible:hover:decoration-transparent outline-none outline-0",
                                     target: "_self",
@@ -205,7 +205,7 @@ export const getMonographPage = ({
                                   type: "link",
                                   attrs: {
                                     rel: "",
-                                    href: "https://staging-studio.isomer.gov.sg/sites/1/pages/18999#",
+                                    href: "https://www.moh.gov.sg/others/subsidised-vaccine-list/",
                                     class:
                                       "focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:decoration-transparent focus-visible:shadow-focus-visible focus-visible:outline-0 focus-visible:transition-none focus-visible:hover:decoration-transparent outline-none outline-0",
                                     target: "_self",
@@ -250,7 +250,7 @@ export const getMonographPage = ({
                                   type: "link",
                                   attrs: {
                                     rel: "",
-                                    href: "https://staging-studio.isomer.gov.sg/sites/1/pages/18999#",
+                                    href: "https://www.moh.gov.sg/managing-expenses/schemes-and-subsidies/medishield-life/cancer-drug-list/",
                                     class:
                                       "focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:decoration-transparent focus-visible:shadow-focus-visible focus-visible:outline-0 focus-visible:transition-none focus-visible:hover:decoration-transparent outline-none outline-0",
                                     target: "_self",
@@ -972,7 +972,7 @@ export const getMonographPage = ({
                           {
                             type: "link",
                             attrs: {
-                              href: "https://staging-studio.isomer.gov.sg/sites/1/pages/19764#",
+                              href: "https://www.sgdi.gov.sg/other-organisations/hospitals",
                               target: "_blank",
                               rel: "noopener nofollow",
                               class:
@@ -992,7 +992,7 @@ export const getMonographPage = ({
                           {
                             type: "link",
                             attrs: {
-                              href: "https://staging-studio.isomer.gov.sg/sites/1/pages/19764#",
+                              href: "https://www.sgdi.gov.sg/other-organisations/polyclinics",
                               target: "_blank",
                               rel: "noopener nofollow",
                               class:
