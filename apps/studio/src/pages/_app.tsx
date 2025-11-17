@@ -1,7 +1,5 @@
 import "@fontsource/ibm-plex-mono" // Import if using code textStyles.
 import "inter-ui/inter.css" // Strongly recommended.
-import "../styles/tailwind.css"
-import "../styles/editor/editorStyles.scss"
 
 import type { AppProps, AppType } from "next/app"
 import { Skeleton, Stack } from "@chakra-ui/react"
