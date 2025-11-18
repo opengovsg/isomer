@@ -12,7 +12,6 @@ const meta: Meta<typeof Filter> = {
   component: Filter,
   render: ({ filters, appliedFilters: _appliedFilters }) => {
     const [appliedFilters, setAppliedFilters] =
-       
       useState<AppliedFilter[]>(_appliedFilters)
     const updateAppliedFilters = (
       appliedFilters: AppliedFilter[],
