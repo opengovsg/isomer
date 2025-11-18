@@ -27,7 +27,7 @@ export const useInteractionScriptLoader = ({
   useEventListener("touchstart", triggerLoad, documentRef, { passive: true })
 
   // Load script after timeout if user doesn't interact
-  useTimeout(() => triggerLoad, timeout)
+  useTimeout(triggerLoad, timeout)
 
   useScript(shouldLoad ? src : null)
 }
