@@ -1,6 +1,5 @@
 "use client"
 
-import type { AriaButtonProps } from "@react-aria/button"
 import type { PropsWithChildren } from "react"
 import { createContext, useContext, useRef, useState } from "react"
 import { useButton } from "@react-aria/button"
@@ -96,13 +95,15 @@ const MobileMastheadButton = ({ children }: PropsWithChildren) => {
   const { isMastheadContentVisible, toggleMastheadContent } = useMasthead()
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  const buttonProps: AriaButtonProps<"button"> = {
-    "aria-controls": MASTHEAD_CONTROL_ID,
-    "aria-describedby": "masthead-aria",
-    "aria-expanded": isMastheadContentVisible,
-    onPress: toggleMastheadContent,
-  }
-  const { buttonProps: ariaProps } = useButton(buttonProps, buttonRef)
+  const { buttonProps: ariaProps } = useButton(
+    {
+      "aria-controls": MASTHEAD_CONTROL_ID,
+      "aria-describedby": "masthead-aria",
+      "aria-expanded": isMastheadContentVisible,
+      onPress: toggleMastheadContent,
+    },
+    buttonRef,
+  )
   const { focusProps, isFocusVisible } = useFocusRing()
   const mergedProps = mergeProps(ariaProps, focusProps)
 
@@ -140,10 +141,12 @@ const DesktopMastheadButton = () => {
   const { isMastheadContentVisible, toggleMastheadContent } = useMasthead()
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  const buttonProps: AriaButtonProps<"button"> = {
-    onPress: toggleMastheadContent,
-  }
-  const { buttonProps: ariaProps } = useButton(buttonProps, buttonRef)
+  const { buttonProps: ariaProps } = useButton(
+    {
+      onPress: toggleMastheadContent,
+    },
+    buttonRef,
+  )
   const { focusProps, isFocusVisible } = useFocusRing()
   const mergedProps = mergeProps(ariaProps, focusProps)
 
