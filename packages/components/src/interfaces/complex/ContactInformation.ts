@@ -8,16 +8,13 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
-import {
-  COMPONENT_TYPES_MAP,
-  CONTACT_INFORMATION_SUPPORT_METHODS,
-} from "~/constants"
+import { CONTACT_INFORMATION_SUPPORT_METHODS } from "~/constants"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 import { createDgsSchema, NativeDataSourceSchema } from "../integration"
 
 const BaseContactInformationSchema = Type.Object({
-  type: Type.Literal(COMPONENT_TYPES_MAP.ContactInformation, {
-    default: COMPONENT_TYPES_MAP.ContactInformation,
+  type: Type.Literal("contactinformation", {
+    default: "contactinformation",
   }),
   label: Type.Optional(
     Type.String({

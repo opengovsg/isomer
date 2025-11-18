@@ -1,8 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import {
-  COMPONENT_TYPES_MAP,
-  DEFAULT_CHILDREN_PAGES_BLOCK,
-} from "@opengovsg/isomer-components"
+import { DEFAULT_CHILDREN_PAGES_BLOCK } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -190,8 +187,8 @@ export const DEFAULT_BLOCKS: Record<
     url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
   },
   // TODO: Replace with actual working API endpoint
-  [COMPONENT_TYPES_MAP.DynamicDataBanner]: {
-    type: COMPONENT_TYPES_MAP.DynamicDataBanner,
+  dynamicdatabanner: {
+    type: "dynamicdatabanner",
     apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
     title: "hijriDate",
     data: [
@@ -234,15 +231,15 @@ export const DEFAULT_BLOCKS: Record<
     images: [],
     title: "With support from these agencies",
   },
-  [COMPONENT_TYPES_MAP.CollectionBlock]: {
-    type: COMPONENT_TYPES_MAP.CollectionBlock,
+  collectionblock: {
+    type: "collectionblock",
     collectionReferenceLink: "", // TODO: placeholder for now as we cannot select a collection beforehand but it's required by the schema
     buttonLabel: "Read all latest news",
     displayThumbnail: true,
     displayCategory: true,
   },
-  [COMPONENT_TYPES_MAP.ImageGallery]: {
-    type: COMPONENT_TYPES_MAP.ImageGallery,
+  imagegallery: {
+    type: "imagegallery",
     images: [
       {
         caption: "This is the first image",
@@ -261,8 +258,8 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
-  [COMPONENT_TYPES_MAP.ContactInformation]: {
-    type: COMPONENT_TYPES_MAP.ContactInformation,
+  contactinformation: {
+    type: "contactinformation",
     title: "Contact us",
     methods: [
       {
@@ -272,8 +269,8 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
-  [COMPONENT_TYPES_MAP.DynamicComponentList]: {
-    type: COMPONENT_TYPES_MAP.DynamicComponentList,
+  dynamiccomponentlist: {
+    type: "dynamiccomponentlist",
     dataSource: {
       type: "dgs",
       resourceId: "PLACEHOLDER_RESOURCE_ID",
@@ -385,7 +382,7 @@ export const BLOCK_TO_META: Record<
       "You can embed videos hosted on platforms such as YouTube and Vimeo.",
     imageSrc: "/assets/block-images/Video.png",
   },
-  [COMPONENT_TYPES_MAP.DynamicDataBanner]: {
+  dynamicdatabanner: {
     label: "Dynamic Data Banner",
     description: "Display dynamic data banner",
     usageText: "This block supports fetching data from an API endpoint.",
@@ -396,14 +393,14 @@ export const BLOCK_TO_META: Record<
     description: "Display logos of other agencies here",
     usageText: "Show an overview of related agencies",
   },
-  [COMPONENT_TYPES_MAP.CollectionBlock]: {
+  collectionblock: {
     // TODO: Add image source
     label: "Collection block",
     description: "Automatically display recent pages from a collection",
     usageText: "Link recent articles from your newsroom, research, or blog.",
     imageSrc: "/assets/block-images/CollectionBlock.png",
   },
-  [COMPONENT_TYPES_MAP.ImageGallery]: {
+  imagegallery: {
     // TODO: Add image source
     label: "Image gallery",
     description: "Display up to 30 images in a slideshow",
@@ -415,13 +412,13 @@ export const BLOCK_TO_META: Record<
     usageText: "Highlight an important quote. You can add an optional image.",
     imageSrc: "/assets/block-images/Blockquote.png",
   },
-  [COMPONENT_TYPES_MAP.ContactInformation]: {
+  contactinformation: {
     label: "Contact information",
     description: "Display contact information",
     usageText: "Showcase contact information for your agency.",
     // TODO: Add imageSrc
   },
-  [COMPONENT_TYPES_MAP.DynamicComponentList]: {
+  dynamiccomponentlist: {
     label: "Dynamic component list",
     description: "Display a list of dynamic components",
     usageText: "Showcase a list of dynamic components.",
@@ -450,7 +447,7 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "accordion",
       "callout",
       "blockquote",
-      COMPONENT_TYPES_MAP.ImageGallery,
+      "imagegallery",
     ],
   },
   { label: "Embed external content", types: ["map", "video"] },
@@ -467,7 +464,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
       "blockquote",
       "contentpic",
       "infobar",
-      COMPONENT_TYPES_MAP.ImageGallery,
+      "imagegallery",
     ],
   },
   {
@@ -491,7 +488,7 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "infopic",
       "infobar",
       "blockquote",
-      COMPONENT_TYPES_MAP.CollectionBlock,
+      "collectionblock",
     ],
   },
 ]

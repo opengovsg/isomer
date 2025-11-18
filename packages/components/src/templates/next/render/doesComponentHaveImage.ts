@@ -1,5 +1,4 @@
 import type { IsomerSchema } from "~/types"
-import { COMPONENT_TYPES_MAP } from "~/constants"
 
 export const doesComponentHaveImage = ({
   component,
@@ -16,9 +15,9 @@ export const doesComponentHaveImage = ({
     case "infobar":
     case "infocols":
     case "prose":
-    case COMPONENT_TYPES_MAP.DynamicDataBanner:
-    case COMPONENT_TYPES_MAP.ContactInformation:
-    case COMPONENT_TYPES_MAP.DynamicComponentList: // The content are fetched, so they eager load has no impact
+    case "dynamicdatabanner":
+    case "contactinformation":
+    case "dynamiccomponentlist": // The content are fetched, so they eager load has no impact
       return false
     case "image":
     case "infopic":
@@ -29,12 +28,12 @@ export const doesComponentHaveImage = ({
     case "iframe":
     case "map":
     case "video":
-    case COMPONENT_TYPES_MAP.ImageGallery:
+    case "imagegallery":
     case "childrenpages":
       return true
     case "infocards":
       return component.cards.some((card) => "imageUrl" in card)
-    case COMPONENT_TYPES_MAP.CollectionBlock:
+    case "collectionblock":
       return component.displayThumbnail
     case "blockquote":
       return component.imageSrc !== undefined

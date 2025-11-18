@@ -2,7 +2,6 @@ import type { TSchema } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerComponentTypes, IsomerPageLayoutType } from "~/types"
-import { COMPONENT_TYPES_MAP } from "~/constants"
 import {
   AccordionSchema,
   BlockquoteSchema,
@@ -53,12 +52,12 @@ export const IsomerComplexComponentsMap = {
   map: MapSchema,
   video: VideoSchema,
   childrenpages: ChildrenPagesSchema,
-  [COMPONENT_TYPES_MAP.DynamicDataBanner]: DynamicDataBannerSchema,
+  dynamicdatabanner: DynamicDataBannerSchema,
   logocloud: LogoCloudSchema,
-  [COMPONENT_TYPES_MAP.CollectionBlock]: CollectionBlockSchema,
-  [COMPONENT_TYPES_MAP.ImageGallery]: ImageGallerySchema,
-  [COMPONENT_TYPES_MAP.ContactInformation]: ContactInformationSchema,
-  [COMPONENT_TYPES_MAP.DynamicComponentList]: DynamicComponentListSchema,
+  collectionblock: CollectionBlockSchema,
+  imagegallery: ImageGallerySchema,
+  contactinformation: ContactInformationSchema,
+  dynamiccomponentlist: DynamicComponentListSchema,
 }
 
 export const IsomerNativeComponentsMap = {
