@@ -24,13 +24,11 @@ export const CollectionBlockSchema = Type.Object(
     customTitle: Type.Optional(
       Type.String({
         title: "Custom title",
-        maxLength: 100,
       }),
     ),
     customDescription: Type.Optional(
       Type.String({
         title: "Custom description",
-        maxLength: 200,
       }),
     ),
     displayThumbnail: Type.Boolean({
@@ -61,7 +59,7 @@ export type CollectionBlockProps = Static<typeof CollectionBlockSchema> & {
 
 export type CollectionBlockSingleCardProps = Pick<
   ProcessedCollectionCardProps,
-  "title" | "image" | "category" | "referenceLinkHref" | "date"
+  "title" | "image" | "category" | "referenceLinkHref" | "formattedDate"
 > &
   Pick<CollectionBlockProps, "displayThumbnail" | "displayCategory"> &
   CollectionBlockNumberOfCards & {

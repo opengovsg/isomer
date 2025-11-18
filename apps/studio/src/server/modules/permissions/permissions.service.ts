@@ -1,7 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
-import { AuditLogEvent, RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
+import { AuditLogEvent, RoleType } from "~prisma/generated/generatedEnums"
 import get from "lodash/get"
 import partition from "lodash/partition"
 
