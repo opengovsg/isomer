@@ -109,7 +109,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             isLoading={notificationMutation.isPending}
             isDisabled={!isDirty}
           />
-          <Box>
+          <Box w="100%">
             <Box mb="-0.5rem" />
             <FormBuilder<Notification>
               schema={NotificationSettingsSchema}
