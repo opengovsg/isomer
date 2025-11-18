@@ -720,3 +720,16 @@ export const HeroSearchbar: Story = {
     },
   }),
 }
+
+export const HeroSearchbarWithImage: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "searchbar",
+      title: "Temasek Polytechnic",
+      subtitle:
+        "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
+      backgroundUrl: "/hero-banner.png",
+    },
+  }),
+}
