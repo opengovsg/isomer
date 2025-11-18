@@ -12,7 +12,7 @@ const SearchInputBox = ({ search }: SearchInputBoxProps) => {
   const commonProps = {
     className: "w-full mt-3",
   }
-  switch (search?.type) {
+  switch (search.type) {
     case "searchSG":
       if (!search.clientId) return null
       return (
