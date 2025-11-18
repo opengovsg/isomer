@@ -36,6 +36,28 @@ const config: StorybookConfig = {
     skipCompiler: false,
     reactDocgen: "react-docgen-typescript",
   },
+
+  // Force Storybook to use the same React version as the app, as it defaults
+  // to using React 19 when using Next.js 15. We require React 18 due to
+  // react-input-mask used by OGP's design system, which uses findDOMNode which
+  // has been removed in React 19.
+  // Ref: https://github.com/storybookjs/storybook/issues/30646
+  webpackFinal: (config) => {
+    const unaliases = [
+      "react",
+      "react-dom/test-utils",
+      "react-dom$",
+      "react-dom/client",
+      "react-dom/server",
+    ]
+    if (config.resolve?.alias) {
+      for (const unalias of unaliases) {
+        // @ts-expect-error to fix when types are proper
+        delete config.resolve.alias[unalias]
+      }
+    }
+    return config
+  },
 }
 export default config
 
