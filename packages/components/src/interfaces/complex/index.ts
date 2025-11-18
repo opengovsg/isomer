@@ -39,7 +39,12 @@ export {
   type CollectionBlockProps,
 } from "./CollectionBlock"
 export { ImageGallerySchema, type ImageGalleryProps } from "./ImageGallery"
-export { ChildrenPagesSchema, type ChildrenPagesProps } from "./ChildrenPages"
+export {
+  ChildrenPagesSchema,
+  type ChildrenPagesProps,
+  CHILDREN_PAGES_LAYOUT_OPTIONS,
+  DEFAULT_CHILDREN_PAGES_BLOCK,
+} from "./ChildrenPages"
 export {
   ContactInformationSchema,
   type ContactInformationProps,

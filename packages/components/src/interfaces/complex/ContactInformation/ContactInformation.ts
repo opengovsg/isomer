@@ -8,9 +8,9 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
-import { CONTACT_INFORMATION_SUPPORT_METHODS } from "~/constants"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
-import { createDgsSchema, NativeDataSourceSchema } from "../integration"
+import { createDgsSchema, NativeDataSourceSchema } from "../../integration"
+import { CONTACT_INFORMATION_SUPPORT_METHODS } from "./constants"
 
 const BaseContactInformationSchema = Type.Object({
   type: Type.Literal("contactinformation", {

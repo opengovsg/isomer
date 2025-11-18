@@ -1,5 +1,5 @@
 import type { IndexPageSchemaType } from "~/types"
-import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/constants"
+import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages/constants"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils"
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"

@@ -16,7 +16,7 @@ import type {
   NotFoundPagePageProps,
   SearchPagePageProps,
 } from "~/types"
-import { ISOMER_PAGE_LAYOUTS } from "~/constants"
+import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
 import { IsomerComponentsSchemas } from "./components"
 import {
   ArticlePageMetaSchema,

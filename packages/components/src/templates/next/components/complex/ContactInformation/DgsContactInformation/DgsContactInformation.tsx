@@ -9,8 +9,8 @@ import type {
   DgsContactInformationProps,
   DgsTransformedContactInformationProps,
 } from "~/interfaces"
-import { InjectableContactInformationKeys } from "~/constants"
 import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
+import { InjectableContactInformationKeys } from "~/interfaces/complex/ContactInformation/constants"
 import { safeJsonParse } from "~/utils"
 import { ContactInformationUI } from "../components"
 

@@ -1,5 +1,0 @@
-export * from "./pageLayouts"
-export * from "./childrenPages"
-export * from "./infobar"
-export * from "./dynamicDataBanner"
-export * from "./contactInformation"

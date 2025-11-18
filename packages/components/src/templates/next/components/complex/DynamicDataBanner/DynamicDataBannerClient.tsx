@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { BiError } from "react-icons/bi"
 
 import type { DynamicDataBannerProps } from "~/interfaces"
-import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/constants"
+import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/interfaces/complex/DynamicDataBanner/constants"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { ComponentContent } from "../../internal/customCssClass"

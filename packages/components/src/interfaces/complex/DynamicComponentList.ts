@@ -7,7 +7,7 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { DgsDataSourceFieldsSchema } from "../integration"
-import { DgsContactInformationSchema } from "./ContactInformation"
+import { DgsContactInformationSchema } from "./ContactInformation/ContactInformation"
 
 const ContactInformationComponentSchema = Type.Intersect([
   Type.Object({

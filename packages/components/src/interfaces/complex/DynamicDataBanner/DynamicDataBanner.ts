@@ -2,9 +2,9 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/constants"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
-import { TextSchema } from "../native/Text"
+import { TextSchema } from "../../native/Text"
+import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "./constants"
 
 export const DynamicDataBannerSchema = Type.Object(
   {
