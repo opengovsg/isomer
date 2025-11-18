@@ -11,7 +11,11 @@ import {
 } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
-import { FormLabel, Input } from "@opengovsg/design-system-react"
+import {
+  FormErrorMessage,
+  FormLabel,
+  Input,
+} from "@opengovsg/design-system-react"
 import get from "lodash/get"
 import { isHexadecimal } from "validator"
 
@@ -22,6 +26,8 @@ export const jsonFormsColourPickerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ColourPickerControl,
   schemaMatches((schema) => schema.format === "color-picker"),
 )
+
+export const DEFAULT_CONTENT_INVERSE_COLOUR = "2164da"
 
 const THEME_PATHS = [
   "colors.brand.canvas.default",
@@ -65,7 +71,7 @@ const JsonFormsColourPickerControl = ({
               </InputLeftAddon>
               <Input
                 value={displayedColour?.replace("#", "")}
-                placeholder="FFFFFF"
+                placeholder={DEFAULT_CONTENT_INVERSE_COLOUR}
                 w="86px"
                 onChange={(e) => {
                   const rawString = e.target.value
@@ -86,7 +92,10 @@ const JsonFormsColourPickerControl = ({
                   const palette = getPalette(parsedHex)
 
                   THEME_PATHS.forEach((p) => {
-                    handleChange(p, palette[p] ?? "#FFFFFF")
+                    handleChange(
+                      p,
+                      palette[p] ?? `#${DEFAULT_CONTENT_INVERSE_COLOUR}`,
+                    )
                   })
                 }}
               />
@@ -96,22 +105,29 @@ const JsonFormsColourPickerControl = ({
               border="1px solid"
               borderColor="base.divider.strong"
               bgColor={
-                displayedColour ? `#${normalizeHex(displayedColour)}` : "white"
+                displayedColour
+                  ? `#${normalizeHex(displayedColour)}`
+                  : `#${DEFAULT_CONTENT_INVERSE_COLOUR}`
               }
               w="2rem"
               h="2rem"
             ></Box>
           </HStack>
+          {!data && (
+            <FormErrorMessage>
+              Enter a hex code to generate a colour palette.
+            </FormErrorMessage>
+          )}
         </FormControl>
         <Box alignSelf="flex-start">
           <FormLabel
             description={
-              "This palette makes your website accessibility compliant."
+              "We’ve generated this palette from your brand colour. It makes your website compliant with accessibility standards."
             }
             mb={0}
             isRequired
           >
-            Color palette
+            Generated colour palette
           </FormLabel>
           <Flex mt="0.75rem" h="3rem">
             {THEME_PATHS.map((p) => {
@@ -129,7 +145,10 @@ const JsonFormsColourPickerControl = ({
                   borderColor="base.divider.medium"
                   borderLeftRadius={isFirst ? "6px" : "auto"}
                   borderRightRadius={isLast ? "6px" : "auto"}
-                  bgColor={get(ctx.core?.data as string | undefined, p)}
+                  bgColor={
+                    (get(ctx.core?.data, p) as string | undefined) ??
+                    `#${DEFAULT_CONTENT_INVERSE_COLOUR}`
+                  }
                 ></Box>
               )
             })}
