@@ -26,7 +26,7 @@ import { KeyStatistics } from "../components/complex/KeyStatistics"
 import { LogoCloud } from "../components/complex/LogoCloud"
 import { Map } from "../components/complex/Map"
 import { Video } from "../components/complex/Video"
-import Prose from "../components/native/Prose"
+import { Prose } from "../components/native/Prose"
 
 interface RenderComponentProps {
   elementKey?: number
