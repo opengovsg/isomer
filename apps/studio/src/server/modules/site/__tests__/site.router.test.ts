@@ -12,17 +12,56 @@ import {
   setupAdminPermissions,
   setupEditorPermissions,
   setupPageResource,
+  setupPublisherPermissions,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
 
 import type { User } from "../../database"
 import type { Notification } from "~/schemas/site"
+import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
 import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
 import { siteRouter } from "../site.router"
 
 const createCaller = createCallerFactory(siteRouter)
+
+const MOCK_SITE_NAME = "isobad"
+const MOCK_LOGO_URL = "https://isobad.com/logo.png"
+const MOCK_ISOMER_THEME = {
+  colors: {
+    brand: {
+      canvas: {
+        default: "#123c5d",
+        alt: "#456789",
+        backdrop: "#abcdef",
+        inverse: "#fedcba",
+      },
+      interaction: {
+        default: "#123456",
+        hover: "#654321",
+        pressed: "#abcdef",
+      },
+    },
+  },
+}
+const MOCK_BLACK_THEME = {
+  colors: {
+    brand: {
+      canvas: {
+        default: "#000000",
+        alt: "#000000",
+        backdrop: "#000000",
+        inverse: "#000000",
+      },
+      interaction: {
+        default: "#000000",
+        hover: "#000000",
+        pressed: "#000000",
+      },
+    },
+  },
+}
 
 const generateNotification = ({
   title,
@@ -339,6 +378,470 @@ describe("site.router", async () => {
     })
   })
 
+  describe("updateSiteConfig", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: 1,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+    it("should throw 403 if the user does not have write access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should throw 403 if the user has publisher access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      // Act
+      const result = caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should update the site config if the user is a site admin", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+      })
+    })
+    it("should generate an audit log entry", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+      })
+
+      // Assert
+      await assertAuditLog(session.userId)
+    })
+    it("should update searchsg if the update went through", async () => {
+      // Arrange
+      const mockSearch = {
+        search: {
+          type: "searchSG",
+          clientId: "i-love-searchsg",
+        },
+      } as const
+      const searchSpy = vi.spyOn(searchSgService, "updateSearchSGConfig")
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({
+          config: {
+            ...site.config,
+            ...mockSearch,
+          },
+        })
+        .execute()
+
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        ...mockSearch,
+      })
+
+      // Assert
+      expect(searchSpy).toHaveBeenCalledWith(
+        {
+          name: MOCK_SITE_NAME,
+          _kind: "name",
+        },
+        mockSearch.search.clientId,
+        result.url,
+      )
+      expect(result).toEqual({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        ...mockSearch,
+      })
+    })
+  })
+
+  describe("updateSiteIntegrations", () => {
+    const MOCK_INTEGRATION_DATA = {
+      siteName: MOCK_SITE_NAME,
+      logoUrl: MOCK_LOGO_URL,
+      theme: "isomer-next",
+      url: "https://www.isomer.gov.sg",
+    } as const
+
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.updateSiteIntegrations({
+        siteId: 1,
+        data: MOCK_INTEGRATION_DATA,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+    it("should throw 403 if the user does not have write access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: MOCK_INTEGRATION_DATA,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should throw 403 if the user has publisher access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      // Act
+      const result = caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: MOCK_INTEGRATION_DATA,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should update the site integrations if the user is a site admin", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSiteIntegrations({
+        data: MOCK_INTEGRATION_DATA,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result.config).toEqual(MOCK_INTEGRATION_DATA)
+    })
+    it("should generate an audit log entry", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: MOCK_INTEGRATION_DATA,
+      })
+
+      // Assert
+      await assertAuditLog(session.userId)
+    })
+
+    it("should preserve extra properties that are submitted in `data`", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          fake: "fake",
+        } as unknown as typeof MOCK_INTEGRATION_DATA,
+      })
+
+      // Assert
+      expect(result.config).toEqual({ ...MOCK_INTEGRATION_DATA, fake: "fake" })
+    })
+  })
+
+  describe("setTheme", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: 1,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+    it("should throw 403 if the user does not have write access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should throw 403 if the user only has publisher access", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({ theme: jsonb(MOCK_BLACK_THEME) })
+        .where("id", "=", site.id)
+        .execute()
+
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+    it("should throw 404 if the theme for the site could not be found", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "The theme for the site could not be found.",
+        }),
+      )
+    })
+    it("should update the site theme if the user is a site admin", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({ theme: jsonb(MOCK_BLACK_THEME) })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toMatchObject({
+        theme: MOCK_ISOMER_THEME,
+      })
+    })
+    it("should update searchsg if the user is a site admin", async () => {
+      // Arrange
+      const mockSearchSg = {
+        search: { type: "searchSG", clientId: "mock-client-id" },
+      } as const
+      const { site } = await setupSite()
+      const spy = vi.spyOn(searchSgService, "updateSearchSGConfig")
+      await db
+        .updateTable("Site")
+        .set({
+          theme: jsonb(MOCK_BLACK_THEME),
+          config: {
+            ...site.config,
+            ...mockSearchSg,
+          },
+        })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toMatchObject({
+        theme: MOCK_ISOMER_THEME,
+      })
+      expect(spy).toHaveBeenCalledWith(
+        {
+          _kind: "colour",
+          colour: MOCK_ISOMER_THEME.colors.brand.canvas.inverse,
+        },
+        mockSearchSg.search.clientId,
+        site.config.url,
+      )
+    })
+    it("should generate an audit log entry", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await db
+        .updateTable("Site")
+        .set({ theme: jsonb(MOCK_BLACK_THEME) })
+        .where("id", "=", site.id)
+        .execute()
+
+      // Act
+      await caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      await assertAuditLog(session.userId)
+    })
+  })
   describe("getTheme", () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange
@@ -439,6 +942,116 @@ describe("site.router", async () => {
     })
   })
 
+  describe("setFooter", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+      const footerContent = JSON.stringify({ foo: "bar" })
+
+      // Act
+      const result = unauthedCaller.setFooter({
+        siteId: 1,
+        footer: footerContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
+    })
+
+    it("should throw 403 if user does not have write access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const footerContent = JSON.stringify({ foo: "bar" })
+
+      // Act
+      const result = caller.setFooter({
+        siteId: site.id,
+        footer: footerContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
+    })
+
+    it('should throw 403 if user has only "publisher" access to the site', async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const footerContent = JSON.stringify({ foo: "bar" })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.setFooter({
+        siteId: site.id,
+        footer: footerContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
+    })
+
+    it("should set the site footer successfully", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const footerContent = { foo: "bar" }
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.setFooter({
+        siteId: site.id,
+        footer: JSON.stringify(footerContent),
+      })
+
+      // Assert
+      const newFooter = await db
+        .selectFrom("Footer")
+        .where("siteId", "=", site.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(newFooter.content).toEqual(footerContent)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(2)
+      expect(
+        auditLog.some(({ eventType }) => {
+          return eventType === AuditLogEvent.FooterUpdate
+        }),
+      ).toEqual(true)
+      expect(
+        auditLog.some(({ eventType }) => {
+          return eventType === AuditLogEvent.Publish
+        }),
+      ).toEqual(true)
+      expect(
+        auditLog.every(({ userId }) => {
+          return userId === session.userId
+        }),
+      ).toEqual(true)
+    })
+  })
+
   describe("getNavbar", () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange
@@ -488,6 +1101,116 @@ describe("site.router", async () => {
         content: navbar.content,
         siteId: site.id,
       })
+    })
+  })
+
+  describe("setNavbar", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+      const navbarContent = JSON.stringify({ foo: "bar" })
+
+      // Act
+      const result = unauthedCaller.setNavbar({
+        siteId: 1,
+        navbar: navbarContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
+    })
+
+    it("should throw 403 if user does not have write access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const navbarContent = JSON.stringify({ foo: "bar" })
+
+      // Act
+      const result = caller.setNavbar({
+        siteId: site.id,
+        navbar: navbarContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
+    })
+
+    it('should throw 403 if user has only "publisher" access to the site', async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const navbarContent = JSON.stringify({ foo: "bar" })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.setNavbar({
+        siteId: site.id,
+        navbar: navbarContent,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
+    })
+
+    it("should set the site navbar successfully", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const navbarContent = { foo: "bar" }
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.setNavbar({
+        siteId: site.id,
+        navbar: JSON.stringify(navbarContent),
+      })
+
+      // Assert
+      const newNavbar = await db
+        .selectFrom("Navbar")
+        .where("siteId", "=", site.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(newNavbar.content).toEqual(navbarContent)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(2)
+      expect(
+        auditLog.some(({ eventType }) => {
+          return eventType === AuditLogEvent.NavbarUpdate
+        }),
+      ).toEqual(true)
+      expect(
+        auditLog.some(({ eventType }) => {
+          return eventType === AuditLogEvent.Publish
+        }),
+      ).toEqual(true)
+      expect(
+        auditLog.every(({ userId }) => {
+          return userId === session.userId
+        }),
+      ).toEqual(true)
     })
   })
 
@@ -662,7 +1385,7 @@ describe("site.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
     it("should throw 403 if user does not have write access to the site", async () => {
@@ -689,7 +1412,34 @@ describe("site.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
+    })
+
+    it("should throw 403 if user has publisher access to the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.setNotification({
+        siteId: site.id,
+        notification: {
+          notification: { title: "foo" },
+        },
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
     it("should save changes to the site notification successfully if one exists", async () => {
@@ -846,7 +1596,7 @@ describe("site.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
-      await expect(db.selectFrom("AuditLog").execute()).resolves.toEqual([])
+      await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
     })
 
     it("should throw 403 if user is not an Isomer Core Admin", async () => {
@@ -1211,3 +1961,23 @@ describe("site.router", async () => {
     })
   })
 })
+
+const assertAuditLog = async (sessionUserId?: string) => {
+  const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+  expect(auditLog).toHaveLength(2)
+  expect(
+    auditLog.some(({ eventType }) => {
+      return eventType === AuditLogEvent.SiteConfigUpdate
+    }),
+  ).toEqual(true)
+  expect(
+    auditLog.some(({ eventType }) => {
+      return eventType === AuditLogEvent.Publish
+    }),
+  ).toEqual(true)
+  expect(
+    auditLog.every(({ userId }) => {
+      return userId === sessionUserId
+    }),
+  ).toEqual(true)
+}

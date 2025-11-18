@@ -1,21 +1,15 @@
+import type { ControlProps, RankedTester } from "@jsonforms/core"
+import type { ArticlePagePageProps } from "@opengovsg/isomer-components"
 import { FormControl, Skeleton, VStack } from "@chakra-ui/react"
-import {
-  ControlProps,
-  RankedTester,
-  rankWith,
-  schemaMatches,
-} from "@jsonforms/core"
+import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, MultiSelect } from "@opengovsg/design-system-react"
-import { ArticlePagePageProps } from "@opengovsg/isomer-components"
 
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
-
-const MAX_TAG_CATEGORY_ITEMS = 3 as const
 
 export const jsonFormsTaggedControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TaggedControl,
@@ -82,11 +76,6 @@ const SuspendableJsonFormsTaggedControl = ({
             )
             const tagOptionsIds = options.map(({ id }) => id)
 
-            // NOTE: This refers to whether we should render and show
-            // ONLY the options that the user has selected
-            const shouldOnlyRenderSelected =
-              currentTagCategoryOptions.length >= MAX_TAG_CATEGORY_ITEMS
-
             return (
               <FormControl isRequired={required} gap="0.5rem">
                 <FormLabel description={description}>{label}</FormLabel>
@@ -95,19 +84,12 @@ const SuspendableJsonFormsTaggedControl = ({
                   nothingFoundLabel="No tags found. Search for something else or contact your site owner(s) to create new tags."
                   values={currentTagCategoryOptions.map(({ id }) => id)}
                   name={label}
-                  items={
-                    shouldOnlyRenderSelected
-                      ? currentTagCategoryOptions.map(({ id, label }) => ({
-                          value: id,
-                          label,
-                        }))
-                      : options.map(({ id, label }) => {
-                          return {
-                            value: id,
-                            label,
-                          }
-                        })
-                  }
+                  items={options.map(({ id, label }) => {
+                    return {
+                      value: id,
+                      label,
+                    }
+                  })}
                   // NOTE: `value` is the new set of selected options
                   onChange={(value) => {
                     const others =

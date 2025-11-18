@@ -1,8 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import omit from "lodash/omit"
-import pick from "lodash/pick"
+import { omit, pick } from "lodash-es"
 
 import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type {

@@ -1,14 +1,13 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { ContactInformationProps } from "~/interfaces"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 import { DgsContactInformation } from "./DgsContactInformation"
 
-const meta: Meta<ContactInformationProps> = {
+const meta: Meta<typeof DgsContactInformation> = {
   title: "Next/Components/ContactInformation/DGS",
   component: DgsContactInformation,
   argTypes: {},
@@ -127,8 +126,71 @@ const DgsParameters = {
   },
 }
 
+const EmptyFieldsParameters = {
+  msw: {
+    handlers: [
+      http.get(DgsUrl, () =>
+        HttpResponse.json({
+          success: true,
+          result: {
+            records: [
+              {
+                entity_name: "Sentosa",
+                description:
+                  "Embassy of the Republic of Singapore - Algeria<br>should accept line break HTM tag",
+                methods: JSON.stringify([
+                  {
+                    method: "telephone",
+                    label: "Telephone",
+                    values: ["+65-63798000 (MFA)"],
+                  },
+                  {
+                    method: "fax",
+                    label: "This is empty and should not be shown",
+                    values: [],
+                  },
+                  {
+                    method: "fax",
+                    label: "This should also not be shown",
+                    values: ["  "],
+                  },
+                ]),
+                other_information: JSON.stringify({
+                  label: "Other Information",
+                  value: "  ",
+                }),
+              },
+            ],
+          },
+        }),
+      ),
+    ],
+  },
+}
+
 export const Default: Story = {
   parameters: DgsParameters,
+  args: {
+    dataSource: {
+      type: "dgs",
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      filters: [
+        {
+          fieldKey: "testFieldKey",
+          fieldValue: "testFieldValue",
+        },
+      ],
+    },
+    title: "[dgs:entity_name]", // to show that they can have different value from DGS
+    description: "[dgs:description]",
+    methods: "[dgs:methods]",
+    otherInformation: "[dgs:other_information]",
+  },
+}
+
+export const DefaultEmptyFields: Story = {
+  name: "Default (Empty Fields)",
+  parameters: EmptyFieldsParameters,
   args: {
     dataSource: {
       type: "dgs",
@@ -174,6 +236,29 @@ export const Partial: Story = {
 
 export const Homepage: Story = {
   parameters: DgsParameters,
+  args: {
+    layout: "homepage",
+    whitelistedMethods: ["telephone", "emergency_contact", "email"],
+    dataSource: {
+      type: "dgs",
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      filters: [
+        {
+          fieldKey: "testFieldKey",
+          fieldValue: "testFieldValue",
+        },
+      ],
+    },
+    title: "[dgs:entity_name]",
+    description: "[dgs:description]",
+    methods: "[dgs:methods]",
+    otherInformation: "[dgs:other_information]",
+  },
+}
+
+export const HomepageEmptyFields: Story = {
+  name: "Homepage (Empty Fields)",
+  parameters: EmptyFieldsParameters,
   args: {
     layout: "homepage",
     whitelistedMethods: ["telephone", "emergency_contact", "email"],
