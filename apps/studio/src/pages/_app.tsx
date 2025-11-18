@@ -1,5 +1,6 @@
 import "@fontsource/ibm-plex-mono" // Import if using code textStyles.
 import "inter-ui/inter.css" // Strongly recommended.
+import "../styles/tiptap.scss"
 
 import type { AppProps, AppType } from "next/app"
 import { Skeleton, Stack } from "@chakra-ui/react"
