@@ -166,27 +166,22 @@ function CheckboxRenderer({
   const { focusProps, isFocusVisible } = useFocusRing()
   const mergedInputProps = mergeProps(inputProps, focusProps)
 
-  // Handle mouse clicks on the label for visual feedback
-  // Keyboard events are handled by the input element
+  // usePress handles both mouse and keyboard interactions
+  // For keyboard: onPress will be called (Enter/Space)
+  // For mouse: we prevent default to avoid double toggling, then onPress handles it
   const { pressProps, isPressed } = usePress({
     isDisabled,
     onPress: () => {
       if (!isDisabled) {
-        // Programmatically click the input to trigger its onChange handler
-        // This ensures grouped checkboxes use inputProps.onChange from useCheckboxGroupItem
-        // and standalone checkboxes use inputProps.onChange from useCheckbox
         inputRef.current?.click()
       }
     },
   })
 
-  // Keep onChange in inputProps - it's needed for both grouped and standalone checkboxes
-  // The label's onClick will prevent default and stop propagation to avoid double toggling
+  // Prevent native label click to avoid double toggling with mouse
+  // Keyboard events are handled by usePress's onPress
   const labelProps = mergeProps(pressProps, {
     onClick: (e: MouseEvent) => {
-      // Prevent the label's default behavior (which would toggle the input)
-      // and stop propagation to prevent the click from bubbling to the input
-      // We handle toggling via usePress instead, which programmatically clicks the input
       e.preventDefault()
       e.stopPropagation()
     },
