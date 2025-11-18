@@ -4,9 +4,8 @@ import { expect, userEvent, within } from "storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { IsomerSitemap } from "~/types"
+import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
-import { type CollectionPageSchemaType } from "~/types"
 import { CollectionLayout } from "./Collection"
 
 const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
