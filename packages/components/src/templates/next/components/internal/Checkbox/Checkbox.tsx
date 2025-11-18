@@ -240,21 +240,16 @@ function StandaloneCheckbox(props: CheckboxProps) {
   const state = useToggleState(checkboxProps)
   const { inputProps } = useCheckbox(checkboxProps, state, ref)
 
-  const isDisabled = checkboxProps.isDisabled ?? false
-  const isInvalid = checkboxProps.isInvalid ?? false
-  const isIndeterminate = checkboxProps.isIndeterminate ?? false
-  const isSelected = state.isSelected
-
   return (
     <CheckboxRenderer
       children={children}
       className={className}
       inputProps={inputProps}
       inputRef={ref}
-      isDisabled={isDisabled}
-      isInvalid={isInvalid}
-      isIndeterminate={isIndeterminate}
-      isSelected={isSelected}
+      isDisabled={checkboxProps.isDisabled ?? false}
+      isInvalid={checkboxProps.isInvalid ?? false}
+      isIndeterminate={checkboxProps.isIndeterminate ?? false}
+      isSelected={state.isSelected}
     />
   )
 }
@@ -285,11 +280,6 @@ function GroupedCheckbox(props: CheckboxProps) {
     ref,
   )
 
-  const isInvalid = checkboxProps.isInvalid ?? false
-  const isIndeterminate = checkboxProps.isIndeterminate ?? false
-  const value = checkboxProps.value ?? ""
-  const isSelected = state.isSelected(value)
-
   return (
     <CheckboxRenderer
       children={children}
@@ -297,9 +287,9 @@ function GroupedCheckbox(props: CheckboxProps) {
       inputProps={inputProps}
       inputRef={ref}
       isDisabled={isDisabled}
-      isInvalid={isInvalid}
-      isIndeterminate={isIndeterminate}
-      isSelected={isSelected}
+      isInvalid={checkboxProps.isInvalid ?? false}
+      isIndeterminate={checkboxProps.isIndeterminate ?? false}
+      isSelected={state.isSelected(checkboxProps.value ?? "")}
     />
   )
 }
