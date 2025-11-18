@@ -37,7 +37,6 @@
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
-    "@types/papaparse": "^5.5.0",
     "sherif": "^1.6.1",
     "turbo": "^2.5.4"
   },
