@@ -36,7 +36,6 @@ interface PublishButtonProps extends ButtonProps {
 const SuspendablePublishButton = ({
   pageId,
   siteId,
-  isDisabled,
   ...rest
 }: PublishButtonProps): JSX.Element => {
   const gb = useGrowthBook()
@@ -118,7 +117,7 @@ const SuspendablePublishButton = ({
                   <Button
                     variant="solid"
                     size="sm"
-                    isDisabled={!isChangesPendingPublish || isDisabled}
+                    isDisabled={!isChangesPendingPublish}
                     isLoading={isPending}
                     borderRightRadius={
                       enableScheduledPublishing ? 0 : undefined
@@ -148,9 +147,7 @@ const SuspendablePublishButton = ({
                           icon={<Icon as={BiChevronDown} boxSize="1rem" />}
                           size="sm"
                           variant="solid"
-                          isDisabled={
-                            !isChangesPendingPublish || isDisabled || isPending
-                          }
+                          isDisabled={!isChangesPendingPublish || isPending}
                           borderLeftRadius={0}
                         />
                         <MenuList>
