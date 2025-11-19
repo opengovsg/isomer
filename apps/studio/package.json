@@ -208,6 +208,7 @@
     "prettier": "^3.3.3",
     "start-server-and-test": "^2.0.11",
     "storybook": "9.1.16",
+    "storybook-mock-date-decorator": "^3.0.0",
     "tailwindcss": "^3.4.4",
     "testcontainers": "^10.13.1",
     "tsx": "^4.20.4",
