@@ -1,3 +1,4 @@
+import type { GrowthBook } from "@growthbook/growthbook"
 import type { Job, JobsOptions } from "bullmq"
 import { Queue, Worker } from "bullmq"
 import { differenceInSeconds } from "date-fns"
@@ -5,9 +6,15 @@ import { differenceInSeconds } from "date-fns"
 import type { Lock } from "@isomer/redis"
 import { getRedisWithRedlock, ResourceLockedError } from "@isomer/redis"
 
-import { sendFailedSchedulePublishEmail } from "~/features/mail/service"
+import { sendFailedPublishEmail } from "~/features/mail/service"
+import {
+  ENABLE_CODEBUILD_JOBS,
+  ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
+} from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
+import { createGrowthBookContext } from "~/server/context"
 import { db } from "~/server/modules/database"
+import { bulkValidateUserPermissionsForResources } from "~/server/modules/permissions/permissions.service"
 import {
   getPageById,
   publishPageResource,
@@ -46,7 +53,7 @@ export const scheduledPublishQueue = new Queue<ScheduledPublishJobData>(
 )
 
 const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
-const BUFFER_IN_SECONDS = 60 // seconds buffer to allow for slight delays in job processing
+export const BUFFER_IN_SECONDS = 60 // seconds buffer to allow for slight delays in job processing
 
 /**
  * Get job options for a scheduled publish job
@@ -91,7 +98,8 @@ export const createScheduledPublishWorker = () => {
   const worker = new Worker<ScheduledPublishJobData>(
     scheduledPublishQueue.name,
     async (job: Job<ScheduledPublishJobData>) => {
-      await publishScheduledResource(job)
+      const gb = await createGrowthBookContext()
+      await publishScheduledResource(gb, job.id, job.data, job.attemptsMade)
       return job.id
     },
     {
@@ -104,13 +112,20 @@ export const createScheduledPublishWorker = () => {
   return worker
 }
 
-const publishScheduledResource = async ({
-  id: jobId,
-  data: { resourceId, siteId, userId },
-  attemptsMade,
-}: Job<ScheduledPublishJobData>) => {
+export const publishScheduledResource = async (
+  gb: GrowthBook,
+  jobId: string | undefined,
+  { resourceId, siteId, userId }: ScheduledPublishJobData,
+  attemptsMade: number,
+) => {
   let lock: Lock | null = null
   try {
+    // verify user still has permission to publish on the site
+    await bulkValidateUserPermissionsForResources({
+      siteId,
+      action: "publish",
+      userId,
+    })
     // Acquire a lock for this resourceId to prevent concurrent processing
     lock = await RedlockClient.acquire(
       [`locks:resource:${resourceId}`],
@@ -120,15 +135,17 @@ const publishScheduledResource = async ({
     const page = await db.transaction().execute(async (tx) => {
       const page = await getPageById(tx, { resourceId, siteId })
       if (!page) {
-        logger.error({
-          message: `Page with id ${resourceId} not found or does not belong to site ${siteId}.`,
-        })
+        logger.error(
+          { resourceId, siteId, jobId, userId },
+          `Page with id ${resourceId} not found or does not belong to site ${siteId}. Exiting job.`,
+        )
         return null
       }
       if (!page.scheduledAt) {
-        logger.info({
-          message: `Page with id ${resourceId} is no longer scheduled for publishing. Exiting job.`,
-        })
+        logger.info(
+          { resourceId, jobId, userId },
+          `Page with id ${resourceId} is no longer scheduled for publishing. Exiting job.`,
+        )
         return null
       }
       // Double-check that we're within the buffer time of the scheduledAt time
@@ -140,9 +157,10 @@ const publishScheduledResource = async ({
         Math.abs(differenceInSeconds(page.scheduledAt, new Date())) >
           BUFFER_IN_SECONDS
       ) {
-        logger.error({
-          message: `Page with id ${resourceId} is scheduled for publishing outside the buffer time. Exiting job.`,
-        })
+        logger.error(
+          { resourceId, jobId, userId },
+          `Page with id ${resourceId} is scheduled for publishing outside the buffer time. Exiting job.`,
+        )
         return null
       }
       // NOTE: once it's been claimed, we unset scheduledAt even if publish fails
@@ -157,34 +175,54 @@ const publishScheduledResource = async ({
         tx,
       )
     })
+    // No page found or not scheduled, exit (logging handled above)
+    if (!page) return
     // Publish the page outside of the transaction to avoid long-running transactions
-    if (page) {
-      logger.info({ message: `Publishing scheduled page ${resourceId}` })
-      await publishPageResource({
-        logger,
-        siteId,
-        resourceId: page.id,
-        userId,
-      })
-    }
-  } catch (err) {
-    // If we fail to acquire the lock, it means another worker is processing this resource and we can exit gracefully
-    if (err instanceof ResourceLockedError) {
-      logger.info({
-        message: `Failed to acquire lock for resource ${resourceId} as another worker is processing it. Exiting job ${jobId}.`,
-        error: err,
-      })
+    logger.info(
+      { resourceId, jobId, userId },
+      `Publishing scheduled page ${resourceId}`,
+    )
+    // Get the user who scheduled the publish from the database
+    const user = await db
+      .selectFrom("User")
+      .where("id", "=", userId)
+      .selectAll()
+      .executeTakeFirst()
+    // if the user no longer exists, we log an error and exit, since we don't have a user to attribute the publish to
+    if (!user) {
+      logger.error(
+        { resourceId, jobId, userId },
+        `User with id ${userId} not found. Cannot continue with publish of resource ${resourceId}.`,
+      )
       return
     }
-    throw err
+    const { version } = await publishPageResource({
+      logger,
+      siteId,
+      resourceId: page.id,
+      user,
+      isScheduled: true,
+      addCodebuildJobRow: gb.isOn(ENABLE_CODEBUILD_JOBS),
+    })
+    return version
+  } catch (error) {
+    // If we fail to acquire the lock, it means another worker is processing this resource and we can exit gracefully
+    if (error instanceof ResourceLockedError) {
+      logger.info(
+        { resourceId, jobId, userId, error },
+        `Could not acquire lock for resource ${resourceId}. It is likely being processed by another worker. Exiting job.`,
+      )
+      return
+    }
+    throw error
   } finally {
     // Ensure the lock is released if it was acquired
     if (lock) {
-      await lock.release().catch((err: Error) => {
-        logger.warn({
-          message: `Failed to release lock for resource ${resourceId}. Lock may have expired.`,
-          error: err,
-        })
+      await lock.release().catch((error: Error) => {
+        logger.warn(
+          { resourceId, jobId, userId, error },
+          `Failed to release lock for resource ${resourceId}. Lock may have expired.`,
+        )
       })
     }
   }
@@ -205,7 +243,7 @@ scheduledPublishWorker.on(
         return
       }
       const {
-        data: { resourceId, userId },
+        data: { resourceId, userId, siteId },
       } = job
       // Log differently based on number of attempts made
       logger.error({
@@ -227,12 +265,26 @@ scheduledPublishWorker.on(
             .select("User.email")
             .executeTakeFirstOrThrow()
 
-          await sendFailedSchedulePublishEmail({ recipientEmail: email })
+          // check the growthbook feature flag to see if we should send emails for scheduled publishes
+          const gb = await createGrowthBookContext()
+          if (gb.isOn(ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY)) {
+            // get the resource that was being published
+            const resource = await getPageById(db, {
+              resourceId,
+              siteId,
+            })
+            if (!resource) throw new Error("The resource no longer exists")
+            await sendFailedPublishEmail({
+              recipientEmail: email,
+              isScheduled: true,
+              resource,
+            })
+          }
         }
-      } catch (emailErr) {
+      } catch (error) {
         logger.error({
-          message: `Failed to send failed schedule publish email to ${userId} for resource ${resourceId}`,
-          error: emailErr,
+          message: `Failed to send failed publish email to ${userId} for resource ${resourceId}`,
+          error,
         })
       }
     })()

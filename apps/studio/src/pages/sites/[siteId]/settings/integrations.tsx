@@ -12,7 +12,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { Value } from "@sinclair/typebox/value"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { isEqual } from "lodash"
+import { isEqual, pickBy } from "lodash"
 import { BiWrench } from "react-icons/bi"
 
 import type { NextPageWithLayout } from "~/lib/types"
@@ -82,8 +82,11 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
     useState<ComplexIntegrationsSettings>({ askgov, vica })
 
   const isDirty = !isEqual(
-    { siteGtmId, search, askgov, vica },
-    { ...simpleIntegrationSettings, ...complexIntegrationSettings },
+    pickBy({ siteGtmId, search, askgov, vica }, (val) => !!val),
+    pickBy(
+      { ...simpleIntegrationSettings, ...complexIntegrationSettings },
+      (val) => !!val,
+    ),
   )
 
   const updateSiteIntegrationsMutation =
@@ -167,13 +170,19 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
               data={complexIntegrationSettings}
               handleChange={(data) => {
                 if (data.vica) {
-                  setComplexIntegrationSettings({
-                    ...data,
-                    vica: {
-                      ...data.vica,
-                      "app-name": agencyName ?? siteName,
-                    },
-                  })
+                  const newVicaState = {
+                    ...data.vica,
+                    "app-name": agencyName ?? siteName,
+                  }
+
+                  if (!isEqual(newVicaState, data.vica)) {
+                    setComplexIntegrationSettings({
+                      ...data,
+                      vica: newVicaState,
+                    })
+                  } else {
+                    setComplexIntegrationSettings(data)
+                  }
                 } else {
                   setComplexIntegrationSettings(data)
                 }
@@ -184,7 +193,6 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
         <SettingsPreviewGridItem>
           <EditSettingsPreview
             siteName={siteName}
-            jumpToFooter
             {...complexIntegrationSettings}
             {...simpleIntegrationSettings}
           />

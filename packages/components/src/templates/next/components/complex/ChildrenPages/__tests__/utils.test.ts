@@ -1,4 +1,4 @@
-import { cloneDeep } from "lodash"
+import { cloneDeep } from "lodash-es"
 import { describe, expect, it } from "vitest"
 
 import type { ChildPage } from "../types"

@@ -5,6 +5,7 @@ import {
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
   GoogleTagManagerPreload,
+  MicrosoftClarity,
   VicaStylesheet,
   VicaWidget,
   Wogaa,
@@ -19,13 +20,10 @@ export const RenderApplicationScripts = ({
   site,
   ScriptComponent,
 }: RenderApplicationScriptsProps) => {
-  const shouldIncludeGTM =
-    site.environment === "production" &&
-    (!!site.siteGtmId || !!site.isomerGtmId)
-
   return (
     <>
       <FontPreload />
+
       {/* NOTE: we load in wogaa regardless of whether the site is  */}
       {/* a government site as wogaa still requires the agency to register their site */}
       {/* and wogaa is still gated behind techpass login. */}
@@ -33,26 +31,29 @@ export const RenderApplicationScripts = ({
       {/* is not registered, so no end impact to user */}
       <Wogaa environment={site.environment} ScriptComponent={ScriptComponent} />
 
-      {shouldIncludeGTM && (
+      {!!site.siteGtmId && (
         <>
           <GoogleTagManagerPreload />
           <GoogleTagManagerHeader
             siteGtmId={site.siteGtmId}
-            isomerGtmId={site.isomerGtmId}
             ScriptComponent={ScriptComponent}
           />
-          <GoogleTagManagerBody
-            siteGtmId={site.siteGtmId}
-            isomerGtmId={site.isomerGtmId}
-          />
+          <GoogleTagManagerBody siteGtmId={site.siteGtmId} />
         </>
+      )}
+
+      {!!site.isomerMsClarityId && (
+        <MicrosoftClarity
+          msClarityId={site.isomerMsClarityId}
+          ScriptComponent={ScriptComponent}
+        />
       )}
 
       {/* Ensures that the webchat widget only loads after the page has loaded */}
       {/* Note: did not account for both being added to the config as it's a very unlikely scenario and there's "correct" way to handle this */}
       {site.vica && (
         <>
-          <VicaStylesheet environment={site.environment} />
+          <VicaStylesheet useDevStagingScript={site.vica.useDevStagingScript} />
           <VicaWidget
             site={site}
             ScriptComponent={ScriptComponent}

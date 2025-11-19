@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+import isEqual from "lodash/isEqual"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
@@ -52,7 +53,7 @@ const FooterSettingsPage: NextPageWithLayout = () => {
     FooterSchemaType | undefined
   >(content)
   const isOpen = !!nextUrl
-  const isDirty = JSON.stringify(previewFooterState) !== JSON.stringify(content)
+  const isDirty = !isEqual(previewFooterState, content)
 
   const handleSaveFooter = (data?: FooterSchemaType) => {
     if (!data) return

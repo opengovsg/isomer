@@ -26,6 +26,7 @@ import { trpc } from "~/utils/trpc"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
 import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"
+import { getCustomErrorMessage } from "./utils"
 import { parseHref } from "./utils/parseHref"
 
 interface SuspendableLabelProps {
@@ -132,7 +133,7 @@ export function BaseLinkControl({
           </Flex>
           {required && (
             <FormErrorMessage>
-              {label} {errors}
+              {label} {getCustomErrorMessage(errors)}
             </FormErrorMessage>
           )}
         </LinkErrorBoundary>

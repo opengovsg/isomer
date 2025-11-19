@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/nextjs"
 import { ResourceState } from "~prisma/generated/generatedEnums"
+import { userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -122,6 +122,9 @@ export const NestedState: Story = {
 }
 
 export const ErrorNestedState: Story = {
+  parameters: {
+    disableMockDate: true, // Disable mockDateDecorator to prevent interference with error state
+  },
   play: async (context) => {
     await NestedState.play?.(context)
 

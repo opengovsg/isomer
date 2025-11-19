@@ -19,7 +19,7 @@ jobs:
     with:
       aws-region: "ap-southeast-1"
       aws-account-id: "343218177745"
-      cicd-role: "arn:aws:iam::343218177745:role/isomer-next-infra-github-oidc-role-d2e1bd3"
+      cicd-role: "arn:aws:iam::343218177745:role/isomer-next-infra-uat-deploy-role"
       ecr-repository: "isomer-next-infra-uat-ecr"
       ecs-cluster-name: "studio-uat-ecs"
       ecs-service-name: "studio-uat-ecs-service"

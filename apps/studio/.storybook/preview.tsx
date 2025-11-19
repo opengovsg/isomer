@@ -1,8 +1,11 @@
 import "@fontsource/ibm-plex-mono"
+
+import { mockDateDecorator } from "storybook-mock-date-decorator"
+
 import "inter-ui/inter.css"
 
 import { useCallback, useState } from "react"
-import { Box, Skeleton, Stack } from "@chakra-ui/react"
+import { Skeleton, Stack } from "@chakra-ui/react"
 import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
@@ -12,13 +15,11 @@ import {
   type Decorator,
   type Preview,
   type ReactRenderer,
-} from "@storybook/react"
+} from "@storybook/nextjs"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
-import { format } from "date-fns/format"
 import { merge } from "lodash"
-import mockdate from "mockdate"
 import { initialize, mswLoader } from "msw-storybook-addon"
 import { ErrorBoundary } from "react-error-boundary"
 import superjson from "superjson"
@@ -26,13 +27,13 @@ import superjson from "superjson"
 import { viewport, withChromaticModes } from "@isomer/storybook-config"
 
 import type { EnvContextReturn } from "~/components/AppProviders"
+import type { AppRouter } from "~/server/modules/_app"
 import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider } from "~/components/AppProviders"
 import { DefaultFallback } from "~/components/ErrorBoundary"
 import Suspense from "~/components/Suspense"
 import { env } from "~/env.mjs"
 import { LoginStateContext } from "~/features/auth"
-import { type AppRouter } from "~/server/modules/_app"
 import { theme } from "~/theme"
 
 // Initialize MSW
@@ -140,41 +141,19 @@ const LoginStateDecorator: Decorator<Args> = (story, { parameters }) => {
   )
 }
 
-export const MockDateDecorator: Decorator<Args> = (story, { parameters }) => {
-  mockdate.reset()
-
-  if (!parameters.mockdate) {
+const conditionalMockDateDecorator: Decorator = (story, context) => {
+  // NOTE: skip mockDateDecorator if explicitly disabled;
+  // this is because the decorator calls `MockDate.reset` under the hood
+  // which might interfere with renders in React
+  if (context.parameters.disableMockDate) {
     return story()
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  mockdate.set(parameters.mockdate)
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  const mockedDate = format(parameters.mockdate, "dd-mm-yyyy HH:mma")
-
-  return (
-    <Box>
-      <Box
-        pos="fixed"
-        top={0}
-        right={0}
-        bg="white"
-        p="0.25rem"
-        fontSize="0.75rem"
-        lineHeight={1}
-        zIndex="docked"
-      >
-        Mocking date: {mockedDate}
-      </Box>
-      {story()}
-    </Box>
-  )
+  return mockDateDecorator(story, context) as JSX.Element
 }
 
 const decorators: Decorator[] = [
   WithLayoutDecorator,
-  MockDateDecorator,
   SetupDecorator,
   StorybookEnvDecorator,
   withThemeFromJSXProvider<ReactRenderer>({
@@ -184,6 +163,7 @@ const decorators: Decorator[] = [
     Provider: ThemeProvider,
   }) as Decorator, // FIXME: Remove this cast when types are fixed
   LoginStateDecorator,
+  conditionalMockDateDecorator,
 ]
 
 const preview: Preview = {
@@ -192,6 +172,8 @@ const preview: Preview = {
   parameters: {
     // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
     layout: "fullscreen",
+    // MOH site launch!!! aka birth of Isomer Next hehe
+    date: new Date(2024, 10, 28),
     viewport,
     /**
      * If tablet view is needed, add it on a per-story basis.

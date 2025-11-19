@@ -1,5 +1,6 @@
 import { Box, useToken } from "@chakra-ui/react"
 import Markdown from "react-markdown"
+import rehypeExternalLinks from "rehype-external-links"
 
 export const MarkdownLabel = ({ description }: { description?: string }) => {
   const [linkColor, linkHoverColor, linkActiveColor] = useToken("colors", [
@@ -7,7 +8,6 @@ export const MarkdownLabel = ({ description }: { description?: string }) => {
     "interaction.links.hover",
     "utility.focus-default",
   ])
-  console.log(description)
 
   return (
     <Box
@@ -26,7 +26,9 @@ export const MarkdownLabel = ({ description }: { description?: string }) => {
         },
       }}
     >
-      <Markdown>{description}</Markdown>
+      <Markdown rehypePlugins={[[rehypeExternalLinks, { target: "_blank" }]]}>
+        {description}
+      </Markdown>
     </Box>
   )
 }

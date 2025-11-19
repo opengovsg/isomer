@@ -1,4 +1,4 @@
-import { IsomerSitemap } from "~/types"
+import type { IsomerSitemap } from "~/types"
 import { getNodeFromSiteMap } from "./getNodeFromSiteMap"
 
 export const getIndexByPermalink = (

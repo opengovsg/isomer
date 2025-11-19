@@ -4,6 +4,7 @@
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
+  "eslint.run": "onSave",
   "eslint.rules.customizations": [{ "rule": "*", "severity": "warn" }],
   "eslint.useFlatConfig": true,
   "eslint.workingDirectories": [

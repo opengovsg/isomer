@@ -1,8 +1,12 @@
+import type { LinkRefPageSchema } from "@opengovsg/isomer-components"
+import type { Static } from "@sinclair/typebox"
 import { format, parse } from "date-fns"
 import { z } from "zod"
 
 import { generateBasePermalinkSchema } from "./common"
 import { MAX_FOLDER_PERMALINK_LENGTH, MAX_FOLDER_TITLE_LENGTH } from "./folder"
+
+export type CollectionLinkProps = Static<typeof LinkRefPageSchema>
 
 // NOTE: zod's internal date schema uses `YYYY-MM-DD` but our format is
 // dd/mm/yyyy. Hence, we will run a 2 way conversion from
