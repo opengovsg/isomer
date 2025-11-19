@@ -178,7 +178,7 @@ const HeroSearchbarSchema = Type.Composite(
   ],
   {
     title: "Search bar",
-    // format: "hidden", // beta: we don't want to show this in the UI yet
+    format: "hidden", // beta: we don't want to show this in the UI yet
     groups: [GROUPINGS.TEXT],
   },
 )
