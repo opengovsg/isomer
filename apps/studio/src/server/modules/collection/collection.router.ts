@@ -334,17 +334,7 @@ export const collectionRouter = router({
     .input(editLinkSchema)
     .mutation(
       async ({
-        input: {
-          date,
-          category,
-          linkId,
-          siteId,
-          description,
-          ref,
-          image,
-          tags,
-          tagged,
-        },
+        input: { page, linkId, siteId },
         ctx,
       }) => {
         // Things that aren't working yet:
@@ -389,7 +379,7 @@ export const collectionRouter = router({
           const blob = await updateBlobById(tx, {
             content: {
               ...content,
-              page: { description, ref, date, category, image, tags, tagged },
+              page,
             },
             pageId: linkId,
             siteId,
