@@ -993,8 +993,10 @@ describe("collection.router", async () => {
       const { site } = await setupCollection()
       const result = unauthedCaller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
-        ref: "1",
+        page: {
+          category: "category",
+          ref: "1",
+        },
         linkId: 999,
       })
 
@@ -1014,8 +1016,10 @@ describe("collection.router", async () => {
       // Act
       const expected = caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
-        ref: "1",
+        page: {
+          category: "category",
+          ref: "1",
+        },
         linkId: 999,
       })
 
@@ -1038,8 +1042,10 @@ describe("collection.router", async () => {
       // Act
       const expected = caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
-        ref: "1",
+        page: {
+          category: "category",
+          ref: "1",
+        },
         linkId: Number(collection.id),
       })
 
@@ -1063,8 +1069,10 @@ describe("collection.router", async () => {
       // Act
       const expected = caller.updateCollectionLink({
         siteId: 999,
-        category: "category",
-        ref: "1",
+        page: {
+          category: "category",
+          ref: "1",
+        },
         linkId: Number(page.id),
       })
 
@@ -1089,8 +1097,10 @@ describe("collection.router", async () => {
       // Act
       const expected = caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
-        ref: "1",
+        page: {
+          category: "category",
+          ref: "1",
+        },
         linkId: Number(page.id),
       })
 
@@ -1124,8 +1134,10 @@ describe("collection.router", async () => {
       // Assert
       const expected = await caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
-        ref: "1",
+        page: {
+          category: "category",
+          ref: "1",
+        },
         linkId: Number(page.id),
       })
 
@@ -1162,8 +1174,10 @@ describe("collection.router", async () => {
       // Act
       const expected = await caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
-        ref: "1",
+        page: {
+          category: "category",
+          ref: "1",
+        },
         linkId: Number(page.id),
       })
 

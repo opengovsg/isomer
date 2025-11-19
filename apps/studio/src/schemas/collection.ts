@@ -27,13 +27,20 @@ const slashDateSchema = z
     return format(d, "dd/mm/yyyy")
   })
 
-export const editLinkSchema = z.object({
-  date: slashDateSchema.optional(),
+// Schema for the page object of a collection link, matching LinkRefPageSchema
+const linkPageSchema = z.object({
   category: z.string(),
-  linkId: z.number().min(1),
-  siteId: z.number().min(1),
-  description: z.string().optional(),
+  tagged: z.array(z.string()).optional(),
+  date: slashDateSchema.optional(),
+  image: z
+    .object({
+      src: z.string(),
+      alt: z.string().max(120),
+    })
+    .optional(),
   ref: z.string().min(1),
+  description: z.string().optional(),
+  // Old tags schema for backwards compatibility (hidden in UI)
   tags: z
     .array(
       z.object({
@@ -42,13 +49,12 @@ export const editLinkSchema = z.object({
       }),
     )
     .optional(),
-  tagged: z.array(z.string()).optional(),
-  image: z
-    .object({
-      src: z.string(),
-      alt: z.string().max(120),
-    })
-    .optional(),
+})
+
+export const editLinkSchema = z.object({
+  linkId: z.number().min(1),
+  siteId: z.number().min(1),
+  page: linkPageSchema,
 })
 
 export const readLinkSchema = z.object({

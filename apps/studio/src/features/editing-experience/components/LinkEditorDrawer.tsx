@@ -215,7 +215,11 @@ export const LinkEditorDrawer = () => {
         previewPageState={data}
         isLoading={isPending}
         handleChange={handleChange}
-        handleSaveChanges={() => mutate({ siteId, linkId, ...data })}
+        handleSaveChanges={() => {
+          // Extract page data excluding title (which is stored separately in Resource table)
+          const { title: _title, ...page } = data
+          mutate({ siteId, linkId, page })
+        }}
       />
     </ErrorProvider>
   )
