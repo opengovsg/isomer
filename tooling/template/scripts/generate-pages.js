@@ -5,9 +5,10 @@ const SITEMAP_JSON = path.join(__dirname, "../public/sitemap.json")
 const SOURCE_PAGE = path.join(__dirname, "../app/[[...permalink]]/page.tsx")
 const APP_DIR = path.join(__dirname, "../app")
 
-// Recursively extract all permalinks from sitemap
+// Recursively extract all permalinks from sitemap, excluding file and link layouts
 const extractPermalinks = (node, permalinks = []) => {
-  if (node.permalink) {
+  // Skip file and link layouts - they don't need page files since they render empty fragments
+  if (node.permalink && node.layout !== "file" && node.layout !== "link") {
     permalinks.push(node.permalink)
   }
 
