@@ -3,6 +3,7 @@ import path, { dirname } from "path"
 import { fileURLToPath } from "url"
 import type { RawBuilder } from "kysely"
 import { endOfMonth, format, parse, startOfMonth, subMonths } from "date-fns"
+import Papa from "papaparse"
 
 import { AuditLogEvent, db, sql } from "~/server/modules/database"
 
@@ -253,15 +254,15 @@ const getAuditLogQuery = ({
 
 const getStringifiedValue = (value: unknown) => {
   if (value === null || value === undefined) {
-    return '""'
+    return ""
   }
   if (value instanceof Date) {
-    return `"${value.toISOString()}"`
+    return value.toISOString()
   }
   if (typeof value === "string") {
-    return `"${value.replace(/"/g, '""')}"`
+    return value
   }
-  return `"${JSON.stringify(value).replace(/"/g, '""')}"`
+  return JSON.stringify(value)
 }
 
 const getAuditLogsForSite = async () => {
@@ -292,23 +293,21 @@ const getAuditLogsForSite = async () => {
     const usersFilename = `useraccess_${siteId}_${monthYear}.csv`
     const eventsFilename = `auditlogs_${siteId}_${monthYear}.csv`
 
-    const usersCsv = [
-      Object.keys(users[0] ?? {}).join(","),
-      ...users.map((row) =>
-        Object.values(row)
-          .map((value) => getStringifiedValue(value))
-          .join(","),
+    const usersCsv = Papa.unparse({
+      fields: Object.keys(users[0] ?? {}).map((key) => key.replaceAll('"', "")),
+      data: users.map((row) =>
+        Object.values(row).map((value) => getStringifiedValue(value)),
       ),
-    ].join("\n")
+    })
 
-    const eventsCsv = [
-      Object.keys(events[0] ?? {}).join(","),
-      ...events.map((row) =>
-        Object.values(row)
-          .map((value) => getStringifiedValue(value))
-          .join(","),
+    const eventsCsv = Papa.unparse({
+      fields: Object.keys(events[0] ?? {}).map((key) =>
+        key.replaceAll('"', ""),
       ),
-    ].join("\n")
+      data: events.map((row) =>
+        Object.values(row).map((value) => getStringifiedValue(value)),
+      ),
+    })
 
     const outputDir = path.join(__dirname, "output")
     if (!fs.existsSync(outputDir)) {
