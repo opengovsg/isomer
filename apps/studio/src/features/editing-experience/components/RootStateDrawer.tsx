@@ -1,5 +1,6 @@
 import type { DropResult } from "@hello-pangea/dnd"
-import { useCallback, useState } from "react"
+import type { IsomerComponent } from "@opengovsg/isomer-components"
+import { useCallback, useMemo, useState } from "react"
 import {
   Box,
   Button,
@@ -11,7 +12,11 @@ import {
 } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
-import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
+import {
+  getComponentSchema,
+  ISOMER_USABLE_PAGE_LAYOUTS,
+  isScopedSchemaLayout,
+} from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
@@ -23,6 +28,8 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ADMIN_ROLE } from "~/lib/growthbook"
+import { ajv } from "~/utils/ajv"
+import { getCachedScopedSchema } from "~/utils/schemaCache"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
 import { pageSchema } from "../schema"
@@ -55,6 +62,12 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
     description: "Summary, Button label and Button URL",
   },
 }
+
+const validateHeroComponentFn = ajv.compile<IsomerComponent>(
+  getComponentSchema({ component: "hero" }),
+)
+
+const invalidBlockDescription = "Fix errors in this block to publish"
 
 export default function RootStateDrawer() {
   const {
@@ -231,6 +244,92 @@ export default function RootStateDrawer() {
     pageLayout !== "index" &&
     pageLayout !== "collection"
 
+  const invalidBlockIndexes = useMemo(() => {
+    if (!isScopedSchemaLayout(pageLayout)) return new Set<number>()
+
+    const validateFn = getCachedScopedSchema({
+      layout: pageLayout,
+      scope: "content",
+    })
+
+    void validateFn(savedPageState.content)
+
+    if (!validateFn.errors) return new Set<number>()
+
+    return new Set<number>(
+      validateFn.errors
+        .map((error) => {
+          // instancePath format: "/0", "/1", "/2", etc. where the number is the block index
+          const [firstSegment] = error.instancePath.split("/").filter(Boolean)
+          const blockIndex = Number(firstSegment)
+          return Number.isNaN(blockIndex) ? null : blockIndex
+        })
+        .filter((index): index is number => index !== null),
+    )
+  }, [pageLayout, savedPageState.content])
+
+  const FixedBlock = () => {
+    // Assuming only one fixedBlock can exist at a time for now
+    const fixedBlock = savedPageState.content[0]
+
+    if (isHeroFixedBlock) {
+      const isValid = validateHeroComponentFn(fixedBlock)
+      return (
+        <BaseBlock
+          onClick={() => {
+            setCurrActiveIdx(0)
+            setDrawerState({ state: "heroEditor" })
+          }}
+          label="Hero banner"
+          description="Title, subtitle, and Call-to-Action"
+          icon={TYPE_TO_ICON.hero}
+          invalidProps={
+            !isValid ? { description: invalidBlockDescription } : undefined
+          }
+        />
+      )
+    }
+
+    if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Database) {
+      return (
+        <VStack gap="1rem" w="100%" align="start">
+          <BaseBlock
+            onClick={() => {
+              setDrawerState({ state: "metadataEditor" })
+            }}
+            label="Page header"
+            description="Summary, Button label, and Button URL"
+            icon={BiPin}
+          />
+          <BaseBlock
+            onClick={() => {
+              setDrawerState({ state: "databaseEditor" })
+            }}
+            label="Database"
+            description="Link your dataset from Data.gov.sg"
+            icon={BiData}
+          />
+        </VStack>
+      )
+    }
+
+    return (
+      <BaseBlock
+        onClick={() => {
+          setDrawerState({ state: "metadataEditor" })
+        }}
+        label={
+          FIXED_BLOCK_CONTENT[pageLayout]?.label ||
+          "Page description and summary"
+        }
+        description={
+          FIXED_BLOCK_CONTENT[pageLayout]?.description || "Click to edit"
+        }
+        icon={BiPin}
+      />
+    )
+  }
+
   // NOTE: if a page has either of these `layouts`,
   // we should disable them from adding blocks
   // because folder index pages aren't intended to have
@@ -322,52 +421,7 @@ export default function RootStateDrawer() {
                     deleted
                   </Text>
                 </VStack>
-
-                {isHeroFixedBlock ? (
-                  <BaseBlock
-                    onClick={() => {
-                      setCurrActiveIdx(0)
-                      setDrawerState({ state: "heroEditor" })
-                    }}
-                    label="Hero banner"
-                    description="Title, subtitle, and Call-to-Action"
-                    icon={TYPE_TO_ICON.hero}
-                  />
-                ) : pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Database ? (
-                  <VStack gap="1rem" w="100%" align="start">
-                    <BaseBlock
-                      onClick={() => {
-                        setDrawerState({ state: "metadataEditor" })
-                      }}
-                      label="Page header"
-                      description="Summary, Button label, and Button URL"
-                      icon={BiPin}
-                    />
-                    <BaseBlock
-                      onClick={() => {
-                        setDrawerState({ state: "databaseEditor" })
-                      }}
-                      label="Database"
-                      description="Link your dataset from Data.gov.sg"
-                      icon={BiData}
-                    />
-                  </VStack>
-                ) : (
-                  <BaseBlock
-                    onClick={() => {
-                      setDrawerState({ state: "metadataEditor" })
-                    }}
-                    label={
-                      FIXED_BLOCK_CONTENT[pageLayout]?.label ||
-                      "Page description and summary"
-                    }
-                    description={
-                      FIXED_BLOCK_CONTENT[pageLayout]?.description ||
-                      "Click to edit"
-                    }
-                    icon={BiPin}
-                  />
-                )}
+                <FixedBlock />
               </VStack>
 
               <VStack gap="1.5rem" w="100%">
@@ -478,6 +532,14 @@ export default function RootStateDrawer() {
                                       // NOTE: SNAPSHOT
                                       setDrawerState({ state: nextState })
                                     }}
+                                    invalidProps={
+                                      invalidBlockIndexes.has(index)
+                                        ? {
+                                            description:
+                                              invalidBlockDescription,
+                                          }
+                                        : undefined
+                                    }
                                   />
                                 )
                               })}
