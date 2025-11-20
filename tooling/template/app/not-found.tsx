@@ -5,7 +5,8 @@ import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
-import { getMetadata, RenderEngine } from "@opengovsg/isomer-components"
+import { getMetadata } from "@/src/getMetadata"
+import { NotFoundLayout } from "@opengovsg/isomer-components/templates/next/layouts/NotFound"
 
 export const dynamic = "force-static"
 
@@ -54,6 +55,23 @@ export const generateMetadata = async (
     description: PAGE_DESCRIPTION,
   }
   return getMetadata(schema)
+}
+
+const renderNextLayout = (props: IsomerPageSchemaType) => {
+  switch (props.layout) {
+    case "notfound":
+      return <NotFoundLayout {...props} />
+    default:
+      return <></>
+  }
+}
+
+const RenderEngine = (props: IsomerPageSchemaType) => {
+  if (props.site.theme === "isomer-next") {
+    return renderNextLayout(props)
+  }
+
+  return null
 }
 
 const NotFound = () => {
