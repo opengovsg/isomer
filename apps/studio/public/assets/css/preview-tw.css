@@ -1219,6 +1219,10 @@ video {
   grid-row: span 1 / span 1;
 }
 
+.m-0 {
+  margin: 0px;
+}
+
 .m-1 {
   margin: 0.25rem;
 }
@@ -3759,33 +3763,8 @@ video {
 
 .transition {
   transition-property:
-    color,
-    background-color,
-    border-color,
-    text-decoration-color,
-    fill,
-    stroke,
-    opacity,
-    box-shadow,
-    transform,
-    filter,
-    -webkit-backdrop-filter;
-  transition-property:
     color, background-color, border-color, text-decoration-color, fill, stroke,
     opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-property:
-    color,
-    background-color,
-    border-color,
-    text-decoration-color,
-    fill,
-    stroke,
-    opacity,
-    box-shadow,
-    transform,
-    filter,
-    backdrop-filter,
-    -webkit-backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -4226,6 +4205,14 @@ video {
   letter-spacing: 0;
   font-size: 0.875rem;
   line-height: 1.5;
+}
+
+.marker\:text-base-content *::marker {
+  color: rgb(55 65 81);
+}
+
+.marker\:text-base-content::marker {
+  color: rgb(55 65 81);
 }
 
 .placeholder\:text-gray-400::-moz-placeholder {
