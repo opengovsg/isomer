@@ -1,13 +1,11 @@
-import type { CollectionPageSchemaType } from "~/types"
-import { getBreadcrumbFromSiteMap } from "~/utils"
+import type { CollectionPageSchemaType } from "~/types/schema"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { Skeleton } from "../Skeleton"
 import { CollectionClient } from "./CollectionClient"
-import {
-  getAvailableFilters,
-  getCollectionItems,
-  processCollectionItems,
-  shouldShowDate,
-} from "./utils"
+import { getAvailableFilters } from "./utils/getAvailableFilters"
+import { getCollectionItems } from "./utils/getCollectionItems"
+import { processCollectionItems } from "./utils/processCollectionItems"
+import { shouldShowDate } from "./utils/shouldShowDate"
 
 export const CollectionLayout = ({
   site,

@@ -1,9 +1,9 @@
+import { Fragment } from "react"
+
 import type { IndexPageSchemaType } from "~/types/schema"
-import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages/constants"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
-import { renderPageContent } from "../../render/renderPageContent"
 import { Skeleton } from "../Skeleton"
 
 const createIndexPageLayoutStyles = tv({
@@ -17,22 +17,21 @@ const createIndexPageLayoutStyles = tv({
 
 const compoundStyles = createIndexPageLayoutStyles()
 
-export const IndexPageLayout = ({
+interface IndexPageLayoutSkeletonProps extends IndexPageSchemaType {
+  renderPageContent: JSX.Element[]
+}
+
+export const IndexPageLayoutSkeleton = ({
   site,
   page,
   layout,
-  content,
   LinkComponent,
-}: IndexPageSchemaType) => {
+  renderPageContent,
+}: IndexPageLayoutSkeletonProps) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
   )
-
-  const hasChildpageBlock = content.some(({ type }) => type === "childrenpages")
-  const pageContent: IndexPageSchemaType["content"] = hasChildpageBlock
-    ? content
-    : [...content, DEFAULT_CHILDREN_PAGES_BLOCK]
 
   return (
     <Skeleton
@@ -52,13 +51,9 @@ export const IndexPageLayout = ({
       />
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.content()}>
-          {renderPageContent({
-            content: pageContent,
-            layout,
-            site,
-            LinkComponent,
-            permalink: page.permalink,
-          })}
+          {renderPageContent.map((el, i) => (
+            <Fragment key={i}>{el}</Fragment>
+          ))}
         </div>
       </div>
     </Skeleton>

@@ -1,5 +1,1 @@
-export {
-  renderLayout,
-  renderPageContent,
-  renderComponentPreviewText,
-} from "./render"
+export { renderComponentPreviewText } from "./render/renderComponentPreviewText"

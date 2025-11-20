@@ -1,3 +1,5 @@
+import { Fragment } from "react"
+
 import type { ContentPageSchemaType } from "~/types/schema"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
@@ -8,7 +10,6 @@ import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
 import { Siderail } from "../../components/internal/Siderail"
 import { TableOfContents } from "../../components/internal/TableOfContents"
-import { renderPageContent } from "../../render/renderPageContent"
 import { Skeleton } from "../Skeleton"
 
 const createContentLayoutStyles = tv({
@@ -23,13 +24,18 @@ const createContentLayoutStyles = tv({
 
 const compoundStyles = createContentLayoutStyles()
 
-export const ContentLayout = ({
+interface ContentLayoutSkeletonProps extends ContentPageSchemaType {
+  renderPageContent: JSX.Element[]
+}
+
+export const ContentLayoutSkeleton = ({
   site,
   page,
   layout,
   content,
   LinkComponent,
-}: ContentPageSchemaType) => {
+  renderPageContent,
+}: ContentLayoutSkeletonProps) => {
   const isParentPageRoot = page.permalink.split("/").length === 2
 
   // Note: We do not show side rail for first-level pages
@@ -69,13 +75,9 @@ export const ContentLayout = ({
             />
           )}
           <div>
-            {renderPageContent({
-              content: transformedContent,
-              layout,
-              site,
-              LinkComponent,
-              permalink: page.permalink,
-            })}
+            {renderPageContent.map((el, i) => (
+              <Fragment key={i}>{el}</Fragment>
+            ))}
           </div>
         </div>
         <div className={compoundStyles.siderailContainer()}>

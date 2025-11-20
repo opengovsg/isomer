@@ -1,19 +1,24 @@
+import { Fragment } from "react"
+
 import type { ArticlePageSchemaType } from "~/types/schema"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
-import { renderPageContent } from "../../render/renderPageContent"
 import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
 import { Skeleton } from "../Skeleton"
 
-export const ArticleLayout = ({
+interface ArticleLayoutSkeletonProps extends ArticlePageSchemaType {
+  renderPageContent: JSX.Element[]
+}
+
+export const ArticleLayoutSkeleton = ({
   site,
   page,
   layout,
-  content,
   LinkComponent,
-}: ArticlePageSchemaType) => {
+  renderPageContent,
+}: ArticleLayoutSkeletonProps) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
@@ -50,13 +55,9 @@ export const ArticleLayout = ({
 
         <div className="mx-auto w-full gap-10 pb-20">
           <div className="w-full overflow-x-auto break-words lg:max-w-[660px]">
-            {renderPageContent({
-              site,
-              layout,
-              content,
-              LinkComponent,
-              permalink: page.permalink,
-            })}
+            {renderPageContent.map((el, i) => (
+              <Fragment key={i}>{el}</Fragment>
+            ))}
           </div>
           <BackToTopLink />
         </div>

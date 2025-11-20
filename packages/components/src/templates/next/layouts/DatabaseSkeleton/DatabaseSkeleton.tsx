@@ -1,3 +1,5 @@
+import { Fragment } from "react"
+
 import type { DatabasePageSchemaType } from "~/types/schema"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
@@ -6,7 +8,6 @@ import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
 import { SearchableTable } from "../../components/internal/SearchableTable"
 import { TableOfContents } from "../../components/internal/TableOfContents"
-import { renderPageContent } from "../../render/renderPageContent"
 import { Skeleton } from "../Skeleton"
 
 const createDatabaseLayoutStyles = tv({
@@ -20,13 +21,18 @@ const createDatabaseLayoutStyles = tv({
 
 const compoundStyles = createDatabaseLayoutStyles()
 
-export const DatabaseLayout = ({
+interface DatabaseLayoutSkeletonProps extends DatabasePageSchemaType {
+  renderPageContent: JSX.Element[]
+}
+
+export const DatabaseLayoutSkeleton = ({
   site,
   page,
   layout,
   content,
   LinkComponent,
-}: DatabasePageSchemaType) => {
+  renderPageContent,
+}: DatabaseLayoutSkeletonProps) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
@@ -60,13 +66,9 @@ export const DatabaseLayout = ({
               />
             )}
             <div>
-              {renderPageContent({
-                content: transformedContent,
-                layout,
-                site,
-                LinkComponent,
-                permalink: page.permalink,
-              })}
+              {renderPageContent.map((el, i) => (
+                <Fragment key={i}>{el}</Fragment>
+              ))}
             </div>
           </div>
         )}
