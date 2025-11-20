@@ -5,6 +5,7 @@ const getSitemapAsArray = (sitemap: IsomerSitemap) => {
 
   const traverse = (node: IsomerSitemap) => {
     if (node.permalink) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { children, ...rest } = node
       result.push(rest)
     }

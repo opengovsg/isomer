@@ -75,6 +75,8 @@ const getPatchedPermalink = async (
   props: DynamicPageProps,
 ): Promise<ParamsContent["permalink"]> => {
   // For static routes, use the defined constant if available
+  // Disabling this because this is a necessary check after this file has been duplicated for each page
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (STATIC_ROUTE_PERMALINK !== undefined) {
     return STATIC_ROUTE_PERMALINK
   }
@@ -83,6 +85,8 @@ const getPatchedPermalink = async (
   const params = await props.params
 
   if (
+    // Disabling this because this is a necessary check after this file has been duplicated for each page
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     params.permalink &&
     params.permalink.length > 0 &&
     params.permalink[0] !== ""
