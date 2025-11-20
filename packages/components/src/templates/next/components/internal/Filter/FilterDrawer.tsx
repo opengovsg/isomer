@@ -1,16 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react"
-import {
-  Button as AriaButton,
-  composeRenderProps,
-  Label,
-} from "react-aria-components"
+import { useButton } from "@react-aria/button"
+import { useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
 import { BiChevronDown, BiX } from "react-icons/bi"
 
 import type { AppliedFilter, FilterProps } from "../../../types/Filter"
 import { tv } from "~/lib/tv"
+import { twMerge } from "~/lib/twMerge"
 import { focusRing } from "~/utils"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
@@ -20,6 +19,43 @@ const expandFilterButtonStyle = tv({
   extend: focusRing,
   base: "prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-base-content",
 })
+
+interface ExpandFilterButtonProps {
+  label: string
+  isExpanded: boolean
+  onPress: () => void
+}
+
+const ExpandFilterButton = ({
+  label,
+  isExpanded,
+  onPress,
+}: ExpandFilterButtonProps) => {
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const { buttonProps } = useButton({ onPress }, buttonRef)
+  const { focusProps, isFocusVisible } = useFocusRing()
+  const mergedProps = mergeProps(buttonProps, focusProps)
+
+  return (
+    <button
+      {...mergedProps}
+      ref={buttonRef}
+      className={twMerge(
+        expandFilterButtonStyle({
+          isFocusVisible,
+        }),
+      )}
+    >
+      <span>{label}</span>
+      <BiChevronDown
+        aria-hidden
+        className={`mr-3 h-6 w-6 text-base-content-strong transition-all duration-300 ease-in-out ${
+          isExpanded ? "rotate-180" : "rotate-0"
+        }`}
+      />
+    </button>
+  )
+}
 
 interface FilterDrawerProps extends FilterProps {
   isOpen: boolean
@@ -91,23 +127,11 @@ const FilterDrawerContent = ({
               }))
             }}
           >
-            <AriaButton
-              className={composeRenderProps("", (className, renderProps) =>
-                expandFilterButtonStyle({
-                  ...renderProps,
-                  className,
-                }),
-              )}
+            <ExpandFilterButton
+              label={label}
+              isExpanded={showFilter[id] ?? false}
               onPress={() => updateFilterToggle(id)}
-            >
-              <Label>{label}</Label>
-              <BiChevronDown
-                aria-hidden
-                className={`mr-3 h-6 w-6 text-base-content-strong transition-all duration-300 ease-in-out ${
-                  showFilter[id] ? "rotate-180" : "rotate-0"
-                }`}
-              />
-            </AriaButton>
+            />
 
             <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
               {items.map(({ id: itemId, label: itemLabel, count }) => (

@@ -1,12 +1,15 @@
 "use client"
 
 import type { PropsWithChildren } from "react"
-import { createContext, useContext, useState } from "react"
-import { Button, composeRenderProps } from "react-aria-components"
+import { createContext, useContext, useRef, useState } from "react"
+import { useButton } from "@react-aria/button"
+import { useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
 import { BiChevronDown } from "react-icons/bi"
 
 import type { MastheadProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { twMerge } from "~/lib/twMerge"
 import { focusVisibleHighlight } from "~/utils/rac"
 import { Link } from "../Link"
 
@@ -88,60 +91,94 @@ const RestrictedHeaderBarContent = ({ children }: PropsWithChildren) => {
   )
 }
 
-const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
+const MobileMastheadButton = ({ children }: PropsWithChildren) => {
   const { isMastheadContentVisible, toggleMastheadContent } = useMasthead()
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  const { buttonProps: ariaProps } = useButton(
+    {
+      "aria-controls": MASTHEAD_CONTROL_ID,
+      "aria-describedby": "masthead-aria",
+      "aria-expanded": isMastheadContentVisible,
+      onPress: toggleMastheadContent,
+    },
+    buttonRef,
+  )
+  const { focusProps, isFocusVisible } = useFocusRing()
+  const mergedProps = mergeProps(ariaProps, focusProps)
+
+  return (
+    <button
+      {...mergedProps}
+      ref={buttonRef}
+      className={twMerge(
+        "group flex w-full gap-1 text-start leading-5 outline-none lg:hidden",
+        mastheadButtonStyle({ isFocusVisible }),
+      )}
+    >
+      {children}
+      <span className="sr-only" id="masthead-aria">
+        {isMastheadContentVisible
+          ? "Click to collapse masthead"
+          : "Click to expand masthead to find out how to identify an official government website"}
+      </span>
+      <RestrictedHeaderBarContent>
+        <span className="not-sr-only text-link underline group-hover:text-link-hover">
+          How to identify
+          <BiChevronDown
+            aria-hidden
+            className={`inline h-4 w-4 shrink-0 transition-all duration-300 ease-in-out ${
+              isMastheadContentVisible ? "rotate-180" : "rotate-0"
+            }`}
+          />
+        </span>
+      </RestrictedHeaderBarContent>
+    </button>
+  )
+}
+
+const DesktopMastheadButton = () => {
+  const { isMastheadContentVisible, toggleMastheadContent } = useMasthead()
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  const { buttonProps: ariaProps } = useButton(
+    {
+      onPress: toggleMastheadContent,
+    },
+    buttonRef,
+  )
+  const { focusProps, isFocusVisible } = useFocusRing()
+  const mergedProps = mergeProps(ariaProps, focusProps)
+
+  return (
+    <div className="hidden items-center gap-1 lg:flex">
+      <RestrictedHeaderBarContent>
+        <button
+          {...mergedProps}
+          ref={buttonRef}
+          className={twMerge(
+            "hidden flex-row items-center text-link underline underline-offset-4 outline-0 transition-colors hover:text-link-hover focus-visible:text-content-strong lg:flex",
+            mastheadButtonStyle({ isFocusVisible }),
+          )}
+        >
+          How to identify
+          <BiChevronDown
+            aria-hidden
+            className={`h-4 w-4 shrink-0 transition-transform ease-in-out ${
+              isMastheadContentVisible ? "rotate-180" : "rotate-0"
+            }`}
+          />
+        </button>
+      </RestrictedHeaderBarContent>
+    </div>
+  )
+}
+
+const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
   return (
     <div className="mx-auto max-w-screen-xl px-6 md:px-10">
-      <Button
-        className={composeRenderProps(
-          "group flex w-full gap-1 text-start leading-5 outline-none lg:hidden",
-          (className, renderProps) =>
-            mastheadButtonStyle({ className, ...renderProps }),
-        )}
-        aria-controls={MASTHEAD_CONTROL_ID}
-        aria-describedby="masthead-aria"
-        aria-expanded={isMastheadContentVisible}
-        onPress={toggleMastheadContent}
-      >
-        {children}
-        <span className="sr-only" id="masthead-aria">
-          {isMastheadContentVisible
-            ? "Click to collapse masthead"
-            : "Click to expand masthead to find out how to identify an official government website"}
-        </span>
-        <RestrictedHeaderBarContent>
-          <span className="not-sr-only text-link underline group-hover:text-link-hover">
-            How to identify
-            <BiChevronDown
-              aria-hidden
-              className={`inline h-4 w-4 shrink-0 transition-all duration-300 ease-in-out ${
-                isMastheadContentVisible ? "rotate-180" : "rotate-0"
-              }`}
-            />
-          </span>
-        </RestrictedHeaderBarContent>
-      </Button>
-      {/* Desktop variant */}
-      <div className="hidden items-center gap-1 lg:flex">
-        <RestrictedHeaderBarContent>
-          <Button
-            className={composeRenderProps(
-              "hidden flex-row items-center text-link underline underline-offset-4 outline-0 transition-colors hover:text-link-hover focus-visible:text-content-strong lg:flex",
-              (className, renderProps) =>
-                mastheadButtonStyle({ className, ...renderProps }),
-            )}
-            onPress={toggleMastheadContent}
-          >
-            How to identify
-            <BiChevronDown
-              aria-hidden
-              className={`h-4 w-4 shrink-0 transition-transform ease-in-out ${
-                isMastheadContentVisible ? "rotate-180" : "rotate-0"
-              }`}
-            />
-          </Button>
-        </RestrictedHeaderBarContent>
-      </div>
+      <MobileMastheadButton>{children}</MobileMastheadButton>
+      <DesktopMastheadButton />
     </div>
   )
 }
