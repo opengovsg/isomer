@@ -34,10 +34,13 @@
     "typescript": "^5.9.2"
   },
   "devDependencies": {
+    "@babel/parser": "^7.23.0",
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21"
+    "@types/node": "^22.15.21",
+    "ast-types": "^0.15.0",
+    "recast": "^0.23.0"
   },
   "prettier": "@isomer/prettier-config"
 }
