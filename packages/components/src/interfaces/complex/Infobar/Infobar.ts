@@ -7,14 +7,8 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
-import { ARRAY_RADIO_FORMAT } from "../format"
-
-const INFOBAR_VARIANT = {
-  light: "light",
-  dark: "dark",
-} as const
-
-export const DEFAULT_INFOBAR_VARIANT = INFOBAR_VARIANT.light
+import { ARRAY_RADIO_FORMAT } from "../../format"
+import { DEFAULT_INFOBAR_VARIANT, INFOBAR_VARIANT } from "./constants"
 
 const generateInfobarSchema = ({
   includeDarkVariant,

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import type { NotificationProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
-import Notification from "./Notification"
+import { Notification } from "./Notification"
 
 const meta: Meta<NotificationProps> = {
   title: "Next/Internal Components/Notification",

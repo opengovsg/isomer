@@ -1,9 +1,9 @@
-import type { IndexPageSchemaType } from "~/engine"
-import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces"
+import type { IndexPageSchemaType } from "~/types/schema"
+import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages/constants"
 import { tv } from "~/lib/tv"
-import { getBreadcrumbFromSiteMap } from "~/utils"
-import { ContentPageHeader } from "../../components/internal"
-import { renderPageContent } from "../../render"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
+import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
+import { renderPageContent } from "../../render/renderPageContent"
 import { Skeleton } from "../Skeleton"
 
 const createIndexPageLayoutStyles = tv({
@@ -17,7 +17,7 @@ const createIndexPageLayoutStyles = tv({
 
 const compoundStyles = createIndexPageLayoutStyles()
 
-const IndexPageLayout = ({
+export const IndexPageLayout = ({
   site,
   page,
   layout,
@@ -64,5 +64,3 @@ const IndexPageLayout = ({
     </Skeleton>
   )
 }
-
-export default IndexPageLayout

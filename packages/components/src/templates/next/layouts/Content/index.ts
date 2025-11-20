@@ -1,1 +1,1 @@
-export { default } from "./Content"
+export { ContentLayout } from "./Content"

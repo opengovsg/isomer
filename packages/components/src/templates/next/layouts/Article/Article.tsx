@@ -1,13 +1,13 @@
-import { type ArticlePageSchemaType } from "~/engine"
-import { getBreadcrumbFromSiteMap } from "~/utils"
+import type { ArticlePageSchemaType } from "~/types/schema"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
-import { BackToTopLink } from "../../components/internal"
-import ArticlePageHeader from "../../components/internal/ArticlePageHeader"
-import { renderPageContent } from "../../render"
+import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
+import { BackToTopLink } from "../../components/internal/BackToTopLink"
+import { renderPageContent } from "../../render/renderPageContent"
 import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
 import { Skeleton } from "../Skeleton"
 
-const ArticleLayout = ({
+export const ArticleLayout = ({
   site,
   page,
   layout,
@@ -64,5 +64,3 @@ const ArticleLayout = ({
     </Skeleton>
   )
 }
-
-export default ArticleLayout

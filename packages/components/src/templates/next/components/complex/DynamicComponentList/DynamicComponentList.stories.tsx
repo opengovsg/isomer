@@ -5,7 +5,7 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { DynamicComponentListProps } from "~/interfaces"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
-import DynamicComponentList from "./DynamicComponentList"
+import { DynamicComponentList } from "./DynamicComponentList"
 
 const meta: Meta<DynamicComponentListProps> = {
   title: "Next/Components/DynamicComponentList",

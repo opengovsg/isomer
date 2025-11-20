@@ -5,7 +5,7 @@ import { useCallback, useMemo, useRef, useState, useTransition } from "react"
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
-import { ImageClient } from "../Image/ImageClient"
+import { ImageClient } from "../Image"
 import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./assets"
 import { getEndingPreviewIndices, getPreviewIndices } from "./utils"
 

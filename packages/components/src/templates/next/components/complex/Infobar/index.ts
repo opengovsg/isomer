@@ -1,1 +1,1 @@
-export { default, createInfobarStyles } from "./Infobar"
+export { Infobar, createInfobarStyles } from "./Infobar"

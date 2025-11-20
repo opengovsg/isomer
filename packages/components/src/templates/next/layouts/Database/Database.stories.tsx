@@ -3,16 +3,16 @@ import { expect, userEvent, waitFor, within } from "storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { DatabasePageSchemaType } from "~/engine"
+import type { DatabasePageSchemaType } from "~/types"
 import {
   DGS_SMALL_DATASET_RESOURCE_ID,
   generateSiteConfig,
 } from "~/stories/helpers"
-import Database from "./Database"
+import { DatabaseLayout } from "./Database"
 
-const meta: Meta<typeof Database> = {
+const meta: Meta<typeof DatabaseLayout> = {
   title: "Next/Layouts/Database",
-  component: Database,
+  component: DatabaseLayout,
   argTypes: {},
   tags: ["!autodocs"],
   parameters: {
@@ -24,7 +24,7 @@ const meta: Meta<typeof Database> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof Database>
+type Story = StoryObj<typeof DatabaseLayout>
 
 const generateArgs = ({
   database,

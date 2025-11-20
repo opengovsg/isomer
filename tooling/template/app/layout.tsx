@@ -5,7 +5,7 @@ import "@/styles/globals.css"
 
 import type { Metadata } from "next"
 import Script from "next/script"
-import { RenderApplicationScripts } from "@opengovsg/isomer-components"
+import { RenderApplicationScripts } from "@opengovsg/isomer-components/engine/renderApplicationScripts"
 
 export const dynamic = "force-static"
 
@@ -29,8 +29,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             // @ts-expect-error to fix when types are proper
             siteMap: sitemap,
             assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
-            isomerMsClarityId:
-              process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
+            isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
           }}
           ScriptComponent={Script}
         />

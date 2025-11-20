@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next"
 import config from "@/data/config.json"
 import sitemapJson from "@/sitemap.json"
-import { getSitemapXml } from "@opengovsg/isomer-components"
+import { getSitemapXml } from "@/src/getSitemapXml"
 
 export const dynamic = "force-static"
 

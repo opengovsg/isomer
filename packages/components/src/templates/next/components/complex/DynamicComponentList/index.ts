@@ -1,1 +1,1 @@
-export { default } from "./DynamicComponentList"
+export { DynamicComponentList } from "./DynamicComponentList"

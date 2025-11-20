@@ -1,5 +1,8 @@
-import type { IsomerComponent, IsomerPageSchemaType } from "~/engine"
-import type { LinkComponentType } from "~/types"
+import type {
+  IsomerComponent,
+  IsomerPageSchemaType,
+  LinkComponentType,
+} from "~/types"
 
 interface RenderComponentProps {
   component: IsomerComponent

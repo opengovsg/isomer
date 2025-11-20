@@ -6,6 +6,12 @@
     "dev": "PORT=3001 next",
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && npm run build",
     "build:template": "next build",
+    "build:prepare": "run-s build:prepare:*",
+    "build:prepare:1-analyze-sitemap": "node scripts/analyze-sitemap.js",
+    "build:prepare:2-generate-pages": "node scripts/generate-pages.js",
+    "build:prepare:3-update-static-route-permalinks": "node scripts/update-static-route-permalinks.js",
+    "build:prepare:4-update-page-imports": "node scripts/update-page-imports.js",
+    "build:prepare:5-delete-permalink": "bash scripts/delete-permalink.sh",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -23,10 +29,13 @@
     "typescript": "^5.9.2"
   },
   "devDependencies": {
+    "@babel/parser": "^7.23.0",
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21"
+    "@types/node": "^22.15.21",
+    "ast-types": "^0.15.0",
+    "recast": "^0.23.0"
   },
   "prettier": "@isomer/prettier-config"
 }

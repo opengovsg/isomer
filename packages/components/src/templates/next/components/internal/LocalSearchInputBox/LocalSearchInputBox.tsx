@@ -3,7 +3,7 @@ import { BiSearch } from "react-icons/bi"
 import type { LocalSearchProps } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
 
-const LocalSearchInputBox = ({
+export const LocalSearchInputBox = ({
   searchUrl,
   className,
 }: Omit<LocalSearchProps, "type">) => {
@@ -26,5 +26,3 @@ const LocalSearchInputBox = ({
     </form>
   )
 }
-
-export default LocalSearchInputBox

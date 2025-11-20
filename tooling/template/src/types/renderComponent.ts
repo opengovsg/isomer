@@ -1,0 +1,16 @@
+import type {
+  IsomerComponent,
+  IsomerPageLayoutType,
+  IsomerSiteProps,
+  LinkComponentType,
+} from "@opengovsg/isomer-components"
+
+export interface RenderComponentProps {
+  elementKey?: number
+  component: IsomerComponent
+  layout: IsomerPageLayoutType
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
+  shouldLazyLoad?: boolean
+  permalink: string
+}

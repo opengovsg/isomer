@@ -1,7 +1,5 @@
-import type { IsomerPageSchemaType } from "~/engine"
-import { renderLayout as renderNextLayout } from "~/templates/next"
-
-export { renderComponentPreviewText } from "~/templates/next"
+import type { IsomerPageSchemaType } from "~/types"
+import { renderLayout as renderNextLayout } from "~/templates/next/render/renderLayout"
 
 export const RenderEngine = (props: IsomerPageSchemaType) => {
   if (props.site.theme === "isomer-next") {

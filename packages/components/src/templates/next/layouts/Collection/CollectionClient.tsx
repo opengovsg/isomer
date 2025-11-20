@@ -4,21 +4,16 @@ import { useRef } from "react"
 
 import type { Filter as FilterType } from "../../types/Filter"
 import type {
-  CollectionPagePageProps,
-  CollectionPageSchemaType,
-} from "~/engine"
-import type {
   BreadcrumbProps,
   ProcessedCollectionCardProps,
 } from "~/interfaces"
+import type { CollectionPagePageProps, CollectionPageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
-import {
-  BackToTopLink,
-  CollectionSearch,
-  Filter,
-  PaginationControls,
-} from "../../components/internal"
-import CollectionPageHeader from "./CollectionPageHeader"
+import { BackToTopLink } from "../../components/internal/BackToTopLink"
+import { CollectionSearch } from "../../components/internal/CollectionSearch"
+import { Filter } from "../../components/internal/Filter"
+import { PaginationControls } from "../../components/internal/PaginationControls"
+import { CollectionPageHeader } from "./CollectionPageHeader"
 import { CollectionResults } from "./CollectionResults"
 import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
 
@@ -51,7 +46,7 @@ const createCollectionLayoutStyles = tv({
 
 const compoundStyles = createCollectionLayoutStyles()
 
-const CollectionClient = ({
+export const CollectionClient = ({
   page,
   items,
   filters,
@@ -148,5 +143,3 @@ const CollectionClient = ({
     </>
   )
 }
-
-export default CollectionClient

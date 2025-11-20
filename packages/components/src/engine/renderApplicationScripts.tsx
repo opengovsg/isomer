@@ -1,15 +1,17 @@
 import type { IsomerSiteProps, ScriptComponentType } from "~/types"
+import { AskgovWidget } from "../templates/next/components/internal/Askgov"
+import { FontPreload } from "../templates/next/components/internal/FontPreload"
 import {
-  AskgovWidget,
-  FontPreload,
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
   GoogleTagManagerPreload,
-  MicrosoftClarity,
+} from "../templates/next/components/internal/GoogleTagManager"
+import { MicrosoftClarity } from "../templates/next/components/internal/MicrosoftClarity"
+import {
   VicaStylesheet,
   VicaWidget,
-  Wogaa,
-} from "../templates/next/components/internal"
+} from "../templates/next/components/internal/Vica"
+import { Wogaa } from "../templates/next/components/internal/Wogaa"
 
 interface RenderApplicationScriptsProps {
   site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">

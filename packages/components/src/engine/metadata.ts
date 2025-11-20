@@ -1,5 +1,5 @@
 import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
-import { ISOMER_PAGE_LAYOUTS } from "~/types"
+import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
 import { getSitemapAsArray } from "~/utils"
 
 const getMetaTitle = (props: IsomerPageSchemaType) => {

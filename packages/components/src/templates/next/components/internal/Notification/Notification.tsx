@@ -1,11 +1,11 @@
 import type { NotificationProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils"
-import { Prose } from "../../native"
+import { Prose } from "../../native/Prose"
 import { hasContent } from "../../native/Prose/utils"
-import BaseParagraph from "../BaseParagraph"
-import NotificationClient from "./NotificationClient"
+import { BaseParagraph } from "../BaseParagraph"
+import { NotificationClient } from "./NotificationClient"
 
-const Notification = ({
+export const Notification = ({
   content,
   title,
   LinkComponent,
@@ -31,5 +31,3 @@ const Notification = ({
     </NotificationClient>
   )
 }
-
-export default Notification

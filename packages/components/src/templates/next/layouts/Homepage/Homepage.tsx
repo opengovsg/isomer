@@ -1,8 +1,8 @@
-import { type HomePageSchemaType } from "~/engine"
-import { renderPageContent } from "../../render"
+import type { HomePageSchemaType } from "~/types/schema"
+import { renderPageContent } from "../../render/renderPageContent"
 import { Skeleton } from "../Skeleton"
 
-const HomepageLayout = ({
+export const HomepageLayout = ({
   site,
   page,
   layout,
@@ -32,5 +32,3 @@ const HomepageLayout = ({
     </Skeleton>
   )
 }
-
-export default HomepageLayout

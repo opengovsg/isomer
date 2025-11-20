@@ -10,7 +10,10 @@ const linkStyle = tv({
   base: "w-fit text-link underline-offset-4 visited:text-link-visited hover:text-link-hover hover:underline",
 })
 
-const TableOfContents = ({ items, LinkComponent }: TableOfContentsProps) => {
+export const TableOfContents = ({
+  items,
+  LinkComponent,
+}: TableOfContentsProps) => {
   return (
     <div className="flex flex-col gap-3 rounded-lg bg-base-canvas-alt p-6">
       <p className="prose-headline-lg-medium text-base-content-strong">
@@ -33,5 +36,3 @@ const TableOfContents = ({ items, LinkComponent }: TableOfContentsProps) => {
     </div>
   )
 }
-
-export default TableOfContents
