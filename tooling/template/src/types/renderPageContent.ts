@@ -1,4 +1,9 @@
-import type { IsomerComponent, IsomerPageLayoutType, IsomerSiteProps, LinkComponentType } from "@opengovsg/isomer-components"
+import type {
+  IsomerComponent,
+  IsomerPageLayoutType,
+  IsomerSiteProps,
+  LinkComponentType,
+} from "@opengovsg/isomer-components"
 
 export interface RenderPageContentParams {
   content: IsomerComponent[]

@@ -19,11 +19,7 @@ const getSitemapAsArray = (sitemap: IsomerSitemap) => {
 
 export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
   return getSitemapAsArray(sitemap)
-    .filter(
-      (item) =>
-        item.layout !== "file" &&
-        item.layout !== "link",
-    )
+    .filter((item) => item.layout !== "file" && item.layout !== "link")
     .map(({ permalink, lastModified }) => ({
       url: siteUrl !== undefined ? `${siteUrl}${permalink}` : permalink,
       lastModified,

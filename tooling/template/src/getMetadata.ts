@@ -109,8 +109,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
       description: getMetaDescription(props),
       url: canonicalUrl,
       siteName: props.site.siteName,
-      type:
-        props.layout === "article" ? "article" : "website",
+      type: props.layout === "article" ? "article" : "website",
       images: !!metaImageUrl
         ? [
             {
