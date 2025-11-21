@@ -9,11 +9,9 @@ import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
-import {
-  getMetadata,
-  getSitemapXml,
-  shouldBlockIndexing,
-} from "@opengovsg/isomer-components/engine/metadata"
+import { getSitemapXml } from "@opengovsg/isomer-components/engine/getSitemapXml"
+import { getMetadata } from "@opengovsg/isomer-components/engine/metadata"
+import { shouldBlockIndexing } from "@opengovsg/isomer-components/engine/shouldBlockIndexing"
 import { Accordion } from "@opengovsg/isomer-components/templates/next/components/complex/Accordion"
 import { Blockquote } from "@opengovsg/isomer-components/templates/next/components/complex/Blockquote"
 import { Callout } from "@opengovsg/isomer-components/templates/next/components/complex/Callout"
