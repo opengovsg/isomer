@@ -1,4 +1,4 @@
-export { RenderEngine, renderComponentPreviewText } from "./render"
+export { RenderEngine } from "./render"
 export { RenderApplicationScripts } from "./renderApplicationScripts"
 export {
   getMetadata,
