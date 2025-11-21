@@ -114,8 +114,6 @@ export const generateMetadata = async (
   return getMetadata(schema)
 }
 
-const Junk = dynamicImport(() => import("@/div"))
-
 const Page = async (props: DynamicPageProps) => {
   const renderSchema = await getSchema({
     permalink: await getPatchedPermalink(props),
@@ -123,7 +121,6 @@ const Page = async (props: DynamicPageProps) => {
 
   return (
     <>
-      {renderSchema.layout === "homepage" && <Junk />}
       <RenderEngine
         {...renderSchema}
         site={{
