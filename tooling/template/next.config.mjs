@@ -17,6 +17,7 @@ const nextConfig = {
           ...config.optimization.splitChunks.cacheGroups,
           components: {
             test: /[\\/]templates[\\/]next[\\/]components[\\/]/,
+            /** @param {{ context: string }} module */
             name(module) {
               const match = module.context.match(
                 /[\\/]components[\\/](?:complex|internal|native)[\\/]([^\\/]+)/,
@@ -29,6 +30,7 @@ const nextConfig = {
           },
           layouts: {
             test: /[\\/]templates[\\/]next[\\/]layouts[\\/]/,
+            /** @param {{ context: string }} module */
             name(module) {
               const match = module.context.match(/[\\/]layouts[\\/]([^\\/]+)/)
               return match ? `layout-${match[1]}` : "layouts"
