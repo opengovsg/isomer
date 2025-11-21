@@ -1,9 +1,9 @@
 "use client"
 
 import type { VicaWidgetClientProps } from "~/interfaces"
+import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader"
 
 export const VicaWidgetClient = ({
-  ScriptComponent,
   useDevStagingScript,
   ...vicaProps
 }: VicaWidgetClientProps) => {
@@ -11,10 +11,7 @@ export const VicaWidgetClient = ({
     ? "https://webchat.mol-vica.com/static/js/chat.js"
     : "https://webchat.vica.gov.sg/static/js/chat.js"
 
-  return (
-    <>
-      <ScriptComponent src={scriptUrl} strategy="lazyOnload" />
-      <div id="webchat" {...vicaProps} />
-    </>
-  )
+  useInteractionScriptLoader({ src: scriptUrl })
+
+  return <div id="webchat" {...vicaProps} />
 }
