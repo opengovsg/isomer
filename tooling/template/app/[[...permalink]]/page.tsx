@@ -190,6 +190,8 @@ const RenderEngine = (props: IsomerPageSchemaType) => {
 const renderNextLayout = (props: IsomerPageSchemaType) => {
   switch (props.layout) {
     case "article":
+      // TODO: to add transformed content
+      // refer to "packages/components/src/templates/next/layouts/Article/Article.tsx"
       return (
         <ArticleLayoutSkeleton
           {...{
@@ -207,6 +209,8 @@ const renderNextLayout = (props: IsomerPageSchemaType) => {
     case "collection":
       return <CollectionLayout {...props} />
     case "content":
+      // TODO: to add transformed content
+      // refer to "packages/components/src/templates/next/layouts/Content/Content.tsx"
       return (
         <ContentLayoutSkeleton
           {...{
@@ -222,6 +226,8 @@ const renderNextLayout = (props: IsomerPageSchemaType) => {
         />
       )
     case "database":
+      // TODO: to add transformed content
+      // refer to "packages/components/src/templates/next/layouts/Database/Database.tsx"
       return (
         <DatabaseLayoutSkeleton
           {...{
@@ -237,6 +243,8 @@ const renderNextLayout = (props: IsomerPageSchemaType) => {
         />
       )
     case "homepage":
+      // TODO: to add transformed content
+      // refer to "packages/components/src/templates/next/layouts/Homepage/Homepage.tsx"
       return (
         <HomepageLayoutSkeleton
           {...{
