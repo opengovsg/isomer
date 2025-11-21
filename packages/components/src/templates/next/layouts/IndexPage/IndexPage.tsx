@@ -1,4 +1,4 @@
-import type { IndexPageSchemaType } from "~/types/schema"
+import type { IndexPageSchemaType } from "~/types"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages/constants"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"

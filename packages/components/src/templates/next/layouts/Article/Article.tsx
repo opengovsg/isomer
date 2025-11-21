@@ -1,4 +1,4 @@
-import type { ArticlePageSchemaType } from "~/types/schema"
+import type { ArticlePageSchemaType } from "~/types"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"

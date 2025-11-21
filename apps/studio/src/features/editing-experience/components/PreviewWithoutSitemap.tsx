@@ -32,9 +32,11 @@ const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
   ),
 )
 
+const defaultLastModified = new Date().toISOString()
+
 function SuspendablePreview({
   permalink,
-  lastModified = new Date().toISOString(),
+  lastModified = defaultLastModified,
   siteId,
   overrides = {},
   siteMap,
