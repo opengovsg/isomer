@@ -3,7 +3,15 @@ import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
-} from "@opengovsg/isomer-components"
+} from "~/types"
+
+export interface RenderPageContentParams {
+  content: IsomerComponent[]
+  layout: IsomerPageLayoutType
+  site: IsomerSiteProps
+  LinkComponent: LinkComponentType
+  permalink: string
+}
 
 export interface RenderComponentProps {
   elementKey?: number

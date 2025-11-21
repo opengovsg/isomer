@@ -1,19 +1,6 @@
-import type {
-  IsomerComponent,
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
+import type { RenderPageContentParams } from "./types"
 import { doesComponentHaveImage } from "./doesComponentHaveImage"
 import { renderComponent } from "./renderComponent"
-
-interface RenderPageContentParams {
-  content: IsomerComponent[]
-  layout: IsomerPageLayoutType
-  site: IsomerSiteProps
-  LinkComponent: LinkComponentType
-  permalink: string
-}
 
 export const renderPageContent = ({
   content,

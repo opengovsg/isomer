@@ -1,16 +1,19 @@
-import type { RenderComponentProps } from "@/src/types/renderComponent"
-import type { RenderPageContentParams } from "@/src/types/renderPageContent"
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
+import type {
+  RenderComponentProps,
+  RenderPageContentParams,
+} from "@opengovsg/isomer-components/templates/next/render/types"
 import type { Metadata, ResolvingMetadata } from "next"
 import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
-import { doesComponentHaveImage } from "@/src/doesComponentHaveImage"
-import { getMetadata } from "@/src/getMetadata"
-import { getSitemapXml } from "@/src/getSitemapXml"
-import { shouldBlockIndexing } from "@/src/shouldBlockIndexing"
+import {
+  getMetadata,
+  getSitemapXml,
+  shouldBlockIndexing,
+} from "@opengovsg/isomer-components/engine/metadata"
 import { Accordion } from "@opengovsg/isomer-components/templates/next/components/complex/Accordion"
 import { Blockquote } from "@opengovsg/isomer-components/templates/next/components/complex/Blockquote"
 import { Callout } from "@opengovsg/isomer-components/templates/next/components/complex/Callout"
@@ -42,6 +45,7 @@ import { HomepageLayoutSkeleton } from "@opengovsg/isomer-components/templates/n
 import { IndexPageLayoutSkeleton } from "@opengovsg/isomer-components/templates/next/layouts/IndexPageSkeleton"
 import { NotFoundLayout } from "@opengovsg/isomer-components/templates/next/layouts/NotFound"
 import { SearchLayout } from "@opengovsg/isomer-components/templates/next/layouts/Search"
+import { doesComponentHaveImage } from "@opengovsg/isomer-components/templates/next/render/doesComponentHaveImage"
 
 export const dynamic = "force-static"
 

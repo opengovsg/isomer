@@ -5,7 +5,7 @@ import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
-import { getMetadata } from "@/src/getMetadata"
+import { getMetadata } from "@opengovsg/isomer-components/engine/metadata"
 import { NotFoundLayout } from "@opengovsg/isomer-components/templates/next/layouts/NotFound"
 
 export const dynamic = "force-static"
