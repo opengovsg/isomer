@@ -22,7 +22,9 @@ const nextConfig = {
               const match = module.context.match(
                 /[\\/]components[\\/](?:complex|internal|native)[\\/]([^\\/]+)/,
               )
-              return match ? `component-${match[1]}` : "components"
+              return match
+                ? `component-${match[1]}`.toLowerCase()
+                : "components"
             },
             chunks: "all",
             priority: 10,
@@ -33,7 +35,7 @@ const nextConfig = {
             /** @param {{ context: string }} module */
             name(module) {
               const match = module.context.match(/[\\/]layouts[\\/]([^\\/]+)/)
-              return match ? `layout-${match[1]}` : "layouts"
+              return match ? `layout-${match[1]}`.toLowerCase() : "layouts"
             },
             chunks: "all",
             priority: 10,
