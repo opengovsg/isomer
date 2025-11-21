@@ -6,7 +6,7 @@ import { HeroGradient } from "./HeroGradient"
 import { HeroLargeImage } from "./HeroLargeImage/HeroLargeImage"
 import { HeroSearchbar } from "./HeroSearchbar"
 
-const Hero = (props: HeroProps) => {
+export const Hero = (props: HeroProps) => {
   const { variant } = props
   switch (variant) {
     case HERO_STYLE.gradient:
@@ -24,5 +24,3 @@ const Hero = (props: HeroProps) => {
       return null
   }
 }
-
-export default Hero

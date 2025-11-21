@@ -1,5 +1,5 @@
 import type { InfobarProps } from "~/interfaces"
-import { DEFAULT_INFOBAR_VARIANT } from "~/interfaces"
+import { DEFAULT_INFOBAR_VARIANT } from "~/interfaces/complex/Infobar/constants"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
@@ -82,7 +82,7 @@ export const createInfobarStyles = tv({
   },
 })
 
-const Infobar = ({
+export const Infobar = ({
   variant,
   title,
   description,
@@ -161,5 +161,3 @@ const Infobar = ({
     </section>
   )
 }
-
-export default Infobar

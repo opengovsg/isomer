@@ -1,5 +1,5 @@
 import type { OrderedListProps } from "~/interfaces"
-import ListItem from "../ListItem"
+import { ListItem } from "../ListItem"
 
 const getOrderedListType = (level?: number) => {
   // We rotate between decimal, lower-alpha and lower-roman
@@ -12,7 +12,7 @@ const getOrderedListType = (level?: number) => {
   }
 }
 
-const OrderedList = ({
+export const OrderedList = ({
   attrs,
   content,
   level,
@@ -36,5 +36,3 @@ const OrderedList = ({
     </ol>
   )
 }
-
-export default OrderedList

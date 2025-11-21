@@ -1,9 +1,7 @@
 import type { HeroSearchbarProps } from "~/interfaces/complex/Hero"
-import {
-  HomepageSearchSGInputBox,
-  LocalSearchInputBox,
-} from "../../../internal"
 import { ComponentContent } from "../../../internal/customCssClass"
+import { LocalSearchInputBox } from "../../../internal/LocalSearchInputBox"
+import { HomepageSearchSGInputBox } from "../../../internal/SearchSGInputBox"
 
 interface SearchInputBoxProps {
   search: NonNullable<HeroSearchbarProps["site"]["search"]>

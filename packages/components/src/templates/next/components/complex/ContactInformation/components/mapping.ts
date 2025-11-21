@@ -10,7 +10,7 @@ import {
   BiUser,
 } from "react-icons/bi"
 
-import type { CONTACT_INFORMATION_SUPPORT_METHODS } from "~/interfaces"
+import type { CONTACT_INFORMATION_SUPPORT_METHODS } from "~/interfaces/complex/ContactInformation/constants"
 
 type MethodMapping = Record<
   (typeof CONTACT_INFORMATION_SUPPORT_METHODS)[number],

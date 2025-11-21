@@ -25,39 +25,28 @@ export {
   InfobarDefaultSchema,
   InfobarHomepageSchema,
   type InfobarProps,
-  DEFAULT_INFOBAR_VARIANT,
 } from "./Infobar"
 export { InfopicSchema, type InfopicProps } from "./Infopic"
 export { KeyStatisticsSchema, type KeyStatisticsProps } from "./KeyStatistics"
 export { MapSchema, type MapProps } from "./Map"
 export { VideoSchema, type VideoProps } from "./Video"
 export {
-  DYNAMIC_DATA_BANNER_TYPE,
-  DYNAMIC_DATA_BANNER_NUMBER_OF_DATA,
   DynamicDataBannerSchema,
   type DynamicDataBannerProps,
 } from "./DynamicDataBanner"
 export {
   CollectionBlockSchema,
   type CollectionBlockProps,
-  COLLECTION_BLOCK_TYPE,
 } from "./CollectionBlock"
-export {
-  IMAGE_GALLERY_TYPE,
-  ImageGallerySchema,
-  type ImageGalleryProps,
-} from "./ImageGallery"
+export { ImageGallerySchema, type ImageGalleryProps } from "./ImageGallery"
 export {
   ChildrenPagesSchema,
-  DEFAULT_CHILDREN_PAGES_BLOCK,
-  CHILDREN_PAGES_LAYOUT_OPTIONS,
   type ChildrenPagesProps,
+  CHILDREN_PAGES_LAYOUT_OPTIONS,
+  DEFAULT_CHILDREN_PAGES_BLOCK,
 } from "./ChildrenPages"
 export {
-  CONTACT_INFORMATION_TYPE,
-  CONTACT_INFORMATION_SUPPORT_METHODS,
   ContactInformationSchema,
-  InjectableContactInformationKeys,
   type ContactInformationProps,
   type ContactInformationUIProps,
   type NativeContactInformationProps,
@@ -65,7 +54,6 @@ export {
   type DgsTransformedContactInformationProps,
 } from "./ContactInformation"
 export {
-  DYNAMIC_COMPONENT_LIST_TYPE,
   DynamicComponentListSchema,
   type DynamicComponentListProps,
 } from "./DynamicComponentList"

@@ -1,7 +1,7 @@
 import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
-import NavbarClient from "./NavbarClient"
+import { NavbarClient } from "./NavbarClient"
 
 const navbarLogoStyles = tv({
   base: "object-contain object-left",
@@ -92,5 +92,3 @@ export const Navbar = ({
     />
   )
 }
-
-export default Navbar

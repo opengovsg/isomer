@@ -9,24 +9,12 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
-import { createDgsSchema, NativeDataSourceSchema } from "../integration"
-
-export const CONTACT_INFORMATION_TYPE = "contactinformation"
-
-export const CONTACT_INFORMATION_SUPPORT_METHODS = [
-  "telephone",
-  "fax",
-  "email",
-  "website",
-  "emergency_contact",
-  "address",
-  "operating_hours",
-  "person",
-] as const
+import { createDgsSchema, NativeDataSourceSchema } from "../../integration"
+import { CONTACT_INFORMATION_SUPPORT_METHODS } from "./constants"
 
 const BaseContactInformationSchema = Type.Object({
-  type: Type.Literal(CONTACT_INFORMATION_TYPE, {
-    default: CONTACT_INFORMATION_TYPE,
+  type: Type.Literal("contactinformation", {
+    default: "contactinformation",
   }),
   label: Type.Optional(
     Type.String({
@@ -151,10 +139,6 @@ export const ContactInformationSchema = Type.Intersect([
   BaseContactInformationSchema,
   Type.Union([NativeContactInformationSchema, DgsContactInformationSchema]),
 ])
-
-export const InjectableContactInformationKeys = Object.keys(
-  InjectableContactInformationSchema.properties,
-) as (keyof typeof InjectableContactInformationSchema.properties)[]
 
 interface AdditionalContactInformationTypeProps {
   layout: IsomerPageLayoutType

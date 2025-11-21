@@ -101,7 +101,6 @@
     "!**/*.json",
     "README.md"
   ],
-  "types": "dist/cjs/index.d.ts",
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

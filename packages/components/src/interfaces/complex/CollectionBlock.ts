@@ -6,12 +6,10 @@ import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { COLLECTION_DROPDOWN_FORMAT } from "~/interfaces/format"
 import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
 
-export const COLLECTION_BLOCK_TYPE = "collectionblock"
-
 export const CollectionBlockSchema = Type.Object(
   {
-    type: Type.Literal(COLLECTION_BLOCK_TYPE, {
-      default: COLLECTION_BLOCK_TYPE,
+    type: Type.Literal("collectionblock", {
+      default: "collectionblock",
     }),
     collectionReferenceLink: Type.String({
       title: "Collection",

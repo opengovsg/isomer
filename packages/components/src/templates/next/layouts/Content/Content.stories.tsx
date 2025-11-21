@@ -5,11 +5,11 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { generateSiteConfig } from "~/stories/helpers"
-import Content from "./Content"
+import { ContentLayout } from "./Content"
 
-const meta: Meta<typeof Content> = {
+const meta: Meta<typeof ContentLayout> = {
   title: "Next/Layouts/Content",
-  component: Content,
+  component: ContentLayout,
   argTypes: {},
   tags: ["!autodocs"],
   parameters: {
@@ -21,7 +21,7 @@ const meta: Meta<typeof Content> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof Content>
+type Story = StoryObj<typeof ContentLayout>
 
 export const Default: Story = {
   args: {

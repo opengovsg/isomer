@@ -1,1 +1,1 @@
-export { default } from "./UnorderedList"
+export { UnorderedList } from "./UnorderedList"
