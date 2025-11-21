@@ -8,7 +8,6 @@ import {
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
 import { SearchableTable } from "../../components/internal/SearchableTable"
 import { TableOfContents } from "../../components/internal/TableOfContents"
-import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
 const createDatabaseLayoutStyles = tv({
@@ -28,6 +27,7 @@ export const DatabaseLayout = ({
   layout,
   content,
   LinkComponent,
+  renderPageContent,
 }: DatabasePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
