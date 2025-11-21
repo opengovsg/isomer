@@ -105,8 +105,8 @@
       "require": "./dist/cjs/templates/next/components/native/*/index.js"
     },
     "./templates/next/render/*": {
-      "import": "./dist/esm/templates/next/render/*",
-      "require": "./dist/cjs/templates/next/render/*"
+      "import": "./dist/esm/templates/next/render/*.js",
+      "require": "./dist/cjs/templates/next/render/*.js"
     },
     "./engine/*": {
       "import": "./dist/esm/engine/*.js",
