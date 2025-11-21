@@ -91,6 +91,318 @@
     "./templates/next": {
       "import": "./dist/esm/templates/next/index.js",
       "require": "./dist/cjs/templates/next/index.js"
+    },
+    "./templates/next/components/complex/Accordion": {
+      "import": "./dist/esm/templates/next/components/complex/Accordion/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/Accordion/index.js"
+    },
+    "./templates/next/components/complex/Blockquote": {
+      "import": "./dist/esm/templates/next/components/complex/Blockquote/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/Blockquote/index.js"
+    },
+    "./templates/next/components/complex/Callout": {
+      "import": "./dist/esm/templates/next/components/complex/Callout/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/Callout/index.js"
+    },
+    "./templates/next/components/complex/ChildrenPages": {
+      "import": "./dist/esm/templates/next/components/complex/ChildrenPages/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/ChildrenPages/index.js"
+    },
+    "./templates/next/components/complex/CollectionBlock": {
+      "import": "./dist/esm/templates/next/components/complex/CollectionBlock/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/CollectionBlock/index.js"
+    },
+    "./templates/next/components/complex/ContactInformation": {
+      "import": "./dist/esm/templates/next/components/complex/ContactInformation/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/ContactInformation/index.js"
+    },
+    "./templates/next/components/complex/Contentpic": {
+      "import": "./dist/esm/templates/next/components/complex/Contentpic/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/Contentpic/index.js"
+    },
+    "./templates/next/components/complex/DynamicComponentList": {
+      "import": "./dist/esm/templates/next/components/complex/DynamicComponentList/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/DynamicComponentList/index.js"
+    },
+    "./templates/next/components/complex/DynamicDataBanner": {
+      "import": "./dist/esm/templates/next/components/complex/DynamicDataBanner/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/DynamicDataBanner/index.js"
+    },
+    "./templates/next/components/complex/FormSG": {
+      "import": "./dist/esm/templates/next/components/complex/FormSG/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/FormSG/index.js"
+    },
+    "./templates/next/components/complex/Hero": {
+      "import": "./dist/esm/templates/next/components/complex/Hero/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/Hero/index.js"
+    },
+    "./templates/next/components/complex/Iframe": {
+      "import": "./dist/esm/templates/next/components/complex/Iframe/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/Iframe/index.js"
+    },
+    "./templates/next/components/complex/Image": {
+      "import": "./dist/esm/templates/next/components/complex/Image/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/Image/index.js"
+    },
+    "./templates/next/components/complex/ImageGallery": {
+      "import": "./dist/esm/templates/next/components/complex/ImageGallery/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/ImageGallery/index.js"
+    },
+    "./templates/next/components/complex/Infobar": {
+      "import": "./dist/esm/templates/next/components/complex/Infobar/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/Infobar/index.js"
+    },
+    "./templates/next/components/complex/InfoCards": {
+      "import": "./dist/esm/templates/next/components/complex/InfoCards/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/InfoCards/index.js"
+    },
+    "./templates/next/components/complex/InfoCols": {
+      "import": "./dist/esm/templates/next/components/complex/InfoCols/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/InfoCols/index.js"
+    },
+    "./templates/next/components/complex/Infopic": {
+      "import": "./dist/esm/templates/next/components/complex/Infopic/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/Infopic/index.js"
+    },
+    "./templates/next/components/complex/KeyStatistics": {
+      "import": "./dist/esm/templates/next/components/complex/KeyStatistics/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/KeyStatistics/index.js"
+    },
+    "./templates/next/components/complex/LogoCloud": {
+      "import": "./dist/esm/templates/next/components/complex/LogoCloud/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/LogoCloud/index.js"
+    },
+    "./templates/next/components/complex/Map": {
+      "import": "./dist/esm/templates/next/components/complex/Map/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/Map/index.js"
+    },
+    "./templates/next/components/complex/Video": {
+      "import": "./dist/esm/templates/next/components/complex/Video/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/Video/index.js"
+    },
+    "./templates/next/components/internal/ArticlePageHeader": {
+      "import": "./dist/esm/templates/next/components/internal/ArticlePageHeader/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/ArticlePageHeader/index.js"
+    },
+    "./templates/next/components/internal/Askgov": {
+      "import": "./dist/esm/templates/next/components/internal/Askgov/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Askgov/index.js"
+    },
+    "./templates/next/components/internal/BackToTopLink": {
+      "import": "./dist/esm/templates/next/components/internal/BackToTopLink/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/BackToTopLink/index.js"
+    },
+    "./templates/next/components/internal/BaseParagraph": {
+      "import": "./dist/esm/templates/next/components/internal/BaseParagraph/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/BaseParagraph/index.js"
+    },
+    "./templates/next/components/internal/BlogCard": {
+      "import": "./dist/esm/templates/next/components/internal/BlogCard/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/BlogCard/index.js"
+    },
+    "./templates/next/components/internal/Breadcrumb": {
+      "import": "./dist/esm/templates/next/components/internal/Breadcrumb/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Breadcrumb/index.js"
+    },
+    "./templates/next/components/internal/Button": {
+      "import": "./dist/esm/templates/next/components/internal/Button/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Button/index.js"
+    },
+    "./templates/next/components/internal/Checkbox": {
+      "import": "./dist/esm/templates/next/components/internal/Checkbox/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Checkbox/index.js"
+    },
+    "./templates/next/components/internal/CollectionCard": {
+      "import": "./dist/esm/templates/next/components/internal/CollectionCard/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/CollectionCard/index.js"
+    },
+    "./templates/next/components/internal/CollectionSearch": {
+      "import": "./dist/esm/templates/next/components/internal/CollectionSearch/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/CollectionSearch/index.js"
+    },
+    "./templates/next/components/internal/ContentPageHeader": {
+      "import": "./dist/esm/templates/next/components/internal/ContentPageHeader/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/ContentPageHeader/index.js"
+    },
+    "./templates/next/components/internal/customCssClass": {
+      "import": "./dist/esm/templates/next/components/internal/customCssClass/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/customCssClass/index.js"
+    },
+    "./templates/next/components/internal/DownloadButton": {
+      "import": "./dist/esm/templates/next/components/internal/DownloadButton/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/DownloadButton/index.js"
+    },
+    "./templates/next/components/internal/Filter": {
+      "import": "./dist/esm/templates/next/components/internal/Filter/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Filter/index.js"
+    },
+    "./templates/next/components/internal/FontPreload": {
+      "import": "./dist/esm/templates/next/components/internal/FontPreload/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/FontPreload/index.js"
+    },
+    "./templates/next/components/internal/Footer": {
+      "import": "./dist/esm/templates/next/components/internal/Footer/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Footer/index.js"
+    },
+    "./templates/next/components/internal/GoogleTagManager": {
+      "import": "./dist/esm/templates/next/components/internal/GoogleTagManager/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/GoogleTagManager/index.js"
+    },
+    "./templates/next/components/internal/IconButton": {
+      "import": "./dist/esm/templates/next/components/internal/IconButton/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/IconButton/index.js"
+    },
+    "./templates/next/components/internal/Link": {
+      "import": "./dist/esm/templates/next/components/internal/Link/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Link/index.js"
+    },
+    "./templates/next/components/internal/LinkButton": {
+      "import": "./dist/esm/templates/next/components/internal/LinkButton/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/LinkButton/index.js"
+    },
+    "./templates/next/components/internal/LocalSearchInputBox": {
+      "import": "./dist/esm/templates/next/components/internal/LocalSearchInputBox/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/LocalSearchInputBox/index.js"
+    },
+    "./templates/next/components/internal/Masthead": {
+      "import": "./dist/esm/templates/next/components/internal/Masthead/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Masthead/index.js"
+    },
+    "./templates/next/components/internal/MicrosoftClarity": {
+      "import": "./dist/esm/templates/next/components/internal/MicrosoftClarity/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/MicrosoftClarity/index.js"
+    },
+    "./templates/next/components/internal/Navbar": {
+      "import": "./dist/esm/templates/next/components/internal/Navbar/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Navbar/index.js"
+    },
+    "./templates/next/components/internal/Notification": {
+      "import": "./dist/esm/templates/next/components/internal/Notification/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Notification/index.js"
+    },
+    "./templates/next/components/internal/PaginationControls": {
+      "import": "./dist/esm/templates/next/components/internal/PaginationControls/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/PaginationControls/index.js"
+    },
+    "./templates/next/components/internal/Pill": {
+      "import": "./dist/esm/templates/next/components/internal/Pill/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Pill/index.js"
+    },
+    "./templates/next/components/internal/ScrollToTop": {
+      "import": "./dist/esm/templates/next/components/internal/ScrollToTop/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/ScrollToTop/index.js"
+    },
+    "./templates/next/components/internal/Search": {
+      "import": "./dist/esm/templates/next/components/internal/Search/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Search/index.js"
+    },
+    "./templates/next/components/internal/SearchableTable": {
+      "import": "./dist/esm/templates/next/components/internal/SearchableTable/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/SearchableTable/index.js"
+    },
+    "./templates/next/components/internal/SearchSGInputBox": {
+      "import": "./dist/esm/templates/next/components/internal/SearchSGInputBox/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/SearchSGInputBox/index.js"
+    },
+    "./templates/next/components/internal/Siderail": {
+      "import": "./dist/esm/templates/next/components/internal/Siderail/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Siderail/index.js"
+    },
+    "./templates/next/components/internal/SkipToContent": {
+      "import": "./dist/esm/templates/next/components/internal/SkipToContent/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/SkipToContent/index.js"
+    },
+    "./templates/next/components/internal/TableOfContents": {
+      "import": "./dist/esm/templates/next/components/internal/TableOfContents/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/TableOfContents/index.js"
+    },
+    "./templates/next/components/internal/Tag": {
+      "import": "./dist/esm/templates/next/components/internal/Tag/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Tag/index.js"
+    },
+    "./templates/next/components/internal/UnsupportedBrowserBanner": {
+      "import": "./dist/esm/templates/next/components/internal/UnsupportedBrowserBanner/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/UnsupportedBrowserBanner/index.js"
+    },
+    "./templates/next/components/internal/utils": {
+      "import": "./dist/esm/templates/next/components/internal/utils/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/utils/index.js"
+    },
+    "./templates/next/components/internal/Vica": {
+      "import": "./dist/esm/templates/next/components/internal/Vica/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Vica/index.js"
+    },
+    "./templates/next/components/internal/Wogaa": {
+      "import": "./dist/esm/templates/next/components/internal/Wogaa/index.js",
+      "require": "./dist/cjs/templates/next/components/internal/Wogaa/index.js"
+    },
+    "./templates/next/components/native/Divider": {
+      "import": "./dist/esm/templates/next/components/native/Divider/index.js",
+      "require": "./dist/cjs/templates/next/components/native/Divider/index.js"
+    },
+    "./templates/next/components/native/Heading": {
+      "import": "./dist/esm/templates/next/components/native/Heading/index.js",
+      "require": "./dist/cjs/templates/next/components/native/Heading/index.js"
+    },
+    "./templates/next/components/native/ListItem": {
+      "import": "./dist/esm/templates/next/components/native/ListItem/index.js",
+      "require": "./dist/cjs/templates/next/components/native/ListItem/index.js"
+    },
+    "./templates/next/components/native/OrderedList": {
+      "import": "./dist/esm/templates/next/components/native/OrderedList/index.js",
+      "require": "./dist/cjs/templates/next/components/native/OrderedList/index.js"
+    },
+    "./templates/next/components/native/Paragraph": {
+      "import": "./dist/esm/templates/next/components/native/Paragraph/index.js",
+      "require": "./dist/cjs/templates/next/components/native/Paragraph/index.js"
+    },
+    "./templates/next/components/native/Prose": {
+      "import": "./dist/esm/templates/next/components/native/Prose/index.js",
+      "require": "./dist/cjs/templates/next/components/native/Prose/index.js"
+    },
+    "./templates/next/components/native/Table": {
+      "import": "./dist/esm/templates/next/components/native/Table/index.js",
+      "require": "./dist/cjs/templates/next/components/native/Table/index.js"
+    },
+    "./templates/next/components/native/UnorderedList": {
+      "import": "./dist/esm/templates/next/components/native/UnorderedList/index.js",
+      "require": "./dist/cjs/templates/next/components/native/UnorderedList/index.js"
+    },
+    "./templates/next/layouts/Article": {
+      "import": "./dist/esm/templates/next/layouts/Article/index.js",
+      "require": "./dist/cjs/templates/next/layouts/Article/index.js"
+    },
+    "./templates/next/layouts/Collection": {
+      "import": "./dist/esm/templates/next/layouts/Collection/index.js",
+      "require": "./dist/cjs/templates/next/layouts/Collection/index.js"
+    },
+    "./templates/next/layouts/Content": {
+      "import": "./dist/esm/templates/next/layouts/Content/index.js",
+      "require": "./dist/cjs/templates/next/layouts/Content/index.js"
+    },
+    "./templates/next/layouts/Database": {
+      "import": "./dist/esm/templates/next/layouts/Database/index.js",
+      "require": "./dist/cjs/templates/next/layouts/Database/index.js"
+    },
+    "./templates/next/layouts/Homepage": {
+      "import": "./dist/esm/templates/next/layouts/Homepage/index.js",
+      "require": "./dist/cjs/templates/next/layouts/Homepage/index.js"
+    },
+    "./templates/next/layouts/IndexPage": {
+      "import": "./dist/esm/templates/next/layouts/IndexPage/index.js",
+      "require": "./dist/cjs/templates/next/layouts/IndexPage/index.js"
+    },
+    "./templates/next/layouts/NotFound": {
+      "import": "./dist/esm/templates/next/layouts/NotFound/index.js",
+      "require": "./dist/cjs/templates/next/layouts/NotFound/index.js"
+    },
+    "./templates/next/layouts/Search": {
+      "import": "./dist/esm/templates/next/layouts/Search/index.js",
+      "require": "./dist/cjs/templates/next/layouts/Search/index.js"
+    },
+    "./engine/metadata": {
+      "import": "./dist/esm/engine/metadata.js",
+      "require": "./dist/cjs/engine/metadata.js"
     }
   },
   "files": [
