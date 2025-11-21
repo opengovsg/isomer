@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic"
 
 import type { IsomerPageSchemaType } from "../../../packages/components/dist/esm/types"
+import { renderPageContent } from "./pageContent"
 
 const ArticleLayout = dynamic(() =>
   import("@opengovsg/isomer-components/templates/next/layouts/Article").then(
@@ -50,6 +51,7 @@ export const renderLayout = ({
   const props = {
     ...rest,
     LinkComponent,
+    renderPageContent,
   }
 
   switch (props.layout) {

@@ -4,6 +4,7 @@ import { Type } from "@sinclair/typebox"
 
 import type { NotFoundPageMetaProps, SearchPageMetaProps } from "./meta"
 import type { IsomerSiteProps } from "./site"
+import type { renderPageContent } from "~/templates/next"
 import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
@@ -243,6 +244,7 @@ export type IsomerSchema = SimplifyDeep<Static<typeof IsomerPageSchema>>
 interface BasePageAdditionalProps {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
+  renderPageContent: typeof renderPageContent
 }
 
 export interface NotFoundPageSchemaType extends BasePageAdditionalProps {

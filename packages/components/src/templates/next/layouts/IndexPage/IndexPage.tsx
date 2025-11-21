@@ -3,7 +3,6 @@ import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils"
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
-import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
 const createIndexPageLayoutStyles = tv({
@@ -23,6 +22,7 @@ export const IndexPageLayout = ({
   layout,
   content,
   LinkComponent,
+  renderPageContent,
 }: IndexPageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
