@@ -248,6 +248,8 @@ const renderNextLayout = (props: IsomerPageSchemaType) => {
         />
       )
     case "index":
+      // TODO: to add default children pages block
+      // refer to "packages/components/src/templates/next/layouts/IndexPage/IndexPage.tsx"
       return (
         <IndexPageLayoutSkeleton
           {...{
