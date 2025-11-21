@@ -1,5 +1,6 @@
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
 import type { Metadata, ResolvingMetadata } from "next"
+import dynamicImport from "next/dynamic"
 import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
@@ -112,35 +113,40 @@ export const generateMetadata = async (
   return getMetadata(schema)
 }
 
+const Junk = dynamicImport(() => import("@/div"))
+
 const Page = async (props: DynamicPageProps) => {
   const renderSchema = await getSchema({
     permalink: await getPatchedPermalink(props),
   })
 
   return (
-    <RenderEngine
-      {...renderSchema}
-      site={{
-        ...config.site,
-        environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-        // TODO: fixup all the typing errors
-        // @ts-ignore to fix when types are proper
-        siteMap: sitemap,
-        navbar: navbar,
-        // TODO: fixup all the typing errors
-        // @ts-ignore to fix when types are proper
-        footerItems: footer,
-        lastUpdated,
-        assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
-      }}
-      meta={{
-        // TODO: fixup all the typing errors
-        noIndex: shouldBlockIndexing(
-          process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-        ),
-      }}
-      LinkComponent={Link}
-    />
+    <>
+      {renderSchema.layout === "homepage" && <Junk />}
+      <RenderEngine
+        {...renderSchema}
+        site={{
+          ...config.site,
+          environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+          // TODO: fixup all the typing errors
+          // @ts-ignore to fix when types are proper
+          siteMap: sitemap,
+          navbar: navbar,
+          // TODO: fixup all the typing errors
+          // @ts-ignore to fix when types are proper
+          footerItems: footer,
+          lastUpdated,
+          assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+        }}
+        meta={{
+          // TODO: fixup all the typing errors
+          noIndex: shouldBlockIndexing(
+            process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+          ),
+        }}
+        LinkComponent={Link}
+      />
+    </>
   )
 }
 
