@@ -134,8 +134,6 @@ const updateStaticRoutePermalink = (ast, permalink) => {
 
 // Remove unused imports using AST
 const removeUnusedImports = (ast, usedLayouts, usedComponents) => {
-  const b = recast.types.builders
-
   // Find and remove unused import declarations
   recast.visit(ast, {
     visitImportDeclaration(path) {
