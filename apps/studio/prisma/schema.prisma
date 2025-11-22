@@ -137,7 +137,7 @@ model User {
   versions           Version[]
   AuditLog           AuditLog[]
   CodeBuildJobs      CodeBuildJobs[]
-  resources          Resource[]
+  ScheduledResources Resource[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -286,7 +286,7 @@ enum BuildStatusType {
 
 model CodeBuildJobs {
   id                  BigInt          @id @default(autoincrement())
-  buildId             String
+  buildId             String // The AWS CodeBuild build ID
   siteId              Int
   site                Site            @relation(fields: [siteId], references: [id])
   userId              String

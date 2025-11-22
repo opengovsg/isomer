@@ -1,7 +1,4 @@
 -- AlterTable
-ALTER TABLE "CodeBuildJobs" ALTER COLUMN "buildId" DROP NOT NULL;
-
--- AlterTable
 ALTER TABLE "Resource" ADD COLUMN     "scheduledBy" TEXT;
 
 -- AddForeignKey
