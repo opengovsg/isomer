@@ -20,7 +20,7 @@ const CRON_SCHEDULE = "* * * * *" // every minute
 const logger = createBaseLogger({ path: "cron:schedulePublishingJob" })
 
 export const schedulePublishingJob = async () => {
-  await registerPgbossJob(
+  return await registerPgbossJob(
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
