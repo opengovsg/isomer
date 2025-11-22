@@ -6,7 +6,7 @@ import {
   getRecursiveTree,
   getResourceRoomName,
 } from "./github";
-import { MigrationRequest, ReportRow } from "./types";
+import type { MigrationRequest, ReportRow } from "./types";
 import { config } from "./config";
 import {
   getCollectionFolderName,
@@ -45,12 +45,14 @@ const getStatusName = (
 
 interface PageMigrationParams {
   site: string;
+  domain?: string;
   path: string;
   isResourceRoomPage: boolean;
 }
 
 const migratePage = async ({
   site,
+  domain,
   path,
   isResourceRoomPage = false,
 }: PageMigrationParams) => {
@@ -67,6 +69,8 @@ const migratePage = async ({
     content,
     path,
     isResourceRoomPage,
+    site,
+    domain,
   });
   return conversionResponse;
 };
@@ -74,11 +78,13 @@ const migratePage = async ({
 const migrateCollectionPage = async ({
   site,
   path,
+  domain,
 }: Omit<PageMigrationParams, "isResourceRoomPage">) => {
   const migrationResponse = await migratePage({
     site,
     path,
     isResourceRoomPage: true,
+    domain,
   });
 
   if (!migrationResponse) {
@@ -209,6 +215,7 @@ const createCollectionIndex = async (
 
 const migrate = async ({
   site,
+  domain,
   id,
   folders,
   isResourceRoomIncluded,
@@ -268,6 +275,7 @@ const migrate = async ({
       site,
       path,
       isResourceRoomPage: false,
+      domain,
     });
 
     if (!content) {
@@ -279,7 +287,7 @@ const migrate = async ({
       continue;
     }
 
-    saveContentsToFile({
+    await saveContentsToFile({
       site,
       content: content.content,
       permalink: getLegalPermalink(content.permalink),
@@ -302,7 +310,7 @@ const migrate = async ({
   }
 
   for (const path of allResourceRoomPages) {
-    const content = await migrateCollectionPage({ site, path });
+    const content = await migrateCollectionPage({ site, path, domain });
 
     if (!content) {
       continue;
@@ -325,7 +333,7 @@ const migrate = async ({
           }`
         : `${resourceRoomName}/${tempPermalink}`;
 
-    saveContentsToFile({
+    await saveContentsToFile({
       site,
       content: content.content,
       permalink: getLegalPermalink(permalinkToUse),

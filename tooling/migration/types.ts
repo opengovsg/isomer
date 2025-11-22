@@ -1,6 +1,9 @@
 export interface MigrationRequest {
   // The GitHub repository name of the Isomer Classic site to migrate
   site: string;
+  // The URL to the current live site (used for generating absolute URLs to
+  // images, mainly for private repositories)
+  domain?: string;
   // The site ID inside Isomer Studio to migrate into. If undefined, a folder
   // will be created with the repository name
   id?: number;

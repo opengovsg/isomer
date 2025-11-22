@@ -1,4 +1,4 @@
-import { Octokit } from "@octokit/rest";
+import type { Octokit } from "@octokit/rest";
 import { getFileContents, getRecursiveTree } from "./github";
 import fm from "front-matter";
 import {
@@ -110,7 +110,7 @@ export const getResourceRoomFileType = (filePath: string) => {
   const fileName = path.basename(path.join("/", filePath));
   // Check if the file name is in the format of YYYY-MM-DD-type-title
   const regex = /^\d{4}-\d{2}-\d{2}-(.*)/;
-  const match = fileName.match(regex);
+  const match = regex.exec(fileName);
 
   if (!match) {
     return undefined;
@@ -131,16 +131,15 @@ export const getResourceRoomFileType = (filePath: string) => {
   return potentialType;
 };
 
-export const getManualReviewItems = (
+export const getManualReviewItems = async (
   content: any[],
   originalContent: any,
   description: any,
   layout: any
-): {
+): Promise<{
   content: any[];
   reviewItems: string[];
-} => {
-  let updatedContent = content;
+}> => {
   const reviewItems: string[] = [];
   const stringifiedContent = JSON.stringify(content);
   const stringifiedOriginalContent = JSON.stringify(originalContent);
@@ -283,7 +282,7 @@ export const getManualReviewItems = (
   }
 
   return {
-    content: updatedContent,
+    content,
     reviewItems,
   };
 };

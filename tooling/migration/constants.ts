@@ -11,4 +11,6 @@ export const PLACEHOLDER_INSTAGRAM_LINK_TEXT = "View post on Instagram.";
 
 export const PLACEHOLDER_CARD_LINK_TEXT = "Click to explore";
 
+export const PLACEHOLDER_PAGE_SUMMARY = "This is the page summary";
+
 export const NON_CONTENT_LAYOUTS = ["post", "link", "file"];

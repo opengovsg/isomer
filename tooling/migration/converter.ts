@@ -42,6 +42,7 @@ import {
   PLACEHOLDER_IMAGE_IN_TABLE_TEXT,
   PLACEHOLDER_INSTAGRAM_LINK_TEXT,
 } from "./constants";
+import { generateImageAltText } from "./ai";
 
 const { JSDOM } = jsdom;
 const dom = new JSDOM(
@@ -83,7 +84,7 @@ export const getIsHtmlContainingRedundantDivs = (html: string) => {
       "onmouseout",
     ];
 
-    for (let attr of div.attributes) {
+    for (const attr of div.attributes) {
       if (impactAttributes.includes(attr.name)) {
         return false;
       }
@@ -402,8 +403,7 @@ const convertFromTiptap = (schema: any) => {
       component.content &&
       component.content.length === 1 &&
       component.content[0].type === "text" &&
-      component.content[0].marks &&
-      component.content[0].marks.some((mark: any) => mark.type === "link") &&
+      component.content[0].marks?.some((mark: any) => mark.type === "link") &&
       (component.content[0].text.toLocaleLowerCase() ===
         "share your feedback" ||
         component.content[0].text.toLocaleLowerCase() === "share your views")
@@ -427,12 +427,7 @@ const convertFromTiptap = (schema: any) => {
         ...rest,
       };
 
-      if (
-        attrs &&
-        attrs.class &&
-        attrs.class.length === 2 &&
-        attrs.class[0] === "h"
-      ) {
+      if (attrs?.class && attrs.class.length === 2 && attrs.class[0] === "h") {
         proseBlock.content.push({
           type: "heading",
           attrs: {
@@ -799,8 +794,7 @@ const getCleanedSchema = (schema: any) => {
     schema.forEach((component: any) => {
       if (
         component.type === "text" &&
-        component.marks &&
-        component.marks.some((mark: any) => mark.type === "link")
+        component.marks?.some((mark: any) => mark.type === "link")
       ) {
         const newMarks = component.marks.map((mark: any) => {
           // YT - Add file size
@@ -852,7 +846,7 @@ const getCleanedSchema = (schema: any) => {
  * Move all chldren out of an element, and remove the element.
  */
 const unwrap = (el: any) => {
-  let parent = el.parentNode;
+  const parent = el.parentNode;
 
   // Move all children to the parent element.
   while (el.firstChild) parent.insertBefore(el.firstChild, el);
@@ -865,7 +859,7 @@ const unwrap = (el: any) => {
  * Move all chldren out of an anchor, and set a replacement text.
  */
 const unwrapLink = (el: any, replacementText: string) => {
-  let parent = el.parentNode;
+  const parent = el.parentNode;
 
   // Move all children to the parent element.
   while (el.firstChild) parent.insertBefore(el.firstChild, el);
@@ -884,7 +878,7 @@ const wrap = (el: any, wrapper: any) => {
 };
 
 const fixTipTapContent = (html: string) => {
-  let container = document.createElement("div");
+  const container = document.createElement("div");
   container.innerHTML = html;
 
   let el;
@@ -916,7 +910,7 @@ const fixTipTapContent = (html: string) => {
       ':not([data-youtube-video]) > iframe[src*="youtube.com"]'
     ))
   ) {
-    let wrapper = document.createElement("div");
+    const wrapper = document.createElement("div");
     wrapper.dataset.youtubeVideo = "true";
     wrap(el, wrapper);
   }

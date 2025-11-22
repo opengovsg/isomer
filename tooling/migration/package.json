@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^1.0.27",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
     "@octokit/rest": "^21.1.1",
@@ -42,6 +43,7 @@
     "@tiptap/extension-text": "^2.22.3",
     "@tiptap/extension-underline": "^2.22.3",
     "@tiptap/html": "^2.22.3",
+    "ai": "^5.0.99",
     "ajv": "^8.17.1",
     "dotenv": "^16.4.7",
     "front-matter": "^4.0.2",

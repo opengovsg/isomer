@@ -5,8 +5,10 @@ import {
 } from "./converter";
 import { getHtmlFromMarkdown } from "./markdown";
 import { getManualReviewItems, getResourceRoomFileType } from "./utils";
-import { GetIsomerSchemaFromJekyllResponse } from "./types";
+import type { GetIsomerSchemaFromJekyllResponse } from "./types";
 import { isomerSchemaValidator } from "./schema";
+import { PLACEHOLDER_ALT_TEXT, PLACEHOLDER_PAGE_SUMMARY } from "./constants";
+import { generateImageAltText, generatePageSummary } from "./ai";
 
 const WHITELISTED_LAYOUTS = [
   // From staging branch, for extremely old sites
@@ -103,7 +105,7 @@ const getPageContent = ({
         category: "Placeholder", // Note: This will be changed to the actual category in the next step
         date: convertedDate,
         articlePageHeader: {
-          summary: description || "This is the page summary",
+          summary: description || PLACEHOLDER_PAGE_SUMMARY,
         },
       },
       ...((description || image) && {
@@ -122,7 +124,7 @@ const getPageContent = ({
     page: {
       title,
       contentPageHeader: {
-        summary: description || "This is the page summary",
+        summary: description || PLACEHOLDER_PAGE_SUMMARY,
       },
     },
     ...((description || image) && {
@@ -138,12 +140,16 @@ interface GetIsomerSchemaFromJekyllParams {
   content: string;
   path: string;
   isResourceRoomPage: boolean;
+  site: string;
+  domain?: string;
 }
 
 export const getIsomerSchemaFromJekyll = async ({
   content,
   path,
   isResourceRoomPage,
+  site,
+  domain,
 }: GetIsomerSchemaFromJekyllParams): Promise<GetIsomerSchemaFromJekyllResponse> => {
   const {
     variant,
@@ -182,7 +188,7 @@ export const getIsomerSchemaFromJekyll = async ({
 
   // Check through the output schema to flag out the issues that need manual
   // review (e.g. long/missing alt text, missing table captions, etc)
-  const { content: updatedContent, reviewItems } = getManualReviewItems(
+  const { content: updatedContent, reviewItems } = await getManualReviewItems(
     convertedContent,
     content,
     description,
@@ -191,7 +197,7 @@ export const getIsomerSchemaFromJekyll = async ({
 
   // Extract date from filename if not present in frontmatter
   // First check if the filename has a date prefix of the form YYYY-MM-DD
-  let dateFromFilenameMatch = path.match(/\/(\d{4}-\d{2}-\d{2})-/);
+  const dateFromFilenameMatch = /\/(\d{4}-\d{2}-\d{2})-/.exec(path);
   const updatedDate =
     date || (dateFromFilenameMatch ? dateFromFilenameMatch[1] : undefined);
 
@@ -207,6 +213,55 @@ export const getIsomerSchemaFromJekyll = async ({
     updatedDate,
     updatedContent,
   });
+
+  // Enhance placeholder texts with AI-generated ones where possible
+  const updatedSchemaContent: any[] = [];
+  for (const block of schemaContent.content) {
+    if (
+      (block.type === "image" || block.type === "contentpic") &&
+      block.src &&
+      (block.alt === PLACEHOLDER_ALT_TEXT || block.alt.length < 10)
+    ) {
+      // Generate alt text for images with missing or very short alt text
+      const fullSrc = block.src.startsWith("http")
+        ? block.src
+        : domain
+          ? `${domain}${block.src}`
+          : `https://raw.githubusercontent.com/isomerpages/${site}/staging${block.src}`;
+      const generatedAltText = await generateImageAltText(fullSrc);
+
+      updatedSchemaContent.push({
+        ...block,
+        alt: generatedAltText,
+      });
+      reviewItems.push(
+        "AI-generated alt text were used for images with missing alt text"
+      );
+    } else {
+      updatedSchemaContent.push(block);
+    }
+  }
+  schemaContent.content = updatedSchemaContent;
+
+  // Provide an AI-generated page summary if none exists
+  if (
+    schemaContent.page?.contentPageHeader?.summary ===
+      PLACEHOLDER_PAGE_SUMMARY ||
+    schemaContent.page?.articlePageHeader?.summary === PLACEHOLDER_PAGE_SUMMARY
+  ) {
+    const pageContentString = JSON.stringify(convertedContent);
+    const aiGeneratedSummary = await generatePageSummary(pageContentString);
+
+    if (schemaContent.page?.contentPageHeader) {
+      schemaContent.page.contentPageHeader.summary = aiGeneratedSummary;
+    } else if (schemaContent.page?.articlePageHeader) {
+      schemaContent.page.articlePageHeader.summary = aiGeneratedSummary;
+    }
+
+    reviewItems.push(
+      "AI-generated page summary was used for pages without a summary"
+    );
+  }
 
   // Check if the page schema is valid
   const isValidSchema = isomerSchemaValidator(schemaContent);
