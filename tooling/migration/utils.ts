@@ -156,17 +156,6 @@ export const getManualReviewItems = (
     reviewItems.push("Images with missing alt text");
   }
 
-  // Images with alt text that is too long
-  if (
-    content.some(
-      (block) =>
-        (block.type === "image" || block.type === "contentpic") &&
-        block.alt.length > 120
-    )
-  ) {
-    reviewItems.push("Images with alt text that is too long");
-  }
-
   // Images inside tables
   if (stringifiedContent.includes(PLACEHOLDER_IMAGE_IN_TABLE_TEXT)) {
     // Already replaced in the converter script, but highlighting for manual review
@@ -273,19 +262,19 @@ export const getManualReviewItems = (
   }
 
   // Flag pages with descriptions that are too long
-  // For content pages, 300 characters
+  // For content pages, 500 characters
   if (
     description &&
     layout &&
     !NON_CONTENT_LAYOUTS.includes(layout) &&
-    description.length > 300
+    description.length > 500
   ) {
-    reviewItems.push("Page summary is longer than 300 characters");
+    reviewItems.push("Page summary is longer than 500 characters");
   }
 
-  // For article pages, 250 characters
-  if (description && layout && layout === "post" && description.length > 250) {
-    reviewItems.push("Article summary is longer than 250 characters");
+  // For article pages, 500 characters
+  if (description && layout && layout === "post" && description.length > 500) {
+    reviewItems.push("Article summary is longer than 500 characters");
   }
 
   // Flag pages that have images that used to be links

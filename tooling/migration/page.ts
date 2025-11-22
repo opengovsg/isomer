@@ -47,14 +47,17 @@ const getPageContent = ({
   updatedDate,
   updatedContent,
 }: GetPageContentProps) => {
+  const convertedDate = moment(updatedDate, [
+    moment.ISO_8601,
+    "YYYY-MM-DD",
+  ]).format("DD/MM/YYYY");
+
   if (
     layout === "link" ||
     fileType === "link" ||
     layout === "file" ||
     fileType === "file"
   ) {
-    const convertedDate = moment(updatedDate).format("DD/MM/YYYY");
-
     return {
       version: "0.1.0",
       layout: "link",
@@ -98,14 +101,14 @@ const getPageContent = ({
       page: {
         title,
         category: "Placeholder", // Note: This will be changed to the actual category in the next step
-        date: moment(date).format("DD/MM/YYYY"),
+        date: convertedDate,
         articlePageHeader: {
           summary: description || "This is the page summary",
         },
       },
       ...((description || image) && {
         meta: {
-          description: description.slice(0, 160),
+          description,
           image: image || undefined,
         },
       }),
@@ -124,7 +127,7 @@ const getPageContent = ({
     },
     ...((description || image) && {
       meta: {
-        description: description.slice(0, 160),
+        description,
         image: image || undefined,
       },
     }),
@@ -194,7 +197,7 @@ export const getIsomerSchemaFromJekyll = async ({
 
   const schemaContent = getPageContent({
     layout,
-    fileType: getResourceRoomFileType(path),
+    fileType: !!ref ? "link" : getResourceRoomFileType(path),
     isResourceRoomPage,
     title,
     ref,
@@ -214,8 +217,6 @@ export const getIsomerSchemaFromJekyll = async ({
   }
 
   const status = reviewItems.length === 0 ? "converted" : "manual_review";
-
-  const fileType = !!ref ? "link" : getResourceRoomFileType(path);
 
   return {
     status,

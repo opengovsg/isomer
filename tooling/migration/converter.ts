@@ -384,7 +384,9 @@ const convertFromTiptap = (schema: any) => {
       const updatedHeading = {
         type: "heading",
         attrs: {
-          level: component.attrs.level,
+          // NOTE: We do not support level 1 headings in Isomer Next, so we
+          // downshift it to level 2, but leave the rest unchanged
+          level: component.attrs.level === 1 ? 2 : component.attrs.level,
         },
         content: component.content.map((text: any) => {
           return {
@@ -477,31 +479,69 @@ const convertFromTiptap = (schema: any) => {
               alt: listItemContent.attrs.alt || PLACEHOLDER_ALT_TEXT,
             });
           } else if (listItemContent.type === "paragraph") {
-            if (newListItemParagraphContent.length > 0) {
-              // Add two hard breaks to separate paragraphs
-              newListItemParagraphContent.push({
-                type: "hardBreak",
+            // Within a paragraph, there can be content of type text, orderedList or unorderedList
+            // Recursively check the orderedList and unorderedList such that the hierarchy
+            // is (orderedList | unorderedList) -> listItem -> (paragraph | orderedList | unorderedList)
+            // Ensure nested orderedList and unorderedList are not a child of paragraph
+            const organizeListItems = (paragraphItems: any) => {
+              const newListItemContent = [];
+              let newParagraphItems: any[] = [];
+
+              paragraphItems.forEach((pItem: any) => {
+                if (
+                  pItem.type === "orderedList" ||
+                  pItem.type === "unorderedList"
+                ) {
+                  if (newParagraphItems.length > 0) {
+                    newListItemContent.push({
+                      type: "paragraph",
+                      content: newParagraphItems,
+                    });
+
+                    newParagraphItems = [];
+                  }
+
+                  const recurseList = {
+                    ...pItem,
+                    content: pItem.content.map((li: any) => ({
+                      ...li,
+                      content: li.content.map((lic: any) =>
+                        organizeListItems(lic.content)
+                      ),
+                    })),
+                  };
+
+                  if (recurseList.content.length === 0) {
+                    return;
+                  }
+                  newListItemContent.push(recurseList);
+                } else {
+                  newParagraphItems.push(pItem);
+                }
               });
-              newListItemParagraphContent.push({
-                type: "hardBreak",
-              });
-            }
+
+              if (newParagraphItems.length > 0) {
+                newListItemContent.push({
+                  type: "paragraph",
+                  content: newParagraphItems,
+                });
+              }
+
+              return newListItemContent;
+            };
 
             newListItemParagraphContent = newListItemParagraphContent.concat(
-              listItemContent.content
+              organizeListItems(listItemContent.content)
             );
+          } else {
+            newListItemParagraphContent.push(listItemContent);
           }
         });
 
         if (newListItemParagraphContent.length > 0) {
           newListItems.push({
             type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: newListItemParagraphContent,
-              },
-            ],
+            content: newListItemParagraphContent,
           });
 
           newListItemParagraphContent = [];
@@ -576,19 +616,23 @@ const convertFromTiptap = (schema: any) => {
 
 // Performs some cleaning up of the Tiptap schema due to poor usage of HTML
 const getCleanedSchema = (schema: any) => {
-  // Recursively find components with "type": "table" and add a new key "caption"
-  // then return the schema
-  const findTable = (schema: any) => {
+  // Recursively find components with "type": "table" and remove any empty
+  // tableRow or tableCell components before returning the schema
+  const removeEmptyTableContents = (schema: any) => {
     schema.forEach((component: any) => {
       if (component.type === "table") {
-        component.caption = "";
-
-        // Remove any empty tableRow
-        component.content = component.content.filter(
-          (row: any) => row.content && row.content.length > 0
-        );
-      } else if (component.content) {
-        findTable(component.content);
+        component.content = component.content
+          .filter((row: any) => row.content && row.content.length > 0)
+          .map((row: any) => {
+            return {
+              ...row,
+              content: row.content.filter(
+                (cell: any) => cell.content && cell.content.length > 0
+              ),
+            };
+          });
+      } else if (component.content && Array.isArray(component.content)) {
+        removeEmptyTableContents(component.content);
       }
     });
 
@@ -609,7 +653,7 @@ const getCleanedSchema = (schema: any) => {
               },
               content: [
                 {
-                  text: `${PLACEHOLDER_IMAGE_IN_TABLE_TEXT} ${node.attrs.src}`,
+                  text: `${PLACEHOLDER_IMAGE_IN_TABLE_TEXT} "${node.attrs.src}"`,
                   type: "text",
                 },
               ],
@@ -626,8 +670,8 @@ const getCleanedSchema = (schema: any) => {
     return schema;
   };
 
-  // Recursively find components with "type": "hardBreak" and remove all other attributes
-  // then return the schema
+  // Recursively find components with "type": "hardBreak" and remove all other
+  // attributes then return the schema
   const findHardBreak = (schema: any) => {
     schema.forEach((component: any) => {
       if (component.type === "hardBreak") {
@@ -702,19 +746,20 @@ const getCleanedSchema = (schema: any) => {
   // the component from the schema
   const removeEmptyParagraphs = (schema: any) => {
     return schema.filter((component: any) => {
+      if (component.content) {
+        component.content = removeEmptyParagraphs(component.content);
+      }
+
       if (
         (component.type === "paragraph" ||
           component.type === "heading" ||
-          component.type === "tableHeader") &&
+          component.type === "tableHeader" ||
+          component.type === "listItem") &&
         (!component.content ||
           component.content.length === 0 ||
           component.content.every((c: any) => c.type === "hardBreak"))
       ) {
         return false;
-      }
-
-      if (component.content) {
-        component.content = removeEmptyParagraphs(component.content);
       }
 
       return true;
@@ -790,11 +835,13 @@ const getCleanedSchema = (schema: any) => {
     return schema;
   };
 
-  return findIframe(
-    findLink(
-      removeEmptyParagraphs(
+  return removeEmptyTableContents(
+    findIframe(
+      findLink(
         findHardBreak(
-          findParagraphHardBreak(replaceTableImages(findTable(schema)))
+          replaceTableImages(
+            removeEmptyParagraphs(findParagraphHardBreak(schema))
+          )
         )
       )
     )
@@ -852,9 +899,11 @@ const fixTipTapContent = (html: string) => {
   }
 
   // Wrap all non-paragraph-wrapped anchors in paragraphs.
-  while ((el = container.querySelector("a:not(p a)"))) {
-    wrap(el, document.createElement("p"));
-  }
+  // NOTE: This was commented out because there can be anchors within list items
+  // and not paragraphs, which is valid HTML
+  // while ((el = container.querySelector("a:not(p a)"))) {
+  //   wrap(el, document.createElement("p"));
+  // }
 
   // Move youtube iframes out of paragraphs.
   while ((el = container.querySelector('p > iframe[src*="youtube.com"]'))) {
@@ -922,7 +971,7 @@ export const convertHtmlToSchema = async (html: string) => {
       content: "text*",
       marks: "",
     }).configure({
-      levels: [2, 3, 4, 5],
+      levels: [1, 2, 3, 4, 5],
     }),
     History,
     HorizontalRule.extend({
@@ -936,7 +985,12 @@ export const convertHtmlToSchema = async (html: string) => {
         return [{ tag: "a:not(.isomer-card)" }];
       },
     }),
-    ListItem,
+    ListItem.extend({
+      content: "paragraph list*",
+    }).configure({
+      bulletListTypeName: "unorderedList",
+      orderedListTypeName: "orderedList",
+    }),
     OrderedList.extend({
       name: "orderedList",
     }).configure({
@@ -972,9 +1026,15 @@ export const convertHtmlToSchema = async (html: string) => {
     }),
     TableRow,
     TableHeader.extend({
-      content: "paragraph+",
+      // NOTE: We allow images in table headers, but they will be replaced with
+      // placeholder text during conversion
+      content: "(paragraph|image)+",
     }),
-    TableCell,
+    TableCell.extend({
+      // NOTE: We allow images in table cells, but they will be replaced with
+      // placeholder text during conversion
+      content: "(paragraph|list|image)+",
+    }),
     Text,
     Underline.extend({
       parseHTML() {
@@ -1054,7 +1114,9 @@ export const convertHtmlToSchema = async (html: string) => {
     Instagram,
   ]);
 
+  console.log(JSON.stringify(output.content));
   const schema = getCleanedSchema(output.content);
+  // console.log(JSON.stringify(schema));
   const result = convertFromTiptap(schema);
   return result;
 };
