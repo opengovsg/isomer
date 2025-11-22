@@ -157,6 +157,7 @@ export const readPageOutputSchema = z.object({
   state: z.nativeEnum(ResourceState).nullable(),
   type: z.nativeEnum(ResourceType),
   scheduledAt: z.date().nullable(),
+  scheduledBy: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })
