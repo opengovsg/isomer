@@ -5,7 +5,7 @@ import { z } from "zod"
 import { EditCollectionLinkPreview } from "~/features/editing-experience/components/EditLinkPreview"
 import { LinkEditorDrawer } from "~/features/editing-experience/components/LinkEditorDrawer"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { CollectionLinkProps } from "~/schemas/collection"
+import type { CollectionLinkProps } from "~/schemas/collection"
 import { LinkEditingLayout } from "~/templates/layouts/LinkEditingLayout"
 import { trpc } from "~/utils/trpc"
 
