@@ -45,7 +45,6 @@ import { HomepageLayoutSkeleton } from "@opengovsg/isomer-components/templates/n
 import { IndexPageLayoutSkeleton } from "@opengovsg/isomer-components/templates/next/layouts/IndexPageSkeleton"
 import { NotFoundLayout } from "@opengovsg/isomer-components/templates/next/layouts/NotFound"
 import { SearchLayout } from "@opengovsg/isomer-components/templates/next/layouts/Search"
-import { doesComponentHaveImage } from "@opengovsg/isomer-components/templates/next/render/doesComponentHaveImage"
 import { renderPageContentSkeleton } from "@opengovsg/isomer-components/templates/next/render/renderPageContentSkeleton"
 
 export const dynamic = "force-static"
