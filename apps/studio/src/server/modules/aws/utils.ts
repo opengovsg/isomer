@@ -37,8 +37,8 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
     buildIdToLink = startedBuildId
     buildStartTime = startedBuildTime
   } else {
-    buildIdToLink = buildChanges.latestRunningBuild?.id
-    buildStartTime = buildChanges.latestRunningBuild?.startTime
+    buildIdToLink = buildChanges.latestRunningBuild.id
+    buildStartTime = buildChanges.latestRunningBuild.startTime
   }
 
   // Insert a new row into CodeBuildJobs to link the resourceId, userId, siteId to the build
