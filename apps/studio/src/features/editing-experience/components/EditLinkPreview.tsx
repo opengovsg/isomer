@@ -4,7 +4,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
-import { CollectionLinkProps } from "~/schemas/collection"
+import type { CollectionLinkProps } from "~/schemas/collection"
 import { trpc } from "~/utils/trpc"
 import PreviewWithoutSitemap from "./PreviewWithoutSitemap"
 import { ViewportContainer } from "./ViewportContainer"

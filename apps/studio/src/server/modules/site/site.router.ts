@@ -128,10 +128,7 @@ export const siteRouter = router({
 
         await logConfigEvent(tx, {
           eventType: AuditLogEvent.SiteConfigUpdate,
-          delta: {
-            before: site,
-            after: updatedSite,
-          },
+          delta: { before: site, after: updatedSite },
           by: user,
           siteId,
         })
@@ -188,10 +185,7 @@ export const siteRouter = router({
 
         await logConfigEvent(tx, {
           eventType: AuditLogEvent.SiteConfigUpdate,
-          delta: {
-            before: site,
-            after: updatedSite,
-          },
+          delta: { before: site, after: updatedSite },
           by: user,
           siteId,
         })
@@ -260,9 +254,7 @@ export const siteRouter = router({
 
         const newSite = await tx
           .updateTable("Site")
-          .set({
-            theme: jsonb(theme),
-          })
+          .set({ theme: jsonb(theme) })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirst()
@@ -276,10 +268,7 @@ export const siteRouter = router({
         await logConfigEvent(tx, {
           siteId,
           eventType: AuditLogEvent.SiteConfigUpdate,
-          delta: {
-            before: site,
-            after: newSite,
-          },
+          delta: { before: site, after: newSite },
           by: user,
         })
 
@@ -295,10 +284,7 @@ export const siteRouter = router({
           theme.colors.brand.canvas.inverse
       ) {
         void updateSearchSGConfig(
-          {
-            colour: theme.colors.brand.canvas.inverse,
-            _kind: "colour",
-          },
+          { colour: theme.colors.brand.canvas.inverse, _kind: "colour" },
           site.config.search.clientId,
           site.config.url,
         )
@@ -389,10 +375,7 @@ export const siteRouter = router({
         await logConfigEvent(tx, {
           siteId,
           eventType: AuditLogEvent.FooterUpdate,
-          delta: {
-            before: oldFooter,
-            after: newFooter,
-          },
+          delta: { before: oldFooter, after: newFooter },
           by: user,
         })
 
@@ -485,10 +468,7 @@ export const siteRouter = router({
         await logConfigEvent(tx, {
           siteId,
           eventType: AuditLogEvent.NavbarUpdate,
-          delta: {
-            before: oldNavbar,
-            after: newNavbar,
-          },
+          delta: { before: oldNavbar, after: newNavbar },
           by: user,
         })
 
@@ -609,10 +589,7 @@ export const siteRouter = router({
           await logConfigEvent(tx, {
             siteId,
             eventType: AuditLogEvent.SiteConfigUpdate,
-            delta: {
-              before: oldSite,
-              after: newSite,
-            },
+            delta: { before: oldSite, after: newSite },
             by: user,
           })
 
@@ -653,10 +630,7 @@ export const siteRouter = router({
           await logConfigEvent(tx, {
             siteId,
             eventType: AuditLogEvent.NavbarUpdate,
-            delta: {
-              before: oldNavbar,
-              after: newNavbar,
-            },
+            delta: { before: oldNavbar, after: newNavbar },
             by: user,
           })
 
@@ -697,10 +671,7 @@ export const siteRouter = router({
           await logConfigEvent(tx, {
             siteId,
             eventType: AuditLogEvent.FooterUpdate,
-            delta: {
-              before: oldFooter,
-              after: newFooter,
-            },
+            delta: { before: oldFooter, after: newFooter },
             by: user,
           })
 
@@ -752,7 +723,7 @@ export const siteRouter = router({
           metadata: {},
           siteId,
         })
-        await publishSite(ctx.logger, { siteId: siteId, userId: ctx.user.id })
+        await publishSite(ctx.logger, { siteId: siteId })
       })
     }),
   publishAll: protectedProcedure.mutation(async ({ ctx }) => {
@@ -793,10 +764,7 @@ export const siteRouter = router({
               metadata: {},
               siteId: site.id,
             })
-            await publishSite(ctx.logger, {
-              siteId: site.id,
-              userId: ctx.user.id,
-            })
+            await publishSite(ctx.logger, { siteId: site.id })
           })
         } catch (error) {
           ctx.logger.error({

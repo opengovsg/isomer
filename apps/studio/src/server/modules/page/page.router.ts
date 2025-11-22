@@ -63,12 +63,7 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import {
-  createDefaultPage,
-  createFolderIndexPage,
-  schedulePublishResource,
-  unschedulePublishResource,
-} from "./page.service"
+import { createDefaultPage, createFolderIndexPage } from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -169,9 +164,7 @@ export const pageRouter = router({
         .map((blob) => blob.category)
         .filter((c) => !!c && !!c.trim())
 
-      return {
-        categories,
-      }
+      return { categories }
     }),
 
   readPage: protectedProcedure
@@ -335,10 +328,7 @@ export const pageRouter = router({
           siteId,
           eventType: AuditLogEvent.ResourceUpdate,
           delta: {
-            before: {
-              blob: oldBlob,
-              resource: fullPage,
-            },
+            before: { blob: oldBlob, resource: fullPage },
             after: { blob: updatedBlob, resource: fullPage },
           },
           by,
@@ -371,10 +361,7 @@ export const pageRouter = router({
 
       const updatedPage = await db.transaction().execute(async (tx) => {
         // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
-        const resource = await getPageById(tx, {
-          resourceId: pageId,
-          siteId,
-        })
+        const resource = await getPageById(tx, { resourceId: pageId, siteId })
         if (!resource) {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -392,11 +379,7 @@ export const pageRouter = router({
         }
         // update the resource's scheduled field
         const updatedPage = await updatePageById(
-          {
-            id: pageId,
-            siteId,
-            scheduledAt,
-          },
+          { id: pageId, siteId, scheduledAt, scheduledBy: by.id },
           tx,
         )
         // verify that the update was successful
@@ -406,18 +389,15 @@ export const pageRouter = router({
             message: "Failed to schedule page",
           })
         }
-        await schedulePublishResource(
-          ctx.logger,
-          { resourceId: pageId, siteId, userId: ctx.user.id },
-          scheduledAt,
-        )
+        // await schedulePublishResource(
+        //   ctx.logger,
+        //   { resourceId: pageId, siteId, userId: ctx.user.id },
+        //   scheduledAt,
+        // )
         await logResourceEvent(tx, {
           siteId,
           by,
-          delta: {
-            before: resource,
-            after: updatedPage,
-          },
+          delta: { before: resource, after: updatedPage },
           eventType: AuditLogEvent.SchedulePublish,
         })
         return updatedPage
@@ -442,10 +422,7 @@ export const pageRouter = router({
         .selectAll()
         .executeTakeFirstOrThrow()
       const updatedPage = await db.transaction().execute(async (tx) => {
-        const resource = await getPageById(tx, {
-          resourceId: pageId,
-          siteId,
-        })
+        const resource = await getPageById(tx, { resourceId: pageId, siteId })
         if (!resource) {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -461,11 +438,7 @@ export const pageRouter = router({
         }
         // update the resource's scheduled field
         const updatedPage = await updatePageById(
-          {
-            id: pageId,
-            siteId,
-            scheduledAt: null,
-          },
+          { id: pageId, siteId, scheduledAt: null, scheduledBy: null },
           tx,
         )
         if (!updatedPage) {
@@ -474,18 +447,15 @@ export const pageRouter = router({
             message: "Failed to cancel page schedule",
           })
         }
-        await unschedulePublishResource(
-          ctx.logger,
-          pageId,
-          resource.scheduledAt,
-        )
+        // await unschedulePublishResource(
+        //   ctx.logger,
+        //   pageId,
+        //   resource.scheduledAt,
+        // )
         await logResourceEvent(tx, {
           siteId,
           by,
-          delta: {
-            before: resource,
-            after: updatedPage,
-          },
+          delta: { before: resource, after: updatedPage },
           eventType: AuditLogEvent.CancelSchedulePublish,
         })
         return updatedPage
@@ -602,9 +572,7 @@ export const pageRouter = router({
 
             const blob = await tx
               .insertInto("Blob")
-              .values({
-                content: jsonb(newPage),
-              })
+              .values({ content: jsonb(newPage) })
               .returningAll()
               .executeTakeFirstOrThrow()
 
@@ -710,9 +678,12 @@ export const pageRouter = router({
         logger: ctx.logger,
         siteId,
         resourceId: String(pageId),
-        user,
-        isScheduled: false,
-        addCodebuildJobRow: ctx.gb.isOn(ENABLE_CODEBUILD_JOBS),
+        userId: user.id,
+        sitePublishOptions: {
+          enable: true,
+          addCodebuildJobRow: ctx.gb.isOn(ENABLE_CODEBUILD_JOBS),
+          isScheduled: false,
+        },
       })
       // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
       if (!ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)) {

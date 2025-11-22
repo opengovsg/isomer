@@ -6,10 +6,7 @@ import { differenceInSeconds } from "date-fns"
 import { getRedisWithRedlock, withRedlock } from "@isomer/redis"
 
 import { sendFailedPublishEmail } from "~/features/mail/service"
-import {
-  ENABLE_CODEBUILD_JOBS,
-  ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
-} from "~/lib/growthbook"
+import { ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY } from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { db } from "~/server/modules/database"
@@ -43,10 +40,7 @@ const { redis: RedisClient, redlock: RedlockClient } = getRedisWithRedlock({
 /** BullMQ Queue for scheduling publish jobs */
 export const scheduledPublishQueue = new Queue<ScheduledPublishJobData>(
   SCHEDULED_PUBLISH_QUEUE_NAME,
-  {
-    connection: RedisClient,
-    defaultJobOptions: defaultOpts,
-  },
+  { connection: RedisClient, defaultJobOptions: defaultOpts },
 )
 
 const logger = createBaseLogger({ path: "bullmq:schedule-publish" })
@@ -167,11 +161,7 @@ export const publishScheduledResource = async (
     // The scheduledAt field currently blocks the editing flow so we want to
     // ensure it's unset even if publish fails, to avoid blocking the user from making further edits
     return await updatePageById(
-      {
-        id: resourceId,
-        siteId,
-        scheduledAt: null,
-      },
+      { id: resourceId, siteId, scheduledAt: null },
       tx,
     )
   })
@@ -198,11 +188,10 @@ export const publishScheduledResource = async (
   }
   await publishPageResource({
     logger,
+    resourceId: String(resourceId),
     siteId,
-    resourceId: page.id,
-    user,
-    isScheduled: true,
-    addCodebuildJobRow: gb.isOn(ENABLE_CODEBUILD_JOBS),
+    userId: user.id,
+    sitePublishOptions: { enable: false },
   })
 }
 
@@ -247,10 +236,7 @@ scheduledPublishWorker.on(
           const gb = await createGrowthBookContext()
           if (gb.isOn(ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY)) {
             // get the resource that was being published
-            const resource = await getPageById(db, {
-              resourceId,
-              siteId,
-            })
+            const resource = await getPageById(db, { resourceId, siteId })
             if (!resource) throw new Error("The resource no longer exists")
             await sendFailedPublishEmail({
               recipientEmail: email,
@@ -271,10 +257,7 @@ scheduledPublishWorker.on(
 
 // Handle worker-level errors
 scheduledPublishWorker.on("error", (err: Error) => {
-  logger.error({
-    message: "Error occurred in worker process",
-    error: err,
-  })
+  logger.error({ message: "Error occurred in worker process", error: err })
 })
 
 // Handle graceful shutdown
