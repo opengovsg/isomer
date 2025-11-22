@@ -1,6 +1,7 @@
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
 import type {
   RenderComponentProps,
+  RenderPageContentOutput,
   RenderPageContentParams,
 } from "@opengovsg/isomer-components/templates/next/render/types"
 import type { Metadata } from "next"
@@ -122,80 +123,40 @@ const RenderEngine = (props: IsomerPageSchemaType) => {
 const renderNextLayout = (props: IsomerPageSchemaType) => {
   switch (props.layout) {
     case "article":
-      // TODO: to add transformed content
-      // refer to "packages/components/src/templates/next/layouts/Article/Article.tsx"
       return (
         <ArticleLayoutSkeleton
           {...props}
-          renderPageContent={renderPageContent({
-            content: props.content,
-            layout: props.layout,
-            site: props.site,
-            LinkComponent: Link,
-            permalink: props.page.permalink,
-          })}
+          renderPageContent={renderPageContent}
         />
       )
     case "collection":
       return <CollectionLayout {...props} />
     case "content":
-      // TODO: to add transformed content
-      // refer to "packages/components/src/templates/next/layouts/Content/Content.tsx"
       return (
         <ContentLayoutSkeleton
           {...props}
-          renderPageContent={renderPageContent({
-            content: props.content,
-            layout: props.layout,
-            site: props.site,
-            LinkComponent: Link,
-            permalink: props.page.permalink,
-          })}
+          renderPageContent={renderPageContent}
         />
       )
     case "database":
-      // TODO: to add transformed content
-      // refer to "packages/components/src/templates/next/layouts/Database/Database.tsx"
       return (
         <DatabaseLayoutSkeleton
           {...props}
-          renderPageContent={renderPageContent({
-            content: props.content,
-            layout: props.layout,
-            site: props.site,
-            LinkComponent: Link,
-            permalink: props.page.permalink,
-          })}
+          renderPageContent={renderPageContent}
         />
       )
     case "homepage":
-      // TODO: to add transformed content
-      // refer to "packages/components/src/templates/next/layouts/Homepage/Homepage.tsx"
       return (
         <HomepageLayoutSkeleton
           {...props}
-          renderPageContent={renderPageContent({
-            content: props.content,
-            layout: props.layout,
-            site: props.site,
-            LinkComponent: Link,
-            permalink: props.page.permalink,
-          })}
+          renderPageContent={renderPageContent}
         />
       )
     case "index":
-      // TODO: to add default children pages block
-      // refer to "packages/components/src/templates/next/layouts/IndexPage/IndexPage.tsx"
       return (
         <IndexPageLayoutSkeleton
           {...props}
-          renderPageContent={renderPageContent({
-            content: props.content,
-            layout: props.layout,
-            site: props.site,
-            LinkComponent: Link,
-            permalink: props.page.permalink,
-          })}
+          renderPageContent={renderPageContent}
         />
       )
     case "notfound":
@@ -211,7 +172,10 @@ const renderNextLayout = (props: IsomerPageSchemaType) => {
   }
 }
 
-const renderPageContent = ({ content, ...rest }: RenderPageContentParams) => {
+const renderPageContent = ({
+  content,
+  ...rest
+}: RenderPageContentParams): RenderPageContentOutput => {
   // Find index of first component with image
   const firstImageIndex = content.findIndex((component) =>
     doesComponentHaveImage({ component }),

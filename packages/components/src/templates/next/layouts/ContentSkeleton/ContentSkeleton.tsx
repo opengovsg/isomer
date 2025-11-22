@@ -1,5 +1,7 @@
-import { Fragment } from "react"
-
+import type {
+  RenderPageContentOutput,
+  RenderPageContentParams,
+} from "../../render/types"
 import type { ContentPageSchemaType } from "~/types/schema"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
@@ -25,7 +27,9 @@ const createContentLayoutStyles = tv({
 const compoundStyles = createContentLayoutStyles()
 
 interface ContentLayoutSkeletonProps extends ContentPageSchemaType {
-  renderPageContent: JSX.Element[]
+  renderPageContent: (
+    params: RenderPageContentParams,
+  ) => RenderPageContentOutput
 }
 
 export const ContentLayoutSkeleton = ({
@@ -75,9 +79,13 @@ export const ContentLayoutSkeleton = ({
             />
           )}
           <div>
-            {renderPageContent.map((el, i) => (
-              <Fragment key={i}>{el}</Fragment>
-            ))}
+            {renderPageContent({
+              content: transformedContent,
+              layout,
+              site,
+              LinkComponent,
+              permalink: page.permalink,
+            })}
           </div>
         </div>
         <div className={compoundStyles.siderailContainer()}>

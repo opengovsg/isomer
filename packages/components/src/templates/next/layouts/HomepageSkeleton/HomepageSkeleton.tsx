@@ -1,16 +1,21 @@
-import { Fragment } from "react"
-
+import type {
+  RenderPageContentOutput,
+  RenderPageContentParams,
+} from "../../render/types"
 import type { HomePageSchemaType } from "~/types/schema"
 import { Skeleton } from "../Skeleton"
 
 interface HomepageLayoutSkeletonProps extends HomePageSchemaType {
-  renderPageContent: JSX.Element[]
+  renderPageContent: (
+    params: RenderPageContentParams,
+  ) => RenderPageContentOutput
 }
 
 export const HomepageLayoutSkeleton = ({
   site,
   page,
   layout,
+  content,
   LinkComponent,
   renderPageContent,
 }: HomepageLayoutSkeletonProps) => {
@@ -26,9 +31,13 @@ export const HomepageLayoutSkeleton = ({
         // but cannot be used here as tailwind does not support dynamic class names
         className={`break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10`}
       >
-        {renderPageContent.map((el, i) => (
-          <Fragment key={i}>{el}</Fragment>
-        ))}
+        {renderPageContent({
+          content,
+          layout,
+          site,
+          LinkComponent,
+          permalink: page.permalink,
+        })}
       </div>
     </Skeleton>
   )

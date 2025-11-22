@@ -13,6 +13,8 @@ export interface RenderPageContentParams {
   permalink: string
 }
 
+export type RenderPageContentOutput = JSX.Element[]
+
 export interface RenderComponentProps {
   elementKey?: number
   component: IsomerComponent

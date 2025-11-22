@@ -1,5 +1,7 @@
-import { Fragment } from "react"
-
+import type {
+  RenderPageContentOutput,
+  RenderPageContentParams,
+} from "../../render/types"
 import type { ArticlePageSchemaType } from "~/types/schema"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
@@ -9,13 +11,16 @@ import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
 import { Skeleton } from "../Skeleton"
 
 interface ArticleLayoutSkeletonProps extends ArticlePageSchemaType {
-  renderPageContent: JSX.Element[]
+  renderPageContent: (
+    params: RenderPageContentParams,
+  ) => RenderPageContentOutput
 }
 
 export const ArticleLayoutSkeleton = ({
   site,
   page,
   layout,
+  content,
   LinkComponent,
   renderPageContent,
 }: ArticleLayoutSkeletonProps) => {
@@ -55,9 +60,13 @@ export const ArticleLayoutSkeleton = ({
 
         <div className="mx-auto w-full gap-10 pb-20">
           <div className="w-full overflow-x-auto break-words lg:max-w-[660px]">
-            {renderPageContent.map((el, i) => (
-              <Fragment key={i}>{el}</Fragment>
-            ))}
+            {renderPageContent({
+              site,
+              layout,
+              content,
+              LinkComponent,
+              permalink: page.permalink,
+            })}
           </div>
           <BackToTopLink />
         </div>

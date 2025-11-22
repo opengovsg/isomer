@@ -1,11 +1,11 @@
-import type { RenderPageContentParams } from "./types"
+import type { RenderPageContentOutput, RenderPageContentParams } from "./types"
 import { doesComponentHaveImage } from "./doesComponentHaveImage"
 import { renderComponent } from "./renderComponent"
 
 export const renderPageContent = ({
   content,
   ...rest
-}: RenderPageContentParams) => {
+}: RenderPageContentParams): RenderPageContentOutput => {
   // Find index of first component with image
   const firstImageIndex = content.findIndex((component) =>
     doesComponentHaveImage({ component }),
