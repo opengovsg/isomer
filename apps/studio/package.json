@@ -177,7 +177,6 @@
     "@isomer/eslint-config": "*",
     "@isomer/pgboss": "*",
     "@isomer/prettier-config": "*",
-    "@isomer/redis": "*",
     "@isomer/storybook-config": "*",
     "@isomer/tsconfig": "*",
     "@playwright/test": "^1.40.1",
