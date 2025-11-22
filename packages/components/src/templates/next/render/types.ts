@@ -24,3 +24,5 @@ export interface RenderComponentProps {
   shouldLazyLoad?: boolean
   permalink: string
 }
+
+export type RenderComponentOutput = JSX.Element

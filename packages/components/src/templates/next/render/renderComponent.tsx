@@ -1,4 +1,4 @@
-import type { RenderComponentProps } from "./types"
+import type { RenderComponentOutput, RenderComponentProps } from "./types"
 import { Accordion } from "../components/complex/Accordion"
 import { Blockquote } from "../components/complex/Blockquote"
 import { Callout } from "../components/complex/Callout"
@@ -27,7 +27,7 @@ export const renderComponent = ({
   elementKey,
   component,
   ...rest
-}: RenderComponentProps) => {
+}: RenderComponentProps): RenderComponentOutput => {
   switch (component.type) {
     case "logocloud":
       return <LogoCloud key={elementKey} {...component} {...rest} />
