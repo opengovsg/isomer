@@ -37,6 +37,16 @@ export const registerPgbossJob = async <T extends object>(
   data?: T
 ) => {
   const boss = await getPgbossClient(logger);
+  if (globalForPgboss.registeredPgbossJobs.has(jobName)) {
+    logger.warn(
+      `Pgboss job ${jobName} is already registered. Skipping registration.`
+    );
+    return { stop: () => boss.offWork(jobName) };
+  }
+  // Ensure the queue exists, else create it
+  const queue = await boss.getQueue(jobName);
+  if (!queue) await boss.createQueue(jobName);
+  // Set up the worker to process jobs
   await boss.work(jobName, async ([job]: Job<T>[]) => {
     if (!job) {
       logger.warn(`No job found for job name ${jobName}`);
@@ -50,19 +60,21 @@ export const registerPgbossJob = async <T extends object>(
       throw error;
     }
   });
+  // Schedule the job
   await boss.schedule(jobName, cronExpression, data, options);
   globalForPgboss.registeredPgbossJobs.add(jobName);
   logger.info(
     `Registered PgBoss job: ${jobName} with schedule ${cronExpression}`
   );
+  return { stop: () => boss.offWork(jobName) };
 };
 
-export const stopPgbossJobs = async (
+export const stopAllPgbossJobs = async (
   logger: pino.Logger<string>
 ): Promise<void> => {
   const boss = await getPgbossClient(logger);
   try {
-    await boss.stop();
+    await boss.stop({ graceful: true });
     logger.info("PgBoss client stopped");
   } catch (error) {
     logger.error("Error stopping PgBoss client:", error);
