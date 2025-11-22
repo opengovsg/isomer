@@ -39,7 +39,7 @@ export const fetchDgsMetadata = async ({
   try {
     // For simplicity sake, we will always use data.gov.sg production API
     const response = await fetch(
-      `https://api-production.data.gov.sg/v2/public/api/datasets/${resourceId}/metadata`,
+      `https://api-staging.data.gov.sg/v2/public/api/datasets/${resourceId}/metadata`,
     )
 
     if (!response.ok) {
