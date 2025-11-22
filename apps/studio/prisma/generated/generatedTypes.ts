@@ -91,6 +91,7 @@ export interface Resource {
   state: Generated<ResourceState | null>
   type: ResourceType
   scheduledAt: Timestamp | null
+  scheduledBy: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
