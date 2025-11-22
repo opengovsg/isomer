@@ -41,7 +41,7 @@ export interface Blob {
 }
 export interface CodeBuildJobs {
   id: GeneratedAlways<string>
-  buildId: string | null
+  buildId: string
   siteId: number
   userId: string
   status: Generated<BuildStatusType>
@@ -91,6 +91,7 @@ export interface Resource {
   state: Generated<ResourceState | null>
   type: ResourceType
   scheduledAt: Timestamp | null
+  scheduledBy: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }

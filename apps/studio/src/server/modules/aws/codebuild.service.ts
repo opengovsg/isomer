@@ -7,21 +7,22 @@ import {
   startProjectById,
 } from "./utils"
 
+type CodebuildJobArgs =
+  | {
+      addCodebuildJobRow: true
+      isScheduled: boolean
+      resourceWithUserIds: { resourceId: string; userId: string }[]
+    }
+  | { addCodebuildJobRow: false }
+
+interface PublishSiteArgs {
+  siteId: number
+  codebuildJobArgs?: CodebuildJobArgs
+}
+
 export const publishSite = async (
   logger: Logger<string>,
-  {
-    siteId,
-    userId,
-    resourceId,
-    isScheduled,
-    addCodebuildJobRow,
-  }: {
-    siteId: number
-    userId: string
-    isScheduled?: boolean
-    resourceId?: string
-    addCodebuildJobRow?: boolean
-  },
+  { siteId, codebuildJobArgs = { addCodebuildJobRow: false } }: PublishSiteArgs,
 ) => {
   // Step 1: Get the CodeBuild ID associated with the site
   const site = await getSiteNameAndCodeBuildId(siteId)
@@ -40,36 +41,25 @@ export const publishSite = async (
   // Step 2: Determine if a new build should be started
   const buildChanges = await computeBuildChanges(logger, codeBuildId)
   if (!buildChanges.isNewBuildNeeded) {
-    if (addCodebuildJobRow)
+    if (codebuildJobArgs.addCodebuildJobRow)
       await addCodeBuildAndMarkSupersededBuild({
         buildChanges,
-        resourceId,
+        resourceWithUserIds: codebuildJobArgs.resourceWithUserIds,
+        isScheduled: codebuildJobArgs.isScheduled,
         siteId,
-        userId,
-        isScheduled,
       })
     return
   }
 
   // Step 3: Start a new build
   const startedBuild = await startProjectById(logger, codeBuildId)
-  logger.info(
-    {
-      siteId,
-      codeBuildId,
-    },
-    "Started new CodeBuild project run",
-  )
+  logger.info({ siteId, codeBuildId }, "Started new CodeBuild project run")
 
-  if (addCodebuildJobRow)
+  if (codebuildJobArgs.addCodebuildJobRow)
     await addCodeBuildAndMarkSupersededBuild({
-      buildChanges: {
-        ...buildChanges,
-        startedBuild,
-      },
-      resourceId,
+      buildChanges: { ...buildChanges, startedBuild },
+      resourceWithUserIds: codebuildJobArgs.resourceWithUserIds,
       siteId,
-      userId,
-      isScheduled,
+      isScheduled: codebuildJobArgs.isScheduled,
     })
 }

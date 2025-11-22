@@ -1058,6 +1058,10 @@ video {
   visibility: visible;
 }
 
+.invisible {
+  visibility: hidden;
+}
+
 .collapse {
   visibility: collapse;
 }
@@ -3550,6 +3554,11 @@ video {
   color: rgb(26 86 229 / var(--tw-text-opacity));
 }
 
+.text-red-700 {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity));
+}
+
 .text-site-secondary {
   --tw-text-opacity: 1;
   color: rgb(78 69 65 / var(--tw-text-opacity));
@@ -4340,6 +4349,21 @@ video {
   opacity: 0;
 }
 
+.group[data-pressed]
+  .group-data-\[pressed\]\:\[--color\:theme\(colors\.base\.divider\.strong\)\] {
+  --color: #9ca3af;
+}
+
+.group[data-pressed]
+  .group-data-\[pressed\]\:\[--color\:theme\(colors\.brand\.interaction\.pressed\)\] {
+  --color: var(--color-brand-interaction-pressed);
+}
+
+.group[data-pressed]
+  .group-data-\[pressed\]\:\[--color\:theme\(colors\.red\.800\)\] {
+  --color: #991b1b;
+}
+
 .current\:bg-base-content-subtle[data-current] {
   --tw-bg-opacity: 1;
   background-color: rgb(75 85 99 / var(--tw-bg-opacity));
@@ -4353,14 +4377,6 @@ video {
 .current\:text-white[data-current] {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
-}
-
-.group:where([data-rac])[data-empty] .group-empty\:invisible {
-  visibility: hidden;
-}
-
-.group:where(:not([data-rac])):empty .group-empty\:invisible {
-  visibility: hidden;
 }
 
 .hover\:cursor-pointer:where([data-rac])[data-hovered] {
@@ -5259,20 +5275,6 @@ video {
     :not([data-rac])
   ):hover {
   text-decoration-color: transparent;
-}
-
-.group[data-pressed]
-  .group-pressed\:\[--color\:theme\(colors\.base\.divider\.strong\)\] {
-  --color: #9ca3af;
-}
-
-.group[data-pressed]
-  .group-pressed\:\[--color\:theme\(colors\.brand\.interaction\.pressed\)\] {
-  --color: var(--color-brand-interaction-pressed);
-}
-
-.group[data-pressed] .group-pressed\:\[--color\:theme\(colors\.red\.800\)\] {
-  --color: #991b1b;
 }
 
 .disabled\:text-interaction-support-placeholder:where(
@@ -6345,16 +6347,6 @@ video {
 
   .forced-colors\:\!\[--color\:Mark\] {
     --color: Mark !important;
-  }
-
-  .group:where([data-rac])[data-disabled]
-    .forced-colors\:group-disabled\:text-\[GrayText\] {
-    color: GrayText;
-  }
-
-  .group:where(:not([data-rac])):disabled
-    .forced-colors\:group-disabled\:text-\[GrayText\] {
-    color: GrayText;
   }
 }
 

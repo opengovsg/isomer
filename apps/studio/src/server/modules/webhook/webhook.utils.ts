@@ -25,9 +25,7 @@ const updateCurrentAndSupersededBuilds = async (
 ) => {
   await db
     .updateTable("CodeBuildJobs")
-    .set({
-      status: buildStatus,
-    })
+    .set({ status: buildStatus })
     .where((eb) => {
       return eb.or([
         eb("CodeBuildJobs.buildId", "=", buildId),
@@ -57,20 +55,12 @@ export const updateCodebuildStatusAndSendEmails = async (
   try {
     codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, status)
     logger.info(
-      {
-        buildId,
-        status,
-        codebuildJobIdsForSentEmails,
-      },
+      { buildId, status, codebuildJobIdsForSentEmails },
       `Emails sent for buildId ${String(buildId)}`,
     )
   } catch (error) {
     logger.error(
-      {
-        buildId,
-        status,
-        error,
-      },
+      { buildId, status, error },
       `Failed to send notification emails for build status ${String(status)} for buildId ${String(buildId)}.`,
     )
   }
@@ -78,16 +68,12 @@ export const updateCodebuildStatusAndSendEmails = async (
   if (codebuildJobIdsForSentEmails.length > 0) {
     await db
       .updateTable("CodeBuildJobs")
-      .set({
-        emailSent: true,
-      })
+      .set({ emailSent: true })
       .where("id", "in", codebuildJobIdsForSentEmails)
       .execute()
   }
 
-  return {
-    codebuildJobIdsForSentEmails,
-  }
+  return { codebuildJobIdsForSentEmails }
 }
 
 /**
