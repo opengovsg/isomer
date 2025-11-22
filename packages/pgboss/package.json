@@ -36,6 +36,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "pg-boss": "^12.3.0",
     "pino": "^9.6.0"
   }
 }
