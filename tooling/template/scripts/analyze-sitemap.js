@@ -101,8 +101,6 @@ const analyzePage = async (permalink, layout) => {
 
 const main = async () => {
   try {
-    console.log("Reading sitemap.json...")
-
     // Read sitemap.json
     const sitemapContent = await fs.readFile(SITEMAP_JSON, "utf8")
     const sitemap = JSON.parse(sitemapContent)
@@ -126,8 +124,6 @@ const main = async () => {
 
     extractPages(sitemap)
 
-    console.log(`Found ${pages.length} pages`)
-
     // Analyze each page and build output object
     const output = {}
 
@@ -144,10 +140,6 @@ const main = async () => {
 
     // Write to JSON file
     await fs.writeFile(OUTPUT_FILE, JSON.stringify(output, null, 2), "utf8")
-
-    console.log(`\nOutput written to: ${OUTPUT_FILE}`)
-    console.log(`\nTotal pages: ${Object.keys(output).length}`)
-    console.log("")
   } catch (error) {
     console.error("Error:", error.message)
     console.error(error.stack)

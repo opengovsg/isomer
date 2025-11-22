@@ -164,7 +164,6 @@ const findPageFiles = async (dir) => {
 
 const main = async () => {
   try {
-    console.log("Finding all page.tsx files...")
     const allPageFiles = await findPageFiles(APP_DIR)
 
     // Filter out the catch-all route which should keep STATIC_ROUTE_PERMALINK as undefined
@@ -173,10 +172,6 @@ const main = async () => {
       // Skip the catch-all route [[...permalink]]/page.tsx
       return !relativePath.startsWith("[[...permalink]]")
     })
-
-    console.log(
-      `Found ${pageFiles.length} page.tsx files (excluding catch-all route [[...permalink]])\n`,
-    )
 
     console.log("Updating STATIC_ROUTE_PERMALINK constants...\n")
     let updatedCount = 0
@@ -190,14 +185,9 @@ const main = async () => {
       }
     }
 
-    console.log(`\nUpdated ${updatedCount} out of ${pageFiles.length} files`)
-
     if (updatedCount === 0) {
       console.log(
-        "\nNote: No files were updated. Make sure your page.tsx files contain:",
-      )
-      console.log(
-        "  const STATIC_ROUTE_PERMALINK: string[] | undefined = undefined",
+        "\nNote: No files were updated. Make sure your page.tsx files contain: const STATIC_ROUTE_PERMALINK: string[] | undefined = undefined",
       )
     }
   } catch (error) {

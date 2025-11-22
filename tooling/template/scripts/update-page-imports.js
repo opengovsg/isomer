@@ -429,11 +429,6 @@ const main = async () => {
       // Skip the catch-all route [[...permalink]]/page.tsx
       return !relativePath.startsWith("[[...permalink]]")
     })
-    console.log(
-      `Found ${pageFiles.length} page.tsx files (excluding catch-all route [[...permalink]])\n`,
-    )
-
-    console.log("Processing files...\n")
     let updatedCount = 0
 
     for (const filePath of pageFiles) {
@@ -442,7 +437,6 @@ const main = async () => {
         updatedCount++
       }
     }
-    console.log(`\nUpdated ${updatedCount} out of ${pageFiles.length} files`)
   } catch (error) {
     console.error("Error:", error.message)
     console.error(error.stack)
