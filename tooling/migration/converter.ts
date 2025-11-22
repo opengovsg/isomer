@@ -811,6 +811,10 @@ const getCleanedSchema = (schema: any) => {
               newAttrs.target = "_blank";
             }
 
+            if (mark.attrs.href.startsWith("http://")) {
+              newAttrs.href = mark.attrs.href.replace("http://", "https://");
+            }
+
             return {
               ...mark,
               attrs: newAttrs,
