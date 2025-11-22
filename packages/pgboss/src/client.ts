@@ -10,7 +10,7 @@ const globalForPgboss = global as unknown as {
 };
 
 const createPgbossClient = async (
-  logger: pino.Logger<string>
+  logger: pino.Logger<string>,
 ): Promise<PgBoss> => {
   const boss = new PgBoss({ connectionString: env.DATABASE_URL });
   boss.on("error", (err) => logger.error("Pgboss client error", err));
@@ -20,7 +20,7 @@ const createPgbossClient = async (
 };
 
 const getPgbossClient = async (
-  logger: pino.Logger<string>
+  logger: pino.Logger<string>,
 ): Promise<PgBoss> => {
   const boss = globalForPgboss.pgBoss ?? (await createPgbossClient(logger));
   globalForPgboss.pgBoss = boss;
@@ -34,12 +34,12 @@ export const registerPgbossJob = async <T extends object>(
   handler: (job: Job<T>) => Promise<void>,
   options: ScheduleOptions = { tz: "Asia/Singapore" },
   // TODO: move logger to its own package
-  data?: T
+  data?: T,
 ) => {
   const boss = await getPgbossClient(logger);
   if (globalForPgboss.registeredPgbossJobs.has(jobName)) {
     logger.warn(
-      `Pgboss job ${jobName} is already registered. Skipping registration.`
+      `Pgboss job ${jobName} is already registered. Skipping registration.`,
     );
     return { stop: () => boss.offWork(jobName) };
   }
@@ -64,13 +64,13 @@ export const registerPgbossJob = async <T extends object>(
   await boss.schedule(jobName, cronExpression, data, options);
   globalForPgboss.registeredPgbossJobs.add(jobName);
   logger.info(
-    `Registered PgBoss job: ${jobName} with schedule ${cronExpression}`
+    `Registered PgBoss job: ${jobName} with schedule ${cronExpression}`,
   );
   return { stop: () => boss.offWork(jobName) };
 };
 
 export const stopAllPgbossJobs = async (
-  logger: pino.Logger<string>
+  logger: pino.Logger<string>,
 ): Promise<void> => {
   const boss = await getPgbossClient(logger);
   try {
