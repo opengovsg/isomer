@@ -6,6 +6,8 @@ const { namedTypes: n } = require("ast-types")
 const SITEMAP_ANALYSIS = path.join(__dirname, "../sitemap-analysis.json")
 const APP_DIR = path.join(__dirname, "../app")
 
+const PAGE_FILE_NAME = "page.tsx"
+
 // Mapping of component types to import names
 const COMPONENT_IMPORTS = {
   accordion: "Accordion",
@@ -45,6 +47,30 @@ const LAYOUT_IMPORTS = {
   search: "SearchLayout",
 }
 
+// Get the permalink array from a page.tsx file path
+// Example: app/contact/page.tsx -> ["contact"]
+// Example: app/the-president/former-presidents/page.tsx -> ["the-president", "former-presidents"]
+// Example: app/page.tsx -> [] (empty array for root)
+const getPermalinkFromPath = (filePath) => {
+  const relativePath = path.relative(APP_DIR, filePath)
+
+  // Handle root page.tsx
+  if (relativePath === PAGE_FILE_NAME) {
+    return []
+  }
+
+  // Remove /page.tsx from the end
+  const routePath = relativePath.replace(/\/page\.tsx$/, "").replace(/\\/g, "/")
+
+  // If empty after removing page.tsx, it's root
+  if (routePath === "") {
+    return []
+  }
+
+  // Split by / and filter out empty strings
+  return routePath.split("/").filter(Boolean)
+}
+
 // Get the route path from a page.tsx file path
 const getRouteFromPath = (filePath) => {
   const relativePath = path.relative(APP_DIR, filePath)
@@ -69,6 +95,41 @@ const collectUsedItems = (sitemapAnalysis, routePath) => {
   }
 
   return { usedLayouts, usedComponents }
+}
+
+// Update STATIC_ROUTE_PERMALINK constant in a file using AST
+const updateStaticRoutePermalink = (ast, permalink) => {
+  const b = recast.types.builders
+  let found = false
+
+  recast.visit(ast, {
+    visitVariableDeclarator(path) {
+      const node = path.node
+
+      // Look for STATIC_ROUTE_PERMALINK constant
+      if (
+        n.Identifier.check(node.id) &&
+        node.id.name === "STATIC_ROUTE_PERMALINK"
+      ) {
+        found = true
+
+        // Create the new value: array of string literals
+        const arrayElements = permalink.map((segment) => b.literal(segment))
+
+        // Create array expression: [segment1, segment2, ...]
+        const arrayExpression = b.arrayExpression(arrayElements)
+
+        // Update the init value
+        node.init = arrayExpression
+
+        return false // Stop traversing
+      }
+
+      this.traverse(path)
+    },
+  })
+
+  return found
 }
 
 // Remove unused imports using AST
@@ -313,12 +374,8 @@ const removeUnusedSwitchCases = (ast, usedLayouts, usedComponents) => {
 
 // Process a single page.tsx file
 const processPageFile = async (filePath, sitemapAnalysis) => {
+  const permalink = getPermalinkFromPath(filePath)
   const routePath = getRouteFromPath(filePath)
-
-  // Skip catch-all route - it needs all imports
-  if (routePath === null) {
-    return false
-  }
 
   const { usedLayouts, usedComponents } = collectUsedItems(
     sitemapAnalysis,
@@ -326,6 +383,11 @@ const processPageFile = async (filePath, sitemapAnalysis) => {
   )
 
   const content = await fs.readFile(filePath, "utf8")
+
+  // Skip if file doesn't contain STATIC_ROUTE_PERMALINK
+  if (!content.includes("STATIC_ROUTE_PERMALINK")) {
+    return false
+  }
 
   try {
     // Parse the file into an AST
@@ -347,6 +409,9 @@ const processPageFile = async (filePath, sitemapAnalysis) => {
         },
       },
     })
+
+    // Update the STATIC_ROUTE_PERMALINK constant
+    updateStaticRoutePermalink(ast, permalink)
 
     // Remove unused imports
     removeUnusedImports(ast, usedLayouts, usedComponents)
@@ -407,7 +472,7 @@ const findPageFiles = async (dir) => {
     if (entry.isDirectory()) {
       const subFiles = await findPageFiles(fullPath)
       files.push(...subFiles)
-    } else if (entry.name === "page.tsx") {
+    } else if (entry.name === PAGE_FILE_NAME) {
       files.push(fullPath)
     }
   }
@@ -421,21 +486,24 @@ const main = async () => {
     const sitemapAnalysisContent = await fs.readFile(SITEMAP_ANALYSIS, "utf8")
     const sitemapAnalysis = JSON.parse(sitemapAnalysisContent)
 
-    console.log("Finding all page.tsx files...")
-    const allPageFiles = await findPageFiles(APP_DIR)
-    // Filter out the catch-all route which needs all imports
-    const pageFiles = allPageFiles.filter((filePath) => {
-      const relativePath = path.relative(APP_DIR, filePath)
-      // Skip the catch-all route [[...permalink]]/page.tsx
-      return !relativePath.startsWith("[[...permalink]]")
-    })
+    console.log(`Finding all ${PAGE_FILE_NAME} files...`)
+    const pageFiles = await findPageFiles(APP_DIR)
     let updatedCount = 0
 
+    console.log("Updating permalinks, imports and switch cases...\n")
     for (const filePath of pageFiles) {
+      const routePath = getRouteFromPath(filePath)
       const updated = await processPageFile(filePath, sitemapAnalysis)
       if (updated) {
         updatedCount++
+        console.log(`✓ Updated ${routePath}`)
       }
+    }
+
+    if (updatedCount === 0) {
+      console.log("\nNote: No files were updated.")
+    } else {
+      console.log(`\n✓ Updated ${updatedCount} file(s)`)
     }
   } catch (error) {
     console.error("Error:", error.message)

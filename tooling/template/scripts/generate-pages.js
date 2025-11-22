@@ -2,7 +2,7 @@ const fs = require("fs").promises
 const path = require("path")
 
 const SITEMAP_JSON = path.join(__dirname, "../public/sitemap.json")
-const SOURCE_PAGE = path.join(__dirname, "../app/[[...permalink]]/page.tsx")
+const SOURCE_PAGE = path.join(__dirname, "../app/page.tsx")
 const APP_DIR = path.join(__dirname, "../app")
 
 // Recursively extract all permalinks from sitemap, excluding file and link layouts
