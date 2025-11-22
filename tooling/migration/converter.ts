@@ -1114,7 +1114,7 @@ export const convertHtmlToSchema = async (html: string) => {
     Instagram,
   ]);
 
-  console.log(JSON.stringify(output.content));
+  // console.log(JSON.stringify(output.content));
   const schema = getCleanedSchema(output.content);
   // console.log(JSON.stringify(schema));
   const result = convertFromTiptap(schema);
