@@ -16,6 +16,10 @@ const s3Schema = z.object({
   NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: z.string(),
 })
 
+const cronHeartbeatSchema = z.object({
+  SCHEDULED_PUBLISHING_HEARTBEAT: z.string().url().optional(),
+})
+
 /**
  * Specify your client-side environment variables schema here. This way you can ensure the app isn't
  * built with invalid env vars. To expose them to the client, prefix them with `NEXT_PUBLIC_`.
@@ -37,6 +41,7 @@ const client = z
     NEXT_PUBLIC_INTERCOM_APP_ID: z.string().optional(),
   })
   .merge(s3Schema)
+  .merge(cronHeartbeatSchema)
 
 const singpassSchema = z.object({
   SINGPASS_CLIENT_ID: z.string().min(1),
@@ -112,6 +117,7 @@ const processEnv = {
     process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   NEXT_PUBLIC_INTERCOM_APP_ID: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
   SEARCHSG_API_KEY: process.env.SEARCHSG_API_KEY,
+  SCHEDULED_PUBLISHING_HEARTBEAT: process.env.SCHEDULED_PUBLISHING_HEARTBEAT,
 }
 
 // Don't touch the part below
