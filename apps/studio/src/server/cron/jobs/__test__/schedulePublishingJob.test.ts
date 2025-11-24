@@ -1,4 +1,5 @@
 import type { User } from "@prisma/client"
+import type { MockInstance } from "vitest"
 import { AuditLogEvent, ResourceType } from "@prisma/client"
 import { addSeconds } from "date-fns"
 import MockDate from "mockdate"
@@ -12,26 +13,21 @@ import {
 } from "tests/integration/helpers/seed"
 
 import * as emailService from "~/features/mail/service"
+import * as awsUtils from "~/server/modules/aws/utils"
 import { db } from "~/server/modules/database"
 import * as publishPageResourceModule from "~/server/modules/resource/resource.service"
-import { publishScheduledResources } from "../schedulePublishingJob"
+import {
+  publishScheduledResources,
+  publishScheduledSites,
+} from "../schedulePublishingJob"
 
-vi.mock("~/server/modules/aws/utils.ts", async () => {
-  const actual = await vi.importActual<
-    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-    typeof import("~/server/modules/aws/utils.ts")
-  >("~/server/modules/aws/utils.ts")
-  return {
-    ...actual,
-    // mock the buildChanges to always return that a new build is needed
-    computeBuildChanges: vi.fn().mockResolvedValue({ isNewBuildNeeded: true }),
-    // do not actually start a codebuild project
-    startProjectById: vi.fn().mockResolvedValue({
-      id: "test-build-id",
-      startTime: new Date("2024-01-01T00:00:00.000Z"),
-    }),
-  }
-})
+const addCodebuildProjectToSite = async (siteId: number) => {
+  await db
+    .updateTable("Site")
+    .set({ codeBuildId: "test-codebuild-project-id" })
+    .where("id", "=", siteId)
+    .execute()
+}
 
 const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
 
@@ -39,7 +35,8 @@ describe("schedulePublishingJob", async () => {
   const session = await applyAuthedSession()
   let user: User
   beforeEach(async () => {
-    vi.clearAllMocks()
+    vi.restoreAllMocks()
+    MockDate.set(FIXED_NOW) // Freeze time before each test
     await resetTables(
       "AuditLog",
       "ResourcePermission",
@@ -57,22 +54,11 @@ describe("schedulePublishingJob", async () => {
     await auth(user)
   })
 
-  const addCodebuildProjectToSite = async (siteId: number) => {
-    await db
-      .updateTable("Site")
-      .set({ codeBuildId: "test-codebuild-project-id" })
-      .where("id", "=", siteId)
-      .execute()
-  }
+  afterEach(() => {
+    MockDate.reset() // Reset time after each test
+  })
 
   describe("schedulePublishJobHandler", () => {
-    beforeEach(() => {
-      MockDate.set(FIXED_NOW) // Freeze time before each test
-    })
-    afterEach(() => {
-      MockDate.reset() // Reset time after each test
-      vi.restoreAllMocks()
-    })
     it("publishes a resource which has scheduledAt less than current run time", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -80,7 +66,6 @@ describe("schedulePublishingJob", async () => {
         scheduledAt: FIXED_NOW,
         scheduledBy: session.userId,
       })
-      await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -127,7 +112,6 @@ describe("schedulePublishingJob", async () => {
         scheduledAt: addSeconds(FIXED_NOW, 10),
         scheduledBy: session.userId,
       })
-      await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -153,7 +137,6 @@ describe("schedulePublishingJob", async () => {
         scheduledAt: FIXED_NOW,
         scheduledBy: session.userId,
       })
-      await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -197,7 +180,6 @@ describe("schedulePublishingJob", async () => {
         scheduledBy: session.userId,
         permalink: "page-1",
       })
-      await addCodebuildProjectToSite(site.id)
       // setup a second resource which should be published successfully
       const { page: page2, site: site2 } = await setupPageResource({
         resourceType: ResourceType.Page,
@@ -263,6 +245,129 @@ describe("schedulePublishingJob", async () => {
       expect(versionsPage2[0]).toMatchObject({
         resourceId: page2.id,
         versionNum: 1,
+      })
+    })
+  })
+
+  describe("publishScheduledSites", () => {
+    let computeBuildChangesSpy: MockInstance
+    let startProjectByIdSpy: MockInstance
+    beforeEach(() => {
+      computeBuildChangesSpy = vi
+        .spyOn(awsUtils, "computeBuildChanges")
+        .mockResolvedValue({
+          isNewBuildNeeded: true,
+        })
+      startProjectByIdSpy = vi
+        .spyOn(awsUtils, "startProjectById")
+        .mockResolvedValue({
+          id: "test-build-id",
+          startTime: FIXED_NOW,
+        })
+    })
+
+    it("publishes sites for resources inside the input resourceMap", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+      })
+      await addCodebuildProjectToSite(site.id)
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await publishScheduledSites(
+        { [site.id]: [{ ...page, scheduledBy: String(session.userId) }] },
+        true,
+      )
+
+      // Assert
+      // expect the codebuildjob to be inserted for the site, since the site is published
+      expect(computeBuildChangesSpy).toHaveBeenCalledOnce()
+      expect(startProjectByIdSpy).toHaveBeenCalledOnce()
+      const codebuildJobs = await db
+        .selectFrom("CodeBuildJobs")
+        .where("siteId", "=", site.id)
+        .selectAll()
+        .execute()
+
+      expect(codebuildJobs).toHaveLength(1)
+      expect(codebuildJobs[0]).toMatchObject({
+        siteId: site.id,
+        userId: session.userId,
+        resourceId: page.id,
+        status: "IN_PROGRESS",
+        startedAt: FIXED_NOW,
+        isScheduled: true,
+      })
+    })
+    it("passing in enableCodebuildJobs false leads to no codebuild row being inserted", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+      })
+      await addCodebuildProjectToSite(site.id)
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await publishScheduledSites(
+        { [site.id]: [{ ...page, scheduledBy: String(session.userId) }] },
+        false,
+      )
+
+      // Assert
+      const codebuildJobs = await db
+        .selectFrom("CodeBuildJobs")
+        .where("siteId", "=", site.id)
+        .selectAll()
+        .execute()
+      expect(codebuildJobs).toHaveLength(0)
+      expect(computeBuildChangesSpy).toHaveBeenCalledOnce()
+      expect(startProjectByIdSpy).toHaveBeenCalledOnce()
+    })
+    it("a failed site publish leads to an email being sent for each resource under the site", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+      })
+      await addCodebuildProjectToSite(site.id)
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // mock the startProjectByIdSpy to throw an error to simulate failure to start codebuild
+      startProjectByIdSpy.mockRejectedValueOnce(
+        new Error("Failed to start codebuild project"),
+      )
+
+      const sendFailedPublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedPublishEmail")
+        .mockResolvedValue()
+
+      // Act
+      await publishScheduledSites(
+        { [site.id]: [{ ...page, scheduledBy: String(session.userId) }] },
+        true,
+      )
+
+      // Assert
+      expect(sendFailedPublishEmailSpy).toHaveBeenCalledTimes(1)
+      expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        isScheduled: true,
+        resource: expect.objectContaining({ id: page.id }),
       })
     })
   })
