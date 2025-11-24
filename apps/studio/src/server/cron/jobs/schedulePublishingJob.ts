@@ -3,6 +3,7 @@ import type pino from "pino"
 import { registerPgbossJob } from "@isomer/pgboss"
 
 import type { Resource } from "~/server/modules/database"
+import { env } from "~/env.mjs"
 import { sendFailedPublishEmail } from "~/features/mail/service"
 import {
   ENABLE_CODEBUILD_JOBS,
@@ -19,29 +20,46 @@ const CRON_SCHEDULE = "* * * * *" // every minute
 
 const logger = createBaseLogger({ path: "cron:schedulePublishingJob" })
 
+/**
+ * Registers the schedule publishing job with the specified cron schedule.
+ * @returns A promise that resolves when the job is registered.
+ */
 export const schedulePublishingJob = async () => {
   return await registerPgbossJob(
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
-    async () => {
-      const scheduledAtCutoff = new Date()
-      const gb = await createGrowthBookContext()
-      const enableCodebuildJobs = gb.isOn(ENABLE_CODEBUILD_JOBS)
-      const enableEmailsForScheduledPublishes = gb.isOn(
-        ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
-      )
-      const siteResourcesMap = await publishScheduledResources(
-        enableEmailsForScheduledPublishes,
-        scheduledAtCutoff,
-      )
-      await publishScheduledSites(siteResourcesMap, enableCodebuildJobs)
-      await resetScheduledAtForPublishedResources(scheduledAtCutoff)
-    },
+    schedulePublishJobHandler,
     // do NOT retry failed jobs, since we send failure emails on a per-resource basis
     // use singletonKey to ensure only one instance of the job runs at a time
     { retryLimit: 0, singletonKey: JOB_NAME },
+    env.SCHEDULED_PUBLISHING_HEARTBEAT
+      ? { heartbeatURL: env.SCHEDULED_PUBLISHING_HEARTBEAT }
+      : undefined,
   )
+}
+
+/**
+ * Handler function for the schedule publishing job.
+ * Publishes all resources scheduled for publishing up to the current time,
+ * publishes their associated sites, and resets their scheduledAt fields.
+ */
+const schedulePublishJobHandler = async () => {
+  const scheduledAtCutoff = new Date()
+  const gb = await createGrowthBookContext()
+  const enableCodebuildJobs = gb.isOn(ENABLE_CODEBUILD_JOBS)
+  const enableEmailsForScheduledPublishes = gb.isOn(
+    ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
+  )
+  // Publish all scheduled resources up to the cutoff time
+  const siteResourcesMap = await publishScheduledResources(
+    enableEmailsForScheduledPublishes,
+    scheduledAtCutoff,
+  )
+  // Publish all sites that have resources published
+  await publishScheduledSites(siteResourcesMap, enableCodebuildJobs)
+  // Reset the scheduledAt field for all resources that were scheduled to be published
+  await resetScheduledAtForPublishedResources(scheduledAtCutoff)
 }
 
 const publishScheduledResources = async (

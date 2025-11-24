@@ -2,6 +2,7 @@ import type { Job, ScheduleOptions } from "pg-boss";
 import { PgBoss } from "pg-boss";
 import { env } from "./env";
 import type { pino } from "pino";
+import { type HeartbeatOptions, sendHeartbeat } from "./utils";
 
 /* Singleton pattern using global for dev hot reload */
 const globalForPgboss = global as unknown as {
@@ -27,14 +28,13 @@ const getPgbossClient = async (
   return boss;
 };
 
-export const registerPgbossJob = async <T extends object>(
+export const registerPgbossJob = async (
   logger: pino.Logger<string>,
   jobName: string,
   cronExpression: string,
-  handler: (job: Job<T>) => Promise<void>,
-  options: ScheduleOptions = { tz: "Asia/Singapore" },
-  // TODO: move logger to its own package
-  data?: T,
+  handler: (job: Job) => Promise<void>,
+  scheduleOptions: ScheduleOptions = { tz: "Asia/Singapore" },
+  heartbeatOptions?: HeartbeatOptions,
 ) => {
   const boss = await getPgbossClient(logger);
   if (globalForPgboss.registeredPgbossJobs.has(jobName)) {
@@ -47,21 +47,23 @@ export const registerPgbossJob = async <T extends object>(
   const queue = await boss.getQueue(jobName);
   if (!queue) await boss.createQueue(jobName);
   // Set up the worker to process jobs
-  await boss.work(jobName, async ([job]: Job<T>[]) => {
+  await boss.work(jobName, async ([job]: Job[]) => {
     if (!job) {
       logger.warn(`No job found for job name ${jobName}`);
       return;
     }
-    logger.info(`Received job ${job.id} with data ${JSON.stringify(job.data)}`);
+    logger.info(`Received job ${job.id} for ${jobName}`);
     try {
       await handler(job);
+      if (heartbeatOptions)
+        await sendHeartbeat(logger, job.id, heartbeatOptions);
     } catch (error) {
       logger.error(`Error processing job ${job.id}:`, error);
       throw error;
     }
   });
   // Schedule the job
-  await boss.schedule(jobName, cronExpression, data, options);
+  await boss.schedule(jobName, cronExpression, undefined, scheduleOptions);
   globalForPgboss.registeredPgbossJobs.add(jobName);
   logger.info(
     `Registered PgBoss job: ${jobName} with schedule ${cronExpression}`,
