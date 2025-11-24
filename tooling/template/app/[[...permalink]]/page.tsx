@@ -1,5 +1,4 @@
 import type { Metadata, ResolvingMetadata } from "next"
-import dynamicImport from "next/dynamic"
 import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
@@ -11,8 +10,6 @@ import {
   getSitemapXml,
   shouldBlockIndexing,
 } from "@opengovsg/isomer-components/engine/metadata"
-
-import { IsomerPageSchemaType } from "../../../../packages/components/dist/esm/types"
 
 export const dynamic = "force-static"
 
@@ -68,7 +65,7 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
         `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       ).then((module) => module.default)
-    })) as IsomerPageSchemaType
+    })) as any
 
   const lastModified =
     // TODO: fixup all the typing errors
