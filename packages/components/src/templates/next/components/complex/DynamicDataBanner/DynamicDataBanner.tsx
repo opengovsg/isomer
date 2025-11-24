@@ -1,3 +1,5 @@
+"use client"
+
 import type { DynamicDataBannerProps } from "~/interfaces"
 import { getReferenceLinkHref, getTextAsHtml } from "~/utils"
 import { BaseParagraph } from "../../internal/BaseParagraph"

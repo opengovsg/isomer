@@ -1,3 +1,5 @@
+"use client"
+
 import type { VideoProps } from "~/interfaces"
 import { isValidVideoUrl, VALID_VIDEO_DOMAINS } from "~/utils/validation"
 import { ComponentContent } from "../../internal/customCssClass"

@@ -1,16 +1,10 @@
 import dynamic from "next/dynamic"
-
-import type {
-  IsomerComponent,
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "../../../packages/components/dist/esm/types"
-
 // Static imports - lightweight/critical components that need SSR
 import { Accordion } from "@opengovsg/isomer-components/templates/next/components/complex/Accordion"
 import { Blockquote } from "@opengovsg/isomer-components/templates/next/components/complex/Blockquote"
 import { Callout } from "@opengovsg/isomer-components/templates/next/components/complex/Callout"
+import { ChildrenPages } from "@opengovsg/isomer-components/templates/next/components/complex/ChildrenPages"
+// Dynamic imports with ssr: false - heavy components that can load client-side
 import { ContactInformation } from "@opengovsg/isomer-components/templates/next/components/complex/ContactInformation"
 import { Hero } from "@opengovsg/isomer-components/templates/next/components/complex/Hero"
 import { Image } from "@opengovsg/isomer-components/templates/next/components/complex/Image"
@@ -20,51 +14,65 @@ import { InfoCols } from "@opengovsg/isomer-components/templates/next/components
 import { Infopic } from "@opengovsg/isomer-components/templates/next/components/complex/Infopic"
 import { KeyStatistics } from "@opengovsg/isomer-components/templates/next/components/complex/KeyStatistics"
 import { Prose } from "@opengovsg/isomer-components/templates/next/components/native/Prose"
+import { Contentpic } from "@opengovsg/isomer-components/templates/next/components/complex/Contentpic"
+import { CollectionBlock } from "@opengovsg/isomer-components/templates/next/components/complex/CollectionBlock"
+import { LogoCloud } from "@opengovsg/isomer-components/templates/next/components/complex/LogoCloud"
 
-// Dynamic imports with ssr: false - heavy components that can load client-side
-const ChildrenPages = dynamic(
-  () => import("@opengovsg/isomer-components/templates/next/components/complex/ChildrenPages").then(m => m.ChildrenPages),
-  { ssr: false }
-)
-const CollectionBlock = dynamic(
-  () => import("@opengovsg/isomer-components/templates/next/components/complex/CollectionBlock").then(m => m.CollectionBlock),
-  { ssr: false }
-)
-const Contentpic = dynamic(
-  () => import("@opengovsg/isomer-components/templates/next/components/complex/Contentpic").then(m => m.Contentpic),
-  { ssr: false }
-)
+import type {
+  IsomerComponent,
+  IsomerPageLayoutType,
+  IsomerSiteProps,
+  LinkComponentType,
+} from "../../../packages/components/dist/esm/types"
+
 const DynamicComponentList = dynamic(
-  () => import("@opengovsg/isomer-components/templates/next/components/complex/DynamicComponentList").then(m => m.DynamicComponentList),
-  { ssr: false }
+  () =>
+    import(
+      "@opengovsg/isomer-components/templates/next/components/complex/DynamicComponentList"
+    ).then((m) => m.DynamicComponentList),
+  { ssr: false },
 )
 const DynamicDataBanner = dynamic(
-  () => import("@opengovsg/isomer-components/templates/next/components/complex/DynamicDataBanner").then(m => m.DynamicDataBanner),
-  { ssr: false }
+  () =>
+    import(
+      "@opengovsg/isomer-components/templates/next/components/complex/DynamicDataBanner"
+    ).then((m) => m.DynamicDataBanner),
+  { ssr: false },
 )
 const FormSG = dynamic(
-  () => import("@opengovsg/isomer-components/templates/next/components/complex/FormSG").then(m => m.FormSG),
-  { ssr: false }
+  () =>
+    import(
+      "@opengovsg/isomer-components/templates/next/components/complex/FormSG"
+    ).then((m) => m.FormSG),
+  { ssr: false },
 )
 const Iframe = dynamic(
-  () => import("@opengovsg/isomer-components/templates/next/components/complex/Iframe").then(m => m.Iframe),
-  { ssr: false }
+  () =>
+    import(
+      "@opengovsg/isomer-components/templates/next/components/complex/Iframe"
+    ).then((m) => m.Iframe),
+  { ssr: false },
 )
 const ImageGallery = dynamic(
-  () => import("@opengovsg/isomer-components/templates/next/components/complex/ImageGallery").then(m => m.ImageGallery),
-  { ssr: false }
-)
-const LogoCloud = dynamic(
-  () => import("@opengovsg/isomer-components/templates/next/components/complex/LogoCloud").then(m => m.LogoCloud),
-  { ssr: false }
+  () =>
+    import(
+      "@opengovsg/isomer-components/templates/next/components/complex/ImageGallery"
+    ).then((m) => m.ImageGallery),
+  { ssr: false },
 )
 const Map = dynamic(
-  () => import("@opengovsg/isomer-components/templates/next/components/complex/Map").then(m => m.Map),
-  { ssr: false }
+  () =>
+    import(
+      "@opengovsg/isomer-components/templates/next/components/complex/Map"
+    ).then((m) => m.Map),
+  { ssr: false },
 )
 const Video = dynamic(
-  () => import("@opengovsg/isomer-components/templates/next/components/complex/Video").then(m => m.Video),
-  { ssr: false }
+  () =>
+    import(
+      "@opengovsg/isomer-components/templates/next/components/complex/Video"
+    ).then((m) => m.Video),
+  { ssr: false },
 )
 
 interface RenderComponentProps {
