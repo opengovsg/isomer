@@ -2,6 +2,42 @@
   * This file contains the styles required for the Tiptap editor.
   * It is imported in _app.tsx to ensure that the styles are applied globally.
   */
+@use "sass:list";
+
+// List styles to cycle through, this should match the order that is defined
+// inside the OrderedList and UnorderedList components
+$orderedlist-styles: decimal, lower-alpha, lower-roman;
+$unorderedlist-styles: disc, circle, square;
+// Maximum depth of nested lists to support, the modulo of this should be 1 so
+// that we reset back to the first style after cycling through all of them
+$max-depth: 13;
+
+// Recursive mixin to apply styles for nested ordered lists
+@mixin nested-orderedlist($level: 1) {
+  $index: (($level - 1) % list.length($orderedlist-styles)) + 1;
+  list-style-type: list.nth($orderedlist-styles, $index);
+  padding-inline-start: 2.25rem;
+
+  @if $level < $max-depth {
+    > li > ol {
+      @include nested-orderedlist($level + 1);
+    }
+  }
+}
+
+// Recursive mixin to apply styles for nested unordered lists
+@mixin nested-unorderedlist($level: 1) {
+  $index: (($level - 1) % list.length($unorderedlist-styles)) + 1;
+  list-style-type: list.nth($unorderedlist-styles, $index);
+  padding-inline-start: 2.25rem;
+
+  @if $level < $max-depth {
+    > li > ul {
+      @include nested-unorderedlist($level + 1);
+    }
+  }
+}
+
 .tiptap:focus {
   outline: none;
 }
@@ -14,48 +50,54 @@
 .tiptap {
   height: 100%;
 
-  .previewTextStyles {
-    h1 {
-      font-size: 3.375rem;
-      line-height: 4.5rem;
-      font-weight: 400;
-      letter-spacing: -0.022em;
-    }
+  h1 {
+    font-size: 3.375rem;
+    line-height: 4.5rem;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+  }
 
-    h2 {
-      font-size: 2.75rem;
-      line-height: 4rem;
-      font-weight: 400;
-      letter-spacing: -0.022em;
-    }
+  h2 {
+    font-size: 2.75rem;
+    line-height: 4rem;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+  }
 
-    h3 {
-      font-size: 2rem;
-      line-height: 3rem;
-      font-weight: 400;
-      letter-spacing: -0.022em;
-    }
+  h3 {
+    font-size: 2rem;
+    line-height: 3rem;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+  }
 
-    h4 {
-      font-size: 1.625rem;
-      line-height: 2.5rem;
-      font-weight: 400;
-      letter-spacing: -0.02em;
-    }
+  h4 {
+    font-size: 1.625rem;
+    line-height: 2.5rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
 
-    h5 {
-      font-size: 1.375rem;
-      line-height: 2rem;
-      font-weight: 400;
-      letter-spacing: -0.018em;
-    }
+  h5 {
+    font-size: 1.375rem;
+    line-height: 2rem;
+    font-weight: 400;
+    letter-spacing: -0.018em;
+  }
 
-    h6 {
-      font-size: 1rem;
-      line-height: 1.5rem;
-      font-weight: 400;
-      letter-spacing: -0.011em;
-    }
+  h6 {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 400;
+    letter-spacing: -0.011em;
+  }
+
+  ol {
+    @include nested-orderedlist(1);
+  }
+
+  ul {
+    @include nested-unorderedlist(1);
   }
 
   > * + * {
