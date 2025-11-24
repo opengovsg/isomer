@@ -15,17 +15,24 @@ const nextConfig = {
         ...config.optimization.splitChunks,
         cacheGroups: {
           ...config.optimization.splitChunks.cacheGroups,
+          defaultVendors: {
+            test: /[\\/]node_modules[\\/]/,
+            maxSize: 500000,
+            priority: 0,
+            chunks: "all",
+            reuseExistingChunk: true,
+          },
           components: {
             test: /[\\/]templates[\\/]next[\\/]components[\\/]/,
             chunks: "all",
-            maxSize: 25000,
+            maxSize: 500000,
             priority: 10,
             minSize: 0,
           },
           layouts: {
             test: /[\\/]templates[\\/]next[\\/]layouts[\\/]/,
             chunks: "all",
-            maxSize: 25000,
+            maxSize: 500000,
             priority: 10,
             minSize: 0,
           },
