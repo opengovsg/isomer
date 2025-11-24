@@ -18,14 +18,14 @@ const nextConfig = {
           components: {
             test: /[\\/]templates[\\/]next[\\/]components[\\/]/,
             chunks: "all",
-            maxSize: "25000",
+            maxSize: 25000,
             priority: 10,
             minSize: 0,
           },
           layouts: {
             test: /[\\/]templates[\\/]next[\\/]layouts[\\/]/,
             chunks: "all",
-            maxSize: "25000",
+            maxSize: 25000,
             priority: 10,
             minSize: 0,
           },
