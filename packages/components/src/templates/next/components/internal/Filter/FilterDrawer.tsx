@@ -17,7 +17,7 @@ import { IconButton } from "../IconButton"
 
 const expandFilterButtonStyle = tv({
   extend: focusRing,
-  base: "prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-base-content",
+  base: "prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content",
 })
 
 interface ExpandFilterButtonProps {
@@ -49,7 +49,7 @@ const ExpandFilterButton = ({
       <span>{label}</span>
       <BiChevronDown
         aria-hidden
-        className={`mr-3 h-6 w-6 text-base-content-strong transition-all duration-300 ease-in-out ${
+        className={`mr-3 h-6 w-6 flex-shrink-0 text-base-content-strong transition-all duration-300 ease-in-out ${
           isExpanded ? "rotate-180" : "rotate-0"
         }`}
       />
