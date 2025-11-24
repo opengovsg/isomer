@@ -1,5 +1,4 @@
 import type { Metadata, ResolvingMetadata } from "next"
-import dynamicImport from "next/dynamic"
 import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
