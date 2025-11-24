@@ -16,7 +16,7 @@ $max-depth: 13;
 @mixin nested-orderedlist($level: 1) {
   $index: (($level - 1) % list.length($orderedlist-styles)) + 1;
   list-style-type: list.nth($orderedlist-styles, $index);
-  padding-inline-start: 2.25rem;
+  padding-inline-start: 1.25rem;
 
   @if $level < $max-depth {
     > li > ol {
@@ -29,7 +29,7 @@ $max-depth: 13;
 @mixin nested-unorderedlist($level: 1) {
   $index: (($level - 1) % list.length($unorderedlist-styles)) + 1;
   list-style-type: list.nth($unorderedlist-styles, $index);
-  padding-inline-start: 2.25rem;
+  padding-inline-start: 1.25rem;
 
   @if $level < $max-depth {
     > li > ul {
@@ -58,38 +58,35 @@ $max-depth: 13;
   }
 
   h2 {
-    font-size: 2.75rem;
-    line-height: 4rem;
-    font-weight: 400;
+    font-size: 2.25rem;
+    line-height: 1.2;
+    font-weight: 600;
     letter-spacing: -0.022em;
   }
 
   h3 {
-    font-size: 2rem;
-    line-height: 3rem;
-    font-weight: 400;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    font-weight: 600;
     letter-spacing: -0.022em;
   }
 
   h4 {
-    font-size: 1.625rem;
-    line-height: 2.5rem;
-    font-weight: 400;
-    letter-spacing: -0.02em;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    font-weight: 600;
   }
 
   h5 {
-    font-size: 1.375rem;
-    line-height: 2rem;
-    font-weight: 400;
-    letter-spacing: -0.018em;
+    font-size: 1.125rem;
+    line-height: 1.3;
+    font-weight: 600;
   }
 
   h6 {
     font-size: 1rem;
-    line-height: 1.5rem;
-    font-weight: 400;
-    letter-spacing: -0.011em;
+    line-height: 1.4;
+    font-weight: 600;
   }
 
   ol {
@@ -159,7 +156,7 @@ $max-depth: 13;
 
   ul,
   ol {
-    padding: 0 1rem;
+    padding-left: 1rem;
   }
 
   code {
