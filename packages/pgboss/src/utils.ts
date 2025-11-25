@@ -24,12 +24,12 @@ export const sendHeartbeat = async (
         throw new Error(
           `Sending heartbeat URL failed with status: ${response.status}`,
         );
-      } else {
-        logger.info(
-          { jobId },
-          `Successfully sent heartbeat for job attempt ${attempt}`,
-        );
       }
+      logger.info(
+        { jobId },
+        `Successfully sent heartbeat for job attempt ${attempt}`,
+      );
+      return;
     } catch (error) {
       logger.error(
         { error, jobId },
