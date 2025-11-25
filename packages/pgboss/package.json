@@ -24,7 +24,12 @@
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "format:fix": "prettier --write . --ignore-path ../../.gitignore",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "db:sleep": "sleep 3",
+    "services:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
+    "setup:test": "run-s --print-label services:setup db:sleep",
+    "test": "run-s test:*",
+    "test:watch": "dotenv -e .env.test npx vitest watch"
   },
   "devDependencies": {
     "@isomer/eslint-config": "*",
@@ -37,6 +42,7 @@
   },
   "dependencies": {
     "pg-boss": "^12.3.0",
-    "pino": "^9.6.0"
+    "pino": "^9.6.0",
+    "vitest": "^2.1.1"
   }
 }
