@@ -17,7 +17,7 @@ const s3Schema = z.object({
 })
 
 const cronHeartbeatSchema = z.object({
-  SCHEDULED_PUBLISHING_HEARTBEAT: z.string().url().optional(),
+  SCHEDULED_PUBLISHING_HEARTBEAT_URL: z.string().url().optional(),
 })
 
 /**
@@ -117,7 +117,8 @@ const processEnv = {
     process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   NEXT_PUBLIC_INTERCOM_APP_ID: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
   SEARCHSG_API_KEY: process.env.SEARCHSG_API_KEY,
-  SCHEDULED_PUBLISHING_HEARTBEAT: process.env.SCHEDULED_PUBLISHING_HEARTBEAT,
+  SCHEDULED_PUBLISHING_HEARTBEAT_URL:
+    process.env.SCHEDULED_PUBLISHING_HEARTBEAT_URL,
 }
 
 // Don't touch the part below

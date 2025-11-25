@@ -33,8 +33,8 @@ export const schedulePublishingJob = async () => {
     // do NOT retry failed jobs, since we send failure emails on a per-resource basis
     // use singletonKey to ensure only one instance of the job runs at a time
     { retryLimit: 0, singletonKey: JOB_NAME },
-    env.SCHEDULED_PUBLISHING_HEARTBEAT
-      ? { heartbeatURL: env.SCHEDULED_PUBLISHING_HEARTBEAT }
+    env.SCHEDULED_PUBLISHING_HEARTBEAT_URL
+      ? { heartbeatURL: env.SCHEDULED_PUBLISHING_HEARTBEAT_URL }
       : undefined,
   )
 }
