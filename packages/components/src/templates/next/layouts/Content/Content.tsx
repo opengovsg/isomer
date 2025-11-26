@@ -1,4 +1,4 @@
-import type { ContentPageSchemaType } from "~/types/schema"
+import type { ContentPageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getSiderailFromSiteMap } from "~/utils/getSiderailFromSiteMap"

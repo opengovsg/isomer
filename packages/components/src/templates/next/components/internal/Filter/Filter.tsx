@@ -35,12 +35,12 @@ const FilterSectionButton = ({
     <button
       {...mergedProps}
       ref={buttonRef}
-      className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-base-content outline-0"
+      className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content outline-0"
     >
       <label className={filterSectionLabelStyle()}>{label}</label>
       <BiChevronDown
         aria-hidden
-        className={`h-6 w-6 text-base-content-strong transition-all duration-300 ease-in-out ${
+        className={`h-6 w-6 flex-shrink-0 text-base-content-strong transition-all duration-300 ease-in-out ${
           isOpen ? "rotate-180" : "rotate-0"
         }`}
       />

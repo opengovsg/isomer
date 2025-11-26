@@ -1,4 +1,4 @@
-import type { HomePageSchemaType } from "~/types/schema"
+import type { HomePageSchemaType } from "~/types"
 import { renderPageContent } from "../../render/renderPageContent"
 import { Skeleton } from "../Skeleton"
 

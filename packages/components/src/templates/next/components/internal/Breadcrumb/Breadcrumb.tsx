@@ -78,6 +78,7 @@ function BaseBreadcrumb({
         href={href}
         label={label}
         className={mergedLinkClassName}
+        isWithFocusVisibleHighlight
         LinkComponent={LinkComponent}
       >
         {children}

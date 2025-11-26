@@ -56,19 +56,11 @@ export const RenderApplicationScripts = ({
       {site.vica && (
         <>
           <VicaStylesheet useDevStagingScript={site.vica.useDevStagingScript} />
-          <VicaWidget
-            site={site}
-            ScriptComponent={ScriptComponent}
-            {...site.vica}
-          />
+          <VicaWidget site={site} {...site.vica} />
         </>
       )}
       {site.askgov && (
-        <AskgovWidget
-          environment={site.environment}
-          ScriptComponent={ScriptComponent}
-          {...site.askgov}
-        />
+        <AskgovWidget environment={site.environment} {...site.askgov} />
       )}
     </>
   )
