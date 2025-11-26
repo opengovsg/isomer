@@ -104,9 +104,13 @@
       "import": "./dist/esm/templates/next/components/native/*/index.js",
       "require": "./dist/cjs/templates/next/components/native/*/index.js"
     },
-    "./engine/renderApplicationScripts": {
-      "import": "./dist/esm/engine/renderApplicationScripts.js",
-      "require": "./dist/cjs/engine/renderApplicationScripts.js"
+    "./templates/next/render/*": {
+      "import": "./dist/esm/templates/next/render/*.js",
+      "require": "./dist/cjs/templates/next/render/*.js"
+    },
+    "./engine/*": {
+      "import": "./dist/esm/engine/*.js",
+      "require": "./dist/cjs/engine/*.js"
     }
   },
   "files": [

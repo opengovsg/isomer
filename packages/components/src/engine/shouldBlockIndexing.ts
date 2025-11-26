@@ -1,4 +1,4 @@
-import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
+import type { IsomerPageSchemaType } from "~/types"
 
 export const shouldBlockIndexing = (
   environment: IsomerPageSchemaType["site"]["environment"],

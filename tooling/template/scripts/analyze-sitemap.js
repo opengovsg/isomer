@@ -21,6 +21,23 @@ const extractPermalinks = (node, permalinks = []) => {
   return permalinks
 }
 
+const extractPages = (node, pages = []) => {
+  if (node.permalink) {
+    pages.push({
+      permalink: node.permalink,
+      layout: node.layout,
+    })
+  }
+
+  if (node.children && Array.isArray(node.children)) {
+    node.children.forEach((child) => {
+      extractPages(child, pages)
+    })
+  }
+
+  return pages
+}
+
 // Get schema file path for a permalink
 const getSchemaPath = (permalink) => {
   if (permalink === "/") {
@@ -46,14 +63,13 @@ const readSchema = async (permalink) => {
       return null
     }
 
-    const permalinkWithoutSlash = permalink.replace(/^\//, "")
-    const indexSchemaPath = path.join(
-      SCHEMA_DIR,
-      permalinkWithoutSlash,
-      `${INDEX_PAGE_PERMALINK}.json`,
-    )
-
     try {
+      const permalinkWithoutSlash = permalink.replace(/^\//, "")
+      const indexSchemaPath = path.join(
+        SCHEMA_DIR,
+        permalinkWithoutSlash,
+        `${INDEX_PAGE_PERMALINK}.json`,
+      )
       const content = await fs.readFile(indexSchemaPath, "utf8")
       return JSON.parse(content)
     } catch {
@@ -68,14 +84,11 @@ const extractComponents = (content) => {
     return []
   }
 
-  const components = []
-  content.forEach((item) => {
-    if (item.type) {
-      components.push(item.type)
-    }
-  })
+  const components = content
+    .filter((item) => item.type)
+    .map((item) => item.type)
 
-  return components
+  return [...new Set(components)] // Remove duplicates
 }
 
 // Analyze a single page
@@ -85,48 +98,25 @@ const analyzePage = async (permalink, layout) => {
   if (!schema) {
     return {
       permalink,
-      layout: layout || "N/A",
+      layout,
       components: [],
     }
   }
 
-  const components = extractComponents(schema.content || [])
-
   return {
     permalink,
-    layout: schema.layout || layout || "N/A",
-    components: [...new Set(components)], // Remove duplicates
+    layout: schema.layout || layout,
+    components: extractComponents(schema.content || []),
   }
 }
 
 const main = async () => {
   try {
-    console.log("Reading sitemap.json...")
-
     // Read sitemap.json
     const sitemapContent = await fs.readFile(SITEMAP_JSON, "utf8")
     const sitemap = JSON.parse(sitemapContent)
 
-    // Extract all permalinks with their layouts
-    const pages = []
-    const extractPages = (node) => {
-      if (node.permalink) {
-        pages.push({
-          permalink: node.permalink,
-          layout: node.layout,
-        })
-      }
-
-      if (node.children && Array.isArray(node.children)) {
-        node.children.forEach((child) => {
-          extractPages(child)
-        })
-      }
-    }
-
-    extractPages(sitemap)
-
-    console.log(`Found ${pages.length} pages`)
+    const pages = extractPages(sitemap)
 
     // Analyze each page and build output object
     const output = {}
@@ -144,10 +134,6 @@ const main = async () => {
 
     // Write to JSON file
     await fs.writeFile(OUTPUT_FILE, JSON.stringify(output, null, 2), "utf8")
-
-    console.log(`\nOutput written to: ${OUTPUT_FILE}`)
-    console.log(`\nTotal pages: ${Object.keys(output).length}`)
-    console.log("")
   } catch (error) {
     console.error("Error:", error.message)
     console.error(error.stack)

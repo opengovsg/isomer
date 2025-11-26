@@ -2,7 +2,7 @@ const fs = require("fs").promises
 const path = require("path")
 
 const SITEMAP_JSON = path.join(__dirname, "../public/sitemap.json")
-const SOURCE_PAGE = path.join(__dirname, "../app/[[...permalink]]/page.tsx")
+const SOURCE_PAGE = path.join(__dirname, "../app/page.tsx")
 const APP_DIR = path.join(__dirname, "../app")
 
 // Recursively extract all permalinks from sitemap, excluding file and link layouts
@@ -30,8 +30,6 @@ const generatePages = async () => {
     // Extract all permalinks
     const permalinks = extractPermalinks(sitemap)
     const uniquePermalinks = [...new Set(permalinks)].sort()
-
-    console.log(`Found ${uniquePermalinks.length} unique permalinks\n`)
 
     let created = 0
     let skipped = 0
@@ -66,22 +64,13 @@ const generatePages = async () => {
       // Copy page.tsx if it doesn't exist
       try {
         await fs.access(targetFile)
-        console.log(`Skipped (already exists): ${targetFile}`)
         skipped++
       } catch {
         // File doesn't exist, copy it
         await fs.copyFile(SOURCE_PAGE, targetFile)
-        console.log(`Created: ${targetFile}`)
         created++
       }
     }
-
-    console.log("\n========================================")
-    console.log("Summary:")
-    console.log(`  Total permalinks: ${uniquePermalinks.length}`)
-    console.log(`  Created: ${created}`)
-    console.log(`  Skipped: ${skipped}`)
-    console.log("========================================")
   } catch (error) {
     console.error("Error:", error.message)
     process.exit(1)

@@ -1,16 +1,19 @@
-import type { RenderComponentProps } from "@/src/types/renderComponent"
-import type { RenderPageContentParams } from "@/src/types/renderPageContent"
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
-import type { Metadata, ResolvingMetadata } from "next"
+import type {
+  RenderComponentOutput,
+  RenderComponentProps,
+  RenderPageContentOutput,
+  RenderPageContentParams,
+} from "@opengovsg/isomer-components/templates/next/render/types"
+import type { Metadata } from "next"
 import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
-import { doesComponentHaveImage } from "@/src/doesComponentHaveImage"
-import { getMetadata } from "@/src/getMetadata"
-import { getSitemapXml } from "@/src/getSitemapXml"
-import { shouldBlockIndexing } from "@/src/shouldBlockIndexing"
+import { getSitemapXml } from "@opengovsg/isomer-components/engine/getSitemapXml"
+import { getMetadata } from "@opengovsg/isomer-components/engine/metadata"
+import { shouldBlockIndexing } from "@opengovsg/isomer-components/engine/shouldBlockIndexing"
 import { Accordion } from "@opengovsg/isomer-components/templates/next/components/complex/Accordion"
 import { Blockquote } from "@opengovsg/isomer-components/templates/next/components/complex/Blockquote"
 import { Callout } from "@opengovsg/isomer-components/templates/next/components/complex/Callout"
@@ -42,61 +45,18 @@ import { HomepageLayoutSkeleton } from "@opengovsg/isomer-components/templates/n
 import { IndexPageLayoutSkeleton } from "@opengovsg/isomer-components/templates/next/layouts/IndexPageSkeleton"
 import { NotFoundLayout } from "@opengovsg/isomer-components/templates/next/layouts/NotFound"
 import { SearchLayout } from "@opengovsg/isomer-components/templates/next/layouts/Search"
+import { renderPageContentSkeleton } from "@opengovsg/isomer-components/templates/next/render/renderPageContentSkeleton"
 
 export const dynamic = "force-static"
 
 const INDEX_PAGE_PERMALINK = "_index"
 
-// For static routes (copied pages), define the permalink here as a constant.
-// This is needed because static routes don't receive params from Next.js.
-//
-// Examples:
-//   - For /contact/page.tsx: const STATIC_ROUTE_PERMALINK = ["contact"]
-//   - For /newsroom/page.tsx: const STATIC_ROUTE_PERMALINK = ["newsroom"]
-//   - For /the-president/former-presidents/page.tsx: const STATIC_ROUTE_PERMALINK = ["the-president", "former-presidents"]
+// We define the permalink here so that it can be easily replaced when we duplicate this page
+// Examples on how it's used:
 //   - For root /page.tsx: const STATIC_ROUTE_PERMALINK = [] (empty array)
-//
-// Leave undefined for dynamic routes (catch-all route [[...permalink]])
-const STATIC_ROUTE_PERMALINK: string[] | undefined = undefined
-
-interface ParamsContent {
-  permalink: string[]
-}
-interface DynamicPageProps {
-  params: Promise<ParamsContent>
-}
-
-// Note: permalink should not be able to be undefined
-// However, nextjs had some magic props passing going on that causes
-// { permalink: [""] } to be converted to {}
-// Thus the patch is necessary to convert it back if its undefined
-// For static routes (copied pages without params), use STATIC_ROUTE_PERMALINK constant
-const getPatchedPermalink = async (
-  props: DynamicPageProps,
-): Promise<ParamsContent["permalink"]> => {
-  // For static routes, use the defined constant if available
-  // Disabling this because this is a necessary check after this file has been duplicated for each page
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (STATIC_ROUTE_PERMALINK !== undefined) {
-    return STATIC_ROUTE_PERMALINK
-  }
-
-  // For dynamic routes (catch-all), get from params
-  const params = await props.params
-
-  if (
-    // Disabling this because this is a necessary check after this file has been duplicated for each page
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    params.permalink &&
-    params.permalink.length > 0 &&
-    params.permalink[0] !== ""
-  ) {
-    return params.permalink
-  }
-
-  // Fallback to homepage (empty permalink)
-  return [""]
-}
+//   - For /newsroom/page.tsx: const STATIC_ROUTE_PERMALINK = ["newsroom"]
+//   - For /newsroom/newspage/page.tsx: const STATIC_ROUTE_PERMALINK = ["newsroom", "newspage"]
+const STATIC_ROUTE_PERMALINK: string[] = []
 
 const timeNow = new Date()
 const lastUpdated =
@@ -106,59 +66,37 @@ const lastUpdated =
   " " +
   timeNow.getFullYear()
 
-const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
-  const joinedPermalink: string = permalink.join("/")
+const getSchema = async () => {
+  const joinedPermalink = STATIC_ROUTE_PERMALINK.join("/")
 
   const schema = (await import(`@/schema/${joinedPermalink}.json`)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     .then((module) => module.default)
     // NOTE: If the initial import is missing,
     // this might be the case where the file is an index page
     // and has `_index` appended to the original permalink
     // so we have to do another import w the appended index path
     .catch(async () => {
-      if (joinedPermalink === "") {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`).then(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-          (module) => module.default,
-        )
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return import(
-        `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-      ).then((module) => module.default)
+      const path =
+        joinedPermalink === ""
+          ? `${INDEX_PAGE_PERMALINK}.json`
+          : `${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
+      return import(`@/schema/${path}`).then((module) => module.default)
     })) as IsomerPageSchemaType
 
-  const lastModified =
+  schema.page.permalink = "/" + joinedPermalink
+
+  schema.page.lastModified =
     // TODO: fixup all the typing errors
-    // @ts-expect-error to fix when types are proper
+    // @ts-ignore to fix when types are proper
     getSitemapXml(sitemap).find(
       ({ url }) => joinedPermalink === url.replace(/^\//, ""),
     ).lastModified || new Date().toISOString()
 
-  schema.page.permalink = "/" + joinedPermalink
-  schema.page.lastModified = lastModified
-
   return schema
 }
 
-export const generateStaticParams = () => {
-  // TODO: fixup all the typing errors
-  // @ts-expect-error to fix when types are proper
-  return getSitemapXml(sitemap).map(({ url }) => ({
-    permalink: url.replace(/^\//, "").split("/"),
-  }))
-}
-
-export const generateMetadata = async (
-  props: DynamicPageProps,
-  _parent: ResolvingMetadata,
-): Promise<Metadata> => {
-  const schema = await getSchema({
-    permalink: await getPatchedPermalink(props),
-  })
+export const generateMetadata = async (): Promise<Metadata> => {
+  const schema = await getSchema()
   schema.site = {
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
@@ -188,16 +126,8 @@ const renderNextLayout = (props: IsomerPageSchemaType) => {
     case "article":
       return (
         <ArticleLayoutSkeleton
-          {...{
-            ...props,
-            renderPageContent: renderPageContent({
-              content: props.content,
-              layout: props.layout,
-              site: props.site,
-              LinkComponent: Link,
-              permalink: props.page.permalink,
-            }),
-          }}
+          {...props}
+          renderPageContent={renderPageContent}
         />
       )
     case "collection":
@@ -205,61 +135,29 @@ const renderNextLayout = (props: IsomerPageSchemaType) => {
     case "content":
       return (
         <ContentLayoutSkeleton
-          {...{
-            ...props,
-            renderPageContent: renderPageContent({
-              content: props.content,
-              layout: props.layout,
-              site: props.site,
-              LinkComponent: Link,
-              permalink: props.page.permalink,
-            }),
-          }}
+          {...props}
+          renderPageContent={renderPageContent}
         />
       )
     case "database":
       return (
         <DatabaseLayoutSkeleton
-          {...{
-            ...props,
-            renderPageContent: renderPageContent({
-              content: props.content,
-              layout: props.layout,
-              site: props.site,
-              LinkComponent: Link,
-              permalink: props.page.permalink,
-            }),
-          }}
+          {...props}
+          renderPageContent={renderPageContent}
         />
       )
     case "homepage":
       return (
         <HomepageLayoutSkeleton
-          {...{
-            ...props,
-            renderPageContent: renderPageContent({
-              content: props.content,
-              layout: props.layout,
-              site: props.site,
-              LinkComponent: Link,
-              permalink: props.page.permalink,
-            }),
-          }}
+          {...props}
+          renderPageContent={renderPageContent}
         />
       )
     case "index":
       return (
         <IndexPageLayoutSkeleton
-          {...{
-            ...props,
-            renderPageContent: renderPageContent({
-              content: props.content,
-              layout: props.layout,
-              site: props.site,
-              LinkComponent: Link,
-              permalink: props.page.permalink,
-            }),
-          }}
+          {...props}
+          renderPageContent={renderPageContent}
         />
       )
     case "notfound":
@@ -275,48 +173,17 @@ const renderNextLayout = (props: IsomerPageSchemaType) => {
   }
 }
 
-const renderPageContent = ({ content, ...rest }: RenderPageContentParams) => {
-  // Find index of first component with image
-  const firstImageIndex = content.findIndex((component) =>
-    doesComponentHaveImage({ component }),
-  )
-
-  let isInfopicTextOnRight = false
-
-  return content.map((component, index) => {
-    // Lazy load components with images that appear after the first image.
-    // We assume that only the first image component will be visible above the fold,
-    // while subsequent components should be lazy loaded to enhance the Lighthouse performance score.
-    const shouldLazyLoad = index > firstImageIndex
-
-    if (component.type === "infopic") {
-      isInfopicTextOnRight = !isInfopicTextOnRight
-      const formattedComponent = {
-        ...component,
-        isTextOnRight: isInfopicTextOnRight,
-      }
-      return renderComponent({
-        elementKey: index,
-        component: formattedComponent,
-        shouldLazyLoad,
-        ...rest,
-      })
-    }
-
-    return renderComponent({
-      elementKey: index,
-      component,
-      shouldLazyLoad,
-      ...rest,
-    })
-  })
+const renderPageContent = (
+  props: RenderPageContentParams,
+): RenderPageContentOutput => {
+  return renderPageContentSkeleton({ ...props, renderComponent })
 }
 
 const renderComponent = ({
   elementKey,
   component,
   ...rest
-}: RenderComponentProps) => {
+}: RenderComponentProps): RenderComponentOutput => {
   switch (component.type) {
     case "logocloud":
       return <LogoCloud key={elementKey} {...component} {...rest} />
@@ -376,10 +243,8 @@ const renderComponent = ({
   }
 }
 
-const Page = async (props: DynamicPageProps) => {
-  const renderSchema = await getSchema({
-    permalink: await getPatchedPermalink(props),
-  })
+const Page = async () => {
+  const renderSchema = await getSchema()
 
   return (
     <RenderEngine

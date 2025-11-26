@@ -1,5 +1,4 @@
-import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
-
+import type { IsomerPageSchemaType } from "~/types"
 import { shouldBlockIndexing } from "./shouldBlockIndexing"
 
 export const getRobotsTxt = (props: IsomerPageSchemaType) => {

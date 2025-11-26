@@ -1,5 +1,7 @@
-import { Fragment } from "react"
-
+import type {
+  RenderPageContentOutput,
+  RenderPageContentParams,
+} from "../../render/types"
 import type { DatabasePageSchemaType } from "~/types/schema"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
@@ -22,7 +24,9 @@ const createDatabaseLayoutStyles = tv({
 const compoundStyles = createDatabaseLayoutStyles()
 
 interface DatabaseLayoutSkeletonProps extends DatabasePageSchemaType {
-  renderPageContent: JSX.Element[]
+  renderPageContent: (
+    params: RenderPageContentParams,
+  ) => RenderPageContentOutput
 }
 
 export const DatabaseLayoutSkeleton = ({
@@ -66,9 +70,13 @@ export const DatabaseLayoutSkeleton = ({
               />
             )}
             <div>
-              {renderPageContent.map((el, i) => (
-                <Fragment key={i}>{el}</Fragment>
-              ))}
+              {renderPageContent({
+                content: transformedContent,
+                layout,
+                site,
+                LinkComponent,
+                permalink: page.permalink,
+              })}
             </div>
           </div>
         )}

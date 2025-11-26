@@ -3,7 +3,17 @@ import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
-} from "@opengovsg/isomer-components"
+} from "~/types"
+
+export interface RenderPageContentParams {
+  content: IsomerComponent[]
+  layout: IsomerPageLayoutType
+  site: IsomerSiteProps
+  LinkComponent: LinkComponentType
+  permalink: string
+}
+
+export type RenderPageContentOutput = JSX.Element[]
 
 export interface RenderComponentProps {
   elementKey?: number
@@ -14,3 +24,5 @@ export interface RenderComponentProps {
   shouldLazyLoad?: boolean
   permalink: string
 }
+
+export type RenderComponentOutput = JSX.Element
