@@ -1,5 +1,6 @@
 import type { Logger } from "pino"
 
+import type { BuildChanges } from "./types"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
   addCodeBuildAndMarkSupersededBuild,
@@ -39,37 +40,31 @@ export const publishSite = async (
 
   // Step 2: Determine if a new build should be started
   const buildChanges = await computeBuildChanges(logger, codeBuildId)
-  if (!buildChanges.isNewBuildNeeded) {
-    if (addCodebuildJobRow)
-      await addCodeBuildAndMarkSupersededBuild({
-        buildChanges,
-        resourceId,
+  let buildChangesWithStartedBuild: BuildChanges
+
+  // Step 3: Start a new build if needed
+  if (buildChanges.isNewBuildNeeded) {
+    const startedBuild = await startProjectById(logger, codeBuildId)
+    buildChangesWithStartedBuild = { ...buildChanges, startedBuild }
+    logger.info(
+      {
         siteId,
-        userId,
-        isScheduled,
-      })
-    return
+        codeBuildId,
+      },
+      "Started new CodeBuild project run",
+    )
+  } else {
+    buildChangesWithStartedBuild = buildChanges
   }
 
-  // Step 3: Start a new build
-  const startedBuild = await startProjectById(logger, codeBuildId)
-  logger.info(
-    {
-      siteId,
-      codeBuildId,
-    },
-    "Started new CodeBuild project run",
-  )
-
-  if (addCodebuildJobRow)
+  // Step 4: Record the build in the database and mark any superseded builds
+  if (addCodebuildJobRow) {
     await addCodeBuildAndMarkSupersededBuild({
-      buildChanges: {
-        ...buildChanges,
-        startedBuild,
-      },
-      resourceId,
+      buildChanges: buildChangesWithStartedBuild,
       siteId,
       userId,
       isScheduled,
+      resourceId,
     })
+  }
 }
