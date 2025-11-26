@@ -9,8 +9,7 @@ export const SearchLayout = ({
   LinkComponent,
 }: SearchPageSchemaType) => {
   const clientId =
-    (site.search && site.search.type === "searchSG" && site.search.clientId) ||
-    ""
+    (site.search?.type === "searchSG" && site.search.clientId) || ""
 
   return (
     <Skeleton
@@ -19,11 +18,8 @@ export const SearchLayout = ({
       layout={layout}
       LinkComponent={LinkComponent}
     >
-      {/* Local search */}
-      {site.search && site.search.type === "localSearch" && <></>}
-
       {/* SearchSG-powered search */}
-      {site.search && site.search.type === "searchSG" && clientId && (
+      {site.search?.type === "searchSG" && clientId && (
         <SearchSG clientId={clientId} />
       )}
     </Skeleton>

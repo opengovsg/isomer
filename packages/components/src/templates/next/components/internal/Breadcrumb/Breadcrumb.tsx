@@ -1,14 +1,4 @@
-"use client"
-
-import type { ElementType } from "react"
-import type {
-  BreadcrumbProps as AriaBreadcrumbProps,
-  BreadcrumbsProps,
-} from "react-aria-components"
-import {
-  Breadcrumb as AriaBreadcrumb,
-  Breadcrumbs as AriaBreadcrumbs,
-} from "react-aria-components"
+import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react"
 import { BiChevronRight } from "react-icons/bi"
 
 import type { BreadcrumbProps, LinkProps } from "~/interfaces"
@@ -40,36 +30,61 @@ const createBreadcrumbLinkStyles = tv({
   defaultVariants: { colorScheme: "default" },
 })
 
-function BaseBreadcrumbs<T extends object>(props: BreadcrumbsProps<T>) {
+type BaseBreadcrumbsProps = ComponentPropsWithoutRef<"div"> & {
+  children: ReactNode
+}
+
+function BaseBreadcrumbs({
+  className,
+  children,
+  "aria-label": ariaLabel = "Breadcrumb",
+  ...props
+}: BaseBreadcrumbsProps) {
   return (
-    <AriaBreadcrumbs
+    <div
       {...props}
-      className={twMerge("flex flex-wrap gap-1", props.className)}
-    />
+      aria-label={ariaLabel}
+      role="navigation"
+      className={twMerge("flex flex-wrap gap-1", className)}
+    >
+      <ol className="m-0 flex list-none flex-wrap items-center gap-1 p-0">
+        {children}
+      </ol>
+    </div>
   )
+}
+
+type BaseBreadcrumbProps = LinkProps & {
+  LinkComponent?: ElementType
+  colorScheme?: "default" | "inverse"
 }
 
 function BaseBreadcrumb({
   LinkComponent,
   colorScheme,
-  ...props
-}: AriaBreadcrumbProps &
-  LinkProps & {
-    LinkComponent?: ElementType
-    colorScheme?: "default" | "inverse"
-  }) {
+  children,
+  label,
+  className,
+  href,
+  ...linkProps
+}: BaseBreadcrumbProps) {
   const styles = createBreadcrumbLinkStyles({ colorScheme })
+  const mergedLinkClassName = twMerge(styles.link(), className)
 
   return (
-    <AriaBreadcrumb {...props} className={styles.container()}>
+    <li className={styles.container()}>
       <Link
-        {...props}
-        label={typeof props.children === "string" ? props.children : undefined}
-        className={styles.link()}
+        {...linkProps}
+        href={href}
+        label={label}
+        className={mergedLinkClassName}
+        isWithFocusVisibleHighlight
         LinkComponent={LinkComponent}
-      />
-      {props.href && <BiChevronRight className={styles.icon()} />}
-    </AriaBreadcrumb>
+      >
+        {children}
+      </Link>
+      {href && <BiChevronRight aria-hidden="true" className={styles.icon()} />}
+    </li>
   )
 }
 

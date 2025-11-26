@@ -1,7 +1,7 @@
 import type { Exact } from "type-fest"
 
 import type { AllCardProps, ProcessedCollectionCardProps } from "~/interfaces"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import { getFormattedDate, getReferenceLinkHref, isExternalUrl } from "~/utils"
 
 export const processCollectionItems = (
   items: AllCardProps[],
@@ -38,6 +38,7 @@ export const processCollectionItems = (
           ? item.image?.src
           : `${site.assetsBaseUrl}${item.image?.src}`,
       itemTitle: `${item.title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`,
+      formattedDate: date ? getFormattedDate(date.toISOString()) : undefined,
     } as Exact<ProcessedCollectionCardProps, ProcessedCollectionCardProps>
   })
 }

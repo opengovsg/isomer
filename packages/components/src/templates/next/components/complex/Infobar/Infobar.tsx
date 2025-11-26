@@ -1,5 +1,5 @@
 import type { InfobarProps } from "~/interfaces"
-import { DEFAULT_INFOBAR_VARIANT } from "~/constants"
+import { DEFAULT_INFOBAR_VARIANT } from "~/interfaces/complex/Infobar/constants"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"

@@ -45,9 +45,9 @@ export const ArticlePageHeader = ({
         )}
 
         {summary && (
-          <div className="prose-title-lg text-base-content-light">
+          <p className="prose-title-lg whitespace-pre-wrap text-base-content-light">
             {summary}
-          </div>
+          </p>
         )}
       </div>
     </div>

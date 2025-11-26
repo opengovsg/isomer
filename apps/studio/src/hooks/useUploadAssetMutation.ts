@@ -23,10 +23,14 @@ interface HandleUploadParams {
 }
 
 const handleUpload = async ({ file, presignedPutUrl }: HandleUploadParams) => {
+  // Encode filename for Content-Disposition header (RFC 6266)
+  // Escape quotes and backslashes, then use filename* parameter for UTF-8 support
+  const encodedFilename = encodeURIComponent(file.name)
+
   const response = await fetch(presignedPutUrl, {
     headers: {
       "Content-Type": file.type,
-      "Content-Disposition": `inline; filename="${file.name}"`,
+      "Content-Disposition": `inline; filename*=UTF-8''${encodedFilename}`,
     },
     method: "PUT",
     body: file,

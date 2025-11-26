@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { expect, userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { expect, userEvent, within } from "storybook/test"
 import { userHandlers } from "tests/msw/handlers/user"
 
 import UsersPage from "~/pages/sites/[siteId]/users"
@@ -83,6 +83,7 @@ export const Loading: Story = {
 
 export const ToastAfterEditingUser: Story = {
   parameters: {
+    disableMockDate: true,
     msw: {
       handlers: [...ADMIN_HANDLERS, userHandlers.update.success()],
     },

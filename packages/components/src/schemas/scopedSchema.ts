@@ -1,6 +1,6 @@
 import type { Static, TSchema } from "@sinclair/typebox"
 
-import { ISOMER_USABLE_PAGE_LAYOUTS } from "../constants"
+import type { ISOMER_USABLE_PAGE_LAYOUTS } from "../types/constants"
 import {
   ArticlePageSchema,
   CollectionPageSchema,

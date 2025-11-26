@@ -1,5 +1,5 @@
 import type { CalloutProps } from "~/interfaces"
-import Prose from "../../native/Prose"
+import { Prose } from "../../native/Prose"
 
 export const Callout = ({ content, LinkComponent, site }: CalloutProps) => {
   return (

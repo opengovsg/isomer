@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import type { ContactInformationUIProps } from "~/interfaces"
-import { CONTACT_INFORMATION_SUPPORT_METHODS } from "~/constants"
+import type { CONTACT_INFORMATION_SUPPORT_METHODS } from "~/interfaces/complex/ContactInformation/constants"
 import { filterContactMethods } from "../filterContactMethods"
 
 // Helper function to create mock contact methods

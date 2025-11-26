@@ -1,21 +1,20 @@
 "use client"
 
-import type {
-  SearchFieldProps as AriaSearchFieldProps,
-  GroupProps,
-} from "react-aria-components"
-import {
-  SearchField as AriaSearchField,
-  composeRenderProps,
-  Group,
-} from "react-aria-components"
+import type { AriaTextFieldOptions } from "@react-aria/textfield"
+import { useRef, useState } from "react"
+import { useFocusRing } from "@react-aria/focus"
+import { useTextField } from "@react-aria/textfield"
+import { mergeProps } from "@react-aria/utils"
 import { BiSearch, BiX } from "react-icons/bi"
 
 import type { ClassNames } from "~/utils/rac"
 import { tv } from "~/lib/tv"
-import { composeTailwindRenderProps } from "~/utils/rac"
+import { twMerge } from "~/lib/twMerge"
 import { IconButton } from "./IconButton"
-import { Input } from "./Input"
+
+const inputStyles = tv({
+  base: "prose-body-base min-w-0 flex-1 bg-white text-base-content outline outline-0 placeholder:text-interaction-support-placeholder disabled:text-interaction-support-placeholder",
+})
 
 const fieldGroupStyles = tv({
   base: "group flex items-center gap-4 overflow-hidden rounded bg-white py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
@@ -33,19 +32,7 @@ const fieldGroupStyles = tv({
   },
 })
 
-function FieldGroup(props: GroupProps) {
-  return (
-    <Group
-      {...props}
-      className={composeRenderProps(props.className, (className, renderProps) =>
-        fieldGroupStyles({ ...renderProps, className }),
-      )}
-    />
-  )
-}
-
-export interface SearchFieldProps
-  extends Omit<AriaSearchFieldProps, "className"> {
+export interface SearchFieldProps extends AriaTextFieldOptions<"input"> {
   placeholder?: string
   classNames?: ClassNames<
     | "container"
@@ -64,32 +51,67 @@ export function SearchField({
   placeholder,
   ...props
 }: SearchFieldProps) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [isFocusWithin, setIsFocusWithin] = useState(false)
+  const { inputProps } = useTextField(props, inputRef)
+  const { focusProps } = useFocusRing()
+
+  const isDisabled = props.isDisabled ?? false
+  const isInvalid = props.isInvalid ?? false
+  const value = typeof inputProps.value === "string" ? inputProps.value : ""
+  const isEmpty = !value || value.length === 0
+
+  const handleClear = () => {
+    if (props.onChange) {
+      props.onChange("")
+    }
+    inputRef.current?.focus()
+  }
+
   return (
-    <AriaSearchField
-      {...props}
-      className={composeTailwindRenderProps(
-        classNames?.container,
-        "group flex flex-col gap-2",
-      )}
-    >
-      <FieldGroup className={classNames?.fieldgroup}>
+    <div className={twMerge("flex flex-col gap-2", classNames?.container)}>
+      <div
+        className={twMerge(
+          fieldGroupStyles({
+            isFocusWithin,
+            isInvalid,
+            isDisabled,
+          }),
+          classNames?.fieldgroup,
+        )}
+        onFocus={() => setIsFocusWithin(true)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            setIsFocusWithin(false)
+          }
+        }}
+      >
         <BiSearch
           aria-hidden
-          className="h-5 w-5 text-base-content-medium forced-colors:text-[ButtonText] forced-colors:group-disabled:text-[GrayText]"
+          className={
+            isDisabled
+              ? "h-5 w-5 text-base-content-medium forced-colors:text-[GrayText]"
+              : "h-5 w-5 text-base-content-medium forced-colors:text-[ButtonText]"
+          }
         />
-        <Input
-          className={composeTailwindRenderProps(
-            classNames?.input,
+        <input
+          {...mergeProps(inputProps, focusProps)}
+          ref={inputRef}
+          type="search"
+          className={twMerge(
+            inputStyles(),
             "bg-transparent [&::-webkit-search-cancel-button]:hidden",
+            classNames?.input,
           )}
           placeholder={placeholder}
         />
         <IconButton
           icon={BiX}
-          className="group-empty:invisible"
+          onPress={handleClear}
+          className={twMerge(isEmpty && "invisible", classNames?.reset)}
           aria-label="Clear search field"
         />
-      </FieldGroup>
-    </AriaSearchField>
+      </div>
+    </div>
   )
 }

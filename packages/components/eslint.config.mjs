@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook"
+
 import baseConfig from "@isomer/eslint-config/base"
 import reactConfig from "@isomer/eslint-config/react"
 
@@ -45,8 +48,16 @@ export default [
               message: "Please use export from next instead of next/navigation",
             },
           ],
+          patterns: [
+            {
+              group: ["lodash-es/*"],
+              message:
+                "Import from `lodash-es` entrypoint only to preserve tree shaking.",
+            },
+          ],
         },
       ],
     },
   },
+  ...storybook.configs["flat/recommended"],
 ]

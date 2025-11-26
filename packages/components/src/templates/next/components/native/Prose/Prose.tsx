@@ -55,7 +55,7 @@ const ProseComponent = ({
   }
 }
 
-const Prose = ({
+export const Prose = ({
   content,
   LinkComponent,
   site,
@@ -79,5 +79,3 @@ const Prose = ({
     </>
   )
 }
-
-export default Prose

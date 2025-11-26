@@ -1,13 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { expect, userEvent, within } from "@storybook/test"
-import flatten from "lodash/flatten"
-import times from "lodash/times"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { flatten, times } from "lodash-es"
+import { expect, userEvent, within } from "storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { IsomerSitemap } from "~/types"
+import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
-import { type CollectionPageSchemaType } from "~/types"
 import { CollectionLayout } from "./Collection"
 
 const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
@@ -22,7 +20,14 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
       date: "07/05/2024",
       category: "Category Name",
-      tags: [{ category: "jokes", values: ["Dad"], selected: ["Dad"] }],
+      tags: [
+        {
+          category:
+            "Testing a long filter label to test how it wraps or truncates",
+          values: ["Test"],
+          selected: ["Test"],
+        },
+      ],
     },
     {
       id: `${index}`,
@@ -39,11 +44,15 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       date: "07/05/2024",
       category: "Category Name",
       ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
-      fileDetails: {
-        type: "png",
-        size: "1.2MB",
-      },
-      tags: [{ category: "jokes", values: ["Lame"], selected: ["Lame"] }],
+      fileDetails: { type: "png", size: "1.2MB" },
+      tags: [
+        {
+          category:
+            "Testing a long filter label to test how it wraps or truncates",
+          values: ["Test"],
+          selected: ["Test"],
+        },
+      ],
     },
     {
       id: `${index}`,
@@ -58,12 +67,13 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       ref: "https://guide.isomer.gov.sg",
       tags: [
         {
-          category: "jokes",
+          category:
+            "Testing a long filter label to test how it wraps or truncates",
           values: [
             "This is a very long tag that should be reflowed on smaller screens maybe",
           ],
           selected: [
-            "Lame",
+            "Test",
             "This is a very long tag that shuold be reflowed on smaller screens maybe",
             "This is a second long link that should eat into the image area so that we can see how it looks",
           ],
