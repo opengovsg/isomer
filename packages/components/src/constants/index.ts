@@ -1,7 +1,2 @@
-export * from "./pageLayouts"
-export * from "./childrenPages"
-export * from "./infobar"
-export * from "./dynamicDataBanner"
-export * from "./contactInformation"
 export { COMPONENT_MAPPINGS } from "./componentMappings"
 export { LAYOUT_MAPPINGS } from "./layoutMappings"
