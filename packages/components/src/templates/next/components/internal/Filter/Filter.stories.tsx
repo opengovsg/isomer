@@ -75,7 +75,7 @@ const meta: Meta<typeof Filter> = {
     filters: [
       {
         id: "type",
-        label: "Type",
+        label: "Testing a long filter label to test how it wraps or truncates",
         items: [
           { id: "article", label: "Article", count: 1204 },
           { id: "speech", label: "Speech", count: 888 },
