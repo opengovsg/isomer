@@ -196,6 +196,7 @@ function CheckboxRenderer({
         className,
       )}
       data-pressed={isPressed ? "true" : undefined}
+      data-selected={isSelected || isIndeterminate ? "true" : undefined}
     >
       <input
         {...mergedInputProps}
