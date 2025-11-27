@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 
 import type { MicrosoftClarityProps } from "~/interfaces"
-import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader" // your hook
+import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader"
 
 export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
   // Step 1: insert the tiny inline init function
