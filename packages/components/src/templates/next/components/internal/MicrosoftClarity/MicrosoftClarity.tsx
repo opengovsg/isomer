@@ -7,6 +7,11 @@ import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader" 
 
 export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
   // Step 1: insert the tiny inline init function
+  // If code calls window.clarity() before the script loads, it would fail because window.clarity doesn't exist yet.
+  // The function below (taken from the Clarity docs) implements a queue pattern:
+  // 1. Creates a placeholder window.clarity function that queues calls
+  // 2. Stores calls in window.clarity.q array
+  // 3. When the real Clarity script loads, it processes all queued calls
   useEffect(() => {
     // to not render during static site generation on the server
     if (typeof window === "undefined") return
