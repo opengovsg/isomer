@@ -2,7 +2,7 @@ import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
 import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
 import { getSitemapAsArray } from "~/utils"
 
-const getMetaTitle = (props: IsomerPageSchemaType) => {
+const getOpenGraphTitle = (props: IsomerPageSchemaType) => {
   // NOTE: We show the site name as the title for the homepage, as places like
   // WhatsApp do not use the site_name property of the OpenGraph metadata when
   // displaying the page preview, which can be confusing for users
@@ -92,7 +92,9 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
 
   const metadata = {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
-    title: getMetaTitle(props),
+    // NOTE: The title will be used like "{title} | {siteName}" inside the
+    // NextJS template
+    title: props.page.title,
     description: getMetaDescription(props),
     robots: {
       index:
@@ -107,7 +109,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
       shortcut: faviconUrl,
     },
     openGraph: {
-      title: getMetaTitle(props),
+      title: getOpenGraphTitle(props),
       description: getMetaDescription(props),
       url: canonicalUrl,
       siteName: props.site.siteName,
