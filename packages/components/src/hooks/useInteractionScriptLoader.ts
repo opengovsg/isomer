@@ -21,10 +21,11 @@ export const useInteractionScriptLoader = ({
 
   const triggerLoad = () => setShouldLoad(true)
 
-  // Load script on user interactions (scroll, click, touchstart)
+  // Load script on user interactions (scroll, click, touchstart, mousemove)
   useEventListener("scroll", triggerLoad, documentRef, { passive: true })
   useEventListener("click", triggerLoad, documentRef) // as we might need to call preventDefault
   useEventListener("touchstart", triggerLoad, documentRef, { passive: true })
+  useEventListener("mousemove", triggerLoad, documentRef, { passive: true })
 
   // Load script after timeout if user doesn't interact
   useTimeout(triggerLoad, timeout)
