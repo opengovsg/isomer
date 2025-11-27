@@ -32,5 +32,5 @@ export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
     src: `https://www.clarity.ms/tag/${msClarityId}`,
   })
 
-  return null // this component does not render anything
+  return null
 }
