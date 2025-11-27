@@ -1,10 +1,10 @@
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
 import type { Metadata, ResolvingMetadata } from "next"
-import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
+import { SuperLink } from "@/src/superlink"
 import { getMetadata } from "@opengovsg/isomer-components/engine/metadata"
 import { NotFoundLayout } from "@opengovsg/isomer-components/templates/next/layouts/NotFound"
 
@@ -103,7 +103,7 @@ const NotFound = () => {
           lastModified: new Date().toISOString(),
         }}
         content={[]}
-        LinkComponent={Link}
+        LinkComponent={SuperLink}
       />
     </>
   )
