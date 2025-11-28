@@ -3,7 +3,6 @@ import { getBreadcrumbFromSiteMap } from "~/utils"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
-import { renderPageContent } from "../../render"
 import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
 import { Skeleton } from "../Skeleton"
 
@@ -13,6 +12,7 @@ export const ArticleLayout = ({
   layout,
   content,
   LinkComponent,
+  renderPageContent,
 }: ArticlePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,

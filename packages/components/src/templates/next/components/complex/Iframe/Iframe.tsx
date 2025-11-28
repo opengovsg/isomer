@@ -1,3 +1,5 @@
+"use client"
+
 import type { IframeProps } from "~/interfaces"
 import { getSanitizedIframeWithTitle } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"

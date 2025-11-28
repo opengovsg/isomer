@@ -1,3 +1,5 @@
+"use client"
+
 import type { ImageGalleryProps } from "~/interfaces/complex/ImageGallery"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ImageGalleryClient } from "./ImageGalleryClient"

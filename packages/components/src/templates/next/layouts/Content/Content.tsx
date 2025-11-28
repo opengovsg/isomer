@@ -10,7 +10,6 @@ import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
 import { Siderail } from "../../components/internal/Siderail"
 import { TableOfContents } from "../../components/internal/TableOfContents"
-import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
 const createContentLayoutStyles = tv({
@@ -30,6 +29,7 @@ export const ContentLayout = ({
   page,
   layout,
   content,
+  renderPageContent,
   LinkComponent,
 }: ContentPageSchemaType) => {
   const isParentPageRoot = page.permalink.split("/").length === 2

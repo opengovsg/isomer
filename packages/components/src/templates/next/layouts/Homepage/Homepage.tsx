@@ -1,5 +1,4 @@
 import { type HomePageSchemaType } from "~/types"
-import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
 export const HomepageLayout = ({
@@ -8,6 +7,7 @@ export const HomepageLayout = ({
   layout,
   content,
   LinkComponent,
+  renderPageContent,
 }: HomePageSchemaType) => {
   return (
     <Skeleton
