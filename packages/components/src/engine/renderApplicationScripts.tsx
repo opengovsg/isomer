@@ -45,10 +45,7 @@ export const RenderApplicationScripts = ({
       )}
 
       {!!site.isomerMsClarityId && (
-        <MicrosoftClarity
-          msClarityId={site.isomerMsClarityId}
-          ScriptComponent={ScriptComponent}
-        />
+        <MicrosoftClarity msClarityId={site.isomerMsClarityId} />
       )}
 
       {/* Ensures that the webchat widget only loads after the page has loaded */}
