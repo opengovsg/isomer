@@ -97,10 +97,8 @@ const publishScheduledResources = async (
       })
       logger.info(`Successfully published page for resource: ${resourceId}`)
       // Group resources by siteId for site publishing later
-      siteResourcesMap[siteId] = [
-        ...(siteResourcesMap[siteId] ?? []),
-        { ...resource, scheduledBy },
-      ]
+      siteResourcesMap[siteId] = siteResourcesMap[siteId] ?? []
+      siteResourcesMap[siteId].push({ ...resource, scheduledBy })
     } catch (error) {
       logger.error(
         { error },
