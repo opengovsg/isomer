@@ -281,7 +281,11 @@ describe("schedulePublishingJob", async () => {
 
       // Act
       await publishScheduledSites(
-        { [site.id]: [{ ...page, scheduledBy: String(session.userId) }] },
+        {
+          [site.id]: [
+            { ...page, scheduledBy: String(session.userId), email: user.email },
+          ],
+        },
         true,
       )
 
@@ -320,7 +324,11 @@ describe("schedulePublishingJob", async () => {
 
       // Act
       await publishScheduledSites(
-        { [site.id]: [{ ...page, scheduledBy: String(session.userId) }] },
+        {
+          [site.id]: [
+            { ...page, scheduledBy: String(session.userId), email: user.email },
+          ],
+        },
         false,
       )
 
@@ -358,7 +366,11 @@ describe("schedulePublishingJob", async () => {
 
       // Act
       await publishScheduledSites(
-        { [site.id]: [{ ...page, scheduledBy: String(session.userId) }] },
+        {
+          [site.id]: [
+            { ...page, scheduledBy: String(session.userId), email: user.email },
+          ],
+        },
         true,
       )
 
