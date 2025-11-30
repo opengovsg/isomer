@@ -11,7 +11,7 @@ import {
 
 interface PublishSiteArgs {
   siteId: number
-  codebuildJobArgs?: {
+  codebuildJob?: {
     isScheduled: boolean
     resourceWithUserIds: { resourceId: string; userId: string }[]
   }
@@ -19,7 +19,7 @@ interface PublishSiteArgs {
 
 export const publishSite = async (
   logger: Logger<string>,
-  { siteId, codebuildJobArgs }: PublishSiteArgs,
+  { siteId, codebuildJob }: PublishSiteArgs,
 ) => {
   // Step 1: Get the CodeBuild ID associated with the site
   const site = await getSiteNameAndCodeBuildId(siteId)
@@ -55,11 +55,11 @@ export const publishSite = async (
   }
 
   // Step 4: Record the build in the database and mark any superseded builds
-  if (codebuildJobArgs) {
+  if (codebuildJob) {
     await addCodeBuildAndMarkSupersededBuild({
       buildChanges: buildChangesWithStartedBuild,
       siteId,
-      ...pick(codebuildJobArgs, ["isScheduled", "resourceWithUserIds"]),
+      ...pick(codebuildJob, ["isScheduled", "resourceWithUserIds"]),
     })
   }
 }
