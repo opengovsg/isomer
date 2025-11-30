@@ -137,7 +137,7 @@ const publishScheduledSites = async (
     try {
       await publishSite(logger, {
         siteId: Number(siteId),
-        codebuildJobArgs: enableCodebuildJobs
+        codebuildJob: enableCodebuildJobs
           ? {
               isScheduled: true,
               resourceWithUserIds: resources.map(

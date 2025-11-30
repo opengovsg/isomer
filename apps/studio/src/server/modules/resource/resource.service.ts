@@ -540,7 +540,8 @@ interface PublishPageResourceArgs {
   userId: string
   siteId: number
   resourceId: string
-  sitePublishOptions?: {
+  sitePublish?: {
+    enableCodebuildJobs: boolean
     isScheduled: boolean
   }
   isSingpassEnabled?: boolean
@@ -551,7 +552,7 @@ export const publishPageResource = async ({
   siteId,
   resourceId,
   userId,
-  sitePublishOptions,
+  sitePublish,
 }: PublishPageResourceArgs) => {
   await db.transaction().execute(async (tx) => {
     // Step 1: Create a new version
@@ -592,13 +593,15 @@ export const publishPageResource = async ({
   })
 
   // Step 2: Trigger a publish of the site
-  if (sitePublishOptions)
+  if (sitePublish)
     await publishSite(logger, {
       siteId,
-      codebuildJobArgs: {
-        resourceWithUserIds: [{ resourceId, userId }],
-        isScheduled: sitePublishOptions.isScheduled,
-      },
+      codebuildJob: sitePublish.enableCodebuildJobs
+        ? {
+            resourceWithUserIds: [{ resourceId, userId }],
+            isScheduled: sitePublish.isScheduled,
+          }
+        : undefined,
     })
 }
 
