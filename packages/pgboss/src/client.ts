@@ -4,11 +4,13 @@ import { env } from "./env";
 import type { pino } from "pino";
 import { type HeartbeatOptions, sendHeartbeat } from "./utils";
 
-/* Singleton pattern using global for dev hot reload */
-const globalForPgboss = global as unknown as {
+export interface GlobalWithPgBoss {
   pgBoss: PgBoss | undefined;
   registeredPgbossJobs: Set<string>;
-};
+}
+
+/* Singleton pattern using global for dev hot reload */
+const globalForPgboss = global as unknown as GlobalWithPgBoss;
 
 const createPgbossClient = async (
   logger: pino.Logger<string>,
