@@ -647,44 +647,35 @@ export const pageRouter = router({
 
   publishPage: protectedProcedure
     .input(publishPageSchema)
-    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "publish",
-        userId: ctx.user.id,
-      })
-      const user = await db
-        .selectFrom("User")
-        .selectAll()
-        .where("id", "=", ctx.user.id)
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "PRECONDITION_FAILED",
-              message: "Please ensure that you have logged in",
-            }),
-        )
-      await publishPageResource({
-        logger: ctx.logger,
-        siteId,
-        resourceId: String(pageId),
-        userId: user.id,
-        sitePublishOptions: ctx.gb.isOn(ENABLE_CODEBUILD_JOBS)
-          ? {
-              isScheduled: false,
-            }
-          : undefined,
-      })
-      // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
-      if (!ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)) {
-        await alertPublishWhenSingpassDisabled({
+    .mutation(
+      async ({ ctx: { user, gb, logger }, input: { siteId, pageId } }) => {
+        await bulkValidateUserPermissionsForResources({
+          siteId,
+          action: "publish",
+          userId: user.id,
+        })
+        await publishPageResource({
+          logger,
           siteId,
           resourceId: String(pageId),
-          publisherId: user.id,
-          publisherEmail: user.email,
+          userId: user.id,
+          sitePublishOptions: gb.isOn(ENABLE_CODEBUILD_JOBS)
+            ? {
+                isScheduled: false,
+              }
+            : undefined,
         })
-      }
-    }),
+        // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
+        if (!gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)) {
+          await alertPublishWhenSingpassDisabled({
+            siteId,
+            resourceId: String(pageId),
+            publisherId: user.id,
+            publisherEmail: user.email,
+          })
+        }
+      },
+    ),
 
   updateMeta: protectedProcedure
     .input(updatePageMetaSchema)
