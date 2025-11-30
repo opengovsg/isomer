@@ -669,10 +669,11 @@ export const pageRouter = router({
         siteId,
         resourceId: String(pageId),
         userId: user.id,
-        sitePublishOptions: {
-          addCodebuildJobRow: ctx.gb.isOn(ENABLE_CODEBUILD_JOBS),
-          isScheduled: false,
-        },
+        sitePublishOptions: ctx.gb.isOn(ENABLE_CODEBUILD_JOBS)
+          ? {
+              isScheduled: false,
+            }
+          : undefined,
       })
       // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
       if (!ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)) {
