@@ -1,4 +1,5 @@
 import type { Logger } from "pino"
+import { pick } from "lodash"
 
 import type { BuildChanges } from "./types"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
@@ -63,8 +64,7 @@ export const publishSite = async (
     await addCodeBuildAndMarkSupersededBuild({
       buildChanges: buildChangesWithStartedBuild,
       siteId,
-      resourceWithUserIds: codebuildJobArgs.resourceWithUserIds,
-      isScheduled: codebuildJobArgs.isScheduled,
+      ...pick(codebuildJobArgs, ["isScheduled", "resourceWithUserIds"]),
     })
   }
 }
