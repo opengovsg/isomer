@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types": ["node"],
     "declaration": true,
     "rootDir": "src",
     "moduleResolution": "node",
@@ -9,7 +10,6 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
-    "typeRoots": ["node_modules/@types", "src/types"],
     "baseUrl": "./",
     "paths": {
       "~/*": ["./src/*"]

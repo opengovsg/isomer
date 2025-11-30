@@ -7,9 +7,7 @@ import reactConfig from "@isomer/eslint-config/react"
 
 /** @type {import('typescript-eslint').Config} */
 export default [
-  {
-    ignores: [".next/**", "!.storybook/**"],
-  },
+  { ignores: [".next/**", "!.storybook/**", "./next-env.d.ts"] },
   ...baseConfig,
   ...reactConfig,
   ...nextjsConfig,
