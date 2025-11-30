@@ -97,7 +97,6 @@ const publishScheduledResources = async (
         resourceId,
         siteId,
         userId: scheduledBy,
-        sitePublishOptions: { enable: false },
       })
       logger.info(`Successfully published page for resource: ${resourceId}`)
       // Group resources by siteId for site publishing later

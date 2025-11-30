@@ -670,7 +670,6 @@ export const pageRouter = router({
         resourceId: String(pageId),
         userId: user.id,
         sitePublishOptions: {
-          enable: true,
           addCodebuildJobRow: ctx.gb.isOn(ENABLE_CODEBUILD_JOBS),
           isScheduled: false,
         },
