@@ -389,11 +389,6 @@ export const pageRouter = router({
             message: "Failed to schedule page",
           })
         }
-        // await schedulePublishResource(
-        //   ctx.logger,
-        //   { resourceId: pageId, siteId, userId: ctx.user.id },
-        //   scheduledAt,
-        // )
         await logResourceEvent(tx, {
           siteId,
           by,
@@ -447,11 +442,6 @@ export const pageRouter = router({
             message: "Failed to cancel page schedule",
           })
         }
-        // await unschedulePublishResource(
-        //   ctx.logger,
-        //   pageId,
-        //   resource.scheduledAt,
-        // )
         await logResourceEvent(tx, {
           siteId,
           by,
