@@ -539,9 +539,10 @@ interface PublishPageResourceArgs {
   userId: string
   siteId: number
   resourceId: string
-  sitePublishOptions:
-    | { enable: true; isScheduled: boolean; addCodebuildJobRow: boolean }
-    | { enable: false }
+  sitePublishOptions?: {
+    isScheduled: boolean
+    addCodebuildJobRow: boolean
+  }
   isSingpassEnabled?: boolean
 }
 
@@ -601,7 +602,7 @@ export const publishPageResource = async ({
   })
 
   // Step 2: Trigger a publish of the site
-  if (sitePublishOptions.enable)
+  if (sitePublishOptions)
     await publishSite(logger, {
       siteId,
       codebuildJobArgs: sitePublishOptions.addCodebuildJobRow
