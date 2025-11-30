@@ -67,7 +67,7 @@ type ResourceWithUser = Omit<Resource, "scheduledBy"> & {
   userDeletedAt: Date | null
 }
 
-const publishScheduledResources = async (
+export const publishScheduledResources = async (
   enableEmailsForScheduledPublishes: boolean,
   scheduledAtCutoff: Date,
 ) => {
@@ -141,7 +141,7 @@ const publishScheduledResources = async (
   return siteResourcesMap
 }
 
-const publishScheduledSites = async (
+export const publishScheduledSites = async (
   siteResourcesMap: Record<string, ResourceWithUser[]>,
   enableCodebuildJobs: boolean,
 ) => {
