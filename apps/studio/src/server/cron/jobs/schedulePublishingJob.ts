@@ -137,15 +137,16 @@ const publishScheduledSites = async (
     try {
       await publishSite(logger, {
         siteId: Number(siteId),
-        codebuildJobArgs: {
-          addCodebuildJobRow: enableCodebuildJobs,
-          isScheduled: true,
-          resourceWithUserIds: resources.map(
-            ({ id: resourceId, scheduledBy }) => {
-              return { resourceId, userId: scheduledBy }
-            },
-          ),
-        },
+        codebuildJobArgs: enableCodebuildJobs
+          ? {
+              isScheduled: true,
+              resourceWithUserIds: resources.map(
+                ({ id: resourceId, scheduledBy }) => {
+                  return { resourceId, userId: scheduledBy }
+                },
+              ),
+            }
+          : undefined,
       })
       logger.info(`Successfully published site for siteId: ${siteId}`)
     } catch (error) {
