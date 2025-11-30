@@ -21,9 +21,11 @@ import {
 // Mock the publishSite function to avoid making actual AWS SDK calls during tests
 vi.mock("~/server/modules/aws/codebuild.service.ts", () => ({
   publishSite: vi.fn().mockResolvedValue({
-    buildId: "test-id",
-    // this date is the same as FIXED_NOW below, but since this call is hoisted we need to redefine it here
-    startTime: new Date("2024-01-01T00:00:00.000Z"),
+    isNewBuildNeeded: true,
+    startedBuild: {
+      id: "test-id",
+      startTime: new Date("2024-01-01T00:00:00.000Z"),
+    },
   }),
 }))
 
@@ -33,6 +35,7 @@ const getMockGrowthbook = (mockReturnValue = true) => {
   }
   return mockGrowthBook as GrowthBook
 }
+const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
 
 describe("scheduled-publish", async () => {
   const session = await applyAuthedSession()
@@ -56,7 +59,6 @@ describe("scheduled-publish", async () => {
   })
 
   describe("publishScheduledResource", () => {
-    const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
     beforeEach(() => {
       MockDate.set(FIXED_NOW) // Freeze time before each test
     })
@@ -84,8 +86,8 @@ describe("scheduled-publish", async () => {
 
       // Assert
       // expect a version to be created
-      expect(String(res?.versionId)).toEqual("1")
-      expect(String(res?.versionNum)).toEqual("1")
+      expect(String(res?.version.versionId)).toEqual("1")
+      expect(String(res?.version.versionNum)).toEqual("1")
       // expect the scheduledAt field to be cleared in the resource table
       const resource = await db
         .selectFrom("Resource")
@@ -118,7 +120,6 @@ describe("scheduled-publish", async () => {
         siteId: site.id,
         userId: user.id,
         eventType: AuditLogEvent.Publish,
-        delta: { after: res, before: null },
       })
     })
     it("does not publish the resource IF the scheduledAt time is outside the buffer", async () => {
