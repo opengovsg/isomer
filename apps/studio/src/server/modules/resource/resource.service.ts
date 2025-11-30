@@ -27,6 +27,7 @@ import {
 import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
+import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
 
@@ -580,17 +581,7 @@ export const publishPageResource = async ({
 
     await logPublishEvent(tx, {
       siteId,
-      by: await db
-        .selectFrom("User")
-        .selectAll()
-        .where("id", "=", userId)
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Please ensure that you are logged in!",
-            }),
-        ),
+      by: await getUserById(userId),
       delta: {
         before: previousVersion ? { versionId: previousVersion.id } : null,
         after: { versionId: newVersion.id },
