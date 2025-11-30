@@ -1,5 +1,3 @@
-import type pino from "pino"
-
 import { registerPgbossJob } from "@isomer/pgboss"
 
 import type { Resource } from "~/server/modules/database"
@@ -13,7 +11,10 @@ import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { publishSite } from "~/server/modules/aws/codebuild.service"
 import { db } from "~/server/modules/database"
-import { publishPageResource } from "~/server/modules/resource/resource.service"
+import {
+  defaultResourceSelect,
+  publishPageResource,
+} from "~/server/modules/resource/resource.service"
 
 const JOB_NAME = "schedule-publishing"
 const CRON_SCHEDULE = "* * * * *" // every minute
@@ -62,20 +63,23 @@ const schedulePublishJobHandler = async () => {
   await resetScheduledAtForPublishedResources(scheduledAtCutoff)
 }
 
+type ResourceWithUser = Omit<Resource, "scheduledBy"> & {
+  scheduledBy: string
+  email: string
+}
+
 const publishScheduledResources = async (
   enableEmailsForScheduledPublishes: boolean,
   scheduledAtCutoff: Date,
 ) => {
   // A mapping from siteId to array of resourceIds, to determine which sites need to be published after their resources have been published
-  const siteResourcesMap: Record<
-    string,
-    (Resource & { scheduledBy: string })[]
-  > = {}
+  const siteResourcesMap: Record<string, ResourceWithUser[]> = {}
   // Fetch all resources that are scheduled to be published at or before the current time, along with the user who scheduled them
   const resourcesWithUser = await db
     .selectFrom("Resource")
+    .innerJoin("User as u", "Resource.scheduledBy", "u.id")
     .where("scheduledAt", "<=", scheduledAtCutoff)
-    .selectAll()
+    .select([...defaultResourceSelect, "u.email as email"])
     .execute()
 
   for (const resource of resourcesWithUser) {
@@ -105,16 +109,21 @@ const publishScheduledResources = async (
         `Failed to publish page for resource: ${resourceId}`,
       )
       if (enableEmailsForScheduledPublishes) {
-        const recipientEmail = await getUserEmailFromId(logger, scheduledBy)
-        if (recipientEmail)
+        try {
           await sendFailedPublishEmail({
-            recipientEmail,
+            recipientEmail: resource.email,
             isScheduled: true,
             resource,
           })
-        logger.info(
-          `Sent failed publish email to ${recipientEmail} for resource: ${resourceId}`,
-        )
+          logger.info(
+            `Sent failed publish email to ${resource.email} for resource: ${resourceId}`,
+          )
+        } catch (emailError) {
+          logger.error(
+            { error: emailError },
+            `Failed to send failed publish email to ${resource.email} for resource: ${resourceId}`,
+          )
+        }
       }
     }
   }
@@ -122,7 +131,7 @@ const publishScheduledResources = async (
 }
 
 const publishScheduledSites = async (
-  siteResourcesMap: Record<string, (Resource & { scheduledBy: string })[]>,
+  siteResourcesMap: Record<string, ResourceWithUser[]>,
   enableCodebuildJobs: boolean,
 ) => {
   for (const [siteId, resources] of Object.entries(siteResourcesMap)) {
@@ -143,16 +152,21 @@ const publishScheduledSites = async (
     } catch (error) {
       logger.error({ error }, `Failed to publish site for siteId: ${siteId}`)
       for (const resource of resources) {
-        const email = await getUserEmailFromId(logger, resource.scheduledBy)
-        if (!email) continue
-        await sendFailedPublishEmail({
-          recipientEmail: email,
-          isScheduled: true,
-          resource,
-        })
-        logger.info(
-          `Sent failed publish email to ${email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
-        )
+        try {
+          await sendFailedPublishEmail({
+            recipientEmail: resource.email,
+            isScheduled: true,
+            resource,
+          })
+          logger.info(
+            `Sent failed publish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+          )
+        } catch (emailError) {
+          logger.error(
+            { error: emailError },
+            `Failed to send failed publish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+          )
+        }
       }
     }
   }
@@ -172,23 +186,4 @@ const resetScheduledAtForPublishedResources = async (
     .set({ scheduledAt: null, scheduledBy: null })
     .where("scheduledAt", "<=", scheduledAtCutoff)
     .execute()
-}
-
-const getUserEmailFromId = async (
-  logger: pino.Logger<string>,
-  userId: string,
-): Promise<string | null> => {
-  const user = await db
-    .selectFrom("User")
-    .where("id", "=", userId)
-    .selectAll()
-    .executeTakeFirst()
-  // if user no longer exists or has no email, log error and continue
-  if (!user?.email) {
-    logger.error(
-      `User ${userId} not found or has no email, cannot send failed publish email`,
-    )
-    return null
-  }
-  return user.email
 }
