@@ -59,8 +59,6 @@ const schedulePublishJobHandler = async () => {
   )
   // Publish all sites that have resources published
   await publishScheduledSites(siteResourcesMap, enableCodebuildJobs)
-  // Reset the scheduledAt field for all resources that were scheduled to be published
-  await resetScheduledAtForPublishedResources(scheduledAtCutoff)
 }
 
 type ResourceWithUser = Omit<Resource, "scheduledBy"> & {
@@ -81,6 +79,9 @@ const publishScheduledResources = async (
     .where("scheduledAt", "<=", scheduledAtCutoff)
     .select([...defaultResourceSelect, "u.email as email"])
     .execute()
+
+  // Reset the scheduledAt and scheduledBy fields for all resources that are being published
+  await resetScheduledAtForPublishedResources(scheduledAtCutoff)
 
   for (const resource of resourcesWithUser) {
     const { id: resourceId, siteId, scheduledBy } = resource
