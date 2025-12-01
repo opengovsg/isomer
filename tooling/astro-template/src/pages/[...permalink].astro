@@ -1,0 +1,177 @@
+---
+import BaseLayout from "@/src/layouts/base.astro"; 
+import { RenderEngine } from "@opengovsg/isomer-components/engine/render";
+import { getSitemapXml } from "@opengovsg/isomer-components/engine/getSitemapXml"
+import { shouldBlockIndexing } from "@opengovsg/isomer-components/engine/shouldBlockIndexing"
+import type { IsomerPageSchemaType } from "@opengovsg/isomer-components";
+import config from "@/data/config.json";
+import footer from "@/data/footer.json";
+import navbar from "@/data/navbar.json";
+import sitemap from "@/sitemap.json";
+
+const INDEX_PAGE_PERMALINK = "_index"
+
+// Pre-load all schema files at build time using import.meta.glob
+// This avoids Astro's limitation on dynamic imports with variables more than one level deep
+const schemaModules = import.meta.glob("@/schema/**/*.json", { eager: true })
+
+const timeNow = new Date()
+const lastUpdated =
+  timeNow.getDate().toString().padStart(2, "0") +
+  " " +
+  timeNow.toLocaleString("default", { month: "short" }) +
+  " " +
+  timeNow.getFullYear()
+
+export async function getStaticPaths() {
+  // Recursively extract all permalinks from sitemap, excluding file and link layouts
+  const extractPermalinks = (node: any, permalinks: string[] = []): string[] => {
+    // Skip file and link layouts - they don't need page files since they render empty fragments
+    if (node.permalink && node.layout !== "file" && node.layout !== "link") {
+      permalinks.push(node.permalink)
+    }
+
+    if (node.children && Array.isArray(node.children)) {
+      node.children.forEach((child: any) => {
+        extractPermalinks(child, permalinks)
+      })
+    }
+
+    return permalinks
+  }
+
+  // Extract all permalinks from sitemap
+  const permalinks = [...new Set(extractPermalinks(sitemap))]
+
+  // Generate paths for each permalink, including root route
+  return permalinks.map((permalink) => {
+    if (permalink === "/") {
+      // Root route - return undefined for catch-all route (empty path)
+      return {
+        params: {
+          permalink: undefined,
+        },
+      }
+    }
+    return {
+      params: {
+        // Remove leading slash - Astro expects the full path as a string
+        permalink: permalink.replace(/^\//, ""),
+      },
+    }
+  })
+}
+
+const getSchema = ({ permalink }: { permalink: string | undefined }) => {
+  const joinedPermalink: string = permalink || ""
+
+  let schema: { default: IsomerPageSchemaType } | undefined
+  const schemaKeys = Object.keys(schemaModules)
+
+  // Helper to extract the relative schema path from a key
+  const extractSchemaPath = (key: string): string => {
+    // Remove leading path parts and keep only schema/... part
+    return key
+      .replace(/^.*\/schema\//, "")
+      .replace(/^\.\/schema\//, "")
+      .replace(/^@\/schema\//, "")
+      .replace(/\.json$/, "")
+  }
+
+  // Try to find matching schema by comparing normalized paths
+  const findMatchingSchema = (targetPath: string): typeof schema => {
+    const normalizedTarget = targetPath.replace(/\.json$/, "")
+    
+    for (const key of schemaKeys) {
+      const normalizedKey = extractSchemaPath(key)
+      
+      // Exact match
+      if (normalizedKey === normalizedTarget) {
+        return schemaModules[key] as { default: IsomerPageSchemaType }
+      }
+      
+      // Match index file (e.g., "the-president/former-presidents" matches "the-president/former-presidents/_index")
+      if (normalizedKey === `${normalizedTarget}/${INDEX_PAGE_PERMALINK}`) {
+        return schemaModules[key] as { default: IsomerPageSchemaType }
+      }
+    }
+    
+    return undefined
+  }
+
+  // Try direct path first (e.g., "the-president/former-presidents")
+  if (joinedPermalink !== "") {
+    schema = findMatchingSchema(joinedPermalink)
+  }
+
+  // If not found and it's root, try _index.json
+  if (!schema && joinedPermalink === "") {
+    schema = findMatchingSchema(INDEX_PAGE_PERMALINK)
+  }
+
+  // If still not found, try as index page (e.g., "the-president/former-presidents/_index")
+  if (!schema && joinedPermalink !== "") {
+    schema = findMatchingSchema(`${joinedPermalink}/${INDEX_PAGE_PERMALINK}`)
+  }
+
+  if (!schema) {
+    // More helpful error message with actual available paths
+    const samplePaths = schemaKeys.slice(0, 10).map(extractSchemaPath)
+    throw new Error(
+      `Schema not found for permalink: "${joinedPermalink}". ` +
+      `Tried: "${joinedPermalink}.json" and "${joinedPermalink}/_index.json". ` +
+      `Sample available schemas: ${samplePaths.join(", ")}`
+    )
+  }
+
+  const schemaData = schema.default
+
+  const lastModified =
+    // TODO: fixup all the typing errors
+    // @ts-expect-error to fix when types are proper
+    getSitemapXml(sitemap).find(
+      ({ url }) => joinedPermalink === url.replace(/^\//, ""),
+    )?.lastModified || new Date().toISOString()
+
+  schemaData.page.permalink = "/" + joinedPermalink
+  schemaData.page.lastModified = lastModified
+
+  return schemaData
+}
+
+// Get permalink from Astro.params (for dynamic routes)
+// For catch-all routes [...permalink], Astro.params.permalink is a string (or undefined for root)
+const { permalink } = Astro.params
+const permalinkString = typeof permalink === "string" ? permalink : undefined
+
+const renderSchema = getSchema({
+  permalink: permalinkString
+})
+
+---
+<BaseLayout>  
+  <RenderEngine
+    client:load
+    {...renderSchema}
+    site={{
+      ...config.site,
+      environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+      // TODO: fixup all the typing errors
+      // @ts-ignore to fix when types are proper
+      siteMap: sitemap,
+      navbar: navbar,
+      // TODO: fixup all the typing errors
+      // @ts-ignore to fix when types are proper
+      footerItems: footer,
+      lastUpdated,
+      assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+    }}
+    meta={{
+      // TODO: fixup all the typing errors
+      noIndex: shouldBlockIndexing(
+        process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+      ),
+    }}
+  />
+</BaseLayout>
+

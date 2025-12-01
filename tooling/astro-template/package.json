@@ -1,0 +1,39 @@
+{
+  "name": "isomer-base-template",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "build:prepare": "run-s build:prepare:*",
+    "build:prepare:1-analyze-sitemap": "node scripts/analyze-sitemap.js",
+    "build:prepare:2-generate-pages": "node scripts/generate-pages.js",
+    "build:prepare:3-update-pages": "node scripts/update-pages.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "format:fix": "prettier --write . --ignore-path ../../.gitignore",
+    "typecheck": "tsc --noEmit",
+    "clean": "git clean -xdf .turbo node_modules out"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.4.2",
+    "@astrojs/tailwind": "^6.0.2",
+    "@opengovsg/isomer-components": "file:opengovsg-isomer-components-0.0.13.tgz",
+    "astro": "^5.16.2",
+    "postcss": "^8.4.39",
+    "postcss-preset-env": "^10.0.8",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.9.2"
+  },
+  "prettier": "@isomer/prettier-config",
+  "devDependencies": {
+    "@babel/parser": "^7.23.0",
+    "@types/node": "^22.15.21",
+    "ast-types": "^0.15.0",
+    "npm-run-all": "^4.1.5",
+    "recast": "^0.23.0",
+    "rollup-plugin-visualizer": "^6.0.5"
+  }
+}

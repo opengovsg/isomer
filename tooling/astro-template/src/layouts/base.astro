@@ -1,0 +1,28 @@
+---
+import { ClientRouter } from "astro:transitions";
+import { RenderApplicationScripts } from "@opengovsg/isomer-components"
+import config from "@/data/config.json"
+import sitemap from "@/sitemap.json"
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <RenderApplicationScripts
+      site={{
+        ...config.site,
+        environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+        // TODO: fixup all the typing errors
+        // @ts-expect-error to fix when types are proper
+        siteMap: sitemap,
+        assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+        isomerMsClarityId:
+          process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
+      }}
+    />
+    <ClientRouter />
+  </head>
+  <body>
+    <slot /> <!-- your content is injected here -->
+  </body>
+</html>

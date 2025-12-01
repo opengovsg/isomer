@@ -1,0 +1,34 @@
+{
+  "site": {
+    "siteName": "Isomer",
+    "url": "https://www.isomer.gov.sg",
+    "agencyName": "Open Government Products",
+    "theme": "isomer-next",
+    "logoUrl": "/images/isomer-logo.svg",
+    "favicon": "/images/favicon-isomer.ico",
+    "isGovernment": true,
+    "search": {
+      "type": "localSearch",
+      "searchUrl": "/search"
+    }
+  },
+  "colors": {
+    "site-primary-default": "#f78f1e",
+    "site-primary-100": "#fef4e8",
+    "site-primary-200": "#ffeec2",
+    "site-secondary-default": "#877664",
+    "brand": {
+      "canvas": {
+        "default": "#e6ecef",
+        "alt": "#bfcfd7",
+        "backdrop": "#80a0af",
+        "inverse": "#00405f"
+      },
+      "interaction": {
+        "default": "#00405f",
+        "hover": "#002e44",
+        "pressed": "#00283b"
+      }
+    }
+  }
+}
