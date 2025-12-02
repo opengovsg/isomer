@@ -282,7 +282,7 @@ enum BuildStatusType {
 
 model CodeBuildJobs {
   id                  BigInt          @id @default(autoincrement())
-  buildId             String? // The AWS CodeBuild build ID
+  buildId             String
   siteId              Int
   site                Site            @relation(fields: [siteId], references: [id])
   userId              String
