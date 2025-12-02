@@ -63,7 +63,7 @@ const schedulePublishJobHandler = async () => {
 
 type ResourceWithUser = Omit<Resource, "scheduledBy"> & {
   scheduledBy: string
-  email: string
+  email: string | null
 }
 
 const publishScheduledResources = async (
@@ -75,7 +75,7 @@ const publishScheduledResources = async (
   // Fetch all resources that are scheduled to be published at or before the current time, along with the user who scheduled them
   const resourcesWithUser = await db
     .selectFrom("Resource")
-    .innerJoin("User as u", "Resource.scheduledBy", "u.id")
+    .leftJoin("User as u", "Resource.scheduledBy", "u.id")
     .where("scheduledAt", "<=", scheduledAtCutoff)
     .select([...defaultResourceSelect, "u.email as email"])
     .execute()
@@ -108,6 +108,12 @@ const publishScheduledResources = async (
         { error },
         `Failed to publish page for resource: ${resourceId}`,
       )
+      if (!resource.email) {
+        logger.warn(
+          `Resource ${resourceId} is missing user email information, cannot send failed publish email`,
+        )
+        continue
+      }
       if (enableEmailsForScheduledPublishes) {
         try {
           await sendFailedPublishEmail({
@@ -115,7 +121,7 @@ const publishScheduledResources = async (
             isScheduled: true,
             resource,
           })
-          logger.info(
+          logger.warn(
             `Sent failed publish email to ${resource.email} for resource: ${resourceId}`,
           )
         } catch (emailError) {
@@ -153,13 +159,19 @@ const publishScheduledSites = async (
     } catch (error) {
       logger.error({ error }, `Failed to publish site for siteId: ${siteId}`)
       for (const resource of resources) {
+        if (!resource.email) {
+          logger.warn(
+            `Resource ${resource.id} is missing user email information, cannot send failed publish email`,
+          )
+          continue
+        }
         try {
           await sendFailedPublishEmail({
             recipientEmail: resource.email,
             isScheduled: true,
             resource,
           })
-          logger.info(
+          logger.warn(
             `Sent failed publish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
           )
         } catch (emailError) {
