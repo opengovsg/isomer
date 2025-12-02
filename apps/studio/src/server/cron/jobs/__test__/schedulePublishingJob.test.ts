@@ -476,5 +476,85 @@ describe("schedulePublishingJob", async () => {
         resource: expect.objectContaining({ id: page.id }),
       })
     })
+    it("a failed site publish does NOT send emails if user is deleted", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+      })
+      await addCodebuildProjectToSite(site.id)
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // mock the startProjectByIdSpy to throw an error to simulate failure to start codebuild
+      startProjectByIdSpy.mockRejectedValueOnce(
+        new Error("Failed to start codebuild project"),
+      )
+
+      const sendFailedPublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedPublishEmail")
+        .mockResolvedValue()
+
+      // Act
+      await publishScheduledSites(
+        {
+          [site.id]: [
+            {
+              ...page,
+              scheduledBy: String(session.userId),
+              email: user.email,
+              userDeletedAt: FIXED_NOW, // simulate deleted user
+            },
+          ],
+        },
+        true,
+      )
+
+      // Assert
+      expect(sendFailedPublishEmailSpy).not.toHaveBeenCalled()
+    })
+    it("a failed site publish does NOT send emails if user is missing an email", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+      })
+      await addCodebuildProjectToSite(site.id)
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // mock the startProjectByIdSpy to throw an error to simulate failure to start codebuild
+      startProjectByIdSpy.mockRejectedValueOnce(
+        new Error("Failed to start codebuild project"),
+      )
+
+      const sendFailedPublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedPublishEmail")
+        .mockResolvedValue()
+
+      // Act
+      await publishScheduledSites(
+        {
+          [site.id]: [
+            {
+              ...page,
+              scheduledBy: String(session.userId),
+              email: null, // simulate missing email
+              userDeletedAt: null,
+            },
+          ],
+        },
+        true,
+      )
+
+      // Assert
+      expect(sendFailedPublishEmailSpy).not.toHaveBeenCalled()
+    })
   })
 })
