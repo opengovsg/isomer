@@ -64,6 +64,7 @@ const schedulePublishJobHandler = async () => {
 type ResourceWithUser = Omit<Resource, "scheduledBy"> & {
   scheduledBy: string
   email: string | null
+  userDeletedAt: Date | null
 }
 
 const publishScheduledResources = async (
@@ -77,7 +78,11 @@ const publishScheduledResources = async (
     .selectFrom("Resource")
     .leftJoin("User as u", "Resource.scheduledBy", "u.id")
     .where("scheduledAt", "<=", scheduledAtCutoff)
-    .select([...defaultResourceSelect, "u.email as email"])
+    .select([
+      ...defaultResourceSelect,
+      "u.email as email",
+      "u.deletedAt as userDeletedAt",
+    ])
     .execute()
 
   // Reset the scheduledAt and scheduledBy fields for all resources that are being published
@@ -108,9 +113,9 @@ const publishScheduledResources = async (
         { error },
         `Failed to publish page for resource: ${resourceId}`,
       )
-      if (!resource.email) {
+      if (resource.userDeletedAt || !resource.email) {
         logger.warn(
-          `Resource ${resourceId} is missing user email information, cannot send failed publish email`,
+          `Resource ${resourceId} is missing user email information or deleted, cannot send failed publish email`,
         )
         continue
       }
@@ -159,9 +164,9 @@ const publishScheduledSites = async (
     } catch (error) {
       logger.error({ error }, `Failed to publish site for siteId: ${siteId}`)
       for (const resource of resources) {
-        if (!resource.email) {
+        if (resource.userDeletedAt || !resource.email) {
           logger.warn(
-            `Resource ${resource.id} is missing user email information, cannot send failed publish email`,
+            `Resource ${resource.id} is missing user email information or deleted, cannot send failed publish email`,
           )
           continue
         }
