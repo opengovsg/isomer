@@ -247,6 +247,59 @@ describe("schedulePublishingJob", async () => {
         versionNum: 1,
       })
     })
+    it("a resource without userId inside scheduledBy is skipped and does not prevent other resources from being published", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: null, // no user info
+        permalink: "page-1",
+      })
+      // setup a second resource which should be published successfully
+      const { page: page2, site: site2 } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        permalink: "page-2",
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const publishPageResourceSpy = vi.spyOn(
+        publishPageResourceModule,
+        "publishPageResource",
+      )
+
+      // Act
+      const result = await publishScheduledResources(true, FIXED_NOW)
+
+      // Assert
+      expect(publishPageResourceSpy).toHaveBeenCalledTimes(1)
+      expect(result[site.id]).not.toBeDefined()
+      expect(result[site2.id]?.length).toBe(1)
+      expect(result[site2.id]?.[0]!.id).toBe(page2.id)
+
+      // expect a version to be created only for the second resource
+      const versionsPage1 = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(versionsPage1).toHaveLength(0)
+
+      const versionsPage2 = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page2.id)
+        .selectAll()
+        .execute()
+
+      expect(versionsPage2).toHaveLength(1)
+      expect(versionsPage2[0]).toMatchObject({
+        resourceId: page2.id,
+        versionNum: 1,
+      })
+    })
     it("throwing an error when sending an email for a resource still processes the next resource correctly", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
