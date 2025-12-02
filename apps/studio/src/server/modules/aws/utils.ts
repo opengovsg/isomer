@@ -38,7 +38,7 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
   isScheduled?: boolean
   resourceId?: string
 }) => {
-  let buildIdToLink: string | undefined
+  let buildIdToLink: string
   let buildStartTime: Date | undefined
   if (buildChanges.isNewBuildNeeded) {
     const { id: startedBuildId, startTime: startedBuildTime } =
@@ -46,8 +46,8 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
     buildIdToLink = startedBuildId
     buildStartTime = startedBuildTime
   } else {
-    buildIdToLink = buildChanges.latestRunningBuild?.id
-    buildStartTime = buildChanges.latestRunningBuild?.startTime
+    buildIdToLink = buildChanges.latestRunningBuild.id
+    buildStartTime = buildChanges.latestRunningBuild.startTime
   }
 
   // Insert a new row into CodeBuildJobs to link the resourceId, userId, siteId to the build

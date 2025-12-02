@@ -17,7 +17,7 @@ export interface RequiresNewBuild {
  * the resource
  */
 export interface RequiresNoNewBuild {
-  latestRunningBuild?: Required<Pick<Build, "id" | "startTime">>
+  latestRunningBuild: Required<Pick<Build, "id" | "startTime">>
   isNewBuildNeeded: false
 }
 
