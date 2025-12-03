@@ -12,6 +12,7 @@ import {
   createSupersededBuildRows,
   setupCodeBuildJob,
   setupPageResource,
+  setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
 
@@ -20,6 +21,7 @@ import {
   sendFailedPublishEmail,
   sendSuccessfulPublishEmail,
 } from "~/features/mail/service"
+import { buildIdFromArn } from "~/schemas/webhook"
 import { createCallerFactory } from "~/server/trpc"
 import { db } from "../../database"
 import { webhookRouter } from "../webhook.router"
@@ -81,16 +83,15 @@ describe("webhook.router", async () => {
         projectName: "test-project",
         siteId: site.id,
         arn: "build/test-id", // saved in the db
-        buildStatus: "SUCCEEDED",
+        status: "SUCCEEDED",
       })
 
       // Assert
       expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
       expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
-        publishTime: FIXED_NOW,
         isScheduled: true,
-        title: page.title,
+        resource: expect.objectContaining(page),
       })
 
       // check the codebuildjobs table to see if the status has been updated
@@ -107,6 +108,51 @@ describe("webhook.router", async () => {
         }),
       )
     })
+    it("it should update the codebuildjobs table when multiple resources specify the same buildId", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const NUM_RESOURCES_WITH_SAME_BUILD_ID = 3
+      const ARN = "build/test-id"
+      const buildId = buildIdFromArn(ARN)!
+      // create another 2 builds with the same buildId to simulate multiple resources being published with the same build
+      // NOTE: these don't have to be for the same site
+      for (let i = 0; i < NUM_RESOURCES_WITH_SAME_BUILD_ID; i++) {
+        await setupCodeBuildJob({
+          userId: user.id,
+          arn: ARN,
+          startedAt: FIXED_NOW,
+          isScheduled: true,
+          siteId: site.id,
+          permalink: `test-page-${i}`, // so that the resource is unique
+        })
+      }
+      const caller = getCallerWithMockGrowthbook(session)
+
+      // Act
+      await caller.updateCodebuildWebhook({
+        projectName: "test-project",
+        siteId: site.id,
+        arn: "build/test-id", // saved in the db
+        status: "SUCCEEDED",
+      })
+
+      // Assert
+      expect(sendSuccessfulPublishEmail).toHaveBeenCalledTimes(
+        NUM_RESOURCES_WITH_SAME_BUILD_ID,
+      )
+      // check the codebuildjobs table to see if the status has been updated for all the jobs with the same buildId
+      const jobs = await db
+        .selectFrom("CodeBuildJobs")
+        .where("buildId", "=", buildId)
+        .selectAll()
+        .execute()
+
+      expect(jobs.length).toBe(NUM_RESOURCES_WITH_SAME_BUILD_ID)
+      jobs.forEach((job) => {
+        expect(job.status).toBe("SUCCEEDED")
+        expect(job.emailSent).toBe(true)
+      })
+    })
     it("it should update the codebuildjobs table if the received build status is failed", async () => {
       // Arrange
       const { site, page, codebuildJob } = await setupCodeBuildJob({
@@ -122,7 +168,7 @@ describe("webhook.router", async () => {
         projectName: "test-project",
         siteId: site.id,
         arn: "build/test-id", // saved in the db
-        buildStatus: "FAILED",
+        status: "FAILED",
       })
 
       // Assert
@@ -152,7 +198,7 @@ describe("webhook.router", async () => {
       const { site } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
-        buildStatus: "SUCCEEDED", // initial status is SUCCEEDED
+        status: "SUCCEEDED", // initial status is SUCCEEDED
         startedAt: FIXED_NOW,
         emailSent: true, // email already sent
         isScheduled: true,
@@ -164,7 +210,7 @@ describe("webhook.router", async () => {
         projectName: "test-project",
         siteId: site.id,
         arn: "build/test-id",
-        buildStatus: "SUCCEEDED", // same status as before
+        status: "SUCCEEDED", // same status as before
       })
 
       // Assert
@@ -175,7 +221,7 @@ describe("webhook.router", async () => {
       const { site, page } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
-        buildStatus: "IN_PROGRESS",
+        status: "IN_PROGRESS",
         startedAt: FIXED_NOW,
         isScheduled: false, // not a scheduled publish
       })
@@ -186,16 +232,15 @@ describe("webhook.router", async () => {
         projectName: "test-project",
         siteId: site.id,
         arn: "build/test-id",
-        buildStatus: "SUCCEEDED",
+        status: "SUCCEEDED",
       })
 
       // Assert
       expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
       expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
-        publishTime: FIXED_NOW,
         isScheduled: false,
-        title: page.title,
+        resource: expect.objectContaining(page),
       })
     })
     it("sends a failure email with the correct isScheduled flag", async () => {
@@ -203,7 +248,7 @@ describe("webhook.router", async () => {
       const { site, page } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
-        buildStatus: "IN_PROGRESS",
+        status: "IN_PROGRESS",
         startedAt: FIXED_NOW,
         isScheduled: false, // not a scheduled publish
       })
@@ -214,7 +259,7 @@ describe("webhook.router", async () => {
         projectName: "test-project",
         siteId: site.id,
         arn: "build/test-id",
-        buildStatus: "FAILED",
+        status: "FAILED",
       })
 
       // Assert
@@ -230,7 +275,7 @@ describe("webhook.router", async () => {
       const { site } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
-        buildStatus: "IN_PROGRESS",
+        status: "IN_PROGRESS",
         startedAt: FIXED_NOW,
         isScheduled: true,
       })
@@ -241,7 +286,7 @@ describe("webhook.router", async () => {
         projectName: "test-project",
         siteId: site.id,
         arn: "build/test-id",
-        buildStatus: "SUCCEEDED",
+        status: "SUCCEEDED",
       })
 
       // Assert
@@ -252,7 +297,7 @@ describe("webhook.router", async () => {
       const { site } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
-        buildStatus: "IN_PROGRESS",
+        status: "IN_PROGRESS",
         startedAt: FIXED_NOW,
         isScheduled: true,
       })
@@ -263,7 +308,7 @@ describe("webhook.router", async () => {
         projectName: "test-project",
         siteId: site.id,
         arn: "build/test-id",
-        buildStatus: "FAILED",
+        status: "FAILED",
       })
 
       // Assert
@@ -280,7 +325,7 @@ describe("webhook.router", async () => {
       } = await setupCodeBuildJob({
         userId: user.id,
         arn: "build/test-id",
-        buildStatus: "IN_PROGRESS",
+        status: "IN_PROGRESS",
         startedAt: FIXED_NOW,
         isScheduled: true,
       })
@@ -302,7 +347,7 @@ describe("webhook.router", async () => {
         projectName: "test-project",
         siteId: site.id,
         arn: "build/test-id",
-        buildStatus: "SUCCEEDED",
+        status: "SUCCEEDED",
       })
 
       // Assert
@@ -326,17 +371,15 @@ describe("webhook.router", async () => {
       callsWithOriginalUser.forEach((call) => {
         expect(call).toEqual({
           recipientEmail: user.email,
-          publishTime: FIXED_NOW,
           isScheduled: codebuildJob.isScheduled,
-          title: pageForMainBuild.title, // title from the original build
+          resource: expect.objectContaining(pageForMainBuild),
         })
       })
       callsWithSupersededUser.forEach((call) => {
         expect(call).toEqual({
           recipientEmail: userForSupersededBuilds.email,
-          publishTime: FIXED_NOW,
           isScheduled: codebuildJob.isScheduled,
-          title: pageForSupersededBuild.title, // title from the superseded builds
+          resource: expect.objectContaining(pageForSupersededBuild),
         })
       })
       // check that the codebuild job is updated with the emailSent flag
@@ -348,6 +391,43 @@ describe("webhook.router", async () => {
       updatedCodebuildJob.forEach((job) => {
         expect(job.emailSent).toBe(true) // all jobs should have emailSent = true
       })
+    })
+    it("does not send an email if the publish is a site-level publish", async () => {
+      // Arrange
+      const { site, codebuildJob } = await setupCodeBuildJob({
+        userId: user.id,
+        arn: "build/test-id",
+        startedAt: FIXED_NOW,
+        isScheduled: true,
+        omitResourceId: true, // this will create a codebuild job without a resourceId, simulating a site publish
+      })
+      const caller = getCallerWithMockGrowthbook(session)
+
+      // Act
+      await caller.updateCodebuildWebhook({
+        projectName: "test-project",
+        siteId: site.id,
+        arn: "build/test-id", // saved in the db
+        status: "SUCCEEDED",
+      })
+
+      // Assert
+      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+      // check the codebuildjobs table to see if the status has been updated
+      await db
+        .selectFrom("CodeBuildJobs")
+        .where("buildId", "=", codebuildJob.buildId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+        .then((job) => {
+          // expect the job status to be updated to SUCCEEDED
+          expect(job).toEqual(
+            expect.objectContaining({
+              status: "SUCCEEDED",
+              emailSent: false, // emailSent should remain false
+            }),
+          )
+        })
     })
   })
 })
