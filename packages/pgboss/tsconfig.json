@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["node"],
+    "types": ["node", "vitest/globals"],
     "declaration": true,
     "rootDir": "src",
     "moduleResolution": "node",

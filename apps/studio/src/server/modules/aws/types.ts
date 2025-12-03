@@ -12,9 +12,8 @@ export interface RequiresNewBuild {
 }
 
 /**
- * Describes the scenario where no new build is needed, and optionally
- * provides the latest running build if one such build should be linked to
- * the resource
+ * Describes the scenario where no new build is needed, and
+ * provides the latest running build information
  */
 export interface RequiresNoNewBuild {
   latestRunningBuild: Required<Pick<Build, "id" | "startTime">>
