@@ -392,7 +392,7 @@ describe("webhook.router", async () => {
         expect(job.emailSent).toBe(true) // all jobs should have emailSent = true
       })
     })
-    it("does not send an email if the resource type is not page", async () => {
+    it("does not send an email if the publish is a site-level publish", async () => {
       // Arrange
       const { site, codebuildJob } = await setupCodeBuildJob({
         userId: user.id,
