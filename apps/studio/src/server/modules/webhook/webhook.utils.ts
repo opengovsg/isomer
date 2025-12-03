@@ -117,6 +117,7 @@ const sendEmails = async (
       ])
     })
     .selectAll()
+    .select(["CodeBuildJobs.id as codeBuildJobId"])
     .execute()
 
   const emailPromisesWithCodebuildJobId = _.compact(
@@ -126,7 +127,7 @@ const sendEmails = async (
         switch (buildStatus) {
           case "SUCCEEDED":
             return {
-              id: info.id, // codebuild job id
+              id: info.codeBuildJobId, // codebuild job id
               promise: sendSuccessfulPublishEmail({
                 isScheduled: info.isScheduled,
                 recipientEmail: info.email,
@@ -136,7 +137,7 @@ const sendEmails = async (
             }
           case "FAILED":
             return {
-              id: info.id, // codebuild job id
+              id: info.codeBuildJobId, // codebuild job id
               promise: sendFailedPublishEmail({
                 isScheduled: info.isScheduled,
                 recipientEmail: info.email,

@@ -8,6 +8,11 @@ import {
 } from "@aws-sdk/client-codebuild"
 import { TRPCError } from "@trpc/server"
 
+import type {
+  PublishSiteResult,
+  PublishSiteWithNewBuild,
+  PublishSiteWithoutNewBuild,
+} from "../resource/resource.types"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 
 const client = new CodeBuildClient({ region: "ap-southeast-1" })
@@ -17,7 +22,10 @@ const client = new CodeBuildClient({ region: "ap-southeast-1" })
 // build would have already captured the latest changes
 const RECENT_BUILD_THRESHOLD_SECONDS = 30
 
-export const publishSite = async (logger: Logger<string>, siteId: number) => {
+export const publishSite = async (
+  logger: Logger<string>,
+  siteId: number,
+): Promise<PublishSiteResult | undefined> => {
   // Step 1: Get the CodeBuild ID associated with the site
   const site = await getSiteNameAndCodeBuildId(siteId)
   const { codeBuildId } = site
@@ -33,25 +41,38 @@ export const publishSite = async (logger: Logger<string>, siteId: number) => {
   }
 
   // Step 2: Determine if a new build should be started
-  const isNewBuildNeeded = await shouldStartNewBuild(logger, codeBuildId)
+  const res = await buildChanges(logger, codeBuildId)
 
-  if (!isNewBuildNeeded) {
-    return
-  }
+  if (!res.isNewBuildNeeded)
+    return {
+      isNewBuildNeeded: false,
+      latestRunningBuild: res.latestRunningBuild,
+    }
 
   // Step 3: Start a new build
   const build = await startProjectById(logger, codeBuildId)
 
+  logger.info(
+    {
+      siteId,
+      codeBuildId,
+    },
+    "Started new CodeBuild project run",
+  )
+
   return {
-    buildId: build.id,
-    startTime: build.startTime,
+    startedBuild: build,
+    stoppedBuild: res.stoppedBuild,
+    isNewBuildNeeded: true,
   }
 }
 
-export const shouldStartNewBuild = async (
+export const buildChanges = async (
   logger: Logger<string>,
   projectId: string,
-): Promise<boolean> => {
+): Promise<
+  PublishSiteWithoutNewBuild | Omit<PublishSiteWithNewBuild, "startedBuild">
+> => {
   const now = new Date()
   const thresholdTimeAgo = new Date(
     now.getTime() - RECENT_BUILD_THRESHOLD_SECONDS * 1000,
@@ -69,7 +90,7 @@ export const shouldStartNewBuild = async (
 
     if (buildIds.length === 0) {
       logger.info({ projectId }, "No builds found for the project")
-      return true
+      return { isNewBuildNeeded: true }
     }
 
     // Get details of the builds
@@ -82,7 +103,7 @@ export const shouldStartNewBuild = async (
     )
 
     if (runningBuilds?.length === 0) {
-      return true
+      return { isNewBuildNeeded: true }
     }
 
     // Case 2: Start a new build if there is only 1 running build, and it is
@@ -99,7 +120,7 @@ export const shouldStartNewBuild = async (
     )
 
     if (runningBuilds?.length === 1 && recentRunningBuilds?.length === 0) {
-      return true
+      return { isNewBuildNeeded: true }
     }
 
     // Case 3: Start a new build if there are 2 running builds, and both are
@@ -114,12 +135,12 @@ export const shouldStartNewBuild = async (
         })
         .at(0)
 
-      if (!latestBuild) {
+      if (!latestBuild?.id || !latestBuild.startTime) {
         logger.error(
           { projectId },
           "Unable to determine the latest build to stop",
         )
-        return true
+        return { isNewBuildNeeded: true }
       }
 
       const stopBuildCommand = new StopBuildCommand({
@@ -128,11 +149,31 @@ export const shouldStartNewBuild = async (
 
       await client.send(stopBuildCommand)
 
-      return true
+      return {
+        stoppedBuild: {
+          id: latestBuild.id,
+          startTime: latestBuild.startTime,
+        },
+        isNewBuildNeeded: true,
+      }
     }
 
     // Any other case, we should not start a new build
-    return false
+    const [runningBuild] = runningBuilds ?? []
+    if (!runningBuild?.id || !runningBuild.startTime) {
+      logger.error(
+        { projectId },
+        "Unable to determine the latest running build",
+      )
+      return { isNewBuildNeeded: true }
+    }
+    return {
+      isNewBuildNeeded: false,
+      latestRunningBuild: {
+        id: runningBuild.id,
+        startTime: runningBuild.startTime,
+      },
+    }
   } catch (error) {
     logger.error(
       { projectId, error },
