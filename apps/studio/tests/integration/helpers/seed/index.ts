@@ -268,6 +268,7 @@ export const setupPageResource = async ({
   parentId,
   title,
   scheduledAt = null,
+  scheduledBy = null,
 }: {
   siteId?: number
   blobId?: string
@@ -278,6 +279,7 @@ export const setupPageResource = async ({
   parentId?: string | null
   title?: string
   scheduledAt?: Date | null
+  scheduledBy?: string | null
 }) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
@@ -291,6 +293,7 @@ export const setupPageResource = async ({
       parentId,
       publishedVersionId: null,
       scheduledAt,
+      scheduledBy,
       draftBlobId: blob.id,
       type: resourceType,
       state,

@@ -18,25 +18,16 @@ import { RECENT_BUILD_THRESHOLD_SECONDS } from "./constants"
 
 const client = new CodeBuildClient({ region: "ap-southeast-1" })
 
-/**
- * Adds a new CodeBuildJob entry for the newly started build,
- * and marks any stopped builds as superseded by the new build
- * @param tx Transaction
- * @param stoppedBuildId The build ID of the stopped build
- * @param startedBuildId The build ID of the newly started build
- */
 export const addCodeBuildAndMarkSupersededBuild = async ({
   buildChanges,
-  resourceId,
+  resourceWithUserIds,
   siteId,
-  userId,
   isScheduled,
 }: {
   buildChanges: BuildChanges
   siteId: number
-  userId: string
-  isScheduled?: boolean
-  resourceId?: string
+  isScheduled: boolean
+  resourceWithUserIds: { resourceId: string; userId: string }[]
 }) => {
   let buildIdToLink: string
   let buildStartTime: Date | undefined
@@ -53,14 +44,16 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
   // Insert a new row into CodeBuildJobs to link the resourceId, userId, siteId to the build
   await db
     .insertInto("CodeBuildJobs")
-    .values({
-      siteId,
-      userId,
-      buildId: buildIdToLink,
-      startedAt: buildStartTime,
-      resourceId,
-      isScheduled,
-    })
+    .values(
+      resourceWithUserIds.map(({ resourceId, userId }) => ({
+        siteId,
+        userId,
+        buildId: buildIdToLink,
+        startedAt: buildStartTime,
+        resourceId,
+        isScheduled,
+      })),
+    )
     .execute()
   // If a new build was started, mark the stopped build (if any) as being superseded by the new build
   if (buildChanges.isNewBuildNeeded && buildChanges.stoppedBuild?.id) {
@@ -87,10 +80,7 @@ export const updateStoppedBuild = async ({
 }) => {
   await db
     .updateTable("CodeBuildJobs")
-    .set({
-      supersededByBuildId: startedBuildId,
-      status: "STOPPED",
-    })
+    .set({ supersededByBuildId: startedBuildId, status: "STOPPED" })
     .where(
       "buildId",
       "in",
@@ -179,9 +169,7 @@ export const computeBuildChanges = async (
         return { isNewBuildNeeded: true }
       }
 
-      const stopBuildCommand = new StopBuildCommand({
-        id: latestBuild.id,
-      })
+      const stopBuildCommand = new StopBuildCommand({ id: latestBuild.id })
 
       await client.send(stopBuildCommand)
 

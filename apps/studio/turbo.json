@@ -17,7 +17,7 @@
     "generate": {
       "dependsOn": [
         "@opengovsg/isomer-components#build",
-        "@isomer/redis#build"
+        "@isomer/pgboss#build"
       ],
       "inputs": ["prisma/schema.prisma"],
       "cache": false
@@ -44,7 +44,7 @@
     "build": {
       "dependsOn": [
         "@opengovsg/isomer-components#build",
-        "@isomer/redis#build",
+        "@isomer/pgboss#build",
         "generate",
         "build:theme",
         "build:preview-tw"

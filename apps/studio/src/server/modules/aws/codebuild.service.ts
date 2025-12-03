@@ -1,4 +1,5 @@
 import type { Logger } from "pino"
+import { pick } from "lodash"
 
 import type { BuildChanges } from "./types"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
@@ -8,21 +9,17 @@ import {
   startProjectById,
 } from "./utils"
 
+interface PublishSiteArgs {
+  siteId: number
+  codebuildJob?: {
+    isScheduled: boolean
+    resourceWithUserIds: { resourceId: string; userId: string }[]
+  }
+}
+
 export const publishSite = async (
   logger: Logger<string>,
-  {
-    siteId,
-    userId,
-    resourceId,
-    isScheduled,
-    addCodebuildJobRow,
-  }: {
-    siteId: number
-    userId: string
-    isScheduled?: boolean
-    resourceId?: string
-    addCodebuildJobRow?: boolean
-  },
+  { siteId, codebuildJob }: PublishSiteArgs,
 ) => {
   // Step 1: Get the CodeBuild ID associated with the site
   const site = await getSiteNameAndCodeBuildId(siteId)
@@ -58,13 +55,11 @@ export const publishSite = async (
   }
 
   // Step 4: Record the build in the database and mark any superseded builds
-  if (addCodebuildJobRow) {
+  if (codebuildJob) {
     await addCodeBuildAndMarkSupersededBuild({
       buildChanges: buildChangesWithStartedBuild,
       siteId,
-      userId,
-      isScheduled,
-      resourceId,
+      ...pick(codebuildJob, ["isScheduled", "resourceWithUserIds"]),
     })
   }
 }

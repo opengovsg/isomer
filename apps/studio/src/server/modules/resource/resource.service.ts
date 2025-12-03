@@ -27,6 +27,7 @@ import {
 import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
+import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
 
@@ -44,6 +45,7 @@ export const defaultResourceSelect = [
   "Resource.createdAt",
   "Resource.updatedAt",
   "Resource.scheduledAt",
+  "Resource.scheduledBy",
 ] satisfies SelectExpression<DB, "Resource">[]
 
 const defaultResourceWithBlobSelect = [
@@ -88,13 +90,7 @@ export const getSiteResourceById = ({
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
 const getById = (
   db: SafeKysely,
-  {
-    resourceId,
-    siteId,
-  }: {
-    resourceId: number
-    siteId: number
-  },
+  { resourceId, siteId }: { resourceId: number; siteId: number },
 ) =>
   db
     .selectFrom("Resource")
@@ -104,10 +100,7 @@ const getById = (
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
 export const getFullPageById = async (
   db: SafeKysely,
-  args: {
-    resourceId: number
-    siteId: number
-  },
+  args: { resourceId: number; siteId: number },
 ) => {
   // Check if draft blob exists and return that preferentially
   const draftBlob = await getById(db, args)
@@ -279,10 +272,7 @@ export const updateBlobById = async (
     .executeTakeFirst()
 
   if (!page) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Resource not found",
-    })
+    throw new TRPCError({ code: "NOT_FOUND", message: "Resource not found" })
   }
 
   let blobIdToUpdate = page.draftBlobId
@@ -358,10 +348,7 @@ export const getLocalisedSitemap = async (
     `.as("thumbnail")
 
   // Get the actual resource first
-  const resource = await getById(db, {
-    resourceId,
-    siteId,
-  })
+  const resource = await getById(db, { resourceId, siteId })
     .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
 
@@ -550,21 +537,22 @@ export const getResourceFullPermalink = async (
 
 interface PublishPageResourceArgs {
   logger: Logger<string>
-  user: User
+  userId: string
   siteId: number
   resourceId: string
+  sitePublish?: {
+    enableCodebuildJobs: boolean
+    isScheduled: boolean
+  }
   isSingpassEnabled?: boolean
-  isScheduled: boolean
-  addCodebuildJobRow: boolean
 }
 
 export const publishPageResource = async ({
   logger,
   siteId,
   resourceId,
-  user,
-  isScheduled,
-  addCodebuildJobRow,
+  userId,
+  sitePublish,
 }: PublishPageResourceArgs) => {
   await db.transaction().execute(async (tx) => {
     // Step 1: Create a new version
@@ -581,12 +569,7 @@ export const publishPageResource = async ({
       })
     }
 
-    const version = await incrementVersion({
-      tx,
-      siteId,
-      resourceId,
-      userId: user.id,
-    })
+    const version = await incrementVersion({ tx, siteId, resourceId, userId })
 
     if (!version) {
       logger.warn(
@@ -599,7 +582,7 @@ export const publishPageResource = async ({
 
     await logPublishEvent(tx, {
       siteId,
-      by: user,
+      by: await getUserById(userId),
       delta: {
         before: previousVersion ? { versionId: previousVersion.id } : null,
         after: { versionId: newVersion.id },
@@ -610,13 +593,16 @@ export const publishPageResource = async ({
   })
 
   // Step 2: Trigger a publish of the site
-  await publishSite(logger, {
-    siteId,
-    userId: user.id,
-    resourceId,
-    isScheduled,
-    addCodebuildJobRow,
-  })
+  if (sitePublish)
+    await publishSite(logger, {
+      siteId,
+      codebuildJob: sitePublish.enableCodebuildJobs
+        ? {
+            resourceWithUserIds: [{ resourceId, userId }],
+            isScheduled: sitePublish.isScheduled,
+          }
+        : undefined,
+    })
 }
 
 /**
@@ -649,19 +635,12 @@ export const publishResource = async (
     await logPublishEvent(tx, {
       siteId: resource.siteId,
       by: byUser,
-      delta: {
-        before: null,
-        after: null,
-      },
+      delta: { before: null, after: null },
       eventType: AuditLogEvent.Publish,
       metadata: resource,
     })
 
-    await publishSite(logger, {
-      siteId: resource.siteId,
-      userId: byUser.id,
-      resourceId: resource.id,
-    })
+    await publishSite(logger, { siteId: resource.siteId })
   })
 }
 
@@ -689,15 +668,12 @@ export const publishSiteConfig = async (
     await logPublishEvent(tx, {
       siteId: site.id,
       by: byUser,
-      delta: {
-        before: null,
-        after: null,
-      },
+      delta: { before: null, after: null },
       eventType: AuditLogEvent.Publish,
       metadata: { site, ...rest },
     })
 
-    await publishSite(logger, { siteId: site.id, userId: byUser.id })
+    await publishSite(logger, { siteId: site.id })
   })
 }
 
@@ -925,9 +901,7 @@ export const getSearchRecentlyEdited = async ({
   limit?: number
 }): Promise<SearchResultResource[]> => {
   return await getResourcesWithFullPermalink({
-    resources: await getResourcesWithLastUpdatedAt({
-      siteId: Number(siteId),
-    })
+    resources: await getResourcesWithLastUpdatedAt({ siteId: Number(siteId) })
       .where("Resource.type", "in", [
         // only show page-ish resources
         ResourceType.Page,

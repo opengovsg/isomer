@@ -1,5 +1,5 @@
 {
-  "name": "@isomer/redis",
+  "name": "@isomer/pgboss",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -26,18 +26,17 @@
     "format:fix": "prettier --write . --ignore-path ../../.gitignore",
     "lint": "eslint ."
   },
-  "dependencies": {
-    "ioredis": "^5.7.0",
-    "pino": "^9.6.0",
-    "redlock": "^5.0.0-beta.2",
-    "zod": "^3.22.4"
-  },
   "devDependencies": {
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
+    "@types/node": "^22.15.21",
     "eslint": "^9.10.0",
     "prettier": "^3.3.3",
     "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "pg-boss": "^12.3.0",
+    "pino": "^9.6.0"
   }
 }
