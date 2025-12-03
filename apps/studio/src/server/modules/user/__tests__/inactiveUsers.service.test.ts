@@ -1,4 +1,7 @@
-import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+import {
+  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
+  PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
+} from "~prisma/constants"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -374,7 +377,7 @@ describe("inactiveUsers.service", () => {
       expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
     })
 
-    it("should not include isomer admins and migrators in the email", async () => {
+    it("should not include isomer admins and migrators (including former members) in the email", async () => {
       // Arrange
       const userToDeactivate = await setupUserWrapper({
         siteId: site.id,
@@ -382,7 +385,7 @@ describe("inactiveUsers.service", () => {
         lastLoginDaysAgo: null,
       })
       await Promise.all(
-        ISOMER_ADMINS_AND_MIGRATORS_EMAILS.map((email) =>
+        PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS.map((email) =>
           setupUserWrapper({
             siteId: site.id,
             email,
