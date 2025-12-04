@@ -3,7 +3,7 @@ import type {
   IsomerComponent,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useState } from "react"
 import {
   Box,
   Button,
