@@ -489,6 +489,7 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "infobar",
       "blockquote",
       "collectionblock",
+      "logocloud",
     ],
   },
 ]
