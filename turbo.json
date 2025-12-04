@@ -5,8 +5,6 @@
   "globalEnv": [
     "NODE_ENV",
     "DATABASE_URL",
-    "REDIS_HOST",
-    "REDIS_PORT",
     "CI",
     "SESSION_SECRET",
     "NEXT_PUBLIC_S3_REGION",
