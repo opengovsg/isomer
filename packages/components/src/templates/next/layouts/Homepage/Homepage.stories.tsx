@@ -608,20 +608,16 @@ const generateArgs = ({
         title: "Our partners",
         images: [
           {
-            src: "https://isomer-user-content.by.gov.sg/16/25863c2f-61e7-4d54-bb36-e7cfa1490b64/ogp-logo.svg",
-            alt: "open government products logo",
+            src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/65609f775edfd6ba4a3c3af7_Nairobi-colored.svg",
+            alt: "placeholder logo",
           },
           {
-            src: "https://isomer-user-content.by.gov.sg/85/06d6b95f-fc6b-418d-8b08-9efa88790822/GovTech%20Inline%20Logo_V3_no%20bg.gif",
-            alt: "govtech logo",
+            src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/61f12d5f57bdb32d0cbecfa3_CluesDark.svg",
+            alt: "placeholder logo",
           },
           {
-            src: "https://isomer-user-content.by.gov.sg/1/713bc29a-4ba6-4e17-b3a0-43b5a88a4572/stb-logo.svg",
-            alt: "singapore tourism board logo",
-          },
-          {
-            src: "https://isomer-user-content.by.gov.sg/24/b6286d60-5e3c-430a-a9e6-9a4c1dce6544/togsgcares_logo.png",
-            alt: "sg cares logo",
+            src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/65607e86d46a61fcef7cddce_Springfield-colored.svg",
+            alt: "placeholder logo",
           },
         ],
       },
