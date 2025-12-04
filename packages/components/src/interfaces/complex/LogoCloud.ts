@@ -14,7 +14,9 @@ export const LogoCloudSchema = Type.Object(
         alt: AltTextSchema,
       }),
       {
-        title: "Images for logo cloud",
+        title: "Logos",
+        description:
+          "Upload original logos with transparent backgrounds for best results.",
         minItems: 1,
         maxItems: 10,
       },
@@ -25,7 +27,7 @@ export const LogoCloudSchema = Type.Object(
     }),
   },
   {
-    title: "Logocloud component",
+    title: "Logocloud",
   },
 )
 
