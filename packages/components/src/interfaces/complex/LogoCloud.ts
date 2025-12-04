@@ -21,10 +21,28 @@ export const LogoCloudSchema = Type.Object(
         maxItems: 10,
       },
     ),
-    title: Type.String({
-      title: "Title for the logo cloud",
-      description: "Upload the images for the logo cloud here or provide a url",
-    }),
+    title: Type.Optional(
+      Type.String({
+        title: "Title",
+      }),
+    ),
+    variant: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("default", {
+            title: "Default",
+          }),
+          Type.Literal("greyscale", {
+            title: "Greyscale",
+          }),
+        ],
+        {
+          default: "default",
+          title: "Style",
+          format: "radio",
+        },
+      ),
+    ),
   },
   {
     title: "Logocloud",
