@@ -13,7 +13,7 @@ export const ContentpicSchema = Type.Object(
     content: ContentpicProseSchema,
   },
   {
-    title: "Contentpic component",
+    title: "Image with text",
     description:
       "The contentpic component is used to display an image with accompanying text only in content pages",
   },

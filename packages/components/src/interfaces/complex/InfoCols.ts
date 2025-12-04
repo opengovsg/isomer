@@ -75,7 +75,7 @@ export const InfoColsSchema = Type.Object(
     }),
   },
   {
-    title: "Infocols component",
+    title: "Columns of text",
   },
 )
 

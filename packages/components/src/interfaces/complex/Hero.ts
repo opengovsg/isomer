@@ -200,7 +200,7 @@ export const HeroSchema = Type.Intersect(
     ),
   ],
   {
-    title: "Hero component",
+    title: "Hero banner",
   },
 )
 
