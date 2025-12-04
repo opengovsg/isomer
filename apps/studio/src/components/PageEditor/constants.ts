@@ -228,7 +228,16 @@ export const DEFAULT_BLOCKS: Record<
   },
   logocloud: {
     type: "logocloud",
-    images: [],
+    images: [
+      {
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
+      {
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
+    ],
     title: "With support from these agencies",
   },
   collectionblock: {
@@ -489,6 +498,7 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "infobar",
       "blockquote",
       "collectionblock",
+      "logocloud",
     ],
   },
 ]

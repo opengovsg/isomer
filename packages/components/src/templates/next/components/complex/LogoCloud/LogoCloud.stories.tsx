@@ -32,6 +32,7 @@ export const Default: Story = {
   args: {
     images: [IMAGE],
     site: generateSiteConfig(),
+    title: "Our partners",
   },
 }
 
@@ -39,23 +40,55 @@ export const ManyImages: Story = {
   args: {
     images: Array(10).fill(IMAGE),
     site: generateSiteConfig(),
+    title: "Our partners and accolades",
+  },
+}
+
+export const LongTitle: Story = {
+  args: {
+    images: Array(5).fill(IMAGE),
+    site: generateSiteConfig(),
+    title: "Our agency partners that have joined us on our journey since 2019",
+  },
+}
+
+export const Greyscale: Story = {
+  args: {
+    images: [
+      {
+        src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/65609f775edfd6ba4a3c3af7_Nairobi-colored.svg",
+        alt: "placeholder logo",
+      },
+      {
+        src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/61f12d5f57bdb32d0cbecfa3_CluesDark.svg",
+        alt: "placeholder logo",
+      },
+      {
+        src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/65607e86d46a61fcef7cddce_Springfield-colored.svg",
+        alt: "placeholder logo",
+      },
+    ],
+    site: generateSiteConfig(),
+    title: "Our partners",
+    variant: "greyscale",
   },
 }
 
 export const Agency: Story = {
   args: {
+    title: "Our partners",
     images: [
       {
-        alt: "Some image",
-        src: "https://www.ncss.gov.sg/images/default-source/asset/fwdsg_logo.png?sfvrsn=91b23ea8_1",
+        src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/65609f775edfd6ba4a3c3af7_Nairobi-colored.svg",
+        alt: "placeholder logo",
       },
       {
-        alt: "Some image",
-        src: "https://www.ncss.gov.sg/images/default-source/asset/togsgcares_logo.png?sfvrsn=d499b7ea_2",
+        src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/61f12d5f57bdb32d0cbecfa3_CluesDark.svg",
+        alt: "placeholder logo",
       },
       {
-        alt: "Some image",
-        src: "https://www.ncss.gov.sg/images/default-source/asset/celebrating-volunteers-logo.png?sfvrsn=44b85185_2 ",
+        src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/65607e86d46a61fcef7cddce_Springfield-colored.svg",
+        alt: "placeholder logo",
       },
     ],
     site: generateSiteConfig(),
@@ -64,6 +97,7 @@ export const Agency: Story = {
 
 export const HugeHorizontalLogo: Story = {
   args: {
+    title: "Our partners",
     images: [...Array(4).fill(IMAGE), HORIZONTAL_IMAGE],
     site: generateSiteConfig(),
   },
@@ -71,6 +105,7 @@ export const HugeHorizontalLogo: Story = {
 
 export const HugeVerticalLogo: Story = {
   args: {
+    title: "Our partners",
     images: [...Array(4).fill(IMAGE), VERTICAL_IMAGE],
     site: generateSiteConfig(),
   },

@@ -5,8 +5,25 @@ import type { IsomerSiteProps } from "~/types"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const LOGO_CLOUD_TYPE = "logocloud"
+
+export const LogoCloudVariants = {
+  Default: {
+    value: "default",
+    label: "Colour (Default)",
+  },
+  Greyscale: {
+    value: "greyscale",
+    label: "Greyscale",
+  },
+} as const
+
 export const LogoCloudSchema = Type.Object(
   {
+    title: Type.Optional(
+      Type.String({
+        title: "Title",
+      }),
+    ),
     type: Type.Literal(LOGO_CLOUD_TYPE, { default: LOGO_CLOUD_TYPE }),
     images: Type.Array(
       Type.Object({
@@ -14,18 +31,33 @@ export const LogoCloudSchema = Type.Object(
         alt: AltTextSchema,
       }),
       {
-        title: "Images for logo cloud",
+        title: "Logos",
+        description:
+          "Upload original logos with transparent backgrounds for best results.",
         minItems: 1,
         maxItems: 10,
       },
     ),
-    title: Type.String({
-      title: "Title for the logo cloud",
-      description: "Upload the images for the logo cloud here or provide a url",
-    }),
+    variant: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal(LogoCloudVariants.Default.value, {
+            title: LogoCloudVariants.Default.label,
+          }),
+          Type.Literal(LogoCloudVariants.Greyscale.value, {
+            title: LogoCloudVariants.Greyscale.label,
+          }),
+        ],
+        {
+          default: LogoCloudVariants.Default.value,
+          title: "Logocloud style",
+          format: "radio",
+        },
+      ),
+    ),
   },
   {
-    title: "Logocloud component",
+    title: "Logocloud",
   },
 )
 
