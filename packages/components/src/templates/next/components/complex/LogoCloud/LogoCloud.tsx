@@ -16,6 +16,7 @@ const createLogoCloudStyles = tv({
       greyscale: {
         logo: "grayscale",
       },
+      default: { logo: "" },
     },
   },
 })

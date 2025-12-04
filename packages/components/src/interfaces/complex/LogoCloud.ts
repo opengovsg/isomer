@@ -5,6 +5,18 @@ import type { IsomerSiteProps } from "~/types"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const LOGO_CLOUD_TYPE = "logocloud"
+
+export const LogoCloudVariants = {
+  Default: {
+    value: "default",
+    label: "Colour (Default)",
+  },
+  Greyscale: {
+    value: "greyscale",
+    label: "Greyscale",
+  },
+} as const
+
 export const LogoCloudSchema = Type.Object(
   {
     type: Type.Literal(LOGO_CLOUD_TYPE, { default: LOGO_CLOUD_TYPE }),
@@ -29,16 +41,16 @@ export const LogoCloudSchema = Type.Object(
     variant: Type.Optional(
       Type.Union(
         [
-          Type.Literal("default", {
-            title: "Default",
+          Type.Literal(LogoCloudVariants.Default.value, {
+            title: LogoCloudVariants.Default.label,
           }),
-          Type.Literal("greyscale", {
-            title: "Greyscale",
+          Type.Literal(LogoCloudVariants.Greyscale.value, {
+            title: LogoCloudVariants.Greyscale.label,
           }),
         ],
         {
-          default: "default",
-          title: "Style",
+          default: LogoCloudVariants.Default.value,
+          title: "Logocloud style",
           format: "radio",
         },
       ),
