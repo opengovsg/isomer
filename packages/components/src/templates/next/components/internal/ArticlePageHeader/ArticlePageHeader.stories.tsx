@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import type { ArticlePageHeaderProps } from "~/interfaces"
-import ArticlePageHeader from "./ArticlePageHeader"
+import { ArticlePageHeader } from "./ArticlePageHeader"
 
 const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",

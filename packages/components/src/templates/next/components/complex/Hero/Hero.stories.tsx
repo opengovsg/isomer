@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -7,7 +7,7 @@ import {
   withSearchSgSetup,
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
-import Hero from "./Hero"
+import { Hero } from "./Hero"
 
 const meta: Meta<typeof Hero> = {
   title: "Next/Components/Hero",
@@ -166,6 +166,25 @@ export const Searchbar: Story = {
     title: "Temasek Polytechnic",
     subtitle:
       "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
+    variant: "searchbar",
+  },
+}
+
+export const SearchbarWithImage: Story = {
+  decorators: [withSearchSgSetup()],
+  args: {
+    site: generateSiteConfig({
+      search: {
+        type: "searchSG",
+        clientId: SEARCHSG_TEST_CLIENT_ID,
+      },
+    }),
+
+    title: "Temasek Polytechnic",
+    subtitle:
+      "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1594318142972-1e2ea7487a3e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1740",
     variant: "searchbar",
   },
 }

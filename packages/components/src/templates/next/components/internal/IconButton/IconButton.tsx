@@ -1,14 +1,18 @@
 "use client"
 
-import type { ButtonProps as AriaButtonProps } from "react-aria-components"
+import type { AriaButtonProps } from "@react-aria/button"
 import type { IconType } from "react-icons"
 import type { VariantProps } from "tailwind-variants"
 import type { SetRequired } from "type-fest"
-import { forwardRef } from "react"
-import { Button as AriaButton, composeRenderProps } from "react-aria-components"
+import { forwardRef, useRef } from "react"
+import { useButton } from "@react-aria/button"
+import { useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
 
 import { tv } from "~/lib/tv"
+import { twMerge } from "~/lib/twMerge"
 import { focusRing } from "~/utils"
+import { mergeRefs } from "~/utils/rac"
 
 export const iconButtonStyles = tv({
   base: "box-border flex w-fit cursor-pointer items-center justify-center rounded text-center transition",
@@ -53,29 +57,43 @@ export const iconButtonIconStyles = tv({
 })
 
 export interface IconButtonProps
-  extends SetRequired<Omit<AriaButtonProps, "children">, "aria-label">,
+  extends SetRequired<
+      Omit<AriaButtonProps<"button">, "children">,
+      "aria-label"
+    >,
     VariantProps<typeof iconButtonStyles> {
   icon: IconType
+  className?: string
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ icon: Icon, className, variant, size, colorScheme, ...props }, ref) => {
+  (
+    { icon: Icon, className, variant, size, colorScheme, isDisabled, ...props },
+    ref,
+  ) => {
+    const buttonRef = useRef<HTMLButtonElement>(null)
+    const { buttonProps } = useButton({ ...props, isDisabled }, buttonRef)
+    const { focusProps, isFocusVisible } = useFocusRing()
+
+    const mergedProps = mergeProps(buttonProps, focusProps)
+
     return (
-      <AriaButton
-        {...props}
-        ref={ref}
-        className={composeRenderProps(className, (className, renderProps) =>
+      <button
+        {...mergedProps}
+        ref={mergeRefs(buttonRef, ref)}
+        className={twMerge(
           iconButtonStyles({
-            ...renderProps,
+            isFocusVisible,
+            isDisabled,
             variant,
             size,
-            className,
             colorScheme,
           }),
+          className,
         )}
       >
         <Icon className={iconButtonIconStyles()} />
-      </AriaButton>
+      </button>
     )
   },
 )

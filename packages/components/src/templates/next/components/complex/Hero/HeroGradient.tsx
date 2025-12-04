@@ -1,4 +1,4 @@
-import type { HeroProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
@@ -13,7 +13,7 @@ export const HeroGradient = ({
   backgroundUrl,
   site,
   LinkComponent,
-}: HeroProps) => {
+}: HeroGradientProps) => {
   const backgroundSrc =
     isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
       ? backgroundUrl

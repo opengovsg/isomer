@@ -1,14 +1,13 @@
 import type { Static } from "@sinclair/typebox"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { Box, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { LAYOUT_PAGE_MAP } from "@opengovsg/isomer-components"
-import { useAtom, useSetAtom } from "jotai"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
 import { z } from "zod"
 
-import type { CollectionLinkProps } from "../atoms"
+import type { CollectionLinkProps } from "~/schemas/collection"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -16,7 +15,6 @@ import { ADMIN_ROLE } from "~/lib/growthbook"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
-import { linkAtom, linkRefAtom } from "../atoms"
 import { ActivateRawJsonEditorMode } from "./ActivateRawJsonEditorMode"
 import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
@@ -162,31 +160,19 @@ const DrawerState = (
   }
 }
 
-export const LinkEditorDrawer = () => {
+interface LinkEditorDrawerProps {
+  link: CollectionLinkProps
+  setLink: (link: CollectionLinkProps) => void
+  initialLinkState: IsomerLinkSchema
+}
+export const LinkEditorDrawer = ({
+  initialLinkState,
+  link,
+  setLink,
+}: LinkEditorDrawerProps) => {
   const { linkId, siteId } = useQueryParse(editLinkSchema)
-  const [data, setLinkAtom] = useAtom(linkAtom)
   const utils = trpc.useUtils()
   const toast = useToast()
-  const setLinkRef = useSetAtom(linkRefAtom)
-
-  const [{ content, title }] =
-    trpc.collection.readCollectionLink.useSuspenseQuery(
-      {
-        linkId,
-        siteId,
-      },
-      {
-        refetchOnWindowFocus: false,
-      },
-    )
-
-  useEffect(() => {
-    setLinkAtom({
-      ...(content.page as CollectionLinkProps),
-      title,
-    })
-    setLinkRef((content.page as CollectionLinkProps).ref)
-  }, [content, setLinkAtom, setLinkRef, title])
 
   const { mutate, isPending } =
     trpc.collection.updateCollectionLink.useMutation({
@@ -201,21 +187,14 @@ export const LinkEditorDrawer = () => {
       },
     })
 
-  const savedPageState = {
-    ...(content.page as CollectionLinkProps),
-    title,
-  }
-  const handleChange = (data: IsomerLinkSchema) =>
-    setLinkAtom(data as CollectionLinkProps)
-
   return (
     <ErrorProvider>
       <DrawerState
-        savedPageState={savedPageState}
-        previewPageState={data}
+        savedPageState={initialLinkState}
+        previewPageState={link}
         isLoading={isPending}
-        handleChange={handleChange}
-        handleSaveChanges={() => mutate({ siteId, linkId, ...data })}
+        handleChange={(data) => setLink(data)}
+        handleSaveChanges={() => mutate({ siteId, linkId, ...link })}
       />
     </ErrorProvider>
   )

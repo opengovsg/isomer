@@ -140,6 +140,7 @@ export const createUserWithPermission = async ({
       eventType: AuditLogEvent.PermissionCreate,
       by: byUser,
       delta: { before: null, after: resourcePermission },
+      siteId,
     })
 
     return resourcePermission
@@ -260,6 +261,7 @@ export const deleteUserPermission = async ({
         eventType: AuditLogEvent.PermissionDelete,
         by: byUser,
         delta: { before, after: deletedUserPermission },
+        siteId,
       })
     }
   })
@@ -298,4 +300,12 @@ export const updateUserDetails = async ({
 
     return updatedUser
   })
+}
+
+export const getUserById = async (userId: string) => {
+  return await db
+    .selectFrom("User")
+    .selectAll()
+    .where("id", "=", userId)
+    .executeTakeFirstOrThrow()
 }

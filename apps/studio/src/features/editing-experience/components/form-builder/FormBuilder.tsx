@@ -25,6 +25,8 @@ import {
   jsonFormsChildrenPagesOrderingControlTester,
   JsonFormsCollectionDropdownControl,
   jsonFormsCollectionDropdownControlTester,
+  JsonFormsColourPickerControl,
+  jsonFormsColourPickerControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
@@ -80,6 +82,10 @@ import {
 } from "./renderers"
 
 export const renderers: JsonFormsRendererRegistryEntry[] = [
+  {
+    renderer: JsonFormsColourPickerControl,
+    tester: jsonFormsColourPickerControlTester,
+  },
   {
     renderer: JsonFormsWidgetIntegrationControl,
     tester: jsonFormsWidgetIntegrationControlTester,

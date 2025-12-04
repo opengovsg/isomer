@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { expect, userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { expect, userEvent, within } from "storybook/test"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import type { NavbarProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 import { Button } from "../Button"
-import Masthead from "../Masthead"
-import Navbar from "./Navbar"
+import { Masthead } from "../Masthead"
+import { Navbar } from "./Navbar"
 
 const Renderer = (props: NavbarProps) => {
   return (
@@ -175,10 +175,10 @@ export const CallToAction: Story = {
 
 export const ExpandFirstItem: Story = {
   args: generateNavbarArgs(),
+  globals: {
+    viewport: getViewportByMode("desktop"),
+  },
   parameters: {
-    viewport: {
-      defaultViewport: getViewportByMode("desktop"),
-    },
     chromatic: withChromaticModes(["desktop"]),
   },
   play: async ({ canvasElement }) => {
@@ -192,10 +192,10 @@ export const ExpandFirstItem: Story = {
 
 export const ExpandNavbarItemWithLink: Story = {
   args: generateNavbarArgs(),
+  globals: {
+    viewport: getViewportByMode("desktop"),
+  },
   parameters: {
-    viewport: {
-      defaultViewport: getViewportByMode("desktop"),
-    },
     chromatic: withChromaticModes(["desktop"]),
   },
   play: async ({ canvasElement }) => {
@@ -227,11 +227,11 @@ export const ExpandSearch: Story = {
 
 export const Mobile: Story = {
   args: generateNavbarArgs(),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
   parameters: {
     chromatic: withChromaticModes(["mobile"]),
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -243,11 +243,11 @@ export const Mobile: Story = {
 
 export const ExpandMobile: Story = {
   args: generateNavbarArgs(),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
   parameters: {
     chromatic: withChromaticModes(["mobile"]),
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -265,11 +265,11 @@ export const MobileCallToAction: Story = {
       url: "/call-to-action",
     },
   }),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
   parameters: {
     chromatic: withChromaticModes(["mobile"]),
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -282,11 +282,11 @@ export const MobileCallToAction: Story = {
 export const ExpandMobileWithLinkOneWord: Story = {
   name: "Expand Mobile With Link (one word)",
   args: generateNavbarArgs(),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -300,11 +300,11 @@ export const ExpandMobileWithLinkOneWord: Story = {
 export const ExpandMobileWithLinkMultipleWords: Story = {
   name: "Expand Mobile With Link (multiple words)",
   args: generateNavbarArgs(),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -345,11 +345,11 @@ export const UtilityLinksMobile: Story = {
       ],
     },
   }),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -385,11 +385,11 @@ export const UtilityLinksNoLabelMobile: Story = {
       ],
     },
   }),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -435,11 +435,11 @@ export const CTAAndUtilityLinksMobile: Story = {
       ],
     },
   }),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

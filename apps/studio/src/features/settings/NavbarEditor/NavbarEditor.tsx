@@ -59,13 +59,11 @@ export const NavbarEditor = ({
 
   const handleItemsChange = useCallback(
     (data: Static<typeof NavbarItemsSchema>) => {
-      const updatedData = { ...previewNavbarState, ...data }
-
-      if (isEqual(previewNavbarState, updatedData)) {
+      if (isEqual(previewNavbarState, data)) {
         return
       }
 
-      setPreviewNavbarState(updatedData)
+      setPreviewNavbarState(data)
     },
     [previewNavbarState, setPreviewNavbarState],
   )

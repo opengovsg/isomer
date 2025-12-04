@@ -67,12 +67,12 @@ async function main() {
   })
 }
 
-main()
+await main()
   .catch((e) => {
     console.error(e)
     process.exit(1)
   })
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  .finally(async () => {
-    await db.destroy()
+
+  .finally(() => {
+    void db.destroy()
   })

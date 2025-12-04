@@ -17,6 +17,7 @@ export const DEFAULT_COLLECTION_ITEMS = [
     siteId: 1,
     createdAt: new Date("2024-09-12T07:00:30.000Z"),
     scheduledAt: null,
+    scheduledBy: null,
   },
   {
     id: "5",
@@ -31,6 +32,7 @@ export const DEFAULT_COLLECTION_ITEMS = [
     siteId: 1,
     createdAt: new Date("2024-09-12T07:00:30.000Z"),
     scheduledAt: null,
+    scheduledBy: null,
   },
 ]
 export const collectionHandlers = {
@@ -52,6 +54,7 @@ export const collectionHandlers = {
         parentId: "1",
         publishedVersionId: null,
         scheduledAt: null,
+        scheduledBy: null,
         draftBlobId: "1",
       })),
   },
@@ -83,10 +86,7 @@ export const collectionHandlers = {
             date: "24-10-2024",
             summary: "",
             category: "Others",
-            image: {
-              src: "www.google.com",
-              alt: "fake news",
-            },
+            image: { src: "www.google.com", alt: "fake news" },
           },
           layout: "link",
           content: [],

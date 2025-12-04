@@ -8,8 +8,9 @@ import type { NavbarClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
-import { LocalSearchInputBox, NavbarSearchSGInputBox } from "../../internal"
 import { LinkButton } from "../../internal/LinkButton"
+import { LocalSearchInputBox } from "../../internal/LocalSearchInputBox"
+import { NavbarSearchSGInputBox } from "../../internal/SearchSGInputBox"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
@@ -278,5 +279,3 @@ export const NavbarClient = ({
     </div>
   )
 }
-
-export default NavbarClient

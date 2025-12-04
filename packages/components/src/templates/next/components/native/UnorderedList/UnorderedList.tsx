@@ -1,5 +1,5 @@
 import type { UnorderedListProps } from "~/interfaces"
-import ListItem from "../ListItem"
+import { ListItem } from "../ListItem"
 
 const getUnorderedListType = (level?: number) => {
   // We rotate between disc, circle and square
@@ -12,14 +12,16 @@ const getUnorderedListType = (level?: number) => {
   }
 }
 
-const UnorderedList = ({
+export const UnorderedList = ({
   content,
   level,
   LinkComponent,
   site,
 }: UnorderedListProps) => {
   return (
-    <ul className={`mt-6 ps-9 ${getUnorderedListType(level)}`}>
+    <ul
+      className={`mt-6 ps-9 marker:text-base-content ${getUnorderedListType(level)}`}
+    >
       {content.map((item, index) => (
         <ListItem
           key={index}
@@ -32,5 +34,3 @@ const UnorderedList = ({
     </ul>
   )
 }
-
-export default UnorderedList

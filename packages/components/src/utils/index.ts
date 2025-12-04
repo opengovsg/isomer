@@ -23,9 +23,7 @@ export {
 } from "./dgs"
 export { fetchFileMetadata } from "./fetchFileMetadata"
 export { formatBytes } from "./formatBytes"
-export { orderedListSchemaBuilder } from "./orderedListSchemaBuilder"
 export * from "./tailwind"
-export { unorderedListSchemaBuilder } from "./unorderedListSchemaBuilder"
 export { getWordsFromPermalink } from "./getWordsFromPermalink"
 export {
   getResourceIdFromReferenceLink,

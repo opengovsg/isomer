@@ -1,5 +1,5 @@
 import type { OrderedListProps } from "~/interfaces"
-import ListItem from "../ListItem"
+import { ListItem } from "../ListItem"
 
 const getOrderedListType = (level?: number) => {
   // We rotate between decimal, lower-alpha and lower-roman
@@ -12,7 +12,7 @@ const getOrderedListType = (level?: number) => {
   }
 }
 
-const OrderedList = ({
+export const OrderedList = ({
   attrs,
   content,
   level,
@@ -21,7 +21,7 @@ const OrderedList = ({
 }: OrderedListProps) => {
   return (
     <ol
-      className={`mt-6 ps-9 ${getOrderedListType(level)}`}
+      className={`mt-6 ps-9 marker:text-base-content ${getOrderedListType(level)}`}
       start={attrs?.start}
     >
       {content.map((item, index) => (
@@ -36,5 +36,3 @@ const OrderedList = ({
     </ol>
   )
 }
-
-export default OrderedList

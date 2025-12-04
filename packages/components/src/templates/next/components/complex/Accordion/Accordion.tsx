@@ -4,7 +4,7 @@ import { BiMinus, BiPlus } from "react-icons/bi"
 import type { AccordionProps as BaseAccordionProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight } from "~/utils"
-import { Prose } from "../../native"
+import { Prose } from "../../native/Prose"
 
 const summaryStyle = tv({
   extend: focusVisibleHighlight,
@@ -26,7 +26,7 @@ interface AccordionProps
   extends BaseAccordionProps,
     VariantProps<typeof createAccordionStyles> {}
 
-const Accordion = ({
+export const Accordion = ({
   summary,
   details,
   LinkComponent,
@@ -52,5 +52,3 @@ const Accordion = ({
     </details>
   )
 }
-
-export default Accordion

@@ -17,6 +17,7 @@ import {
   setNavbarSchema,
   setNotificationSchema,
   setSiteConfigByAdminSchema,
+  setThemeSchema,
   updateSiteConfigSchema,
   updateSiteIntegrationsSchema,
 } from "~/schemas/site"
@@ -96,7 +97,7 @@ export const siteRouter = router({
     }),
   updateSiteConfig: protectedProcedure
     .input(updateSiteConfigSchema)
-    .mutation(async ({ ctx, input: { siteId, siteName } }) => {
+    .mutation(async ({ ctx, input: { siteId, siteName, ...rest } }) => {
       await validateUserPermissionsForSite({
         siteId,
         userId: ctx.user.id,
@@ -120,17 +121,14 @@ export const siteRouter = router({
       const updatedConfig = await db.transaction().execute(async (tx) => {
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ config: jsonb({ ...config, siteName }) })
+          .set({ config: jsonb({ ...rest, siteName }) })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()
 
         await logConfigEvent(tx, {
           eventType: AuditLogEvent.SiteConfigUpdate,
-          delta: {
-            before: site,
-            after: updatedSite,
-          },
+          delta: { before: site, after: updatedSite },
           by: user,
           siteId,
         })
@@ -150,7 +148,7 @@ export const siteRouter = router({
           config.siteName !== updatedConfig.siteName)
       )
         void updateSearchSGConfig(
-          { name: siteName },
+          { name: siteName, _kind: "name" },
           updatedConfig.search.clientId,
           updatedConfig.url,
         )
@@ -187,10 +185,7 @@ export const siteRouter = router({
 
         await logConfigEvent(tx, {
           eventType: AuditLogEvent.SiteConfigUpdate,
-          delta: {
-            before: site,
-            after: updatedSite,
-          },
+          delta: { before: site, after: updatedSite },
           by: user,
           siteId,
         })
@@ -210,6 +205,92 @@ export const siteRouter = router({
       })
       const theme = await getSiteTheme(id)
       return theme
+    }),
+  setTheme: protectedProcedure
+    .input(setThemeSchema)
+    .mutation(async ({ ctx, input: { siteId, theme } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", siteId)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!site) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "The site could not be found.",
+        })
+      }
+
+      const oldTheme = site.theme
+
+      if (!oldTheme) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "The theme for the site could not be found.",
+        })
+      }
+
+      const updatedSite = await db.transaction().execute(async (tx) => {
+        const user = await tx
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!user) {
+          // NOTE: This shouldn't happen as the user is already logged in
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The user could not be found.",
+          })
+        }
+
+        const newSite = await tx
+          .updateTable("Site")
+          .set({ theme: jsonb(theme) })
+          .where("id", "=", siteId)
+          .returningAll()
+          .executeTakeFirst()
+
+        if (!newSite)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site theme.",
+          })
+
+        await logConfigEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: { before: site, after: newSite },
+          by: user,
+        })
+
+        await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
+        return newSite
+      })
+
+      // NOTE: if the users update their `canvas.inverse`
+      // we also need to update their searchsg theme settings
+      if (
+        site.config.search?.type === "searchSG" &&
+        oldTheme.colors.brand.canvas.inverse !==
+          theme.colors.brand.canvas.inverse
+      ) {
+        void updateSearchSGConfig(
+          { colour: theme.colors.brand.canvas.inverse, _kind: "colour" },
+          site.config.search.clientId,
+          site.config.url,
+        )
+      }
+
+      return updatedSite
     }),
   getFooter: protectedProcedure
     .input(getConfigSchema)
@@ -294,10 +375,7 @@ export const siteRouter = router({
         await logConfigEvent(tx, {
           siteId,
           eventType: AuditLogEvent.FooterUpdate,
-          delta: {
-            before: oldFooter,
-            after: newFooter,
-          },
+          delta: { before: oldFooter, after: newFooter },
           by: user,
         })
 
@@ -390,10 +468,7 @@ export const siteRouter = router({
         await logConfigEvent(tx, {
           siteId,
           eventType: AuditLogEvent.NavbarUpdate,
-          delta: {
-            before: oldNavbar,
-            after: newNavbar,
-          },
+          delta: { before: oldNavbar, after: newNavbar },
           by: user,
         })
 
@@ -514,10 +589,7 @@ export const siteRouter = router({
           await logConfigEvent(tx, {
             siteId,
             eventType: AuditLogEvent.SiteConfigUpdate,
-            delta: {
-              before: oldSite,
-              after: newSite,
-            },
+            delta: { before: oldSite, after: newSite },
             by: user,
           })
 
@@ -558,10 +630,7 @@ export const siteRouter = router({
           await logConfigEvent(tx, {
             siteId,
             eventType: AuditLogEvent.NavbarUpdate,
-            delta: {
-              before: oldNavbar,
-              after: newNavbar,
-            },
+            delta: { before: oldNavbar, after: newNavbar },
             by: user,
           })
 
@@ -602,10 +671,7 @@ export const siteRouter = router({
           await logConfigEvent(tx, {
             siteId,
             eventType: AuditLogEvent.FooterUpdate,
-            delta: {
-              before: oldFooter,
-              after: newFooter,
-            },
+            delta: { before: oldFooter, after: newFooter },
             by: user,
           })
 
@@ -657,7 +723,7 @@ export const siteRouter = router({
           metadata: {},
           siteId,
         })
-        await publishSite(ctx.logger, siteId)
+        await publishSite(ctx.logger, { siteId: siteId })
       })
     }),
   publishAll: protectedProcedure.mutation(async ({ ctx }) => {
@@ -698,7 +764,7 @@ export const siteRouter = router({
               metadata: {},
               siteId: site.id,
             })
-            await publishSite(ctx.logger, site.id)
+            await publishSite(ctx.logger, { siteId: site.id })
           })
         } catch (error) {
           ctx.logger.error({

@@ -1,9 +1,9 @@
 import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils"
-import Breadcrumb from "../Breadcrumb"
+import { Breadcrumb } from "../Breadcrumb"
 import { Tag } from "../Tag"
 
-const ArticlePageHeader = ({
+export const ArticlePageHeader = ({
   breadcrumb,
   category,
   title,
@@ -45,13 +45,11 @@ const ArticlePageHeader = ({
         )}
 
         {summary && (
-          <div className="prose-title-lg text-base-content-light">
+          <p className="prose-title-lg whitespace-pre-wrap text-base-content-light">
             {summary}
-          </div>
+          </p>
         )}
       </div>
     </div>
   )
 }
-
-export default ArticlePageHeader

@@ -1,5 +1,5 @@
+import type { NextApiRequest } from "next"
 import type { DestinationStream } from "pino"
-import { NextApiRequest } from "next"
 import { nanoid } from "nanoid"
 import pino from "pino"
 import pinoPretty from "pino-pretty"
@@ -69,7 +69,7 @@ export class PinoLogger {
     return PinoLogger.getInstance().child({
       path,
       clientIp: req && getIP(req),
-      id: nanoid(),
+      id: nanoid<string>(),
       trace_id: req?.headers["x-datadog-trace-id"],
     })
   }

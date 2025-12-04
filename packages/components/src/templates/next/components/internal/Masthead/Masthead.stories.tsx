@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { userEvent, within } from "storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { MastheadProps } from "~/interfaces"
-import Masthead from "./Masthead"
+import { Masthead } from "./Masthead"
 
 const meta: Meta<MastheadProps> = {
   title: "Next/Internal Components/Masthead",

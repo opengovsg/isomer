@@ -1,15 +1,13 @@
-import type { DatabasePageSchemaType } from "~/engine"
+import type { DatabasePageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
 import {
   getBreadcrumbFromSiteMap,
   getTableOfContents,
   getTransformedPageContent,
 } from "~/utils"
-import {
-  ContentPageHeader,
-  SearchableTable,
-  TableOfContents,
-} from "../../components/internal"
+import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
+import { SearchableTable } from "../../components/internal/SearchableTable"
+import { TableOfContents } from "../../components/internal/TableOfContents"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
@@ -24,7 +22,7 @@ const createDatabaseLayoutStyles = tv({
 
 const compoundStyles = createDatabaseLayoutStyles()
 
-const DatabaseLayout = ({
+export const DatabaseLayout = ({
   site,
   page,
   layout,
@@ -82,5 +80,3 @@ const DatabaseLayout = ({
     </Skeleton>
   )
 }
-
-export default DatabaseLayout

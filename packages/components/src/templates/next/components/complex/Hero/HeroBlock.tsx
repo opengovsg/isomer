@@ -1,4 +1,4 @@
-import type { HeroProps } from "~/interfaces/complex/Hero"
+import type { HeroBlockProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
@@ -28,7 +28,7 @@ export const HeroBlock = ({
   site,
   LinkComponent,
   theme = "default",
-}: HeroProps) => {
+}: HeroBlockProps) => {
   const backgroundSrc =
     isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
       ? backgroundUrl

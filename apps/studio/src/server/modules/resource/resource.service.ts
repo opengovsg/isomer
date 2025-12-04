@@ -27,6 +27,7 @@ import {
 import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
+import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
 
@@ -44,6 +45,7 @@ export const defaultResourceSelect = [
   "Resource.createdAt",
   "Resource.updatedAt",
   "Resource.scheduledAt",
+  "Resource.scheduledBy",
 ] satisfies SelectExpression<DB, "Resource">[]
 
 const defaultResourceWithBlobSelect = [
@@ -88,13 +90,7 @@ export const getSiteResourceById = ({
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
 const getById = (
   db: SafeKysely,
-  {
-    resourceId,
-    siteId,
-  }: {
-    resourceId: number
-    siteId: number
-  },
+  { resourceId, siteId }: { resourceId: number; siteId: number },
 ) =>
   db
     .selectFrom("Resource")
@@ -104,10 +100,7 @@ const getById = (
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
 export const getFullPageById = async (
   db: SafeKysely,
-  args: {
-    resourceId: number
-    siteId: number
-  },
+  args: { resourceId: number; siteId: number },
 ) => {
   // Check if draft blob exists and return that preferentially
   const draftBlob = await getById(db, args)
@@ -279,10 +272,7 @@ export const updateBlobById = async (
     .executeTakeFirst()
 
   if (!page) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Resource not found",
-    })
+    throw new TRPCError({ code: "NOT_FOUND", message: "Resource not found" })
   }
 
   let blobIdToUpdate = page.draftBlobId
@@ -358,10 +348,7 @@ export const getLocalisedSitemap = async (
     `.as("thumbnail")
 
   // Get the actual resource first
-  const resource = await getById(db, {
-    resourceId,
-    siteId,
-  })
+  const resource = await getById(db, { resourceId, siteId })
     .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
 
@@ -550,93 +537,83 @@ export const getResourceFullPermalink = async (
 
 interface PublishPageResourceArgs {
   logger: Logger<string>
-  user: User
+  userId: string
   siteId: number
   resourceId: string
+  sitePublish?: {
+    enableCodebuildJobs: boolean
+    isScheduled: boolean
+  }
   isSingpassEnabled?: boolean
-  isScheduled: boolean
-  addCodebuildJobRow: boolean
 }
 
 export const publishPageResource = async ({
   logger,
   siteId,
   resourceId,
-  user,
-  isScheduled,
-  addCodebuildJobRow,
+  userId,
+  sitePublish,
 }: PublishPageResourceArgs) => {
-  const version = await db
-    .transaction()
-    .setIsolationLevel("serializable")
-    .execute(async (tx) => {
-      // Step 1: Create a new version
-      const fullResource = await getFullPageById(tx, {
-        resourceId: Number(resourceId),
-        siteId,
-      })
-
-      if (!fullResource) {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message:
-            "Please ensure you are attempting to publish a page that exists",
-        })
-      }
-
-      const version = await incrementVersion({
-        tx,
-        siteId,
-        resourceId,
-        userId: user.id,
-      })
-
-      const previousVersion = await tx
-        .selectFrom("Version")
-        .where("Version.versionNum", "=", Number(version.versionNum) - 1)
-        .where("Version.resourceId", "=", resourceId)
-        .select("Version.id")
-        .executeTakeFirst()
-
-      await logPublishEvent(tx, {
-        siteId,
-        by: user,
-        delta: {
-          before: previousVersion?.id
-            ? { versionId: previousVersion.id }
-            : null,
-          after: version,
-        },
-        eventType: AuditLogEvent.Publish,
-        metadata: fullResource,
-      })
-      return version
+  await db.transaction().execute(async (tx) => {
+    // Step 1: Create a new version
+    const fullResource = await getFullPageById(tx, {
+      resourceId: Number(resourceId),
+      siteId,
     })
 
-  // Step 2: Trigger a publish of the site
-  const build = await publishSite(logger, siteId)
-
-  // Step 3: Save the build info if the build was triggered
-  if (build && addCodebuildJobRow)
-    await db
-      .insertInto("CodeBuildJobs")
-      .values({
-        siteId,
-        userId: user.id,
-        buildId: build.buildId,
-        startedAt: build.startTime,
-        resourceId,
-        status: "IN_PROGRESS", // default to in progress, will be updated by webhook
-        isScheduled,
+    if (!fullResource) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message:
+          "Please ensure you are attempting to publish a page that exists",
       })
-      .execute()
+    }
 
-  return { version }
+    const version = await incrementVersion({ tx, siteId, resourceId, userId })
+
+    if (!version) {
+      logger.warn(
+        `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
+      )
+      return
+    }
+
+    const { previousVersion, newVersion } = version
+
+    await logPublishEvent(tx, {
+      siteId,
+      by: await getUserById(userId),
+      delta: {
+        before: previousVersion ? { versionId: previousVersion.id } : null,
+        after: { versionId: newVersion.id },
+      },
+      eventType: AuditLogEvent.Publish,
+      metadata: fullResource,
+    })
+  })
+
+  // Step 2: Trigger a publish of the site
+  if (sitePublish)
+    await publishSite(logger, {
+      siteId,
+      codebuildJob: sitePublish.enableCodebuildJobs
+        ? {
+            resourceWithUserIds: [{ resourceId, userId }],
+            isScheduled: sitePublish.isScheduled,
+          }
+        : undefined,
+    })
 }
 
-// NOTE: The distinction here between `publishResource` and `publishPageResource` is that
-// this should be used for publishes that do not incur a change to `Blob.content`
-// and hence, don't incur a log to the `Version` table
+/**
+ * NOTE: The distinction here between `publishResource` and `publishPageResource` is that
+ * this should be used for publishes that do not incur a change to `Blob.content`
+ * and hence, don't incur a log to the `Version` table
+ * @param by The user who is publishing the resource
+ * @param resource Resource to be published
+ * @param logger Logger instance
+ * @returns
+ */
 export const publishResource = async (
   by: User["id"],
   resource: Resource,
@@ -658,15 +635,12 @@ export const publishResource = async (
     await logPublishEvent(tx, {
       siteId: resource.siteId,
       by: byUser,
-      delta: {
-        before: null,
-        after: null,
-      },
+      delta: { before: null, after: null },
       eventType: AuditLogEvent.Publish,
       metadata: resource,
     })
 
-    await publishSite(logger, resource.siteId)
+    await publishSite(logger, { siteId: resource.siteId })
   })
 }
 
@@ -694,15 +668,12 @@ export const publishSiteConfig = async (
     await logPublishEvent(tx, {
       siteId: site.id,
       by: byUser,
-      delta: {
-        before: null,
-        after: null,
-      },
+      delta: { before: null, after: null },
       eventType: AuditLogEvent.Publish,
       metadata: { site, ...rest },
     })
 
-    await publishSite(logger, site.id)
+    await publishSite(logger, { siteId: site.id })
   })
 }
 
@@ -930,9 +901,7 @@ export const getSearchRecentlyEdited = async ({
   limit?: number
 }): Promise<SearchResultResource[]> => {
   return await getResourcesWithFullPermalink({
-    resources: await getResourcesWithLastUpdatedAt({
-      siteId: Number(siteId),
-    })
+    resources: await getResourcesWithLastUpdatedAt({ siteId: Number(siteId) })
       .where("Resource.type", "in", [
         // only show page-ish resources
         ResourceType.Page,

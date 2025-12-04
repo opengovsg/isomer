@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { expect, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { expect, within } from "storybook/test"
 
 import { generateSiteConfig } from "~/stories/helpers"
-import Paragraph from "./Paragraph"
+import { Paragraph } from "./Paragraph"
 
 const meta: Meta<typeof Paragraph> = {
   title: "Next/Components/Paragraph",

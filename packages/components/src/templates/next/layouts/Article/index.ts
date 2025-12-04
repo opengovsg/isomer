@@ -1,1 +1,1 @@
-export { default } from "./Article"
+export { ArticleLayout } from "./Article"

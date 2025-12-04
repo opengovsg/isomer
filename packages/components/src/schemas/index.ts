@@ -7,3 +7,4 @@ export {
   isScopedSchemaLayout,
   type ScopedSchemaLayout,
 } from "./scopedSchema"
+export { orderedListSchemaBuilder, unorderedListSchemaBuilder } from "./utils"

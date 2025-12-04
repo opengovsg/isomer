@@ -1,4 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { expect, within } from "storybook/test"
 
 import { Checkbox } from "./Checkbox"
 
@@ -24,6 +25,14 @@ type Story = StoryObj<typeof Checkbox>
 
 export const Default: Story = {
   args: {},
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const checkbox = canvas.getByRole("checkbox")
+    const label = checkbox.closest("label")
+
+    // Verify that data-selected attribute is not present when checkbox is not selected
+    await expect(label).not.toHaveAttribute("data-selected")
+  },
 }
 
 export const Checked: Story = {
@@ -31,6 +40,14 @@ export const Checked: Story = {
     children:
       "This is a long label that may wrap into a new line; This is a long label that may wrap into a new line;",
     isSelected: true,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const checkbox = canvas.getByRole("checkbox")
+    const label = checkbox.closest("label")
+
+    // Verify that data-selected attribute is present when checkbox is selected
+    await expect(label).toHaveAttribute("data-selected", "true")
   },
 }
 

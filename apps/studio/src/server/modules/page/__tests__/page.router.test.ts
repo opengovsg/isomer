@@ -29,10 +29,6 @@ import {
 
 import type { User } from "../../database"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
-import {
-  getJobIdFromResourceIdAndScheduledAt,
-  scheduledPublishQueue,
-} from "~/server/bullmq/queues/schedule-publish"
 import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db } from "../../database"
@@ -48,7 +44,6 @@ describe("page.router", async () => {
   let user: User
 
   beforeEach(async () => {
-    await scheduledPublishQueue.obliterate({ force: true })
     await resetTables(
       "AuditLog",
       "ResourcePermission",
@@ -72,9 +67,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.list({
-        siteId: 1,
-      })
+      const result = unauthedCaller.list({ siteId: 1 })
 
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -85,9 +78,7 @@ describe("page.router", async () => {
       // Arrange
       const { site } = await setupSite()
 
-      const result = caller.list({
-        siteId: site.id,
-      })
+      const result = caller.list({ siteId: site.id })
 
       await expect(result).rejects.toThrowError(
         new TRPCError({
@@ -107,9 +98,7 @@ describe("page.router", async () => {
       })
 
       // Act
-      const result = await caller.list({
-        siteId: site.id,
-      })
+      const result = await caller.list({ siteId: site.id })
 
       // Assert
       expect(result).toEqual([])
@@ -121,10 +110,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getCategories({
-        siteId: 1,
-        pageId: 1,
-      })
+      const result = unauthedCaller.getCategories({ siteId: 1, pageId: 1 })
 
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -182,10 +168,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.readPage({
-        siteId: 1,
-        pageId: 1,
-      })
+      const result = unauthedCaller.readPage({ siteId: 1, pageId: 1 })
 
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -194,10 +177,7 @@ describe("page.router", async () => {
 
     it("should return 404 if page does not exist", async () => {
       // Act
-      const mockSite = {
-        siteId: 1,
-        pageId: 1,
-      }
+      const mockSite = { siteId: 1, pageId: 1 }
       const site = await setupSite(mockSite.siteId)
       await setupAdminPermissions({
         userId: session.userId ?? undefined,
@@ -325,10 +305,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.readPageAndBlob({
-        siteId: 1,
-        pageId: 1,
-      })
+      const result = unauthedCaller.readPageAndBlob({ siteId: 1, pageId: 1 })
 
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -358,10 +335,7 @@ describe("page.router", async () => {
     })
 
     it("should return 404 if page does not exist", async () => {
-      const mockSite = {
-        siteId: 1,
-        pageId: 1,
-      }
+      const mockSite = { siteId: 1, pageId: 1 }
       const site = await setupSite(mockSite.siteId)
       await setupEditorPermissions({
         userId: session.userId ?? undefined,
@@ -640,9 +614,7 @@ describe("page.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "UNPROCESSABLE_CONTENT",
-        }),
+        new TRPCError({ code: "UNPROCESSABLE_CONTENT" }),
       )
       await assertAuditLogRows()
     })
@@ -686,9 +658,7 @@ describe("page.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "UNPROCESSABLE_CONTENT",
-        }),
+        new TRPCError({ code: "UNPROCESSABLE_CONTENT" }),
       )
       await assertAuditLogRows()
     })
@@ -767,12 +737,7 @@ describe("page.router", async () => {
         content: [
           {
             type: "paragraph",
-            content: [
-              {
-                type: "text",
-                text: "This is the new block",
-              },
-            ],
+            content: [{ type: "text", text: "This is the new block" }],
           },
         ],
       },
@@ -783,12 +748,7 @@ describe("page.router", async () => {
           content: [
             {
               type: "paragraph",
-              content: [
-                {
-                  type: "text",
-                  text: "Test Callout content",
-                },
-              ],
+              content: [{ type: "text", text: "Test Callout content" }],
             },
           ],
         },
@@ -865,10 +825,7 @@ describe("page.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "Resource not found",
-        }),
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
       await assertAuditLogRows()
     })
@@ -1107,9 +1064,7 @@ describe("page.router", async () => {
         .where("Resource.id", "=", result.pageId)
         .select(["title", "permalink", "type", "siteId", "Blob.content"])
         .executeTakeFirstOrThrow()
-      expect(result).toMatchObject({
-        pageId: expect.any(String),
-      })
+      expect(result).toMatchObject({ pageId: expect.any(String) })
       expect(actual).toMatchObject({
         ...expectedPageArgs,
         content: createDefaultPage({ layout: "content" }),
@@ -1148,9 +1103,7 @@ describe("page.router", async () => {
         .where("Resource.id", "=", result.pageId)
         .select(["title", "permalink", "type", "siteId", "Blob.content"])
         .executeTakeFirstOrThrow()
-      expect(result).toMatchObject({
-        pageId: expect.any(String),
-      })
+      expect(result).toMatchObject({ pageId: expect.any(String) })
       expect(actual).toMatchObject({
         ...expectedPageArgs,
         content: createDefaultPage({ layout: "article" }),
@@ -1189,9 +1142,7 @@ describe("page.router", async () => {
         .where("Resource.id", "=", result.pageId)
         .select(["title", "permalink", "type", "siteId", "Blob.content"])
         .executeTakeFirstOrThrow()
-      expect(result).toMatchObject({
-        pageId: expect.any(String),
-      })
+      expect(result).toMatchObject({ pageId: expect.any(String) })
       expect(actual).toMatchObject({
         ...expectedPageArgs,
         content: createDefaultPage({ layout: "database" }),
@@ -1218,9 +1169,7 @@ describe("page.router", async () => {
       })
 
       // Act
-      const result = await caller.createPage({
-        ...expectedPageArgs,
-      })
+      const result = await caller.createPage({ ...expectedPageArgs })
 
       // Assert
       const actual = await db
@@ -1229,9 +1178,7 @@ describe("page.router", async () => {
         .where("Resource.id", "=", result.pageId)
         .select(["title", "permalink", "type", "siteId", "Blob.content"])
         .executeTakeFirstOrThrow()
-      expect(result).toMatchObject({
-        pageId: expect.any(String),
-      })
+      expect(result).toMatchObject({ pageId: expect.any(String) })
       expect(actual).toMatchObject({
         ...expectedPageArgs,
         content: createDefaultPage({ layout: "content" }),
@@ -1278,9 +1225,7 @@ describe("page.router", async () => {
           "parentId",
         ])
         .executeTakeFirstOrThrow()
-      expect(result).toMatchObject({
-        pageId: expect.any(String),
-      })
+      expect(result).toMatchObject({ pageId: expect.any(String) })
       expect(actual).toMatchObject({
         ...expectedPageArgs,
         parentId: folder.id,
@@ -1309,9 +1254,7 @@ describe("page.router", async () => {
       })
 
       // Act
-      const result = caller.createPage({
-        ...expectedPageArgs,
-      })
+      const result = caller.createPage({ ...expectedPageArgs })
 
       // Assert
       await assertAuditLogRows()
@@ -1338,9 +1281,7 @@ describe("page.router", async () => {
       })
 
       // Act
-      const result = caller.createPage({
-        ...expectedPageArgs,
-      })
+      const result = caller.createPage({ ...expectedPageArgs })
 
       // Assert
       await assertAuditLogRows()
@@ -1362,9 +1303,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getRootPage({
-        siteId: 1,
-      })
+      const result = unauthedCaller.getRootPage({ siteId: 1 })
 
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -1398,9 +1337,7 @@ describe("page.router", async () => {
       })
 
       // Act
-      const result = await caller.getRootPage({
-        siteId: site.id,
-      })
+      const result = await caller.getRootPage({ siteId: site.id })
 
       // Assert
       expect(result).toMatchObject(pick(page, ["id", "title", "draftBlobId"]))
@@ -1411,9 +1348,7 @@ describe("page.router", async () => {
       const { site } = await setupSite()
 
       // Act
-      const result = caller.getRootPage({
-        siteId: site.id,
-      })
+      const result = caller.getRootPage({ siteId: site.id })
 
       // Assert
       await expect(result).rejects.toThrowError(
@@ -1435,10 +1370,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.publishPage({
-        siteId: 1,
-        pageId: 1,
-      })
+      const result = unauthedCaller.publishPage({ siteId: 1, pageId: 1 })
 
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -1480,26 +1412,29 @@ describe("page.router", async () => {
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
-
-      // Act
-      const result = await caller.publishPage({
-        siteId: site.id,
-        pageId: Number(page.id),
-      })
-
-      // Assert
-      expect(result).toEqual({
-        versionId: expect.any(String),
-        versionNum: expect.any(Number),
-      })
-
-      // Assert - DB (Version)
-      const versions = await db
+      const previousVersions = await db
         .selectFrom("Version")
-        .where("id", "=", result.versionId)
+        .where("resourceId", "=", page.id)
         .selectAll()
         .execute()
-      expect(versions.length).toEqual(1)
+
+      expect(previousVersions.length).toEqual(0)
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert - DB (Version)
+      const newVersions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+
+      expect(newVersions.length).toEqual(1)
+      expect(newVersions[0]).toMatchObject({
+        resourceId: page.id,
+        versionNum: 1,
+      })
 
       // Assert - DB (AuditLog)
       const auditLogs = await db
@@ -1537,9 +1472,7 @@ describe("page.router", async () => {
       const result = caller.updateMeta({
         siteId: site.id,
         resourceId: page.id,
-        meta: JSON.stringify({
-          description: "Test Meta",
-        }),
+        meta: JSON.stringify({ description: "Test Meta" }),
       })
 
       // Assert
@@ -1566,9 +1499,7 @@ describe("page.router", async () => {
       const result = await caller.updateMeta({
         siteId: site.id,
         resourceId: page.id,
-        meta: JSON.stringify({
-          description: "Test Meta",
-        }),
+        meta: JSON.stringify({ description: "Test Meta" }),
       })
 
       // Assert
@@ -1630,9 +1561,7 @@ describe("page.router", async () => {
 
     it("should update page settings successfully", async () => {
       // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: "Page",
-      })
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
       const expectedSettings = {
         title: "New Title",
         permalink: "new-permalink",
@@ -1677,10 +1606,7 @@ describe("page.router", async () => {
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
-      const expectedSettings = {
-        title: "New Title",
-        permalink: "",
-      }
+      const expectedSettings = { title: "New Title", permalink: "" }
 
       // Act
       const result = await caller.updateSettings({
@@ -1743,9 +1669,7 @@ describe("page.router", async () => {
 
     it("should throw 403 if user does not have access to site", async () => {
       // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: "Page",
-      })
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
       const expectedSettings = {
         title: "New Title",
         permalink: "new-permalink",
@@ -1777,10 +1701,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getFullPermalink({
-        siteId: 1,
-        pageId: 1,
-      })
+      const result = unauthedCaller.getFullPermalink({ siteId: 1, pageId: 1 })
 
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -1793,10 +1714,7 @@ describe("page.router", async () => {
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
-      const result = caller.getFullPermalink({
-        siteId: site.id,
-        pageId: 99999,
-      })
+      const result = caller.getFullPermalink({ siteId: site.id, pageId: 99999 })
 
       // Assert
       await expect(result).rejects.toThrowError(
@@ -1809,9 +1727,7 @@ describe("page.router", async () => {
 
     it("should return the full permalink of first-level page successfully", async () => {
       // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: "Page",
-      })
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
       await setupAdminPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
@@ -1899,10 +1815,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getPermalinkTree({
-        pageId: 1,
-        siteId: 1,
-      })
+      const result = unauthedCaller.getPermalinkTree({ pageId: 1, siteId: 1 })
 
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -1931,10 +1844,7 @@ describe("page.router", async () => {
       const { site } = await setupSite()
 
       // Act
-      const result = caller.getPermalinkTree({
-        siteId: site.id,
-        pageId: 99999,
-      })
+      const result = caller.getPermalinkTree({ siteId: site.id, pageId: 99999 })
 
       // Assert
       await expect(result).rejects.toThrowError(
@@ -2060,9 +1970,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
-        pageId: expect.any(String),
-      })
+      expect(result).toEqual({ pageId: expect.any(String) })
     })
   })
   describe("schedulePage", () => {
@@ -2137,19 +2045,7 @@ describe("page.router", async () => {
         milliseconds: 0,
       })
       expect(actual.scheduledAt).toEqual(expectedDate)
-      // expect a job to be created in the scheduledPublishQueue, with the correct id, delay and data
-      const job = await scheduledPublishQueue.getJob(
-        getJobIdFromResourceIdAndScheduledAt(expectedPage.id, scheduledAt),
-      )
-      expect(job!.data).toEqual({
-        resourceId: Number(expectedPage.id),
-        siteId: site.id,
-        userId: session.userId,
-      })
-      expect(job!.opts.delay).toBeCloseTo(
-        expectedDate.getTime() - FIXED_NOW.getTime(),
-        -3, // rounding to the nearest second (3 decimal places)
-      )
+      expect(actual.scheduledBy).toEqual(session.userId)
       // expect the audit log to be created, with the updated scheduledAt time
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
@@ -2159,7 +2055,11 @@ describe("page.router", async () => {
           before: omit(expectedPage, ["updatedAt", "createdAt"]),
           // NOTE: Need to convert expectedDate to ISO string as the comparison is done with the DB value which is in ISO format
           after: omit(
-            { ...expectedPage, scheduledAt: expectedDate.toISOString() },
+            {
+              ...expectedPage,
+              scheduledAt: expectedDate.toISOString(),
+              scheduledBy: session.userId,
+            },
             ["updatedAt", "createdAt"],
           ),
         },
@@ -2192,9 +2092,6 @@ describe("page.router", async () => {
         siteId: site.id,
       })
       expect(pageById?.scheduledAt).toBeNull()
-      // Since the request fails, expect no job to be created in the queue
-      const jobs = await scheduledPublishQueue.getJobs()
-      expect(jobs).toHaveLength(0)
       // Since the request fails, expect no audit log to be created
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(0)
@@ -2263,10 +2160,7 @@ describe("page.router", async () => {
 
       // Assert
       await expect(scheduleCaller).rejects.toThrowError(
-        new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Resource not found",
-        }),
+        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
       )
     })
   })
@@ -2303,17 +2197,14 @@ describe("page.router", async () => {
       })
 
       // Assert
-      // The scheduledAt field of the page should be null and the job should be removed from the job queue
+      // The scheduledAt field of the page should be null
       const actual = await db
         .selectFrom("Resource")
         .where("id", "=", expectedPage.id)
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(actual.scheduledAt).toBeNull()
-      const job = await scheduledPublishQueue.getJob(
-        getJobIdFromResourceIdAndScheduledAt(expectedPage.id, scheduledAt),
-      )
-      expect(job).toBeUndefined()
+      expect(actual.scheduledBy).toBeNull()
     })
     it("cancelling a scheduled publish throws an error if the page is not scheduled", async () => {
       // Arrange
@@ -2417,10 +2308,7 @@ describe("page.router", async () => {
 
       // Assert
       await expect(cancelScheduleCaller).rejects.toThrowError(
-        new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Resource not found",
-        }),
+        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
       )
     })
   })

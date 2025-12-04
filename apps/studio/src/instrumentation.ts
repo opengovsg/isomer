@@ -9,7 +9,7 @@ export async function register() {
     const { initializeCronJobs, stopCronJobs } = await import("~/server/cron")
 
     // Initialize cron jobs when server starts
-    initializeCronJobs()
+    await initializeCronJobs()
 
     // Handle graceful shutdown
     const gracefulShutdown = () => {

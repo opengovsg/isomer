@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { IndexPageSchemaType } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
-import IndexPage from "./IndexPage"
+import { IndexPageLayout } from "./IndexPage"
 
 const DEFAULT_INDEX_PAGE = {
   permalink: "/parent",
@@ -117,9 +117,9 @@ const generateIndexPage = (
   }
 }
 
-const meta: Meta<typeof IndexPage> = {
+const meta: Meta<typeof IndexPageLayout> = {
   title: "Next/Layouts/IndexPage",
-  component: IndexPage,
+  component: IndexPageLayout,
   argTypes: {},
   tags: ["!autodocs"],
   parameters: {
@@ -131,7 +131,7 @@ const meta: Meta<typeof IndexPage> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof IndexPage>
+type Story = StoryObj<typeof IndexPageLayout>
 
 export const Default: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE),

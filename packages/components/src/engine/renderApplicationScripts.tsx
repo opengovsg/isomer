@@ -1,14 +1,17 @@
 import type { IsomerSiteProps, ScriptComponentType } from "~/types"
+import { AskgovWidget } from "../templates/next/components/internal/Askgov"
+import { FontPreload } from "../templates/next/components/internal/FontPreload"
 import {
-  AskgovWidget,
-  FontPreload,
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
   GoogleTagManagerPreload,
+} from "../templates/next/components/internal/GoogleTagManager"
+import { MicrosoftClarity } from "../templates/next/components/internal/MicrosoftClarity"
+import {
   VicaStylesheet,
   VicaWidget,
-  Wogaa,
-} from "../templates/next/components/internal"
+} from "../templates/next/components/internal/Vica"
+import { Wogaa } from "../templates/next/components/internal/Wogaa"
 
 interface RenderApplicationScriptsProps {
   site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
@@ -30,19 +33,19 @@ export const RenderApplicationScripts = ({
       {/* is not registered, so no end impact to user */}
       <Wogaa environment={site.environment} ScriptComponent={ScriptComponent} />
 
-      {(!!site.siteGtmId || !!site.isomerGtmId) && (
+      {!!site.siteGtmId && (
         <>
           <GoogleTagManagerPreload />
           <GoogleTagManagerHeader
             siteGtmId={site.siteGtmId}
-            isomerGtmId={site.isomerGtmId}
             ScriptComponent={ScriptComponent}
           />
-          <GoogleTagManagerBody
-            siteGtmId={site.siteGtmId}
-            isomerGtmId={site.isomerGtmId}
-          />
+          <GoogleTagManagerBody siteGtmId={site.siteGtmId} />
         </>
+      )}
+
+      {!!site.isomerMsClarityId && (
+        <MicrosoftClarity msClarityId={site.isomerMsClarityId} />
       )}
 
       {/* Ensures that the webchat widget only loads after the page has loaded */}
@@ -50,19 +53,11 @@ export const RenderApplicationScripts = ({
       {site.vica && (
         <>
           <VicaStylesheet useDevStagingScript={site.vica.useDevStagingScript} />
-          <VicaWidget
-            site={site}
-            ScriptComponent={ScriptComponent}
-            {...site.vica}
-          />
+          <VicaWidget site={site} {...site.vica} />
         </>
       )}
       {site.askgov && (
-        <AskgovWidget
-          environment={site.environment}
-          ScriptComponent={ScriptComponent}
-          {...site.askgov}
-        />
+        <AskgovWidget environment={site.environment} {...site.askgov} />
       )}
     </>
   )

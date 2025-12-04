@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
-import { userEvent, within } from "@storybook/test"
+import { userEvent, within } from "storybook/test"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
@@ -12,7 +12,6 @@ const meta: Meta<typeof Filter> = {
   component: Filter,
   render: ({ filters, appliedFilters: _appliedFilters }) => {
     const [appliedFilters, setAppliedFilters] =
-      // eslint-disable-next-line react-hooks/rules-of-hooks
       useState<AppliedFilter[]>(_appliedFilters)
     const updateAppliedFilters = (
       appliedFilters: AppliedFilter[],
@@ -76,7 +75,7 @@ const meta: Meta<typeof Filter> = {
     filters: [
       {
         id: "type",
-        label: "Type",
+        label: "Testing a long filter label to test how it wraps or truncates",
         items: [
           { id: "article", label: "Article", count: 1204 },
           { id: "speech", label: "Speech", count: 888 },
@@ -132,10 +131,8 @@ export const WithSomeSelected: Story = {
 }
 
 export const MobileFilterButton: Story = {
+  globals: { viewport: getViewportByMode("mobile") },
   parameters: {
-    viewport: {
-      defaultViewport: getViewportByMode("mobile"),
-    },
     chromatic: withChromaticModes(["mobile"]),
   },
   args: WithSomeSelected.args,

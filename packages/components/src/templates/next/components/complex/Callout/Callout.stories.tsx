@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import type { CalloutProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
-import Callout from "./Callout"
+import { Callout } from "./Callout"
 
 const meta: Meta<CalloutProps> = {
   title: "Next/Components/Callout",

@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import type { FooterProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
-import Footer from "./Footer"
+import { Footer } from "./Footer"
 
 const meta: Meta<FooterProps> = {
   title: "Next/Internal Components/Footer",

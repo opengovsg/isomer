@@ -474,7 +474,7 @@ const FooterDesktop = ({
   )
 }
 
-const Footer = (props: FooterProps) => {
+export const Footer = (props: FooterProps) => {
   return (
     <footer className="bg-base-canvas-inverse text-base-content-inverse">
       <FooterMobile {...props} />
@@ -482,5 +482,3 @@ const Footer = (props: FooterProps) => {
     </footer>
   )
 }
-
-export default Footer
