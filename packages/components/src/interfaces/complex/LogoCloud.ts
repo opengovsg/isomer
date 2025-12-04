@@ -19,6 +19,11 @@ export const LogoCloudVariants = {
 
 export const LogoCloudSchema = Type.Object(
   {
+    title: Type.Optional(
+      Type.String({
+        title: "Title",
+      }),
+    ),
     type: Type.Literal(LOGO_CLOUD_TYPE, { default: LOGO_CLOUD_TYPE }),
     images: Type.Array(
       Type.Object({
@@ -32,11 +37,6 @@ export const LogoCloudSchema = Type.Object(
         minItems: 1,
         maxItems: 10,
       },
-    ),
-    title: Type.Optional(
-      Type.String({
-        title: "Title",
-      }),
     ),
     variant: Type.Optional(
       Type.Union(
