@@ -85,7 +85,7 @@ export const EditKeyStatistics: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /KeyStatistics Component/i,
+      name: /Statistics/i,
     })
     await userEvent.click(button)
   },

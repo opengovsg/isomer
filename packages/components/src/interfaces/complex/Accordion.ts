@@ -12,7 +12,7 @@ export const AccordionSchema = Type.Object(
     }),
     details: AccordionProseSchema,
   },
-  { title: "Accordion component" },
+  { title: "Accordion" },
 )
 
 export type AccordionProps = Static<typeof AccordionSchema> & {

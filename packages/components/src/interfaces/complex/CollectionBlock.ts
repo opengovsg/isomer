@@ -45,7 +45,7 @@ export const CollectionBlockSchema = Type.Object(
     }),
   },
   {
-    title: "CollectionBlock component",
+    title: "Linked Collection",
   },
 )
 

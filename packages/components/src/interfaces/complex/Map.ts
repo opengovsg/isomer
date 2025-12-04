@@ -19,7 +19,7 @@ export const MapSchema = Type.Object(
     }),
   },
   {
-    title: "Map component",
+    title: "Map",
     description:
       "The map component is used to embed a map of a location or area within the current page.",
   },

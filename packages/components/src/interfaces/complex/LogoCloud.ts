@@ -25,7 +25,7 @@ export const LogoCloudSchema = Type.Object(
     }),
   },
   {
-    title: "Logocloud component",
+    title: "Logo cloud",
   },
 )
 

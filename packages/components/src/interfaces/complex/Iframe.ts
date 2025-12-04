@@ -16,7 +16,7 @@ export const IframeSchema = Type.Object(
     }),
   },
   {
-    title: "Iframe component",
+    title: "Iframe",
     description:
       "The iframe component is used to embed a whitelisted external webpage within the current page.",
   },

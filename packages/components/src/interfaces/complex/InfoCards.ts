@@ -192,12 +192,12 @@ export const InfoCardsSchema = Type.Intersect(
       ],
       {
         format: ARRAY_RADIO_FORMAT,
-        title: "Infocards style",
+        title: "Style",
       },
     ),
   ],
   {
-    title: "Cards component",
+    title: "Cards",
   },
 )
 
