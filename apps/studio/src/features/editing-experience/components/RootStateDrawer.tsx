@@ -250,12 +250,13 @@ export default function RootStateDrawer() {
 
   validateFn(savedPageState)
 
+  const contentIndexRegex = /^\/content\/(\d+)/
   const invalidBlockIndexes = new Set(
     (validateFn.errors ?? [])
       // When validating content array directly,
       // instancePath will be like "content/0", "content/1", "content/2", etc.
       // where the number is the index of the invalid component
-      .map((e) => e.instancePath.match(/^\/content\/(\d+)/)?.[1])
+      .map((e) => contentIndexRegex.exec(e.instancePath)?.[1])
       .filter(Boolean)
       .map(Number),
   )
