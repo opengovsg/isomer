@@ -1,5 +1,8 @@
 import type { DropResult } from "@hello-pangea/dnd"
-import type { IsomerComponent } from "@opengovsg/isomer-components"
+import type {
+  IsomerComponent,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import { useCallback, useMemo, useState } from "react"
 import {
   Box,
@@ -15,7 +18,7 @@ import { Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getComponentSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
-  isScopedSchemaLayout,
+  schema,
 } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
@@ -29,7 +32,6 @@ import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import { ajv } from "~/utils/ajv"
-import { getCachedScopedSchema } from "~/utils/schemaCache"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
 import { pageSchema } from "../schema"
@@ -66,6 +68,8 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
 const validateHeroComponentFn = ajv.compile<IsomerComponent>(
   getComponentSchema({ component: "hero" }),
 )
+
+const validateFn = ajv.compile<IsomerSchema>(schema)
 
 const invalidBlockDescription = "Fix errors in this block to publish"
 
@@ -244,29 +248,17 @@ export default function RootStateDrawer() {
     pageLayout !== "index" &&
     pageLayout !== "collection"
 
-  const invalidBlockIndexes = useMemo(() => {
-    if (!isScopedSchemaLayout(pageLayout)) return new Set<number>()
+  validateFn(savedPageState)
 
-    const validateFn = getCachedScopedSchema({
-      layout: pageLayout,
-      scope: "content",
-    })
-
-    void validateFn(savedPageState.content)
-
-    if (!validateFn.errors) return new Set<number>()
-
-    return new Set<number>(
-      validateFn.errors
-        .map((error) => {
-          // instancePath format: "/0", "/1", "/2", etc. where the number is the block index
-          const [firstSegment] = error.instancePath.split("/").filter(Boolean)
-          const blockIndex = Number(firstSegment)
-          return Number.isNaN(blockIndex) ? null : blockIndex
-        })
-        .filter((index): index is number => index !== null),
-    )
-  }, [pageLayout, savedPageState.content])
+  const invalidBlockIndexes = new Set(
+    (validateFn.errors ?? [])
+      // When validating content array directly,
+      // instancePath will be like "content/0", "content/1", "content/2", etc.
+      // where the number is the index of the invalid component
+      .map((e) => e.instancePath.match(/^\/content\/(\d+)/)?.[1])
+      .filter(Boolean)
+      .map(Number),
+  )
 
   const FixedBlock = () => {
     // Assuming only one fixedBlock can exist at a time for now
