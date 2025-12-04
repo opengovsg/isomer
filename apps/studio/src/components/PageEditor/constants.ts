@@ -291,144 +291,137 @@ export const BLOCK_TO_META: Record<
 > = {
   hero: {
     label: "Hero banner",
-    description: "Title, summary, hero image, and Call-to-Action",
+    description: "Title, summary, hero image, and Call-to-Action.",
   },
   childrenpages: {
     label: "Child pages",
-    description: "Edit how users see the child page of this folder here",
+    description: "Edit how child pages of this folder are displayed.",
   },
   image: {
     label: "Image",
-    description: "Add an image with caption",
+    description: "Add an image with caption.",
     usageText:
-      "Get your readers' attention and create emotions by using an image. You can adjust the size of the image.",
+      "Evoke emotions by adding an authentic image.",
     imageSrc: "/assets/block-images/Image.png",
   },
   prose: {
     label: "Text",
-    description: "Add a block of text to your page",
-    usageText:
-      "You can add structure to your content by using features such as headings, lists, links, and body text.",
+    description: "Add text, links, lists, and tables.",
     imageSrc: "/assets/block-images/Text.png",
   },
   callout: {
     label: "Callout",
-    description: "Bring attention to important information",
+    description: "Bring attention to important information.",
     usageText:
-      "Callouts are great for highlighting information such as updates. We recommend not overusing the callouts.",
+      "Highlight information that is out of the ordinary, like changes or updates.",
     imageSrc: "/assets/block-images/Callout.png",
   },
   keystatistics: {
     label: "Statistics",
-    description: "Display KPIs or key statistics for your agency",
+    description: "Display metrics or key statistics that represent your agency.",
     usageText:
-      "Do you have metrics to show the public? Designed to be bold, this block supports up to four numbers with labels.",
+      "Share key wins or highlight your values in short words.",
     imageSrc: "/assets/block-images/KeyStatistics.png",
   },
   infobar: {
     label: "Call-to-Action",
-    description: "Add a strong call-to-action",
+    description: "Add a strong Call-to-Action.",
     usageText:
-      "Use this block to highlight key initatives on your homepage. It supports up to two buttons.",
+      "Add a strong punchline, or use to get conversions like sign-ups and subscriptions.",
     imageSrc: "/assets/block-images/Infobar.png",
   },
   contentpic: {
     label: "Image with text",
-    description: "Put image and text side-by-side",
+    description: "Put image and text side-by-side.",
     usageText:
-      "Use this block to juxtapose text next to a smaller image than usual, such as introducing a committee member along with their headshot.",
+      "Introduce people with their headshots or show report covers.",
     imageSrc: "/assets/block-images/Contentpic.png",
   },
   infopic: {
-    label: "Text with image",
-    description: "Place an image with a text and call-to-action",
-    usageText: "This block comes with a button.",
+    label: "Image with text",
+    description: "Place an image with a text and Call-to-Action",
     imageSrc: "/assets/block-images/Infopic.png",
   },
   accordion: {
     label: "Accordion",
-    description: "Display content in expandable accordions",
+    description: "Hide content in expandable accordions.",
     usageText:
-      "Accordions hide details by default, so they are great for content that isn't relevant to every reader.",
+      "Show content that isn't relevant to every reader, but only to some readers.",
     imageSrc: "/assets/block-images/Accordion.png",
   },
   infocards: {
     label: "Cards",
-    description: `Link information in "cards" with or without images`,
-    usageText: "This block supports up to six cards.",
+    description: "Link information on cards.",
     imageSrc: "/assets/block-images/InfoCards.png",
   },
   infocols: {
     label: "Columns of text",
-    description: "Show important links in multiple columns",
-    usageText: "This block supports up to six links.",
+    description: "Show links using multiple columns and icons.",
     imageSrc: "/assets/block-images/Infocol.png",
   },
   iframe: {
     label: "Embed",
-    description: "Embed a video or other content",
-    usageText: "This block supports embedding content from other websites.",
+    description: "Embed content from external websites.",
   },
   map: {
     label: "Map",
-    description: "Embed a map of a location or area",
-    usageText: "Embed a map to show your offices or an event location.",
+    description: "Embed a map of a location or an area.",
+    usageText: "Direct people to your office or an event location.",
     imageSrc: "/assets/block-images/Map.png",
   },
   video: {
     label: "Video",
-    description: "Embed an external video",
+    description: "Embed a video from YouTube, Vimeo, or Facebook Watch.",
     usageText:
-      "You can embed videos hosted on platforms such as YouTube and Vimeo.",
+      "The video will be playable directly on the page.",
     imageSrc: "/assets/block-images/Video.png",
   },
   dynamicdatabanner: {
     label: "Dynamic Data Banner",
-    description: "Display dynamic data banner",
+    description: "Display a dynamic data banner.",
     usageText: "This block supports fetching data from an API endpoint.",
   },
   logocloud: {
     // TODO: Add image source
     label: "Logo cloud",
-    description: "Display logos of other agencies here",
-    usageText: "Show an overview of related agencies",
+    description: "Display logos of partner organisations or accolades.",
   },
   collectionblock: {
     // TODO: Add image source
-    label: "Collection block",
-    description: "Automatically display recent pages from a collection",
-    usageText: "Link recent articles from your newsroom, research, or blog.",
+    label: "Link a Collection",
+    description: "Automatically display recent items from a Collection.",
+    usageText: "Keep your website up-to-date with recent items from your newsroom, resources, or blog.",
     imageSrc: "/assets/block-images/CollectionBlock.png",
   },
   imagegallery: {
     // TODO: Add image source
     label: "Image gallery",
-    description: "Display up to 30 images in a slideshow",
-    usageText: "Showcase images from an event.",
+    description: "Display up to 30 images in a slideshow.",
+    usageText: "Share memorable moments from an event.",
   },
   blockquote: {
     label: "Quote",
-    description: "Display a quote or testimonial",
-    usageText: "Highlight an important quote. You can add an optional image.",
+    description: "Display a quote or testimonial.",
+    usageText: "Humanise your site with powerful quotes or stories from real people.",
     imageSrc: "/assets/block-images/Blockquote.png",
   },
   contactinformation: {
     label: "Contact information",
-    description: "Display contact information",
-    usageText: "Showcase contact information for your agency.",
+    description: "Display contact information.",
+    usageText: "Let people know how they can reach you.",
     // TODO: Add imageSrc
   },
   dynamiccomponentlist: {
     label: "Dynamic component list",
-    description: "Display a list of dynamic components",
+    description: "Display a list of dynamic components.",
     usageText: "Showcase a list of dynamic components.",
     // TODO: Add imageSrc
   },
   formsg: {
     label: "FormSG",
-    description: "Embed a form to collect data",
+    description: "Embed a form to collect data.",
     usageText:
-      "Get mailing list sign-ups or quick feedback by embedding a form directly on your page.",
+      "Get mailing list sign-ups or quick feedback directly on the page.",
     imageSrc: "/assets/block-images/FormSG.png",
   },
 }
