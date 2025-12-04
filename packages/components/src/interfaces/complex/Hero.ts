@@ -34,14 +34,14 @@ const HeroBaseSchema = Type.Object({
 const CallToActionsSchema = Type.Object({
   buttonLabel: Type.Optional(
     Type.String({
-      title: "Primary call-to-action text",
+      title: "Primary Call-to-Action text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
     }),
   ),
   buttonUrl: Type.Optional(
     Type.String({
-      title: "Primary call-to-action destination",
+      title: "Button destination",
       description: "When this is clicked, open:",
       format: "link",
       pattern: LINK_HREF_PATTERN,
@@ -49,7 +49,7 @@ const CallToActionsSchema = Type.Object({
   ),
   secondaryButtonLabel: Type.Optional(
     Type.String({
-      title: "Secondary call-to-action text",
+      title: "Secondary Call-to-Action text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
     }),
@@ -75,11 +75,11 @@ const GROUPINGS = {
     fields: ["title", "subtitle"],
   },
   PRIMARY_CALL_TO_ACTION: {
-    label: "Primary call-to-action",
+    label: "Primary Call-to-Action",
     fields: ["buttonLabel", "buttonUrl"],
   },
   SECONDARY_CALL_TO_ACTION: {
-    label: "Secondary call-to-action",
+    label: "Secondary Call-to-Action",
     fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
   },
 } as const
