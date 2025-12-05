@@ -625,13 +625,20 @@ const getCleanedSchema = (schema: any) => {
                 (cell: any) => cell.content && cell.content.length > 0
               ),
             };
-          });
+          })
+          .filter((row: any) => row.content && row.content.length > 0);
       } else if (component.content && Array.isArray(component.content)) {
         removeEmptyTableContents(component.content);
       }
     });
 
-    return schema;
+    return schema.filter((component: any) => {
+      if (component.type === "table") {
+        return component.content && component.content.length > 0;
+      }
+
+      return true;
+    });
   };
 
   // Recursively find components with "type": "tableHeader" or "type": "tableCell"
@@ -811,7 +818,7 @@ const getCleanedSchema = (schema: any) => {
               newAttrs.target = "_blank";
             }
 
-            if (mark.attrs.href.startsWith("http://")) {
+            if (mark.attrs.href?.startsWith("http://")) {
               newAttrs.href = mark.attrs.href.replace("http://", "https://");
             }
 
