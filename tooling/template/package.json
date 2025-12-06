@@ -6,6 +6,10 @@
     "dev": "PORT=3001 next",
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && npm run build",
     "build:template": "next build",
+    "analyze:schema": "tsx scripts/analyze-schema.ts",
+    "build:transform": "npx npm-run-all -p build:transform:renderLayout build:transform:renderComponent",
+    "build:transform:renderLayout": "jscodeshift -t scripts/transforms/renderLayout.js node_modules/@opengovsg/isomer-components/dist/esm/templates/next/render/renderLayout.js",
+    "build:transform:renderComponent": "jscodeshift -t scripts/transforms/renderComponent.js node_modules/@opengovsg/isomer-components/dist/esm/templates/next/render/renderComponent.js",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -26,7 +30,9 @@
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21"
+    "@types/node": "^22.15.21",
+    "jscodeshift": "^17.3.0",
+    "tsx": "^4.20.4"
   },
   "prettier": "@isomer/prettier-config"
 }

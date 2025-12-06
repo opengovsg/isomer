@@ -57,10 +57,22 @@ if [ ! -f "schema/not-found.json" ]; then
   cp schema/_index.json schema/not-found.json
 fi
 
-# Build the site
-echo "Building site..."
+# Installing dependencies
+echo "Installing dependencies..."
 start_time=$(date +%s)
 npm i opengovsg-isomer-components-0.0.13.tgz
+calculate_duration $start_time
+
+# Analyzing and optimizing renderers
+echo "Analyzing and optimizing renderers..."
+start_time=$(date +%s)
+npm run analyze:schema
+npm run build:transform
+calculate_duration $start_time
+
+# Building the site
+echo "Building the site..."
+start_time=$(date +%s)
 npm run build:template
 calculate_duration $start_time
 
