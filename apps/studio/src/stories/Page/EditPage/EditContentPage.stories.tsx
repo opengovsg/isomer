@@ -133,7 +133,9 @@ export const AddTextBlock: Story = {
     await AddBlock.play?.(context)
 
     await userEvent.click(
-      canvas.getByRole("button", { name: /Add text, links, lists, and tables./i }),
+      canvas.getByRole("button", {
+        name: /Add text, links, lists, and tables./i,
+      }),
     )
   },
 }

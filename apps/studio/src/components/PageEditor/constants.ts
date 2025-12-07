@@ -300,8 +300,7 @@ export const BLOCK_TO_META: Record<
   image: {
     label: "Image",
     description: "Add an image with caption.",
-    usageText:
-      "Evoke emotions by adding an authentic image.",
+    usageText: "Evoke emotions by adding an authentic image.",
     imageSrc: "/assets/block-images/Image.png",
   },
   prose: {
@@ -318,9 +317,9 @@ export const BLOCK_TO_META: Record<
   },
   keystatistics: {
     label: "Statistics",
-    description: "Display metrics or key statistics that represent your agency.",
-    usageText:
-      "Share key wins or highlight your values in short words.",
+    description:
+      "Display metrics or key statistics that represent your agency.",
+    usageText: "Share key wins or highlight your values in short words.",
     imageSrc: "/assets/block-images/KeyStatistics.png",
   },
   infobar: {
@@ -333,8 +332,7 @@ export const BLOCK_TO_META: Record<
   contentpic: {
     label: "Image with text",
     description: "Put image and text side-by-side.",
-    usageText:
-      "Introduce people with their headshots or show report covers.",
+    usageText: "Introduce people with their headshots or show report covers.",
     imageSrc: "/assets/block-images/Contentpic.png",
   },
   infopic: {
@@ -372,8 +370,7 @@ export const BLOCK_TO_META: Record<
   video: {
     label: "Video",
     description: "Embed a video from YouTube, Vimeo, or Facebook Watch.",
-    usageText:
-      "The video will be playable directly on the page.",
+    usageText: "The video will be playable directly on the page.",
     imageSrc: "/assets/block-images/Video.png",
   },
   dynamicdatabanner: {
@@ -390,7 +387,8 @@ export const BLOCK_TO_META: Record<
     // TODO: Add image source
     label: "Link a Collection",
     description: "Automatically display recent items from a Collection.",
-    usageText: "Keep your website up-to-date with recent items from your newsroom, resources, or blog.",
+    usageText:
+      "Keep your website up-to-date with recent items from your newsroom, resources, or blog.",
     imageSrc: "/assets/block-images/CollectionBlock.png",
   },
   imagegallery: {
@@ -402,7 +400,8 @@ export const BLOCK_TO_META: Record<
   blockquote: {
     label: "Quote",
     description: "Display a quote or testimonial.",
-    usageText: "Humanise your site with powerful quotes or stories from real people.",
+    usageText:
+      "Humanise your site with powerful quotes or stories from real people.",
     imageSrc: "/assets/block-images/Blockquote.png",
   },
   contactinformation: {
