@@ -110,7 +110,7 @@ export const NestedState: Story = {
     const canvas = within(canvasElement)
 
     const keyStatisticsButton = await canvas.findByRole("button", {
-      name: /keystatistics/i,
+      name: /statistics/i,
     })
     await userEvent.click(keyStatisticsButton)
 
