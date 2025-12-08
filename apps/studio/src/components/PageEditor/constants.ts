@@ -398,8 +398,7 @@ export const BLOCK_TO_META: Record<
   },
   logocloud: {
     label: "Logo cloud",
-    description: "Display logos of other agencies here",
-    usageText: "Show an overview of related agencies",
+    description: "Display logos of partner organisations or accolades.",
     imageSrc: "/assets/block-images/LogoCloud.png",
   },
   collectionblock: {
