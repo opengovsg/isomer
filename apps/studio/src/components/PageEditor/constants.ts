@@ -397,10 +397,10 @@ export const BLOCK_TO_META: Record<
     usageText: "This block supports fetching data from an API endpoint.",
   },
   logocloud: {
-    // TODO: Add image source
     label: "Logo cloud",
     description: "Display logos of other agencies here",
     usageText: "Show an overview of related agencies",
+    imageSrc: "/assets/block-images/LogoCloud.png",
   },
   collectionblock: {
     // TODO: Add image source
