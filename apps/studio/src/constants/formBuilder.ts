@@ -41,6 +41,6 @@ export const JSON_FORMS_RANKING = {
   Catchall: -99999999999,
 }
 
-export const PROSE_COMPONENT_NAME = "Text component"
+export const PROSE_COMPONENT_NAME = "Text"
 
 export const TEXTAREA_CHARACTERS_PER_ROW = 70
