@@ -92,7 +92,7 @@ const generateInfobarSchema = ({
           fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
         },
       ],
-      title: "Infobar component",
+      title: "Call-to-Action",
     },
   )
 }
