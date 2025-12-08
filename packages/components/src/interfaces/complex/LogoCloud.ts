@@ -50,14 +50,14 @@ export const LogoCloudSchema = Type.Object(
         ],
         {
           default: LogoCloudVariants.Default.value,
-          title: "Logocloud style",
+          title: "Style",
           format: "radio",
         },
       ),
     ),
   },
   {
-    title: "Logocloud",
+    title: "Logo cloud",
   },
 )
 
