@@ -11,7 +11,7 @@ import { BaseSelect } from "./BaseSelect"
 
 interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {
   size: "sm" | "md" | "lg"
-  earliestAllowableTime?: Date | null // the earliest time that can be selected, if any, in SGT
+  earliestAllowableTime?: Date | null // the earliest time that can be selected, if any
   minutesStep?: 5 | 10 | 15 | 20 | 30 | 60 // determines granularity of time options
 }
 

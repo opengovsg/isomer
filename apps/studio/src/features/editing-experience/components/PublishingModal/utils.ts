@@ -22,24 +22,13 @@ export const formatScheduledAtDate = (d: Date) =>
 
 /**
  * Get the timezone abbreviation for the current locale and date.
+ * https://github.com/tc39/proposal-temporal/issues/2257#issuecomment-1152070209
  * @returns The timezone abbreviation or a fallback GMT offset string.
  */
 export const getTimezoneAbbreviation = (format: "short" | "long" = "short") => {
-  const date = new Date()
-
-  // Get abbreviation, if available. Some might return GMT+08:00 format
-  // https://github.com/tc39/proposal-temporal/issues/2257#issuecomment-1152070209
-  const abbr = new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat("en", {
     timeZoneName: format,
   })
-    .formatToParts(date)
-    .find((part) => part.type === "timeZoneName")
-
-  // Get numeric offset (e.g., "+08:00") as a fallback
-  const offset = -date.getTimezoneOffset() // in minutes
-  const sign = offset >= 0 ? "+" : "-"
-  const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, "0")
-  const mins = String(Math.abs(offset) % 60).padStart(2, "0")
-
-  return abbr ? abbr.value : `GMT${sign}${hours}:${mins}`
+    .formatToParts(new Date())
+    .find((part) => part.type === "timeZoneName")?.value
 }
