@@ -28,6 +28,7 @@ import { useZodForm } from "~/lib/form"
 import { schedulePublishClientSchema } from "~/schemas/schedule"
 import { trpc } from "~/utils/trpc"
 import { SchedulePublishDetails } from "./ScheduledPublishDetails"
+import { getTimezoneAbbreviation } from "./utils"
 
 interface ScheduledPublishingModalProps extends UseDisclosureReturn {
   pageId: number
@@ -129,7 +130,6 @@ export const ScheduledPublishingModal = ({
 const SchedulePublishBanner = () => {
   const { getValues } =
     useFormContext<z.input<typeof schedulePublishClientSchema>>()
-
   return (
     <HStack
       spacing="0.5rem"
@@ -144,7 +144,7 @@ const SchedulePublishBanner = () => {
         <Text display="inline" textStyle="subhead-2">
           {format(parseTimeStringToDate(getValues("publishTime")), "hh:mm a")}
         </Text>
-        , Singapore Standard Time, on{" "}
+        , {getTimezoneAbbreviation("long")}, on{" "}
         <Text display="inline" textStyle="subhead-2">
           {format(getValues("publishDate"), "MMMM d, yyyy")}
         </Text>

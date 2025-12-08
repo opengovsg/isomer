@@ -1,15 +1,17 @@
 import type { FormatOptionLabelMeta, SelectInstance } from "chakra-react-select"
 import React from "react"
 import { Divider, Flex, Icon, Text } from "@chakra-ui/react"
+import { components } from "chakra-react-select"
 import { format, parse, set } from "date-fns"
 import { BiTimeFive } from "react-icons/bi"
 
 import type { BaseSelectOption, BaseSelectProps } from "./BaseSelect"
+import { getTimezoneAbbreviation } from "~/features/editing-experience/components/PublishingModal"
 import { BaseSelect } from "./BaseSelect"
 
 interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {
   size: "sm" | "md" | "lg"
-  earliestAllowableTime?: Date | null // the earliest time that can be selected, if any
+  earliestAllowableTime?: Date | null // the earliest time that can be selected, if any, in SGT
   minutesStep?: 5 | 10 | 15 | 20 | 30 | 60 // determines granularity of time options
 }
 
@@ -50,18 +52,28 @@ export const TimeSelect = React.forwardRef<
           : true
       })
 
+    const TimezoneBadge = () => {
+      return (
+        <Text textStyle="caption-2" color="base.content.medium">
+          {getTimezoneAbbreviation()}
+        </Text>
+      )
+    }
+
     const formatOptionLabel = (
       option: BaseSelectOption<string>,
       { context }: FormatOptionLabelMeta<BaseSelectOption<string>>,
     ) => {
       return (
-        <Flex align="center" justify="space-between" w="100%" cursor="pointer">
+        <Flex
+          align="center"
+          justify="space-between"
+          w="100%"
+          cursor="pointer"
+          flexDir="row"
+        >
           <Text>{option.label}</Text>
-          {context === "value" && (
-            <Text textStyle="caption-2" color="base.content.medium">
-              SGT (GMT +8)
-            </Text>
-          )}
+          {context === "value" && <TimezoneBadge />}
         </Flex>
       )
     }
@@ -94,6 +106,16 @@ export const TimeSelect = React.forwardRef<
               borderColor="base.divider.strong"
             />
           ),
+          Placeholder: (props) => {
+            return (
+              <components.Placeholder {...props}>
+                <Flex align="center" justify="space-between" w="100%">
+                  <Text>Select time</Text>
+                  <TimezoneBadge />
+                </Flex>
+              </components.Placeholder>
+            )
+          },
         }}
         {...rest}
       />
