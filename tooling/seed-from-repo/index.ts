@@ -686,5 +686,5 @@ function getIndexPageContent(title: string) {
 
 export const cleanup = () => {
   const assetsDir = path.join(process.cwd(), "assets");
-  fs.rmdirSync(assetsDir);
+  fs.rmdirSync(assetsDir, { recursive: true });
 };
