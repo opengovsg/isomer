@@ -318,7 +318,7 @@ export default function RootStateDrawer() {
                 <VStack gap="0.25rem" align="start">
                   <Text textStyle="subhead-1">Fixed blocks</Text>
                   <Text textStyle="caption-2" color="base.content.medium">
-                    These are fixed for the layout and cannot be deleted.
+                    These are built into the layout, so you can’t delete them.
                   </Text>
                 </VStack>
 

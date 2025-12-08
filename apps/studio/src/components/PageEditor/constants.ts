@@ -317,8 +317,7 @@ export const BLOCK_TO_META: Record<
   },
   keystatistics: {
     label: "Statistics",
-    description:
-      "Display metrics or key statistics that represent your agency.",
+    description: "Display metrics that represent your agency.",
     usageText: "Share key wins or highlight your values in short words.",
     imageSrc: "/assets/block-images/KeyStatistics.png",
   },
@@ -337,7 +336,7 @@ export const BLOCK_TO_META: Record<
   },
   infopic: {
     label: "Image with text",
-    description: "Place an image with a text and Call-to-Action",
+    description: "Place an image with a text and Call-to-Action.",
     imageSrc: "/assets/block-images/Infopic.png",
   },
   accordion: {
@@ -349,7 +348,7 @@ export const BLOCK_TO_META: Record<
   },
   infocards: {
     label: "Cards",
-    description: "Link information on cards.",
+    description: "Link your pages using cards.",
     imageSrc: "/assets/block-images/InfoCards.png",
   },
   infocols: {
