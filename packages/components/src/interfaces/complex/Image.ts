@@ -68,7 +68,7 @@ export const ImageSchema = Type.Object(
     ),
   },
   {
-    title: "Image component",
+    title: "Image",
   },
 )
 

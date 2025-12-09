@@ -1,4 +1,7 @@
-import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+import {
+  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
+  PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
+} from "~prisma/constants"
 import { startOfDay, subDays } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 
@@ -188,7 +191,7 @@ const getSiteAndAdmins = async ({ userId, siteIds }: GetSiteAndAdminsProps) => {
           .where("ResourcePermission.userId", "!=", userId) // don't want to ask users to ask themselves for permissions
           .where("ResourcePermission.deletedAt", "is", null)
           .where("ResourcePermission.role", "=", RoleType.Admin) // should only give the admin emails to request reactivation permissions from
-          .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
+          .where("User.email", "not in", PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS) // we don't want to send emails to admins and migrators
           .select([
             "Site.id as siteId",
             db.fn.agg<string[]>("array_agg", ["User.email"]).as("adminEmails"),

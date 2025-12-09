@@ -11,6 +11,7 @@ import {
   IndexPageSchema,
   LinkRefSchema,
 } from "../types/schema"
+import { componentSchemaDefinitions } from "./components"
 
 type ScopedSchemaLayout =
   (typeof ISOMER_USABLE_PAGE_LAYOUTS)[keyof typeof ISOMER_USABLE_PAGE_LAYOUTS]
@@ -111,9 +112,13 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
 
     return {
       ...currentSchema,
+      ...componentSchemaDefinitions,
       properties: filteredProperties,
     } as TSchema
   }
 
-  return currentSchema
+  return {
+    ...currentSchema,
+    ...componentSchemaDefinitions,
+  } as TSchema
 }

@@ -61,7 +61,7 @@ export const KeyStatisticsSchema = Type.Object(
         fields: ["label", "url"],
       },
     ],
-    title: "KeyStatistics component",
+    title: "Statistics",
     description: "A component that displays KeyStatistics",
   },
 )
