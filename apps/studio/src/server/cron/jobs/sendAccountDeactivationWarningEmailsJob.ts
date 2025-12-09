@@ -28,29 +28,7 @@ export const sendAccountDeactivationWarningEmailsJob = async () => {
 }
 
 const sendAccountDeactivationWarningEmailsJobHandler = async () => {
-  try {
-    logger.info(
-      {
-        timestamp: new Date().toISOString(),
-        jobName: `sendAccountDeactivationWarningEmailsJob`,
-      },
-      "Send account deactivation warning emails job started",
-    )
-
-    await bulkSendAccountDeactivationWarningEmails({
-      inHowManyDays: 1,
-    })
-
-    logger.info(
-      `sendAccountDeactivationWarningEmailsJob completed successfully`,
-    )
-  } catch (error) {
-    logger.error(
-      {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      },
-      `sendAccountDeactivationWarningEmailsJob failed`,
-    )
-  }
+  await bulkSendAccountDeactivationWarningEmails({
+    inHowManyDays: 1,
+  })
 }
