@@ -1,3 +1,4 @@
+import { Inter } from "next/font/google"
 import config from "@/data/config.json"
 import sitemap from "@/sitemap.json"
 
@@ -16,9 +17,25 @@ export const metadata: Metadata = {
   },
 }
 
+const inter = Inter({
+  subsets: [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "vietnamese",
+  ],
+})
+
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html lang="en" data-theme={config.site.theme || "isomer-next"}>
+    <html
+      lang="en"
+      data-theme={config.site.theme || "isomer-next"}
+      className={inter.className}
+    >
       <body className="antialiased">
         {children}
         <RenderApplicationScripts
