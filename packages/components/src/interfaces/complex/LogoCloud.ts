@@ -6,17 +6,6 @@ import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const LOGO_CLOUD_TYPE = "logocloud"
 
-export const LogoCloudVariants = {
-  Default: {
-    value: "default",
-    label: "Colour (Default)",
-  },
-  Greyscale: {
-    value: "greyscale",
-    label: "Greyscale",
-  },
-} as const
-
 export const LogoCloudSchema = Type.Object(
   {
     title: Type.Optional(
@@ -37,23 +26,6 @@ export const LogoCloudSchema = Type.Object(
         minItems: 1,
         maxItems: 10,
       },
-    ),
-    variant: Type.Optional(
-      Type.Union(
-        [
-          Type.Literal(LogoCloudVariants.Default.value, {
-            title: LogoCloudVariants.Default.label,
-          }),
-          Type.Literal(LogoCloudVariants.Greyscale.value, {
-            title: LogoCloudVariants.Greyscale.label,
-          }),
-        ],
-        {
-          default: LogoCloudVariants.Default.value,
-          title: "Style",
-          format: "radio",
-        },
-      ),
     ),
   },
   {

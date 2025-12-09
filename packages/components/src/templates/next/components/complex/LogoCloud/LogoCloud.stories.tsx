@@ -70,7 +70,6 @@ export const Greyscale: Story = {
     ],
     site: generateSiteConfig(),
     title: "Our partners",
-    variant: "greyscale",
   },
 }
 

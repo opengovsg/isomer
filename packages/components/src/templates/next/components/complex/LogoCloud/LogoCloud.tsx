@@ -11,21 +11,12 @@ const createLogoCloudStyles = tv({
     logoContainer: "flex flex-wrap justify-center gap-x-6 gap-y-2",
     logo: "inset-0 h-[90px] w-[160px] object-contain px-2",
   },
-  variants: {
-    style: {
-      greyscale: {
-        logo: "grayscale",
-      },
-      default: { logo: "" },
-    },
-  },
 })
 const compoundStyles = createLogoCloudStyles()
 
 export const LogoCloud = ({
   images: baseImages,
   title,
-  variant,
   site: { assetsBaseUrl },
   shouldLazyLoad = true,
 }: LogoCloudProps) => {
@@ -47,7 +38,7 @@ export const LogoCloud = ({
             // have to pass in here instead of w-fit because
             // flex-wrap in parent div doesn't work well with w-fit for safari
             width="auto"
-            className={compoundStyles.logo({ style: variant })}
+            className={compoundStyles.logo()}
             assetsBaseUrl={assetsBaseUrl}
           />
         ))}
