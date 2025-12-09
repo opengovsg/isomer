@@ -1641,6 +1641,10 @@ video {
   height: 7.375rem;
 }
 
+.h-\[90px\] {
+  height: 90px;
+}
+
 .h-\[calc\(100vh\+300px\)\] {
   height: calc(100vh + 300px);
 }
@@ -1813,6 +1817,10 @@ video {
 
 .w-\[12px\] {
   width: 12px;
+}
+
+.w-\[160px\] {
+  width: 160px;
 }
 
 .w-\[1px\] {
