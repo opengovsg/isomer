@@ -13,7 +13,7 @@ export interface GlobalWithPgBoss {
 const globalForPgboss = global as unknown as GlobalWithPgBoss;
 
 const createPgbossClient = async (
-  logger: pino.Logger<string>,
+  logger: pino.Logger<string>
 ): Promise<PgBoss> => {
   const boss = new PgBoss({ connectionString: env.DATABASE_URL });
   boss.on("error", (err) => logger.error("Pgboss client error", err));
@@ -23,7 +23,7 @@ const createPgbossClient = async (
 };
 
 const getPgbossClient = async (
-  logger: pino.Logger<string>,
+  logger: pino.Logger<string>
 ): Promise<PgBoss> => {
   const boss = globalForPgboss.pgBoss ?? (await createPgbossClient(logger));
   globalForPgboss.pgBoss = boss;
@@ -35,13 +35,13 @@ export const registerPgbossJob = async (
   jobName: string,
   cronExpression: string,
   handler: (job: Job) => Promise<void>,
-  scheduleOptions: ScheduleOptions = { tz: "Asia/Singapore" },
-  heartbeatOptions?: HeartbeatOptions,
+  scheduleOptions: ScheduleOptions = {},
+  heartbeatOptions?: HeartbeatOptions
 ) => {
   const boss = await getPgbossClient(logger);
   if (globalForPgboss.registeredPgbossJobs.has(jobName)) {
     logger.warn(
-      `Pgboss job ${jobName} is already registered. Skipping registration.`,
+      `Pgboss job ${jobName} is already registered. Skipping registration.`
     );
     return { stop: () => boss.offWork(jobName) };
   }
@@ -64,17 +64,30 @@ export const registerPgbossJob = async (
       throw error;
     }
   });
+
+  // Merge default timezone with provided scheduleOptions
+  // Default to Asia/Singapore timezone unless explicitly overridden
+  const mergedScheduleOptions: ScheduleOptions = {
+    tz: "Asia/Singapore",
+    ...scheduleOptions,
+  };
+
   // Schedule the job
-  await boss.schedule(jobName, cronExpression, undefined, scheduleOptions);
+  await boss.schedule(
+    jobName,
+    cronExpression,
+    undefined,
+    mergedScheduleOptions
+  );
   globalForPgboss.registeredPgbossJobs.add(jobName);
   logger.info(
-    `Registered PgBoss job: ${jobName} with schedule ${cronExpression}`,
+    `Registered PgBoss job: ${jobName} with schedule ${cronExpression}`
   );
   return { stop: () => boss.offWork(jobName) };
 };
 
 export const stopAllPgbossJobs = async (
-  logger: pino.Logger<string>,
+  logger: pino.Logger<string>
 ): Promise<void> => {
   const boss = await getPgbossClient(logger);
   try {
