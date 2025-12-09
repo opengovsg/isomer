@@ -100,7 +100,7 @@ export {
 } from "./JsonFormsUuidControl"
 export {
   jsonFormsTagCategoriesControlTester,
-  default as JsonFormsTagCategoriesControl,
+  JsonFormsTagCategoriesControl,
 } from "./JsonFormsTagCategoryControl"
 export {
   default as JsonFormsNavbarControl,

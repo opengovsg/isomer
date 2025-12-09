@@ -71,5 +71,3 @@ export function CmsSidebarItems({ navItems }: CmsSidebarItemsProps) {
 
   return <List spacing={3}>{renderedSidebarItems}</List>
 }
-
-export default CmsSidebarItems

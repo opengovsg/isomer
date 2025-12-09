@@ -22,5 +22,3 @@ export const JsonFormsTagCategoriesControl = (props: ArrayLayoutProps) => {
 
   return <JsonFormsArrayControl {...props} />
 }
-
-export default JsonFormsTagCategoriesControl
