@@ -16,34 +16,10 @@ export const deactivateInactiveUsersJob = async () => {
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
-    deactivateInactiveUsersJobHandler,
+    () => bulkDeactivateInactiveUsers(),
     { retryLimit: 2, singletonKey: JOB_NAME },
     env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL
       ? { heartbeatURL: env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL }
       : undefined,
   )
-}
-
-const deactivateInactiveUsersJobHandler = async () => {
-  try {
-    logger.info(
-      {
-        timestamp: new Date().toISOString(),
-        jobName: `deactivateInactiveUsersJob`,
-      },
-      "Deactivate inactive users job started",
-    )
-
-    await bulkDeactivateInactiveUsers()
-
-    logger.info(`deactivateInactiveUsersJob completed successfully`)
-  } catch (error) {
-    logger.error(
-      {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      },
-      `deactivateInactiveUsersJob failed`,
-    )
-  }
 }
