@@ -21,8 +21,6 @@ export const LogoCloudSchema = Type.Object(
       }),
       {
         title: "Logos",
-        description:
-          "Upload original logos with transparent backgrounds for best results.",
         minItems: 1,
         maxItems: 10,
       },

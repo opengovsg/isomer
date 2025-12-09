@@ -237,8 +237,12 @@ export const DEFAULT_BLOCKS: Record<
         src: "/placeholder_no_image.png",
         alt: "This is the alt text",
       },
+      {
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
     ],
-    title: "With support from these agencies",
+    title: "In collaboration with",
   },
   collectionblock: {
     type: "collectionblock",
@@ -399,6 +403,8 @@ export const BLOCK_TO_META: Record<
   logocloud: {
     label: "Logo cloud",
     description: "Display logos of partner organisations or accolades.",
+    usageText:
+      "Upload original logos with transparent backgrounds for the best results.",
     imageSrc: "/assets/block-images/LogoCloud.png",
   },
   collectionblock: {
