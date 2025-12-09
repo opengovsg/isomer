@@ -244,7 +244,7 @@ const DeleteSocialMediaLinkModal = ({
   )
 }
 
-const JsonFormsSocialMediaControl({
+const JsonFormsSocialMediaControl = ({
   data,
   path,
   visible,
@@ -418,7 +418,7 @@ const JsonFormsSocialMediaControl({
                   />
                 )
               })}
-            </VStack> 
+            </VStack>
           )}
         </VStack>
       </VStack>
