@@ -1,51 +1,48 @@
-import cron from "node-cron"
+import { registerPgbossJob } from "@isomer/pgboss"
 
 import { bulkDeactivateInactiveUsers } from "~/server/modules/user/inactiveUsers.service"
 import { createBaseLogger } from "../../../lib/logger"
+
+const JOB_NAME = "deactivate-inactive-users"
+const CRON_SCHEDULE = "0 0 * * *" // every day at 00:00 (midnight)
 
 const logger = createBaseLogger({
   path: "cron:deactivateInactiveUsersJob",
 })
 
-export const deactivateInactiveUsersJob = () => {
-  const task = cron.schedule(
-    "0 0 * * *", // every day at 00:00 (midnight)
-    () => {
-      const runJob = async (): Promise<void> => {
-        try {
-          logger.info(
-            {
-              timestamp: new Date().toISOString(),
-              jobName: `deactivateInactiveUsersJob`,
-            },
-            "Deactivate inactive users job started",
-          )
-
-          await bulkDeactivateInactiveUsers()
-
-          logger.info(`deactivateInactiveUsersJob completed successfully`)
-        } catch (error) {
-          logger.error(
-            {
-              error: error instanceof Error ? error.message : String(error),
-              stack: error instanceof Error ? error.stack : undefined,
-            },
-            `deactivateInactiveUsersJob failed`,
-          )
-        }
-      }
-      void runJob() // Fire and forget - we don't need to await this
-    },
+export const deactivateInactiveUsersJob = async () => {
+  return await registerPgbossJob(
+    logger,
+    JOB_NAME,
+    CRON_SCHEDULE,
+    deactivateInactiveUsersJobHandler,
     {
-      scheduled: false, // Don't start immediately
-      timezone: "Asia/Singapore",
+      retryLimit: 2,
+      singletonKey: JOB_NAME,
     },
   )
+}
 
-  // Start the job
-  task.start()
+const deactivateInactiveUsersJobHandler = async () => {
+  try {
+    logger.info(
+      {
+        timestamp: new Date().toISOString(),
+        jobName: `deactivateInactiveUsersJob`,
+      },
+      "Deactivate inactive users job started",
+    )
 
-  logger.info(`deactivateInactiveUsersJob scheduled to run daily at midnight`)
+    await bulkDeactivateInactiveUsers()
 
-  return task
+    logger.info(`deactivateInactiveUsersJob completed successfully`)
+  } catch (error) {
+    logger.error(
+      {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+      `deactivateInactiveUsersJob failed`,
+    )
+  }
 }
