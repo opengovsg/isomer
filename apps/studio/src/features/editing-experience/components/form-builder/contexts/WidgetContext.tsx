@@ -16,7 +16,7 @@ export const WIDGET_CONFIG: Record<WidgetType, Widget> = {
   },
   vica: {
     icon: <VicaLogo width="5rem" ml="-8px" />,
-    label: "Vica",
+    label: "VICA",
   },
 }
 
