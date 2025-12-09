@@ -18,8 +18,8 @@ export type SiteAbility = PureAbility<SitePermissionTuple>
 
 // Only 2 actions are allowed for UserManagement
 // because Admins can update, delete and create users
-const USER_MANAGEMENT_ACTIONS = ["read", "manage"] as const
-export type UserManagementActions = (typeof USER_MANAGEMENT_ACTIONS)[number]
+const _USER_MANAGEMENT_ACTIONS = ["read", "manage"] as const
+export type UserManagementActions = (typeof _USER_MANAGEMENT_ACTIONS)[number]
 type UserManagementTuple = [UserManagementActions, "UserManagement"]
 export type UserManagementAbility = PureAbility<UserManagementTuple>
 
