@@ -10,7 +10,7 @@ export const CalloutSchema = Type.Object(
     content: CalloutProseSchema,
   },
   {
-    title: "Callout component",
+    title: "Callout",
     description: "A component that highlights important information",
   },
 )

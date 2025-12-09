@@ -22,7 +22,7 @@ export const ImageGallerySchema = Type.Object(
     }),
   },
   {
-    title: "Image Gallery component",
+    title: "Image gallery",
   },
 )
 
