@@ -1,5 +1,6 @@
 import { registerPgbossJob } from "@isomer/pgboss"
 
+import { env } from "~/env.mjs"
 import { bulkSendAccountDeactivationWarningEmails } from "~/server/modules/user/inactiveUsers.service"
 import { createBaseLogger } from "../../../lib/logger"
 
@@ -16,6 +17,13 @@ export const sendAccountDeactivationWarningEmailsJob = async () => {
     JOB_NAME,
     CRON_SCHEDULE,
     sendAccountDeactivationWarningEmailsJobHandler,
+    { retryLimit: 2, singletonKey: JOB_NAME },
+    env.SEND_ACCOUNT_DEACTIVATION_WARNING_EMAILS_HEARTBEAT_URL
+      ? {
+          heartbeatURL:
+            env.SEND_ACCOUNT_DEACTIVATION_WARNING_EMAILS_HEARTBEAT_URL,
+        }
+      : undefined,
   )
 }
 
