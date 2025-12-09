@@ -2,7 +2,7 @@ import type { TRPCLink } from "@trpc/client"
 import { type NextPageContext } from "next"
 import { httpLink, loggerLink, TRPCClientError } from "@trpc/client"
 import { createTRPCNext } from "@trpc/next"
-import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server"
+import { type inferRouterOutputs } from "@trpc/server"
 import { observable } from "@trpc/server/observable"
 import { type TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
 import superjson from "superjson"
@@ -26,7 +26,7 @@ const NON_RETRYABLE_ERROR_CODES = new Set<TRPC_ERROR_CODE_KEY>([
   "NOT_FOUND",
 ])
 
-export const versionLink: TRPCLink<AppRouter> = () => {
+const versionLink: TRPCLink<AppRouter> = () => {
   return ({ next, op }) => {
     return observable((observer) => {
       const unsubscribe = next(op).subscribe({
@@ -66,7 +66,7 @@ export const versionLink: TRPCLink<AppRouter> = () => {
   }
 }
 
-export const custom401Link: TRPCLink<AppRouter> = () => {
+const custom401Link: TRPCLink<AppRouter> = () => {
   // here we just got initialized in the app - this happens once per app
   // useful for storing cache for instance
   return ({ next, op }) => {
@@ -110,7 +110,7 @@ const isErrorRetryableOnClient = (error: unknown): boolean => {
 /**
  * Extend `NextPageContext` with meta data that can be picked up by `responseMeta()` when server-side rendering
  */
-export interface SSRContext extends NextPageContext {
+interface SSRContext extends NextPageContext {
   /**
    * Set HTTP Status code
    * @example
@@ -232,5 +232,4 @@ export const trpc = createTRPCNext<AppRouter, SSRContext>({
   transformer: superjson,
 })
 
-export type RouterInput = inferRouterInputs<AppRouter>
 export type RouterOutput = inferRouterOutputs<AppRouter>

@@ -140,7 +140,7 @@ function ComplexEditorNestedDrawer({
   )
 }
 
-export function JsonFormsArrayControl({
+function JsonFormsArrayControl({
   data,
   path,
   visible,

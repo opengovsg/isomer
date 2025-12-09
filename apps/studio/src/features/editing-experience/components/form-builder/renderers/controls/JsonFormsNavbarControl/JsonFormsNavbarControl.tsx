@@ -42,7 +42,7 @@ export const jsonFormsNavbarControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "navbar"),
 )
 
-export function JsonFormsNavbarControl({
+function JsonFormsNavbarControl({
   data,
   path,
   visible,

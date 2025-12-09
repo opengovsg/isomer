@@ -11,7 +11,7 @@ export const jsonFormsTagCategoriesControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "tag-categories"),
 )
 
-export const JsonFormsTagCategoriesControl = (props: ArrayLayoutProps) => {
+const JsonFormsTagCategoriesControl = (props: ArrayLayoutProps) => {
   const isUserIsomerAdmin = useIsUserIsomerAdmin({
     roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
   })
@@ -22,3 +22,5 @@ export const JsonFormsTagCategoriesControl = (props: ArrayLayoutProps) => {
 
   return <JsonFormsArrayControl {...props} />
 }
+
+export default JsonFormsTagCategoriesControl

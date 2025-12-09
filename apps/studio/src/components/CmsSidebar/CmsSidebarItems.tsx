@@ -19,7 +19,7 @@ export type CmsSidebarItem = {
   }
 >
 
-export interface CmsSidebarItemsProps {
+interface CmsSidebarItemsProps {
   navItems: CmsSidebarItem[]
 }
 

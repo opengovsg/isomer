@@ -3,7 +3,7 @@ import { VStack } from "@chakra-ui/react"
 import type { CmsSidebarItem } from "./CmsSidebarItems"
 import { CmsSidebarItems } from "./CmsSidebarItems"
 
-export interface CmsSidebarProps {
+interface CmsSidebarProps {
   topNavItems?: CmsSidebarItem[]
   bottomNavItems?: CmsSidebarItem[]
 }

@@ -4,7 +4,7 @@ import { userHandlers } from "tests/msw/handlers/user"
 
 import UsersPage from "~/pages/sites/[siteId]/users"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
-import { ResetEditUserModalDecorator } from "../decorators/resetModalState"
+import { ResetEditUserModalDecorator } from "../decorators"
 import { ADMIN_HANDLERS } from "../handlers"
 
 const meta: Meta<typeof UsersPage> = {
