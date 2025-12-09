@@ -1,5 +1,6 @@
 import { registerPgbossJob } from "@isomer/pgboss"
 
+import { env } from "~/env.mjs"
 import { bulkDeactivateInactiveUsers } from "~/server/modules/user/inactiveUsers.service"
 import { createBaseLogger } from "../../../lib/logger"
 
@@ -16,10 +17,10 @@ export const deactivateInactiveUsersJob = async () => {
     JOB_NAME,
     CRON_SCHEDULE,
     deactivateInactiveUsersJobHandler,
-    {
-      retryLimit: 2,
-      singletonKey: JOB_NAME,
-    },
+    { retryLimit: 2, singletonKey: JOB_NAME },
+    env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL
+      ? { heartbeatURL: env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL }
+      : undefined,
   )
 }
 
