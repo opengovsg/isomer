@@ -5,7 +5,6 @@ import { env } from "~/env.mjs"
 import { bulkSendAccountDeactivationWarningEmails } from "~/server/modules/user/inactiveUsers.service"
 import { createBaseLogger } from "../../../lib/logger"
 
-const JOB_NAME = "send-account-deactivation-warning-emails"
 const CRON_SCHEDULE = "0 0 * * *" // every day at 00:00 (midnight)
 
 const logger = createBaseLogger({
@@ -15,6 +14,8 @@ const logger = createBaseLogger({
 export const sendAccountDeactivationWarningEmailsJob = async ({
   inHowManyDays,
 }: BulkSendAccountDeactivationWarningEmailsProps) => {
+  // Include inHowManyDays in the job name to make each registration unique
+  const JOB_NAME = `send-account-deactivation-warning-emails-${inHowManyDays}days`
   return await registerPgbossJob(
     logger,
     JOB_NAME,
