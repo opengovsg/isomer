@@ -1,5 +1,6 @@
 import { registerPgbossJob } from "@isomer/pgboss"
 
+import type { BulkSendAccountDeactivationWarningEmailsProps } from "~/server/modules/user/types"
 import { env } from "~/env.mjs"
 import { bulkSendAccountDeactivationWarningEmails } from "~/server/modules/user/inactiveUsers.service"
 import { createBaseLogger } from "../../../lib/logger"
@@ -11,12 +12,14 @@ const logger = createBaseLogger({
   path: "cron:sendAccountDeactivationWarningEmailsJob",
 })
 
-export const sendAccountDeactivationWarningEmailsJob = async () => {
+export const sendAccountDeactivationWarningEmailsJob = async ({
+  inHowManyDays,
+}: BulkSendAccountDeactivationWarningEmailsProps) => {
   return await registerPgbossJob(
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
-    sendAccountDeactivationWarningEmailsJobHandler,
+    () => bulkSendAccountDeactivationWarningEmails({ inHowManyDays }),
     { retryLimit: 2, singletonKey: JOB_NAME },
     env.SEND_ACCOUNT_DEACTIVATION_WARNING_EMAILS_HEARTBEAT_URL
       ? {
@@ -25,10 +28,4 @@ export const sendAccountDeactivationWarningEmailsJob = async () => {
         }
       : undefined,
   )
-}
-
-const sendAccountDeactivationWarningEmailsJobHandler = async () => {
-  await bulkSendAccountDeactivationWarningEmails({
-    inHowManyDays: 1,
-  })
 }

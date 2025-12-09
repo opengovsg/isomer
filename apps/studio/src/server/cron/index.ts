@@ -15,7 +15,9 @@ export const initializeCronJobs = async () => {
   cronJobs.push(
     await deactivateInactiveUsersJob(),
     await schedulePublishingJob(),
-    await sendAccountDeactivationWarningEmailsJob(),
+    await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 1 }),
+    await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 7 }),
+    await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 14 }),
   )
 
   logger.info("Cron jobs initialized successfully")
