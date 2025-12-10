@@ -90,7 +90,7 @@ export const schedulePageTemplate = (
   return {
     subject: `[Isomer Studio] You scheduled a page to be published`,
     body: `<p>Hi ${recipientEmail},</p>
-    <p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${formatScheduledAtDate(toZonedTime(scheduledAt, "Asia/Singapore"))}</strong>.</p>
+    <p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${formatScheduledAtDate(toZonedTime(scheduledAt, "Asia/Singapore"), false)} (SGT)</strong>.</p>
     <p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to modify or cancel your schedule.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,

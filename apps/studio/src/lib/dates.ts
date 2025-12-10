@@ -44,5 +44,9 @@ export const getTimezoneAbbreviation = (format: "short" | "long" = "short") => {
     .find((part) => part.type === "timeZoneName")?.value
 }
 
-export const formatScheduledAtDate = (d: Date) =>
-  `${format(d, `dd/MM/yyyy, hh:mma`)} (${getTimezoneAbbreviation()})`
+export const formatScheduledAtDate = (d: Date, includeTimezone = true) => {
+  const formatStr = `dd/MM/yyyy, hh:mma`
+  return includeTimezone
+    ? `${format(d, formatStr)} (${getTimezoneAbbreviation()})`
+    : format(d, formatStr)
+}
