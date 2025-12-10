@@ -7,9 +7,9 @@ import {
   renderComponentPreviewText,
 } from "@opengovsg/isomer-components"
 
+import type { BaseBlockProps } from "./BaseBlock"
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { TYPE_TO_ICON } from "../../constants"
-import type { BaseBlockProps } from "./BaseBlock";
 import { BaseBlock, BaseBlockDragHandle } from "./BaseBlock"
 
 interface DraggableBlockProps extends Pick<BaseBlockProps, "invalidProps"> {

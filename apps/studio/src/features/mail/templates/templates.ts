@@ -89,10 +89,10 @@ export const schedulePageTemplate = (
   return {
     subject: `[Isomer Studio] You scheduled a page to be published`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${formatScheduledAtDate(scheduledAt)}</strong>.</p>
-<p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to modify or cancel your schedule.</p>
-<p>Best,</p>
-<p>Isomer team</p>`,
+    <p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${formatScheduledAtDate(scheduledAt)}</strong>.</p>
+    <p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to modify or cancel your schedule.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
   }
 }
 
@@ -103,10 +103,10 @@ export const cancelSchedulePageTemplate = (
   return {
     subject: `[Isomer Studio] Schedule to publish was cancelled`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>Your schedule to publish "${resource.title}" has been cancelled. The page is now in draft mode.</p>
-<p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to make manage changes to your page.</p>
-<p>Best,</p>
-<p>Isomer team</p>`,
+    <p>Your schedule to publish "${resource.title}" has been cancelled. The page is now in draft mode.</p>
+    <p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to make manage changes to your page.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
   }
 }
 
@@ -119,10 +119,10 @@ export const failedPublishTemplate = (
       return {
         subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
         body: `<p>Hi ${recipientEmail},</p>
-  <p>We couldn’t publish the page ${resource.title} that you scheduled.</p>
-  <p>Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
-  <p>Best,</p>
-  <p>Isomer team</p>`,
+        <p>We couldn’t publish the page ${resource.title} that you scheduled.</p>
+        <p>Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
       }
     case false:
       return {
@@ -145,7 +145,7 @@ export const successfulPublishTemplate = (
       return {
         subject: `[Isomer Studio] Your scheduled page was published`,
         body: `<p>Hi ${recipientEmail},</p>
-        <p>Your page ${resource.title} was successfully published as scheduled, at ${formatScheduledAtDate(rest.scheduledAt)}. It will be live on your site in approximately 5-10 minutes.</p>
+        <p>Your page ${resource.title} was successfully published as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
         <p> You can view or edit your published content on Isomer Studio at ${getStudioResourceUrl(resource)}.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
@@ -171,10 +171,10 @@ export const publishAlertContentPublisherTemplate = (
   return {
     subject: `[Isomer Studio] ${resource.title} has been published`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You have successfully published "${resource.title}" on ${siteName}. You can access your published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
-<p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. If you didn't authorize this publication, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
-<p>Best,</p>
-<p>Isomer team</p>`,
+    <p>You have successfully published "${resource.title}" on ${siteName}. You can access your published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
+    <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. If you didn't authorize this publication, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
   }
 }
 
@@ -187,10 +187,10 @@ export const publishAlertSiteAdminTemplate = (
   return {
     subject: `[Isomer Studio] ${resource.title} has been published`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>${publisherEmail} has published "${resource.title}" on ${siteName}. You can view the published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
-<p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. As a site admin, we want to keep you informed of all publishing activities. If you have any concerns, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
-<p>Best,</p>
-<p>Isomer team</p>`,
+    <p>${publisherEmail} has published "${resource.title}" on ${siteName}. You can view the published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
+    <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. As a site admin, we want to keep you informed of all publishing activities. If you have any concerns, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
   }
 }
 

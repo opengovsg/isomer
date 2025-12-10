@@ -26,17 +26,10 @@ export interface SchedulePageTemplateData extends BaseEmailTemplateData {
   scheduledAt: Date
 }
 
-export type SuccessfulPublishTemplateData = BaseEmailTemplateData & {
+export interface SuccessfulPublishTemplateData extends BaseEmailTemplateData {
   resource: Resource // the resource that was published
-} & (
-    | {
-        isScheduled: true
-        scheduledAt: Date
-      }
-    | {
-        isScheduled: false
-      }
-  )
+  isScheduled: boolean // whether the publish was scheduled or manual
+}
 
 export interface FailedPublishTemplateData extends BaseEmailTemplateData {
   isScheduled: boolean // whether the publish was scheduled or manual
