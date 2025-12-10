@@ -236,7 +236,7 @@ export const Mobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation bar/i }),
+      canvas.getByRole("button", { name: /open navigation menu/i }),
     )
   },
 }
@@ -252,7 +252,7 @@ export const ExpandMobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation bar/i }),
+      canvas.getByRole("button", { name: /open navigation menu/i }),
     )
     await userEvent.click(canvas.getByRole("button", { name: /max 70 chars/i }))
   },
@@ -274,7 +274,7 @@ export const MobileCallToAction: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation bar/i }),
+      canvas.getByRole("button", { name: /open navigation menu/i }),
     )
   },
 }
@@ -291,7 +291,7 @@ export const ExpandMobileWithLinkOneWord: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation bar/i }),
+      canvas.getByRole("button", { name: /open navigation menu/i }),
     )
     await userEvent.click(canvas.getByRole("button", { name: /Please/i }))
   },
@@ -309,7 +309,7 @@ export const ExpandMobileWithLinkMultipleWords: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation bar/i }),
+      canvas.getByRole("button", { name: /open navigation menu/i }),
     )
     await userEvent.click(
       canvas.getByRole("button", { name: /Longer item with 30 characters/i }),
@@ -354,7 +354,7 @@ export const UtilityLinksMobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation bar/i }),
+      canvas.getByRole("button", { name: /open navigation menu/i }),
     )
   },
 }
@@ -394,7 +394,7 @@ export const UtilityLinksNoLabelMobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation bar/i }),
+      canvas.getByRole("button", { name: /open navigation menu/i }),
     )
   },
 }
@@ -444,7 +444,7 @@ export const CTAAndUtilityLinksMobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation bar/i }),
+      canvas.getByRole("button", { name: /open navigation menu/i }),
     )
   },
 }
