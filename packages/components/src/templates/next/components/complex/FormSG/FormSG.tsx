@@ -11,8 +11,8 @@ export const FormSG = ({ title, url, LinkComponent }: FormSGProps) => {
   return (
     <section className={`${ComponentContent} mt-7 first:mt-0`}>
       <BaseParagraph
-        content={`If the form below is not loaded, you can also fill it in at <a href="${url}">here</a>.`}
-        className="prose-body-base pb-2 pt-1 text-base-content opacity-90"
+        content={`If the form below is not loading, <a href="${url}">open it in a new window</a>.`}
+        className="prose-body-base pb-2 pt-1 text-base-content"
         LinkComponent={LinkComponent}
       />
 
@@ -30,8 +30,8 @@ export const FormSG = ({ title, url, LinkComponent }: FormSGProps) => {
       </div>
 
       <BaseParagraph
-        content={`Powered by <a href="https://form.gov.sg">Form</a>.`}
-        className="prose-body-base pb-2 pt-1 text-base-content opacity-50"
+        content={`Powered by <a href="https://form.gov.sg">FormSG</a>.`}
+        className="prose-body-base pb-2 pt-1 text-base-content"
         LinkComponent={LinkComponent}
       />
     </section>
