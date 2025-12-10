@@ -24,11 +24,11 @@ import { BiHourglass } from "react-icons/bi"
 
 import { parseTimeStringToDate } from "~/components/Select/TimeSelect"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { getTimezoneAbbreviation } from "~/lib/dates"
 import { useZodForm } from "~/lib/form"
 import { schedulePublishClientSchema } from "~/schemas/schedule"
 import { trpc } from "~/utils/trpc"
 import { SchedulePublishDetails } from "./ScheduledPublishDetails"
-import { getTimezoneAbbreviation } from "./utils"
 
 interface ScheduledPublishingModalProps extends UseDisclosureReturn {
   pageId: number

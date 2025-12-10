@@ -1,6 +1,4 @@
 import { RoleType } from "~prisma/generated/generatedEnums"
-import { format } from "date-fns"
-import { toZonedTime } from "date-fns-tz"
 
 import type {
   AccountDeactivationEmailTemplateData,
@@ -18,6 +16,7 @@ import type {
 } from "./types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
+import { formatScheduledAtDate } from "~/lib/dates"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
 import { getStudioResourceUrl } from "~/utils/resources"
 
@@ -86,16 +85,12 @@ export const loginAlertTemplate = (
 export const schedulePageTemplate = (
   data: SchedulePageTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, resource, scheduledAt } = data
-  const scheduledAtTimezone = format(
-    toZonedTime(scheduledAt, "Asia/Singapore"),
-    "MMMM d, yyyy hh:mm a",
-  )
+  const { recipientEmail, scheduledAt, resource } = data
   return {
-    subject: `[Isomer Studio] You scheduled ${resource.title} to be published`,
+    subject: `[Isomer Studio] You scheduled a page to be published`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${scheduledAtTimezone}</strong>.</p>
-<p>Log in to Isomer Studio at ${constructStudioRedirect()} to change or cancel this.</p>
+<p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${formatScheduledAtDate(scheduledAt)}</strong>.</p>
+<p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to modify or cancel your schedule.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }
@@ -106,10 +101,10 @@ export const cancelSchedulePageTemplate = (
 ): EmailTemplate => {
   const { recipientEmail, resource } = data
   return {
-    subject: `[Isomer Studio] Your scheduled publish for ${resource.title} has been cancelled`,
+    subject: `[Isomer Studio] Schedule to publish was cancelled`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>Your scheduled publish for ${resource.title} has been cancelled.</p>
-<p>Log in to Isomer Studio at ${constructStudioRedirect()} to manage your content.</p>
+<p>Your schedule to publish "${resource.title}" has been cancelled. The page is now in draft mode.</p>
+<p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to make manage changes to your page.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }
@@ -122,17 +117,19 @@ export const failedPublishTemplate = (
   switch (isScheduled) {
     case true:
       return {
-        subject: `[Isomer Studio] We couldn’t publish your scheduled page ${resource.title}`,
+        subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
         body: `<p>Hi ${recipientEmail},</p>
-      <p>We couldn’t publish the page ${resource.title} that you scheduled. Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
-        <p>Best,</p>
-        <p>Isomer team</p>`,
+  <p>We couldn’t publish the page ${resource.title} that you scheduled.</p>
+  <p>Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
+  <p>Best,</p>
+  <p>Isomer team</p>`,
       }
     case false:
       return {
-        subject: `[Isomer Studio] We couldn’t publish your page ${resource.title}`,
+        subject: `[Isomer Studio] We couldn’t publish your page`,
         body: `<p>Hi ${recipientEmail},</p>
-        <p>We couldn’t publish the page ${resource.title} that you tried to publish. Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
+        <p>We couldn’t publish the page ${resource.title} that you tried to publish.</p>
+        <p>Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
@@ -142,24 +139,25 @@ export const failedPublishTemplate = (
 export const successfulPublishTemplate = (
   data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, isScheduled, resource } = data
-  switch (isScheduled) {
+  const { recipientEmail, resource, ...rest } = data
+  switch (rest.isScheduled) {
     case true:
       return {
-        subject: `[Isomer Studio] The page ${resource.title} was published as scheduled`,
+        subject: `[Isomer Studio] Your scheduled page was published`,
         body: `<p>Hi ${recipientEmail},</p>
-        <p>Your page ${resource.title} was successfully published as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
+        <p>Your page ${resource.title} was successfully published as scheduled, at ${formatScheduledAtDate(rest.scheduledAt)}. It will be live on your site in approximately 5-10 minutes.</p>
         <p> You can view or edit your published content on Isomer Studio at ${getStudioResourceUrl(resource)}.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
     case false:
       return {
-        subject: `[Isomer Studio] Changes you published to ${resource.title} are now live`,
+        subject: `[Isomer Studio] Changes you published are now live`,
         body: `<p>Hi ${recipientEmail},</p>
-    <p>Your changes to page ${resource.title} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
-    <p>Best,</p>
-    <p>Isomer team</p>`,
+        <p>Your changes to page ${resource.title} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
+        <p> You can view or edit your published content on Isomer Studio at ${getStudioResourceUrl(resource)}.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
       }
   }
 }

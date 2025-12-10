@@ -115,7 +115,14 @@ const sendEmails = async (
             return {
               id: info.codeBuildJobId, // codebuild job id
               promise: sendSuccessfulPublishEmail({
-                isScheduled: info.isScheduled,
+                ...(info.isScheduled && info.scheduledAt
+                  ? {
+                      isScheduled: true,
+                      scheduledAt: info.scheduledAt,
+                    }
+                  : {
+                      isScheduled: false,
+                    }),
                 recipientEmail: info.email,
                 resource: info,
               }),

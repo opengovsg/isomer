@@ -6,7 +6,7 @@ import { format, parse, set } from "date-fns"
 import { BiTimeFive } from "react-icons/bi"
 
 import type { BaseSelectOption, BaseSelectProps } from "./BaseSelect"
-import { getTimezoneAbbreviation } from "~/features/editing-experience/components/PublishingModal"
+import { getTimezoneAbbreviation } from "~/lib/dates"
 import { BaseSelect } from "./BaseSelect"
 
 interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {
