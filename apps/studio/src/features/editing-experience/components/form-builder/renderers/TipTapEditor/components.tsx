@@ -7,7 +7,7 @@ import { EditorContent } from "@tiptap/react"
 
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 
-export const EditorContainer = ({
+const EditorContainer = ({
   children,
   isNested,
 }: PropsWithChildren<{ isNested?: boolean }>) => {
@@ -43,7 +43,7 @@ export const EditorContainer = ({
   )
 }
 
-export const EditorContentWrapper = ({
+const EditorContentWrapper = ({
   editor,
 }: Pick<EditorContentProps, "editor">) => {
   return (

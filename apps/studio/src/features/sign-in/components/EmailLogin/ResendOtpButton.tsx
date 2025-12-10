@@ -2,7 +2,7 @@ import type { ButtonProps } from "@opengovsg/design-system-react"
 import { Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 
-export interface ResendOtpButtonProps extends ButtonProps {
+interface ResendOtpButtonProps extends ButtonProps {
   timer: number
 }
 

@@ -19,7 +19,7 @@ export const jsonFormsDateControlTester: RankedTester = rankWith(
   ),
 )
 
-export function JsonFormsDateControl({
+function JsonFormsDateControl({
   data,
   label,
   handleChange,

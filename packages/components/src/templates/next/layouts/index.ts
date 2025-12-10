@@ -1,8 +1,0 @@
-export { ArticleLayout } from "./Article"
-export { CollectionLayout } from "./Collection"
-export { ContentLayout } from "./Content"
-export { DatabaseLayout } from "./Database"
-export { HomepageLayout } from "./Homepage"
-export { IndexPageLayout } from "./IndexPage"
-export { NotFoundLayout } from "./NotFound"
-export { SearchLayout } from "./Search"

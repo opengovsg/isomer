@@ -16,7 +16,7 @@ export const jsonFormsBooleanControlTester: RankedTester = rankWith(
   isBooleanControl,
 )
 
-export function JsonFormsBooleanControl({
+function JsonFormsBooleanControl({
   data,
   label,
   id,

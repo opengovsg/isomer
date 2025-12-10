@@ -7,7 +7,7 @@ import type {
 } from "~/features/editing-experience/components/LinkEditor/constants"
 import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
 
-export type LinkEditorContextReturn = ReturnType<typeof useLinkEditorContext>
+type LinkEditorContextReturn = ReturnType<typeof useLinkEditorContext>
 const LinkEditorContext = createContext<LinkEditorContextReturn | undefined>(
   undefined,
 )

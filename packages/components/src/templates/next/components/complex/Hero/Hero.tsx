@@ -3,7 +3,7 @@ import { HERO_STYLE } from "~/interfaces/complex/Hero"
 import { HeroBlock } from "./HeroBlock"
 import { HeroFloating } from "./HeroFloating"
 import { HeroGradient } from "./HeroGradient"
-import { HeroLargeImage } from "./HeroLargeImage/HeroLargeImage"
+import { HeroLargeImage } from "./HeroLargeImage"
 import { HeroSearchbar } from "./HeroSearchbar"
 
 export const Hero = (props: HeroProps) => {

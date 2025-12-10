@@ -20,7 +20,7 @@ const defaultVersionSelect: SelectExpression<DB, "Version">[] = [
   "Version.publishedAt",
 ]
 
-export const getVersionById = ({ versionId }: { versionId: string }) =>
+const getVersionById = ({ versionId }: { versionId: string }) =>
   db
     .selectFrom("Version")
     .where("Version.id", "=", versionId)

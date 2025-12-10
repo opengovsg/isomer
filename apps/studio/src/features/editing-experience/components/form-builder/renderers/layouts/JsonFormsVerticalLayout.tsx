@@ -90,7 +90,7 @@ function getUiSchemaWithGroup(
   return newUiSchema
 }
 
-export function JsonFormsVerticalLayoutRenderer({
+function JsonFormsVerticalLayoutRenderer({
   uischema,
   schema,
   path,
