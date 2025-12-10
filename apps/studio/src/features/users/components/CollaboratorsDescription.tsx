@@ -9,7 +9,7 @@ export const CollaboratorsDescription = () => {
   if (ability.can("manage", "UserManagement")) {
     return (
       <Text textStyle="body-2">
-        View and manage users that collaborate with you on this site.
+        View and manage users that work with you on this site.
       </Text>
     )
   }
@@ -17,7 +17,7 @@ export const CollaboratorsDescription = () => {
   if (ability.can("read", "UserManagement")) {
     return (
       <Text textStyle="body-2">
-        View users that you collaborate with you on this site.
+        View users that work with you on this site.
       </Text>
     )
   }
