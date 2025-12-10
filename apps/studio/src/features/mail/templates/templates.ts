@@ -1,4 +1,5 @@
 import { RoleType } from "~prisma/generated/generatedEnums"
+import { toZonedTime } from "date-fns-tz"
 
 import type {
   AccountDeactivationEmailTemplateData,
@@ -89,7 +90,7 @@ export const schedulePageTemplate = (
   return {
     subject: `[Isomer Studio] You scheduled a page to be published`,
     body: `<p>Hi ${recipientEmail},</p>
-    <p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${formatScheduledAtDate(scheduledAt)}</strong>.</p>
+    <p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${formatScheduledAtDate(toZonedTime(scheduledAt, "Asia/Singapore"))}</strong>.</p>
     <p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to modify or cancel your schedule.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
@@ -104,7 +105,7 @@ export const cancelSchedulePageTemplate = (
     subject: `[Isomer Studio] Schedule to publish was cancelled`,
     body: `<p>Hi ${recipientEmail},</p>
     <p>Your schedule to publish "${resource.title}" has been cancelled. The page is now in draft mode.</p>
-    <p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to make manage changes to your page.</p>
+    <p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to manage changes to your page.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
   }
