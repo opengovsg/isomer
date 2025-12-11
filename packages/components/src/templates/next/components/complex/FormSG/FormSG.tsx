@@ -31,7 +31,7 @@ export const FormSG = ({ title, url, LinkComponent }: FormSGProps) => {
 
       <BaseParagraph
         content={`Powered by <a href="https://form.gov.sg">Form</a>.`}
-        className="prose-body-base pb-2 pt-1 text-base-content opacity-50"
+        className="prose-body-base pb-2 pt-1 text-base-content-subtle"
         LinkComponent={LinkComponent}
       />
     </section>
