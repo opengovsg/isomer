@@ -100,7 +100,7 @@ export const EditNavbarItem = ({
             onClick={onBack}
             textStyle="subhead-2"
           >
-            Back to navigation menu
+            Back to navigation bar
           </Button>
 
           <HStack gap="0.75rem" w="full" alignItems="center">
