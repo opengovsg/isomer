@@ -18,7 +18,7 @@ export const jsonFormsAnyOfControlTester: RankedTester = rankWith(
   isAnyOfControl,
 )
 
-export function JsonFormsAnyOfControl({
+function JsonFormsAnyOfControl({
   schema,
   path,
   renderers,

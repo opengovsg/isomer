@@ -6,7 +6,7 @@ import { useFormContext } from "react-hook-form"
 
 import type { schedulePublishClientSchema } from "~/schemas/schedule"
 
-export interface QuickSelectTime {
+interface QuickSelectTime {
   hours: number
   minutes: number
 }

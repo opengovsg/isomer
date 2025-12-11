@@ -35,7 +35,7 @@ const createSearchableTableStyles = tv({
   },
 })
 
-export const compoundStyles = createSearchableTableStyles()
+const compoundStyles = createSearchableTableStyles()
 
 interface SearchableTableClientUIProps
   extends Omit<SearchableTableClientProps, "items"> {

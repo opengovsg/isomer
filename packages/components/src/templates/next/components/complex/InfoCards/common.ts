@@ -24,7 +24,7 @@ export const infoCardTitleStyle = tv({
   ],
 })
 
-export const singleInfoCardStyle = tv({
+const singleInfoCardStyle = tv({
   slots: {
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImage: "h-full w-full object-center",
@@ -75,7 +75,7 @@ export const singleInfoCardStyle = tv({
   },
 })
 
-export const createInfoCardsStyles = tv({
+const createInfoCardsStyles = tv({
   extend: singleInfoCardStyle,
   slots: {
     container: `${ComponentContent} flex flex-col`,

@@ -10,17 +10,17 @@ export type CrudResourceActions = (typeof CRUD_ACTIONS)[number]
 type Subjects = "Resource" | Resource
 
 export const ALL_ACTIONS = [...CRUD_ACTIONS, "move", "publish"] as const
-export type ResourcePermissionTuple = [AllowedResourceActions, Subjects]
+type ResourcePermissionTuple = [AllowedResourceActions, Subjects]
 export type ResourceAbility = PureAbility<ResourcePermissionTuple>
 
-export type SitePermissionTuple = [CrudResourceActions, "Site"]
+type SitePermissionTuple = [CrudResourceActions, "Site"]
 export type SiteAbility = PureAbility<SitePermissionTuple>
 
 // Only 2 actions are allowed for UserManagement
 // because Admins can update, delete and create users
-export const USER_MANAGEMENT_ACTIONS = ["read", "manage"] as const
-export type UserManagementActions = (typeof USER_MANAGEMENT_ACTIONS)[number]
-export type UserManagementTuple = [UserManagementActions, "UserManagement"]
+const _USER_MANAGEMENT_ACTIONS = ["read", "manage"] as const
+export type UserManagementActions = (typeof _USER_MANAGEMENT_ACTIONS)[number]
+type UserManagementTuple = [UserManagementActions, "UserManagement"]
 export type UserManagementAbility = PureAbility<UserManagementTuple>
 
 export interface PermissionsProps {
