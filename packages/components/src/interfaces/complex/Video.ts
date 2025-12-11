@@ -24,4 +24,6 @@ export const VideoSchema = Type.Object(
   },
 )
 
-export type VideoProps = Static<typeof VideoSchema>
+export type VideoProps = Static<typeof VideoSchema> & {
+  shouldLazyLoad?: boolean
+}
