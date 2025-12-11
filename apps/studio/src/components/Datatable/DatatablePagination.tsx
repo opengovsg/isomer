@@ -1,7 +1,7 @@
 import { Pagination } from "@opengovsg/design-system-react"
 import { type Table } from "@tanstack/react-table"
 
-export interface DataTablePaginationProps<D> {
+interface DataTablePaginationProps<D> {
   instance: Table<D>
   totalRowCount?: number
 }

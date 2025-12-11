@@ -14,7 +14,7 @@ import { env } from "~/env.mjs"
 
 const { NEXT_PUBLIC_S3_REGION } = env
 
-export const storage = new S3Client({
+const storage = new S3Client({
   region: NEXT_PUBLIC_S3_REGION,
 })
 

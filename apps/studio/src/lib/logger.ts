@@ -24,7 +24,7 @@ interface LoggerOptions {
   req?: NextApiRequest
 }
 
-export class PinoLogger {
+class PinoLogger {
   private static instance?: pino.Logger<string>
   private static getInstance() {
     PinoLogger.instance ??= PinoLogger.createBaseLogger()

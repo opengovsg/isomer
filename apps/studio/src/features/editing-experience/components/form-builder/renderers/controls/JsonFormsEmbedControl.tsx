@@ -168,7 +168,7 @@ function EmbedCodeModal({
   )
 }
 
-export function JsonFormsEmbedControl({
+function JsonFormsEmbedControl({
   data,
   label,
   handleChange,

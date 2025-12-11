@@ -14,7 +14,7 @@ const BaseSearchableTableSchema = Type.Object({
   ),
 })
 
-export const NativeSearchableTableSchema = Type.Intersect(
+const NativeSearchableTableSchema = Type.Intersect(
   [
     NativeDataSourceSchema,
     Type.Object({
@@ -28,7 +28,7 @@ export const NativeSearchableTableSchema = Type.Intersect(
   },
 )
 
-export const DGSSearchableTableSchema = Type.Intersect(
+const DGSSearchableTableSchema = Type.Intersect(
   [
     DgsDataSourceSchema,
     Type.Object({

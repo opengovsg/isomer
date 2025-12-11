@@ -40,7 +40,7 @@ export const ISOMER_ADMINS_AND_MIGRATORS_EMAILS =
 
 // this is a quick hack to determine who to show as "isomer admins" for user management dashboard
 // TODO: maybe create a standalone "role" in ResourcePermission instead
-export const PAST_AND_FORMER_ISOMER_MEMBERS = [
+const PAST_AND_FORMER_ISOMER_MEMBERS = [
   ...ISOMER_ADMINS,
   ...ISOMER_MIGRATORS,
   ...PAST_ISOMER_MEMBERS,

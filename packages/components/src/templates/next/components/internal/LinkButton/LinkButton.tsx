@@ -8,9 +8,7 @@ import { isExternalUrl } from "~/utils"
 import { buttonIconStyles, buttonStyles } from "../Button/common"
 import { Link } from "../Link"
 
-export interface LinkButtonProps
-  extends LinkProps,
-    VariantProps<typeof buttonStyles> {
+interface LinkButtonProps extends LinkProps, VariantProps<typeof buttonStyles> {
   LinkComponent?: ElementType
 }
 

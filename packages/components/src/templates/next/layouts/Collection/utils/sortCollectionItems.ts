@@ -1,7 +1,7 @@
 import type { GetCollectionItemsProps } from "./getCollectionItems"
 import type { AllCardProps } from "~/interfaces"
 
-export interface SortCollectionItemsProps
+interface SortCollectionItemsProps
   extends Pick<GetCollectionItemsProps, "sortBy" | "sortDirection"> {
   items: AllCardProps[]
 }

@@ -127,7 +127,7 @@ const SuspendableBlocks = ({
   return <DraggableBlocks data={resources} {...rest} />
 }
 
-export function JsonFormsChildrenPagesLayoutControl({
+function JsonFormsChildrenPagesLayoutControl({
   data,
   label,
   description,

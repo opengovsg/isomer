@@ -28,7 +28,7 @@ interface UseWidgetContextReturn {
   getNextWidget: (widget: WidgetType) => WidgetType
 }
 
-export const WidgetContext = createContext<null | UseWidgetContextReturn>(null)
+const WidgetContext = createContext<null | UseWidgetContextReturn>(null)
 
 export const WidgetProvider = ({
   children,

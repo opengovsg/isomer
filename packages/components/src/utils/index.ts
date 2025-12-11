@@ -1,5 +1,4 @@
 export { getBreadcrumbFromSiteMap } from "./getBreadcrumbFromSiteMap"
-export { getDigestFromText } from "./getDigestFromText"
 export { getFormattedDate } from "./getFormattedDate"
 export { getNodeFromSiteMap } from "./getNodeFromSiteMap"
 export { getParsedDate } from "./getParsedDate"
@@ -34,5 +33,4 @@ export {
   MAPS_EMBED_URL_REGEXES,
   VIDEO_EMBED_URL_REGEXES,
   NON_EMPTY_STRING_REGEX,
-  DGS_ID_STRING_REGEX,
 } from "./validation"
