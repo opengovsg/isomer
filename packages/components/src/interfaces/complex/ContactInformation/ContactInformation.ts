@@ -125,7 +125,7 @@ const InjectableContactInformationSchema = Type.Object(
   },
 )
 
-export const NativeContactInformationSchema = Type.Intersect([
+const NativeContactInformationSchema = Type.Intersect([
   NativeDataSourceSchema,
   InjectableContactInformationSchema,
 ])

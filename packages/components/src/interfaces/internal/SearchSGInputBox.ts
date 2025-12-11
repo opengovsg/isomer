@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-export const SearchSGClientIdSchema = Type.String({
+const SearchSGClientIdSchema = Type.String({
   title: "Client ID for SearchSG",
   description:
     "If you’re facing any issues with SearchSG, contact Isomer Support.",

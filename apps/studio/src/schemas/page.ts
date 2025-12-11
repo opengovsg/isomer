@@ -18,7 +18,7 @@ export const NEW_PAGE_LAYOUT_VALUES = [
 export const MAX_TITLE_LENGTH = 250
 export const MAX_PAGE_URL_LENGTH = 500
 
-export const pageTitleSchema = z
+const pageTitleSchema = z
   .string({
     required_error: "Enter a title for this page",
   })
@@ -27,7 +27,7 @@ export const pageTitleSchema = z
     message: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
   })
 
-export const permalinkSchema = generateBasePermalinkSchema("page")
+const permalinkSchema = generateBasePermalinkSchema("page")
   .min(1, { message: "Enter a URL for this page" })
   .max(MAX_PAGE_URL_LENGTH, {
     message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
@@ -124,7 +124,7 @@ export const basePageSettingsSchema = basePageSchema.extend({
   title: pageTitleSchema,
 })
 
-export const rootPageSettingsSchema = basePageSettingsSchema.extend({
+const rootPageSettingsSchema = basePageSettingsSchema.extend({
   type: z.literal(ResourceType.RootPage),
 })
 

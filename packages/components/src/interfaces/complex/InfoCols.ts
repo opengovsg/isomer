@@ -9,7 +9,7 @@ import type {
 import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
-export const InfoBoxSchema = Type.Object({
+const InfoBoxSchema = Type.Object({
   title: Type.String({
     title: "Title",
   }),
@@ -75,7 +75,7 @@ export const InfoColsSchema = Type.Object(
     }),
   },
   {
-    title: "Infocols component",
+    title: "Columns of text",
   },
 )
 

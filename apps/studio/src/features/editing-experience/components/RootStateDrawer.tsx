@@ -410,8 +410,7 @@ export default function RootStateDrawer() {
                 <VStack gap="0.25rem" align="start">
                   <Text textStyle="subhead-1">Fixed blocks</Text>
                   <Text textStyle="caption-2" color="base.content.medium">
-                    These components are fixed for the layout and cannot be
-                    deleted
+                    These are built into the layout, so you can’t delete them.
                   </Text>
                 </VStack>
                 <FixedBlock />
@@ -426,7 +425,7 @@ export default function RootStateDrawer() {
                       <VStack gap="0.25rem" align="start" flex={1}>
                         <Text textStyle="subhead-1">Custom blocks</Text>
                         <Text textStyle="caption-2" color="base.content.medium">
-                          Use blocks to display your content in various ways
+                          Use blocks to display your content.
                         </Text>
                       </VStack>
                     )}

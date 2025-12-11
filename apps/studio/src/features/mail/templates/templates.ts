@@ -68,7 +68,7 @@ export const invitationTemplate = (
 }
 
 // FYI: Currently, we only send this email to users when Singpass has been disabled.
-export const loginAlertTemplate = (
+const loginAlertTemplate = (
   data: LoginAlertEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail } = data
@@ -83,7 +83,7 @@ export const loginAlertTemplate = (
   }
 }
 
-export const schedulePageTemplate = (
+const schedulePageTemplate = (
   data: SchedulePageTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, scheduledAt, resource } = data
@@ -97,7 +97,7 @@ export const schedulePageTemplate = (
   }
 }
 
-export const cancelSchedulePageTemplate = (
+const cancelSchedulePageTemplate = (
   data: CancelSchedulePageTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, resource } = data
@@ -111,7 +111,7 @@ export const cancelSchedulePageTemplate = (
   }
 }
 
-export const failedPublishTemplate = (
+const failedPublishTemplate = (
   data: FailedPublishTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, isScheduled, resource } = data
@@ -137,7 +137,7 @@ export const failedPublishTemplate = (
   }
 }
 
-export const successfulPublishTemplate = (
+const successfulPublishTemplate = (
   data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, resource, ...rest } = data
@@ -163,7 +163,7 @@ export const successfulPublishTemplate = (
   }
 }
 
-export const publishAlertContentPublisherTemplate = (
+const publishAlertContentPublisherTemplate = (
   data: PublishAlertContentPublisherEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, siteName, resource } = data
@@ -179,7 +179,7 @@ export const publishAlertContentPublisherTemplate = (
   }
 }
 
-export const publishAlertSiteAdminTemplate = (
+const publishAlertSiteAdminTemplate = (
   data: PublishAlertSiteAdminEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, publisherEmail, siteName, resource } = data

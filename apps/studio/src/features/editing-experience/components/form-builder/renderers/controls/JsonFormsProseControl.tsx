@@ -65,7 +65,7 @@ const getEditorHookAndEditor = (
   }
 }
 
-export function JsonFormsProseControl({
+function JsonFormsProseControl({
   data,
   label,
   handleChange,

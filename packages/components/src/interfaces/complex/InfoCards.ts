@@ -20,7 +20,7 @@ export const INFOCARD_VARIANT = {
   default: "default",
 } as const
 
-export type InfoCardVariants = keyof typeof INFOCARD_VARIANT
+type InfoCardVariants = keyof typeof INFOCARD_VARIANT
 
 const IMAGE_FIT = {
   Cover: "cover",
@@ -192,12 +192,12 @@ export const InfoCardsSchema = Type.Intersect(
       ],
       {
         format: ARRAY_RADIO_FORMAT,
-        title: "Infocards style",
+        title: "Style",
       },
     ),
   ],
   {
-    title: "Cards component",
+    title: "Cards",
   },
 )
 

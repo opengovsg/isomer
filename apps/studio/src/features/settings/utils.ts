@@ -49,7 +49,7 @@ export const normalizeHex = (color: string): string => {
   return normalizedColor.padStart(6, "0")
 }
 
-export const convertHexToRgb = (color: string): [number, number, number] => {
+const convertHexToRgb = (color: string): [number, number, number] => {
   const rgb = normalizeHex(color)
   return chunk(rgb, 2).map((hex) => parseInt(hex.join(""), 16)) as [
     number,
@@ -58,10 +58,7 @@ export const convertHexToRgb = (color: string): [number, number, number] => {
   ]
 }
 
-export const calculateRelativeContrast = (
-  lum1: number,
-  lum2: number,
-): number => {
+const calculateRelativeContrast = (lum1: number, lum2: number): number => {
   const lighter = Math.max(lum1, lum2)
   const darker = Math.min(lum1, lum2)
 
@@ -76,7 +73,7 @@ const normaliseRsRgb = (value: number) => {
   }
 }
 
-export const calculateRelativeLuminance = (color: string) => {
+const calculateRelativeLuminance = (color: string) => {
   // NOTE: strip leading #
   const rgb = convertHexToRgb(color).map((value) => value / 255)
   const [r, g, b] = rgb.map((value) => normaliseRsRgb(value))
@@ -97,7 +94,7 @@ export interface Theme {
   "colors.brand.interaction.pressed": string
 }
 
-export const generateTheme = ({
+const generateTheme = ({
   tints,
   colour,
   shades,
@@ -201,7 +198,7 @@ const shade = (value: number, scale: number) => {
   return Math.round(value * scale)
 }
 
-export const generateColorPalette = (r: number, g: number, b: number) => {
+const generateColorPalette = (r: number, g: number, b: number) => {
   const tints = PALETTE_SCALES.map((scale) => {
     const red = tint(r, scale)
     const green = tint(g, scale)

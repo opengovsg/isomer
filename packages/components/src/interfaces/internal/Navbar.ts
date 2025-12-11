@@ -9,6 +9,7 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import type { OmitFromUnion } from "~/types/helpers"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 const NavbarItemSchema = Type.Object({

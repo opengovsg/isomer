@@ -119,7 +119,7 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
 interface DeactivateUsersProps {
   userIds: User["id"][]
 }
-export const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
+const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
   // prevent empty array from being passed in
   if (userIds.length === 0) return []
 

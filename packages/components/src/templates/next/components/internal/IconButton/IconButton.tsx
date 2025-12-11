@@ -14,7 +14,7 @@ import { twMerge } from "~/lib/twMerge"
 import { focusRing } from "~/utils"
 import { mergeRefs } from "~/utils/rac"
 
-export const iconButtonStyles = tv({
+const iconButtonStyles = tv({
   base: "box-border flex w-fit cursor-pointer items-center justify-center rounded text-center transition",
   extend: focusRing,
   variants: {
@@ -52,11 +52,11 @@ export const iconButtonStyles = tv({
   },
 })
 
-export const iconButtonIconStyles = tv({
+const iconButtonIconStyles = tv({
   base: "h-6 w-6",
 })
 
-export interface IconButtonProps
+interface IconButtonProps
   extends SetRequired<
       Omit<AriaButtonProps<"button">, "children">,
       "aria-label"

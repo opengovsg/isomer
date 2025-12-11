@@ -25,7 +25,7 @@ export const BlockquoteSchema = Type.Object(
     imageAlt: Type.Optional(AltTextSchema),
   },
   {
-    title: "Blockquote component",
+    title: "Blockquote",
     description:
       "The Blockquote component is used to display a quote with an image.",
   },
