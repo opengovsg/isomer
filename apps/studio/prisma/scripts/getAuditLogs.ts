@@ -110,6 +110,7 @@ const SITES_WITH_AUDIT_LOGS = [
   261, // hochiminhcity.mfa.gov.sg
   262, // www.mfa.gov.sg
   263, // nagoya.mfa.gov.sg
+  284, // www.ptc.gov.sg
 ]
 
 // Month and year to get audit logs for, in the format of YYYY-MM,
