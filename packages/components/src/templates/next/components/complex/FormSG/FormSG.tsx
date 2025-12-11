@@ -3,7 +3,12 @@ import { isValidFormSGEmbedUrl } from "~/utils/validation"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
 
-export const FormSG = ({ title, url, LinkComponent }: FormSGProps) => {
+export const FormSG = ({
+  title,
+  url,
+  LinkComponent,
+  shouldLazyLoad = true,
+}: FormSGProps) => {
   if (!isValidFormSGEmbedUrl(url)) {
     return <></>
   }
@@ -26,6 +31,7 @@ export const FormSG = ({ title, url, LinkComponent }: FormSGProps) => {
             overflow: "auto",
           }}
           title={title || "FormSG form embedded in the page"}
+          loading={shouldLazyLoad ? "lazy" : "eager"}
         />
       </div>
 
