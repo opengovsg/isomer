@@ -1,4 +1,4 @@
-import { format, isSameDay } from "date-fns"
+import { isSameDay } from "date-fns"
 
 /**
  * if the date provided is equal to the earliestSchedule's date, the earliest allowable time should be set to the FIRST
@@ -16,6 +16,3 @@ export const getEarliestAllowableTime = (
   }
   return null
 }
-
-export const formatScheduledAtDate = (d: Date) =>
-  format(d, "hh:mma, dd/MM/yyyy")
