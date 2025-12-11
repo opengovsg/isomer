@@ -8,7 +8,7 @@ export const LOGO_CLOUD_TYPE = "logocloud"
 
 export const LogoCloudSchema = Type.Object(
   {
-    title: Type.Optional(
+    title: Type.Object(
       Type.String({
         title: "Title",
       }),
