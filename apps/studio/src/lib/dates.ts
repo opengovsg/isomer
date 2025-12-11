@@ -1,0 +1,52 @@
+import { format } from "date-fns/format"
+
+export const formatRelativeTime = (
+  date?: Date | null,
+  baseDate?: Date | null,
+  formatStr = "MMM dd",
+) => {
+  if (date === null || date === undefined) return
+
+  baseDate ??= new Date()
+
+  let deltaSeconds = (date.getTime() - baseDate.getTime()) / 1000
+  const isFuture = deltaSeconds > 0 ? true : false
+
+  let t
+  deltaSeconds = Math.abs(deltaSeconds)
+
+  if (deltaSeconds < 60) {
+    t = `${Math.floor(deltaSeconds)}s`
+  } else if (deltaSeconds < 3600) {
+    t = `${Math.floor(deltaSeconds / 60)}m`
+  } else if (deltaSeconds < 86400) {
+    t = `${Math.floor(deltaSeconds / 3600)}h`
+  } else {
+    t = format(date, formatStr)
+  }
+  if (isFuture) {
+    return "in " + t
+  } else {
+    return t
+  }
+}
+
+/**
+ * Get the timezone abbreviation for the current locale and date.
+ * https://github.com/tc39/proposal-temporal/issues/2257#issuecomment-1152070209
+ * @returns The timezone abbreviation or a fallback GMT offset string.
+ */
+export const getTimezoneAbbreviation = (format: "short" | "long" = "short") => {
+  return new Intl.DateTimeFormat("en", {
+    timeZoneName: format,
+  })
+    .formatToParts(new Date())
+    .find((part) => part.type === "timeZoneName")?.value
+}
+
+export const formatScheduledAtDate = (d: Date, includeTimezone = true) => {
+  const formatStr = `dd/MM/yyyy, hh:mma`
+  return includeTimezone
+    ? `${format(d, formatStr)} (${getTimezoneAbbreviation()})`
+    : format(d, formatStr)
+}

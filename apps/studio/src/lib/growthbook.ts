@@ -7,6 +7,10 @@ export const ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY =
   "enable-emails-for-scheduled-publishes"
 export const ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY =
   "enable-emails-for-regular-publishes"
+// A feature flag to enable scheduled publishing for all sites, regardless of whether they are
+// explicitly included in the scheduled publishing sites feature flag.
+export const ENABLE_ALL_SITES_SCHEDULED_PUBLISHING_FEATURE_KEY =
+  "enable-all-sites-scheduled-publishing"
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const ISOMER_ADMIN_FEATURE_KEY = "isomer_admins"
 export const IS_NEW_SETTINGS_PAGE_ENABLED_FEATURE_KEY =
@@ -47,7 +51,10 @@ export const getIsScheduledPublishingEnabledForSite = ({
       enabledSites: [],
     },
   )
-  return feature.enabledSites.includes(siteId.toString())
+  return (
+    feature.enabledSites.includes(siteId.toString()) ||
+    gb.isOn(ENABLE_ALL_SITES_SCHEDULED_PUBLISHING_FEATURE_KEY)
+  )
 }
 
 // Growthbook has a constraint in the typings that requires the index signature
