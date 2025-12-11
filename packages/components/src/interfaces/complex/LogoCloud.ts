@@ -7,11 +7,9 @@ import { AltTextSchema, ImageSrcSchema } from "./Image"
 export const LogoCloudSchema = Type.Object(
   {
     type: Type.Literal("logocloud", { default: "logocloud" }),
-    title: Type.Object(
-      Type.String({
-        title: "Title",
-      }),
-    ),
+    title: Type.String({
+      title: "Title",
+    }),
     images: Type.Array(
       Type.Object({
         src: ImageSrcSchema,
