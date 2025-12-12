@@ -10,7 +10,7 @@ const createLogoCloudStyles = tv({
     title:
       "prose-headline-lg-medium self-center text-center text-base-content-subtle",
     logoContainer: "flex flex-wrap justify-center gap-x-2 gap-y-2",
-    logo: "inset-0 max-h-20 object-contain",
+    logo: "inset-0 max-h-16 object-contain xs:max-h-[80px] md:max-h-20",
   },
 })
 const compoundStyles = createLogoCloudStyles()
