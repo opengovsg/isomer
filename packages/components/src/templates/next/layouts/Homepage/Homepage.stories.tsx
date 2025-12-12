@@ -608,15 +608,15 @@ const generateArgs = ({
         title: "Our partners",
         images: [
           {
-            src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/65609f775edfd6ba4a3c3af7_Nairobi-colored.svg",
+            src: "https://placehold.co/150",
             alt: "placeholder logo",
           },
           {
-            src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/61f12d5f57bdb32d0cbecfa3_CluesDark.svg",
+            src: "https://placehold.co/150",
             alt: "placeholder logo",
           },
           {
-            src: "https://cdn.prod.website-files.com/61ed56ae9da9fd7e0ef0a967/65607e86d46a61fcef7cddce_Springfield-colored.svg",
+            src: "https://placehold.co/150",
             alt: "placeholder logo",
           },
         ],

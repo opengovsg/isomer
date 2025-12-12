@@ -1,15 +1,16 @@
 import type { LogoCloudProps } from "~/interfaces/complex/LogoCloud"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils"
+import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../Image"
 
 const createLogoCloudStyles = tv({
   slots: {
-    container: "flex flex-col gap-9 py-16",
+    container: `${ComponentContent} flex flex-col gap-9 py-16`,
     title:
       "prose-headline-lg-medium self-center text-center text-base-content-subtle",
-    logoContainer: "flex flex-wrap justify-center gap-x-6 gap-y-2",
-    logo: "inset-0 mx-2 h-[90px] w-[160px] object-contain",
+    logoContainer: "flex flex-wrap justify-center gap-x-2 gap-y-2",
+    logo: "inset-0 max-h-20 object-contain",
   },
 })
 const compoundStyles = createLogoCloudStyles()
