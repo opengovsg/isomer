@@ -28,4 +28,5 @@ export const FormSGSchema = Type.Object(
 
 export type FormSGProps = Static<typeof FormSGSchema> & {
   LinkComponent?: LinkComponentType
+  shouldLazyLoad?: boolean
 }

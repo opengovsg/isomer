@@ -22,4 +22,6 @@ export const IframeSchema = Type.Object(
   },
 )
 
-export type IframeProps = Static<typeof IframeSchema>
+export type IframeProps = Static<typeof IframeSchema> & {
+  shouldLazyLoad?: boolean
+}

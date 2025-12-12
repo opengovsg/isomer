@@ -46,7 +46,7 @@ const getSanitizedEmbedUrl = (url: string) => {
   return ""
 }
 
-export const Video = ({ title, url }: VideoProps) => {
+export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
   if (!isValidVideoUrl(url)) {
     return <></>
   }
@@ -65,6 +65,7 @@ export const Video = ({ title, url }: VideoProps) => {
           allow="accelerometer; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
+          loading={shouldLazyLoad ? "lazy" : "eager"}
         />
       </div>
     </section>
