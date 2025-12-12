@@ -99,7 +99,7 @@ export function renderComponentPreviewText({
     case "map":
       return component.title || "Map embed"
     case "logocloud":
-      return component.title
+      return component.title || "Logo cloud"
     case "prose":
       return getTextContentOfProse(component.content)
     case "video":

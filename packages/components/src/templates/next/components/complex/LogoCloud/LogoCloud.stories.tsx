@@ -32,6 +32,7 @@ export const Default: Story = {
   args: {
     images: [IMAGE],
     site: generateSiteConfig(),
+    title: "Our partners",
   },
 }
 
@@ -39,31 +40,21 @@ export const ManyImages: Story = {
   args: {
     images: Array(10).fill(IMAGE),
     site: generateSiteConfig(),
+    title: "Our partners and accolades",
   },
 }
 
-export const Agency: Story = {
+export const LongTitle: Story = {
   args: {
-    images: [
-      {
-        alt: "Some image",
-        src: "https://www.ncss.gov.sg/images/default-source/asset/fwdsg_logo.png?sfvrsn=91b23ea8_1",
-      },
-      {
-        alt: "Some image",
-        src: "https://www.ncss.gov.sg/images/default-source/asset/togsgcares_logo.png?sfvrsn=d499b7ea_2",
-      },
-      {
-        alt: "Some image",
-        src: "https://www.ncss.gov.sg/images/default-source/asset/celebrating-volunteers-logo.png?sfvrsn=44b85185_2 ",
-      },
-    ],
+    images: Array(5).fill(IMAGE),
     site: generateSiteConfig(),
+    title: "Our agency partners that have joined us on our journey since 2019",
   },
 }
 
 export const HugeHorizontalLogo: Story = {
   args: {
+    title: "Our partners",
     images: [...Array(4).fill(IMAGE), HORIZONTAL_IMAGE],
     site: generateSiteConfig(),
   },
@@ -71,6 +62,7 @@ export const HugeHorizontalLogo: Story = {
 
 export const HugeVerticalLogo: Story = {
   args: {
+    title: "Our partners",
     images: [...Array(4).fill(IMAGE), VERTICAL_IMAGE],
     site: generateSiteConfig(),
   },
