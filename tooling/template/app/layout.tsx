@@ -5,7 +5,7 @@ import "@/styles/globals.css"
 
 import type { Metadata } from "next"
 import Script from "next/script"
-import { RenderApplicationScripts } from "@opengovsg/isomer-components"
+import { RenderApplicationScripts } from "@opengovsg/isomer-components/engine/renderApplicationScripts"
 
 export const dynamic = "force-static"
 
