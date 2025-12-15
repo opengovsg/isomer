@@ -181,21 +181,25 @@ const InfoCardsNoImageSchema = Type.Object(
   },
 )
 
-export const InfoCardsSchema = Type.Intersect(
-  [
-    InfoCardsBaseSchema,
-    Type.Union(
-      [
-        InfoCardsWithImageSchema,
-        InfoCardsNoImageSchema,
-        InfoCardsWithFullImageSchema,
-      ],
-      {
-        format: ARRAY_RADIO_FORMAT,
-        title: "Style",
-      },
-    ),
+// Use Type.Unsafe to generate oneOf (not anyOf) for AJV discriminator support
+// Type.Union generates anyOf which doesn't work with discriminator
+const InfoCardsVariantSchema = Type.Unsafe<
+  | Static<typeof InfoCardsWithImageSchema>
+  | Static<typeof InfoCardsNoImageSchema>
+  | Static<typeof InfoCardsWithFullImageSchema>
+>({
+  oneOf: [
+    InfoCardsWithImageSchema,
+    InfoCardsNoImageSchema,
+    InfoCardsWithFullImageSchema,
   ],
+  discriminator: { propertyName: "variant" },
+  format: ARRAY_RADIO_FORMAT,
+  title: "Style",
+})
+
+export const InfoCardsSchema = Type.Intersect(
+  [InfoCardsBaseSchema, InfoCardsVariantSchema],
   {
     title: "Cards",
   },
