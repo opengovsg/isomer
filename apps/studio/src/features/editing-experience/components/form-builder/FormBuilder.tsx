@@ -13,6 +13,8 @@ import {
   jsonFormsAllOfControlTester,
   JsonFormsAnyOfControl,
   jsonFormsAnyOfControlTester,
+  JsonFormsOneOfControl,
+  jsonFormsOneOfControlTester,
   JsonFormsArrayControl,
   jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
@@ -147,6 +149,7 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsRefControlTester, renderer: JsonFormsRefControl },
   { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
   { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
+  { tester: jsonFormsOneOfControlTester, renderer: JsonFormsOneOfControl },
   {
     tester: jsonFormsGroupLayoutTester,
     renderer: jsonFormsGroupLayoutRenderer,

@@ -30,6 +30,7 @@ export const JSON_FORMS_RANKING = {
   // NOTE: Needs to be above `AnyOfControl`
   SearchSGControl: 4,
   AnyOfControl: 3,
+  OneOfControl: 3,
   CategoryControl: 3,
   CollectionDropdownControl: 3,
   ProseControl: 3,
