@@ -33,7 +33,7 @@ export const CollectionCard = ({
       isExternal={isExternalLink}
     >
       {shouldShowDate && (
-        <p className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
+        <p className="prose-label-md-regular shrink-0 text-base-content-subtle md:w-[140px]">
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
