@@ -7,7 +7,7 @@ function getTextContentOfProse(content: ProseContent): string {
   function recursiveSearch(
     content: ProseContent | OrderedListProps["content"],
   ) {
-    content.map((contentBlock) => {
+    content.forEach((contentBlock) => {
       switch (contentBlock.type) {
         case "heading":
           values.push(
@@ -18,7 +18,7 @@ function getTextContentOfProse(content: ProseContent): string {
           break
         case "orderedList":
         case "unorderedList":
-          contentBlock.content.map((listItemBlock) => {
+          contentBlock.content.forEach((listItemBlock) => {
             recursiveSearch(listItemBlock.content)
           })
           break
@@ -26,7 +26,7 @@ function getTextContentOfProse(content: ProseContent): string {
           recursiveSearch(contentBlock.content)
           break
         case "paragraph":
-          contentBlock.content?.map((paragraphContentBlock) => {
+          contentBlock.content?.forEach((paragraphContentBlock) => {
             switch (paragraphContentBlock.type) {
               case "text":
                 values.push(paragraphContentBlock.text.trim())
@@ -40,7 +40,7 @@ function getTextContentOfProse(content: ProseContent): string {
           })
           break
         case "table":
-          values.push(contentBlock.attrs.caption.trim())
+          values.push((contentBlock.attrs.caption || "").trim())
           break
         case "divider":
           break
