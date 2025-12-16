@@ -20,7 +20,12 @@ const createMapStyles = tv({
   },
 })
 
-export const Map = ({ title, url, LinkComponent }: MapProps) => {
+export const Map = ({
+  title,
+  url,
+  LinkComponent,
+  shouldLazyLoad = true,
+}: MapProps) => {
   if (!isValidMapEmbedUrl(url)) {
     return <></>
   }
@@ -50,7 +55,7 @@ export const Map = ({ title, url, LinkComponent }: MapProps) => {
           src={url}
           title={title || "Map embedded in the page"}
           allowFullScreen
-          loading="lazy"
+          loading={shouldLazyLoad ? "lazy" : "eager"}
           referrerPolicy="no-referrer-when-downgrade"
         />
       </div>
