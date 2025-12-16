@@ -81,7 +81,7 @@ export function createNextPreset({
   includeFonts = true,
 }: {
   includeFonts?: boolean
-}): Config {
+} = {}): Config {
   return {
     content: [],
     theme: {
