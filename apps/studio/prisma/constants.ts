@@ -16,7 +16,6 @@ export const ISOMER_MIGRATORS = [
   "junxiang",
   "rayyan",
   "yongteng",
-  "huaying",
   "weiping",
   "sophie",
   "felicia",
@@ -28,6 +27,7 @@ export const PAST_ISOMER_MEMBERS = [
   "alexander",
   "jan",
   "jinhui",
+  "huaying",
 ] as const
 
 export const ISOMER_ADMINS_AND_MIGRATORS = [
