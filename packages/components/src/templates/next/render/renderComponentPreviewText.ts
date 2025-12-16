@@ -40,7 +40,7 @@ function getTextContentOfProse(content: ProseContent): string {
           })
           break
         case "table":
-          values.push(contentBlock.attrs.caption.trim())
+          values.push((contentBlock.attrs.caption || "").trim())
           break
         case "divider":
           break
