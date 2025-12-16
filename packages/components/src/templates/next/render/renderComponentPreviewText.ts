@@ -18,7 +18,7 @@ function getTextContentOfProse(content: ProseContent): string {
           break
         case "orderedList":
         case "unorderedList":
-          contentBlock.content.map((listItemBlock) => {
+          contentBlock.content.forEach((listItemBlock) => {
             recursiveSearch(listItemBlock.content)
           })
           break
