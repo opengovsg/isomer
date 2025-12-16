@@ -26,7 +26,7 @@ function getTextContentOfProse(content: ProseContent): string {
           recursiveSearch(contentBlock.content)
           break
         case "paragraph":
-          contentBlock.content?.map((paragraphContentBlock) => {
+          contentBlock.content?.forEach((paragraphContentBlock) => {
             switch (paragraphContentBlock.type) {
               case "text":
                 values.push(paragraphContentBlock.text.trim())
