@@ -7,7 +7,7 @@ function getTextContentOfProse(content: ProseContent): string {
   function recursiveSearch(
     content: ProseContent | OrderedListProps["content"],
   ) {
-    content.map((contentBlock) => {
+    content.forEach((contentBlock) => {
       switch (contentBlock.type) {
         case "heading":
           values.push(
