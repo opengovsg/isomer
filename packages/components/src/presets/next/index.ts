@@ -377,6 +377,19 @@ export function createNextPreset({
             "@font-face": interFontFaces,
           })
         }
+
+        // Always add fallback font for arrow symbols (e.g., ↗) to render correctly.
+        // next/font's metric adjustments can distort these characters, so this uses system fonts.
+        addBase({
+          "@font-face": {
+            fontFamily: "Inter",
+            fontStyle: "normal",
+            fontWeight: "100 900",
+            fontDisplay: "swap",
+            src: 'local("Segoe UI Symbol"), local("Noto Sans Symbols 2"), local("Noto Sans Symbols"), local("DejaVu Sans")',
+            unicodeRange: "U+2190-21FF", // Arrows Unicode block
+          },
+        })
       }),
     ],
   }
