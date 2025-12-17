@@ -249,7 +249,7 @@ const generateArgs = ({
           },
           {
             name: "Contact us",
-            url: "/single-item",
+            url: "https://isomer.gov.sg",
           },
         ],
       },
