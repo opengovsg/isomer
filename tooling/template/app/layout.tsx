@@ -4,8 +4,17 @@ import sitemap from "@/sitemap.json"
 import "@/styles/globals.css"
 
 import type { Metadata } from "next"
+import { Inter } from "next/font/google"
 import Script from "next/script"
 import { RenderApplicationScripts } from "@opengovsg/isomer-components"
+
+const inter = Inter({
+  // while we support other languages, we should only preload the latin subset
+  // as it is the most common subset and the most likely to be used
+  // we accept that non-latin languages will not be self hosted and preloaded
+  subsets: ["latin"],
+  display: "swap",
+})
 
 export const dynamic = "force-static"
 
@@ -18,7 +27,11 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html lang="en" data-theme={config.site.theme || "isomer-next"}>
+    <html
+      lang="en"
+      data-theme={config.site.theme || "isomer-next"}
+      className={inter.className}
+    >
       <body className="antialiased">
         {children}
         <RenderApplicationScripts
