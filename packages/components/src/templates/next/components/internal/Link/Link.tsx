@@ -2,27 +2,17 @@ import type { LinkProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusRing, focusVisibleHighlight } from "~/utils"
+import { ExternalLinkIcon } from "../../native/ExternalLinkIcon"
 import { getReactNodeText } from "./utils"
 import { generateAriaLabel } from "./utils/generateAriaLabel"
 
 const linkStyles = tv({
   extend: focusRing,
-  base: "",
-  variants: {
-    showExternalIcon: {
-      true: `after:content-['_↗']`,
-    },
-  },
 })
 
 const fvHighlightLinkStyles = tv({
   extend: focusVisibleHighlight,
   base: "outline-none outline-0",
-  variants: {
-    showExternalIcon: {
-      true: `after:content-['_↗']`,
-    },
-  },
 })
 
 export const Link = ({
@@ -38,9 +28,7 @@ export const Link = ({
   ...rest
 }: LinkProps) => {
   const cssStyles = twMerge(
-    isWithFocusVisibleHighlight
-      ? fvHighlightLinkStyles({ showExternalIcon })
-      : linkStyles({ showExternalIcon }),
+    isWithFocusVisibleHighlight ? fvHighlightLinkStyles() : linkStyles(),
     className,
   )
   const externalLinkProps = isExternal
@@ -62,6 +50,13 @@ export const Link = ({
       aria-current={current}
       data-current={!!current || undefined}
       disabled={isDisabled}
-    />
+    >
+      <span className="inline-flex items-center">
+        {rest.children}
+        {showExternalIcon && (
+          <ExternalLinkIcon className="ml-0.5 size-[1.25em] shrink-0 stroke-current" />
+        )}
+      </span>
+    </ElementToRender>
   )
 }
