@@ -14,6 +14,7 @@ const inter = Inter({
   // we accept that non-latin languages will not be self hosted and preloaded
   subsets: ["latin"],
   display: "swap",
+  variable: "--font-inter",
 })
 
 export const dynamic = "force-static"
@@ -30,7 +31,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
     <html
       lang="en"
       data-theme={config.site.theme || "isomer-next"}
-      className={inter.className}
+      className={inter.variable}
     >
       <body className="antialiased">
         {children}

@@ -198,7 +198,15 @@ export function createNextPreset({
           },
         },
         fontFamily: {
-          sans: ['"Inter"', ...defaultTheme.fontFamily.sans],
+          sans: [
+            // This allows us to pass in the font variable from template layout.tsx
+            // via next/font/local to avoid FOUT (Flash of Unstyled Text)
+            // If not passed in, it will fallback to the default font family
+            // Reference: https://nextjs.org/docs/15/app/api-reference/components/font#tailwind-css-v3
+            "var(--font-inter)",
+            '"Inter"',
+            ...defaultTheme.fontFamily.sans,
+          ],
         },
         letterSpacing: {
           tight: "-0.022em",
