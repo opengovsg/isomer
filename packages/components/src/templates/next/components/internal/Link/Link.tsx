@@ -28,7 +28,6 @@ export const Link = ({
   ...rest
 }: LinkProps) => {
   const cssStyles = twMerge(
-    "inline-flex items-center",
     isWithFocusVisibleHighlight ? fvHighlightLinkStyles() : linkStyles(),
     className,
   )
