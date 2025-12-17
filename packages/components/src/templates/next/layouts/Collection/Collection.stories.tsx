@@ -9,7 +9,7 @@ import { generateSiteConfig } from "~/stories/helpers"
 import { CollectionLayout } from "./Collection"
 
 const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
-  times(5, (index) => [
+  times(10, (index) => [
     {
       id: `${index}`,
       title: `This is a publication title that is really long because ${index}`,
@@ -18,7 +18,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       layout: "article",
       summary:
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
-      date: "27/12/2024",
+      date: "07/05/2024",
       category: "Category Name",
       tags: [
         {
