@@ -8,7 +8,7 @@ import { whitelistHandlers } from "tests/msw/handlers/whitelist"
 
 import UsersPage from "~/pages/sites/[siteId]/users"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
-import { ResetAddUserModalDecorator } from "../decorators/resetModalState"
+import { ResetAddUserModalDecorator } from "../decorators"
 
 const EMAIL = "chillguy@isomer.gov.sg"
 const COMMON_HANDLERS = [

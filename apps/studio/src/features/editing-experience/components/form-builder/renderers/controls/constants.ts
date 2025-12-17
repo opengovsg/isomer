@@ -24,7 +24,3 @@ export const FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
   ".csv": "text/csv",
   ".tsv": "text/tab-separated-values",
 }
-
-export const ACCEPTED_FILE_TYPES_MESSAGE = Object.keys(
-  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-).join(", ")

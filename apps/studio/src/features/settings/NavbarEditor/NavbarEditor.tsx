@@ -116,7 +116,7 @@ export const NavbarEditor = ({
             textColor="base.content.default"
             textOverflow="ellipsis"
           >
-            Navigation menu
+            Navigation bar
           </Text>
 
           <Spacer />
@@ -199,7 +199,7 @@ const PublishButton = ({
       <Tooltip
         label={
           !isSchemaValid
-            ? "There are errors in your navigation menu. Fix them before publishing."
+            ? "There are errors in your navigation bar. Fix them before publishing."
             : undefined
         }
         hasArrow

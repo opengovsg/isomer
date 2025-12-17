@@ -62,5 +62,3 @@ export function EditPageDrawer(): JSX.Element {
       return <h1>Edit Page Drawer</h1>
   }
 }
-
-export default EditPageDrawer

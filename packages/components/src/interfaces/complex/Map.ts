@@ -27,4 +27,5 @@ export const MapSchema = Type.Object(
 
 export type MapProps = Static<typeof MapSchema> & {
   LinkComponent?: LinkComponentType
+  shouldLazyLoad?: boolean
 }

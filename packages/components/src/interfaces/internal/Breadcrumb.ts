@@ -1,6 +1,6 @@
 import type { LinkComponentType } from "~/types"
 
-export interface BreadcrumbLink {
+interface BreadcrumbLink {
   title: string
   url: string
 }

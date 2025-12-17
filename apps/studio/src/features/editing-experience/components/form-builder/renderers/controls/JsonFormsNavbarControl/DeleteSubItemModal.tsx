@@ -33,7 +33,7 @@ export const DeleteSubItemModal = ({
 
         <ModalBody>
           <Text textStyle="body-1">
-            You’re about to delete 1 link from the navigation menu. This doesn’t
+            You’re about to delete 1 link from the navigation bar. This doesn’t
             remove any actual pages.
           </Text>
         </ModalBody>

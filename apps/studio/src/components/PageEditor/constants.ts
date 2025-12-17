@@ -228,8 +228,21 @@ export const DEFAULT_BLOCKS: Record<
   },
   logocloud: {
     type: "logocloud",
-    images: [],
-    title: "With support from these agencies",
+    images: [
+      {
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
+      {
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
+      {
+        src: "/placeholder_no_image.png",
+        alt: "This is the alt text",
+      },
+    ],
+    title: "In collaboration with",
   },
   collectionblock: {
     type: "collectionblock",
@@ -378,9 +391,11 @@ export const BLOCK_TO_META: Record<
     usageText: "This block supports fetching data from an API endpoint.",
   },
   logocloud: {
-    // TODO: Add image source
     label: "Logo cloud",
     description: "Display logos of partner organisations or accolades.",
+    usageText:
+      "Upload original logos with transparent backgrounds for the best results.",
+    imageSrc: "/assets/block-images/LogoCloud.png",
   },
   collectionblock: {
     // TODO: Add image source
@@ -480,6 +495,7 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "infobar",
       "blockquote",
       "collectionblock",
+      "logocloud",
     ],
   },
 ]

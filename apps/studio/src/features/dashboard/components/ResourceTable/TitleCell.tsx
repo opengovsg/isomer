@@ -10,7 +10,7 @@ import type { ResourceTableData } from "./types"
 import { getLinkToResource } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 
-export interface TitleCellProps
+interface TitleCellProps
   extends Pick<
     ResourceTableData,
     "title" | "permalink" | "type" | "id" | "scheduledAt"

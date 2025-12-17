@@ -940,13 +940,3 @@ export const getSearchWithResourceIds = async ({
     })),
   })
 }
-
-export const getFullResourceByVersion = (versionId: string) => {
-  return db
-    .selectFrom("Version")
-    .innerJoin("Blob", "Version.blobId", "Blob.id")
-    .innerJoin("Resource", "Version.resourceId", "Resource.id")
-    .where("Version.id", "=", versionId)
-    .select(defaultResourceWithBlobSelect)
-    .executeTakeFirst()
-}

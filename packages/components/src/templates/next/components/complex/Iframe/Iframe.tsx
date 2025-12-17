@@ -28,8 +28,14 @@ const getPaddingForEmbed = (url: string | null) => {
 /**
  * @deprecated Replaced with individual website embed components
  */
-export const Iframe = ({ title, content }: IframeProps) => {
+export const Iframe = ({
+  title,
+  content,
+  shouldLazyLoad = true,
+}: IframeProps) => {
   const sanitizedIframe = getSanitizedIframeWithTitle(content, title)
+  sanitizedIframe.setAttribute("loading", shouldLazyLoad ? "lazy" : "eager")
+
   const iframeUrl = sanitizedIframe.getAttribute("src")
 
   return (

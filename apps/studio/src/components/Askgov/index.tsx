@@ -40,7 +40,7 @@ export const AskgovWidget = () => {
   )
 }
 
-export const ChatButtonIcon = () => (
+const ChatButtonIcon = () => (
   <svg
     width="38"
     height="36"

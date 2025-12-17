@@ -5,20 +5,34 @@ import {
   createCombinatorRenderInfos,
   createDefaultValue,
   isAnyOfControl,
+  isOneOfControl,
   rankWith,
 } from "@jsonforms/core"
-import { JsonFormsDispatch, withJsonFormsAnyOfProps } from "@jsonforms/react"
+import {
+  JsonFormsDispatch,
+  withJsonFormsAnyOfProps,
+  withJsonFormsOneOfProps,
+} from "@jsonforms/react"
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
+export const jsonFormsOneOfControlTester: RankedTester = rankWith(
+  JSON_FORMS_RANKING.OneOfControl,
+  isOneOfControl,
+)
 
 export const jsonFormsAnyOfControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.AnyOfControl,
   isAnyOfControl,
 )
 
-export function JsonFormsAnyOfControl({
+interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
+  combinatorType: "oneOf" | "anyOf"
+}
+
+function JsonFormsCombinatorControl({
   schema,
   path,
   renderers,
@@ -31,26 +45,26 @@ export function JsonFormsAnyOfControl({
   handleChange,
   indexOfFittingSchema,
   data,
-}: CombinatorRendererProps) {
+  combinatorType,
+}: JsonFormsCombinatorControlProps) {
   const [variant, setVariant] = useState("")
-  const anyOfRenderInfos = createCombinatorRenderInfos(
-    schema.anyOf ?? [],
+  const combinatorSchemas = schema[combinatorType] ?? []
+  const renderInfos = createCombinatorRenderInfos(
+    combinatorSchemas,
     rootSchema,
-    "anyOf",
+    combinatorType,
     uischema,
     path,
     uischemas,
   )
 
-  const options = anyOfRenderInfos
-    .map((anyOfRenderInfo) => {
-      if (anyOfRenderInfo.schema.format === "hidden") {
+  const options = renderInfos
+    .map((renderInfo) => {
+      if (renderInfo.schema.format === "hidden") {
         return null
       }
 
-      const option = String(
-        anyOfRenderInfo.label || anyOfRenderInfo.schema.const,
-      )
+      const option = String(renderInfo.label || renderInfo.schema.const)
 
       return {
         label: option.charAt(0).toUpperCase() + option.slice(1),
@@ -63,8 +77,7 @@ export function JsonFormsAnyOfControl({
     setVariant(value)
 
     const newSchema =
-      anyOfRenderInfos[options.findIndex((option) => option.value === value)]
-        ?.schema
+      renderInfos[options.findIndex((option) => option.value === value)]?.schema
     if (!newSchema) {
       handleChange(path, {})
     } else {
@@ -133,13 +146,13 @@ export function JsonFormsAnyOfControl({
         </FormControl>
       </Box>
 
-      {anyOfRenderInfos.map(
-        (anyOfRenderInfo) =>
-          variant === anyOfRenderInfo.label && (
+      {renderInfos.map(
+        (renderInfo) =>
+          variant === renderInfo.label && (
             <JsonFormsDispatch
-              key={anyOfRenderInfo.label}
-              uischema={anyOfRenderInfo.uischema}
-              schema={anyOfRenderInfo.schema}
+              key={renderInfo.label}
+              uischema={renderInfo.uischema}
+              schema={renderInfo.schema}
               path={path}
               renderers={renderers}
               cells={cells}
@@ -150,4 +163,13 @@ export function JsonFormsAnyOfControl({
   )
 }
 
-export default withJsonFormsAnyOfProps(JsonFormsAnyOfControl)
+function OneOfControl(props: CombinatorRendererProps) {
+  return <JsonFormsCombinatorControl {...props} combinatorType="oneOf" />
+}
+
+function AnyOfControl(props: CombinatorRendererProps) {
+  return <JsonFormsCombinatorControl {...props} combinatorType="anyOf" />
+}
+
+export const JsonFormsOneOfControl = withJsonFormsOneOfProps(OneOfControl)
+export const JsonFormsAnyOfControl = withJsonFormsAnyOfProps(AnyOfControl)

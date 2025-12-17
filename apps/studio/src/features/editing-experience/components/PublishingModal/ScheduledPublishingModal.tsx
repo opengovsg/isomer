@@ -24,6 +24,7 @@ import { BiHourglass } from "react-icons/bi"
 
 import { parseTimeStringToDate } from "~/components/Select/TimeSelect"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { getTimezoneAbbreviation } from "~/lib/dates"
 import { useZodForm } from "~/lib/form"
 import { schedulePublishClientSchema } from "~/schemas/schedule"
 import { trpc } from "~/utils/trpc"
@@ -129,7 +130,6 @@ export const ScheduledPublishingModal = ({
 const SchedulePublishBanner = () => {
   const { getValues } =
     useFormContext<z.input<typeof schedulePublishClientSchema>>()
-
   return (
     <HStack
       spacing="0.5rem"
@@ -144,7 +144,7 @@ const SchedulePublishBanner = () => {
         <Text display="inline" textStyle="subhead-2">
           {format(parseTimeStringToDate(getValues("publishTime")), "hh:mm a")}
         </Text>
-        , Singapore Standard Time, on{" "}
+        , {getTimezoneAbbreviation("long")}, on{" "}
         <Text display="inline" textStyle="subhead-2">
           {format(getValues("publishDate"), "MMMM d, yyyy")}
         </Text>

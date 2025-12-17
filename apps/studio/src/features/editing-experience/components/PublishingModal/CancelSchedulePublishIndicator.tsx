@@ -2,8 +2,8 @@ import { Button, HStack, Icon, Text, useDisclosure } from "@chakra-ui/react"
 import { TouchableTooltip } from "@opengovsg/design-system-react"
 import { BiTimeFive } from "react-icons/bi"
 
+import { formatScheduledAtDate } from "~/lib/dates"
 import { CancelScheduleModal } from "."
-import { formatScheduledAtDate } from "./utils"
 
 interface CancelSchedulePublishIndicatorProps {
   pageId: number

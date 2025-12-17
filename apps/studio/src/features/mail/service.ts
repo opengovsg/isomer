@@ -15,7 +15,7 @@ import type {
 import { createBaseLogger } from "~/lib/logger"
 import { isValidEmail } from "~/utils/email"
 import { sendMail } from "../../lib/mail"
-import { templates } from "./templates/templates"
+import { templates } from "./templates"
 
 const logger = createBaseLogger({ path: "features/mail/service" })
 

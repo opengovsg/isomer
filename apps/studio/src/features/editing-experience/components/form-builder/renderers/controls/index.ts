@@ -19,9 +19,11 @@ export {
   jsonFormsObjectControlTester,
 } from "./JsonFormsObjectControl"
 export {
-  default as JsonFormsAnyOfControl,
+  JsonFormsAnyOfControl,
   jsonFormsAnyOfControlTester,
-} from "./JsonFormsAnyOfControl"
+  JsonFormsOneOfControl,
+  jsonFormsOneOfControlTester,
+} from "./JsonFormsCombinatorControl"
 export {
   default as JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
@@ -99,13 +101,13 @@ export {
   jsonFormsUuidControlTester,
 } from "./JsonFormsUuidControl"
 export {
-  jsonFormsTagCategoriesControlTester,
   default as JsonFormsTagCategoriesControl,
+  jsonFormsTagCategoriesControlTester,
 } from "./JsonFormsTagCategoryControl"
 export {
   default as JsonFormsNavbarControl,
   jsonFormsNavbarControlTester,
-} from "./JsonFormsNavbarControl/JsonFormsNavbarControl"
+} from "./JsonFormsNavbarControl"
 export {
   default as JsonFormsLinkArrayControl,
   jsonFormsLinkArrayControlTester,
@@ -113,7 +115,7 @@ export {
 export {
   default as JsonFormsSocialMediaControl,
   jsonFormsSocialMediaControlTester,
-} from "./JsonFormsSocialMediaControl/JsonFormsSocialMediaControl"
+} from "./JsonFormsSocialMediaControl"
 export {
   default as JsonFormsEnumControl,
   jsonFormsEnumControlTester,

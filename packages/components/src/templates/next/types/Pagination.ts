@@ -4,5 +4,3 @@ export interface PaginationProps {
   currPage: number
   setCurrPage: (previousState: number) => void
 }
-
-export default PaginationProps
