@@ -1,6 +1,6 @@
 // @ts-nocheck
 /** @type {import('tailwindcss').Config} */
-import { createNextPreset, isomerSiteTheme } from "@opengovsg/isomer-components"
+import { isomerSiteTheme, NextPreset } from "@opengovsg/isomer-components"
 import plugin from "tailwindcss/plugin"
 
 import siteConfig from "./data/config.json"
@@ -11,8 +11,7 @@ const config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./node_modules/@opengovsg/isomer-components/**/*.{js,ts,jsx,tsx}",
   ],
-  // Use createNextPreset with includeFonts: false since we load Inter via next/font/google in layout.tsx
-  presets: [createNextPreset({ includeFonts: false })],
+  presets: [NextPreset],
   plugins: [
     isomerSiteTheme({
       colors: siteConfig.colors.brand,
