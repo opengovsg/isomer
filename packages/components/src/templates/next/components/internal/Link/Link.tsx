@@ -28,6 +28,7 @@ export const Link = ({
   ...rest
 }: LinkProps) => {
   const cssStyles = twMerge(
+    "inline-flex items-center",
     isWithFocusVisibleHighlight ? fvHighlightLinkStyles() : linkStyles(),
     className,
   )
@@ -51,12 +52,10 @@ export const Link = ({
       data-current={!!current || undefined}
       disabled={isDisabled}
     >
-      <span className="inline-flex items-center">
-        {rest.children}
-        {showExternalIcon && (
-          <ExternalLinkIcon className="ml-0.5 size-[1.25em] shrink-0 stroke-current" />
-        )}
-      </span>
+      {rest.children}
+      {showExternalIcon && (
+        <ExternalLinkIcon className="ml-0.5 size-[1.25em] shrink-0 stroke-current" />
+      )}
     </ElementToRender>
   )
 }
