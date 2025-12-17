@@ -12,7 +12,8 @@ const config = {
     "./node_modules/@opengovsg/isomer-components/**/*.{js,ts,jsx,tsx}",
   ],
   // Use createNextPreset with includeFonts: false since we load Inter via next/font/google in layout.tsx
-  presets: [createNextPreset({ includeFonts: false })],
+  // FIXME: Currently set to true as arrow symbols are not rendering correctly when using next/font/google
+  presets: [createNextPreset({ includeFonts: true })],
   plugins: [
     isomerSiteTheme({
       colors: siteConfig.colors.brand,
