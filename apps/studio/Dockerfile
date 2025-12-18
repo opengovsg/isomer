@@ -30,6 +30,10 @@ ENV NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=$NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY
 ARG NEXT_PUBLIC_INTERCOM_APP_ID
 ENV NEXT_PUBLIC_INTERCOM_APP_ID=$NEXT_PUBLIC_INTERCOM_APP_ID
 
+# Refer to this PR for the env var and why we need this.
+# https://github.com/vercel/next.js/pull/46052/changes
+ENV KEEP_ALIVE_TIMEOUT 70000
+
 FROM base AS builder
 RUN apk update
 RUN apk add --no-cache libc6-compat
