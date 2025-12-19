@@ -41,7 +41,6 @@ RUN apk add --no-cache libc6-compat
 # Set working directory
 WORKDIR /app
 # Replace <your-major-version> with the major version installed in your repository. For example:
-# RUN npm i -g turbo@^2
 RUN npm install -g turbo@^2
 COPY . .
 
