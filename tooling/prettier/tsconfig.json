@@ -1,7 +1,8 @@
 {
   "extends": "@isomer/tsconfig/base.json",
   "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
+    "types": []
   },
   "include": ["."],
   "exclude": ["node_modules"]
