@@ -74,7 +74,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
           ],
           selected: [
             "Test",
-            "This is a very long tag that shuold be reflowed on smaller screens maybe",
+            "This is a very long tag that should be reflowed on smaller screens maybe",
             "This is a second long link that should eat into the image area so that we can see how it looks",
           ],
         },
