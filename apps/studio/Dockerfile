@@ -36,13 +36,17 @@ ENV KEEP_ALIVE_TIMEOUT 70000
 
 FROM base AS builder
 RUN apk update
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat bash curl unzip
+
+# Install bun
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
 
 # Set working directory
 WORKDIR /app
 # Replace <your-major-version> with the major version installed in your repository. For example:
-# RUN npm i -g turbo@^2
-RUN npm install -g turbo@^2
+# RUN bun add -g turbo@^2
+RUN bun add -g turbo@^2
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
@@ -52,16 +56,21 @@ RUN turbo prune isomer-studio --docker
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
 RUN apk update
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat bash curl unzip
+
+# Install bun
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
+
 WORKDIR /app
 
 # First install the dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .
-RUN npm ci
+RUN bun install --frozen-lockfile
 
 # Build the project
 COPY --from=builder /app/out/full/ .
-RUN npx turbo run build --filter=isomer-studio...
+RUN bunx turbo run build --filter=isomer-studio...
 
 FROM base AS runner
 WORKDIR /app

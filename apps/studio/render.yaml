@@ -11,9 +11,9 @@ services:
     ## 👇 Specify the plan for the PR deployment:
     # previewPlan: starter
     ## 👇 Preview Environment Initialization script:
-    # initialDeployHook: npm run db-seed
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    # initialDeployHook: bun run db-seed
+    buildCommand: bun install && bun run build
+    startCommand: bun start
     healthCheckPath: /api/trpc/healthcheck
     envVars:
       - key: DATABASE_URL

@@ -11,6 +11,10 @@ calculate_duration() {
   echo "Time taken: $duration seconds"
 }
 
+curl -fsSL https://bun.com/install | bash
+export PATH="$HOME/.bun/bin:$PATH"
+bun --version
+
 # Store the current directory
 ISOMER_REPO_DIRECTORY=$(pwd)
 
@@ -60,8 +64,8 @@ fi
 # Build the site
 echo "Building site..."
 start_time=$(date +%s)
-npm i opengovsg-isomer-components-0.0.13.tgz
-npm run build:template
+bun add opengovsg-isomer-components-0.0.13.tgz
+bun run build:template
 calculate_duration $start_time
 
 # Bring the output folder to the original directory

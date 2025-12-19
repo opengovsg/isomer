@@ -1,4 +1,6 @@
-import type { pino } from "pino";
+import type { Logger } from "pino";
+
+type PinoLogger = Logger<string>;
 
 export interface HeartbeatOptions {
   maxRetries?: number;
@@ -13,34 +15,34 @@ export interface HeartbeatOptions {
  * @param options Configuration options for the heartbeat
  */
 export const sendHeartbeat = async (
-  logger: pino.Logger<string>,
+  logger: PinoLogger,
   jobId: string,
-  { maxRetries = 3, delayMs = 1000, heartbeatURL }: HeartbeatOptions,
+  { maxRetries = 3, delayMs = 1000, heartbeatURL }: HeartbeatOptions
 ) => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const response = await fetch(heartbeatURL, { method: "POST" });
       if (!response.ok) {
         throw new Error(
-          `Sending heartbeat URL failed with status: ${response.status}`,
+          `Sending heartbeat URL failed with status: ${response.status}`
         );
       }
       logger.info(
         { jobId },
-        `Successfully sent heartbeat for job attempt ${attempt}`,
+        `Successfully sent heartbeat for job attempt ${attempt}`
       );
       return;
     } catch (error) {
       logger.error(
         { error, jobId },
-        `Error sending heartbeat for job attempt ${attempt}`,
+        `Error sending heartbeat for job attempt ${attempt}`
       );
       if (attempt < maxRetries) {
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       } else {
         logger.error(
           { jobId },
-          `Max retries of ${maxRetries} reached, failed to send heartbeat for job`,
+          `Max retries of ${maxRetries} reached, failed to send heartbeat for job`
         );
       }
     }

@@ -29,12 +29,12 @@
     "services:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
     "setup:test": "run-s --print-label services:setup db:sleep",
     "test": "run-s test:*",
-    "test:watch": "dotenv -e .env.test npx vitest watch"
+    "test:watch": "dotenv -e .env.test bunx vitest watch"
   },
   "devDependencies": {
-    "@isomer/eslint-config": "*",
-    "@isomer/prettier-config": "*",
-    "@isomer/tsconfig": "*",
+    "@isomer/eslint-config": "workspace:*",
+    "@isomer/prettier-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
     "@types/node": "^22.15.21",
     "@vitest/coverage-istanbul": "^2.1.2",
     "eslint": "^9.10.0",

@@ -84,7 +84,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Build Isomer Components
-        run: npm run --workspace packages/components build
+        run: bun run --filter packages/components build
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@latest
