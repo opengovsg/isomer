@@ -14,6 +14,7 @@ calculate_duration() {
 curl -fsSL https://bun.com/install | bash
 export PATH="$HOME/.bun/bin:$PATH"
 bun --version
+calculate_duration $start_time
 
 # Use the latest release tag unless one was provided in the env var
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
