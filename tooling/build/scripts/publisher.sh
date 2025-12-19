@@ -11,6 +11,9 @@ calculate_duration() {
   echo "Time taken: $duration seconds"
 }
 
+# Install bun
+echo "Installing bun..."
+start_time=$(date +%s)
 curl -fsSL https://bun.com/install | bash
 export PATH="$HOME/.bun/bin:$PATH"
 bun --version
