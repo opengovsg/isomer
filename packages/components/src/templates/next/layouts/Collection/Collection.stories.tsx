@@ -285,7 +285,7 @@ export const AllResultsSameCategory: Story = {
   args: generateArgs({
     collectionItems: COLLECTION_ITEMS.map((item) => ({
       ...item,
-      category: "The only categ0ry",
+      category: "The only category",
     })),
   }),
   play: async ({ canvasElement }) => {
@@ -293,7 +293,7 @@ export const AllResultsSameCategory: Story = {
     const categoryFilter = screen.queryByText(/Category/i)
     await expect(categoryFilter).toBeInTheDocument()
 
-    const categoryItems = await screen.findAllByText(/The only categ0ry \(30\)/)
+    const categoryItems = await screen.findAllByText(/The only category \(30\)/)
     await expect(categoryItems.length).toBe(1)
   },
 }
