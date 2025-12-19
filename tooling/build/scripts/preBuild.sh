@@ -11,7 +11,8 @@ calculate_duration() {
   echo "Time taken: $duration seconds"
 }
 
-curl -fsSL https://bun.com/install | bash
+# Install bun (pinned to match packageManager in package.json)
+curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
 export PATH="$HOME/.bun/bin:$PATH"
 bun --version
 

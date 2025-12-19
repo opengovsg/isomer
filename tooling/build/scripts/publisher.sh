@@ -11,10 +11,10 @@ calculate_duration() {
   echo "Time taken: $duration seconds"
 }
 
-# Install bun
+# Install bun (pinned to match packageManager in package.json)
 echo "Installing bun..."
 start_time=$(date +%s)
-curl -fsSL https://bun.com/install | bash
+curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
 export PATH="$HOME/.bun/bin:$PATH"
 bun --version
 calculate_duration $start_time

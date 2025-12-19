@@ -1,8 +1,8 @@
 FROM mcr.microsoft.com/devcontainers/javascript-node:1-22
 
-# Install Bun for the node user
+# Install Bun for the node user (pinned to match packageManager in package.json)
 USER node
-RUN curl -fsSL https://bun.sh/install | bash
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
 ENV BUN_INSTALL="/home/node/.bun"
 ENV PATH="$BUN_INSTALL/bin:$PATH"
 USER root

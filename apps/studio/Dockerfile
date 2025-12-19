@@ -38,8 +38,8 @@ FROM base AS builder
 RUN apk update
 RUN apk add --no-cache libc6-compat bash curl unzip
 
-# Install bun
-RUN curl -fsSL https://bun.sh/install | bash
+# Install bun (pinned to match packageManager in package.json)
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
 ENV PATH="/root/.bun/bin:${PATH}"
 
 # Set working directory
@@ -58,8 +58,8 @@ FROM base AS installer
 RUN apk update
 RUN apk add --no-cache libc6-compat bash curl unzip
 
-# Install bun
-RUN curl -fsSL https://bun.sh/install | bash
+# Install bun (pinned to match packageManager in package.json)
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
 ENV PATH="/root/.bun/bin:${PATH}"
 
 WORKDIR /app
