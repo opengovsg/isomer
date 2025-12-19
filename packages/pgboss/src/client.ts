@@ -34,12 +34,12 @@ export const registerPgbossJob = async (
   cronExpression: string,
   handler: (job: Job) => Promise<void>,
   scheduleOptions: ScheduleOptions = { tz: "Asia/Singapore" },
-  heartbeatOptions?: HeartbeatOptions
+  heartbeatOptions?: HeartbeatOptions,
 ) => {
   const boss = await getPgbossClient(logger);
   if (globalForPgboss.registeredPgbossJobs.has(jobName)) {
     logger.warn(
-      `Pgboss job ${jobName} is already registered. Skipping registration.`
+      `Pgboss job ${jobName} is already registered. Skipping registration.`,
     );
     return { stop: () => boss.offWork(jobName) };
   }
@@ -66,7 +66,7 @@ export const registerPgbossJob = async (
   await boss.schedule(jobName, cronExpression, undefined, scheduleOptions);
   globalForPgboss.registeredPgbossJobs.add(jobName);
   logger.info(
-    `Registered PgBoss job: ${jobName} with schedule ${cronExpression}`
+    `Registered PgBoss job: ${jobName} with schedule ${cronExpression}`,
   );
   return { stop: () => boss.offWork(jobName) };
 };

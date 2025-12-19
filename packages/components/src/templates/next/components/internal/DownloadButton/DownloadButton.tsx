@@ -32,8 +32,7 @@ const downloadFile = (url: string) => {
 }
 
 interface DownloadButtonProps
-  extends AriaButtonProps<"button">,
-    VariantProps<typeof buttonStyles> {
+  extends AriaButtonProps<"button">, VariantProps<typeof buttonStyles> {
   url: string // URL to download the file from
   className?: string
 }

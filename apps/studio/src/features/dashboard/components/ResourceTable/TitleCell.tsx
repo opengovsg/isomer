@@ -10,11 +10,10 @@ import type { ResourceTableData } from "./types"
 import { getLinkToResource } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 
-interface TitleCellProps
-  extends Pick<
-    ResourceTableData,
-    "title" | "permalink" | "type" | "id" | "scheduledAt"
-  > {
+interface TitleCellProps extends Pick<
+  ResourceTableData,
+  "title" | "permalink" | "type" | "id" | "scheduledAt"
+> {
   siteId: number
 }
 

@@ -4,8 +4,10 @@ import { Modal, ModalContent, ModalOverlay } from "@chakra-ui/react"
 import { CreatePageWizardProvider } from "./CreatePageWizardContext"
 import { CreatePageModalScreen } from "./ModalScreen"
 
-interface CreatePageModalProps
-  extends Pick<UseDisclosureReturn, "isOpen" | "onClose"> {
+interface CreatePageModalProps extends Pick<
+  UseDisclosureReturn,
+  "isOpen" | "onClose"
+> {
   siteId: number
   folderId?: number
 }

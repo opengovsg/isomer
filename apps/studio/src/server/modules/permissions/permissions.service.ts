@@ -84,8 +84,7 @@ export const definePermissionsForSite = async ({
 // We do bulk validation to reduce the number of DB queries: currently at max. 1-2 queries
 // TODO: this is using site wide permissions for now
 // we should fetch the oldest `parent` of this resource eventually
-interface BulkValidateUserPermissionsForResourcesProps
-  extends BulkPermissionsProps {
+interface BulkValidateUserPermissionsForResourcesProps extends BulkPermissionsProps {
   action: CrudResourceActions | "publish"
 }
 export const bulkValidateUserPermissionsForResources = async ({

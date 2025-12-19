@@ -37,8 +37,10 @@ const createSearchableTableStyles = tv({
 
 const compoundStyles = createSearchableTableStyles()
 
-interface SearchableTableClientUIProps
-  extends Omit<SearchableTableClientProps, "items"> {
+interface SearchableTableClientUIProps extends Omit<
+  SearchableTableClientProps,
+  "items"
+> {
   search: {
     input: string
     deferred: string
