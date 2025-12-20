@@ -23,8 +23,7 @@ const createAccordionStyles = tv({
 const accordionStyles = createAccordionStyles()
 
 interface AccordionProps
-  extends BaseAccordionProps,
-    VariantProps<typeof createAccordionStyles> {}
+  extends BaseAccordionProps, VariantProps<typeof createAccordionStyles> {}
 
 export const Accordion = ({
   summary,

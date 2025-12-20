@@ -95,7 +95,7 @@ updates:
         update-types: ["version-update:semver-major"]
       # Ignore major version updates for Prisma 6 due to installation issues
       ### Could not resolve @prisma/client despite the installation that we just tried.
-      ### Please try to install it by hand with npm i @prisma/client and rerun npx "prisma generate" 🙏.
+      ### Please try to install it by hand with bun add @prisma/client and rerun bunx "prisma generate" 🙏.
       - dependency-name: "prisma"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@prisma/client"

@@ -20,7 +20,7 @@ To perform the update, this is the overall sequence we will undertake:
 
 ### Running the scripts
 
-Use `source .env && npx tsx prisma/scripts/moh-tosp/<script-name>` within `isomer/apps/studio` directory to run any of the scripts.
+Use `source .env && bunx tsx prisma/scripts/moh-tosp/<script-name>` within `isomer/apps/studio` directory to run any of the scripts.
 
 ## Scripts
 

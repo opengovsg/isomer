@@ -8,6 +8,7 @@
     },
     "plugins": [{ "name": "next" }],
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
+    "types": [],
     "module": "esnext"
   },
   "exclude": ["node_modules", ".next", "out"],
