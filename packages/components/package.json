@@ -91,6 +91,26 @@
     "./templates/next": {
       "import": "./dist/esm/templates/next/index.js",
       "require": "./dist/cjs/templates/next/index.js"
+    },
+    "./templates/next/layouts/*": {
+      "import": "./dist/esm/templates/next/layouts/*/index.js",
+      "require": "./dist/cjs/templates/next/layouts/*/index.js"
+    },
+    "./templates/next/components/complex/*": {
+      "import": "./dist/esm/templates/next/components/complex/*/index.js",
+      "require": "./dist/cjs/templates/next/components/complex/*/index.js"
+    },
+    "./templates/next/components/native/*": {
+      "import": "./dist/esm/templates/next/components/native/*/index.js",
+      "require": "./dist/cjs/templates/next/components/native/*/index.js"
+    },
+    "./templates/next/render/*": {
+      "import": "./dist/esm/templates/next/render/*.js",
+      "require": "./dist/cjs/templates/next/render/*.js"
+    },
+    "./engine/*": {
+      "import": "./dist/esm/engine/*.js",
+      "require": "./dist/cjs/engine/*.js"
     }
   },
   "files": [
