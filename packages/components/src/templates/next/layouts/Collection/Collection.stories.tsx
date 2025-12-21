@@ -290,7 +290,7 @@ export const AllResultsSameCategory: Story = {
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const categoryFilter = screen.queryByText(/Category/i)
+    const categoryFilter = screen.queryByText(/Category/)
     await expect(categoryFilter).toBeInTheDocument()
 
     const categoryItems = await screen.findAllByText(/The only category \(30\)/)
