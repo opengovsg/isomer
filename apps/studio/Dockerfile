@@ -41,12 +41,11 @@ RUN apk add --no-cache libc6-compat
 # Set working directory
 WORKDIR /app
 # Replace <your-major-version> with the major version installed in your repository. For example:
-# RUN npm i -g turbo@^2
 RUN npm install -g turbo@^2
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
-# Assuming "web" is the name entered in the project's package.json: { name: "web" }
+# Assuming "isomer-studio" is the name entered in the project's package.json: { name: "isomer-studio" }
 RUN turbo prune isomer-studio --docker
 
 # Add lockfile and package.json's of isolated subworkspace
