@@ -114,7 +114,7 @@ export const TagsWithImage: Story = {
       {
         category: "long",
         selected: [
-          "This is a very long tag that shuold be reflowed on smaller screens maybe",
+          "This is a very long tag that should be reflowed on smaller screens maybe",
         ],
       },
     ],
