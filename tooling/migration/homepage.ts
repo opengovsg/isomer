@@ -447,20 +447,29 @@ const convertResources = (
   const reviewItems: string[] = [];
   reviewItems.push("Collection reference link requires manual lookup");
 
+  const component: any = {
+    type: "collectionblock",
+    buttonLabel:
+      enhanceButtonLabel(resourcesSection.button, resourcesSection.subtitle) ||
+      "Explore more",
+    displayCategory: true,
+    displayThumbnail: true,
+    collectionReferenceLink: "[resource:0:0]", // Requires manual lookup - placeholder needs to be replaced with actual resource ID
+    ...(resourcesSection.title && {
+      customTitle: stripHtml(resourcesSection.title) || resourcesSection.title,
+    }),
+  };
+
+  // Only include customDescription if it has a value
+  if (resourcesSection.subtitle) {
+    const cleanedDescription = stripHtml(resourcesSection.subtitle);
+    if (cleanedDescription && cleanedDescription.trim() !== "") {
+      component.customDescription = cleanedDescription;
+    }
+  }
+
   return {
-    component: {
-      type: "collectionblock",
-      buttonLabel:
-        enhanceButtonLabel(
-          resourcesSection.button,
-          resourcesSection.subtitle
-        ) || "Explore more",
-      customDescription: resourcesSection.subtitle || "",
-      displayCategory: true,
-      displayThumbnail: true,
-      collectionReferenceLink: "[resource:ID:ID]", // Requires manual lookup
-      ...(resourcesSection.title && { customTitle: resourcesSection.title }),
-    },
+    component,
     reviewItems,
   };
 };
