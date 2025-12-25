@@ -100,6 +100,45 @@ const enhanceDescription = (original: string | undefined): string => {
 };
 
 /**
+ * Strip HTML tags from text and convert common HTML entities to plain text.
+ * This ensures text fields contain only plain text as required by the schema.
+ */
+const stripHtml = (text: string | undefined): string | undefined => {
+  if (!text) {
+    return text;
+  }
+
+  // Replace <br> and <br/> with newlines, then spaces
+  let cleaned = text.replace(/<br\s*\/?>/gi, " ");
+
+  // Replace <a href="...">text</a> with "text (url)"
+  cleaned = cleaned.replace(
+    /<a\s+href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi,
+    (match, url, linkText) => {
+      const trimmedText = linkText.trim();
+      return trimmedText ? `${trimmedText} (${url})` : url;
+    }
+  );
+
+  // Remove all remaining HTML tags
+  cleaned = cleaned.replace(/<[^>]+>/g, "");
+
+  // Decode common HTML entities
+  cleaned = cleaned
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
+  // Clean up multiple spaces and trim
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+
+  return cleaned || undefined;
+};
+
+/**
  * Normalize URL to ensure it matches Isomer Next schema requirements.
  * Internal links must start with '/' to match LINK_HREF_PATTERN.
  * External URLs (https://, tel:, mailto:, etc.) are left as-is.
@@ -108,17 +147,17 @@ const normalizeUrl = (url: string | undefined): string | undefined => {
   if (!url) {
     return url;
   }
-  
+
   // External URLs, phone, email, resource references are already valid
   if (/^(https?:\/\/|tel:|sms:|mailto:|\[resource:)/.test(url)) {
     return url;
   }
-  
+
   // Internal links must start with '/'
-  if (!url.startsWith('/')) {
-    return '/' + url;
+  if (!url.startsWith("/")) {
+    return "/" + url;
   }
-  
+
   return url;
 };
 
@@ -129,24 +168,21 @@ interface HeroSection {
   button?: string;
   url?: string;
   dropdown?: any;
-  key_highlights?: Array<{
+  key_highlights?: {
     title: string;
     description: string;
     url: string;
-  }>;
+  }[];
   variant?: string;
   size?: string;
   alignment?: string;
 }
 
-const convertHero = (
-  heroSection: HeroSection,
-  firstInfobar?: any
-): any => {
+const convertHero = (heroSection: HeroSection, firstInfobar?: any): any => {
   const reviewItems: string[] = [];
   const hero: any = {
     type: "hero",
-    title: heroSection.title || "Home",
+    title: stripHtml(heroSection.title) || heroSection.title || "Home",
     variant: "gradient", // default
   };
 
@@ -174,10 +210,10 @@ const convertHero = (
   }
 
   // Add subtitle from first infobar if available
-  if (firstInfobar && firstInfobar.description) {
-    hero.subtitle = firstInfobar.description.substring(0, 300);
+  if (firstInfobar?.description) {
+    hero.subtitle = stripHtml(firstInfobar.description)?.substring(0, 300);
   } else if (heroSection.subtitle) {
-    hero.subtitle = heroSection.subtitle.substring(0, 300);
+    hero.subtitle = stripHtml(heroSection.subtitle)?.substring(0, 300);
   }
 
   // Flag dropdown removal
@@ -189,14 +225,18 @@ const convertHero = (
 };
 
 const convertKeyHighlights = (
-  keyHighlights: Array<{
+  keyHighlights: {
     title: string;
     description: string;
     url: string;
-  }>,
+  }[],
   siteTitle?: string
 ): any => {
-  if (!keyHighlights || !Array.isArray(keyHighlights) || keyHighlights.length === 0) {
+  if (
+    !keyHighlights ||
+    !Array.isArray(keyHighlights) ||
+    keyHighlights.length === 0
+  ) {
     return null;
   }
 
@@ -207,7 +247,9 @@ const convertKeyHighlights = (
     infoBoxes: keyHighlights.map((highlight) => ({
       icon: mapIcon(highlight.title),
       title: highlight.title,
-      description: enhanceDescription(highlight.description) || highlight.description,
+      description: stripHtml(
+        enhanceDescription(highlight.description) || highlight.description
+      ),
       buttonUrl: normalizeUrl(highlight.url),
       buttonLabel: enhanceButtonLabel(
         undefined,
@@ -236,12 +278,15 @@ const convertInfopic = async (
   const reviewItems: string[] = [];
   const infopic: any = {
     type: "infopic",
-    title: infopicSection.title,
+    title: stripHtml(infopicSection.title) || infopicSection.title,
     variant: "block",
   };
 
   if (infopicSection.description) {
-    infopic.description = enhanceDescription(infopicSection.description) || infopicSection.description;
+    infopic.description = stripHtml(
+      enhanceDescription(infopicSection.description) ||
+        infopicSection.description
+    );
   }
 
   if (infopicSection.url) {
@@ -255,7 +300,7 @@ const convertInfopic = async (
 
   if (infopicSection.image) {
     infopic.imageSrc = infopicSection.image;
-    
+
     // Generate alt text if missing or enhance existing
     if (infopicSection.alt) {
       infopic.imageAlt = infopicSection.alt.substring(0, 120);
@@ -294,7 +339,7 @@ const convertInfobars = (
   infobarSections: InfobarSection[]
 ): { components: any[]; reviewItems: string[] } => {
   const reviewItems: string[] = [];
-  
+
   if (!infobarSections || infobarSections.length === 0) {
     return { components: [], reviewItems: [] };
   }
@@ -303,32 +348,48 @@ const convertInfobars = (
   if (infobarSections.length >= 2) {
     infobarSections.forEach((infobar) => {
       if (infobar.subtitle) {
-        reviewItems.push("Infobar subtitle was removed - requires manual review");
+        reviewItems.push(
+          "Infobar subtitle was removed - requires manual review"
+        );
       }
     });
 
     const cards = infobarSections
-      .map((infobar) => ({
-        title: infobar.title,
-        description:
-          enhanceDescription(infobar.description) || infobar.description || "",
-        url: normalizeUrl(infobar.url),
-      }))
+      .map((infobar) => {
+        const card: any = {
+          title: stripHtml(infobar.title) || infobar.title,
+          description:
+            stripHtml(
+              enhanceDescription(infobar.description) ||
+                infobar.description ||
+                ""
+            ) || "",
+        };
+        // Only include url if it's not empty after normalization
+        const normalizedUrl = normalizeUrl(infobar.url);
+        if (normalizedUrl && normalizedUrl.trim() !== "") {
+          card.url = normalizedUrl;
+        }
+        return card;
+      })
       .filter((card) => card.title); // Ensure valid cards
 
     // Schema requires at least 1 card (minItems: 1)
     // If no valid cards, add a placeholder card
-    const finalCards = cards.length === 0
-      ? [
-          {
-            title: "Placeholder",
-            description: "",
-          },
-        ]
-      : cards;
+    const finalCards =
+      cards.length === 0
+        ? [
+            {
+              title: "Placeholder",
+              description: "",
+            },
+          ]
+        : cards;
 
     if (cards.length === 0) {
-      reviewItems.push("Infobars section had no valid cards - placeholder card added");
+      reviewItems.push(
+        "Infobars section had no valid cards - placeholder card added"
+      );
     }
 
     return {
@@ -354,7 +415,7 @@ const convertInfobars = (
 
   const component: any = {
     type: "infobar",
-    title: infobar.title,
+    title: stripHtml(infobar.title) || infobar.title,
     buttonLabel: enhanceButtonLabel(
       infobar.button,
       infobar.description,
@@ -364,7 +425,7 @@ const convertInfobars = (
   };
 
   if (infobar.description) {
-    component.description = infobar.description;
+    component.description = stripHtml(infobar.description);
   }
 
   if (infobar.id) {
@@ -389,10 +450,11 @@ const convertResources = (
   return {
     component: {
       type: "collectionblock",
-      buttonLabel: enhanceButtonLabel(
-        resourcesSection.button,
-        resourcesSection.subtitle
-      ) || "Explore more",
+      buttonLabel:
+        enhanceButtonLabel(
+          resourcesSection.button,
+          resourcesSection.subtitle
+        ) || "Explore more",
       customDescription: resourcesSection.subtitle || "",
       displayCategory: true,
       displayThumbnail: true,
@@ -407,14 +469,14 @@ interface TextcardsSection {
   title?: string;
   subtitle?: string;
   description?: string;
-  cards?: Array<{
+  cards?: {
     title: string;
     description?: string;
     linktext?: string;
     url: string;
     image?: string;
     alt?: string;
-  }>;
+  }[];
 }
 
 const convertTextcards = (
@@ -440,10 +502,15 @@ const convertTextcards = (
         }
 
         const cardObj: any = {
-          title: card.title,
-          description: card.description?.substring(0, 150) || "",
-          url: normalizeUrl(card.url),
+          title: stripHtml(card.title) || card.title,
+          description: stripHtml(card.description)?.substring(0, 150) || "",
         };
+
+        // Only include url if it's not empty after normalization
+        const normalizedUrl = normalizeUrl(card.url);
+        if (normalizedUrl && normalizedUrl.trim() !== "") {
+          cardObj.url = normalizedUrl;
+        }
 
         if (card.image) {
           cardObj.imageUrl = card.image;
@@ -457,13 +524,15 @@ const convertTextcards = (
   };
 
   if (textcardsSection.description) {
-    component.subtitle = textcardsSection.description;
+    component.subtitle = stripHtml(textcardsSection.description);
   }
 
   // Schema requires at least 1 card (minItems: 1)
   // If no valid cards, add a placeholder card
   if (component.cards.length === 0) {
-    reviewItems.push("Textcards section had no valid cards - placeholder card added");
+    reviewItems.push(
+      "Textcards section had no valid cards - placeholder card added"
+    );
     component.cards = [
       {
         title: "Placeholder",
@@ -478,13 +547,13 @@ const convertTextcards = (
 interface AnnouncementsSection {
   title?: string;
   subtitle?: string;
-  announcements?: Array<{
+  announcements?: {
     title: string;
     date?: string;
     announcement: string;
     linktext?: string;
     url: string;
-  }>;
+  }[];
 }
 
 const convertAnnouncements = (
@@ -496,9 +565,7 @@ const convertAnnouncements = (
     reviewItems.push("Subtitle used as Description");
   }
 
-  const hasDates = announcementsSection.announcements?.some(
-    (ann) => ann.date
-  );
+  const hasDates = announcementsSection.announcements?.some((ann) => ann.date);
   if (hasDates) {
     reviewItems.push("Announcement date was removed - requires manual review");
   }
@@ -511,34 +578,47 @@ const convertAnnouncements = (
   }
 
   const cards = (announcementsSection.announcements || [])
-    .map((ann) => ({
-      title: ann.title,
-      description: ann.announcement,
-      url: normalizeUrl(ann.url),
-    }))
+    .map((ann) => {
+      const card: any = {
+        title: stripHtml(ann.title) || ann.title,
+        description: stripHtml(ann.announcement) || ann.announcement,
+      };
+      // Only include url if it's not empty after normalization
+      const normalizedUrl = normalizeUrl(ann.url);
+      if (normalizedUrl && normalizedUrl.trim() !== "") {
+        card.url = normalizedUrl;
+      }
+      return card;
+    })
     .filter((card) => card.title); // Ensure valid cards
 
   // Schema requires at least 1 card (minItems: 1)
   // If no valid cards, add a placeholder card
-  const finalCards = cards.length === 0
-    ? [
-        {
-          title: "Placeholder",
-          description: "",
-        },
-      ]
-    : cards;
+  const finalCards =
+    cards.length === 0
+      ? [
+          {
+            title: "Placeholder",
+            description: "",
+          },
+        ]
+      : cards;
 
   if (cards.length === 0) {
-    reviewItems.push("Announcements section had no valid cards - placeholder card added");
+    reviewItems.push(
+      "Announcements section had no valid cards - placeholder card added"
+    );
   }
 
   return {
     component: {
       type: "infocards",
-      title: announcementsSection.title || "Announcements",
+      title:
+        stripHtml(announcementsSection.title) ||
+        announcementsSection.title ||
+        "Announcements",
       ...(announcementsSection.subtitle && {
-        subtitle: announcementsSection.subtitle,
+        subtitle: stripHtml(announcementsSection.subtitle),
       }),
       variant: "cardsWithoutImages",
       maxColumns: "3",
@@ -553,10 +633,10 @@ interface InfocolumnsSection {
   subtitle?: string;
   linktext?: string;
   url?: string;
-  columns?: Array<{
+  columns?: {
     title: string;
     description?: string;
-  }>;
+  }[];
 }
 
 const convertInfocolumns = (
@@ -565,7 +645,9 @@ const convertInfocolumns = (
   const reviewItems: string[] = [];
 
   if (infocolumnsSection.subtitle) {
-    reviewItems.push("Infocolumns subtitle was removed - requires manual review");
+    reviewItems.push(
+      "Infocolumns subtitle was removed - requires manual review"
+    );
   }
   if (infocolumnsSection.linktext || infocolumnsSection.url) {
     reviewItems.push("Infocolumns link was removed - requires manual review");
@@ -574,10 +656,13 @@ const convertInfocolumns = (
   return {
     component: {
       type: "infocols",
-      title: infocolumnsSection.title || "Information",
+      title:
+        stripHtml(infocolumnsSection.title) ||
+        infocolumnsSection.title ||
+        "Information",
       infoBoxes: (infocolumnsSection.columns || []).map((col) => ({
-        title: col.title,
-        description: col.description || "",
+        title: stripHtml(col.title) || col.title,
+        description: stripHtml(col.description) || col.description || "",
         icon: mapIcon(col.title),
       })),
     },
@@ -591,14 +676,14 @@ export const migrateHomepage = async ({
   domain,
 }: HomepageMigrationParams): Promise<GetIsomerSchemaFromJekyllResponse> => {
   const reviewItems: string[] = [];
-  
+
   // Parse frontmatter
   let frontmatter: any = {};
   try {
     frontmatter = fm(content).attributes as any;
   } catch (e) {
     // Handle case where frontmatter has duplicate keys
-    const frontmatterMatch = content.match(/---([\s\S]*?)---/);
+    const frontmatterMatch = /---([\s\S]*?)---/.exec(content);
     if (frontmatterMatch) {
       const frontmatterContent = frontmatterMatch[1]!;
       frontmatterContent.split("\n").forEach((line) => {
@@ -625,28 +710,38 @@ export const migrateHomepage = async ({
 
   // Handle notification banner
   if (frontmatter.notification) {
-    reviewItems.push("Notification banner requires manual configuration in Next");
+    reviewItems.push(
+      "Notification banner requires manual configuration in Next"
+    );
   }
 
   const sections = frontmatter.sections || [];
   const contentArray: any[] = [];
 
   // Extract sections by type
-  const heroSection = sections.find((s: any) => s.hero)?.hero as HeroSection | undefined;
+  const heroSection = sections.find((s: any) => s.hero)?.hero as
+    | HeroSection
+    | undefined;
   const infopicSections = sections
     .filter((s: any) => s.infopic)
     .map((s: any) => s.infopic) as InfopicSection[];
   const infobarSections = sections
     .filter((s: any) => s.infobar)
     .map((s: any) => s.infobar) as InfobarSection[];
-  const resourcesSection = sections.find((s: any) => s.resources)
-    ?.resources as ResourcesSection | undefined;
-  const textcardsSection = sections.find((s: any) => s.textcards)
-    ?.textcards as TextcardsSection | undefined;
+  const resourcesSection = sections.find((s: any) => s.resources)?.resources as
+    | ResourcesSection
+    | undefined;
+  const textcardsSection = sections.find((s: any) => s.textcards)?.textcards as
+    | TextcardsSection
+    | undefined;
   const announcementsSection = sections.find((s: any) => s.announcements)
     ?.announcements as AnnouncementsSection | undefined;
-  const infocolumnsSection = sections.find((s: any) => s.infocolumns || s["info-columns"])
-    ?.infocolumns || sections.find((s: any) => s["info-columns"])?.["info-columns"] as InfocolumnsSection | undefined;
+  const infocolumnsSection =
+    sections.find((s: any) => s.infocolumns || s["info-columns"])
+      ?.infocolumns ||
+    (sections.find((s: any) => s["info-columns"])?.["info-columns"] as
+      | InfocolumnsSection
+      | undefined);
 
   // Convert Hero + InfoCols
   if (heroSection) {
@@ -672,8 +767,11 @@ export const migrateHomepage = async ({
 
   // Convert Infopics
   for (const infopicSection of infopicSections) {
-    const { infopic, reviewItems: infopicReviewItems } =
-      await convertInfopic(infopicSection, site, domain);
+    const { infopic, reviewItems: infopicReviewItems } = await convertInfopic(
+      infopicSection,
+      site,
+      domain
+    );
     reviewItems.push(...infopicReviewItems);
     contentArray.push(infopic);
   }
