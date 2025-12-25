@@ -99,6 +99,29 @@ const enhanceDescription = (original: string | undefined): string => {
   return enhanced[original] || original;
 };
 
+/**
+ * Normalize URL to ensure it matches Isomer Next schema requirements.
+ * Internal links must start with '/' to match LINK_HREF_PATTERN.
+ * External URLs (https://, tel:, mailto:, etc.) are left as-is.
+ */
+const normalizeUrl = (url: string | undefined): string | undefined => {
+  if (!url) {
+    return url;
+  }
+  
+  // External URLs, phone, email, resource references are already valid
+  if (/^(https?:\/\/|tel:|sms:|mailto:|\[resource:)/.test(url)) {
+    return url;
+  }
+  
+  // Internal links must start with '/'
+  if (!url.startsWith('/')) {
+    return '/' + url;
+  }
+  
+  return url;
+};
+
 interface HeroSection {
   title?: string;
   subtitle?: string;
@@ -143,7 +166,7 @@ const convertHero = (
   }
 
   if (heroSection.url) {
-    hero.buttonUrl = heroSection.url;
+    hero.buttonUrl = normalizeUrl(heroSection.url);
     hero.buttonLabel = enhanceButtonLabel(
       heroSection.button,
       heroSection.subtitle
@@ -185,7 +208,7 @@ const convertKeyHighlights = (
       icon: mapIcon(highlight.title),
       title: highlight.title,
       description: enhanceDescription(highlight.description) || highlight.description,
-      buttonUrl: highlight.url,
+      buttonUrl: normalizeUrl(highlight.url),
       buttonLabel: enhanceButtonLabel(
         undefined,
         highlight.description,
@@ -222,7 +245,7 @@ const convertInfopic = async (
   }
 
   if (infopicSection.url) {
-    infopic.buttonUrl = infopicSection.url;
+    infopic.buttonUrl = normalizeUrl(infopicSection.url);
     infopic.buttonLabel = enhanceButtonLabel(
       infopicSection.button,
       infopicSection.description,
@@ -284,6 +307,30 @@ const convertInfobars = (
       }
     });
 
+    const cards = infobarSections
+      .map((infobar) => ({
+        title: infobar.title,
+        description:
+          enhanceDescription(infobar.description) || infobar.description || "",
+        url: normalizeUrl(infobar.url),
+      }))
+      .filter((card) => card.title); // Ensure valid cards
+
+    // Schema requires at least 1 card (minItems: 1)
+    // If no valid cards, add a placeholder card
+    const finalCards = cards.length === 0
+      ? [
+          {
+            title: "Placeholder",
+            description: "",
+          },
+        ]
+      : cards;
+
+    if (cards.length === 0) {
+      reviewItems.push("Infobars section had no valid cards - placeholder card added");
+    }
+
     return {
       components: [
         {
@@ -292,12 +339,7 @@ const convertInfobars = (
           subtitle: "Learn about our key initiatives",
           variant: "cardsWithoutImages",
           maxColumns: "3",
-          cards: infobarSections.map((infobar) => ({
-            title: infobar.title,
-            description:
-              enhanceDescription(infobar.description) || infobar.description || "",
-            url: infobar.url,
-          })),
+          cards: finalCards,
         },
       ],
       reviewItems,
@@ -318,7 +360,7 @@ const convertInfobars = (
       infobar.description,
       infobar.title
     ),
-    buttonUrl: infobar.url,
+    buttonUrl: normalizeUrl(infobar.url),
   };
 
   if (infobar.description) {
@@ -391,29 +433,43 @@ const convertTextcards = (
     title: textcardsSection.title || "Quick Links",
     variant: hasImages ? "cardsWithImages" : "cardsWithoutImages",
     maxColumns: "3",
-    cards: (textcardsSection.cards || []).map((card) => {
-      if (card.linktext) {
-        reviewItems.push("Link text was removed - requires manual review");
-      }
+    cards: (textcardsSection.cards || [])
+      .map((card) => {
+        if (card.linktext) {
+          reviewItems.push("Link text was removed - requires manual review");
+        }
 
-      const cardObj: any = {
-        title: card.title,
-        description: card.description?.substring(0, 150) || "",
-        url: card.url,
-      };
+        const cardObj: any = {
+          title: card.title,
+          description: card.description?.substring(0, 150) || "",
+          url: normalizeUrl(card.url),
+        };
 
-      if (card.image) {
-        cardObj.imageUrl = card.image;
-        cardObj.imageAlt = card.alt || `${card.title} image`;
-        cardObj.imageFit = "cover";
-      }
+        if (card.image) {
+          cardObj.imageUrl = card.image;
+          cardObj.imageAlt = card.alt || `${card.title} image`;
+          cardObj.imageFit = "cover";
+        }
 
-      return cardObj;
-    }),
+        return cardObj;
+      })
+      .filter((card) => card.title), // Ensure valid cards
   };
 
   if (textcardsSection.description) {
     component.subtitle = textcardsSection.description;
+  }
+
+  // Schema requires at least 1 card (minItems: 1)
+  // If no valid cards, add a placeholder card
+  if (component.cards.length === 0) {
+    reviewItems.push("Textcards section had no valid cards - placeholder card added");
+    component.cards = [
+      {
+        title: "Placeholder",
+        description: "",
+      },
+    ];
   }
 
   return { component, reviewItems };
@@ -454,6 +510,29 @@ const convertAnnouncements = (
     reviewItems.push("Link text was removed");
   }
 
+  const cards = (announcementsSection.announcements || [])
+    .map((ann) => ({
+      title: ann.title,
+      description: ann.announcement,
+      url: normalizeUrl(ann.url),
+    }))
+    .filter((card) => card.title); // Ensure valid cards
+
+  // Schema requires at least 1 card (minItems: 1)
+  // If no valid cards, add a placeholder card
+  const finalCards = cards.length === 0
+    ? [
+        {
+          title: "Placeholder",
+          description: "",
+        },
+      ]
+    : cards;
+
+  if (cards.length === 0) {
+    reviewItems.push("Announcements section had no valid cards - placeholder card added");
+  }
+
   return {
     component: {
       type: "infocards",
@@ -463,11 +542,7 @@ const convertAnnouncements = (
       }),
       variant: "cardsWithoutImages",
       maxColumns: "3",
-      cards: (announcementsSection.announcements || []).map((ann) => ({
-        title: ann.title,
-        description: ann.announcement,
-        url: ann.url,
-      })),
+      cards: finalCards,
     },
     reviewItems,
   };
@@ -648,20 +723,20 @@ export const migrateHomepage = async ({
     contentArray.push(component);
   }
 
+  // All components should be valid now (placeholders added instead of null)
+  const validContent = contentArray;
+
   // Build final JSON
+  // Note: page object must be empty {} per HomePagePageSchema
   const homepageSchema = {
     meta: {
-      image: frontmatter.image || undefined,
+      ...(frontmatter.image && { image: frontmatter.image }),
       noIndex: false,
-      description: frontmatter.description || undefined,
+      ...(frontmatter.description && { description: frontmatter.description }),
     },
-    page: {
-      title: "Home",
-      permalink: frontmatter.permalink || "/",
-      lastModified: moment().toISOString(),
-    },
+    page: {}, // HomePagePageSchema requires empty object
     layout: "homepage",
-    content: contentArray,
+    content: validContent,
     version: "0.1.0",
   };
 
