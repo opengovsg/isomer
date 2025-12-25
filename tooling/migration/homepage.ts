@@ -141,15 +141,21 @@ const stripHtml = (text: string | undefined): string | undefined => {
 /**
  * Normalize URL to ensure it matches Isomer Next schema requirements.
  * Internal links must start with '/' to match LINK_HREF_PATTERN.
- * External URLs (https://, tel:, mailto:, etc.) are left as-is.
+ * External URLs must use https:// (not http://).
+ * Other protocols (tel:, mailto:, etc.) are left as-is.
  */
 const normalizeUrl = (url: string | undefined): string | undefined => {
   if (!url) {
     return url;
   }
 
+  // Convert HTTP to HTTPS for external URLs
+  if (url.startsWith("http://")) {
+    return url.replace(/^http:\/\//, "https://");
+  }
+
   // External URLs, phone, email, resource references are already valid
-  if (/^(https?:\/\/|tel:|sms:|mailto:|\[resource:)/.test(url)) {
+  if (/^(https:\/\/|tel:|sms:|mailto:|\[resource:)/.test(url)) {
     return url;
   }
 
@@ -303,7 +309,17 @@ const convertInfopic = async (
 
     // Generate alt text if missing or enhance existing
     if (infopicSection.alt) {
-      infopic.imageAlt = infopicSection.alt.substring(0, 120);
+      const altText = stripHtml(infopicSection.alt);
+      // Check if alt text is generic/placeholder and use title instead
+      const genericAltPattern =
+        /^(image|picture|photo|logo|screenshot|graph|chart|diagram|icon|alt text|image alt text).*$/i;
+      if (altText && genericAltPattern.test(altText.trim())) {
+        infopic.imageAlt =
+          stripHtml(infopicSection.title) || infopicSection.title;
+      } else {
+        infopic.imageAlt =
+          altText?.substring(0, 120) || infopicSection.alt.substring(0, 120);
+      }
     } else {
       const fullSrc = infopicSection.image.startsWith("http")
         ? infopicSection.image
