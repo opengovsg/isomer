@@ -20,6 +20,7 @@ import { randomUUID } from "crypto";
 
 import * as dotenv from "dotenv";
 import { getIsomerSchemaFromJekyll } from "./page";
+import { migrateHomepage } from "./homepage";
 
 dotenv.config();
 
@@ -265,6 +266,56 @@ const migrate = async ({
     allPages.length + allResourceRoomPages.length
   );
 
+  // Migrate homepage first
+  console.log("Migrating homepage...");
+  const homepageContent = await getFileContents({
+    site,
+    path: "index.md",
+    octokit,
+  });
+
+  let homepageResult: ReportRow | null = null;
+  if (homepageContent && homepageContent.length >= 5) {
+    const homepageMigration = await migrateHomepage({
+      content: homepageContent,
+      site,
+      domain,
+    });
+
+    if (homepageMigration.status !== "not_converted") {
+      await saveContentsToFile({
+        site,
+        content: homepageMigration.content,
+        permalink: getLegalPermalink(homepageMigration.permalink || "/"),
+        shouldOverwrite: true,
+      });
+
+      homepageResult = {
+        status: homepageMigration.status,
+        title: homepageMigration.title,
+        permalink: homepageMigration.permalink || "/",
+        ...(homepageMigration.status === "manual_review" && {
+          reviewItems: homepageMigration.reviewItems,
+        }),
+      };
+      console.log("Homepage migrated successfully");
+    } else {
+      homepageResult = {
+        status: "not_converted",
+        title: "Home page",
+        permalink: "/",
+      };
+      console.log("Homepage could not be converted");
+    }
+  } else {
+    console.log("Homepage (index.md) not found or empty");
+    homepageResult = {
+      status: "not_converted",
+      title: "Home page",
+      permalink: "/",
+    };
+  }
+
   // Migrate all non-resource room pages
   const finishedPages: ReportRow[] = [];
   const finishedResourceRoomPages: ReportRow[] = [];
@@ -357,11 +408,15 @@ const migrate = async ({
   const csvRows = [
     ...finishedPages,
     ...finishedResourceRoomPages,
-    {
-      status: "not_converted",
-      permalink: "/",
-      title: "Home page",
-    } satisfies ReportRow,
+    ...(homepageResult
+      ? [homepageResult]
+      : [
+          {
+            status: "not_converted",
+            permalink: "/",
+            title: "Home page",
+          } satisfies ReportRow,
+        ]),
   ]
     .filter((pages) => pages?.permalink !== undefined)
     .map(

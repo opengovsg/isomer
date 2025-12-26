@@ -14,7 +14,7 @@
     "@ai-sdk/openai-compatible": "^1.0.27",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
-    "@octokit/rest": "^21.1.1",
+    "@octokit/rest": "^22.0.0",
     "@opengovsg/isomer-components": "*",
     "@tiptap/core": "^2.22.3",
     "@tiptap/extension-blockquote": "^2.22.3",
@@ -50,7 +50,7 @@
     "jsdom": "^26.0.0",
     "markdown-it": "^14.1.0",
     "moment": "^2.30.1",
-    "tsx": "^4.16.0"
+    "tsx": "^4.20.4"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7"

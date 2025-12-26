@@ -11,7 +11,7 @@
     "@isomer/tsconfig": "*",
     "@types/node": "^22.15.21",
     "@types/pg": "^8.15.4",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "tsx": "^4.20.4",
     "typescript": "^5.9.2"
   },
