@@ -1,5 +1,5 @@
-import { type NotFoundPageSchemaType } from "~/types"
-import { getTailwindVariantLayout } from "~/utils"
+import type { NotFoundPageSchemaType } from "~/types"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 import { createInfobarStyles } from "../../components/complex/Infobar"
 import { LinkButton } from "../../components/internal/LinkButton"
 import { Skeleton } from "../Skeleton"

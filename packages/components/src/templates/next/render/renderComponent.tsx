@@ -1,9 +1,4 @@
-import type {
-  IsomerComponent,
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
+import type { RenderComponentOutput, RenderComponentProps } from "./types"
 import { Accordion } from "../components/complex/Accordion"
 import { Blockquote } from "../components/complex/Blockquote"
 import { Callout } from "../components/complex/Callout"
@@ -28,21 +23,11 @@ import { Map } from "../components/complex/Map"
 import { Video } from "../components/complex/Video"
 import { Prose } from "../components/native/Prose"
 
-interface RenderComponentProps {
-  elementKey?: number
-  component: IsomerComponent
-  layout: IsomerPageLayoutType
-  site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
-  shouldLazyLoad?: boolean
-  permalink: string
-}
-
 export const renderComponent = ({
   elementKey,
   component,
   ...rest
-}: RenderComponentProps) => {
+}: RenderComponentProps): RenderComponentOutput => {
   switch (component.type) {
     case "logocloud":
       return <LogoCloud key={elementKey} {...component} {...rest} />

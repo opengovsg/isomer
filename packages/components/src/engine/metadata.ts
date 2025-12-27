@@ -1,6 +1,5 @@
-import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
+import type { IsomerPageSchemaType } from "~/types"
 import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
-import { getSitemapAsArray } from "~/utils"
 
 const getOpenGraphTitle = (props: IsomerPageSchemaType) => {
   // NOTE: We show the site name as the title for the homepage, as places like
@@ -132,43 +131,4 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
   }
 
   return metadata
-}
-
-export const shouldBlockIndexing = (
-  environment: IsomerPageSchemaType["site"]["environment"],
-): boolean => {
-  return environment !== "production"
-}
-
-export const getRobotsTxt = (props: IsomerPageSchemaType) => {
-  const rules = [
-    {
-      userAgent: "*",
-      allow: "/",
-      disallow: ["/search"],
-    },
-  ]
-
-  return {
-    sitemap: props.site.url ? `${props.site.url}/sitemap.xml` : undefined,
-    rules: shouldBlockIndexing(props.site.environment)
-      ? {
-          userAgent: "*",
-          disallow: "/",
-        }
-      : rules,
-  }
-}
-
-export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
-  return getSitemapAsArray(sitemap)
-    .filter(
-      (item) =>
-        item.layout !== ISOMER_PAGE_LAYOUTS.File &&
-        item.layout !== ISOMER_PAGE_LAYOUTS.Link,
-    )
-    .map(({ permalink, lastModified }) => ({
-      url: siteUrl !== undefined ? `${siteUrl}${permalink}` : permalink,
-      lastModified,
-    }))
 }

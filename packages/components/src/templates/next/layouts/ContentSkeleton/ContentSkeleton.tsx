@@ -1,0 +1,98 @@
+import type {
+  RenderPageContentOutput,
+  RenderPageContentParams,
+} from "../../render/types"
+import type { ContentPageSchemaType } from "~/types/schema"
+import { tv } from "~/lib/tv"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
+import { getSiderailFromSiteMap } from "~/utils/getSiderailFromSiteMap"
+import { getTableOfContents } from "~/utils/getTableOfContents"
+import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
+import { BackToTopLink } from "../../components/internal/BackToTopLink"
+import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
+import { Siderail } from "../../components/internal/Siderail"
+import { TableOfContents } from "../../components/internal/TableOfContents"
+import { Skeleton } from "../Skeleton"
+
+const createContentLayoutStyles = tv({
+  slots: {
+    container:
+      "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
+    siderailContainer: "relative col-span-3 hidden lg:block",
+    content:
+      "col-span-12 flex flex-col gap-16 break-words lg:col-span-9 lg:mr-24",
+  },
+})
+
+const compoundStyles = createContentLayoutStyles()
+
+interface ContentLayoutSkeletonProps extends ContentPageSchemaType {
+  renderPageContent: (
+    params: RenderPageContentParams,
+  ) => RenderPageContentOutput
+}
+
+export const ContentLayoutSkeleton = ({
+  site,
+  page,
+  layout,
+  content,
+  LinkComponent,
+  renderPageContent,
+}: ContentLayoutSkeletonProps) => {
+  const isParentPageRoot = page.permalink.split("/").length === 2
+
+  // Note: We do not show side rail for first-level pages
+  const sideRail = !isParentPageRoot
+    ? getSiderailFromSiteMap(site.siteMap, page.permalink)
+    : null
+
+  // auto-inject ids for heading level 2 blocks if does not exist
+  const transformedContent = getTransformedPageContent(content)
+  const tableOfContents = getTableOfContents(site, transformedContent)
+  const breadcrumb = getBreadcrumbFromSiteMap(
+    site.siteMap,
+    page.permalink.split("/").slice(1),
+  )
+  return (
+    <Skeleton
+      site={site}
+      page={page}
+      layout={layout}
+      LinkComponent={LinkComponent}
+    >
+      <ContentPageHeader
+        {...page.contentPageHeader}
+        image={page.image}
+        title={page.title}
+        breadcrumb={breadcrumb}
+        site={site}
+        LinkComponent={LinkComponent}
+        lastUpdated={page.lastModified}
+      />
+      <div className={compoundStyles.container()}>
+        <div className={compoundStyles.content()}>
+          {tableOfContents.length > 1 && (
+            <TableOfContents
+              items={tableOfContents}
+              LinkComponent={LinkComponent}
+            />
+          )}
+          <div>
+            {renderPageContent({
+              content: transformedContent,
+              layout,
+              site,
+              LinkComponent,
+              permalink: page.permalink,
+            })}
+          </div>
+        </div>
+        <div className={compoundStyles.siderailContainer()}>
+          {sideRail && <Siderail {...sideRail} LinkComponent={LinkComponent} />}
+          <BackToTopLink />
+        </div>
+      </div>
+    </Skeleton>
+  )
+}

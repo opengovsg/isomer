@@ -5,7 +5,7 @@ import reactConfig from "@isomer/eslint-config/react"
 /** @type {import('typescript-eslint').Config} */
 export default [
   {
-    ignores: [".next/**", "!.storybook/**", "out/**"],
+    ignores: [".next/**", "!.storybook/**", "out/**", "scripts/**"],
   },
   ...baseConfig,
   ...reactConfig,
@@ -17,6 +17,18 @@ export default [
         "error",
         {
           "ts-ignore": "allow-with-description",
+        },
+      ],
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["^@opengovsg/isomer-components$"],
+              message:
+                "Import from subpaths directly (e.g., '@opengovsg/isomer-components/templates/next') to improve Next.js tree-shaking. Root imports are not allowed.",
+            },
+          ],
         },
       ],
     },
