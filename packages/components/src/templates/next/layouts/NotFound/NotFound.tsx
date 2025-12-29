@@ -60,7 +60,7 @@ export const NotFoundLayout = ({
                         className="group flex flex-col gap-1 outline-0"
                         LinkComponent={LinkComponent}
                       >
-                        <span className="prose-headline-lg-semibold text-base-content-strong underline-offset-4 group-hover:text-brand-canvas-inverse group-hover:underline">
+                        <span className="prose-headline-lg-semibold text-brand-interaction underline-offset-4 group-hover:text-brand-canvas-inverse group-hover:underline">
                           {match.item.entity.title}
                         </span>
                         <span className="prose-body-sm text-base-content-subtle">
