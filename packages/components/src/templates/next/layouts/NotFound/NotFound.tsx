@@ -1,12 +1,8 @@
 import { type NotFoundPageSchemaType } from "~/types"
 import { getTailwindVariantLayout } from "~/utils"
 import { createInfobarStyles } from "../../components/complex/Infobar"
-import { Link } from "../../components/internal/Link"
-import { LinkButton } from "../../components/internal/LinkButton"
 import { Skeleton } from "../Skeleton"
-import { NotFoundSearchButton } from "./NotFoundSearchButton"
-import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
-import { getSimilarSitemapMatches } from "~/utils/getSimilarSitemapMatches"
+import { NotFoundSimilarMatches } from "./NotFoundSimilarMatches"
 
 export const NotFoundLayout = ({
   site,
@@ -17,11 +13,6 @@ export const NotFoundLayout = ({
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const infobarStyles = createInfobarStyles({
     layout: simplifiedLayout,
-  })
-
-  const similarSitemapMatches = getSimilarSitemapMatches({
-    sitemap: getSitemapAsArray(site.siteMap),
-    query: page.permalink,
   })
 
   return (
@@ -45,48 +36,13 @@ export const NotFoundLayout = ({
             <div className={infobarStyles.innerContainer()}>
               <div className={infobarStyles.headingContainer()}>
                 <h2 className={infobarStyles.title()}>Page not found</h2>
-                <p className={infobarStyles.description()}>
-                  {similarSitemapMatches.length > 0
-                    ? "This page might have been moved or deleted. Did you mean one of these?"
-                    : "This page might have been moved or deleted. Try searching for this page instead."}
-                </p>
               </div>
-              {similarSitemapMatches.length > 0 && (
-                <ul className="flex flex-col gap-6">
-                  {similarSitemapMatches.map((match) => (
-                    <li key={match.item.entity.permalink}>
-                      <Link
-                        href={match.item.entity.permalink}
-                        className="group flex flex-col gap-1 outline-0"
-                        LinkComponent={LinkComponent}
-                      >
-                        <span className="prose-headline-lg-semibold text-brand-interaction underline-offset-4 group-hover:text-brand-canvas-inverse group-hover:underline">
-                          {match.item.entity.title}
-                        </span>
-                        <span className="prose-body-sm text-base-content-subtle">
-                          {match.item.entity.permalink}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div className={infobarStyles.buttonContainer()}>
-                <NotFoundSearchButton LinkComponent={LinkComponent}>
-                  {similarSitemapMatches.length > 0
-                    ? "Search"
-                    : "Search for this page"}
-                </NotFoundSearchButton>
-                <LinkButton
-                  href="/"
-                  size="lg"
-                  variant="outline"
-                  LinkComponent={LinkComponent}
-                  isWithFocusVisibleHighlight
-                >
-                  Go to homepage
-                </LinkButton>
-              </div>
+              <NotFoundSimilarMatches
+                site={site}
+                LinkComponent={LinkComponent}
+                descriptionClassName={infobarStyles.description()}
+                buttonContainerClassName={infobarStyles.buttonContainer()}
+              />
             </div>
           </div>
         </section>

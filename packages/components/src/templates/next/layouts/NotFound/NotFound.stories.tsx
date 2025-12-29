@@ -18,6 +18,17 @@ const meta: Meta<typeof NotFoundLayout> = {
       themeOverride: "Isomer Next",
     },
   },
+  decorators: [
+    (Story, context) => {
+      // Mock window.location.pathname for testing
+      // This avoids using /iframe.html which is Storybook's default
+      if (typeof window !== "undefined" && context.args.page.permalink) {
+        // we are using push state because we cannot redefine property: location
+        window.history.pushState({}, "", context.args.page.permalink)
+      }
+      return <Story />
+    },
+  ],
 }
 export default meta
 type Story = StoryObj<NotFoundPageSchemaType>
