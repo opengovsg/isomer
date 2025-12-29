@@ -4,14 +4,14 @@ import { getFuzzySitemapMatches } from "../getFuzzySitemapMatches"
 
 describe("getFuzzySitemapMatches", () => {
   const mockSitemap = [
-    { url: "https://example.com/about-us", title: "About Us" },
-    { url: "https://example.com/contact", title: "Contact" },
+    { permalink: "https://example.com/about-us", title: "About Us" },
+    { permalink: "https://example.com/contact", title: "Contact" },
     {
-      url: "https://example.com/services/web-development",
+      permalink: "https://example.com/services/web-development",
       title: "Web Development",
     },
-    { url: "https://example.com/services/mobile-apps", title: "Mobile Apps" },
-    { url: "https://example.com/blog/hello-world", title: "Hello World" },
+    { permalink: "https://example.com/services/mobile-apps", title: "Mobile Apps" },
+    { permalink: "https://example.com/blog/hello-world", title: "Hello World" },
   ]
 
   describe("basic functionality", () => {
@@ -24,7 +24,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/about-us",
       ])
     })
@@ -38,7 +38,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/contact",
       ])
     })
@@ -54,7 +54,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/about-us",
       ])
     })
@@ -68,7 +68,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/services/web-development",
       ])
     })
@@ -82,7 +82,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(2)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/services/web-development",
         "https://example.com/services/mobile-apps",
       ])
@@ -133,7 +133,7 @@ describe("getFuzzySitemapMatches", () => {
       // Assert
       expect(results.length).toBe(1)
       expect(results[0]?.item.entity).toEqual({
-        url: "https://example.com/contact",
+        permalink: "https://example.com/contact",
         title: "Contact",
       })
     })
@@ -149,7 +149,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/about-us",
       ])
     })
@@ -163,7 +163,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/blog/hello-world",
       ])
     })
@@ -173,7 +173,7 @@ describe("getFuzzySitemapMatches", () => {
     it("should handle URLs with query parameters", () => {
       // Arrange
       const sitemapWithParams = [
-        { url: "https://example.com/page?foo=bar", title: "Page with params" },
+        { permalink: "https://example.com/page?foo=bar", title: "Page with params" },
       ]
 
       // Act
@@ -184,7 +184,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/page?foo=bar",
       ])
     })
@@ -192,7 +192,7 @@ describe("getFuzzySitemapMatches", () => {
     it("should handle URLs with hash fragments", () => {
       // Arrange
       const sitemapWithHash = [
-        { url: "https://example.com/page#section", title: "Page with hash" },
+        { permalink: "https://example.com/page#section", title: "Page with hash" },
       ]
 
       // Act
@@ -203,7 +203,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/page#section",
       ])
     })
@@ -211,7 +211,7 @@ describe("getFuzzySitemapMatches", () => {
     it("should handle URLs with underscores", () => {
       // Arrange
       const sitemapWithUnderscores = [
-        { url: "https://example.com/my_page_name", title: "Underscore page" },
+        { permalink: "https://example.com/my_page_name", title: "Underscore page" },
       ]
 
       // Act
@@ -222,7 +222,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/my_page_name",
       ])
     })
@@ -233,7 +233,7 @@ describe("getFuzzySitemapMatches", () => {
       // Arrange
       const deeplyNestedSitemap = [
         {
-          url: "https://example.com/level1/level2/level3/level4/final-page",
+          permalink: "https://example.com/level1/level2/level3/level4/final-page",
           title: "Deep Page",
         },
       ]
@@ -246,7 +246,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/level1/level2/level3/level4/final-page",
       ])
     })
@@ -255,14 +255,14 @@ describe("getFuzzySitemapMatches", () => {
       // Arrange
       const numericSitemap = [
         {
-          url: "https://example.com/news/2024/01/15/article",
+          permalink: "https://example.com/news/2024/01/15/article",
           title: "Article",
         },
         {
-          url: "https://example.com/product-123-details",
+          permalink: "https://example.com/product-123-details",
           title: "Product 123",
         },
-        { url: "https://example.com/v2/api/users", title: "API V2 Users" },
+        { permalink: "https://example.com/v2/api/users", title: "API V2 Users" },
       ]
 
       // Act
@@ -273,7 +273,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/news/2024/01/15/article",
       ])
     })
@@ -281,9 +281,9 @@ describe("getFuzzySitemapMatches", () => {
     it("should handle URLs with file extensions", () => {
       // Arrange
       const extensionSitemap = [
-        { url: "https://example.com/docs/guide.html", title: "Guide HTML" },
-        { url: "https://example.com/files/report.pdf", title: "Report PDF" },
-        { url: "https://example.com/data/export.json", title: "Export JSON" },
+        { permalink: "https://example.com/docs/guide.html", title: "Guide HTML" },
+        { permalink: "https://example.com/files/report.pdf", title: "Report PDF" },
+        { permalink: "https://example.com/data/export.json", title: "Export JSON" },
       ]
 
       // Act & Assert
@@ -292,7 +292,7 @@ describe("getFuzzySitemapMatches", () => {
         query: "guide",
       })
       expect(results1.length).toBe(1)
-      expect(results1.map((r) => r.item.entity.url)).toEqual([
+      expect(results1.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/docs/guide.html",
       ])
 
@@ -309,10 +309,10 @@ describe("getFuzzySitemapMatches", () => {
       // Arrange
       const encodedSitemap = [
         {
-          url: "https://example.com/search?q=hello%20world",
+          permalink: "https://example.com/search?q=hello%20world",
           title: "Search Hello World",
         },
-        { url: "https://example.com/path%2Fto%2Fpage", title: "Encoded Path" },
+        { permalink: "https://example.com/path%2Fto%2Fpage", title: "Encoded Path" },
       ]
 
       // Assert & Assert
@@ -321,7 +321,7 @@ describe("getFuzzySitemapMatches", () => {
         query: "search",
       })
       expect(results1.length).toBe(1)
-      expect(results1.map((r) => r.item.entity.url)).toEqual([
+      expect(results1.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/search?q=hello%20world",
       ])
 
@@ -338,11 +338,11 @@ describe("getFuzzySitemapMatches", () => {
       // Arrange
       const mixedSitemap = [
         {
-          url: "https://example.com/blog-2024_01-my_first_post",
+          permalink: "https://example.com/blog-2024_01-my_first_post",
           title: "First Post",
         },
         {
-          url: "https://example.com/event--2024__annual-meeting",
+          permalink: "https://example.com/event--2024__annual-meeting",
           title: "Annual Meeting",
         },
       ]
@@ -355,7 +355,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/event--2024__annual-meeting",
       ])
     })
@@ -363,8 +363,8 @@ describe("getFuzzySitemapMatches", () => {
     it("should handle URLs with trailing slashes", () => {
       // Arrange
       const trailingSlashSitemap = [
-        { url: "https://example.com/about-us/", title: "About Us" },
-        { url: "https://example.com/contact/", title: "Contact" },
+        { permalink: "https://example.com/about-us/", title: "About Us" },
+        { permalink: "https://example.com/contact/", title: "Contact" },
       ]
 
       // Act
@@ -380,8 +380,8 @@ describe("getFuzzySitemapMatches", () => {
     it("should handle URLs with port numbers", () => {
       // Arrange
       const portSitemap = [
-        { url: "https://example.com:8080/admin/dashboard", title: "Dashboard" },
-        { url: "http://localhost:3000/test-page", title: "Test Page" },
+        { permalink: "https://example.com:8080/admin/dashboard", title: "Dashboard" },
+        { permalink: "http://localhost:3000/test-page", title: "Test Page" },
       ]
 
       // Act & Assert
@@ -390,7 +390,7 @@ describe("getFuzzySitemapMatches", () => {
         query: "dashboard",
       })
       expect(results1.length).toBe(1)
-      expect(results1.map((r) => r.item.entity.url)).toEqual([
+      expect(results1.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com:8080/admin/dashboard",
       ])
 
@@ -406,9 +406,9 @@ describe("getFuzzySitemapMatches", () => {
     it("should handle URLs with subdomains", () => {
       // Arrange
       const subdomainSitemap = [
-        { url: "https://blog.example.com/article-one", title: "Article One" },
-        { url: "https://api.staging.example.com/docs", title: "API Docs" },
-        { url: "https://www.example.com/home", title: "Home" },
+        { permalink: "https://blog.example.com/article-one", title: "Article One" },
+        { permalink: "https://api.staging.example.com/docs", title: "API Docs" },
+        { permalink: "https://www.example.com/home", title: "Home" },
       ]
 
       // Act & Assert
@@ -417,7 +417,7 @@ describe("getFuzzySitemapMatches", () => {
         query: "article one",
       })
       expect(results1.length).toBe(1)
-      expect(results1.map((r) => r.item.entity.url)).toEqual([
+      expect(results1.map((r) => r.item.entity.permalink)).toEqual([
         "https://blog.example.com/article-one",
       ])
 
@@ -434,11 +434,11 @@ describe("getFuzzySitemapMatches", () => {
       // Arrange
       const complexQuerySitemap = [
         {
-          url: "https://example.com/page?category=news&sort=date#top",
+          permalink: "https://example.com/page?category=news&sort=date#top",
           title: "News Page",
         },
         {
-          url: "https://example.com/search?q=test&page=1#results",
+          permalink: "https://example.com/search?q=test&page=1#results",
           title: "Search Results",
         },
       ]
@@ -449,7 +449,7 @@ describe("getFuzzySitemapMatches", () => {
         query: "page",
       })
       expect(results1.length).toBe(1)
-      expect(results1.map((r) => r.item.entity.url)).toEqual([
+      expect(results1.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/page?category=news&sort=date#top",
       ])
 
@@ -466,7 +466,7 @@ describe("getFuzzySitemapMatches", () => {
       // Arrange
       const longPathSitemap = [
         {
-          url: "https://example.com/this-is-a-very-long-path-segment-that-contains-many-words-and-hyphens",
+          permalink: "https://example.com/this-is-a-very-long-path-segment-that-contains-many-words-and-hyphens",
           title: "Long Path",
         },
       ]
@@ -484,8 +484,8 @@ describe("getFuzzySitemapMatches", () => {
     it("should handle URLs with single character segments", () => {
       // Arrange
       const singleCharSitemap = [
-        { url: "https://example.com/a/b/c/page", title: "ABC Page" },
-        { url: "https://example.com/x-y-z", title: "XYZ" },
+        { permalink: "https://example.com/a/b/c/page", title: "ABC Page" },
+        { permalink: "https://example.com/x-y-z", title: "XYZ" },
       ]
 
       // Act
@@ -502,11 +502,11 @@ describe("getFuzzySitemapMatches", () => {
       // Arrange
       const consecutiveDelimiterSitemap = [
         {
-          url: "https://example.com/path--with---many----dashes",
+          permalink: "https://example.com/path--with---many----dashes",
           title: "Dashes",
         },
         {
-          url: "https://example.com/path__with___underscores",
+          permalink: "https://example.com/path__with___underscores",
           title: "Underscores",
         },
       ]
@@ -524,11 +524,11 @@ describe("getFuzzySitemapMatches", () => {
     it("should handle similar URLs and rank them appropriately", () => {
       // Arrange
       const similarSitemap = [
-        { url: "https://example.com/contact", title: "Contact" },
-        { url: "https://example.com/contact-us", title: "Contact Us" },
-        { url: "https://example.com/contact-form", title: "Contact Form" },
+        { permalink: "https://example.com/contact", title: "Contact" },
+        { permalink: "https://example.com/contact-us", title: "Contact Us" },
+        { permalink: "https://example.com/contact-form", title: "Contact Form" },
         {
-          url: "https://example.com/about/contact-info",
+          permalink: "https://example.com/about/contact-info",
           title: "Contact Info",
         },
       ]
@@ -541,7 +541,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(4)
-      expect(results.map((r) => r.item.entity.url)).toEqual([
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
         "https://example.com/contact",
         "https://example.com/contact-us",
         "https://example.com/contact-form",
@@ -552,14 +552,14 @@ describe("getFuzzySitemapMatches", () => {
 
   describe("numberOfResults", () => {
     const largeSitemap = [
-      { url: "https://example.com/page-1", title: "Page 1" },
-      { url: "https://example.com/page-2", title: "Page 2" },
-      { url: "https://example.com/page-3", title: "Page 3" },
-      { url: "https://example.com/page-4", title: "Page 4" },
-      { url: "https://example.com/page-5", title: "Page 5" },
-      { url: "https://example.com/page-6", title: "Page 6" },
-      { url: "https://example.com/page-7", title: "Page 7" },
-      { url: "https://example.com/page-8", title: "Page 8" },
+      { permalink: "https://example.com/page-1", title: "Page 1" },
+      { permalink: "https://example.com/page-2", title: "Page 2" },
+      { permalink: "https://example.com/page-3", title: "Page 3" },
+      { permalink: "https://example.com/page-4", title: "Page 4" },
+      { permalink: "https://example.com/page-5", title: "Page 5" },
+      { permalink: "https://example.com/page-6", title: "Page 6" },
+      { permalink: "https://example.com/page-7", title: "Page 7" },
+      { permalink: "https://example.com/page-8", title: "Page 8" },
     ]
 
     it("should default to 5 results when numberOfResults is not specified", () => {

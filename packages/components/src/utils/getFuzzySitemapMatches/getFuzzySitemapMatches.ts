@@ -1,10 +1,10 @@
 import createFuzzySearch from "@nozbe/microfuzz"
 
-import { normalizeUrl } from "./normalizeUrl"
+import { normalizePermalink } from "./normalizeUrl"
 
 interface GetFuzzySitemapMatchesOptions {
   sitemap: {
-    url: string
+    permalink: string
     title: string
   }[]
   query: string
@@ -22,7 +22,7 @@ export const getFuzzySitemapMatches = ({
   numberOfResults = 5,
 }: GetFuzzySitemapMatchesOptions) => {
   const indexed = sitemap.map((entity) => ({
-    text: normalizeUrl(entity.url),
+    text: normalizePermalink(entity.permalink),
     entity,
   }))
 
@@ -30,5 +30,5 @@ export const getFuzzySitemapMatches = ({
     getText: (entity: IndexedEntity) => [entity.text],
   })
 
-  return searchFunction(normalizeUrl(query)).slice(0, numberOfResults)
+  return searchFunction(normalizePermalink(query)).slice(0, numberOfResults)
 }

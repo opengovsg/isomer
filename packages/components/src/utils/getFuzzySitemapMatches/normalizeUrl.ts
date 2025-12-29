@@ -1,6 +1,6 @@
-export const normalizeUrl = (url: string) => {
+export const normalizePermalink = (permalink: string) => {
   try {
-    const u = new URL(url);
+    const u = new URL(permalink);
     // get pathname only, remove leading slash
     let path = u.pathname.replace(/^\//, "");
 
@@ -15,7 +15,7 @@ export const normalizeUrl = (url: string) => {
 
     return path.toLowerCase();
   } catch {
-    // fallback for invalid URLs
-    return url
+    // fallback for invalid permalinks
+    return permalink
   }
 }
