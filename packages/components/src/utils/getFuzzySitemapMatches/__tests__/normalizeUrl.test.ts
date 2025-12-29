@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { normalizePermalink } from "../normalizeUrl"
+import { normalizePermalink, STOP_WORDS } from "../normalizeUrl"
 
 describe("normalizePermalink", () => {
   describe("URL handling", () => {
@@ -165,53 +165,10 @@ describe("normalizePermalink", () => {
   })
 
   describe("stop word removal", () => {
-    it("should remove common stop words", () => {
-      expect(normalizePermalink("/this-is-my-life")).toBe("this my life")
-    })
-
-    it("should remove 'the' from paths", () => {
-      expect(normalizePermalink("/the-quick-brown-fox")).toBe("quick brown fox")
-    })
-
-    it("should remove 'a' and 'an' from paths", () => {
-      expect(normalizePermalink("/a-guide-to-an-example")).toBe("guide example")
-    })
-
-    it("should remove 'of' from paths", () => {
-      expect(normalizePermalink("/department-of-finance")).toBe(
-        "department finance",
+    it.each([...STOP_WORDS])("should remove '%s' from paths", (stopWord) => {
+      expect(normalizePermalink(`/word-${stopWord}-another`)).toBe(
+        "word another",
       )
-    })
-
-    it("should remove 'and' from paths", () => {
-      expect(normalizePermalink("/terms-and-conditions")).toBe(
-        "terms conditions",
-      )
-    })
-
-    it("should remove 'for' from paths", () => {
-      expect(normalizePermalink("/resources-for-students")).toBe(
-        "resources students",
-      )
-    })
-
-    it("should remove 'in' and 'on' from paths", () => {
-      expect(normalizePermalink("/events-in-2024")).toBe("events 2024")
-      expect(normalizePermalink("/update-on-policy")).toBe("update policy")
-    })
-
-    it("should remove 'to' from paths", () => {
-      expect(normalizePermalink("/how-to-apply")).toBe("how apply")
-    })
-
-    it("should remove 'with' and 'by' from paths", () => {
-      expect(normalizePermalink("/guide-with-examples")).toBe("guide examples")
-      expect(normalizePermalink("/sorted-by-date")).toBe("sorted date")
-    })
-
-    it("should remove 'be', 'is', 'are', 'was', 'were', 'been' from paths", () => {
-      expect(normalizePermalink("/what-is-new")).toBe("what new")
-      expect(normalizePermalink("/things-are-changing")).toBe("things changing")
     })
 
     it("should handle multiple stop words in a row", () => {

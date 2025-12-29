@@ -40,7 +40,7 @@ const removeDelimiters = (path: string) =>
   path.replace(/[-_]+/g, " ")
 
 // Common filler words that are often dropped during URL restructuring
-const STOP_WORDS = new Set([
+export const STOP_WORDS = new Set([
   "a",
   "an",
   "the",
