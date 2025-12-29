@@ -60,7 +60,7 @@ const generateSitemap = (size: number) => {
 // Measure execution time with multiple runs for accuracy
 const measureTime = (
   fn: () => void,
-  runs: number = 100,
+  runs = 100,
 ): { avg: number; min: number; max: number } => {
   const times: number[] = []
 
