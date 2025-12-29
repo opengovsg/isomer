@@ -3,7 +3,7 @@ import createFuzzySearch from "@nozbe/microfuzz"
 import { getWordJaccardSimilarity } from "./getWordJaccardSimilarity"
 import { normalizePermalink } from "./normalizeUrl"
 
-interface GetFuzzySitemapMatchesOptions {
+interface GetSimilarSitemapMatchesOptions {
   sitemap: {
     permalink: string
     title: string
@@ -14,17 +14,17 @@ interface GetFuzzySitemapMatchesOptions {
 
 interface IndexedEntity {
   text: string
-  entity: GetFuzzySitemapMatchesOptions["sitemap"][number]
+  entity: GetSimilarSitemapMatchesOptions["sitemap"][number]
 }
 
 // Minimum word overlap required for fallback matching
 const MIN_JACCARD_THRESHOLD = 0.2
 
-export const getFuzzySitemapMatches = ({
+export const getSimilarSitemapMatches = ({
   sitemap,
   query,
   numberOfResults = 5,
-}: GetFuzzySitemapMatchesOptions) => {
+}: GetSimilarSitemapMatchesOptions) => {
   const normalizedQuery = normalizePermalink(query)
 
   // Return empty if query is empty after normalization
@@ -63,3 +63,4 @@ export const getFuzzySitemapMatches = ({
     .sort((a, b) => b.jaccardScore - a.jaccardScore)
     .slice(0, numberOfResults)
 }
+

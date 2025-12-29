@@ -6,7 +6,7 @@ import { LinkButton } from "../../components/internal/LinkButton"
 import { Skeleton } from "../Skeleton"
 import { NotFoundSearchButton } from "./NotFoundSearchButton"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
-import { getFuzzySitemapMatches } from "~/utils/getFuzzySitemapMatches"
+import { getSimilarSitemapMatches } from "~/utils/getSimilarSitemapMatches"
 
 export const NotFoundLayout = ({
   site,
@@ -19,7 +19,7 @@ export const NotFoundLayout = ({
     layout: simplifiedLayout,
   })
 
-  const fuzzySitemapMatches = getFuzzySitemapMatches({
+  const similarSitemapMatches = getSimilarSitemapMatches({
     sitemap: getSitemapAsArray(site.siteMap),
     query: page.permalink,
   })
@@ -46,14 +46,14 @@ export const NotFoundLayout = ({
               <div className={infobarStyles.headingContainer()}>
                 <h2 className={infobarStyles.title()}>Page not found</h2>
                 <p className={infobarStyles.description()}>
-                  {fuzzySitemapMatches.length > 0
+                  {similarSitemapMatches.length > 0
                     ? "This page might have been moved or deleted. Did you mean one of these?"
                     : "This page might have been moved or deleted. Try searching for this page instead."}
                 </p>
               </div>
-              {fuzzySitemapMatches.length > 0 && (
+              {similarSitemapMatches.length > 0 && (
                 <ul className="flex flex-col gap-6">
-                  {fuzzySitemapMatches.map((match) => (
+                  {similarSitemapMatches.map((match) => (
                     <li key={match.item.entity.permalink}>
                       <Link
                         href={match.item.entity.permalink}

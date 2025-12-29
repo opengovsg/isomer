@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import { getFuzzySitemapMatches } from "../getFuzzySitemapMatches"
+import { getSimilarSitemapMatches } from "../getSimilarSitemapMatches"
 
-describe("getFuzzySitemapMatches", () => {
+describe("getSimilarSitemapMatches", () => {
   const mockSitemap = [
     { permalink: "https://example.com/about-us", title: "About Us" },
     { permalink: "https://example.com/contact", title: "Contact" },
@@ -17,7 +17,7 @@ describe("getFuzzySitemapMatches", () => {
   describe("basic functionality", () => {
     it("should find exact matches when searching", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: mockSitemap,
         query: "about",
       })
@@ -31,7 +31,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should find fuzzy matches when searching", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: mockSitemap,
         query: "contct",
       })
@@ -47,7 +47,7 @@ describe("getFuzzySitemapMatches", () => {
   describe("URL normalization in matching", () => {
     it("should match URLs with hyphens converted to spaces", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: mockSitemap,
         query: "about us",
       })
@@ -61,7 +61,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should match nested paths", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: mockSitemap,
         query: "web development",
       })
@@ -75,7 +75,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should match partial path segments", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: mockSitemap,
         query: "services",
       })
@@ -92,7 +92,7 @@ describe("getFuzzySitemapMatches", () => {
   describe("edge cases", () => {
     it("should handle empty sitemap", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: [],
         query: "test",
       })
@@ -103,7 +103,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should handle empty query", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: mockSitemap,
         query: "",
       })
@@ -114,7 +114,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should handle query with no matches", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: mockSitemap,
         query: "zzzznonexistent",
       })
@@ -125,7 +125,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should preserve entity data in results", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: mockSitemap,
         query: "contact",
       })
@@ -142,7 +142,7 @@ describe("getFuzzySitemapMatches", () => {
   describe("case insensitivity", () => {
     it("should match regardless of case", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: mockSitemap,
         query: "ABOUT",
       })
@@ -156,7 +156,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should match mixed case queries", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: mockSitemap,
         query: "HeLLo WoRLd",
       })
@@ -177,7 +177,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: sitemapWithParams,
         query: "page",
       })
@@ -196,7 +196,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: sitemapWithHash,
         query: "page",
       })
@@ -215,7 +215,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: sitemapWithUnderscores,
         query: "my page name",
       })
@@ -239,7 +239,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: deeplyNestedSitemap,
         query: "final page",
       })
@@ -266,7 +266,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: numericSitemap,
         query: "2024",
       })
@@ -287,7 +287,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act & Assert
-      const results1 = getFuzzySitemapMatches({
+      const results1 = getSimilarSitemapMatches({
         sitemap: extensionSitemap,
         query: "guide",
       })
@@ -298,7 +298,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Act & Assert
       // should not match file extensions
-      const results2 = getFuzzySitemapMatches({
+      const results2 = getSimilarSitemapMatches({
         sitemap: extensionSitemap,
         query: "pdf",
       })
@@ -316,7 +316,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Assert & Assert
-      const results1 = getFuzzySitemapMatches({
+      const results1 = getSimilarSitemapMatches({
         sitemap: encodedSitemap,
         query: "search",
       })
@@ -327,7 +327,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert & Assert
       // should not match encoded characters
-      const results2 = getFuzzySitemapMatches({
+      const results2 = getSimilarSitemapMatches({
         sitemap: encodedSitemap,
         query: "hello world",
       })
@@ -348,7 +348,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: mixedSitemap,
         query: "annual meeting",
       })
@@ -368,7 +368,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: trailingSlashSitemap,
         query: "about us",
       })
@@ -385,7 +385,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act & Assert
-      const results1 = getFuzzySitemapMatches({
+      const results1 = getSimilarSitemapMatches({
         sitemap: portSitemap,
         query: "dashboard",
       })
@@ -396,7 +396,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Act & Assert
       // should not match port numbers
-      const results2 = getFuzzySitemapMatches({
+      const results2 = getSimilarSitemapMatches({
         sitemap: portSitemap,
         query: "8080",
       })
@@ -412,7 +412,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act & Assert
-      const results1 = getFuzzySitemapMatches({
+      const results1 = getSimilarSitemapMatches({
         sitemap: subdomainSitemap,
         query: "article one",
       })
@@ -423,7 +423,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Act & Assert
       // should not match subdomains
-      const results2 = getFuzzySitemapMatches({
+      const results2 = getSimilarSitemapMatches({
         sitemap: subdomainSitemap,
         query: "api",
       })
@@ -444,7 +444,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act & Assert
-      const results1 = getFuzzySitemapMatches({
+      const results1 = getSimilarSitemapMatches({
         sitemap: complexQuerySitemap,
         query: "page",
       })
@@ -455,7 +455,7 @@ describe("getFuzzySitemapMatches", () => {
 
       // Act & Assert
       // should not match query parameters
-      const results2 = getFuzzySitemapMatches({
+      const results2 = getSimilarSitemapMatches({
         sitemap: complexQuerySitemap,
         query: "news",
       })
@@ -472,7 +472,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: longPathSitemap,
         query: "very long path",
       })
@@ -489,7 +489,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: singleCharSitemap,
         query: "x y z",
       })
@@ -512,7 +512,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: consecutiveDelimiterSitemap,
         query: "path with many dashes",
       })
@@ -534,7 +534,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: similarSitemap,
         query: "contact",
       })
@@ -559,7 +559,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap,
         query: "this-is-my-life",
       })
@@ -582,7 +582,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act - query has "of" which is a stop word
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap,
         query: "department-of-finance",
       })
@@ -602,7 +602,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap,
         query: "contact",
       })
@@ -629,7 +629,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap,
         query: "web development",
       })
@@ -648,7 +648,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act - "a", "to", "the" are all stop words
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap,
         query: "a-guide-to-the-new-system",
       })
@@ -667,7 +667,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act - %20 is space, "and" is stop word
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap,
         query: "terms%20and%20conditions",
       })
@@ -686,7 +686,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act - "the" and "and" are stop words
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap,
         query: "/about/the-team/and-values",
       })
@@ -705,7 +705,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act - typo in "services"
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap,
         query: "servces",
       })
@@ -732,7 +732,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should default to 5 results when numberOfResults is not specified", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: largeSitemap,
         query: "page",
       })
@@ -743,7 +743,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should limit results to the specified numberOfResults", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: largeSitemap,
         query: "page",
         numberOfResults: 3,
@@ -755,7 +755,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should return all matches when numberOfResults exceeds match count", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: largeSitemap,
         query: "page",
         numberOfResults: 20,
@@ -767,7 +767,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should return empty array when numberOfResults is 0", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: largeSitemap,
         query: "page",
         numberOfResults: 0,
@@ -779,7 +779,7 @@ describe("getFuzzySitemapMatches", () => {
 
     it("should return single result when numberOfResults is 1", () => {
       // Arrange & Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap: largeSitemap,
         query: "page",
         numberOfResults: 1,
@@ -802,7 +802,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap,
         query: "/this-is-a-not-found-page", // normalizes to "this not found page"
       })
@@ -824,7 +824,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap,
         query: "/completely-different-words",
       })
@@ -842,7 +842,7 @@ describe("getFuzzySitemapMatches", () => {
       ]
 
       // Act - "this not found page" has 4 words after normalization
-      const results = getFuzzySitemapMatches({
+      const results = getSimilarSitemapMatches({
         sitemap,
         query: "/this-is-a-not-found-page",
       })
@@ -857,3 +857,4 @@ describe("getFuzzySitemapMatches", () => {
     })
   })
 })
+
