@@ -1,5 +1,6 @@
 import createFuzzySearch from "@nozbe/microfuzz"
 
+import { calculateCombinedScore } from "./calculateCombinedScore"
 import { normalizePermalink } from "./normalizeUrl"
 
 interface GetFuzzySitemapMatchesOptions {
@@ -21,6 +22,8 @@ export const getFuzzySitemapMatches = ({
   query,
   numberOfResults = 5,
 }: GetFuzzySitemapMatchesOptions) => {
+  const normalizedQuery = normalizePermalink(query)
+
   const indexed = sitemap.map((entity) => ({
     text: normalizePermalink(entity.permalink),
     entity,
@@ -30,5 +33,26 @@ export const getFuzzySitemapMatches = ({
     getText: (entity: IndexedEntity) => [entity.text],
   })
 
-  return searchFunction(normalizePermalink(query)).slice(0, numberOfResults)
+  // Get more results than needed for re-ranking
+  const fuzzyResults = searchFunction(normalizedQuery).slice(
+    0,
+    numberOfResults * 2,
+  )
+
+  // Find max fuzzy score for normalization
+  const maxFuzzyScore = Math.max(...fuzzyResults.map((r) => r.score), 1)
+
+  // Calculate combined scores and re-rank
+  return fuzzyResults
+    .map((result) => {
+      const combinedScore = calculateCombinedScore({
+        rawFuzzyScore: result.score,
+        maxFuzzyScore,
+        normalizedQuery,
+        normalizedTarget: result.item.text,
+      });
+      return { ...result, combinedScore };
+    })
+    .sort((a, b) => b.combinedScore - a.combinedScore) // Sort by combined score (higher is better)
+    .slice(0, numberOfResults)
 }

@@ -550,6 +550,174 @@ describe("getFuzzySitemapMatches", () => {
     })
   })
 
+  describe("hybrid scoring (fuzzy + word overlap)", () => {
+    it("should match query with extra stop words to clean sitemap URL", () => {
+      // Arrange - query has "is" which is a stop word
+      const sitemap = [
+        { permalink: "https://example.com/this-my-life", title: "This My Life" },
+        { permalink: "https://example.com/other-page", title: "Other Page" },
+      ]
+
+      // Act
+      const results = getFuzzySitemapMatches({
+        sitemap,
+        query: "this-is-my-life",
+      })
+
+      // Assert - should match despite "is" being in query but not in sitemap
+      expect(results.length).toBe(1)
+      expect(results[0]?.item.entity.permalink).toBe(
+        "https://example.com/this-my-life",
+      )
+    })
+
+    it("should match query with filler words removed", () => {
+      // Arrange
+      const sitemap = [
+        {
+          permalink: "https://example.com/department-finance",
+          title: "Department Finance",
+        },
+        { permalink: "https://example.com/other-page", title: "Other" },
+      ]
+
+      // Act - query has "of" which is a stop word
+      const results = getFuzzySitemapMatches({
+        sitemap,
+        query: "department-of-finance",
+      })
+
+      // Assert
+      expect(results.length).toBe(1)
+      expect(results[0]?.item.entity.permalink).toBe(
+        "https://example.com/department-finance",
+      )
+    })
+
+    it("should prefer exact word matches over partial character matches", () => {
+      // Arrange
+      const sitemap = [
+        { permalink: "https://example.com/contact", title: "Contact" },
+        { permalink: "https://example.com/contractor", title: "Contractor" },
+      ]
+
+      // Act
+      const results = getFuzzySitemapMatches({
+        sitemap,
+        query: "contact",
+      })
+
+      // Assert - exact word match should rank first
+      expect(results.length).toBe(2)
+      expect(results[0]?.item.entity.permalink).toBe(
+        "https://example.com/contact",
+      )
+    })
+
+    it("should rank higher when more query words match", () => {
+      // Arrange
+      const sitemap = [
+        {
+          permalink: "https://example.com/web-development",
+          title: "Web Development",
+        },
+        {
+          permalink: "https://example.com/web-design-development",
+          title: "Web Design Development",
+        },
+        { permalink: "https://example.com/web", title: "Web" },
+      ]
+
+      // Act
+      const results = getFuzzySitemapMatches({
+        sitemap,
+        query: "web development",
+      })
+
+      // Assert - exact match should be first
+      expect(results[0]?.item.entity.permalink).toBe(
+        "https://example.com/web-development",
+      )
+    })
+
+    it("should handle query with multiple stop words", () => {
+      // Arrange
+      const sitemap = [
+        { permalink: "https://example.com/guide-new-system", title: "Guide" },
+        { permalink: "https://example.com/other", title: "Other" },
+      ]
+
+      // Act - "a", "to", "the" are all stop words
+      const results = getFuzzySitemapMatches({
+        sitemap,
+        query: "a-guide-to-the-new-system",
+      })
+
+      // Assert
+      expect(results.length).toBe(1)
+      expect(results[0]?.item.entity.permalink).toBe(
+        "https://example.com/guide-new-system",
+      )
+    })
+
+    it("should match URL-encoded queries with stop words", () => {
+      // Arrange
+      const sitemap = [
+        { permalink: "https://example.com/terms-conditions", title: "Terms" },
+      ]
+
+      // Act - %20 is space, "and" is stop word
+      const results = getFuzzySitemapMatches({
+        sitemap,
+        query: "terms%20and%20conditions",
+      })
+
+      // Assert
+      expect(results.length).toBe(1)
+      expect(results[0]?.item.entity.permalink).toBe(
+        "https://example.com/terms-conditions",
+      )
+    })
+
+    it("should handle nested paths with stop words in query", () => {
+      // Arrange
+      const sitemap = [
+        { permalink: "https://example.com/about/team/values", title: "Values" },
+      ]
+
+      // Act - "the" and "and" are stop words
+      const results = getFuzzySitemapMatches({
+        sitemap,
+        query: "/about/the-team/and-values",
+      })
+
+      // Assert
+      expect(results.length).toBe(1)
+      expect(results[0]?.item.entity.permalink).toBe(
+        "https://example.com/about/team/values",
+      )
+    })
+
+    it("should still find fuzzy matches even with normalized words", () => {
+      // Arrange
+      const sitemap = [
+        { permalink: "https://example.com/services", title: "Services" },
+      ]
+
+      // Act - typo in "services"
+      const results = getFuzzySitemapMatches({
+        sitemap,
+        query: "servces",
+      })
+
+      // Assert
+      expect(results.length).toBe(1)
+      expect(results[0]?.item.entity.permalink).toBe(
+        "https://example.com/services",
+      )
+    })
+  })
+
   describe("numberOfResults", () => {
     const largeSitemap = [
       { permalink: "https://example.com/page-1", title: "Page 1" },
