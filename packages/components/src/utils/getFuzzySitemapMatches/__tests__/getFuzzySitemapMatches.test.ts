@@ -549,4 +549,76 @@ describe("getFuzzySitemapMatches", () => {
       ])
     })
   })
+
+  describe("numberOfResults", () => {
+    const largeSitemap = [
+      { url: "https://example.com/page-1", title: "Page 1" },
+      { url: "https://example.com/page-2", title: "Page 2" },
+      { url: "https://example.com/page-3", title: "Page 3" },
+      { url: "https://example.com/page-4", title: "Page 4" },
+      { url: "https://example.com/page-5", title: "Page 5" },
+      { url: "https://example.com/page-6", title: "Page 6" },
+      { url: "https://example.com/page-7", title: "Page 7" },
+      { url: "https://example.com/page-8", title: "Page 8" },
+    ]
+
+    it("should default to 5 results when numberOfResults is not specified", () => {
+      // Arrange & Act
+      const results = getFuzzySitemapMatches({
+        sitemap: largeSitemap,
+        query: "page",
+      })
+
+      // Assert
+      expect(results.length).toBe(5)
+    })
+
+    it("should limit results to the specified numberOfResults", () => {
+      // Arrange & Act
+      const results = getFuzzySitemapMatches({
+        sitemap: largeSitemap,
+        query: "page",
+        numberOfResults: 3,
+      })
+
+      // Assert
+      expect(results.length).toBe(3)
+    })
+
+    it("should return all matches when numberOfResults exceeds match count", () => {
+      // Arrange & Act
+      const results = getFuzzySitemapMatches({
+        sitemap: largeSitemap,
+        query: "page",
+        numberOfResults: 20,
+      })
+
+      // Assert
+      expect(results.length).toBe(8)
+    })
+
+    it("should return empty array when numberOfResults is 0", () => {
+      // Arrange & Act
+      const results = getFuzzySitemapMatches({
+        sitemap: largeSitemap,
+        query: "page",
+        numberOfResults: 0,
+      })
+
+      // Assert
+      expect(results.length).toBe(0)
+    })
+
+    it("should return single result when numberOfResults is 1", () => {
+      // Arrange & Act
+      const results = getFuzzySitemapMatches({
+        sitemap: largeSitemap,
+        query: "page",
+        numberOfResults: 1,
+      })
+
+      // Assert
+      expect(results.length).toBe(1)
+    })
+  })
 })
