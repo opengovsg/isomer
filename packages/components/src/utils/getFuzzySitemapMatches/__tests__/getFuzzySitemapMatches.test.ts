@@ -550,7 +550,7 @@ describe("getFuzzySitemapMatches", () => {
     })
   })
 
-  describe("hybrid scoring (fuzzy + word overlap)", () => {
+  describe("normalization with stop words", () => {
     it("should match query with extra stop words to clean sitemap URL", () => {
       // Arrange - query has "is" which is a stop word
       const sitemap = [
@@ -787,6 +787,73 @@ describe("getFuzzySitemapMatches", () => {
 
       // Assert
       expect(results.length).toBe(1)
+    })
+  })
+
+  describe("word-based fallback", () => {
+    it("should fall back to word matching when query has unique characters not in targets", () => {
+      // Arrange - query "this not found page" has 'h' and 'i' which don't exist in "not found page"
+      // This causes microfuzz to return no results, but word matching should still work
+      const sitemap = [
+        { permalink: "/not-found-page", title: "Not Found Page" },
+        { permalink: "/page-not-found-help", title: "Page Not Found Help" },
+        { permalink: "/found-resources", title: "Found Resources" },
+        { permalink: "/contact-us", title: "Contact Us" },
+      ]
+
+      // Act
+      const results = getFuzzySitemapMatches({
+        sitemap,
+        query: "/this-is-a-not-found-page", // normalizes to "this not found page"
+      })
+
+      // Assert - should find matches based on word overlap
+      expect(results.length).toBe(3)
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
+        "/not-found-page",
+        "/page-not-found-help",
+        "/found-resources",
+      ])
+    })
+
+    it("should not return results when word overlap is too low", () => {
+      // Arrange - query has no word overlap with sitemap
+      const sitemap = [
+        { permalink: "/apple-banana", title: "Apple Banana" },
+        { permalink: "/orange-grape", title: "Orange Grape" },
+      ]
+
+      // Act
+      const results = getFuzzySitemapMatches({
+        sitemap,
+        query: "/completely-different-words",
+      })
+
+      // Assert
+      expect(results.length).toBe(0)
+    })
+
+    it("should rank by word overlap in fallback mode", () => {
+      // Arrange
+      const sitemap = [
+        { permalink: "/found", title: "Found" }, 
+        { permalink: "/not-found", title: "Not Found" }, 
+        { permalink: "/not-found-page", title: "Not Found Page" }, 
+      ]
+
+      // Act - "this not found page" has 4 words after normalization
+      const results = getFuzzySitemapMatches({
+        sitemap,
+        query: "/this-is-a-not-found-page",
+      })
+
+      // Assert - should be ranked by word overlap (higher is better)
+      expect(results.length).toBe(3)
+      expect(results.map((r) => r.item.entity.permalink)).toEqual([
+        "/not-found-page", // 3/4 words = 0.6
+        "/not-found", // 2/4 words = 0.4 (but union is 4, so 2/4 = 0.5)
+        "/found", // 1/4 words = 0.25
+      ])
     })
   })
 })

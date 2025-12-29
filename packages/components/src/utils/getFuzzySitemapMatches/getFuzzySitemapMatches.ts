@@ -1,6 +1,6 @@
 import createFuzzySearch from "@nozbe/microfuzz"
 
-import { calculateCombinedScore } from "./calculateCombinedScore"
+import { getWordJaccardSimilarity } from "./getWordJaccardSimilarity"
 import { normalizePermalink } from "./normalizeUrl"
 
 interface GetFuzzySitemapMatchesOptions {
@@ -17,12 +17,20 @@ interface IndexedEntity {
   entity: GetFuzzySitemapMatchesOptions["sitemap"][number]
 }
 
+// Minimum word overlap required for fallback matching
+const MIN_JACCARD_THRESHOLD = 0.2
+
 export const getFuzzySitemapMatches = ({
   sitemap,
   query,
   numberOfResults = 5,
 }: GetFuzzySitemapMatchesOptions) => {
   const normalizedQuery = normalizePermalink(query)
+
+  // Return empty if query is empty after normalization
+  if (!normalizedQuery) {
+    return []
+  }
 
   const indexed = sitemap.map((entity) => ({
     text: normalizePermalink(entity.permalink),
@@ -33,26 +41,25 @@ export const getFuzzySitemapMatches = ({
     getText: (entity: IndexedEntity) => [entity.text],
   })
 
-  // Get more results than needed for re-ranking
-  const fuzzyResults = searchFunction(normalizedQuery).slice(
-    0,
-    numberOfResults * 2,
-  )
+  // Get fuzzy results - microfuzz already ranks by match quality (lower score = better match)
+  const fuzzyResults = searchFunction(normalizedQuery).slice(0, numberOfResults)
 
-  // Find max fuzzy score for normalization
-  const maxFuzzyScore = Math.max(...fuzzyResults.map((r) => r.score), 1)
+  // If fuzzy search found results, return them directly
+  if (fuzzyResults.length > 0) {
+    return fuzzyResults
+  }
 
-  // Calculate combined scores and re-rank
-  return fuzzyResults
-    .map((result) => {
-      const combinedScore = calculateCombinedScore({
-        rawFuzzyScore: result.score,
-        maxFuzzyScore,
-        normalizedQuery,
-        normalizedTarget: result.item.text,
-      });
-      return { ...result, combinedScore };
-    })
-    .sort((a, b) => b.combinedScore - a.combinedScore) // Sort by combined score (higher is better)
+  // Fallback: use pure word-based matching when fuzzy search returns no results
+  // This handles cases where the query contains characters not present in any target
+  return indexed
+    .filter((item) => item.text.length > 0) // Skip empty permalinks (e.g., homepage "/")
+    .map((item) => ({
+      item,
+      score: 0, // No fuzzy score available
+      matches: null,
+      jaccardScore: getWordJaccardSimilarity(normalizedQuery, item.text),
+    }))
+    .filter((result) => result.jaccardScore >= MIN_JACCARD_THRESHOLD)
+    .sort((a, b) => b.jaccardScore - a.jaccardScore)
     .slice(0, numberOfResults)
 }
