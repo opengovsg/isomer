@@ -23,7 +23,7 @@ const MIN_JACCARD_THRESHOLD = 0.2
 export const getSimilarSitemapMatches = ({
   sitemap,
   query,
-  numberOfResults = 5,
+  numberOfResults = 3,
 }: GetSimilarSitemapMatchesOptions) => {
   const normalizedQuery = normalizePermalink(query)
 

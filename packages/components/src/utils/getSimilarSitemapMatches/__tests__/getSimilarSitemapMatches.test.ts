@@ -537,6 +537,7 @@ describe("getSimilarSitemapMatches", () => {
       const results = getSimilarSitemapMatches({
         sitemap: similarSitemap,
         query: "contact",
+        numberOfResults: similarSitemap.length + 1, // higher than the default of 3
       })
 
       // Assert
@@ -730,7 +731,7 @@ describe("getSimilarSitemapMatches", () => {
       { permalink: "https://example.com/page-8", title: "Page 8" },
     ]
 
-    it("should default to 5 results when numberOfResults is not specified", () => {
+    it("should default to 3 results when numberOfResults is not specified", () => {
       // Arrange & Act
       const results = getSimilarSitemapMatches({
         sitemap: largeSitemap,
@@ -738,7 +739,7 @@ describe("getSimilarSitemapMatches", () => {
       })
 
       // Assert
-      expect(results.length).toBe(5)
+      expect(results.length).toBe(3)
     })
 
     it("should limit results to the specified numberOfResults", () => {
