@@ -22,17 +22,117 @@ const meta: Meta<typeof NotFoundLayout> = {
 export default meta
 type Story = StoryObj<NotFoundPageSchemaType>
 
-export const Default: Story = {
-  name: "NotFound",
+export const NoFuzzyMatches: Story = {
   args: {
     layout: "notfound",
-    site: generateSiteConfig(),
+    site: generateSiteConfig({
+      siteMap: {
+        id: "1",
+        title: "Isomer Next",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [
+          {
+            id: "2",
+            title: "About Us",
+            permalink: "/about-us",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+          },
+          {
+            id: "3",
+            title: "Contact",
+            permalink: "/contact",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+          },
+          {
+            id: "4",
+            title: "Services",
+            permalink: "/services",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+          },
+        ],
+      },
+    }),
     meta: {
-      description: "Search results",
+      description: "No matching results",
     },
     page: {
       title: "Search",
-      permalink: "/404.html",
+      permalink: "/xyz-quantum-blockchain-metaverse",
+      lastModified: "2024-05-02T14:12:57.160Z",
+    },
+  },
+}
+
+export const WithFuzzyMatches: Story = {
+  args: {
+    layout: "notfound",
+    site: generateSiteConfig({
+      siteMap: {
+        id: "1",
+        title: "Isomer Next",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [
+          {
+            id: "2",
+            title: "Career Opportunities",
+            permalink: "/career-opportunities",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+          },
+          {
+            id: "3",
+            title: "Careers at Our Company",
+            permalink: "/careers-at-our-company",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+          },
+          {
+            id: "4",
+            title: "Job Openings",
+            permalink: "/job-openings",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+          },
+          {
+            id: "5",
+            title: "About Us",
+            permalink: "/about-us",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+          },
+          {
+            id: "6",
+            title: "Contact",
+            permalink: "/contact",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+          },
+        ],
+      },
+    }),
+    meta: {
+      description: "Found matching results",
+    },
+    page: {
+      title: "Search",
+      permalink: "/careers",
       lastModified: "2024-05-02T14:12:57.160Z",
     },
   },

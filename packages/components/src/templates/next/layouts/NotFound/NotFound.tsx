@@ -1,9 +1,12 @@
 import { type NotFoundPageSchemaType } from "~/types"
 import { getTailwindVariantLayout } from "~/utils"
 import { createInfobarStyles } from "../../components/complex/Infobar"
+import { Link } from "../../components/internal/Link"
 import { LinkButton } from "../../components/internal/LinkButton"
 import { Skeleton } from "../Skeleton"
 import { NotFoundSearchButton } from "./NotFoundSearchButton"
+import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
+import { getFuzzySitemapMatches } from "~/utils/getFuzzySitemapMatches"
 
 export const NotFoundLayout = ({
   site,
@@ -14,6 +17,11 @@ export const NotFoundLayout = ({
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const infobarStyles = createInfobarStyles({
     layout: simplifiedLayout,
+  })
+
+  const fuzzySitemapMatches = getFuzzySitemapMatches({
+    sitemap: getSitemapAsArray(site.siteMap),
+    query: page.permalink,
   })
 
   return (
@@ -38,10 +46,31 @@ export const NotFoundLayout = ({
               <div className={infobarStyles.headingContainer()}>
                 <h2 className={infobarStyles.title()}>Page not found</h2>
                 <p className={infobarStyles.description()}>
-                  This page might have been moved or deleted. Try searching for
-                  this page instead.
+                  {fuzzySitemapMatches.length > 0
+                    ? "This page might have been moved or deleted. Did you mean one of these?"
+                    : "This page might have been moved or deleted. Try searching for this page instead."}
                 </p>
               </div>
+              {fuzzySitemapMatches.length > 0 && (
+                <ul className="flex flex-col gap-6">
+                  {fuzzySitemapMatches.map((match) => (
+                    <li key={match.item.entity.permalink}>
+                      <Link
+                        href={match.item.entity.permalink}
+                        className="group flex flex-col gap-1 outline-0"
+                        LinkComponent={LinkComponent}
+                      >
+                        <span className="prose-headline-lg-semibold text-base-content-strong underline-offset-4 group-hover:text-brand-canvas-inverse group-hover:underline">
+                          {match.item.entity.title}
+                        </span>
+                        <span className="prose-body-sm text-base-content-subtle">
+                          {match.item.entity.permalink}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <div className={infobarStyles.buttonContainer()}>
                 <NotFoundSearchButton LinkComponent={LinkComponent} />
                 <LinkButton
