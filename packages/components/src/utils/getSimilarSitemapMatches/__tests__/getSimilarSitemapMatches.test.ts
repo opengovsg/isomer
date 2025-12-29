@@ -10,7 +10,10 @@ describe("getSimilarSitemapMatches", () => {
       permalink: "https://example.com/services/web-development",
       title: "Web Development",
     },
-    { permalink: "https://example.com/services/mobile-apps", title: "Mobile Apps" },
+    {
+      permalink: "https://example.com/services/mobile-apps",
+      title: "Mobile Apps",
+    },
     { permalink: "https://example.com/blog/hello-world", title: "Hello World" },
   ]
 
@@ -173,7 +176,10 @@ describe("getSimilarSitemapMatches", () => {
     it("should handle URLs with query parameters", () => {
       // Arrange
       const sitemapWithParams = [
-        { permalink: "https://example.com/page?foo=bar", title: "Page with params" },
+        {
+          permalink: "https://example.com/page?foo=bar",
+          title: "Page with params",
+        },
       ]
 
       // Act
@@ -192,7 +198,10 @@ describe("getSimilarSitemapMatches", () => {
     it("should handle URLs with hash fragments", () => {
       // Arrange
       const sitemapWithHash = [
-        { permalink: "https://example.com/page#section", title: "Page with hash" },
+        {
+          permalink: "https://example.com/page#section",
+          title: "Page with hash",
+        },
       ]
 
       // Act
@@ -211,7 +220,10 @@ describe("getSimilarSitemapMatches", () => {
     it("should handle URLs with underscores", () => {
       // Arrange
       const sitemapWithUnderscores = [
-        { permalink: "https://example.com/my_page_name", title: "Underscore page" },
+        {
+          permalink: "https://example.com/my_page_name",
+          title: "Underscore page",
+        },
       ]
 
       // Act
@@ -233,7 +245,8 @@ describe("getSimilarSitemapMatches", () => {
       // Arrange
       const deeplyNestedSitemap = [
         {
-          permalink: "https://example.com/level1/level2/level3/level4/final-page",
+          permalink:
+            "https://example.com/level1/level2/level3/level4/final-page",
           title: "Deep Page",
         },
       ]
@@ -262,7 +275,10 @@ describe("getSimilarSitemapMatches", () => {
           permalink: "https://example.com/product-123-details",
           title: "Product 123",
         },
-        { permalink: "https://example.com/v2/api/users", title: "API V2 Users" },
+        {
+          permalink: "https://example.com/v2/api/users",
+          title: "API V2 Users",
+        },
       ]
 
       // Act
@@ -281,9 +297,18 @@ describe("getSimilarSitemapMatches", () => {
     it("should handle URLs with file extensions", () => {
       // Arrange
       const extensionSitemap = [
-        { permalink: "https://example.com/docs/guide.html", title: "Guide HTML" },
-        { permalink: "https://example.com/files/report.pdf", title: "Report PDF" },
-        { permalink: "https://example.com/data/export.json", title: "Export JSON" },
+        {
+          permalink: "https://example.com/docs/guide.html",
+          title: "Guide HTML",
+        },
+        {
+          permalink: "https://example.com/files/report.pdf",
+          title: "Report PDF",
+        },
+        {
+          permalink: "https://example.com/data/export.json",
+          title: "Export JSON",
+        },
       ]
 
       // Act & Assert
@@ -312,7 +337,10 @@ describe("getSimilarSitemapMatches", () => {
           permalink: "https://example.com/search?q=hello%20world",
           title: "Search Hello World",
         },
-        { permalink: "https://example.com/path%2Fto%2Fpage", title: "Encoded Path" },
+        {
+          permalink: "https://example.com/path%2Fto%2Fpage",
+          title: "Encoded Path",
+        },
       ]
 
       // Assert & Assert
@@ -380,7 +408,10 @@ describe("getSimilarSitemapMatches", () => {
     it("should handle URLs with port numbers", () => {
       // Arrange
       const portSitemap = [
-        { permalink: "https://example.com:8080/admin/dashboard", title: "Dashboard" },
+        {
+          permalink: "https://example.com:8080/admin/dashboard",
+          title: "Dashboard",
+        },
         { permalink: "http://localhost:3000/test-page", title: "Test Page" },
       ]
 
@@ -406,8 +437,14 @@ describe("getSimilarSitemapMatches", () => {
     it("should handle URLs with subdomains", () => {
       // Arrange
       const subdomainSitemap = [
-        { permalink: "https://blog.example.com/article-one", title: "Article One" },
-        { permalink: "https://api.staging.example.com/docs", title: "API Docs" },
+        {
+          permalink: "https://blog.example.com/article-one",
+          title: "Article One",
+        },
+        {
+          permalink: "https://api.staging.example.com/docs",
+          title: "API Docs",
+        },
         { permalink: "https://www.example.com/home", title: "Home" },
       ]
 
@@ -466,7 +503,8 @@ describe("getSimilarSitemapMatches", () => {
       // Arrange
       const longPathSitemap = [
         {
-          permalink: "https://example.com/this-is-a-very-long-path-segment-that-contains-many-words-and-hyphens",
+          permalink:
+            "https://example.com/this-is-a-very-long-path-segment-that-contains-many-words-and-hyphens",
           title: "Long Path",
         },
       ]
@@ -526,7 +564,10 @@ describe("getSimilarSitemapMatches", () => {
       const similarSitemap = [
         { permalink: "https://example.com/contact", title: "Contact" },
         { permalink: "https://example.com/contact-us", title: "Contact Us" },
-        { permalink: "https://example.com/contact-form", title: "Contact Form" },
+        {
+          permalink: "https://example.com/contact-form",
+          title: "Contact Form",
+        },
         {
           permalink: "https://example.com/about/contact-info",
           title: "Contact Info",
@@ -555,7 +596,10 @@ describe("getSimilarSitemapMatches", () => {
     it("should match query with extra stop words to clean sitemap URL", () => {
       // Arrange - query has "is" which is a stop word
       const sitemap = [
-        { permalink: "https://example.com/this-my-life", title: "This My Life" },
+        {
+          permalink: "https://example.com/this-my-life",
+          title: "This My Life",
+        },
         { permalink: "https://example.com/other-page", title: "Other Page" },
       ]
 
@@ -837,9 +881,9 @@ describe("getSimilarSitemapMatches", () => {
     it("should rank by word overlap in fallback mode", () => {
       // Arrange
       const sitemap = [
-        { permalink: "/found", title: "Found" }, 
-        { permalink: "/not-found", title: "Not Found" }, 
-        { permalink: "/not-found-page", title: "Not Found Page" }, 
+        { permalink: "/found", title: "Found" },
+        { permalink: "/not-found", title: "Not Found" },
+        { permalink: "/not-found-page", title: "Not Found Page" },
       ]
 
       // Act - "this not found page" has 4 words after normalization
@@ -858,4 +902,3 @@ describe("getSimilarSitemapMatches", () => {
     })
   })
 })
-

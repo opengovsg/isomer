@@ -192,4 +192,3 @@ describe("normalizePermalink", () => {
     })
   })
 })
-

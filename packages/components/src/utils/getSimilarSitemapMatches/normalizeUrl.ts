@@ -36,8 +36,7 @@ const decodeUrl = (path: string) => {
 const removeFileExtension = (path: string) =>
   path.replace(/\.[a-zA-Z0-9]+$/, "")
 
-const removeDelimiters = (path: string) =>
-  path.replace(/[-_]+/g, " ")
+const removeDelimiters = (path: string) => path.replace(/[-_]+/g, " ")
 
 // Common filler words that are often dropped during URL restructuring
 export const STOP_WORDS = new Set([
@@ -79,4 +78,3 @@ const cleanupSegments = (path: string) =>
     .map((segment) => segment.split(" ").filter(Boolean).join(" "))
     .filter(Boolean)
     .join("/")
-

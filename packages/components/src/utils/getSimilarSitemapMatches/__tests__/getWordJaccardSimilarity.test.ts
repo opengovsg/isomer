@@ -65,14 +65,18 @@ describe("getWordJaccardSimilarity", () => {
     })
 
     it("should handle mixed delimiters", () => {
-      expect(getWordJaccardSimilarity("docs/guide page", "docs/guide page")).toBe(1)
+      expect(
+        getWordJaccardSimilarity("docs/guide page", "docs/guide page"),
+      ).toBe(1)
     })
 
     it("should treat path segments as separate words", () => {
       // query: {docs, guide}, target: {docs, other}
       // intersection: {docs} = 1
       // union: {docs, guide, other} = 3
-      expect(getWordJaccardSimilarity("docs/guide", "docs/other")).toBeCloseTo(1 / 3)
+      expect(getWordJaccardSimilarity("docs/guide", "docs/other")).toBeCloseTo(
+        1 / 3,
+      )
     })
   })
 
@@ -93,4 +97,3 @@ describe("getWordJaccardSimilarity", () => {
     })
   })
 })
-

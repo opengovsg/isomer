@@ -63,4 +63,3 @@ export const getSimilarSitemapMatches = ({
     .sort((a, b) => b.jaccardScore - a.jaccardScore)
     .slice(0, numberOfResults)
 }
-

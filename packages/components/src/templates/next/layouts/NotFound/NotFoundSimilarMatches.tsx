@@ -29,12 +29,16 @@ export const NotFoundSimilarMatches = ({
 
   useEffect(() => {
     // Ensure this only runs in browser environments, not during server-side rendering
-    if (typeof window === "undefined" || window.location.pathname === "undefined") return
+    if (
+      typeof window === "undefined" ||
+      window.location.pathname === "undefined"
+    )
+      return
 
     const currentPath = window.location.pathname
 
     setPermalink(currentPath)
-    
+
     const matches = getSimilarSitemapMatches({
       sitemap: getSitemapAsArray(site.siteMap),
       query: currentPath,

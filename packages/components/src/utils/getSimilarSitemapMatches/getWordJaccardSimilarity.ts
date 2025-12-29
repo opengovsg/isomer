@@ -21,4 +21,3 @@ export const getWordJaccardSimilarity = (query: string, target: string) => {
 
   return intersectionSize / unionSize
 }
-
