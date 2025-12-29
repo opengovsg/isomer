@@ -6,9 +6,12 @@ import type { NotFoundPageSchemaType } from "~/types"
 import { getWordsFromPermalink } from "~/utils"
 import { LinkButton } from "../../components/internal/LinkButton"
 
-type NotFoundSearchButtonProps = Pick<NotFoundPageSchemaType, "LinkComponent">
+type NotFoundSearchButtonProps = Pick<NotFoundPageSchemaType, "LinkComponent"> & {
+  children: React.ReactNode
+}
 export const NotFoundSearchButton = ({
   LinkComponent,
+  children,
 }: NotFoundSearchButtonProps) => {
   const [permalink, setPermalink] = useState("")
 
@@ -31,7 +34,7 @@ export const NotFoundSearchButton = ({
       LinkComponent={LinkComponent}
       isWithFocusVisibleHighlight
     >
-      Search for this page
+      {children}
     </LinkButton>
   )
 }

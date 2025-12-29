@@ -72,7 +72,11 @@ export const NotFoundLayout = ({
                 </ul>
               )}
               <div className={infobarStyles.buttonContainer()}>
-                <NotFoundSearchButton LinkComponent={LinkComponent} />
+                <NotFoundSearchButton LinkComponent={LinkComponent}>
+                  {similarSitemapMatches.length > 0
+                    ? "Search"
+                    : "Search for this page"}
+                </NotFoundSearchButton>
                 <LinkButton
                   href="/"
                   size="lg"
