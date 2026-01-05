@@ -159,7 +159,7 @@ export const getRobotsTxt = (props: IsomerPageSchemaType) => {
           },
           {
             userAgent: "SearchSG",
-            disallow: "",
+            allow: "/",
           },
         ]
       : rules,
