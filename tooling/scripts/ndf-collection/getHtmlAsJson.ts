@@ -200,8 +200,15 @@ export const getHtmlAsJson = (html: string) => {
     });
   }
 
-  // console.log(JSON.stringify(validSchemaContent));
-
-  initialSchema.content = validSchemaContent;
+  initialSchema.content = validSchemaContent.map((component) => {
+    if (component.type === "image") {
+      return {
+        ...component,
+        src: `/images/product-info/${component.src}`,
+      };
+    } else {
+      return component;
+    }
+  });
   return initialSchema;
 };

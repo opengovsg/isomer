@@ -291,7 +291,7 @@ export const getLandingPageRelatedMonographs = (
                 {
                   type: "link",
                   attrs: {
-                    href: `/automated/active-ingredient/${monograph["Monograph ID"]}`,
+                    href: `/about-drugs/active-ingredient/${monograph["Monograph ID"]}`,
                   },
                 },
               ],
@@ -380,7 +380,7 @@ export const getRouteOfAdministration = (
                       {
                         type: "link",
                         attrs: {
-                          href: `/automated/product-information/${licenceNumber}`,
+                          href: `/about-drugs/product-information/${licenceNumber}`,
                           target: "_self",
                           rel: "",
                           class: null,

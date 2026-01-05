@@ -98,6 +98,7 @@ export const createProductInformationCollection = async () => {
       manufacturer,
       countryOfManufacture,
       routeOfAdministration,
+      forensicClassification,
     });
 
     // Write to file

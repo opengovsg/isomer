@@ -43,7 +43,7 @@ export const getMonographPage = ({
 
   return {
     page: {
-      title: monographName,
+      title: decodeHtmlEntities(monographName),
       tags: [
         {
           category: "Subsidy Information and Financing Scheme",
@@ -1842,6 +1842,7 @@ interface ProductInformationLinkProps {
   manufacturer: string;
   countryOfManufacture: string;
   routeOfAdministration: string;
+  forensicClassification: string;
 }
 
 export const getProductInformationLink = ({
@@ -1853,36 +1854,46 @@ export const getProductInformationLink = ({
   manufacturer,
   countryOfManufacture,
   routeOfAdministration,
+  forensicClassification,
 }: ProductInformationLinkProps) => {
-  const category =
+  const routeOfAdministrationNormalised =
     routeOfAdministration.charAt(0).toUpperCase() +
     routeOfAdministration.toLocaleLowerCase().slice(1);
+  const category =
+    forensicClassification.charAt(0).toUpperCase() +
+    forensicClassification.toLocaleLowerCase().slice(1);
   const clinicalInformation =
     indications === "NA" && dosage === "NA" && contraindications === "NA"
       ? "No"
       : "Yes";
-  const manufacturerTags = manufacturer.split(" | ");
-  const countryOfManufactureTags = countryOfManufacture.split(" | ");
+  const manufacturerTags = manufacturer.split("|").map((m) => m.trim());
+  const countryOfManufactureTags = countryOfManufacture
+    .split("|")
+    .map((c) => c.trim());
 
   return {
     version: "0.1.0",
     layout: "link",
     page: {
-      title: `${decodeHtmlEntities(productName)} [${licenseNumber}]"`,
-      ref: `/automated/product-information/${licenseNumber}`,
+      title: `${decodeHtmlEntities(productName)} [${licenseNumber}]`,
+      ref: `/about-drugs/product-information/${licenseNumber}`,
       description: `Active ingredients: ${decodeHtmlEntities(productName)}`,
       category,
       tags: [
         {
-          category: "Clinical information",
+          category: "1. Clinical information",
           selected: [clinicalInformation],
         },
         {
-          category: "Manufacturer",
+          category: "2. Route of Administration",
+          selected: [routeOfAdministrationNormalised],
+        },
+        {
+          category: "3. Manufacturer",
           selected: manufacturerTags,
         },
         {
-          category: "Country of Manufacturer",
+          category: "4. Country of Manufacturer",
           selected: countryOfManufactureTags,
         },
       ],
