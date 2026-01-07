@@ -1,8 +1,8 @@
 import fm from "front-matter";
-import moment from "moment";
 import { isomerSchemaValidator } from "./schema";
 import { generateImageAltText } from "./ai";
 import type { GetIsomerSchemaFromJekyllResponse } from "./types";
+import fs from "fs";
 
 interface HomepageMigrationParams {
   content: string;
@@ -276,12 +276,144 @@ interface InfopicSection {
   alt?: string;
 }
 
+// Extract cards from HTML description that contains multiple paragraphs with bold titles
+const extractCardsFromDescription = (
+  description: string
+): { title: string; description: string; url?: string }[] | null => {
+  if (!description) {
+    return null;
+  }
+
+  // Match paragraphs that start with bold text (e.g., <p><b>Title</b>Description</p>)
+  // Also handle <BR> tags and other HTML
+  const paragraphRegex = /<p[^>]*>(.*?)<\/p>/gi;
+  const cards: { title: string; description: string; url?: string }[] = [];
+  let match;
+
+  while ((match = paragraphRegex.exec(description)) !== null) {
+    const paragraphContent = match[1] || "";
+
+    // Check if paragraph starts with bold text (may have <BR> or other tags after)
+    const boldRegex = /^<b[^>]*>(.*?)<\/b>/i;
+    const boldMatch = boldRegex.exec(paragraphContent);
+    if (boldMatch) {
+      const title = stripHtml(boldMatch[1]) || "";
+      // Get the rest of the paragraph after the bold tag
+      // Remove the bold tag and any <BR> tags, then clean up remaining HTML
+      const descriptionText = paragraphContent
+        .replace(/^<b[^>]*>.*?<\/b>/i, "") // Remove bold tag
+        .replace(/<BR\s*\/?>/gi, " ") // Replace <BR> with space
+        .replace(/<br\s*\/?>/gi, " ") // Replace <br> with space
+        .replace(/<[^>]+>/g, " ") // Remove remaining HTML tags
+        .replace(/\s+/g, " ") // Normalize whitespace
+        .trim();
+
+      // Skip paragraphs that are just "We welcome you..." or similar closing text
+      if (
+        title &&
+        descriptionText &&
+        !descriptionText.toLowerCase().includes("we welcome")
+      ) {
+        cards.push({
+          title,
+          description: descriptionText,
+        });
+      }
+    }
+  }
+
+  // Also check for links at the end of the description (outside paragraphs)
+  // Look for links that might be associated with the cards
+  const linkRegex = /<a[^>]*href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi;
+  let linkMatch;
+  const links: string[] = [];
+  while ((linkMatch = linkRegex.exec(description)) !== null) {
+    links.push(linkMatch[1] || "");
+  }
+
+  // Apply the last link URL to the last card if we have cards and links
+  if (links.length > 0 && cards.length > 0) {
+    const lastCard = cards[cards.length - 1];
+    if (lastCard) {
+      lastCard.url = normalizeUrl(links[links.length - 1] || "");
+    }
+  }
+
+  // Only return cards if we found at least 2 (indicating multiple items)
+  return cards.length >= 2 ? cards : null;
+};
+
 const convertInfopic = async (
   infopicSection: InfopicSection,
   site: string,
   domain?: string
-): Promise<{ infopic: any; reviewItems: string[] }> => {
+): Promise<{ infopic?: any; infocards?: any; reviewItems: string[] }> => {
   const reviewItems: string[] = [];
+
+  // Check if description contains multiple items that should be converted to infocards
+  const extractedCards = infopicSection.description
+    ? extractCardsFromDescription(infopicSection.description)
+    : null;
+
+  if (extractedCards) {
+    // Convert to infocards instead of infopic
+    reviewItems.push("Infopic with multiple items converted to infocards");
+
+    const cards = extractedCards
+      .map((card) => {
+        const cardObj: any = {
+          title: card.title,
+          description: stripHtml(card.description)?.substring(0, 150) || "",
+        };
+
+        // Only include url if it's not empty after normalization
+        if (card.url) {
+          const normalizedUrl = normalizeUrl(card.url);
+          if (normalizedUrl && normalizedUrl.trim() !== "") {
+            cardObj.url = normalizedUrl;
+          }
+        } else if (infopicSection.url) {
+          // Fall back to infopic URL if card doesn't have one
+          const normalizedUrl = normalizeUrl(infopicSection.url);
+          if (normalizedUrl && normalizedUrl.trim() !== "") {
+            cardObj.url = normalizedUrl;
+          }
+        }
+
+        return cardObj;
+      })
+      .filter((card) => card.title); // Ensure valid cards
+
+    // Schema requires at least 1 card
+    const finalCards =
+      cards.length === 0
+        ? [
+            {
+              title: "Placeholder",
+              description: "",
+            },
+          ]
+        : cards;
+
+    if (cards.length === 0) {
+      reviewItems.push(
+        "Infopic section had no valid cards - placeholder card added"
+      );
+    }
+
+    return {
+      infocards: {
+        type: "infocards",
+        title: stripHtml(infopicSection.title) || infopicSection.title,
+        variant: "cardsWithoutImages",
+        maxColumns: "3",
+        cards: finalCards,
+      },
+      reviewItems,
+    };
+  }
+
+  // Default: convert to infopic
   const infopic: any = {
     type: "infopic",
     title: stripHtml(infopicSection.title) || infopicSection.title,
@@ -792,13 +924,14 @@ export const migrateHomepage = async ({
 
   // Convert Infopics
   for (const infopicSection of infopicSections) {
-    const { infopic, reviewItems: infopicReviewItems } = await convertInfopic(
-      infopicSection,
-      site,
-      domain
-    );
-    reviewItems.push(...infopicReviewItems);
-    contentArray.push(infopic);
+    const result = await convertInfopic(infopicSection, site, domain);
+    reviewItems.push(...result.reviewItems);
+    // Handle both infopic and infocards cases
+    if (result.infocards) {
+      contentArray.push(result.infocards);
+    } else if (result.infopic) {
+      contentArray.push(result.infopic);
+    }
   }
 
   // Convert Infobars (skip first if used in hero subtitle)
@@ -879,3 +1012,77 @@ export const migrateHomepage = async ({
     content: homepageSchema,
   };
 };
+
+// Main execution function
+const main = async () => {
+  const args = process.argv.slice(2);
+
+  if (args.length === 0) {
+    console.error(
+      "Usage: tsx homepage.ts <input-file> [output-file] [site] [domain]"
+    );
+    console.error("Example: tsx homepage.ts homepage/to-migrate/mof-svp.md");
+    console.error(
+      "Example: tsx homepage.ts homepage/to-migrate/mof-svp.md output.json my-site https://example.com"
+    );
+    process.exit(1);
+  }
+
+  const inputFile = args[0];
+  if (!inputFile) {
+    console.error("❌ Error: Input file is required");
+    process.exit(1);
+  }
+
+  const outputFile = args[1] || inputFile.replace(/\.md$/, ".json");
+  const site = args[2] || "default-site";
+  const domain = args[3];
+
+  try {
+    // Read input file
+    const markdownContent = fs.readFileSync(inputFile, "utf-8");
+
+    // Migrate to JSON
+    const migrationResult = await migrateHomepage({
+      content: markdownContent,
+      site,
+      domain,
+    });
+
+    if (migrationResult.status === "not_converted") {
+      console.error(
+        `❌ Error: ${migrationResult.title} could not be converted`
+      );
+      process.exit(1);
+    }
+
+    // Write output file
+    fs.writeFileSync(
+      outputFile,
+      JSON.stringify(migrationResult.content, null, 2)
+    );
+
+    if (migrationResult.status === "converted") {
+      console.log(`✅ Successfully migrated ${inputFile} to ${outputFile}`);
+    } else {
+      console.log(
+        `⚠️  Migrated ${inputFile} to ${outputFile} (requires manual review)`
+      );
+      if (
+        migrationResult.reviewItems &&
+        migrationResult.reviewItems.length > 0
+      ) {
+        console.log("Review items:");
+        migrationResult.reviewItems.forEach((item) => {
+          console.log(`  - ${item}`);
+        });
+      }
+    }
+  } catch (error) {
+    console.error(`❌ Error migrating ${inputFile}:`, error);
+    process.exit(1);
+  }
+};
+
+// Run if executed directly
+void main();

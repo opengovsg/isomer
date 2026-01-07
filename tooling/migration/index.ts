@@ -21,6 +21,8 @@ import { randomUUID } from "crypto";
 import * as dotenv from "dotenv";
 import { getIsomerSchemaFromJekyll } from "./page";
 import { migrateHomepage } from "./homepage";
+import { migrateContactUsPage } from "./contact";
+import { isomerSchemaValidator } from "./schema";
 
 dotenv.config();
 
@@ -228,44 +230,6 @@ const migrate = async ({
     `(https://github.com/isomerpages/${site})`
   );
 
-  const migrationFolders = folders ?? (await getAllFolders({ site, octokit }));
-  const resourceRoomName = isResourceRoomIncluded
-    ? await getResourceRoomName({ site, octokit })
-    : null;
-  const orphanPages = isOrphansIncluded
-    ? await getOrphanPages({ site, octokit })
-    : [];
-
-  console.log("Folders to migrate:", migrationFolders.join(", "));
-
-  if (resourceRoomName) {
-    console.log("Resource room name:", resourceRoomName);
-  }
-
-  if (orphanPages.length > 0) {
-    console.log("Orphan pages:", orphanPages.join(", "));
-  }
-
-  const allPages = await getPathsToMigrate({
-    octokit,
-    site,
-    folders: migrationFolders,
-    orphanPages,
-  });
-
-  const allResourceRoomPages = !!resourceRoomName
-    ? await getRecursiveTree({
-        site,
-        path: resourceRoomName,
-        octokit,
-      })
-    : [];
-
-  console.log(
-    "Total pages to migrate:",
-    allPages.length + allResourceRoomPages.length
-  );
-
   // Migrate homepage first
   console.log("Migrating homepage...");
   const homepageContent = await getFileContents({
@@ -315,6 +279,104 @@ const migrate = async ({
       permalink: "/",
     };
   }
+
+  // Migrate contact us page
+  console.log("Migrating contact us page...");
+  const contactUsContent = await getFileContents({
+    site,
+    path: "pages/contact-us.md",
+    octokit,
+  });
+
+  let contactUsResult: ReportRow | null = null;
+  if (contactUsContent && contactUsContent.length >= 5) {
+    try {
+      const migrationResult = migrateContactUsPage(contactUsContent);
+      const contactUsJson = migrationResult.content;
+      const pageTitle = contactUsJson.page?.title || "Contact Us";
+      const pagePermalink = contactUsJson.page?.permalink || "/contact-us/";
+
+      // Validate the schema
+      const isValidSchema = isomerSchemaValidator(contactUsJson);
+      const allReviewItems = [...migrationResult.reviewItems];
+
+      if (!isValidSchema) {
+        allReviewItems.push("Contact us page schema validation failed");
+      }
+
+      contactUsResult = {
+        status: allReviewItems.length > 0 ? "manual_review" : "converted",
+        title: pageTitle,
+        permalink: pagePermalink,
+        ...(allReviewItems.length > 0 && { reviewItems: allReviewItems }),
+      };
+
+      await saveContentsToFile({
+        site,
+        content: contactUsJson,
+        permalink: getLegalPermalink(pagePermalink),
+        shouldOverwrite: true,
+      });
+
+      if (allReviewItems.length > 0) {
+        console.log("Contact us page migrated with review items");
+      } else {
+        console.log("Contact us page migrated successfully");
+      }
+    } catch (error) {
+      console.error("Error migrating contact us page:", error);
+      contactUsResult = {
+        status: "not_converted",
+        title: "Contact Us",
+        permalink: "/contact-us/",
+      };
+    }
+  } else {
+    console.log("Contact us page (pages/contact-us.md) not found or empty");
+    contactUsResult = {
+      status: "not_converted",
+      title: "Contact Us",
+      permalink: "/contact-us/",
+    };
+  }
+
+  const migrationFolders = folders ?? (await getAllFolders({ site, octokit }));
+  const resourceRoomName = isResourceRoomIncluded
+    ? await getResourceRoomName({ site, octokit })
+    : null;
+  const orphanPages = isOrphansIncluded
+    ? await getOrphanPages({ site, octokit })
+    : [];
+
+  console.log("Folders to migrate:", migrationFolders.join(", "));
+
+  if (resourceRoomName) {
+    console.log("Resource room name:", resourceRoomName);
+  }
+
+  if (orphanPages.length > 0) {
+    console.log("Orphan pages:", orphanPages.join(", "));
+  }
+
+  const allPages = await getPathsToMigrate({
+    octokit,
+    site,
+    folders: migrationFolders,
+    orphanPages,
+  });
+
+  const allResourceRoomPages = !!resourceRoomName
+    ? await getRecursiveTree({
+        site,
+        path: resourceRoomName,
+        octokit,
+      })
+    : [];
+
+  console.log(
+    "Total pages to migrate:",
+    allPages.length + allResourceRoomPages.length
+  );
 
   // Migrate all non-resource room pages
   const finishedPages: ReportRow[] = [];
@@ -415,6 +477,15 @@ const migrate = async ({
             status: "not_converted",
             permalink: "/",
             title: "Home page",
+          } satisfies ReportRow,
+        ]),
+    ...(contactUsResult
+      ? [contactUsResult]
+      : [
+          {
+            status: "not_converted",
+            permalink: "/contact-us/",
+            title: "Contact Us",
           } satisfies ReportRow,
         ]),
   ]
