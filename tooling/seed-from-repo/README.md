@@ -27,7 +27,7 @@ Additionally, you need to set up your SSH keys and `.env.prod` files inside the 
    3. `DB_HOST`: This is the full hostname of the RDS database server, which should be the writer endpoint of the RDS cluster.
 3. Add the SSH private key as `isomer-next-prod-bastion.pem` inside this `.ssh` folder.
 
-Once everything is set up, verify that you are able to connect to the bastion host by connecting to the OGP VPN, then running `npm run jump:prod`. If successful, you should be able to see a shell session started on the bastion host.
+Once everything is set up, verify that you are able to connect to the bastion host by connecting to the OGP VPN, then running `bun run jump:prod`. If successful, you should be able to see a shell session started on the bastion host.
 
 ### Running the migration and seeding process
 
@@ -44,7 +44,7 @@ As you will be modifying the production database and creating lots of entries, m
    5. Everything else can be set to the default.
 5. Modify the `MIGRATING_SITES_MAPPING` constant inside `index.ts` with the mapping of the GitHub repo name to the site ID that is currently stored in the database.
 6. Ensure that you do not have any `assets` or `repos` folder and if you do, delete them.
-7. Run `npm run start` to perform the migration.
+7. Run `bun run start` to perform the migration.
 8. After the migration is complete, go to the AWS production account and open the assets S3 bucket. Click on "Upload" in the root directory, click on "Add folder" and select the folder inside `assets` (which should correspond with the site ID). This will automatically upload all the assets with their corresponding UUIDs in their paths.
 9. Go to CodeBuild and click on "Start build" for that site.
 10. Once the site has finished building, verify that there are no broken links on the site. Use a test domain and point the origin to the site's latest build if there isn't one.

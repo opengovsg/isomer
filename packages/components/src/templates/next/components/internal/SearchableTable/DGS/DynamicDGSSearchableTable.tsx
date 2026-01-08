@@ -12,8 +12,10 @@ import { useDgsData } from "~/hooks/useDgsData"
 import { PAGINATION_MAX_ITEMS } from "../shared/constants"
 import { SearchableTableClientUI } from "../shared/SearchableTableClientUI"
 
-interface DynamicSearchableTableClientProps
-  extends Omit<DGSSearchableTableProps, "items" | "headers"> {
+interface DynamicSearchableTableClientProps extends Omit<
+  DGSSearchableTableProps,
+  "items" | "headers"
+> {
   headers: SearchableTableClientProps["headers"]
   isMetadataLoading: boolean
   isMetadataError: boolean

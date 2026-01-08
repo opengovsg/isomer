@@ -27,7 +27,8 @@ import { removeUserModalAtom, updateUserModalAtom } from "../../atoms"
 import { canResendInviteToUser } from "../../utils"
 
 interface UserTableMenuProps
-  extends Pick<UserTableProps, "siteId">,
+  extends
+    Pick<UserTableProps, "siteId">,
     Pick<UserTableData, "createdAt" | "lastLoginAt" | "email" | "role"> {
   userId: UserTableData["id"]
   userName: UserTableData["name"]

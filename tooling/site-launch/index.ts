@@ -60,7 +60,7 @@ const launch = async () => {
     await createSearchSgClientForGithub({ domain, name: long, repo })
     await archiveRepo(repo)
 
-    await confirm({ message: "Have you ran `npm run db:connect`?" })
+    await confirm({ message: "Have you ran `bun run db:connect`?" })
     const siteId = await createBaseSiteInStudio({
       name: long,
       codeBuildId: codebuildId,

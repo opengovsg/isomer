@@ -13,9 +13,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@isomer/eslint-config": "*",
-    "@isomer/prettier-config": "*",
-    "@isomer/tsconfig": "*",
+    "@isomer/eslint-config": "workspace:*",
+    "@isomer/prettier-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
     "eslint": "^9.10.0",
     "prettier": "^3.3.3",
     "typescript": "^5.9.2"

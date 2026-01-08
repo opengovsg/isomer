@@ -116,7 +116,7 @@ const main = async () => {
 
   if (sourceEnv !== "LOCAL") {
     await confirm({
-      message: `Have you opened your connection to the database using npm run ${getDbConnectCommand(sourceEnv)}?`,
+      message: `Have you opened your connection to the database using bun run ${getDbConnectCommand(sourceEnv)}?`,
     });
   }
 
@@ -160,7 +160,7 @@ const main = async () => {
     fs.writeFileSync(queryFilePath, modifiedQueryFile, "utf-8");
   }
 
-  await exec(`npm run start`, {
+  await exec(`bun run start`, {
     cwd: exportDir,
     env: {
       ...process.env,
@@ -256,7 +256,7 @@ const main = async () => {
   // Step 4: Prompt user to connect to the destination database
   if (destEnv !== "LOCAL" && destEnv !== "GITHUB") {
     await confirm({
-      message: `Have you opened your connection to the database using npm run ${getDbConnectCommand(destEnv)}?`,
+      message: `Have you opened your connection to the database using bun run ${getDbConnectCommand(destEnv)}?`,
     });
   }
 
