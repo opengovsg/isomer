@@ -20,7 +20,7 @@ export const VicaWidget = ({
       // the following attributes to ensure consistency and best brand appearance
       app-font-family="Inter, system-ui, sans-serif"
       app-foreground-color={colors.base.canvas.DEFAULT}
-      app-color={colors.brand.canvas.inverse}
+      // app-color={colors.brand.canvas.inverse}
       app-button-border-color={colors.brand.canvas.inverse}
       app-canvas-background-color={colors.brand.canvas.DEFAULT}
       app-quick-reply-button-background-color={colors.base.canvas.DEFAULT}
