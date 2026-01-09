@@ -1,9 +1,8 @@
 import { type NotFoundPageSchemaType } from "~/types"
 import { getTailwindVariantLayout } from "~/utils"
 import { createInfobarStyles } from "../../components/complex/Infobar"
-import { LinkButton } from "../../components/internal/LinkButton"
 import { Skeleton } from "../Skeleton"
-import { NotFoundSearchButton } from "./NotFoundSearchButton"
+import { NotFoundSimilarMatches } from "./NotFoundSimilarMatches"
 
 export const NotFoundLayout = ({
   site,
@@ -37,23 +36,13 @@ export const NotFoundLayout = ({
             <div className={infobarStyles.innerContainer()}>
               <div className={infobarStyles.headingContainer()}>
                 <h2 className={infobarStyles.title()}>Page not found</h2>
-                <p className={infobarStyles.description()}>
-                  This page might have been moved or deleted. Try searching for
-                  this page instead.
-                </p>
               </div>
-              <div className={infobarStyles.buttonContainer()}>
-                <NotFoundSearchButton LinkComponent={LinkComponent} />
-                <LinkButton
-                  href="/"
-                  size="lg"
-                  variant="outline"
-                  LinkComponent={LinkComponent}
-                  isWithFocusVisibleHighlight
-                >
-                  Go to homepage
-                </LinkButton>
-              </div>
+              <NotFoundSimilarMatches
+                site={site}
+                LinkComponent={LinkComponent}
+                descriptionClassName={infobarStyles.description()}
+                buttonContainerClassName={infobarStyles.buttonContainer()}
+              />
             </div>
           </div>
         </section>
