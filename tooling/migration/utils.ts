@@ -163,7 +163,9 @@ export const getManualReviewItems = async (
 
   // Flag table usages to add captions
   if (
-    stringifiedContent.includes("tableHeader") &&
+    stringifiedContent.includes(`"type":"table"`) ||
+    stringifiedContent.includes('"Table caption"') ||
+    stringifiedContent.includes("tableHeader") ||
     stringifiedContent.includes("tableRow")
   ) {
     reviewItems.push("Tables were used");
@@ -274,6 +276,10 @@ export const getManualReviewItems = async (
   // For article pages, 500 characters
   if (description && layout && layout === "post" && description.length > 500) {
     reviewItems.push("Article summary is longer than 500 characters");
+  }
+
+  if (!description || description.length === 0) {
+    reviewItems.push("Page summary is missing");
   }
 
   // Flag pages that have images that used to be links

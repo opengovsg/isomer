@@ -216,6 +216,8 @@ export const getIsomerSchemaFromJekyll = async ({
 
   // Enhance placeholder texts with AI-generated ones where possible
   const updatedSchemaContent: any[] = [];
+  let isPageContainingBrokenImage = false;
+  let isImageAltTextUpdated = false;
   for (const block of schemaContent.content) {
     if (
       (block.type === "image" || block.type === "contentpic") &&
@@ -235,23 +237,22 @@ export const getIsomerSchemaFromJekyll = async ({
         alt: generatedAltText ?? "This image does not exist",
       });
 
-      const brokenReviewItem = "Page with broken image";
-
-      if (!generatedAltText && !reviewItems.includes(brokenReviewItem)) {
-        reviewItems.push(brokenReviewItem);
-      }
-
-      const reviewItem =
-        "AI-generated alt text were used for images with missing alt text";
-
-      if (!reviewItems.includes(reviewItem)) {
-        reviewItems.push(
-          "AI-generated alt text were used for images with missing alt text"
-        );
+      if (!generatedAltText) {
+        isPageContainingBrokenImage = true;
+      } else {
+        isImageAltTextUpdated = true;
       }
     } else {
       updatedSchemaContent.push(block);
     }
+  }
+  if (isPageContainingBrokenImage) {
+    reviewItems.push("Page with broken image");
+  }
+  if (isImageAltTextUpdated) {
+    reviewItems.push(
+      "AI-generated alt text were used for images with missing alt text"
+    );
   }
   schemaContent.content = updatedSchemaContent;
 

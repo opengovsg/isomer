@@ -201,7 +201,7 @@ const createCollectionIndex = async (
       title,
       subtitle: `Read more on ${title} here.`,
       defaultSortBy: "date",
-      defaultSortDirection: "asc",
+      defaultSortDirection: "desc",
     },
     layout: "collection",
     content: [],
