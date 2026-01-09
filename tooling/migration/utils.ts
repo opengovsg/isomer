@@ -283,7 +283,10 @@ export const getManualReviewItems = async (
   }
 
   // Flag pages that have images that used to be links
-  if (stringifiedContent.includes('"text": "Image link"')) {
+  if (
+    stringifiedContent.includes('"text": "Image link"') ||
+    originalContent.includes('<a class="isomer-image-wrapper" href="')
+  ) {
     reviewItems.push("Contains images that were used as links");
   }
 

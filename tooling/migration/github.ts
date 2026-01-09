@@ -20,7 +20,7 @@ export const getResourceRoomName = async ({
 
   // Find the resource room name with the key `resources_name`
   try {
-    const match = config.match(/resources_name: (.*)/);
+    const match = /resources_name: (.*)/.exec(config);
 
     if (!match) {
       throw new Error("Resource room name not found in _config.yml");
@@ -76,9 +76,15 @@ export const getOrphanPages = async ({
   }
 
   // Filter out pages in the "pages" folder
-  return data
+  const orphanPages = data
     .filter((item) => item.type === "file" && item.name.endsWith(".md"))
     .map((item) => item.path);
+
+  return [
+    ...orphanPages,
+    // Add index.md at the root
+    "index.md",
+  ];
 };
 
 interface GetRepoPathContentsParams {

@@ -224,7 +224,7 @@ const convertHero = (heroSection: HeroSection, firstInfobar?: any): any => {
 
   // Flag dropdown removal
   if (heroSection.dropdown) {
-    reviewItems.push("Hero dropdown was removed - requires manual review");
+    reviewItems.push("Hero dropdown was removed");
   }
 
   return { hero, reviewItems };
@@ -468,7 +468,7 @@ const convertInfopic = async (
 
   // Flag subtitle removal
   if (infopicSection.subtitle) {
-    reviewItems.push("Infopic subtitle was removed - requires manual review");
+    reviewItems.push("Infopic subtitle was removed");
   }
 
   return { infopic, reviewItems };
@@ -496,9 +496,7 @@ const convertInfobars = (
   if (infobarSections.length >= 2) {
     infobarSections.forEach((infobar) => {
       if (infobar.subtitle) {
-        reviewItems.push(
-          "Infobar subtitle was removed - requires manual review"
-        );
+        reviewItems.push("Infobar subtitle was removed");
       }
     });
 
@@ -558,7 +556,7 @@ const convertInfobars = (
   // Single infobar - keep as infobar
   const infobar = infobarSections[0]!;
   if (infobar.subtitle) {
-    reviewItems.push("Infobar subtitle was removed - requires manual review");
+    reviewItems.push("Infobar subtitle was removed");
   }
 
   const component: any = {
@@ -642,7 +640,7 @@ const convertTextcards = (
   const reviewItems: string[] = [];
 
   if (textcardsSection.subtitle) {
-    reviewItems.push("Textcards subtitle was removed - requires manual review");
+    reviewItems.push("Textcards subtitle was removed");
   }
 
   const hasImages = textcardsSection.cards?.some((card) => card.image);
@@ -655,7 +653,7 @@ const convertTextcards = (
     cards: (textcardsSection.cards || [])
       .map((card) => {
         if (card.linktext) {
-          reviewItems.push("Link text was removed - requires manual review");
+          reviewItems.push("Link text was removed");
         }
 
         const cardObj: any = {
@@ -724,7 +722,7 @@ const convertAnnouncements = (
 
   const hasDates = announcementsSection.announcements?.some((ann) => ann.date);
   if (hasDates) {
-    reviewItems.push("Announcement date was removed - requires manual review");
+    reviewItems.push("Announcement date was removed");
   }
 
   const hasLinkText = announcementsSection.announcements?.some(
@@ -802,12 +800,10 @@ const convertInfocolumns = (
   const reviewItems: string[] = [];
 
   if (infocolumnsSection.subtitle) {
-    reviewItems.push(
-      "Infocolumns subtitle was removed - requires manual review"
-    );
+    reviewItems.push("Infocolumns subtitle was removed");
   }
   if (infocolumnsSection.linktext || infocolumnsSection.url) {
-    reviewItems.push("Infocolumns link was removed - requires manual review");
+    reviewItems.push("Infocolumns link was removed");
   }
 
   return {
@@ -1008,81 +1004,7 @@ export const migrateHomepage = async ({
     status,
     title: "Home",
     permalink: frontmatter.permalink || "/",
-    reviewItems: reviewItems.length > 0 ? reviewItems : undefined,
+    reviewItems: reviewItems.length > 0 ? [...new Set(reviewItems)] : undefined,
     content: homepageSchema,
   };
 };
-
-// Main execution function
-const main = async () => {
-  const args = process.argv.slice(2);
-
-  if (args.length === 0) {
-    console.error(
-      "Usage: tsx homepage.ts <input-file> [output-file] [site] [domain]"
-    );
-    console.error("Example: tsx homepage.ts homepage/to-migrate/mof-svp.md");
-    console.error(
-      "Example: tsx homepage.ts homepage/to-migrate/mof-svp.md output.json my-site https://example.com"
-    );
-    process.exit(1);
-  }
-
-  const inputFile = args[0];
-  if (!inputFile) {
-    console.error("❌ Error: Input file is required");
-    process.exit(1);
-  }
-
-  const outputFile = args[1] || inputFile.replace(/\.md$/, ".json");
-  const site = args[2] || "default-site";
-  const domain = args[3];
-
-  try {
-    // Read input file
-    const markdownContent = fs.readFileSync(inputFile, "utf-8");
-
-    // Migrate to JSON
-    const migrationResult = await migrateHomepage({
-      content: markdownContent,
-      site,
-      domain,
-    });
-
-    if (migrationResult.status === "not_converted") {
-      console.error(
-        `❌ Error: ${migrationResult.title} could not be converted`
-      );
-      process.exit(1);
-    }
-
-    // Write output file
-    fs.writeFileSync(
-      outputFile,
-      JSON.stringify(migrationResult.content, null, 2)
-    );
-
-    if (migrationResult.status === "converted") {
-      console.log(`✅ Successfully migrated ${inputFile} to ${outputFile}`);
-    } else {
-      console.log(
-        `⚠️  Migrated ${inputFile} to ${outputFile} (requires manual review)`
-      );
-      if (
-        migrationResult.reviewItems &&
-        migrationResult.reviewItems.length > 0
-      ) {
-        console.log("Review items:");
-        migrationResult.reviewItems.forEach((item) => {
-          console.log(`  - ${item}`);
-        });
-      }
-    }
-  } catch (error) {
-    console.error(`❌ Error migrating ${inputFile}:`, error);
-    process.exit(1);
-  }
-};
-
-// Run if executed directly
-void main();

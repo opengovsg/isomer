@@ -9,6 +9,8 @@ import type { GetIsomerSchemaFromJekyllResponse } from "./types";
 import { isomerSchemaValidator } from "./schema";
 import { PLACEHOLDER_ALT_TEXT, PLACEHOLDER_PAGE_SUMMARY } from "./constants";
 import { generateImageAltText, generatePageSummary } from "./ai";
+import { migrateHomepage } from "./homepage";
+import { migrateContactUsPage } from "./contact";
 
 const WHITELISTED_LAYOUTS = [
   // From staging branch, for extremely old sites
@@ -22,6 +24,10 @@ const WHITELISTED_LAYOUTS = [
   "post",
   "link",
   "file",
+
+  // Special layouts
+  "contact_us",
+  "homepage",
 ];
 
 interface GetPageContentProps {
@@ -180,6 +186,69 @@ export const getIsomerSchemaFromJekyll = async ({
       title,
       permalink,
     };
+  }
+
+  if (layout === "homepage") {
+    const homepageMigration = await migrateHomepage({
+      content,
+      site,
+      domain,
+    });
+
+    if (homepageMigration.status === "not_converted") {
+      return {
+        status: "not_converted",
+        title,
+        permalink,
+      };
+    } else if (homepageMigration.status === "converted") {
+      return {
+        status: "converted",
+        title,
+        permalink,
+        content: homepageMigration.content,
+      };
+    }
+
+    return {
+      status: homepageMigration.status,
+      title,
+      permalink,
+      reviewItems: homepageMigration.reviewItems,
+      content: homepageMigration.content,
+    };
+  }
+
+  if (layout === "contact_us") {
+    try {
+      const contactUsMigration = migrateContactUsPage(content);
+
+      if (
+        contactUsMigration.reviewItems &&
+        contactUsMigration.reviewItems.length > 0
+      ) {
+        return {
+          status: "manual_review",
+          title,
+          permalink,
+          reviewItems: contactUsMigration.reviewItems,
+          content: contactUsMigration.content,
+        };
+      }
+
+      return {
+        status: "converted",
+        title,
+        permalink,
+        content: contactUsMigration.content,
+      };
+    } catch (error) {
+      return {
+        status: "not_converted",
+        title,
+        permalink,
+      };
+    }
   }
 
   // Pages are either in Tiptap (which we know how to handle), or have redundant

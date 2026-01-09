@@ -5,21 +5,21 @@ import fm from "front-matter";
 interface ContactUsLocation {
   title?: string;
   address: string[];
-  operating_hours?: Array<{
+  operating_hours?: {
     days?: string;
     time?: string;
     description?: string;
-  }>;
+  }[];
   maps_link?: string;
 }
 
 interface ContactUsContact {
   title: string;
-  content: Array<{
+  content: {
     phone?: string;
     email?: string;
     other?: string; // HTML string
-  }>;
+  }[];
 }
 
 interface ContactUsFrontmatter {
@@ -43,8 +43,10 @@ const isValidMapEmbedUrl = (url: string): boolean => {
 };
 
 // Extract links from HTML string (e.g., <a href="...">text</a>)
-const extractLinksFromHtml = (html: string): Array<{ href: string; text: string }> => {
-  const links: Array<{ href: string; text: string }> = [];
+const extractLinksFromHtml = (
+  html: string
+): { href: string; text: string }[] => {
+  const links: { href: string; text: string }[] = [];
   const linkRegex = /<a\s+href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi;
   let match;
 
@@ -68,7 +70,7 @@ const createTextNode = (text: string, marks: any[] = []): any => {
 };
 
 // Create a link mark
-const createLinkMark = (href: string, target: string = "_self"): any => {
+const createLinkMark = (href: string, target = "_self"): any => {
   return {
     type: "link",
     attrs: {
@@ -79,7 +81,7 @@ const createLinkMark = (href: string, target: string = "_self"): any => {
 };
 
 // Create a paragraph node
-const createParagraphNode = (content: any[], dir: string = "ltr"): any => {
+const createParagraphNode = (content: any[], dir = "ltr"): any => {
   return {
     type: "paragraph",
     ...(dir && { attrs: { dir } }),
@@ -88,7 +90,7 @@ const createParagraphNode = (content: any[], dir: string = "ltr"): any => {
 };
 
 // Create a heading node
-const createHeadingNode = (level: number, text: string, dir: string = "ltr"): any => {
+const createHeadingNode = (level: number, text: string, dir = "ltr"): any => {
   return {
     type: "heading",
     attrs: {
@@ -132,7 +134,7 @@ const operatingHoursToParagraphContent = (
     if (index > 0) {
       content.push(createHardBreakNode());
     }
-    
+
     // Add days and time on first line
     if (oh.days && oh.time) {
       content.push(createTextNode(`${oh.days}: ${oh.time}`));
@@ -141,7 +143,7 @@ const operatingHoursToParagraphContent = (
     } else if (oh.time) {
       content.push(createTextNode(oh.time));
     }
-    
+
     // Add description on next line if present
     if (oh.description) {
       if (content.length > 0 && content[content.length - 1]?.type === "text") {
@@ -177,6 +179,7 @@ const contactContentToParagraphs = (
       paragraphs.push(createParagraphNode(phoneContent));
     }
 
+    // FIXME: Handle other HTML content more robustly
     if (item.other) {
       const links = extractLinksFromHtml(item.other);
       links.forEach((link) => {
@@ -195,7 +198,7 @@ const contactContentToParagraphs = (
 export const migrateContactUsPage = (
   markdownContent: string,
   lastModified?: string
-): { content: any; reviewItems: string[] } => {
+): { content: any; reviewItems?: string[] } => {
   const { attributes, body } = fm<ContactUsFrontmatter>(markdownContent);
   const frontmatter = attributes;
   const reviewItems: string[] = [];
@@ -222,7 +225,9 @@ export const migrateContactUsPage = (
 
       // Add operating hours paragraph if available
       if (location.operating_hours && location.operating_hours.length > 0) {
-        const ohContent = operatingHoursToParagraphContent(location.operating_hours);
+        const ohContent = operatingHoursToParagraphContent(
+          location.operating_hours
+        );
         if (ohContent.length > 0) {
           currentProseContent.push(createParagraphNode(ohContent));
         }
@@ -297,48 +302,6 @@ export const migrateContactUsPage = (
       content,
       version: "0.1.0",
     },
-    reviewItems,
+    reviewItems: reviewItems.length > 0 ? [...new Set(reviewItems)] : undefined,
   };
 };
-
-// Main execution function
-const main = async () => {
-  const args = process.argv.slice(2);
-
-  if (args.length === 0) {
-    console.error("Usage: tsx contact.ts <input-file> [output-file]");
-    console.error("Example: tsx contact.ts contact-us.md contact-us.json");
-    process.exit(1);
-  }
-
-  const inputFile = args[0];
-  const outputFile = args[1] || inputFile.replace(/\.md$/, ".json");
-
-  try {
-    // Read input file
-    const markdownContent = fs.readFileSync(inputFile, "utf-8");
-
-    // Migrate to JSON
-    const migrationResult = migrateContactUsPage(markdownContent);
-    const jsonContent = migrationResult.content;
-
-    // Write output file
-    fs.writeFileSync(outputFile, JSON.stringify(jsonContent, null, 2));
-
-    if (migrationResult.reviewItems.length > 0) {
-      console.log(`⚠️  Migrated ${inputFile} to ${outputFile} (requires manual review)`);
-      console.log("Review items:");
-      migrationResult.reviewItems.forEach((item) => {
-        console.log(`  - ${item}`);
-      });
-    } else {
-      console.log(`✅ Successfully migrated ${inputFile} to ${outputFile}`);
-    }
-  } catch (error) {
-    console.error(`❌ Error migrating ${inputFile}:`, error);
-    process.exit(1);
-  }
-};
-
-// Run if executed directly
-main();
