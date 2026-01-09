@@ -18,6 +18,7 @@ const s3Schema = z.object({
 
 const cronHeartbeatSchema = z.object({
   SCHEDULED_PUBLISHING_HEARTBEAT_URL: z.string().url().optional(),
+  DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL: z.string().url().optional(),
 })
 
 /**
@@ -115,6 +116,8 @@ const processEnv = {
   SEARCHSG_API_KEY: process.env.SEARCHSG_API_KEY,
   SCHEDULED_PUBLISHING_HEARTBEAT_URL:
     process.env.SCHEDULED_PUBLISHING_HEARTBEAT_URL,
+  DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL:
+    process.env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL,
 }
 
 // Don't touch the part below
