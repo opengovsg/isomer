@@ -20,6 +20,9 @@ import { randomUUID } from "crypto";
 
 import * as dotenv from "dotenv";
 import { getIsomerSchemaFromJekyll } from "./page";
+import { migrateHomepage } from "./homepage";
+import { migrateContactUsPage } from "./contact";
+import { isomerSchemaValidator } from "./schema";
 
 dotenv.config();
 
@@ -227,6 +230,116 @@ const migrate = async ({
     `(https://github.com/isomerpages/${site})`
   );
 
+  // Migrate homepage first
+  console.log("Migrating homepage...");
+  const homepageContent = await getFileContents({
+    site,
+    path: "index.md",
+    octokit,
+  });
+
+  let homepageResult: ReportRow | null = null;
+  if (homepageContent && homepageContent.length >= 5) {
+    const homepageMigration = await migrateHomepage({
+      content: homepageContent,
+      site,
+      domain,
+    });
+
+    if (homepageMigration.status !== "not_converted") {
+      await saveContentsToFile({
+        site,
+        content: homepageMigration.content,
+        permalink: getLegalPermalink(homepageMigration.permalink || "/"),
+        shouldOverwrite: true,
+      });
+
+      homepageResult = {
+        status: homepageMigration.status,
+        title: homepageMigration.title,
+        permalink: homepageMigration.permalink || "/",
+        ...(homepageMigration.status === "manual_review" && {
+          reviewItems: homepageMigration.reviewItems,
+        }),
+      };
+      console.log("Homepage migrated successfully");
+    } else {
+      homepageResult = {
+        status: "not_converted",
+        title: "Home page",
+        permalink: "/",
+      };
+      console.log("Homepage could not be converted");
+    }
+  } else {
+    console.log("Homepage (index.md) not found or empty");
+    homepageResult = {
+      status: "not_converted",
+      title: "Home page",
+      permalink: "/",
+    };
+  }
+
+  // Migrate contact us page
+  console.log("Migrating contact us page...");
+  const contactUsContent = await getFileContents({
+    site,
+    path: "pages/contact-us.md",
+    octokit,
+  });
+
+  let contactUsResult: ReportRow | null = null;
+  if (contactUsContent && contactUsContent.length >= 5) {
+    try {
+      const migrationResult = migrateContactUsPage(contactUsContent);
+      const contactUsJson = migrationResult.content;
+      const pageTitle = contactUsJson.page?.title || "Contact Us";
+      const pagePermalink = contactUsJson.page?.permalink || "/contact-us/";
+
+      // Validate the schema
+      const isValidSchema = isomerSchemaValidator(contactUsJson);
+      const allReviewItems = [...migrationResult.reviewItems];
+
+      if (!isValidSchema) {
+        allReviewItems.push("Contact us page schema validation failed");
+      }
+
+      contactUsResult = {
+        status: allReviewItems.length > 0 ? "manual_review" : "converted",
+        title: pageTitle,
+        permalink: pagePermalink,
+        ...(allReviewItems.length > 0 && { reviewItems: allReviewItems }),
+      };
+
+      await saveContentsToFile({
+        site,
+        content: contactUsJson,
+        permalink: getLegalPermalink(pagePermalink),
+        shouldOverwrite: true,
+      });
+
+      if (allReviewItems.length > 0) {
+        console.log("Contact us page migrated with review items");
+      } else {
+        console.log("Contact us page migrated successfully");
+      }
+    } catch (error) {
+      console.error("Error migrating contact us page:", error);
+      contactUsResult = {
+        status: "not_converted",
+        title: "Contact Us",
+        permalink: "/contact-us/",
+      };
+    }
+  } else {
+    console.log("Contact us page (pages/contact-us.md) not found or empty");
+    contactUsResult = {
+      status: "not_converted",
+      title: "Contact Us",
+      permalink: "/contact-us/",
+    };
+  }
+
   const migrationFolders = folders ?? (await getAllFolders({ site, octokit }));
   const resourceRoomName = isResourceRoomIncluded
     ? await getResourceRoomName({ site, octokit })
@@ -357,11 +470,24 @@ const migrate = async ({
   const csvRows = [
     ...finishedPages,
     ...finishedResourceRoomPages,
-    {
-      status: "not_converted",
-      permalink: "/",
-      title: "Home page",
-    } satisfies ReportRow,
+    ...(homepageResult
+      ? [homepageResult]
+      : [
+          {
+            status: "not_converted",
+            permalink: "/",
+            title: "Home page",
+          } satisfies ReportRow,
+        ]),
+    ...(contactUsResult
+      ? [contactUsResult]
+      : [
+          {
+            status: "not_converted",
+            permalink: "/contact-us/",
+            title: "Contact Us",
+          } satisfies ReportRow,
+        ]),
   ]
     .filter((pages) => pages?.permalink !== undefined)
     .map(
