@@ -21,7 +21,8 @@
     "axios": "^1.10.0",
     "commander-ts": "^0.2.0",
     "npx": "^10.2.2",
-    "tsx": "^4.20.4"
+    "tsx": "^4.20.4",
+    "type-fest": "^4.41.0"
   },
   "prettier": "@isomer/prettier-config"
 }
