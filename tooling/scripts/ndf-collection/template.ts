@@ -7,6 +7,7 @@ import {
   decodeHtmlEntities,
   getRouteOfAdministration,
   getLandingPageRelatedMonographs,
+  toTitleCase,
 } from "./utils";
 
 interface MonographPageProps {
@@ -1856,20 +1857,20 @@ export const getProductInformationLink = ({
   routeOfAdministration,
   forensicClassification,
 }: ProductInformationLinkProps) => {
-  const routeOfAdministrationNormalised =
-    routeOfAdministration.charAt(0).toUpperCase() +
-    routeOfAdministration.toLocaleLowerCase().slice(1);
-  const category =
-    forensicClassification.charAt(0).toUpperCase() +
-    forensicClassification.toLocaleLowerCase().slice(1);
+  const routeOfAdmnistrationTags = routeOfAdministration
+    .split("|")
+    .map((r) => toTitleCase(r.trim()));
+  const category = toTitleCase(forensicClassification);
   const clinicalInformation =
     indications === "NA" && dosage === "NA" && contraindications === "NA"
       ? "No"
       : "Yes";
-  const manufacturerTags = manufacturer.split("|").map((m) => m.trim());
+  const manufacturerTags = manufacturer
+    .split("|")
+    .map((m) => decodeHtmlEntities(m.trim()));
   const countryOfManufactureTags = countryOfManufacture
     .split("|")
-    .map((c) => c.trim());
+    .map((c) => decodeHtmlEntities(c.trim()));
 
   return {
     version: "0.1.0",
@@ -1886,7 +1887,7 @@ export const getProductInformationLink = ({
         },
         {
           category: "2. Route of Administration",
-          selected: [routeOfAdministrationNormalised],
+          selected: routeOfAdmnistrationTags,
         },
         {
           category: "3. Manufacturer",

@@ -2,6 +2,15 @@ import { getHtmlAsJson } from "./getHtmlAsJson";
 import fs from "fs";
 import Papa from "papaparse";
 
+// Function to convert a string to title case
+export const toTitleCase = (str: string) => {
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
 // Function to read and parse a CSV file safely
 export const safeCsvParse = async (filePath: string) => {
   const csvFileContent = await fs.promises.readFile(filePath, "utf-8");
