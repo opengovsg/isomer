@@ -72,3 +72,4 @@ export {
   type NativeSearchableTableProps,
   type DGSSearchableTableProps,
 } from "./SearchableTable"
+export type { PolyglotProps } from "./Polyglot"
