@@ -99,6 +99,13 @@ export const SiteConfigSchema = Type.Intersect([
         format: "hidden",
       }),
     ),
+    enablePolyglot: Type.Optional(
+      Type.Boolean({
+        title: "Enable Polyglot",
+        description: "Whether to enable Polyglot on the site.",
+        format: "hidden",
+      }),
+    ),
   }),
   NotificationSettingsSchema,
 ])

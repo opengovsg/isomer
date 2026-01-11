@@ -3,6 +3,7 @@ import { Footer } from "../../components/internal/Footer"
 import { Masthead } from "../../components/internal/Masthead"
 import { Navbar } from "../../components/internal/Navbar"
 import { Notification } from "../../components/internal/Notification"
+import { Polyglot } from "../../components/internal/Polyglot"
 import { ScrollToTop } from "../../components/internal/ScrollToTop"
 import { SkipToContent } from "../../components/internal/SkipToContent"
 import { UnsupportedBrowserBanner } from "../../components/internal/UnsupportedBrowserBanner"
@@ -21,11 +22,12 @@ export const Skeleton = ({
   return (
     <>
       <ScrollToTop />
-
+      <div id="polyglot-widget"></div>
       <header>
         <SkipToContent LinkComponent={LinkComponent} />
 
         {site.isGovernment && <Masthead isStaging={isStaging} />}
+        {site.enablePolyglot && <Polyglot />}
 
         {site.notification?.title && (
           <Notification
