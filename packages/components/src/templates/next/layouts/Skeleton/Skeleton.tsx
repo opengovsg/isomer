@@ -23,13 +23,10 @@ export const Skeleton = ({
   return (
     <>
       <ScrollToTop />
-      <div id="polyglot-widget"></div>
+      {site.enablePolyglot && <Polyglot />}
       <header>
         <SkipToContent LinkComponent={LinkComponent} />
-
         {site.isGovernment && <Masthead isStaging={isStaging} />}
-        {site.enablePolyglot && <Polyglot />}
-
         {site.notification?.title && (
           <Notification
             {...site.notification}
@@ -37,9 +34,7 @@ export const Skeleton = ({
             site={site}
           />
         )}
-
         <UnsupportedBrowserBanner />
-
         <Navbar
           logoUrl={site.logoUrl}
           logoAlt={site.siteName}
@@ -56,6 +51,7 @@ export const Skeleton = ({
         tabIndex={-1}
         className="focus-visible:outline-none"
       >
+        <div id="polyglot-widget"></div>
         {children}
       </main>
 
