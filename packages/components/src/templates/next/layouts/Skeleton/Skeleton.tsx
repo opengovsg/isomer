@@ -23,6 +23,7 @@ export const Skeleton = ({
   return (
     <>
       <ScrollToTop />
+      <Polyglot />
       {site.enablePolyglot && <Polyglot />}
       <header>
         <SkipToContent LinkComponent={LinkComponent} />
