@@ -96,6 +96,16 @@ export const updateSearchSGConfig = async (
   searchsgClientId: string,
   url: string,
 ) => {
+  // Only update SearchSG in production environment since SearchSG does not have non-prod env
+  // This is to avoid accidentally updating a production site in a non-prod environment
+  if (env.NEXT_PUBLIC_APP_ENV !== "production") {
+    logger.info(
+      { ...props, searchsgClientId, url, env: env.NEXT_PUBLIC_APP_ENV },
+      `[INFO] Skipping SearchSG config update for ${url} - not in production environment`,
+    )
+    return
+  }
+
   const client = await requestSearchSGClient()
   const actualUrl = new URL(url)
   logger.info(
