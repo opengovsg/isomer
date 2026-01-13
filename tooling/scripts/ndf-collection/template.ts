@@ -12,6 +12,7 @@ import {
 
 interface MonographPageProps {
   activeIngredients: string[];
+  synomyms: string[];
   monographName: string;
   subsidyInfo: string[];
   drugGuidance: string[];
@@ -25,6 +26,7 @@ interface MonographPageProps {
 
 export const getMonographPage = ({
   activeIngredients,
+  synomyms,
   monographName,
   subsidyInfo,
   drugGuidance,
@@ -65,7 +67,7 @@ export const getMonographPage = ({
       ],
       category: monographNameFirstChar,
       articlePageHeader: {
-        summary: `Active ingredient${activeIngredients.length === 1 ? "" : "s"}: ${activeIngredients.join(" | ")}`,
+        summary: `Active ingredient${activeIngredients.length === 1 ? "" : "s"}: ${activeIngredients.join(" | ")}${synomyms.length ? `\nSynonym${synomyms.length === 1 ? "" : "s"}: ${synomyms.join(" | ")}` : ""}`,
         showThumbnail: false,
       },
     },

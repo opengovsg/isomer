@@ -75,6 +75,10 @@ export const createActiveIngredientCollection = async () => {
     ).map((ingredient) =>
       ingredient.endsWith(" $") ? ingredient.slice(0, -2) : ingredient
     );
+    const synomyms =
+      entry.Synonym && entry.Synonym !== "NA"
+        ? entry.Synonym.split("|").map((s) => s.trim())
+        : [];
     const subsidyInfo = getSimilarKeysAsArray(
       entry,
       "Subsidy Information and Financing Scheme_"
@@ -102,6 +106,7 @@ export const createActiveIngredientCollection = async () => {
 
     const jsonContent = getMonographPage({
       activeIngredients,
+      synomyms,
       monographName: isLandingPage ? monographName.slice(0, -2) : monographName,
       subsidyInfo,
       drugGuidance,
