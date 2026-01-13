@@ -1,6 +1,7 @@
 import { select } from "@inquirer/prompts";
 import { createActiveIngredientCollection } from "./createActiveIngredientCollection";
 import { createProductInformationCollection } from "./createProductInformationCollection";
+import { createPharmacologicalClassificationsList } from "./createPharmacologicalClassificationsList";
 
 const main = async () => {
   const migrationType = await select({
@@ -14,6 +15,10 @@ const main = async () => {
         name: "Create product information collection",
         value: "product-information",
       },
+      {
+        name: "Create pharmacological classifications listing page",
+        value: "pharmacological-classifications",
+      },
     ],
   });
 
@@ -23,6 +28,9 @@ const main = async () => {
       break;
     case "product-information":
       await createProductInformationCollection();
+      break;
+    case "pharmacological-classifications":
+      await createPharmacologicalClassificationsList();
       break;
     default:
       console.error("Invalid migration type selected.");
