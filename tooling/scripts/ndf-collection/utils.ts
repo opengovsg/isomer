@@ -339,9 +339,11 @@ export const getRouteOfAdministration = (
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ")
       .replaceAll("|", "/");
-    const productsForRoute = matchingProductInfo.filter(
-      (productInfo) => productInfo["Route of Administration"] === route
-    );
+    const productsForRoute = matchingProductInfo
+      .filter((productInfo) => productInfo["Route of Administration"] === route)
+      .sort(
+        (a, b) => a["Product Name"]?.localeCompare(b["Product Name"] || "") || 0
+      );
     const hasProductsWithClinicalInformation = productsForRoute.some(
       (productInfo) =>
         productInfo.Indications !== "NA" ||
