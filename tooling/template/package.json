@@ -17,16 +17,16 @@
   "dependencies": {
     "@opengovsg/isomer-components": "workspace:*",
     "next": "^15.5.9",
-    "postcss": "^8.4.39",
-    "postcss-preset-env": "^10.0.8",
-    "tailwindcss": "^3.4.4",
-    "typescript": "^5.9.2"
+    "postcss": "^8.5.6",
+    "postcss-preset-env": "^10.6.1",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@isomer/eslint-config": "workspace:*",
     "@isomer/prettier-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
-    "@types/node": "^22.15.21"
+    "@types/node": "^22.19.7"
   },
   "prettier": "@isomer/prettier-config"
 }
