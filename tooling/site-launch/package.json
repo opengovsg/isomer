@@ -7,7 +7,7 @@
   "devDependencies": {
     "@isomer/migrate-tags": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
-    "@types/node": "^22.15.21",
+    "@types/node": "^22.19.7",
     "typescript": "latest"
   },
   "dependencies": {
@@ -20,7 +20,7 @@
     "@octokit/rest": "^22.0.0",
     "axios": "^1.10.0",
     "commander-ts": "^0.2.0",
-    "tsx": "^4.20.4"
+    "tsx": "^4.21.0"
   },
   "prettier": "@isomer/prettier-config"
 }
