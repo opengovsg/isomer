@@ -35,7 +35,7 @@ export const registerPgbossJob = async (
   jobName: string,
   cronExpression: string,
   handler: (job: Job) => Promise<void>,
-  scheduleOptions: ScheduleOptions = { tz: "Asia/Singapore" },
+  scheduleOptions: ScheduleOptions = {},
   heartbeatOptions?: HeartbeatOptions,
 ) => {
   const boss = await getPgbossClient(logger);
@@ -64,8 +64,21 @@ export const registerPgbossJob = async (
       throw error;
     }
   });
+
+  // Merge default timezone with provided scheduleOptions
+  // Default to Asia/Singapore timezone unless explicitly overridden
+  const mergedScheduleOptions: ScheduleOptions = {
+    tz: "Asia/Singapore",
+    ...scheduleOptions,
+  };
+
   // Schedule the job
-  await boss.schedule(jobName, cronExpression, undefined, scheduleOptions);
+  await boss.schedule(
+    jobName,
+    cronExpression,
+    undefined,
+    mergedScheduleOptions,
+  );
   globalForPgboss.registeredPgbossJobs.add(jobName);
   logger.info(
     `Registered PgBoss job: ${jobName} with schedule ${cronExpression}`,
