@@ -1,6 +1,5 @@
-import createFuzzySearch from "@nozbe/microfuzz"
-
 import { getWordJaccardSimilarity } from "./getWordJaccardSimilarity"
+import { createFuzzySearch } from "./microfuzz"
 import { normalizePermalink } from "./normalizeUrl"
 
 interface GetSimilarSitemapMatchesOptions {
