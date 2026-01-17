@@ -180,8 +180,11 @@ export const CollectionBlock = ({
 }: CollectionBlockProps): JSX.Element => {
   const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
 
+  // Checking that it does not start with "/" because github
+  const isPermalink = collectionReferenceLink.startsWith("/")
+
   // This happens when no collection is selected yet on Studio when the user just added the block
-  if (collectionId === "") {
+  if (collectionId === "" && !isPermalink) {
     return (
       <CollectionBlockSkeleton
         title="No collection selected"
@@ -190,7 +193,11 @@ export const CollectionBlock = ({
     )
   }
 
-  const collectionParent = getCollectionParent({ site, collectionId })
+  const collectionParent = getCollectionParent({
+    site,
+    collectionId,
+    collectionPermalink: isPermalink ? collectionReferenceLink : undefined,
+  })
 
   if (!collectionParent) {
     return <></>
