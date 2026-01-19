@@ -20,9 +20,6 @@ import { randomUUID } from "crypto";
 
 import * as dotenv from "dotenv";
 import { getIsomerSchemaFromJekyll } from "./page";
-import { migrateHomepage } from "./homepage";
-import { migrateContactUsPage } from "./contact";
-import { isomerSchemaValidator } from "./schema";
 
 dotenv.config();
 
@@ -297,7 +294,9 @@ const migrate = async ({
     await saveContentsToFile({
       site,
       content: content.content,
-      permalink: getLegalPermalink(content.permalink),
+      permalink: getLegalPermalink(
+        content.permalink ?? path.split("/").pop()?.split(".")[0]
+      ),
     });
 
     if (content.third_nav_title) {
