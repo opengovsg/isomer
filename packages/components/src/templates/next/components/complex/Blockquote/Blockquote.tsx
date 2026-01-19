@@ -27,7 +27,7 @@ const createBlockquoteStyles = tv({
         textContainer: "gap-4",
         blockquote: "prose-display-md not-italic",
         citation: "prose-headline-lg-medium",
-        image: "h-60 min-h-60 w-60 min-w-60",
+        image: "h-60 min-h-60 w-60 min-w-60 rounded-lg",
       },
       default: {
         outerContainer:
