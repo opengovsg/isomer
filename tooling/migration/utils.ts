@@ -290,6 +290,11 @@ export const getManualReviewItems = async (
     reviewItems.push("Contains images that were used as links");
   }
 
+  // Flag pages that have div style attributes
+  // if (isHtmlContainingDivStyles(originalContent)) {
+  //   reviewItems.push("Contains div elements with style attributes");
+  // }
+
   return {
     content,
     reviewItems,

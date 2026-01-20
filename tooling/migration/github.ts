@@ -1,4 +1,5 @@
 import { type Octokit } from "@octokit/rest";
+import { GITHUB_REPOSITORY_BRANCH } from "./constants";
 
 interface GetRepoContentsParams {
   site: string;
@@ -43,7 +44,7 @@ export const getAllFolders = async ({
     owner: "isomerpages",
     repo: site,
     path: "",
-    ref: "master",
+    ref: GITHUB_REPOSITORY_BRANCH,
   });
 
   if (!Array.isArray(data)) {
@@ -67,7 +68,7 @@ export const getOrphanPages = async ({
     owner: "isomerpages",
     repo: site,
     path: "pages",
-    ref: "master",
+    ref: GITHUB_REPOSITORY_BRANCH,
   });
 
   if (!Array.isArray(data)) {
@@ -103,7 +104,7 @@ export const getRecursiveTree = async ({
   const { data } = await octokit.git.getTree({
     owner: "isomerpages",
     repo: site,
-    tree_sha: "master",
+    tree_sha: GITHUB_REPOSITORY_BRANCH,
     recursive: "1",
   });
 
@@ -138,7 +139,7 @@ export const getFileContents = async ({
       owner: "isomerpages",
       repo: site,
       path,
-      ref: "master",
+      ref: GITHUB_REPOSITORY_BRANCH,
     });
 
     if (Array.isArray(data) || data.type !== "file") {

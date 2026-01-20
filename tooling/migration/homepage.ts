@@ -3,6 +3,7 @@ import { isomerSchemaValidator } from "./schema";
 import { generateImageAltText } from "./ai";
 import type { GetIsomerSchemaFromJekyllResponse } from "./types";
 import fs from "fs";
+import { GITHUB_REPOSITORY_BRANCH } from "./constants";
 
 interface HomepageMigrationParams {
   content: string;
@@ -457,7 +458,7 @@ const convertInfopic = async (
         ? infopicSection.image
         : domain
           ? `${domain}${infopicSection.image}`
-          : `https://raw.githubusercontent.com/isomerpages/${site}/master${infopicSection.image}`;
+          : `https://raw.githubusercontent.com/isomerpages/${site}/${GITHUB_REPOSITORY_BRANCH}${infopicSection.image}`;
       const generatedAltText = await generateImageAltText(fullSrc);
       infopic.imageAlt = generatedAltText || `${infopicSection.title} image`;
       reviewItems.push("AI-generated alt text was used for infopic image");

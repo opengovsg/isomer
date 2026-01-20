@@ -42,7 +42,6 @@ import {
   PLACEHOLDER_IMAGE_IN_TABLE_TEXT,
   PLACEHOLDER_INSTAGRAM_LINK_TEXT,
 } from "./constants";
-import { generateImageAltText } from "./ai";
 
 const { JSDOM } = jsdom;
 const dom = new JSDOM(
@@ -94,6 +93,46 @@ export const getIsHtmlContainingRedundantDivs = (html: string) => {
     return true;
   });
 };
+
+// export const isHtmlContainingDivStyles = (html: string) => {
+//   const dom = new JSDOM(html);
+//   const subDoc = dom.window.document;
+//   const divs = Array.from(subDoc.querySelectorAll("div"));
+
+//   if (divs.length === 0) {
+//     return false;
+//   }
+
+//   return divs.some((div) => {
+//     // Check if the div is empty or contains only whitespace
+//     if (!div.hasChildNodes() || div.textContent?.trim() === "") {
+//       return false;
+//     }
+
+//     // Check if the div has no attributes
+//     if (div.attributes.length === 0) {
+//       return false;
+//     }
+
+//     // Check for specific attributes that might affect rendering
+//     const impactAttributes = [
+//       "style",
+//       // "class",
+//       // "onclick",
+//       // "onmouseover",
+//       // "onmouseout",
+//     ];
+
+//     for (const attr of div.attributes) {
+//       if (impactAttributes.includes(attr.name)) {
+//         return true;
+//       }
+//     }
+
+//     // If none of the checks above indicated an impact, the div is redundant
+//     return false;
+//   });
+// };
 
 // Converts a Tiptap-based schema to an Isomer Next schema
 // tiptapSchema: The schema object from Tiptap

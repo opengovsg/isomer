@@ -7,8 +7,11 @@ import { getHtmlFromMarkdown } from "./markdown";
 import { getManualReviewItems, getResourceRoomFileType } from "./utils";
 import type { GetIsomerSchemaFromJekyllResponse } from "./types";
 import { isomerSchemaValidator } from "./schema";
-import { PLACEHOLDER_ALT_TEXT, PLACEHOLDER_PAGE_SUMMARY } from "./constants";
-import { generateImageAltText, generatePageSummary } from "./ai";
+import {
+  GITHUB_REPOSITORY_BRANCH,
+  PLACEHOLDER_PAGE_SUMMARY,
+} from "./constants";
+import { generateImageAltText } from "./ai";
 import { migrateHomepage } from "./homepage";
 import { migrateContactUsPage } from "./contact";
 
@@ -298,7 +301,7 @@ export const getIsomerSchemaFromJekyll = async ({
         ? block.src
         : domain
           ? `${domain}${block.src}`
-          : `https://raw.githubusercontent.com/isomerpages/${site}/master${block.src}`;
+          : `https://raw.githubusercontent.com/isomerpages/${site}/${GITHUB_REPOSITORY_BRANCH}${block.src}`;
       const generatedAltText = await generateImageAltText(fullSrc);
 
       updatedSchemaContent.push({
