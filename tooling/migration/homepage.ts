@@ -1,14 +1,13 @@
 import fm from "front-matter";
-import { isomerSchemaValidator } from "./schema";
 import { generateImageAltText } from "./ai";
+import { isomerSchemaValidator } from "./schema";
 import type { GetIsomerSchemaFromJekyllResponse } from "./types";
-import fs from "fs";
-import { GITHUB_REPOSITORY_BRANCH } from "./constants";
 
 interface HomepageMigrationParams {
   content: string;
   site: string;
   domain?: string;
+  useStagingBranch?: boolean;
 }
 
 // Icon mapping helper
@@ -347,7 +346,8 @@ const extractCardsFromDescription = (
 const convertInfopic = async (
   infopicSection: InfopicSection,
   site: string,
-  domain?: string
+  domain?: string,
+  useStagingBranch = false
 ): Promise<{ infopic?: any; infocards?: any; reviewItems: string[] }> => {
   const reviewItems: string[] = [];
 
@@ -458,7 +458,7 @@ const convertInfopic = async (
         ? infopicSection.image
         : domain
           ? `${domain}${infopicSection.image}`
-          : `https://raw.githubusercontent.com/isomerpages/${site}/${GITHUB_REPOSITORY_BRANCH}${infopicSection.image}`;
+          : `https://raw.githubusercontent.com/isomerpages/${site}/${useStagingBranch ? "staging" : "master"}${infopicSection.image}`;
       const generatedAltText = await generateImageAltText(fullSrc);
       infopic.imageAlt = generatedAltText || `${infopicSection.title} image`;
       reviewItems.push("AI-generated alt text was used for infopic image");
@@ -828,6 +828,7 @@ export const migrateHomepage = async ({
   content,
   site,
   domain,
+  useStagingBranch = false,
 }: HomepageMigrationParams): Promise<GetIsomerSchemaFromJekyllResponse> => {
   const reviewItems: string[] = [];
 
@@ -921,7 +922,12 @@ export const migrateHomepage = async ({
 
   // Convert Infopics
   for (const infopicSection of infopicSections) {
-    const result = await convertInfopic(infopicSection, site, domain);
+    const result = await convertInfopic(
+      infopicSection,
+      site,
+      domain,
+      useStagingBranch
+    );
     reviewItems.push(...result.reviewItems);
     // Handle both infopic and infocards cases
     if (result.infocards) {

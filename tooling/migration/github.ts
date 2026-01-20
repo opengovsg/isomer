@@ -1,18 +1,24 @@
 import { type Octokit } from "@octokit/rest";
-import { GITHUB_REPOSITORY_BRANCH } from "./constants";
 
 interface GetRepoContentsParams {
   site: string;
   octokit: Octokit;
+  useStagingBranch?: boolean;
 }
 
 // This function gets the name of the resource room for the Jekyll site
 export const getResourceRoomName = async ({
   site,
   octokit,
+  useStagingBranch = false,
 }: GetRepoContentsParams) => {
   // Read the _config.yml file from the GitHub API
-  const config = await getFileContents({ site, path: "_config.yml", octokit });
+  const config = await getFileContents({
+    site,
+    path: "_config.yml",
+    octokit,
+    useStagingBranch,
+  });
 
   if (!config) {
     console.error("Error reading _config.yml");
@@ -38,13 +44,14 @@ export const getResourceRoomName = async ({
 export const getAllFolders = async ({
   site,
   octokit,
+  useStagingBranch = false,
 }: GetRepoContentsParams) => {
   // Read the contents of the GitHub repository
   const { data } = await octokit.repos.getContent({
     owner: "isomerpages",
     repo: site,
     path: "",
-    ref: GITHUB_REPOSITORY_BRANCH,
+    ref: useStagingBranch ? "staging" : "master",
   });
 
   if (!Array.isArray(data)) {
@@ -62,13 +69,14 @@ export const getAllFolders = async ({
 export const getOrphanPages = async ({
   site,
   octokit,
+  useStagingBranch = false,
 }: GetRepoContentsParams) => {
   // Get all pages in the "pages" folder
   const { data } = await octokit.repos.getContent({
     owner: "isomerpages",
     repo: site,
     path: "pages",
-    ref: GITHUB_REPOSITORY_BRANCH,
+    ref: useStagingBranch ? "staging" : "master",
   });
 
   if (!Array.isArray(data)) {
@@ -92,6 +100,7 @@ interface GetRepoPathContentsParams {
   site: string;
   path: string;
   octokit: Octokit;
+  useStagingBranch?: boolean;
 }
 
 // This function gets the recursive tree of the repository
@@ -99,12 +108,13 @@ export const getRecursiveTree = async ({
   site,
   path,
   octokit,
+  useStagingBranch = false,
 }: GetRepoPathContentsParams) => {
   // Get the recursive tree of the repository
   const { data } = await octokit.git.getTree({
     owner: "isomerpages",
     repo: site,
-    tree_sha: GITHUB_REPOSITORY_BRANCH,
+    tree_sha: useStagingBranch ? "staging" : "master",
     recursive: "1",
   });
 
@@ -132,6 +142,7 @@ export const getFileContents = async ({
   site,
   path,
   octokit,
+  useStagingBranch = false,
 }: GetRepoPathContentsParams) => {
   // Get the file contents of the page
   try {
@@ -139,7 +150,7 @@ export const getFileContents = async ({
       owner: "isomerpages",
       repo: site,
       path,
-      ref: GITHUB_REPOSITORY_BRANCH,
+      ref: useStagingBranch ? "staging" : "master",
     });
 
     if (Array.isArray(data) || data.type !== "file") {

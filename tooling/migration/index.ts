@@ -48,6 +48,7 @@ interface PageMigrationParams {
   domain?: string;
   path: string;
   isResourceRoomPage: boolean;
+  useStagingBranch?: boolean;
 }
 
 const migratePage = async ({
@@ -55,9 +56,15 @@ const migratePage = async ({
   domain,
   path,
   isResourceRoomPage = false,
+  useStagingBranch = false,
 }: PageMigrationParams) => {
   console.log("Migrating page", path);
-  const content = await getFileContents({ site, path, octokit });
+  const content = await getFileContents({
+    site,
+    path,
+    octokit,
+    useStagingBranch,
+  });
 
   // Arbitrary length check to avoid empty files
   if (!content || content.length < 5) {
@@ -71,6 +78,7 @@ const migratePage = async ({
     isResourceRoomPage,
     site,
     domain,
+    useStagingBranch,
   });
   return conversionResponse;
 };
@@ -79,6 +87,7 @@ const migrateCollectionPage = async ({
   site,
   path,
   domain,
+  useStagingBranch = false,
 }: Omit<PageMigrationParams, "isResourceRoomPage">) => {
   const migrationResponse = await migratePage({
     site,
@@ -96,6 +105,7 @@ const migrateCollectionPage = async ({
     site,
     octokit,
     path,
+    useStagingBranch,
   });
 
   if (migrationResponse.status === "not_converted") {
@@ -224,6 +234,7 @@ const migrate = async ({
   folders,
   isResourceRoomIncluded,
   isOrphansIncluded,
+  useStagingBranch = false,
 }: MigrationRequest) => {
   console.log(
     "Migrating site contents from",
@@ -231,12 +242,13 @@ const migrate = async ({
     `(https://github.com/isomerpages/${site})`
   );
 
-  const migrationFolders = folders ?? (await getAllFolders({ site, octokit }));
+  const migrationFolders =
+    folders ?? (await getAllFolders({ site, octokit, useStagingBranch }));
   const resourceRoomName = isResourceRoomIncluded
-    ? await getResourceRoomName({ site, octokit })
+    ? await getResourceRoomName({ site, octokit, useStagingBranch })
     : null;
   const orphanPages = isOrphansIncluded
-    ? await getOrphanPages({ site, octokit })
+    ? await getOrphanPages({ site, octokit, useStagingBranch })
     : [];
 
   console.log("Folders to migrate:", migrationFolders.join(", "));
@@ -261,6 +273,7 @@ const migrate = async ({
         site,
         path: resourceRoomName,
         octokit,
+        useStagingBranch,
       })
     : [];
 
@@ -316,7 +329,12 @@ const migrate = async ({
   }
 
   for (const path of allResourceRoomPages) {
-    const content = await migrateCollectionPage({ site, path, domain });
+    const content = await migrateCollectionPage({
+      site,
+      path,
+      domain,
+      useStagingBranch,
+    });
 
     if (!content) {
       continue;

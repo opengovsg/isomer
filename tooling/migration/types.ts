@@ -14,6 +14,8 @@ export interface MigrationRequest {
   isResourceRoomIncluded?: boolean;
   // Whether to include orphan pages in the migration
   isOrphansIncluded?: boolean;
+  // Whether to take the contents of the staging branch instead of master
+  useStagingBranch?: boolean;
 }
 
 export type GetIsomerSchemaFromJekyllResponse =

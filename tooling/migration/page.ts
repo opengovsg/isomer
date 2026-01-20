@@ -7,10 +7,7 @@ import { getHtmlFromMarkdown } from "./markdown";
 import { getManualReviewItems, getResourceRoomFileType } from "./utils";
 import type { GetIsomerSchemaFromJekyllResponse } from "./types";
 import { isomerSchemaValidator } from "./schema";
-import {
-  GITHUB_REPOSITORY_BRANCH,
-  PLACEHOLDER_PAGE_SUMMARY,
-} from "./constants";
+import { PLACEHOLDER_PAGE_SUMMARY } from "./constants";
 import { generateImageAltText } from "./ai";
 import { migrateHomepage } from "./homepage";
 import { migrateContactUsPage } from "./contact";
@@ -151,6 +148,7 @@ interface GetIsomerSchemaFromJekyllParams {
   isResourceRoomPage: boolean;
   site: string;
   domain?: string;
+  useStagingBranch?: boolean;
 }
 
 export const getIsomerSchemaFromJekyll = async ({
@@ -159,6 +157,7 @@ export const getIsomerSchemaFromJekyll = async ({
   isResourceRoomPage,
   site,
   domain,
+  useStagingBranch = false,
 }: GetIsomerSchemaFromJekyllParams): Promise<GetIsomerSchemaFromJekyllResponse> => {
   const {
     variant,
@@ -196,6 +195,7 @@ export const getIsomerSchemaFromJekyll = async ({
       content,
       site,
       domain,
+      useStagingBranch,
     });
 
     if (homepageMigration.status === "not_converted") {
@@ -301,7 +301,7 @@ export const getIsomerSchemaFromJekyll = async ({
         ? block.src
         : domain
           ? `${domain}${block.src}`
-          : `https://raw.githubusercontent.com/isomerpages/${site}/${GITHUB_REPOSITORY_BRANCH}${block.src}`;
+          : `https://raw.githubusercontent.com/isomerpages/${site}/${useStagingBranch ? "staging" : "master"}${block.src}`;
       const generatedAltText = await generateImageAltText(fullSrc);
 
       updatedSchemaContent.push({

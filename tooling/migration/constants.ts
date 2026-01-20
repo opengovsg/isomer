@@ -1,5 +1,3 @@
-export const GITHUB_REPOSITORY_BRANCH = "master";
-
 export const PLACEHOLDER_ALT_TEXT =
   "Please add an alternate text for this image";
 

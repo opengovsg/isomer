@@ -15,6 +15,7 @@ interface GetPathsToMigrateParams {
   site: string;
   folders: string[];
   orphanPages: string[];
+  useStagingBranch?: boolean;
 }
 
 export const getPathsToMigrate = async ({
@@ -22,9 +23,12 @@ export const getPathsToMigrate = async ({
   site,
   folders,
   orphanPages,
+  useStagingBranch = false,
 }: GetPathsToMigrateParams) => {
   const allFolderPages = await Promise.all(
-    folders.map((folder) => getRecursiveTree({ site, path: folder, octokit }))
+    folders.map((folder) =>
+      getRecursiveTree({ site, path: folder, octokit, useStagingBranch })
+    )
   ).then((results) => results.flat());
 
   return [...allFolderPages, ...orphanPages];
@@ -34,12 +38,14 @@ interface GetCollectionFolderNameParams {
   site: string;
   octokit: Octokit;
   path: string;
+  useStagingBranch?: boolean;
 }
 
 export const getCollectionFolderName = async ({
   octokit,
   site,
   path,
+  useStagingBranch = false,
 }: GetCollectionFolderNameParams) => {
   if (!path.includes("_posts")) {
     return path;
@@ -51,6 +57,7 @@ export const getCollectionFolderName = async ({
     site,
     path: `${parentPath}/index.html`,
     octokit,
+    useStagingBranch,
   });
 
   if (!collectionIndex) {
@@ -66,17 +73,20 @@ interface GetResourceRoomTitleParams {
   site: string;
   octokit: Octokit;
   resourceRoomName: string;
+  useStagingBranch?: boolean;
 }
 
 export const getResourceTitleName = async ({
   octokit,
   site,
   resourceRoomName,
+  useStagingBranch = false,
 }: GetResourceRoomTitleParams) => {
   const resourceRoomIndex = await getFileContents({
     site,
     path: `${resourceRoomName}/index.html`,
     octokit,
+    useStagingBranch,
   });
 
   if (!resourceRoomIndex) {
