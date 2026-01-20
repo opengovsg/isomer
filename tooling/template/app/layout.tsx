@@ -45,6 +45,8 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
             isomerMsClarityId:
               process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
+            pageFeedbackApiEndpoint:
+              process.env.NEXT_PUBLIC_PAGE_FEEDBACK_API_ENDPOINT,
           }}
           ScriptComponent={Script}
         />
