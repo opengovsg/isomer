@@ -323,6 +323,7 @@ export const Default: Story = {
           },
         ],
       },
+      pageFeedbackApiEndpoint: "https://api.example.com/feedback"
     }),
     meta: {
       description: "A Next.js starter for Isomer",
