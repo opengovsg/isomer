@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
-import type { IsomerSiteProps, IsomerPageLayoutType } from "~/types" 
+
+import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 
 export const PageFeedbackSchema = Type.Object(
   {

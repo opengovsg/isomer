@@ -5,8 +5,8 @@ import { BiDislike, BiLike } from "react-icons/bi"
 
 import type { PageFeedbackProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { ComponentContent } from "../customCssClass"
 import { Button } from "../Button"
+import { ComponentContent } from "../customCssClass"
 
 const createPageFeedbackStyles = tv({
   slots: {
@@ -22,17 +22,17 @@ const createPageFeedbackStyles = tv({
   variants: {
     isSubmitted: {
       true: {
-        questionContainer: "opacity-0 absolute pointer-events-none",
-        thankYouContainer: "opacity-100 relative pointer-events-auto",
+        questionContainer: "pointer-events-none absolute opacity-0",
+        thankYouContainer: "pointer-events-auto relative opacity-100",
       },
       false: {
-        questionContainer: "opacity-100 relative pointer-events-auto",
-        thankYouContainer: "opacity-0 absolute pointer-events-none",
+        questionContainer: "pointer-events-auto relative opacity-100",
+        thankYouContainer: "pointer-events-none absolute opacity-0",
       },
     },
     layout: {
       article: {
-        container: "pt-16 pb-12",
+        container: "pb-12 pt-16",
       },
       content: {
         container: "py-8",
@@ -50,7 +50,7 @@ const createPageFeedbackStyles = tv({
 export const PageFeedback = ({ apiEndpoint, layout }: PageFeedbackProps) => {
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const handleFeedback = ({isHelpful}: {isHelpful: boolean}) => {
+  const handleFeedback = ({ isHelpful }: { isHelpful: boolean }) => {
     // Optimistically show success state immediately
     setIsSubmitted(true)
 
@@ -71,7 +71,12 @@ export const PageFeedback = ({ apiEndpoint, layout }: PageFeedbackProps) => {
 
   const styles = createPageFeedbackStyles({
     isSubmitted,
-    layout: layout === "article" ? "article" : layout === "content" ? "content" : "default",
+    layout:
+      layout === "article"
+        ? "article"
+        : layout === "content"
+          ? "content"
+          : "default",
   })
 
   return (
@@ -81,7 +86,7 @@ export const PageFeedback = ({ apiEndpoint, layout }: PageFeedbackProps) => {
           <p className={styles.question()}>Is this page helpful?</p>
           <div className={styles.buttonGroup()}>
             <Button
-              onPress={() => handleFeedback({ isHelpful: true } )}
+              onPress={() => handleFeedback({ isHelpful: true })}
               variant="outline"
               size="base"
             >

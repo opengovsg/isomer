@@ -8,9 +8,9 @@ import {
 } from "~/utils"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
+import { PageFeedback } from "../../components/internal/PageFeedback"
 import { Siderail } from "../../components/internal/Siderail"
 import { TableOfContents } from "../../components/internal/TableOfContents"
-import { PageFeedback } from "../../components/internal/PageFeedback" 
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
@@ -81,7 +81,10 @@ export const ContentLayout = ({
             })}
           </div>
           {site.pageFeedbackApiEndpoint && (
-            <PageFeedback layout={layout} apiEndpoint={site.pageFeedbackApiEndpoint} />
+            <PageFeedback
+              layout={layout}
+              apiEndpoint={site.pageFeedbackApiEndpoint}
+            />
           )}
         </div>
         <div className={compoundStyles.siderailContainer()}>

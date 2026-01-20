@@ -252,7 +252,7 @@ export const Default: Story = {
           ],
         },
       },
-      pageFeedbackApiEndpoint: "https://api.example.com/feedback"
+      pageFeedbackApiEndpoint: "https://api.example.com/feedback",
     }),
     page: {
       title:

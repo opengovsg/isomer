@@ -3,7 +3,7 @@ import { getBreadcrumbFromSiteMap } from "~/utils"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
-import { PageFeedback } from "../../components/internal/PageFeedback" 
+import { PageFeedback } from "../../components/internal/PageFeedback"
 import { renderPageContent } from "../../render"
 import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
 import { Skeleton } from "../Skeleton"
@@ -59,9 +59,12 @@ export const ArticleLayout = ({
               permalink: page.permalink,
             })}
             {site.pageFeedbackApiEndpoint && (
-              <PageFeedback layout={layout} apiEndpoint={site.pageFeedbackApiEndpoint} />
+              <PageFeedback
+                layout={layout}
+                apiEndpoint={site.pageFeedbackApiEndpoint}
+              />
             )}
-          </div>      
+          </div>
           <BackToTopLink />
         </div>
       </div>
