@@ -37,13 +37,10 @@ const createPageFeedbackStyles = tv({
       content: {
         container: "py-8",
       },
-      default: {
-        container: "py-8",
-      },
     },
   },
   defaultVariants: {
-    layout: "default",
+    layout: "content",
   },
 })
 
@@ -70,21 +67,13 @@ export const PageFeedback = ({ apiEndpoint, layout }: PageFeedbackProps) => {
 
   const styles = createPageFeedbackStyles({
     isSubmitted,
-    layout:
-      layout === "article"
-        ? "article"
-        : layout === "content"
-          ? "content"
-          : "default",
+    layout: layout === "article" ? "article" : "content",
   })
 
   return (
     <section className={ComponentContent} aria-label="Page feedback">
       <div className={styles.container()}>
-        <div
-          className={styles.questionContainer()}
-          aria-hidden={isSubmitted}
-        >
+        <div className={styles.questionContainer()} aria-hidden={isSubmitted}>
           <p id={questionId} className={styles.question()}>
             Is this page helpful?
           </p>
