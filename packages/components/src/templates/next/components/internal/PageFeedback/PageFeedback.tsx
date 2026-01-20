@@ -32,7 +32,7 @@ const createPageFeedbackStyles = tv({
     },
     layout: {
       article: {
-        container: "py-12",
+        container: "pt-16 pb-12",
       },
       content: {
         container: "py-8",
