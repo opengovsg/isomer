@@ -1,6 +1,6 @@
 "use client"
 
-import { useId, useState } from "react"
+import { useId, useRef, useState } from "react"
 import { BiDislike, BiLike } from "react-icons/bi"
 
 import type { PageFeedbackProps } from "~/interfaces"
@@ -10,26 +10,13 @@ import { ComponentContent } from "../customCssClass"
 
 const createPageFeedbackStyles = tv({
   slots: {
-    container: "relative flex flex-col items-center gap-4",
+    container: "flex flex-col items-center gap-4",
     question: "prose-headline-lg-medium text-base-content",
     buttonGroup: "flex gap-3",
     thankYouMessage: "prose-body-base text-base-content-medium",
-    questionContainer:
-      "flex flex-col items-center gap-4 transition-opacity duration-300 ease-out motion-reduce:transition-none",
-    thankYouContainer:
-      "flex flex-col items-center gap-4 transition-opacity duration-300 ease-out motion-reduce:transition-none",
+    contentContainer: "flex flex-col items-center gap-4",
   },
   variants: {
-    isSubmitted: {
-      true: {
-        questionContainer: "pointer-events-none absolute opacity-0",
-        thankYouContainer: "pointer-events-auto relative opacity-100",
-      },
-      false: {
-        questionContainer: "pointer-events-auto relative opacity-100",
-        thankYouContainer: "pointer-events-none absolute opacity-0",
-      },
-    },
     layout: {
       article: {
         container: "pb-12 pt-16",
@@ -51,9 +38,9 @@ export const PageFeedback = ({
 }: PageFeedbackProps) => {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const questionId = useId()
+  const thankYouRef = useRef<HTMLDivElement>(null)
 
   const handleFeedback = ({ isHelpful }: { isHelpful: boolean }) => {
-    // Optimistically show success state immediately
     setIsSubmitted(true)
 
     // Fire the API call in the background (fire and forget)
@@ -63,56 +50,70 @@ export const PageFeedback = ({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ isHelpful, permalink }),
-    }).catch((error) => {
-      // Silently handle errors in the background
-      console.error("Error submitting feedback:", error)
     })
+      .then(() => {
+        // Move focus to thank you message for screen reader users
+        setTimeout(() => {
+          thankYouRef.current?.focus()
+        }, 100)
+      })
+      .catch((error) => {
+        // Silently handle errors in the background
+        console.error("Error submitting feedback:", error)
+      })
   }
 
   const styles = createPageFeedbackStyles({
-    isSubmitted,
     layout: layout === "article" ? "article" : "content",
   })
 
   return (
     <section className={ComponentContent} aria-label="Page feedback">
       <div className={styles.container()}>
-        <div className={styles.questionContainer()} aria-hidden={isSubmitted}>
-          <p id={questionId} className={styles.question()}>
-            Is this page helpful?
-          </p>
+        {isSubmitted ? (
           <div
-            className={styles.buttonGroup()}
-            role="group"
-            aria-labelledby={questionId}
+            ref={thankYouRef}
+            className={styles.contentContainer()}
+            aria-live="polite"
+            tabIndex={-1}
           >
-            <Button
-              onPress={() => handleFeedback({ isHelpful: true })}
-              variant="outline"
-              size="base"
-            >
-              <BiLike aria-hidden="true" className="mr-2 h-5 w-5" />
-              Yes
-            </Button>
-            <Button
-              onPress={() => handleFeedback({ isHelpful: false })}
-              variant="outline"
-              size="base"
-            >
-              <BiDislike aria-hidden="true" className="mr-2 h-5 w-5" />
-              No
-            </Button>
+            <p className={styles.thankYouMessage()}>
+              Thank you for your feedback!
+            </p>
           </div>
-        </div>
-        <div
-          className={styles.thankYouContainer()}
-          aria-hidden={!isSubmitted}
-          aria-live="polite"
-        >
-          <p className={styles.thankYouMessage()}>
-            Thank you for your feedback!
-          </p>
-        </div>
+        ) : (
+          <div className={styles.contentContainer()}>
+            <p id={questionId} className={styles.question()}>
+              Is this page helpful?
+            </p>
+            <div
+              className={styles.buttonGroup()}
+              role="group"
+              aria-labelledby={questionId}
+            >
+              <Button
+                onPress={() => handleFeedback({ isHelpful: true })}
+                variant="outline"
+                size="base"
+                isDisabled={isSubmitted}
+                aria-label="Yes, this page is helpful"
+              >
+                <BiLike aria-hidden="true" className="mr-2 h-5 w-5" />
+                Yes
+              </Button>
+              <Button
+                onPress={() => handleFeedback({ isHelpful: false })}
+                variant="outline"
+                size="base"
+                isDisabled={isSubmitted}
+                aria-label="No, this page is not helpful"
+              >
+                <BiDislike aria-hidden="true" className="mr-2 h-5 w-5" />
+                No
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )
