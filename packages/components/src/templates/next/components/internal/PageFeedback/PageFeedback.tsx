@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useId, useState } from "react"
 import { BiDislike, BiLike } from "react-icons/bi"
 
 import type { PageFeedbackProps } from "~/interfaces"
@@ -49,6 +49,7 @@ const createPageFeedbackStyles = tv({
 
 export const PageFeedback = ({ apiEndpoint, layout }: PageFeedbackProps) => {
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const questionId = useId()
 
   const handleFeedback = ({ isHelpful }: { isHelpful: boolean }) => {
     // Optimistically show success state immediately
@@ -80,17 +81,26 @@ export const PageFeedback = ({ apiEndpoint, layout }: PageFeedbackProps) => {
   })
 
   return (
-    <section className={ComponentContent}>
+    <section className={ComponentContent} aria-label="Page feedback">
       <div className={styles.container()}>
-        <div className={styles.questionContainer()}>
-          <p className={styles.question()}>Is this page helpful?</p>
-          <div className={styles.buttonGroup()}>
+        <div
+          className={styles.questionContainer()}
+          aria-hidden={isSubmitted}
+        >
+          <p id={questionId} className={styles.question()}>
+            Is this page helpful?
+          </p>
+          <div
+            className={styles.buttonGroup()}
+            role="group"
+            aria-labelledby={questionId}
+          >
             <Button
               onPress={() => handleFeedback({ isHelpful: true })}
               variant="outline"
               size="base"
             >
-              <BiLike className="mr-2 h-5 w-5" />
+              <BiLike aria-hidden="true" className="mr-2 h-5 w-5" />
               Yes
             </Button>
             <Button
@@ -98,12 +108,16 @@ export const PageFeedback = ({ apiEndpoint, layout }: PageFeedbackProps) => {
               variant="outline"
               size="base"
             >
-              <BiDislike className="mr-2 h-5 w-5" />
+              <BiDislike aria-hidden="true" className="mr-2 h-5 w-5" />
               No
             </Button>
           </div>
         </div>
-        <div className={styles.thankYouContainer()}>
+        <div
+          className={styles.thankYouContainer()}
+          aria-hidden={!isSubmitted}
+          aria-live="polite"
+        >
           <p className={styles.thankYouMessage()}>
             Thank you for your feedback!
           </p>
