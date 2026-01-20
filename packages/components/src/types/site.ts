@@ -111,6 +111,7 @@ export interface IsomerGeneratedSiteProps {
   lastUpdated: string
   assetsBaseUrl?: string
   isomerMsClarityId?: string
+  pageFeedbackApiEndpoint?: string
 }
 
 export interface IsomerSiteWideComponentsProps {

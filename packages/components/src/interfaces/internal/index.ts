@@ -34,6 +34,10 @@ export {
   type NotificationProps,
   type NotificationClientProps,
 } from "./Notification"
+export {
+  PageFeedbackSchema,
+  type PageFeedbackProps,
+} from "./PageFeedback"
 export type { SearchProps } from "./Search"
 export {
   SearchSGSearchSchema,
