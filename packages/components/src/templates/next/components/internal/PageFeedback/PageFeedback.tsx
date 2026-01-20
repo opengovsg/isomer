@@ -56,18 +56,16 @@ export const PageFeedback = ({ apiEndpoint, layout }: PageFeedbackProps) => {
     setIsSubmitted(true)
 
     // Fire the API call in the background (fire and forget)
-    if (apiEndpoint) {
-      fetch(apiEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ isHelpful }),
-      }).catch((error) => {
-        // Silently handle errors in the background
-        console.error("Error submitting feedback:", error)
-      })
-    }
+    fetch(apiEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ isHelpful }),
+    }).catch((error) => {
+      // Silently handle errors in the background
+      console.error("Error submitting feedback:", error)
+    })
   }
 
   const styles = createPageFeedbackStyles({
