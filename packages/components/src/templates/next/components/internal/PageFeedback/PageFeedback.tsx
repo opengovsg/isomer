@@ -49,7 +49,12 @@ export const PageFeedback = ({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ isHelpful, permalink }),
+      body: JSON.stringify({
+        isHelpful,
+        permalink,
+        timestamp: new Date().toISOString(),
+        hostname: typeof window !== "undefined" ? window.location.hostname : "",
+      }),
     })
       .then(() => {
         // Move focus to thank you message for screen reader users
