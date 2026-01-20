@@ -1050,6 +1050,14 @@ video {
   white-space: normal;
 }
 
+.pointer-events-none {
+  pointer-events: none;
+}
+
+.pointer-events-auto {
+  pointer-events: auto;
+}
+
 .\!visible {
   visibility: visible !important;
 }
@@ -1129,10 +1137,6 @@ video {
 
 .bottom-16 {
   bottom: 4rem;
-}
-
-.end-1 {
-  inset-inline-end: 0.25rem;
 }
 
 .left-0 {
@@ -1369,6 +1373,10 @@ video {
   margin-right: 0.25rem;
 }
 
+.mr-2 {
+  margin-right: 0.5rem;
+}
+
 .mr-3 {
   margin-right: 0.75rem;
 }
@@ -1472,10 +1480,6 @@ video {
 
 .inline-block {
   display: inline-block;
-}
-
-.\!inline {
-  display: inline !important;
 }
 
 .inline {
@@ -3104,10 +3108,6 @@ video {
   padding-bottom: 2rem;
 }
 
-.pl-1 {
-  padding-left: 0.25rem;
-}
-
 .pl-2 {
   padding-left: 0.5rem;
 }
@@ -3170,6 +3170,10 @@ video {
 
 .pt-12 {
   padding-top: 3rem;
+}
+
+.pt-16 {
+  padding-top: 4rem;
 }
 
 .pt-2 {
