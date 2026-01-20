@@ -44,7 +44,11 @@ const createPageFeedbackStyles = tv({
   },
 })
 
-export const PageFeedback = ({ apiEndpoint, layout }: PageFeedbackProps) => {
+export const PageFeedback = ({
+  apiEndpoint,
+  layout,
+  permalink,
+}: PageFeedbackProps) => {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const questionId = useId()
 
@@ -58,7 +62,7 @@ export const PageFeedback = ({ apiEndpoint, layout }: PageFeedbackProps) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ isHelpful }),
+      body: JSON.stringify({ isHelpful, permalink }),
     }).catch((error) => {
       // Silently handle errors in the background
       console.error("Error submitting feedback:", error)

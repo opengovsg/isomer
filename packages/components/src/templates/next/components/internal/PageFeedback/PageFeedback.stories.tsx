@@ -11,6 +11,7 @@ const meta: Meta<typeof PageFeedback> = {
   args: {
     layout: "content",
     apiEndpoint: "https://api.example.com/feedback",
+    permalink: "/example-page",
   },
   parameters: {
     themes: {

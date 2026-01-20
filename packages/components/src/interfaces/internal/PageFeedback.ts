@@ -23,4 +23,5 @@ export const PageFeedbackSchema = Type.Object(
 export type PageFeedbackProps = Static<typeof PageFeedbackSchema> & {
   layout: IsomerPageLayoutType
   apiEndpoint: NonNullable<IsomerSiteProps["pageFeedbackApiEndpoint"]>
+  permalink: string
 }

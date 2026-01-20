@@ -62,6 +62,7 @@ export const ArticleLayout = ({
               <PageFeedback
                 layout={layout}
                 apiEndpoint={site.pageFeedbackApiEndpoint}
+                permalink={page.permalink}
               />
             )}
           </div>
