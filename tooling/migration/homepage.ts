@@ -654,7 +654,7 @@ const convertTextcards = (
     cards: (textcardsSection.cards || [])
       .map((card) => {
         if (card.linktext) {
-          reviewItems.push("Link text was removed");
+          reviewItems.push("Textcards with link text was removed");
         }
 
         const cardObj: any = {
@@ -718,7 +718,7 @@ const convertAnnouncements = (
   const reviewItems: string[] = [];
 
   if (announcementsSection.subtitle) {
-    reviewItems.push("Subtitle used as Description");
+    reviewItems.push("Announcement block subtitle used as description");
   }
 
   const hasDates = announcementsSection.announcements?.some((ann) => ann.date);
@@ -730,7 +730,7 @@ const convertAnnouncements = (
     (ann) => ann.linktext
   );
   if (hasLinkText) {
-    reviewItems.push("Link text was removed");
+    reviewItems.push("Announcement block link text was removed");
   }
 
   const cards = (announcementsSection.announcements || [])
