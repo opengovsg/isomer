@@ -75,18 +75,17 @@ export const getIsHtmlContainingRedundantDivs = (html: string) => {
     }
 
     // Check for specific attributes that might affect rendering
-    const impactAttributes = [
-      "style",
-      "class",
-      "onclick",
-      "onmouseover",
-      "onmouseout",
-    ];
+    const impactAttributes = ["style", "onclick", "onmouseover", "onmouseout"];
 
     for (const attr of div.attributes) {
       if (impactAttributes.includes(attr.name)) {
         return false;
       }
+    }
+
+    // Check if the div contains class
+    if (div.classList.length > 0) {
+      return false;
     }
 
     // If none of the checks above indicated an impact, the div is redundant
