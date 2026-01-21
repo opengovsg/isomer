@@ -19,6 +19,6 @@
   "license": "ISC",
   "dependencies": {
     "@inquirer/prompts": "^7.6.0",
-    "pg": "^8.17.1"
+    "pg": "^8.17.2"
   }
 }

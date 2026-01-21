@@ -42,7 +42,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "pg-boss": "^12.3.0",
+    "pg-boss": "^12.5.4",
     "pino": "^9.14.0",
     "vitest": "^2.1.9"
   }
