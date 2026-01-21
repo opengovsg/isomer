@@ -37,8 +37,8 @@
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
-    "sherif": "^1.9.0",
-    "turbo": "^2.7.4"
+    "sherif": "^1.10.0",
+    "turbo": "^2.7.5"
   },
   "packageManager": "bun@1.3.5"
 }
