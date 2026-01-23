@@ -1,0 +1,21 @@
+{
+  "name": "@isomer/scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "streamline": "dotenv tsx streamline/index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-acm": "^3.974.0",
+    "@aws-sdk/credential-providers": "^3.974.0",
+    "dotenv": "^17.2.3",
+    "node-dig-dns": "^0.3.4",
+    "papaparse": "^5.5.3"
+  },
+  "devDependencies": {
+    "@types/papaparse": "^5.5.2"
+  }
+}
