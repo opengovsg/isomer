@@ -12,22 +12,13 @@ This script migrates an Isomer Next GitHub repository into the Isomer Studio dat
 
 ### Setup
 
-This script requires authenticating to GitHub and to the Studio database, so you will need to set up the GitHub API token and the SSH keys to authenticate to the bastion jump host. To do that, duplicate the `.env.example` file into `.env` and update the values accordingly:
+This script requires authenticating to GitHub and to the Studio database, so you will need to set up the GitHub API token as well as a forwarding connection to the database of choice. To do that, duplicate the `.env.example` file into `.env` and update the values accordingly:
 
 - `DATABASE_URL`: This is the database connection string to the Studio database (but should be localhost since we are using port forwarding).
 - `GITHUB_TOKEN`: This is the GitHub token that should have access to the isomerpages organisation, and has read access to the repository that you wish to migrate.
 - `PUBLISHER_USER_ID`: This is the user ID of the user to assign as the publisher of all pages. You can use your own user ID stored inside the production DB User table.
 
-Additionally, you need to set up your SSH keys and `.env.prod` files inside the `.ssh` folder:
-
-1. Create a `.ssh` folder inside this folder.
-2. Create a `.env.prod` (for production) with the following environment variables:
-   1. `SSH_HOST`: This is the IP address or domain name of the bastion host to jump through to access the database.
-   2. `SSH_USER`: This is the user to use when connecting to the bastion host.
-   3. `DB_HOST`: This is the full hostname of the RDS database server, which should be the writer endpoint of the RDS cluster.
-3. Add the SSH private key as `isomer-next-prod-bastion.pem` inside this `.ssh` folder.
-
-Once everything is set up, verify that you are able to connect to the bastion host by connecting to the OGP VPN, then running `npm run jump:prod`. If successful, you should be able to see a shell session started on the bastion host.
+Once everything is set up, verify that you are able to set up a forwarding connection by running `cd ../..`, then running `npm run db:connect`. If successful, you should be able to authenticate to AWS (a sign in window will open) and after clicking `Accept`, there should be a success message on your console.
 
 ### Running the migration and seeding process
 

@@ -1,0 +1,67 @@
+{
+  "www.nmrc.sg": {
+    "Domain": "www.nmrc.sg",
+    "Acm": "_c497800b320c2959dc98a76129960928.www.nmrc.sg.   CNAME   _a1577bdfa48d887bf8aea7f948a10619.xlfgrmvvlj.acm-validations.aws.",
+    "LongName": "National Medical Research Council",
+    "CodeBuildId": "moh-nmrc",
+    "GithubName": "moh-nmrc-next",
+    "SearchSg": "ed9be89b-fbec-4746-978b-b7ee015ae406",
+    "StudioSiteId": "151",
+    "Archived": "true",
+    "Imported": "true",
+    "S3Sync": "true"
+  },
+  "www.digitalgateway.gov.sg": {
+    "Domain": "www.digitalgateway.gov.sg",
+    "Acm": "_b5504f771de5cd2eb778ea2267ef1fbb.www.digitalgateway.gov.sg.   CNAME   _6365655fe04d72ba2d52d9de2df02f02.xlfgrmvvlj.acm-validations.aws.",
+    "LongName": "SG Digital Gateway",
+    "CodeBuildId": "mddi-sgdc",
+    "GithubName": ""
+  },
+  "www.thediary.sg": {
+    "Domain": "www.thediary.sg",
+    "Acm": "_740b2247285e151617db9299e28b9d87.www.thediary.sg   CNAME   _2181d0fecbbe87b90fa3e476c322adc0.jkddzztszm.acm-validations.aws",
+    "LongName": "DIARY@SGH",
+    "CodeBuildId": "singhealth-thediary"
+  },
+  "www.mot.gov.sg": {
+    "Domain": "www.mot.gov.sg",
+    "Acm": "_ac308df632d4273649a47aa8023fe368.www.mot.gov.sg   CNAME   _a153acdda18297c98660f0c82342f712.jkddzztszm.acm-validations.aws",
+    "LongName": "Ministry of Transport",
+    "CodeBuildId": "mot-corp",
+    "GithubName": "mot-corp-next",
+    "SearchSg": "26ff36a1-0ee9-4d0e-9f35-74342d985e21",
+    "StudioSiteId": "287",
+    "Archived": "true",
+    "Imported": "true",
+    "S3Sync": "true"
+  },
+  "www.inclusivesport.gov.sg": {
+    "Domain": "www.inclusivesport.gov.sg",
+    "Acm": "_e226ec7d1e0581aad0970d835cd0ae84.www.inclusivesport.gov.sg   CNAME   _429ef039ee702388ada61709c489a4b1.jkddzztszm.acm-validations.aws"
+  },
+  "www.caringcommuters.gov.sg": {
+    "Domain": "www.caringcommuters.gov.sg",
+    "Acm": "_2a992c31f5545f35df637b99da8e13da.www.caringcommuters.gov.sg   CNAME   _0eac73c469a934f1867aea0a023d389d.jkddzztszm.acm-validations.aws",
+    "LongName": "Caring SG commuters",
+    "CodeBuildId": "mot-cc",
+    "GithubName": "mot-cc-next",
+    "SearchSg": "76524c67-2aac-4434-a009-4cdffd46d9f0",
+    "StudioSiteId": "336",
+    "Archived": "true",
+    "Imported": "true",
+    "S3Sync": "true"
+  },
+  "www.sgsecure.gov.sg": {
+    "Domain": "www.sgsecure.gov.sg",
+    "Acm": "_e5267e2519c1af80dbb6ddbee3db648e.www.sgsecure.gov.sg   CNAME   _26d12284bcf598258088a494a02b8e1e.jkddzztszm.acm-validations.aws",
+    "LongName": "SGSecure",
+    "CodeBuildId": "mha-sgsecure",
+    "GithubName": "mha-sgsecure-next",
+    "SearchSg": "cd859dcc-760a-401f-8ac3-b2a190d7a778",
+    "StudioSiteId": "337",
+    "Archived": "true",
+    "Imported": "true",
+    "S3Sync": "true"
+  }
+}

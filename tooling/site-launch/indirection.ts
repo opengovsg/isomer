@@ -13,16 +13,30 @@ export const createIndirection = async (
   // is the `domain`
   const client = new CloudFrontClient({})
   const command = new ListDistributionsCommand({})
-  const resp = await client.send(command)
-  const matching = resp.DistributionList?.Items?.find(({ Origins }) => {
-    return Origins?.Items?.some(({ OriginPath }) =>
-      OriginPath?.startsWith(`/${codebuildId}/`),
-    )
+  let resp = await client.send(command)
+  let matching = resp.DistributionList?.Items?.find(({ Origins }) => {
+    return Origins?.Items?.some(({ OriginPath }) => {
+      return OriginPath?.startsWith(`/${codebuildId}/`)
+    })
   })
+  console.log(`finding cloudfront distribution`)
+
+  while (!matching && resp.DistributionList?.NextMarker) {
+    const command = new ListDistributionsCommand({
+      Marker: resp.DistributionList?.NextMarker,
+    })
+    const nextResp = await client.send(command)
+    matching = nextResp.DistributionList?.Items?.find(({ Origins }) => {
+      return Origins?.Items?.some(({ OriginPath }) => {
+        return OriginPath?.startsWith(`/${codebuildId}/`)
+      })
+    })
+    resp = nextResp
+  }
 
   if (!matching) {
     throw new Error(
-      `Expected 1 cloudfront distribution to have domain: ${domain} but found none`,
+      `Expected 1 cloudfront distribution to have origin: /${codebuildId}/ but found none`,
     )
   }
 
