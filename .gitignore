@@ -51,3 +51,5 @@ dist/
 **/*.tgz
 
 .aider*
+
+*.ssl.conf
