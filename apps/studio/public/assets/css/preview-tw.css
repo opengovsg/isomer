@@ -1666,6 +1666,10 @@ video {
   max-height: 4rem;
 }
 
+.max-h-20 {
+  max-height: 5rem;
+}
+
 .max-h-\[400px\] {
   max-height: 400px;
 }
@@ -5597,6 +5601,10 @@ video {
     max-height: 5rem;
   }
 
+  .md\:max-h-24 {
+    max-height: 6rem;
+  }
+
   .md\:min-h-80 {
     min-height: 20rem;
   }
@@ -5996,6 +6004,10 @@ video {
 
   .lg\:w-\[1\.125rem\] {
     width: 1.125rem;
+  }
+
+  .lg\:w-\[140px\] {
+    width: 140px;
   }
 
   .lg\:w-\[66\.67\%\] {
