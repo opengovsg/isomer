@@ -21,7 +21,7 @@ export const OrderedList = ({
 }: OrderedListProps) => {
   return (
     <ol
-      className={`mt-6 ps-9 marker:text-base-content ${getOrderedListType(level)}`}
+      className={`mt-4 ps-9 marker:text-base-content ${getOrderedListType(level)}`}
       start={attrs?.start}
     >
       {content.map((item, index) => (
