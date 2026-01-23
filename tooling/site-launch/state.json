@@ -39,5 +39,29 @@
   "www.inclusivesport.gov.sg": {
     "Domain": "www.inclusivesport.gov.sg",
     "Acm": "_e226ec7d1e0581aad0970d835cd0ae84.www.inclusivesport.gov.sg   CNAME   _429ef039ee702388ada61709c489a4b1.jkddzztszm.acm-validations.aws"
+  },
+  "www.caringcommuters.gov.sg": {
+    "Domain": "www.caringcommuters.gov.sg",
+    "Acm": "_2a992c31f5545f35df637b99da8e13da.www.caringcommuters.gov.sg   CNAME   _0eac73c469a934f1867aea0a023d389d.jkddzztszm.acm-validations.aws",
+    "LongName": "Caring SG commuters",
+    "CodeBuildId": "mot-cc",
+    "GithubName": "mot-cc-next",
+    "SearchSg": "76524c67-2aac-4434-a009-4cdffd46d9f0",
+    "StudioSiteId": "336",
+    "Archived": "true",
+    "Imported": "true",
+    "S3Sync": "true"
+  },
+  "www.sgsecure.gov.sg": {
+    "Domain": "www.sgsecure.gov.sg",
+    "Acm": "_e5267e2519c1af80dbb6ddbee3db648e.www.sgsecure.gov.sg   CNAME   _26d12284bcf598258088a494a02b8e1e.jkddzztszm.acm-validations.aws",
+    "LongName": "SGSecure",
+    "CodeBuildId": "mha-sgsecure",
+    "GithubName": "mha-sgsecure-next",
+    "SearchSg": "cd859dcc-760a-401f-8ac3-b2a190d7a778",
+    "StudioSiteId": "337",
+    "Archived": "true",
+    "Imported": "true",
+    "S3Sync": "true"
   }
 }
