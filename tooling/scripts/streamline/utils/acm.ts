@@ -1,13 +1,13 @@
+import type { RequestCertificateCommandInput } from "@aws-sdk/client-acm";
 import {
   ACMClient,
   DeleteCertificateCommand,
   DescribeCertificateCommand,
   RequestCertificateCommand,
 } from "@aws-sdk/client-acm";
-import type { RequestCertificateCommandInput } from "@aws-sdk/client-acm";
 import { fromSSO } from "@aws-sdk/credential-providers";
-import path from "path";
 import * as dotenv from "dotenv";
+import path from "path";
 
 dotenv.config({
   path: path.join(__dirname, "..", ".env"),

@@ -1,4 +1,4 @@
-import { getACMCertificateValidationRecords } from "../utils/aws";
+import { getACMCertificateValidationRecords } from "../utils/acm";
 import { getSiteLaunchBatch } from "../utils/csv";
 import {
   isDomainARecordsCorrect,

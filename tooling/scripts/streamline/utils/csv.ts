@@ -1,10 +1,15 @@
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
+import * as dotenv from "dotenv";
 import type { OnboardingSite, SiteLaunchSite } from "../types";
 
 const ONBOARDING_BATCH_CSV = "onboarding.csv";
 const SITE_LAUNCH_BATCH_CSV = "site-launch.csv";
+
+dotenv.config({
+  path: path.join(__dirname, "..", ".env"),
+});
 
 export const getOnboardingBatch = async () => {
   const csvFilePath = path.join(__dirname, "..", ONBOARDING_BATCH_CSV);
@@ -26,4 +31,52 @@ export const getSiteLaunchBatch = async () => {
   });
 
   return parsed.data;
+};
+
+interface SitesProductionCSVRow {
+  siteName: string;
+  shortName: string;
+  siteId: string;
+  instanceType: string;
+  domainAliases: string;
+}
+
+export const updateSitesProductionCSV = async (
+  sites: SitesProductionCSVRow[],
+  state: "CREATED" | "PRELAUNCH" | "LAUNCHED"
+) => {
+  const csvFilePath = path.join(process.env.SITES_CSV_PATH || "");
+  const fileContent = await fs.promises.readFile(csvFilePath, "utf-8");
+  const parsed = Papa.parse<SitesProductionCSVRow>(fileContent, {
+    header: true,
+    skipEmptyLines: true,
+  });
+
+  const updatedRows = parsed.data.map((row) => {
+    const matchingSite = sites.find(
+      (site) => site.siteName === row.siteName && site.siteId === row.siteId
+    );
+
+    if (matchingSite) {
+      return { ...row, ...matchingSite, state: state };
+    }
+
+    return row;
+  });
+
+  const finalRows = [
+    ...updatedRows,
+    ...sites
+      .filter(
+        (site) =>
+          !updatedRows.some(
+            (row) =>
+              row.siteName === site.siteName && row.siteId === site.siteId
+          )
+      )
+      .map((site) => ({ ...site, state: state })),
+  ];
+
+  const csv = Papa.unparse(finalRows);
+  await fs.promises.writeFile(csvFilePath, csv);
 };
