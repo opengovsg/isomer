@@ -30,9 +30,7 @@ export const getAuthToken = async () => {
   const result = (await fetch(
     "https://api.services.search.gov.sg/admin/v1/auth/token",
     options
-  )
-    .then((response) => response.json())
-    .catch((err) => console.error(err))) as GetAuthTokenResponse;
+  ).then((response) => response.json())) as GetAuthTokenResponse;
 
   return result.accessToken;
 };
@@ -49,9 +47,7 @@ export const getAllApplications = async (authToken: string) => {
   const result = (await fetch(
     "https://api.services.search.gov.sg/admin/v1/bootstrap/applications",
     options
-  )
-    .then((response) => response.json())
-    .catch((err) => console.error(err))) as GetAllApplicationsResponse;
+  ).then((response) => response.json())) as GetAllApplicationsResponse;
 
   return result.data;
 };
@@ -71,9 +67,7 @@ export const getSpecificApplication = async (
   const result = (await fetch(
     `https://api.services.search.gov.sg/admin/v1/bootstrap/applications/${applicationId}`,
     options
-  )
-    .then((response) => response.json())
-    .catch((err) => console.error(err))) as GetSpecificApplicationResponse;
+  ).then((response) => response.json())) as GetSpecificApplicationResponse;
 
   return result.data;
 };
@@ -129,9 +123,7 @@ export const createApplication = async (
   const result = (await fetch(
     "https://api.services.search.gov.sg/admin/v1/bootstrap/applications",
     options
-  )
-    .then((response) => response.json())
-    .catch((err) => console.error(err))) as CreateApplicationResponse;
+  ).then((response) => response.json())) as CreateApplicationResponse;
 
   return result.data;
 };

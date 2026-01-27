@@ -60,3 +60,15 @@ export const createRecords = (zoneId: string): Record[] => {
     content: Buffer.from(template).toString("base64"),
   });
 };
+
+export const archiveGitHubRepo = async (repoName: string) => {
+  const octokit = new Octokit({
+    auth: process.env.GITHUB_TOKEN,
+  });
+
+  await octokit.rest.repos.update({
+    owner: "isomerpages",
+    repo: repoName,
+    archived: true,
+  });
+};

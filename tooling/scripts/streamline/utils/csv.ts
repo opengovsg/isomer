@@ -34,11 +34,11 @@ export const getSiteLaunchBatch = async () => {
 };
 
 interface SitesProductionCSVRow {
-  siteName: string;
-  shortName: string;
   siteId: string;
-  instanceType: string;
-  domainAliases: string;
+  siteName?: string;
+  shortName?: string;
+  instanceType?: string;
+  domainAliases?: string;
 }
 
 export const updateSitesProductionCSV = async (
@@ -51,31 +51,22 @@ export const updateSitesProductionCSV = async (
     header: true,
     skipEmptyLines: true,
   });
-
+  const rowsToAdd = sites
+    .filter((site) => !parsed.data.some((row) => row.siteId === site.siteId))
+    .map((site) => ({ ...site, state }));
   const updatedRows = parsed.data.map((row) => {
-    const matchingSite = sites.find(
-      (site) => site.siteName === row.siteName && site.siteId === row.siteId
-    );
-
-    if (matchingSite) {
-      return { ...row, ...matchingSite, state: state };
+    const siteToUpdate = sites.find((site) => site.siteId === row.siteId);
+    if (siteToUpdate) {
+      return {
+        ...row,
+        ...siteToUpdate,
+        state,
+      };
     }
 
     return row;
   });
-
-  const finalRows = [
-    ...updatedRows,
-    ...sites
-      .filter(
-        (site) =>
-          !updatedRows.some(
-            (row) =>
-              row.siteName === site.siteName && row.siteId === site.siteId
-          )
-      )
-      .map((site) => ({ ...site, state: state })),
-  ];
+  const finalRows = [...updatedRows, ...rowsToAdd];
 
   const csv = Papa.unparse(finalRows);
   await fs.promises.writeFile(csvFilePath, csv);

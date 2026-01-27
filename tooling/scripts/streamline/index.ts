@@ -1,7 +1,9 @@
 import { select } from "@inquirer/prompts";
 import type { StreamlineScriptType } from "./types";
-import { generateDnsRecords } from "./generate-dns";
-import { verifyDnsRecords } from "./verify-dns";
+import { generateDnsRecords } from "./apps/generate-dns";
+import { verifyDnsRecords } from "./apps/verify-dns";
+import { siteLaunchFirstWindow } from "./apps/launch-first";
+import { siteLaunchSecondWindow } from "./apps/launch-second";
 
 const main = async () => {
   const script = await select<StreamlineScriptType>({
@@ -49,10 +51,10 @@ const main = async () => {
       await verifyDnsRecords();
       break;
     case "site-launch-1st-window":
-      console.log("Running site-launch-1st-window script...");
+      await siteLaunchFirstWindow();
       break;
     case "site-launch-2nd-window":
-      console.log("Running site-launch-2nd-window script...");
+      await siteLaunchSecondWindow();
       break;
     default:
       const _: never = script;

@@ -51,10 +51,12 @@ export const getAllCloudFrontDistributions = async () => {
 
 export const getCloudFrontDistributionDomainName = (
   distributions: DistributionSummary[],
-  domain: string
+  siteName: string
 ) => {
   const distribution = distributions.find((dist) =>
-    dist.Aliases?.Items?.includes(domain)
+    dist.Origins?.Items?.some((origin) =>
+      origin.OriginPath?.includes(`/${siteName}/`)
+    )
   );
 
   if (!distribution?.DomainName) {

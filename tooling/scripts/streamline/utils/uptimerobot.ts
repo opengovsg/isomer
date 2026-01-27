@@ -10,6 +10,7 @@ dotenv.config({
 interface GetUptimeRobotMonitorsResponse {
   data: {
     id: number;
+    url: string;
   }[];
 }
 
@@ -21,18 +22,16 @@ export const getUptimeRobotMonitors = async () => {
     },
   };
 
-  const monitorIds = [];
+  const monitors = [];
   let cursor = 0;
 
   while (true) {
     const result = (await fetch(
       `https://api.uptimerobot.com/v3/monitors?cursor=${cursor}`,
       options
-    )
-      .then((response) => response.json())
-      .catch((err) => console.error(err))) as GetUptimeRobotMonitorsResponse;
+    ).then((response) => response.json())) as GetUptimeRobotMonitorsResponse;
 
-    monitorIds.push(...result.data.map((monitor) => monitor.id));
+    monitors.push(...result.data);
 
     if (result.data.length === 0) {
       break;
@@ -41,7 +40,7 @@ export const getUptimeRobotMonitors = async () => {
     cursor = result.data.length + cursor;
   }
 
-  return monitorIds;
+  return monitors;
 };
 
 export const createMaintenanceWindow = async (monitorIds: number[]) => {
@@ -63,7 +62,8 @@ export const createMaintenanceWindow = async (monitorIds: number[]) => {
     }),
   };
 
-  (await fetch("https://api.uptimerobot.com/v3/maintenance-windows", options)
-    .then((response) => response.json())
-    .catch((err) => console.error(err))) as unknown;
+  (await fetch(
+    "https://api.uptimerobot.com/v3/maintenance-windows",
+    options
+  ).then((response) => response.json())) as unknown;
 };
