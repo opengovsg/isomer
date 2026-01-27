@@ -54,7 +54,7 @@ export const createRecords = (zoneId: string): Record[] => {
 
   await octokit.rest.repos.createOrUpdateFileContents({
     owner: "isomerpages",
-    repo: "indirection",
+    repo: "isomer-indirection",
     path: `dns/${domainWithoutWww}.ts`,
     message: `chore: Automated add/update for ${domainWithoutWww}`,
     content: Buffer.from(template).toString("base64"),

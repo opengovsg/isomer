@@ -4,6 +4,7 @@ import { generateDnsRecords } from "./apps/generate-dns";
 import { verifyDnsRecords } from "./apps/verify-dns";
 import { siteLaunchFirstWindow } from "./apps/launch-first";
 import { siteLaunchSecondWindow } from "./apps/launch-second";
+import { migrateClassicToNext } from "./apps/classic-migration";
 
 const main = async () => {
   const script = await select<StreamlineScriptType>({
@@ -42,7 +43,7 @@ const main = async () => {
 
   switch (script) {
     case "migrate-classic-to-next":
-      console.log("Running migrate-classic-to-next script...");
+      await migrateClassicToNext();
       break;
     case "generate-dns-records":
       await generateDnsRecords();
