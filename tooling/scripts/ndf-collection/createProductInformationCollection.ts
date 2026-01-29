@@ -58,6 +58,10 @@ export const createProductInformationCollection = async () => {
     const dosage = entry.Dosage ?? "";
     const contraindications = entry.Contraindications ?? "";
     const routeOfAdministration = entry["Route of Administration"] ?? "NA";
+    const exemptions =
+      entry[
+        "Prescription Only Medicines with Exemptions for Supply without Prescription"
+      ] ?? "NA";
 
     const jsonContent = getProductInformationPage({
       productName,
@@ -70,6 +74,7 @@ export const createProductInformationCollection = async () => {
       licenseHolder,
       forensicClassification,
       atcCode,
+      exemptions,
       indications,
       dosage,
       contraindications,
@@ -91,6 +96,7 @@ export const createProductInformationCollection = async () => {
 
     const jsonLinkContent = getProductInformationLink({
       productName,
+      activeIngredient,
       licenseNumber,
       indications,
       dosage,

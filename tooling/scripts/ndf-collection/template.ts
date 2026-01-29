@@ -1326,6 +1326,7 @@ interface ProductInformationPageProps {
   licenseHolder: string;
   forensicClassification: string;
   atcCode: string;
+  exemptions: string;
   indications: string;
   dosage: string;
   contraindications: string;
@@ -1342,6 +1343,7 @@ export const getProductInformationPage = ({
   licenseHolder,
   forensicClassification,
   atcCode,
+  exemptions,
   indications,
   dosage,
   contraindications,
@@ -1758,6 +1760,50 @@ export const getProductInformationPage = ({
                   },
                 ],
               },
+              {
+                type: "tableRow",
+                content: [
+                  {
+                    type: "tableCell",
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: "paragraph",
+                        attrs: {
+                          dir: "ltr",
+                        },
+                        content: [
+                          {
+                            type: "text",
+                            marks: [
+                              {
+                                type: "bold",
+                              },
+                            ],
+                            text: "Prescription-only Medicines with Exemptions for Supply without Prescription",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content:
+                      getHtmlAsJson(exemptions).content.find(
+                        (c: any) => c.type === "prose"
+                      ).content || [],
+                  },
+                ],
+              },
             ],
           },
         ],
@@ -1838,6 +1884,7 @@ export const getProductInformationPage = ({
 
 interface ProductInformationLinkProps {
   productName: string;
+  activeIngredient: string;
   licenseNumber: string;
   indications: string;
   dosage: string;
@@ -1850,6 +1897,7 @@ interface ProductInformationLinkProps {
 
 export const getProductInformationLink = ({
   productName,
+  activeIngredient,
   licenseNumber,
   indications,
   dosage,
@@ -1880,7 +1928,7 @@ export const getProductInformationLink = ({
     page: {
       title: `${decodeHtmlEntities(productName)} [${licenseNumber}]`,
       ref: `/about-drugs/product-information/${licenseNumber}`,
-      description: `Active ingredients: ${decodeHtmlEntities(productName)}`,
+      description: `Active ingredients: ${decodeHtmlEntities(activeIngredient)}`,
       category,
       tags: [
         {
