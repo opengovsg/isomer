@@ -620,10 +620,7 @@ export const resourceRouter = router({
 
         // Prevent users from deleting the search page (permalink /search, no parent)
         // This is a special page that is used to display the SearchSG results
-        if (
-          before.permalink === "search" &&
-          (before.parentId === null)
-        ) {
+        if (before.permalink === "search" && before.parentId === null) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "The search page cannot be deleted",
