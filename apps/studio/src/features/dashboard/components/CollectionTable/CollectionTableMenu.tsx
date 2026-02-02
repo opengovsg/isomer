@@ -41,9 +41,7 @@ export const CollectionTableMenu = ({
       type: resourceType,
     })
   }
-  const isSearchPage =
-    permalink === "/search" &&
-    (parentId === null || parentId === undefined)
+  const isSearchPage = permalink === "search" && parentId === null
 
   return (
     <Menu isLazy size="sm">

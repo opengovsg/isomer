@@ -43,9 +43,7 @@ export const ResourceTableMenu = ({
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
-  const isSearchPage =
-    permalink === "search" &&
-    (parentId === null || parentId === undefined)
+  const isSearchPage = permalink === "search" && parentId === null
 
   return (
     <Menu isLazy size="sm">
