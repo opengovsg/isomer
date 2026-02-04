@@ -9,6 +9,7 @@ const nextConfig = {
   turbo: {
     moduleIdStrategy: "deterministic",
   },
+  productionBrowserSourceMaps: true,
 }
 
 export default nextConfig
