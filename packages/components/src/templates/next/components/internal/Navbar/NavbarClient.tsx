@@ -1,10 +1,12 @@
 "use client"
 
-import { useCallback, useLayoutEffect, useRef, useState } from "react"
+import type { RefObject } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
 
 import type { NavbarClientProps } from "~/interfaces"
+import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
@@ -15,11 +17,6 @@ import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
 import { NavItem } from "./NavItem"
-
-interface Size {
-  width?: number
-  height?: number
-}
 
 const createNavbarStyles = tv({
   slots: {
@@ -67,6 +64,7 @@ export const NavbarClient = ({
   callToAction,
   utility,
   LinkComponent,
+  headerRef: headerRefProp,
 }: NavbarClientProps) => {
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
@@ -74,32 +72,33 @@ export const NavbarClient = ({
   const [mobileNavbarTopPx, setMobileNavbarTopPx] = useState<number>()
 
   const isMenuOpen = openNavItemIdx !== -1 || isHamburgerOpen
+  const isDesktop = useBreakpoint("lg")
 
-  // Reference for navigation items bar on desktop
   const navDesktopRef = useRef<HTMLUListElement>(null)
-
-  // Reference for the site header
   const siteHeaderRef = useRef<HTMLDivElement>(null)
+  const isHamburgerOpenRef = useRef(isHamburgerOpen)
+  isHamburgerOpenRef.current = isHamburgerOpen
 
-  const refreshMenuOffset = useCallback((size?: Size) => {
-    setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
+  const measuredHeaderRef = headerRefProp ?? siteHeaderRef
 
-    if (!size) {
-      return
-    }
-
-    if (size.width && size.width < 1024) {
-      // close any open nav items when resizing to mobile
-      setOpenNavItemIdx(-1)
-    } else {
-      setIsHamburgerOpen(false)
-    }
-  }, [])
+  const scheduleMenuOffsetUpdate = useCallback(() => {
+    if (!isHamburgerOpenRef.current) return
+    const bottom = measuredHeaderRef.current?.getBoundingClientRect().bottom
+    setMobileNavbarTopPx(bottom)
+  }, [measuredHeaderRef])
 
   useResizeObserver({
-    ref: siteHeaderRef,
-    onResize: refreshMenuOffset,
+    ref: measuredHeaderRef as RefObject<HTMLElement>,
+    onResize: scheduleMenuOffsetUpdate,
   })
+
+  useEffect(() => {
+    if (isDesktop) {
+      setIsHamburgerOpen(false)
+    } else {
+      setOpenNavItemIdx(-1)
+    }
+  }, [isDesktop])
 
   const onCloseMenu = useCallback(() => {
     setIsHamburgerOpen(false)
@@ -108,20 +107,23 @@ export const NavbarClient = ({
 
   const activeNavRef = useRef(null)
 
-  useLayoutEffect(() => {
+  // TBT: useEffect (not useLayoutEffect) so we don't block first paint.
+  // On low-end devices / poor network, useLayoutEffect here would block the main thread
+  // Deferring to useEffect + rAF keeps that work off the critical path.
+  useEffect(() => {
     if (isMenuOpen) {
       window.scrollTo({
         top: 0,
         left: 0,
         behavior: isHamburgerOpen ? undefined : "smooth",
       })
-      refreshMenuOffset()
+      scheduleMenuOffsetUpdate()
     }
-  }, [isHamburgerOpen, isMenuOpen, refreshMenuOffset])
+  }, [isHamburgerOpen, isMenuOpen, scheduleMenuOffsetUpdate])
 
   return (
     <div className={navbarStyles.navbar()}>
-      {/* Site header */}
+      {/* When headerRef is not passed, we measure this container for overlay top; pass headerRef for a wrapper that includes Notification, Masthead, etc. */}
       <div className={navbarStyles.navbarContainer()} ref={siteHeaderRef}>
         <div className={navbarStyles.navbarItems()}>
           {/* Logo */}

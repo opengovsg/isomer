@@ -1,3 +1,4 @@
+import type { RefObject } from "react"
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
@@ -150,4 +151,6 @@ export type NavbarProps = BaseNavbarProps & {
 
 export type NavbarClientProps = OmitFromUnion<BaseNavbarProps, "type"> & {
   imageClientProps: ImageClientProps
+  /** When provided (e.g. ref to wrapper with Notification, Masthead, Navbar), overlay top is measured from this element. Otherwise measured from the navbar container. */
+  headerRef?: RefObject<HTMLDivElement | null>
 }

@@ -15,7 +15,7 @@ import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
 
 type MobileNavMenuProps = Omit<
   NavbarClientProps,
-  "layout" | "imageClientProps"
+  "layout" | "imageClientProps" | "headerRef"
 > & {
   top: number | undefined
   openNavItemIdx: number
@@ -46,10 +46,8 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     return (
       <div
         ref={mobileMenuRef}
-        className="fixed inset-0 z-50"
-        style={{
-          top,
-        }}
+        className="fixed inset-x-0 bottom-0 z-50"
+        style={{ top }}
       >
         <FocusScope restoreFocus>
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
