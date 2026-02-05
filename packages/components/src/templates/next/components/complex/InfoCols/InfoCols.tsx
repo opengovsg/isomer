@@ -19,7 +19,7 @@ const createInfoColsStyles = tv({
     outerContainer: `${ComponentContent}`,
     innerContainer: "flex flex-col gap-12",
     header: "flex w-full max-w-[47.5rem] flex-col items-start text-left",
-    headerTitle: "prose-display-md break-words text-base-content-strong",
+    headerTitle: "prose-display-sm break-words text-base-content-strong",
     headerSubtitle: "prose-headline-lg-regular text-base-content",
     infoBoxesContainer:
       "grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 md:gap-y-12 lg:grid-cols-3",

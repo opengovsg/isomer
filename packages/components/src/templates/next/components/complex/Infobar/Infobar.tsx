@@ -22,7 +22,7 @@ export const createInfobarStyles = tv({
         innerContainer:
           "items-center gap-9 rounded-none text-center lg:max-w-3xl",
         headingContainer: "gap-6",
-        title: "prose-display-lg",
+        title: "prose-display-md",
         description: "prose-headline-lg-regular",
         buttonContainer: "items-center",
       },
