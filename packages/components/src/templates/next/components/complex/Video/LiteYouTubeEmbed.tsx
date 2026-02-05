@@ -56,11 +56,13 @@ export const LiteYouTubeEmbed = ({
         <button
           type="button"
           onClick={() => setActivated(true)}
-          className="group absolute inset-0 flex cursor-pointer items-center justify-center focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          className="group absolute inset-0 flex cursor-pointer items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-utility-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           aria-label={`Play ${title || "video"}`}
         >
-          <span className="sr-only">{`Play ${title || "video"}`}</span>
-          <YouTubePlayButton className="pointer-events-none h-12 w-[68px] shrink-0" />
+          <YouTubePlayButton
+            className="pointer-events-none h-12 w-[68px] shrink-0"
+            aria-hidden
+          />
         </button>
       )}
     </>
@@ -72,7 +74,7 @@ const YouTubePlayButton = (props: SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 68 48"
-    aria-hidden="true"
+    aria-hidden
     {...props}
   >
     <path
