@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  getYouTubeVideoId,
   LINK_HREF_PATTERN,
   MAPS_EMBED_URL_PATTERN,
   VIDEO_EMBED_URL_PATTERN,
@@ -268,6 +269,66 @@ describe("validation", () => {
       testCases.forEach((testCase) => {
         const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
         expect(result).toBe(false)
+      })
+    })
+  })
+
+  describe("getYouTubeVideoId", () => {
+    it("should extract video ID from YouTube watch URLs", () => {
+      const testCases = [
+        {
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          expected: "dQw4w9WgXcQ",
+        },
+        {
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ&feature=youtu.be",
+          expected: "dQw4w9WgXcQ",
+        },
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(getYouTubeVideoId(testCase.url)).toBe(testCase.expected)
+      })
+    })
+
+    it("should extract video ID from YouTube embed URLs", () => {
+      const testCases = [
+        {
+          url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          expected: "dQw4w9WgXcQ",
+        },
+        {
+          url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=7dAKYmJw2jTNNqkr",
+          expected: "dQw4w9WgXcQ",
+        },
+        {
+          url: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+          expected: "dQw4w9WgXcQ",
+        },
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(getYouTubeVideoId(testCase.url)).toBe(testCase.expected)
+      })
+    })
+
+    it("should return null for non-YouTube URLs", () => {
+      const testCases = [
+        "https://player.vimeo.com/video/984159615",
+        "https://www.facebook.com/plugins/video.php?href=...",
+        "https://www.example.com/embed/abc",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(getYouTubeVideoId(testCase)).toBeNull()
+      })
+    })
+
+    it("should return null for invalid URLs", () => {
+      const testCases = ["", "not-a-url"]
+
+      testCases.forEach((testCase) => {
+        expect(getYouTubeVideoId(testCase)).toBeNull()
       })
     })
   })

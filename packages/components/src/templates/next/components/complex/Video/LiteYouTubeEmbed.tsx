@@ -1,0 +1,63 @@
+"use client"
+
+import { useState } from "react"
+
+import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
+
+export interface LiteYouTubeEmbedProps {
+  src: string
+  videoId: string
+  title?: string
+  shouldLazyLoad?: boolean
+}
+
+export const LiteYouTubeEmbed = ({
+  src,
+  videoId,
+  title,
+  shouldLazyLoad = true,
+}: LiteYouTubeEmbedProps) => {
+  const [activated, setActivated] = useState(false)
+
+  return (
+    <>
+      <img
+        src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+        alt={title ? `Thumbnail for ${title}` : "Thumbnail for video"}
+        loading={shouldLazyLoad ? "lazy" : "eager"}
+        className={`absolute inset-0 h-full w-full bg-black object-cover ${activated ? "pointer-events-none opacity-0" : ""}`}
+      />
+      {!activated && (
+        <button
+          type="button"
+          onClick={() => setActivated(true)}
+          className="group absolute inset-0 flex cursor-pointer items-center justify-center focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          aria-label={title ? `Play ${title}` : "Play video"}
+        >
+          <span className="sr-only">{title ? `Play ${title}` : "Play"}</span>
+          {/* YouTube play button: squircle + triangle (same as react-lite-youtube-embed / Paul Irish lite-youtube-embed) */}
+          <span
+            className="pointer-events-none h-12 w-[68px] shrink-0 bg-center bg-no-repeat grayscale transition group-hover:grayscale-0 group-focus:grayscale-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 68 48'%3E%3Cpath fill='%23f00' d='M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z'/%3E%3Cpath fill='%23fff' d='M45 24 27 14v20'/%3E%3C/svg%3E")`,
+              backgroundSize: "68px 48px",
+            }}
+          />
+        </button>
+      )}
+      {activated && (
+        <iframe
+          height="100%"
+          width="100%"
+          className={IFRAME_CLASSNAME}
+          src={src}
+          title={title || "Video player"}
+          allow={IFRAME_ALLOW}
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+          loading={shouldLazyLoad ? "lazy" : "eager"}
+        />
+      )}
+    </>
+  )
+}

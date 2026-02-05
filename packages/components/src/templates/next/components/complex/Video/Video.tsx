@@ -1,6 +1,17 @@
 import type { VideoProps } from "~/interfaces"
-import { isValidVideoUrl, VALID_VIDEO_DOMAINS } from "~/utils/validation"
+import {
+  getYouTubeVideoId,
+  isValidVideoUrl,
+  VALID_VIDEO_DOMAINS,
+} from "~/utils/validation"
 import { ComponentContent } from "../../internal/customCssClass"
+import { LiteYouTubeEmbed } from "./LiteYouTubeEmbed"
+import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
+
+type ParsedVideo =
+  | { type: "youtube"; embedUrl: string; videoId: string }
+  | { type: "vimeo"; embedUrl: string }
+  | { type: "facebook"; embedUrl: string }
 
 // NOTE: We are only using the privacy-enhanced mode of YouTube embeds
 const getPrivacyEnhancedYouTubeEmbedUrl = (urlObject: URL) => {
@@ -27,46 +38,78 @@ const getPrivacyEnhancedYouTubeEmbedUrl = (urlObject: URL) => {
 
 // NOTE: We are setting a do-not-track attribute on Vimeo embeds
 // Ref: https://developer.vimeo.com/api/oembed/videos
-const getPrivacyEnhancedVimeoEmbedUrl = (urlObject: URL) => {
+const getPrivacyEnhancedVimeoEmbedUrl = (url: string): string => {
+  const urlObject = new URL(url)
   urlObject.searchParams.set("dnt", "true")
   return urlObject.toString()
 }
 
-const getSanitizedEmbedUrl = (url: string) => {
+/**
+ * Parses a video URL and returns the video type plus the privacy-enhanced embed URL (or videoId for YouTube).
+ * Returns null for invalid URLs.
+ */
+const parseVideo = (url: string): ParsedVideo | null => {
+  if (!isValidVideoUrl(url)) return null
+
   const urlObject = new URL(url)
 
   if (VALID_VIDEO_DOMAINS.youtube.includes(urlObject.hostname)) {
-    return getPrivacyEnhancedYouTubeEmbedUrl(urlObject)
+    return {
+      type: "youtube",
+      embedUrl: getPrivacyEnhancedYouTubeEmbedUrl(urlObject) ?? "",
+      videoId: getYouTubeVideoId(url) ?? "",
+    }
   } else if (VALID_VIDEO_DOMAINS.vimeo.includes(urlObject.hostname)) {
-    return getPrivacyEnhancedVimeoEmbedUrl(urlObject)
+    return { type: "vimeo", embedUrl: getPrivacyEnhancedVimeoEmbedUrl(url) }
   } else if (VALID_VIDEO_DOMAINS.fbvideo.includes(urlObject.hostname)) {
-    return urlObject.toString()
+    return { type: "facebook", embedUrl: url }
+  } else {
+    return null
   }
-
-  return ""
 }
 
 export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
-  if (!isValidVideoUrl(url)) {
-    return <></>
+  const RenderedVideo = () => {
+    const parsedVideo = parseVideo(url)
+    if (!parsedVideo) return <></>
+
+    const { type: videoType, embedUrl } = parsedVideo
+    switch (videoType) {
+      case "youtube":
+        return (
+          <LiteYouTubeEmbed
+            src={embedUrl}
+            videoId={parsedVideo.videoId}
+            title={title}
+            shouldLazyLoad={shouldLazyLoad}
+          />
+        )
+      case "vimeo":
+      case "facebook":
+        return (
+          <iframe
+            src={embedUrl}
+            title={title || "Video player"}
+            loading={shouldLazyLoad ? "lazy" : "eager"}
+            height="100%"
+            width="100%"
+            className={IFRAME_CLASSNAME}
+            allow={IFRAME_ALLOW}
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        )
+      default:
+        const _exhaustiveCheck: never = videoType
+        return null
+    }
   }
 
   return (
     <section className={`${ComponentContent} mt-7 first:mt-0`}>
       {/* NOTE: 56.25% is a 16:9 aspect ratio */}
       <div className="relative w-full overflow-hidden pt-[56.25%]">
-        <iframe
-          height="100%"
-          width="100%"
-          className="absolute bottom-0 left-0 right-0 top-0 border-0"
-          src={getSanitizedEmbedUrl(url)}
-          title={title || "Video player"}
-          // NOTE: We explicitly disallow autoplay as it is not gold-standard
-          allow="accelerometer; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allowFullScreen
-          loading={shouldLazyLoad ? "lazy" : "eager"}
-        />
+        <RenderedVideo />
       </div>
     </section>
   )
