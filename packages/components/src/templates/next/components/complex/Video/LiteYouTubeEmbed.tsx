@@ -19,10 +19,18 @@ export const LiteYouTubeEmbed = ({
 }: LiteYouTubeEmbedProps) => {
   const [activated, setActivated] = useState(false)
 
+  //  We add autoplay here because the user already click on the facade button once,
+  // and we don't them to have to click again to play.
+  const srcWithAutoplay = () => {
+    const u = new URL(src)
+    u.searchParams.set("autoplay", "1")
+    return u.toString()
+  }
+
   return (
     <>
       <img
-        src={`https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`}
+        src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`} // we use hqdefault as its the best balance between quality and size
         alt={`Thumbnail for ${title || "video"}`}
         loading={shouldLazyLoad ? "lazy" : "eager"}
         className={`absolute inset-0 h-full w-full bg-black object-cover ${activated ? "pointer-events-none opacity-0" : ""}`}
@@ -50,12 +58,11 @@ export const LiteYouTubeEmbed = ({
           height="100%"
           width="100%"
           className={IFRAME_CLASSNAME}
-          src={src}
+          src={srcWithAutoplay()}
           title={title || "Video player"}
-          allow={IFRAME_ALLOW}
+          allow={`${IFRAME_ALLOW}; autoplay`} // autoplay needed to allow Youtube to autoplay
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
-          loading={shouldLazyLoad ? "lazy" : "eager"}
         />
       )}
     </>
