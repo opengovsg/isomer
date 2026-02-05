@@ -81,7 +81,7 @@ export const LiteVimeoEmbed = ({
         >
           <span className="sr-only">{`Play ${title || "video"}`}</span>
           {/* Vimeo play button: rounded rectangle with triangle */}
-          <span className="pointer-events-none flex h-10 w-[65px] shrink-0 items-center justify-center rounded-lg bg-[#172322bf] opacity-80 transition group-hover:bg-[#00ADEF] group-hover:opacity-100 group-focus:bg-[#00ADEF] group-focus:opacity-100">
+          <span className="pointer-events-none flex h-10 w-[65px] shrink-0 items-center justify-center rounded-lg bg-[#15D5FF]">
             <span
               className="ml-1"
               style={{
@@ -89,7 +89,7 @@ export const LiteVimeoEmbed = ({
                 height: 0,
                 borderStyle: "solid",
                 borderWidth: "10px 0 10px 20px",
-                borderColor: "transparent transparent transparent #fff",
+                borderColor: "transparent transparent transparent #000",
               }}
             />
           </span>

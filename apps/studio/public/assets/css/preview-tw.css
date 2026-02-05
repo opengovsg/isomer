@@ -1637,10 +1637,6 @@ video {
   height: 7.375rem;
 }
 
-.h-\[72px\] {
-  height: 72px;
-}
-
 .h-\[calc\(100vh\+300px\)\] {
   height: calc(100vh + 300px);
 }
@@ -1829,10 +1825,6 @@ video {
 
 .w-\[68px\] {
   width: 68px;
-}
-
-.w-\[72px\] {
-  width: 72px;
 }
 
 .w-auto {
@@ -2524,10 +2516,6 @@ video {
   border-width: 1px;
 }
 
-.border-\[3px\] {
-  border-width: 3px;
-}
-
 .border-y {
   border-top-width: 1px;
   border-bottom-width: 1px;
@@ -2653,13 +2641,9 @@ video {
   background-color: #0000001a;
 }
 
-.bg-\[\#172322bf\] {
-  background-color: #172322bf;
-}
-
-.bg-\[\#1c1e21\] {
+.bg-\[\#15D5FF\] {
   --tw-bg-opacity: 1;
-  background-color: rgb(28 30 33 / var(--tw-bg-opacity));
+  background-color: rgb(21 213 255 / var(--tw-bg-opacity));
 }
 
 .bg-\[\#E1EAE6\] {
@@ -2707,10 +2691,6 @@ video {
 .bg-black {
   --tw-bg-opacity: 1;
   background-color: rgb(0 0 0 / var(--tw-bg-opacity));
-}
-
-.bg-black\/40 {
-  background-color: rgb(0 0 0 / 0.4);
 }
 
 .bg-black\/65 {
@@ -3604,10 +3584,6 @@ video {
   opacity: 1;
 }
 
-.opacity-80 {
-  opacity: 0.8;
-}
-
 .opacity-90 {
   opacity: 0.9;
 }
@@ -3762,13 +3738,6 @@ video {
 
 .drop-shadow-none {
   --tw-drop-shadow: drop-shadow(0 0 #0000);
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast)
-    var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate)
-    var(--tw-sepia) var(--tw-drop-shadow);
-}
-
-.grayscale {
-  --tw-grayscale: grayscale(100%);
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast)
     var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate)
     var(--tw-sepia) var(--tw-drop-shadow);
@@ -4651,15 +4620,6 @@ video {
     scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
-.group:where([data-rac])[data-hovered] .group-hover\:bg-\[\#00ADEF\] {
-  --tw-bg-opacity: 1;
-  background-color: rgb(0 173 239 / var(--tw-bg-opacity));
-}
-
-.group:where([data-rac])[data-hovered] .group-hover\:bg-black\/60 {
-  background-color: rgb(0 0 0 / 0.6);
-}
-
 .group:where([data-rac])[data-hovered] .group-hover\:text-brand-canvas-inverse {
   color: var(--color-brand-canvas-inverse);
 }
@@ -4694,13 +4654,6 @@ video {
     var(--tw-sepia) var(--tw-drop-shadow);
 }
 
-.group:where([data-rac])[data-hovered] .group-hover\:grayscale-0 {
-  --tw-grayscale: grayscale(0);
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast)
-    var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate)
-    var(--tw-sepia) var(--tw-drop-shadow);
-}
-
 .group\/parent-item:where(:not([data-rac])):hover
   .group-hover\/parent-item\:translate-x-1 {
   --tw-translate-x: 0.25rem;
@@ -4714,15 +4667,6 @@ video {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y))
     rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
     scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.group:where(:not([data-rac])):hover .group-hover\:bg-\[\#00ADEF\] {
-  --tw-bg-opacity: 1;
-  background-color: rgb(0 173 239 / var(--tw-bg-opacity));
-}
-
-.group:where(:not([data-rac])):hover .group-hover\:bg-black\/60 {
-  background-color: rgb(0 0 0 / 0.6);
 }
 
 .group:where(:not([data-rac])):hover .group-hover\:text-brand-canvas-inverse {
@@ -4754,13 +4698,6 @@ video {
 .group:where(:not([data-rac])):hover .group-hover\:drop-shadow-md {
   --tw-drop-shadow: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07))
     drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast)
-    var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate)
-    var(--tw-sepia) var(--tw-drop-shadow);
-}
-
-.group:where(:not([data-rac])):hover .group-hover\:grayscale-0 {
-  --tw-grayscale: grayscale(0);
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast)
     var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate)
     var(--tw-sepia) var(--tw-drop-shadow);
@@ -4976,46 +4913,6 @@ video {
     :not([data-rac])
   ):focus {
   text-decoration-color: transparent;
-}
-
-.group:where([data-rac])[data-focused] .group-focus\:bg-\[\#00ADEF\] {
-  --tw-bg-opacity: 1;
-  background-color: rgb(0 173 239 / var(--tw-bg-opacity));
-}
-
-.group:where([data-rac])[data-focused] .group-focus\:bg-black\/60 {
-  background-color: rgb(0 0 0 / 0.6);
-}
-
-.group:where([data-rac])[data-focused] .group-focus\:opacity-100 {
-  opacity: 1;
-}
-
-.group:where([data-rac])[data-focused] .group-focus\:grayscale-0 {
-  --tw-grayscale: grayscale(0);
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast)
-    var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate)
-    var(--tw-sepia) var(--tw-drop-shadow);
-}
-
-.group:where(:not([data-rac])):focus .group-focus\:bg-\[\#00ADEF\] {
-  --tw-bg-opacity: 1;
-  background-color: rgb(0 173 239 / var(--tw-bg-opacity));
-}
-
-.group:where(:not([data-rac])):focus .group-focus\:bg-black\/60 {
-  background-color: rgb(0 0 0 / 0.6);
-}
-
-.group:where(:not([data-rac])):focus .group-focus\:opacity-100 {
-  opacity: 1;
-}
-
-.group:where(:not([data-rac])):focus .group-focus\:grayscale-0 {
-  --tw-grayscale: grayscale(0);
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast)
-    var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate)
-    var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 .focus-visible\:-m-0:where([data-rac])[data-focus-visible] {
