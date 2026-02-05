@@ -6,7 +6,7 @@ import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
 
 import type { NavbarClientProps } from "~/interfaces"
-import { useBreakpoint } from "~/hooks/useBreakpoint"
+import { useBreakpointDeferred } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
@@ -72,7 +72,8 @@ export const NavbarClient = ({
   const [mobileNavbarTopPx, setMobileNavbarTopPx] = useState<number>()
 
   const isMenuOpen = openNavItemIdx !== -1 || isHamburgerOpen
-  const isDesktop = useBreakpoint("lg")
+  // TBT: useBreakpointDeferred uses useEffect so we don't block first paint (useMediaQuery uses useLayoutEffect).
+  const isDesktop = useBreakpointDeferred("lg")
 
   const navDesktopRef = useRef<HTMLUListElement>(null)
   const siteHeaderRef = useRef<HTMLDivElement>(null)
@@ -87,12 +88,16 @@ export const NavbarClient = ({
     setMobileNavbarTopPx(bottom)
   }, [measuredHeaderRef])
 
+  // TBT: Only observe when hamburger is open so we don't register ResizeObserver on initial load.
+  // ResizeObserver callbacks run after layout and contribute to "Layout" in the Performance panel.
+  const nullRef = useRef<HTMLElement | null>(null)
   useResizeObserver({
-    ref: measuredHeaderRef as RefObject<HTMLElement>,
+    ref: (isHamburgerOpen ? measuredHeaderRef : nullRef) as RefObject<HTMLElement>,
     onResize: scheduleMenuOffsetUpdate,
   })
 
   useEffect(() => {
+    if (isDesktop === undefined) return
     if (isDesktop) {
       setIsHamburgerOpen(false)
     } else {
