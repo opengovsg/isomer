@@ -41,18 +41,7 @@ export const LiteYouTubeEmbed = ({
           activated && "pointer-events-none opacity-0",
         )}
       />
-      {!activated && (
-        <button
-          type="button"
-          onClick={() => setActivated(true)}
-          className="group absolute inset-0 flex cursor-pointer items-center justify-center focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-          aria-label={`Play ${title || "video"}`}
-        >
-          <span className="sr-only">{`Play ${title || "video"}`}</span>
-          <YouTubePlayButton className="pointer-events-none h-12 w-[68px] shrink-0" />
-        </button>
-      )}
-      {activated && (
+      {activated ? (
         <iframe
           height="100%"
           width="100%"
@@ -63,6 +52,16 @@ export const LiteYouTubeEmbed = ({
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
         />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setActivated(true)}
+          className="group absolute inset-0 flex cursor-pointer items-center justify-center focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          aria-label={`Play ${title || "video"}`}
+        >
+          <span className="sr-only">{`Play ${title || "video"}`}</span>
+          <YouTubePlayButton className="pointer-events-none h-12 w-[68px] shrink-0" />
+        </button>
       )}
     </>
   )
