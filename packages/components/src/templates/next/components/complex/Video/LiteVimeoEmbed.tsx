@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 
+import { twMerge } from "~/lib/twMerge"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 
 // Vimeo API v2 response shape (partial)
@@ -62,11 +63,17 @@ export const LiteVimeoEmbed = ({
           src={thumbnailUrl}
           alt={`Thumbnail for ${title || "video"}`}
           loading={shouldLazyLoad ? "lazy" : "eager"}
-          className={`absolute inset-0 h-full w-full bg-black object-cover ${activated ? "pointer-events-none opacity-0" : ""}`}
+          className={twMerge(
+            "absolute inset-0 h-full w-full bg-black object-cover",
+            activated && "pointer-events-none opacity-0",
+          )}
         />
       ) : (
         <div
-          className={`absolute inset-0 h-full w-full bg-black ${activated ? "pointer-events-none opacity-0" : ""}`}
+          className={twMerge(
+            "absolute inset-0 h-full w-full bg-black",
+            activated && "pointer-events-none opacity-0",
+          )}
           aria-hidden
         />
       )}
@@ -100,7 +107,7 @@ export const LiteVimeoEmbed = ({
           className={IFRAME_CLASSNAME}
           src={srcWithAutoplay()}
           title={title || "Video player"}
-          allow={`${IFRAME_ALLOW}; autoplay`}
+          allow={`${IFRAME_ALLOW}; autoplay`} // autoplay needed to allow Youtube to autoplay
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
         />

@@ -3,6 +3,7 @@
 import type { SVGProps } from "react"
 import { useState } from "react"
 
+import { twMerge } from "~/lib/twMerge"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 
 export interface LiteYouTubeEmbedProps {
@@ -35,7 +36,10 @@ export const LiteYouTubeEmbed = ({
         src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`} // we use hqdefault as its the best balance between quality and size
         alt={`Thumbnail for ${title || "video"}`}
         loading={shouldLazyLoad ? "lazy" : "eager"}
-        className={`absolute inset-0 h-full w-full bg-black object-cover ${activated ? "pointer-events-none opacity-0" : ""}`}
+        className={twMerge(
+        "absolute inset-0 h-full w-full bg-black object-cover",
+        activated && "pointer-events-none opacity-0",
+      )}
       />
       {!activated && (
         <button
