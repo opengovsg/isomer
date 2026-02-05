@@ -85,19 +85,7 @@ export const LiteVimeoEmbed = ({
           aria-label={`Play ${title || "video"}`}
         >
           <span className="sr-only">{`Play ${title || "video"}`}</span>
-          {/* Vimeo play button: rounded rectangle with triangle */}
-          <span className="pointer-events-none flex h-10 w-[65px] shrink-0 items-center justify-center rounded-lg bg-[#15D5FF]">
-            <span
-              className="ml-1"
-              style={{
-                width: 0,
-                height: 0,
-                borderStyle: "solid",
-                borderWidth: "10px 0 10px 20px",
-                borderColor: "transparent transparent transparent #000",
-              }}
-            />
-          </span>
+          <VimeoPlayButton />
         </button>
       )}
       {activated && (
@@ -115,3 +103,18 @@ export const LiteVimeoEmbed = ({
     </>
   )
 }
+
+const VimeoPlayButton = () => (
+  <span className="pointer-events-none flex h-10 w-[65px] shrink-0 items-center justify-center rounded-lg bg-[#15D5FF]">
+    <span
+      className="ml-1"
+      style={{
+        width: 0,
+        height: 0,
+        borderStyle: "solid",
+        borderWidth: "10px 0 10px 20px",
+        borderColor: "transparent transparent transparent #000",
+      }}
+    />
+  </span>
+)
