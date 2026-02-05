@@ -11,6 +11,7 @@ export interface LiteYouTubeEmbedProps {
   shouldLazyLoad?: boolean
 }
 
+// Referenced from https://github.com/ibrahimcesar/react-lite-youtube-embed
 export const LiteYouTubeEmbed = ({
   src,
   videoId,

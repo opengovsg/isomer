@@ -16,6 +16,7 @@ export interface LiteVimeoEmbedProps {
   shouldLazyLoad?: boolean
 }
 
+// Referenced https://github.com/luwes/lite-vimeo-embed
 export const LiteVimeoEmbed = ({
   src,
   videoId,
