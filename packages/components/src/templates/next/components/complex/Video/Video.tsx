@@ -1,14 +1,10 @@
 import type { VideoProps } from "~/interfaces"
-import {
-  getVimeoVideoId,
-  getYouTubeVideoId,
-  isValidVideoUrl,
-  VALID_VIDEO_DOMAINS,
-} from "~/utils/validation"
+import { isValidVideoUrl, VALID_VIDEO_DOMAINS } from "~/utils/validation"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LiteVimeoEmbed } from "./LiteVimeoEmbed"
 import { LiteYouTubeEmbed } from "./LiteYouTubeEmbed"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
+import { getVimeoVideoId, getYouTubeVideoId } from "./utils"
 
 type ParsedVideo =
   | { type: "youtube"; embedUrl: string; videoId: string }
