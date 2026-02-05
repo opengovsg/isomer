@@ -23,7 +23,7 @@ export const LiteYouTubeEmbed = ({
     <>
       <img
         src={`https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`}
-        alt={title ? `Thumbnail for ${title}` : "Thumbnail for video"}
+        alt={`Thumbnail for ${title || "video"}`}
         loading={shouldLazyLoad ? "lazy" : "eager"}
         className={`absolute inset-0 h-full w-full bg-black object-cover ${activated ? "pointer-events-none opacity-0" : ""}`}
       />
@@ -32,9 +32,9 @@ export const LiteYouTubeEmbed = ({
           type="button"
           onClick={() => setActivated(true)}
           className="group absolute inset-0 flex cursor-pointer items-center justify-center focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-          aria-label={title ? `Play ${title}` : "Play video"}
+          aria-label={`Play ${title || "video"}`}
         >
-          <span className="sr-only">{title ? `Play ${title}` : "Play"}</span>
+          <span className="sr-only">{`Play ${title || "video"}`}</span>
           {/* YouTube play button: squircle + triangle (same as react-lite-youtube-embed / Paul Irish lite-youtube-embed) */}
           <span
             className="pointer-events-none h-12 w-[68px] shrink-0 bg-center bg-no-repeat grayscale transition group-hover:grayscale-0 group-focus:grayscale-0"
