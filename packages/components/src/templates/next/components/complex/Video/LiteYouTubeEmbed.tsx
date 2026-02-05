@@ -22,7 +22,7 @@ export const LiteYouTubeEmbed = ({
   return (
     <>
       <img
-        src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+        src={`https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`}
         alt={title ? `Thumbnail for ${title}` : "Thumbnail for video"}
         loading={shouldLazyLoad ? "lazy" : "eager"}
         className={`absolute inset-0 h-full w-full bg-black object-cover ${activated ? "pointer-events-none opacity-0" : ""}`}
