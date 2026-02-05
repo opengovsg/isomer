@@ -96,6 +96,7 @@ export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
           />
         )
       case "facebook":
+        // there's no lite facebook embed to copy from
         return (
           <iframe
             src={embedUrl}
