@@ -37,9 +37,9 @@ export const LiteYouTubeEmbed = ({
         alt={`Thumbnail for ${title || "video"}`}
         loading={shouldLazyLoad ? "lazy" : "eager"}
         className={twMerge(
-        "absolute inset-0 h-full w-full bg-black object-cover",
-        activated && "pointer-events-none opacity-0",
-      )}
+          "absolute inset-0 h-full w-full bg-black object-cover",
+          activated && "pointer-events-none opacity-0",
+        )}
       />
       {!activated && (
         <button
