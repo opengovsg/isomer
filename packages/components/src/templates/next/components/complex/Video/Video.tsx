@@ -1,16 +1,18 @@
 import type { VideoProps } from "~/interfaces"
 import {
+  getVimeoVideoId,
   getYouTubeVideoId,
   isValidVideoUrl,
   VALID_VIDEO_DOMAINS,
 } from "~/utils/validation"
 import { ComponentContent } from "../../internal/customCssClass"
+import { LiteVimeoEmbed } from "./LiteVimeoEmbed"
 import { LiteYouTubeEmbed } from "./LiteYouTubeEmbed"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 
 type ParsedVideo =
   | { type: "youtube"; embedUrl: string; videoId: string }
-  | { type: "vimeo"; embedUrl: string }
+  | { type: "vimeo"; embedUrl: string; videoId: string }
   | { type: "facebook"; embedUrl: string }
 
 // NOTE: We are only using the privacy-enhanced mode of YouTube embeds
@@ -60,7 +62,11 @@ const parseVideo = (url: string): ParsedVideo | null => {
       videoId: getYouTubeVideoId(url) ?? "",
     }
   } else if (VALID_VIDEO_DOMAINS.vimeo.includes(urlObject.hostname)) {
-    return { type: "vimeo", embedUrl: getPrivacyEnhancedVimeoEmbedUrl(url) }
+    return {
+      type: "vimeo",
+      embedUrl: getPrivacyEnhancedVimeoEmbedUrl(url),
+      videoId: getVimeoVideoId(url) ?? "",
+    }
   } else if (VALID_VIDEO_DOMAINS.fbvideo.includes(urlObject.hostname)) {
     return { type: "facebook", embedUrl: url }
   } else {
@@ -85,6 +91,14 @@ export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
           />
         )
       case "vimeo":
+        return (
+          <LiteVimeoEmbed
+            src={embedUrl}
+            videoId={parsedVideo.videoId}
+            title={title}
+            shouldLazyLoad={shouldLazyLoad}
+          />
+        )
       case "facebook":
         return (
           <iframe
