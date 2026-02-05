@@ -57,21 +57,19 @@ export const LiteVimeoEmbed = ({
 
   return (
     <>
-      <div
-        className={`absolute inset-0 h-full w-full bg-black bg-cover bg-center ${activated ? "pointer-events-none opacity-0" : ""}`}
-        style={
-          thumbnailUrl ? { backgroundImage: `url("${thumbnailUrl}")` } : {}
-        }
-      >
-        {thumbnailUrl && (
-          <img
-            src={thumbnailUrl}
-            alt={`Thumbnail for ${title || "video"}`}
-            loading={shouldLazyLoad ? "lazy" : "eager"}
-            className="h-full w-full object-cover"
-          />
-        )}
-      </div>
+      {thumbnailUrl ? (
+        <img
+          src={thumbnailUrl}
+          alt={`Thumbnail for ${title || "video"}`}
+          loading={shouldLazyLoad ? "lazy" : "eager"}
+          className={`absolute inset-0 h-full w-full bg-black object-cover ${activated ? "pointer-events-none opacity-0" : ""}`}
+        />
+      ) : (
+        <div
+          className={`absolute inset-0 h-full w-full bg-black ${activated ? "pointer-events-none opacity-0" : ""}`}
+          aria-hidden
+        />
+      )}
       {!activated && (
         <button
           type="button"
