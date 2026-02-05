@@ -296,10 +296,9 @@ export const ImageGalleryClient = ({
                 className="h-full w-full object-contain"
                 assetsBaseUrl={assetsBaseUrl}
                 lazyLoading={
-                  shouldLazyLoad &&
-                  // only the images in preview sequence are visible and should be lazy loaded (if lazy loading is enabled)
-                  // the other images aren't visible so they can be lazily loaded to not fight for loading priority
-                  visibility !== "none"
+                  // Hidden images should always be lazy loaded to avoid
+                  // fetching all images eagerly on page load
+                  visibility === "none" ? true : shouldLazyLoad
                 }
               />
             </button>
