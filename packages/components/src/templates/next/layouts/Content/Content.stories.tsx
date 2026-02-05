@@ -1525,6 +1525,11 @@ export const Default: Story = {
         url: "/",
         label: "I can't even help myself",
       },
+      {
+        type: "video",
+        title: "This is the video",
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      },
     ],
   },
 }
