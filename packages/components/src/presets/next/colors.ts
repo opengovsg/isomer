@@ -1,4 +1,4 @@
-import twColors from "tailwindcss/colors"
+import twColors from "tailwindcss/colors.js"
 
 export const colors = {
   brand: {
