@@ -213,10 +213,11 @@ export const ImageGalleryClient = ({
                       className="h-full w-full object-contain"
                       assetsBaseUrl={assetsBaseUrl}
                       lazyLoading={
-                        shouldLazyLoad &&
-                        // only the current image is visible and should be lazy loaded (if lazy loading is enabled)
-                        // the other images aren't visible so they can be lazily loaded to not fight for loading priority
-                        isCurrentImage
+                        // Only the current image should respect the shouldLazyLoad prop.
+                        // Non-current images are hidden (opacity-0) and should always lazy load
+                        // to avoid eagerly fetching images that aren't visible on page load.
+                        // They will be force-loaded on demand via preloadImage() when needed.
+                        isCurrentImage ? shouldLazyLoad : true
                       }
                     />
                     {image.caption && (
