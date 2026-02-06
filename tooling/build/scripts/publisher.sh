@@ -194,7 +194,7 @@ aws s3 sync --only-show-errors . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUIL
 
 # Set all files in the _next folder to be cached indefinitely (1 year) on users' browsers
 # Next.js uses unique content hashes in filenames, allowing updated content to have different filenames and invalidate the cache on new builds.
-aws s3 sync --only-show-errors _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=31536000, public"
+aws s3 sync --only-show-errors _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/static/_next --delete --no-progress --cache-control "max-age=31536000, public"
 
 calculate_duration $start_time
 
