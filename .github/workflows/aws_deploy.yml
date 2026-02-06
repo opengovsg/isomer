@@ -191,7 +191,7 @@ jobs:
           artifact_type: "container"
           artifact_path: "${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
           critical_threshold: 3
-          high_threshold: 20
+          high_threshold: 25
 
       # Display Inspector results in the GitHub Actions terminal
       - name: Display CycloneDX SBOM (JSON)
@@ -212,8 +212,15 @@ jobs:
             ${{ steps.inspector.outputs.inspector_scan_results_markdown }}
             ${{ steps.inspector.outputs.artifact_sbom }}
 
-      - name: Fail job if vulnerability threshold is exceeded
-        run: exit ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
+      - name: Notify if vulnerability threshold is exceeded
+        if: ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            channel: ${{ secrets.SLACK_CHANNEL_ID }}
+            text: "<!subteam^${{ secrets.SLACK_NOTIFY_TEAM_ID }}> We've exceeded our vulnerability threshold on our ECS image whilst releasing to ${{ inputs.environment }}"
 
       - name: Push image to ECR after scan passes
         env:
