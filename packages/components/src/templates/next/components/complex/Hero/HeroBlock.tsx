@@ -92,7 +92,7 @@ export const HeroBlock = ({
       <div className="relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:w-1/2">
         <ImageClient
           src={backgroundSrc}
-          alt="" // original schema did not ask user to provide alt text
+          alt={title}
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
           assetsBaseUrl={site.assetsBaseUrl}

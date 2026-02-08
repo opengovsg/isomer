@@ -4,7 +4,7 @@ import { ImageClient } from "../../Image"
 import { SearchbarContent } from "./SearchbarContent"
 
 export const HeroSearchbar = (props: HeroSearchbarProps) => {
-  const { backgroundUrl, site } = props
+  const { backgroundUrl, site, title } = props
 
   if (backgroundUrl) {
     const backgroundSrc =
@@ -19,7 +19,7 @@ export const HeroSearchbar = (props: HeroSearchbarProps) => {
       <section className="relative flex w-full flex-col justify-center overflow-hidden text-base-content-inverse before:absolute before:inset-0 before:z-10 before:bg-[#182236] before:opacity-80 md:min-h-80 lg:min-h-96">
         <ImageClient
           src={backgroundSrc}
-          alt="" // original schema did not ask user to provide alt text
+          alt={title}
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
           assetsBaseUrl={site.assetsBaseUrl}

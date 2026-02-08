@@ -24,7 +24,7 @@ export const HeroGradient = ({
     <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">
       <ImageClient
         src={backgroundSrc}
-        alt="" // original schema did not ask user to provide alt text
+        alt={title}
         width="100%"
         className="absolute inset-0 h-full w-full object-cover object-center"
         assetsBaseUrl={site.assetsBaseUrl}
