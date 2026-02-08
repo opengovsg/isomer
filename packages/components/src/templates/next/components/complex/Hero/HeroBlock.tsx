@@ -90,7 +90,7 @@ export const HeroBlock = ({
         </div>
       </div>
       <div
-        className="relative h-80 min-h-[15rem] overflow-hidden sm:min-h-[22.5rem] lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2"
+        className="relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2"
         style={{ contain: "layout" }}
       >
         <ImageClient
