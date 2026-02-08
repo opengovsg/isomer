@@ -51,7 +51,10 @@ export const HeroFloating = ({
       className={`${ComponentContent} flex w-full flex-col items-center !px-0 pb-12 pt-6 sm:!px-0 md:!px-0 md:pb-24 md:pt-16 lg:items-start lg:!px-10`}
     >
       {/* Image with aspect ratio and max height */}
-      <div className="lg:flex lg:w-full lg:justify-end">
+      <div
+        className="lg:flex lg:w-full lg:justify-end"
+        style={{ contain: "layout" }}
+      >
         <ImageClient
           src={backgroundSrc}
           alt={title}

@@ -51,7 +51,7 @@ export const ImageContainer = ({ imageSrc, imageAlt }: ImageContainerProps) => {
   }, [])
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" style={{ contain: "layout" }}>
       <ImageClient
         ref={imageRef}
         src={imageSrc}

@@ -1706,6 +1706,10 @@ video {
   min-height: 15rem;
 }
 
+.min-h-80 {
+  min-height: 20rem;
+}
+
 .min-h-\[15rem\] {
   min-height: 15rem;
 }
