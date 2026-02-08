@@ -2,6 +2,7 @@ import type { HeroGradientProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
+import { ImageClient } from "../Image"
 
 export const HeroGradient = ({
   title,
@@ -20,13 +21,16 @@ export const HeroGradient = ({
       : `${site.assetsBaseUrl}${backgroundUrl}`
 
   return (
-    <section
-      className="flex min-h-[15rem] bg-cover bg-center bg-no-repeat sm:min-h-[22.5rem] lg:min-h-[31.25rem]"
-      style={{
-        backgroundImage: `url('${backgroundSrc}')`,
-      }}
-    >
-      <div className="w-full content-center bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]">
+    <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">
+      <ImageClient
+        src={backgroundSrc}
+        alt="" // original schema did not ask user to provide alt text
+        width="100%"
+        className="absolute inset-0 h-full w-full object-cover object-center"
+        assetsBaseUrl={site.assetsBaseUrl}
+        lazyLoading={false} // hero is always above the fold
+      />
+      <div className="relative z-10 w-full content-center bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]">
         <div
           className={`${ComponentContent} flex flex-row justify-start py-16 text-start text-base-content-inverse`}
         >
