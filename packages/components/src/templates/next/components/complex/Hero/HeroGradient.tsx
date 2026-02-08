@@ -29,6 +29,7 @@ export const HeroGradient = ({
         className="absolute inset-0 h-full w-full object-cover object-center"
         assetsBaseUrl={site.assetsBaseUrl}
         lazyLoading={false} // hero is always above the fold
+        fetchPriority="high"
       />
       <div className="relative z-10 w-full content-center bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]">
         <div

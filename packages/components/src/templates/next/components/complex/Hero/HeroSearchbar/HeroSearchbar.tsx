@@ -24,6 +24,7 @@ export const HeroSearchbar = (props: HeroSearchbarProps) => {
           className="absolute inset-0 h-full w-full object-cover object-center"
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false} // hero is always above the fold
+          fetchPriority="high"
         />
         <div className="relative z-20">
           {/* z-20 so content stacks above the overlay (z-10) and stays visible. */}
