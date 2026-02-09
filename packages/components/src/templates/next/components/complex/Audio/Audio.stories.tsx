@@ -20,7 +20,7 @@ export const SpotifyEpisode: Story = {
   name: "Spotify episode",
   args: {
     title: "Spotify podcast episode embed",
-    url: "https://open.spotify.com/embed/episode/3T5WkragWdHZRwFl7qCHoz?utm_source=generator",
+    url: "https://open.spotify.com/embed/episode/3T5WkragWdHZRwFl7qCHoz",
   },
 }
 
@@ -28,7 +28,7 @@ export const SpotifyShow: Story = {
   name: "Spotify show",
   args: {
     title: "Spotify podcast show embed",
-    url: "https://open.spotify.com/embed/show/66PYiIthr1KqQhJ82XH4DN?utm_source=generator",
+    url: "https://open.spotify.com/embed/show/66PYiIthr1KqQhJ82XH4DN",
   },
 }
 
