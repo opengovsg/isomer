@@ -6,7 +6,7 @@
       "name": "isomer-next",
       "devDependencies": {
         "sherif": "^1.10.0",
-        "turbo": "^2.7.5",
+        "turbo": "^2.8.3",
       },
     },
     "apps/studio": {
@@ -194,7 +194,7 @@
         "isomorphic-dompurify": "^2.35.0",
         "js-base64": "^3.7.8",
         "js-md5": "^0.8.3",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "markdown-to-jsx": "^7.7.17",
         "minisearch": "^7.2.0",
         "react-icons": "^5.5.0",
@@ -3107,7 +3107,7 @@
 
     "lodash": ["lodash@4.17.21", "", {}, "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="],
 
-    "lodash-es": ["lodash-es@4.17.22", "", {}, "sha512-XEawp1t0gxSi9x01glktRZ5HDy0HXqrM0x5pXQM98EaI0NxO6jVM7omDOxsuEo5UIASAnm2bRp1Jt/e0a2XU8Q=="],
+    "lodash-es": ["lodash-es@4.17.23", "", {}, "sha512-kVI48u3PZr38HdYz98UmfPnXl2DXrpdctLrFLCd3kOx1xUkOmpFPx7gCWWM5MPkL/fD8zb+Ph0QzjGFs4+hHWg=="],
 
     "lodash.camelcase": ["lodash.camelcase@4.3.0", "", {}, "sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA=="],
 
