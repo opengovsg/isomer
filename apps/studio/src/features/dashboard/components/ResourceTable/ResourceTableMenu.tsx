@@ -43,6 +43,7 @@ export const ResourceTableMenu = ({
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
+  const isSearchPage = permalink === "search" && parentId === null
 
   return (
     <Menu isLazy size="sm">
@@ -103,7 +104,17 @@ export const ResourceTableMenu = ({
               </MenuItem>
             </Can>
           )}
-          {resourceType !== ResourceType.RootPage && (
+          {resourceType !== ResourceType.RootPage && isSearchPage && (
+            <MenuItem
+              isDisabled
+              colorScheme="critical"
+              icon={<BiTrash fontSize="1rem" />}
+              tooltip="This is a default page that cannot be removed."
+            >
+              Delete
+            </MenuItem>
+          )}
+          {resourceType !== ResourceType.RootPage && !isSearchPage && (
             <Can do="delete" on={{ parentId }}>
               <MenuItem
                 onClick={() => {
