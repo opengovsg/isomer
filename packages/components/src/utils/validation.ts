@@ -168,11 +168,12 @@ export const isValidAudioEmbedUrl = (url: string) => {
 
   try {
     const urlObject = new URL(url)
-    const allValidAudioEmbedDomains = Object.values(VALID_AUDIO_EMBED_DOMAINS).flat()
+    const allValidAudioEmbedDomains = Object.values(
+      VALID_AUDIO_EMBED_DOMAINS,
+    ).flat()
     return (
-      allValidAudioEmbedDomains.includes(
-        urlObject.hostname,
-      ) && new RegExp(AUDIO_EMBED_URL_PATTERN).test(url)
+      allValidAudioEmbedDomains.includes(urlObject.hostname) &&
+      new RegExp(AUDIO_EMBED_URL_PATTERN).test(url)
     )
   } catch (_) {
     return false
