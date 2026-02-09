@@ -102,6 +102,8 @@ export function renderComponentPreviewText({
       return component.title || "Logo cloud"
     case "prose":
       return getTextContentOfProse(component.content)
+    case "music":
+      return component.title || "Music embed"
     case "video":
       return component.title || "Video embed"
     case "childrenpages":
