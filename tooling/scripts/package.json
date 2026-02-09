@@ -1,23 +1,27 @@
 {
-  "name": "@isomer/seed-from-repo",
+  "name": "@isomer/scripts",
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
-  "exports": "./index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsx index.ts",
-    "convert": "tsx migrate-html.ts",
-    "links": "tsx convert-links.ts",
-    "jump:prod": "source .ssh/.env.prod && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/isomer-next-prod-bastion.pem",
-    "jump:staging": "source .ssh/.env.staging && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/isomer-next-staging-bastion.pem",
-    "lint": "eslint"
+    "streamline": "dotenv tsx streamline/index.ts",
+    "streamline-custom": "dotenv tsx streamline/custom-migration.ts"
   },
-  "keywords": [],
   "author": "",
+  "license": "ISC",
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^2.0.19",
+    "@aws-sdk/client-acm": "^3.840.0",
+    "@aws-sdk/client-amplify": "^3.886.0",
+    "@aws-sdk/client-cloudfront": "^3.840.0",
+    "@aws-sdk/client-codebuild": "^3.835.0",
+    "@aws-sdk/credential-providers": "^3.886.0",
+    "@isomer/prettier-config": "*",
+    "@isomer/tsconfig": "*",
     "@octokit/rest": "^22.0.0",
+    "@opengovsg/isomer-components": "*",
     "@tiptap/core": "^2.22.3",
+    "@tiptap/extension-blockquote": "^2.22.3",
     "@tiptap/extension-bold": "^2.22.3",
     "@tiptap/extension-bullet-list": "^2.22.3",
     "@tiptap/extension-document": "^2.22.3",
@@ -43,17 +47,21 @@
     "@tiptap/extension-text": "^2.22.3",
     "@tiptap/extension-underline": "^2.22.3",
     "@tiptap/html": "^2.22.3",
-    "cheerio": "^1.0.0",
-    "dayjs": "^1.11.13",
+    "ai": "^6.0.50",
+    "ajv": "^8.17.1",
     "dotenv": "^16.4.5",
+    "front-matter": "^4.0.2",
     "jsdom": "^24.1.0",
+    "lodash-es": "^4.17.21",
+    "markdown-it": "^14.1.0",
+    "moment": "^2.30.1",
+    "node-dig-dns": "^0.3.4",
+    "papaparse": "^5.5.3",
     "pg": "^8.16.2",
-    "tsx": "^4.20.4"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@isomer/eslint-config": "*",
-    "@types/jsdom": "^21.1.7",
-    "@types/pg": "^8.15.4",
-    "@types/request": "^2.48.12"
+    "@types/papaparse": "^5.5.0",
+    "@types/pg": "^8.15.4"
   }
 }
