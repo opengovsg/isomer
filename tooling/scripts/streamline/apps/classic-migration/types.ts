@@ -17,6 +17,11 @@ export interface MigrationRequest {
   useStagingBranch?: boolean;
 }
 
+export type StudiofyRequest = Pick<
+  MigrationRequest,
+  "repoName" | "useStagingBranch"
+>;
+
 export type GetIsomerSchemaFromJekyllResponse =
   | {
       status: "not_converted";

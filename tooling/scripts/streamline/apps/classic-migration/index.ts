@@ -6,7 +6,7 @@ import {
   getRecursiveTree,
   getResourceRoomName,
 } from "./github";
-import type { MigrationRequest, ReportRow } from "./types";
+import type { MigrationRequest, ReportRow, StudiofyRequest } from "./types";
 import {
   getCollectionFolderName,
   getLegalPermalink,
@@ -20,6 +20,8 @@ import { randomUUID } from "crypto";
 import * as dotenv from "dotenv";
 import { getIsomerSchemaFromJekyll } from "./page";
 import { getOnboardingBatch } from "../../utils/csv";
+import { CONVERSION_OUTPUT_DIR } from "./constants";
+import { studiofySite } from "./studiofier";
 
 dotenv.config({
   path: path.join(__dirname, "..", ".env"),
@@ -141,6 +143,7 @@ const saveContentsToFile = async ({
   // Create the parent folders to the permalink
   const filePath = path.join(
     __dirname,
+    CONVERSION_OUTPUT_DIR,
     site,
     permalink === "/" ? "index" : permalink.toLocaleLowerCase()
   );
@@ -187,7 +190,11 @@ const createIndexIfNotExists = async (
     version: "0.1.0",
   };
 
-  if (fs.existsSync(path.join(__dirname, site, `${permalink}.json`))) {
+  if (
+    fs.existsSync(
+      path.join(__dirname, CONVERSION_OUTPUT_DIR, site, `${permalink}.json`)
+    )
+  ) {
     return;
   }
 
@@ -397,6 +404,9 @@ export const migrateSite = async ({
 export const migrateClassicToNext = async () => {
   console.log("Starting automated migration of Classic sites to Next...");
   const onboardingSites = await getOnboardingBatch();
+  // NOTE: Change this to true if you wish to use the staging branch instead of
+  // the master branch for migration
+  const useStagingBranch = false;
 
   for (const site of onboardingSites) {
     const migrationRequest: MigrationRequest = {
@@ -404,9 +414,14 @@ export const migrateClassicToNext = async () => {
       isomerDomain: site.isomerDomain,
       isOrphansIncluded: true,
       isResourceRoomIncluded: true,
-      useStagingBranch: false,
+      useStagingBranch,
     };
-
     await migrateSite(migrationRequest);
+
+    const studiofyRequest: StudiofyRequest = {
+      repoName: site.repoName,
+      useStagingBranch,
+    };
+    await studiofySite(studiofyRequest);
   }
 };
