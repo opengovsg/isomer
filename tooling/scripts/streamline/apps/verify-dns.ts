@@ -6,9 +6,18 @@ import {
   isDomainPointingToIndirectionLayer,
 } from "../utils/dns";
 
+interface VerifyDnsRecordsResult {
+  repoName: string;
+  domainName: string;
+  acmRecordCorrect: boolean;
+  isIndirectionLayerCorrect: boolean;
+  isRedirectionRecordsCorrect: boolean;
+}
+
 export const verifyDnsRecords = async () => {
   console.log("Running script to verify DNS records...");
   const siteLaunchSites = await getSiteLaunchBatch();
+  const result: VerifyDnsRecordsResult[] = [];
 
   for (const site of siteLaunchSites) {
     // Step 1: Obtain the ACM validation record for the domain
@@ -45,24 +54,15 @@ export const verifyDnsRecords = async () => {
           answer: [],
         };
 
-    // Step 4: Output the DNS verification results
-    // TODO: Improve output format
-    console.log("DNS Record Verification Results:");
-    console.log(
-      `- ACM Validation CNAME Record Correct: ${
-        acmValidationRecord.isCorrect ? "Yes" : "No"
-      }`
-    );
-    console.log(
-      `- Indirection Layer Correct: ${
-        isIndirectionCorrect.isCorrect ? "Yes" : "No"
-      }`
-    );
-    console.log(
-      `- Redirection Domain A Records Correct: ${
-        isRedirectionCorrect.isCorrect ? "Yes" : "No"
-      }`
-    );
-    console.log("---------------------------------------------------");
+    result.push({
+      repoName: site.repoName,
+      domainName: site.isomerDomain,
+      acmRecordCorrect: acmValidationRecord.isCorrect,
+      isIndirectionLayerCorrect: isIndirectionCorrect.isCorrect,
+      isRedirectionRecordsCorrect: isRedirectionCorrect.isCorrect,
+    });
   }
+
+  // Output the DNS verification results
+  console.table(result);
 };

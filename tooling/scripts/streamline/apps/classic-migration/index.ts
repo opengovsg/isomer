@@ -19,7 +19,7 @@ import { randomUUID } from "crypto";
 
 import * as dotenv from "dotenv";
 import { getIsomerSchemaFromJekyll } from "./page";
-import { getOnboardingBatch } from "../../utils/csv";
+import { getOnboardingBatch, updateSitesProductionCSV } from "../../utils/csv";
 import { CONVERSION_OUTPUT_DIR } from "./constants";
 import { studiofySite } from "./studiofier";
 
@@ -422,6 +422,29 @@ export const migrateClassicToNext = async () => {
       repoName: site.repoName,
       useStagingBranch,
     };
-    await studiofySite(studiofyRequest);
+    const siteId = await studiofySite(studiofyRequest);
+
+    if (!siteId) {
+      console.error(`Error studiofying site ${site.repoName}`);
+      continue;
+    }
+
+    await updateSitesProductionCSV(
+      [
+        {
+          siteId: siteId.toString(),
+          siteName: site.siteName,
+          shortName: site.repoName,
+          instanceType: "medium", // NOTE: We change this later based on actual usage
+          domainAliases: site.isomerDomain,
+        },
+      ],
+      "PREVIEW_ONLY"
+    );
   }
+
+  console.log("Completed automated migration of Classic sites to Next.");
+  console.log(
+    "Please proceed to perform a `pulumi up` on isomer-next-infra to create the CloudFront sites."
+  );
 };

@@ -43,7 +43,7 @@ interface SitesProductionCSVRow {
 
 export const updateSitesProductionCSV = async (
   sites: SitesProductionCSVRow[],
-  state: "CREATED" | "PRELAUNCH" | "LAUNCHED"
+  state: "PREVIEW_ONLY" | "PRELAUNCH" | "LAUNCHED"
 ) => {
   const csvFilePath = path.join(process.env.SITES_CSV_PATH || "");
   const fileContent = await fs.promises.readFile(csvFilePath, "utf-8");

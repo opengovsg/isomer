@@ -10,6 +10,7 @@ import { GET_ALL_RESOURCES_WITH_FULL_PERMALINKS } from "./constants";
 import type { Resource } from "./types";
 import { CONVERSION_OUTPUT_DIR } from "../constants";
 import type { StudiofyRequest } from "../types";
+import { getSiteNameAndUrl } from "../utils";
 
 dotenv.config({
   path: path.join(__dirname, "..", ".env"),
@@ -37,6 +38,7 @@ export const studiofySite = async ({
     await studioifySite(client, siteId, siteName);
     await s3Sync(siteId);
     console.log(`Successfully migrated site ${siteName} with ID ${siteId}`);
+    return siteId;
   } catch (err) {
     console.error(err);
   } finally {
@@ -122,9 +124,14 @@ export const prepareSite = async (
   await fs.promises.rm(conversionDir, { recursive: true, force: true });
 
   // Step 6: Create an empty site on Isomer Studio
+  const { siteName: siteHumanReadableName } = await getSiteNameAndUrl({
+    octokit,
+    site: siteName,
+    useStagingBranch,
+  });
   const result = await client.query(
-    `INSERT INTO public."Site" (name, config, theme) VALUES ($1, $2, $3) RETURNING id`,
-    [siteName, {}, {}]
+    `INSERT INTO public."Site" (name, "codeBuildId", config, theme) VALUES ($1, $2, $3, $4) RETURNING id`,
+    [siteHumanReadableName, siteName, {}, {}]
   );
 
   return result.rows[0].id as number;
@@ -371,7 +378,13 @@ async function importSiteConfig(
       brand: config.colors.brand,
     },
   };
-  const siteConfig = config.site;
+
+  const { siteName: siteHumanReadableName, url } = await getSiteNameAndUrl({
+    octokit,
+    site: siteName,
+    useStagingBranch: false,
+  });
+  const siteConfig = { ...config.site, siteName: siteHumanReadableName, url };
 
   await client.query(
     `UPDATE public."Site" SET config = $1, theme = $2 WHERE id = $3`,

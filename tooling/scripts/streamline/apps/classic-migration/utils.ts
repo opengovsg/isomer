@@ -310,3 +310,45 @@ export const getManualReviewItems = async (
     reviewItems,
   };
 };
+
+interface GetSiteNameAndUrlParams {
+  octokit: Octokit;
+  site: string;
+  useStagingBranch?: boolean;
+}
+
+interface GetSiteNameAndUrlOutput {
+  siteName: string;
+  url: string;
+}
+
+export const getSiteNameAndUrl = async ({
+  octokit,
+  site,
+  useStagingBranch = false,
+}: GetSiteNameAndUrlParams): Promise<GetSiteNameAndUrlOutput> => {
+  let siteName = "Isomer Site";
+  let url = "https://www.isomer.gov.sg";
+
+  const siteConfigContent = await getFileContents({
+    site,
+    path: "_config.yml",
+    octokit,
+    useStagingBranch,
+  });
+
+  if (!siteConfigContent) {
+    return { siteName, url };
+  }
+
+  const siteConfigLines = siteConfigContent.split("\n");
+  for (const line of siteConfigLines) {
+    if (line.startsWith("title:")) {
+      siteName = line.replace("title:", "").trim();
+    } else if (line.startsWith("url:")) {
+      url = line.replace("url:", "").trim();
+    }
+  }
+
+  return { siteName, url };
+};
