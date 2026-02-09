@@ -145,6 +145,41 @@ export const VIDEO_EMBED_URL_PATTERN = Object.values(VIDEO_EMBED_URL_REGEXES)
   .map((re) => `(${re})`)
   .join("|")
 
+// Validation for music embed URLs (Spotify or Apple Music) for the "music" component
+// Spotify: album, single track (song), playlist, episode (podcast), show, artist
+// Apple Music: album, song, playlist, etc.
+export const VALID_MUSIC_EMBED_DOMAINS = [
+  "open.spotify.com",
+  "embed.music.apple.com",
+] as const
+
+export const MUSIC_EMBED_URL_REGEXES = {
+  spotify:
+    "^https://open\\.spotify\\.com/embed/(album|track|playlist|episode|show|artist)/[a-zA-Z0-9]+.*$",
+  applemusic: "^https://embed\\.music\\.apple\\.com/[a-z]{2}/[a-z-]+/.*$",
+} as const
+
+export const MUSIC_EMBED_URL_PATTERN = Object.values(MUSIC_EMBED_URL_REGEXES)
+  .map((re) => `(${re})`)
+  .join("|")
+
+export const isValidMusicEmbedUrl = (url: string) => {
+  if (!url) {
+    return false
+  }
+
+  try {
+    const urlObject = new URL(url)
+    return (
+      (VALID_MUSIC_EMBED_DOMAINS as readonly string[]).includes(
+        urlObject.hostname,
+      ) && new RegExp(MUSIC_EMBED_URL_PATTERN).test(url)
+    )
+  } catch (_) {
+    return false
+  }
+}
+
 // ✅ "hello"
 // ✅ " hello " (has non-whitespace in the middle)
 // ✅ " a " (one letter surrounded by spaces)

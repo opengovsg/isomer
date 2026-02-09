@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest"
 import {
   LINK_HREF_PATTERN,
   MAPS_EMBED_URL_PATTERN,
+  MUSIC_EMBED_URL_PATTERN,
   VIDEO_EMBED_URL_PATTERN,
+  isValidMusicEmbedUrl,
 } from "../validation"
 
 describe("validation", () => {
@@ -268,6 +270,63 @@ describe("validation", () => {
       testCases.forEach((testCase) => {
         const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
         expect(result).toBe(false)
+      })
+    })
+  })
+
+  describe("MUSIC_EMBED_URL_PATTERN and isValidMusicEmbedUrl", () => {
+    it("should allow Spotify embed URLs for album, track, playlist, episode, show, artist", () => {
+      const testCases = [
+        "https://open.spotify.com/embed/album/6i6folBtxKV28WX3msQ4FE",
+        "https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT",
+        "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M",
+        "https://open.spotify.com/embed/episode/7makk4oTQel546B0PZlDM5",
+        "https://open.spotify.com/embed/show/2kRR3Cbq4y7pdwT1o8VJxr",
+        "https://open.spotify.com/embed/artist/0OdUWJ0sBJDrq8yp90n0ID",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(new RegExp(MUSIC_EMBED_URL_PATTERN).test(testCase)).toBe(true)
+        expect(isValidMusicEmbedUrl(testCase)).toBe(true)
+      })
+    })
+
+    it("should allow Apple Music embed URLs for album, song, playlist", () => {
+      const testCases = [
+        "https://embed.music.apple.com/us/album/magical-mystery-tour/1441163490",
+        "https://embed.music.apple.com/us/song/hello/1440933467",
+        "https://embed.music.apple.com/sg/playlist/top-100-singapore/pl.d25f5d1181894928af76c85c967f8f31",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(new RegExp(MUSIC_EMBED_URL_PATTERN).test(testCase)).toBe(true)
+        expect(isValidMusicEmbedUrl(testCase)).toBe(true)
+      })
+    })
+
+    it("should allow single song (track) and episode as well as album/playlist", () => {
+      const singleSongAndEpisodeCases = [
+        "https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT",
+        "https://open.spotify.com/embed/episode/7makk4oTQel546B0PZlDM5",
+        "https://embed.music.apple.com/us/song/hello/1440933467",
+      ]
+      singleSongAndEpisodeCases.forEach((testCase) => {
+        expect(isValidMusicEmbedUrl(testCase)).toBe(true)
+      })
+    })
+
+    it("should not allow non-music or invalid embed URLs", () => {
+      const testCases = [
+        "https://www.example.com/embed/album/6i6folBtxKV28WX3msQ4FE",
+        "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT",
+        "https://spotify.com/embed/album/6i6folBtxKV28WX3msQ4FE",
+        "https://music.apple.com/us/album/magical-mystery-tour/1441163490",
+        "https://embed.music.apple.com/",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(new RegExp(MUSIC_EMBED_URL_PATTERN).test(testCase)).toBe(false)
+        expect(isValidMusicEmbedUrl(testCase)).toBe(false)
       })
     })
   })
