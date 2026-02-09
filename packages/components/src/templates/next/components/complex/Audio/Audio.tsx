@@ -1,12 +1,12 @@
 import type { AudioProps } from "~/interfaces"
-import { isValidAudioEmbedUrl, isApplePodcastUrl } from "~/utils/validation"
+import { isApplePodcastUrl, isValidAudioEmbedUrl } from "~/utils/validation"
 import { ComponentContent } from "../../internal/customCssClass"
 
 export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
   if (!isValidAudioEmbedUrl(url)) {
     return <></>
   }
-  
+
   if (isApplePodcastUrl(url)) {
     const isEpisode = new URL(url).searchParams.has("i")
     const heightPx = isEpisode ? 175 : 450
