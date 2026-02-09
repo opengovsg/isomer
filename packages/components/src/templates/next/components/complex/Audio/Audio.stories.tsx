@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import type { AudioProps } from "~/interfaces"
 import { Audio } from "./Audio"
 
@@ -8,6 +10,7 @@ const meta: Meta<AudioProps> = {
   component: Audio,
   argTypes: {},
   parameters: {
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
