@@ -4,6 +4,7 @@ import { Type } from "@sinclair/typebox"
 import type { IsomerComponentTypes, IsomerPageLayoutType } from "~/types"
 import {
   AccordionSchema,
+  AudioSchema,
   BlockquoteSchema,
   CalloutSchema,
   ChildrenPagesSchema,
@@ -27,7 +28,6 @@ import {
   KeyStatisticsSchema,
   LogoCloudSchema,
   MapSchema,
-  AudioSchema,
   OrderedListSchema,
   ParagraphSchema,
   ProseSchema,

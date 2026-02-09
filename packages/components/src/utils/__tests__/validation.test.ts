@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  AUDIO_EMBED_URL_PATTERN,
+  isValidAudioEmbedUrl,
   LINK_HREF_PATTERN,
   MAPS_EMBED_URL_PATTERN,
-  AUDIO_EMBED_URL_PATTERN,
   VIDEO_EMBED_URL_PATTERN,
-  isValidAudioEmbedUrl,
 } from "../validation"
 
 describe("validation", () => {

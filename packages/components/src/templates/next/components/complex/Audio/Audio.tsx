@@ -16,11 +16,7 @@ const isApplePodcastUrl = (url: string): boolean => {
   }
 }
 
-export const Audio = ({
-  title,
-  url,
-  shouldLazyLoad = true,
-}: AudioProps) => {
+export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
   if (!isValidAudioEmbedUrl(url)) {
     return <></>
   }

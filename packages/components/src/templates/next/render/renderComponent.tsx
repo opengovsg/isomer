@@ -5,6 +5,7 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { Accordion } from "../components/complex/Accordion"
+import { Audio } from "../components/complex/Audio"
 import { Blockquote } from "../components/complex/Blockquote"
 import { Callout } from "../components/complex/Callout"
 import { ChildrenPages } from "../components/complex/ChildrenPages"
@@ -25,7 +26,6 @@ import { Infopic } from "../components/complex/Infopic"
 import { KeyStatistics } from "../components/complex/KeyStatistics"
 import { LogoCloud } from "../components/complex/LogoCloud"
 import { Map } from "../components/complex/Map"
-import { Audio } from "../components/complex/Audio"
 import { Video } from "../components/complex/Video"
 import { Prose } from "../components/native/Prose"
 

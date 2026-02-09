@@ -153,8 +153,7 @@ export const VALID_AUDIO_EMBED_DOMAINS = [
 ] as const
 
 export const AUDIO_EMBED_URL_REGEXES = {
-  spotify:
-    "^https://open\\.spotify\\.com/embed/(episode|show)/[a-zA-Z0-9]+.*$",
+  spotify: "^https://open\\.spotify\\.com/embed/(episode|show)/[a-zA-Z0-9]+.*$",
   applepodcast: "^https://embed\\.podcasts\\.apple\\.com/[a-z]{2}/[a-z-]+/.*$",
 } as const
 
