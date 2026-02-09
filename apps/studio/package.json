@@ -55,9 +55,9 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
-    "@aws-sdk/client-codebuild": "^3.972.0",
-    "@aws-sdk/client-s3": "3.837.0",
-    "@aws-sdk/s3-request-presigner": "3.837.0",
+    "@aws-sdk/client-codebuild": "^3.972.4",
+    "@aws-sdk/client-s3": "^3.972.4",
+    "@aws-sdk/s3-request-presigner": "^3.972.4",
     "@casl/ability": "^6.8.0",
     "@casl/react": "^5.0.1",
     "@chakra-ui/anatomy": "^2.3.4",
