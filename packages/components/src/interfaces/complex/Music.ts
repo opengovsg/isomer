@@ -8,6 +8,8 @@ export const MusicSchema = Type.Object(
     type: Type.Literal("music", { default: "music" }),
     url: Type.String({
       title: "Music to embed",
+      description:
+        "Spotify or Apple Podcast embed URL (album, track, episode, playlist, show, etc.)",
       pattern: MUSIC_EMBED_URL_PATTERN,
       format: "embed",
     }),
@@ -20,7 +22,7 @@ export const MusicSchema = Type.Object(
   {
     title: "Music",
     description:
-      "The music component is used to embed Spotify or Apple Music content: single songs/tracks, episodes, albums, playlists, or podcasts within the current page.",
+      "The music component is used to embed Spotify or Apple Podcast content: single songs/tracks, episodes, albums, playlists, or podcast shows within the current page.",
   },
 )
 

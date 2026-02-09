@@ -25,7 +25,7 @@ import { Infopic } from "../components/complex/Infopic"
 import { KeyStatistics } from "../components/complex/KeyStatistics"
 import { LogoCloud } from "../components/complex/LogoCloud"
 import { Map } from "../components/complex/Map"
-import { Music } from "../components/complex/Music"
+import { Audio } from "../components/complex/Audio"
 import { Video } from "../components/complex/Video"
 import { Prose } from "../components/native/Prose"
 
@@ -86,8 +86,8 @@ export const renderComponent = ({
           shouldStripContentHtmlTags
         />
       )
-    case "music":
-      return <Music key={elementKey} {...component} {...rest} />
+    case "audio":
+      return <Audio key={elementKey} {...component} {...rest} />
     case "video":
       return <Video key={elementKey} {...component} {...rest} />
     case "dynamicdatabanner":

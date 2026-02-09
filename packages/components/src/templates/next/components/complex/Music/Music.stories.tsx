@@ -56,18 +56,18 @@ export const SpotifyArtist: Story = {
   },
 }
 
-export const AppleMusicAlbum: Story = {
-  name: "Apple Music album",
+export const ApplePodcastShow: Story = {
+  name: "Apple Podcast show",
   args: {
-    title: "Apple Music album embed",
-    url: "https://embed.music.apple.com/us/album/magical-mystery-tour/1441163490",
+    title: "BiblioAsia Podcast",
+    url: "https://embed.podcasts.apple.com/us/podcast/biblioasia-podcast/id1688142751",
   },
 }
 
-export const AppleMusicSong: Story = {
-  name: "Apple Music single song",
+export const ApplePodcastEpisode: Story = {
+  name: "Apple Podcast episode",
   args: {
-    title: "Apple Music single song embed",
-    url: "https://embed.music.apple.com/us/song/hello/1440933467",
+    title: "Apple Podcast episode embed",
+    url: "https://embed.podcasts.apple.com/us/podcast/sample-show/id123456789?i=1000123456789",
   },
 }

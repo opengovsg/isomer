@@ -1525,6 +1525,16 @@ export const Default: Story = {
         url: "/",
         label: "I can't even help myself",
       },
+      {
+        type: "audio",
+        title: "Spotify episode embed",
+        url: "https://open.spotify.com/embed/episode/3T5WkragWdHZRwFl7qCHoz?utm_source=generator",
+      },
+      {
+        type: "audio",
+        title: "Apple Podcast show embed",
+        url: "https://embed.podcasts.apple.com/us/podcast/biblioasia-podcast/id1688142751",
+      },
     ],
   },
 }
