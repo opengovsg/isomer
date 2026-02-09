@@ -146,7 +146,7 @@ export const VIDEO_EMBED_URL_PATTERN = Object.values(VIDEO_EMBED_URL_REGEXES)
   .join("|")
 
 // Validation for music embed URLs (Spotify or Apple Music) for the "music" component
-// Spotify: album, single track (song), playlist, episode (podcast), show, artist
+// Spotify: album, single track (song), playlist, episode (podcast), artist
 // Apple Music: album, song, playlist, etc.
 export const VALID_MUSIC_EMBED_DOMAINS = [
   "open.spotify.com",
@@ -155,7 +155,7 @@ export const VALID_MUSIC_EMBED_DOMAINS = [
 
 export const MUSIC_EMBED_URL_REGEXES = {
   spotify:
-    "^https://open\\.spotify\\.com/embed/(album|track|playlist|episode|show|artist)/[a-zA-Z0-9]+.*$",
+    "^https://open\\.spotify\\.com/embed/(album|track|playlist|episode|artist)/[a-zA-Z0-9]+.*$",
   applemusic: "^https://embed\\.music\\.apple\\.com/[a-z]{2}/[a-z-]+/.*$",
 } as const
 

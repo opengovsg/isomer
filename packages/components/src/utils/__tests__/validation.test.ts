@@ -275,13 +275,12 @@ describe("validation", () => {
   })
 
   describe("MUSIC_EMBED_URL_PATTERN and isValidMusicEmbedUrl", () => {
-    it("should allow Spotify embed URLs for album, track, playlist, episode, show, artist", () => {
+    it("should allow Spotify embed URLs for album, track, playlist, episode, artist", () => {
       const testCases = [
         "https://open.spotify.com/embed/album/6i6folBtxKV28WX3msQ4FE",
         "https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT",
         "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M",
         "https://open.spotify.com/embed/episode/7makk4oTQel546B0PZlDM5",
-        "https://open.spotify.com/embed/show/2kRR3Cbq4y7pdwT1o8VJxr",
         "https://open.spotify.com/embed/artist/0OdUWJ0sBJDrq8yp90n0ID",
       ]
 
