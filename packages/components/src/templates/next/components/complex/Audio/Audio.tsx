@@ -1,30 +1,13 @@
 import type { AudioProps } from "~/interfaces"
-import { isValidAudioEmbedUrl } from "~/utils/validation"
+import { isValidAudioEmbedUrl, isApplePodcastUrl } from "~/utils/validation"
 import { ComponentContent } from "../../internal/customCssClass"
-
-const getEmbedUrlWithTheme = (url: string): string => {
-  const urlObject = new URL(url)
-  urlObject.searchParams.set("theme", "0")
-  return urlObject.toString()
-}
-
-const isApplePodcastUrl = (url: string): boolean => {
-  try {
-    return new URL(url).hostname === "embed.podcasts.apple.com"
-  } catch {
-    return false
-  }
-}
 
 export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
   if (!isValidAudioEmbedUrl(url)) {
     return <></>
   }
-
-  const isApplePodcast = isApplePodcastUrl(url)
-  const embedSrc = isApplePodcast ? url : getEmbedUrlWithTheme(url)
-
-  if (isApplePodcast) {
+  
+  if (isApplePodcastUrl(url)) {
     const isEpisode = new URL(url).searchParams.has("i")
     const heightPx = isEpisode ? 175 : 450
     return (
@@ -38,10 +21,8 @@ export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
             height={heightPx}
             width="100%"
             className="h-full w-full border-0"
-            src={embedSrc}
+            src={url}
             title={title || "Audio embed"}
-            allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
-            sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
             referrerPolicy="strict-origin-when-cross-origin"
             loading={shouldLazyLoad ? "lazy" : "eager"}
           />
@@ -58,9 +39,8 @@ export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
           height="152"
           width="100%"
           className="h-full w-full border-0"
-          src={embedSrc}
+          src={url}
           title={title || "Audio embed"}
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           referrerPolicy="strict-origin-when-cross-origin"
           loading={shouldLazyLoad ? "lazy" : "eager"}
         />
