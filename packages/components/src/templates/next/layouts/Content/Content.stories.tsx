@@ -1527,8 +1527,8 @@ export const Default: Story = {
       },
       {
         type: "audio",
-        title: "Spotify episode embed",
-        url: "https://open.spotify.com/embed/episode/3T5WkragWdHZRwFl7qCHoz?utm_source=generator",
+        title: "Spotify show embed",
+        url: "https://open.spotify.com/embed/show/66PYiIthr1KqQhJ82XH4DN",
       },
       {
         type: "audio",
