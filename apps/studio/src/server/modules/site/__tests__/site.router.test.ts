@@ -24,6 +24,18 @@ import { createCallerFactory } from "~/server/trpc"
 import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
 import { siteRouter } from "../site.router"
 
+// Mock env to set production environment for SearchSG tests
+vi.mock("~/env.mjs", async () => {
+  // Import the real module first to get all default values
+  const actual = await vi.importActual("~/env.mjs")
+  return {
+    env: {
+      ...(actual as { env: Record<string, unknown> }).env,
+      NEXT_PUBLIC_APP_ENV: "production",
+    },
+  }
+})
+
 const createCaller = createCallerFactory(siteRouter)
 
 const MOCK_SITE_NAME = "isobad"
