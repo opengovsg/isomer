@@ -179,7 +179,7 @@ export const AddUserModal = () => {
     <Modal isOpen={!!siteId} onClose={handleOnClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader mr="3.5rem">Invite to collaborate</ModalHeader>
+        <ModalHeader mr="3.5rem">Invite user</ModalHeader>
         <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack gap="1.25rem" w="100%">

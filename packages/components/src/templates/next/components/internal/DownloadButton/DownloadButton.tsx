@@ -31,7 +31,7 @@ const downloadFile = (url: string) => {
   document.body.removeChild(a)
 }
 
-export interface DownloadButtonProps
+interface DownloadButtonProps
   extends AriaButtonProps<"button">,
     VariantProps<typeof buttonStyles> {
   url: string // URL to download the file from

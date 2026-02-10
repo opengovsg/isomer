@@ -1,6 +1,19 @@
 import type { LogoCloudProps } from "~/interfaces/complex/LogoCloud"
+import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils"
+import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../Image"
+
+const createLogoCloudStyles = tv({
+  slots: {
+    container: `${ComponentContent} flex flex-col gap-9 py-16`,
+    title:
+      "prose-headline-lg-medium self-center text-center text-base-content-subtle",
+    logoContainer: "flex flex-wrap justify-center gap-x-6 gap-y-4",
+    logo: "inset-0 max-h-20 object-contain md:max-h-24",
+  },
+})
+const compoundStyles = createLogoCloudStyles()
 
 export const LogoCloud = ({
   images: baseImages,
@@ -17,23 +30,19 @@ export const LogoCloud = ({
     return { src: transformedSrc, alt, lazyLoading: shouldLazyLoad }
   })
   return (
-    <div className="px-10 py-12">
-      <div className="flex flex-col gap-4">
-        <p className="prose-headline-base-medium self-center text-base-content-light">
-          {title ?? "With support from these agencies"}
-        </p>
-        <div className="flex flex-wrap justify-center">
-          {images.map((props) => (
-            <ImageClient
-              {...props}
-              // have to pass in here instead of w-fit because
-              // flex-wrap in parent div doesn't work well with w-fit for safari
-              width="auto"
-              className="inset-0 max-h-24 object-contain p-2"
-              assetsBaseUrl={assetsBaseUrl}
-            />
-          ))}
-        </div>
+    <div className={compoundStyles.container()}>
+      {title && <p className={compoundStyles.title()}>{title}</p>}
+      <div className={compoundStyles.logoContainer()}>
+        {images.map((props) => (
+          <ImageClient
+            {...props}
+            // have to pass in here instead of w-fit because
+            // flex-wrap in parent div doesn't work well with w-fit for safari
+            width="auto"
+            className={compoundStyles.logo()}
+            assetsBaseUrl={assetsBaseUrl}
+          />
+        ))}
       </div>
     </div>
   )

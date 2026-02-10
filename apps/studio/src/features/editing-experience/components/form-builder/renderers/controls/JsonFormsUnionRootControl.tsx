@@ -25,7 +25,7 @@ export const jsonFormsUnionRootControlTester: RankedTester = rankWith(
   },
 )
 
-export function JsonFormsUnionRootControl() {
+function JsonFormsUnionRootControl() {
   return <></>
 }
 

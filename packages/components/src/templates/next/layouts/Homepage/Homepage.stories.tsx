@@ -603,6 +603,24 @@ const generateArgs = ({
         url: "/",
         label: "More ways to contact us",
       },
+      {
+        type: "logocloud",
+        title: "Our partners",
+        images: [
+          {
+            src: "https://placehold.co/150",
+            alt: "placeholder logo",
+          },
+          {
+            src: "https://placehold.co/150",
+            alt: "placeholder logo",
+          },
+          {
+            src: "https://placehold.co/150",
+            alt: "placeholder logo",
+          },
+        ],
+      },
     ],
   }
 }

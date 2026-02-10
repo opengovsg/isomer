@@ -38,7 +38,7 @@ const CheckboxGroupContext = createContext<CheckboxGroupContextValue | null>(
   null,
 )
 
-export interface CheckboxGroupProps extends AriaCheckboxGroupProps {
+interface CheckboxGroupProps extends AriaCheckboxGroupProps {
   label?: string
   children?: ReactNode
   description?: string
@@ -134,7 +134,7 @@ const boxStyles = tv({
 const iconStyles =
   "w-4 h-4 text-white group-disabled:text-gray-400 forced-colors:text-[HighlightText]"
 
-export interface CheckboxProps extends AriaCheckboxProps {
+interface CheckboxProps extends AriaCheckboxProps {
   children?: ReactNode
   className?: string
 }

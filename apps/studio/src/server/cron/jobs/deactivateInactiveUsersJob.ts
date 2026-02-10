@@ -16,7 +16,7 @@ export const deactivateInactiveUsersJob = async () => {
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
-    () => bulkDeactivateInactiveUsers(),
+    bulkDeactivateInactiveUsers,
     { retryLimit: 2, singletonKey: JOB_NAME },
     env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL
       ? { heartbeatURL: env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL }

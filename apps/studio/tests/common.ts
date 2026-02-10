@@ -93,7 +93,7 @@ export type ContainerInformation = z.infer<
   typeof CONTAINER_INFORMATION_SCHEMA
 >[number]
 
-export type ContainerConfiguration = ContainerInformation["configuration"]
+type ContainerConfiguration = ContainerInformation["configuration"]
 
 export const setup = async (
   configurations: ContainerConfiguration[],

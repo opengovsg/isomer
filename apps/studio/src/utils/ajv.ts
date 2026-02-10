@@ -6,5 +6,6 @@ export const ajv = new Ajv({
   allErrors: true,
   strict: false,
   logger: false,
+  discriminator: true,
 })
 addErrors(ajv)

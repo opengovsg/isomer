@@ -31,7 +31,7 @@ const getRemainingCharacterCount = (maxLength: number, data?: string) => {
   return Math.max(0, maxLength - data.length)
 }
 
-export function JsonFormsTextAreaControl({
+function JsonFormsTextAreaControl({
   data,
   label,
   handleChange,

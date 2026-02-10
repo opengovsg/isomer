@@ -1,7 +1,6 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { BuildStatusType } from "@prisma/client"
 import type pino from "pino"
-import { ResourceType } from "@prisma/client"
 import _ from "lodash"
 
 import {
@@ -100,7 +99,6 @@ const sendEmails = async (
           eb("CodeBuildJobs.supersededByBuildId", "=", buildId),
         ]),
         eb("CodeBuildJobs.emailSent", "=", false), // only consider builds that haven't had an email sent yet
-        eb("Resource.type", "=", ResourceType.Page), // only consider page resources for sending emails
         eb("User.email", "is not", null), // only consider users with an email
       ])
     })

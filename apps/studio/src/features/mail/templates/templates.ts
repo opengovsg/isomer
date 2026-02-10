@@ -1,5 +1,4 @@
 import { RoleType } from "~prisma/generated/generatedEnums"
-import { format } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 
 import type {
@@ -18,6 +17,7 @@ import type {
 } from "./types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
+import { formatScheduledAtDate } from "~/lib/dates"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
 import { getStudioResourceUrl } from "~/utils/resources"
 
@@ -68,7 +68,7 @@ export const invitationTemplate = (
 }
 
 // FYI: Currently, we only send this email to users when Singpass has been disabled.
-export const loginAlertTemplate = (
+const loginAlertTemplate = (
   data: LoginAlertEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail } = data
@@ -83,70 +83,68 @@ export const loginAlertTemplate = (
   }
 }
 
-export const schedulePageTemplate = (
+const schedulePageTemplate = (
   data: SchedulePageTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, resource, scheduledAt } = data
-  const scheduledAtTimezone = format(
-    toZonedTime(scheduledAt, "Asia/Singapore"),
-    "MMMM d, yyyy hh:mm a",
-  )
+  const { recipientEmail, scheduledAt, resource } = data
   return {
-    subject: `[Isomer Studio] You scheduled ${resource.title} to be published`,
+    subject: `[Isomer Studio] You scheduled a page to be published`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${scheduledAtTimezone}</strong>.</p>
-<p>Log in to Isomer Studio at ${constructStudioRedirect()} to change or cancel this.</p>
-<p>Best,</p>
-<p>Isomer team</p>`,
+    <p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${formatScheduledAtDate(toZonedTime(scheduledAt, "Asia/Singapore"), false)} (SGT)</strong>.</p>
+    <p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to modify or cancel your schedule.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
   }
 }
 
-export const cancelSchedulePageTemplate = (
+const cancelSchedulePageTemplate = (
   data: CancelSchedulePageTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, resource } = data
   return {
-    subject: `[Isomer Studio] Your scheduled publish for ${resource.title} has been cancelled`,
+    subject: `[Isomer Studio] Schedule to publish was cancelled`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>Your scheduled publish for ${resource.title} has been cancelled.</p>
-<p>Log in to Isomer Studio at ${constructStudioRedirect()} to manage your content.</p>
-<p>Best,</p>
-<p>Isomer team</p>`,
+    <p>Your schedule to publish "${resource.title}" has been cancelled. The page is now in draft mode.</p>
+    <p>Log in to Isomer Studio at ${getStudioResourceUrl(resource)} to manage changes to your page.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
   }
 }
 
-export const failedPublishTemplate = (
+const failedPublishTemplate = (
   data: FailedPublishTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, isScheduled, resource } = data
   switch (isScheduled) {
     case true:
       return {
-        subject: `[Isomer Studio] We couldn’t publish your scheduled page ${resource.title}`,
+        subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
         body: `<p>Hi ${recipientEmail},</p>
-      <p>We couldn’t publish the page ${resource.title} that you scheduled. Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
+        <p>We couldn’t publish the page ${resource.title} that you scheduled.</p>
+        <p>Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
     case false:
       return {
-        subject: `[Isomer Studio] We couldn’t publish your page ${resource.title}`,
+        subject: `[Isomer Studio] We couldn’t publish your page`,
         body: `<p>Hi ${recipientEmail},</p>
-        <p>We couldn’t publish the page ${resource.title} that you tried to publish. Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
+        <p>We couldn’t publish the page ${resource.title} that you tried to publish.</p>
+        <p>Please log in to Isomer Studio at ${getStudioResourceUrl(resource)} and try publishing the page again.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
   }
 }
 
-export const successfulPublishTemplate = (
+const successfulPublishTemplate = (
   data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, isScheduled, resource } = data
-  switch (isScheduled) {
+  const { recipientEmail, resource, ...rest } = data
+  switch (rest.isScheduled) {
     case true:
       return {
-        subject: `[Isomer Studio] The page ${resource.title} was published as scheduled`,
+        subject: `[Isomer Studio] Your scheduled page was published`,
         body: `<p>Hi ${recipientEmail},</p>
         <p>Your page ${resource.title} was successfully published as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
         <p> You can view or edit your published content on Isomer Studio at ${getStudioResourceUrl(resource)}.</p>
@@ -155,16 +153,17 @@ export const successfulPublishTemplate = (
       }
     case false:
       return {
-        subject: `[Isomer Studio] Changes you published to ${resource.title} are now live`,
+        subject: `[Isomer Studio] Changes you published are now live`,
         body: `<p>Hi ${recipientEmail},</p>
-    <p>Your changes to page ${resource.title} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
-    <p>Best,</p>
-    <p>Isomer team</p>`,
+        <p>Your changes to page ${resource.title} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
+        <p> You can view or edit your published content on Isomer Studio at ${getStudioResourceUrl(resource)}.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
       }
   }
 }
 
-export const publishAlertContentPublisherTemplate = (
+const publishAlertContentPublisherTemplate = (
   data: PublishAlertContentPublisherEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, siteName, resource } = data
@@ -173,14 +172,14 @@ export const publishAlertContentPublisherTemplate = (
   return {
     subject: `[Isomer Studio] ${resource.title} has been published`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You have successfully published "${resource.title}" on ${siteName}. You can access your published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
-<p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. If you didn't authorize this publication, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
-<p>Best,</p>
-<p>Isomer team</p>`,
+    <p>You have successfully published "${resource.title}" on ${siteName}. You can access your published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
+    <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. If you didn't authorize this publication, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
   }
 }
 
-export const publishAlertSiteAdminTemplate = (
+const publishAlertSiteAdminTemplate = (
   data: PublishAlertSiteAdminEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, publisherEmail, siteName, resource } = data
@@ -189,10 +188,10 @@ export const publishAlertSiteAdminTemplate = (
   return {
     subject: `[Isomer Studio] ${resource.title} has been published`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>${publisherEmail} has published "${resource.title}" on ${siteName}. You can view the published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
-<p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. As a site admin, we want to keep you informed of all publishing activities. If you have any concerns, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
-<p>Best,</p>
-<p>Isomer team</p>`,
+    <p>${publisherEmail} has published "${resource.title}" on ${siteName}. You can view the published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
+    <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. As a site admin, we want to keep you informed of all publishing activities. If you have any concerns, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
   }
 }
 

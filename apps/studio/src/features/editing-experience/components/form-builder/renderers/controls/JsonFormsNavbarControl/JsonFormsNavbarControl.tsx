@@ -42,7 +42,7 @@ export const jsonFormsNavbarControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "navbar"),
 )
 
-export function JsonFormsNavbarControl({
+function JsonFormsNavbarControl({
   data,
   path,
   visible,
@@ -181,12 +181,12 @@ export function JsonFormsNavbarControl({
             <VStack gap="1rem" w="full" px="1.5rem" py="3rem">
               <VStack gap="0.25rem" w="22.5rem" textAlign="center">
                 <Text textStyle="subhead-1" textColor="base.content.default">
-                  Start adding links to the navigation menu
+                  Start adding links to the navigation bar
                 </Text>
 
                 <Text textStyle="caption-2" textColor="base.content.medium">
                   You can help users navigate to critical pages using the
-                  navigation menu
+                  navigation bar
                 </Text>
               </VStack>
 

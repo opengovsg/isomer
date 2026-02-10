@@ -18,7 +18,7 @@ interface SignInState {
   backToInitial: () => void
 }
 
-export const SignInContext = createContext<SignInState | undefined>(undefined)
+const SignInContext = createContext<SignInState | undefined>(undefined)
 
 export const useSignInContext = () => {
   const context = useContext(SignInContext)
