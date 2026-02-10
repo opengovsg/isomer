@@ -17,6 +17,13 @@ const inter = Inter({
   variable: "--font-inter",
 })
 
+const jsonLd = {
+  "@context" : "https://schema.org",
+  "@type" : "WebSite",
+  "name" : config.site.siteName ?? "Isomer",
+  "url" : config.site.url ?? "https://www.isomer.gov.sg",
+}
+
 export const dynamic = "force-static"
 
 export const metadata: Metadata = {
@@ -33,6 +40,13 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
       data-theme={config.site.theme || "isomer-next"}
       className={inter.variable}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
+
       <body className="antialiased">
         {children}
         <RenderApplicationScripts
