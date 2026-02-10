@@ -4,6 +4,7 @@ import { Type } from "@sinclair/typebox"
 import type { IsomerComponentTypes, IsomerPageLayoutType } from "~/types"
 import {
   AccordionSchema,
+  AudioSchema,
   BlockquoteSchema,
   CalloutSchema,
   ChildrenPagesSchema,
@@ -50,6 +51,7 @@ export const IsomerComplexComponentsMap = {
   contentpic: ContentpicSchema,
   keystatistics: KeyStatisticsSchema,
   map: MapSchema,
+  audio: AudioSchema,
   video: VideoSchema,
   childrenpages: ChildrenPagesSchema,
   dynamicdatabanner: DynamicDataBannerSchema,

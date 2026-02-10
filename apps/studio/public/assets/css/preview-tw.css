@@ -1593,6 +1593,10 @@ video {
   height: 0.6rem;
 }
 
+.h-\[152px\] {
+  height: 152px;
+}
+
 .h-\[160px\] {
   height: 160px;
 }
@@ -2448,6 +2452,14 @@ video {
 
 .rounded-\[0\.25rem\] {
   border-radius: 0.25rem;
+}
+
+.rounded-\[10px\] {
+  border-radius: 10px;
+}
+
+.rounded-\[12px\] {
+  border-radius: 12px;
 }
 
 .rounded-full {
