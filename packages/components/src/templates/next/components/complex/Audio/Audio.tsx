@@ -18,7 +18,7 @@ export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
           style={{ height: heightPx }}
         >
           <iframe
-            height={heightPx}
+            height={`${heightPx}px`}
             width="100%"
             className="h-full w-full border-0"
             src={url}
@@ -38,7 +38,7 @@ export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
       {/* Spotify: 152px default embed height */}
       <div className="h-[152px] w-full overflow-hidden rounded-[12px]">
         <iframe
-          height="152"
+          height="152px"
           width="100%"
           className="h-full w-full border-0"
           src={url}
