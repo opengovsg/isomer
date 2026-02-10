@@ -4799,11 +4799,10 @@ export const DynamicComponentListLoading: Story = {
 
 export const AudioEmbedStory: Story = {
   parameters: {
-    // Audio embeds (Spotify/Apple Podcast iframes) are near the bottom of this story.
     // Delay the Chromatic snapshot so iframes have time to load and don’t appear as white blocks.
     chromatic: {
       ...withChromaticModes(["mobile", "tablet", "desktop"]),
-      delay: 2000,
+      delay: 5000,
     },
   },
   args: {
