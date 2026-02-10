@@ -106,6 +106,7 @@ const ContentSecurityPolicy = `
     https://uploads.intercomusercontent.com
     https://data.gov.sg
     https://*.data.gov.sg
+    https://vimeo.com
     ;
   worker-src
     'self'
