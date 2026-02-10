@@ -20,8 +20,8 @@ const inter = Inter({
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "name": config.site.siteName || "Isomer",
-  "url": config.site.url || "https://www.isomer.gov.sg",
+  name: config.site.siteName || "Isomer",
+  url: config.site.url || "https://www.isomer.gov.sg",
 }
 
 export const dynamic = "force-static"
@@ -59,7 +59,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
           }}
         />
       </body>
