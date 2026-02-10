@@ -44,8 +44,6 @@ export const defaultResourceSelect = [
   "Resource.state",
   "Resource.createdAt",
   "Resource.updatedAt",
-  "Resource.scheduledAt",
-  "Resource.scheduledBy",
 ] satisfies SelectExpression<DB, "Resource">[]
 
 const defaultResourceWithBlobSelect = [

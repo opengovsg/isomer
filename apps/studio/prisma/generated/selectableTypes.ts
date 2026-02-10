@@ -11,6 +11,7 @@ export type Navbar = Selectable<T.Navbar>
 export type RateLimiterFlexible = Selectable<T.RateLimiterFlexible>
 export type Resource = Selectable<T.Resource>
 export type ResourcePermission = Selectable<T.ResourcePermission>
+export type ScheduledJobs = Selectable<T.ScheduledJobs>
 export type Site = Selectable<T.Site>
 export type User = Selectable<T.User>
 export type VerificationToken = Selectable<T.VerificationToken>
