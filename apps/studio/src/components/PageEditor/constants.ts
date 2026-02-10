@@ -384,7 +384,7 @@ export const BLOCK_TO_META: Record<
     usageText: "Direct people to your office or an event location.",
     imageSrc: "/assets/block-images/Map.png",
   },
-  // note: not actually available to be added on studio yet
+  // TODO: Add image source (skipped because component not available on studio yet)
   audio: {
     label: "Audio",
     description: "Embed an audio from Spotify or Apple Podcast.",
