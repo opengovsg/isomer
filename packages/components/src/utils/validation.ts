@@ -182,7 +182,7 @@ export const isValidAudioEmbedUrl = (url: string) => {
 
 export const isApplePodcastUrl = (url: string) => {
   try {
-    return new URL(url).hostname === "embed.podcasts.apple.com"
+    return new URL(url).hostname === VALID_AUDIO_EMBED_DOMAINS.applepodcast
   } catch {
     return false
   }
