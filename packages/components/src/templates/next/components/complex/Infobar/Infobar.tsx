@@ -19,15 +19,15 @@ export const createInfobarStyles = tv({
     layout: {
       homepage: {
         outerContainer: "mx-6 py-16 sm:mx-10 lg:py-24",
-        innerContainer: "items-center gap-9 text-center lg:max-w-3xl",
+        innerContainer:
+          "items-center gap-9 rounded-none text-center lg:max-w-3xl",
         headingContainer: "gap-6",
         title: "prose-display-lg",
         description: "prose-headline-lg-regular",
         buttonContainer: "items-center",
       },
       default: {
-        screenWideOuterContainer: "mt-12 first:mt-0",
-        outerContainer: "rounded-lg",
+        screenWideOuterContainer: "mt-12 rounded-lg first:mt-0",
         innerContainer: "items-start gap-7 p-8",
         headingContainer: "gap-4",
         title: "prose-display-sm",
@@ -56,7 +56,7 @@ export const createInfobarStyles = tv({
       layout: "default",
       className: {
         screenWideOuterContainer: "bg-base-canvas-backdrop",
-        outerContainer: "bg-base-canvas-backdrop",
+        outerContainer: "",
       },
     },
     {
@@ -72,7 +72,7 @@ export const createInfobarStyles = tv({
       layout: "default",
       className: {
         screenWideOuterContainer: "bg-base-canvas-backdrop",
-        outerContainer: "bg-base-canvas-backdrop",
+        outerContainer: "",
       },
     },
   ],

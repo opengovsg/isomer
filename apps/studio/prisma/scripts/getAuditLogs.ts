@@ -114,6 +114,7 @@ const SITES_WITH_AUDIT_LOGS = [
   284, // www.ptc.gov.sg
   287, // www.mot.gov.sg
   289, // www.toteboard.gov.sg
+  336, // www.caringcommuters.gov.sg
 ]
 
 // Month and year to get audit logs for, in the format of YYYY-MM,

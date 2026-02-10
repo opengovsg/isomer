@@ -62,7 +62,7 @@ export const HeroBlock = ({
                 )}
                 size="lg"
                 variant="solid"
-                colorScheme="inverse"
+                colorScheme={heroButton}
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
               >

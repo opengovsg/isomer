@@ -238,6 +238,7 @@ const main = async () => {
         "sync",
         `s3://${bucketName}/${sourceSiteId}`,
         `${tempDir}/public/${sourceSiteId}`,
+        "--only-show-errors",
       ],
       {
         cwd: exportDir,
@@ -313,6 +314,7 @@ const main = async () => {
         "sync",
         `public/${sourceSiteId}`,
         `s3://${bucketName}/${finalDestSiteId}`,
+        "--only-show-errors",
       ],
       {
         cwd: tempDir,
