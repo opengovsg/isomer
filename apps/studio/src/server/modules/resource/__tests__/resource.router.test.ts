@@ -2201,6 +2201,35 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should return 400 if resource to delete is the search page (permalink /search, no parent)", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "Page",
+        permalink: "search",
+        parentId: null,
+      })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: page.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "The search page cannot be deleted",
+        }),
+      )
+    })
+
     it("should throw 403 if user does not have delete access to the resource", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
