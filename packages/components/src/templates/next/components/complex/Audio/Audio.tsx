@@ -23,6 +23,8 @@ export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
             className="h-full w-full border-0"
             src={url}
             title={title || "Audio embed"}
+            allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
+            sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
             referrerPolicy="strict-origin-when-cross-origin"
             loading={shouldLazyLoad ? "lazy" : "eager"}
           />
@@ -41,6 +43,7 @@ export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
           className="h-full w-full border-0"
           src={url}
           title={title || "Audio embed"}
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           referrerPolicy="strict-origin-when-cross-origin"
           loading={shouldLazyLoad ? "lazy" : "eager"}
         />
