@@ -41,7 +41,7 @@ export const SettingsHeader = ({
           {title}
         </Text>
       </Flex>
-      <Can do="publish" on={{ parentId: null }}>
+      <Can do="create" on={{ parentId: null }}>
         <Button
           type="submit"
           isLoading={isLoading}
