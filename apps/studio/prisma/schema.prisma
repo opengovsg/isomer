@@ -68,16 +68,11 @@ model Resource {
   state ResourceState? @default(Draft)
   type  ResourceType
 
-  // This is only set if the resource is scheduled to be published at a later date
-  // If set, this indicates the time at which the resource should be published
-  scheduledAt DateTime?
-  scheduledBy String?
-  scheduler   User?     @relation(fields: [scheduledBy], references: [id])
-
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   ResourcePermission ResourcePermission[]
   CodeBuildJobs      CodeBuildJobs[]
+  scheduledJobs      ScheduledJobs[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -137,7 +132,7 @@ model User {
   versions           Version[]
   AuditLog           AuditLog[]
   CodeBuildJobs      CodeBuildJobs[]
-  ScheduledResources Resource[]
+  scheduledJobs      ScheduledJobs[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -284,6 +279,11 @@ enum BuildStatusType {
   STOPPED
 }
 
+enum ScheduledJobType {
+  PublishResource
+  PushDocument
+}
+
 model CodeBuildJobs {
   id                  BigInt          @id @default(autoincrement())
   buildId             String // The AWS CodeBuild build ID
@@ -309,4 +309,23 @@ model CodeBuildJobs {
   @@index([siteId])
   @@index([userId])
   @@index([buildId])
+}
+
+model ScheduledJobs {
+  id         BigInt           @id @default(autoincrement())
+  type       ScheduledJobType
+  // the resource that is linked to this job
+  resourceId BigInt?
+  resource   Resource?        @relation(fields: [resourceId], references: [id])
+
+  // This is only set if the resource is scheduled to be published at a later date
+  // If set, this indicates the time at which the resource should be published
+  scheduledAt DateTime
+  scheduledBy String?
+  scheduler   User?    @relation(fields: [scheduledBy], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([id])
 }
