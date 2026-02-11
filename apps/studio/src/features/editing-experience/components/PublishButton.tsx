@@ -51,6 +51,10 @@ const SuspendablePublishButton = ({
   })
 
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
+  const [job] = trpc.page.getScheduledTime.useSuspenseQuery({
+    pageId,
+    siteId,
+  })
   const isChangesPendingPublish = !!currPage.draftBlobId
 
   const { mutate, isPending } = trpc.page.publishPage.useMutation({
@@ -106,11 +110,11 @@ const SuspendablePublishButton = ({
                   {...publishNowDisclosure}
                 />
               )}
-              {currPage.scheduledAt ? (
+              {job.scheduledAt ? (
                 <CancelSchedulePublishIndicator
                   siteId={siteId}
                   pageId={pageId}
-                  scheduledAt={currPage.scheduledAt}
+                  scheduledAt={job.scheduledAt}
                 />
               ) : (
                 <HStack spacing={0} position="relative">

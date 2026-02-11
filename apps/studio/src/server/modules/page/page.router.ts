@@ -167,6 +167,24 @@ export const pageRouter = router({
       return { categories }
     }),
 
+  getScheduledTime: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const job = await db
+        .selectFrom("ScheduledJobs")
+        .where("resourceId", "=", String(pageId))
+        .selectAll()
+        .executeTakeFirst()
+
+      return { scheduledAt: job?.scheduledAt }
+    }),
+
   readPage: protectedProcedure
     .input(basePageSchema)
     .output(readPageOutputSchema)
