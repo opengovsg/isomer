@@ -281,6 +281,7 @@ export const collectionRouter = router({
 
       return await ctx.db
         .selectFrom("Resource")
+        .leftJoin("ScheduledJobs", "ScheduledJobs.resourceId", "Resource.id")
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "in", [
@@ -292,7 +293,10 @@ export const collectionRouter = router({
         .orderBy("Resource.title", "asc")
         .limit(limit)
         .offset(offset)
-        .select(defaultResourceSelect)
+        .select([
+          ...defaultResourceSelect,
+          "ScheduledJobs.scheduledAt as scheduledAt",
+        ])
         .execute()
     }),
   readCollectionLink: protectedProcedure
