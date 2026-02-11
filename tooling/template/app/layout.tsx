@@ -6,7 +6,7 @@ import "@/styles/globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
-import { RenderApplicationScripts } from "@opengovsg/isomer-components"
+import { RenderApplicationScripts, Wogaa } from "@opengovsg/isomer-components"
 
 const inter = Inter({
   // while we support other languages, we should only preload the latin subset
@@ -40,6 +40,9 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
       data-theme={config.site.theme || "isomer-next"}
       className={inter.variable}
     >
+      <head>
+        <Wogaa environment={process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT} />
+      </head>
       <body className="antialiased">
         {children}
         <RenderApplicationScripts
