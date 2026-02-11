@@ -281,6 +281,7 @@ export const collectionRouter = router({
 
       return await db
         .selectFrom("Resource")
+        .leftJoin("ScheduledJobs", "ScheduledJobs.resourceId", "Resource.id")
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "in", [
@@ -293,7 +294,10 @@ export const collectionRouter = router({
         .orderBy("Resource.id", "asc") // to ensure deterministic ordering
         .limit(limit)
         .offset(offset)
-        .select(defaultResourceSelect)
+        .select([
+          ...defaultResourceSelect,
+          "ScheduledJobs.scheduledAt as scheduledAt",
+        ])
         .execute()
     }),
   readCollectionLink: protectedProcedure
