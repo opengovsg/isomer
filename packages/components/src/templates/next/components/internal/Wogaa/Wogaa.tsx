@@ -9,5 +9,5 @@ export const Wogaa = ({ environment }: WogaaProps) => {
   // NOTE: next/script works by injecting the script tag into the head during runtime
   // however, Wogaa require their script to be present in the head
   // as such, we cannot use next/script and need to use a regular script tag
-  return <script src={scriptUrl} />
+  return <script src={scriptUrl} crossOrigin="anonymous" async />
 }
