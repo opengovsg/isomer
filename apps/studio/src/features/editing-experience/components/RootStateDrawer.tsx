@@ -36,7 +36,7 @@ import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
 import { pageSchema } from "../schema"
-import { getIsHeroFirstBlock } from "../utils/getIsHeroFirstFixedBlock"
+import { getIsHeroFirstBlock } from "../utils/getIsHeroFirstBlock"
 import { ActivateRawJsonEditorMode } from "./ActivateRawJsonEditorMode"
 import { BaseBlock } from "./Block/BaseBlock"
 import { DraggableBlock } from "./Block/DraggableBlock"
@@ -76,7 +76,7 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
 }
 
 const FixedBlock = () => {
-  const { setCurrActiveIdx, setDrawerState, previewPageState, savedPageState } =
+  const { setCurrActiveIdx, setDrawerState, previewPageState } =
     useEditorDrawerContext()
   const pageLayout = previewPageState.layout
   const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, previewPageState)
@@ -84,7 +84,7 @@ const FixedBlock = () => {
 
   if (isHeroFixedBlock) {
     // Assuming only one fixedBlock can exist at a time for now
-    const fixedBlock = savedPageState.content[0]
+    const fixedBlock = previewPageState.content[0]
     const isValid = validateHeroComponentFn(fixedBlock)
     return (
       <BaseBlock
