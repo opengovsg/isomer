@@ -222,5 +222,6 @@ const resetScheduledAtForPublishedResources = async (
   await db
     .deleteFrom("ScheduledJobs")
     .where("scheduledAt", "<=", scheduledAtCutoff)
+    .where("type", "=", "PublishResource")
     .execute()
 }
