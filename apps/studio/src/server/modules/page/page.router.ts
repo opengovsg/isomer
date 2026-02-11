@@ -368,20 +368,40 @@ export const pageRouter = router({
             message: "Resource not found",
           })
         }
-        if (resource.scheduledAt) {
+
+        const scheduledJob = await db
+          .selectFrom("ScheduledJobs")
+          .where("resourceId", "=", resource.id)
+          .select("ScheduledJobs.scheduledAt")
+          .executeTakeFirst()
+
+        if (scheduledJob) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: `Page is already scheduled to be published at ${format(
-              resource.scheduledAt,
+              scheduledJob.scheduledAt,
               "yyyy-MM-dd HH:mm",
             )}`,
           })
         }
         // update the resource's scheduled field
         const updatedPage = await updatePageById(
-          { id: pageId, siteId, scheduledAt, scheduledBy: by.id },
+          {
+            id: pageId,
+            siteId,
+          },
           tx,
         )
+
+        await db
+          .insertInto("ScheduledJobs")
+          .values({
+            resourceId: String(pageId),
+            type: "PublishResource",
+            scheduledAt,
+          })
+          .executeTakeFirst()
+
         // verify that the update was successful
         if (!updatedPage) {
           throw new TRPCError({
@@ -424,19 +444,30 @@ export const pageRouter = router({
             message: "Resource not found",
           })
         }
-        if (!resource.scheduledAt) {
+
+        const scheduledJob = await db
+          .selectFrom("ScheduledJobs")
+          .where("resourceId", "=", resource.id)
+          .select("ScheduledJobs.scheduledAt")
+          .executeTakeFirst()
+
+        if (!scheduledJob?.scheduledAt) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message:
               "Unable to cancel schedule for a page that is not scheduled",
           })
         }
-        // update the resource's scheduled field
-        const updatedPage = await updatePageById(
-          { id: pageId, siteId, scheduledAt: null, scheduledBy: null },
-          tx,
-        )
-        if (!updatedPage) {
+
+        // NOTE: Remove the job from the ScheduledJobs table
+        const deleted = await db
+          .deleteFrom("ScheduledJobs")
+          .where("ScheduledJobs.resourceId", "=", resource.id)
+          .executeTakeFirst()
+
+        // NOTE: need to convert because `numDeletedRows` is a bigint which
+        // cannot be directly compared to a number
+        if (Number(deleted.numDeletedRows) === 0) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to cancel page schedule",
@@ -448,7 +479,8 @@ export const pageRouter = router({
           delta: { before: resource, after: updatedPage },
           eventType: AuditLogEvent.CancelSchedulePublish,
         })
-        return updatedPage
+
+        return resource
       })
       await sendCancelSchedulePageEmail({
         resource: updatedPage,
