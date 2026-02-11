@@ -6,7 +6,7 @@ import "@/styles/globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
-import { RenderApplicationScripts, Wogaa } from "@opengovsg/isomer-components"
+import { RenderApplicationScripts, RenderApplicationHeadScripts } from "@opengovsg/isomer-components"
 
 const inter = Inter({
   // while we support other languages, we should only preload the latin subset
@@ -41,7 +41,12 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
       className={inter.variable}
     >
       <head>
-        <Wogaa environment={process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT} />
+        <RenderApplicationHeadScripts
+          site={{
+            ...config.site,
+            environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+          }}
+        />
       </head>
       <body className="antialiased">
         {children}
