@@ -2,7 +2,7 @@ import type { IsomerSiteProps } from "~/types"
 import { Wogaa } from "~/templates/next/components/internal/Wogaa"
 
 interface RenderApplicationHeadScriptsProps {
-  site: IsomerSiteProps
+  site: Pick<IsomerSiteProps, "environment">
 }
 
 export const RenderApplicationHeadScripts = ({
