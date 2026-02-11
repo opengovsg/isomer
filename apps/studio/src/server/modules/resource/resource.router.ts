@@ -586,6 +586,7 @@ export const resourceRouter = router({
 
       let query = db
         .selectFrom("Resource")
+        .leftJoin("ScheduledJobs", "Resource.id", "ScheduledJobs.resourceId")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.type", "!=", ResourceType.IndexPage)
@@ -613,7 +614,7 @@ export const resourceRouter = router({
           "Resource.type",
           "Resource.parentId",
           "Resource.updatedAt",
-          "Resource.scheduledAt",
+          "scheduledAt",
         ])
         .execute()
     }),
