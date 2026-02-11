@@ -315,14 +315,14 @@ model ScheduledJobs {
   id         BigInt           @id @default(autoincrement())
   type       ScheduledJobType
   // the resource that is linked to this job
-  resourceId BigInt?
-  resource   Resource?        @relation(fields: [resourceId], references: [id])
+  resourceId BigInt
+  resource   Resource         @relation(fields: [resourceId], references: [id])
 
   // This is only set if the resource is scheduled to be published at a later date
   // If set, this indicates the time at which the resource should be published
   scheduledAt DateTime
-  scheduledBy String?
-  scheduler   User?    @relation(fields: [scheduledBy], references: [id])
+  scheduledBy String
+  scheduler   User     @relation(fields: [scheduledBy], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

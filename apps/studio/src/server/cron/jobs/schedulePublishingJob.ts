@@ -74,46 +74,66 @@ export const publishScheduledResources = async (
   // A mapping from siteId to array of resourceIds, to determine which sites need to be published after their resources have been published
   const siteResourcesMap: Record<string, ResourceWithUser[]> = {}
   // Fetch all resources that are scheduled to be published at or before the current time, along with the user who scheduled them
-  const resourcesWithUser = await db
-    .selectFrom("Resource")
-    .leftJoin("User as u", "Resource.scheduledBy", "u.id")
+  const jobsWithUser = await db
+    .selectFrom("ScheduledJobs")
+    .leftJoin("User as u", "scheduledBy", "u.id")
     .where("scheduledAt", "<=", scheduledAtCutoff)
+    .where("type", "=", "PublishResource")
     .select([
-      ...defaultResourceSelect,
       "u.email as email",
       "u.deletedAt as userDeletedAt",
+      "resourceId",
+      "ScheduledJobs.id",
+      "scheduledBy",
     ])
     .execute()
 
   // Reset the scheduledAt and scheduledBy fields for all resources that are being published
   await resetScheduledAtForPublishedResources(scheduledAtCutoff)
 
-  for (const resource of resourcesWithUser) {
-    const { id: resourceId, siteId, scheduledBy } = resource
+  for (const job of jobsWithUser) {
+    const { resourceId, scheduledBy, id: jobId } = job
     if (!scheduledBy) {
       logger.error(
         `Resource ${resourceId} is missing user information, skipping publish`,
       )
       continue
     }
+
+    const resource = await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select(defaultResourceSelect)
+      .executeTakeFirst()
+
+    if (!resource) {
+      logger.error(`Unable to find resource with id: ${resourceId}`)
+      continue
+    }
+
     try {
       // publish the resources WITHOUT publishing the site yet
       await publishPageResource({
         logger,
         resourceId,
-        siteId,
+        siteId: resource.siteId,
         userId: scheduledBy,
       })
+
       logger.info(`Successfully published page for resource: ${resourceId}`)
       // Group resources by siteId for site publishing later
+      const siteId = resource.siteId
       siteResourcesMap[siteId] = siteResourcesMap[siteId] ?? []
-      siteResourcesMap[siteId].push({ ...resource, scheduledBy })
+      siteResourcesMap[siteId].push({
+        ...resource,
+        ...job,
+      })
     } catch (error) {
       logger.error(
         { error },
         `Failed to publish page for resource: ${resourceId}`,
       )
-      if (resource.userDeletedAt || !resource.email) {
+      if (job.userDeletedAt || !job.email) {
         logger.warn(
           `Resource ${resourceId} is missing user email information or deleted, cannot send failed publish email`,
         )
@@ -122,17 +142,17 @@ export const publishScheduledResources = async (
       if (enableEmailsForScheduledPublishes) {
         try {
           await sendFailedPublishEmail({
-            recipientEmail: resource.email,
+            recipientEmail: job.email,
             isScheduled: true,
             resource,
           })
           logger.warn(
-            `Sent failed publish email to ${resource.email} for resource: ${resourceId}`,
+            `Sent failed publish email to ${job.email} for resource: ${resourceId}`,
           )
         } catch (emailError) {
           logger.error(
             { error: emailError },
-            `Failed to send failed publish email to ${resource.email} for resource: ${resourceId}`,
+            `Failed to send failed publish email to ${job.email} for resource: ${resourceId}`,
           )
         }
       }
@@ -200,8 +220,7 @@ const resetScheduledAtForPublishedResources = async (
   scheduledAtCutoff: Date,
 ) => {
   await db
-    .updateTable("Resource")
-    .set({ scheduledAt: null, scheduledBy: null })
+    .deleteFrom("ScheduledJobs")
     .where("scheduledAt", "<=", scheduledAtCutoff)
     .execute()
 }
