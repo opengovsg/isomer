@@ -6,7 +6,10 @@ import "@/styles/globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
-import { RenderApplicationScripts, RenderApplicationHeadScripts } from "@opengovsg/isomer-components"
+import {
+  RenderApplicationHeadScripts,
+  RenderApplicationScripts,
+} from "@opengovsg/isomer-components"
 
 const inter = Inter({
   // while we support other languages, we should only preload the latin subset
