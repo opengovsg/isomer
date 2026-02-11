@@ -1,36 +1,44 @@
+import { z } from "zod"
+
+import { registerPgbossJob } from "@isomer/pgboss"
+
 import type { Resource } from "~/server/modules/database"
 import { env } from "~/env.mjs"
 import { sendFailedPublishEmail } from "~/features/mail/service"
-import {
-  ENABLE_CODEBUILD_JOBS,
-  ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
-} from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
-import { createGrowthBookContext } from "~/server/context"
-import { publishSite } from "~/server/modules/aws/codebuild.service"
 import { db } from "~/server/modules/database"
 import {
   defaultResourceSelect,
   publishPageResource,
 } from "~/server/modules/resource/resource.service"
 
-import { registerPgbossJob } from "@isomer/pgboss"
-
-const JOB_NAME = "schedule-publishing"
+const JOB_NAME = "schedule-push-document"
 const CRON_SCHEDULE = "* * * * *" // every minute
+const EGAZETTE_DOCUMENT_INDEX = "0ea348e0-8276-4b93-95dd-3c6f62e017d6"
 
-const logger = createBaseLogger({ path: "cron:schedulePublishingJob" })
+const logger = createBaseLogger({ path: "cron:schedulePushDocumentJob" })
+
+const pushDocumentContentSchema = z.object({
+  page: z.object({
+    ref: z.string(),
+    category: z.string(),
+  }),
+})
+
+const CONTENT_TYPES = {
+  Informational: "Informational",
+}
 
 /**
- * Registers the schedule publishing job with the specified cron schedule.
+ * Registers the schedule push document job with the specified cron schedule.
  * @returns A promise that resolves when the job is registered.
  */
-export const schedulePublishingJob = async () => {
+export const schedulePushDocumentJob = async () => {
   return await registerPgbossJob(
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
-    schedulePublishJobHandler,
+    schedulePushDocumentJobHandler,
     // do NOT retry failed jobs, since we send failure emails on a per-resource basis
     // use singletonKey to ensure only one instance of the job runs at a time
     { retryLimit: 0, singletonKey: JOB_NAME },
@@ -45,20 +53,71 @@ export const schedulePublishingJob = async () => {
  * Publishes all resources scheduled for publishing up to the current time,
  * publishes their associated sites, and resets their scheduledAt fields.
  */
-const schedulePublishJobHandler = async () => {
+const schedulePushDocumentJobHandler = async () => {
   const scheduledAtCutoff = new Date()
-  const gb = await createGrowthBookContext()
-  const enableCodebuildJobs = gb.isOn(ENABLE_CODEBUILD_JOBS)
-  const enableEmailsForScheduledPublishes = gb.isOn(
-    ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
+
+  // NOTE: get all documents that are scheduled to publish
+  const scheduledResources = await db
+    .selectFrom("ScheduledJobs")
+    .innerJoin("Resource", "Resource.id", "ScheduledJobs.resourceId")
+    .innerJoin("Blob", "Blob.id", "Resource.draftBlobId")
+    .where("scheduledAt", "<=", scheduledAtCutoff)
+    .where("type", "=", "PushDocument")
+    .select([
+      "Blob.content",
+      "Resource.title",
+      "Resource.id as resourceId",
+      "Resource.parentId",
+      "scheduledAt",
+    ])
+    .execute()
+
+  const documentPromises = scheduledResources.map(
+    async ({ scheduledAt, resourceId, title, parentId, content }) => {
+      const parsed = pushDocumentContentSchema.safeParse(content)
+      if (!parsed.success) {
+        logger.error({ content }, "Invalid content structure for push document")
+        return null
+      }
+
+      const url = parsed.data.page.ref
+
+      const { parentTitle } = await db
+        .selectFrom("Resource")
+        .where("id", "=", parentId)
+        .select(["title as parentTitle"])
+        .executeTakeFirstOrThrow()
+
+      return {
+        // NOTE: the document id is what they (searchsg) uses to
+        // uniquely identify a document
+        // so this should be indicative of that same pdf
+        // ie, if a user deletes and re-uploads a slightly different file,
+        // we should NOT show 2 search results
+        documentId: generateDocumentId(url, resourceId),
+        content: await parsePdfContent(url),
+        title,
+        url,
+        contentType: CONTENT_TYPES.Informational,
+        date: scheduledAt,
+        // NOTE: This is the `subcategory`
+        customFilter1: [parsed.data.page.category],
+        categories: [parentTitle],
+      }
+    },
   )
-  // Publish all scheduled resources up to the cutoff time
-  const siteResourcesMap = await publishScheduledResources(
-    enableEmailsForScheduledPublishes,
-    scheduledAtCutoff,
+
+  const resolvedDocuments = await Promise.all(documentPromises)
+  const documents = resolvedDocuments.filter(
+    (document): document is PushDocument => document !== null,
   )
-  // Publish all sites that have resources published
-  await publishScheduledSites(siteResourcesMap, enableCodebuildJobs)
+
+  await pushDocumentsForIngestion(documents)
+}
+
+// TODO: add this in using the egazette implementation
+const parsePdfContent = async (url: string) => {
+  return "test"
 }
 
 type ResourceWithUser = Omit<Resource, "scheduledBy"> & {
@@ -92,7 +151,7 @@ export const publishScheduledResources = async (
   await resetScheduledAtForPublishedResources(scheduledAtCutoff)
 
   for (const job of jobsWithUser) {
-    const { resourceId, scheduledBy, id: jobId } = job
+    const { resourceId, scheduledBy } = job
     if (!scheduledBy) {
       logger.error(
         `Resource ${resourceId} is missing user information, skipping publish`,
@@ -161,55 +220,6 @@ export const publishScheduledResources = async (
   return siteResourcesMap
 }
 
-export const publishScheduledSites = async (
-  siteResourcesMap: Record<string, ResourceWithUser[]>,
-  enableCodebuildJobs: boolean,
-) => {
-  for (const [siteId, resources] of Object.entries(siteResourcesMap)) {
-    try {
-      await publishSite(logger, {
-        siteId: Number(siteId),
-        codebuildJob: enableCodebuildJobs
-          ? {
-              isScheduled: true,
-              resourceWithUserIds: resources.map(
-                ({ id: resourceId, scheduledBy }) => {
-                  return { resourceId, userId: scheduledBy }
-                },
-              ),
-            }
-          : undefined,
-      })
-      logger.info(`Successfully published site for siteId: ${siteId}`)
-    } catch (error) {
-      logger.error({ error }, `Failed to publish site for siteId: ${siteId}`)
-      for (const resource of resources) {
-        if (resource.userDeletedAt || !resource.email) {
-          logger.warn(
-            `Resource ${resource.id} is missing user email information or deleted, cannot send failed publish email`,
-          )
-          continue
-        }
-        try {
-          await sendFailedPublishEmail({
-            recipientEmail: resource.email,
-            isScheduled: true,
-            resource,
-          })
-          logger.warn(
-            `Sent failed publish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
-          )
-        } catch (emailError) {
-          logger.error(
-            { error: emailError },
-            `Failed to send failed publish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
-          )
-        }
-      }
-    }
-  }
-}
-
 /**
  * Reset the scheduledAt field for all resources that have been published as of the given cutoff date
  * Even IF there were errors publishing some resources, we still reset the scheduledAt for all resources
@@ -222,6 +232,84 @@ const resetScheduledAtForPublishedResources = async (
   await db
     .deleteFrom("ScheduledJobs")
     .where("scheduledAt", "<=", scheduledAtCutoff)
-    .where("type", "=", "PublishResource")
+    .where("type", "=", "PushDocument")
     .execute()
+}
+
+const generateDocumentId = (url: string, resourceId: string) => {
+  return `${url}-${resourceId}`
+}
+
+interface PushDocument {
+  documentId: string
+  title: string
+  url: string
+  contentType: string
+  content: string
+  date: Date
+  customFilter1: string[]
+  categories: string[]
+}
+
+const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin" as const
+const ISOMER_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer" as const
+
+const getSearchSGAuthToken = async () => {
+  const response = await fetch(`${SEARCHSG_BASE_URL}/v1/auth/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${env.SEARCHSG_API_KEY}`,
+      "User-Agent": ISOMER_UA,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to get SearchSG auth token: ${response.statusText}`)
+  }
+
+  const { accessToken, tokenType } = (await response.json()) as {
+    accessToken: string
+    tokenType: string
+  }
+
+  return { accessToken, tokenType }
+}
+
+const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
+  if (documents.length === 0) {
+    logger.info("No documents to push for ingestion")
+    return
+  }
+
+  const { accessToken, tokenType } = await getSearchSGAuthToken()
+
+  const response = await fetch(
+    `${SEARCHSG_BASE_URL}/v2/indexes/${EGAZETTE_DOCUMENT_INDEX}/documents`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `${tokenType} ${accessToken}`,
+        "Content-Type": "application/json",
+        "User-Agent": ISOMER_UA,
+      },
+      body: JSON.stringify({ documentsToAdd: documents }),
+    },
+  )
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    logger.error(
+      { status: response.status, error: errorText },
+      "Failed to push documents for ingestion",
+    )
+    throw new Error(
+      `Failed to push documents for ingestion: ${response.statusText}`,
+    )
+  }
+
+  logger.info(
+    { count: documents.length },
+    "Successfully pushed documents for ingestion",
+  )
 }
