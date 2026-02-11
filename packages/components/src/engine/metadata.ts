@@ -173,8 +173,17 @@ export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
         item.layout !== ISOMER_PAGE_LAYOUTS.File &&
         item.layout !== ISOMER_PAGE_LAYOUTS.Link,
     )
-    .map(({ permalink, lastModified }) => ({
-      url: siteUrl !== undefined ? `${siteUrl}${permalink}` : permalink,
-      lastModified,
-    }))
+    .map(({ permalink, lastModified }) => {
+      const permalinkWithTrailingSlash = permalink.endsWith("/")
+        ? permalink
+        : `${permalink}/`
+
+      return {
+        url:
+          siteUrl !== undefined
+            ? `${siteUrl}${permalinkWithTrailingSlash}`
+            : permalinkWithTrailingSlash,
+        lastModified,
+      }
+    })
 }

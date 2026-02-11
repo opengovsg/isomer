@@ -72,7 +72,8 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
     // TODO: fixup all the typing errors
     // @ts-expect-error to fix when types are proper
     getSitemapXml(sitemap).find(
-      ({ url }) => joinedPermalink === url.replace(/^\//, ""),
+      ({ url }) =>
+        joinedPermalink === url.replace(/^\//, "").replace(/\/$/, ""),
     ).lastModified || new Date().toISOString()
 
   schema.page.permalink = "/" + joinedPermalink
@@ -85,7 +86,7 @@ export const generateStaticParams = () => {
   // TODO: fixup all the typing errors
   // @ts-expect-error to fix when types are proper
   return getSitemapXml(sitemap).map(({ url }) => ({
-    permalink: url.replace(/^\//, "").split("/"),
+    permalink: url.replace(/^\//, "").replace(/\/$/, "").split("/"),
   }))
 }
 
