@@ -6,5 +6,8 @@ export const Wogaa = ({ environment }: WogaaProps) => {
       ? "https://assets.wogaa.sg/scripts/wogaa.js"
       : "https://assets.dcube.cloud/scripts/wogaa.js"
 
+  // NOTE: next/script works by injecting the script tag into the head during runtime
+  // however, Wogaa require their script to be present in the head
+  // as such, we cannot use next/script and need to use a regular script tag
   return <script src={scriptUrl} />
 }
