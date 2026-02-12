@@ -76,6 +76,10 @@ export const ScheduledPublishingModal = ({
           title: "Page scheduled successfully",
           ...BRIEF_TOAST_SETTINGS,
         })
+        utils.page.getScheduledTime.invalidate({
+          siteId,
+          pageId,
+        })
       },
       onError: (error) => {
         console.error(`Error occurred when scheduling page: ${error.message}`)
