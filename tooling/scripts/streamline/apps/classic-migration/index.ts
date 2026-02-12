@@ -238,7 +238,7 @@ const createCollectionIndex = async (
 
 export const migrateSite = async ({
   repoName: site,
-  isomerDomain: domain,
+  isomerDomain,
   folders,
   isResourceRoomIncluded,
   isOrphansIncluded,
@@ -249,6 +249,24 @@ export const migrateSite = async ({
     site,
     `(https://github.com/isomerpages/${site})`
   );
+  const domain = isomerDomain.startsWith("http")
+    ? isomerDomain.replace("http://", "https://")
+    : `https://${isomerDomain}`;
+
+  // Remove previous conversion output if any
+  const outputDir = path.join(__dirname, CONVERSION_OUTPUT_DIR, site);
+  if (fs.existsSync(outputDir)) {
+    console.log("NOTE: Removing previous conversion output...");
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  }
+  const migrationReportPath = path.join(
+    __dirname,
+    `migrated-pages-${site}.csv`
+  );
+  if (fs.existsSync(migrationReportPath)) {
+    console.log("NOTE: Removing previous migration report...");
+    fs.rmSync(migrationReportPath, { force: true });
+  }
 
   const migrationFolders =
     folders ?? (await getAllFolders({ site, octokit, useStagingBranch }));
@@ -395,10 +413,7 @@ export const migrateSite = async ({
 
   const csvString = csvHeaders + csvRows.join("");
 
-  await fs.promises.writeFile(
-    path.join(__dirname, `migrated-pages-${site}.csv`),
-    csvString
-  );
+  await fs.promises.writeFile(migrationReportPath, csvString);
 };
 
 export const migrateClassicToNext = async () => {

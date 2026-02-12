@@ -248,14 +248,15 @@ const convertKeyHighlights = (
 
   return {
     type: "infocols",
-    title: siteTitle || "Organization Name", // Should be customized based on site
-    subtitle: "Serving our community", // Default, can be enhanced
+    title: siteTitle || "This is the title of the InfoCols block", // Should be customized based on site
+    subtitle: "", // Default, can be enhanced
     infoBoxes: keyHighlights.map((highlight) => ({
       icon: mapIcon(highlight.title),
       title: highlight.title,
-      description: stripHtml(
-        enhanceDescription(highlight.description) || highlight.description
-      ),
+      description:
+        stripHtml(
+          enhanceDescription(highlight.description) || highlight.description
+        ) ?? "",
       buttonUrl: normalizeUrl(highlight.url),
       buttonLabel: enhanceButtonLabel(
         undefined,
@@ -405,7 +406,10 @@ const convertInfopic = async (
     return {
       infocards: {
         type: "infocards",
-        title: stripHtml(infopicSection.title) || infopicSection.title,
+        title:
+          stripHtml(infopicSection.title) ||
+          infopicSection.title ||
+          "This is the title of the InfoCards block",
         variant: "cardsWithoutImages",
         maxColumns: "3",
         cards: finalCards,
@@ -417,7 +421,10 @@ const convertInfopic = async (
   // Default: convert to infopic
   const infopic: any = {
     type: "infopic",
-    title: stripHtml(infopicSection.title) || infopicSection.title,
+    title:
+      stripHtml(infopicSection.title) ||
+      infopicSection.title ||
+      "This is the title of the Infopic block",
     variant: "block",
   };
 
@@ -453,7 +460,13 @@ const convertInfopic = async (
         infopic.imageAlt =
           altText?.substring(0, 120) || infopicSection.alt.substring(0, 120);
       }
-    } else {
+    }
+
+    if (
+      !infopicSection.alt ||
+      infopic.imageAlt === undefined ||
+      infopic.imageAlt.trim().length < 5
+    ) {
       const fullSrc = infopicSection.image.startsWith("http")
         ? infopicSection.image
         : domain
@@ -562,7 +575,10 @@ const convertInfobars = (
 
   const component: any = {
     type: "infobar",
-    title: stripHtml(infobar.title) || infobar.title,
+    title:
+      stripHtml(infobar.title) ||
+      infobar.title ||
+      "This is the title of the Infobar block",
     buttonLabel: enhanceButtonLabel(
       infobar.button,
       infobar.description,

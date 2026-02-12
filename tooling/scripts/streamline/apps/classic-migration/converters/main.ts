@@ -93,46 +93,6 @@ export const getIsHtmlContainingRedundantDivs = (html: string) => {
   });
 };
 
-// export const isHtmlContainingDivStyles = (html: string) => {
-//   const dom = new JSDOM(html);
-//   const subDoc = dom.window.document;
-//   const divs = Array.from(subDoc.querySelectorAll("div"));
-
-//   if (divs.length === 0) {
-//     return false;
-//   }
-
-//   return divs.some((div) => {
-//     // Check if the div is empty or contains only whitespace
-//     if (!div.hasChildNodes() || div.textContent?.trim() === "") {
-//       return false;
-//     }
-
-//     // Check if the div has no attributes
-//     if (div.attributes.length === 0) {
-//       return false;
-//     }
-
-//     // Check for specific attributes that might affect rendering
-//     const impactAttributes = [
-//       "style",
-//       // "class",
-//       // "onclick",
-//       // "onmouseover",
-//       // "onmouseout",
-//     ];
-
-//     for (const attr of div.attributes) {
-//       if (impactAttributes.includes(attr.name)) {
-//         return true;
-//       }
-//     }
-
-//     // If none of the checks above indicated an impact, the div is redundant
-//     return false;
-//   });
-// };
-
 // Converts a Tiptap-based schema to an Isomer Next schema
 // tiptapSchema: The schema object from Tiptap
 const convertFromTiptap = (schema: any) => {
@@ -147,7 +107,7 @@ const convertFromTiptap = (schema: any) => {
     content: [] as any[],
   };
 
-  const updatedSchema = schema.flatMap((component: any) => {
+  const expandAccordions = (component: any) => {
     // Break out all the accordions
     if (component.type === "detailGroup") {
       const expandedAccordions = component.content.flatMap((detail: any) => {
@@ -171,7 +131,7 @@ const convertFromTiptap = (schema: any) => {
               },
             ],
           },
-          ...(detailContent.content || []),
+          ...(detailContent.content.flatMap(expandAccordions) || []),
         ];
       });
 
@@ -197,12 +157,14 @@ const convertFromTiptap = (schema: any) => {
             },
           ],
         },
-        ...(detailContent.content || []),
+        ...(detailContent.content.flatMap(expandAccordions) || []),
       ];
     }
 
     return [component];
-  });
+  };
+
+  const updatedSchema = schema.flatMap(expandAccordions);
 
   updatedSchema.forEach((component: any) => {
     if (component.type === "iframe") {
@@ -228,11 +190,14 @@ const convertFromTiptap = (schema: any) => {
           srcUrl.pathname.startsWith("/maps")
         ) {
           const title = iframe?.getAttribute("title") || "Google Maps";
+          // Replace the url with /d/u/[0-9]/ to just /d/, which is what we only
+          // accept in Isomer Next for Google Maps embeds
+          const fixedSrc = src?.replace(/\/d\/u\/\d\//, "/d/");
 
           outputContent.push({
             type: "map",
             title,
-            url: src,
+            url: fixedSrc,
           });
         } else if (srcUrl.host.includes("docs.google.com")) {
           outputContent.push({
@@ -277,8 +242,11 @@ const convertFromTiptap = (schema: any) => {
       const { attrs, ...rest } = component;
       const { alt, src } = attrs;
 
+      const fixedSrc =
+        !src.startsWith("http") && !src.startsWith("/") ? `/${src}` : src;
+
       outputContent.push({
-        src,
+        src: fixedSrc,
         alt: alt || PLACEHOLDER_ALT_TEXT,
         ...rest,
       });
@@ -566,6 +534,12 @@ const convertFromTiptap = (schema: any) => {
             newListItemParagraphContent = newListItemParagraphContent.concat(
               organizeListItems(listItemContent.content)
             );
+          } else if (
+            (listItemContent.type === "orderedList" ||
+              listItemContent.type === "unorderedList") &&
+            listItemContent.content.length === 0
+          ) {
+            // Skip empty nested lists
           } else {
             newListItemParagraphContent.push(listItemContent);
           }
@@ -648,7 +622,7 @@ const convertFromTiptap = (schema: any) => {
 };
 
 // Performs some cleaning up of the Tiptap schema due to poor usage of HTML
-const getCleanedSchema = (schema: any) => {
+const getCleanedSchema = (schema: any, domain?: string) => {
   // Recursively find components with "type": "table" and remove any empty
   // tableRow or tableCell components before returning the schema
   const removeEmptyTableContents = (schema: any) => {
@@ -860,6 +834,10 @@ const getCleanedSchema = (schema: any) => {
               newAttrs.href = mark.attrs.href.replace("http://", "https://");
             }
 
+            if (newAttrs.href?.startsWith(`https://${domain}/`)) {
+              newAttrs.href = newAttrs.href.replace(`https://${domain}/`, "/");
+            }
+
             return {
               ...mark,
               attrs: newAttrs,
@@ -967,7 +945,7 @@ const fixTipTapContent = (html: string) => {
   return container.innerHTML;
 };
 
-export const convertHtmlToSchema = async (html: string) => {
+export const convertHtmlToSchema = async (html: string, domain?: string) => {
   const output = generateJSON(fixTipTapContent(html), [
     Blockquote.extend({
       content: "paragraph+",
@@ -1158,7 +1136,7 @@ export const convertHtmlToSchema = async (html: string) => {
   ]);
 
   // console.log(JSON.stringify(output.content));
-  const schema = getCleanedSchema(output.content);
+  const schema = getCleanedSchema(output.content, domain);
   // console.log(JSON.stringify(schema));
   const result = convertFromTiptap(schema);
   return result;
