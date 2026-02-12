@@ -3,6 +3,7 @@ import type {
   PutObjectTaggingCommandInput,
 } from "@aws-sdk/client-s3"
 import {
+  GetObjectCommand,
   GetObjectTaggingCommand,
   PutObjectCommand,
   PutObjectTaggingCommand,
@@ -64,4 +65,30 @@ export const deleteFile = async ({
       },
     }),
   )
+}
+
+export const getBlob = async (bucketName: string, key: string) => {
+  try {
+    const getParams = {
+      Bucket: bucketName,
+      Key: key,
+    }
+
+    const data = await storage.send(new GetObjectCommand(getParams))
+    const byteArr = await data.Body?.transformToByteArray()
+    if (!byteArr) {
+      throw new Error("Error when transforming blob to byte array")
+    }
+    return byteArr
+  } catch (err) {
+    console.error({
+      message: `Error when getting blob`,
+      error: err,
+      merged: {
+        bucketName,
+        key,
+      },
+    })
+    throw err
+  }
 }

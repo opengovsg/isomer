@@ -151,3 +151,8 @@ export const getIndexPageSchema = z.object({
 export const getIndexPageOutputSchema = z.object({
   id: z.string(),
 })
+
+export const getAssetUrlOfResourceSchema = z.object({
+  siteId: z.number().min(1),
+  resourceId: z.string(),
+})

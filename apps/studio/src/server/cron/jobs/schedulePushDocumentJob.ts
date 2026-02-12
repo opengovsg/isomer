@@ -6,6 +6,8 @@ import type { Resource } from "~/server/modules/database"
 import { env } from "~/env.mjs"
 import { sendFailedPublishEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
+import { getBlob } from "~/lib/s3"
+import { parseFullTextFromPDF } from "~/server/modules/asset/asset.service"
 import { db } from "~/server/modules/database"
 import {
   defaultResourceSelect,
@@ -61,8 +63,8 @@ const schedulePushDocumentJobHandler = async () => {
     .selectFrom("ScheduledJobs")
     .innerJoin("Resource", "Resource.id", "ScheduledJobs.resourceId")
     .innerJoin("Blob", "Blob.id", "Resource.draftBlobId")
-    .where("scheduledAt", "<=", scheduledAtCutoff)
-    .where("type", "=", "PushDocument")
+    .where("scheduledAt", ">", scheduledAtCutoff)
+    .where("ScheduledJobs.type", "=", "PushDocument")
     .select([
       "Blob.content",
       "Resource.title",
@@ -88,6 +90,8 @@ const schedulePushDocumentJobHandler = async () => {
         .select(["title as parentTitle"])
         .executeTakeFirstOrThrow()
 
+      const blob = await getBlob(env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME, url) // Input blob only exists on dev
+
       return {
         // NOTE: the document id is what they (searchsg) uses to
         // uniquely identify a document
@@ -95,7 +99,7 @@ const schedulePushDocumentJobHandler = async () => {
         // ie, if a user deletes and re-uploads a slightly different file,
         // we should NOT show 2 search results
         documentId: generateDocumentId(url, resourceId),
-        content: await parsePdfContent(url),
+        content: await parseFullTextFromPDF(blob),
         title,
         url,
         contentType: CONTENT_TYPES.Informational,
@@ -115,11 +119,6 @@ const schedulePushDocumentJobHandler = async () => {
   await pushDocumentsForIngestion(documents)
 }
 
-// TODO: add this in using the egazette implementation
-const parsePdfContent = async (url: string) => {
-  return "test"
-}
-
 type ResourceWithUser = Omit<Resource, "scheduledBy"> & {
   scheduledBy: string
   email: string | null
@@ -137,7 +136,7 @@ export const publishScheduledResources = async (
     .selectFrom("ScheduledJobs")
     .leftJoin("User as u", "scheduledBy", "u.id")
     .where("scheduledAt", "<=", scheduledAtCutoff)
-    .where("type", "=", "PublishResource")
+    .where("ScheduledJobs.type", "=", "PublishResource")
     .select([
       "u.email as email",
       "u.deletedAt as userDeletedAt",

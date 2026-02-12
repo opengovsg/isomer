@@ -135,6 +135,7 @@
     "node-cron": "^3.0.3",
     "openid-client": "^5.7.1",
     "papaparse": "^5.5.3",
+    "pdfreader": "^3.0.8",
     "pg": "^8.16.2",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",

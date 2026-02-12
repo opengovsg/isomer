@@ -31,6 +31,10 @@ export const CancelScheduleModal = ({
   const { mutate, isPending } = trpc.page.cancelSchedulePage.useMutation({
     onSettled: async () => {
       await utils.page.readPage.refetch({ pageId, siteId })
+      await utils.page.getScheduledTime.invalidate({
+        siteId,
+        pageId,
+      })
       onClose()
     },
     onSuccess: () => {

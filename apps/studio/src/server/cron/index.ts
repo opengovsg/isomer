@@ -1,6 +1,7 @@
 import { createBaseLogger } from "../../lib/logger"
 import { deactivateInactiveUsersJob } from "./jobs"
 import { schedulePublishingJob } from "./jobs/schedulePublishingJob"
+import { schedulePushDocumentJob } from "./jobs/schedulePushDocumentJob"
 
 const logger = createBaseLogger({ path: "cron:index" })
 
@@ -11,7 +12,11 @@ export const initializeCronJobs = async () => {
   logger.info("Initializing cron jobs...")
 
   // Initialize and track all cron jobs
-  cronJobs.push(deactivateInactiveUsersJob(), await schedulePublishingJob())
+  cronJobs.push(
+    deactivateInactiveUsersJob(),
+    await schedulePublishingJob(),
+    await schedulePushDocumentJob(),
+  )
 
   logger.info("Cron jobs initialized successfully")
 }
