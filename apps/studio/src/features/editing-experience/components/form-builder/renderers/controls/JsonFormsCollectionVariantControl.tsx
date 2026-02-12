@@ -42,7 +42,7 @@ function JsonFormsCollectionVariantControl({
           value={data as string}
         >
           <Radio
-            value={COLLECTION_VARIANT_OPTIONS.Blog}
+            value={COLLECTION_VARIANT_OPTIONS.Collection}
             allowDeselect={false}
             size="sm"
           >
@@ -50,7 +50,7 @@ function JsonFormsCollectionVariantControl({
             <IconOneColumnLayout mt="10px" />
           </Radio>
           <Radio
-            value={COLLECTION_VARIANT_OPTIONS.Collection}
+            value={COLLECTION_VARIANT_OPTIONS.Blog}
             allowDeselect={false}
             size="sm"
           >
