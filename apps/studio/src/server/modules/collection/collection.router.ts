@@ -279,7 +279,7 @@ export const collectionRouter = router({
       // 1. Last Edited user and time
       // 2. Page status(draft, published)
 
-      return await ctx.db
+      return await db
         .selectFrom("Resource")
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
