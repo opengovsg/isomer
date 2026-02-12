@@ -535,11 +535,53 @@ const convertFromTiptap = (schema: any) => {
               organizeListItems(listItemContent.content)
             );
           } else if (
-            (listItemContent.type === "orderedList" ||
-              listItemContent.type === "unorderedList") &&
-            listItemContent.content.length === 0
+            listItemContent.type === "orderedList" ||
+            listItemContent.type === "unorderedList"
           ) {
             // Skip empty nested lists
+            const removeEmptyNestedLists = (listComponent: any) => {
+              return {
+                ...listComponent,
+                content: listComponent.content
+                  .map((li: any) => ({
+                    ...li,
+                    content: li.content
+                      .map((lic: any) => {
+                        if (
+                          lic.type === "orderedList" ||
+                          lic.type === "unorderedList"
+                        ) {
+                          return removeEmptyNestedLists(lic);
+                        }
+                        return lic;
+                      })
+                      .filter(
+                        (lic: any) =>
+                          !(
+                            lic.type === "orderedList" ||
+                            lic.type === "unorderedList"
+                          ) ||
+                          (lic.content && lic.content.length > 0)
+                      ),
+                  }))
+                  .filter(
+                    (li: any) =>
+                      !(
+                        li.type === "orderedList" || li.type === "unorderedList"
+                      ) ||
+                      (li.content && li.content.length > 0)
+                  ),
+              };
+            };
+
+            const cleanedListContent = removeEmptyNestedLists(listItemContent);
+
+            if (
+              cleanedListContent.content &&
+              cleanedListContent.content.length > 0
+            ) {
+              newListItemParagraphContent.push(cleanedListContent);
+            }
           } else {
             newListItemParagraphContent.push(listItemContent);
           }

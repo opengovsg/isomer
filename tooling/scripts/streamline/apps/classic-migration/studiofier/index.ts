@@ -13,7 +13,7 @@ import type { StudiofyRequest } from "../types";
 import { getSiteNameAndUrl } from "../utils";
 
 dotenv.config({
-  path: path.join(__dirname, "..", ".env"),
+  path: path.join(__dirname, "..", "..", ".env"),
 });
 
 const octokit = new Octokit({
@@ -25,7 +25,7 @@ export const studiofySite = async ({
   useStagingBranch = false,
 }: StudiofyRequest) => {
   const client = new Client({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,
   });
 
   try {
