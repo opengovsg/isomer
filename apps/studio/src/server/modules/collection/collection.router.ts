@@ -290,6 +290,7 @@ export const collectionRouter = router({
         ])
         .orderBy("Resource.type", "asc")
         .orderBy("Resource.title", "asc")
+        .orderBy("Resource.id", "asc") // to ensure deterministic ordering
         .limit(limit)
         .offset(offset)
         .select(defaultResourceSelect)
