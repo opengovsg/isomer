@@ -10,6 +10,7 @@ import {
   deleteResourceSchema,
   getAncestryStackOutputSchema,
   getAncestryStackSchema,
+  getAssetUrlOfResourceSchema,
   getBatchAncestryWithSelfOutputSchema,
   getBatchAncestryWithSelfSchema,
   getChildrenOutputSchema,
@@ -98,6 +99,37 @@ const validateUserPermissionsForMove = async ({
 }
 
 export const resourceRouter = router({
+  getAssetUrlOfResource: protectedProcedure
+    .input(getAssetUrlOfResourceSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        resourceIds: [resourceId],
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const resource = await db
+        .selectFrom("Resource")
+        .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
+        .where("Resource.id", "=", resourceId)
+        .select("content")
+        .executeTakeFirst()
+
+      // NOTE: Throw here because this method
+      // should only be invoked when trying to publish a resource,
+      // which means that the draft blob should exist
+      if (!resource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      // TODO: parse this properly
+      return { url: (resource.content.page as any).ref }
+    }),
+
   getMetadataById: protectedProcedure
     .input(getMetadataSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {

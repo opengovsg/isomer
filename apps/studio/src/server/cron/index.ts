@@ -2,6 +2,7 @@ import { createBaseLogger } from "../../lib/logger"
 import { deactivateInactiveUsersJob } from "./jobs/deactivateInactiveUsersJob"
 import { schedulePublishingJob } from "./jobs/schedulePublishingJob"
 import { sendAccountDeactivationWarningEmailsJob } from "./jobs/sendAccountDeactivationWarningEmailsJob"
+import { schedulePushDocumentJob } from "./jobs/schedulePushDocumentJob"
 
 const logger = createBaseLogger({ path: "cron:index" })
 
@@ -15,6 +16,7 @@ export const initializeCronJobs = async () => {
   cronJobs.push(
     await deactivateInactiveUsersJob(),
     await schedulePublishingJob(),
+    await schedulePushDocumentJob(),
     await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 1 }),
     await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 7 }),
     await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 14 }),

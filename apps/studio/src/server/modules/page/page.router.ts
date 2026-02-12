@@ -60,7 +60,6 @@ import {
   publishPageResource,
   publishResource,
   updateBlobById,
-  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage, createFolderIndexPage } from "./page.service"
@@ -358,89 +357,108 @@ export const pageRouter = router({
     }),
   schedulePage: protectedProcedure
     .input(scheduledPublishServerSchema)
-    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "publish",
-        userId: ctx.user.id,
-      })
-      // check if the input.scheduledAt is after the current time
-      if (isBefore(scheduledAt, new Date())) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Scheduled time must be in the future",
+    .mutation(
+      async ({
+        ctx,
+        input: { scheduledAt, siteId, pageId, shouldIngestDocument },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          siteId,
+          action: "publish",
+          userId: ctx.user.id,
         })
-      }
-      const by = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-
-      const updatedPage = await db.transaction().execute(async (tx) => {
-        // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
-        const resource = await getPageById(tx, { resourceId: pageId, siteId })
-        if (!resource) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Resource not found",
-          })
-        }
-
-        const scheduledJob = await db
-          .selectFrom("ScheduledJobs")
-          .where("resourceId", "=", resource.id)
-          .select("ScheduledJobs.scheduledAt")
-          .executeTakeFirst()
-
-        if (scheduledJob) {
+        // check if the input.scheduledAt is after the current time
+        if (isBefore(scheduledAt, new Date())) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: `Page is already scheduled to be published at ${format(
-              scheduledJob.scheduledAt,
-              "yyyy-MM-dd HH:mm",
-            )}`,
+            message: "Scheduled time must be in the future",
           })
         }
-        // update the resource's scheduled field
-        const updatedPage = await updatePageById(
-          {
-            id: pageId,
+        const by = await db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+
+        const updatedPage = await db.transaction().execute(async (tx) => {
+          // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
+          const resource = await getPageById(tx, { resourceId: pageId, siteId })
+          if (!resource) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Resource not found",
+            })
+          }
+
+          const scheduledJob = await tx
+            .selectFrom("ScheduledJobs")
+            .where("resourceId", "=", resource.id)
+            .select("ScheduledJobs.scheduledAt")
+            .executeTakeFirst()
+
+          if (scheduledJob) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `Page is already scheduled to be published at ${format(
+                scheduledJob.scheduledAt,
+                "yyyy-MM-dd HH:mm",
+              )}`,
+            })
+          }
+
+          const jobsToInsert = [
+            {
+              resourceId: String(pageId),
+              type: "PublishResource" as const,
+              scheduledAt,
+              scheduledBy: by.id,
+            },
+            // NOTE: Insert an identical job into our db so that we ingest the document
+            // and push it to our search provider.
+            // This is required so that our search results will show this page at runtime
+            // TODO: handle de-duplication between the ingested document and the
+            // page at runtime - this is because searchsg will ingest this pdf as a result
+            // of this job but also will crawl the site and see the newly updated page
+            ...(shouldIngestDocument
+              ? [
+                  {
+                    resourceId: String(pageId),
+                    type: "PushDocument" as const,
+                    scheduledAt,
+                    scheduledBy: by.id,
+                  },
+                ]
+              : []),
+          ]
+
+          const successfulJob = await tx
+            .insertInto("ScheduledJobs")
+            .values(jobsToInsert)
+            .executeTakeFirst()
+
+          // verify that the update was successful
+          if (!successfulJob) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to schedule page",
+            })
+          }
+          await logResourceEvent(tx, {
             siteId,
-          },
-          tx,
-        )
-
-        await db
-          .insertInto("ScheduledJobs")
-          .values({
-            resourceId: String(pageId),
-            type: "PublishResource",
-            scheduledAt,
+            by,
+            delta: { before: resource, after: resource },
+            eventType: AuditLogEvent.SchedulePublish,
           })
-          .executeTakeFirst()
 
-        // verify that the update was successful
-        if (!updatedPage) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to schedule page",
-          })
-        }
-        await logResourceEvent(tx, {
-          siteId,
-          by,
-          delta: { before: resource, after: updatedPage },
-          eventType: AuditLogEvent.SchedulePublish,
+          return resource
         })
-        return updatedPage
-      })
-      await sendScheduledPageEmail({
-        resource: updatedPage,
-        scheduledAt,
-        recipientEmail: by.email,
-      })
-    }),
+        await sendScheduledPageEmail({
+          resource: updatedPage,
+          scheduledAt,
+          recipientEmail: by.email,
+        })
+      },
+    ),
   cancelSchedulePage: protectedProcedure
     .input(basePageSchema)
     .mutation(async ({ ctx, input: { siteId, pageId } }) => {
@@ -494,7 +512,7 @@ export const pageRouter = router({
         await logResourceEvent(tx, {
           siteId,
           by,
-          delta: { before: resource, after: updatedPage },
+          delta: { before: resource, after: resource },
           eventType: AuditLogEvent.CancelSchedulePublish,
         })
 

@@ -2,6 +2,7 @@ import { randomUUID } from "crypto"
 import type { z } from "zod"
 import { TRPCError } from "@trpc/server"
 import filenamify from "filenamify"
+import { PdfReader } from "pdfreader"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
@@ -15,6 +16,7 @@ import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
+const pdfReader = new PdfReader({})
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
 const EXTENSION_TO_MIME: Record<string, string> = {
@@ -131,4 +133,23 @@ export const markFileAsDeleted = async ({ key }: { key: string }) => {
     Key: key,
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
   })
+}
+
+// NOTE: Taken as is from egazette codebase
+export const parseFullTextFromPDF = async (pdfBuffer: Uint8Array) => {
+  const data: string[] = await new Promise((resolve, reject) => {
+    const parsedData: string[] = []
+    pdfReader.parseBuffer(Buffer.from(pdfBuffer), (err, item) => {
+      if (err) {
+        reject(err)
+      } else if (!item) {
+        console.warn("end of buffer")
+        resolve(parsedData)
+      } else if (item.text) {
+        parsedData.push(item.text)
+      }
+    })
+  })
+
+  return data.join(" ")
 }
