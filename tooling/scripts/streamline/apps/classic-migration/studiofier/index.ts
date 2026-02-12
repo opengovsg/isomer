@@ -52,7 +52,12 @@ export const prepareSite = async (
   useStagingBranch = false
 ) => {
   // Step 1: Perform a sanity check that the conversion output directory exists
-  const conversionDir = path.join(__dirname, CONVERSION_OUTPUT_DIR, siteName);
+  const conversionDir = path.join(
+    __dirname,
+    "..",
+    CONVERSION_OUTPUT_DIR,
+    siteName
+  );
 
   if (!fs.existsSync(conversionDir)) {
     throw new Error(
@@ -61,16 +66,22 @@ export const prepareSite = async (
   }
 
   // Step 2: Git clone the template repository
-  const cloneDir = path.join(__dirname, "repos");
+  const cloneDir = path.join(__dirname, "..", "repos");
 
   // Create the repos directory if it doesn't exist
   if (!fs.existsSync(cloneDir)) {
-    fs.mkdirSync(cloneDir, { recursive: true });
+    await fs.promises.mkdir(cloneDir, { recursive: true });
+  }
+
+  // Make sure the site directory does not already exist from a previous migration
+  const siteDir = path.join(cloneDir, siteName);
+  if (fs.existsSync(siteDir)) {
+    await fs.promises.rm(siteDir, { recursive: true, force: true });
   }
 
   await new Promise<void>((resolve, reject) => {
     exec(
-      `git clone https://oauth2:${process.env.GITHUB_TOKEN}@github.com/isomerpages/isomer-next-base-template.git ${cloneDir}/${siteName}`,
+      `git clone https://oauth2:${process.env.GITHUB_TOKEN}@github.com/isomerpages/isomer-next-base-template.git ${siteDir}`,
       (err) => {
         if (err) {
           reject(err);
@@ -95,6 +106,7 @@ export const prepareSite = async (
   const buffer = Buffer.from(arrayBuffer);
   const tarballPath = path.join(__dirname, `${siteName}-archive.tar.gz`);
   const tempDir = path.join(__dirname, "temp");
+  await fs.promises.mkdir(tempDir, { recursive: true });
   await fs.promises.writeFile(tarballPath, buffer);
   await new Promise<void>((resolve, reject) => {
     exec(
@@ -277,7 +289,7 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
     }
   }
 
-  const schemaDir = path.join(__dirname, "repos", siteName, "schema");
+  const schemaDir = path.join(__dirname, "..", "repos", siteName, "schema");
   await processDirectory(schemaDir, null);
 
   await importSiteConfig(client, siteId, siteName);
@@ -365,6 +377,7 @@ async function importSiteConfig(
   console.log("Importing site config");
   const siteConfigPath = path.join(
     __dirname,
+    "..",
     "repos",
     siteName,
     "data",
@@ -396,6 +409,7 @@ async function importNavbar(client: Client, siteId: number, siteName: string) {
   console.log("Importing navbar");
   const navbarPath = path.join(
     __dirname,
+    "..",
     "repos",
     siteName,
     "data",
@@ -413,6 +427,7 @@ async function importFooter(client: Client, siteId: number, siteName: string) {
   console.log("Importing footer");
   const footerPath = path.join(
     __dirname,
+    "..",
     "repos",
     siteName,
     "data",
@@ -480,7 +495,7 @@ async function studioifySite(client: Client, siteId: number, siteName: string) {
     .map(([original, newAsset]) => `${original},${newAsset}`)
     .join("\n");
   fs.writeFileSync(
-    path.join(__dirname, `asset-mappings-${siteName}.csv`),
+    path.join(__dirname, "..", `asset-mappings-${siteName}.csv`),
     assetsCsvHeaders + assetsCsv,
     "utf-8"
   );
@@ -488,11 +503,11 @@ async function studioifySite(client: Client, siteId: number, siteName: string) {
 
 function getAssetsMapping(siteId: number, siteName: string) {
   // Get the list of images and files in the site
-  const siteDir = path.join(__dirname, "repos", siteName);
+  const siteDir = path.join(__dirname, "..", "repos", siteName);
   const publicDir = path.join(siteDir, "public");
   const imagesDir = path.join(publicDir, "images");
   const filesDir = path.join(publicDir, "files");
-  const assetsDir = path.join(__dirname, "assets");
+  const assetsDir = path.join(__dirname, "..", "assets");
 
   const images = getFiles(imagesDir).map((file) =>
     path.relative(publicDir, file)
@@ -727,8 +742,9 @@ function getIndexPageContent(title: string) {
 const s3Sync = async (siteId: number) => {
   await new Promise<void>((resolve, reject) => {
     exec(
-      `aws s3 sync --only-show-errors ${path.join(
+      `AWS_PROFILE=${process.env.AWS_NEXT_PROFILE} aws s3 sync --only-show-errors ${path.join(
         __dirname,
+        "..",
         "assets",
         String(siteId)
       )}/ ${process.env.S3_BUCKET_URI}/${siteId}/`,

@@ -69,5 +69,5 @@ export const updateSitesProductionCSV = async (
   const finalRows = [...updatedRows, ...rowsToAdd];
 
   const csv = Papa.unparse(finalRows);
-  await fs.promises.writeFile(csvFilePath, csv);
+  await fs.promises.writeFile(csvFilePath, `${csv}\n`);
 };
