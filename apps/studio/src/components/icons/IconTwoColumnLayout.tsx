@@ -11,7 +11,7 @@ export const IconTwoColumnLayout = chakra(
         xmlns="http://www.w3.org/2000/svg"
         {...props}
       >
-        <g clip-path="url(#clip0_18559_60735)">
+        <g clipPath="url(#clip0_18559_60735)">
           <rect x="1" y="1" width="103" height="62" rx="4" fill="white" />
           <rect x="1" y="1" width="103" height="62" rx="4" fill="white" />
           <rect x="31" y="7" width="30" height="20" rx="2" fill="#EBEBEB" />
