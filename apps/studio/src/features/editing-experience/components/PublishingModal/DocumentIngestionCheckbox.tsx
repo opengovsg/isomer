@@ -8,7 +8,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 
 const linkSchema = z.object({
-  linkId: z.string(),
+  linkId: z.string().optional(),
   siteId: z.coerce.number().min(1),
 })
 
@@ -17,9 +17,12 @@ type DocumentIngestionCheckboxProps =
 
 const DocumentIngestionCheckboxContent = forwardRef<
   HTMLInputElement,
-  DocumentIngestionCheckboxProps
+  DocumentIngestionCheckboxProps & {
+    linkId: string
+    siteId: number
+  }
 >((props, ref) => {
-  const { linkId, siteId } = useQueryParse(linkSchema)
+  const { linkId, siteId } = props
   const [{ url }] = trpc.resource.getAssetUrlOfResource.useSuspenseQuery({
     resourceId: linkId.toString(),
     siteId,
@@ -42,9 +45,17 @@ export const DocumentIngestionCheckbox = forwardRef<
   HTMLInputElement,
   DocumentIngestionCheckboxProps
 >((props, ref) => {
+  const { linkId, siteId } = useQueryParse(linkSchema)
   return (
     <Suspense fallback={null}>
-      <DocumentIngestionCheckboxContent ref={ref} {...props} />
+      {linkId && (
+        <DocumentIngestionCheckboxContent
+          ref={ref}
+          {...props}
+          linkId={linkId}
+          siteId={siteId}
+        />
+      )}
     </Suspense>
   )
 })

@@ -2,17 +2,11 @@ import { z } from "zod"
 
 import { registerPgbossJob } from "@isomer/pgboss"
 
-import type { Resource } from "~/server/modules/database"
 import { env } from "~/env.mjs"
-import { sendFailedPublishEmail } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
 import { getBlob } from "~/lib/s3"
 import { parseFullTextFromPDF } from "~/server/modules/asset/asset.service"
 import { db } from "~/server/modules/database"
-import {
-  defaultResourceSelect,
-  publishPageResource,
-} from "~/server/modules/resource/resource.service"
 
 const JOB_NAME = "schedule-push-document"
 const CRON_SCHEDULE = "* * * * *" // every minute
@@ -41,9 +35,7 @@ export const schedulePushDocumentJob = async () => {
     JOB_NAME,
     CRON_SCHEDULE,
     schedulePushDocumentJobHandler,
-    // do NOT retry failed jobs, since we send failure emails on a per-resource basis
-    // use singletonKey to ensure only one instance of the job runs at a time
-    { retryLimit: 0, singletonKey: JOB_NAME },
+    { retryLimit: 3, singletonKey: JOB_NAME },
     env.SCHEDULED_PUBLISHING_HEARTBEAT_URL
       ? { heartbeatURL: env.SCHEDULED_PUBLISHING_HEARTBEAT_URL }
       : undefined,
@@ -59,12 +51,17 @@ const schedulePushDocumentJobHandler = async () => {
   const scheduledAtCutoff = new Date()
 
   // NOTE: get all documents that are scheduled to publish
+  // Use distinctOn to get only the latest version per resource
   const scheduledResources = await db
     .selectFrom("ScheduledJobs")
     .innerJoin("Resource", "Resource.id", "ScheduledJobs.resourceId")
-    .innerJoin("Blob", "Blob.id", "Resource.draftBlobId")
-    .where("scheduledAt", ">", scheduledAtCutoff)
+    .innerJoin("Version", "Version.resourceId", "Resource.id")
+    .innerJoin("Blob", "Blob.id", "Version.blobId")
+    .where("scheduledAt", "<=", scheduledAtCutoff)
     .where("ScheduledJobs.type", "=", "PushDocument")
+    .distinctOn("Resource.id")
+    .orderBy("Resource.id")
+    .orderBy("Version.id", "desc")
     .select([
       "Blob.content",
       "Resource.title",
@@ -76,37 +73,48 @@ const schedulePushDocumentJobHandler = async () => {
 
   const documentPromises = scheduledResources.map(
     async ({ scheduledAt, resourceId, title, parentId, content }) => {
-      const parsed = pushDocumentContentSchema.safeParse(content)
-      if (!parsed.success) {
-        logger.error({ content }, "Invalid content structure for push document")
+      try {
+        const parsed = pushDocumentContentSchema.safeParse(content)
+        if (!parsed.success) {
+          logger.error(
+            { content, resourceId },
+            "Invalid content structure for push document",
+          )
+          return null
+        }
+
+        const url = parsed.data.page.ref
+
+        const { parentTitle } = await db
+          .selectFrom("Resource")
+          .where("id", "=", parentId)
+          .select(["title as parentTitle"])
+          .executeTakeFirstOrThrow()
+
+        const blob = await getBlob(
+          env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+          url.substring(1),
+        )
+
+        return {
+          // NOTE: the document id is what they (searchsg) uses to
+          // uniquely identify a document
+          // so this should be indicative of that same pdf
+          // ie, if a user deletes and re-uploads a slightly different file,
+          // we should NOT show 2 search results
+          documentId: generateDocumentId(url, String(resourceId)),
+          content: await parseFullTextFromPDF(blob),
+          title,
+          url: `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${url}`,
+          contentType: CONTENT_TYPES.Informational,
+          date: scheduledAt,
+          // NOTE: This is the `subcategory`
+          customFilter1: [parsed.data.page.category],
+          categories: [parentTitle],
+        }
+      } catch (error) {
+        logger.error({ error, resourceId }, "Failed to process document")
         return null
-      }
-
-      const url = parsed.data.page.ref
-
-      const { parentTitle } = await db
-        .selectFrom("Resource")
-        .where("id", "=", parentId)
-        .select(["title as parentTitle"])
-        .executeTakeFirstOrThrow()
-
-      const blob = await getBlob(env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME, url) // Input blob only exists on dev
-
-      return {
-        // NOTE: the document id is what they (searchsg) uses to
-        // uniquely identify a document
-        // so this should be indicative of that same pdf
-        // ie, if a user deletes and re-uploads a slightly different file,
-        // we should NOT show 2 search results
-        documentId: generateDocumentId(url, resourceId),
-        content: await parseFullTextFromPDF(blob),
-        title,
-        url,
-        contentType: CONTENT_TYPES.Informational,
-        date: scheduledAt,
-        // NOTE: This is the `subcategory`
-        customFilter1: [parsed.data.page.category],
-        categories: [parentTitle],
       }
     },
   )
@@ -117,106 +125,7 @@ const schedulePushDocumentJobHandler = async () => {
   )
 
   await pushDocumentsForIngestion(documents)
-}
-
-type ResourceWithUser = Omit<Resource, "scheduledBy"> & {
-  scheduledBy: string
-  email: string | null
-  userDeletedAt: Date | null
-}
-
-export const publishScheduledResources = async (
-  enableEmailsForScheduledPublishes: boolean,
-  scheduledAtCutoff: Date,
-) => {
-  // A mapping from siteId to array of resourceIds, to determine which sites need to be published after their resources have been published
-  const siteResourcesMap: Record<string, ResourceWithUser[]> = {}
-  // Fetch all resources that are scheduled to be published at or before the current time, along with the user who scheduled them
-  const jobsWithUser = await db
-    .selectFrom("ScheduledJobs")
-    .leftJoin("User as u", "scheduledBy", "u.id")
-    .where("scheduledAt", "<=", scheduledAtCutoff)
-    .where("ScheduledJobs.type", "=", "PublishResource")
-    .select([
-      "u.email as email",
-      "u.deletedAt as userDeletedAt",
-      "resourceId",
-      "ScheduledJobs.id",
-      "scheduledBy",
-    ])
-    .execute()
-
-  // Reset the scheduledAt and scheduledBy fields for all resources that are being published
   await resetScheduledAtForPublishedResources(scheduledAtCutoff)
-
-  for (const job of jobsWithUser) {
-    const { resourceId, scheduledBy } = job
-    if (!scheduledBy) {
-      logger.error(
-        `Resource ${resourceId} is missing user information, skipping publish`,
-      )
-      continue
-    }
-
-    const resource = await db
-      .selectFrom("Resource")
-      .where("id", "=", resourceId)
-      .select(defaultResourceSelect)
-      .executeTakeFirst()
-
-    if (!resource) {
-      logger.error(`Unable to find resource with id: ${resourceId}`)
-      continue
-    }
-
-    try {
-      // publish the resources WITHOUT publishing the site yet
-      await publishPageResource({
-        logger,
-        resourceId,
-        siteId: resource.siteId,
-        userId: scheduledBy,
-      })
-
-      logger.info(`Successfully published page for resource: ${resourceId}`)
-      // Group resources by siteId for site publishing later
-      const siteId = resource.siteId
-      siteResourcesMap[siteId] = siteResourcesMap[siteId] ?? []
-      siteResourcesMap[siteId].push({
-        ...resource,
-        ...job,
-      })
-    } catch (error) {
-      logger.error(
-        { error },
-        `Failed to publish page for resource: ${resourceId}`,
-      )
-      if (job.userDeletedAt || !job.email) {
-        logger.warn(
-          `Resource ${resourceId} is missing user email information or deleted, cannot send failed publish email`,
-        )
-        continue
-      }
-      if (enableEmailsForScheduledPublishes) {
-        try {
-          await sendFailedPublishEmail({
-            recipientEmail: job.email,
-            isScheduled: true,
-            resource,
-          })
-          logger.warn(
-            `Sent failed publish email to ${job.email} for resource: ${resourceId}`,
-          )
-        } catch (emailError) {
-          logger.error(
-            { error: emailError },
-            `Failed to send failed publish email to ${job.email} for resource: ${resourceId}`,
-          )
-        }
-      }
-    }
-  }
-  return siteResourcesMap
 }
 
 /**
@@ -298,7 +207,8 @@ const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
 
   if (!response.ok) {
     const errorText = await response.text()
-    logger.error(
+    console.log(errorText)
+    console.error(
       { status: response.status, error: errorText },
       "Failed to push documents for ingestion",
     )
