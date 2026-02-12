@@ -178,6 +178,7 @@ export const pageRouter = router({
       const job = await db
         .selectFrom("ScheduledJobs")
         .where("resourceId", "=", String(pageId))
+        .where("type", "=", "PublishResource")
         .selectAll()
         .executeTakeFirst()
 
