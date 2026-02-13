@@ -4801,3 +4801,41 @@ export const DynamicComponentListLoading: Story = {
     ],
   },
 }
+
+export const AudioEmbedStory: Story = {
+  parameters: {
+    // Delay the Chromatic snapshot so iframes have time to load and don’t appear as white blocks.
+    chromatic: {
+      ...withChromaticModes(["mobile", "tablet", "desktop"]),
+      delay: 5000,
+    },
+  },
+  args: {
+    layout: "content",
+    site: generateSiteConfig({}),
+    page: {
+      permalink: "/content",
+      title: "Content page",
+      lastModified: "2024-05-02T14:12:57.160Z",
+      contentPageHeader: {
+        showThumbnail: false,
+        summary:
+          "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",
+        buttonLabel: "Submit a proposal",
+        buttonUrl: "/submit-proposal",
+      },
+    },
+    content: [
+      {
+        type: "audio",
+        title: "Spotify show embed",
+        url: "https://open.spotify.com/embed/show/66PYiIthr1KqQhJ82XH4DN",
+      },
+      {
+        type: "audio",
+        title: "Apple Podcast show embed",
+        url: "https://embed.podcasts.apple.com/us/podcast/biblioasia-podcast/id1688142751",
+      },
+    ],
+  },
+}

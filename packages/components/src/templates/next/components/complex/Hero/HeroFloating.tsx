@@ -58,6 +58,7 @@ export const HeroFloating = ({
           width="100%"
           className="aspect-[3/2] w-full object-cover object-center lg:w-[66.67%]"
           lazyLoading={false}
+          fetchPriority="high"
         />
       </div>
       {/* Floating container */}

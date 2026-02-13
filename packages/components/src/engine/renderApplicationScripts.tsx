@@ -1,6 +1,5 @@
 import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 import { AskgovWidget } from "../templates/next/components/internal/Askgov"
-import { FontPreload } from "../templates/next/components/internal/FontPreload"
 import {
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
@@ -24,8 +23,6 @@ export const RenderApplicationScripts = ({
 }: RenderApplicationScriptsProps) => {
   return (
     <>
-      <FontPreload />
-
       {/* NOTE: we load in wogaa regardless of whether the site is  */}
       {/* a government site as wogaa still requires the agency to register their site */}
       {/* and wogaa is still gated behind techpass login. */}
