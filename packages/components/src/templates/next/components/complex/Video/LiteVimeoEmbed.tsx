@@ -84,7 +84,7 @@ export const LiteVimeoEmbed = ({
           className={IFRAME_CLASSNAME}
           src={srcWithAutoplay()}
           title={title || "Video player"}
-          allow={`${IFRAME_ALLOW}; autoplay`} // autoplay needed to allow Youtube to autoplay
+          allow={`${IFRAME_ALLOW}; autoplay`} // autoplay needed to allow Vimeo to autoplay
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
         />
