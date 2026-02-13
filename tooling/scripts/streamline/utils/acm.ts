@@ -84,7 +84,10 @@ export const getACMCertificateValidationRecords = async (domain: string) => {
     DomainName: domain,
     ValidationMethod: "DNS",
     KeyAlgorithm: "RSA_2048",
-    IdempotencyToken: domain.replace(/\./g, "_").replace(/-/g, "_"),
+    IdempotencyToken: domain
+      .replace(/\./g, "_")
+      .replace(/-/g, "_")
+      .slice(0, 32),
     Options: {
       CertificateTransparencyLoggingPreference: "ENABLED",
       Export: "DISABLED",

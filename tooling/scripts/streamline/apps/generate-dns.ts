@@ -57,11 +57,11 @@ const getReportRow = (row: ReportRow) => {
     row.acmRecordName,
     row.acmRecordValue,
     row.isIndirectionLayerUpdateNeeded
-      ? "No changes needed"
-      : `Update to ${indirectionSlug}.hostedon.isomer.gov.sg`,
+      ? `Update to ${indirectionSlug}.hostedon.isomer.gov.sg`
+      : "No changes needed",
     row.isRedirectionRecordsUpdateNeeded
-      ? "No changes needed"
-      : "Add 2 A records pointing to 18.138.108.8 and 18.139.47.66",
+      ? "Add 2 A records pointing to 18.138.108.8 and 18.139.47.66"
+      : "No changes needed",
   ];
 };
 
@@ -71,7 +71,7 @@ export const generateDnsRecords = async () => {
   const cloudfrontDistributions = await getAllCloudFrontDistributions();
 
   const client = new Client({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,
   });
 
   const output: ReportRow[] = [];
@@ -217,7 +217,6 @@ export const generateDnsRecords = async () => {
   const outputPath = path.join(
     __dirname,
     "..",
-    "output",
     `dns-records-${Date.now()}.xlsx`
   );
   await fs.promises.writeFile(outputPath, finalBook);
