@@ -38,10 +38,6 @@ FROM base AS builder
 RUN apk update
 RUN apk add --no-cache libc6-compat bash curl unzip
 
-# Install glibc via community package
-# needed for bunx to work on Alpine
-RUN apk add --no-cache curl bash gcompat
-
 # Install bun
 RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
 ENV BUN_INSTALL="/root/.bun"
@@ -53,8 +49,8 @@ WORKDIR /app
 RUN bun add -g turbo@^2
 COPY . .
 
-RUN bun ci
-RUN bunx turbo run build --filter=isomer-studio...
+RUN bun ci --ignore-scripts
+RUN turbo run build --filter=isomer-studio...
 
 FROM base AS runner
 WORKDIR /app
