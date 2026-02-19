@@ -1,10 +1,12 @@
-import { useRef, useState } from "react"
-import { useEventListener, useScript, useTimeout } from "usehooks-ts"
+import { useEffect, useState } from "react"
+import { useScript, useTimeout } from "usehooks-ts"
 
 interface UseInteractionScriptLoaderOptions {
   src: string
   timeout?: number
 }
+
+const hasIdleCallback = typeof requestIdleCallback !== "undefined"
 
 // TBT flags any script blocking the main thread for >50ms.
 // Large third-party widgets (Vica ~800kb, AskGov ~250kb) exceed this,
@@ -14,22 +16,48 @@ export const useInteractionScriptLoader = ({
   src,
   timeout = 3000, // 3 seconds from manual testing
 }: UseInteractionScriptLoaderOptions) => {
-  const documentRef = useRef<Document | null>(
-    typeof document !== "undefined" ? document : null,
-  )
   const [shouldLoad, setShouldLoad] = useState(false)
 
-  const triggerLoad = () => setShouldLoad(true)
+  useEffect(() => {
+    if (shouldLoad) return
 
-  // Load script on user interactions (scroll, click, touchstart, mousemove, keydown)
-  useEventListener("scroll", triggerLoad, documentRef, { passive: true })
-  useEventListener("click", triggerLoad, documentRef) // as we might need to call preventDefault
-  useEventListener("touchstart", triggerLoad, documentRef, { passive: true })
-  useEventListener("mousemove", triggerLoad, documentRef, { passive: true })
-  useEventListener("keydown", triggerLoad, documentRef, { passive: true })
+    const triggerLoad = () => setShouldLoad(true)
 
-  // Load script after timeout if user doesn't interact
-  useTimeout(triggerLoad, timeout)
+    // Prefer requestIdleCallback when available
+    if (hasIdleCallback) {
+      const id = requestIdleCallback(triggerLoad)
+      return () => cancelIdleCallback(id)
+    }
 
+    // Safari fallback: load on user interaction
+    // NOTE: Safari doesn't support requestIdleCallback
+    // so we default to loading the script on user interactions
+    const events = [
+      "scroll",
+      "click",
+      "touchstart",
+      "mousemove",
+      "keydown",
+    ] as const
+
+    events.forEach((event) => {
+      document.addEventListener(event, triggerLoad, {
+        passive: event !== "click", // click may need preventDefault
+        once: true,
+      })
+    })
+
+    return () => {
+      events.forEach((event) =>
+        document.removeEventListener(event, triggerLoad),
+      )
+    }
+  }, [shouldLoad])
+
+  // Fallback timeout - pass null after load to cancel
+  useTimeout(() => setShouldLoad(true), timeout)
+
+  // We load the script based on the earlier of:
+  // timeout (3s), idle, or user interaction (Safari only)
   useScript(shouldLoad ? src : null)
 }
