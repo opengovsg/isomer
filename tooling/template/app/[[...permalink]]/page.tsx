@@ -11,6 +11,7 @@ import {
   RenderEngine,
   shouldBlockIndexing,
 } from "@opengovsg/isomer-components"
+import ReactDOM from "react-dom"
 
 export const dynamic = "force-static"
 
@@ -112,10 +113,16 @@ export const generateMetadata = async (
   return getMetadata(schema)
 }
 
+const NEXT_HOSTED_ASSETS_URL =
+  process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT === "production"
+    ? "https://isomer-user-content.by.gov.sg"
+    : "https://isomer-user-content-stg.by.gov.sg"
+
 const Page = async (props: DynamicPageProps) => {
   const renderSchema = await getSchema({
     permalink: await getPatchedPermalink(props),
   })
+  ReactDOM.preconnect(NEXT_HOSTED_ASSETS_URL)
 
   return (
     <RenderEngine
