@@ -40,6 +40,7 @@ RUN apk add --no-cache libc6-compat bash curl unzip
 
 # Install bun (pinned to match packageManager in package.json)
 RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
+ENV BUN_INSTALL="/root/.bun"
 ENV PATH="/root/.bun/bin:${PATH}"
 
 # Set working directory
@@ -48,8 +49,7 @@ WORKDIR /app
 RUN bun add -g turbo@^2
 COPY . .
 
-# --ignore-scripts skips root postinstall (lint:ws) which needs bunx in PATH
-RUN bun ci --ignore-scripts
+RUN bun ci
 RUN bunx turbo run build --filter=isomer-studio...
 
 FROM base AS runner
