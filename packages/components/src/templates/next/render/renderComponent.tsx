@@ -5,6 +5,7 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { Accordion } from "../components/complex/Accordion"
+import { Audio } from "../components/complex/Audio"
 import { Blockquote } from "../components/complex/Blockquote"
 import { Callout } from "../components/complex/Callout"
 import { ChildrenPages } from "../components/complex/ChildrenPages"
@@ -85,6 +86,8 @@ export const renderComponent = ({
           shouldStripContentHtmlTags
         />
       )
+    case "audio":
+      return <Audio key={elementKey} {...component} {...rest} />
     case "video":
       return <Video key={elementKey} {...component} {...rest} />
     case "dynamicdatabanner":

@@ -48,6 +48,9 @@ const ContentSecurityPolicy = `
     https://www.facebook.com
     https://maps.gov.sg
     https://form.gov.sg
+    https://open.spotify.com
+    https://embed-standalone.spotify.com
+    https://embed.podcasts.apple.com
     ;
   object-src 'none';
   script-src
@@ -57,6 +60,9 @@ const ContentSecurityPolicy = `
     https://app.intercom.io
     https://widget.intercom.io
     https://js.intercomcdn.com
+    https://embed-cdn.spotifycdn.com
+    https://open.spotify.com
+    https://js-cdn.music.apple.com
     ;
   style-src
     'self'
@@ -68,6 +74,8 @@ const ContentSecurityPolicy = `
     https://downloads.intercomcdn.com
     https://downloads.intercomcdn.eu
     https://downloads.au.intercomcdn.com
+    https://episodes.captivate.fm
+    https://podcasts.captivate.fm
     ;
   connect-src
     'self'
@@ -106,6 +114,11 @@ const ContentSecurityPolicy = `
     https://uploads.intercomusercontent.com
     https://data.gov.sg
     https://*.data.gov.sg
+    https://vimeo.com
+    https://*.spotify.com
+    https://*.wg.spotify.com
+    https://*.podcasts.apple.com
+    https://*.xp.apple.com
     ;
   worker-src
     'self'
