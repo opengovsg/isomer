@@ -82,7 +82,7 @@ else
 
   echo "Installing dependencies..."
   start_time=$(date +%s)
-  bun install --frozen-lockfile
+  bun ci
   calculate_duration $start_time
 
   echo "Caching node_modules..."
@@ -99,7 +99,7 @@ echo "Fetching from database..."
 start_time=$(date +%s)
 cd tooling/build/scripts/publishing
 echo $(pwd)
-bun install --frozen-lockfile
+bun ci
 bun run start
 calculate_duration $start_time
 
@@ -146,7 +146,7 @@ else
   echo "Installing dependencies..."
   cd tooling/template
   start_time=$(date +%s)
-  bun install --frozen-lockfile
+  bun ci
   calculate_duration $start_time
 
   echo "Prebuilding..."

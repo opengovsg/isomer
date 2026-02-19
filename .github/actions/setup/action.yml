@@ -16,4 +16,4 @@ runs:
       run: bun add -g turbo
 
     - shell: bash
-      run: bun install --frozen-lockfile
+      run: bun ci

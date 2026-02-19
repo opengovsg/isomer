@@ -56,7 +56,7 @@ bun add sherif@1.6.1
 # Install dependencies
 echo "Installing dependencies..."
 start_time=$(date +%s)
-bun install --frozen-lockfile
+bun ci
 echo "Dependencies installed"
 calculate_duration $start_time
 

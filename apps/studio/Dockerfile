@@ -68,7 +68,7 @@ WORKDIR /app
 # a bun.lock that doesn't match the pruned workspace (see https://github.com/vercel/turborepo/issues/10658).
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/bun.lock ./bun.lock
-RUN bun install --frozen-lockfile
+RUN bun ci
 
 # Build the project
 COPY --from=builder /app/out/full/ .
