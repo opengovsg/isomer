@@ -1911,7 +1911,6 @@ describe("site.router", async () => {
       expect(result).toBeUndefined() // does not return anything
     })
   })
-
 })
 
 const assertAuditLog = async (sessionUserId?: string) => {
