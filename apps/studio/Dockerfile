@@ -38,8 +38,10 @@ FROM base AS builder
 RUN apk update
 RUN apk add --no-cache libc6-compat bash curl unzip
 
-# Install bun (pinned to match packageManager in package.json)
-RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
+# Install bun and symlink into /usr/local/bin so child shells (e.g. postinstall scripts) can find it
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5" \
+    && ln -s /root/.bun/bin/bun /usr/local/bin/bun \
+    && ln -s /root/.bun/bin/bunx /usr/local/bin/bunx
 ENV BUN_INSTALL="/root/.bun"
 ENV PATH="/root/.bun/bin:${PATH}"
 
