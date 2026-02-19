@@ -48,7 +48,8 @@ WORKDIR /app
 RUN bun add -g turbo@^2
 COPY . .
 
-RUN bun ci
+# --ignore-scripts skips root postinstall (lint:ws) which needs bunx in PATH
+RUN bun ci --ignore-scripts
 RUN bunx turbo run build --filter=isomer-studio...
 
 FROM base AS runner
