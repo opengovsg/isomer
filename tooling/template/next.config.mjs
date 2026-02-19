@@ -6,6 +6,9 @@ const nextConfig = {
   reactStrictMode: true,
   indexExtensions: ["index.tsx", "index.ts", "index.jsx", "index.js"],
   trailingSlash: true,
+  experimental: {
+    inlineCss: true,
+  },
   turbo: {
     moduleIdStrategy: "deterministic",
   },
