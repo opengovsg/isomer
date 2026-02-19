@@ -34,6 +34,6 @@ export const Vimeo: Story = {
 export const FacebookVideo: Story = {
   args: {
     title: "CLC Lecture: Bringing Town Planning to the Future",
-    url: "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2FCLCsg%2Fvideos%2F443087086248211%2F&show_text=0&width=560",
+    url: "https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Fworldcitiessummit%2Fvideos%2F696071555825049%2F&show_text=false&width=560&t=0",
   },
 }
