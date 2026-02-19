@@ -16,7 +16,6 @@
  *        npx tsx scripts/rebuildAllCodebuildProjects.ts --start-at 42
  *        npx tsx scripts/rebuildAllCodebuildProjects.ts --interval 10 --region ap-southeast-1
  */
-
 import { appendFileSync, mkdirSync } from "fs"
 import { dirname, join } from "path"
 import { fileURLToPath } from "url"
@@ -44,10 +43,7 @@ function parseArgs() {
   return { region, dryRun, startAt, interval }
 }
 
-function logLine(
-  message: string,
-  logFilePath: string | null,
-): void {
+function logLine(message: string, logFilePath: string | null): void {
   const line = `${message}\n`
   process.stdout.write(line)
   if (logFilePath) {
@@ -59,16 +55,12 @@ function formatTimestamp(): string {
   return new Date().toISOString()
 }
 
-async function listAllProjects(
-  client: CodeBuildClient,
-): Promise<string[]> {
+async function listAllProjects(client: CodeBuildClient): Promise<string[]> {
   const projects: string[] = []
   let nextToken: string | undefined
 
   do {
-    const response = await client.send(
-      new ListProjectsCommand({ nextToken }),
-    )
+    const response = await client.send(new ListProjectsCommand({ nextToken }))
     if (response.projects) {
       projects.push(...response.projects)
     }
@@ -104,7 +96,9 @@ async function main(): Promise<void> {
   const projectsToProcess = allProjects.slice(startAt)
 
   if (dryRun) {
-    console.log(`Found ${allProjects.length} projects (alphabetically sorted):\n`)
+    console.log(
+      `Found ${allProjects.length} projects (alphabetically sorted):\n`,
+    )
     for (let i = 0; i < allProjects.length; i++) {
       console.log(`  [${i}] ${allProjects[i]}`)
     }
