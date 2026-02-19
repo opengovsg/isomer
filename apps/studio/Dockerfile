@@ -38,10 +38,12 @@ FROM base AS builder
 RUN apk update
 RUN apk add --no-cache libc6-compat bash curl unzip
 
-# Install bun and symlink into /usr/local/bin so child shells (e.g. postinstall scripts) can find it
-RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5" \
-    && ln -s /root/.bun/bin/bun /usr/local/bin/bun \
-    && ln -s /root/.bun/bin/bunx /usr/local/bin/bunx
+# Install glibc via community package
+# needed for bunx to work on Alpine
+RUN apk add --no-cache curl bash gcompat
+
+# Install bun
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
 ENV BUN_INSTALL="/root/.bun"
 ENV PATH="/root/.bun/bin:${PATH}"
 
