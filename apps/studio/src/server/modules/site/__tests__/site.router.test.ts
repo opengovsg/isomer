@@ -1911,67 +1911,6 @@ describe("site.router", async () => {
       expect(result).toBeUndefined() // does not return anything
     })
   })
-
-  describe("publishAll", () => {
-    it("should throw 401 if user is not logged in", async () => {
-      // Arrange
-      const unauthedSession = applySession()
-      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
-
-      // Act
-      const result = unauthedCaller.publishAll()
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "UNAUTHORIZED" }),
-      )
-    })
-
-    it("should throw 403 if user is not an Isomer Core Admin", async () => {
-      // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
-
-      // Act
-      const result = caller.publishAll()
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        }),
-      )
-    })
-
-    it("should publish a site successfully if user is an Isomer Core Admin", async () => {
-      // Arrange
-      await setupSite()
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
-
-      // Act
-      const result = await caller.publishAll()
-
-      // Assert
-      expect(result).toBeDefined()
-    })
-  })
 })
 
 const assertAuditLog = async (sessionUserId?: string) => {

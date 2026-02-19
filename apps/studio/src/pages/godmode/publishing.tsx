@@ -7,7 +7,6 @@ import {
   BreadcrumbLink,
   Button,
   Flex,
-  HStack,
   Table,
   Tbody,
   Td,
@@ -62,26 +61,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
       },
     })
 
-  const { mutate: publishAllSite, isPending: isPublishingAllSite } =
-    trpc.site.publishAll.useMutation({
-      onSuccess: ({ siteCount }) => {
-        toast({
-          title: `Starting to publish ${siteCount} sites in the background...`,
-          status: "success",
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-      onError: (error) => {
-        toast({
-          title: "Failed to publish site",
-          description: error.message,
-          status: "error",
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-    })
-
-  const isLoading = isPublishingOneSite || isPublishingAllSite
+  const isLoading = isPublishingOneSite
 
   return (
     <Flex flexDir="column" py="2rem" maxW="57rem" mx="auto" width="100%">
@@ -109,23 +89,13 @@ const GodModePublishingPage: NextPageWithLayout = () => {
         <Text>
           The latest published version of the site will be deployed to
           production.
-          <br />
-          Mass publishing is used when we have to publish to all the live sites
-          e.g. features/fixes for Template library.
         </Text>
       </Box>
 
       <Box mt={8} bg="white" borderRadius="md" p={4}>
-        <HStack justify="space-between" mb={4}>
-          <Text fontWeight="bold">Sites</Text>
-          <Button
-            colorScheme="blue"
-            onClick={() => publishAllSite()}
-            isLoading={isLoading}
-          >
-            Publish All
-          </Button>
-        </HStack>
+        <Text fontWeight="bold" mb={4}>
+          Sites
+        </Text>
         <Table variant="simple">
           <Thead>
             <Tr>
