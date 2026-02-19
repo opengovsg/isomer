@@ -64,7 +64,10 @@ ENV PATH="/root/.bun/bin:${PATH}"
 WORKDIR /app
 
 # First install the dependencies (as they change less often)
+# Use pruned package.json tree from turbo, but the original lockfile: turbo prune can produce
+# a bun.lock that doesn't match the pruned workspace (see https://github.com/vercel/turborepo/issues/10658).
 COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/bun.lock ./bun.lock
 RUN bun install --frozen-lockfile
 
 # Build the project
