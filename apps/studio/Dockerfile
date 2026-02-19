@@ -48,30 +48,7 @@ WORKDIR /app
 RUN bun add -g turbo@^2
 COPY . .
 
-# Generate a partial monorepo with a pruned lockfile for a target workspace.
-# Assuming "isomer-studio" is the name entered in the project's package.json: { name: "isomer-studio" }
-RUN turbo prune isomer-studio --docker
-
-# Add lockfile and package.json's of isolated subworkspace
-FROM base AS installer
-RUN apk update
-RUN apk add --no-cache libc6-compat bash curl unzip
-
-# Install bun (pinned to match packageManager in package.json)
-RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
-ENV PATH="/root/.bun/bin:${PATH}"
-
-WORKDIR /app
-
-# First install the dependencies (as they change less often)
-# Use pruned package.json tree from turbo, but the original lockfile: turbo prune can produce
-# a bun.lock that doesn't match the pruned workspace (see https://github.com/vercel/turborepo/issues/10658).
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/bun.lock ./bun.lock
 RUN bun ci
-
-# Build the project
-COPY --from=builder /app/out/full/ .
 RUN bunx turbo run build --filter=isomer-studio...
 
 FROM base AS runner
@@ -84,8 +61,8 @@ USER nextjs
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/.next/standalone ./
-COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/.next/static ./apps/studio/.next/static
-COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/public ./apps/studio/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/studio/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/studio/.next/static ./apps/studio/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/studio/public ./apps/studio/public
 
 CMD ["node", "apps/studio/server.js"]
