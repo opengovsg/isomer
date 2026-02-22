@@ -31,15 +31,15 @@ export const RenderApplicationScripts = ({
             ScriptComponent={ScriptComponent}
           />
           <GoogleTagManagerBody siteGtmId={site.siteGtmId} />
-
-          <GoogleTagManagerHeader
-            siteGtmId="GTM-PQ2BGPVQ"
-            ScriptComponent={ScriptComponent}
-            usePartytown={true}
-          />
-          <GoogleTagManagerBody siteGtmId="GTM-PQ2BGPVQ" />
         </>
       )}
+
+      <GoogleTagManagerHeader
+        siteGtmId="GTM-PQ2BGPVQ"
+        ScriptComponent={ScriptComponent}
+        usePartytown={true}
+      />
+      <GoogleTagManagerBody siteGtmId="GTM-PQ2BGPVQ" />
 
       {!!site.isomerMsClarityId && (
         <MicrosoftClarity msClarityId={site.isomerMsClarityId} />
