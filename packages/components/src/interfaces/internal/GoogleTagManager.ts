@@ -6,6 +6,7 @@ interface GoogleTagManagerProps {
 
 export interface GoogleTagManagerHeaderProps extends GoogleTagManagerProps {
   ScriptComponent?: ScriptComponentType
+  usePartytown?: boolean
 }
 
 export type GoogleTagManagerBodyProps = GoogleTagManagerProps

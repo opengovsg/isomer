@@ -3,6 +3,7 @@ import type { GoogleTagManagerHeaderProps } from "~/interfaces"
 export const GoogleTagManagerHeader = ({
   siteGtmId,
   ScriptComponent,
+  usePartytown = false,
 }: GoogleTagManagerHeaderProps) => {
   return (
     <ScriptComponent
@@ -15,6 +16,7 @@ export const GoogleTagManagerHeader = ({
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
         })(window,document,'script','dataLayer','${siteGtmId}');`,
       }}
+      {...(usePartytown ? { type: "text/partytown" } : {})}
     />
   )
 }
