@@ -9,6 +9,9 @@ const nextConfig = {
   turbo: {
     moduleIdStrategy: "deterministic",
   },
+  experimental: {
+    nextScriptWorkers: true,
+  },
 }
 
 export default nextConfig

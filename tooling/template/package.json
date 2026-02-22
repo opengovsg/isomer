@@ -16,8 +16,8 @@
     "partytown": "partytown copylib out/~partytown"
   },
   "dependencies": {
+    "@builder.io/partytown": "^0.10.3",
     "@opengovsg/isomer-components": "*",
-    "@qwik.dev/partytown": "^0.11.2",
     "next": "^15.5.9",
     "postcss": "^8.4.39",
     "postcss-preset-env": "^10.0.8",

@@ -10,7 +10,6 @@ import {
   RenderApplicationHeadScripts,
   RenderApplicationScripts,
 } from "@opengovsg/isomer-components"
-import { Partytown } from "@qwik.dev/partytown/react"
 
 const inter = Inter({
   // while we support other languages, we should only preload the latin subset
@@ -51,7 +50,6 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
           }}
         />
-        <Partytown debug={true} forward={["dataLayer.push", "fbq"]} />
       </head>
       <body className="antialiased">
         {children}
