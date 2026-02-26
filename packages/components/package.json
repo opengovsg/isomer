@@ -67,7 +67,7 @@
     "react-dom": "^18.3.1",
     "rollup": "^4.32.1",
     "rollup-plugin-dts": "^6.2.1",
-    "storybook": "9.1.17",
+    "storybook": "9.1.19",
     "storybook-addon-pseudo-states": "9.1.17",
     "tailwindcss": "^3.4.4",
     "tsc-alias": "^1.8.16",
