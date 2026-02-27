@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss"
 import racPlugin from "tailwindcss-react-aria-components"
-import defaultTheme from "tailwindcss/defaultTheme"
-import plugin from "tailwindcss/plugin"
+import defaultTheme from "tailwindcss/defaultTheme.js"
+import plugin from "tailwindcss/plugin.js"
 
 import { colors } from "./colors"
 import { isomerTypography } from "./typography"
