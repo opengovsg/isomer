@@ -294,6 +294,34 @@ export const Default: Story = {
             ],
           },
           {
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 2,
+            },
+            content: [{ type: "text", text: "Testing headings" }],
+          },
+          {
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 3,
+            },
+            content: [{ type: "text", text: "Testing headings" }],
+          },
+          {
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 4,
+            },
+            content: [{ type: "text", text: "Testing headings" }],
+          },
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Your business must have:" }],
+          },
+          {
             type: "paragraph",
             content: [
               {

@@ -7,28 +7,38 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     ".prose-display-xl": {
       fontWeight: theme("fontWeight.semibold"),
       letterSpacing: "-0.022em",
-      "@apply text-[3rem] xl:text-[4.25rem] leading-[1.2] xl:leading-[1.1]": {},
+      "@apply text-[2.5rem] md:text-[3rem] xl:text-[3.8125rem] leading-[1.2] xl:leading-[1.1]":
+        {},
     },
     ".prose-display-lg": {
       fontWeight: theme("fontWeight.semibold"),
       letterSpacing: "-0.022em",
-      "@apply text-[2.25rem] lg:text-[3rem] leading-[1.2] lg:leading-[1.1]": {},
+      "@apply text-[2rem] md:text-[2.4375rem] lg:text-[3rem] leading-[1.2] lg:leading-[1.1]":
+        {},
     },
     ".prose-display-md": {
       fontWeight: theme("fontWeight.semibold"),
       letterSpacing: "-0.022em",
-      "@apply text-[1.75rem] md:text-[2.25rem] leading-[1.2]": {},
+      "@apply text-[1.75rem] md:text-[2rem] lg:text-[2.4375rem] leading-[1.2]":
+        {},
     },
     ".prose-display-sm": {
       fontWeight: theme("fontWeight.semibold"),
       letterSpacing: "-0.022em",
-      "@apply text-[1.25rem] lg:text-[1.5rem] leading-[1.2]": {},
+      "@apply text-[1.5625rem] md:text-[1.75rem] lg:text-[1.9375rem] leading-[1.2]":
+        {},
+    },
+    ".prose-display-xs": {
+      fontWeight: theme("fontWeight.semibold"),
+      letterSpacing: "-0.022em",
+      "@apply text-[1.375rem] md:text-[1.4375rem] lg:text-[1.5625rem] leading-[1.2]":
+        {},
     },
     // Title
     // Group major sections
     ".prose-title-lg": {
       letterSpacing: "0",
-      "@apply text-[1.1875rem] lg:text-[1.5rem] leading-[1.3]": {},
+      "@apply text-[1.25rem] lg:text-[1.5rem] leading-[1.3]": {},
     },
     ".prose-title-lg-medium": {
       fontWeight: theme("fontWeight.medium"),
@@ -40,7 +50,7 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     },
     ".prose-title-md": {
       letterSpacing: "0",
-      "@apply text-[1.0625rem] lg:text-[1.25rem] leading-[1.3]": {},
+      "@apply text-[1.125rem] lg:text-[1.25rem] leading-[1.3]": {},
     },
     ".prose-title-md-semibold": {
       fontWeight: theme("fontWeight.semibold"),
@@ -54,7 +64,8 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     // Attention to specific part of section
     ".prose-headline-lg": {
       letterSpacing: "0",
-      "@apply text-[1.0625rem] lg:text-[1.125rem] leading-[1.3]": {},
+      fontSize: "1.125rem",
+      lineHeight: "1.3",
     },
     ".prose-headline-lg-semibold": {
       fontWeight: theme("fontWeight.semibold"),
@@ -70,7 +81,8 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     },
     ".prose-headline-base": {
       letterSpacing: "0",
-      "@apply text-[0.9375rem] lg:text-[1rem] leading-[1.4]": {},
+      fontSize: "1rem",
+      lineHeight: "1.4",
     },
     ".prose-headline-base-semibold": {
       fontWeight: theme("fontWeight.semibold"),
