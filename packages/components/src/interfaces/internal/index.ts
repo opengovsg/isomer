@@ -2,6 +2,13 @@ export {
   ArticlePageHeaderSchema,
   type ArticlePageHeaderProps,
 } from "./ArticlePageHeader"
+export {
+  CentralNotificationEntrySchema,
+  CentralNotificationBroadcastSchema,
+  type CentralNotificationEntry,
+  type CentralNotificationBroadcast,
+  type CentralNotificationProps,
+} from "./CentralNotification"
 export type { BaseParagraphProps } from "./BaseParagraph"
 export type { BreadcrumbProps } from "./Breadcrumb"
 export type {

@@ -46,6 +46,16 @@ export function AppNavbar(): JSX.Element {
             priority
           />
           {isUserIsomerAdmin && (
+            <Button
+              variant="clear"
+              size="xs"
+              as={NextLink}
+              href="/central-banner"
+            >
+              Central Banner
+            </Button>
+          )}
+          {isUserIsomerAdmin && (
             <Button variant="clear" size="xs" as={NextLink} href="/godmode">
               👁️ God Mode 👁️
             </Button>
