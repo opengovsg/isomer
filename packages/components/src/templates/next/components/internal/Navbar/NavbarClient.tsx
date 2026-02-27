@@ -34,7 +34,7 @@ const createNavbarStyles = tv({
     utilityItemsHeader: "prose-label-sm-medium text-base-content-strong",
     utilityItem: [
       focusVisibleHighlight(),
-      "prose-label-sm-medium text-base-content-subtle hover:underline",
+      "prose-label-sm-medium inline-block py-1 text-base-content-subtle hover:underline",
     ],
     navbarItems:
       "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-4 pl-6 pr-3 md:px-10",
