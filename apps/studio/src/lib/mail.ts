@@ -33,14 +33,24 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
           error: "Postman API error",
           status: response.status,
           recipient: params.recipient,
+          subject: params.subject,
         })
+        throw new Error(`Postman API error with status ${response.status}`)
       }
+
+      logger.info({
+        event: "email_send_succeeded",
+        status: response.status,
+        recipient: params.recipient,
+        subject: params.subject,
+      })
       return
     } catch (error) {
       logger.error({
         error: "Postman API call failed",
         originalError: error,
         recipient: params.recipient,
+        subject: params.subject,
       })
       throw error
     }
