@@ -35,7 +35,10 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
           recipient: params.recipient,
           subject: params.subject,
         })
-        throw new Error(`Postman API error with status ${response.status}`)
+        throw new PostmanApiStatusError(
+          `Postman API error with status ${response.status}`,
+          response.status,
+        )
       }
 
       logger.info({
@@ -46,6 +49,8 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
       })
       return
     } catch (error) {
+      if (error instanceof PostmanApiStatusError) throw error
+
       logger.error({
         error: "Postman API call failed",
         originalError: error,
@@ -61,4 +66,14 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
     params,
   )
   return
+}
+
+class PostmanApiStatusError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message)
+    this.name = "PostmanApiStatusError"
+  }
 }
