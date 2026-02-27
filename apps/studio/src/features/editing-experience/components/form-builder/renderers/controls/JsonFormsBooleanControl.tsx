@@ -34,7 +34,7 @@ function JsonFormsBooleanControl({
   return (
     <Box>
       <FormControl>
-        <Flex justifyContent="space-between" alignItems="center">
+        <Flex justifyContent="space-between" alignItems="start">
           <FormLabel
             isRequired
             description={description}
