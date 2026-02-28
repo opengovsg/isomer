@@ -12,6 +12,7 @@ export interface GetCollectionItemsProps {
   permalink: string
   sortBy?: CollectionPagePageProps["defaultSortBy"]
   sortDirection?: CollectionPagePageProps["defaultSortDirection"]
+  categories?: AllCardProps["category"][]
   tagCategories?: CollectionPagePageProps["tagCategories"]
 }
 
@@ -20,6 +21,7 @@ export const getCollectionItems = ({
   permalink,
   sortBy,
   sortDirection,
+  categories = [],
   tagCategories,
 }: GetCollectionItemsProps): AllCardProps[] => {
   let currSitemap: IsomerSitemap = site.siteMap
@@ -54,9 +56,11 @@ export const getCollectionItems = ({
   const transformedItems = items
     .filter(
       (item) =>
-        item.layout === "file" ||
-        item.layout === "link" ||
-        item.layout === "article",
+        (item.layout === "file" ||
+          item.layout === "link" ||
+          item.layout === "article") &&
+        (categories.length === 0 ||
+          categories.includes(item.category || CATEGORY_OTHERS)),
     )
     .map((item) => {
       const date =
