@@ -12,8 +12,7 @@ import { mergeRefs } from "~/utils/rac"
 import { buttonStyles } from "./common"
 
 export interface ButtonProps
-  extends AriaButtonProps<"button">,
-    VariantProps<typeof buttonStyles> {
+  extends AriaButtonProps<"button">, VariantProps<typeof buttonStyles> {
   className?: string
 }
 

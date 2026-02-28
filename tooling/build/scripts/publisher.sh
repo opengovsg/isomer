@@ -11,6 +11,14 @@ calculate_duration() {
   echo "Time taken: $duration seconds"
 }
 
+# Install bun (pinned to match packageManager in package.json)
+echo "Installing bun..."
+start_time=$(date +%s)
+curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
+export PATH="$HOME/.bun/bin:$PATH"
+bun --version
+calculate_duration $start_time
+
 # Use the latest release tag unless one was provided in the env var
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   ##### This long command is used to get the latest release tag from the Isomer repository.
@@ -41,8 +49,8 @@ start_time=$(date +%s)
 git checkout $ISOMER_BUILD_REPO_BRANCH
 calculate_duration $start_time
 
-# Perform a clean of npm cache
-npm cache clean --force
+# Perform a clean of bun cache
+bun pm cache rm
 
 ### Create a cache key for the current build ###
 # Assumption: All production related builds are using release tags e.g. v0.2.1
@@ -74,7 +82,7 @@ else
 
   echo "Installing dependencies..."
   start_time=$(date +%s)
-  npm ci
+  bun ci
   calculate_duration $start_time
 
   echo "Caching node_modules..."
@@ -91,8 +99,8 @@ echo "Fetching from database..."
 start_time=$(date +%s)
 cd tooling/build/scripts/publishing
 echo $(pwd)
-npm ci
-npm run start
+bun ci
+bun run start
 calculate_duration $start_time
 
 # Prebuilding...
@@ -129,7 +137,7 @@ else
   echo "Building components..."
   start_time=$(date +%s)
   cd ../../packages/components # from tooling/template
-  npm run build
+  bun run build
   mv opengovsg-isomer-components-0.0.13.tgz ../../tooling/template/
   echo $(pwd)
   cd ../.. # back to root
@@ -138,13 +146,13 @@ else
   echo "Installing dependencies..."
   cd tooling/template
   start_time=$(date +%s)
-  npm ci
+  bun ci
   calculate_duration $start_time
 
   echo "Prebuilding..."
   start_time=$(date +%s)
   rm -rf node_modules && rm -rf .next
-  npm i opengovsg-isomer-components-0.0.13.tgz
+  bun add opengovsg-isomer-components-0.0.13.tgz
   calculate_duration $start_time
 
   echo "Caching node_modules..."
@@ -159,7 +167,7 @@ fi
 # Build
 echo "Building..."
 start_time=$(date +%s)
-npm run build:template
+bun run build:template
 calculate_duration $start_time
 
 # Check if the 'out' folder exists

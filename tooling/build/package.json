@@ -9,8 +9,8 @@
     "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
-    "@isomer/eslint-config": "*",
-    "@isomer/prettier-config": "*"
+    "@isomer/eslint-config": "workspace:*",
+    "@isomer/prettier-config": "workspace:*"
   },
   "prettier": "@isomer/prettier-config",
   "dependencies": {

@@ -57,10 +57,8 @@ const iconButtonIconStyles = tv({
 })
 
 interface IconButtonProps
-  extends SetRequired<
-      Omit<AriaButtonProps<"button">, "children">,
-      "aria-label"
-    >,
+  extends
+    SetRequired<Omit<AriaButtonProps<"button">, "children">, "aria-label">,
     VariantProps<typeof iconButtonStyles> {
   icon: IconType
   className?: string

@@ -11,6 +11,11 @@ calculate_duration() {
   echo "Time taken: $duration seconds"
 }
 
+# Install bun (pinned to match packageManager in package.json)
+curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
+export PATH="$HOME/.bun/bin:$PATH"
+bun --version
+
 # Use the latest release tag unless one was provided in the env var
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   ##### This long command is used to get the latest release tag from the Isomer repository.
@@ -44,14 +49,14 @@ start_time=$(date +%s)
 git checkout $ISOMER_BUILD_REPO_BRANCH
 calculate_duration $start_time
 
-# Perform a clean of npm cache
-npm cache clean --force
-npm i sherif@1.6.1
+# Perform a clean of bun cache
+bun pm cache rm
+bun add sherif@1.6.1
 
 # Install dependencies
 echo "Installing dependencies..."
 start_time=$(date +%s)
-npm ci
+bun ci
 echo "Dependencies installed"
 calculate_duration $start_time
 
@@ -59,4 +64,4 @@ calculate_duration $start_time
 echo "Building components..."
 start_time=$(date +%s)
 cd packages/components
-npm run build
+bun run build

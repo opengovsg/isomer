@@ -173,8 +173,10 @@ export type ContactInformationProps = Static<typeof ContactInformationSchema> &
     site: IsomerSiteProps
   }
 
-export interface DgsTransformedContactInformationProps
-  extends Except<DgsContactInformationProps, "dataSource"> {
+export interface DgsTransformedContactInformationProps extends Except<
+  DgsContactInformationProps,
+  "dataSource"
+> {
   record: DgsApiDatasetSearchResponseSuccess["result"]["records"][number]
   isLoading?: ContactInformationUIProps["isLoading"]
 }

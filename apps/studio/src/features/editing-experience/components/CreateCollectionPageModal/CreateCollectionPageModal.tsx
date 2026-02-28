@@ -4,8 +4,10 @@ import { Modal, ModalContent, ModalOverlay } from "@chakra-ui/react"
 import { CreateCollectionPageWizardProvider } from "./CreateCollectionPageWizardContext"
 import { CreateCollectionPageModalScreen } from "./ModalScreen"
 
-interface CreateCollectionPageModalProps
-  extends Pick<UseDisclosureReturn, "isOpen" | "onClose"> {
+interface CreateCollectionPageModalProps extends Pick<
+  UseDisclosureReturn,
+  "isOpen" | "onClose"
+> {
   siteId: number
   collectionId: number
 }
