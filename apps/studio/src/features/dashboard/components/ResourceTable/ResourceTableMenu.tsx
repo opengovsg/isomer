@@ -70,13 +70,6 @@ export const ResourceTableMenu = ({
               >
                 Edit settings
               </MenuItem>
-
-              {/* TODO(ISOM-1552): Add back duplicate page functionality when implemented */}
-              <Can do="create" on={{ parentId }}>
-                <MenuItem isDisabled icon={<BiDuplicate fontSize="1rem" />}>
-                  Duplicate page
-                </MenuItem>
-              </Can>
             </>
           )}
           {type === ResourceType.Folder && (
