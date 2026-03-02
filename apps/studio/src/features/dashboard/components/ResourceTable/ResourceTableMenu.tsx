@@ -5,7 +5,6 @@ import { useSetAtom } from "jotai"
 import {
   BiCog,
   BiDotsHorizontalRounded,
-  BiDuplicate,
   BiFolderOpen,
   BiTrash,
 } from "react-icons/bi"
