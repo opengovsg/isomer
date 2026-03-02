@@ -54,7 +54,7 @@ export const ResourceTableMenu = ({
         variant="clear"
       />
       <Portal>
-        <MenuList>
+        <MenuList minWidth="8rem">
           {/* TODO: Open edit modal depending on resource  */}
           {type === ResourceType.Page && (
             <>
