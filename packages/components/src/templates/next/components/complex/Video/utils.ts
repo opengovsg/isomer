@@ -13,7 +13,9 @@ export const getYouTubeVideoId = (url: string): string | null => {
     const { pathname, searchParams } = urlObject
     if (pathname.startsWith("/embed/")) {
       const id = pathname.slice("/embed/".length).split("?")[0]
-      return id || null
+      // "videoseries" is a playlist embed path, not a video ID
+      if (!id || id === "videoseries") return null
+      return id
     }
     if (pathname.startsWith("/watch")) {
       return searchParams.get("v") || null
