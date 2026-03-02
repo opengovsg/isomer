@@ -114,6 +114,7 @@ const ContentSecurityPolicy = `
     https://uploads.intercomusercontent.com
     https://data.gov.sg
     https://*.data.gov.sg
+    https://www.youtube.com
     https://vimeo.com
     https://*.spotify.com
     https://*.wg.spotify.com
