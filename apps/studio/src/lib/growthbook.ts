@@ -15,6 +15,8 @@ export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const ISOMER_ADMIN_FEATURE_KEY = "isomer_admins"
 export const IS_NEW_SETTINGS_PAGE_ENABLED_FEATURE_KEY =
   "is-new-settings-page-enabled"
+export const IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY =
+  "is-new-collection-editing-experience-enabled"
 export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 export const ENABLE_DATABASE_LAYOUT_FEATURE_KEY = "enable-database-layout"
