@@ -2,7 +2,6 @@
 
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
-import { useResizeObserver } from "usehooks-ts"
 
 import type { NavbarClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
@@ -15,11 +14,6 @@ import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
 import { NavItem } from "./NavItem"
-
-interface Size {
-  width?: number
-  height?: number
-}
 
 const createNavbarStyles = tv({
   slots: {
@@ -71,7 +65,7 @@ export const NavbarClient = ({
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [mobileNavbarTopPx, setMobileNavbarTopPx] = useState<number>()
+  const [mobileNavbarTopPx] = useState<number>()
 
   const isMenuOpen = openNavItemIdx !== -1 || isHamburgerOpen
 
@@ -80,26 +74,6 @@ export const NavbarClient = ({
 
   // Reference for the site header
   const siteHeaderRef = useRef<HTMLDivElement>(null)
-
-  const refreshMenuOffset = useCallback((size?: Size) => {
-    setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
-
-    if (!size) {
-      return
-    }
-
-    if (size.width && size.width < 1024) {
-      // close any open nav items when resizing to mobile
-      setOpenNavItemIdx(-1)
-    } else {
-      setIsHamburgerOpen(false)
-    }
-  }, [])
-
-  useResizeObserver({
-    ref: siteHeaderRef,
-    onResize: refreshMenuOffset,
-  })
 
   const onCloseMenu = useCallback(() => {
     setIsHamburgerOpen(false)
@@ -115,9 +89,8 @@ export const NavbarClient = ({
         left: 0,
         behavior: isHamburgerOpen ? undefined : "smooth",
       })
-      refreshMenuOffset()
     }
-  }, [isHamburgerOpen, isMenuOpen, refreshMenuOffset])
+  }, [isHamburgerOpen, isMenuOpen])
 
   return (
     <div className={navbarStyles.navbar()}>
