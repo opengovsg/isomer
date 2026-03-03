@@ -1,8 +1,54 @@
 import { describe, expect, it } from "vitest"
 
-import { getFileKey } from "../asset.service"
+import {
+  getContentDispositionForKey,
+  getContentTypeFromKey,
+  getFileKey,
+} from "../asset.service"
 
 describe("asset.service", () => {
+  describe("getContentTypeFromKey", () => {
+    it("should return image MIME for image extensions", () => {
+      expect(getContentTypeFromKey("1/abc/test.png")).toBe("image/png")
+      expect(getContentTypeFromKey("1/abc/photo.jpg")).toBe("image/jpeg")
+      expect(getContentTypeFromKey("1/abc/photo.jpeg")).toBe("image/jpeg")
+      expect(getContentTypeFromKey("1/abc/icon.svg")).toBe("image/svg+xml")
+      expect(getContentTypeFromKey("1/abc/art.webp")).toBe("image/webp")
+    })
+
+    it("should return document MIME for file extensions", () => {
+      expect(getContentTypeFromKey("1/abc/doc.pdf")).toBe("application/pdf")
+      expect(getContentTypeFromKey("1/abc/data.csv")).toBe("text/csv")
+      expect(getContentTypeFromKey("1/abc/sheet.xlsx")).toBe(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      )
+    })
+
+    it("should return application/octet-stream for unknown extension", () => {
+      expect(getContentTypeFromKey("1/abc/file.xyz")).toBe(
+        "application/octet-stream",
+      )
+    })
+
+    it("should use lowercase extension for lookup", () => {
+      expect(getContentTypeFromKey("1/abc/file.PNG")).toBe("image/png")
+    })
+  })
+
+  describe("getContentDispositionForKey", () => {
+    it("should return inline with filename from key segment", () => {
+      const result = getContentDispositionForKey("1/abc-uuid/test.png")
+      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
+      expect(result).toContain(encodeURIComponent("test.png"))
+    })
+
+    it("should encode special characters in filename", () => {
+      const result = getContentDispositionForKey("1/abc/测试文件.pdf")
+      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
+      expect(result).toContain(encodeURIComponent("测试文件.pdf"))
+    })
+  })
+
   describe("getFileKey", () => {
     it("should generate a file key with basic ASCII filename", () => {
       // Arrange
