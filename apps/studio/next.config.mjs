@@ -55,7 +55,7 @@ const ContentSecurityPolicy = `
   object-src 'none';
   script-src
     'self'
-    'unsafe-eval'
+    ${env.NODE_ENV === "production" ? "" : "'unsafe-eval'"}
     https://*.wogaa.sg
     https://app.intercom.io
     https://widget.intercom.io
@@ -114,6 +114,7 @@ const ContentSecurityPolicy = `
     https://uploads.intercomusercontent.com
     https://data.gov.sg
     https://*.data.gov.sg
+    https://www.youtube.com
     https://vimeo.com
     https://*.spotify.com
     https://*.wg.spotify.com

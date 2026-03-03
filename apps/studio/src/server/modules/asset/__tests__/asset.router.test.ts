@@ -283,12 +283,13 @@ describe("asset.router", async () => {
         siteId: site.id,
         userId: session.userId,
       })
+      const fileKey = `${site.id}/test-uuid/test.png`
 
       // Act
       const result = caller.deleteAssets({
         siteId: site.id,
         resourceId: page.id,
-        fileKeys: ["test.png"],
+        fileKeys: [fileKey],
       })
 
       // Assert
@@ -334,12 +335,13 @@ describe("asset.router", async () => {
         siteId: site.id,
         userId: session.userId,
       })
+      const fileKey = `${site.id}/test-uuid/test.png`
 
       // Act
       const result = caller.deleteAssets({
         siteId: site.id,
         resourceId: page.id,
-        fileKeys: ["test.png"],
+        fileKeys: [fileKey],
       })
 
       // Assert
@@ -382,12 +384,13 @@ describe("asset.router", async () => {
         siteId: site.id,
         userId: session.userId,
       })
+      const fileKey = `${site.id}/test-uuid/test.png`
 
       // Act
       const result = caller.deleteAssets({
         siteId: site.id,
         resourceId: page.id,
-        fileKeys: ["test.png"],
+        fileKeys: [fileKey],
       })
 
       // Assert
@@ -403,7 +406,11 @@ describe("asset.router", async () => {
         siteId: site.id,
         userId: session.userId,
       })
-      const fileKeys = ["file1.png", "file2.jpg", "file3.pdf"]
+      const fileKeys = [
+        `${site.id}/uuid1/file1.png`,
+        `${site.id}/uuid2/file2.jpg`,
+        `${site.id}/uuid3/file3.pdf`,
+      ]
 
       // Act
       await caller.deleteAssets({
@@ -420,6 +427,36 @@ describe("asset.router", async () => {
           Key: fileKey,
         })
       })
+    })
+
+    it("should throw 403 if fileKeys contain a key from another site (IDOR)", async () => {
+      // Arrange: user has delete permission on site A
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupAdminPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+      const otherSiteId = site.id + 100
+      const fileKeysFromOtherSite = `${otherSiteId}/some-uuid/attacker-target.png`
+
+      // Act: pass authorized siteId but fileKey belonging to another site
+      const result = caller.deleteAssets({
+        siteId: site.id,
+        resourceId: page.id,
+        fileKeys: [fileKeysFromOtherSite],
+      })
+
+      // Assert: request rejected, no delete performed
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "One or more file keys do not belong to the specified site. You may only delete assets for the site you are authorized for.",
+        }),
+      )
+      expect(deleteFile).not.toHaveBeenCalled()
     })
   })
 })
