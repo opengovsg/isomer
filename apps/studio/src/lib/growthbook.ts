@@ -17,7 +17,6 @@ export const IS_NEW_SETTINGS_PAGE_ENABLED_FEATURE_KEY =
   "is-new-settings-page-enabled"
 export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
-export const ENABLE_DATABASE_LAYOUT_FEATURE_KEY = "enable-database-layout"
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
