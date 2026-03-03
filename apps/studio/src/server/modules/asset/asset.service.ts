@@ -28,9 +28,8 @@ const EXTENSION_TO_MIME: Record<string, string> = {
  */
 export const getContentTypeFromKey = (key: string): string => {
   const segment = key.split("/").pop() ?? ""
-  const ext = segment.includes(".")
-    ? segment.toLowerCase().substring(segment.lastIndexOf("."))
-    : ""
+  const lower = segment.toLowerCase()
+  const ext = lower.includes(".") ? lower.substring(lower.lastIndexOf(".")) : ""
   return EXTENSION_TO_MIME[ext] ?? "application/octet-stream"
 }
 

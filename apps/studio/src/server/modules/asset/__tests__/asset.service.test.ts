@@ -33,6 +33,13 @@ describe("asset.service", () => {
     it("should use lowercase extension for lookup", () => {
       expect(getContentTypeFromKey("1/abc/file.PNG")).toBe("image/png")
     })
+
+    it("should derive extension from lowercased segment so length-changing Unicode (e.g. İ) does not break lookup", () => {
+      // İ (U+0130) → toLowerCase() is i + combining dot (2 code units). Using the
+      // original segment's lastIndexOf(".") on the lowercased string would slice
+      // at the wrong index and yield application/octet-stream without the fix.
+      expect(getContentTypeFromKey("1/abc/İ.png")).toBe("image/png")
+    })
   })
 
   describe("getContentDispositionForKey", () => {
