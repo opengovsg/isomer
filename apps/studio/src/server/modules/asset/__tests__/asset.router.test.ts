@@ -50,6 +50,9 @@ describe("asset.router", async () => {
     await setUpWhitelist({ email: TEST_VALID_EMAIL })
     // Reset any mocks after each test
     vi.restoreAllMocks()
+    vi.mocked(generateSignedPutUrl).mockResolvedValue(
+      "https://example.com/signed-url",
+    )
   })
 
   describe("getPresignedPutUrl", () => {
@@ -161,10 +164,42 @@ describe("asset.router", async () => {
         fileName,
       })
 
-      // Assert
+      // Assert: backend-derived ContentType and ContentDisposition are signed (not client-controlled)
       expect(generateSignedPutUrl).toHaveBeenCalledWith({
         Bucket: expect.any(String),
-        Key: expect.any(String),
+        Key: expect.stringContaining("test-image.png"),
+        ContentType: "image/png",
+        ContentDisposition: expect.stringMatching(
+          /^inline; filename\*=UTF-8''.+/,
+        ),
+      })
+    })
+
+    it("should return contentType and contentDisposition for client to send with PUT", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = await caller.getPresignedPutUrl({
+        siteId: site.id,
+        resourceId: page.id,
+        fileName: "doc.pdf",
+      })
+
+      // Assert
+      expect(result).toMatchObject({
+        fileKey: expect.any(String),
+        presignedPutUrl: "https://example.com/signed-url",
+        contentType: "application/pdf",
+        contentDisposition: expect.stringMatching(
+          /^inline; filename\*=UTF-8''.+/,
+        ),
       })
     })
   })
