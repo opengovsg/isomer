@@ -10,14 +10,25 @@ type HttpsLink = `https://${string}`
  * - Validates and normalises output; coerces http to https.
  * - On parse error, falls back to the same string we would have built without URL (no throw).
  */
-export const generateHttpsLink = (data: string): HttpsLink => {
-  const trimmed = data.trim()
+const HTTP_PREFIX = "http://"
 
-  const candidate = trimmed.startsWith(HTTPS_PREFIX)
-    ? trimmed
-    : trimmed.startsWith("//")
-      ? `https:${trimmed.replace(/^\/+/, "//")}`
-      : `${HTTPS_PREFIX}${trimmed}`
+const buildHttpsCandidate = (trimmed: string): string => {
+  const lower = trimmed.toLowerCase()
+  if (lower.startsWith(HTTPS_PREFIX)) return trimmed
+
+  if (lower.startsWith(HTTP_PREFIX)) {
+    return `${HTTPS_PREFIX}${trimmed.slice(HTTP_PREFIX.length)}`
+  }
+
+  if (trimmed.startsWith("//")) {
+    return `https:${trimmed.replace(/^\/+/, "//")}`
+  }
+
+  return `${HTTPS_PREFIX}${trimmed}`
+}
+
+export const generateHttpsLink = (data: string): HttpsLink => {
+  const candidate = buildHttpsCandidate(data.trim())
 
   try {
     const parsed = new URL(candidate, "https://isomer.gov.sg/") // the URL here is a dummy URL because it doesn't matter
