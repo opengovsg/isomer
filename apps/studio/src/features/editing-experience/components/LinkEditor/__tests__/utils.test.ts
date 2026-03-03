@@ -38,6 +38,18 @@ describe("generateHttpsLink", () => {
       "https://www.example.com/",
     )
     expect(generateHttpsLink("  //example.com  ")).toBe("https://example.com/")
+    expect(generateHttpsLink("  http://example.com  ")).toBe(
+      "https://example.com/",
+    )
+  })
+
+  it("preserves query string and hash", () => {
+    expect(generateHttpsLink("https://example.com?q=1")).toBe(
+      "https://example.com/?q=1",
+    )
+    expect(generateHttpsLink("http://gov.sg/page#section")).toBe(
+      "https://gov.sg/page#section",
+    )
   })
 
   it("does not produce double-slash hrefs for protocol-relative input", () => {
@@ -55,6 +67,7 @@ describe("generateHttpsLink", () => {
     // Invalid URL: parse fails, we return the string we would have built
     expect(generateHttpsLink("https://")).toBe("https://")
     expect(generateHttpsLink("")).toBe("https://")
+    expect(generateHttpsLink("   ")).toBe("https://")
   })
 })
 
