@@ -1,6 +1,33 @@
 import type { LinkTypes } from "./constants"
 import { LINK_TYPES } from "./constants"
 
+export const HTTPS_PREFIX = "https://"
+type HttpsLink = `https://${string}`
+
+/**
+ * Normalises user input to a valid https link using the native URL constructor.
+ * - Handles protocol-relative URLs (//host) and avoids malformed hrefs like https:////host.
+ * - Validates and normalises output; coerces http to https.
+ * - On parse error, falls back to the same string we would have built without URL (no throw).
+ */
+export const generateHttpsLink = (data: string): HttpsLink => {
+  const trimmed = data.trim()
+
+  const candidate = trimmed.startsWith(HTTPS_PREFIX)
+    ? trimmed
+    : trimmed.startsWith("//")
+      ? `https:${trimmed.replace(/^\/+/, "//")}`
+      : `${HTTPS_PREFIX}${trimmed}`
+
+  try {
+    const parsed = new URL(candidate, "https://isomer.gov.sg/") // the URL here is a dummy URL because it doesn't matter
+    parsed.protocol = "https:"
+    return parsed.href as HttpsLink
+  } catch {
+    return candidate as HttpsLink
+  }
+}
+
 export const getLinkHrefType = (href: string | undefined): LinkTypes => {
   if (!href) {
     // We default to page if no href is provided, as that is the first option

@@ -11,17 +11,7 @@ import { FormLabel } from "@opengovsg/design-system-react"
 import { LINK_TYPES } from "./constants"
 import { useLinkEditor } from "./LinkEditorContext"
 import { LinkEditorRadioGroup } from "./LinkEditorRadioGroup"
-
-const HTTPS_PREFIX = "https://"
-type HttpsLink = `https://${string}`
-
-const generateHttpsLink = (data: string): HttpsLink => {
-  if (data.startsWith(HTTPS_PREFIX)) {
-    return data as HttpsLink
-  }
-
-  return `${HTTPS_PREFIX}${data}`
-}
+import { generateHttpsLink, HTTPS_PREFIX } from "./utils"
 
 interface LinkHrefEditorProps {
   label: string
