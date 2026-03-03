@@ -1,7 +1,12 @@
 import type { Exact } from "type-fest"
 
-import type { AllCardProps, ProcessedCollectionCardProps } from "~/interfaces"
-import { getFormattedDate, getReferenceLinkHref, isExternalUrl } from "~/utils"
+import type {
+  AllCardProps,
+  ProcessedCollectionCardProps,
+} from "~/interfaces/internal/CollectionCard"
+import { getFormattedDate } from "~/utils/getFormattedDate"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 
 export const processCollectionItems = (
   items: AllCardProps[],

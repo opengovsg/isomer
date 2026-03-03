@@ -1,5 +1,5 @@
 import type { HeroSearchbarProps } from "~/interfaces/complex/Hero"
-import { isExternalUrl } from "~/utils"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ImageClient } from "../../Image"
 import { SearchbarContent } from "./SearchbarContent"
 
