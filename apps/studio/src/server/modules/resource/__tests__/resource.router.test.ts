@@ -1506,6 +1506,109 @@ describe("resource.router", async () => {
       expect(auditEntry.userId).toBe(session.userId)
     })
 
+    it("should return 400 if moving a folder into its direct child (prevents circular reference)", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { folder: parentFolder, site } = await setupFolder({
+        permalink: "parent-folder",
+      })
+      const { folder: childFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "child-folder",
+        parentId: parentFolder.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - try to move parent folder into its child (would create A -> B -> A cycle)
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: parentFolder.id,
+        destinationResourceId: childFolder.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot move a folder into one of its descendants",
+        }),
+      )
+    })
+
+    it("should return 400 if moving a folder into a deeply nested descendant (prevents circular reference)", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { folder: grandparentFolder, site } = await setupFolder({
+        permalink: "grandparent-folder",
+      })
+      const { folder: parentFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "parent-folder",
+        parentId: grandparentFolder.id,
+      })
+      const { folder: childFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "child-folder",
+        parentId: parentFolder.id,
+      })
+      const { folder: grandchildFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "grandchild-folder",
+        parentId: childFolder.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - try to move grandparent folder into its grandchild (would create cycle)
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: grandparentFolder.id,
+        destinationResourceId: grandchildFolder.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot move a folder into one of its descendants",
+        }),
+      )
+    })
+
+    it("should allow moving a folder to a sibling folder (not a descendant)", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { folder: folderA, site } = await setupFolder({
+        permalink: "folder-a",
+      })
+      const { folder: folderB } = await setupFolder({
+        siteId: site.id,
+        permalink: "folder-b",
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - move folder A into folder B (siblings, not descendants)
+      const result = await caller.move({
+        siteId: site.id,
+        movedResourceId: folderA.id,
+        destinationResourceId: folderB.id,
+      })
+
+      // Assert
+      expect(result.parentId).toEqual(folderB.id)
+      expect(auditSpy).toHaveBeenCalled()
+    })
+
     it.skip("should throw 403 if user does not have write access to destination resource", async () => {})
 
     it.skip("should throw 403 if user does not have write access to origin resource", async () => {})
