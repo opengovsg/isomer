@@ -37,7 +37,9 @@ describe("getLinkHrefType", () => {
   })
 
   it("returns External for other URLs and paths", () => {
-    expect(getLinkHrefType("https://example.com/page")).toBe(LINK_TYPES.External)
+    expect(getLinkHrefType("https://example.com/page")).toBe(
+      LINK_TYPES.External,
+    )
     expect(getLinkHrefType("/some/page")).toBe(LINK_TYPES.External)
   })
 })
