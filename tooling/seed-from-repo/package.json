@@ -51,7 +51,7 @@
     "tsx": "^4.20.4"
   },
   "devDependencies": {
-    "@isomer/eslint-config": "*",
+    "@isomer/eslint-config": "workspace:*",
     "@types/jsdom": "^21.1.7",
     "@types/pg": "^8.15.4",
     "@types/request": "^2.48.12"

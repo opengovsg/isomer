@@ -8,7 +8,7 @@
     "start": "dotenv tsx index.ts"
   },
   "devDependencies": {
-    "@isomer/tsconfig": "*",
+    "@isomer/tsconfig": "workspace:*",
     "@types/node": "^22.15.21",
     "@types/pg": "^8.15.4",
     "dotenv": "^16.4.5",

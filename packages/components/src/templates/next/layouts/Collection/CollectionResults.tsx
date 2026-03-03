@@ -4,16 +4,15 @@ import { tv } from "~/lib/tv"
 import { BlogCard } from "../../components/internal/BlogCard"
 import { CollectionCard } from "../../components/internal/CollectionCard"
 
-interface CollectionResultProps
-  extends Pick<
-    UseCollectionReturn,
-    | "paginatedItems"
-    | "appliedFilters"
-    | "searchValue"
-    | "filteredCount"
-    | "handleClearFilter"
-    | "totalCount"
-  > {
+interface CollectionResultProps extends Pick<
+  UseCollectionReturn,
+  | "paginatedItems"
+  | "appliedFilters"
+  | "searchValue"
+  | "filteredCount"
+  | "handleClearFilter"
+  | "totalCount"
+> {
   shouldShowDate?: boolean
   variant?: CollectionVariant
   siteAssetsBaseUrl: string | undefined

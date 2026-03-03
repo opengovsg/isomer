@@ -36,31 +36,21 @@ ENV KEEP_ALIVE_TIMEOUT 70000
 
 FROM base AS builder
 RUN apk update
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat bash curl unzip
+
+# Install bun
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
+ENV BUN_INSTALL="/root/.bun"
+ENV PATH="/root/.bun/bin:${PATH}"
 
 # Set working directory
 WORKDIR /app
 # Replace <your-major-version> with the major version installed in your repository. For example:
-RUN npm install -g turbo@^2
+RUN bun add -g turbo@^2
 COPY . .
 
-# Generate a partial monorepo with a pruned lockfile for a target workspace.
-# Assuming "isomer-studio" is the name entered in the project's package.json: { name: "isomer-studio" }
-RUN turbo prune isomer-studio --docker
-
-# Add lockfile and package.json's of isolated subworkspace
-FROM base AS installer
-RUN apk update
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-
-# First install the dependencies (as they change less often)
-COPY --from=builder /app/out/json/ .
-RUN npm ci
-
-# Build the project
-COPY --from=builder /app/out/full/ .
-RUN npx turbo run build --filter=isomer-studio...
+RUN bun ci --ignore-scripts
+RUN turbo run build --filter=isomer-studio...
 
 FROM base AS runner
 WORKDIR /app
@@ -72,8 +62,8 @@ USER nextjs
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/.next/standalone ./
-COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/.next/static ./apps/studio/.next/static
-COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/public ./apps/studio/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/studio/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/studio/.next/static ./apps/studio/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/studio/public ./apps/studio/public
 
 CMD ["node", "apps/studio/server.js"]

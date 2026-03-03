@@ -7,7 +7,7 @@ This is a monorepo for the Isomer Next project.
 This monorepo uses Turborepo. To get started, first install the `turbo` command:
 
 ```bash
-npm install turbo --global
+bun add -g turbo
 
 ```
 
@@ -50,9 +50,9 @@ We run releases via the `publish` event. Hence, in order to cut a release, we ha
    - this can be found by searching for `AWS Isomer Next <env> Bastion SSH Key` in your 1Password vault
 2. Next, duplicate the `.env.example` in `apps/studio` to `.ssh/.env.<env>`
 3. Fill in the relevant information by searching for `Isomer Next <env> Database` inside 1password
-4. Next, run `npm run jump:<env>` from within the `apps/studio` folder
-5. Next, run `npm run migrate:<env>` from within the `apps/studio` folder
-6. (Optional) If you need to run a seed, run `npm run db:seed`
+4. Next, run `bun run jump:<env>` from within the `apps/studio` folder
+5. Next, run `bun run migrate:<env>` from within the `apps/studio` folder
+6. (Optional) If you need to run a seed, run `bun run db:seed`
 
 ### Extra tools
 
