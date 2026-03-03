@@ -428,7 +428,11 @@ export const resourceRouter = router({
               })
             }
 
-            if (toMove.type === "Folder" || toMove.type === "Collection") {
+            if (
+              toMove.type === "Folder" ||
+              toMove.type === "Collection" ||
+              toMove.type === "RootPage"
+            ) {
               const descendants = await tx
                 .withRecursive("Descendants", (eb) =>
                   eb
