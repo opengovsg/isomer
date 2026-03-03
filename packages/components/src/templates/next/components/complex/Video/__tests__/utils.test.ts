@@ -42,6 +42,18 @@ describe("utils", () => {
       })
     })
 
+    it("should return null for YouTube video-series (playlist) embed URLs", () => {
+      const testCases = [
+        "https://www.youtube.com/embed/videoseries?list=PLH2CR4s1lqyhblReuK5ULf6cB100TO-VU",
+        "https://www.youtube.com/embed/videoseries?si=FyxmgTc4hGelVqNi&list=PLH2CR4s1lqyhblReuK5ULf6cB100TO-VU",
+        "https://www.youtube-nocookie.com/embed/videoseries?list=PLxxx",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(getYouTubeVideoId(testCase)).toBeNull()
+      })
+    })
+
     it("should return null for non-YouTube URLs", () => {
       const testCases = [
         "https://player.vimeo.com/video/984159615",
