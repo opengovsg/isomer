@@ -37,6 +37,8 @@ export const generateSignedPutUrl = async ({
     }),
     {
       expiresIn: 60 * 5, // 5 minutes
+      // Sign these headers so S3 rejects PUTs with different values (prevents type-confusion XSS)
+      signableHeaders: new Set(["content-type", "content-disposition"]),
     },
   )
 }
