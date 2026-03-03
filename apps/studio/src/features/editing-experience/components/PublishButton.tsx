@@ -137,15 +137,15 @@ const SuspendablePublishButton = ({
                         <MenuItem
                           onClick={scheduledPublishingDisclosure.onOpen}
                         >
-                            <HStack spacing="0.5rem" alignItems="center">
-                              <Icon as={BiTimeFive} boxSize="1rem" />
-                              <Text
-                                textStyle="body-2"
-                                color="base.content.strong"
-                              >
-                                Schedule for later
-                              </Text>
-                            </HStack>
+                          <HStack spacing="0.5rem" alignItems="center">
+                            <Icon as={BiTimeFive} boxSize="1rem" />
+                            <Text
+                              textStyle="body-2"
+                              color="base.content.strong"
+                            >
+                              Schedule for later
+                            </Text>
+                          </HStack>
                         </MenuItem>
                       </MenuList>
                     </Menu>
