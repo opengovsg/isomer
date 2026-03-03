@@ -14,7 +14,13 @@ export const getLinkHrefType = (href: string | undefined): LinkTypes => {
   // File links point to the assets bucket: path-only format /(\d+)/<uuid>/<filename>.
   // Never treat full URLs as internal file links (avoids external URLs with this
   // pattern being misclassified and shown as filename-only in the UI).
-  const isFullUrl = href.startsWith("http://") || href.startsWith("https://")
+  let isFullUrl = false
+  try {
+    const url = new URL(href)
+    isFullUrl = url.protocol === "http:" || url.protocol === "https:"
+  } catch {
+    // Relative path or invalid URL
+  }
   if (!isFullUrl) {
     const fileLinkMatch = /^\/(\d+)\/[0-9a-fA-F-]{36}\//.exec(href)
     if (fileLinkMatch?.length === 2) {
