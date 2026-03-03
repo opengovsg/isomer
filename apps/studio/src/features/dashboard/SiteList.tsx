@@ -1,3 +1,4 @@
+import { useState } from "react"
 import NextLink from "next/link"
 import {
   Box,
@@ -11,10 +12,9 @@ import {
   Skeleton,
   Text,
 } from "@chakra-ui/react"
-import { Link } from "@opengovsg/design-system-react"
+import { Link, Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
 
 import { NoResultIcon } from "~/components/Svg/NoResultIcon"
-import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { withSuspense } from "~/hocs/withSuspense"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
@@ -31,50 +31,56 @@ const Site = ({
   return (
     <LinkBox cursor="pointer" role="group">
       <LinkOverlay href={`/sites/${siteId}`} as={NextLink}>
-        <Flex key={siteId} flexDirection="column" gap="1rem" width="100%">
+        <Flex
+          key={siteId}
+          flexDirection="row"
+          border="1.5px solid"
+          align="center"
+          borderColor="base.divider.medium"
+          borderRadius="0.5rem"
+          gap="1rem"
+          width="100%"
+        >
           <Box position="relative">
             <Image
               src={siteLogoUrl}
               alt={siteName}
+              width="6rem"
+              height="6rem"
               borderRadius="0.5rem"
-              border="1.5px solid"
-              borderColor="base.divider.medium"
-              width="100%"
-              height="100%"
               objectFit="contain"
               aspectRatio="1/1"
               backgroundColor="white"
               fallbackSrc="/isomer-sites-placeholder.png"
-              padding="1rem" // Leave some space so that logo won't be flush with the border
+              padding="0.5rem" // Leave some space so that logo won't be flush with the border
             />
-            <Box
-              position="absolute"
-              top="0"
-              left="0"
-              right="0"
-              bottom="0"
-              backgroundColor="base.canvas.overlay"
-              borderRadius="0.5rem"
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              opacity="0"
-              transition="opacity 0.2s"
-              _groupHover={{ opacity: 1 }}
-            >
-              <Button backgroundColor="interaction.main.default">
-                <Text textStyle="subhead-1">Start editing site</Text>
-              </Button>
-            </Box>
           </Box>
           <Text
             textStyle="subhead-2"
-            noOfLines={2}
+            noOfLines={3}
             overflow="hidden"
             textOverflow="ellipsis"
           >
             {siteName}
           </Text>
+        </Flex>
+        <Flex
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          backgroundColor="base.canvas.overlay"
+          borderRadius="0.5rem"
+          justifyContent="center"
+          alignItems="center"
+          opacity="0"
+          transition="opacity 0.2s"
+          _groupHover={{ opacity: 1 }}
+        >
+          <Button backgroundColor="interaction.main.default">
+            <Text textStyle="subhead-1">Edit site</Text>
+          </Button>
         </Flex>
       </LinkOverlay>
     </LinkBox>
@@ -83,19 +89,26 @@ const Site = ({
 
 const SiteListSection = ({
   children,
+  onChange = () => {},
 }: {
   children: React.ReactNode
+  onChange?: (value: string) => void
 }): JSX.Element => {
   return (
-    <Flex flexDirection="column" gap="1.5rem" marginTop="0.75rem">
-      <Text textStyle="body-2">
-        Don't see a site that you're supposed to have access to?{" "}
-        <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
-          Let us know
-        </Link>
-        .
-      </Text>
-      <SimpleGrid columns={3} gap="2.5rem" width="100%">
+    <Flex flexDirection="column" gap="2rem">
+      <Flex flexDirection="row" gap="1.5rem" marginTop="0.75rem">
+        <Text textStyle="body-2">
+          These are sites you’ve been added to. If you don't see a site you're
+          supposed to have access to, speak to your System Owner for access.
+        </Text>
+        <OgpSearchBar
+          defaultIsExpanded
+          onChange={({ target }) => onChange(target.value)}
+          width="15rem"
+          placeholder={`Search sites by name`}
+        />
+      </Flex>
+      <SimpleGrid columns={2} gap="2rem" width="100%">
         {children}
       </SimpleGrid>
     </Flex>
@@ -104,6 +117,10 @@ const SiteListSection = ({
 
 const SuspendableSiteList = (): JSX.Element => {
   const [sites] = trpc.site.list.useSuspenseQuery()
+  const [query, setQuery] = useState("")
+  const filteredSites = sites.filter((site) =>
+    site.config.siteName.toLowerCase().includes(query.toLowerCase()),
+  )
 
   if (sites.length === 0) {
     return (
@@ -119,21 +136,38 @@ const SuspendableSiteList = (): JSX.Element => {
             You don't have access to any sites yet.
           </Text>
           <Text textStyle="body-2" textAlign="center">
-            Speak to your System Owner to get access.<br></br>
-            If you think there is an error,{" "}
-            <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
-              let us know
-            </Link>
-            .
+            If you don't see a site you're supposed to have access to, speak to
+            your System Owner for access.
           </Text>
         </Flex>
       </Flex>
     )
   }
 
+  if (filteredSites.length === 0) {
+    return (
+      <SiteListSection onChange={setQuery}>
+        <Flex
+          flexDirection="column"
+          gap="0.5rem"
+          style={{ gridColumn: "1 / -1" }}
+          alignItems="center"
+          marginTop="6rem"
+        >
+          <Text textStyle="h5" textAlign="center">
+            No sites found for "{query}".
+          </Text>
+          <Text textStyle="body-2" textAlign="center">
+            Try searching for a something else, or check your spelling.
+          </Text>
+        </Flex>
+      </SiteListSection>
+    )
+  }
+
   return (
-    <SiteListSection>
-      {sites.map((site) => (
+    <SiteListSection onChange={(value) => setQuery(value)}>
+      {filteredSites.map((site) => (
         <Site
           siteId={site.id}
           siteName={site.config.siteName}
@@ -147,7 +181,7 @@ const SuspendableSiteList = (): JSX.Element => {
 const SiteListSkeleton = (): JSX.Element => {
   return (
     <SiteListSection>
-      {[1, 2, 3].map((index) => (
+      {[1, 2].map((index) => (
         <Card key={index} width="100%">
           <Skeleton>
             <Site />
