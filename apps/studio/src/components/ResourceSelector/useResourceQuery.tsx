@@ -1,4 +1,7 @@
-import { type ResourceItemContent } from "~/schemas/resource"
+import {
+  MAX_BATCH_RESOURCE_IDS,
+  type ResourceItemContent,
+} from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"
 
 interface UseResourceQueryProps {
@@ -32,7 +35,7 @@ export const useResourceQuery = ({
       resourceId:
         (isResourceHighlighted ? parentDest?.id : moveDest?.id) ?? null,
       siteId: String(siteId),
-      limit: 25,
+      limit: MAX_BATCH_RESOURCE_IDS,
     },
     {
       getNextPageParam: (lastPage) => lastPage.nextOffset,
