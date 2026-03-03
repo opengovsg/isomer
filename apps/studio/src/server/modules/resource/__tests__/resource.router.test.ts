@@ -1609,6 +1609,39 @@ describe("resource.router", async () => {
       expect(auditSpy).toHaveBeenCalled()
     })
 
+    it("should return 400 if moving a RootPage into its descendant (prevents circular reference)", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { page: rootPage, site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      const { folder } = await setupFolder({
+        siteId: site.id,
+        permalink: "child-folder",
+        parentId: rootPage.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - try to move RootPage into its child folder (would create cycle)
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: rootPage.id,
+        destinationResourceId: folder.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot move a folder into one of its descendants",
+        }),
+      )
+    })
+
     it.skip("should throw 403 if user does not have write access to destination resource", async () => {})
 
     it.skip("should throw 403 if user does not have write access to origin resource", async () => {})
