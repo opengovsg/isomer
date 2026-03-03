@@ -55,7 +55,7 @@ const ContentSecurityPolicy = `
   object-src 'none';
   script-src
     'self'
-    'unsafe-eval'
+    ${env.NODE_ENV === "production" ? "" : "'unsafe-eval'"}
     https://*.wogaa.sg
     https://app.intercom.io
     https://widget.intercom.io
