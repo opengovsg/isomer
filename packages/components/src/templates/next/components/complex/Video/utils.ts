@@ -8,7 +8,7 @@ const YOUTUBE_PRIVACY_ENHANCED_HOST = "www.youtube-nocookie.com"
  */
 export const getPrivacyEnhancedYouTubeEmbedUrl = (urlObject: URL): string | undefined => {
   const isYouTube = VALID_VIDEO_DOMAINS.youtube.includes(urlObject.hostname)
-  const isAlreadyPrivacyEnhanced = urlObject.hostname.includes("youtube-nocookie.com")
+  const isAlreadyPrivacyEnhanced = urlObject.hostname === YOUTUBE_PRIVACY_ENHANCED_HOST
   if (isYouTube && !isAlreadyPrivacyEnhanced) {
     urlObject.hostname = YOUTUBE_PRIVACY_ENHANCED_HOST
   }
