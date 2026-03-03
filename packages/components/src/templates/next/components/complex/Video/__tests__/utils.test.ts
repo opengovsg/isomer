@@ -1,8 +1,66 @@
 import { describe, expect, it } from "vitest"
 
-import { getVimeoVideoId, getYouTubeVideoId } from "../utils"
+import {
+  getPrivacyEnhancedYouTubeEmbedUrl,
+  getVimeoVideoId,
+  getYouTubeVideoId,
+} from "../utils"
 
 describe("utils", () => {
+  describe("getPrivacyEnhancedYouTubeEmbedUrl", () => {
+    it("rewrites www.youtube.com to www.youtube-nocookie.com for watch URLs", () => {
+      const url = new URL("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+      expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBe(
+        "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+      )
+    })
+
+    it("rewrites www.youtube.com to www.youtube-nocookie.com for embed URLs", () => {
+      const url = new URL("https://www.youtube.com/embed/dQw4w9WgXcQ")
+      expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBe(
+        "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+      )
+    })
+
+    it("rewrites youtube.com (no www) to privacy-enhanced host", () => {
+      const url = new URL("https://youtube.com/watch?v=abc123")
+      expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBe(
+        "https://www.youtube-nocookie.com/embed/abc123",
+      )
+    })
+
+    it("leaves www.youtube-nocookie.com unchanged for watch URLs", () => {
+      const url = new URL("https://www.youtube-nocookie.com/watch?v=abc123")
+      expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBe(
+        "https://www.youtube-nocookie.com/embed/abc123",
+      )
+    })
+
+    it("leaves www.youtube-nocookie.com unchanged for embed URLs", () => {
+      const url = new URL("https://www.youtube-nocookie.com/embed/abc123")
+      expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBe(
+        "https://www.youtube-nocookie.com/embed/abc123",
+      )
+    })
+
+    it("leaves youtube-nocookie.com (no www) unchanged", () => {
+      const url = new URL("https://youtube-nocookie.com/embed/abc123")
+      expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBe(
+        "https://youtube-nocookie.com/embed/abc123",
+      )
+    })
+
+    it("returns empty string for watch URL without v parameter", () => {
+      const url = new URL("https://www.youtube.com/watch")
+      expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBe("")
+    })
+
+    it("returns undefined for unsupported path", () => {
+      const url = new URL("https://www.youtube.com/feed/subscriptions")
+      expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBeUndefined()
+    })
+  })
+
   describe("getYouTubeVideoId", () => {
     it("should extract video ID from YouTube watch URLs", () => {
       const testCases = [
