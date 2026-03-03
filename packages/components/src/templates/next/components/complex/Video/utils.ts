@@ -6,9 +6,13 @@ const YOUTUBE_PRIVACY_ENHANCED_HOST = "www.youtube-nocookie.com"
  * Rewrites a YouTube URL to the privacy-enhanced embed form (youtube-nocookie.com).
  * Converts /watch?v=id to /embed/id. Returns undefined for unsupported path shapes.
  */
-export const getPrivacyEnhancedYouTubeEmbedUrl = (urlObject: URL): string | undefined => {
+export const getPrivacyEnhancedYouTubeEmbedUrl = (
+  urlObject: URL,
+): string | undefined => {
   const isYouTube = VALID_VIDEO_DOMAINS.youtube.includes(urlObject.hostname)
-  const isAlreadyPrivacyEnhanced = urlObject.hostname === YOUTUBE_PRIVACY_ENHANCED_HOST
+  const isAlreadyPrivacyEnhanced =
+    urlObject.hostname === "www.youtube-nocookie.com" ||
+    urlObject.hostname === "youtube-nocookie.com"
   if (isYouTube && !isAlreadyPrivacyEnhanced) {
     urlObject.hostname = YOUTUBE_PRIVACY_ENHANCED_HOST
   }
