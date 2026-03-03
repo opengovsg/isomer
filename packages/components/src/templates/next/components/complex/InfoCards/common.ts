@@ -80,7 +80,7 @@ const createInfoCardsStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col`,
     headingContainer: "flex flex-col",
-    headingTitle: "prose-display-md break-words text-base-content-strong",
+    headingTitle: "prose-display-sm break-words text-base-content-strong",
     headingSubtitle: "text-base-content",
     // auto-rows-max and grid-template-rows:max-content are needed to make the grid items have the same height,
     // which otherwise would be an issue on some versions of Safari
