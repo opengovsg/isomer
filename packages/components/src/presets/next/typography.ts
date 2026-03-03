@@ -17,12 +17,12 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     ".prose-display-md": {
       fontWeight: theme("fontWeight.semibold"),
       letterSpacing: "-0.022em",
-      "@apply text-[2rem] lg:text-[2.438rem] leading-[1.2]": {},
+      "@apply text-[1.75rem] lg:text-[2.25rem] leading-[1.2]": {},
     },
     ".prose-display-sm": {
       fontWeight: theme("fontWeight.semibold"),
       letterSpacing: "-0.022em",
-      "@apply text-[1.75rem] lg:text-[1.938rem] leading-[1.2]": {},
+      "@apply text-[1.5rem] lg:text-[1.938rem] leading-[1.2]": {},
     },
     ".prose-display-xs": {
       fontWeight: theme("fontWeight.semibold"),
