@@ -1,7 +1,5 @@
-import {
-  MAX_BATCH_RESOURCE_IDS,
-  type ResourceItemContent,
-} from "~/schemas/resource"
+import type { ResourceItemContent } from "~/schemas/resource"
+import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"
 
 interface UseResourceQueryProps {
