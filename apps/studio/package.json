@@ -188,7 +188,7 @@
     "clean-webpack-plugin": "^4.0.0",
     "dotenv-cli": "^8.0.0",
     "eslint": "^9.10.0",
-    "eslint-plugin-storybook": "^9.1.17",
+    "eslint-plugin-storybook": "^9.1.19",
     "mockdate": "^3.0.5",
     "msw": "^2.8.6",
     "msw-storybook-addon": "^2.0.4",
