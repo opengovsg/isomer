@@ -6,11 +6,41 @@ import filenamify from "filenamify"
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { env } from "~/env.mjs"
+import {
+  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
 import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
+
+// Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
+const EXTENSION_TO_MIME: Record<string, string> = {
+  ...IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  ...FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+}
+
+/**
+ * Derive trusted Content-Type from key. Key is only produced after schema validation,
+ * so the file extension is always from the allowlist.
+ */
+export const getContentTypeFromKey = (key: string): string => {
+  const segment = key.split("/").pop() ?? ""
+  const lower = segment.toLowerCase()
+  const ext = lower.includes(".") ? lower.substring(lower.lastIndexOf(".")) : ""
+  return EXTENSION_TO_MIME[ext] ?? "application/octet-stream"
+}
+
+/**
+ * Build Content-Disposition for signed upload (inline; filename for download hint).
+ */
+export const getContentDispositionForKey = (key: string): string => {
+  const segment = key.split("/").pop() ?? ""
+  const encoded = encodeURIComponent(segment)
+  return `inline; filename*=UTF-8''${encoded}`
+}
 
 // Permissions for assets share the same permissions as resources preferentially
 // because the underlying assumption is that the asset is tied to the resource,
@@ -76,11 +106,24 @@ export const doAllFileKeysBelongToSite = ({
   return fileKeys.every((key) => key.startsWith(`${siteId}/`))
 }
 
-export const getPresignedPutUrl = async ({ key }: { key: string }) => {
-  return generateSignedPutUrl({
+export const getPresignedPutUrl = async ({
+  key,
+}: {
+  key: string
+}): Promise<{
+  presignedPutUrl: string
+  contentType: string
+  contentDisposition: string
+}> => {
+  const contentType = getContentTypeFromKey(key)
+  const contentDisposition = getContentDispositionForKey(key)
+  const presignedPutUrl = await generateSignedPutUrl({
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
     Key: key,
+    ContentType: contentType,
+    ContentDisposition: contentDisposition,
   })
+  return { presignedPutUrl, contentType, contentDisposition }
 }
 
 export const markFileAsDeleted = async ({ key }: { key: string }) => {

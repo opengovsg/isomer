@@ -21,15 +21,24 @@ const storage = new S3Client({
 export const generateSignedPutUrl = async ({
   Bucket,
   Key,
-}: Pick<PutObjectCommandInput, "Bucket" | "Key">): Promise<string> => {
+  ContentType,
+  ContentDisposition,
+}: Pick<
+  PutObjectCommandInput,
+  "Bucket" | "Key" | "ContentType" | "ContentDisposition"
+>): Promise<string> => {
   return getSignedUrl(
     storage,
     new PutObjectCommand({
       Bucket,
       Key,
+      ContentType,
+      ContentDisposition,
     }),
     {
       expiresIn: 60 * 5, // 5 minutes
+      // Sign these headers so S3 rejects PUTs with different values (prevents type-confusion XSS)
+      signableHeaders: new Set(["content-type", "content-disposition"]),
     },
   )
 }

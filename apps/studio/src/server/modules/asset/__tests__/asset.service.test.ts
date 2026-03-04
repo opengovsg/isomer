@@ -1,8 +1,62 @@
 import { describe, expect, it } from "vitest"
 
-import { doAllFileKeysBelongToSite, getFileKey } from "../asset.service"
+import {
+  doAllFileKeysBelongToSite,
+  getContentDispositionForKey,
+  getContentTypeFromKey,
+  getFileKey,
+} from "../asset.service"
 
 describe("asset.service", () => {
+  describe("getContentTypeFromKey", () => {
+    it("should return image MIME for image extensions", () => {
+      expect(getContentTypeFromKey("1/abc/test.png")).toBe("image/png")
+      expect(getContentTypeFromKey("1/abc/photo.jpg")).toBe("image/jpeg")
+      expect(getContentTypeFromKey("1/abc/photo.jpeg")).toBe("image/jpeg")
+      expect(getContentTypeFromKey("1/abc/icon.svg")).toBe("image/svg+xml")
+      expect(getContentTypeFromKey("1/abc/art.webp")).toBe("image/webp")
+    })
+
+    it("should return document MIME for file extensions", () => {
+      expect(getContentTypeFromKey("1/abc/doc.pdf")).toBe("application/pdf")
+      expect(getContentTypeFromKey("1/abc/data.csv")).toBe("text/csv")
+      expect(getContentTypeFromKey("1/abc/sheet.xlsx")).toBe(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      )
+    })
+
+    it("should return application/octet-stream for unknown extension", () => {
+      expect(getContentTypeFromKey("1/abc/file.xyz")).toBe(
+        "application/octet-stream",
+      )
+    })
+
+    it("should use lowercase extension for lookup", () => {
+      expect(getContentTypeFromKey("1/abc/file.PNG")).toBe("image/png")
+    })
+
+    it("should derive extension from lowercased segment so length-changing Unicode (e.g. İ) does not break lookup", () => {
+      // İ (U+0130) → toLowerCase() is i + combining dot (2 code units). Using the
+      // original segment's lastIndexOf(".") on the lowercased string would slice
+      // at the wrong index and yield application/octet-stream without the fix.
+      expect(getContentTypeFromKey("1/abc/İ.png")).toBe("image/png")
+    })
+  })
+
+  describe("getContentDispositionForKey", () => {
+    it("should return inline with filename from key segment", () => {
+      const result = getContentDispositionForKey("1/abc-uuid/test.png")
+      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
+      expect(result).toContain(encodeURIComponent("test.png"))
+    })
+
+    it("should encode special characters in filename", () => {
+      const result = getContentDispositionForKey("1/abc/测试文件.pdf")
+      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
+      expect(result).toContain(encodeURIComponent("测试文件.pdf"))
+    })
+  })
+
   describe("getFileKey", () => {
     it("should generate a file key with basic ASCII filename", () => {
       // Arrange
