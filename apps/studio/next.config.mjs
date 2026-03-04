@@ -4,6 +4,8 @@
  */
 const { env } = await import("./src/env.mjs")
 
+// NOTE: Keep the `unsafe-eval` for `script-src` as the removal
+// led to nextjs crashing on start
 /*
 TODO: Removing this CSP first
   // img-src 'self' data: blob: ${
