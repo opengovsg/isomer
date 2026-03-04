@@ -428,6 +428,44 @@ export const resourceRouter = router({
               })
             }
 
+            if (
+              toMove.type === "Folder" ||
+              toMove.type === "Collection" ||
+              toMove.type === "RootPage"
+            ) {
+              const descendants = await tx
+                .withRecursive("Descendants", (eb) =>
+                  eb
+                    .selectFrom("Resource")
+                    .select(["id"])
+                    .where("Resource.parentId", "=", movedResourceId)
+                    .unionAll((eb) =>
+                      eb
+                        .selectFrom("Resource")
+                        .innerJoin(
+                          "Descendants",
+                          "Resource.parentId",
+                          "Descendants.id",
+                        )
+                        .select(["Resource.id"]),
+                    ),
+                )
+                .selectFrom("Descendants")
+                .select(["id"])
+                .execute()
+
+              const descendantIds = descendants.map((d) => d.id)
+              if (
+                destinationResourceId &&
+                descendantIds.includes(destinationResourceId)
+              ) {
+                throw new TRPCError({
+                  code: "BAD_REQUEST",
+                  message: "Cannot move a folder into one of its descendants",
+                })
+              }
+            }
+
             await tx
               .updateTable("Resource")
               .where("siteId", "=", Number(siteId))
