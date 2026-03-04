@@ -2032,9 +2032,9 @@ describe("page.router", async () => {
       })
 
       // Assert
-      const actual = await db
-        .selectFrom("Resource")
-        .where("id", "=", expectedPage.id)
+      const actualScheduledJob = await db
+        .selectFrom("ScheduledJobs")
+        .where("resourceId", "=", expectedPage.id)
         .selectAll()
         .executeTakeFirstOrThrow()
       // expect the scheduledAt to be tomorrow at 10am
@@ -2044,8 +2044,8 @@ describe("page.router", async () => {
         seconds: 0,
         milliseconds: 0,
       })
-      expect(actual.scheduledAt).toEqual(expectedDate)
-      expect(actual.scheduledBy).toEqual(session.userId)
+      expect(actualScheduledJob.scheduledAt).toEqual(expectedDate)
+      expect(actualScheduledJob.scheduledBy).toEqual(session.userId)
       // expect the audit log to be created, with the updated scheduledAt time
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
@@ -2197,14 +2197,13 @@ describe("page.router", async () => {
       })
 
       // Assert
-      // The scheduledAt field of the page should be null
-      const actual = await db
-        .selectFrom("Resource")
-        .where("id", "=", expectedPage.id)
+      // The scheduled job should be deleted
+      const actualScheduledJob = await db
+        .selectFrom("ScheduledJobs")
+        .where("resourceId", "=", expectedPage.id)
         .selectAll()
-        .executeTakeFirstOrThrow()
-      expect(actual.scheduledAt).toBeNull()
-      expect(actual.scheduledBy).toBeNull()
+        .executeTakeFirst()
+      expect(actualScheduledJob).toBeUndefined()
     })
     it("cancelling a scheduled publish throws an error if the page is not scheduled", async () => {
       // Arrange

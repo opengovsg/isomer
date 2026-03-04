@@ -1893,13 +1893,15 @@ describe("resource.router", async () => {
     ] as const
 
     const testListComparable = (
-      a: { updatedAt: Date; title: string },
-      b: { updatedAt: Date; title: string },
+      a: { updatedAt?: Date; title?: string },
+      b: { updatedAt?: Date; title?: string },
     ) => {
-      if (b.updatedAt.valueOf() === a.updatedAt.valueOf()) {
-        return a.title.localeCompare(b.title)
+      const aUpdatedAt = a.updatedAt?.valueOf() ?? 0
+      const bUpdatedAt = b.updatedAt?.valueOf() ?? 0
+      if (bUpdatedAt === aUpdatedAt) {
+        return (a.title ?? "").localeCompare(b.title ?? "")
       }
-      return b.updatedAt.valueOf() - a.updatedAt.valueOf()
+      return bUpdatedAt - aUpdatedAt
     }
 
     it("should throw 401 if not logged in", async () => {
