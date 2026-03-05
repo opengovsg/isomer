@@ -68,7 +68,7 @@ export const definePermissionsForSite = async ({
     .execute()
 
   // NOTE: Any role should be able to read site
-  if (roles.length === 1) {
+  if (roles.length > 0) {
     builder.can("read", "Site")
   }
 
