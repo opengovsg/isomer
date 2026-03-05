@@ -100,7 +100,6 @@ export const HeroBlock = ({
           className="absolute inset-0 h-full w-full object-cover object-center"
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false} // hero is always above the fold
-          fetchPriority="high"
         />
       </div>
     </section>
