@@ -40,7 +40,7 @@ export const ImageContainer = ({ imageSrc, imageAlt }: ImageContainerProps) => {
     // to not render during static site generation on the server
     if (typeof window === "undefined") return
 
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll, { passive: true })
     window.addEventListener("resize", handleScroll)
     handleScroll()
 
