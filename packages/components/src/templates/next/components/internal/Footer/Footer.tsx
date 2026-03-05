@@ -476,7 +476,7 @@ const FooterDesktop = ({
 
 export const Footer = (props: FooterProps) => {
   return (
-    <footer className="bg-base-canvas-inverse text-base-content-inverse">
+    <footer className="bg-base-canvas-inverse text-base-content-inverse [contain-intrinsic-size:auto] [content-visibility:auto]">
       <FooterMobile {...props} />
       <FooterDesktop {...props} />
     </footer>
