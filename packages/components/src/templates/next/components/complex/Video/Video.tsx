@@ -5,6 +5,7 @@ import { LiteVimeoEmbed } from "./LiteVimeoEmbed"
 import { LiteYouTubeEmbed } from "./LiteYouTubeEmbed"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 import {
+  getPrivacyEnhancedVimeoEmbedUrl,
   getPrivacyEnhancedYouTubeEmbedUrl,
   getVimeoVideoId,
   getYouTubeVideoId,
@@ -14,15 +15,6 @@ type ParsedVideo =
   | { type: "youtube"; embedUrl: string; videoId: string }
   | { type: "vimeo"; embedUrl: string; videoId: string }
   | { type: "facebook"; embedUrl: string }
-
-// NOTE: We are only using the privacy-enhanced mode of YouTube embeds (see getPrivacyEnhancedYouTubeEmbedUrl in utils).
-// NOTE: We are setting a do-not-track attribute on Vimeo embeds
-// Ref: https://developer.vimeo.com/api/oembed/videos
-const getPrivacyEnhancedVimeoEmbedUrl = (url: string): string => {
-  const urlObject = new URL(url)
-  urlObject.searchParams.set("dnt", "true")
-  return urlObject.toString()
-}
 
 /**
  * Parses a video URL and returns the video type plus the privacy-enhanced embed URL (or videoId for YouTube).

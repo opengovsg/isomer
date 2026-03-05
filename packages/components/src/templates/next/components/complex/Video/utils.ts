@@ -56,6 +56,14 @@ export const getYouTubeVideoId = (url: string): string | null => {
   }
 }
 
+// NOTE: We are setting a do-not-track attribute on Vimeo embeds
+// Ref: https://developer.vimeo.com/api/oembed/videos
+export const getPrivacyEnhancedVimeoEmbedUrl = (url: string): string => {
+  const urlObject = new URL(url)
+  urlObject.searchParams.set("dnt", "true")
+  return urlObject.toString()
+}
+
 /**
  * Extracts Vimeo video ID from a valid Vimeo embed URL.
  * Returns null for non-Vimeo URLs or when the ID cannot be parsed.
