@@ -16,7 +16,6 @@ export const ImageClient = forwardRef<
       className,
       assetsBaseUrl,
       lazyLoading = true, // next/image defaults to lazy loading true too
-      fetchPriority,
       onLoad,
     },
     ref,
@@ -35,7 +34,8 @@ export const ImageClient = forwardRef<
           currentTarget.src = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
         }}
         loading={lazyLoading ? "lazy" : "eager"}
-        fetchPriority={fetchPriority}
+        fetchPriority={lazyLoading ? "auto" : "high"}
+        decoding={lazyLoading ? "async" : "auto"} // sync decoding can block the main thread
       />
     )
   },
