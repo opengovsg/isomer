@@ -1,1 +1,0 @@
-export { getReactNodeText } from "./getTextContent"
