@@ -71,6 +71,10 @@ export const generateAriaLabel = ({
     return `Link to ${getDomainFromUrl(patchedTextContent)} (opens in new tab)`
   }
 
+  if (isExternal) {
+    return `${textContent.trim()} (opens in new tab)`
+  }
+
   if (isUrl(patchedTextContent)) {
     return `Link to ${getDomainFromUrl(patchedTextContent)}`
   }
