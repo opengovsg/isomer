@@ -40,17 +40,19 @@ const Site = ({
           borderRadius="0.5rem"
           gap="1rem"
           width="100%"
+          _groupHover={{
+            borderColor: "base.divider.brand",
+            backgroundColor: "interaction.muted.main.hover",
+          }}
         >
-          <Box position="relative">
+          <Box position="relative" flexShrink={0}>
             <Image
               src={siteLogoUrl}
               alt={siteName}
               width="6rem"
               height="6rem"
-              borderRadius="0.5rem"
               objectFit="contain"
               aspectRatio="1/1"
-              backgroundColor="white"
               fallbackSrc="/isomer-sites-placeholder.png"
               padding="0.5rem" // Leave some space so that logo won't be flush with the border
             />
@@ -63,24 +65,6 @@ const Site = ({
           >
             {siteName}
           </Text>
-        </Flex>
-        <Flex
-          position="absolute"
-          top="0"
-          left="0"
-          right="0"
-          bottom="0"
-          backgroundColor="base.canvas.overlay"
-          borderRadius="0.5rem"
-          justifyContent="center"
-          alignItems="center"
-          opacity="0"
-          transition="opacity 0.2s"
-          _groupHover={{ opacity: 1 }}
-        >
-          <Button backgroundColor="interaction.main.default">
-            <Text textStyle="subhead-1">Edit site</Text>
-          </Button>
         </Flex>
       </LinkOverlay>
     </LinkBox>
@@ -104,7 +88,7 @@ const SiteListSection = ({
         <OgpSearchBar
           defaultIsExpanded
           onChange={({ target }) => onChange(target.value)}
-          width="15rem"
+          width="16rem"
           placeholder={`Search sites by name`}
         />
       </Flex>
