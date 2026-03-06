@@ -73,7 +73,12 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
 
     return (
       <li>
-        <button ref={ref} className={item({ isOpen })} onClick={onClick}>
+        <button
+          ref={ref}
+          className={item({ isOpen })}
+          onClick={onClick}
+          aria-expanded={isOpen}
+        >
           <span className={groupFocusVisibleHighlight()}>{name}</span>
           <BiChevronDown className={chevron({ isOpen })} />
         </button>
