@@ -15,7 +15,10 @@ export const TableOfContents = ({
   LinkComponent,
 }: TableOfContentsProps) => {
   return (
-    <nav className="flex flex-col gap-3 rounded-lg bg-base-canvas-alt p-6">
+    <nav
+      aria-label="Table of Contents"
+      className="flex flex-col gap-3 rounded-lg bg-base-canvas-alt p-6"
+    >
       <p className="prose-headline-lg-medium text-base-content-strong">
         On this page
       </p>
