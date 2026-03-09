@@ -6,11 +6,7 @@ import type {
   CollectionBlockSingleCardProps,
 } from "~/interfaces/complex/CollectionBlock"
 import { tv } from "~/lib/tv"
-import {
-  getReferenceLinkHref,
-  getResourceIdFromReferenceLink,
-  isExternalUrl,
-} from "~/utils"
+import { getReferenceLinkHref, getResourceIdFromReferenceLink, isExternalUrl } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
@@ -101,11 +97,7 @@ const SingleCard = ({
     return (
       <div className={compoundStyles.cardImageContainer({ numberOfCards })}>
         <ImageClient
-          src={
-            isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
-              ? imageSrc
-              : `${site.assetsBaseUrl}${imageSrc}`
-          }
+          src={imageSrc}
           alt={imageAlt}
           width="100%"
           className={compoundStyles.cardImage({

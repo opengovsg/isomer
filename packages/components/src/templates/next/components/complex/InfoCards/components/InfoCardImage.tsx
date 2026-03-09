@@ -1,7 +1,7 @@
 import type { With4Cols } from "./types"
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
-import { getTailwindVariantLayout, isExternalUrl } from "~/utils"
+import { getTailwindVariantLayout } from "~/utils"
 import { ImageClient } from "../../Image"
 import { compoundStyles } from "../common"
 
@@ -27,11 +27,6 @@ export const InfoCardImage = ({
   | "shouldLazyLoad"
   | "variant"
 >): JSX.Element => {
-  const imgSrc =
-    isExternalUrl(imageUrl) || site.assetsBaseUrl === undefined
-      ? imageUrl
-      : `${site.assetsBaseUrl}${imageUrl}`
-
   return (
     <div
       className={compoundStyles.cardImageContainer({
@@ -42,7 +37,7 @@ export const InfoCardImage = ({
       })}
     >
       <ImageClient
-        src={imgSrc}
+        src={imageUrl}
         alt={imageAlt}
         width="100%"
         className={compoundStyles.cardImage({

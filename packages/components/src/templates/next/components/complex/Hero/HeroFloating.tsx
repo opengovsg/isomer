@@ -1,5 +1,5 @@
 import type { HeroFloatingProps } from "~/interfaces/complex/Hero"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import { getReferenceLinkHref } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 import { ImageClient } from "../Image"
@@ -35,11 +35,6 @@ export const HeroFloating = ({
   LinkComponent,
   theme = "default",
 }: HeroFloatingProps) => {
-  const backgroundSrc =
-    isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
-      ? backgroundUrl
-      : `${site.assetsBaseUrl}${backgroundUrl}`
-
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTitleColour = HERO_THEME_MAPPINGS.title[theme]
   const heroSubtitleColour = HERO_THEME_MAPPINGS.subtitle[theme]
@@ -53,10 +48,11 @@ export const HeroFloating = ({
       {/* Image with aspect ratio and max height */}
       <div className="lg:flex lg:w-full lg:justify-end">
         <ImageClient
-          src={backgroundSrc}
+          src={backgroundUrl}
           alt={title}
           width="100%"
           className="aspect-[3/2] w-full object-cover object-center lg:w-[66.67%]"
+          assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false}
           fetchPriority="high"
         />

@@ -2,7 +2,6 @@ import type { VariantProps } from "tailwind-variants"
 
 import type { ContentpicProps as BaseContentpicProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { isExternalUrl } from "~/utils"
 import { Prose } from "../../native/Prose"
 import { ImageClient } from "../Image"
 
@@ -29,15 +28,10 @@ export const Contentpic = ({
   site,
   shouldLazyLoad = true,
 }: ContentpicProps): JSX.Element => {
-  const imgSrc =
-    isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
-      ? imageSrc
-      : `${site.assetsBaseUrl}${imageSrc}`
-
   return (
     <div className={compoundStyles.container()}>
       <ImageClient
-        src={imgSrc}
+        src={imageSrc}
         alt={imageAlt || ""}
         width="100%"
         className={compoundStyles.image()}

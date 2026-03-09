@@ -1,5 +1,5 @@
 import type { HeroGradientProps } from "~/interfaces/complex/Hero"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import { getReferenceLinkHref } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 import { ImageClient } from "../Image"
@@ -15,11 +15,6 @@ export const HeroGradient = ({
   site,
   LinkComponent,
 }: HeroGradientProps) => {
-  const backgroundSrc =
-    isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
-      ? backgroundUrl
-      : `${site.assetsBaseUrl}${backgroundUrl}`
-
   return (
     <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">
       <div
@@ -28,7 +23,7 @@ export const HeroGradient = ({
         aria-hidden
       >
         <ImageClient
-          src={backgroundSrc}
+          src={backgroundUrl}
           alt={title}
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"

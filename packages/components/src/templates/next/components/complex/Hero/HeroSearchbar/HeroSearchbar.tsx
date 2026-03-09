@@ -1,5 +1,4 @@
 import type { HeroSearchbarProps } from "~/interfaces/complex/Hero"
-import { isExternalUrl } from "~/utils"
 import { ImageClient } from "../../Image"
 import { SearchbarContent } from "./SearchbarContent"
 
@@ -7,10 +6,6 @@ export const HeroSearchbar = (props: HeroSearchbarProps) => {
   const { backgroundUrl, site, title } = props
 
   if (backgroundUrl) {
-    const backgroundSrc =
-      isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
-        ? backgroundUrl
-        : `${site.assetsBaseUrl}${backgroundUrl}`
     // Stacking (back to front): background image (no z-index) → overlay (before:z-10) → content (z-20).
     return (
       <section className="relative flex w-full flex-col justify-center text-base-content-inverse before:absolute before:inset-0 before:z-10 before:bg-[#182236] before:opacity-80 md:min-h-80 lg:min-h-96">
@@ -20,7 +15,7 @@ export const HeroSearchbar = (props: HeroSearchbarProps) => {
           aria-hidden
         >
           <ImageClient
-            src={backgroundSrc}
+            src={backgroundUrl}
             alt={title}
             width="100%"
             className="absolute inset-0 h-full w-full object-cover object-center"
