@@ -38,7 +38,6 @@ const BoxLayout = ({
   childpages,
   showSummary,
   showThumbnail,
-  assetsBaseUrl,
   fallback,
   shouldLazyLoad,
   LinkComponent,
