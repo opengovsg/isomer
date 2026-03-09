@@ -61,7 +61,9 @@ export const LiteYouTubeEmbed = ({
   // Single-video: use static thumbnail.
   // Playlist/video series: resolve thumbnail via oEmbed.
   const thumbnailUrl = videoId
-    ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` // we use hqdefault as its the best balance between quality and size
+    ? // we use sddefault as its the best balance between quality and size
+      // note: maxresdefault is not available for all videos
+      `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`
     : oEmbedThumbnailUrl
 
   return (
