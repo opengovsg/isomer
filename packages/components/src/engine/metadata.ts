@@ -10,32 +10,48 @@ const getOpenGraphTitle = (props: IsomerPageSchemaType) => {
 }
 
 const getMetaDescription = (props: IsomerPageSchemaType) => {
-  if (props.meta?.description) {
-    return props.meta.description
+  const getNonEmptyValue = (value?: string) => {
+    return value?.trim() ? value : undefined
   }
+
+  // NOTE: Product requirement is to always use site name for homepage
+  // metadata description.
+  if (props.layout === ISOMER_PAGE_LAYOUTS.Homepage) {
+    return getNonEmptyValue(props.site.siteName)
+  }
+
+  if (getNonEmptyValue(props.meta?.description)) {
+    return props.meta?.description
+  }
+
+  let layoutDefaultDescription: string | undefined
 
   switch (props.layout) {
     case ISOMER_PAGE_LAYOUTS.Article:
-      return props.page.articlePageHeader.summary
+      layoutDefaultDescription = props.page.articlePageHeader.summary
+      break
     case ISOMER_PAGE_LAYOUTS.Content:
     case ISOMER_PAGE_LAYOUTS.Database:
     case ISOMER_PAGE_LAYOUTS.Index:
-      return props.page.contentPageHeader.summary
+      layoutDefaultDescription = props.page.contentPageHeader.summary
+      break
     case ISOMER_PAGE_LAYOUTS.Collection:
-      return props.page.subtitle
-    case ISOMER_PAGE_LAYOUTS.Homepage:
-      return props.content.find((item) => item.type === "hero")?.subtitle
+      layoutDefaultDescription = props.page.subtitle
+      break
     case ISOMER_PAGE_LAYOUTS.File:
     case ISOMER_PAGE_LAYOUTS.Link:
     case ISOMER_PAGE_LAYOUTS.Search:
     case ISOMER_PAGE_LAYOUTS.NotFound:
-      // NOTE: These pages do not appear in search results, so we don't need to
-      // provide a meta description
-      return undefined
+      layoutDefaultDescription = undefined
+      break
     default:
       const _: never = props
-      return undefined
+      layoutDefaultDescription = undefined
+      break
   }
+
+  // NOTE: Ensure meta description is present even if default summary is empty.
+  return getNonEmptyValue(layoutDefaultDescription) ?? getNonEmptyValue(props.site.siteName)
 }
 
 const getMetaImage = (props: IsomerPageSchemaType) => {
