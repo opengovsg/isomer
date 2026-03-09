@@ -8,7 +8,7 @@ export const AskgovSchema = Type.Object(
     "data-agency": Type.String({
       title: "AskGov ID",
       description:
-        "You can get this from [AskGov Support](https://form.gov.sg/689d8bf8bd05b72ca8a21d6b) after onboarding. If the widget doesn’t appear on your site, check that you have the correct ID.",
+        "Find your AskGov ID at the end of your AskGov agency URL (e.g. https://ask.gov.sg/ogp → ID is 'ogp'). For help, see [How to set up AskGov widget on my website?](https://ask.gov.sg/help/questions/cmeb54o2q00t98tmo9zv8au0w).",
     }),
     "data-topic": Type.Optional(
       Type.String({
