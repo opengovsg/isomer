@@ -178,6 +178,38 @@ export const Custom: Story = {
   ),
 }
 
+export const WithTableOfContents: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        type: "prose",
+        content: [
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [{ type: "text", text: "First Section" }],
+          },
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Content for the first section." }],
+          },
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [{ type: "text", text: "Second Section" }],
+          },
+          {
+            type: "paragraph",
+            content: [
+              { type: "text", text: "Content for the second section." },
+            ],
+          },
+        ],
+      },
+    ],
+  }),
+}
+
 export const Rows: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
