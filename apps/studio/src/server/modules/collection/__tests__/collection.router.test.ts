@@ -697,6 +697,61 @@ describe("collection.router", async () => {
       // Assert
       expect(result).toEqual(expect.any(Array))
     })
+
+    it("should return deterministic paginated results when items share the same type and title", async () => {
+      // Arrange: Create 4 CollectionPages with identical title to trigger non-deterministic
+      // ordering without a tie-breaker. Tests regression of offset/limit pagination bug.
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      const sharedTitle = "Identical Title"
+      const permalinks = ["page-1", "page-2", "page-3", "page-4"]
+      const pages = await Promise.all(
+        permalinks.map((permalink) =>
+          setupPageResource({
+            siteId: site.id,
+            resourceType: ResourceType.CollectionPage,
+            parentId: collection.id,
+            title: sharedTitle,
+            permalink,
+          }),
+        ),
+      )
+
+      // Act: Fetch two pages with limit=2
+      const page1First = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        limit: 2,
+        offset: 0,
+      })
+      const page1Second = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        limit: 2,
+        offset: 0,
+      })
+      const page2Result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        limit: 2,
+        offset: 2,
+      })
+
+      // Assert: Repeated page 1 calls return identical results (deterministic ordering)
+      expect(page1First.map((r) => r.id)).toEqual(page1Second.map((r) => r.id))
+
+      // Assert: No duplicate IDs across pages (pagination consistency)
+      const page1Ids = new Set(page1First.map((r) => r.id))
+      const page2Ids = new Set(page2Result.map((r) => r.id))
+      const overlap = [...page1Ids].filter((id) => page2Ids.has(id))
+      expect(overlap).toHaveLength(0)
+
+      // Assert: All 4 items are returned across pages (no items skipped)
+      const allIds = new Set([...page1Ids, ...page2Ids])
+      const expectedIds = new Set(pages.map((p) => p.page.id))
+      expect(allIds).toEqual(expectedIds)
+    })
   })
 
   describe("readCollectionLink", () => {

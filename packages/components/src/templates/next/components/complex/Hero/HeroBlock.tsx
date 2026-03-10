@@ -1,6 +1,7 @@
 import type { HeroBlockProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
+import { ImageClient } from "../Image"
 
 const HERO_THEME_MAPPINGS = {
   hero: {
@@ -62,7 +63,7 @@ export const HeroBlock = ({
                 )}
                 size="lg"
                 variant="solid"
-                colorScheme="inverse"
+                colorScheme={heroButton}
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
               >
@@ -89,11 +90,18 @@ export const HeroBlock = ({
         </div>
       </div>
       <div
-        className="h-80 bg-cover bg-center bg-no-repeat lg:h-auto lg:max-h-full lg:w-1/2"
-        style={{
-          backgroundImage: `url('${backgroundSrc}')`,
-        }}
-      />
+        className="relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2"
+        style={{ contain: "layout" }}
+      >
+        <ImageClient
+          src={backgroundSrc}
+          alt={title}
+          width="100%"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          assetsBaseUrl={site.assetsBaseUrl}
+          lazyLoading={false} // hero is always above the fold
+        />
+      </div>
     </section>
   )
 }

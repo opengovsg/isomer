@@ -26,6 +26,7 @@ import {
   DATABASE_ALLOWED_BLOCKS,
   DEFAULT_BLOCKS,
   HOMEPAGE_ALLOWED_BLOCKS,
+  INDEX_ALLOWED_BLOCKS,
 } from "./constants"
 import { type SectionType } from "./types"
 
@@ -181,8 +182,9 @@ function ComponentSelector() {
         return ARTICLE_ALLOWED_BLOCKS
       case ResourceType.Collection:
       case ResourceType.CollectionLink:
-      case ResourceType.IndexPage:
         return []
+      case ResourceType.IndexPage:
+        return INDEX_ALLOWED_BLOCKS
       case ResourceType.Folder:
       case ResourceType.FolderMeta:
       case ResourceType.CollectionMeta:

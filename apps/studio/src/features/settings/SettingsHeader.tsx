@@ -4,6 +4,7 @@ import { Button } from "@opengovsg/design-system-react"
 import { isEmpty } from "lodash"
 
 import { useBuilderErrors } from "../editing-experience/components/form-builder/ErrorProvider"
+import { Can } from "../permissions"
 
 interface SettingsHeaderProps {
   title: string
@@ -40,15 +41,17 @@ export const SettingsHeader = ({
           {title}
         </Text>
       </Flex>
-      <Button
-        type="submit"
-        isLoading={isLoading}
-        onClick={onClick}
-        isDisabled={isDisabledProp || isDisabled}
-        size="xs"
-      >
-        Publish
-      </Button>
+      <Can do="create" on={{ parentId: null }}>
+        <Button
+          type="submit"
+          isLoading={isLoading}
+          onClick={onClick}
+          isDisabled={isDisabledProp || isDisabled}
+          size="xs"
+        >
+          Publish
+        </Button>
+      </Can>
     </Flex>
   )
 }

@@ -2,7 +2,8 @@ import { BiChevronDown, BiRightArrowAlt } from "react-icons/bi"
 
 import type { NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlight, isExternalUrl } from "~/utils"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+import { focusVisibleHighlight } from "~/utils/tailwind"
 import { Link } from "../../Link"
 
 type NavItemAccordionProps = NavbarProps["items"][number] &

@@ -12,7 +12,9 @@ import { getEndingPreviewIndices, getPreviewIndices } from "./utils"
 const createImagePreviewStyles = tv({
   slots: {
     container:
-      "relative aspect-[1/1] w-full flex-1 flex-shrink-0 overflow-hidden border-[1px] focus-visible:outline focus-visible:outline-[0.75rem] focus-visible:outline-offset-[-0.75rem] focus-visible:outline-utility-highlight",
+      // Height is responsive via CSS to avoid hydration mismatch:
+      // sm/md screens show 3 previews (taller), lg screens show 5 previews (shorter)
+      "relative aspect-[1/1] w-full flex-1 flex-shrink-0 overflow-hidden border-[1px] focus-visible:outline focus-visible:outline-[0.75rem] focus-visible:outline-offset-[-0.75rem] focus-visible:outline-utility-highlight sm:h-[7.375rem] lg:h-[5.375rem]",
   },
   variants: {
     isSelected: {
@@ -24,19 +26,17 @@ const createImagePreviewStyles = tv({
         container: "border-base-divider-medium hover:opacity-80",
       },
     },
-    numberOfImages: {
-      "3": {
-        container: "h-[7.375rem]",
-      },
-      "5": {
-        container: "h-[5.375rem]",
-      },
-    },
-    isVisible: {
-      true: {
+    visibility: {
+      // Visible at all breakpoints (sm/md and lg)
+      all: {
         container: "block",
       },
-      false: {
+      // Only visible on lg (5 previews), hidden on sm/md (3 previews)
+      lgOnly: {
+        container: "hidden lg:block",
+      },
+      // Not visible at any breakpoint
+      none: {
         container: "hidden",
       },
     },
@@ -62,6 +62,22 @@ export const ImageGalleryClient = ({
     numberOfImages: images.length,
     currentIndex,
     maxPreviewImages,
+  })
+
+  // In production static export, useMediaQuery causes a hydration mismatch that React
+  // silently swallows — the DOM keeps the server-rendered state (3 previews) and never
+  // updates until a user interaction forces a re-render. To ensure the initial HTML is
+  // correct for all screen sizes, we compute preview indices for both breakpoints and
+  // use CSS responsive classes to show/hide the extras (see `visibility` TV variant).
+  const previewIndicesForSmMd = getPreviewIndices({
+    numberOfImages: images.length,
+    currentIndex,
+    maxPreviewImages: 3,
+  })
+  const previewIndicesForLg = getPreviewIndices({
+    numberOfImages: images.length,
+    currentIndex,
+    maxPreviewImages: 5,
   })
 
   const preloadImage = useCallback(
@@ -197,10 +213,11 @@ export const ImageGalleryClient = ({
                       className="h-full w-full object-contain"
                       assetsBaseUrl={assetsBaseUrl}
                       lazyLoading={
-                        shouldLazyLoad &&
-                        // only the current image is visible and should be lazy loaded (if lazy loading is enabled)
-                        // the other images aren't visible so they can be lazily loaded to not fight for loading priority
-                        isCurrentImage
+                        // Only the current image should respect the shouldLazyLoad prop.
+                        // Non-current images are hidden (opacity-0) and should always lazy load
+                        // to avoid eagerly fetching images that aren't visible on page load.
+                        // They will be force-loaded on demand via preloadImage() when needed.
+                        isCurrentImage ? shouldLazyLoad : true
                       }
                     />
                     {image.caption && (
@@ -244,20 +261,26 @@ export const ImageGalleryClient = ({
       {/* Preview Sequence - Using grid for fixed columns */}
       <div
         ref={containerRef}
-        className="mt-6 hidden w-full gap-3 sm:grid md:grid-cols-3 lg:grid-cols-5"
+        className="mt-6 hidden w-full gap-3 sm:grid sm:grid-cols-3 lg:grid-cols-5"
       >
         {images.map((image, index) => {
           // We render all images, but hide the ones that are not in the preview sequence
-          // This is avoid reloading images that have been loaded (e.g. when navigating back to an already loaded image)
-          // Given that current total image count is capped at 30, this have minimal performance impact (as they are basic DOM elements)
-          const isVisible = previewIndices.includes(index)
+          // This is to avoid reloading images that have been loaded (e.g. when navigating back to an already loaded image)
+          // Given that current total image count is capped at 30, this has minimal performance impact (as they are basic DOM elements)
+          // Visibility is CSS-driven to avoid hydration layout shift (see comment above).
+          // sm/md shows 3 previews, lg shows 5 — items only in the lg set are hidden on smaller screens.
+          const visibility = previewIndicesForSmMd.includes(index)
+            ? "all"
+            : previewIndicesForLg.includes(index)
+              ? "lgOnly"
+              : "none"
+
           return (
             <button
               key={image.src + index} // in case of same src, use index as key
               className={compoundStyles.container({
                 isSelected: index === currentIndex,
-                numberOfImages: maxPreviewImages.toString() as "3" | "5",
-                isVisible,
+                visibility,
               })}
               onClick={() => navigateToImageByIndex(index)}
               aria-label={`View image ${index + 1} of ${images.length}`}
@@ -274,10 +297,9 @@ export const ImageGalleryClient = ({
                 className="h-full w-full object-contain"
                 assetsBaseUrl={assetsBaseUrl}
                 lazyLoading={
-                  shouldLazyLoad &&
-                  // only the images in preview sequence are visible and should be lazy loaded (if lazy loading is enabled)
-                  // the other images aren't visible so they can be lazily loaded to not fight for loading priority
-                  isVisible
+                  // Hidden images should always be lazy loaded to avoid
+                  // fetching all images eagerly on page load
+                  visibility === "none" ? true : shouldLazyLoad
                 }
               />
             </button>

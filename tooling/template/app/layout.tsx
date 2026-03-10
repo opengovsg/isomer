@@ -6,7 +6,10 @@ import "@/styles/globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
-import { RenderApplicationScripts } from "@opengovsg/isomer-components"
+import {
+  RenderApplicationHeadScripts,
+  RenderApplicationScripts,
+} from "@opengovsg/isomer-components"
 
 const inter = Inter({
   // while we support other languages, we should only preload the latin subset
@@ -16,6 +19,13 @@ const inter = Inter({
   display: "swap",
   variable: "--font-inter",
 })
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: config.site.siteName || "Isomer",
+  url: config.site.url || "https://www.isomer.gov.sg",
+}
 
 export const dynamic = "force-static"
 
@@ -33,6 +43,14 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
       data-theme={config.site.theme || "isomer-next"}
       className={inter.variable}
     >
+      <head>
+        <RenderApplicationHeadScripts
+          site={{
+            ...config.site,
+            environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+          }}
+        />
+      </head>
       <body className="antialiased">
         {children}
         <RenderApplicationScripts
@@ -47,6 +65,13 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
               process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
           }}
           ScriptComponent={Script}
+        />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          }}
         />
       </body>
     </html>

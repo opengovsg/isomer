@@ -2,7 +2,7 @@ import type { PropsWithChildren } from "react"
 
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
-import { getReferenceLinkHref } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { Link } from "../../../internal/Link"
 import { compoundStyles } from "../common"
 

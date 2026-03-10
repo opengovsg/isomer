@@ -11,8 +11,8 @@ import { mergeProps } from "@react-aria/utils"
 
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { focusRing } from "~/utils"
 import { mergeRefs } from "~/utils/rac"
+import { focusRing } from "~/utils/tailwind"
 
 const iconButtonStyles = tv({
   base: "box-border flex w-fit cursor-pointer items-center justify-center rounded text-center transition",

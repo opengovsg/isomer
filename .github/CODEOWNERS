@@ -4,4 +4,4 @@
 # As they have no owner listed, these files are not owned by anyone.
 # Mostly to avoid dependabot noise
 package.json
-bun.lockb
+bun.lock

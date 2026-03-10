@@ -1,6 +1,7 @@
-import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
+import type { IsomerPageSchemaType } from "~/types/schema"
+import type { IsomerSitemap } from "~/types/sitemap"
 import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
-import { getSitemapAsArray } from "~/utils"
+import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
 const getOpenGraphTitle = (props: IsomerPageSchemaType) => {
   // NOTE: We show the site name as the title for the homepage, as places like
@@ -173,8 +174,17 @@ export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
         item.layout !== ISOMER_PAGE_LAYOUTS.File &&
         item.layout !== ISOMER_PAGE_LAYOUTS.Link,
     )
-    .map(({ permalink, lastModified }) => ({
-      url: siteUrl !== undefined ? `${siteUrl}${permalink}` : permalink,
-      lastModified,
-    }))
+    .map(({ permalink, lastModified }) => {
+      const permalinkWithTrailingSlash = permalink.endsWith("/")
+        ? permalink
+        : `${permalink}/`
+
+      return {
+        url:
+          siteUrl !== undefined
+            ? `${siteUrl}${permalinkWithTrailingSlash}`
+            : permalinkWithTrailingSlash,
+        lastModified,
+      }
+    })
 }

@@ -428,6 +428,46 @@ export const resourceRouter = router({
               })
             }
 
+            if (
+              toMove.type === "Folder" ||
+              toMove.type === "Collection" ||
+              toMove.type === "RootPage"
+            ) {
+              const descendants = await tx
+                .withRecursive("Descendants", (eb) =>
+                  eb
+                    .selectFrom("Resource")
+                    .select(["id"])
+                    .where("Resource.parentId", "=", movedResourceId)
+                    // Use UNION (distinct) so recursive traversal terminates
+                    // even if legacy cyclic resource graphs exist.
+                    .union((eb) =>
+                      eb
+                        .selectFrom("Resource")
+                        .innerJoin(
+                          "Descendants",
+                          "Resource.parentId",
+                          "Descendants.id",
+                        )
+                        .select(["Resource.id"]),
+                    ),
+                )
+                .selectFrom("Descendants")
+                .select(["id"])
+                .execute()
+
+              const descendantIds = descendants.map((d) => d.id)
+              if (
+                destinationResourceId &&
+                descendantIds.includes(destinationResourceId)
+              ) {
+                throw new TRPCError({
+                  code: "BAD_REQUEST",
+                  message: "Cannot move a folder into one of its descendants",
+                })
+              }
+            }
+
             await tx
               .updateTable("Resource")
               .where("siteId", "=", Number(siteId))
@@ -615,6 +655,15 @@ export const resourceRouter = router({
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "The resource to be deleted could not be found",
+          })
+        }
+
+        // Prevent users from deleting the search page (permalink /search, no parent)
+        // This is a special page that is used to display the SearchSG results
+        if (before.permalink === "search" && before.parentId === null) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "The search page cannot be deleted",
           })
         }
 

@@ -49,7 +49,7 @@ const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
 }
 
 const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
-  return <h2 className="prose-display-sm">{siteName}</h2>
+  return <h2 className="prose-display-xs">{siteName}</h2>
 }
 
 const footerItemLinkStyle = tv({
