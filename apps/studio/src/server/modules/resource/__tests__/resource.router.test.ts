@@ -2991,10 +2991,7 @@ describe("resource.router", async () => {
     it("should reject requests over MAX_BATCH_RESOURCE_IDS", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupEditorPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
       const result = caller.getBatchAncestryWithSelf({
@@ -4115,16 +4112,6 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
-
-      const resourceIds: string[] = []
-      for (let i = 0; i < MAX_BATCH_RESOURCE_IDS; i++) {
-        const { page } = await setupPageResource({
-          siteId: site.id,
-          resourceType: "Page",
-          permalink: `page-${i + 1}`,
-        })
-        resourceIds.push(page.id)
-      }
 
       // Act
       const result = caller.searchWithResourceIds({
