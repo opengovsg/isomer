@@ -5,7 +5,7 @@
  * the `getApiKey` callback. This keeps environment-variable access outside of
  * the shared components library.
  */
-type DgsConfig = {
+interface DgsConfig {
   getApiKey?: () => string | undefined
 }
 
