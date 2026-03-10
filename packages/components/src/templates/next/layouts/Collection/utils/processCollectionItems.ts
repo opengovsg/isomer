@@ -6,7 +6,6 @@ import type {
 } from "~/interfaces/internal/CollectionCard"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
-import { isExternalUrl } from "~/utils/isExternalUrl"
 
 export const processCollectionItems = (
   items: AllCardProps[],
