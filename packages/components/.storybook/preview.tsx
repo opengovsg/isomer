@@ -9,6 +9,7 @@ import "bootstrap-icons/font/bootstrap-icons.css"
 import "../src/index.css"
 
 import { viewport } from "@isomer/storybook-config"
+
 import { configureDgs } from "../src/utils/dgs/fetchDgs"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
