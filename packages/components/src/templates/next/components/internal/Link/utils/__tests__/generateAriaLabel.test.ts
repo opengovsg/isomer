@@ -51,6 +51,14 @@ describe("generateAriaLabel", () => {
     expect(result).toBe("Link to www.example.com (opens in new tab)")
   })
 
+  it("should return trimmed textContent with (opens in new tab) when isExternal and textContent is not a URL", () => {
+    const result = generateAriaLabel({
+      textContent: "  Click here  ",
+      isExternal: true,
+    })
+    expect(result).toBe("Click here (opens in new tab)")
+  })
+
   it("should only return the domain and not the entire url", () => {
     const result = generateAriaLabel({
       textContent: "https://www.example.com/test",

@@ -24,6 +24,14 @@ export const YouTube: Story = {
   },
 }
 
+export const YouTubeVideoSeries: Story = {
+  name: "YouTube video series (playlist)",
+  args: {
+    title: "YouTube playlist embed",
+    url: "https://www.youtube.com/embed/videoseries?si=FyxmgTc4hGelVqNi&list=PLH2CR4s1lqyhblReuK5ULf6cB100TO-VU",
+  },
+}
+
 export const Vimeo: Story = {
   args: {
     title: "WORMWOOD - Animation Short Film 2024 - GOBELINS",

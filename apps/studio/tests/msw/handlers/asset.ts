@@ -7,6 +7,8 @@ export const assetHandler = {
         return {
           fileKey: "MOCK_STORYBOOK_ASSET",
           presignedPutUrl: "/storybook/upload",
+          contentType: "application/octet-stream",
+          contentDisposition: "inline; filename*=UTF-8''MOCK_STORYBOOK_ASSET",
         }
       })
     },

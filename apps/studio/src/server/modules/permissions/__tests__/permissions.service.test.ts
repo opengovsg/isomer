@@ -19,7 +19,10 @@ import {
   getResourcePermission,
 } from "../permissions.service"
 import { CRUD_ACTIONS } from "../permissions.type"
-import { buildPermissionsForResource } from "../permissions.util"
+import {
+  buildPermissionsForResource,
+  buildUserManagementPermissions,
+} from "../permissions.util"
 
 const buildPermissions = (role: RoleType) => {
   const builder = new AbilityBuilder<ResourceAbility>(createMongoAbility)
@@ -159,6 +162,52 @@ describe("permissions.service", () => {
       // Assert
       expect(canMoveFrom).toBe(expected)
       expect(canMoveTo).toBe(false)
+    })
+  })
+
+  describe("buildUserManagementPermissions", () => {
+    it("should not allow read when user has no roles", () => {
+      const perms = buildUserManagementPermissions([])
+      expect(perms.can("read", "UserManagement")).toBe(false)
+      expect(perms.can("manage", "UserManagement")).toBe(false)
+    })
+
+    it("should allow read when user has exactly one role (Editor)", () => {
+      const perms = buildUserManagementPermissions([{ role: RoleType.Editor }])
+      expect(perms.can("read", "UserManagement")).toBe(true)
+      expect(perms.can("manage", "UserManagement")).toBe(false)
+    })
+
+    it("should allow read when user has exactly one role (Publisher)", () => {
+      const perms = buildUserManagementPermissions([
+        { role: RoleType.Publisher },
+      ])
+      expect(perms.can("read", "UserManagement")).toBe(true)
+      expect(perms.can("manage", "UserManagement")).toBe(false)
+    })
+
+    it("should allow read when user has multiple non-admin roles (Editor and Publisher)", () => {
+      const perms = buildUserManagementPermissions([
+        { role: RoleType.Editor },
+        { role: RoleType.Publisher },
+      ])
+      expect(perms.can("read", "UserManagement")).toBe(true)
+      expect(perms.can("manage", "UserManagement")).toBe(false)
+    })
+
+    it("should allow manage when user has Admin role", () => {
+      const perms = buildUserManagementPermissions([{ role: RoleType.Admin }])
+      expect(perms.can("read", "UserManagement")).toBe(true)
+      expect(perms.can("manage", "UserManagement")).toBe(true)
+    })
+
+    it("should allow manage when user has multiple roles including Admin", () => {
+      const perms = buildUserManagementPermissions([
+        { role: RoleType.Editor },
+        { role: RoleType.Admin },
+      ])
+      expect(perms.can("read", "UserManagement")).toBe(true)
+      expect(perms.can("manage", "UserManagement")).toBe(true)
     })
   })
 

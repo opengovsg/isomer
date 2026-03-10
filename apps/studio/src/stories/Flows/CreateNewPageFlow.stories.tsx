@@ -6,7 +6,6 @@ import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import SitePage from "~/pages/sites/[siteId]"
-import { createDatabaseLayoutGbParameters } from "../utils/growthbook"
 
 const meta: Meta<typeof SitePage> = {
   title: "Flows/Create New Page",
@@ -71,9 +70,6 @@ export const SelectArticleLayout: Story = {
 }
 
 export const SelectDatabaseLayout: Story = {
-  parameters: {
-    growthbook: [createDatabaseLayoutGbParameters("1")],
-  },
   play: async (context) => {
     const { canvasElement } = context
     const screen = within(canvasElement.ownerDocument.body)

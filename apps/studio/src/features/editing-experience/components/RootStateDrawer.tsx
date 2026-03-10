@@ -328,7 +328,7 @@ export default function RootStateDrawer() {
   // because folder index pages aren't intended to have
   // content yet and components don't render content
   // for collection index pages
-  const canAddBlocks = pageLayout !== "index" && pageLayout !== "collection"
+  const canAddBlocks = pageLayout !== "collection"
 
   return (
     <Flex direction="column" h="full">

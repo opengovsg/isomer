@@ -15,10 +15,7 @@ import { BiShow } from "react-icons/bi"
 
 import type { Layout } from "./constants"
 import { NextImage } from "~/components/NextImage"
-import { siteSchema } from "~/features/editing-experience/schema"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import { LAYOUT_RENDER_DATA } from "./constants"
-import { useLayoutOptions } from "./useLayoutOptions"
 
 interface LayoutTileProps extends UseRadioProps {
   value: Layout
@@ -149,18 +146,11 @@ export const LayoutOptionsInput = forwardRef<
 
   const group = getRootProps()
 
-  const { siteId } = useQueryParse(siteSchema)
-
-  const { layoutOptions } = useLayoutOptions({ siteId })
-
-  const entries = Object.entries(layoutOptions) as [
-    keyof typeof layoutOptions,
-    (typeof layoutOptions)[keyof typeof layoutOptions],
-  ][]
+  const layoutKeys = Object.keys(LAYOUT_RENDER_DATA) as Layout[]
 
   return (
     <Stack {...group} gap="2rem">
-      {entries.map(([key, _value], index) => {
+      {layoutKeys.map((key, index) => {
         const radio = getRadioProps({ value: key })
         return (
           <LayoutOptionRadio

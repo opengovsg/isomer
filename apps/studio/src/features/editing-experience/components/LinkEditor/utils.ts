@@ -11,11 +11,21 @@ export const getLinkHrefType = (href: string | undefined): LinkTypes => {
     return LINK_TYPES.Email
   }
 
-  // File links would be pointing to the assets bucket, so they start with a
-  // /(\d+)/<uuid>/<filename>
-  const fileLinkMatch = /\/(\d+)\/[0-9a-fA-F-]{36}\//.exec(href)
-  if (fileLinkMatch?.length === 2) {
-    return LINK_TYPES.File
+  // File links point to the assets bucket: path-only format /(\d+)/<uuid>/<filename>.
+  // Never treat full URLs as internal file links (avoids external URLs with this
+  // pattern being misclassified and shown as filename-only in the UI).
+  let isFullUrl = false
+  try {
+    const url = new URL(href)
+    isFullUrl = url.protocol === "http:" || url.protocol === "https:"
+  } catch {
+    // Relative path or invalid URL
+  }
+  if (!isFullUrl) {
+    const fileLinkMatch = /^\/(\d+)\/[0-9a-fA-F-]{36}\//.exec(href)
+    if (fileLinkMatch?.length === 2) {
+      return LINK_TYPES.File
+    }
   }
 
   // Internal links are in the format [resource:$siteId:$pageId]

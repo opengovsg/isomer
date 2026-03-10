@@ -1,9 +1,9 @@
-import type { LinkProps } from "~/interfaces"
+import type { LinkProps } from "~/interfaces/internal/Link"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { focusRing, focusVisibleHighlight } from "~/utils"
-import { getReactNodeText } from "./utils"
+import { focusRing, focusVisibleHighlight } from "~/utils/tailwind"
 import { generateAriaLabel } from "./utils/generateAriaLabel"
+import { getReactNodeText } from "./utils/getTextContent"
 
 const linkStyles = tv({
   extend: focusRing,
