@@ -1586,6 +1586,51 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should reject descendant moves even when legacy cyclic data exists", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { folder: folderA, site } = await setupFolder({
+        permalink: "cyclic-folder-a",
+      })
+      const { folder: folderB } = await setupFolder({
+        siteId: site.id,
+        permalink: "cyclic-folder-b",
+        parentId: folderA.id,
+      })
+      const { folder: folderC } = await setupFolder({
+        siteId: site.id,
+        permalink: "cyclic-folder-c",
+        parentId: folderB.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Seed legacy corruption: A -> B and B -> A cycle.
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folderA.id)
+        .set({ parentId: folderB.id })
+        .execute()
+
+      // Act
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: folderA.id,
+        destinationResourceId: folderC.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot move a folder into one of its descendants",
+        }),
+      )
+    })
+
     it("should allow moving a folder to a sibling folder (not a descendant)", async () => {
       // Arrange
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
