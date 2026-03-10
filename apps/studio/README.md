@@ -221,12 +221,12 @@ Operational notes:
 
 Quick failure guide:
 
-| Symptom                               | Likely cause                                | Where to check |
-| ------------------------------------- | ------------------------------------------- | -------------- |
-| `UNAUTHORIZED: Email address...`      | Email not in allowlist or user is deleted   | `email.router.ts` login checks |
-| `INTERNAL_SERVER_ERROR: Failed to...` | Postman API/network failure while sending   | `lib/mail.ts` logs |
-| `Please request for another OTP`      | Missing/expired verification token          | verification token table and OTP fingerprinting |
-| OTP not received locally              | `POSTMAN_API_KEY` missing (console fallback)| local server console output |
+| Symptom                               | Likely cause                                 | Where to check                                  |
+| ------------------------------------- | -------------------------------------------- | ----------------------------------------------- |
+| `UNAUTHORIZED: Email address...`      | Email not in allowlist or user is deleted    | `email.router.ts` login checks                  |
+| `INTERNAL_SERVER_ERROR: Failed to...` | Postman API/network failure while sending    | `lib/mail.ts` logs                              |
+| `Please request for another OTP`      | Missing/expired verification token           | verification token table and OTP fingerprinting |
+| OTP not received locally              | `POSTMAN_API_KEY` missing (console fallback) | local server console output                     |
 
 ## Files of note
 
