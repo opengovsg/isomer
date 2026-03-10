@@ -1,5 +1,3 @@
-import { getDgsApiKey } from "./getDgsApiKey"
-
 /**
  * Wrapper around fetch that auto-injects the data.gov.sg API key when present.
  * Works without the API key—requests succeed either way. The key is only for
@@ -16,4 +14,9 @@ export const fetchDgs = (
     headers.set("x-api-key", apiKey)
   }
   return fetch(input, { ...init, headers })
+}
+
+const getDgsApiKey = (): string | undefined => {
+  const key = process.env.DATAGOVSG_API_KEY
+  return typeof key === "string" ? key.trim() || undefined : undefined
 }
