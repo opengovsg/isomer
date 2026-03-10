@@ -439,7 +439,9 @@ export const resourceRouter = router({
                     .selectFrom("Resource")
                     .select(["id"])
                     .where("Resource.parentId", "=", movedResourceId)
-                    .unionAll((eb) =>
+                    // Use UNION (distinct) so recursive traversal terminates
+                    // even if legacy cyclic resource graphs exist.
+                    .union((eb) =>
                       eb
                         .selectFrom("Resource")
                         .innerJoin(
