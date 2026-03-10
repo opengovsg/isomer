@@ -1,8 +1,13 @@
 import type { IndexPageSchemaType } from "~/types"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages/constants"
 import { tv } from "~/lib/tv"
-import { getBreadcrumbFromSiteMap } from "~/utils"
+import {
+  getBreadcrumbFromSiteMap,
+  getTableOfContents,
+  getTransformedPageContent,
+} from "~/utils"
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
+import { TableOfContents } from "../../components/internal/TableOfContents"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
@@ -33,6 +38,9 @@ export const IndexPageLayout = ({
   const pageContent: IndexPageSchemaType["content"] = hasChildpageBlock
     ? content
     : [...content, DEFAULT_CHILDREN_PAGES_BLOCK]
+  // auto-inject ids for heading level 2 blocks if does not exist
+  const transformedContent = getTransformedPageContent(pageContent)
+  const tableOfContents = getTableOfContents(site, transformedContent)
 
   return (
     <Skeleton
@@ -52,8 +60,14 @@ export const IndexPageLayout = ({
       />
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.content()}>
+          {tableOfContents.length > 1 && (
+            <TableOfContents
+              items={tableOfContents}
+              LinkComponent={LinkComponent}
+            />
+          )}
           {renderPageContent({
-            content: pageContent,
+            content: transformedContent,
             layout,
             site,
             LinkComponent,
