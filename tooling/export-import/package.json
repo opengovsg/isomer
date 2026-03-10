@@ -9,16 +9,16 @@
   },
   "devDependencies": {
     "@isomer/tsconfig": "workspace:*",
-    "@types/node": "^22.15.21",
-    "@types/pg": "^8.15.4",
+    "@types/node": "^22.19.7",
+    "@types/pg": "^8.16.0",
     "dotenv": "^16.4.5",
-    "tsx": "^4.20.4",
-    "typescript": "^5.9.2"
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@inquirer/prompts": "^7.6.0",
-    "pg": "^8.16.2"
+    "pg": "^8.17.2"
   }
 }

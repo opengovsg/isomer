@@ -7,20 +7,20 @@
   "devDependencies": {
     "@isomer/migrate-tags": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
-    "@types/node": "^22.15.21",
+    "@types/node": "^22.19.7",
     "typescript": "latest"
   },
   "dependencies": {
-    "@aws-sdk/client-acm": "^3.840.0",
-    "@aws-sdk/client-amplify": "^3.886.0",
-    "@aws-sdk/client-cloudfront": "^3.840.0",
-    "@aws-sdk/credential-providers": "^3.886.0",
+    "@aws-sdk/client-acm": "^3.972.4",
+    "@aws-sdk/client-amplify": "^3.972.4",
+    "@aws-sdk/client-cloudfront": "^3.972.4",
+    "@aws-sdk/credential-providers": "^3.972.4",
     "@inquirer/prompts": "^7.6.0",
     "@isomer/seed-from-repo": "workspace:*",
     "@octokit/rest": "^22.0.0",
     "axios": "^1.10.0",
     "commander-ts": "^0.2.0",
-    "tsx": "^4.20.4"
+    "tsx": "^4.21.0"
   },
   "prettier": "@isomer/prettier-config"
 }
