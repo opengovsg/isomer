@@ -23,6 +23,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
+import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 import { db } from "../../database"
@@ -30,6 +31,9 @@ import { resourceRouter } from "../resource.router"
 import { getFullPageById } from "../resource.service"
 
 const createCaller = createCallerFactory(resourceRouter)
+
+const makeResourceIds = (count: number): string[] =>
+  Array.from({ length: count }, (_, index) => `${index + 1}`)
 
 describe("resource.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -2959,6 +2963,46 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should accept requests up to MAX_BATCH_RESOURCE_IDS", async () => {
+      // Arrange - use one existing resource ID repeated to hit the limit
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      const resourceIds: string[] = []
+      for (let i = 0; i < MAX_BATCH_RESOURCE_IDS; i++) {
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: `page-${i + 1}`,
+        })
+        resourceIds.push(page.id)
+      }
+
+      // Act
+      const result = await caller.getBatchAncestryWithSelf({
+        siteId: String(site.id),
+        resourceIds,
+      })
+
+      // Assert
+      expect(result).toHaveLength(MAX_BATCH_RESOURCE_IDS)
+    })
+
+    it("should reject requests over MAX_BATCH_RESOURCE_IDS", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.getBatchAncestryWithSelf({
+        siteId: String(site.id),
+        resourceIds: makeResourceIds(MAX_BATCH_RESOURCE_IDS + 1),
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    })
+
     it.skip("should throw 403 if user does not have read access to the resources", async () => {})
   })
 
@@ -4038,6 +4082,63 @@ describe("resource.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+    })
+
+    it("should accept requests up to MAX_BATCH_RESOURCE_IDS", async () => {
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      const resourceIds: string[] = []
+      for (let i = 0; i < MAX_BATCH_RESOURCE_IDS; i++) {
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: `page-${i + 1}`,
+        })
+        resourceIds.push(page.id)
+      }
+
+      // Act
+      const result = await caller.searchWithResourceIds({
+        siteId: String(site.id),
+        resourceIds,
+      })
+
+      // Assert - route accepts input (DB returns unique rows so 1 result)
+      expect(Array.isArray(result)).toBe(true)
+    })
+
+    it("should reject requests over MAX_BATCH_RESOURCE_IDS", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.searchWithResourceIds({
+        siteId: String(site.id),
+        resourceIds: makeResourceIds(MAX_BATCH_RESOURCE_IDS + 1),
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    })
+
+    it("should reject invalid bigint resource IDs", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.searchWithResourceIds({
+        siteId: String(site.id),
+        resourceIds: ["01", "2"],
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
     it.skip("should throw 403 if user does not have read access to the resources", async () => {})
