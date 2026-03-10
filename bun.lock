@@ -5,8 +5,8 @@
     "": {
       "name": "isomer-next",
       "devDependencies": {
-        "sherif": "^1.9.0",
-        "turbo": "^2.7.4",
+        "sherif": "^1.10.0",
+        "turbo": "^2.8.15",
       },
     },
     "apps/studio": {
