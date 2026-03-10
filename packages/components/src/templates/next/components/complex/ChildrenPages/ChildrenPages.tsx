@@ -45,7 +45,11 @@ const BoxLayout = ({
 }: ChildpageLayoutProps) => {
   return (
     <div
-      className={compoundStyles.grid({ maxColumns: "3", variant: "default" })}
+      className={compoundStyles.grid({
+        maxColumns: "3",
+        variant: "default",
+        class: "[&:not(:first-child)]:mt-7",
+      })}
     >
       {childpages.map(({ title, description, url, image }, idx) => {
         if (showThumbnail) {
