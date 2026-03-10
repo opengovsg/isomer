@@ -67,7 +67,7 @@ export const IndexPageLayout = ({
             />
           )}
           {renderPageContent({
-            content: pageContent,
+            content: transformedContent,
             layout,
             site,
             LinkComponent,
