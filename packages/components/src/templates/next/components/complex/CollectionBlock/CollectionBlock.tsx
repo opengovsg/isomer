@@ -6,7 +6,11 @@ import type {
   CollectionBlockSingleCardProps,
 } from "~/interfaces/complex/CollectionBlock"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, getResourceIdFromReferenceLink, isExternalUrl } from "~/utils"
+import {
+  getReferenceLinkHref,
+  getResourceIdFromReferenceLink,
+  isExternalUrl,
+} from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
