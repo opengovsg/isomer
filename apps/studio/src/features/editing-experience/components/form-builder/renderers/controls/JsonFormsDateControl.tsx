@@ -33,9 +33,9 @@ function JsonFormsDateControl({
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <DatePicker
-          inputValue={!!data ? String(data) : undefined}
+          inputValue={data}
           allowManualInput={true}
-          onInputValueChange={(date) => handleChange(path, date.toString())}
+          onInputValueChange={(date) => handleChange(path, date)}
         />
         <FormErrorMessage>
           {label} {getCustomErrorMessage(errors)}
