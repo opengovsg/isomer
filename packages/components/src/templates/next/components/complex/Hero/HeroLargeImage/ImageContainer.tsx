@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 
 import type { ImageClientProps } from "~/interfaces"
-import { ImageClient } from "../../Image"
+import { ImageClient } from "../../../internal/ImageClient"
 import { ScrollForMoreButton } from "./ScrollForMoreButton"
 
 interface ImageContainerProps {

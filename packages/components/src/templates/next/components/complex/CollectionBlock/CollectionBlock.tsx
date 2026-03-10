@@ -14,7 +14,7 @@ import {
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
-import { ImageClient } from "../Image"
+import { ImageClient } from "../../internal/ImageClient"
 import {
   getCollectionPages,
   getCollectionParent,

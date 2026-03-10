@@ -2,7 +2,7 @@ import type { With4Cols } from "./types"
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { getTailwindVariantLayout } from "~/utils"
-import { ImageClient } from "../../Image"
+import { ImageClient } from "../../../internal/ImageClient"
 import { compoundStyles } from "../common"
 
 export const InfoCardImage = ({

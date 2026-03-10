@@ -1,7 +1,7 @@
 import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { isExternalUrl } from "~/utils"
-import { ImageClient } from "../../complex/Image"
+import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
 import { Tag } from "../Tag"
 import { Title } from "./Title"

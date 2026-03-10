@@ -8,7 +8,7 @@ import {
 } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
-import { ImageClient } from "../Image"
+import { ImageClient } from "../../internal/ImageClient"
 import { compoundStyles } from "../InfoCards/common"
 import { InfoCardNoImage, InfoCardWithImage } from "../InfoCards/components"
 import { mergeChildrenPages } from "./utils"

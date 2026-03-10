@@ -1,7 +1,7 @@
 import type { LogoCloudProps } from "~/interfaces/complex/LogoCloud"
 import { tv } from "~/lib/tv"
 import { ComponentContent } from "../../internal/customCssClass"
-import { ImageClient } from "../Image"
+import { ImageClient } from "../../internal/ImageClient"
 
 const createLogoCloudStyles = tv({
   slots: {

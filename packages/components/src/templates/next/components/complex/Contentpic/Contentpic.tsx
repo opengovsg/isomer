@@ -3,7 +3,7 @@ import type { VariantProps } from "tailwind-variants"
 import type { ContentpicProps as BaseContentpicProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { Prose } from "../../native/Prose"
-import { ImageClient } from "../Image"
+import { ImageClient } from "../../internal/ImageClient"
 
 const contentpicStyles = tv({
   slots: {

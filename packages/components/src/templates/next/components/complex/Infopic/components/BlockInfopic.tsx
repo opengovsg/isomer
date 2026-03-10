@@ -2,7 +2,7 @@ import type { InfopicProps } from "../types"
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { getReferenceLinkHref } from "~/utils"
 import { LinkButton } from "../../../internal/LinkButton"
-import { ImageClient } from "../../Image"
+import { ImageClient } from "../../../internal/ImageClient"
 import { infopicStyles } from "../common"
 
 export const BlockInfopic = ({
