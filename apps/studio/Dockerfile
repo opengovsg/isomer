@@ -1,7 +1,7 @@
-# needed to pin to 3.20 because Prisma uses OpenSSL but it has been shifted to another location in 3.21
+# Use Debian-based image (not Alpine) - Bun/bunx requires glibc, Alpine uses musl
 # Ref: https://github.com/prisma/prisma/issues/25817
 # Solution: https://github.com/prisma/prisma/issues/25817#issuecomment-2529926082
-FROM node:22-alpine3.20 AS base
+FROM node:22-slim AS base
 
 ARG NEXT_PUBLIC_APP_ENV
 ENV NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV
@@ -35,8 +35,9 @@ ENV NEXT_PUBLIC_INTERCOM_APP_ID=$NEXT_PUBLIC_INTERCOM_APP_ID
 ENV KEEP_ALIVE_TIMEOUT 70000
 
 FROM base AS builder
-RUN apk update
-RUN apk add --no-cache libc6-compat bash curl unzip
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash curl unzip ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install bun
 RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
@@ -49,7 +50,7 @@ WORKDIR /app
 RUN bun add -g turbo@^2
 COPY . .
 
-RUN bun ci --ignore-scripts
+RUN bun ci
 RUN turbo run build --filter=isomer-studio...
 
 FROM base AS runner
@@ -57,7 +58,7 @@ WORKDIR /app
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN adduser --system --uid 1001 --ingroup nodejs nextjs
 USER nextjs
 
 # Automatically leverage output traces to reduce image size
