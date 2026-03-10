@@ -56,7 +56,6 @@ export const Navbar = ({
         }),
         assetsBaseUrl: site.assetsBaseUrl,
         lazyLoading: false, // will always be above the fold
-        fetchPriority: "high", // will always be above the fold
       }}
       callToAction={
         !!callToAction

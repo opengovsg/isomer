@@ -212,8 +212,8 @@ jobs:
             ${{ steps.inspector.outputs.inspector_scan_results_markdown }}
             ${{ steps.inspector.outputs.artifact_sbom }}
 
-      - name: Notify if vulnerability threshold is exceeded
-        if: ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
+      - name: Notify if vulnerability threshold is exceeded (for production deployments only)
+        if: ${{ steps.inspector.outputs.vulnerability_threshold_exceeded && inputs.environment == 'production' }}
         uses: slackapi/slack-github-action@v2.1.1
         with:
           method: chat.postMessage
