@@ -22,9 +22,9 @@ export default [
       "no-restricted-imports": [
         "error",
         {
-          patterns: [
+          paths: [
             {
-              group: ["^@opengovsg/isomer-components$"],
+              name: "@opengovsg/isomer-components",
               message:
                 "Import from subpaths directly (e.g., '@opengovsg/isomer-components/templates/next') to improve Next.js tree-shaking. Root imports are not allowed.",
             },
