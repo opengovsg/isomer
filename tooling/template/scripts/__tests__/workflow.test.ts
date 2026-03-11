@@ -8,6 +8,7 @@ import { run as runGeneratePages } from "../generate-pages"
 import { run as runUpdatePages } from "../update-pages"
 
 const FIXTURE = path.join(__dirname, "fixtures", "workflow")
+const TEMPLATE_APP_PAGE = path.join(__dirname, "..", "..", "app", "page.tsx")
 
 describe("build:prepare workflow (regression)", () => {
   let tmpDir: string
@@ -17,10 +18,7 @@ describe("build:prepare workflow (regression)", () => {
     await copyDir(path.join(FIXTURE, "public"), path.join(tmpDir, "public"))
     await copyDir(path.join(FIXTURE, "schema"), path.join(tmpDir, "schema"))
     await fs.mkdir(path.join(tmpDir, "app"), { recursive: true })
-    await fs.copyFile(
-      path.join(FIXTURE, "app", "page.tsx"),
-      path.join(tmpDir, "app", "page.tsx"),
-    )
+    await fs.copyFile(TEMPLATE_APP_PAGE, path.join(tmpDir, "app", "page.tsx"))
   })
 
   afterEach(async () => {
@@ -65,10 +63,10 @@ describe("build:prepare workflow (regression)", () => {
     const newsPage = path.join(tmpDir, "app", "news", "page.tsx")
     const pdfPage = path.join(tmpDir, "app", "pdf", "page.tsx")
 
-    await expect(fs.access(rootPage)).resolves.toBeUndefined()
-    await expect(fs.access(aboutPage)).resolves.toBeUndefined()
-    await expect(fs.access(teamPage)).resolves.toBeUndefined()
-    await expect(fs.access(newsPage)).resolves.toBeUndefined()
+    await fs.access(rootPage)
+    await fs.access(aboutPage)
+    await fs.access(teamPage)
+    await fs.access(newsPage)
     await expect(fs.access(pdfPage)).rejects.toThrow()
 
     // --- 3. STATIC_ROUTE_PERMALINK per page ---
