@@ -1,5 +1,5 @@
 import type { HeadingProps } from "~/interfaces"
-import { getTextAsHtml } from "~/utils"
+import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
 export const Heading = ({
   attrs: { id, level, dir },

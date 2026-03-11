@@ -1,6 +1,6 @@
 import type { InfopicProps } from "./types"
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
-import { isExternalUrl } from "~/utils"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import { BlockInfopic } from "./components/BlockInfopic"
 import { FullInfopic } from "./components/FullInfopic"
 

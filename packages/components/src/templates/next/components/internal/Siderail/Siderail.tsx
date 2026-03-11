@@ -2,7 +2,7 @@ import type { Item } from "./types"
 import type { SiderailProps } from "~/interfaces"
 import type { LinkComponentType } from "~/types"
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlight } from "~/utils"
+import { focusVisibleHighlight } from "~/utils/tailwind"
 import { Link } from "../Link"
 
 const MAX_SIBLINGS_LIMIT = 10

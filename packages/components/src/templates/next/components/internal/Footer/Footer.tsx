@@ -25,12 +25,10 @@ import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import {
-  focusVisibleHighlight,
-  getFormattedDate,
-  getReferenceLinkHref,
-  isExternalUrl,
-} from "~/utils"
+import { getFormattedDate } from "~/utils/getFormattedDate"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+import { focusVisibleHighlight } from "~/utils/tailwind"
 import { Link } from "../Link"
 import { ClientCopyrightYear } from "./ClientCopyrightYear"
 

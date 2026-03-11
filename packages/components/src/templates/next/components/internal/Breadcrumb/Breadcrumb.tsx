@@ -4,7 +4,7 @@ import { BiChevronRight } from "react-icons/bi"
 import type { BreadcrumbProps, LinkProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { focusVisibleHighlight } from "~/utils"
+import { focusVisibleHighlight } from "~/utils/tailwind"
 import { Link } from "../Link"
 
 const createBreadcrumbLinkStyles = tv({

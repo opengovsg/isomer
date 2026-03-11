@@ -4,14 +4,14 @@ import type { commonContactMethodStyles } from "./common"
 import type { ContactInformationUIProps } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
 import { Link } from "~/templates/next/components/internal/Link"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+import { focusVisibleHighlight } from "~/utils/tailwind"
 import {
-  focusVisibleHighlight,
   isEmail,
-  isExternalUrl,
   isPhoneNumber,
   isUrl,
   sanitizePhoneNumber,
-} from "~/utils"
+} from "~/utils/validation"
 import { METHODS_MAPPING } from "./mapping"
 
 type ContactMethodProps = ContactInformationUIProps["methods"][number] & {

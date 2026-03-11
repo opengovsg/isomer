@@ -1,12 +1,10 @@
 import type { ChildrenPagesProps, ImageClientProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types"
 import { tv } from "~/lib/tv"
-import {
-  getNodeFromSiteMap,
-  getReferenceLinkHref,
-  groupFocusVisibleHighlight,
-  isExternalUrl,
-} from "~/utils"
+import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { ImageClient } from "../Image"
