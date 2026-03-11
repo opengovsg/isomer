@@ -14,7 +14,7 @@ export const getHtmlFromMarkdown = (markdown: string) => {
   } catch (e) {
     // Handle case where frontmatter has duplicate keys
     // Extract the frontmatter manually
-    const frontmatterMatch = markdown.match(/---([\s\S]*?)---/);
+    const frontmatterMatch = /---([\s\S]*?)---/.exec(markdown);
     if (frontmatterMatch) {
       const frontmatterContent = frontmatterMatch[1]!;
       frontmatterContent.split("\n").forEach((line) => {

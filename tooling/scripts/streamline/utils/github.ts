@@ -52,12 +52,20 @@ export const createRecords = (zoneId: string): Record[] => {
 };
 `;
 
+  const response = await octokit.repos.getContent({
+    owner: "isomerpages",
+    repo: "isomer-indirection",
+    path: `dns/${domainWithoutWww}.ts`,
+  });
+
   await octokit.rest.repos.createOrUpdateFileContents({
     owner: "isomerpages",
     repo: "isomer-indirection",
     path: `dns/${domainWithoutWww}.ts`,
-    message: `chore: Automated add/update for ${domainWithoutWww}`,
+    message: `chore: automated add/update for ${domainWithoutWww}`,
     content: Buffer.from(template).toString("base64"),
+    // @ts-expect-error unable to narrow the types
+    sha: response.data.sha,
   });
 };
 

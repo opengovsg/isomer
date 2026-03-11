@@ -12,6 +12,7 @@ interface GetUptimeRobotMonitorsResponse {
     id: number;
     url: string;
   }[];
+  nextLink: string | null;
 }
 
 export const getUptimeRobotMonitors = async () => {
@@ -23,21 +24,20 @@ export const getUptimeRobotMonitors = async () => {
   };
 
   const monitors = [];
-  let cursor = 0;
+  let url = "https://api.uptimerobot.com/v3/monitors?limit=200";
 
   while (true) {
-    const result = (await fetch(
-      `https://api.uptimerobot.com/v3/monitors?cursor=${cursor}`,
-      options
-    ).then((response) => response.json())) as GetUptimeRobotMonitorsResponse;
+    const result = (await fetch(url, options).then((response) =>
+      response.json()
+    )) as GetUptimeRobotMonitorsResponse;
 
     monitors.push(...result.data);
 
-    if (result.data.length === 0) {
+    if (result.nextLink === null) {
       break;
     }
 
-    cursor = result.data.length + cursor;
+    url = result.nextLink.replace("http://", "https://");
   }
 
   return monitors;

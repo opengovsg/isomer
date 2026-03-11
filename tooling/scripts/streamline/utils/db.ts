@@ -6,11 +6,6 @@ dotenv.config({
   path: path.join(__dirname, "..", ".env"),
 });
 
-interface GetSiteConfigResult {
-  siteName: string;
-  brandColor: string;
-}
-
 // NOTE: Stub type definition as the other fields are not required
 interface SiteRow {
   config: {
@@ -30,6 +25,12 @@ interface SiteRow {
       };
     };
   };
+}
+
+interface GetSiteConfigResult {
+  siteName: string;
+  brandColor: string;
+  config: SiteRow["config"];
 }
 
 export const getSiteConfig = async (
@@ -62,6 +63,7 @@ export const getSiteConfig = async (
     return {
       siteName: config.siteName || "Isomer Site",
       brandColor: theme.colors?.brand?.canvas?.inverse || "#00405f",
+      config,
     };
   } catch (error) {
     console.error("Error fetching site config:", error);

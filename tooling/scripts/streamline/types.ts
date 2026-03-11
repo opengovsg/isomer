@@ -24,7 +24,8 @@ export interface OnboardingSite {
 export interface SiteLaunchSite {
   // Site ID of the site inside Isomer Studio
   siteId: string;
-  // Site name of the site recorded inside sites.production.csv
+  // Site name of the site recorded inside sites.production.csv, this should be
+  // the codeBuildId
   siteName: string;
   // Name of the Isomer Classic GitHub repository for the site
   repoName: string;

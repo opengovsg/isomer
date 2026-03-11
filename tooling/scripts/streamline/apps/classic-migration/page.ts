@@ -8,7 +8,7 @@ import { getManualReviewItems, getResourceRoomFileType } from "./utils";
 import type { GetIsomerSchemaFromJekyllResponse } from "./types";
 import { isomerSchemaValidator } from "./schema";
 import { PLACEHOLDER_PAGE_SUMMARY } from "./constants";
-import { generateImageAltText } from "./ai";
+import { generateImageAltText, generatePageSummary } from "./ai";
 import { migrateHomepage } from "./converters/homepage";
 import { migrateContactUsPage } from "./converters/contact";
 
@@ -329,24 +329,24 @@ export const getIsomerSchemaFromJekyll = async ({
   schemaContent.content = updatedSchemaContent;
 
   // Provide an AI-generated page summary if none exists
-  // if (
-  //   schemaContent.page?.contentPageHeader?.summary ===
-  //     PLACEHOLDER_PAGE_SUMMARY ||
-  //   schemaContent.page?.articlePageHeader?.summary === PLACEHOLDER_PAGE_SUMMARY
-  // ) {
-  //   const pageContentString = JSON.stringify(convertedContent);
-  //   const aiGeneratedSummary = await generatePageSummary(pageContentString);
+  if (
+    schemaContent.page?.contentPageHeader?.summary ===
+      PLACEHOLDER_PAGE_SUMMARY ||
+    schemaContent.page?.articlePageHeader?.summary === PLACEHOLDER_PAGE_SUMMARY
+  ) {
+    const pageContentString = JSON.stringify(convertedContent);
+    const aiGeneratedSummary = await generatePageSummary(pageContentString);
 
-  //   if (schemaContent.page?.contentPageHeader) {
-  //     schemaContent.page.contentPageHeader.summary = aiGeneratedSummary;
-  //   } else if (schemaContent.page?.articlePageHeader) {
-  //     schemaContent.page.articlePageHeader.summary = aiGeneratedSummary;
-  //   }
+    if (schemaContent.page?.contentPageHeader) {
+      schemaContent.page.contentPageHeader.summary = aiGeneratedSummary;
+    } else if (schemaContent.page?.articlePageHeader) {
+      schemaContent.page.articlePageHeader.summary = aiGeneratedSummary;
+    }
 
-  //   reviewItems.push(
-  //     "AI-generated page summary was used for pages without a summary"
-  //   );
-  // }
+    reviewItems.push(
+      "AI-generated page summary was used for pages without a summary"
+    );
+  }
 
   // Check if the page schema is valid
   const isValidSchema = isomerSchemaValidator(schemaContent);

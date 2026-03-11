@@ -22,7 +22,7 @@ export const verifyDnsRecords = async () => {
   for (const site of siteLaunchSites) {
     // Step 1: Obtain the ACM validation record for the domain
     console.log(
-      `Generating DNS records for site: ${site.repoName}, domain: ${site.isomerDomain}`
+      `Verifying DNS records for site: ${site.repoName}, domain: ${site.isomerDomain}`
     );
 
     const record = await getACMCertificateValidationRecords(site.isomerDomain);

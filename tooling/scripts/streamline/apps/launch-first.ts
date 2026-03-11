@@ -59,41 +59,45 @@ export const siteLaunchFirstWindow = async () => {
     // and update the site config inside Isomer Studio with the SearchSG client ID
     const siteId = parseInt(site.siteId, 10);
     const siteConfig = await getSiteConfig(siteId);
-    let createApplicationRes: Awaited<ReturnType<typeof createApplication>>;
+    const isSearchSGClientSetUp = siteConfig.config.search?.clientId;
 
-    try {
-      createApplicationRes = await createApplication(
-        searchSGAuthToken,
-        siteConfig.siteName,
-        site.isomerDomain,
-        siteConfig.brandColor
-      );
-    } catch (error) {
-      // NOTE: It is possible that the SearchSG client for the site already
-      // exists for the given name, we will retry once with a space appended
-      // to the name, and give up if it still fails.
-      console.warn(
-        `Warning: Failed to create SearchSG client for site ${site.repoName} with domain ${site.isomerDomain}. Retrying once...`,
-        error
-      );
+    if (!isSearchSGClientSetUp) {
+      let createApplicationRes: Awaited<ReturnType<typeof createApplication>>;
+
       try {
         createApplicationRes = await createApplication(
           searchSGAuthToken,
-          `${siteConfig.siteName} `,
+          siteConfig.siteName,
           site.isomerDomain,
           siteConfig.brandColor
         );
-      } catch (retryError) {
-        console.error(
-          `Error: Failed to create SearchSG client for site ${site.repoName} with domain ${site.isomerDomain} on retry. Skipping...`,
-          retryError
+      } catch (error) {
+        // NOTE: It is possible that the SearchSG client for the site already
+        // exists for the given name, we will retry once with a space appended
+        // to the name, and give up if it still fails.
+        console.warn(
+          `Warning: Failed to create SearchSG client for site ${site.repoName} with domain ${site.isomerDomain}. Retrying once...`,
+          error
         );
-        continue;
+        try {
+          createApplicationRes = await createApplication(
+            searchSGAuthToken,
+            `${siteConfig.siteName} `,
+            site.isomerDomain,
+            siteConfig.brandColor
+          );
+        } catch (retryError) {
+          console.error(
+            `Error: Failed to create SearchSG client for site ${site.repoName} with domain ${site.isomerDomain} on retry. Skipping...`,
+            retryError
+          );
+          continue;
+        }
       }
-    }
 
-    const searchSGClientId = createApplicationRes.application.applicationId;
-    await updateSiteConfig(siteId, searchSGClientId);
+      const searchSGClientId = createApplicationRes.application.applicationId;
+      await updateSiteConfig(siteId, searchSGClientId);
+    }
 
     // Step 2: Call the AWS API to get the details of the CloudFront
     // distributions for each individual site, then call the GitHub API to
@@ -122,7 +126,11 @@ export const siteLaunchFirstWindow = async () => {
   // individual site
   const monitorIds = successfulSites
     .map((site) => {
-      const monitor = monitors.find((m) => m.url.includes(site.isomerDomain));
+      const monitor = monitors.find(
+        (m) =>
+          m.url.includes(site.isomerDomain) ||
+          (site.redirectionDomain && m.url.includes(site.redirectionDomain))
+      );
       return monitor?.id || null;
     })
     .filter((id): id is number => id !== null);
@@ -134,7 +142,10 @@ export const siteLaunchFirstWindow = async () => {
   // Step 4: Update the Isomer Next infra to set the sites to the `PRELAUNCH`
   // state
   await updateSitesProductionCSV(
-    successfulSites.map((site) => ({ siteId: site.siteId })),
+    successfulSites.map((site) => ({
+      siteId: site.siteId,
+      domainAliases: site.isomerDomain,
+    })),
     "PRELAUNCH"
   );
 
