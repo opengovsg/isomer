@@ -28,6 +28,7 @@ interface ChildpageLayoutProps
       | "shouldLazyLoad"
       | "LinkComponent"
       | "site"
+      | "maxColumns"
     >,
     Pick<ImageClientProps, "assetsBaseUrl"> {
   childpages: Childpage[]
@@ -42,11 +43,12 @@ const BoxLayout = ({
   shouldLazyLoad,
   LinkComponent,
   site,
+  maxColumns = "3",
 }: ChildpageLayoutProps) => {
   return (
     <div
       className={compoundStyles.grid({
-        maxColumns: "3",
+        maxColumns,
         variant: "default",
         class: "[&:not(:first-child)]:mt-7",
       })}
@@ -66,7 +68,7 @@ const BoxLayout = ({
               imageUrl={imageUrl}
               imageAlt={imageAlt}
               imageFit={hasImage ? "cover" : "contain"}
-              maxColumns="3"
+              maxColumns={maxColumns}
               layout="index"
               site={site}
               LinkComponent={LinkComponent}
@@ -194,6 +196,7 @@ export const ChildrenPages = ({
   showSummary = true,
   showThumbnail,
   shouldLazyLoad,
+  maxColumns = "3",
 }: ChildrenPagesProps) => {
   const currentPageNode = getNodeFromSiteMap(site.siteMap, permalink)
 
@@ -222,6 +225,7 @@ export const ChildrenPages = ({
         fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
         shouldLazyLoad={shouldLazyLoad}
         site={site}
+        maxColumns={maxColumns}
       />
     )
   }
