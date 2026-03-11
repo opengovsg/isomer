@@ -61,7 +61,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
                   textOverflow="ellipsis"
                   wordBreak="break-all"
                 >
-                  Collaborators
+                  Users
                 </Text>
               </HStack>
               <CollaboratorsDescription />

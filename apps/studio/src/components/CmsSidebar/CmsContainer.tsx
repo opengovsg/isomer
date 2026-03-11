@@ -1,7 +1,7 @@
 import type { ReactElement, ReactNode } from "react"
 import { Box, Grid, GridItem } from "@chakra-ui/react"
 
-export interface CmsContainerProps {
+interface CmsContainerProps {
   children: ReactNode
   sidebar: ReactElement
   header: ReactElement

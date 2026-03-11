@@ -55,6 +55,8 @@ import {
   jsonFormsNavbarControlTester,
   JsonFormsObjectControl,
   jsonFormsObjectControlTester,
+  JsonFormsOneOfControl,
+  jsonFormsOneOfControlTester,
   JsonFormsProseControl,
   jsonFormsProseControlTester,
   JsonFormsRefControl,
@@ -147,6 +149,7 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsRefControlTester, renderer: JsonFormsRefControl },
   { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
   { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
+  { tester: jsonFormsOneOfControlTester, renderer: JsonFormsOneOfControl },
   {
     tester: jsonFormsGroupLayoutTester,
     renderer: jsonFormsGroupLayoutRenderer,

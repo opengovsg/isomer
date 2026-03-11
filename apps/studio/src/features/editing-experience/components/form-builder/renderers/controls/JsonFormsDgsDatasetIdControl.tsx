@@ -212,7 +212,7 @@ interface JsonFormsDgsDatasetIdControlProps extends ControlProps {
   data: string
 }
 
-export function JsonFormsDgsDatasetIdControl({
+function JsonFormsDgsDatasetIdControl({
   data,
   label,
   handleChange,

@@ -4,7 +4,7 @@ import { Type } from "@sinclair/typebox"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
-export const SocialMediaTypes = [
+const SocialMediaTypes = [
   "facebook",
   "twitter",
   "instagram",

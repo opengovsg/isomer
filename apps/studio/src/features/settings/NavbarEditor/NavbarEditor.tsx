@@ -59,13 +59,11 @@ export const NavbarEditor = ({
 
   const handleItemsChange = useCallback(
     (data: Static<typeof NavbarItemsSchema>) => {
-      const updatedData = { ...previewNavbarState, ...data }
-
-      if (isEqual(previewNavbarState, updatedData)) {
+      if (isEqual(previewNavbarState, data)) {
         return
       }
 
-      setPreviewNavbarState(updatedData)
+      setPreviewNavbarState(data)
     },
     [previewNavbarState, setPreviewNavbarState],
   )
@@ -118,7 +116,7 @@ export const NavbarEditor = ({
             textColor="base.content.default"
             textOverflow="ellipsis"
           >
-            Navigation menu
+            Navigation bar
           </Text>
 
           <Spacer />
@@ -201,7 +199,7 @@ const PublishButton = ({
       <Tooltip
         label={
           !isSchemaValid
-            ? "There are errors in your navigation menu. Fix them before publishing."
+            ? "There are errors in your navigation bar. Fix them before publishing."
             : undefined
         }
         hasArrow

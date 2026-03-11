@@ -24,9 +24,7 @@ const updateCurrentAndSupersededBuilds = async (
 ) => {
   await db
     .updateTable("CodeBuildJobs")
-    .set({
-      status: buildStatus,
-    })
+    .set({ status: buildStatus })
     .where((eb) => {
       return eb.or([
         eb("CodeBuildJobs.buildId", "=", buildId),
@@ -47,46 +45,34 @@ export const updateCodebuildStatusAndSendEmails = async (
   logger: pino.Logger<string>,
   gb: GrowthBook,
   buildId: string,
-  buildStatus: BuildStatusType,
+  status: BuildStatusType,
 ): Promise<{ codebuildJobIdsForSentEmails: string[] }> => {
   // tracks the ids of builds for which emails were sent successfully
   let codebuildJobIdsForSentEmails: string[] = []
-  await updateCurrentAndSupersededBuilds(buildId, buildStatus)
+  await updateCurrentAndSupersededBuilds(buildId, status)
   // send notification emails on a best-effort basis, so we catch any errors and log them
   try {
-    codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, buildStatus)
+    codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, status)
     logger.info(
-      {
-        buildId,
-        buildStatus,
-        codebuildJobIdsForSentEmails,
-      },
+      { buildId, status, codebuildJobIdsForSentEmails },
       `Emails sent for buildId ${String(buildId)}`,
     )
   } catch (error) {
     logger.error(
-      {
-        buildId,
-        buildStatus,
-        error,
-      },
-      `Failed to send notification emails for build status ${String(buildStatus)} for buildId ${String(buildId)}.`,
+      { buildId, status, error },
+      `Failed to send notification emails for build status ${String(status)} for buildId ${String(buildId)}.`,
     )
   }
   // mark the builds for which emails were sent successfully as having had their email sent
   if (codebuildJobIdsForSentEmails.length > 0) {
     await db
       .updateTable("CodeBuildJobs")
-      .set({
-        emailSent: true,
-      })
+      .set({ emailSent: true })
       .where("id", "in", codebuildJobIdsForSentEmails)
       .execute()
   }
 
-  return {
-    codebuildJobIdsForSentEmails,
-  }
+  return { codebuildJobIdsForSentEmails }
 }
 
 /**
@@ -117,6 +103,7 @@ const sendEmails = async (
       ])
     })
     .selectAll()
+    .select(["CodeBuildJobs.id as codeBuildJobId"])
     .execute()
 
   const emailPromisesWithCodebuildJobId = _.compact(
@@ -126,17 +113,16 @@ const sendEmails = async (
         switch (buildStatus) {
           case "SUCCEEDED":
             return {
-              id: info.id, // codebuild job id
+              id: info.codeBuildJobId, // codebuild job id
               promise: sendSuccessfulPublishEmail({
                 isScheduled: info.isScheduled,
                 recipientEmail: info.email,
-                title: info.title,
-                publishTime: new Date(), // use current time as publish time, no need to use exact time from codebuild
+                resource: info,
               }),
             }
           case "FAILED":
             return {
-              id: info.id, // codebuild job id
+              id: info.codeBuildJobId, // codebuild job id
               promise: sendFailedPublishEmail({
                 isScheduled: info.isScheduled,
                 recipientEmail: info.email,

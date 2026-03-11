@@ -32,7 +32,7 @@ const fieldGroupStyles = tv({
   },
 })
 
-export interface SearchFieldProps extends AriaTextFieldOptions<"input"> {
+interface SearchFieldProps extends AriaTextFieldOptions<"input"> {
   placeholder?: string
   classNames?: ClassNames<
     | "container"

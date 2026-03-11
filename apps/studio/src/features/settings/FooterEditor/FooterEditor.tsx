@@ -44,9 +44,8 @@ export const FooterEditor = ({
 
   const handleChange = useCallback(
     (data: FooterSchemaType) => {
-      const updatedData = { ...previewFooterState, ...data }
-      if (!isEqual(previewFooterState, updatedData)) {
-        setPreviewFooterState(updatedData)
+      if (!isEqual(previewFooterState, data)) {
+        setPreviewFooterState(data)
         setIsDirty(true)
       }
     },

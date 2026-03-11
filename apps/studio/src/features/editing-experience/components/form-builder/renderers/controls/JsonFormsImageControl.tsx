@@ -26,7 +26,7 @@ interface JsonFormsImageControlProps extends ControlProps {
   data: string
   schema: JsonSchema & { maxSizeInBytes?: number }
 }
-export function JsonFormsImageControl({
+function JsonFormsImageControl({
   label,
   handleChange,
   path,

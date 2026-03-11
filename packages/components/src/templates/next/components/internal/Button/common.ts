@@ -1,5 +1,5 @@
 import { tv } from "~/lib/tv"
-import { focusRing } from "~/utils"
+import { focusRing } from "~/utils/tailwind"
 
 export const buttonStyles = tv({
   base: "box-border flex h-full w-fit cursor-pointer items-center gap-2 rounded text-center transition",
@@ -49,7 +49,7 @@ export const buttonStyles = tv({
       variant: "outline",
       colorScheme: "default",
       className:
-        "border border-brand-canvas-inverse text-brand-canvas-inverse hover:bg-base-canvas-backdrop",
+        "border border-brand-canvas-inverse bg-base-canvas text-brand-canvas-inverse hover:bg-base-canvas-backdrop",
     },
     {
       variant: "outline",

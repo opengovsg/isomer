@@ -16,7 +16,7 @@ const resourceSchema = z
 // NOTE: We want to accept string
 // but validate that the string conforms to bigint.
 // Oddly enough, kysely doesn't allow `bigint` to query
-export const bigIntSchema = z
+const bigIntSchema = z
   // NOTE: A valid `bigint` is one that
   // begins with a non-zero digit
   // and has length > 1
@@ -99,9 +99,12 @@ export const getAncestryStackOutputSchema = z.array(
   z.custom<ResourceItemContent>(),
 )
 
+// Limit array size to prevent DoS via expensive recursive queries
+export const MAX_BATCH_RESOURCE_IDS = 25
+
 export const getBatchAncestryWithSelfSchema = z.object({
   siteId: z.string(),
-  resourceIds: z.array(z.string()),
+  resourceIds: z.array(z.string()).max(MAX_BATCH_RESOURCE_IDS),
 })
 
 export const getBatchAncestryWithSelfOutputSchema = z.array(
@@ -136,7 +139,7 @@ export const searchOutputSchema = z.object({
 
 export const searchWithResourceIdsSchema = z.object({
   siteId: z.string(),
-  resourceIds: z.array(bigIntSchema),
+  resourceIds: z.array(bigIntSchema).max(MAX_BATCH_RESOURCE_IDS),
 })
 
 export const searchWithResourceIdsOutputSchema = z.array(

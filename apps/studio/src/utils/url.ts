@@ -17,7 +17,7 @@ export const getRedirectUrl = (query: ParsedUrlQuery) => {
   return decodeURIComponent(String(query[CALLBACK_URL_KEY]))
 }
 
-export const isRelativeUrl = (url: string) => {
+const isRelativeUrl = (url: string) => {
   const baseUrl = getBaseUrl()
   try {
     const normalizedUrl = new URL(url, baseUrl)

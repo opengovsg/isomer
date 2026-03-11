@@ -1,4 +1,5 @@
 export { RenderEngine, renderComponentPreviewText } from "./render"
+export { RenderApplicationHeadScripts } from "./renderApplicationHeadScripts"
 export { RenderApplicationScripts } from "./renderApplicationScripts"
 export { getMetadata } from "./metadata"
 export { getRobotsTxt } from "./getRobotsTxt"

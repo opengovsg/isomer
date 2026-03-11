@@ -73,7 +73,12 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
 
     return (
       <li>
-        <button ref={ref} className={item({ isOpen })} onClick={onClick}>
+        <button
+          ref={ref}
+          className={item({ isOpen })}
+          onClick={onClick}
+          aria-expanded={isOpen}
+        >
           <span className={groupFocusVisibleHighlight()}>{name}</span>
           <BiChevronDown className={chevron({ isOpen })} />
         </button>
@@ -142,7 +147,7 @@ const Megamenu = ({
           <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
             <div className="flex w-full flex-row items-start">
               <div className="flex flex-col gap-1">
-                <h2 className="prose-display-sm text-base-content">
+                <h2 className="prose-display-xs text-base-content">
                   {renderTitleContent()}
                 </h2>
                 {description && (

@@ -33,7 +33,7 @@ const getColumns = ({
   const baseColumns = [
     columnsHelper.display({
       id: "user_info",
-      header: () => <TableHeader>Collaborator</TableHeader>,
+      header: () => <TableHeader>User</TableHeader>,
       cell: ({ row }) => (
         <VStack gap="0.25rem" align="start">
           <Text textStyle="subhead-2" textColor="base.content.strong">

@@ -16,7 +16,7 @@ export const jsonFormsBooleanControlTester: RankedTester = rankWith(
   isBooleanControl,
 )
 
-export function JsonFormsBooleanControl({
+function JsonFormsBooleanControl({
   data,
   label,
   id,
@@ -34,7 +34,7 @@ export function JsonFormsBooleanControl({
   return (
     <Box>
       <FormControl>
-        <Flex justifyContent="space-between" alignItems="center">
+        <Flex justifyContent="space-between" alignItems="start">
           <FormLabel
             isRequired
             description={description}

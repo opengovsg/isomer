@@ -19,7 +19,7 @@ export const jsonFormsObjectControlTester: RankedTester = rankWith(
   isObjectControl,
 )
 
-export function JsonFormsObjectControl({
+function JsonFormsObjectControl({
   data,
   path,
   visible,

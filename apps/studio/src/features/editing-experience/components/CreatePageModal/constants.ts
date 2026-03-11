@@ -14,10 +14,10 @@ export type LayoutRenderDataType = Record<
 
 export const LAYOUT_RENDER_DATA: LayoutRenderDataType = {
   content: {
-    title: "Default layout",
-    description: "This is the most basic layout for your content.",
+    title: "Standard layout",
+    description: "This is the default layout for your content.",
     imageSrc: "/assets/layout-card/default_layout_card.webp",
-    altText: "Image preview of Default layout",
+    altText: "Image preview of standard layout",
   },
   article: {
     title: "Article layout",

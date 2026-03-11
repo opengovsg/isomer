@@ -51,7 +51,7 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
       onError: () => {
         toast({
           status: "error",
-          title: "Error saving navigation menu!",
+          title: "Error saving navigation bar.",
           description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         })
       },

@@ -60,7 +60,7 @@ export const LogoSettingsSchema = Type.Object({
   logoUrl: Type.String({
     title: "Logo",
     description:
-      "The logo appears on the navigation menu. It may also be used as a thumbnail if there’s no thumbnail set on a page.",
+      "The logo appears on the navigation bar. It may also be used as a thumbnail if there’s no thumbnail set on a page.",
     format: "image",
   }),
   favicon: Type.Optional(

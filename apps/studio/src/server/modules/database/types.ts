@@ -13,7 +13,6 @@ export * as Model from "~prisma/generated/generatedTypes"
 export type { DB } from "~prisma/generated/generatedTypes"
 export * from "~prisma/generated/generatedEnums"
 export * from "~prisma/generated/selectableTypes"
-export type { Insertable, Updateable, QueryNode } from "kysely"
 export { sql } from "kysely"
 
 export class Kysely<DB> extends NativeKysely<DB> {

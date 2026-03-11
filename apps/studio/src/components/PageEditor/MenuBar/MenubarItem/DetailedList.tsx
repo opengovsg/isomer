@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 
-export interface DetailedItem {
+interface DetailedItem {
   name: string
   description: string
   icon: IconType

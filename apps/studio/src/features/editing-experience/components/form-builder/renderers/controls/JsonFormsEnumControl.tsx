@@ -21,7 +21,7 @@ export const jsonFormsEnumControlTester: RankedTester = rankWith(
   isEnumControl,
 )
 
-export const JsonFormsEnumControl = ({
+const JsonFormsEnumControl = ({
   data,
   label,
   description,

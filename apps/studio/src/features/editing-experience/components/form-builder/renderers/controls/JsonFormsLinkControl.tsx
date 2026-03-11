@@ -14,7 +14,7 @@ export const jsonFormsLinkControlTester: RankedTester = rankWith(
   ),
 )
 
-export function JsonFormsLinkControl({
+function JsonFormsLinkControl({
   data,
   label,
   handleChange,

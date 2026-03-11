@@ -23,6 +23,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
+import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 import { db } from "../../database"
@@ -30,6 +31,9 @@ import { resourceRouter } from "../resource.router"
 import { getFullPageById } from "../resource.service"
 
 const createCaller = createCallerFactory(resourceRouter)
+
+const makeResourceIds = (count: number): string[] =>
+  Array.from({ length: count }, (_, index) => `${index + 1}`)
 
 describe("resource.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -1157,6 +1161,50 @@ describe("resource.router", async () => {
       }
       expect(result).toEqual(expected)
     })
+
+    it("should terminate and return unique descendants when legacy cyclic data exists", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { folder: folderA } = await setupFolder({
+        siteId: site.id,
+        parentId: null,
+        permalink: "cyclic-a",
+      })
+      const { folder: folderB } = await setupFolder({
+        siteId: site.id,
+        parentId: folderA.id,
+        permalink: "cyclic-b",
+      })
+      const { folder: folderC } = await setupFolder({
+        siteId: site.id,
+        parentId: folderB.id,
+        permalink: "cyclic-c",
+      })
+
+      // Seed legacy corruption: A <-> B cycle.
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folderA.id)
+        .set({ parentId: folderB.id })
+        .execute()
+
+      // Act
+      const result = await caller.getNestedFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: folderA.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        items: [folderB, folderC].map((resource) =>
+          pick(resource, RESOURCE_FIELDS_TO_PICK),
+        ),
+      })
+    })
   })
 
   describe("move", () => {
@@ -1504,6 +1552,187 @@ describe("resource.router", async () => {
         _.omit(result, ["createdAt", "updatedAt"]),
       )
       expect(auditEntry.userId).toBe(session.userId)
+    })
+
+    it("should return 400 if moving a folder into its direct child (prevents circular reference)", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { folder: parentFolder, site } = await setupFolder({
+        permalink: "parent-folder",
+      })
+      const { folder: childFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "child-folder",
+        parentId: parentFolder.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - try to move parent folder into its child (would create A -> B -> A cycle)
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: parentFolder.id,
+        destinationResourceId: childFolder.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot move a folder into one of its descendants",
+        }),
+      )
+    })
+
+    it("should return 400 if moving a folder into a deeply nested descendant (prevents circular reference)", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { folder: grandparentFolder, site } = await setupFolder({
+        permalink: "grandparent-folder",
+      })
+      const { folder: parentFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "parent-folder",
+        parentId: grandparentFolder.id,
+      })
+      const { folder: childFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "child-folder",
+        parentId: parentFolder.id,
+      })
+      const { folder: grandchildFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "grandchild-folder",
+        parentId: childFolder.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - try to move grandparent folder into its grandchild (would create cycle)
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: grandparentFolder.id,
+        destinationResourceId: grandchildFolder.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot move a folder into one of its descendants",
+        }),
+      )
+    })
+
+    it("should reject descendant moves even when legacy cyclic data exists", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { folder: folderA, site } = await setupFolder({
+        permalink: "cyclic-folder-a",
+      })
+      const { folder: folderB } = await setupFolder({
+        siteId: site.id,
+        permalink: "cyclic-folder-b",
+        parentId: folderA.id,
+      })
+      const { folder: folderC } = await setupFolder({
+        siteId: site.id,
+        permalink: "cyclic-folder-c",
+        parentId: folderB.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Seed legacy corruption: A -> B and B -> A cycle.
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folderA.id)
+        .set({ parentId: folderB.id })
+        .execute()
+
+      // Act
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: folderA.id,
+        destinationResourceId: folderC.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot move a folder into one of its descendants",
+        }),
+      )
+    })
+
+    it("should allow moving a folder to a sibling folder (not a descendant)", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { folder: folderA, site } = await setupFolder({
+        permalink: "folder-a",
+      })
+      const { folder: folderB } = await setupFolder({
+        siteId: site.id,
+        permalink: "folder-b",
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - move folder A into folder B (siblings, not descendants)
+      const result = await caller.move({
+        siteId: site.id,
+        movedResourceId: folderA.id,
+        destinationResourceId: folderB.id,
+      })
+
+      // Assert
+      expect(result.parentId).toEqual(folderB.id)
+      expect(auditSpy).toHaveBeenCalled()
+    })
+
+    it("should return 400 if moving a RootPage into its descendant (prevents circular reference)", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { page: rootPage, site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      const { folder } = await setupFolder({
+        siteId: site.id,
+        permalink: "child-folder",
+        parentId: rootPage.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - try to move RootPage into its child folder (would create cycle)
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: rootPage.id,
+        destinationResourceId: folder.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot move a folder into one of its descendants",
+        }),
+      )
     })
 
     it.skip("should throw 403 if user does not have write access to destination resource", async () => {})
@@ -2201,6 +2430,35 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should return 400 if resource to delete is the search page (permalink /search, no parent)", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "Page",
+        permalink: "search",
+        parentId: null,
+      })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: page.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "The search page cannot be deleted",
+        }),
+      )
+    })
+
     it("should throw 403 if user does not have delete access to the resource", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -2792,6 +3050,46 @@ describe("resource.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+    })
+
+    it("should accept requests up to MAX_BATCH_RESOURCE_IDS", async () => {
+      // Arrange - use one existing resource ID repeated to hit the limit
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      const resourceIds: string[] = []
+      for (let i = 0; i < MAX_BATCH_RESOURCE_IDS; i++) {
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: `page-${i + 1}`,
+        })
+        resourceIds.push(page.id)
+      }
+
+      // Act
+      const result = await caller.getBatchAncestryWithSelf({
+        siteId: String(site.id),
+        resourceIds,
+      })
+
+      // Assert
+      expect(result).toHaveLength(MAX_BATCH_RESOURCE_IDS)
+    })
+
+    it("should reject requests over MAX_BATCH_RESOURCE_IDS", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.getBatchAncestryWithSelf({
+        siteId: String(site.id),
+        resourceIds: makeResourceIds(MAX_BATCH_RESOURCE_IDS + 1),
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
     it.skip("should throw 403 if user does not have read access to the resources", async () => {})
@@ -3873,6 +4171,63 @@ describe("resource.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+    })
+
+    it("should accept requests up to MAX_BATCH_RESOURCE_IDS", async () => {
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      const resourceIds: string[] = []
+      for (let i = 0; i < MAX_BATCH_RESOURCE_IDS; i++) {
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: `page-${i + 1}`,
+        })
+        resourceIds.push(page.id)
+      }
+
+      // Act
+      const result = await caller.searchWithResourceIds({
+        siteId: String(site.id),
+        resourceIds,
+      })
+
+      // Assert - route accepts input (DB returns unique rows so 1 result)
+      expect(Array.isArray(result)).toBe(true)
+    })
+
+    it("should reject requests over MAX_BATCH_RESOURCE_IDS", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.searchWithResourceIds({
+        siteId: String(site.id),
+        resourceIds: makeResourceIds(MAX_BATCH_RESOURCE_IDS + 1),
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    })
+
+    it("should reject invalid bigint resource IDs", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.searchWithResourceIds({
+        siteId: String(site.id),
+        resourceIds: ["01", "2"],
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
     it.skip("should throw 403 if user does not have read access to the resources", async () => {})

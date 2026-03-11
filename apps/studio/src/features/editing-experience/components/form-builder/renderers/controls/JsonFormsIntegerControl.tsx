@@ -40,7 +40,7 @@ export const jsonFormsIntegerControlTester: RankedTester = rankWith(
   ),
 )
 
-export function JsonFormsIntegerControl({
+function JsonFormsIntegerControl({
   label,
   schema,
   handleChange,

@@ -1,5 +1,5 @@
 import classicPreset from "./src/presets/classic"
-import nextPreset from "./src/presets/next"
+import { NextPreset } from "./src/presets/next"
 
 /**
  * This file is only used for storybook. The actual tailwind configuration that
@@ -20,7 +20,7 @@ export default {
     // Note: This is here temporarily until we can figure out how to load the
     // presets dynamically depending on the template being used.
     classicPreset,
-    nextPreset,
+    NextPreset,
   ],
   theme: {
     extend: {

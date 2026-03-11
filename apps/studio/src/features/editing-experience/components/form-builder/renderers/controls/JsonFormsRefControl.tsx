@@ -12,7 +12,7 @@ export const jsonFormsRefControlTester: RankedTester = rankWith(
   and(schemaMatches((schema) => schema.format === "ref")),
 )
 
-export function JsonFormsRefControl({
+function JsonFormsRefControl({
   data,
   handleChange,
   path,

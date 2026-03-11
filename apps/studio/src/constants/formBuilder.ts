@@ -30,6 +30,7 @@ export const JSON_FORMS_RANKING = {
   // NOTE: Needs to be above `AnyOfControl`
   SearchSGControl: 4,
   AnyOfControl: 3,
+  OneOfControl: 3,
   CategoryControl: 3,
   CollectionDropdownControl: 3,
   ProseControl: 3,
@@ -41,6 +42,6 @@ export const JSON_FORMS_RANKING = {
   Catchall: -99999999999,
 }
 
-export const PROSE_COMPONENT_NAME = "Text component"
+export const PROSE_COMPONENT_NAME = "Text"
 
 export const TEXTAREA_CHARACTERS_PER_ROW = 70

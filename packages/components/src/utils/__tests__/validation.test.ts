@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  AUDIO_EMBED_URL_PATTERN,
+  isValidAudioEmbedUrl,
   LINK_HREF_PATTERN,
   MAPS_EMBED_URL_PATTERN,
   VIDEO_EMBED_URL_PATTERN,
@@ -268,6 +270,64 @@ describe("validation", () => {
       testCases.forEach((testCase) => {
         const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
         expect(result).toBe(false)
+      })
+    })
+  })
+
+  describe("AUDIO_EMBED_URL_PATTERN and isValidAudioEmbedUrl", () => {
+    it("should allow Spotify episode and show embed URLs", () => {
+      const testCases = [
+        "https://open.spotify.com/embed/episode/7makk4oTQel546B0PZlDM5",
+        "https://open.spotify.com/embed/episode/3T5WkragWdHZRwFl7qCHoz?utm_source=generator",
+        "https://open.spotify.com/embed/show/66PYiIthr1KqQhJ82XH4DN?utm_source=generator",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(true)
+        expect(isValidAudioEmbedUrl(testCase)).toBe(true)
+      })
+    })
+
+    it("should allow Apple Podcast embed URLs for show and episode", () => {
+      const testCases = [
+        "https://embed.podcasts.apple.com/us/podcast/biblioasia-podcast/id1688142751",
+        "https://embed.podcasts.apple.com/us/podcast/the-days-before-air-conditioning/id1688142751?i=1000739749908",
+        "https://embed.podcasts.apple.com/sg/podcast/another-podcast/id987654321",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(true)
+        expect(isValidAudioEmbedUrl(testCase)).toBe(true)
+      })
+    })
+
+    it("should not allow Spotify album, track, playlist, or artist (only episode and show supported)", () => {
+      const testCases = [
+        "https://open.spotify.com/embed/album/6i6folBtxKV28WX3msQ4FE",
+        "https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT",
+        "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M",
+        "https://open.spotify.com/embed/artist/0OdUWJ0sBJDrq8yp90n0ID",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(false)
+        expect(isValidAudioEmbedUrl(testCase)).toBe(false)
+      })
+    })
+
+    it("should not allow non-audio or invalid embed URLs", () => {
+      const testCases = [
+        "https://www.example.com/embed/episode/xxx",
+        "https://open.spotify.com/episode/7makk4oTQel546B0PZlDM5",
+        "https://spotify.com/embed/episode/xxx",
+        "https://podcasts.apple.com/us/podcast/sample/id123",
+        "https://embed.music.apple.com/us/album/test/123",
+        "https://embed.podcasts.apple.com/",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(false)
+        expect(isValidAudioEmbedUrl(testCase)).toBe(false)
       })
     })
   })

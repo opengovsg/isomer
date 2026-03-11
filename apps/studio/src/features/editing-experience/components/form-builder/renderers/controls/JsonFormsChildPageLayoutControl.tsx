@@ -18,7 +18,7 @@ export const jsonFormsChildrenPagesLayoutControlTester: RankedTester = rankWith(
   ),
 )
 
-export function JsonFormsChildrenPagesLayoutControl({
+function JsonFormsChildrenPagesLayoutControl({
   data,
   label,
   handleChange,

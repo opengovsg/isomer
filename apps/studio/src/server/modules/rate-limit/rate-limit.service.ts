@@ -11,7 +11,7 @@ import { type RateLimitMetaOptions } from "./types"
 import { getRateLimitFingerprint } from "./utils"
 
 // Default 5 queries per second fallback
-export const rateLimiterMemory = new RateLimiterMemory({
+const rateLimiterMemory = new RateLimiterMemory({
   points: 5,
   duration: 1,
 })

@@ -48,7 +48,7 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
       header: { label: "Navigation", icon: BiDirections },
       items: [
         {
-          label: "Navigation menu",
+          label: "Navigation bar",
           href: `/sites/${siteId}/settings/navbar`,
         },
         {

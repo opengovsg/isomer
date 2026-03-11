@@ -25,7 +25,7 @@ interface CreateCollectionPageWizardProps
   collectionId: number
 }
 
-export type CreateCollectionPageWizardContextReturn = ReturnType<
+type CreateCollectionPageWizardContextReturn = ReturnType<
   typeof useCreateCollectionPageWizardContext
 >
 
@@ -44,7 +44,7 @@ export const useCreateCollectionPageWizard =
     return context
   }
 
-export const INITIAL_STEP_STATE: CreateCollectionPageFlowStates =
+const INITIAL_STEP_STATE: CreateCollectionPageFlowStates =
   CreateCollectionPageFlowStates.Type
 
 const useCreateCollectionPageWizardContext = ({

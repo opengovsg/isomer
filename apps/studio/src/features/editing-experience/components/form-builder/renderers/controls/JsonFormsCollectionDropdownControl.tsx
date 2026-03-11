@@ -53,7 +53,7 @@ function SuspendableJsonFormsCollectionDropdownControl({
   )
 }
 
-export function JsonFormsCollectionDropdownControl({
+function JsonFormsCollectionDropdownControl({
   description,
   required,
   label,

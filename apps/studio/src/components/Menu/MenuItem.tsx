@@ -4,7 +4,7 @@ import { MenuItem as ChakraMenuItem, cssVar, Tooltip } from "@chakra-ui/react"
 
 const $bg = cssVar("menu-bg")
 
-export interface MenuItemProps extends ChakraMenuItemProps {
+interface MenuItemProps extends ChakraMenuItemProps {
   colorScheme?: "critical"
   tooltip?: string
 }

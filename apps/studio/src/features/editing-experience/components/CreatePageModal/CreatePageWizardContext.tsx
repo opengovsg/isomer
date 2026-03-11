@@ -27,7 +27,7 @@ interface CreatePageWizardProps extends Pick<UseDisclosureReturn, "onClose"> {
   folderId?: number
 }
 
-export type CreatePageWizardContextReturn = ReturnType<
+type CreatePageWizardContextReturn = ReturnType<
   typeof useCreatePageWizardContext
 >
 
@@ -45,8 +45,7 @@ export const useCreatePageWizard = (): CreatePageWizardContextReturn => {
   return context
 }
 
-export const INITIAL_STEP_STATE: CreatePageFlowStates =
-  CreatePageFlowStates.Layout
+const INITIAL_STEP_STATE: CreatePageFlowStates = CreatePageFlowStates.Layout
 
 const useCreatePageWizardContext = ({
   siteId,

@@ -31,9 +31,3 @@ export type DynamicComponentListProps = Static<
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }
-
-export type DgsTransformedContactInformationProps = Static<
-  typeof ContactInformationComponentSchema
-> & {
-  record: Record<string, string | number>
-}

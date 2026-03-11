@@ -244,7 +244,7 @@ const DeleteSocialMediaLinkModal = ({
   )
 }
 
-export const JsonFormsSocialMediaControl = ({
+const JsonFormsSocialMediaControl = ({
   data,
   path,
   visible,

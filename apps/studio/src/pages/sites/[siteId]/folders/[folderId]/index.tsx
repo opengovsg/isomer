@@ -11,7 +11,7 @@ import {
   DashboardLayout,
   getBreadcrumbsFromRoot,
 } from "~/features/dashboard/components/DashboardLayout"
-import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
+import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { IndexpageRow } from "~/features/dashboard/components/IndexpageRow/IndexpageRow"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"

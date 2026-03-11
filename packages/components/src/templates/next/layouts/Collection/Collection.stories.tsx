@@ -74,7 +74,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
           ],
           selected: [
             "Test",
-            "This is a very long tag that shuold be reflowed on smaller screens maybe",
+            "This is a very long tag that should be reflowed on smaller screens maybe",
             "This is a second long link that should eat into the image area so that we can see how it looks",
           ],
         },
@@ -116,7 +116,7 @@ const generateArgs = ({
               {
                 category: "long",
                 selected: [
-                  "This is a very long tag that shuold be reflowed on smaller screens maybe",
+                  "This is a very long tag that should be reflowed on smaller screens maybe",
                 ],
               },
               {
@@ -285,15 +285,15 @@ export const AllResultsSameCategory: Story = {
   args: generateArgs({
     collectionItems: COLLECTION_ITEMS.map((item) => ({
       ...item,
-      category: "The only categ0ry",
+      category: "The only category",
     })),
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const categoryFilter = screen.queryByText(/Category/i)
+    const categoryFilter = screen.queryByText(/Category/)
     await expect(categoryFilter).toBeInTheDocument()
 
-    const categoryItems = await screen.findAllByText(/The only categ0ry \(30\)/)
+    const categoryItems = await screen.findAllByText(/The only category \(30\)/)
     await expect(categoryItems.length).toBe(1)
   },
 }

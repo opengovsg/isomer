@@ -2,15 +2,13 @@ import type { ElementType } from "react"
 import type { VariantProps } from "tailwind-variants"
 import { BiLinkExternal } from "react-icons/bi"
 
-import type { LinkProps } from "~/interfaces"
+import type { LinkProps } from "~/interfaces/internal/Link"
 import { twMerge } from "~/lib/twMerge"
-import { isExternalUrl } from "~/utils"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import { buttonIconStyles, buttonStyles } from "../Button/common"
 import { Link } from "../Link"
 
-export interface LinkButtonProps
-  extends LinkProps,
-    VariantProps<typeof buttonStyles> {
+interface LinkButtonProps extends LinkProps, VariantProps<typeof buttonStyles> {
   LinkComponent?: ElementType
 }
 

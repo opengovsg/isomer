@@ -10,11 +10,7 @@ export const jsonFormsUuidControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "uuid"),
 )
 
-export const JsonFormsUuidControl = ({
-  data,
-  handleChange,
-  path,
-}: ControlProps) => {
+const JsonFormsUuidControl = ({ data, handleChange, path }: ControlProps) => {
   const uuid = useMemo(
     () => (typeof data === "string" ? data : crypto.randomUUID()),
     [path],

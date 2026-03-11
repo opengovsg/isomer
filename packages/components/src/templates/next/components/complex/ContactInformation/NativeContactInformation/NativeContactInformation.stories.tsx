@@ -87,6 +87,11 @@ export const Default: Story = {
           "This is a really really really long address that should be wrapped in the browser so please please please wrap it thank you",
         ],
       },
+      {
+        method: "website",
+        label: "This is not a valid URL",
+        values: ["weibo:"],
+      },
     ],
     otherInformation: {
       label: "This is a customized header of a Other Information field",

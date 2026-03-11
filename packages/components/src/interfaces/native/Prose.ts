@@ -79,7 +79,6 @@ export const SimpleProseSchema = Type.Object(
 export const ProseSchema = generateProseSchema({
   id: "components-native-prose",
 })
-export const BaseProseSchema = generateProseSchema({})
 export const AccordionProseSchema = generateProseSchema({
   format: "accordion",
   isRequired: true,

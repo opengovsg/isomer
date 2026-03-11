@@ -43,7 +43,7 @@ export const DeleteGroupModal = ({
         <ModalBody>
           <Text textStyle="body-1">
             You’re about to delete {totalLinksToDelete} {linkSingularPlural}{" "}
-            from the navigation menu. This doesn’t remove any actual pages.
+            from the navigation bar. This doesn’t remove any actual pages.
           </Text>
         </ModalBody>
 

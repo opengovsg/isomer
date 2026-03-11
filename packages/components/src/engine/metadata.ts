@@ -1,4 +1,4 @@
-import type { IsomerPageSchemaType } from "~/types"
+import type { IsomerPageSchemaType } from "~/types/schema"
 import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
 
 const getOpenGraphTitle = (props: IsomerPageSchemaType) => {

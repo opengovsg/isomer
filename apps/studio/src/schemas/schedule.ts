@@ -1,5 +1,4 @@
 import { add, format, isBefore, isValid, set, startOfDay } from "date-fns"
-import { fromZonedTime } from "date-fns-tz"
 import { z } from "zod"
 
 import { parseTimeStringToDate } from "~/components/Select/TimeSelect"
@@ -25,15 +24,12 @@ export const schedulePublishClientSchema = basePageSchema
     const [hours, minutes] = publishTime.split(":").map(Number)
     return {
       ...rest,
-      scheduledAt: fromZonedTime(
-        set(publishDate, {
-          hours,
-          minutes,
-          seconds: 0,
-          milliseconds: 0,
-        }),
-        "Asia/Singapore",
-      ),
+      scheduledAt: set(publishDate, {
+        hours,
+        minutes,
+        seconds: 0,
+        milliseconds: 0,
+      }),
     }
   })
   .superRefine((schema, ctx) => {

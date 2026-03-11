@@ -243,7 +243,7 @@ const DeleteLinkModal = ({
   )
 }
 
-export function JsonFormsArrayLinkControl({
+function JsonFormsArrayLinkControl({
   data,
   path,
   visible,

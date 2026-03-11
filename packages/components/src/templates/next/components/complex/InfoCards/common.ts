@@ -24,7 +24,7 @@ export const infoCardTitleStyle = tv({
   ],
 })
 
-export const singleInfoCardStyle = tv({
+const singleInfoCardStyle = tv({
   slots: {
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImage: "h-full w-full object-center",
@@ -75,12 +75,12 @@ export const singleInfoCardStyle = tv({
   },
 })
 
-export const createInfoCardsStyles = tv({
+const createInfoCardsStyles = tv({
   extend: singleInfoCardStyle,
   slots: {
     container: `${ComponentContent} flex flex-col`,
     headingContainer: "flex flex-col",
-    headingTitle: "prose-display-md break-words text-base-content-strong",
+    headingTitle: "prose-display-sm break-words text-base-content-strong",
     headingSubtitle: "text-base-content",
     // auto-rows-max and grid-template-rows:max-content are needed to make the grid items have the same height,
     // which otherwise would be an issue on some versions of Safari

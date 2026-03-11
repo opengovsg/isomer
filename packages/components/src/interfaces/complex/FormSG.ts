@@ -20,7 +20,7 @@ export const FormSGSchema = Type.Object(
     }),
   },
   {
-    title: "FormSG component",
+    title: "FormSG",
     description:
       "The FormSG component is used to embed a FormSG form within the current page.",
   },
@@ -28,4 +28,5 @@ export const FormSGSchema = Type.Object(
 
 export type FormSGProps = Static<typeof FormSGSchema> & {
   LinkComponent?: LinkComponentType
+  shouldLazyLoad?: boolean
 }

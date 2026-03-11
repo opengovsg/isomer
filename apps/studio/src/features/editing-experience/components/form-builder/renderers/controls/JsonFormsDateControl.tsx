@@ -19,7 +19,7 @@ export const jsonFormsDateControlTester: RankedTester = rankWith(
   ),
 )
 
-export function JsonFormsDateControl({
+function JsonFormsDateControl({
   data,
   label,
   handleChange,
@@ -33,9 +33,9 @@ export function JsonFormsDateControl({
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <DatePicker
-          inputValue={!!data ? String(data) : undefined}
+          inputValue={typeof data === "string" ? String(data) : undefined}
           allowManualInput={true}
-          onInputValueChange={(date) => handleChange(path, date.toString())}
+          onInputValueChange={(date) => handleChange(path, date)}
         />
         <FormErrorMessage>
           {label} {getCustomErrorMessage(errors)}

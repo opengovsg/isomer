@@ -89,7 +89,8 @@ const getSchema = async () => {
     // TODO: fixup all the typing errors
     // @ts-ignore to fix when types are proper
     getSitemapXml(sitemap).find(
-      ({ url }) => joinedPermalink === url.replace(/^\//, ""),
+      ({ url }) =>
+        joinedPermalink === url.replace(/^\//, "").replace(/\/$/, ""),
     ).lastModified || new Date().toISOString()
 
   return schema

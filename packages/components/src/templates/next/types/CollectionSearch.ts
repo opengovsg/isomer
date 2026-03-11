@@ -3,5 +3,3 @@ export interface CollectionSearchProps {
   search: string
   setSearch: (search: string) => void
 }
-
-export default CollectionSearchProps

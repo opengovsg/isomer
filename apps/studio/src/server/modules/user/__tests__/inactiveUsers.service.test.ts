@@ -1,4 +1,8 @@
-import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+import {
+  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
+  PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
+  PAST_ISOMER_MEMBERS,
+} from "~prisma/constants"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -374,7 +378,7 @@ describe("inactiveUsers.service", () => {
       expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
     })
 
-    it("should not include isomer admins and migrators in the email", async () => {
+    it("should not include isomer admins and migrators (including former members) in the email", async () => {
       // Arrange
       const userToDeactivate = await setupUserWrapper({
         siteId: site.id,
@@ -382,7 +386,7 @@ describe("inactiveUsers.service", () => {
         lastLoginDaysAgo: null,
       })
       await Promise.all(
-        ISOMER_ADMINS_AND_MIGRATORS_EMAILS.map((email) =>
+        PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS.map((email) =>
           setupUserWrapper({
             siteId: site.id,
             email,
@@ -396,7 +400,11 @@ describe("inactiveUsers.service", () => {
       await bulkDeactivateInactiveUsers()
 
       // Assert
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1) // send to deactivated user
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(
+        1 +
+          // we actually want to send the email to ex-isomer members as well
+          PAST_ISOMER_MEMBERS.length,
+      ) // send to deactivated user and all past isomer members
       expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
         recipientEmail: userToDeactivate.email,
         sitesAndAdmins: expect.any(Array),

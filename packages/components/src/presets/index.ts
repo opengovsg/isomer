@@ -1,3 +1,3 @@
 export { default as ClassicPreset } from "./classic"
-export { default as NextPreset } from "./next"
+export { NextPreset, createNextPreset } from "./next"
 export { isomerSiteTheme } from "./next/site-theme"

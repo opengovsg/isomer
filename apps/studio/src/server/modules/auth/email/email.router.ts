@@ -96,6 +96,11 @@ export const emailSessionRouter = router({
           message: "Failed to send OTP email",
         })
       }
+
+      ctx.logger.info(
+        { email, expires },
+        "OTP token stored and sign-in email sent",
+      )
       return { email, otpPrefix }
     }),
   verifyOtp: publicProcedure

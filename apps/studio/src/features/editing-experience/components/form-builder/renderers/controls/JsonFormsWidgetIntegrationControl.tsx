@@ -20,7 +20,7 @@ export const jsonFormsWidgetIntegrationControlTester: RankedTester = rankWith(
   schemaMatches((schema) => !!schema.format?.startsWith("widget-integration/")),
 )
 
-export function JsonFormsWidgetIntegrationControl({
+function JsonFormsWidgetIntegrationControl({
   data,
   path,
   schema,

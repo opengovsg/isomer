@@ -13,7 +13,7 @@ export const jsonFormsAllOfControlTester: RankedTester = rankWith(
   isAllOfControl,
 )
 
-export function JsonFormsAllOfControl({
+function JsonFormsAllOfControl({
   schema,
   path,
   renderers,

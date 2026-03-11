@@ -14,7 +14,7 @@ export const jsonFormsSearchSGControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "searchsg"),
 )
 
-export function JsonFormsSearchSGControl({
+function JsonFormsSearchSGControl({
   schema,
   path,
   renderers,

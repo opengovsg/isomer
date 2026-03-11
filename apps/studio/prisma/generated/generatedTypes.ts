@@ -45,7 +45,7 @@ export interface CodeBuildJobs {
   siteId: number
   userId: string
   status: Generated<BuildStatusType>
-  resourceId: string
+  resourceId: string | null
   startedAt: Generated<Timestamp>
   emailSent: Generated<boolean>
   isScheduled: Generated<boolean>
@@ -91,6 +91,7 @@ export interface Resource {
   state: Generated<ResourceState | null>
   type: ResourceType
   scheduledAt: Timestamp | null
+  scheduledBy: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }

@@ -18,10 +18,12 @@ export const VideoSchema = Type.Object(
     }),
   },
   {
-    title: "Video component",
+    title: "Video",
     description:
       "The video component is used to embed an external video within the current page.",
   },
 )
 
-export type VideoProps = Static<typeof VideoSchema>
+export type VideoProps = Static<typeof VideoSchema> & {
+  shouldLazyLoad?: boolean
+}

@@ -21,7 +21,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { type DrawerState } from "~/types/editorDrawer"
 import { trpc } from "~/utils/trpc"
 
-export interface DrawerContextType
+interface DrawerContextType
   extends Pick<
     EditorDrawerProviderProps,
     "type" | "permalink" | "siteId" | "pageId" | "updatedAt" | "title"

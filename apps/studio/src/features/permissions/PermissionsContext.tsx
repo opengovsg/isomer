@@ -21,7 +21,7 @@ const getPermissions = (roles: { role: RoleType }[]) => {
   return builder.build({ detectSubjectType: () => "Resource" })
 }
 
-export const PermissionsContext = createContext<ResourceAbility | PureAbility>(
+const PermissionsContext = createContext<ResourceAbility | PureAbility>(
   // NOTE: Pass a dummy ability that does not allow the user to do anything
   // so that the createContextualCan function does not throw a type error
   new PureAbility(),

@@ -34,7 +34,6 @@ export {
   type NotificationProps,
   type NotificationClientProps,
 } from "./Notification"
-export type { PillProps } from "./Pill"
 export type { SearchProps } from "./Search"
 export {
   SearchSGSearchSchema,

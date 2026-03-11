@@ -71,7 +71,7 @@ export const InfopicSchema = Type.Object(
     imageAlt: AltTextSchema,
   },
   {
-    title: "Infopic component",
+    title: "Image with text",
     description:
       "The infopic component is used to display an image with accompanying text",
   },

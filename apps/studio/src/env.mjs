@@ -16,6 +16,11 @@ const s3Schema = z.object({
   NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: z.string(),
 })
 
+const cronHeartbeatSchema = z.object({
+  SCHEDULED_PUBLISHING_HEARTBEAT_URL: z.string().url().optional(),
+  DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL: z.string().url().optional(),
+})
+
 /**
  * Specify your client-side environment variables schema here. This way you can ensure the app isn't
  * built with invalid env vars. To expose them to the client, prefix them with `NEXT_PUBLIC_`.
@@ -37,6 +42,7 @@ const client = z
     NEXT_PUBLIC_INTERCOM_APP_ID: z.string().optional(),
   })
   .merge(s3Schema)
+  .merge(cronHeartbeatSchema)
 
 const singpassSchema = z.object({
   SINGPASS_CLIENT_ID: z.string().min(1),
@@ -62,8 +68,6 @@ const server = z
     SESSION_SECRET: z.string().min(32),
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
     STUDIO_SSM_WEBHOOK_API_KEY: z.string().optional(),
-    REDIS_HOST: z.string(),
-    REDIS_PORT: z.coerce.number().default(6379),
     SEARCHSG_API_KEY: z.string(),
   })
   .merge(s3Schema)
@@ -98,8 +102,6 @@ const processEnv = {
   SINGPASS_ENCRYPTION_KEY_ALG: process.env.SINGPASS_ENCRYPTION_KEY_ALG,
   SINGPASS_SIGNING_PRIVATE_KEY: process.env.SINGPASS_SIGNING_PRIVATE_KEY,
   SINGPASS_SIGNING_KEY_ALG: process.env.SINGPASS_SIGNING_KEY_ALG,
-  REDIS_HOST: process.env.REDIS_HOST,
-  REDIS_PORT: process.env.REDIS_PORT,
   STUDIO_SSM_WEBHOOK_API_KEY: process.env.STUDIO_SSM_WEBHOOK_API_KEY,
   // Client-side env vars
   NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
@@ -112,6 +114,10 @@ const processEnv = {
     process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   NEXT_PUBLIC_INTERCOM_APP_ID: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
   SEARCHSG_API_KEY: process.env.SEARCHSG_API_KEY,
+  SCHEDULED_PUBLISHING_HEARTBEAT_URL:
+    process.env.SCHEDULED_PUBLISHING_HEARTBEAT_URL,
+  DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL:
+    process.env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL,
 }
 
 // Don't touch the part below

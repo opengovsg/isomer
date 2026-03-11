@@ -56,7 +56,7 @@ const GroupComponent = React.memo(function GroupComponent({
   )
 })
 
-export function JsonFormsGroupLayoutRenderer({
+function JsonFormsGroupLayoutRenderer({
   uischema,
   schema,
   path,

@@ -70,7 +70,10 @@ model Resource {
 
   // This is only set if the resource is scheduled to be published at a later date
   // If set, this indicates the time at which the resource should be published
-  scheduledAt        DateTime?
+  scheduledAt DateTime?
+  scheduledBy String?
+  scheduler   User?     @relation(fields: [scheduledBy], references: [id])
+
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   ResourcePermission ResourcePermission[]
@@ -134,6 +137,7 @@ model User {
   versions           Version[]
   AuditLog           AuditLog[]
   CodeBuildJobs      CodeBuildJobs[]
+  ScheduledResources Resource[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -282,15 +286,15 @@ enum BuildStatusType {
 
 model CodeBuildJobs {
   id                  BigInt          @id @default(autoincrement())
-  buildId             String
+  buildId             String // The AWS CodeBuild build ID
   siteId              Int
   site                Site            @relation(fields: [siteId], references: [id])
   userId              String
   user                User            @relation(fields: [userId], references: [id])
   status              BuildStatusType @default(IN_PROGRESS)
-  // the resource that triggered this build
-  resourceId          BigInt
-  resource            Resource        @relation(fields: [resourceId], references: [id])
+  // the resource that triggered this build, or null if it was a manual publish
+  resourceId          BigInt?
+  resource            Resource?       @relation(fields: [resourceId], references: [id])
   startedAt           DateTime        @default(now())
   // Whether the email notification has successfully been sent (can be retried if failed)
   emailSent           Boolean         @default(false)

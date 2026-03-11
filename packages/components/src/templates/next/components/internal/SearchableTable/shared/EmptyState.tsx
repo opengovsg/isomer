@@ -23,7 +23,7 @@ const createEmptyStateStyles = tv({
   },
 })
 
-export const styles = createEmptyStateStyles()
+const styles = createEmptyStateStyles()
 
 interface EmptyStateProps {
   search: string
