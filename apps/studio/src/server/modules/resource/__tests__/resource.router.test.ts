@@ -1161,6 +1161,50 @@ describe("resource.router", async () => {
       }
       expect(result).toEqual(expected)
     })
+
+    it("should terminate and return unique descendants when legacy cyclic data exists", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { folder: folderA } = await setupFolder({
+        siteId: site.id,
+        parentId: null,
+        permalink: "cyclic-a",
+      })
+      const { folder: folderB } = await setupFolder({
+        siteId: site.id,
+        parentId: folderA.id,
+        permalink: "cyclic-b",
+      })
+      const { folder: folderC } = await setupFolder({
+        siteId: site.id,
+        parentId: folderB.id,
+        permalink: "cyclic-c",
+      })
+
+      // Seed legacy corruption: A <-> B cycle.
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folderA.id)
+        .set({ parentId: folderB.id })
+        .execute()
+
+      // Act
+      const result = await caller.getNestedFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: folderA.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        items: [folderB, folderC].map((resource) =>
+          pick(resource, RESOURCE_FIELDS_TO_PICK),
+        ),
+      })
+    })
   })
 
   describe("move", () => {
