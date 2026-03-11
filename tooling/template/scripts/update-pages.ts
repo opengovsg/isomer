@@ -3,7 +3,7 @@ import { createRequire } from "node:module"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { namedTypes as n } from "ast-types"
-import recast from "recast"
+import * as recast from "recast"
 
 import type { SitemapAnalysis } from "./utils/analysis"
 import { collectUsedItems } from "./utils/analysis"
@@ -255,15 +255,10 @@ const processPageFile = async (
   }
 
   try {
-    const parser = require("@babel/parser") as typeof import("@babel/parser")
-    const ast = recast.parse(content, {
-      parser: {
-        parse: (source: string) =>
-          parser.parse(source, {
-            ...PARSER_OPTIONS,
-            plugins: [...PARSER_OPTIONS.plugins],
-          }),
-      },
+    const babelParser = require("@babel/parser") as typeof import("@babel/parser")
+    const ast = babelParser.parse(content, {
+      ...PARSER_OPTIONS,
+      plugins: [...PARSER_OPTIONS.plugins],
     })
 
     updateStaticRoutePermalink(ast, permalink)
@@ -296,11 +291,11 @@ const processPageFile = async (
   } catch (error) {
     const err = error as Error
     console.error(`Error processing ${filePath}:`, err.message)
+    console.error(`  Full error:`, err.stack)
     if (err.message.includes("regular expression")) {
       console.error(
         `  This might be a JSX parsing issue. Line number in error may not match actual line.`,
       )
-      console.error(`  Full error:`, err.stack)
     }
     return false
   }
