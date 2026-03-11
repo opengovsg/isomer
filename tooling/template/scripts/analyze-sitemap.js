@@ -88,10 +88,19 @@ const analyzePage = async (permalink, layout) => {
     }
   }
 
+  const resolvedLayout = schema.layout || layout
+  const components = extractComponents(schema.content || [])
+
+  // Index pages dynamically inject a default childrenpages block at runtime if missing.
+  // Mirror that behavior here so that downstream tooling doesn't prune ChildrenPages.
+  if (resolvedLayout === "index" && !components.includes("childrenpages")) {
+    components.push("childrenpages")
+  }
+
   return {
     permalink,
-    layout: schema.layout || layout,
-    components: extractComponents(schema.content || []),
+    layout: resolvedLayout,
+    components,
   }
 }
 
