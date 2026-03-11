@@ -67,22 +67,31 @@ const lastUpdated =
   " " +
   timeNow.getFullYear()
 
+const importSchemaDefault = async (
+  path: string,
+): Promise<IsomerPageSchemaType> => {
+  const mod = (await import(`@/schema/${path}`)) as unknown as {
+    default: IsomerPageSchemaType
+  }
+  return mod.default
+}
+
 const getSchema = async () => {
   const joinedPermalink = STATIC_ROUTE_PERMALINK.join("/")
 
-  const schema = (await import(`@/schema/${joinedPermalink}.json`)
-    .then((module) => module.default)
-    // NOTE: If the initial import is missing,
-    // this might be the case where the file is an index page
-    // and has `_index` appended to the original permalink
-    // so we have to do another import w the appended index path
-    .catch(async () => {
+  const schema = await importSchemaDefault(`${joinedPermalink}.json`).catch(
+    async () => {
+      // NOTE: If the initial import is missing,
+      // this might be the case where the file is an index page
+      // and has `_index` appended to the original permalink
+      // so we have to do another import w the appended index path
       const path =
         joinedPermalink === ""
           ? `${INDEX_PAGE_PERMALINK}.json`
           : `${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
-      return import(`@/schema/${path}`).then((module) => module.default)
-    })) as IsomerPageSchemaType
+      return await importSchemaDefault(path)
+    },
+  )
 
   schema.page.permalink = "/" + joinedPermalink
 
