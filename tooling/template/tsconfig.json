@@ -11,7 +11,7 @@
     "module": "esnext",
     "moduleResolution": "bundler"
   },
-  "exclude": ["node_modules", ".next", "out", "scripts"],
+  "exclude": ["node_modules", ".next", "out"],
   "include": [
     ".",
     ".next/types/**/*.ts",
