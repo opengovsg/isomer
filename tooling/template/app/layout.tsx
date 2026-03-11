@@ -6,7 +6,7 @@ import "@/styles/globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
-import { RenderApplicationHeadScripts } from "@opengovsg/isomer-components/engine/RenderApplicationHeadScripts"
+import { RenderApplicationHeadScripts } from "@opengovsg/isomer-components/engine/renderApplicationHeadScripts"
 import { RenderApplicationScripts } from "@opengovsg/isomer-components/engine/renderApplicationScripts"
 
 const inter = Inter({
