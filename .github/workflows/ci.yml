@@ -105,6 +105,8 @@ jobs:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           # Set timezone to Singapore to ensure that the tests are run in the correct timezone
           TZ: Asia/Singapore
+      - name: Test Template scripts
+        run: turbo test-ci:unit --filter=isomer-base-template --env-mode=loose
 
   end-to-end-tests:
     name: End-to-end tests

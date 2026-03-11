@@ -18,6 +18,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test-ci:unit": "vitest run",
     "clean": "git clean -xdf .next .turbo node_modules out"
   },
   "dependencies": {
