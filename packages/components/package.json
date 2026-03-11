@@ -111,6 +111,10 @@
     "./engine/*": {
       "import": "./dist/esm/engine/*.js",
       "require": "./dist/cjs/engine/*.js"
+    },
+    "./types": {
+      "import": "./dist/esm/types/index.js",
+      "require": "./dist/cjs/types/index.js"
     }
   },
   "files": [

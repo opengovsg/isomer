@@ -1,10 +1,10 @@
-import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
 import type {
   RenderComponentOutput,
   RenderComponentProps,
   RenderPageContentOutput,
   RenderPageContentParams,
 } from "@opengovsg/isomer-components/templates/next/render/types"
+import type { IsomerPageSchemaType } from "@opengovsg/isomer-components/types"
 import type { Metadata } from "next"
 import Link from "next/link"
 import config from "@/data/config.json"
