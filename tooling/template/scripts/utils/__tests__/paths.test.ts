@@ -22,7 +22,9 @@ describe("escapeRegExp", () => {
   })
 
   it("escapes regex metacharacters", () => {
-    expect(escapeRegExp(".*+?^${}()|[]\\")).toBe("\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\")
+    expect(escapeRegExp(".*+?^${}()|[]\\")).toBe(
+      "\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\",
+    )
   })
 
   it("leaves plain alphanumerics and hyphens unchanged", () => {
