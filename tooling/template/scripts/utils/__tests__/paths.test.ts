@@ -2,12 +2,40 @@ import path from "node:path"
 import { describe, expect, it } from "vitest"
 
 import {
+  escapeRegExp,
   getPermalinkFromPath,
   getRouteFromPath,
   PAGE_FILE_NAME,
 } from "../paths"
 
 const appDir = path.join("/fake", "app")
+
+// Just-in-case good-practice tests: we don't expect page file names with regex
+// metacharacters from our DB, but escaping them keeps the implementation robust.
+describe("escapeRegExp", () => {
+  it("escapes dot", () => {
+    expect(escapeRegExp("page.tsx")).toBe("page\\.tsx")
+  })
+
+  it("escapes backslash", () => {
+    expect(escapeRegExp("a\\b")).toBe("a\\\\b")
+  })
+
+  it("escapes regex metacharacters", () => {
+    expect(escapeRegExp(".*+?^${}()|[]\\")).toBe("\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\")
+  })
+
+  it("leaves plain alphanumerics and hyphens unchanged", () => {
+    expect(escapeRegExp("page-1")).toBe("page-1")
+  })
+
+  it("produces a string that matches literally in a RegExp", () => {
+    const literal = "file (1).tsx"
+    const escaped = escapeRegExp(literal)
+    const re = new RegExp(escaped)
+    expect("path/to/file (1).tsx".replace(re, "")).toBe("path/to/")
+  })
+})
 
 describe("getPermalinkFromPath", () => {
   it("returns [] for root page.tsx", () => {

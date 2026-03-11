@@ -2,6 +2,10 @@ import path from "node:path"
 
 export const PAGE_FILE_NAME = "page.tsx"
 
+export function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
 /**
  * Get the permalink array from a page.tsx file path relative to appDir.
  * e.g. app/contact/page.tsx -> ["contact"], app/page.tsx -> []
@@ -17,7 +21,7 @@ export function getPermalinkFromPath(
     return []
   }
 
-  const escaped = pageFileName.replace(/\./g, "\\.")
+  const escaped = escapeRegExp(pageFileName)
   const routePath = relativePath
     .replace(new RegExp(`/${escaped}$`), "")
     .replace(/\\/g, "/")
@@ -38,7 +42,7 @@ export function getRouteFromPath(
   pageFileName: string = PAGE_FILE_NAME,
 ): string {
   const relativePath = path.relative(appDir, filePath)
-  const escaped = pageFileName.replace(/\./g, "\\.")
+  const escaped = escapeRegExp(pageFileName)
   let routePath = relativePath
     .replace(new RegExp(`/?${escaped}$`), "")
     .replace(/\\/g, "/")
