@@ -29,6 +29,30 @@ describe("getSchemaPath", () => {
       path.join(schemaDir, "index.json"),
     )
   })
+
+  it("throws on path traversal segments (..)", () => {
+    expect(() => getSchemaPath("/foo/../etc", schemaDir)).toThrow(
+      'Invalid schema permalink path segments: "/foo/../etc"',
+    )
+    expect(() => getSchemaPath("/..", schemaDir)).toThrow(
+      'Invalid schema permalink path segments: "/.."',
+    )
+  })
+
+  it("throws on current-dir segments (.)", () => {
+    expect(() => getSchemaPath("/./foo", schemaDir)).toThrow(
+      'Invalid schema permalink path segments: "/./foo"',
+    )
+    expect(() => getSchemaPath("/.", schemaDir)).toThrow(
+      'Invalid schema permalink path segments: "/."',
+    )
+  })
+
+  it("throws on empty or invalid segments", () => {
+    expect(() => getSchemaPath("/foo//bar", schemaDir)).toThrow(
+      'Invalid schema permalink path segments: "/foo//bar"',
+    )
+  })
 })
 
 describe("INDEX_PAGE_PERMALINK", () => {

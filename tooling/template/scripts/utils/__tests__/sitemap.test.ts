@@ -94,4 +94,28 @@ describe("permalinkToTargetPath", () => {
       targetFile: "/app/the-president/former-presidents/page.tsx",
     })
   })
+
+  it("throws on path traversal segments (..)", () => {
+    expect(() => permalinkToTargetPath("/foo/../etc", appDir)).toThrow(
+      'Invalid permalink path segments: "/foo/../etc"',
+    )
+    expect(() => permalinkToTargetPath("/..", appDir)).toThrow(
+      'Invalid permalink path segments: "/.."',
+    )
+  })
+
+  it("throws on current-dir segments (.)", () => {
+    expect(() => permalinkToTargetPath("/./foo", appDir)).toThrow(
+      'Invalid permalink path segments: "/./foo"',
+    )
+    expect(() => permalinkToTargetPath("/.", appDir)).toThrow(
+      'Invalid permalink path segments: "/."',
+    )
+  })
+
+  it("throws on empty or invalid segments", () => {
+    expect(() => permalinkToTargetPath("/foo//bar", appDir)).toThrow(
+      'Invalid permalink path segments: "/foo//bar"',
+    )
+  })
 })

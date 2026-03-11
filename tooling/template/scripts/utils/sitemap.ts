@@ -61,20 +61,44 @@ export function permalinkToTargetPath(
   permalink: string,
   appDir: string,
 ): { targetDir: string; targetFile: string } {
+  const appRoot = path.resolve(appDir)
+
   if (permalink === "/") {
     return {
-      targetDir: appDir,
-      targetFile: path.join(appDir, "page.tsx"),
+      targetDir: appRoot,
+      targetFile: path.join(appRoot, "page.tsx"),
     }
   }
 
   const pathParts = permalink.replace(/^\//, "").split("/")
-  let targetDir = appDir
+
+  // Defensive guard against path traversal or malformed segments. This should not
+  // happen in practice since we control the sitemap from the database; good practice only.
+  if (
+    pathParts.length === 0 ||
+    pathParts.some((part) => !part || part === "." || part === "..")
+  ) {
+    throw new Error(`Invalid permalink path segments: "${permalink}"`)
+  }
+
+  let targetDir = appRoot
   for (const part of pathParts) {
     targetDir = path.join(targetDir, part)
   }
+
+  const resolvedTargetDir = path.resolve(targetDir)
+  // Ensure resolved path stays under appDir (same rationale as above).
+  if (
+    resolvedTargetDir !== appRoot &&
+    !resolvedTargetDir.startsWith(`${appRoot}${path.sep}`)
+  ) {
+    throw new Error(
+      `Resolved target directory escapes appDir for permalink "${permalink}"`,
+    )
+  }
+
   return {
-    targetDir,
-    targetFile: path.join(targetDir, "page.tsx"),
+    targetDir: resolvedTargetDir,
+    targetFile: path.join(resolvedTargetDir, "page.tsx"),
   }
 }
