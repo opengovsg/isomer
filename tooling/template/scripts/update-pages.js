@@ -11,6 +11,7 @@ const PAGE_FILE_NAME = "page.tsx"
 // Mapping of component types to import names
 const COMPONENT_IMPORTS = {
   accordion: "Accordion",
+  audio: "Audio",
   blockquote: "Blockquote",
   callout: "Callout",
   childrenpages: "ChildrenPages",
