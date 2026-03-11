@@ -43,7 +43,7 @@ export const DatabaseLayoutSkeleton = ({
   )
   // auto-inject ids for heading level 2 blocks if does not exist
   const transformedContent = getTransformedPageContent(content)
-  const tableOfContents = getTableOfContents(site, content)
+  const tableOfContents = getTableOfContents(site, transformedContent)
 
   return (
     <Skeleton
