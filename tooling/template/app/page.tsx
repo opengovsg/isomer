@@ -35,6 +35,7 @@ import { Infopic } from "@opengovsg/isomer-components/templates/next/components/
 import { KeyStatistics } from "@opengovsg/isomer-components/templates/next/components/complex/KeyStatistics"
 import { LogoCloud } from "@opengovsg/isomer-components/templates/next/components/complex/LogoCloud"
 import { Map } from "@opengovsg/isomer-components/templates/next/components/complex/Map"
+import { Audio } from "@opengovsg/isomer-components/templates/next/components/complex/Audio"
 import { Video } from "@opengovsg/isomer-components/templates/next/components/complex/Video"
 import { Prose } from "@opengovsg/isomer-components/templates/next/components/native/Prose"
 import { ArticleLayoutSkeleton } from "@opengovsg/isomer-components/templates/next/layouts/ArticleSkeleton"
@@ -227,6 +228,8 @@ const renderComponent = ({
           shouldStripContentHtmlTags
         />
       )
+    case "audio":
+      return <Audio key={elementKey} {...component} {...rest} />
     case "video":
       return <Video key={elementKey} {...component} {...rest} />
     case "dynamicdatabanner":
