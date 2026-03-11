@@ -6,21 +6,6 @@ const SCHEMA_DIR = path.join(__dirname, "../schema")
 const OUTPUT_FILE = path.join(__dirname, "../sitemap-analysis.json")
 const INDEX_PAGE_PERMALINK = "_index"
 
-// Recursively extract all permalinks from sitemap
-const extractPermalinks = (node, permalinks = []) => {
-  if (node.permalink) {
-    permalinks.push(node.permalink)
-  }
-
-  if (node.children && Array.isArray(node.children)) {
-    node.children.forEach((child) => {
-      extractPermalinks(child, permalinks)
-    })
-  }
-
-  return permalinks
-}
-
 const extractPages = (node, pages = []) => {
   if (node.permalink) {
     pages.push({
