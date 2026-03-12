@@ -26,6 +26,8 @@ function getRecast(): ReturnType<typeof require> {
   return require("recast")
 }
 
+const recast = getRecast()
+
 function getBaseDir(): string {
   return process.env.TEMPLATE_BASE_DIR ?? path.join(__dirname, "..")
 }
@@ -52,7 +54,6 @@ const parseWithRecast = (content: string) => {
       "@babel/parser not found. Install it in this project (e.g. npm install @babel/parser).",
     )
   }
-  const recast = getRecast()
   if (typeof recast?.parse !== "function") {
     throw new Error(
       "recast.parse is not available. Ensure recast is installed (e.g. npm install recast).",
@@ -134,7 +135,6 @@ function updateStaticRoutePermalink(
   ast: unknown,
   permalink: string[],
 ): boolean {
-  const recast = getRecast()
   const b = recast.types.builders
   let found = false
 
@@ -162,7 +162,7 @@ function removeUnusedImports(
   usedLayouts: Set<string>,
   usedComponents: Set<string>,
 ): void {
-  getRecast().visit(ast as any, {
+  recast.visit(ast as any, {
     visitImportDeclaration(p: any) {
       const node = p.node
       const source: string = node.source?.value ?? ""
@@ -200,7 +200,7 @@ function processSwitchInFunction(
   usedLayouts: Set<string>,
   usedComponents: Set<string>,
 ): void {
-  getRecast().visit(funcBody as any, {
+  recast.visit(funcBody as any, {
     visitSwitchStatement(switchPath: any) {
       const { node: switchNode } = switchPath
       const discriminant = switchNode.discriminant
@@ -236,7 +236,7 @@ function removeUnusedSwitchCases(
   usedLayouts: Set<string>,
   usedComponents: Set<string>,
 ): void {
-  getRecast().visit(ast as any, {
+  recast.visit(ast as any, {
     visitFunctionDeclaration(p: any) {
       if (isTargetFunctionName(p.node.id?.name)) {
         const body = getFunctionBody(p.node)
@@ -296,13 +296,13 @@ const processPageFile = async (
 
     let newContent: string
     try {
-      newContent = getRecast().print(ast, PRINT_OPTIONS).code
+      newContent = recast.print(ast, PRINT_OPTIONS).code
     } catch (printError) {
       const err = printError as Error
       console.error(`Error printing AST for ${filePath}:`, err.message)
       console.error(`  This might indicate an AST structure issue.`)
       try {
-        newContent = getRecast().print(ast).code
+        newContent = recast.print(ast).code
       } catch (fallbackError) {
         const fallbackErr = fallbackError as Error
         throw new Error(
@@ -330,22 +330,21 @@ const processPageFile = async (
   }
 }
 
+/** Find all page files in one readdir (Node 18.17+ recursive). */
 const findPageFiles = async (dir: string): Promise<string[]> => {
-  const files: string[] = []
-  const entries = await fs.readdir(dir, { withFileTypes: true })
-
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name)
-
-    if (entry.isDirectory()) {
-      const subFiles = await findPageFiles(fullPath)
-      files.push(...subFiles)
-    } else if (entry.name === PAGE_FILE_NAME) {
-      files.push(fullPath)
-    }
-  }
-
-  return files
+  const entries = await fs.readdir(dir, {
+    recursive: true,
+    withFileTypes: true,
+  })
+  return entries
+    .filter(
+      (e) => e.isFile() && e.name === PAGE_FILE_NAME,
+    )
+    .map((e) => {
+      const parentPath =
+        "parentPath" in e && typeof e.parentPath === "string" ? e.parentPath : dir
+      return path.join(parentPath, e.name)
+    })
 }
 
 export async function run(baseDir?: string): Promise<void> {
