@@ -1,16 +1,13 @@
 import moment from "moment";
-import {
-  convertHtmlToSchema,
-  getIsHtmlContainingRedundantDivs,
-} from "./converters/main";
-import { getHtmlFromMarkdown } from "./markdown";
-import { getManualReviewItems, getResourceRoomFileType } from "./utils";
-import type { GetIsomerSchemaFromJekyllResponse } from "./types";
-import { isomerSchemaValidator } from "./schema";
-import { PLACEHOLDER_PAGE_SUMMARY } from "./constants";
 import { generateImageAltText, generatePageSummary } from "./ai";
-import { migrateHomepage } from "./converters/homepage";
+import { PLACEHOLDER_PAGE_SUMMARY } from "./constants";
 import { migrateContactUsPage } from "./converters/contact";
+import { migrateHomepage } from "./converters/homepage";
+import { convertHtmlToSchema } from "./converters/main";
+import { getHtmlFromMarkdown } from "./markdown";
+import { isomerSchemaValidator } from "./schema";
+import type { GetIsomerSchemaFromJekyllResponse } from "./types";
+import { getManualReviewItems, getResourceRoomFileType } from "./utils";
 
 const WHITELISTED_LAYOUTS = [
   // From staging branch, for extremely old sites
@@ -172,14 +169,16 @@ export const getIsomerSchemaFromJekyll = async ({
     ...rest
   } = getHtmlFromMarkdown(content);
 
-  if (variant === "markdown" && !getIsHtmlContainingRedundantDivs(html)) {
-    // Page will need to be flagged for manual conversion
-    return {
-      status: "not_converted",
-      title,
-      permalink,
-    };
-  }
+  // NOTE: We now convert pages with custom HTML, but we will flag out later on
+  // for manual review
+  // if (variant === "markdown" && !getIsHtmlContainingRedundantDivs(html)) {
+  //   // Page will need to be flagged for manual conversion
+  //   return {
+  //     status: "not_converted",
+  //     title,
+  //     permalink,
+  //   };
+  // }
 
   if (layout !== undefined && !WHITELISTED_LAYOUTS.includes(layout)) {
     // Page layout is not supported for automatic conversion
@@ -264,7 +263,9 @@ export const getIsomerSchemaFromJekyll = async ({
     convertedContent,
     content,
     description,
-    layout
+    layout,
+    variant,
+    html
   );
 
   // Extract date from filename if not present in frontmatter
@@ -322,9 +323,7 @@ export const getIsomerSchemaFromJekyll = async ({
     reviewItems.push("Page with broken image");
   }
   if (isImageAltTextUpdated) {
-    reviewItems.push(
-      "AI-generated alt text were used for images with missing alt text"
-    );
+    reviewItems.push("Review AI-generated alternate text.");
   }
   schemaContent.content = updatedSchemaContent;
 
@@ -335,7 +334,10 @@ export const getIsomerSchemaFromJekyll = async ({
     schemaContent.page?.articlePageHeader?.summary === PLACEHOLDER_PAGE_SUMMARY
   ) {
     const pageContentString = JSON.stringify(convertedContent);
-    const aiGeneratedSummary = await generatePageSummary(pageContentString);
+    const aiGeneratedSummary = await generatePageSummary(
+      title,
+      pageContentString
+    );
 
     if (schemaContent.page?.contentPageHeader) {
       schemaContent.page.contentPageHeader.summary = aiGeneratedSummary;
@@ -343,9 +345,7 @@ export const getIsomerSchemaFromJekyll = async ({
       schemaContent.page.articlePageHeader.summary = aiGeneratedSummary;
     }
 
-    reviewItems.push(
-      "AI-generated page summary was used for pages without a summary"
-    );
+    reviewItems.push("Review AI-generated page summary.");
   }
 
   // Check if the page schema is valid

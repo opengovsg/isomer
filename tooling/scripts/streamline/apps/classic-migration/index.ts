@@ -405,6 +405,7 @@ export const migrateSite = async ({
   );
   const csvHeaders = "Permalink,Title,Status,Review items\n";
   const csvRows = [...finishedPages, ...finishedResourceRoomPages]
+    .sort((a, b) => a.permalink.localeCompare(b.permalink))
     .filter((pages) => pages?.permalink !== undefined)
     .map(
       (content) =>

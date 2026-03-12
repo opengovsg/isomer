@@ -257,7 +257,9 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
 
       const fullPath = path.join(dirPath, page.name);
       const content = JSON.parse(fs.readFileSync(fullPath, "utf-8"));
-      const title = content.page?.title || path.basename(page.name, ".json");
+      const title = isRootPage
+        ? "Home"
+        : content.page?.title || path.basename(page.name, ".json");
       const permalink = isRootPage
         ? "" // FIXME: This should be "_index" but Studio is not fully ready for this yet
         : path.basename(page.name, ".json").toLowerCase(); // Only use the file name without extension

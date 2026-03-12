@@ -44,6 +44,15 @@ export const getAllAmplifyApps = async () => {
   }
 
   for (const app of apps) {
+    if (app.name?.endsWith("-staging-lite")) {
+      results.push({
+        id: app.appId,
+        name: app.name,
+        domains: [] as string[],
+      });
+      continue;
+    }
+
     try {
       const command = new ListDomainAssociationsCommand({ appId: app.appId });
       const response = await client.send(command);
@@ -54,10 +63,11 @@ export const getAllAmplifyApps = async () => {
       ) {
         results.push({
           id: app.appId,
+          name: app.name,
           domains: response.domainAssociations.map((da) => da.domainName),
         });
       } else {
-        results.push({ id: app.appId, domains: [] });
+        results.push({ id: app.appId, name: app.name, domains: [] });
       }
     } catch (error) {
       console.error(
@@ -71,10 +81,7 @@ export const getAllAmplifyApps = async () => {
   return results;
 };
 
-export const removeDomainAssociation = async (
-  appId: string,
-  domainName: string
-) => {
+export const removeDomainAssociation = async (appId: string) => {
   const client = new AmplifyClient({
     profile: process.env.AWS_CLASSIC_PROFILE,
     region: "ap-southeast-1",
@@ -84,14 +91,22 @@ export const removeDomainAssociation = async (
   });
 
   try {
-    const command = new DeleteDomainAssociationCommand({
-      appId,
-      domainName,
-    });
-    await client.send(command);
+    const ldaCommand = new ListDomainAssociationsCommand({ appId });
+    const response = await client.send(ldaCommand);
+    const domainAssociations =
+      response.domainAssociations?.map((da) => da.domainName) ?? [];
+
+    for (const domainName of domainAssociations) {
+      const ddaCommand = new DeleteDomainAssociationCommand({
+        appId,
+        domainName,
+      });
+      await client.send(ddaCommand);
+      console.log(`Removed domain association ${domainName} from app ${appId}`);
+    }
   } catch (error) {
     console.error(
-      `Error deleting domain association ${domainName} for app ${appId}:`,
+      `Error removing domain associations for app ${appId}:`,
       error
     );
     throw error;

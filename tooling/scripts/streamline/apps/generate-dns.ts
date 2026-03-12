@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import * as fs from "fs";
 import * as path from "path";
 import { Client } from "pg";
+import { confirm } from "@inquirer/prompts";
 
 import { getACMCertificateValidationRecords } from "../utils/acm";
 import {
@@ -69,6 +70,18 @@ export const generateDnsRecords = async () => {
   console.log("Running script to generate DNS records...");
   const onboardingSites = await getOnboardingBatch();
   const cloudfrontDistributions = await getAllCloudFrontDistributions();
+
+  const isDbConnected = await confirm({
+    message:
+      'Have you ran "npm run db:connect" to connect to the Isomer Studio database?',
+    default: true,
+  });
+
+  if (!isDbConnected) {
+    throw new Error(
+      "Please connect to the Isomer Studio database before proceeding."
+    );
+  }
 
   const client = new Client({
     connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,

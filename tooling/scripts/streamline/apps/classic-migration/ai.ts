@@ -52,7 +52,10 @@ Return ONLY the alt text, nothing else.`,
   }
 };
 
-export const generatePageSummary = async (pageContent: string) => {
+export const generatePageSummary = async (
+  title: string,
+  pageContent: string
+) => {
   const foundryEngineProvider = getEngine();
   const chatModel = foundryEngineProvider.chatModel("claude-sonnet-4-6-v1:rsn");
   const maxCharacters = 250;
@@ -63,46 +66,53 @@ export const generatePageSummary = async (pageContent: string) => {
       messages: [
         {
           role: "system",
-          content: `You are a summary-writing expert for Singapore government website content whose primary goal is to generate a page summary that helps readers understand what the page is about and decide whether it's worth reading or useful to them.
-Follow these steps when responding to queries:
-[STEP 1] Ask for three things: the title of the page, content of the page (or what it's about if confidential), and which Singapore government website it is from. In most cases, user will give you the title. Ask for the other two.
-[STEP 2] If unclear, probe about what the page is aiming to do (examples like - get people to perform an action? learn how to do something? be aware of a new change?) and who the page is for. If clear, skip this step.
-[STEP 3] If unclear, probe more about what other pages are on the site. If clear, skip this step. If the user says it's a topic/index page, ask more about what the OTHER pages in the same index page are about.
-[STEP 4] If user asked for a summary, generate 3 summary options and ask user to give feedback so that you can refine it. Ask whether it contains the key action or value to the reader and whether the tone fits the purpose. You can suggest to make it sound more casual and formal. If user asked for an evaluation of a summary, give them what's good, what's not, and 3 suggestions.
+          content: `You are a content writing expert for government agency websites.
 
-For your reference, these are what make a summary good:
-- Say what matters most to the reader. Action? Value? As a Member of Public, why should I read your page? Summarise the key point or action. Don't storytell a policy's background or philosophy.
-- The summary can't be the title repeated with no extra value-add. For example, a page titled "Our team" can't have a summary that says "Find out about our team".
-- Keep it short. Aim for one sentence, max 2. Keep sentences short. Keep to 160 characters as much as possible. 160-200 is still an acceptable range. You can go up to ${maxCharacters} characters, but only if absolutely necessary.
-- One of the options might have a narrative hook.
-- Summaries need to end with a full stop. This helps users with assistive technologies like screen readers.
-- You may include keywords that were not used in the title.
+Write and return a summary text for the page content which is provided as a JSON string below. The title of this page is ${title}.
 
-As usual, always remember to:
-- use passive sentences only when necessary,
-- don't use jargon,
-- use British English by default,
-- use proper grammar,
-- keep tone light but not too friendly or casual,
-- only add a full stop if you have a full sentence,
-- be wary of jargons and words that mean nothing (e.g., "various"),
-- write for Primary 5-level reading skills,
-- HARD LIMIT: the summary must be at most ${maxCharacters} characters, and
+This summary will be displayed at the top of a webpage and gives visitors a reason to read on.
+
+Follow these rules to craft the summary:
+
+- The first sentence should highlight the stakes or key insight to hook the reader
+- The second sentence should briefly outline what the page covers
+- Do not insert new messages or ideas that are not explicitly present in the page content
+- Do not repeat sentences from the page as-is
+- Aim for 2 sentences, but 1 or 3 are acceptable if the summary covers everything
+- HARD LIMIT: ${maxCharacters} characters is the absolute maximum  — however, it is not a target. Use only as many characters as needed.
 - HARD REQUIREMENT: DO NOT ask for any additional information, generate the summary based on the information given, and if you think the information is insufficient, make assumptions based on typical Singapore government website content and generate the best possible summary you can. NEVER say "Based on the information provided, I don't have enough information to generate a good summary" or any similar statements. ALWAYS generate a summary regardless of the information given, and make assumptions where necessary.
 
+Make sure the copy follows these stylistic rules:
+
+- Match the tone and style of the page content
+- End in a full stop
+- Do not use headers or bullet points
+- Use passive sentences only when necessary
+- Use British English and spelling by default
+- Use proper grammar
+- Don't use em-dashes unless absolutely necessary
+- Keep tone light but not too friendly or casual
+- Do not use jargons or words that are redundant (e.g., "various")
+- Aim for Secondary 1 level reading level
+
 These are examples of bad summaries:
+
 - "Learn more about our open source products."
 - "Pages in this section."
 - "Stay active in your golden years with Age Well SG."
+- "Sanctions for violating anti-doping rule violation may range from a reprimand to a lifetime ban. The period of ineligibility may vary depending on the type of anti-doping rule violation, the circumstances of each case, the substance, and the possible repetition of an anti-doping rule violation."
+
+These are examples of better summaries:
+
+- "Discover investment opportunities and be part of Singapore's tourism future."
+- "As an athlete, you are strictly liable for any prohibited substance found in your system, regardless of intent. Learn what's banned, how to check your medications, and how to stay compliant."
+- "The "Wah! Singapore" report is a bi-annual publication that covers fun community events in Singapore. Download and read the latest edition."
 
 Return ONLY the summary text, nothing else.`,
         },
         {
           role: "user",
-          content:
-            `Here is the page content as a JSON string. ` +
-            `Summarise it in at most ${maxCharacters} characters:\n\n` +
-            pageContent,
+          content: pageContent,
         },
       ],
     });

@@ -100,41 +100,11 @@ export const updateSiteConfig = async (
   }
 };
 
-// NOTE: Stub type definition as the other fields are not required
-interface ReposRow {
-  site_id: number;
-}
-
-export const removeAllSiteCollaborators = async (repoName: string) => {
-  const client = new Client({
-    connectionString: process.env.ISOMER_CMS_DATABASE_URL,
-  });
-
-  try {
-    await client.connect();
-
-    const siteIdRes = await client.query<ReposRow>(
-      `SELECT site_id FROM repos WHERE name = $1`,
-      [repoName]
-    );
-
-    if (siteIdRes.rows.length !== 1) {
-      throw new Error(`Repository with name ${repoName} not found.`);
-    }
-
-    const siteId = siteIdRes.rows[0]?.site_id;
-
-    if (!siteId) {
-      throw new Error(
-        `Repository with name ${repoName} has no associated site ID.`
-      );
-    }
-
-    await client.query(`DELETE FROM site_members WHERE site_id = $1`, [siteId]);
-  } catch (error) {
-    console.error("Error removing site collaborators:", error);
-    throw error;
-  } finally {
-    await client.end();
-  }
+export const getRemoveAllSiteCollaboratorsQuery = (repoNames: string[]) => {
+  return `  DELETE FROM site_members
+  WHERE site_members.site_id IN (
+    SELECT repos.site_id
+    FROM repos
+    WHERE repos.name IN (${repoNames.map((name) => `'${name}'`).join(", ")})
+  );`;
 };

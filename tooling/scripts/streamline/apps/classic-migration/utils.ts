@@ -9,6 +9,7 @@ import {
   PLACEHOLDER_INSTAGRAM_LINK_TEXT,
 } from "./constants";
 import path from "path";
+import { getIsHtmlContainingRedundantDivs } from "./converters/main";
 
 interface GetPathsToMigrateParams {
   octokit: Octokit;
@@ -145,7 +146,9 @@ export const getManualReviewItems = async (
   content: any[],
   originalContent: any,
   description: any,
-  layout: any
+  layout: any,
+  variant: any,
+  html: string
 ): Promise<{
   content: any[];
   reviewItems: string[];
@@ -153,6 +156,11 @@ export const getManualReviewItems = async (
   const reviewItems: string[] = [];
   const stringifiedContent = JSON.stringify(content);
   const stringifiedOriginalContent = JSON.stringify(originalContent);
+
+  // Flag pages with custom HTML
+  if (variant === "markdown" && !getIsHtmlContainingRedundantDivs(html)) {
+    reviewItems.push("Converted from HTML");
+  }
 
   // Images with missing alt text
   if (
@@ -186,56 +194,13 @@ export const getManualReviewItems = async (
     reviewItems.push("InfoCards were used");
   }
 
-  // InfoCards with more than 12 cards were used
+  // InfoCards with more than 30 cards were used
   if (
     content.some(
-      (block) => block.type === "infocards" && block.cards.length > 12
+      (block) => block.type === "infocards" && block.cards.length > 30
     )
   ) {
-    reviewItems.push("InfoCards with more than 12 cards were used");
-  }
-
-  // InfoCards with titles that breach the character limit
-  if (
-    content.some(
-      (block) =>
-        block.type === "infocards" &&
-        block.cards.some((card: any) => card.title.length > 100)
-    )
-  ) {
-    reviewItems.push(
-      "InfoCards with titles that are longer than 100 characters"
-    );
-  }
-
-  // InfoCards with descriptions that breach the character limit
-  if (
-    content.some(
-      (block) =>
-        block.type === "infocards" &&
-        block.cards.some(
-          (card: any) => card.description && card.description.length > 150
-        )
-    )
-  ) {
-    reviewItems.push(
-      "InfoCards with descriptions that are longer than 150 characters"
-    );
-  }
-
-  // InfoCards with image alt texts that breach the character limit
-  if (
-    content.some(
-      (block) =>
-        block.type === "infocards" &&
-        block.cards.some(
-          (card: any) => card.imageAlt && card.imageAlt.length > 120
-        )
-    )
-  ) {
-    reviewItems.push(
-      "InfoCards with image alt texts that are longer than 120 characters"
-    );
+    reviewItems.push("InfoCards with more than 30 cards were used");
   }
 
   // Accordions
@@ -259,16 +224,8 @@ export const getManualReviewItems = async (
     reviewItems.push("Contains Instagram embeds");
   }
 
-  // Flag Iframe usages (with special exception for FormSG)
-  if (
-    content.some(
-      (block) =>
-        block.type === "iframe" &&
-        block.content.includes("https://form.gov.sg/")
-    )
-  ) {
-    reviewItems.push("Contains FormSG embeds");
-  } else if (content.some((block) => block.type === "iframe")) {
+  // Flag Iframe usages
+  if (content.some((block) => block.type === "iframe")) {
     reviewItems.push("Contains Iframes");
   }
 
