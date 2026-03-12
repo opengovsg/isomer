@@ -3,7 +3,6 @@ import { createRequire } from "node:module"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { namedTypes as n } from "ast-types"
-import * as recast from "recast"
 
 import type { SitemapAnalysis } from "./utils/analysis"
 import { collectUsedItems } from "./utils/analysis"
@@ -22,6 +21,11 @@ import {
 
 const require = createRequire(import.meta.url)
 
+/** Use require() so recast works when the script runs in another project (ESM import can expose recast without .parse/.visit/.print there). */
+function getRecast(): ReturnType<typeof require> {
+  return require("recast")
+}
+
 function getBaseDir(): string {
   return process.env.TEMPLATE_BASE_DIR ?? path.join(__dirname, "..")
 }
@@ -38,12 +42,40 @@ const PARSER_OPTIONS = {
   tokens: true,
 }
 
+/** Parse via recast so it keeps the source for comment/whitespace when printing (JS did this; TS migration had switched to babel.parse directly which broke comments). Use require() so we get the CJS build when the script runs in another project (ESM import can expose recast without .parse there). */
+const parseWithRecast = (content: string) => {
+  const babelParser = require("@babel/parser") as
+    | typeof import("@babel/parser")
+    | undefined
+  if (!babelParser?.parse) {
+    throw new Error(
+      "@babel/parser not found. Install it in this project (e.g. npm install @babel/parser).",
+    )
+  }
+  const recast = getRecast()
+  if (typeof recast?.parse !== "function") {
+    throw new Error(
+      "recast.parse is not available. Ensure recast is installed (e.g. npm install recast).",
+    )
+  }
+  return recast.parse(content, {
+    parser: {
+      parse(source: string) {
+        return babelParser.parse(source, {
+          ...PARSER_OPTIONS,
+          plugins: [...PARSER_OPTIONS.plugins],
+        })
+      },
+    },
+  })
+}
+
 const PRINT_OPTIONS = {
   quote: "double" as const,
   tabWidth: 2,
   trailingComma: true,
   wrapColumn: 80,
-  reuseWhitespace: false,
+  reuseWhitespace: true,
 }
 
 // ---------------------------------------------------------------------------
@@ -102,6 +134,7 @@ function updateStaticRoutePermalink(
   ast: unknown,
   permalink: string[],
 ): boolean {
+  const recast = getRecast()
   const b = recast.types.builders
   let found = false
 
@@ -129,7 +162,7 @@ function removeUnusedImports(
   usedLayouts: Set<string>,
   usedComponents: Set<string>,
 ): void {
-  recast.visit(ast as any, {
+  getRecast().visit(ast as any, {
     visitImportDeclaration(p: any) {
       const node = p.node
       const source: string = node.source?.value ?? ""
@@ -167,7 +200,7 @@ function processSwitchInFunction(
   usedLayouts: Set<string>,
   usedComponents: Set<string>,
 ): void {
-  recast.visit(funcBody as any, {
+  getRecast().visit(funcBody as any, {
     visitSwitchStatement(switchPath: any) {
       const { node: switchNode } = switchPath
       const discriminant = switchNode.discriminant
@@ -203,7 +236,7 @@ function removeUnusedSwitchCases(
   usedLayouts: Set<string>,
   usedComponents: Set<string>,
 ): void {
-  recast.visit(ast as any, {
+  getRecast().visit(ast as any, {
     visitFunctionDeclaration(p: any) {
       if (isTargetFunctionName(p.node.id?.name)) {
         const body = getFunctionBody(p.node)
@@ -255,11 +288,7 @@ const processPageFile = async (
   }
 
   try {
-    const babelParser = require("@babel/parser") as typeof import("@babel/parser")
-    const ast = babelParser.parse(content, {
-      ...PARSER_OPTIONS,
-      plugins: [...PARSER_OPTIONS.plugins],
-    })
+    const ast = parseWithRecast(content)
 
     updateStaticRoutePermalink(ast, permalink)
     removeUnusedImports(ast, usedLayouts, usedComponents)
@@ -267,13 +296,13 @@ const processPageFile = async (
 
     let newContent: string
     try {
-      newContent = recast.print(ast, PRINT_OPTIONS).code
+      newContent = getRecast().print(ast, PRINT_OPTIONS).code
     } catch (printError) {
       const err = printError as Error
       console.error(`Error printing AST for ${filePath}:`, err.message)
       console.error(`  This might indicate an AST structure issue.`)
       try {
-        newContent = recast.print(ast).code
+        newContent = getRecast().print(ast).code
       } catch (fallbackError) {
         const fallbackErr = fallbackError as Error
         throw new Error(
