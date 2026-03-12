@@ -27,7 +27,7 @@ const readSchema = async (
     const content = await fs.readFile(schemaPath, "utf8")
     return JSON.parse(content) as SchemaJson
   } catch {
-    if (permalink === "") {
+    if (permalink === "/") {
       return null
     }
 
