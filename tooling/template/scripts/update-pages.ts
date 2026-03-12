@@ -362,11 +362,9 @@ export async function run(baseDir?: string): Promise<void> {
 
   console.log("Updating permalinks, imports and switch cases...\n")
   for (const filePath of pageFiles) {
-    const routePath = getRouteFromPath(filePath, appDir, PAGE_FILE_NAME)
     const updated = await processPageFile(filePath, sitemapAnalysis, appDir)
     if (updated) {
       updatedCount++
-      console.log(`✓ Updated ${routePath}`)
     }
   }
 
