@@ -1,68 +1,20 @@
-"use client"
-
 import type { PropsWithChildren } from "react"
-import { createContext, useContext, useRef, useState } from "react"
-import { useButton } from "@react-aria/button"
-import { useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
 import { BiChevronDown } from "react-icons/bi"
 
 import type { MastheadProps } from "~/interfaces"
-import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { focusVisibleHighlight } from "~/utils/rac"
 import { Link } from "../Link"
 
 const MASTHEAD_CONTROL_ID = "govt-masthead-expandable"
 
-const mastheadButtonStyle = tv({
-  extend: focusVisibleHighlight,
-  base: "",
-})
+/** Focus-visible highlight scoped to the trigger (summary has group/summary) */
+const triggerFocusVisibleStyles =
+  "group-focus-visible/summary:bg-utility-highlight group-focus-visible/summary:text-base-content-strong group-focus-visible/summary:decoration-transparent group-focus-visible/summary:shadow-focus-visible group-focus-visible/summary:outline-0 group-focus-visible/summary:transition-none group-focus-visible/summary:hover:decoration-transparent"
 
-type MastheadProviderProps = Omit<MastheadProps, "type">
-interface MastheadContextReturn extends MastheadProviderProps {
-  isMastheadContentVisible: boolean
-  toggleMastheadContent: () => void
-}
-
-const MastheadContext = createContext<MastheadContextReturn | null>(null)
-const MastheadProvider = ({
+const RestrictedHeaderBarContent = ({
   children,
-  LinkComponent,
   isStaging,
-}: PropsWithChildren<MastheadProviderProps>) => {
-  const [isMastheadContentVisible, setIsMastheadContentVisible] =
-    useState(false)
-
-  const toggleMastheadContent = () => {
-    setIsMastheadContentVisible((prev) => !prev)
-  }
-
-  return (
-    <MastheadContext.Provider
-      value={{
-        isMastheadContentVisible,
-        toggleMastheadContent,
-        LinkComponent,
-        isStaging,
-      }}
-    >
-      {children}
-    </MastheadContext.Provider>
-  )
-}
-
-const useMasthead = () => {
-  const context = useContext(MastheadContext)
-  if (context === null) {
-    throw new Error("useMasthead must be used within a MastheadProvider")
-  }
-  return context
-}
-
-const RestrictedHeaderBarContent = ({ children }: PropsWithChildren) => {
-  const { isStaging } = useMasthead()
+}: PropsWithChildren<{ isStaging?: boolean }>) => {
   return (
     <>
       <svg
@@ -91,107 +43,49 @@ const RestrictedHeaderBarContent = ({ children }: PropsWithChildren) => {
   )
 }
 
-const MobileMastheadButton = ({ children }: PropsWithChildren) => {
-  const { isMastheadContentVisible, toggleMastheadContent } = useMasthead()
-  const buttonRef = useRef<HTMLButtonElement>(null)
-
-  const { buttonProps: ariaProps } = useButton(
-    {
-      "aria-controls": MASTHEAD_CONTROL_ID,
-      "aria-describedby": "masthead-aria",
-      "aria-expanded": isMastheadContentVisible,
-      onPress: toggleMastheadContent,
-    },
-    buttonRef,
-  )
-  const { focusProps, isFocusVisible } = useFocusRing()
-  const mergedProps = mergeProps(ariaProps, focusProps)
-
+const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
   return (
-    <button
-      {...mergedProps}
-      ref={buttonRef}
+    <summary
       className={twMerge(
-        "group flex w-full gap-1 text-start leading-5 outline-none lg:hidden",
-        mastheadButtonStyle({ isFocusVisible }),
+        "group/summary flex w-full cursor-pointer list-none gap-1 text-start leading-5 outline-none lg:flex-row lg:items-center [&::-webkit-details-marker]:hidden",
       )}
     >
-      {children}
-      <span className="sr-only" id="masthead-aria">
-        {isMastheadContentVisible
-          ? "Click to collapse masthead"
-          : "Click to expand masthead to find out how to identify an official government website"}
-      </span>
-      <RestrictedHeaderBarContent>
-        <span className="not-sr-only text-link underline group-hover:text-link-hover">
-          How to identify
-          <BiChevronDown
-            aria-hidden
-            className={`inline h-4 w-4 shrink-0 transition-all duration-300 ease-in-out ${
-              isMastheadContentVisible ? "rotate-180" : "rotate-0"
-            }`}
-          />
+      <div className="mx-auto flex w-full max-w-screen-xl gap-1 px-6 text-start md:px-10 lg:flex-row lg:items-center">
+        <span className="sr-only group-open:hidden" id="masthead-aria">
+          Click to expand masthead to find out how to identify an official
+          government website
         </span>
-      </RestrictedHeaderBarContent>
-    </button>
+        <span className="sr-only hidden group-open:inline">
+          Click to collapse masthead
+        </span>
+        <RestrictedHeaderBarContent isStaging={isStaging}>
+          <span
+            className={twMerge(
+              "not-sr-only text-link underline underline-offset-4 group-hover/summary:text-link-hover",
+              triggerFocusVisibleStyles,
+            )}
+          >
+            How to identify
+            <BiChevronDown
+              aria-hidden
+              className="inline h-4 w-4 shrink-0 rotate-0 transition-transform duration-300 ease-in-out group-open:rotate-180"
+            />
+          </span>
+        </RestrictedHeaderBarContent>
+      </div>
+    </summary>
   )
 }
 
-const DesktopMastheadButton = () => {
-  const { isMastheadContentVisible, toggleMastheadContent } = useMasthead()
-  const buttonRef = useRef<HTMLButtonElement>(null)
-
-  const { buttonProps: ariaProps } = useButton(
-    {
-      onPress: toggleMastheadContent,
-    },
-    buttonRef,
-  )
-  const { focusProps, isFocusVisible } = useFocusRing()
-  const mergedProps = mergeProps(ariaProps, focusProps)
-
-  return (
-    <div className="hidden items-center gap-1 lg:flex">
-      <RestrictedHeaderBarContent>
-        <button
-          {...mergedProps}
-          ref={buttonRef}
-          className={twMerge(
-            "hidden flex-row items-center text-link underline underline-offset-4 outline-0 transition-colors hover:text-link-hover focus-visible:text-content-strong lg:flex",
-            mastheadButtonStyle({ isFocusVisible }),
-          )}
-        >
-          How to identify
-          <BiChevronDown
-            aria-hidden
-            className={`h-4 w-4 shrink-0 transition-transform ease-in-out ${
-              isMastheadContentVisible ? "rotate-180" : "rotate-0"
-            }`}
-          />
-        </button>
-      </RestrictedHeaderBarContent>
-    </div>
-  )
-}
-
-const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
-  return (
-    <div className="mx-auto max-w-screen-xl px-6 md:px-10">
-      <MobileMastheadButton>{children}</MobileMastheadButton>
-      <DesktopMastheadButton />
-    </div>
-  )
-}
-
-const RestrictedContent = () => {
-  const { isMastheadContentVisible, LinkComponent } = useMasthead()
-
+const RestrictedContent = ({
+  LinkComponent,
+}: {
+  LinkComponent?: MastheadProps["LinkComponent"]
+}) => {
   return (
     <div
       id={MASTHEAD_CONTROL_ID}
-      className={`mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10 ${
-        isMastheadContentVisible ? "block" : "hidden"
-      }`}
+      className="mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10"
     >
       <div className="grid grid-cols-[1fr] gap-6 px-px lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] lg:gap-40">
         <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
@@ -277,12 +171,13 @@ const RestrictedContent = () => {
 }
 
 export const Masthead = (props: Omit<MastheadProps, "type">) => {
+  const { LinkComponent, isStaging } = props
   return (
-    <MastheadProvider {...props}>
-      <div className="bg-base-canvas-backdrop">
-        <RestrictedHeaderBar />
-        <RestrictedContent />
-      </div>
-    </MastheadProvider>
+    <div className="bg-base-canvas-backdrop">
+      <details className="group">
+        <MastheadSummary isStaging={isStaging} />
+        <RestrictedContent LinkComponent={LinkComponent} />
+      </details>
+    </div>
   )
 }
