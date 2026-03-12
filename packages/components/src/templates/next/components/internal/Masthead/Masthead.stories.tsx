@@ -36,8 +36,7 @@ export const Staging: Story = {
 export const Expanded: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(
-      screen.getByRole("button", { name: /how to identify/i }),
-    )
+    // Trigger is <summary> (disclosure), not a button; click the visible label
+    await userEvent.click(screen.getByText("How to identify"))
   },
 }
