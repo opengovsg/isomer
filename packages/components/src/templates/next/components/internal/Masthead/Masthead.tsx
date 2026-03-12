@@ -5,8 +5,6 @@ import type { MastheadProps } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
 import { Link } from "../Link"
 
-const MASTHEAD_CONTROL_ID = "govt-masthead-expandable"
-
 /** Focus-visible highlight scoped to the trigger (summary has group/summary) */
 const triggerFocusVisibleStyles =
   "group-focus-visible/summary:bg-utility-highlight group-focus-visible/summary:text-base-content-strong group-focus-visible/summary:decoration-transparent group-focus-visible/summary:shadow-focus-visible group-focus-visible/summary:outline-0 group-focus-visible/summary:transition-none group-focus-visible/summary:hover:decoration-transparent"
@@ -51,7 +49,7 @@ const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
       )}
     >
       <div className="mx-auto flex w-full max-w-screen-xl gap-1 px-6 text-start md:px-10 lg:flex-row lg:items-center">
-        <span className="sr-only group-open:hidden" id="masthead-aria">
+        <span className="sr-only group-open:hidden">
           Click to expand masthead to find out how to identify an official
           government website
         </span>
@@ -83,10 +81,7 @@ const RestrictedContent = ({
   LinkComponent?: MastheadProps["LinkComponent"]
 }) => {
   return (
-    <div
-      id={MASTHEAD_CONTROL_ID}
-      className="mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10"
-    >
+    <div className="mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10">
       <div className="grid grid-cols-[1fr] gap-6 px-px lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] lg:gap-40">
         <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
           <div className="-mt-[0.1rem] lg:mt-[0.2rem]">
