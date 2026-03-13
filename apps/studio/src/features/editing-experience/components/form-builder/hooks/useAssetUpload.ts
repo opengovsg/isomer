@@ -8,8 +8,8 @@ interface UseAssetUploadProps {
   baseTimeoutMs?: number
 }
 export const useAssetUpload = ({
-  numOfAttempts = 5,
-  baseTimeoutMs = 500,
+  numOfAttempts = 10,
+  baseTimeoutMs = 1000,
 }: UseAssetUploadProps) => {
   const [isLoading, setIsLoading] = useState(false)
   const handleAssetUpload = async (src: string) => {
