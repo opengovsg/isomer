@@ -10,7 +10,7 @@ export const SingpassErrorFallback: ComponentType<FallbackProps> = () => {
   const router = useRouter()
 
   useEffect(() => {
-    void router.push(
+    void router.replace(
       `${SIGN_IN}?error=${encodeURIComponent("Unable to match Singpass profile")}`,
     )
   }, [router])
