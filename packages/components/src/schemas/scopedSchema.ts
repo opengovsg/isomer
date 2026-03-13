@@ -124,7 +124,21 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
             if (Object.keys(filteredProperties).length === 0) {
               return null
             }
-            return { ...subSchema, properties: filteredProperties }
+            const result: Record<string, unknown> = {
+              ...subSchema,
+              properties: filteredProperties,
+            }
+            if (Array.isArray(subSchema.required)) {
+              const filteredRequired = subSchema.required.filter(
+                (field: string) => !excludeSet.has(field),
+              )
+              if (filteredRequired.length > 0) {
+                result.required = filteredRequired
+              } else {
+                delete result.required
+              }
+            }
+            return result
           }
           return subSchema
         })
@@ -144,11 +158,23 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
         delete filteredProperties[fieldToExclude]
       }
 
-      return {
+      const result: Record<string, unknown> = {
         ...currentSchema,
         ...componentSchemaDefinitions,
         properties: filteredProperties,
-      } as TSchema
+      }
+      if (Array.isArray(currentSchema.required)) {
+        const filteredRequired = currentSchema.required.filter(
+          (field: string) => !excludeSet.has(field),
+        )
+        if (filteredRequired.length > 0) {
+          result.required = filteredRequired
+        } else {
+          delete result.required
+        }
+      }
+
+      return result as TSchema
     }
   }
 

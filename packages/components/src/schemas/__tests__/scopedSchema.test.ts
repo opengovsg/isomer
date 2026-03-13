@@ -255,6 +255,37 @@ describe("getScopedSchema", () => {
       expect(allProperties).not.toContain("subtitle")
     })
 
+    it("should remove excluded fields from required array in allOf sub-schemas", () => {
+      const schema = getScopedSchema({
+        layout: "collection",
+        scope: "page",
+        exclude: ["subtitle"],
+      })
+
+      expect(schema).toBeDefined()
+      expect(schema.allOf).toBeDefined()
+
+      // "subtitle" should not appear in any required array
+      for (const subSchema of schema.allOf) {
+        if (Array.isArray(subSchema.required)) {
+          expect(subSchema.required).not.toContain("subtitle")
+        }
+      }
+    })
+
+    it("should remove excluded fields from required array in non-allOf schemas", () => {
+      const schema = getScopedSchema({
+        layout: "database",
+        scope: "page",
+        exclude: ["contentPageHeader"],
+      })
+
+      expect(schema).toBeDefined()
+      if (Array.isArray(schema.required)) {
+        expect(schema.required).not.toContain("contentPageHeader")
+      }
+    })
+
     it("should return original schema when exclude is empty array", () => {
       const originalSchema = getScopedSchema({
         layout: "database",
