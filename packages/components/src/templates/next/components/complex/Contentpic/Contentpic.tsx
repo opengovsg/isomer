@@ -18,7 +18,8 @@ const contentpicStyles = tv({
 const compoundStyles = contentpicStyles()
 
 interface ContentpicProps
-  extends Omit<BaseContentpicProps, "type">,
+  extends
+    Omit<BaseContentpicProps, "type">,
     VariantProps<typeof contentpicStyles> {}
 
 export const Contentpic = ({

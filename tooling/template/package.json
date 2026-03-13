@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "PORT=3001 next",
-    "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && npm run build",
+    "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && bun run build",
     "build:template": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -15,18 +15,18 @@
     "clean": "git clean -xdf .next .turbo node_modules out"
   },
   "dependencies": {
-    "@opengovsg/isomer-components": "*",
-    "next": "^15.5.9",
-    "postcss": "^8.4.39",
-    "postcss-preset-env": "^10.0.8",
-    "tailwindcss": "^3.4.4",
-    "typescript": "^5.9.2"
+    "@opengovsg/isomer-components": "workspace:*",
+    "next": "^15.5.10",
+    "postcss": "^8.5.6",
+    "postcss-preset-env": "^10.6.1",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@isomer/eslint-config": "*",
-    "@isomer/prettier-config": "*",
-    "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21"
+    "@isomer/eslint-config": "workspace:*",
+    "@isomer/prettier-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "^22.19.7"
   },
   "prettier": "@isomer/prettier-config"
 }

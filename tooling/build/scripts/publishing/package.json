@@ -12,10 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.4.5",
-    "pg": "^8.12.0",
+    "pg": "^8.17.2",
     "tsx": "^4.19.2"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.6"
+    "@types/pg": "^8.16.0"
   }
 }

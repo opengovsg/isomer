@@ -1,7 +1,7 @@
-# needed to pin to 3.20 because Prisma uses OpenSSL but it has been shifted to another location in 3.21
+# Use Debian-based image (not Alpine) - Bun/bunx requires glibc, Alpine uses musl
 # Ref: https://github.com/prisma/prisma/issues/25817
 # Solution: https://github.com/prisma/prisma/issues/25817#issuecomment-2529926082
-FROM node:22-alpine3.20 AS base
+FROM node:22-slim AS base
 
 ARG NEXT_PUBLIC_APP_ENV
 ENV NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV
@@ -35,45 +35,36 @@ ENV NEXT_PUBLIC_INTERCOM_APP_ID=$NEXT_PUBLIC_INTERCOM_APP_ID
 ENV KEEP_ALIVE_TIMEOUT 70000
 
 FROM base AS builder
-RUN apk update
-RUN apk add --no-cache libc6-compat
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash curl unzip ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install bun
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
+ENV BUN_INSTALL="/root/.bun"
+ENV PATH="/root/.bun/bin:${PATH}"
 
 # Set working directory
 WORKDIR /app
 # Replace <your-major-version> with the major version installed in your repository. For example:
-RUN npm install -g turbo@^2
+RUN bun add -g turbo@^2
 COPY . .
 
-# Generate a partial monorepo with a pruned lockfile for a target workspace.
-# Assuming "isomer-studio" is the name entered in the project's package.json: { name: "isomer-studio" }
-RUN turbo prune isomer-studio --docker
-
-# Add lockfile and package.json's of isolated subworkspace
-FROM base AS installer
-RUN apk update
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-
-# First install the dependencies (as they change less often)
-COPY --from=builder /app/out/json/ .
-RUN npm ci
-
-# Build the project
-COPY --from=builder /app/out/full/ .
-RUN npx turbo run build --filter=isomer-studio...
+RUN bun ci
+RUN turbo run build --filter=isomer-studio...
 
 FROM base AS runner
 WORKDIR /app
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN adduser --system --uid 1001 --ingroup nodejs nextjs
 USER nextjs
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/.next/standalone ./
-COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/.next/static ./apps/studio/.next/static
-COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/public ./apps/studio/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/studio/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/studio/.next/static ./apps/studio/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/studio/public ./apps/studio/public
 
 CMD ["node", "apps/studio/server.js"]

@@ -45,7 +45,8 @@ interface Childpage {
 }
 
 interface ChildpageLayoutProps
-  extends Pick<
+  extends
+    Pick<
       ChildrenPagesProps,
       | "showSummary"
       | "showThumbnail"

@@ -19,8 +19,10 @@ export enum CreateCollectionPageFlowStates {
   Details = "details",
 }
 
-interface CreateCollectionPageWizardProps
-  extends Pick<UseDisclosureReturn, "onClose"> {
+interface CreateCollectionPageWizardProps extends Pick<
+  UseDisclosureReturn,
+  "onClose"
+> {
   siteId: number
   collectionId: number
 }
