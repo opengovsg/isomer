@@ -504,7 +504,7 @@ export const getResourcePermalinkTree = async (
           .where("Resource.siteId", "=", siteId)
           .where("Resource.id", "=", String(resourceId))
           .select(defaultResourceSelect)
-          .unionAll((fb) =>
+          .union((fb) =>
             fb
               // Recursive case: Get all the ancestors of the resource
               .selectFrom("Resource")
@@ -702,6 +702,7 @@ export const getBatchAncestryWithSelfQuery = async ({
           sql<ResourceItemContent[]>`jsonb_build_array(${resourceObject})`.as(
             "groupedByPath",
           ),
+          sql<string[]>`ARRAY["Resource"."id"]::text[]`.as("visitedPath"),
         ])
         .where("Resource.siteId", "=", Number(siteId))
         .where("Resource.id", "in", resourceIds)
@@ -723,12 +724,23 @@ export const getBatchAncestryWithSelfQuery = async ({
               >`jsonb_build_array(${resourceObject}) || "recursiveResources"."groupedByPath"`.as(
                 "groupedByPath",
               ),
+              sql<string[]>`"recursiveResources"."visitedPath" || "Resource"."id"`.as(
+                "visitedPath",
+              ),
             ]),
+        )
+        .where(
+          sql<boolean>`NOT ("Resource"."id" = ANY("recursiveResources"."visitedPath"))`,
         ),
     )
     .selectFrom("recursiveResources")
     .select("recursiveResources.groupedByPath")
-    .where("recursiveResources.parentId", "is", null)
+    .where((eb) =>
+      eb.or([
+        eb("recursiveResources.parentId", "is", null),
+        sql<boolean>`"recursiveResources"."parentId" = ANY("recursiveResources"."visitedPath")`,
+      ]),
+    )
     .execute()
 
   return result.map((r) => r.groupedByPath)

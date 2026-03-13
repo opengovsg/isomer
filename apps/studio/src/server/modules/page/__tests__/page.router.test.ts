@@ -1897,6 +1897,40 @@ describe("page.router", async () => {
       expect(result).toEqual([folder.permalink, page.permalink])
     })
 
+    it("should terminate permalink tree traversal when legacy cyclic data exists", async () => {
+      // Arrange
+      const { site, folder: folderA } = await setupFolder({
+        permalink: "cyclic-permalink-a",
+        title: "Cyclic permalink A",
+      })
+      const { folder: folderB } = await setupFolder({
+        siteId: site.id,
+        parentId: folderA.id,
+        permalink: "cyclic-permalink-b",
+        title: "Cyclic permalink B",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Seed legacy corruption: A <-> B cycle.
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folderA.id)
+        .set({ parentId: folderB.id })
+        .execute()
+
+      // Act
+      const result = await caller.getPermalinkTree({
+        siteId: site.id,
+        pageId: Number(folderA.id),
+      })
+
+      // Assert
+      expect(result).toEqual([folderB.permalink, folderA.permalink])
+    })
+
     it("should throw 403 if user does not have access to site", async () => {
       // Arrange
       const { site, folder } = await setupFolder()

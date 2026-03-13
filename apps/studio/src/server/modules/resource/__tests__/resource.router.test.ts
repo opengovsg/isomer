@@ -2936,6 +2936,48 @@ describe("resource.router", async () => {
       ])
     })
 
+    it("should terminate ancestry traversal when legacy cyclic data exists", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      const { folder: folderA } = await setupFolder({
+        siteId: site.id,
+        permalink: "cyclic-ancestry-a",
+        title: "Cyclic ancestry A",
+      })
+      const { folder: folderB } = await setupFolder({
+        siteId: site.id,
+        parentId: folderA.id,
+        permalink: "cyclic-ancestry-b",
+        title: "Cyclic ancestry B",
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Seed legacy corruption: A <-> B cycle.
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folderA.id)
+        .set({ parentId: folderB.id })
+        .execute()
+
+      // Act
+      const result = await caller.getAncestryStack({
+        resourceId: folderA.id,
+        siteId: String(site.id),
+        includeSelf: true,
+      })
+
+      // Assert
+      expect(result).toEqual([
+        pick(folderB, RESOURCE_FIELDS_TO_PICK),
+        pick(folderA, RESOURCE_FIELDS_TO_PICK),
+      ])
+    })
+
     it("should throw 403 if user does not have read access to the site", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
