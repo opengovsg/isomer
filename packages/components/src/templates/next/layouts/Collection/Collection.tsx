@@ -21,6 +21,8 @@ export const CollectionLayout = ({
     defaultSortBy,
     defaultSortDirection,
     tagCategories,
+    showDate,
+    showThumbnail,
   } = page
 
   const items = getCollectionItems({
@@ -30,6 +32,8 @@ export const CollectionLayout = ({
     sortBy: defaultSortBy,
     sortDirection: defaultSortDirection,
     tagCategories,
+    showDate,
+    showThumbnail,
   })
   const processedItems = processCollectionItems(items)
   const breadcrumb = getBreadcrumbFromSiteMap(

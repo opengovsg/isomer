@@ -69,12 +69,13 @@ export const getCollectionItems = ({
         showDate !== false && item.date !== undefined && item.date !== ""
           ? getParsedDate(item.date)
           : undefined
-      const image = showThumbnail
-        ? (item.image ?? {
-            src: site.logoUrl,
-            alt: `${site.siteName} site logo`,
-          })
-        : undefined
+      const image =
+        showThumbnail !== false
+          ? (item.image ?? {
+              src: site.logoUrl,
+              alt: `${site.siteName} site logo`,
+            })
+          : undefined
 
       const baseItem = {
         type: "collectionCard" as const,
