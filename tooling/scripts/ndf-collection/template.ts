@@ -10,6 +10,21 @@ import {
   toTitleCase,
 } from "./utils";
 
+const SUBSIDY_SCHEMES_MAPPING: Record<string, string> = {
+  SDL: "Standard Drug List",
+  MAF: "Medical Assistance Fund",
+  SVL: "Subsidised Vaccine List",
+  MSHL: "Cancer Drug and Clinical Indication listed in the MediShield Life Outpatient Cancer Drug List",
+};
+
+const POST_MARKETING_INFO_MAPPING: Record<string, string> = {
+  DHCPL: "Dear Healthcare Professional Letters",
+  PEM: "Physician Educational Material",
+  PMG: "Patient Medication Guide",
+  PAC: "Patient Alert Card",
+  HCP: "Healthcare Professionals",
+};
+
 interface MonographPageProps {
   activeIngredients: string[];
   synomyms: string[];
@@ -40,9 +55,20 @@ export const getMonographPage = ({
   const monographNameFirstChar = monographName.charAt(0).toUpperCase();
   const subsidyInfoTags = [
     ...new Set(subsidyInfo.map((info) => info.trim().split("~")[0])),
-  ];
+  ].map((scheme) => SUBSIDY_SCHEMES_MAPPING[scheme!] || scheme);
   const isSummaryOfBiologics =
     monographName.endsWith("#") || landingPageRelatedMonographs.length > 0;
+
+  const postMarketingInfoProcessed = postMarketingInfo.flatMap(
+    (info) => getHtmlAsJson(info).content[0].content
+  );
+  const postMarketingTags = [
+    ...new Set(
+      postMarketingInfoProcessed.map(
+        (item) => item.content[0].text.split(" ")[0]
+      )
+    ),
+  ].map((indicator) => POST_MARKETING_INFO_MAPPING[indicator!] || indicator);
 
   return {
     page: {
@@ -53,15 +79,15 @@ export const getMonographPage = ({
           selected: subsidyInfoTags.length ? subsidyInfoTags : ["No"],
         },
         {
-          category: "Drug Guidance",
+          category: "Availability of ACE Drug Guidance",
           selected: drugGuidance.length ? ["Yes"] : ["No"],
         },
         {
           category: "Post-marketing information",
-          selected: postMarketingInfo.length ? ["Yes"] : ["No"],
+          selected: postMarketingTags,
         },
         {
-          category: "Summary of Biologics",
+          category: "Biologics Drug Information Overview",
           selected: isSummaryOfBiologics ? ["Yes"] : ["No"],
         },
       ],
@@ -815,9 +841,7 @@ export const getMonographPage = ({
               details: {
                 type: "prose",
                 content: [
-                  ...postMarketingInfo.flatMap(
-                    (info) => getHtmlAsJson(info).content[0].content
-                  ),
+                  ...postMarketingInfoProcessed,
                   {
                     type: "divider",
                   },
@@ -921,11 +945,11 @@ export const getMonographPage = ({
                             },
                           },
                         ],
-                        text: "HSA website ",
+                        text: "HSA website",
                       },
                       {
                         type: "text",
-                        text: "for the most updated information.",
+                        text: " for the most updated information.",
                       },
                     ],
                   },
@@ -1029,7 +1053,7 @@ export const getMonographPage = ({
                   {
                     type: "table",
                     attrs: {
-                      caption: "Drug availability",
+                      caption: "Availability information",
                     },
                     content: [
                       {
@@ -1330,6 +1354,7 @@ interface ProductInformationPageProps {
   indications: string;
   dosage: string;
   contraindications: string;
+  monographId: string;
 }
 
 export const getProductInformationPage = ({
@@ -1347,12 +1372,17 @@ export const getProductInformationPage = ({
   indications,
   dosage,
   contraindications,
+  monographId,
 }: ProductInformationPageProps) => {
   return {
     page: {
       contentPageHeader: {
         summary: `Active ingredients: ${decodeHtmlEntities(productName)}`,
         showThumbnail: false,
+        buttonLabel: monographId ? "See monograph" : undefined,
+        buttonUrl: monographId
+          ? `/about-drugs/active-ingredient/${monographId}`
+          : undefined,
       },
       title: `${decodeHtmlEntities(productName)} [${licenseNumber}]`,
     },

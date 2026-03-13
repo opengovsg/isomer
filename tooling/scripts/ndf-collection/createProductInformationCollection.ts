@@ -1,47 +1,40 @@
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
-import { NDF_PRODUCT_INFORMATION_CSV_FILEPATH } from "./config";
+import {
+  NDF_GENERAL_MONOGRAPH_CSV_FILEPATH,
+  NDF_PRODUCT_INFORMATION_CSV_FILEPATH,
+} from "./config";
 import {
   getProductInformationLink,
   getProductInformationPage,
 } from "./template";
+import { safeCsvParse } from "./utils";
 
 export const createProductInformationCollection = async () => {
   console.log("Creating product information collection...");
 
-  const csvFileContent = await fs.promises.readFile(
-    NDF_PRODUCT_INFORMATION_CSV_FILEPATH,
-    "utf-8"
+  const generalMonographData = await safeCsvParse(
+    NDF_GENERAL_MONOGRAPH_CSV_FILEPATH
   );
-
-  if (!csvFileContent) {
-    console.error(
-      `CSV file at path ${NDF_PRODUCT_INFORMATION_CSV_FILEPATH} is empty or not found.`
-    );
-    return;
-  }
-
-  const parsedCsv = Papa.parse(csvFileContent, {
-    header: true,
-    skipEmptyLines: true,
-  });
-
-  if (parsedCsv.errors.length) {
-    console.error("Error parsing CSV file:");
-    console.error(parsedCsv.errors);
-    return;
-  }
-
-  const data = parsedCsv.data as Record<string, string>[];
-  const filteredData = data.filter(
+  const filteredGeneralMonographData = generalMonographData.filter(
     (entry) =>
       entry["Publish Status"] === "Active" &&
       entry["Editorial Status"] &&
       ["New", "Revised", "Unchanged"].includes(entry["Editorial Status"])
   );
 
-  for (const entry of filteredData) {
+  const productInfoData = await safeCsvParse(
+    NDF_PRODUCT_INFORMATION_CSV_FILEPATH
+  );
+  const filteredProductInfoData = productInfoData.filter(
+    (entry) =>
+      entry["Publish Status"] === "Active" &&
+      entry["Editorial Status"] &&
+      ["New", "Revised", "Unchanged"].includes(entry["Editorial Status"])
+  );
+
+  for (const entry of filteredProductInfoData) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const permalink = entry["Licence number (SIN number)"]!;
     const productName = entry["Product Name"] ?? "";
@@ -62,6 +55,10 @@ export const createProductInformationCollection = async () => {
       entry[
         "Prescription Only Medicines with Exemptions for Supply without Prescription"
       ] ?? "NA";
+    const monographId =
+      filteredGeneralMonographData.find(
+        (monograph) => monograph["Monograph Name"] === entry["Monograph Name"]
+      )?.["Monograph ID"] ?? "";
 
     const jsonContent = getProductInformationPage({
       productName,
@@ -78,6 +75,7 @@ export const createProductInformationCollection = async () => {
       indications,
       dosage,
       contraindications,
+      monographId,
     });
 
     // Write to file

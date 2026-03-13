@@ -336,7 +336,8 @@ export const createPharmacologicalClassificationsList = async () => {
     version: "0.1.0",
     page: {
       contentPageHeader: {
-        summary: "View the full list of pharmacological classifications here.",
+        summary:
+          "Browse for active ingredients based on the World Health Organisation (WHO) Anatomical Therapeutic Chemical Classification.",
         showThumbnail: false,
       },
       title: "Listing of Pharmacological Classifications",
