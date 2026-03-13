@@ -199,6 +199,62 @@ describe("getScopedSchema", () => {
       expect(schema.allOf || schema.properties).toBeDefined()
     })
 
+    it("should exclude fields from allOf sub-schemas in collection layout", () => {
+      const schema = getScopedSchema({
+        layout: "collection",
+        scope: "page",
+        exclude: ["subtitle"],
+      })
+
+      expect(schema).toBeDefined()
+      expect(schema.allOf).toBeDefined()
+
+      // "subtitle" should not appear in any allOf sub-schema
+      for (const subSchema of schema.allOf) {
+        if (subSchema.properties) {
+          expect(subSchema.properties.subtitle).toBeUndefined()
+        }
+      }
+    })
+
+    it("should exclude multiple fields across different allOf sub-schemas in collection layout", () => {
+      const schema = getScopedSchema({
+        layout: "collection",
+        scope: "page",
+        exclude: ["subtitle", "variant", "image"],
+      })
+
+      expect(schema).toBeDefined()
+      expect(schema.allOf).toBeDefined()
+
+      for (const subSchema of schema.allOf) {
+        if (subSchema.properties) {
+          expect(subSchema.properties.subtitle).toBeUndefined()
+          expect(subSchema.properties.variant).toBeUndefined()
+          expect(subSchema.properties.image).toBeUndefined()
+        }
+      }
+    })
+
+    it("should preserve non-excluded fields in allOf sub-schemas", () => {
+      const schema = getScopedSchema({
+        layout: "collection",
+        scope: "page",
+        exclude: ["subtitle"],
+      })
+
+      expect(schema).toBeDefined()
+      expect(schema.allOf).toBeDefined()
+
+      // Other fields like "variant" should still exist
+      const allProperties = schema.allOf.flatMap(
+        (s: Record<string, unknown>) =>
+          s.properties ? Object.keys(s.properties) : [],
+      )
+      expect(allProperties).toContain("variant")
+      expect(allProperties).not.toContain("subtitle")
+    })
+
     it("should return original schema when exclude is empty array", () => {
       const originalSchema = getScopedSchema({
         layout: "database",
