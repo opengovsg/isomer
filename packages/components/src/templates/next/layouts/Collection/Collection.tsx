@@ -15,11 +15,18 @@ export const CollectionLayout = ({
   layout,
   LinkComponent,
 }: CollectionPageSchemaType) => {
-  const { permalink, defaultSortBy, defaultSortDirection, tagCategories } = page
+  const {
+    permalink,
+    sortOrder,
+    defaultSortBy,
+    defaultSortDirection,
+    tagCategories,
+  } = page
 
   const items = getCollectionItems({
     site,
     permalink,
+    sortOrder,
     sortBy: defaultSortBy,
     sortDirection: defaultSortDirection,
     tagCategories,
