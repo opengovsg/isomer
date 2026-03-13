@@ -72,12 +72,12 @@ interface ScopeLayoutMap {
 
  * // ❌ Type error - "page.database" doesn't exist in ArticlePageSchema
  * const schema = getScopedSchema({ layout: "article", scope: "page.database" })
- * 
+ *
  * // ✅ Exclude specific fields from the schema
- * const schema = getScopedSchema({ 
- *   layout: "database", 
- *   scope: "page", 
- *   exclude: ["contentPageHeader", "database"] 
+ * const schema = getScopedSchema({
+ *   layout: "database",
+ *   scope: "page",
+ *   exclude: ["contentPageHeader", "database"]
  * })
  * ```
  */
@@ -103,18 +103,53 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
   }
 
   // If exclude is provided, remove the specified fields from the schema
-  if (exclude && exclude.length > 0 && currentSchema.properties) {
-    const filteredProperties = { ...currentSchema.properties }
+  if (exclude && exclude.length > 0) {
+    const excludeSet = new Set(exclude)
 
-    for (const fieldToExclude of exclude) {
-      delete filteredProperties[fieldToExclude]
+    // Handle allOf: filter properties from each sub-schema
+    if (currentSchema.allOf) {
+      const filteredAllOf = currentSchema.allOf
+        .map((subSchema: Record<string, unknown>) => {
+          if (
+            subSchema.properties &&
+            typeof subSchema.properties === "object"
+          ) {
+            const filteredProperties = { ...subSchema.properties } as Record<
+              string,
+              unknown
+            >
+            for (const fieldToExclude of excludeSet) {
+              delete filteredProperties[fieldToExclude]
+            }
+            if (Object.keys(filteredProperties).length === 0) {
+              return null
+            }
+            return { ...subSchema, properties: filteredProperties }
+          }
+          return subSchema
+        })
+        .filter(Boolean)
+
+      return {
+        ...currentSchema,
+        ...componentSchemaDefinitions,
+        allOf: filteredAllOf,
+      } as TSchema
     }
 
-    return {
-      ...currentSchema,
-      ...componentSchemaDefinitions,
-      properties: filteredProperties,
-    } as TSchema
+    if (currentSchema.properties) {
+      const filteredProperties = { ...currentSchema.properties }
+
+      for (const fieldToExclude of excludeSet) {
+        delete filteredProperties[fieldToExclude]
+      }
+
+      return {
+        ...currentSchema,
+        ...componentSchemaDefinitions,
+        properties: filteredProperties,
+      } as TSchema
+    }
   }
 
   return {
