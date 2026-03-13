@@ -1,10 +1,8 @@
 import type { DatabasePageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
-import {
-  getBreadcrumbFromSiteMap,
-  getTableOfContents,
-  getTransformedPageContent,
-} from "~/utils"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
+import { getTableOfContents } from "~/utils/getTableOfContents"
+import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
 import { SearchableTable } from "../../components/internal/SearchableTable"
 import { TableOfContents } from "../../components/internal/TableOfContents"

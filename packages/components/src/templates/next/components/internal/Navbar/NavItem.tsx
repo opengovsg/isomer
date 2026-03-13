@@ -7,11 +7,11 @@ import { useScrollLock } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import {
   focusVisibleHighlight,
   groupFocusVisibleHighlight,
-  isExternalUrl,
-} from "~/utils"
+} from "~/utils/tailwind"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 
