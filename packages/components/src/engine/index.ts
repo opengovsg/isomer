@@ -1,9 +1,7 @@
 export { RenderEngine, renderComponentPreviewText } from "./render"
-export { RenderApplicationScripts } from "./renderApplicationScripts"
 export { RenderApplicationHeadScripts } from "./renderApplicationHeadScripts"
-export {
-  getMetadata,
-  shouldBlockIndexing,
-  getRobotsTxt,
-  getSitemapXml,
-} from "./metadata"
+export { RenderApplicationScripts } from "./renderApplicationScripts"
+export { getMetadata } from "./metadata"
+export { getRobotsTxt } from "./getRobotsTxt"
+export { getSitemapXml } from "./getSitemapXml"
+export { shouldBlockIndexing } from "./shouldBlockIndexing"

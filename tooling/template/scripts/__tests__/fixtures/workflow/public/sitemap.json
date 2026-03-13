@@ -1,0 +1,29 @@
+{
+  "permalink": "/",
+  "layout": "homepage",
+  "title": "Home",
+  "children": [
+    {
+      "permalink": "/about",
+      "layout": "content",
+      "title": "About",
+      "children": [
+        {
+          "permalink": "/about/team",
+          "layout": "content",
+          "title": "Team"
+        }
+      ]
+    },
+    {
+      "permalink": "/news",
+      "layout": "index",
+      "title": "News"
+    },
+    {
+      "permalink": "/pdf",
+      "layout": "file",
+      "title": "PDF"
+    }
+  ]
+}
