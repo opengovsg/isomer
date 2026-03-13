@@ -22,7 +22,7 @@ const POST_MARKETING_INFO_MAPPING: Record<string, string> = {
   PEM: "Physician Educational Material",
   PMG: "Patient Medication Guide",
   PAC: "Patient Alert Card",
-  HCP: "Healthcare Professionals",
+  HCP: "Healthcare Professionals Checklist",
 };
 
 interface MonographPageProps {
@@ -1379,7 +1379,9 @@ export const getProductInformationPage = ({
       contentPageHeader: {
         summary: `Active ingredients: ${decodeHtmlEntities(productName)}`,
         showThumbnail: false,
-        buttonLabel: monographId ? "See monograph" : undefined,
+        buttonLabel: monographId
+          ? "View products monograph information"
+          : undefined,
         buttonUrl: monographId
           ? `/about-drugs/active-ingredient/${monographId}`
           : undefined,
@@ -1962,7 +1964,7 @@ export const getProductInformationLink = ({
       category,
       tags: [
         {
-          category: "1. Clinical information",
+          category: "1. Availability of clinical information",
           selected: [clinicalInformation],
         },
         {
