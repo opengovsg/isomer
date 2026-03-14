@@ -1,8 +1,8 @@
 import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { CSSProperties } from "react"
+import { isomerColors } from "@opengovsg/isomer-components"
 import { flatten } from "flat"
 import chunk from "lodash/chunk"
-import twColors from "tailwindcss/colors"
 
 // NOTE: refer to this article for conversion from gamma compressed rgb values
 // to a linear rgb scale
@@ -15,12 +15,12 @@ const LINEAR_RGB_FACTORS = {
 
 // NOTE: This is used to check relative contrast.
 // Refer to https://www.notion.so/opengov/Internal-use-only-Updating-colours-on-your-Isomer-Next-site-15277dbba78880d798bce51ae626d6ae
-// The dark colour there is twColors.gray["700"].
+// The dark colour there is base.content.DEFAULT (tailwindcss gray-700).
 // This can also be referenced from
 // /isomer/packages/components/src/presets/next/colors.ts
 export const TEXT_COLOURS = {
   light: "#FFFFFF",
-  dark: twColors.gray["700"],
+  dark: isomerColors.base.content.DEFAULT,
 } as const
 
 export const BACKGROUND_COLOURS = {
