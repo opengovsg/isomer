@@ -363,7 +363,8 @@ export const getLocalisedSitemap = async (
         .leftJoin("Version", "Version.id", "publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
         .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
-        .unionAll((fb) =>
+        // Use UNION (distinct) to terminate traversal on legacy cyclic data.
+        .union((fb) =>
           fb
             // Recursive case: Get all the ancestors of the resource
             .selectFrom("Resource")
@@ -413,7 +414,8 @@ export const getLocalisedSitemap = async (
         .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
         .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
-        .unionAll((fb) =>
+        // Use UNION (distinct) to terminate traversal on legacy cyclic data.
+        .union((fb) =>
           fb
             .selectFrom("Resource")
             .innerJoin(
@@ -504,7 +506,8 @@ export const getResourcePermalinkTree = async (
           .where("Resource.siteId", "=", siteId)
           .where("Resource.id", "=", String(resourceId))
           .select(defaultResourceSelect)
-          .unionAll((fb) =>
+          // Use UNION (distinct) to terminate traversal on legacy cyclic data.
+          .union((fb) =>
             fb
               // Recursive case: Get all the ancestors of the resource
               .selectFrom("Resource")
@@ -707,7 +710,8 @@ export const getBatchAncestryWithSelfQuery = async ({
         .where("Resource.id", "in", resourceIds)
         .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.type", "!=", ResourceType.IndexPage)
-        .unionAll(
+        // Use UNION (distinct) to terminate traversal on legacy cyclic data.
+        .union(
           eb
             .selectFrom("Resource")
             .innerJoin(

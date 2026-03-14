@@ -157,6 +157,43 @@ describe("resource.service", () => {
       ])
     })
 
+    it("should terminate and return no ancestry on legacy cyclic data", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { folder: folderA } = await setupFolder({
+        siteId: site.id,
+        parentId: null,
+        permalink: "cyclic-a",
+      })
+      const { folder: folderB } = await setupFolder({
+        siteId: site.id,
+        parentId: folderA.id,
+        permalink: "cyclic-b",
+      })
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: folderB.id,
+        permalink: "cyclic-page",
+      })
+
+      // Seed legacy corruption: page -> B -> A -> B
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folderA.id)
+        .set({ parentId: folderB.id })
+        .execute()
+
+      // Act
+      const result = await getBatchAncestryWithSelfQuery({
+        siteId: site.id,
+        resourceIds: [page.id],
+      })
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
     it("should return multiple ancestry paths for multiple resources", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1286,6 +1323,48 @@ describe("resource.service", () => {
       )
       expect(collection2Node?.title).toBe("Collection 2 Index Page")
       expect(collection2Node?.summary).toBe("Hello im the index page")
+    })
+
+    it("should still return sitemap when unrelated legacy cyclic data exists", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page: rootPage } = await setupPageResource({
+        resourceType: ResourceType.RootPage,
+        siteId: site.id,
+      })
+      const { folder: healthyFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: null,
+        permalink: "healthy-folder",
+        state: ResourceState.Published,
+      })
+
+      const { folder: folderA } = await setupFolder({
+        siteId: site.id,
+        parentId: null,
+        permalink: "cyclic-a",
+        state: ResourceState.Published,
+      })
+      const { folder: folderB } = await setupFolder({
+        siteId: site.id,
+        parentId: folderA.id,
+        permalink: "cyclic-b",
+        state: ResourceState.Published,
+      })
+
+      // Seed legacy corruption: A <-> B cycle.
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folderA.id)
+        .set({ parentId: folderB.id })
+        .execute()
+
+      // Act
+      const result = await getLocalisedSitemap(site.id, Number(rootPage.id))
+
+      // Assert
+      expect(result.id).toBe(rootPage.id)
+      expect(result.children?.map((child) => child.id)).toContain(healthyFolder.id)
     })
   })
   describe.skip("getResourcePermalinkTree", () => {})
