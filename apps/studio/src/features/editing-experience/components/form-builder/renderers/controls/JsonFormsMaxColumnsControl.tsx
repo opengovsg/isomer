@@ -23,11 +23,16 @@ function JsonFormsMaxColumnsControl({
   handleChange,
   path,
   description,
-}: ControlProps): JSX.Element | null {
+}: Omit<ControlProps, "data"> & {
+  data?: string
+}): JSX.Element | null {
   const ctx = useJsonForms()
 
   // Get sibling variant value
-  const variant = get(ctx.core?.data, "variant")
+  const variant = get(
+    ctx.core?.data as Record<string, string | undefined>,
+    "variant",
+  )
 
   // Only show when variant is "boxes"
   if (variant !== "boxes") {
@@ -41,7 +46,7 @@ function JsonFormsMaxColumnsControl({
           {label || "Maximum columns"}
         </FormLabel>
         <SingleSelect
-          value={(data as string) ?? "3"}
+          value={data ?? "3"}
           name={label || "Maximum columns"}
           items={MAX_COLUMNS_OPTIONS}
           isClearable={false}
