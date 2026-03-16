@@ -1380,7 +1380,7 @@ export const getProductInformationPage = ({
         summary: `Active ingredients: ${decodeHtmlEntities(productName)}`,
         showThumbnail: false,
         buttonLabel: monographId
-          ? "View products monograph information"
+          ? "View product's general information"
           : undefined,
         buttonUrl: monographId
           ? `/about-drugs/active-ingredient/${monographId}`
