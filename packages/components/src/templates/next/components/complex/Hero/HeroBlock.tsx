@@ -1,7 +1,7 @@
 import type { HeroBlockProps } from "~/interfaces/complex/Hero"
-import { getReferenceLinkHref } from "~/utils"
-import { LinkButton } from "../../internal/LinkButton/LinkButton"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { ImageClient } from "../../internal/ImageClient"
+import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
 const HERO_THEME_MAPPINGS = {
   hero: {

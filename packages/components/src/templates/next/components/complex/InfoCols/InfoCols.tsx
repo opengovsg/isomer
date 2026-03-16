@@ -4,12 +4,10 @@ import type { SupportedIconName } from "~/common/icons"
 import type { InfoColsProps } from "~/interfaces"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"
-import {
-  getReferenceLinkHref,
-  getTailwindVariantLayout,
-  groupFocusVisibleHighlight,
-  isExternalUrl,
-} from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 

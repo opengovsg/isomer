@@ -1,8 +1,10 @@
 import type { ContentPageHeaderProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getFormattedDate, getReferenceLinkHref, isExternalUrl } from "~/utils"
-import { ImageClient } from "../ImageClient"
+import { getFormattedDate } from "~/utils/getFormattedDate"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import { Breadcrumb } from "../Breadcrumb"
+import { ImageClient } from "../ImageClient"
 import { LinkButton } from "../LinkButton"
 
 const createContentPageHeaderStyles = tv({

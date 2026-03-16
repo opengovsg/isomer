@@ -1,6 +1,6 @@
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { tv } from "~/lib/tv"
-import { groupFocusVisibleHighlight } from "~/utils"
+import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 import { ComponentContent } from "../../internal/customCssClass"
 
 export const infoCardTitleStyle = tv({

@@ -1,5 +1,5 @@
 import { tv } from "~/lib/tv"
-import { groupFocusVisibleHighlight } from "~/utils"
+import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
 export const collectionCardLinkStyle = tv({
   extend: groupFocusVisibleHighlight,

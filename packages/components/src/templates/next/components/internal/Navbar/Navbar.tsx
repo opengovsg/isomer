@@ -1,6 +1,6 @@
 import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { NavbarClient } from "./NavbarClient"
 
 const navbarLogoStyles = tv({

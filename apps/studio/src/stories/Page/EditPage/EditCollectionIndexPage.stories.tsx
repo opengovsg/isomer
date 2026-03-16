@@ -6,6 +6,7 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
+import { IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
 
@@ -24,17 +25,16 @@ const COMMON_HANDLERS = [
   resourceHandlers.getBatchAncestryWithSelf.default(),
   resourceHandlers.getRolesFor.admin(),
   // NOTE: Handlers that return custom data for this story
-  sitesHandlers.getLocalisedSitemap.index(),
+  sitesHandlers.getLocalisedSitemap.collection(),
   resourceHandlers.getWithFullPermalink.index(),
   resourceHandlers.getMetadataById.index(),
-  pageHandlers.readPageAndBlob.index(),
+  pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.index(),
   pageHandlers.getFullPermalink.index(),
-  sitesHandlers.getLocalisedSitemap.index(),
 ]
 
 const meta: Meta<typeof EditPage> = {
-  title: "Pages/Edit Page/Index Page",
+  title: "Pages/Edit Page/Collection Index Page",
   component: EditPage,
   parameters: {
     getLayout: EditPage.getLayout,
@@ -63,7 +63,7 @@ export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Header/i,
+      name: /Page description and summary/i,
     })
     await userEvent.click(button)
   },
@@ -75,7 +75,9 @@ export const SaveToast: Story = {
     await EditFixedBlockState.play?.({ canvasElement, ...rest })
     const canvas = within(canvasElement)
 
-    const textbox = await canvas.findByPlaceholderText("Page summary")
+    const textbox = await canvas.findByPlaceholderText(
+      "The subtitle of the collection",
+    )
     await userEvent.type(textbox, "very cool summary")
 
     const saveButton = await canvas.findByRole("button", {
@@ -110,23 +112,17 @@ export const WithBanner: Story = {
   },
 }
 
-export const EditChildBlockState: Story = {
+export const NewCollectionIndexEditingExperience: Story = {
+  parameters: {
+    growthbook: [
+      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+    ],
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Child pages/i,
+      name: /Collection settings/i,
     })
     await userEvent.click(button)
-  },
-}
-
-export const CustomIndexPage: Story = {
-  parameters: {
-    msw: {
-      handlers: [
-        pageHandlers.readPageAndBlob.customIndex(),
-        ...COMMON_HANDLERS,
-      ],
-    },
   },
 }

@@ -5,7 +5,8 @@ import {
   CARDS_WITHOUT_IMAGES,
   INFOCARD_VARIANT,
 } from "~/interfaces/complex/InfoCards"
-import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 import { LinkButton } from "../../internal/LinkButton"
 import { compoundStyles } from "./common"
 import {

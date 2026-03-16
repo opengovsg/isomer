@@ -1,6 +1,7 @@
 import type { KeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
