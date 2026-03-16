@@ -46,7 +46,7 @@ function JsonFormsMaxColumnsControl({
           {label || "Maximum columns"}
         </FormLabel>
         <SingleSelect
-          value={data ?? "3"}
+          value={data ?? "2"}
           name={label || "Maximum columns"}
           items={MAX_COLUMNS_OPTIONS}
           isClearable={false}

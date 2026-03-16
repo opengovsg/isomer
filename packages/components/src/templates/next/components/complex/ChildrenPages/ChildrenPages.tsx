@@ -41,7 +41,7 @@ const BoxLayout = ({
   shouldLazyLoad,
   LinkComponent,
   site,
-  maxColumns = "3",
+  maxColumns = "2",
 }: ChildpageLayoutProps) => {
   return (
     <div
