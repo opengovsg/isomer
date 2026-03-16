@@ -3,7 +3,7 @@
 import { forwardRef } from "react"
 
 import type { ImageClientProps } from "~/interfaces"
-import { isExternalUrl } from "~/utils"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 
 export const ImageClient = forwardRef<
   HTMLImageElement,
