@@ -172,6 +172,95 @@ To prevent expensive recursive lookups, batch resource queries are capped:
 
 If you change this value, update both schema validation and UI assumptions together.
 
+### Cycle-safe recursive folder traversal and move validation
+
+Codepaths:
+
+- `src/server/modules/resource/resource.router.ts`:
+  - `getNestedFolderChildrenOf`
+  - `move` (descendant validation branch)
+- `src/server/modules/resource/__tests__/resource.router.test.ts`
+
+Two recursive CTE paths are explicitly cycle-safe for legacy corrupted graphs:
+
+- Nested folder listing (`getNestedFolderChildrenOf`)
+- Descendant lookup during move validation (`move`)
+
+Current behavior:
+
+- Both paths use recursive `UNION` (distinct) traversal instead of `UNION ALL`
+- This guarantees traversal termination even when historical cyclic parent-child edges exist
+- Move guard still rejects destination inside descendants with:
+  - `"Cannot move a folder into one of its descendants"`
+
+Common pitfalls:
+
+- Switching to `UNION ALL` can re-introduce non-terminating recursion on cyclic data
+- Do not remove cycle-focused tests; they protect production legacy-data behavior
+
+### Collection editing experience and layout variant behavior
+
+Codepaths:
+
+- `src/lib/growthbook.ts`
+- `src/hooks/useNewCollectionEditingExperience.ts`
+- `src/features/editing-experience/components/RootStateDrawer.tsx`
+- `src/features/editing-experience/components/CollectionEditorStateDrawer.tsx`
+- `src/features/editing-experience/components/form-builder/renderers/controls/JsonFormsCollectionVariantControl.tsx`
+- `packages/components/src/types/page.ts`
+- `packages/components/src/templates/next/layouts/Collection/CollectionClient.tsx`
+- `packages/components/src/templates/next/layouts/Collection/CollectionResults.tsx`
+
+The collection-specific editor experience is gated by the GrowthBook feature key
+`is-new-collection-editing-experience-enabled`.
+
+Current behavior:
+
+- When the flag is **enabled** and layout is `collection`, the fixed block opens `collectionEditor` ("Collection settings")
+- When the flag is **disabled**, collection pages continue to use the regular `metadataEditor`
+- The `variant` field in collection page schema supports:
+  - `collection` (labelled as `1-column` in Studio)
+  - `blog` (labelled as `2-column` in Studio)
+- The collection variant control is intentionally hidden when the feature flag is off
+- Runtime rendering defaults to `collection` when `page.variant` is missing
+
+Common pitfalls:
+
+- Turning off the feature flag does **not** remove stored `page.variant`; it only hides the editor control
+- New/legacy pages without `variant` still render as `collection` due component-level defaulting
+- If adding new variant options, update both schema literals and rendering branches together
+
+### Collection item creation workflow (Page vs Link or file)
+
+Codepaths:
+
+- `src/features/editing-experience/components/CreateCollectionPageModal/CreateCollectionPageWizardContext.tsx`
+- `src/features/editing-experience/components/CreateCollectionPageModal/TypeScreen.tsx`
+- `src/features/editing-experience/components/CreateCollectionPageModal/DetailsScreen.tsx`
+- `src/schemas/page.ts` (`createCollectionPageFormSchema`)
+- `src/server/modules/collection/collection.router.ts` (`createCollectionPage`)
+
+Flow summary:
+
+1. User selects item type: `CollectionPage` or `CollectionLink`
+2. Frontend submits to the same mutation (`collection.createCollectionPage`) with discriminated `type`
+3. Backend inserts a resource under the parent collection and creates the corresponding default blob
+4. Studio redirects to the new editor route after success
+
+Input and permalink behavior:
+
+- `CollectionPage` uses human-readable URL slug input (`permalink`)
+- `CollectionLink` hides URL editing in UI and auto-fills `permalink` with `crypto.randomUUID()`
+- Backend still enforces unique `(siteId, permalink)` for both types
+
+Troubleshooting notes:
+
+- `CONFLICT` can still happen if permalink is duplicated (for pages by slug, for links only in very rare UUID collision cases)
+- Studio maps `CONFLICT` to:
+  - `permalink` field error for `CollectionPage`
+  - `title` field error for `CollectionLink`
+- If this mapping changes, keep frontend error targeting aligned with backend error semantics
+
 ### Asset upload and delete workflow
 
 Codepaths:
@@ -227,6 +316,38 @@ Quick failure guide:
 | `INTERNAL_SERVER_ERROR: Failed to...` | Postman API/network failure while sending    | `lib/mail.ts` logs                              |
 | `Please request for another OTP`      | Missing/expired verification token           | verification token table and OTP fingerprinting |
 | OTP not received locally              | `POSTMAN_API_KEY` missing (console fallback) | local server console output                     |
+
+### Singpass callback error handling
+
+Codepaths:
+
+- `src/pages/sign-in/singpass/callback.tsx`
+- `src/features/sign-in/components/SingpassCallback.tsx`
+- `src/features/sign-in/components/SingpassErrorFallback/SingpassErrorFallback.tsx`
+- `src/pages/sign-in/singpass/index.tsx`
+
+Flow summary:
+
+1. Callback page wraps `SingpassCallback` with suspense + error boundary
+2. Callback success:
+   - Existing users are redirected to `redirectUrl`
+   - New users land on setup confirmation screen
+3. Callback runtime error triggers `SingpassErrorFallback`, which redirects to sign-in with:
+   - `error=Unable to match Singpass profile`
+
+Operational notes:
+
+- The fallback intentionally renders a full-screen spinner while redirecting to avoid callback-page deadlocks
+- `/sign-in/singpass` reads `router.query.error` to show an auth failure infobox
+- If `auth.singpass.getUserProps` fails on `/sign-in/singpass`, user is redirected to `/sign-in?error=Unable to retrieve user data`
+
+Quick failure guide:
+
+| Symptom                                | Likely cause                               | Where to check                              |
+| -------------------------------------- | ------------------------------------------ | ------------------------------------------- |
+| Spinner never resolves on callback     | Error path not redirecting correctly       | `SingpassErrorFallback.tsx`, callback route |
+| Redirects to `/sign-in/singpass?error` | Callback query failed or callback exception | `SingpassCallback.tsx` query + logs         |
+| Redirects to `/sign-in?error=...`      | Failed `getUserProps` on sign-in page      | `sign-in/singpass/index.tsx` effect         |
 
 ## Files of note
 
