@@ -1,9 +1,9 @@
 import { Skeleton } from "@chakra-ui/react"
 
-import type { PreviewProps } from "./PreviewWithoutSitemap"
+import type { PreviewProps } from "./PreviewWithCustomSitemap"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
-import PreviewWithoutSitemap from "./PreviewWithoutSitemap"
+import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 
 function SuspendablePreview({
   siteId,
@@ -15,7 +15,9 @@ function SuspendablePreview({
     resourceId,
   })
 
-  return <PreviewWithoutSitemap {...rest} siteMap={siteMap} siteId={siteId} />
+  return (
+    <PreviewWithCustomSitemap {...rest} siteMap={siteMap} siteId={siteId} />
+  )
 }
 
 const Preview = withSuspense(

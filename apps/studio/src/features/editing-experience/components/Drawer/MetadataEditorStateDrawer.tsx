@@ -16,12 +16,12 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { pageSchema } from "../schema"
-import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
-import { DiscardChangesModal } from "./DiscardChangesModal"
-import { DrawerHeader } from "./Drawer/DrawerHeader"
-import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
-import FormBuilder from "./form-builder/FormBuilder"
+import { pageSchema } from "../../schema"
+import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
+import { DiscardChangesModal } from "../DiscardChangesModal"
+import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
+import FormBuilder from "../form-builder/FormBuilder"
+import { DrawerHeader } from "./DrawerHeader"
 
 const HEADER_LABELS: Record<string, string> = {
   article: "Edit article page header",
