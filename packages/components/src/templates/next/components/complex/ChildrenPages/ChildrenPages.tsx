@@ -99,12 +99,12 @@ const BoxLayout = ({
 
 const createRowStyles = tv({
   slots: {
-    container: `${ComponentContent} grid grid-cols-3 gap-10 md:grid-cols-6 lg:grid-cols-12 [&:not(:first-child)]:mt-7`,
+    container: `${ComponentContent} grid grid-cols-3 gap-9 md:grid-cols-6 lg:grid-cols-12 [&:not(:first-child)]:mt-7`,
     image: "bg-white",
     imageContainer:
-      "align-center flex aspect-[3/2] h-full w-full justify-center overflow-hidden rounded-lg border bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md max-md:col-span-full max-md:row-span-1 md:col-span-2 lg:col-span-3",
+      "flex aspect-[3/2] h-full w-full justify-center overflow-hidden rounded-lg border bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md max-md:col-span-full max-md:row-span-1 md:col-span-2 lg:col-span-3",
     textContainer:
-      "flex flex-col gap-2 break-words max-md:col-span-full max-md:row-span-1",
+      "flex flex-col justify-center gap-2 break-words max-md:col-span-full max-md:row-span-1",
     contentContainer:
       "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid p-5 max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
     cardTitleArrow:
