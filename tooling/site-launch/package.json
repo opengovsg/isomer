@@ -2,7 +2,7 @@
   "name": "@isomer/site-launch",
   "type": "module",
   "scripts": {
-    "launch": "dotenv npx tsx ./index.ts"
+    "launch": "dotenv tsx ./index.ts"
   },
   "devDependencies": {
     "@isomer/migrate-tags": "*",
@@ -20,7 +20,7 @@
     "@octokit/rest": "^22.0.0",
     "axios": "^1.10.0",
     "commander-ts": "^0.2.0",
-    "npx": "^10.2.2",
+    "dotenv": "^16.4.5",
     "tsx": "^4.20.4"
   },
   "prettier": "@isomer/prettier-config"
