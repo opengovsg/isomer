@@ -7,6 +7,19 @@ interface UseAssetUploadProps {
   numOfAttempts?: number
   baseTimeoutMs?: number
 }
+
+export const ASSET_UPLOAD_MAX_BACKOFF_MS = 5000
+
+export const getAssetUploadBackoffOptions = ({
+  baseTimeoutMs,
+  numOfAttempts,
+}: Required<UseAssetUploadProps>) => ({
+  startingDelay: baseTimeoutMs,
+  numOfAttempts,
+  delayFirstAttempt: true,
+  maxDelay: ASSET_UPLOAD_MAX_BACKOFF_MS,
+})
+
 export const useAssetUpload = ({
   numOfAttempts = 10,
   baseTimeoutMs = 1000,
@@ -23,11 +36,10 @@ export const useAssetUpload = ({
           }
           return src
         },
-        {
-          startingDelay: baseTimeoutMs,
+        getAssetUploadBackoffOptions({
+          baseTimeoutMs,
           numOfAttempts,
-          delayFirstAttempt: true,
-        },
+        }),
       )
       return src
     } catch (e) {
