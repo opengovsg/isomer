@@ -1616,19 +1616,11 @@ describe("user.router", () => {
         eventType: "PermissionDelete",
         delta: expect.objectContaining({
           before: expect.objectContaining({
-            ...omit(currentPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
+            ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
             deletedAt: null,
           }),
           after: expect.objectContaining({
-            ...omit(currentPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
+            ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
             deletedAt: expect.anything(),
           }),
         }),
@@ -1711,19 +1703,11 @@ describe("user.router", () => {
         eventType: "PermissionDelete",
         delta: expect.objectContaining({
           before: expect.objectContaining({
-            ...omit(currentPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
+            ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
             deletedAt: null,
           }),
           after: expect.objectContaining({
-            ...omit(currentPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
+            ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
             deletedAt: expect.anything(), // should be set to a new date
           }),
         }),
@@ -2164,7 +2148,7 @@ describe("user.router", () => {
             phone: MOCK_TEST_PHONE,
           }),
           after: expect.objectContaining(
-              omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
+            omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
           ),
         }),
       })
