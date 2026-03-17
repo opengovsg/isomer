@@ -4,7 +4,6 @@ import {
   getBlobOfResource,
   updateBlobById,
 } from "~server/modules/resource/resource.service"
-import _ from "lodash-es"
 import {
   generateUpdatedContent,
   getChildItemsWithTags,

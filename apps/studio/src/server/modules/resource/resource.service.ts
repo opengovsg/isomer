@@ -4,7 +4,6 @@ import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
-import _ from "lodash-es"
 
 import type {
   Footer,
