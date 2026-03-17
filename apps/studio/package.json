@@ -115,7 +115,7 @@
     "@trpc/react-query": "^11.4.4",
     "@trpc/server": "^11.4.4",
     "@uidotdev/usehooks": "^2.4.1",
-    "ajv": "^8.17.1",
+    "ajv": "^8.18.0",
     "ajv-errors": "^3.0.0",
     "chakra-react-select": "^5.0.5",
     "date-fns": "^4.1.0",
