@@ -39,7 +39,7 @@ export const ChildrenPagesSchema = Type.Object(
           title: "Number of columns",
           description:
             "This only affects how the block appears on large screens",
-          default: "3",
+          default: "2",
           format: "childPagesCols",
         },
       ),
