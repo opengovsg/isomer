@@ -1,5 +1,8 @@
+import { BiRightArrowAlt } from "react-icons/bi"
+
 import type { ChildrenPagesProps, ImageClientProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types"
+import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { IMAGE_FIT } from "~/interfaces/constants"
 import { tv } from "~/lib/tv"
 import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
@@ -8,7 +11,7 @@ import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
-import { compoundStyles } from "../InfoCards/common"
+import { compoundStyles, infoCardTitleStyle } from "../InfoCards/common"
 import { InfoCardNoImage, InfoCardWithImage } from "../InfoCards/components"
 import { mergeChildrenPages } from "./utils"
 
@@ -97,17 +100,21 @@ const BoxLayout = ({
 const createRowStyles = tv({
   slots: {
     container: `${ComponentContent} grid grid-cols-3 gap-10 md:grid-cols-6 lg:grid-cols-12 [&:not(:first-child)]:mt-7`,
-    image: "rounded-l-sm bg-white",
+    image: "bg-white",
     imageContainer:
-      "align-center flex aspect-[3/2] h-full w-full justify-center max-md:col-span-full max-md:row-span-1 max-md:border-b max-md:border-b-base-divider-subtle md:col-span-2 md:border-r md:border-r-base-divider-subtle lg:col-span-3",
+      "align-center flex aspect-[3/2] h-full w-full justify-center overflow-hidden rounded-lg border bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md max-md:col-span-full max-md:row-span-1 md:col-span-2 lg:col-span-3",
     textContainer:
       "flex flex-col gap-2 break-words max-md:col-span-full max-md:row-span-1",
     contentContainer:
-      // NOTE: Our `rounded-sm` compiles down to `0.125 rem` rather than `0.25 rem`, necessitating this
-      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid rounded-[0.25rem] border border-base-divider-medium p-5 max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
+      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid p-5 max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
+    cardTitleArrow:
+      "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     title: [
       groupFocusVisibleHighlight(),
-      "prose-title-md-medium text-base-content-strong group-hover:text-brand-canvas-inverse group-hover:underline",
+      infoCardTitleStyle({
+        isClickableCard: true,
+        variant: INFOCARD_VARIANT.default,
+      }),
     ],
     description: "prose-body-base text-base-content",
   },
@@ -126,7 +133,7 @@ const createRowStyles = tv({
     hasThumbnail: {
       true: {
         textContainer:
-          "pb-5 max-md:px-5 md:col-span-4 md:ml-[-1.25rem] md:py-5 md:pr-5 lg:col-span-9",
+          "pb-5 md:col-span-4 md:ml-[-1.25rem] md:pr-5 lg:col-span-9",
         contentContainer: "p-0",
       },
       false: { textContainer: "md:col-span-6 lg:col-span-12" },
@@ -188,7 +195,18 @@ const RowLayout = ({
                 hasThumbnail: !!showThumbnail,
               })}
             >
-              <p className={styles.title()}>{title}</p>
+              <p className={styles.title()}>
+                <span>{title}</span>
+                {url && (
+                  <BiRightArrowAlt
+                    aria-hidden
+                    className={compoundStyles.cardTitleArrow({
+                      isExternalLink: false,
+                      variant: INFOCARD_VARIANT.default,
+                    })}
+                  />
+                )}
+              </p>
               {showSummary && (
                 <p className={styles.description()}>{description}</p>
               )}
