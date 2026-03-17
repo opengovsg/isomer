@@ -44,7 +44,7 @@ const BoxLayout = ({
   LinkComponent,
   site,
   maxColumns = "2",
-  imageFit,
+  imageFit = "cover",
 }: ChildpageLayoutProps) => {
   return (
     <div
