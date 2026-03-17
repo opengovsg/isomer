@@ -2,7 +2,7 @@ import { randomUUID } from "crypto"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import type { UUID } from "crypto"
 import { db, sql } from "~server/modules/database"
-import _ from "lodash"
+import _ from "lodash-es"
 
 // NOTE: old tag is `category: string + selected: string[]`
 export interface LegacyTag {

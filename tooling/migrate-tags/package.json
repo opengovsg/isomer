@@ -7,6 +7,7 @@
   },
   "devDependencies": {
     "@isomer/tsconfig": "*",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.15.21",
     "typescript": "latest"
   },
@@ -19,6 +20,7 @@
     "@opengovsg/isomer-components": "*",
     "axios": "^1.13.6",
     "commander-ts": "^0.2.0",
+    "lodash-es": "^4.17.23",
     "tsx": "^4.20.4"
   },
   "prettier": "@isomer/prettier-config"

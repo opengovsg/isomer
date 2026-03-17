@@ -1,15 +1,15 @@
+import type { LegacyTag } from "utils"
 import { db, jsonb } from "~server/modules/database"
 import {
   getBlobOfResource,
   updateBlobById,
 } from "~server/modules/resource/resource.service"
-import _ from "lodash"
+import _ from "lodash-es"
 import {
   generateUpdatedContent,
   getChildItemsWithTags,
   getCollatedTags,
   getCollectionsOfSiteWithTags,
-  LegacyTag,
   migrateTags,
 } from "utils"
 
