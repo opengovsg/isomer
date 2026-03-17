@@ -7,7 +7,7 @@ import {
   useIsNotificationDismissed,
 } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { isEmpty, isEqual } from "lodash"
+import { isEmpty, isEqual } from "lodash-es"
 import { BiWrench } from "react-icons/bi"
 
 import type { NextPageWithLayout } from "~/lib/types"

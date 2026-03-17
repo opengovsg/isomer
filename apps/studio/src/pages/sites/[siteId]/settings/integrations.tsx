@@ -12,7 +12,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { Value } from "@sinclair/typebox/value"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { isEqual, pickBy } from "lodash"
+import { isEqual, pickBy } from "lodash-es"
 import { BiWrench } from "react-icons/bi"
 
 import type { NextPageWithLayout } from "~/lib/types"

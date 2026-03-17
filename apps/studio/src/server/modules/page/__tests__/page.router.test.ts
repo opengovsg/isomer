@@ -7,7 +7,7 @@ import {
   ResourceType,
 } from "~prisma/generated/generatedEnums"
 import { addDays, set, subDays } from "date-fns"
-import { omit, pick } from "lodash"
+import { omit, pick } from "lodash-es"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"

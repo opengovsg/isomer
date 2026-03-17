@@ -16,7 +16,7 @@ import {
   ResourceType,
 } from "~prisma/generated/generatedEnums"
 import { format, isBefore } from "date-fns"
-import _, { get, isEmpty, isEqual } from "lodash"
+import _, { get, isEmpty, isEqual } from "lodash-es"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {

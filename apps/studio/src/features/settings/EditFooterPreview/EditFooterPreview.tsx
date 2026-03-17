@@ -1,5 +1,5 @@
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
-import merge from "lodash/merge"
+import { merge } from "lodash-es"
 
 import type { IframeCallbackFnProps } from "~/types/dom"
 import Preview from "~/features/editing-experience/components/Preview"

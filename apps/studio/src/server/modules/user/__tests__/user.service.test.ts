@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { RoleType } from "~prisma/generated/generatedEnums"
-import _ from "lodash"
+import _ from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,

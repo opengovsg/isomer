@@ -20,8 +20,7 @@ import {
   NavbarAddonsSchema,
   NavbarItemsSchema,
 } from "@opengovsg/isomer-components"
-import isEmpty from "lodash/isEmpty"
-import isEqual from "lodash/isEqual"
+import { isEmpty, isEqual } from "lodash-es"
 import { BiDirections } from "react-icons/bi"
 
 import {

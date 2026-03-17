@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
-import _ from "lodash"
+import _ from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,

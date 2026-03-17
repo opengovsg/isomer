@@ -1,6 +1,6 @@
 import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
-import _, { omit } from "lodash"
+import _, { omit } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
