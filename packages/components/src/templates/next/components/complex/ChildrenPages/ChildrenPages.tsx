@@ -209,7 +209,7 @@ export const ChildrenPages = ({
   showSummary = true,
   showThumbnail,
   shouldLazyLoad,
-  maxColumns = "3",
+  maxColumns = "2",
   imageFit = IMAGE_FIT.Cover,
 }: ChildrenPagesProps) => {
   const currentPageNode = getNodeFromSiteMap(site.siteMap, permalink)
