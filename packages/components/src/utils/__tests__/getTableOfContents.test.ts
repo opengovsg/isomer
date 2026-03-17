@@ -1,60 +1,101 @@
 import { describe, expect, it } from "vitest"
 
+import type { IsomerComponent } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 import { getTableOfContents } from "~/utils/getTableOfContents"
 import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 
-describe("getTransformedPageContent", () => {
-  it("should auto-generate ids for level 2 prose headings and structured blocks", () => {
+describe("getTableOfContents", () => {
+  const anchorPattern = /^#[a-f0-9]{32}$/
+
+  it("generates toc entries from level-2 prose headings only", () => {
     // Arrange
-    const content = [
+    const site = generateSiteConfig()
+    const transformedContent = getTransformedPageContent([
       {
         type: "prose",
         content: [
           {
             type: "heading",
             attrs: { level: 2 },
-            content: [{ type: "text", text: "Auto generated heading" }],
+            content: [{ type: "text", text: "Overview" }],
           },
           {
             type: "heading",
             attrs: { level: 3 },
-            content: [{ type: "text", text: "Ignored heading level" }],
+            content: [{ type: "text", text: "Hidden from toc" }],
           },
           {
             type: "heading",
-            attrs: { level: 2, id: "existing-id" },
-            content: [{ type: "text", text: "Predefined heading" }],
+            attrs: { level: 2 },
+            content: [{ type: "text", text: "Details" }],
           },
         ],
       },
-      {
-        type: "infocards",
-        title: "Useful links",
-      },
-    ] as never
+    ])
 
     // Act
-    const transformedContent = getTransformedPageContent(content)
+    const toc = getTableOfContents(site, transformedContent)
 
     // Assert
-    const proseBlock = transformedContent[0] as never as {
-      content: Array<{ attrs: { level: number; id?: string } }>
-    }
-    const infoCardsBlock = transformedContent[1] as never as { id?: string }
-
-    expect(proseBlock.content[0].attrs.id).toMatch(/^[a-f0-9]{32}$/)
-    expect(proseBlock.content[1].attrs.id).toBeUndefined()
-    expect(proseBlock.content[2].attrs.id).toBe("existing-id")
-    expect(infoCardsBlock.id).toMatch(/^[a-f0-9]{32}$/)
-    expect((content as Array<{ content: Array<{ attrs: { id?: string } }> }>)[0]
-      .content[0].attrs.id).toBeUndefined()
+    expect(toc).toHaveLength(2)
+    expect(toc.map((t) => t.content)).toEqual(["Overview", "Details"])
+    expect(toc.map((t) => t.anchorLink)).toEqual([
+      expect.stringMatching(anchorPattern),
+      expect.stringMatching(anchorPattern),
+    ])
   })
-})
 
-describe("getTableOfContents", () => {
-  it("should generate anchor links from transformed prose and block content", () => {
+  it("generates toc entries for supported structured blocks with titles", () => {
     // Arrange
-    const content = [
+    const site = generateSiteConfig()
+    const content: IsomerComponent[] = [
+      {
+        type: "infocards",
+        title: "Quick links",
+        variant: "cardsWithoutImages",
+        cards: [{ title: "Card" }],
+      },
+      {
+        type: "infocols",
+        title: "Info columns",
+        infoBoxes: [{ title: "Column" }],
+      },
+      {
+        type: "infopic",
+        title: "Image with text",
+        imageSrc: "/image.png",
+        imageAlt: "Diagram showing process flow",
+      },
+      {
+        type: "keystatistics",
+        title: "Key stats",
+        statistics: [{ label: "Metric", value: "100" }],
+      },
+    ]
+    const transformedContent = getTransformedPageContent(content)
+
+    // Act
+    const toc = getTableOfContents(site, transformedContent)
+
+    // Assert
+    expect(toc.map((t) => t.content)).toEqual([
+      "Quick links",
+      "Info columns",
+      "Image with text",
+      "Key stats",
+    ])
+    expect(toc.map((t) => t.anchorLink)).toEqual([
+      expect.stringMatching(anchorPattern),
+      expect.stringMatching(anchorPattern),
+      expect.stringMatching(anchorPattern),
+      expect.stringMatching(anchorPattern),
+    ])
+  })
+
+  it("preserves order of toc entries across prose and blocks", () => {
+    // Arrange
+    const content: IsomerComponent[] = [
       {
         type: "prose",
         content: [
@@ -73,34 +114,22 @@ describe("getTableOfContents", () => {
       {
         type: "infocards",
         title: "Quick links",
+        variant: "cardsWithoutImages",
+        cards: [{ title: "Card" }],
       },
-    ] as never
+    ]
 
+    const site = generateSiteConfig()
     const transformedContent = getTransformedPageContent(content)
-    const generatedHeadingId = (
-      transformedContent[0] as never as {
-        content: Array<{ attrs: { id?: string } }>
-      }
-    ).content[0].attrs.id
-    const generatedInfoCardsId = (transformedContent[1] as never as { id?: string })
-      .id
 
     // Act
-    const tableOfContents = getTableOfContents(
-      {} as never,
-      transformedContent as never,
-    )
+    const toc = getTableOfContents(site, transformedContent)
 
     // Assert
-    expect(tableOfContents).toEqual([
-      {
-        content: "Overview",
-        anchorLink: `#${generatedHeadingId}`,
-      },
-      {
-        content: "Quick links",
-        anchorLink: `#${generatedInfoCardsId}`,
-      },
+    expect(toc.map((t) => t.content)).toEqual(["Overview", "Quick links"])
+    expect(toc.map((t) => t.anchorLink)).toEqual([
+      expect.stringMatching(anchorPattern),
+      expect.stringMatching(anchorPattern),
     ])
   })
 })
