@@ -17,7 +17,7 @@
     "@isomer/seed-from-repo": "*",
     "@octokit/rest": "^22.0.0",
     "@opengovsg/isomer-components": "*",
-    "axios": "^1.10.0",
+    "axios": "^1.13.6",
     "commander-ts": "^0.2.0",
     "tsx": "^4.20.4"
   },
