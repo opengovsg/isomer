@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 
 import { twMerge } from "~/lib/twMerge"
+import { ImageClient } from "../Image/ImageClient"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 
 // Vimeo API v2 response shape (partial)
@@ -59,10 +60,11 @@ export const LiteVimeoEmbed = ({
   return (
     <>
       {thumbnailUrl ? (
-        <img
+        <ImageClient
           src={thumbnailUrl}
           alt={`Thumbnail for ${title || "video"}`}
-          loading={shouldLazyLoad ? "lazy" : "eager"}
+          width="100%"
+          lazyLoading={shouldLazyLoad}
           className={twMerge(
             "absolute inset-0 h-full w-full bg-black object-cover",
             activated && "pointer-events-none opacity-0",
