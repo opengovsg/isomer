@@ -1,4 +1,5 @@
 import type { IsomerSiteProps } from "~/types"
+import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
 export const generateSiteConfig = (
   overrides?: Partial<IsomerSiteProps>,
@@ -14,17 +15,7 @@ export const generateSiteConfig = (
       summary: "",
       children: [],
     },
-    siteMapArray: [
-      {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [],
-      },
-    ],
+    siteMapArray: [],
     theme: "isomer-next",
     isGovernment: true,
     url: "https://www.isomer.gov.sg",
@@ -59,8 +50,13 @@ export const generateSiteConfig = (
     },
   }
 
-  return {
+  const site: IsomerSiteProps = {
     ...defaultConfig,
     ...overrides,
+  }
+
+  return {
+    ...site,
+    siteMapArray: getSitemapAsArray(site.siteMap),
   }
 }

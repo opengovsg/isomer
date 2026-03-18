@@ -1,6 +1,5 @@
 import type { IsomerSiteProps } from "~/types"
 import type { IsomerCollectionPageSitemap } from "~/types/sitemap"
-import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
 interface GetCollectionParentProps {
   site: IsomerSiteProps
