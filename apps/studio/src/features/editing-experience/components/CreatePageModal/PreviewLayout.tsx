@@ -5,8 +5,8 @@ import { format } from "date-fns"
 
 import Suspense from "~/components/Suspense"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
-import { PreviewIframe } from "../PreviewIframe"
-import PreviewWithoutSitemap from "../PreviewWithoutSitemap"
+import { PreviewIframe } from "../preview/PreviewIframe"
+import PreviewWithCustomSitemap from "../preview/PreviewWithCustomSitemap"
 import { LAYOUT_RENDER_DATA } from "./constants"
 import { useCreatePageWizard } from "./CreatePageWizardContext"
 
@@ -88,7 +88,7 @@ const SuspendableLayoutPreview = () => {
       keyForRerender={currentLayout}
       style={themeCssVars}
     >
-      <PreviewWithoutSitemap
+      <PreviewWithCustomSitemap
         overrides={previewOverrides}
         siteId={siteId}
         permalink={currentPermalink}

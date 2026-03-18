@@ -15,10 +15,10 @@ import { ADMIN_ROLE } from "~/lib/growthbook"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
-import { ActivateRawJsonEditorMode } from "./ActivateRawJsonEditorMode"
-import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
-import FormBuilder from "./form-builder/FormBuilder"
-import { RawJsonEditor } from "./RawJsonEditor"
+import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
+import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
+import FormBuilder from "../form-builder/FormBuilder"
+import { RawJsonEditor } from "../RawJsonEditor"
 
 const schema = LAYOUT_PAGE_MAP.link
 type IsomerLinkSchema = Static<typeof schema>
