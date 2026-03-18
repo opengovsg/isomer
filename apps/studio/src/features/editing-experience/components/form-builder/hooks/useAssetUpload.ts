@@ -33,16 +33,13 @@ export const useAssetUpload = ({
   const handleAssetUpload = async (src: string) => {
     setIsLoading(true)
     try {
-      await backOff(
-        async () => {
-          const response = await fetch(`${ASSETS_BASE_URL}${src}`)
-          if (!response.ok) {
-            throw new Error(`Unable to read from ${src}`)
-          }
-          return src
-        },
-        getAssetUploadBackoffOptions({ numOfAttempts, baseTimeoutMs }),
-      )
+      await backOff(async () => {
+        const response = await fetch(`${ASSETS_BASE_URL}${src}`)
+        if (!response.ok) {
+          throw new Error(`Unable to read from ${src}`)
+        }
+        return src
+      }, getAssetUploadBackoffOptions({ numOfAttempts, baseTimeoutMs }))
       return src
     } catch (e) {
       console.error(e)
