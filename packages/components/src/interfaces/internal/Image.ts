@@ -7,4 +7,5 @@ export interface ImageClientProps {
   lazyLoading?: boolean
   fetchPriority?: "auto" | "high" | "low"
   onLoad?: React.ReactEventHandler<HTMLImageElement>
+  onError?: React.ReactEventHandler<HTMLImageElement>
 }
