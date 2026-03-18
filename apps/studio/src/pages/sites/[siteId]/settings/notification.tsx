@@ -23,9 +23,9 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
-import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
+import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"

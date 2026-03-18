@@ -1,5 +1,6 @@
 import type { HeroFloatingProps } from "~/interfaces/complex/Hero"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 import { ImageClient } from "../Image"
@@ -58,7 +59,6 @@ export const HeroFloating = ({
           width="100%"
           className="aspect-[3/2] w-full object-cover object-center lg:w-[66.67%]"
           lazyLoading={false}
-          fetchPriority="high"
         />
       </div>
       {/* Floating container */}

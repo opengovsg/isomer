@@ -290,7 +290,9 @@ export const resourceRouter = router({
               .where("Resource.type", "in", [ResourceType.Folder])
               .where("Resource.siteId", "=", Number(siteId))
               .where("Resource.parentId", "=", String(resourceId))
-              .unionAll((eb) =>
+              // Use UNION (distinct) so recursion terminates even when
+              // legacy cyclic resource graphs exist in production data.
+              .union((eb) =>
                 eb
                   .selectFrom("Resource")
                   .innerJoin(
@@ -308,6 +310,7 @@ export const resourceRouter = router({
               ),
           )
           .selectFrom("NestedResources")
+          .where("id", "!=", String(resourceId))
           .select(["title", "permalink", "type", "id", "parentId"])
           .execute(),
       }
@@ -439,7 +442,9 @@ export const resourceRouter = router({
                     .selectFrom("Resource")
                     .select(["id"])
                     .where("Resource.parentId", "=", movedResourceId)
-                    .unionAll((eb) =>
+                    // Use UNION (distinct) so recursive traversal terminates
+                    // even if legacy cyclic resource graphs exist.
+                    .union((eb) =>
                       eb
                         .selectFrom("Resource")
                         .innerJoin(

@@ -1,5 +1,6 @@
 import type { HeroBlockProps } from "~/interfaces/complex/Hero"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 import { ImageClient } from "../Image"
 
@@ -100,7 +101,6 @@ export const HeroBlock = ({
           className="absolute inset-0 h-full w-full object-cover object-center"
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false} // hero is always above the fold
-          fetchPriority="high"
         />
       </div>
     </section>

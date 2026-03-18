@@ -8,7 +8,7 @@ import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 
 import type { FilterProps } from "../../../types/Filter"
 import { tv } from "~/lib/tv"
-import { groupFocusVisibleHighlight } from "~/utils"
+import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { FilterDrawer } from "./FilterDrawer"

@@ -34,7 +34,7 @@ const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
 
 const defaultLastModified = new Date().toISOString()
 
-function SuspendablePreview({
+function SuspendablePreviewWithCustomSitemap({
   permalink,
   lastModified = defaultLastModified,
   siteId,
@@ -85,8 +85,8 @@ function SuspendablePreview({
   )
 }
 
-const PreviewWithoutSitemap = withSuspense(
-  SuspendablePreview,
+const PreviewWithCustomSitemap = withSuspense(
+  SuspendablePreviewWithCustomSitemap,
   <Skeleton width="100%" height="100%" />,
 )
-export default PreviewWithoutSitemap
+export default PreviewWithCustomSitemap

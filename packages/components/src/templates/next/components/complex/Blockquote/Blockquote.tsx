@@ -2,7 +2,8 @@ import { BiSolidQuoteAltLeft } from "react-icons/bi"
 
 import type { BlockquoteProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getTailwindVariantLayout, isExternalUrl } from "~/utils"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../Image"
 

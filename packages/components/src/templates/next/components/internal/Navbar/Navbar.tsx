@@ -1,6 +1,7 @@
 import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import { NavbarClient } from "./NavbarClient"
 
 const navbarLogoStyles = tv({
@@ -59,7 +60,6 @@ export const Navbar = ({
         }),
         assetsBaseUrl: site.assetsBaseUrl,
         lazyLoading: false, // will always be above the fold
-        fetchPriority: "high", // will always be above the fold
       }}
       callToAction={
         !!callToAction

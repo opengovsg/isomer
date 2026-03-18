@@ -40,7 +40,7 @@ export const ImageContainer = ({ imageSrc, imageAlt }: ImageContainerProps) => {
     // to not render during static site generation on the server
     if (typeof window === "undefined") return
 
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll, { passive: true })
     window.addEventListener("resize", handleScroll)
     handleScroll()
 
@@ -59,7 +59,6 @@ export const ImageContainer = ({ imageSrc, imageAlt }: ImageContainerProps) => {
         width="100%"
         className="aspect-square max-h-[60rem] w-full object-cover object-center md:aspect-[2/1]"
         lazyLoading={false} // hero is always above the fold
-        fetchPriority="high"
       />
       {shouldShowButton && <ScrollForMoreButton isFixed={isFixed} />}
     </div>

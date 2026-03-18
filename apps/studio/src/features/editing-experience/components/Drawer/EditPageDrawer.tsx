@@ -4,13 +4,14 @@ import { getComponentSchema } from "@opengovsg/isomer-components"
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { ajv } from "~/utils/ajv"
+import TipTapProseComponent from "../TipTapProseComponent"
+import CollectionEditorStateDrawer from "./CollectionEditorStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import DatabaseEditorStateDrawer from "./DatabaseEditorStateDrawer"
 import HeroEditorDrawer from "./HeroEditorDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
 import RawJsonEditorModeStateDrawer from "./RawJsonEditorModeStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
-import TipTapProseComponent from "./TipTapProseComponent"
 
 const proseSchema = getComponentSchema({ component: "prose" })
 
@@ -57,6 +58,8 @@ export function EditPageDrawer(): JSX.Element {
       return <DatabaseEditorStateDrawer />
     case "heroEditor":
       return <HeroEditorDrawer />
+    case "collectionEditor":
+      return <CollectionEditorStateDrawer />
     default:
       const _: never = currState
       return <h1>Edit Page Drawer</h1>

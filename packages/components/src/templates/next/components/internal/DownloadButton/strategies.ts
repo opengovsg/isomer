@@ -1,10 +1,10 @@
 import {
   fetchDgsFileDownloadUrl,
   fetchDgsMetadata,
-  fetchFileMetadata,
-  formatBytes,
   getDgsIdFromDgsLink,
-} from "~/utils"
+} from "~/utils/dgs"
+import { fetchFileMetadata } from "~/utils/fetchFileMetadata"
+import { formatBytes } from "~/utils/formatBytes"
 
 interface DownloadStrategy {
   /** Determines if this strategy can handle the given URL */

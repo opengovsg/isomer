@@ -976,7 +976,7 @@ export const pageHandlers = {
               date: "11-09-2024",
               title: "article layout",
               category: "Feature Articles",
-              articlePageHeader: { summary: "" },
+              subtitle: "This is a subtitle for the collection page",
             },
             layout: "collection",
             content: [],
