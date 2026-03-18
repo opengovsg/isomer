@@ -15,6 +15,17 @@ describe("getCollectionParent", () => {
       lastModified: "2021-01-01",
       children: [],
     },
+    siteMapArray: [
+      {
+        id: "root",
+        title: "Homepage",
+        permalink: "/",
+        layout: "homepage",
+        summary: "Homepage summary",
+        lastModified: "2021-01-01",
+        children: [],
+      },
+    ],
     lastUpdated: "2021-01-01",
     // IsomerSiteWideComponentsProps
     navbar: { items: [] }, // Provide minimal valid value

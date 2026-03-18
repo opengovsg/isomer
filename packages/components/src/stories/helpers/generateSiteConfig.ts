@@ -14,6 +14,17 @@ export const generateSiteConfig = (
       summary: "",
       children: [],
     },
+    siteMapArray: [
+      {
+        id: "1",
+        title: "Home",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [],
+      },
+    ],
     theme: "isomer-next",
     isGovernment: true,
     url: "https://www.isomer.gov.sg",
