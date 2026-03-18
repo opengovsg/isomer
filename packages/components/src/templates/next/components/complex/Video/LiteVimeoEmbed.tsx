@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react"
 
-import { ImageClient } from "../Image/ImageClient"
 import { twMerge } from "~/lib/twMerge"
+import { ImageClient } from "../Image/ImageClient"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 
 // Vimeo API v2 response shape (partial)
