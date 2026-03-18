@@ -5,15 +5,5 @@
     "outDir": "dist/esm",
     "module": "esnext"
   },
-  "exclude": [
-    "node_modules/**",
-    "build",
-    "dist",
-    "src/**/*.test.ts",
-    "src/**/*.test.tsx",
-    "src/**/*.spec.ts",
-    "src/**/*.spec.tsx",
-    "src/**/__tests__/**",
-    "src/**/__test__/**"
-  ]
+  "exclude": ["node_modules/**", "build"]
 }
