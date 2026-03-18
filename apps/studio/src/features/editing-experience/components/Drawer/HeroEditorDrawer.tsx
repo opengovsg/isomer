@@ -20,10 +20,10 @@ import {
   PLACEHOLDER_IMAGE_FILENAME,
 } from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"
-import { DrawerHeader } from "../Drawer/DrawerHeader"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
 import { uploadModifiedAssets } from "../utils"
+import { DrawerHeader } from "./DrawerHeader"
 
 export default function HeroEditorDrawer(): JSX.Element {
   const {
