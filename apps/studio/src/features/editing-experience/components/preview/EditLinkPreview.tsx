@@ -6,7 +6,7 @@ import type { CollectionLinkProps } from "~/schemas/collection"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { trpc } from "~/utils/trpc"
-import PreviewWithoutSitemap from "./PreviewWithoutSitemap"
+import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
 const currentDate = new Date().toString()
@@ -84,7 +84,7 @@ export const EditCollectionLinkPreview = ({
 
   return (
     <ViewportContainer siteId={siteId}>
-      <PreviewWithoutSitemap
+      <PreviewWithCustomSitemap
         content={[]}
         page={{ title: parentTitle }}
         layout={"collection"}

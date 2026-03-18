@@ -13,17 +13,17 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { pageSchema } from "../schema"
+import { pageSchema } from "../../schema"
 import {
   CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
   PLACEHOLDER_IMAGE_FILENAME,
-} from "./constants"
-import { DeleteBlockModal } from "./DeleteBlockModal"
-import { DiscardChangesModal } from "./DiscardChangesModal"
-import { DrawerHeader } from "./Drawer/DrawerHeader"
-import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
-import FormBuilder from "./form-builder/FormBuilder"
-import { uploadModifiedAssets } from "./utils"
+} from "../constants"
+import { DeleteBlockModal } from "../DeleteBlockModal"
+import { DiscardChangesModal } from "../DiscardChangesModal"
+import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
+import FormBuilder from "../form-builder/FormBuilder"
+import { uploadModifiedAssets } from "../utils"
+import { DrawerHeader } from "./DrawerHeader"
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
   const {
