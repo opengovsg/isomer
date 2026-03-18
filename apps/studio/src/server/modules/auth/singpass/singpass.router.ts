@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
-import set from "lodash/set"
+import { set } from "lodash-es"
 
 import type { SessionData } from "~/lib/types/session"
 import { DASHBOARD } from "~/lib/routes"

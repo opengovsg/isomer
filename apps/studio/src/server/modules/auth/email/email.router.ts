@@ -1,6 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import pick from "lodash/pick"
-import set from "lodash/set"
+import { pick, set } from "lodash-es"
 
 import type { SessionData } from "~/lib/types/session"
 import type { GrowthbookAttributes } from "~/types/growthbook"

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import isEqual from "lodash/isEqual"
+import { isEqual } from "lodash-es"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
