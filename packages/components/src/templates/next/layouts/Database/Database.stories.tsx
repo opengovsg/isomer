@@ -966,3 +966,17 @@ export const DGSSearchableTableWithHeaders: Story = {
     },
   }),
 }
+
+export const DGSSearchableTableWithFilters: Story = {
+  name: "DGS Searchable Table (with column filters)",
+  args: generateArgs({
+    database: {
+      title: "Graduate Employment by Year",
+      dataSource: {
+        type: "dgs",
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+        filters: [{ fieldKey: "year", fieldValue: "2022" }],
+      },
+    },
+  }),
+}
