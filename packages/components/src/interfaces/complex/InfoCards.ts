@@ -6,7 +6,7 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
-import { ImageFitSchema } from "~/schemas/internal/imageFitSchema"
+import { ImageFitSchema } from "~/schemas/internal"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
