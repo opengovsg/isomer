@@ -1,10 +1,10 @@
 "use client"
 
-import type { SVGProps } from "react"
+import type { SVGProps, SyntheticEvent } from "react"
 import { useEffect, useState } from "react"
 
-import { ImageClient } from "../Image/ImageClient"
 import { twMerge } from "~/lib/twMerge"
+import { ImageClient } from "../Image/ImageClient"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 
 export interface LiteYouTubeEmbedProps {
@@ -75,6 +75,18 @@ export const LiteYouTubeEmbed = ({
           alt={`Thumbnail for ${title || "video"}`}
           width="100%"
           lazyLoading={shouldLazyLoad}
+          onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
+            if (!videoId) return
+
+            const { currentTarget } = e
+            if (
+              currentTarget.src ===
+              `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`
+            ) {
+              currentTarget.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+              e.preventDefault()
+            }
+          }}
           className={twMerge(
             "absolute inset-0 h-full w-full bg-black object-cover",
             activated && "pointer-events-none opacity-0",
