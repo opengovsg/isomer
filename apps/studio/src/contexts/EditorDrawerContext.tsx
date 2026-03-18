@@ -101,11 +101,6 @@ export function EditorDrawerProvider({
         return type !== DEFAULT_CHILDREN_PAGES_BLOCK.type
       })
     ) {
-      // NOTE: This is defined but we just do the assertion here
-      // because the type for `DEFAULT_BLOCKS` is possibly undefined
-      // so `ts` cannot infer
-      if (!DEFAULT_BLOCKS.childrenpages) return
-
       const content = Array.from(initialPageState.content)
       const newPageState = {
         ...initialPageState,

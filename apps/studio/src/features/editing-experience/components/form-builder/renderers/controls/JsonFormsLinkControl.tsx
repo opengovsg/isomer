@@ -25,10 +25,7 @@ const AUTOPOPULATED_FIELDS = ["title", "description", "imageUrl"] as const
 
 // Placeholder values from DEFAULT_BLOCKS that should be treated as empty
 const PLACEHOLDER_VALUES = new Set(
-  DEFAULT_BLOCKS.infocards.cards.flatMap((card) => [
-    card.title,
-    card.imageUrl,
-  ]) ?? [],
+  DEFAULT_BLOCKS.infocards.cards.flatMap((card) => [card.title, card.imageUrl]),
 )
 
 const isEmptyOrPlaceholder = (value: string | undefined): boolean => {
@@ -44,7 +41,7 @@ function JsonFormsLinkControl({
   required,
   errors,
 }: ControlProps) {
-  const [lastFetched, setLastFetched] = useState()
+  const [lastFetched, setLastFetched] = useState<string>("")
   const { siteId } = useQueryParse(pageSchema)
   const ctx = useJsonForms()
   const utils = trpc.useUtils()
@@ -57,7 +54,7 @@ function JsonFormsLinkControl({
     // to avoid slow rendering cycles
     if (lastFetched === data) return
 
-    const resourceId = getResourceIdFromReferenceLink(data)
+    const resourceId = getResourceIdFromReferenceLink(data as string)
     if (!resourceId) return
 
     // NOTE: Omit last item because that points to this link control
@@ -65,7 +62,9 @@ function JsonFormsLinkControl({
 
     // Check if any field is empty or contains a placeholder value before fetching
     const hasEmptyOrPlaceholderField = AUTOPOPULATED_FIELDS.some((field) =>
-      isEmptyOrPlaceholder(get(ctx.core?.data, `${basePath}.${field}`)),
+      isEmptyOrPlaceholder(
+        get(ctx.core?.data, `${basePath}.${field}`) as string | undefined,
+      ),
     )
 
     if (!hasEmptyOrPlaceholderField) return
@@ -75,7 +74,9 @@ function JsonFormsLinkControl({
       .fetch({ resourceId, siteId })
       .then(({ title, description, thumbnail }) => {
         if (
-          isEmptyOrPlaceholder(get(ctx.core?.data, `${basePath}.title`)) &&
+          isEmptyOrPlaceholder(
+            get(ctx.core?.data, `${basePath}.title`) as string | undefined,
+          ) &&
           title
         ) {
           handleChange(`${basePath}.title`, title)
@@ -83,7 +84,9 @@ function JsonFormsLinkControl({
 
         if (
           isEmptyOrPlaceholder(
-            get(ctx.core?.data, `${basePath}.description`),
+            get(ctx.core?.data, `${basePath}.description`) as
+              | string
+              | undefined,
           ) &&
           description
         ) {
@@ -91,13 +94,15 @@ function JsonFormsLinkControl({
         }
 
         if (
-          isEmptyOrPlaceholder(get(ctx.core?.data, `${basePath}.imageUrl`)) &&
+          isEmptyOrPlaceholder(
+            get(ctx.core?.data, `${basePath}.imageUrl`) as string | undefined,
+          ) &&
           thumbnail
         ) {
           handleChange(`${basePath}.imageUrl`, thumbnail)
         }
 
-        setLastFetched(data)
+        setLastFetched(data as string)
       })
       .catch((err) => {
         // Silently fail if the linked page cannot be fetched
@@ -105,11 +110,12 @@ function JsonFormsLinkControl({
       })
   }, [
     data,
+    lastFetched,
     siteId,
     path,
     ctx.core?.data,
     handleChange,
-    utils.page.readPageAndBlob,
+    utils.page.getPrefill,
   ])
 
   return (
