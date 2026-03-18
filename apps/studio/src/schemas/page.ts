@@ -172,3 +172,8 @@ export const createIndexPageSchema = z.object({
   siteId: z.number().min(1),
   parentId: z.string(),
 })
+
+export const getPrefillSchema = z.object({
+  siteId: z.number().min(1),
+  resourceId: z.string(),
+})

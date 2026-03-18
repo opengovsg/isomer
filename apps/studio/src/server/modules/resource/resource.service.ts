@@ -102,8 +102,34 @@ export const getFullPageById = async (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
 ) => {
+  // Check if the resource is a Collection or Folder, and if so, use its IndexPage
+  const resource = await getById(db, args)
+    .select(["Resource.id", "Resource.type"])
+    .executeTakeFirst()
+
+  let targetResourceId = args.resourceId
+
+  if (
+    resource?.type === ResourceType.Collection ||
+    resource?.type === ResourceType.Folder
+  ) {
+    const indexPage = await db
+      .selectFrom("Resource")
+      .where("Resource.parentId", "=", String(args.resourceId))
+      .where("Resource.siteId", "=", args.siteId)
+      .where("Resource.type", "=", ResourceType.IndexPage)
+      .select("Resource.id")
+      .executeTakeFirst()
+
+    if (indexPage) {
+      targetResourceId = Number(indexPage.id)
+    }
+  }
+
+  const targetArgs = { ...args, resourceId: targetResourceId }
+
   // Check if draft blob exists and return that preferentially
-  const draftBlob = await getById(db, args)
+  const draftBlob = await getById(db, targetArgs)
     .where("Resource.draftBlobId", "is not", null)
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
@@ -113,7 +139,7 @@ export const getFullPageById = async (
     return draftBlob
   }
 
-  const publishedBlob = await getById(db, args)
+  const publishedBlob = await getById(db, targetArgs)
     .where("Resource.publishedVersionId", "is not", null)
     .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
     .innerJoin("Blob", "Version.blobId", "Blob.id")
