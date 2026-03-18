@@ -3,6 +3,7 @@ import type {
   IsomerSchema,
 } from "@opengovsg/isomer-components"
 import {
+  ArticlePagePageSchema,
   COLLECTION_PAGE_DEFAULT_SORT_BY,
   COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
   getLayoutMetadataSchema,
@@ -31,6 +32,7 @@ import {
   basePageSchema,
   createIndexPageSchema,
   createPageSchema,
+  getPrefillSchema,
   getRootPageSchema,
   listPagesSchema,
   pageSettingsSchema,
@@ -98,6 +100,69 @@ const validatedPageProcedure = protectedProcedure.use(
 )
 
 export const pageRouter = router({
+  getPrefill: protectedProcedure
+    .input(getPrefillSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const resource = await getFullPageById(db, {
+        resourceId: Number(resourceId),
+        siteId,
+      })
+
+      if (!resource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      const { title, content } = resource
+
+      switch (content.layout) {
+        case "article":
+          return {
+            title,
+            description: content.page.articlePageHeader?.summary,
+            thumbnail: content.page.image?.src,
+          }
+        case "content":
+        case "index":
+          return {
+            title,
+            description: content.page.contentPageHeader?.summary,
+            thumbnail: content.page.image?.src,
+          }
+        case "database":
+          return {
+            title,
+            description: content.page.contentPageHeader?.summary,
+          }
+        case "collection":
+          return {
+            title,
+            description: content.page.subtitle,
+          }
+        case "file":
+        case "link":
+          return {
+            title,
+            description: content.page.description,
+            thumbnail: content.page.image?.src,
+          }
+        case "homepage":
+        case "search":
+        default:
+          return {
+            title,
+          }
+      }
+    }),
+
   list: protectedProcedure
     .input(listPagesSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
