@@ -106,7 +106,7 @@ const createRowStyles = tv({
     textContainer:
       "flex flex-col justify-center gap-2 break-words max-md:col-span-full max-md:row-span-1",
     contentContainer:
-      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid p-5 max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
+      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     title: [
