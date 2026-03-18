@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, ScriptComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 
 export const AskgovSchema = Type.Object(
   {
