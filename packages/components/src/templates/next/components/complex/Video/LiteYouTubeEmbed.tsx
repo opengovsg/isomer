@@ -3,6 +3,7 @@
 import type { SVGProps } from "react"
 import { useEffect, useState } from "react"
 
+import { ImageClient } from "../Image/ImageClient"
 import { twMerge } from "~/lib/twMerge"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 
@@ -69,10 +70,11 @@ export const LiteYouTubeEmbed = ({
   return (
     <>
       {thumbnailUrl && (
-        <img
+        <ImageClient
           src={thumbnailUrl}
           alt={`Thumbnail for ${title || "video"}`}
-          loading={shouldLazyLoad ? "lazy" : "eager"}
+          width="100%"
+          lazyLoading={shouldLazyLoad}
           className={twMerge(
             "absolute inset-0 h-full w-full bg-black object-cover",
             activated && "pointer-events-none opacity-0",
