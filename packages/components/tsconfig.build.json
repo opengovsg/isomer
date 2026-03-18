@@ -5,6 +5,11 @@
     "node_modules",
     "build",
     "src/**/*.stories.tsx",
-    "src/**/*.test.tsx"
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/__tests__/**",
+    "src/**/__test__/**"
   ]
 }

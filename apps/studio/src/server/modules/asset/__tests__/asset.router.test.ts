@@ -48,8 +48,8 @@ describe("asset.router", async () => {
   beforeEach(async () => {
     await resetTables("Site", "ResourcePermission", "Resource")
     await setUpWhitelist({ email: TEST_VALID_EMAIL })
-    // Reset any mocks after each test
-    vi.restoreAllMocks()
+    // Clear call state without undoing module mocks created via vi.mock(...)
+    vi.clearAllMocks()
     vi.mocked(generateSignedPutUrl).mockResolvedValue(
       "https://example.com/signed-url",
     )
