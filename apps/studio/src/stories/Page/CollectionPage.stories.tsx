@@ -6,7 +6,7 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
-import CollectionPage from "~/pages/sites/[siteId]/collections/[resourceId]"
+import CollectionPage from "~/pages/sites/[siteId]/collections/[collectionId]"
 import { createBannerGbParameters } from "../utils/growthbook"
 
 const meta: Meta<typeof CollectionPage> = {
@@ -35,7 +35,7 @@ const meta: Meta<typeof CollectionPage> = {
       router: {
         query: {
           siteId: "1",
-          resourceId: "1",
+          collectionId: "1",
         },
       },
     },

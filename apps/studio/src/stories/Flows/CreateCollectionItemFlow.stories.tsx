@@ -6,7 +6,7 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
-import CollectionListPage from "~/pages/sites/[siteId]/collections/[resourceId]"
+import CollectionListPage from "~/pages/sites/[siteId]/collections/[collectionId]"
 
 const meta: Meta<typeof CollectionListPage> = {
   title: "Flows/Create Collection Item",
@@ -41,9 +41,9 @@ const meta: Meta<typeof CollectionListPage> = {
       router: {
         query: {
           siteId: "1",
-          resourceId: "1",
+          collectionId: "1",
         },
-        pathname: "/sites/[siteId]/collections/[resourceId]",
+        pathname: "/sites/[siteId]/collections/[collectionId]",
       },
     },
   },
