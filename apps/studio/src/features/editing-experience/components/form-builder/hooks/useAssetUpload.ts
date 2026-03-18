@@ -10,7 +10,9 @@ interface UseAssetUploadProps {
 
 const DEFAULT_NUM_OF_ATTEMPTS = 10
 const DEFAULT_BASE_TIMEOUT_MS = 1000
-// Cap exponential delay to avoid multi-minute hangs on failed uploads.
+// Cap exponential delay between retries to avoid multi-minute hangs on failed uploads.
+// Delay before each attempt is min(startingDelay * 2^attempt, maxDelay). With 10 attempts
+// and this cap, total wait time is 1+2+4+8+8*7 ≈ 63s worst case (all retries delayed).
 export const MAX_ASSET_UPLOAD_BACKOFF_DELAY_MS = 8000
 
 export const getAssetUploadBackoffOptions = ({
