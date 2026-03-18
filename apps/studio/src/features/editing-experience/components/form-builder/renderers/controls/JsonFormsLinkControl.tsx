@@ -5,6 +5,7 @@ import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import get from "lodash/get"
 
+import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -21,6 +22,19 @@ export const jsonFormsLinkControlTester: RankedTester = rankWith(
 )
 
 const AUTOPOPULATED_FIELDS = ["title", "description", "imageUrl"] as const
+
+// Placeholder values from DEFAULT_BLOCKS that should be treated as empty
+const PLACEHOLDER_VALUES = new Set(
+  DEFAULT_BLOCKS.infocards.cards.flatMap((card) => [
+    card.title,
+    card.imageUrl,
+  ]) ?? [],
+)
+
+const isEmptyOrPlaceholder = (value: string | undefined): boolean => {
+  if (!value?.trim()) return true
+  return PLACEHOLDER_VALUES.has(value)
+}
 
 function JsonFormsLinkControl({
   data,
@@ -49,31 +63,37 @@ function JsonFormsLinkControl({
     // NOTE: Omit last item because that points to this link control
     const basePath = path.split(".").slice(0, -1).join(".")
 
-    // Check if any field is empty before fetching
-    const hasEmptyField = AUTOPOPULATED_FIELDS.some(
-      (field) => !get(ctx.core?.data, `${basePath}.${field}`)?.trim(),
+    // Check if any field is empty or contains a placeholder value before fetching
+    const hasEmptyOrPlaceholderField = AUTOPOPULATED_FIELDS.some((field) =>
+      isEmptyOrPlaceholder(get(ctx.core?.data, `${basePath}.${field}`)),
     )
 
-    // Check if this is the prefilled title or image
+    if (!hasEmptyOrPlaceholderField) return
 
-    if (!hasEmptyField) return
-
-    // Fetch the linked page data and auto-fill empty fields
+    // Fetch the linked page data and auto-fill empty or placeholder fields
     utils.page.getPrefill
       .fetch({ resourceId, siteId })
       .then(({ title, description, thumbnail }) => {
-        if (!get(ctx.core?.data, `${basePath}.title`)?.trim() && title) {
+        if (
+          isEmptyOrPlaceholder(get(ctx.core?.data, `${basePath}.title`)) &&
+          title
+        ) {
           handleChange(`${basePath}.title`, title)
         }
 
         if (
-          !get(ctx.core?.data, `${basePath}.description`)?.trim() &&
+          isEmptyOrPlaceholder(
+            get(ctx.core?.data, `${basePath}.description`),
+          ) &&
           description
         ) {
           handleChange(`${basePath}.description`, description)
         }
 
-        if (!get(ctx.core?.data, `${basePath}.imageUrl`)?.trim() && thumbnail) {
+        if (
+          isEmptyOrPlaceholder(get(ctx.core?.data, `${basePath}.imageUrl`)) &&
+          thumbnail
+        ) {
           handleChange(`${basePath}.imageUrl`, thumbnail)
         }
 

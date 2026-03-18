@@ -2,10 +2,7 @@ import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
-export const DEFAULT_BLOCKS: Record<
-  IsomerComponent["type"],
-  IsomerComponent | undefined
-> = {
+export const DEFAULT_BLOCKS = {
   prose: {
     type: "prose",
     content: [
@@ -448,7 +445,7 @@ export const BLOCK_TO_META: Record<
       "Get mailing list sign-ups or quick feedback directly on the page.",
     imageSrc: "/assets/block-images/FormSG.png",
   },
-}
+} as const
 
 type AllowedBlockSections = {
   label: string
