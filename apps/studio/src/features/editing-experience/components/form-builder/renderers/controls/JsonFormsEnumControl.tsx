@@ -11,7 +11,7 @@ import {
   FormLabel,
   SingleSelect,
 } from "@opengovsg/design-system-react"
-import startCase from "lodash/startCase"
+import { startCase } from "lodash-es"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getCustomErrorMessage } from "./utils"

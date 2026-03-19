@@ -4,7 +4,7 @@ import { Button, Center, HStack, Text, VStack } from "@chakra-ui/react"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
 import { NotificationSettingsSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "@prisma/client"
-import { isEqual } from "lodash"
+import { isEqual } from "lodash-es"
 import { z } from "zod"
 
 import type { NextPageWithLayout } from "~/lib/types"
