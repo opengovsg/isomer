@@ -1,3 +1,5 @@
+import { fetchDgs } from "./fetchDgs"
+
 interface FetchDgsMetadataProps {
   resourceId: string
 }
@@ -38,7 +40,7 @@ export const fetchDgsMetadata = async ({
 }: FetchDgsMetadataProps): Promise<FetchDgsMetadataOutput | undefined> => {
   try {
     // For simplicity sake, we will always use data.gov.sg production API
-    const response = await fetch(
+    const response = await fetchDgs(
       `https://api-production.data.gov.sg/v2/public/api/datasets/${resourceId}/metadata`,
     )
 

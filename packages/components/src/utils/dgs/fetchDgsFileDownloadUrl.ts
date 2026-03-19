@@ -1,3 +1,5 @@
+import { fetchDgs } from "./fetchDgs"
+
 interface FetchDgsFileDownloadUrlProps {
   resourceId: string
 }
@@ -23,8 +25,8 @@ export const fetchDgsFileDownloadUrl = async ({
     // Reference: https://opengovproducts.slack.com/archives/C05FKB7JM1U/p1754303394798019
     const baseUrl = `https://api-open.data.gov.sg/v1/public/api/datasets/${resourceId}`
     const downloadResponse = await Promise.race([
-      fetch(`${baseUrl}/initiate-download`),
-      fetch(`${baseUrl}/poll-download`),
+      fetchDgs(`${baseUrl}/initiate-download`),
+      fetchDgs(`${baseUrl}/poll-download`),
     ])
 
     if (!downloadResponse.ok) {

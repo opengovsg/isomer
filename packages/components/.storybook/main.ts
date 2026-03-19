@@ -16,6 +16,12 @@ const config: StorybookConfig = {
   viteFinal(config) {
     // Merge custom configuration into the default config
     return mergeConfig(config, {
+      // Inject data.gov.sg API key for DGS requests (avoids rate limits in Storybook/Chromatic)
+      define: {
+        "process.env.DATAGOVSG_API_KEY": JSON.stringify(
+          process.env.DATAGOVSG_API_KEY ?? "",
+        ),
+      },
       // Add dependencies to pre-optimization
       optimizeDeps: {
         include: ["storybook-dark-mode"],

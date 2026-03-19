@@ -10,6 +10,8 @@ import "../src/index.css"
 
 import { viewport } from "@isomer/storybook-config"
 
+import { configureDgs } from "../src/utils/dgs/fetchDgs"
+
 const CUSTOM_GENERAL_VIEWPORTS = {
   smallDesktop: {
     name: "Small Desktop",
@@ -78,6 +80,11 @@ const CUSTOM_GSIB_VIEWPORTS = {
     },
   },
 }
+
+// Configure data.gov.sg API key for Storybook/Chromatic only.
+configureDgs({
+  getApiKey: () => (process.env.DATAGOVSG_API_KEY ?? "").trim() || undefined,
+})
 
 // Initialize MSW
 initialize({
