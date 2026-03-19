@@ -2,7 +2,7 @@ import type { LogoCloudProps } from "~/interfaces/complex/LogoCloud"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ComponentContent } from "../../internal/customCssClass"
-import { ImageClient } from "../../internal/ImageClient"
+import { ImageClient } from "../Image"
 
 const createLogoCloudStyles = tv({
   slots: {
@@ -21,15 +21,21 @@ export const LogoCloud = ({
   site: { assetsBaseUrl },
   shouldLazyLoad = true,
 }: LogoCloudProps) => {
+  const images = baseImages.map(({ src, alt }) => {
+    const transformedSrc =
+      isExternalUrl(src) || (assetsBaseUrl === undefined && !!src)
+        ? src
+        : `${assetsBaseUrl}${src}`
+
+    return { src: transformedSrc, alt, lazyLoading: shouldLazyLoad }
+  })
   return (
     <div className={compoundStyles.container()}>
       {title && <p className={compoundStyles.title()}>{title}</p>}
       <div className={compoundStyles.logoContainer()}>
-        {baseImages.map(({ src, alt }) => (
+        {images.map((props) => (
           <ImageClient
-            src={src}
-            alt={alt}
-            lazyLoading={shouldLazyLoad}
+            {...props}
             // have to pass in here instead of w-fit because
             // flex-wrap in parent div doesn't work well with w-fit for safari
             width="auto"

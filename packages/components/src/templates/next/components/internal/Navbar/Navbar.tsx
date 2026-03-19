@@ -1,6 +1,7 @@
 import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import { NavbarClient } from "./NavbarClient"
 
 const navbarLogoStyles = tv({
@@ -48,7 +49,10 @@ export const Navbar = ({
       items={items.map(processNavItem)}
       LinkComponent={LinkComponent}
       imageClientProps={{
-        src: logoUrl,
+        src:
+          isExternalUrl(logoUrl) || site.assetsBaseUrl === undefined
+            ? logoUrl
+            : `${site.assetsBaseUrl}${logoUrl}`,
         alt: logoAlt,
         width: "100%",
         className: navbarLogoStyles({
