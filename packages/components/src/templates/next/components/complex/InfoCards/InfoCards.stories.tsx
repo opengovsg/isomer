@@ -39,16 +39,6 @@ const generateArgs = ({
   const cards = [
     {
       title:
-        "IrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationality",
-      description:
-        "Wow this title is so long and it's a single word? How can liddat",
-      imageUrl: "https://placehold.co/200x300",
-      imageAlt: "alt text",
-      imageFit: "contain",
-      url: "/ggwp",
-    },
-    {
-      title:
         "Testing for a card with a long line length that spans across two lines or more",
       description:
         "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
