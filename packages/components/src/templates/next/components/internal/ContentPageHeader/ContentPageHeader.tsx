@@ -83,7 +83,7 @@ export const ContentPageHeader = ({
                 <LinkButton
                   href={getReferenceLinkHref(
                     buttonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   LinkComponent={LinkComponent}

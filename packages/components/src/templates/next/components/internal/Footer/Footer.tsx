@@ -110,7 +110,7 @@ const NavSection = ({
             url={
               getReferenceLinkHref(
                 item.url,
-                site.siteMap,
+                site.siteMapArray,
                 site.assetsBaseUrl,
               ) ?? item.url
             }
@@ -126,7 +126,7 @@ const NavSection = ({
             url={
               getReferenceLinkHref(
                 item.url,
-                site.siteMap,
+                site.siteMapArray,
                 site.assetsBaseUrl,
               ) ?? item.url
             }
@@ -158,7 +158,7 @@ const SocialMediaSection = ({
               key={link.url}
               href={getReferenceLinkHref(
                 link.url,
-                site.siteMap,
+                site.siteMapArray,
                 site.assetsBaseUrl,
               )}
               isExternal
@@ -193,7 +193,7 @@ const ContactUsSection = ({
           url={
             getReferenceLinkHref(
               contactUsLink,
-              site.siteMap,
+              site.siteMapArray,
               site.assetsBaseUrl,
             ) ?? contactUsLink
           }
@@ -206,7 +206,7 @@ const ContactUsSection = ({
           url={
             getReferenceLinkHref(
               feedbackFormLink,
-              site.siteMap,
+              site.siteMapArray,
               site.assetsBaseUrl,
             ) ?? feedbackFormLink
           }
@@ -288,7 +288,7 @@ const LegalSection = ({
               url={
                 getReferenceLinkHref(
                   privacyStatementLink,
-                  site.siteMap,
+                  site.siteMapArray,
                   site.assetsBaseUrl,
                 ) ?? privacyStatementLink
               }
@@ -301,7 +301,7 @@ const LegalSection = ({
               url={
                 getReferenceLinkHref(
                   termsOfUseLink,
-                  site.siteMap,
+                  site.siteMapArray,
                   site.assetsBaseUrl,
                 ) ?? termsOfUseLink
               }
