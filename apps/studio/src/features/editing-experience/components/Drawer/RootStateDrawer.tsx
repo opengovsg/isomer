@@ -267,11 +267,6 @@ export default function RootStateDrawer() {
   )
 
   const handleConversionToIndexPage = useCallback(() => {
-    // NOTE: This is defined but we just do the assertion here
-    // because the type for `DEFAULT_BLOCKS` is possibly undefined
-    // so `ts` cannot infer
-    if (!DEFAULT_BLOCKS.childrenpages) return
-
     const newPageState = {
       ...savedPageState,
     }

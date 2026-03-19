@@ -172,3 +172,45 @@ export const createIndexPageSchema = z.object({
   siteId: z.number().min(1),
   parentId: z.string(),
 })
+
+export const getPrefillSchema = z.object({
+  siteId: z.number().min(1),
+  resourceId: z.string(),
+})
+
+// Zod parsers for extracting prefill data from different page layouts
+const imageSchema = z.object({
+  src: z.string(),
+  alt: z.string(),
+})
+
+const articlePageHeaderSchema = z.object({
+  summary: z.string(),
+})
+
+const contentPageHeaderSchema = z.object({
+  summary: z.string(),
+})
+
+export const articlePageSchema = z.object({
+  articlePageHeader: articlePageHeaderSchema.optional(),
+  image: imageSchema.optional(),
+})
+
+export const contentPageSchema = z.object({
+  contentPageHeader: contentPageHeaderSchema.optional(),
+  image: imageSchema.optional(),
+})
+
+export const databasePageSchema = z.object({
+  contentPageHeader: contentPageHeaderSchema.optional(),
+})
+
+export const collectionPageSchema = z.object({
+  subtitle: z.string().optional(),
+})
+
+export const refPageSchema = z.object({
+  description: z.string().optional(),
+  image: imageSchema.optional(),
+})

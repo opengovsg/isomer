@@ -28,14 +28,20 @@ import {
   IS_SINGPASS_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
 import {
+  articlePageSchema,
   basePageSchema,
+  collectionPageSchema,
+  contentPageSchema,
   createIndexPageSchema,
   createPageSchema,
+  databasePageSchema,
+  getPrefillSchema,
   getRootPageSchema,
   listPagesSchema,
   pageSettingsSchema,
   publishPageSchema,
   readPageOutputSchema,
+  refPageSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
   updatePageMetaSchema,
@@ -98,6 +104,79 @@ const validatedPageProcedure = protectedProcedure.use(
 )
 
 export const pageRouter = router({
+  getPrefill: protectedProcedure
+    .input(getPrefillSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const resource = await getFullPageById(db, {
+        resourceId: Number(resourceId),
+        siteId,
+      })
+
+      if (!resource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      const { title, content } = resource
+
+      switch (content.layout) {
+        case "article": {
+          const page = articlePageSchema.parse(content.page)
+          return {
+            title,
+            description: page.articlePageHeader?.summary,
+            thumbnail: page.image?.src,
+          }
+        }
+        case "content":
+        case "index": {
+          const page = contentPageSchema.parse(content.page)
+          return {
+            title,
+            description: page.contentPageHeader?.summary,
+            thumbnail: page.image?.src,
+          }
+        }
+        case "database": {
+          const page = databasePageSchema.parse(content.page)
+          return {
+            title,
+            description: page.contentPageHeader?.summary,
+          }
+        }
+        case "collection": {
+          const page = collectionPageSchema.parse(content.page)
+          return {
+            title,
+            description: page.subtitle,
+          }
+        }
+        case "file":
+        case "link": {
+          const page = refPageSchema.parse(content.page)
+          return {
+            title,
+            description: page.description,
+            thumbnail: page.image?.src,
+          }
+        }
+        case "homepage":
+        case "search":
+        default:
+          return {
+            title,
+          }
+      }
+    }),
+
   list: protectedProcedure
     .input(listPagesSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
