@@ -1,6 +1,8 @@
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
-import { cloneDeep, get, set } from "lodash-es"
+import cloneDeep from "lodash/cloneDeep"
+import get from "lodash/get"
+import set from "lodash/set"
 
 import type {
   MoveItemOperation,

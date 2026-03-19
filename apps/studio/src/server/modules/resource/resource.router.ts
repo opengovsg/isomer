@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
-import { get } from "lodash-es"
+import get from "lodash/get"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"

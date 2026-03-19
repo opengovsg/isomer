@@ -2,7 +2,7 @@
   "name": "@isomer/site-launch",
   "type": "module",
   "scripts": {
-    "launch": "dotenv tsx ./index.ts"
+    "launch": "dotenv npx tsx ./index.ts"
   },
   "devDependencies": {
     "@isomer/migrate-tags": "*",
@@ -11,16 +11,16 @@
     "typescript": "latest"
   },
   "dependencies": {
-    "@aws-sdk/client-acm": "^3.1011.0",
-    "@aws-sdk/client-amplify": "^3.1011.0",
-    "@aws-sdk/client-cloudfront": "^3.1011.0",
-    "@aws-sdk/credential-providers": "^3.1011.0",
+    "@aws-sdk/client-acm": "^3.840.0",
+    "@aws-sdk/client-amplify": "^3.886.0",
+    "@aws-sdk/client-cloudfront": "^3.840.0",
+    "@aws-sdk/credential-providers": "^3.886.0",
     "@inquirer/prompts": "^7.6.0",
     "@isomer/seed-from-repo": "*",
     "@octokit/rest": "^22.0.0",
-    "axios": "^1.13.6",
+    "axios": "^1.10.0",
     "commander-ts": "^0.2.0",
-    "dotenv": "^16.4.5",
+    "npx": "^10.2.2",
     "tsx": "^4.20.4"
   },
   "prettier": "@isomer/prettier-config"

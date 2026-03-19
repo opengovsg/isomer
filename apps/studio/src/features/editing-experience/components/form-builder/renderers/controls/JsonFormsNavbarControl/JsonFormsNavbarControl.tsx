@@ -27,7 +27,7 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { get } from "lodash-es"
+import get from "lodash/get"
 import { BiPlusCircle } from "react-icons/bi"
 
 import type { NavbarItems } from "./types"

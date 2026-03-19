@@ -9,7 +9,7 @@ import { forwardRef } from "react"
 import Script from "next/script"
 import { Skeleton } from "@chakra-ui/react"
 import { RenderEngine } from "@opengovsg/isomer-components"
-import { merge } from "lodash-es"
+import { merge } from "lodash"
 
 import { withSuspense } from "~/hocs/withSuspense"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"

@@ -2,7 +2,7 @@ import { randomUUID } from "crypto"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import type { UUID } from "crypto"
 import { db, sql } from "~server/modules/database"
-import { omit } from "lodash-es"
+import _ from "lodash"
 
 // NOTE: old tag is `category: string + selected: string[]`
 export interface LegacyTag {
@@ -70,7 +70,7 @@ export const migrateTags = (collatedTags: {
 }) => {
   const labelToCategoryToId: Record<string, Record<string, UUID>> = {}
 
-  const tagCategories: TagCategories = Object.entries(collatedTags.mappings)
+  const tagCategories: TagCategories = _.entries(collatedTags.mappings)
     .map(([categoryLabel, categoryOptions]) => {
       const categoryId = randomUUID()
 
@@ -126,7 +126,7 @@ export function generateUpdatedContent(
   return {
     ...blob,
     page: {
-      ...omit(blob.page, "tags"),
+      ..._.omit(blob.page, "tags"),
       // NOTE: we CANNOT reuse `tags` because our existing tags use it...
       // If we replace the existing labels because it'll cause the sites to have the uuid
       // on the next rebuild due to this feature not being released.

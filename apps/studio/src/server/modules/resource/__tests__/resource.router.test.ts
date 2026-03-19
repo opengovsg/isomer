@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { omit, pick } from "lodash-es"
+import _, { pick } from "lodash"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -1457,7 +1457,7 @@ describe("resource.router", async () => {
         .executeTakeFirstOrThrow()
       expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.after!).toMatchObject(
-        omit(result, ["createdAt", "updatedAt"]),
+        _.omit(result, ["createdAt", "updatedAt"]),
       )
       expect(auditEntry.userId).toBe(session.userId)
     })
@@ -1508,7 +1508,7 @@ describe("resource.router", async () => {
         .executeTakeFirstOrThrow()
       expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.after!).toMatchObject(
-        omit(result, ["createdAt", "updatedAt"]),
+        _.omit(result, ["createdAt", "updatedAt"]),
       )
       expect(auditEntry.userId).toBe(session.userId)
     })
@@ -1549,7 +1549,7 @@ describe("resource.router", async () => {
         .executeTakeFirstOrThrow()
       expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.after!).toMatchObject(
-        omit(result, ["createdAt", "updatedAt"]),
+        _.omit(result, ["createdAt", "updatedAt"]),
       )
       expect(auditEntry.userId).toBe(session.userId)
     })
@@ -2319,7 +2319,7 @@ describe("resource.router", async () => {
         .executeTakeFirstOrThrow()
       expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.before!).toMatchObject(
-        omit(fullPage, ["createdAt", "updatedAt"]),
+        _.omit(fullPage, ["createdAt", "updatedAt"]),
       )
       expect(auditEntry.userId).toBe(session.userId)
       const actual = await db
@@ -2401,7 +2401,7 @@ describe("resource.router", async () => {
         .executeTakeFirstOrThrow()
       expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.before!).toMatchObject(
-        omit(folderToUse, ["createdAt", "updatedAt"]),
+        _.omit(folderToUse, ["createdAt", "updatedAt"]),
       )
       expect(auditEntry.userId).toBe(session.userId)
     })

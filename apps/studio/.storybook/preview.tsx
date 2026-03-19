@@ -19,7 +19,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
-import { merge } from "lodash-es"
+import { merge } from "lodash"
 import { initialize, mswLoader } from "msw-storybook-addon"
 import { ErrorBoundary } from "react-error-boundary"
 import superjson from "superjson"

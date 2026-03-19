@@ -1,6 +1,6 @@
 import type { User } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
-import { pick } from "lodash-es"
+import pick from "lodash/pick"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {

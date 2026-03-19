@@ -1,5 +1,5 @@
 import type { Logger } from "pino"
-import { pick } from "lodash-es"
+import { pick } from "lodash"
 
 import type { BuildChanges } from "./types"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
