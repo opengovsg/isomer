@@ -1348,6 +1348,10 @@ export const pageHandlers = {
       trpcMsw.page.getFullPermalink.query(() => {
         return "/article-layout"
       }),
+    collection: () =>
+      trpcMsw.page.getFullPermalink.query(() => {
+        return "/collection"
+      }),
     index: () =>
       trpcMsw.page.getFullPermalink.query(() => {
         return "parent"
