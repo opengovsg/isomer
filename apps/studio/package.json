@@ -129,7 +129,7 @@
     "isomorphic-dompurify": "^3.3.0",
     "jose": "^6.0.11",
     "jotai": "^2.12.5",
-    "kysely": "^0.27.3",
+    "kysely": "^0.28.11",
     "lodash-es": "^4.17.23",
     "nanoid": "^5.0.9",
     "next": "^15.5.12",

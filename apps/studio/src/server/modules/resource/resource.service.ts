@@ -445,7 +445,7 @@ export const getLocalisedSitemap = async (
         .selectFrom("nestedResources as Resource")
         .select(["summary", "thumbnail", ...defaultResourceSelect]),
     )
-    .orderBy("title asc")
+    .orderBy("title", "asc")
     .execute()
 
   // Step 5: Construct the localised sitemap object
