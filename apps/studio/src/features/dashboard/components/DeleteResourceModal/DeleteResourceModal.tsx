@@ -17,7 +17,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useAtom } from "jotai"
-import { upperFirst } from "lodash-es"
+import upperFirst from "lodash/upperFirst"
 
 import type { DeleteResourceModalState } from "../../types"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"

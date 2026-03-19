@@ -1,5 +1,5 @@
 import { ResourceType } from "@prisma/client"
-import { pick } from "lodash-es"
+import { pick } from "lodash"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupBlob,

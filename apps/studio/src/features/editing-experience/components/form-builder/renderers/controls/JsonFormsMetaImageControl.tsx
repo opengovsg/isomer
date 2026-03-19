@@ -8,7 +8,7 @@ import {
   FormLabel,
 } from "@opengovsg/design-system-react"
 import { META_IMAGE_FORMAT } from "@opengovsg/isomer-components"
-import { uniq } from "lodash-es"
+import uniq from "lodash/uniq"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"

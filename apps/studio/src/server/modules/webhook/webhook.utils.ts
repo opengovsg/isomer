@@ -1,7 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { BuildStatusType } from "@prisma/client"
 import type pino from "pino"
-import { compact } from "lodash-es"
+import _ from "lodash"
 
 import {
   sendFailedPublishEmail,
@@ -106,7 +106,7 @@ const sendEmails = async (
     .select(["CodeBuildJobs.id as codeBuildJobId"])
     .execute()
 
-  const emailPromisesWithCodebuildJobId = compact(
+  const emailPromisesWithCodebuildJobId = _.compact(
     buildsToSendEmails
       .filter((build) => isEmailFunctionalityActive(gb, build.isScheduled))
       .map((info) => {

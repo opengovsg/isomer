@@ -12,7 +12,8 @@ import {
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { FooterSchema } from "@opengovsg/isomer-components"
-import { isEmpty, isEqual } from "lodash-es"
+import isEmpty from "lodash/isEmpty"
+import isEqual from "lodash/isEqual"
 import { BiDirections } from "react-icons/bi"
 
 import { FORM_BUILDER_PARENT_ID } from "~/features/editing-experience/components/form-builder/constants"
