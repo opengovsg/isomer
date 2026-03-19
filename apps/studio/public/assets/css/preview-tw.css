@@ -783,7 +783,7 @@ video {
   line-height: 1.2;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .prose-display-md {
     font-size: 2.25rem;
   }
@@ -792,12 +792,25 @@ video {
 .prose-display-sm {
   font-weight: 600;
   letter-spacing: -0.022em;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   line-height: 1.2;
 }
 
 @media (min-width: 1024px) {
   .prose-display-sm {
+    font-size: 1.938rem;
+  }
+}
+
+.prose-display-xs {
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+@media (min-width: 1024px) {
+  .prose-display-xs {
     font-size: 1.5rem;
   }
 }
@@ -1704,10 +1717,6 @@ video {
 
 .min-h-60 {
   min-height: 15rem;
-}
-
-.min-h-80 {
-  min-height: 20rem;
 }
 
 .min-h-\[15rem\] {
@@ -3339,6 +3348,10 @@ video {
   text-transform: lowercase;
 }
 
+.capitalize {
+  text-transform: capitalize;
+}
+
 .italic {
   font-style: italic;
 }
@@ -4351,6 +4364,20 @@ video {
   --color: #991b1b;
 }
 
+.group:where([data-rac])[data-open] .group-open\:rotate-180 {
+  --tw-rotate: 180deg;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y))
+    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
+    scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.group:where(:not([data-rac]))[open] .group-open\:rotate-180 {
+  --tw-rotate: 180deg;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y))
+    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
+    scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
 .current\:bg-base-content-subtle[data-current] {
   --tw-bg-opacity: 1;
   background-color: rgb(75 85 99 / var(--tw-bg-opacity));
@@ -4621,6 +4648,12 @@ video {
     scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
+.group\/summary:where([data-rac])[data-hovered]
+  .group-hover\/summary\:text-link-hover {
+  --tw-text-opacity: 1;
+  color: rgb(21 71 190 / var(--tw-text-opacity));
+}
+
 .group:where([data-rac])[data-hovered] .group-hover\:text-brand-canvas-inverse {
   color: var(--color-brand-canvas-inverse);
 }
@@ -4632,11 +4665,6 @@ video {
 .group:where([data-rac])[data-hovered] .group-hover\:text-gray-600 {
   --tw-text-opacity: 1;
   color: rgb(75 85 99 / var(--tw-text-opacity));
-}
-
-.group:where([data-rac])[data-hovered] .group-hover\:text-link-hover {
-  --tw-text-opacity: 1;
-  color: rgb(21 71 190 / var(--tw-text-opacity));
 }
 
 .group:where([data-rac])[data-hovered] .group-hover\:underline {
@@ -4670,6 +4698,12 @@ video {
     scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
+.group\/summary:where(:not([data-rac])):hover
+  .group-hover\/summary\:text-link-hover {
+  --tw-text-opacity: 1;
+  color: rgb(21 71 190 / var(--tw-text-opacity));
+}
+
 .group:where(:not([data-rac])):hover .group-hover\:text-brand-canvas-inverse {
   color: var(--color-brand-canvas-inverse);
 }
@@ -4681,11 +4715,6 @@ video {
 .group:where(:not([data-rac])):hover .group-hover\:text-gray-600 {
   --tw-text-opacity: 1;
   color: rgb(75 85 99 / var(--tw-text-opacity));
-}
-
-.group:where(:not([data-rac])):hover .group-hover\:text-link-hover {
-  --tw-text-opacity: 1;
-  color: rgb(21 71 190 / var(--tw-text-opacity));
 }
 
 .group:where(:not([data-rac])):hover .group-hover\:underline {
@@ -4944,11 +4973,6 @@ video {
   color: rgb(17 24 39 / var(--tw-text-opacity));
 }
 
-.focus-visible\:text-content-strong:where([data-rac])[data-focus-visible] {
-  --tw-text-opacity: 1;
-  color: rgb(44 46 52 / var(--tw-text-opacity));
-}
-
 .focus-visible\:decoration-transparent:where([data-rac])[data-focus-visible] {
   text-decoration-color: transparent;
 }
@@ -5090,11 +5114,6 @@ video {
   color: rgb(17 24 39 / var(--tw-text-opacity));
 }
 
-.focus-visible\:text-content-strong:where(:not([data-rac])):focus-visible {
-  --tw-text-opacity: 1;
-  color: rgb(44 46 52 / var(--tw-text-opacity));
-}
-
 .focus-visible\:decoration-transparent:where(:not([data-rac])):focus-visible {
   text-decoration-color: transparent;
 }
@@ -5198,6 +5217,12 @@ video {
   text-decoration-color: transparent;
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:bg-utility-highlight {
+  --tw-bg-opacity: 1;
+  background-color: rgb(251 191 36 / var(--tw-bg-opacity));
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:bg-utility-highlight {
   --tw-bg-opacity: 1;
@@ -5209,15 +5234,36 @@ video {
   fill: #111827;
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:text-base-content-strong {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity));
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:text-base-content-strong {
   --tw-text-opacity: 1;
   color: rgb(17 24 39 / var(--tw-text-opacity));
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:decoration-transparent {
+  text-decoration-color: transparent;
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:decoration-transparent {
   text-decoration-color: transparent;
+}
+
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:shadow-focus-visible {
+  --tw-shadow: 0px -2px #fbbf24, 0 2px #111827;
+  --tw-shadow-colored:
+    0px -2px var(--tw-shadow-color), 0 2px var(--tw-shadow-color);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow);
 }
 
 .group:where([data-rac])[data-focus-visible]
@@ -5228,15 +5274,31 @@ video {
   box-shadow:
     var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
     var(--tw-shadow);
+}
+
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:outline-0 {
+  outline-width: 0px;
 }
 
 .group:where([data-rac])[data-focus-visible] .group-focus-visible\:outline-0 {
   outline-width: 0px;
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:transition-none {
+  transition-property: none;
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:transition-none {
   transition-property: none;
+}
+
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:bg-utility-highlight {
+  --tw-bg-opacity: 1;
+  background-color: rgb(251 191 36 / var(--tw-bg-opacity));
 }
 
 .group:where(:not([data-rac])):focus-visible
@@ -5250,15 +5312,36 @@ video {
   fill: #111827;
 }
 
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:text-base-content-strong {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity));
+}
+
 .group:where(:not([data-rac])):focus-visible
   .group-focus-visible\:text-base-content-strong {
   --tw-text-opacity: 1;
   color: rgb(17 24 39 / var(--tw-text-opacity));
 }
 
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:decoration-transparent {
+  text-decoration-color: transparent;
+}
+
 .group:where(:not([data-rac])):focus-visible
   .group-focus-visible\:decoration-transparent {
   text-decoration-color: transparent;
+}
+
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:shadow-focus-visible {
+  --tw-shadow: 0px -2px #fbbf24, 0 2px #111827;
+  --tw-shadow-colored:
+    0px -2px var(--tw-shadow-color), 0 2px var(--tw-shadow-color);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow);
 }
 
 .group:where(:not([data-rac])):focus-visible
@@ -5271,8 +5354,18 @@ video {
     var(--tw-shadow);
 }
 
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:outline-0 {
+  outline-width: 0px;
+}
+
 .group:where(:not([data-rac])):focus-visible .group-focus-visible\:outline-0 {
   outline-width: 0px;
+}
+
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:transition-none {
+  transition-property: none;
 }
 
 .group:where(:not([data-rac])):focus-visible
@@ -5280,8 +5373,22 @@ video {
   transition-property: none;
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:hover\:decoration-transparent:where(
+    [data-rac]
+  )[data-hovered] {
+  text-decoration-color: transparent;
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:hover\:decoration-transparent:where(
+    [data-rac]
+  )[data-hovered] {
+  text-decoration-color: transparent;
+}
+
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:hover\:decoration-transparent:where(
     [data-rac]
   )[data-hovered] {
   text-decoration-color: transparent;
@@ -5294,8 +5401,22 @@ video {
   text-decoration-color: transparent;
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:hover\:decoration-transparent:where(
+    :not([data-rac])
+  ):hover {
+  text-decoration-color: transparent;
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:hover\:decoration-transparent:where(
+    :not([data-rac])
+  ):hover {
+  text-decoration-color: transparent;
+}
+
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:hover\:decoration-transparent:where(
     :not([data-rac])
   ):hover {
   text-decoration-color: transparent;
@@ -5872,10 +5993,6 @@ video {
     line-height: 1;
   }
 
-  .md\:text-\[2\.25rem\] {
-    font-size: 2.25rem;
-  }
-
   @media not all and (min-width: 1024px) {
     .md\:max-lg\:w-\[70px\] {
       width: 70px;
@@ -6136,6 +6253,10 @@ video {
     align-items: flex-end;
   }
 
+  .lg\:items-center {
+    align-items: center;
+  }
+
   .lg\:justify-end {
     justify-content: flex-end;
   }
@@ -6288,8 +6409,16 @@ video {
     font-size: 1.5rem;
   }
 
+  .lg\:text-\[1\.938rem\] {
+    font-size: 1.938rem;
+  }
+
   .lg\:text-\[1rem\] {
     font-size: 1rem;
+  }
+
+  .lg\:text-\[2\.25rem\] {
+    font-size: 2.25rem;
   }
 
   .lg\:text-\[3rem\] {
@@ -6422,6 +6551,10 @@ video {
 }
 
 .group:where(:not([data-rac]))[open] .\[\&\.plus\]\:group-open\:hidden.plus {
+  display: none;
+}
+
+.\[\&\:\:-webkit-details-marker\]\:hidden::-webkit-details-marker {
   display: none;
 }
 
