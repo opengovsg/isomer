@@ -3,39 +3,13 @@ import type { IsomerSitemap } from "~/types"
 import { tv } from "~/lib/tv"
 import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
-import { isExternalUrl } from "~/utils/isExternalUrl"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 import { ComponentContent } from "../../internal/customCssClass"
+import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
-import { ImageClient } from "../Image"
+import { compoundStyles } from "../InfoCards/common"
+import { InfoCardNoImage, InfoCardWithImage } from "../InfoCards/components"
 import { mergeChildrenPages } from "./utils"
-
-const ChildpageImage = ({
-  src,
-  alt,
-  assetsBaseUrl,
-  className,
-  lazyLoading,
-}: Pick<
-  ImageClientProps,
-  "className" | "assetsBaseUrl" | "src" | "alt" | "lazyLoading"
->) => {
-  const imgSrc =
-    isExternalUrl(src) || assetsBaseUrl === undefined
-      ? src
-      : `${assetsBaseUrl}${src}`
-
-  return (
-    <ImageClient
-      assetsBaseUrl={assetsBaseUrl}
-      width="100%"
-      className={className}
-      alt={alt}
-      src={imgSrc}
-      lazyLoading={lazyLoading}
-    />
-  )
-}
 
 interface Childpage {
   title: string
@@ -52,90 +26,64 @@ interface ChildpageLayoutProps
       | "shouldLazyLoad"
       | "LinkComponent"
       | "site"
+      | "maxColumns"
     >,
     Pick<ImageClientProps, "assetsBaseUrl"> {
   childpages: Childpage[]
   fallback: Required<NonNullable<IsomerSitemap["image"]>>
 }
 
-const createBoxStyles = tv({
-  slots: {
-    container: `${ComponentContent} grid grid-cols-3 gap-10 md:grid-cols-6 md:gap-x-10 [&:not(:first-child)]:mt-7`,
-    imageContainer:
-      "align-center col-span-full row-span-1 flex aspect-[3/2] h-full w-full justify-center border-b border-b-base-divider-medium",
-    image: "rounded-t-md bg-white",
-    textContainer:
-      "col-span-full row-span-1 flex flex-col gap-2 break-words px-5 pb-5",
-    contentContainer:
-      "grid-rows-[1fr fit-content] group grid cursor-pointer grid-cols-subgrid content-start items-start gap-y-5 rounded-md border border-base-divider-medium max-md:col-span-full md:col-span-3",
-    title: [
-      groupFocusVisibleHighlight(),
-      "prose-title-md-medium text-base-content-strong group-hover:text-brand-canvas-inverse group-hover:underline",
-    ],
-    description: "prose-body-base text-base-content",
-  },
-  variants: {
-    layout: {
-      default: {},
-    },
-    hasThumbnail: {
-      true: {},
-      false: { textContainer: "pt-5" },
-    },
-    hasFallbackImage: {
-      true: { image: "size-1/2 self-center" },
-      false: { image: "object-cover" },
-    },
-  },
-
-  defaultVariants: {
-    layout: "default",
-  },
-})
-
 const BoxLayout = ({
   childpages,
   showSummary,
   showThumbnail,
-  assetsBaseUrl,
   fallback,
   shouldLazyLoad,
   LinkComponent,
   site,
+  maxColumns = "2",
 }: ChildpageLayoutProps) => {
-  const styles = createBoxStyles()
-
   return (
-    <div className={styles.container()}>
+    <div
+      className={compoundStyles.grid({
+        maxColumns,
+        variant: "default",
+        class: "[&:not(:first-child)]:mt-7",
+      })}
+    >
       {childpages.map(({ title, description, url, image }, idx) => {
-        const renderedImage = image?.src ? image : fallback
+        if (showThumbnail) {
+          const hasImage = !!image?.src
+          const imageUrl = hasImage ? image.src : fallback.src
+          const imageAlt = hasImage ? (image.alt ?? "") : fallback.alt
+
+          return (
+            <InfoCardWithImage
+              key={`${title}-${idx}`}
+              title={title}
+              description={showSummary ? description : undefined}
+              url={url}
+              imageUrl={imageUrl}
+              imageAlt={imageAlt}
+              imageFit={hasImage ? "cover" : "contain"}
+              maxColumns={maxColumns}
+              layout="index"
+              site={site}
+              LinkComponent={LinkComponent}
+              shouldLazyLoad={shouldLazyLoad}
+            />
+          )
+        }
 
         return (
-          <Link
-            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+          <InfoCardNoImage
             key={`${title}-${idx}`}
+            title={title}
+            description={showSummary ? description : undefined}
+            url={url}
+            site={site}
             LinkComponent={LinkComponent}
-            className={styles.contentContainer()}
-          >
-            {showThumbnail && (
-              <div className={styles.imageContainer()}>
-                <ChildpageImage
-                  assetsBaseUrl={assetsBaseUrl}
-                  lazyLoading={shouldLazyLoad}
-                  {...renderedImage}
-                  className={styles.image({ hasFallbackImage: !image?.src })}
-                />
-              </div>
-            )}
-            <div
-              className={styles.textContainer({ hasThumbnail: showThumbnail })}
-            >
-              <p className={styles.title()}>{title}</p>
-              {showSummary && (
-                <p className={styles.description()}> {description}</p>
-              )}
-            </div>
-          </Link>
+          />
         )
       })}
     </div>
@@ -210,10 +158,12 @@ const RowLayout = ({
           >
             {showThumbnail && (
               <div className={styles.imageContainer()}>
-                <ChildpageImage
+                <ImageClient
                   assetsBaseUrl={assetsBaseUrl}
                   lazyLoading={shouldLazyLoad}
-                  {...renderedImage}
+                  src={renderedImage.src}
+                  alt={renderedImage.alt}
+                  width="100%"
                   className={styles.image({ hasFallbackImage: !image?.src })}
                 />
               </div>
@@ -244,6 +194,7 @@ export const ChildrenPages = ({
   showSummary = true,
   showThumbnail,
   shouldLazyLoad,
+  maxColumns = "3",
 }: ChildrenPagesProps) => {
   const currentPageNode = getNodeFromSiteMap(site.siteMap, permalink)
 
@@ -272,6 +223,7 @@ export const ChildrenPages = ({
         fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
         shouldLazyLoad={shouldLazyLoad}
         site={site}
+        maxColumns={maxColumns}
       />
     )
   }
