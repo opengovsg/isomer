@@ -18,7 +18,6 @@ export const ImageClient = forwardRef<
       assetsBaseUrl,
       lazyLoading = true, // next/image defaults to lazy loading true too
       onLoad,
-      onError,
     },
     ref,
   ) => {
@@ -36,13 +35,7 @@ export const ImageClient = forwardRef<
         height="auto"
         className={className}
         onLoad={onLoad}
-        onError={(e) => {
-          if (onError) {
-            onError(e)
-            if (e.defaultPrevented) return
-          }
-
-          const { currentTarget } = e
+        onError={({ currentTarget }) => {
           currentTarget.onerror = null
           currentTarget.src = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
         }}
