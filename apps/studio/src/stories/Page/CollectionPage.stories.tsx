@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { userEvent, within } from "storybook/test"
 import { collectionHandlers } from "tests/msw/handlers/collection"
+import { folderHandlers } from "tests/msw/handlers/folder"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -29,6 +30,7 @@ const meta: Meta<typeof CollectionPage> = {
         resourceHandlers.getParentOf.collection(),
         collectionHandlers.getMetadata.default(),
         collectionHandlers.list.default(),
+        folderHandlers.getIndexpage.default(),
       ],
     },
     nextjs: {
