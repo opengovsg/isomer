@@ -1,20 +1,11 @@
 import { BiChevronDown } from "react-icons/bi"
 
 import type { MastheadProps } from "~/interfaces"
-import { twMerge } from "~/lib/twMerge"
 import { Link } from "../Link"
-
-/** Focus-visible highlight scoped to the trigger (summary has group/summary) */
-const triggerFocusVisibleStyles =
-  "group-focus-visible/summary:bg-utility-highlight group-focus-visible/summary:text-base-content-strong group-focus-visible/summary:decoration-transparent group-focus-visible/summary:shadow-focus-visible group-focus-visible/summary:outline-0 group-focus-visible/summary:transition-none group-focus-visible/summary:hover:decoration-transparent"
 
 const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
   return (
-    <summary
-      className={twMerge(
-        "group/summary flex w-full cursor-pointer list-none gap-1 text-start leading-5 outline-none lg:flex-row lg:items-center [&::-webkit-details-marker]:hidden",
-      )}
-    >
+    <summary className="group/summary flex w-full cursor-pointer list-none gap-1 text-start leading-5 outline-none lg:flex-row lg:items-center [&::-webkit-details-marker]:hidden">
       <div className="mx-auto flex w-full max-w-screen-xl gap-1 px-6 text-start md:px-10 lg:flex-row lg:items-center">
         <svg
           version="1.1"
@@ -36,12 +27,8 @@ const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
             A Singapore Government Agency Website&nbsp;
             {isStaging ? <b>[NOTE: THIS IS A STAGING WEBSITE]&nbsp;</b> : null}
           </span>
-          <span
-            className={twMerge(
-              "not-sr-only text-link underline underline-offset-4 group-hover/summary:text-link-hover",
-              triggerFocusVisibleStyles,
-            )}
-          >
+          {/* Focus-visible highlight scoped to the trigger (summary has group/summary) */}
+          <span className="not-sr-only text-link underline underline-offset-4 group-hover/summary:text-link-hover group-focus-visible/summary:bg-utility-highlight group-focus-visible/summary:text-base-content-strong group-focus-visible/summary:decoration-transparent group-focus-visible/summary:shadow-focus-visible group-focus-visible/summary:outline-0 group-focus-visible/summary:transition-none group-focus-visible/summary:hover:decoration-transparent">
             How to identify
             <BiChevronDown
               aria-hidden
