@@ -28,7 +28,7 @@ class TracingPlugin implements KyselyPlugin {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (ddTrace?.tracer) {
       // this is VERY performant (microseconds) relative to actually executing the query, so we can afford to do this
-      const compiled = this.compiler.compileQuery(args.node)
+      const compiled = this.compiler.compileQuery(args.node, queryId)
       const span = ddTrace.tracer.startSpan(`kysely_${args.node.kind}`, {
         childOf: ddTrace.tracer.scope().active() ?? undefined,
         tags: {
