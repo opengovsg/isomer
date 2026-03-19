@@ -132,8 +132,7 @@ const createRowStyles = tv({
     },
     hasThumbnail: {
       true: {
-        textContainer:
-          "pb-5 md:col-span-4 md:ml-[-1.25rem] md:pr-5 lg:col-span-9",
+        textContainer: "md:col-span-4 md:ml-[-1.25rem] lg:col-span-9",
         contentContainer: "p-0",
       },
       false: { textContainer: "md:col-span-6 lg:col-span-12" },
