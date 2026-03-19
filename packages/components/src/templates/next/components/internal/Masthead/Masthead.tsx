@@ -49,13 +49,6 @@ const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
       )}
     >
       <div className="mx-auto flex w-full max-w-screen-xl gap-1 px-6 text-start md:px-10 lg:flex-row lg:items-center">
-        <span className="sr-only group-open:hidden">
-          Click to expand masthead to find out how to identify an official
-          government website
-        </span>
-        <span className="sr-only hidden group-open:inline">
-          Click to collapse masthead
-        </span>
         <RestrictedHeaderBarContent isStaging={isStaging}>
           <span
             className={twMerge(
