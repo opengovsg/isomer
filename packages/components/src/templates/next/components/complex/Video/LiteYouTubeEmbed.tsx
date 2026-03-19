@@ -1,9 +1,10 @@
 "use client"
 
-import type { SVGProps } from "react"
+import type { SVGProps, SyntheticEvent } from "react"
 import { useEffect, useState } from "react"
 
 import { twMerge } from "~/lib/twMerge"
+import { ImageClient } from "../Image/ImageClient"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 
 export interface LiteYouTubeEmbedProps {
@@ -61,16 +62,31 @@ export const LiteYouTubeEmbed = ({
   // Single-video: use static thumbnail.
   // Playlist/video series: resolve thumbnail via oEmbed.
   const thumbnailUrl = videoId
-    ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` // we use hqdefault as its the best balance between quality and size
+    ? // we use sddefault as its the best balance between quality and size
+      // note: maxresdefault is not available for all videos
+      `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`
     : oEmbedThumbnailUrl
 
   return (
     <>
       {thumbnailUrl && (
-        <img
+        <ImageClient
           src={thumbnailUrl}
           alt={`Thumbnail for ${title || "video"}`}
-          loading={shouldLazyLoad ? "lazy" : "eager"}
+          width="100%"
+          lazyLoading={shouldLazyLoad}
+          onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
+            if (!videoId) return
+
+            const { currentTarget } = e
+            if (
+              currentTarget.src ===
+              `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`
+            ) {
+              currentTarget.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+              e.preventDefault()
+            }
+          }}
           className={twMerge(
             "absolute inset-0 h-full w-full bg-black object-cover",
             activated && "pointer-events-none opacity-0",
