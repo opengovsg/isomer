@@ -30,7 +30,7 @@ const singleInfoCardStyle = tv({
     cardImage: "h-full w-full object-center",
     cardTextContainer: "flex flex-col break-words",
     cardTitleArrow:
-      "mb-0.5 ml-1 inline h-auto w-6 shrink-0 transition ease-in group-hover:translate-x-1",
+      "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
     cardImageContainer:
       "w-full overflow-hidden border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
