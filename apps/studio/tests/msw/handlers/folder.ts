@@ -23,16 +23,4 @@ export const folderHandlers = {
       })
     },
   },
-  listChildPages: {
-    default: () => {
-      return trpcMsw.folder.listChildPages.query(() => {
-        return {
-          childPages: [
-            { id: "5", title: "sibling1" },
-            { id: "4", title: "sibling2" },
-          ],
-        }
-      })
-    },
-  },
 }

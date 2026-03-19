@@ -133,10 +133,6 @@ export {
   jsonFormsColourPickerControlTester,
 } from "./JsonFormsColourPickerControl"
 export {
-  default as JsonFormsMaxColumnsControl,
-  jsonFormsMaxColumnsControlTester,
-} from "./JsonFormsMaxColumnsControl"
-export {
   default as JsonFormsCollectionVariantControl,
   jsonFormsCollectionVariantControlTester,
 } from "./JsonFormsCollectionVariantControl"

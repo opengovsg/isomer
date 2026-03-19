@@ -28,9 +28,9 @@ const singleInfoCardStyle = tv({
   slots: {
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImage: "h-full w-full object-center",
-    cardTextContainer: "flex flex-col break-words",
+    cardTextContainer: "flex flex-col",
     cardTitleArrow:
-      "mb-0.5 ml-1 inline h-auto w-6 shrink-0 transition ease-in group-hover:translate-x-1",
+      "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
     cardImageContainer:
       "w-full overflow-hidden border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
@@ -60,12 +60,6 @@ const singleInfoCardStyle = tv({
       },
       contain: {
         cardImage: "object-contain",
-      },
-    },
-    isFallback: {
-      true: {
-        cardImage: "size-1/2 object-contain",
-        cardImageContainer: "flex items-center justify-center",
       },
     },
     isExternalLink: {

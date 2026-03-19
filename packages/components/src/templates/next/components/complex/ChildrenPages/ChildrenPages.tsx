@@ -1,19 +1,41 @@
-import { BiRightArrowAlt } from "react-icons/bi"
-
 import type { ChildrenPagesProps, ImageClientProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types"
-import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
-import { IMAGE_FIT } from "~/interfaces/constants"
 import { tv } from "~/lib/tv"
 import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 import { ComponentContent } from "../../internal/customCssClass"
-import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
-import { compoundStyles, infoCardTitleStyle } from "../InfoCards/common"
-import { InfoCardNoImage, InfoCardWithImage } from "../InfoCards/components"
+import { ImageClient } from "../Image"
 import { mergeChildrenPages } from "./utils"
+
+const ChildpageImage = ({
+  src,
+  alt,
+  assetsBaseUrl,
+  className,
+  lazyLoading,
+}: Pick<
+  ImageClientProps,
+  "className" | "assetsBaseUrl" | "src" | "alt" | "lazyLoading"
+>) => {
+  const imgSrc =
+    isExternalUrl(src) || assetsBaseUrl === undefined
+      ? src
+      : `${assetsBaseUrl}${src}`
+
+  return (
+    <ImageClient
+      assetsBaseUrl={assetsBaseUrl}
+      width="100%"
+      className={className}
+      alt={alt}
+      src={imgSrc}
+      lazyLoading={lazyLoading}
+    />
+  )
+}
 
 interface Childpage {
   title: string
@@ -26,71 +48,94 @@ interface ChildpageLayoutProps
   extends Pick<
       ChildrenPagesProps,
       | "showSummary"
-      | "imageFit"
       | "showThumbnail"
       | "shouldLazyLoad"
       | "LinkComponent"
       | "site"
-      | "maxColumns"
     >,
     Pick<ImageClientProps, "assetsBaseUrl"> {
   childpages: Childpage[]
   fallback: Required<NonNullable<IsomerSitemap["image"]>>
 }
 
+const createBoxStyles = tv({
+  slots: {
+    container: `${ComponentContent} grid grid-cols-3 gap-10 md:grid-cols-6 md:gap-x-10 [&:not(:first-child)]:mt-7`,
+    imageContainer:
+      "align-center col-span-full row-span-1 flex aspect-[3/2] h-full w-full justify-center border-b border-b-base-divider-medium",
+    image: "rounded-t-md bg-white",
+    textContainer:
+      "col-span-full row-span-1 flex flex-col gap-2 break-words px-5 pb-5",
+    contentContainer:
+      "grid-rows-[1fr fit-content] group grid cursor-pointer grid-cols-subgrid content-start items-start gap-y-5 rounded-md border border-base-divider-medium max-md:col-span-full md:col-span-3",
+    title: [
+      groupFocusVisibleHighlight(),
+      "prose-title-md-medium text-base-content-strong group-hover:text-brand-canvas-inverse group-hover:underline",
+    ],
+    description: "prose-body-base text-base-content",
+  },
+  variants: {
+    layout: {
+      default: {},
+    },
+    hasThumbnail: {
+      true: {},
+      false: { textContainer: "pt-5" },
+    },
+    hasFallbackImage: {
+      true: { image: "size-1/2 self-center" },
+      false: { image: "object-cover" },
+    },
+  },
+
+  defaultVariants: {
+    layout: "default",
+  },
+})
+
 const BoxLayout = ({
   childpages,
   showSummary,
   showThumbnail,
+  assetsBaseUrl,
   fallback,
   shouldLazyLoad,
   LinkComponent,
   site,
-  maxColumns = "2",
-  imageFit = "cover",
 }: ChildpageLayoutProps) => {
-  return (
-    <div
-      className={compoundStyles.grid({
-        maxColumns,
-        variant: "default",
-        class: "[&:not(:first-child)]:mt-7",
-      })}
-    >
-      {childpages.map(({ title, description, url, image }, idx) => {
-        if (showThumbnail) {
-          const hasImage = !!image?.src
-          const imageUrl = hasImage ? image.src : fallback.src
-          const imageAlt = hasImage ? (image.alt ?? "") : fallback.alt
+  const styles = createBoxStyles()
 
-          return (
-            <InfoCardWithImage
-              key={`${title}-${idx}`}
-              title={title}
-              description={showSummary ? description : undefined}
-              url={url}
-              imageUrl={imageUrl}
-              imageAlt={imageAlt}
-              imageFit={imageFit}
-              maxColumns={maxColumns}
-              layout="index"
-              site={site}
-              isFallback={!hasImage}
-              LinkComponent={LinkComponent}
-              shouldLazyLoad={shouldLazyLoad}
-            />
-          )
-        }
+  return (
+    <div className={styles.container()}>
+      {childpages.map(({ title, description, url, image }, idx) => {
+        const renderedImage = image?.src ? image : fallback
 
         return (
-          <InfoCardNoImage
+          <Link
+            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
             key={`${title}-${idx}`}
-            title={title}
-            description={showSummary ? description : undefined}
-            url={url}
-            site={site}
             LinkComponent={LinkComponent}
-          />
+            className={styles.contentContainer()}
+          >
+            {showThumbnail && (
+              <div className={styles.imageContainer()}>
+                <ChildpageImage
+                  assetsBaseUrl={assetsBaseUrl}
+                  lazyLoading={shouldLazyLoad}
+                  {...renderedImage}
+                  className={styles.image({ hasFallbackImage: !image?.src })}
+                />
+              </div>
+            )}
+            <div
+              className={styles.textContainer({ hasThumbnail: showThumbnail })}
+            >
+              <p className={styles.title()}>{title}</p>
+              {showSummary && (
+                <p className={styles.description()}> {description}</p>
+              )}
+            </div>
+          </Link>
         )
       })}
     </div>
@@ -99,22 +144,18 @@ const BoxLayout = ({
 
 const createRowStyles = tv({
   slots: {
-    container: `${ComponentContent} grid grid-cols-3 gap-9 md:grid-cols-6 lg:grid-cols-12 [&:not(:first-child)]:mt-7`,
-    image: "bg-white",
+    container: `${ComponentContent} grid grid-cols-3 gap-10 md:grid-cols-6 lg:grid-cols-12 [&:not(:first-child)]:mt-7`,
+    image: "rounded-l-sm bg-white",
     imageContainer:
-      "flex aspect-[3/2] h-full w-full justify-center overflow-hidden rounded-lg border bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md max-md:col-span-full max-md:row-span-1 md:col-span-2 lg:col-span-3",
+      "align-center flex aspect-[3/2] h-full w-full justify-center max-md:col-span-full max-md:row-span-1 max-md:border-b max-md:border-b-base-divider-subtle md:col-span-2 md:border-r md:border-r-base-divider-subtle lg:col-span-3",
     textContainer:
-      "flex flex-col justify-center gap-2 break-words max-md:col-span-full max-md:row-span-1",
+      "flex flex-col gap-2 break-words max-md:col-span-full max-md:row-span-1",
     contentContainer:
-      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
-    cardTitleArrow:
-      "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
+      // NOTE: Our `rounded-sm` compiles down to `0.125 rem` rather than `0.25 rem`, necessitating this
+      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid rounded-[0.25rem] border border-base-divider-medium p-5 max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
     title: [
       groupFocusVisibleHighlight(),
-      infoCardTitleStyle({
-        isClickableCard: true,
-        variant: INFOCARD_VARIANT.default,
-      }),
+      "prose-title-md-medium text-base-content-strong group-hover:text-brand-canvas-inverse group-hover:underline",
     ],
     description: "prose-body-base text-base-content",
   },
@@ -122,23 +163,17 @@ const createRowStyles = tv({
     layout: {
       default: {},
     },
-    imageFit: {
-      cover: {
-        image: "object-cover",
-      },
-      contain: {
-        image: "object-contain",
-      },
-    },
     hasThumbnail: {
       true: {
-        textContainer: "md:col-span-4 md:ml-[-1.25rem] lg:col-span-9",
+        textContainer:
+          "pb-5 max-md:px-5 md:col-span-4 md:ml-[-1.25rem] md:py-5 md:pr-5 lg:col-span-9",
         contentContainer: "p-0",
       },
       false: { textContainer: "md:col-span-6 lg:col-span-12" },
     },
     hasFallbackImage: {
       true: { image: "h-auto w-2/3 object-contain" },
+      false: { image: "object-cover" },
     },
   },
 
@@ -156,7 +191,6 @@ const RowLayout = ({
   shouldLazyLoad,
   LinkComponent,
   site,
-  imageFit,
 }: ChildpageLayoutProps): JSX.Element => {
   const styles = createRowStyles()
 
@@ -176,16 +210,11 @@ const RowLayout = ({
           >
             {showThumbnail && (
               <div className={styles.imageContainer()}>
-                <ImageClient
+                <ChildpageImage
                   assetsBaseUrl={assetsBaseUrl}
                   lazyLoading={shouldLazyLoad}
-                  src={renderedImage.src}
-                  alt={renderedImage.alt}
-                  width="100%"
-                  className={styles.image({
-                    hasFallbackImage: !image?.src,
-                    imageFit,
-                  })}
+                  {...renderedImage}
+                  className={styles.image({ hasFallbackImage: !image?.src })}
                 />
               </div>
             )}
@@ -194,18 +223,7 @@ const RowLayout = ({
                 hasThumbnail: !!showThumbnail,
               })}
             >
-              <p className={styles.title()}>
-                <span>{title}</span>
-                {url && (
-                  <BiRightArrowAlt
-                    aria-hidden
-                    className={compoundStyles.cardTitleArrow({
-                      isExternalLink: false,
-                      variant: INFOCARD_VARIANT.default,
-                    })}
-                  />
-                )}
-              </p>
+              <p className={styles.title()}>{title}</p>
               {showSummary && (
                 <p className={styles.description()}>{description}</p>
               )}
@@ -226,8 +244,6 @@ export const ChildrenPages = ({
   showSummary = true,
   showThumbnail,
   shouldLazyLoad,
-  maxColumns = "2",
-  imageFit = IMAGE_FIT.Cover,
 }: ChildrenPagesProps) => {
   const currentPageNode = getNodeFromSiteMap(site.siteMap, permalink)
 
@@ -256,8 +272,6 @@ export const ChildrenPages = ({
         fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
         shouldLazyLoad={shouldLazyLoad}
         site={site}
-        maxColumns={maxColumns}
-        imageFit={imageFit}
       />
     )
   }
@@ -276,7 +290,6 @@ export const ChildrenPages = ({
       fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
       shouldLazyLoad={shouldLazyLoad}
       site={site}
-      imageFit={imageFit}
     />
   )
 }

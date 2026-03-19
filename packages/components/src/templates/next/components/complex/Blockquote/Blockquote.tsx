@@ -5,7 +5,7 @@ import { tv } from "~/lib/tv"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ComponentContent } from "../../internal/customCssClass"
-import { ImageClient } from "../../internal/ImageClient"
+import { ImageClient } from "../Image"
 
 const createBlockquoteStyles = tv({
   slots: {
@@ -82,7 +82,11 @@ export const Blockquote = ({
 
         {imageSrc && imageAlt && (
           <ImageClient
-            src={imageSrc}
+            src={
+              isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
+                ? imageSrc
+                : `${site.assetsBaseUrl}${imageSrc}`
+            }
             alt={imageAlt}
             width="100%"
             className={compoundStyles.image()}

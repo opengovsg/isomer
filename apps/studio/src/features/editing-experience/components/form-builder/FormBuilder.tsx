@@ -51,8 +51,6 @@ import {
   jsonFormsLinkArrayControlTester,
   JsonFormsLinkControl,
   jsonFormsLinkControlTester,
-  JsonFormsMaxColumnsControl,
-  jsonFormsMaxColumnsControlTester,
   JsonFormsMetaImageControl,
   jsonFormsMetaImageControlTester,
   JsonFormsNavbarControl,
@@ -169,10 +167,6 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsChildrenPagesLayoutControlTester,
     renderer: JsonFormsChildrenPagesLayoutControl,
-  },
-  {
-    tester: jsonFormsMaxColumnsControlTester,
-    renderer: JsonFormsMaxColumnsControl,
   },
   {
     tester: jsonFormsCollectionVariantControlTester,

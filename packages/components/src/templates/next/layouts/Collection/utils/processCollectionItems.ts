@@ -6,6 +6,7 @@ import type {
 } from "~/interfaces/internal/CollectionCard"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 
 export const processCollectionItems = (
   items: AllCardProps[],
@@ -37,7 +38,10 @@ export const processCollectionItems = (
         site.siteMap,
         site.assetsBaseUrl,
       ),
-      imageSrc: item.image?.src,
+      imageSrc:
+        isExternalUrl(item.image?.src) || site.assetsBaseUrl === undefined
+          ? item.image?.src
+          : `${site.assetsBaseUrl}${item.image?.src}`,
       itemTitle: `${item.title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`,
       formattedDate: date ? getFormattedDate(date.toISOString()) : undefined,
     } as Exact<ProcessedCollectionCardProps, ProcessedCollectionCardProps>
