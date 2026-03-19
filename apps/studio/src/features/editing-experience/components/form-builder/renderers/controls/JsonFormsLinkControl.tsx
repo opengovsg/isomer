@@ -7,7 +7,7 @@ import get from "lodash/get"
 
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { pageSchema } from "~/features/editing-experience/schema"
+import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
@@ -42,7 +42,7 @@ function JsonFormsLinkControl({
   errors,
 }: ControlProps) {
   const [lastFetched, setLastFetched] = useState<string>("")
-  const { siteId } = useQueryParse(pageSchema)
+  const { siteId } = useQueryParse(siteSchema)
   const ctx = useJsonForms()
   const utils = trpc.useUtils()
 
