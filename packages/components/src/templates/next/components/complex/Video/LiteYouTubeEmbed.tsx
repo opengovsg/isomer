@@ -41,7 +41,10 @@ export const LiteYouTubeEmbed = ({
 
         const data = (await response.json()) as { thumbnail_url?: string }
         if (data.thumbnail_url) {
-          setOEmbedThumbnailUrl(data.thumbnail_url)
+          // Prefer sddefault; oEmbed returns hqdefault. Fallback to hqdefault is handled in onLoad.
+          setOEmbedThumbnailUrl(
+            data.thumbnail_url.replace("hqdefault", "sddefault"),
+          )
         }
       } catch {
         // Best effort only; playback still works without preview image.
@@ -76,18 +79,20 @@ export const LiteYouTubeEmbed = ({
           width="100%"
           lazyLoading={shouldLazyLoad}
           onLoad={(e: SyntheticEvent<HTMLImageElement, Event>) => {
-            if (!videoId) return
-
             const { currentTarget } = e
             // When sddefault.jpg is missing, YouTube returns HTTP 404 with a valid 120×90 JPEG
             // (a placeholder). The browser then fires onLoad, not onError, so we detect the
-            // "missing thumbnail" case by dimensions and swap to hqdefault.jpg.
+            // "missing thumbnail" case by dimensions and swap to hqdefault.jpg. Applies to both
+            // single-video and oEmbed (playlist) thumbnails.
             if (
-              currentTarget.src.endsWith(`/vi/${videoId}/sddefault.jpg`) &&
+              currentTarget.src.endsWith("/sddefault.jpg") &&
               currentTarget.naturalWidth === 120 &&
               currentTarget.naturalHeight === 90
             ) {
-              currentTarget.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+              currentTarget.src = currentTarget.src.replace(
+                "sddefault.jpg",
+                "hqdefault.jpg",
+              )
             }
           }}
           className={twMerge(
