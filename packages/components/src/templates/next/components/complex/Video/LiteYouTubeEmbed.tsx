@@ -75,16 +75,19 @@ export const LiteYouTubeEmbed = ({
           alt={`Thumbnail for ${title || "video"}`}
           width="100%"
           lazyLoading={shouldLazyLoad}
-          onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
+          onLoad={(e: SyntheticEvent<HTMLImageElement, Event>) => {
             if (!videoId) return
 
             const { currentTarget } = e
+            // When sddefault.jpg is missing, YouTube returns HTTP 404 with a valid 120×90 JPEG
+            // (a placeholder). The browser then fires onLoad, not onError, so we detect the
+            // "missing thumbnail" case by dimensions and swap to hqdefault.jpg.
             if (
-              currentTarget.src ===
-              `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`
+              currentTarget.src.endsWith(`/vi/${videoId}/sddefault.jpg`) &&
+              currentTarget.naturalWidth === 120 &&
+              currentTarget.naturalHeight === 90
             ) {
               currentTarget.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
-              e.preventDefault()
             }
           }}
           className={twMerge(
