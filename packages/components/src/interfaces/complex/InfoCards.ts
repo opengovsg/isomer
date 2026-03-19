@@ -6,7 +6,6 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
-import { InfoCardsImageFitSchema } from "~/schemas/internal"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
@@ -21,6 +20,11 @@ export const INFOCARD_VARIANT = {
 } as const
 
 type InfoCardVariants = keyof typeof INFOCARD_VARIANT
+
+const IMAGE_FIT = {
+  Cover: "cover",
+  Content: "contain",
+} as const
 
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
@@ -47,7 +51,24 @@ const SingleCardWithImageSchema = Type.Composite([
   SingleCardNoImageSchema,
   Type.Object({
     imageUrl: ImageSrcSchema,
-    imageFit: Type.Optional(InfoCardsImageFitSchema),
+    imageFit: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal(IMAGE_FIT.Cover, {
+            title: "Default (recommended)",
+          }),
+          Type.Literal(IMAGE_FIT.Content, {
+            title: "Resize image to fit",
+          }),
+        ],
+        {
+          default: IMAGE_FIT.Cover,
+          title: "Image display",
+          description: `Select "Resize image to fit" only if the image has a white background.`,
+          format: ARRAY_RADIO_FORMAT,
+        },
+      ),
+    ),
     imageAlt: AltTextSchema,
   }),
 ])
@@ -199,7 +220,6 @@ export type SingleCardWithImageProps = Static<
     LinkComponent?: LinkComponentType
     shouldLazyLoad?: boolean
     variant?: InfoCardVariants
-    isFallback?: boolean
   }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   layout: IsomerPageLayoutType

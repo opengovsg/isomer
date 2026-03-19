@@ -2,7 +2,6 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { ChildrenPagesImageFitSchema } from "~/schemas/internal"
 import { CHILDREN_PAGES_LAYOUT_OPTIONS } from "./constants"
 
 export const ChildrenPagesSchema = Type.Object(
@@ -39,12 +38,11 @@ export const ChildrenPagesSchema = Type.Object(
           title: "Number of columns",
           description:
             "This only affects how the block appears on large screens",
-          default: "2",
+          default: "3",
           format: "childPagesCols",
         },
       ),
     ),
-    imageFit: Type.Optional(ChildrenPagesImageFitSchema),
     // NOTE: We set this to `Optional` for now due to backcompat
     // TODO: Remove this chunk after we run the forward migration to
     // add this property to all index pages

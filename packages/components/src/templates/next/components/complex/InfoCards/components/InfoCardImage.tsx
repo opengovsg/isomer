@@ -15,10 +15,8 @@ export const InfoCardImage = ({
   site,
   shouldLazyLoad,
   variant = INFOCARD_VARIANT.default,
-  isFallback,
 }: Pick<
   With4Cols<SingleCardWithImageProps>,
-  | "isFallback"
   | "imageUrl"
   | "imageAlt"
   | "maxColumns"
@@ -36,7 +34,6 @@ export const InfoCardImage = ({
         maxColumns,
         isClickableCard: !!url,
         variant,
-        isFallback,
       })}
     >
       <ImageClient
@@ -45,7 +42,6 @@ export const InfoCardImage = ({
         width="100%"
         className={compoundStyles.cardImage({
           imageFit,
-          isFallback,
         })}
         assetsBaseUrl={site.assetsBaseUrl}
         lazyLoading={shouldLazyLoad}

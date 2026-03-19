@@ -1,6 +1,5 @@
 import type { ChildrenPagesProps, ImageClientProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types"
-import { IMAGE_FIT } from "~/interfaces/constants"
 import { tv } from "~/lib/tv"
 import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
@@ -23,7 +22,6 @@ interface ChildpageLayoutProps
   extends Pick<
       ChildrenPagesProps,
       | "showSummary"
-      | "imageFit"
       | "showThumbnail"
       | "shouldLazyLoad"
       | "LinkComponent"
@@ -44,7 +42,6 @@ const BoxLayout = ({
   LinkComponent,
   site,
   maxColumns = "2",
-  imageFit = "cover",
 }: ChildpageLayoutProps) => {
   return (
     <div
@@ -68,11 +65,10 @@ const BoxLayout = ({
               url={url}
               imageUrl={imageUrl}
               imageAlt={imageAlt}
-              imageFit={imageFit}
+              imageFit={hasImage ? "cover" : "contain"}
               maxColumns={maxColumns}
               layout="index"
               site={site}
-              isFallback={!hasImage}
               LinkComponent={LinkComponent}
               shouldLazyLoad={shouldLazyLoad}
             />
@@ -115,14 +111,6 @@ const createRowStyles = tv({
     layout: {
       default: {},
     },
-    imageFit: {
-      cover: {
-        image: "object-cover",
-      },
-      contain: {
-        image: "object-contain",
-      },
-    },
     hasThumbnail: {
       true: {
         textContainer:
@@ -133,6 +121,7 @@ const createRowStyles = tv({
     },
     hasFallbackImage: {
       true: { image: "h-auto w-2/3 object-contain" },
+      false: { image: "object-cover" },
     },
   },
 
@@ -150,7 +139,6 @@ const RowLayout = ({
   shouldLazyLoad,
   LinkComponent,
   site,
-  imageFit,
 }: ChildpageLayoutProps): JSX.Element => {
   const styles = createRowStyles()
 
@@ -176,10 +164,7 @@ const RowLayout = ({
                   src={renderedImage.src}
                   alt={renderedImage.alt}
                   width="100%"
-                  className={styles.image({
-                    hasFallbackImage: !image?.src,
-                    imageFit,
-                  })}
+                  className={styles.image({ hasFallbackImage: !image?.src })}
                 />
               </div>
             )}
@@ -209,8 +194,7 @@ export const ChildrenPages = ({
   showSummary = true,
   showThumbnail,
   shouldLazyLoad,
-  maxColumns = "2",
-  imageFit = IMAGE_FIT.Cover,
+  maxColumns = "3",
 }: ChildrenPagesProps) => {
   const currentPageNode = getNodeFromSiteMap(site.siteMap, permalink)
 
@@ -240,7 +224,6 @@ export const ChildrenPages = ({
         shouldLazyLoad={shouldLazyLoad}
         site={site}
         maxColumns={maxColumns}
-        imageFit={imageFit}
       />
     )
   }
@@ -259,7 +242,6 @@ export const ChildrenPages = ({
       fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
       shouldLazyLoad={shouldLazyLoad}
       site={site}
-      imageFit={imageFit}
     />
   )
 }

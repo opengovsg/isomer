@@ -62,12 +62,6 @@ const singleInfoCardStyle = tv({
         cardImage: "object-contain",
       },
     },
-    isFallback: {
-      true: {
-        cardImage: "size-1/2 object-contain",
-        cardImageContainer: "flex items-center justify-center",
-      },
-    },
     isExternalLink: {
       true: {
         cardTitleArrow: "rotate-[-45deg]",
