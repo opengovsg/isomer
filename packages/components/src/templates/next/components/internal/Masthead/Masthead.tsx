@@ -43,9 +43,7 @@ const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
 
 const RestrictedContent = ({
   LinkComponent,
-}: {
-  LinkComponent?: MastheadProps["LinkComponent"]
-}) => {
+}: Pick<MastheadProps, "LinkComponent">) => {
   return (
     <div className="mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10">
       <div className="grid grid-cols-[1fr] gap-6 px-px lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] lg:gap-40">
@@ -131,8 +129,7 @@ const RestrictedContent = ({
   )
 }
 
-export const Masthead = (props: Omit<MastheadProps, "type">) => {
-  const { LinkComponent, isStaging } = props
+export const Masthead = ({ isStaging, LinkComponent }: MastheadProps) => {
   return (
     <div className="bg-base-canvas-backdrop">
       <details className="group">
