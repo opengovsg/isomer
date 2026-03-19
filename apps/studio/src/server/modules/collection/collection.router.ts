@@ -286,7 +286,6 @@ export const collectionRouter = router({
         .where("Resource.type", "in", [
           ResourceType.CollectionPage,
           ResourceType.CollectionLink,
-          ResourceType.IndexPage,
         ])
         .orderBy("Resource.type", "asc")
         .orderBy("Resource.title", "asc")
