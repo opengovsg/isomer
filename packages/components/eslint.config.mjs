@@ -32,6 +32,11 @@ export default [
         {
           paths: [
             {
+              name: "~/utils",
+              message:
+                "Do not import from ~/utils (barrel). Import from the specific file instead (e.g. ~/utils/getWordsFromPermalink).",
+            },
+            {
               name: "tailwind-variants",
               importNames: ["tv"],
               message:

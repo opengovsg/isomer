@@ -26,7 +26,7 @@ import { FOOTER_QUERY_SELECTOR } from "~/features/settings/constants"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { waitForElement } from "~/utils/dom"
 import { trpc } from "~/utils/trpc"
-import { siteSchema } from "../schema"
+import { siteSchema } from "../../schema"
 import Preview from "./Preview"
 import { ViewportContainer } from "./ViewportContainer"
 

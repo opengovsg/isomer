@@ -26,7 +26,7 @@ import { BiCheck, BiMinus } from "react-icons/bi"
 
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { focusRing } from "~/utils"
+import { focusRing } from "~/utils/tailwind"
 
 interface CheckboxGroupContextValue {
   state: CheckboxGroupState

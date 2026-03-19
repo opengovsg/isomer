@@ -11,7 +11,7 @@ import type {
 } from "~/interfaces"
 import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
 import { InjectableContactInformationKeys } from "~/interfaces/complex/ContactInformation/constants"
-import { safeJsonParse } from "~/utils"
+import { safeJsonParse } from "~/utils/safeJsonParse"
 import { ContactInformationUI } from "../components"
 
 export const DgsContactInformation = ({

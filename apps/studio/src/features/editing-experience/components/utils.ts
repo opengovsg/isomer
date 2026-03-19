@@ -9,7 +9,7 @@ import {
   VIDEO_EMBED_URL_REGEXES,
 } from "@opengovsg/isomer-components"
 import DOMPurify from "isomorphic-dompurify"
-import set from "lodash/set"
+import { set } from "lodash-es"
 
 import type collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
 import type {

@@ -1,11 +1,10 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { useCallback } from "react"
-import { Box, Flex, useDisclosure } from "@chakra-ui/react"
-import { Button, useToast } from "@opengovsg/design-system-react"
+import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
+import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
-import cloneDeep from "lodash/cloneDeep"
-import isEmpty from "lodash/isEmpty"
-import isEqual from "lodash/isEqual"
+import { cloneDeep, isEmpty, isEqual } from "lodash-es"
+import { BiTrash } from "react-icons/bi"
 
 import type { ModifiedAsset } from "~/types/assets"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -14,41 +13,47 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { pageSchema } from "../schema"
+import { pageSchema } from "../../schema"
 import {
   CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
   PLACEHOLDER_IMAGE_FILENAME,
-} from "./constants"
-import { DiscardChangesModal } from "./DiscardChangesModal"
-import { DrawerHeader } from "./Drawer/DrawerHeader"
-import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
-import FormBuilder from "./form-builder/FormBuilder"
-import { uploadModifiedAssets } from "./utils"
+} from "../constants"
+import { DeleteBlockModal } from "../DeleteBlockModal"
+import { DiscardChangesModal } from "../DiscardChangesModal"
+import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
+import FormBuilder from "../form-builder/FormBuilder"
+import { uploadModifiedAssets } from "../utils"
+import { DrawerHeader } from "./DrawerHeader"
 
-export default function HeroEditorDrawer(): JSX.Element {
+export default function ComplexEditorStateDrawer(): JSX.Element {
+  const {
+    isOpen: isDeleteBlockModalOpen,
+    onOpen: onDeleteBlockModalOpen,
+    onClose: onDeleteBlockModalClose,
+  } = useDisclosure()
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const {
+    addedBlockIndex,
+    setAddedBlockIndex,
     setDrawerState,
+    currActiveIdx,
     savedPageState,
     setSavedPageState,
     previewPageState,
-    currActiveIdx,
     setPreviewPageState,
     modifiedAssets,
     setModifiedAssets,
   } = useEditorDrawerContext()
   const toast = useToast()
 
-  const subSchema = getComponentSchema({ component: "hero" })
-  const validateFn = ajv.compile<IsomerComponent>(subSchema)
-
   const { pageId, siteId } = useQueryParse(pageSchema)
   const utils = trpc.useUtils()
-  const { mutate, isPending: isSavingPage } =
+
+  const { mutate: savePage, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
@@ -60,14 +65,94 @@ export default function HeroEditorDrawer(): JSX.Element {
         })
       },
     })
+
   const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
     useUploadAssetMutation({ siteId, resourceId: String(pageId) })
   const { mutate: deleteAssets, isPending: isDeletingAssets } =
     trpc.asset.deleteAssets.useMutation()
 
-  const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
+  const handleDeleteBlock = useCallback(() => {
+    const updatedBlocks = Array.from(savedPageState.content)
+    updatedBlocks.splice(currActiveIdx, 1)
+    const newPageState = {
+      ...previewPageState,
+      content: updatedBlocks,
+    }
+    onDeleteBlockModalClose()
+    setDrawerState({ state: "root" })
+    setAddedBlockIndex(null)
+    savePage({
+      pageId,
+      siteId,
+      content: JSON.stringify(newPageState),
+    })
+    // NOTE: This chunk needs to be AFTER `setDrawerState`.
+    // This is because we set the state of the drawer and then
+    // use `flushSync` to force a re-render.
+    // As this state is also read by `FormBuilder`,
+    // setting the state here will lead to a crash
+    // as the component will then re-render with an invalid
+    // state being fed to `FormBuilder`.
+    setSavedPageState(newPageState)
+    setPreviewPageState(newPageState)
+  }, [
+    currActiveIdx,
+    onDeleteBlockModalClose,
+    pageId,
+    previewPageState,
+    savePage,
+    savedPageState.content,
+    setAddedBlockIndex,
+    setDrawerState,
+    setPreviewPageState,
+    setSavedPageState,
+    siteId,
+  ])
 
-  const handleSaveChanges = useCallback(async () => {
+  const handleDiscardChanges = useCallback(() => {
+    if (addedBlockIndex !== null) {
+      const updatedBlocks = Array.from(savedPageState.content)
+      updatedBlocks.splice(addedBlockIndex, 1)
+      const newPageState = {
+        ...previewPageState,
+        content: updatedBlocks,
+      }
+      setSavedPageState(newPageState)
+      setPreviewPageState(newPageState)
+    } else {
+      setPreviewPageState(savedPageState)
+    }
+    setAddedBlockIndex(null)
+    onDiscardChangesModalClose()
+    setDrawerState({ state: "root" })
+  }, [
+    addedBlockIndex,
+    onDiscardChangesModalClose,
+    previewPageState,
+    savedPageState,
+    setAddedBlockIndex,
+    setDrawerState,
+    setPreviewPageState,
+    setSavedPageState,
+  ])
+
+  const handleChange = useCallback(
+    (data: IsomerComponent) => {
+      setPreviewPageState((oldPageState) => {
+        const updatedBlocks = Array.from(oldPageState.content)
+        updatedBlocks[currActiveIdx] = data
+
+        const newPageState = {
+          ...oldPageState,
+          content: updatedBlocks,
+        }
+        return newPageState
+      })
+    },
+    [currActiveIdx, setPreviewPageState],
+  )
+
+  const handleSave = useCallback(async () => {
     let newPageState = previewPageState
 
     if (modifiedAssets.length > 0) {
@@ -130,7 +215,7 @@ export default function HeroEditorDrawer(): JSX.Element {
       })
     }
 
-    mutate(
+    savePage(
       {
         pageId,
         siteId,
@@ -142,6 +227,7 @@ export default function HeroEditorDrawer(): JSX.Element {
           setPreviewPageState(newPageState)
           setSavedPageState(newPageState)
           setDrawerState({ state: "root" })
+          setAddedBlockIndex(null)
         },
       },
     )
@@ -149,9 +235,10 @@ export default function HeroEditorDrawer(): JSX.Element {
     currActiveIdx,
     deleteAssets,
     modifiedAssets,
-    mutate,
     pageId,
     previewPageState,
+    savePage,
+    setAddedBlockIndex,
     setDrawerState,
     setModifiedAssets,
     setPreviewPageState,
@@ -161,32 +248,35 @@ export default function HeroEditorDrawer(): JSX.Element {
     uploadAsset,
   ])
 
-  const handleDiscardChanges = useCallback(() => {
-    setPreviewPageState(savedPageState)
-    onDiscardChangesModalClose()
-    setDrawerState({ state: "root" })
-  }, [
-    onDiscardChangesModalClose,
-    savedPageState,
-    setDrawerState,
-    setPreviewPageState,
-  ])
+  const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
 
-  const handleChange = useCallback(
-    (data: IsomerComponent) => {
-      const updatedBlocks = Array.from(previewPageState.content)
-      updatedBlocks[currActiveIdx] = data
-      const newPageState = {
-        ...previewPageState,
-        content: updatedBlocks,
-      }
-      setPreviewPageState(newPageState)
-    },
-    [currActiveIdx, previewPageState, setPreviewPageState],
-  )
+  if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
+    return <></>
+  }
+
+  const component = previewPageState.content[currActiveIdx]
+
+  if (!component) {
+    return <></>
+  }
+
+  const subSchema = getComponentSchema({
+    component: component.type,
+    layout: previewPageState.layout,
+  })
+  const { title } = subSchema
+  const validateFn = ajv.compile<IsomerComponent>(subSchema)
+  const componentName = title || "component"
 
   return (
     <>
+      <DeleteBlockModal
+        itemName={componentName}
+        isOpen={isDeleteBlockModalOpen}
+        onClose={onDeleteBlockModalClose}
+        onDelete={handleDeleteBlock}
+      />
+
       <DiscardChangesModal
         isOpen={isDiscardChangesModalOpen}
         onClose={onDiscardChangesModalClose}
@@ -203,16 +293,15 @@ export default function HeroEditorDrawer(): JSX.Element {
               handleDiscardChanges()
             }
           }}
-          label="Edit Hero banner"
+          label={`Edit ${componentName}`}
         />
-
         <ErrorProvider>
-          <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
+          <Box flex={1} overflow="auto" px="1.5rem" py="1rem">
             <Box mb="1rem">
               <FormBuilder<IsomerComponent>
                 schema={subSchema}
                 validateFn={validateFn}
-                data={previewPageState.content[0]}
+                data={component}
                 handleChange={handleChange}
               />
             </Box>
@@ -223,7 +312,20 @@ export default function HeroEditorDrawer(): JSX.Element {
             py="1.5rem"
             px="2rem"
           >
-            <SaveButton onClick={handleSaveChanges} isLoading={isLoading} />
+            <HStack spacing="0.75rem">
+              {component.type !== "childrenpages" && (
+                <IconButton
+                  icon={<BiTrash fontSize="1.25rem" />}
+                  variant="outline"
+                  colorScheme="critical"
+                  aria-label="Delete block"
+                  onClick={onDeleteBlockModalOpen}
+                />
+              )}
+              <Box w="100%">
+                <SaveButton onClick={handleSave} isLoading={isLoading} />
+              </Box>
+            </HStack>
           </Box>
         </ErrorProvider>
       </Flex>
@@ -247,7 +349,7 @@ const SaveButton = ({
       isDisabled={!isEmpty(errors)}
       onClick={onClick}
     >
-      Save changes
+      Save block
     </Button>
   )
 }

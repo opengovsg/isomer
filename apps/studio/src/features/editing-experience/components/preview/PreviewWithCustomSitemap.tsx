@@ -9,7 +9,7 @@ import { forwardRef } from "react"
 import Script from "next/script"
 import { Skeleton } from "@chakra-ui/react"
 import { RenderEngine } from "@opengovsg/isomer-components"
-import { merge } from "lodash"
+import { merge } from "lodash-es"
 
 import { withSuspense } from "~/hocs/withSuspense"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
@@ -34,7 +34,7 @@ const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
 
 const defaultLastModified = new Date().toISOString()
 
-function SuspendablePreview({
+function SuspendablePreviewWithCustomSitemap({
   permalink,
   lastModified = defaultLastModified,
   siteId,
@@ -85,8 +85,8 @@ function SuspendablePreview({
   )
 }
 
-const PreviewWithoutSitemap = withSuspense(
-  SuspendablePreview,
+const PreviewWithCustomSitemap = withSuspense(
+  SuspendablePreviewWithCustomSitemap,
   <Skeleton width="100%" height="100%" />,
 )
-export default PreviewWithoutSitemap
+export default PreviewWithCustomSitemap

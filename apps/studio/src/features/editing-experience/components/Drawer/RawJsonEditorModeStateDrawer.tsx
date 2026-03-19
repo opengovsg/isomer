@@ -2,7 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useCallback, useMemo, useState } from "react"
 import { useToast } from "@opengovsg/design-system-react"
 import { schema } from "@opengovsg/isomer-components"
-import isEqual from "lodash/isEqual"
+import { isEqual } from "lodash-es"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -10,9 +10,9 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
-import { pageSchema } from "../schema"
-import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
-import { RawJsonEditor } from "./RawJsonEditor"
+import { pageSchema } from "../../schema"
+import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
+import { RawJsonEditor } from "../RawJsonEditor"
 
 const validateFn = ajv.compile<IsomerSchema>(schema)
 

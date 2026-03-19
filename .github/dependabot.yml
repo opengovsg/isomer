@@ -20,8 +20,8 @@ updates:
       lodash:
         applies-to: version-updates
         patterns:
-          - "lodash"
-          - "@types/lodash"
+          - "lodash-es"
+          - "@types/lodash-es"
       pg:
         applies-to: version-updates
         patterns:
