@@ -575,7 +575,7 @@ describe("collection.router", async () => {
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
-        .orderBy("AuditLog.createdAt desc")
+        .orderBy("AuditLog.createdAt", "desc")
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(auditEntry).toBeDefined()
