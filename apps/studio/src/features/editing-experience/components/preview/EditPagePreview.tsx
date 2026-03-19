@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useMemo } from "react"
 import { Box } from "@chakra-ui/react"
 import merge from "lodash/merge"
 
@@ -8,31 +8,31 @@ import { LoadingPreview } from "./LoadingPreview"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
-type PreviewState = "loading" | "interactive"
+type PreviewState = "loading" | "interactive" | "error"
 
 export const EditPagePreview = (): JSX.Element => {
   const { previewPageState, pageId, updatedAt, siteId, permalink, title } =
     useEditorDrawerContext()
 
-  const [previewState, setPreviewState] = useState<PreviewState>("loading")
-  const { data: siteMap } = trpc.site.getLocalisedSitemap.useQuery({
+  const {
+    data: siteMap,
+    isLoading,
+    isError,
+  } = trpc.site.getLocalisedSitemap.useQuery({
     siteId,
     resourceId: pageId,
   })
-  const isInteractivePreviewReady = siteMap !== undefined
-
-  useEffect(() => {
-    if (!isInteractivePreviewReady) {
-      return
+  const previewState: PreviewState = useMemo(() => {
+    if (!isLoading && !isError && siteMap !== undefined) {
+      return "interactive"
     }
 
-    setPreviewState((prevState) => {
-      if (prevState === "loading") {
-        return "interactive"
-      }
-      return prevState
-    })
-  }, [isInteractivePreviewReady])
+    if (isError) {
+      return "error"
+    }
+
+    return "loading"
+  }, [isLoading, isError, siteMap])
 
   switch (previewState) {
     case "loading":
@@ -50,6 +50,8 @@ export const EditPagePreview = (): JSX.Element => {
           </Box>
         </Box>
       )
+    case "error":
+      return <Box>Failed to load preview</Box>
     case "interactive":
       if (!siteMap) {
         return <Box>Failed to load preview</Box>
