@@ -7,19 +7,20 @@
   },
   "devDependencies": {
     "@isomer/tsconfig": "*",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.15.21",
     "typescript": "latest"
   },
   "dependencies": {
-    "@aws-sdk/client-acm": "^3.840.0",
-    "@aws-sdk/client-cloudfront": "^3.840.0",
+    "@aws-sdk/client-acm": "^3.1011.0",
+    "@aws-sdk/client-cloudfront": "^3.1011.0",
     "@inquirer/prompts": "^7.6.0",
     "@isomer/seed-from-repo": "*",
     "@octokit/rest": "^22.0.0",
     "@opengovsg/isomer-components": "*",
-    "axios": "^1.10.0",
+    "axios": "^1.13.6",
     "commander-ts": "^0.2.0",
-    "npx": "^10.2.2",
+    "lodash-es": "^4.17.23",
     "tsx": "^4.20.4"
   },
   "prettier": "@isomer/prettier-config"

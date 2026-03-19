@@ -6,8 +6,8 @@ import { format } from "date-fns"
 
 import collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
-import { PreviewIframe } from "../PreviewIframe"
-import PreviewWithoutSitemap from "../PreviewWithoutSitemap"
+import { PreviewIframe } from "../preview/PreviewIframe"
+import PreviewWithCustomSitemap from "../preview/PreviewWithCustomSitemap"
 import { generatePreviewSitemap } from "../utils"
 import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"
 
@@ -82,7 +82,7 @@ const SuspendableLayoutPreview = () => {
       keyForRerender={currentType}
       style={themeCssVars}
     >
-      <PreviewWithoutSitemap
+      <PreviewWithCustomSitemap
         overrides={previewOverrides}
         siteId={siteId}
         siteMap={generatePreviewSitemap(collectionSitemap, title)}

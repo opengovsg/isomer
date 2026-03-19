@@ -1,9 +1,9 @@
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
-import merge from "lodash/merge"
+import { merge } from "lodash-es"
 
 import type { IframeCallbackFnProps } from "~/types/dom"
-import Preview from "~/features/editing-experience/components/Preview"
-import { ViewportContainer } from "~/features/editing-experience/components/ViewportContainer"
+import Preview from "~/features/editing-experience/components/preview/Preview"
+import { ViewportContainer } from "~/features/editing-experience/components/preview/ViewportContainer"
 import { waitForElement } from "~/utils/dom"
 import { trpc } from "~/utils/trpc"
 import { FOOTER_QUERY_SELECTOR } from "../constants"

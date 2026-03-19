@@ -16,7 +16,7 @@ import {
   ResourceType,
 } from "~prisma/generated/generatedEnums"
 import { format, isBefore } from "date-fns"
-import _, { get, isEmpty, isEqual } from "lodash"
+import { get, isEmpty, isEqual, pick } from "lodash-es"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
@@ -850,7 +850,7 @@ export const pageRouter = router({
             // page settings immediately visible on the end site
             await publishResource(ctx.user.id, updatedResource, ctx.logger)
 
-            return _.pick(updatedResource, [
+            return pick(updatedResource, [
               "id",
               "type",
               "title",

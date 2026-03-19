@@ -13,9 +13,9 @@ import { getLayoutPageSchema } from "@opengovsg/isomer-components"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { ajv } from "~/utils/ajv"
-import { DiscardChangesModal } from "./DiscardChangesModal"
-import { ErrorProvider } from "./form-builder/ErrorProvider"
-import FormBuilder from "./form-builder/FormBuilder"
+import { DiscardChangesModal } from "../DiscardChangesModal"
+import { ErrorProvider } from "../form-builder/ErrorProvider"
+import FormBuilder from "../form-builder/FormBuilder"
 
 export default function CollectionEditorStateDrawer(): JSX.Element {
   const theme = useTheme()
