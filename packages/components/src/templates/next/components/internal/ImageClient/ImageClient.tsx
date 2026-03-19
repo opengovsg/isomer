@@ -35,6 +35,10 @@ export const ImageClient = forwardRef<
         height="auto"
         className={className}
         onLoad={onLoad}
+        onError={({ currentTarget }) => {
+          currentTarget.onerror = null
+          currentTarget.src = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
+        }}
         loading={lazyLoading ? "lazy" : "eager"}
         fetchPriority={lazyLoading ? "auto" : "high"}
         decoding={lazyLoading ? "async" : "auto"} // sync decoding can block the main thread
