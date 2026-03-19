@@ -1,4 +1,4 @@
-import { merge } from "lodash-es"
+import merge from "lodash/merge"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import Preview from "./Preview"

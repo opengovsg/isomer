@@ -1,7 +1,7 @@
 import type { IconType } from "react-icons"
 import { Center, Flex, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { isEmpty } from "lodash-es"
+import { isEmpty } from "lodash"
 
 import { useBuilderErrors } from "../editing-experience/components/form-builder/ErrorProvider"
 import { Can } from "../permissions"

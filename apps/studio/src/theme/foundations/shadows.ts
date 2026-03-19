@@ -1,4 +1,4 @@
-import { merge } from "lodash-es"
+import merge from "lodash/merge"
 
 import { shadows as generatedShadows } from "../generated/shadows"
 

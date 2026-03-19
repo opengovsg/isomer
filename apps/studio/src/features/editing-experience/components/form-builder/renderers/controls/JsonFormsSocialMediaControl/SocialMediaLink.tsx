@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react"
 import { useJsonForms } from "@jsonforms/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
-import { get } from "lodash-es"
+import get from "lodash/get"
 import {
   BiDotsHorizontalRounded,
   BiPencil,

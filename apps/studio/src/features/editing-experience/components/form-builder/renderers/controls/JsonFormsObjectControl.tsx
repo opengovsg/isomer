@@ -9,7 +9,7 @@ import {
 } from "@jsonforms/core"
 import { JsonFormsDispatch } from "@jsonforms/react"
 import { Switch } from "@opengovsg/design-system-react"
-import { isEmpty } from "lodash-es"
+import isEmpty from "lodash/isEmpty"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { withJsonFormsControlWithDetailProps } from "../../contexts/JsonFormsContext"

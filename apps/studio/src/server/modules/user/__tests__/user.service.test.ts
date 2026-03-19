@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { RoleType } from "~prisma/generated/generatedEnums"
-import { omit } from "lodash-es"
+import _ from "lodash"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -230,7 +230,7 @@ describe("user.service", () => {
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
-            omit(resourcePermission, ["createdAt", "updatedAt"]),
+            _.omit(resourcePermission, ["createdAt", "updatedAt"]),
           ),
         }),
       })
@@ -323,7 +323,7 @@ describe("user.service", () => {
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
-            omit(result.user, ["createdAt", "updatedAt"]),
+            _.omit(result.user, ["createdAt", "updatedAt"]),
           ),
         }),
       })
@@ -340,7 +340,7 @@ describe("user.service", () => {
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
-            omit(result.resourcePermission, ["createdAt", "updatedAt"]),
+            _.omit(result.resourcePermission, ["createdAt", "updatedAt"]),
           ),
         }),
       })
@@ -403,7 +403,7 @@ describe("user.service", () => {
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
-            omit(user, ["createdAt", "updatedAt"]),
+            _.omit(user, ["createdAt", "updatedAt"]),
           ),
         }),
       })
@@ -420,7 +420,7 @@ describe("user.service", () => {
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
-            omit(resourcePermission, ["createdAt", "updatedAt"]),
+            _.omit(resourcePermission, ["createdAt", "updatedAt"]),
           ),
         }),
       })
@@ -488,7 +488,7 @@ describe("user.service", () => {
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
-            omit(user, ["createdAt", "updatedAt"]),
+            _.omit(user, ["createdAt", "updatedAt"]),
           ),
         }),
       })
@@ -505,7 +505,7 @@ describe("user.service", () => {
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
-            omit(resourcePermission, ["createdAt", "updatedAt"]),
+            _.omit(resourcePermission, ["createdAt", "updatedAt"]),
           ),
         }),
       })
@@ -565,7 +565,7 @@ describe("user.service", () => {
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
-            omit(resourcePermission, ["createdAt", "updatedAt"]),
+            _.omit(resourcePermission, ["createdAt", "updatedAt"]),
           ),
         }),
       })

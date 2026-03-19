@@ -2,7 +2,8 @@ import type { GrowthBook } from "@growthbook/growthbook"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { TRPCError } from "@trpc/server"
 import { AuditLogEvent, RoleType } from "~prisma/generated/generatedEnums"
-import { get, partition } from "lodash-es"
+import get from "lodash/get"
+import partition from "lodash/partition"
 
 import type {
   BulkPermissionsProps,

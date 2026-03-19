@@ -16,7 +16,7 @@ import {
   FormLabel,
   Input,
 } from "@opengovsg/design-system-react"
-import { get } from "lodash-es"
+import get from "lodash/get"
 import { isHexadecimal } from "validator"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"

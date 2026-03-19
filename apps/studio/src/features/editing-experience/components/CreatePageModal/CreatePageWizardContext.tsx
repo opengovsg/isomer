@@ -3,7 +3,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { createContext, useContext, useMemo, useState } from "react"
 import { useRouter } from "next/router"
-import { merge } from "lodash-es"
+import { merge } from "lodash"
 
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"

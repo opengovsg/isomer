@@ -4,7 +4,7 @@ import { Box } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { SiteThemeSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { isEqual } from "lodash-es"
+import { isEqual } from "lodash"
 import { BiPaint } from "react-icons/bi"
 
 import type { NextPageWithLayout } from "~/lib/types"

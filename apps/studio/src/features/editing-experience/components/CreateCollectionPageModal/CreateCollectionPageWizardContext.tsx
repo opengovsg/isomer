@@ -5,7 +5,7 @@ import type { z } from "zod"
 import { createContext, useContext, useMemo, useState } from "react"
 import { useRouter } from "next/router"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { merge } from "lodash-es"
+import { merge } from "lodash"
 
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import collectionLinkPreview from "~/features/editing-experience/data/collectionLinkPreview.json"
