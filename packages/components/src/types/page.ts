@@ -146,6 +146,7 @@ export const CollectionPagePageSchema = Type.Intersect([
   Type.Object({
     subtitle: Type.String({
       title: "The subtitle of the collection",
+      format: "textarea",
     }),
   }),
   TagCategoriesSchema,
