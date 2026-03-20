@@ -4,7 +4,7 @@
   "ignorePatterns": [".next/**", "!.storybook/**", "./next-env.d.ts"],
   "overrides": [
     {
-      "files": ["**/*.js", "**/*.ts", "**/*.tsx"],
+      "files": ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.tsx"],
       "rules": {
         "react/react-in-jsx-scope": "off",
         "react-hooks/rules-of-hooks": "error",
@@ -30,6 +30,7 @@
         "@next/next/no-duplicate-head": "error",
         "@next/next/no-head-import-in-document": "error",
         "@next/next/no-script-component-in-head": "error",
+        "node/no-process-env": "error",
         "no-restricted-imports": [
           "error",
           {
@@ -60,7 +61,29 @@
       "globals": {
         "React": "writable"
       },
-      "plugins": ["react", "nextjs"]
+      "plugins": ["react", "nextjs", "node"]
+    },
+    {
+      "files": ["src/env.mjs"],
+      "rules": {
+        "node/no-process-env": "off"
+      },
+      "plugins": ["node"]
+    },
+    {
+      "files": [
+        "playwright.config.ts",
+        "tests/**/*.ts",
+        "tests/**/*.tsx",
+        ".storybook/**/*.ts",
+        ".storybook/**/*.tsx",
+        ".storybook/**/*.js",
+        ".storybook/**/*.jsx"
+      ],
+      "rules": {
+        "node/no-process-env": "off"
+      },
+      "plugins": ["node"]
     },
     {
       "files": ["**/*.ts", "**/*.tsx"],

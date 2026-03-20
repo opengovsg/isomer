@@ -142,7 +142,7 @@ export const trpc = createTRPCNext<AppRouter, SSRContext>({
         // adds pretty logs to your console in development and logs errors in production
         loggerLink({
           enabled: (opts) =>
-            // oxlint-disable-next-line no-restricted-properties
+            // oxlint-disable-next-line node/no-process-env
             process.env.NODE_ENV === "development" ||
             (opts.direction === "down" && opts.result instanceof Error),
         }),

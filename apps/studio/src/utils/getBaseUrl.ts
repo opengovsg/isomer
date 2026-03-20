@@ -1,4 +1,4 @@
-/* oxlint-disable no-restricted-properties */
+/* oxlint-disable node/no-process-env */
 import { env } from "~/env.mjs"
 
 /**

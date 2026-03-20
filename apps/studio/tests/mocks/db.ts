@@ -19,10 +19,7 @@ const prismaMigrationDir = join(
 )
 
 const parsed = CONTAINER_INFORMATION_SCHEMA.parse(
-  parse(
-    // oxlint-disable-next-line no-restricted-properties
-    process.env.testcontainers ?? "",
-  ),
+  parse(process.env.testcontainers ?? ""),
 )
 
 const container = parsed.find((c) => c.configuration.name === "database")

@@ -68,7 +68,7 @@ const dialect = new PostgresDialect({
 })
 
 export const db: Kysely<DB> = new Kysely<DB>({
-  // oxlint-disable-next-line no-restricted-properties
+  // oxlint-disable-next-line node/no-process-env
   log: process.env.NODE_ENV === "development" ? ["error"] : undefined,
   dialect,
   // add tracing plugin for dd-spans to intercept kysely queries
