@@ -1,14 +1,14 @@
 "use client"
 
-import { useRef } from "react"
-
-import type { Filter as FilterType } from "../../types/Filter"
 import type {
   BreadcrumbProps,
   ProcessedCollectionCardProps,
 } from "~/interfaces"
 import type { CollectionPagePageProps, CollectionPageSchemaType } from "~/types"
+import { useRef } from "react"
 import { tv } from "~/lib/tv"
+
+import type { Filter as FilterType } from "../../types/Filter"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { CollectionSearch } from "../../components/internal/CollectionSearch"
 import { Filter } from "../../components/internal/Filter"

@@ -1,7 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 import { pick } from "lodash"
-
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { sendInvitation } from "~/features/mail/service"
 import { canResendInviteToUser } from "~/features/users/utils"
@@ -24,6 +22,8 @@ import {
   updateUserInputSchema,
   updateUserOutputSchema,
 } from "~/schemas/user"
+import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
+
 import { protectedProcedure, router } from "../../trpc"
 import { db, RoleType } from "../database"
 import {

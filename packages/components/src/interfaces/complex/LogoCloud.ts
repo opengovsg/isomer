@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps } from "~/types"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const LogoCloudSchema = Type.Object(

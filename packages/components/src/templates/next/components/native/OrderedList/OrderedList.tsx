@@ -1,4 +1,5 @@
 import type { OrderedListProps } from "~/interfaces"
+
 import { ListItem } from "../ListItem"
 
 const getOrderedListType = (level?: number) => {

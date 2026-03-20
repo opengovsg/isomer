@@ -4,7 +4,6 @@ import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
 import { COLLECTION_VARIANT_OPTIONS } from "@opengovsg/isomer-components"
-
 import { IconOneColumnLayout, IconTwoColumnLayout } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useNewCollectionEditingExperience } from "~/hooks/useNewCollectionEditingExperience"

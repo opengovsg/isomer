@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
-
 import type { ResourceItemContent } from "~/schemas/resource"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { trpc } from "~/utils/trpc"
 
 interface UseResourceStackProps {

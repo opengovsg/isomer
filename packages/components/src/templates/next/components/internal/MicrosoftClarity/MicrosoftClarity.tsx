@@ -1,8 +1,7 @@
 "use client"
 
-import { useEffect } from "react"
-
 import type { MicrosoftClarityProps } from "~/interfaces"
+import { useEffect } from "react"
 import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader"
 
 export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {

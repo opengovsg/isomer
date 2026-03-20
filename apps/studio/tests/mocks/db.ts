@@ -1,13 +1,13 @@
+import type { DB } from "~/server/modules/database"
+import { PrismaClient } from "@prisma/client"
 import { randomUUID } from "crypto"
 import { readdirSync, readFileSync, statSync } from "fs"
-import { dirname, join } from "path"
-import { fileURLToPath } from "url"
-import { PrismaClient } from "@prisma/client"
 import { Kysely, PostgresDialect } from "kysely"
+import { dirname, join } from "path"
 import { Client, Pool } from "pg"
 import { parse } from "superjson"
+import { fileURLToPath } from "url"
 
-import type { DB } from "~/server/modules/database"
 import { CONTAINER_INFORMATION_SCHEMA } from "../common"
 
 const prismaMigrationDir = join(

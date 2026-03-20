@@ -1,6 +1,6 @@
+import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { describe, expect, it } from "vitest"
 
-import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { getCollectionPages } from "../getCollectionPages"
 
 describe("getCollectionPages", () => {

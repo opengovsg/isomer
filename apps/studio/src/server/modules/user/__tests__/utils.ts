@@ -1,11 +1,11 @@
 import {
-  ISOMER_ADMINS_AND_MIGRATORS,
-  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
-} from "~prisma/constants"
-import {
   setupAdminPermissions,
   setupUser,
 } from "tests/integration/helpers/seed"
+import {
+  ISOMER_ADMINS_AND_MIGRATORS,
+  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
+} from "~prisma/constants"
 
 export const isomerAdminsCount = ISOMER_ADMINS_AND_MIGRATORS.length
 

@@ -1,6 +1,7 @@
 import type { HeroFloatingProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { isExternalUrl } from "~/utils/isExternalUrl"
+
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 import { ImageClient } from "../Image"

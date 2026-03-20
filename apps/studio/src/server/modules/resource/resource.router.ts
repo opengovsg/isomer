@@ -1,9 +1,6 @@
 import { TRPCError } from "@trpc/server"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import get from "lodash/get"
-
-import type { PermissionsProps } from "../permissions/permissions.type"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
 import {
   countResourceSchema,
@@ -30,6 +27,9 @@ import {
   searchWithResourceIdsSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+
+import type { PermissionsProps } from "../permissions/permissions.type"
 import { logResourceEvent } from "../audit/audit.service"
 import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"

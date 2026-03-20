@@ -1,8 +1,7 @@
 "use client"
 
-import { forwardRef } from "react"
-
 import type { ImageClientProps } from "~/interfaces"
+import { forwardRef } from "react"
 
 export const ImageClient = forwardRef<
   HTMLImageElement,

@@ -1,13 +1,12 @@
 import type { z } from "zod"
-import { useEffect } from "react"
-import Link from "next/link"
+import type { getIndexpageSchema } from "~/schemas/folder"
 import { HStack, IconButton, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+import Link from "next/link"
+import { useEffect } from "react"
 import { BiChevronRight, BiFile, BiSolidCircle } from "react-icons/bi"
-
-import type { getIndexpageSchema } from "~/schemas/folder"
 import { trpc } from "~/utils/trpc"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 
 type IndexpageRowProps = z.infer<typeof getIndexpageSchema>
 

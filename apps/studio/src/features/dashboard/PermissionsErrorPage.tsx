@@ -1,7 +1,6 @@
-import { useRouter } from "next/router"
 import { Center, Flex, Stack, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-
+import { useRouter } from "next/router"
 import { HeadScratch } from "~/components/Svg"
 
 interface PermissionsErrorBoundaryProps {

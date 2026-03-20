@@ -1,4 +1,3 @@
-import { useEffect, useMemo } from "react"
 import {
   Button,
   FormControl,
@@ -15,16 +14,17 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { FormLabel, useToast } from "@opengovsg/design-system-react"
-import { RoleType } from "~prisma/generated/generatedEnums"
 import { useAtomValue, useSetAtom } from "jotai"
+import { useEffect, useMemo } from "react"
 import { z as zod } from "zod"
-
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
 import { updateUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
+import { RoleType } from "~prisma/generated/generatedEnums"
+
 import {
   DEFAULT_UPDATE_USER_MODAL_STATE,
   updateUserModalAtom,

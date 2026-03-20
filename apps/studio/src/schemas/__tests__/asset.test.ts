@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest"
-
 import {
   FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+
 import { getPresignedPutUrlSchema } from "../asset"
 
 describe("getPresignedPutUrlSchema", () => {

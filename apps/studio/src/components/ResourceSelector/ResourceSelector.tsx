@@ -1,11 +1,11 @@
-import { Suspense, useMemo } from "react"
-import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-
 import type { ResourceItemContent } from "~/schemas/resource"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
+import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
+import { Button } from "@opengovsg/design-system-react"
+import { Suspense, useMemo } from "react"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import {
   LoadingResourceItemsResults,
   SuspendableContent,

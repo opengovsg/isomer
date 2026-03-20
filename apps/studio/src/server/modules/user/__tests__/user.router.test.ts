@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server"
-import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 import _ from "lodash"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -21,9 +20,10 @@ import {
   MOCK_TEST_USER_NAME,
 } from "tests/msw/constants"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
-
 import { db, RoleType } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
+import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+
 import { userRouter } from "../user.router"
 import { isomerAdminsCount, setupIsomerAdmins } from "./utils"
 

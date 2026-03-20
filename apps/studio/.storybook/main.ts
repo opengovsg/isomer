@@ -1,5 +1,5 @@
-import { dirname, join } from "node:path"
 import type { StorybookConfig } from "@storybook/nextjs"
+import { dirname, join } from "node:path"
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],

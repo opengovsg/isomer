@@ -1,5 +1,5 @@
 import type { ControlProps } from "@jsonforms/core"
-import { Suspense } from "react"
+import type { LinkEditorModalProps } from "~/components/PageEditor/LinkEditorModal"
 import {
   Box,
   Flex,
@@ -15,14 +15,14 @@ import {
   FormLabel,
 } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
+import { Suspense } from "react"
 import { BiTrash } from "react-icons/bi"
-
-import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
-import type { LinkEditorModalProps } from "~/components/PageEditor/LinkEditorModal"
 import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
+
+import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
 import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"

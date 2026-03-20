@@ -1,15 +1,15 @@
 "use client"
 
 import type { Dispatch, SetStateAction } from "react"
-import { forwardRef, useRef } from "react"
+import type { NavbarClientProps } from "~/interfaces"
 import { useButton } from "@react-aria/button"
 import { FocusScope, useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
+import { forwardRef, useRef } from "react"
 import { useScrollLock } from "usehooks-ts"
-
-import type { NavbarClientProps } from "~/interfaces"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+
 import { Link } from "../../Link"
 import { LinkButton } from "../../LinkButton/LinkButton"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"

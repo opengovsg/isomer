@@ -1,5 +1,4 @@
 import { Flex, Td, Text, Tr, VStack } from "@chakra-ui/react"
-
 import { AddNewUserButton } from "~/features/users/components"
 
 interface UserTableEmptyStateProps {

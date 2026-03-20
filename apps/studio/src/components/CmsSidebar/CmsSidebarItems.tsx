@@ -1,10 +1,10 @@
 import type { IconType } from "react-icons"
 import type { MergeExclusive } from "type-fest"
-import { useMemo } from "react"
-import NextLink from "next/link"
-import { useRouter } from "next/router"
 import { List, ListItem, Tooltip } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
+import NextLink from "next/link"
+import { useRouter } from "next/router"
+import { useMemo } from "react"
 
 export type CmsSidebarItem = {
   icon: IconType

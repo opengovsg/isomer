@@ -1,6 +1,6 @@
+import type { IsomerSitemap } from "~/types"
 import DOMPurify from "isomorphic-dompurify"
 
-import type { IsomerSitemap } from "~/types"
 import { getSitemapAsArray } from "./getSitemapAsArray"
 
 // This function returns a sanitized version of the provided URL string

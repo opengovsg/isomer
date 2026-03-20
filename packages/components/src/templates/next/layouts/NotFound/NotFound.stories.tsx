@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { NotFoundPageSchemaType } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { NotFoundPageSchemaType } from "~/types"
-import { generateSiteConfig } from "~/stories/helpers"
 import { NotFoundLayout } from "./NotFound"
 
 const meta: Meta<typeof NotFoundLayout> = {

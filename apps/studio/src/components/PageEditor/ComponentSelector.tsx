@@ -1,6 +1,4 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useMemo } from "react"
-import Image from "next/image"
 import {
   chakra,
   Flex,
@@ -13,12 +11,14 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import Image from "next/image"
+import { useMemo } from "react"
 import { type IconType } from "react-icons"
-
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { type DrawerState } from "~/types/editorDrawer"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import {
   ARTICLE_ALLOWED_BLOCKS,
   BLOCK_TO_META,

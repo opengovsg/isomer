@@ -4,13 +4,13 @@ import { useFeatureValue } from "@growthbook/growthbook-react"
 import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, SingleSelect } from "@opengovsg/design-system-react"
-
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { CATEGORY_DROPDOWN_FEATURE_KEY } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
+
 import { JsonFormsTextControl } from "./JsonFormsTextControl"
 
 export const jsonFormsCategoryControlTester: RankedTester = rankWith(
