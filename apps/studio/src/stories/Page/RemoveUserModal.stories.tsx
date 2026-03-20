@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { userEvent, within } from "storybook/test"
 import { userHandlers } from "tests/msw/handlers/user"
-
 import UsersPage from "~/pages/sites/[siteId]/users"
 import { ResetRemoveUserModalDecorator } from "~/stories/decorators"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
+
 import { ADMIN_HANDLERS } from "../handlers"
 
 const SHARED_HANDLERS = [

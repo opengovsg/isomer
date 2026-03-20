@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import type { GrowthbookAttributes } from "~/types/growthbook"
 import { Divider, Flex, Text } from "@chakra-ui/react"
 import { useGrowthBook } from "@growthbook/growthbook-react"
 import {
@@ -6,9 +6,8 @@ import {
   AvatarMenu as OgpAvatarMenu,
 } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
+import { useEffect } from "react"
 import { BiLogOut, BiPencil, BiUser } from "react-icons/bi"
-
-import type { GrowthbookAttributes } from "~/types/growthbook"
 import { useMe } from "~/features/me/api"
 import { updateProfileModalOpenAtom } from "~/features/users/atoms"
 import { EditProfileModal } from "~/features/users/components"

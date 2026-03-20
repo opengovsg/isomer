@@ -1,6 +1,5 @@
 import type { Static, StringOptions } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
-
 import {
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,

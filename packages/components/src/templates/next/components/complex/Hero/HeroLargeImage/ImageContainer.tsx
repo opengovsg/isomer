@@ -1,8 +1,8 @@
 "use client"
 
+import type { ImageClientProps } from "~/interfaces"
 import { useEffect, useRef, useState } from "react"
 
-import type { ImageClientProps } from "~/interfaces"
 import { ImageClient } from "../../Image"
 import { ScrollForMoreButton } from "./ScrollForMoreButton"
 

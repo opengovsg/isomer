@@ -1,6 +1,4 @@
 import type { FieldError } from "react-hook-form"
-import { useEffect } from "react"
-import { useRouter } from "next/router"
 import { FormControl, Stack, Text } from "@chakra-ui/react"
 import {
   Button,
@@ -9,12 +7,14 @@ import {
   Input,
   Link,
 } from "@opengovsg/design-system-react"
-
-import type { VfnStepData } from "../SignInContext"
+import { useRouter } from "next/router"
+import { useEffect } from "react"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { useZodForm } from "~/lib/form"
 import { emailSignInSchema } from "~/schemas/auth/email/sign-in"
 import { trpc } from "~/utils/trpc"
+
+import type { VfnStepData } from "../SignInContext"
 import { useSignInContext } from "../SignInContext"
 
 const EmailInputErrorMessage = ({ type, message }: Partial<FieldError>) => {

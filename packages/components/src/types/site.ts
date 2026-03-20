@@ -1,8 +1,6 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
-import type { IsomerSitemap } from "./sitemap"
 import type { FooterSchemaType, NavbarSchemaType } from "~/interfaces"
+import { Type } from "@sinclair/typebox"
 import {
   AskgovSchema,
   LocalSearchSchema,
@@ -10,6 +8,8 @@ import {
   VicaSchema,
 } from "~/interfaces"
 import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
+
+import type { IsomerSitemap } from "./sitemap"
 
 export const AgencySettingsSchema = Type.Object({
   siteName: Type.String({

@@ -1,6 +1,5 @@
-import { BiSearch } from "react-icons/bi"
-
 import type { LocalSearchProps } from "~/interfaces"
+import { BiSearch } from "react-icons/bi"
 import { twMerge } from "~/lib/twMerge"
 
 export const LocalSearchInputBox = ({

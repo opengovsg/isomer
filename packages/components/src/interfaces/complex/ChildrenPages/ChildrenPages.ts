@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { CHILDREN_PAGES_LAYOUT_OPTIONS } from "./constants"
 
 export const ChildrenPagesSchema = Type.Object(

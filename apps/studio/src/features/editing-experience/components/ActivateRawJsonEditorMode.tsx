@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react"
 import { Box, Text } from "@chakra-ui/react"
+import { useEffect, useRef, useState } from "react"
 
 const COMBO: KeyboardEvent["key"][] = [
   "ArrowUp",

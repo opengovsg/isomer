@@ -1,9 +1,9 @@
-import { useCallback, useMemo } from "react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-
 import type { ResourceItemContent } from "~/schemas/resource"
+import { useCallback, useMemo } from "react"
 import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import { lastResourceItemInAncestryStack } from "./utils"
 
 interface UseResourceSelectorProps {

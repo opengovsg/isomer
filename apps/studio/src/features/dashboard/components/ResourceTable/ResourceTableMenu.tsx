@@ -1,6 +1,5 @@
 import { MenuButton, MenuList, Portal } from "@chakra-ui/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
 import {
   BiCog,
@@ -8,11 +7,12 @@ import {
   BiFolderOpen,
   BiTrash,
 } from "react-icons/bi"
-
-import type { ResourceTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
 import { Can } from "~/features/permissions"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import type { ResourceTableData } from "./types"
 import {
   deleteResourceModalAtom,
   folderSettingsModalAtom,

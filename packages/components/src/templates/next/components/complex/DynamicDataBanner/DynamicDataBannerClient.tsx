@@ -1,12 +1,12 @@
 "use client"
 
+import type { DynamicDataBannerProps } from "~/interfaces"
 import { useEffect, useState } from "react"
 import { BiError } from "react-icons/bi"
-
-import type { DynamicDataBannerProps } from "~/interfaces"
 import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/interfaces/complex/DynamicDataBanner/constants"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"

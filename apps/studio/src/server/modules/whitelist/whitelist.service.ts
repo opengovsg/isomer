@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
-
 import { isValidEmail } from "~/utils/email"
+
 import { db } from "../database"
 
 export const isEmailWhitelisted = async (email: string) => {

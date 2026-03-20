@@ -1,6 +1,5 @@
-import { type ReactNode } from "react"
 import { chakra } from "@chakra-ui/react"
-
+import { type ReactNode } from "react"
 import { LayoutHead } from "~/components/LayoutHead"
 
 interface DefaultLayoutProps {

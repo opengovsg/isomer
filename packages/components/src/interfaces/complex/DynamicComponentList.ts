@@ -1,11 +1,11 @@
 import type { Static } from "@sinclair/typebox"
-import { Omit, Type } from "@sinclair/typebox"
-
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { Omit, Type } from "@sinclair/typebox"
+
 import { DgsDataSourceFieldsSchema } from "../integration"
 import { DgsContactInformationSchema } from "./ContactInformation/ContactInformation"
 

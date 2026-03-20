@@ -1,6 +1,5 @@
-import { compact } from "lodash-es"
-
 import type { ContactInformationUIProps } from "~/interfaces"
+import { compact } from "lodash-es"
 
 interface FilterContactMethodsProps {
   methods: ContactInformationUIProps["methods"]

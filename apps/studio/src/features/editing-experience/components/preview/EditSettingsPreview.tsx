@@ -5,10 +5,11 @@ import type {
 } from "@opengovsg/isomer-components"
 import type { CSSProperties, PropsWithChildren } from "react"
 import type { UnwrapTagged } from "type-fest"
-import { useState } from "react"
-import Image from "next/image"
+import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box, Icon, TabList, Text, useTheme, useToken } from "@chakra-ui/react"
 import { Tab, Tabs } from "@opengovsg/design-system-react"
+import Image from "next/image"
+import { useState } from "react"
 import {
   BiChevronLeft,
   BiChevronRight,
@@ -16,8 +17,6 @@ import {
   BiRevision,
   BiX,
 } from "react-icons/bi"
-
-import type { IframeCallbackFnProps } from "~/types/dom"
 import { AskgovWidget } from "~/components/Askgov"
 import { VicaWidget } from "~/components/Vica"
 import { env } from "~/env.mjs"
@@ -26,6 +25,7 @@ import { FOOTER_QUERY_SELECTOR } from "~/features/settings/constants"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { waitForElement } from "~/utils/dom"
 import { trpc } from "~/utils/trpc"
+
 import { siteSchema } from "../../schema"
 import Preview from "./Preview"
 import { ViewportContainer } from "./ViewportContainer"

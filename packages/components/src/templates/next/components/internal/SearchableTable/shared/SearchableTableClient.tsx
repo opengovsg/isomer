@@ -1,8 +1,8 @@
 "use client"
 
+import type { SearchableTableClientProps } from "~/interfaces"
 import { useDeferredValue, useMemo, useState } from "react"
 
-import type { SearchableTableClientProps } from "~/interfaces"
 import { MAX_NUMBER_OF_COLUMNS, PAGINATION_MAX_ITEMS } from "./constants"
 import { getFilteredItems } from "./getFilteredItems"
 import { getPaginatedItems } from "./getPaginatedItems"

@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { CollectionCardProps } from "~/interfaces"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { CollectionCardProps } from "~/interfaces"
 import { CollectionCard } from "./CollectionCard"
 
 const meta: Meta<typeof CollectionCard> = {

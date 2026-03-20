@@ -1,10 +1,9 @@
 import type { z } from "zod"
+import type { schedulePublishClientSchema } from "~/schemas/schedule"
 import { HStack, Text, VStack } from "@chakra-ui/react"
 import { Badge } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
 import { useFormContext } from "react-hook-form"
-
-import type { schedulePublishClientSchema } from "~/schemas/schedule"
 
 interface QuickSelectTime {
   hours: number

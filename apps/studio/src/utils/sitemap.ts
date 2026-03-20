@@ -5,10 +5,8 @@ import type {
   IsomerSitemap,
   LinkRefPageProps,
 } from "@opengovsg/isomer-components"
-import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-
 import type { Resource } from "~prisma/generated/selectableTypes"
+import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { env } from "~/env.mjs"
 import { db } from "~/server/modules/database"
@@ -16,6 +14,7 @@ import {
   getBlobOfResource,
   getPublishedIndexBlobByParentId,
 } from "~/server/modules/resource/resource.service"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 type ResourceDto = Omit<
   Resource,

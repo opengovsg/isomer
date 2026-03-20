@@ -5,12 +5,12 @@ import type {
   QueryResult,
   UnknownRow,
 } from "kysely"
-import { type DB } from "~prisma/generated/generatedTypes"
 import ddTrace from "dd-trace"
 import { PostgresDialect, PostgresQueryCompiler } from "kysely"
 import pg from "pg"
-
 import { env } from "~/env.mjs"
+import { type DB } from "~prisma/generated/generatedTypes"
+
 import { Kysely } from "./types"
 
 const connectionString = `${env.DATABASE_URL}`

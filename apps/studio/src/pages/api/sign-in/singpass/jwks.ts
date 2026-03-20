@@ -1,7 +1,6 @@
 import crypto from "crypto"
-import { type NextApiRequest, type NextApiResponse } from "next"
 import { calculateJwkThumbprint, exportJWK } from "jose"
-
+import { type NextApiRequest, type NextApiResponse } from "next"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 

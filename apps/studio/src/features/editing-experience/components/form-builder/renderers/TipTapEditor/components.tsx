@@ -1,11 +1,10 @@
 import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
 import type { PropsWithChildren } from "react"
-import { useMemo } from "react"
+import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
-
-import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
+import { useMemo } from "react"
 
 const EditorContainer = ({
   children,

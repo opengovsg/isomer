@@ -2,14 +2,14 @@
 
 import type { AriaButtonProps } from "@react-aria/button"
 import type { VariantProps } from "tailwind-variants"
-import { useEffect, useMemo, useRef, useState } from "react"
 import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { BiDownload, BiLoaderAlt } from "react-icons/bi"
-
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+
 import { buttonIconStyles, buttonStyles } from "../Button/common"
 import { defaultDownloadStrategies, directDownloadStrategy } from "./strategies"
 
@@ -32,8 +32,7 @@ const downloadFile = (url: string) => {
 }
 
 interface DownloadButtonProps
-  extends AriaButtonProps<"button">,
-    VariantProps<typeof buttonStyles> {
+  extends AriaButtonProps<"button">, VariantProps<typeof buttonStyles> {
   url: string // URL to download the file from
   className?: string
 }

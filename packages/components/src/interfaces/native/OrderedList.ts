@@ -1,11 +1,11 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { Type } from "@sinclair/typebox"
 import {
   orderedListSchemaBuilder,
   unorderedListSchemaBuilder,
 } from "~/schemas/utils"
+
 import { listItemSchemaBuilder } from "./ListItem"
 
 export const OrderedListSchema = orderedListSchemaBuilder(

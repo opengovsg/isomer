@@ -1,6 +1,6 @@
+import type { IsomerSitemap } from "~/types"
 import { describe, expect, it } from "vitest"
 
-import type { IsomerSitemap } from "~/types"
 import { getReferenceLinkHref } from "../getReferenceLinkHref"
 
 const EXAMPLE_SITEMAP: IsomerSitemap = {

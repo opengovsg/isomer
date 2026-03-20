@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 const getImageAsFile = async (imageUrl: string): Promise<File> => {

@@ -5,6 +5,7 @@ import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
+
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { ImageClient } from "../Image"
@@ -45,7 +46,8 @@ interface Childpage {
 }
 
 interface ChildpageLayoutProps
-  extends Pick<
+  extends
+    Pick<
       ChildrenPagesProps,
       | "showSummary"
       | "showThumbnail"

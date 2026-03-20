@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { KeyStatisticsProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { KeyStatistics } from "./KeyStatistics"
 
 const meta: Meta<KeyStatisticsProps> = {

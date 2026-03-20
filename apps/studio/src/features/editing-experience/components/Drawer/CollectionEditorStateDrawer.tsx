@@ -10,9 +10,9 @@ import {
 } from "@chakra-ui/react"
 import { Tab, Tabs } from "@opengovsg/design-system-react"
 import { getLayoutPageSchema } from "@opengovsg/isomer-components"
-
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { ajv } from "~/utils/ajv"
+
 import { DiscardChangesModal } from "../DiscardChangesModal"
 import { ErrorProvider } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"

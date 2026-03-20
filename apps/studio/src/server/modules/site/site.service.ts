@@ -1,4 +1,10 @@
+import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
+import {
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "~/server/modules/database"
 import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
 import { addUsersToSite } from "~prisma/scripts/addUsersToSite"
 
@@ -10,12 +16,6 @@ import type {
   Version,
 } from "../database"
 import type { UserPermissionsProps } from "../permissions/permissions.type"
-import type { Notification } from "~/schemas/site"
-import {
-  ResourceState,
-  ResourceType,
-  RoleType,
-} from "~/server/modules/database"
 import { logConfigEvent } from "../audit/audit.service"
 import { AuditLogEvent, db, jsonb } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
