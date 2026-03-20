@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    "types": [
-      "node",
-      "vitest/globals"
-    ],
+    "types": ["node", "vitest/globals"],
     "declaration": true,
     "rootDir": "src",
     "moduleResolution": "node",
@@ -14,19 +11,10 @@
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "~/*": [
-        "./src/*"
-      ]
+      "~/*": ["./src/*"]
     },
-    "lib": [
-      "es2021"
-    ]
+    "lib": ["es2021"]
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

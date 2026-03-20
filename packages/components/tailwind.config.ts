@@ -1,4 +1,5 @@
 import plugin from "tailwindcss/plugin"
+
 import classicPreset from "./src/presets/classic"
 import { NextPreset } from "./src/presets/next"
 
