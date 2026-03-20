@@ -10,8 +10,8 @@ export const exportIndividualJsons = async () => {
   });
   const resourceIds = resourceIdsInput
     .split(",")
-    .map((id) => Number(id.trim()))
-    .filter((id) => !isNaN(id));
+    .map((id) => id.trim())
+    .filter((id) => id !== "" && /^\d+$/.test(id));
 
   if (resourceIds.length === 0) {
     console.error("No valid resource IDs provided");
@@ -34,8 +34,9 @@ export const exportIndividualJsons = async () => {
        JOIN "Version" ON "Resource"."publishedVersionId" = "Version".id
        JOIN "Blob" ON "Version"."blobId" = "Blob".id
        WHERE "Resource"."id" IN (${placeholders})
+       AND "Resource"."draftBlobId" IS NULL
        AND "Resource".type NOT IN ('Folder', 'Collection', 'IndexPage')`,
-      [...resourceIds, ...resourceIds]
+      resourceIds
     );
 
     if (!fs.existsSync("./output")) {

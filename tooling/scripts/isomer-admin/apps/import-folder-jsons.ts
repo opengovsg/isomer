@@ -46,10 +46,17 @@ export const importFolderJsons = async () => {
       // NOTE: Change this line if your input files are in a different format.
       // However, you should ensure that the resource ID is obtainable from the
       // filename in some way
-      const id = Number(file.split(".")[0]);
+      const idFromFilename = file.split(".")[0];
+      if (!idFromFilename || !/^\d+$/.test(idFromFilename)) {
+        console.warn(
+          `Skipping file ${file}: filename does not contain a valid numeric resource ID`
+        );
+        continue;
+      }
+      const id = idFromFilename;
 
       const resource = await client.query<{
-        id: number;
+        id: string;
         draftBlobId: string | null;
         publishedVersionId: string | null;
       }>(

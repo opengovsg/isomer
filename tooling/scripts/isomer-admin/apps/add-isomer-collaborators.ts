@@ -63,6 +63,12 @@ export const addIsomerCollaborators = async () => {
   await withDbClient(async (client) => {
     if (mode.startsWith("all:")) {
       const minSiteId = Number(mode.split(":")[1]);
+      if (isNaN(minSiteId)) {
+        console.error(
+          "Invalid site ID. Please enter a valid number after 'all:'."
+        );
+        return;
+      }
       const siteResult = await client.query(
         `SELECT id FROM "Site" WHERE id >= $1 ORDER BY id`,
         [minSiteId]
@@ -76,6 +82,10 @@ export const addIsomerCollaborators = async () => {
       }
     } else {
       const siteId = Number(mode);
+      if (isNaN(siteId)) {
+        console.error("Invalid site ID. Please enter a valid number.");
+        return;
+      }
       await insertUsersForSite(client, siteId);
     }
 

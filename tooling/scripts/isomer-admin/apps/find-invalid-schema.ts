@@ -9,12 +9,14 @@ const SCHEMA_URL = "https://schema.isomer.gov.sg";
 
 const ajv = new Ajv({ strict: false, logger: false });
 
+let cachedValidate: ReturnType<typeof ajv.compile> | null = null;
+
 const isSchemaValid = (
   content: unknown,
   jsonSchema: Record<string, unknown>
 ): boolean => {
-  const validate = ajv.compile(jsonSchema);
-  return validate(content);
+  cachedValidate ??= ajv.compile(jsonSchema);
+  return cachedValidate(content) as boolean;
 };
 
 const checkDBBlobs = async (jsonSchema: Record<string, unknown>) => {
@@ -63,11 +65,16 @@ const checkLocalDirectory = (
 
   for (const file of jsonFiles) {
     const filePath = path.join(localDirectory, file);
-    const content: unknown = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    const isValid = isSchemaValid(content, jsonSchema);
+    try {
+      const fileContents = fs.readFileSync(filePath, "utf-8");
+      const content: unknown = JSON.parse(fileContents);
+      const isValid = isSchemaValid(content, jsonSchema);
 
-    if (!isValid) {
-      invalidEntries.push(`Schema not valid for file: ${filePath}`);
+      if (!isValid) {
+        invalidEntries.push(`Schema not valid for file: ${filePath}`);
+      }
+    } catch {
+      invalidEntries.push(`Failed to read or parse JSON for file: ${filePath}`);
     }
   }
 

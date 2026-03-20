@@ -33,7 +33,7 @@ export const withDbClient = async <T>(
     console.log("Connected to the database");
     return await fn(client);
   } catch (e) {
-    console.error("An error occurred");
+    console.error("An error occurred while using the database client:", e);
     throw e;
   } finally {
     await client.end();

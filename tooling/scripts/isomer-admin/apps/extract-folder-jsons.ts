@@ -4,12 +4,17 @@ import type { ResourceRow } from "../types";
 import { withDbClient } from "../utils/db";
 
 export const extractFolderJsons = async () => {
-  const parentResourceId = Number(
-    await input({
-      message:
-        "Enter the parent resource ID to extract children from. This should either be a Folder or Collection resource ID.",
-    })
-  );
+  const parentResourceIdInput = await input({
+    message:
+      "Enter the parent resource ID to extract children from. This should either be a Folder or Collection resource ID.",
+  });
+
+  if (!/^\d+$/.test(parentResourceIdInput)) {
+    console.error(
+      "Invalid parent resource ID. Please enter a numeric ID."
+    );
+    return;
+  }
 
   await withDbClient(async (client) => {
     const allResources = await client.query<ResourceRow>(
@@ -25,8 +30,9 @@ export const extractFolderJsons = async () => {
        JOIN "Version" ON "Resource"."publishedVersionId" = "Version".id
        JOIN "Blob" ON "Version"."blobId" = "Blob".id
        WHERE "Resource"."parentId" = $1
+       AND "Resource"."draftBlobId" IS NULL
        AND "Resource".type NOT IN ('Folder', 'Collection', 'IndexPage')`,
-      [parentResourceId, parentResourceId]
+      [parentResourceIdInput]
     );
 
     if (!fs.existsSync("./output")) {
