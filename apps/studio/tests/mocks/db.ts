@@ -20,7 +20,7 @@ const prismaMigrationDir = join(
 
 const parsed = CONTAINER_INFORMATION_SCHEMA.parse(
   parse(
-    // eslint-disable-next-line no-restricted-properties
+    // oxlint-disable-next-line no-restricted-properties
     process.env.testcontainers ?? "",
   ),
 )

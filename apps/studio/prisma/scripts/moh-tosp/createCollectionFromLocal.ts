@@ -93,10 +93,10 @@ export const createCollectionFromLocal = async ({
         }
         const fileContent = await fs.readFile(filePath, "utf-8")
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         let parsedFileContent: any
         try {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
           parsedFileContent = JSON.parse(fileContent)
         } catch (error) {
           if (error instanceof Error) {
@@ -117,7 +117,7 @@ export const createCollectionFromLocal = async ({
         const resource = await tx
           .insertInto("Resource")
           .values({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             title: parsedFileContent.page.title,
             permalink: file.replace(/\.json$/, ""), // remove the .json at the back on permalinks
             siteId: siteId, // Replace with appropriate site ID

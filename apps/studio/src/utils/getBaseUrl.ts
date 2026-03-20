@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-properties */
+/* oxlint-disable no-restricted-properties */
 import { env } from "~/env.mjs"
 
 /**

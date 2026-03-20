@@ -1,3 +1,4 @@
+import plugin from "tailwindcss/plugin"
 import classicPreset from "./src/presets/classic"
 import { NextPreset } from "./src/presets/next"
 
@@ -7,8 +8,6 @@ import { NextPreset } from "./src/presets/next"
  */
 
 /** @type {import('tailwindcss').Config} */
-
-const plugin = require("tailwindcss/plugin")
 
 export default {
   content: [

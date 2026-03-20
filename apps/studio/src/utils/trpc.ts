@@ -80,7 +80,7 @@ const custom401Link: TRPCLink<AppRouter> = () => {
         // Handle 401 errors
         error(err) {
           observer.error(err)
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (window !== undefined && err.data?.code === "UNAUTHORIZED") {
             // Clear logged in state on localStorage
             // NOTE: This error is not handled in the /api/[trpc] API route as API routes are invoked
@@ -142,7 +142,7 @@ export const trpc = createTRPCNext<AppRouter, SSRContext>({
         // adds pretty logs to your console in development and logs errors in production
         loggerLink({
           enabled: (opts) =>
-            // eslint-disable-next-line no-restricted-properties
+            // oxlint-disable-next-line no-restricted-properties
             process.env.NODE_ENV === "development" ||
             (opts.direction === "down" && opts.result instanceof Error),
         }),

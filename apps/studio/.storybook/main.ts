@@ -27,7 +27,7 @@ const config: StorybookConfig = {
   env: (config) => ({
     ...config,
     SKIP_ENV_VALIDATION: "true",
-    // eslint-disable-next-line no-restricted-properties
+    // oxlint-disable-next-line no-restricted-properties
     STORYBOOK_ENVIRONMENT: JSON.stringify(process.env),
   }),
 

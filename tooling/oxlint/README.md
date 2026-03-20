@@ -1,6 +1,8 @@
 # @isomer/oxlint-config
 
-Shared **Oxlint** configuration for Isomer. This package **depends on** `oxlint` and `oxlint-tsgolint`, so workspaces (or other repos) only need to depend on `@isomer/oxlint-config`—you do **not** need to install those binaries at the repository root.
+Shared **Oxlint** configuration for Isomer. This package **depends on** `oxlint` and `oxlint-tsgolint`. Workspaces that run lint only need `@isomer/oxlint-config` for those CLIs.
+
+Workspaces whose `.oxlintrc.json` uses **`jsPlugins`: `eslint-plugin-storybook`** (for `storybook/*` rules) should list **`eslint-plugin-storybook`** in their own `devDependencies`—Oxlint loads that package via [JS plugins](https://oxc.rs/docs/guide/usage/linter/js-plugins); **ESLint itself is not required**.
 
 ## Use in this monorepo
 
