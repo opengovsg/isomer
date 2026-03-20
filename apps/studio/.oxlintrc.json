@@ -1,0 +1,122 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../node_modules/@isomer/oxlint-config/base.json"],
+  "ignorePatterns": [".next/**", "!.storybook/**", "./next-env.d.ts"],
+  "overrides": [
+    {
+      "files": ["**/*.js", "**/*.ts", "**/*.tsx"],
+      "rules": {
+        "react/react-in-jsx-scope": "off",
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "warn",
+        "@next/next/google-font-display": "warn",
+        "@next/next/google-font-preconnect": "warn",
+        "@next/next/next-script-for-ga": "warn",
+        "@next/next/no-async-client-component": "warn",
+        "@next/next/no-before-interactive-script-outside-document": "warn",
+        "@next/next/no-css-tags": "warn",
+        "@next/next/no-head-element": "warn",
+        "@next/next/no-html-link-for-pages": "error",
+        "@next/next/no-img-element": "warn",
+        "@next/next/no-page-custom-font": "warn",
+        "@next/next/no-styled-jsx-in-document": "warn",
+        "@next/next/no-sync-scripts": "error",
+        "@next/next/no-title-in-document-head": "warn",
+        "@next/next/no-typos": "warn",
+        "@next/next/no-unwanted-polyfillio": "warn",
+        "@next/next/inline-script-id": "error",
+        "@next/next/no-assign-module-variable": "error",
+        "@next/next/no-document-import-in-page": "error",
+        "@next/next/no-duplicate-head": "error",
+        "@next/next/no-head-import-in-document": "error",
+        "@next/next/no-script-component-in-head": "error",
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "process",
+                "importNames": ["env"],
+                "message": "Use `import { env } from '~/env'` instead to ensure validated types."
+              },
+              {
+                "name": "@chakra-ui/react",
+                "importNames": ["useToast"],
+                "message": "Please use useToast from @opengovsg/design-system-react instead."
+              },
+              {
+                "name": "@chakra-ui/react",
+                "importNames": [
+                  "FormLabel",
+                  "FormErrorMessage",
+                  "FormHelperText"
+                ],
+                "message": "Please use FormLabel, FormErrorMessage, and FormHelperText from @opengovsg/design-system-react instead."
+              }
+            ]
+          }
+        ]
+      },
+      "globals": {
+        "React": "writable"
+      },
+      "plugins": ["react", "nextjs"]
+    },
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "rules": {
+        "@typescript-eslint/prefer-nullish-coalescing": [
+          "error",
+          {
+            "ignorePrimitives": true
+          }
+        ]
+      },
+      "plugins": ["typescript"]
+    },
+    {
+      "files": [
+        "**/*.stories.ts",
+        "**/*.stories.tsx",
+        "**/*.stories.js",
+        "**/*.stories.jsx",
+        "**/*.stories.mjs",
+        "**/*.stories.cjs",
+        "**/*.story.ts",
+        "**/*.story.tsx",
+        "**/*.story.js",
+        "**/*.story.jsx",
+        "**/*.story.mjs",
+        "**/*.story.cjs"
+      ],
+      "rules": {
+        "react-hooks/rules-of-hooks": "off",
+        "import/no-anonymous-default-export": "off",
+        "storybook/await-interactions": "error",
+        "storybook/context-in-play-function": "error",
+        "storybook/default-exports": "error",
+        "storybook/hierarchy-separator": "warn",
+        "storybook/no-redundant-story-name": "warn",
+        "storybook/no-renderer-packages": "error",
+        "storybook/prefer-pascal-case": "warn",
+        "storybook/story-exports": "error",
+        "storybook/use-storybook-expect": "error",
+        "storybook/use-storybook-testing-library": "error"
+      },
+      "jsPlugins": ["eslint-plugin-storybook"],
+      "plugins": ["react", "import"]
+    },
+    {
+      "files": [
+        ".storybook/main.js",
+        ".storybook/main.cjs",
+        ".storybook/main.mjs",
+        ".storybook/main.ts"
+      ],
+      "rules": {
+        "storybook/no-uninstalled-addons": "error"
+      },
+      "jsPlugins": ["eslint-plugin-storybook"]
+    }
+  ]
+}
