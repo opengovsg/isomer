@@ -1,0 +1,9 @@
+{
+  "extends": "@isomer/tsconfig/base.json",
+  "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "compileOnSave": false
+}
