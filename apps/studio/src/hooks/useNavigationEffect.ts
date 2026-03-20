@@ -20,7 +20,7 @@ export const useNavigationEffect = ({
         router.events.off("routeChangeStart", handleRouteChange)
         callback(url)
         router.events.emit("routeChangeError")
-        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        // oxlint-disable-next-line @typescript-eslint/only-throw-error
         throw "Error to abort router route change. Ignore this!"
       }
     }

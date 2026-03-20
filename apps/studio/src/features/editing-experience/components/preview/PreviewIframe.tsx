@@ -73,7 +73,7 @@ export const PreviewIframe = ({
         style={containerStyles}
         {...extraProps}
         head={
-          // eslint-disable-next-line @next/next/no-css-tags
+          // oxlint-disable-next-line @next/next/no-css-tags
           <link
             rel="stylesheet"
             type="text/css"

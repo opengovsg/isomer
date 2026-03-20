@@ -56,7 +56,7 @@ export const useResourceQuery = ({
 
   return {
     resourceItemsWithAncestryStack,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    // oxlint-disable-next-line @typescript-eslint/no-empty-function
     fetchNextPage: useResourceIdsFromSearch ? () => {} : fetchNextPage,
     hasNextPage: useResourceIdsFromSearch ? false : hasNextPage,
     isFetchingNextPage: useResourceIdsFromSearch ? false : isFetchingNextPage,

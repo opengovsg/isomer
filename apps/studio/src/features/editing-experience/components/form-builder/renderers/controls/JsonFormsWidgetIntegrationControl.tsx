@@ -33,7 +33,7 @@ function JsonFormsWidgetIntegrationControl({
   enabled,
 }: ControlWithDetailProps) {
   const { activeWidget, setActiveWidget, getNextWidget } = useWidget()
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [snapshot, setSnapshot] = useState(data)
   const detailUiSchema = useMemo(
     () =>
