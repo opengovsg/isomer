@@ -51,8 +51,11 @@
     "generate": {},
     "format": {
       "dependsOn": ["^build"],
-      "outputs": ["node_modules/.cache/.prettiercache"],
-      "outputLogs": "new-only"
+      "outputs": []
+    },
+    "format:fix": {
+      "dependsOn": ["^build"],
+      "outputs": []
     },
     "lint": {
       "dependsOn": ["^build"],
