@@ -29,6 +29,7 @@ export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
   // TODO: Reconsider how this is done as currently every item in the sitemap has the same props
   collectionPagePageProps?: {
     tagCategories?: CollectionPagePageProps["tagCategories"]
+    sortOrder?: CollectionPagePageProps["sortOrder"]
     defaultSortBy?: CollectionPagePageProps["defaultSortBy"]
     defaultSortDirection?: CollectionPagePageProps["defaultSortDirection"]
   }
