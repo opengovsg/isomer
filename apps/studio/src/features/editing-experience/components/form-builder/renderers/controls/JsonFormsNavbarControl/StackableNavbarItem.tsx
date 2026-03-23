@@ -36,7 +36,7 @@ import { NavbarItemBox } from "./NavbarItemBox"
 import { getInstancePathFromNavbarItemPath, getNavbarItemPath } from "./utils"
 
 const getNumberOfErrors = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   errors: ErrorObject<string, Record<string, any>, unknown>[],
   path: string,
 ) => {
@@ -47,7 +47,7 @@ const getNumberOfErrors = (
 
 interface StackableNavbarItemProps {
   index: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   errors: ErrorObject<string, Record<string, any>, unknown>[]
   onEdit: (subItemIndex?: number) => void
   removeItem: (subItemIndex?: number) => void

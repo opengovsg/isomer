@@ -234,7 +234,7 @@ export const pageRouter = router({
           permalink,
           navbar,
           footer,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore type instantiation is excessively deep and possibly infinite
           content,
           title,

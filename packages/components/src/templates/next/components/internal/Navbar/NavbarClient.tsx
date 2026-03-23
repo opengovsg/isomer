@@ -179,7 +179,7 @@ export const NavbarClient = ({
                       )
                     }}
                     isOpen={openNavItemIdx === index && !isHamburgerOpen}
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     LinkComponent={LinkComponent}
                   />
                 ))}
@@ -272,7 +272,7 @@ export const NavbarClient = ({
           setOpenNavItemIdx={setOpenNavItemIdx}
           callToAction={callToAction}
           utility={utility}
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
           LinkComponent={LinkComponent}
           onCloseMenu={onCloseMenu}
         />

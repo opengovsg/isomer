@@ -144,7 +144,7 @@ export const FullscreenPreview: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // Required since menu is a portal
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
     const screen = within(canvasElement.parentElement!)
 
     const button = await canvas.findByRole("button", { name: /default mode/i })
