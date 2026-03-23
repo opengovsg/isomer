@@ -102,19 +102,21 @@ export const MAPS_EMBED_URL_PATTERN = Object.values(MAPS_EMBED_URL_REGEXES)
   .join("|")
 
 // Validation for video-related embed URLs
-export const YOUTUBE_PRIVACY_ENHANCED_HOST = "www.youtube-nocookie.com"
 export const YOUTUBE_PRIVACY_ENHANCED_DOMAINS = [
-  YOUTUBE_PRIVACY_ENHANCED_HOST,
-  YOUTUBE_PRIVACY_ENHANCED_HOST.replace(/^www\./, ""),
+  "www.youtube-nocookie.com",
+  "youtube-nocookie.com",
 ] as const
 
-interface ValidVideoDomains {
-  youtube: readonly string[]
-  vimeo: readonly string[]
-  fbvideo: readonly string[]
+export const YOUTUBE_PRIVACY_ENHANCED_HOST = YOUTUBE_PRIVACY_ENHANCED_DOMAINS[0]
+
+export const isYoutubePrivacyEnhancedHost = (hostname: string): boolean => {
+  for (const h of YOUTUBE_PRIVACY_ENHANCED_DOMAINS) {
+    if (h === hostname) return true
+  }
+  return false
 }
 
-export const VALID_VIDEO_DOMAINS: ValidVideoDomains = {
+export const VALID_VIDEO_DOMAINS = {
   youtube: [
     "www.youtube.com",
     "youtube.com",
