@@ -34,7 +34,7 @@ export const processCollectionItems = (
       tags,
       referenceLinkHref: getReferenceLinkHref(
         url,
-        site.siteMap,
+        site.siteMapArray,
         site.assetsBaseUrl,
       ),
       imageSrc: item.image?.src,

@@ -53,7 +53,7 @@ export const HeroBlock = ({
               <LinkButton
                 href={getReferenceLinkHref(
                   buttonUrl,
-                  site.siteMap,
+                  site.siteMapArray,
                   site.assetsBaseUrl,
                 )}
                 size="lg"
@@ -71,7 +71,7 @@ export const HeroBlock = ({
                   size="lg"
                   href={getReferenceLinkHref(
                     secondaryButtonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   LinkComponent={LinkComponent}

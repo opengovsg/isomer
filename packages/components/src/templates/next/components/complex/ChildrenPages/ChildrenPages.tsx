@@ -167,7 +167,11 @@ const RowLayout = ({
 
         return (
           <Link
-            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            href={getReferenceLinkHref(
+              url,
+              site.siteMapArray,
+              site.assetsBaseUrl,
+            )}
             key={`${title}-${idx}`}
             LinkComponent={LinkComponent}
             className={styles.contentContainer({

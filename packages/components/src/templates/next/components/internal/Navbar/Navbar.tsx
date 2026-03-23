@@ -36,7 +36,7 @@ export const Navbar = ({
   ): NavbarProps["items"][number] => ({
     ...item,
     url:
-      getReferenceLinkHref(item.url, site.siteMap, site.assetsBaseUrl) ??
+      getReferenceLinkHref(item.url, site.siteMapArray, site.assetsBaseUrl) ??
       item.url,
     items: item.items?.map(processNavItem),
   })
@@ -64,7 +64,7 @@ export const Navbar = ({
               url:
                 getReferenceLinkHref(
                   callToAction.url,
-                  site.siteMap,
+                  site.siteMapArray,
                   site.assetsBaseUrl,
                 ) ?? callToAction.url,
             }
@@ -79,7 +79,7 @@ export const Navbar = ({
                 url:
                   getReferenceLinkHref(
                     item.url,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   ) ?? item.url,
               })),

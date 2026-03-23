@@ -230,7 +230,7 @@ export const CollectionBlock = ({
         <LinkButton
           href={getReferenceLinkHref(
             collectionReferenceLink,
-            site.siteMap,
+            site.siteMapArray,
             site.assetsBaseUrl,
           )}
           size="base"

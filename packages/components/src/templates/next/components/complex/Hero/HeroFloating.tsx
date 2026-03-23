@@ -77,7 +77,7 @@ export const HeroFloating = ({
               <LinkButton
                 href={getReferenceLinkHref(
                   buttonUrl,
-                  site.siteMap,
+                  site.siteMapArray,
                   site.assetsBaseUrl,
                 )}
                 size="lg"
@@ -92,7 +92,7 @@ export const HeroFloating = ({
                 <LinkButton
                   href={getReferenceLinkHref(
                     secondaryButtonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   variant="outline"

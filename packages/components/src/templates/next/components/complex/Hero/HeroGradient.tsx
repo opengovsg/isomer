@@ -45,7 +45,7 @@ export const HeroGradient = ({
                 <LinkButton
                   href={getReferenceLinkHref(
                     buttonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   size="lg"
@@ -61,7 +61,7 @@ export const HeroGradient = ({
                     size="lg"
                     href={getReferenceLinkHref(
                       secondaryButtonUrl,
-                      site.siteMap,
+                      site.siteMapArray,
                       site.assetsBaseUrl,
                     )}
                     LinkComponent={LinkComponent}

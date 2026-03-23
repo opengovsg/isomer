@@ -36,7 +36,7 @@ export const BlockInfopic = ({
               LinkComponent={LinkComponent}
               href={getReferenceLinkHref(
                 buttonUrl,
-                site.siteMap,
+                site.siteMapArray,
                 site.assetsBaseUrl,
               )}
               isWithFocusVisibleHighlight
