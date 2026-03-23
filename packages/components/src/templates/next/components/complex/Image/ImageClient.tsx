@@ -35,7 +35,7 @@ export const ImageClient = forwardRef<
         }}
         loading={lazyLoading ? "lazy" : "eager"}
         fetchPriority={lazyLoading ? "auto" : "high"}
-        decoding={lazyLoading ? "async" : "auto"} // sync decoding can block the main thread
+        decoding="async" // sync decoding can block the main thread
       />
     )
   },
