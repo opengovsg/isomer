@@ -175,7 +175,7 @@ export const createIndexPageSchema = z.object({
 
 export const getPrefillSchema = z.object({
   siteId: z.number().min(1),
-  resourceId: z.string(),
+  resourceId: z.string().regex(/^\d+$/),
 })
 
 // Zod parsers for extracting prefill data from different page layouts
