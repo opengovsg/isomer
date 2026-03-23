@@ -1,10 +1,10 @@
-import { VALID_VIDEO_DOMAINS } from "~/utils/validation"
-
-const YOUTUBE_PRIVACY_ENHANCED_HOST = "www.youtube-nocookie.com"
-const YOUTUBE_PRIVACY_ENHANCED_HOSTS = new Set([
+import {
+  VALID_VIDEO_DOMAINS,
+  YOUTUBE_PRIVACY_ENHANCED_DOMAINS,
   YOUTUBE_PRIVACY_ENHANCED_HOST,
-  YOUTUBE_PRIVACY_ENHANCED_HOST.replace(/^www\./, ""),
-])
+} from "~/utils/validation"
+
+const YOUTUBE_PRIVACY_ENHANCED_HOSTS = new Set(YOUTUBE_PRIVACY_ENHANCED_DOMAINS)
 
 /**
  * Rewrites a YouTube URL to the privacy-enhanced embed form (youtube-nocookie.com).
