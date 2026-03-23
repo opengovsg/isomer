@@ -882,8 +882,10 @@ export const pageHandlers = {
               {
                 type: "childrenpages",
                 variant: "boxes",
-                summary: false,
-                thumbnail: false,
+                showSummary: false,
+                showThumbnail: true,
+                imageFit: "contain",
+                childrenPagesOrdering: ["5", "4"],
               },
             ],
             version: "0.1.0",
