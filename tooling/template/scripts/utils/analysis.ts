@@ -10,9 +10,10 @@ export type SiteSitemapAnalysis = {
 /**
  * Build used sets for AST pruning. Always includes `childrenpages` in components.
  */
-export function collectSiteUsedItems(
-  siteAnalysis: SiteSitemapAnalysis,
-): { usedLayouts: Set<string>; usedComponents: Set<string> } {
+export function collectSiteUsedItems(siteAnalysis: SiteSitemapAnalysis): {
+  usedLayouts: Set<string>
+  usedComponents: Set<string>
+} {
   const usedLayouts = new Set(siteAnalysis.layouts)
   const usedComponents = new Set(siteAnalysis.components)
   usedComponents.add("childrenpages")

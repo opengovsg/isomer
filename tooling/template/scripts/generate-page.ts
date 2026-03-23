@@ -322,7 +322,9 @@ export async function run(baseDir?: string): Promise<void> {
   const updated = await processCatchAllPage(catchAllPage, siteAnalysis)
 
   if (!updated) {
-    console.log("\nNote: No changes were written (already minimal or unchanged).")
+    console.log(
+      "\nNote: No changes were written (already minimal or unchanged).",
+    )
   } else {
     console.log(`\n✓ Updated ${path.relative(base, catchAllPage)}`)
   }
