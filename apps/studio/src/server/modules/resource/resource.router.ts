@@ -539,24 +539,6 @@ export const resourceRouter = router({
         siteId: Number(siteId),
       })
 
-      let resourceType: null | ResourceType = null
-
-      if (resourceId) {
-        const { type } = await db
-          .selectFrom("Resource")
-          .where("id", "=", String(resourceId))
-          .select("type")
-          .executeTakeFirstOrThrow(
-            () =>
-              new TRPCError({
-                code: "NOT_FOUND",
-                message: "Resource not found",
-              }),
-          )
-
-        resourceType = type
-      }
-
       // TODO(perf): If too slow, consider caching this count, but 4-5 million rows should be fine
       let query = db
         .selectFrom("Resource")
@@ -564,11 +546,8 @@ export const resourceRouter = router({
         .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
+        .where("Resource.type", "!=", ResourceType.IndexPage)
         .select((eb) => [eb.fn.countAll().as("totalCount")])
-
-      if (resourceType !== ResourceType.Collection) {
-        query = query.where("Resource.type", "!=", ResourceType.IndexPage)
-      }
 
       if (resourceId) {
         query = query.where("Resource.parentId", "=", String(resourceId))
