@@ -11,6 +11,7 @@ import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
+import { getSitemapAsArray } from "@opengovsg/isomer-components/engine/getSitemapAsArray"
 import { getSitemapXml } from "@opengovsg/isomer-components/engine/getSitemapXml"
 import { getMetadata } from "@opengovsg/isomer-components/engine/metadata"
 import { shouldBlockIndexing } from "@opengovsg/isomer-components/engine/shouldBlockIndexing"
@@ -130,8 +131,16 @@ export const generateMetadata = async ({
 }
 
 const RenderEngine = (props: IsomerPageSchemaType) => {
+  const renderProps = {
+    ...props,
+    site: {
+      ...props.site,
+      siteMapArray: getSitemapAsArray(props.site.siteMap),
+    },
+  } satisfies IsomerPageSchemaType
+
   if (props.site.theme === "isomer-next") {
-    return renderNextLayout(props)
+    return renderNextLayout(renderProps)
   }
 
   return null
