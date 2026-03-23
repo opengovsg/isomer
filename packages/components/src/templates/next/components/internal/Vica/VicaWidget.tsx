@@ -1,5 +1,6 @@
 import type { VicaWidgetProps } from "~/interfaces"
 import { colors } from "~/presets/next/colors"
+import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { VicaWidgetClient } from "./VicaWidgetClient"
 
@@ -8,11 +9,14 @@ export const VicaWidget = ({
   "app-icon": appIcon,
   ...rest
 }: VicaWidgetProps) => {
+  const siteMapArray =
+    site.siteMapArray ?? (site.siteMap ? getSitemapAsArray(site.siteMap) : [])
+
   return (
     <VicaWidgetClient
       app-icon={
         appIcon
-          ? getReferenceLinkHref(appIcon, site.siteMapArray, site.assetsBaseUrl)
+          ? getReferenceLinkHref(appIcon, siteMapArray, site.assetsBaseUrl)
           : undefined
       }
       {...rest}
