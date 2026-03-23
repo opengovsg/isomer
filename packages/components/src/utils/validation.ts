@@ -108,7 +108,13 @@ export const YOUTUBE_PRIVACY_ENHANCED_DOMAINS = [
   YOUTUBE_PRIVACY_ENHANCED_HOST.replace(/^www\./, ""),
 ] as const
 
-export const VALID_VIDEO_DOMAINS = {
+type ValidVideoDomains = {
+  youtube: readonly string[]
+  vimeo: readonly string[]
+  fbvideo: readonly string[]
+}
+
+export const VALID_VIDEO_DOMAINS: ValidVideoDomains = {
   youtube: [
     "www.youtube.com",
     "youtube.com",
@@ -116,7 +122,7 @@ export const VALID_VIDEO_DOMAINS = {
   ],
   vimeo: ["player.vimeo.com"],
   fbvideo: ["www.facebook.com"],
-} as const
+}
 
 export const isValidVideoUrl = (url: string) => {
   if (!url) {
