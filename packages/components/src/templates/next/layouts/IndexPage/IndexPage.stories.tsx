@@ -95,6 +95,26 @@ const generateIndexPage = (
                 layout: "content",
                 summary: "",
               },
+              {
+                id: "9",
+                title: "Database page with thumbnail",
+                permalink: "/parent/database-page-with-thumbnail",
+                lastModified: "",
+                layout: "database",
+                summary: "Database page with thumbnail",
+                image: {
+                  src: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop",
+                  alt: "Thumbnail for Database page with thumbnail",
+                },
+              },
+              {
+                id: "10",
+                title: "Database page without thumbnail",
+                permalink: "/parent/database-page-without-thumbnail",
+                lastModified: "",
+                layout: "database",
+                summary: "Database page without thumbnail",
+              },
             ],
           },
           {
@@ -253,6 +273,21 @@ export const RowsWithDescriptionOnly: Story = {
 }
 
 export const RowsWithImageAndDescription: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        childrenPagesOrdering: [],
+        type: "childrenpages",
+        variant: "rows",
+        showSummary: true,
+        showThumbnail: true,
+      },
+    ],
+  }),
+}
+
+export const RowsWithDatabaseLayoutThumbnails: Story = {
+  name: "Rows — thumbnails on database child pages",
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
