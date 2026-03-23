@@ -16,6 +16,11 @@ export const HeroLargeImage = ({
   site,
   LinkComponent,
 }: HeroLargeImageProps) => {
+  const backgroundSrc =
+    isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
+      ? backgroundUrl
+      : `${site.assetsBaseUrl}${backgroundUrl}`
+
   return (
     <section className="flex w-full flex-col">
       {/* Text and button container */}
@@ -62,11 +67,7 @@ export const HeroLargeImage = ({
           </div>
         )}
       </div>
-      <ImageContainer
-        imageSrc={backgroundUrl}
-        imageAlt={title}
-        assetsBaseUrl={site.assetsBaseUrl}
-      />
+      <ImageContainer imageSrc={backgroundSrc} imageAlt={title} />
     </section>
   )
 }

@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 import { userEvent, within } from "storybook/test"
-import { folderHandlers } from "tests/msw/handlers/folder"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -24,7 +23,6 @@ const COMMON_HANDLERS = [
   resourceHandlers.getAncestryStack.default(),
   resourceHandlers.getBatchAncestryWithSelf.default(),
   resourceHandlers.getRolesFor.admin(),
-  folderHandlers.listChildPages.default(),
   // NOTE: Handlers that return custom data for this story
   sitesHandlers.getLocalisedSitemap.index(),
   resourceHandlers.getWithFullPermalink.index(),

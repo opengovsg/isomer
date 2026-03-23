@@ -10,9 +10,9 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferenceLink"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ComponentContent } from "../../internal/customCssClass"
-import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
+import { ImageClient } from "../Image"
 import {
   getCollectionPages,
   getCollectionParent,
@@ -99,7 +99,11 @@ const SingleCard = ({
     return (
       <div className={compoundStyles.cardImageContainer({ numberOfCards })}>
         <ImageClient
-          src={imageSrc}
+          src={
+            isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
+              ? imageSrc
+              : `${site.assetsBaseUrl}${imageSrc}`
+          }
           alt={imageAlt}
           width="100%"
           className={compoundStyles.cardImage({
