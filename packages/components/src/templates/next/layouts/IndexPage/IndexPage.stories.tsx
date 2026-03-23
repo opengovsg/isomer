@@ -286,21 +286,6 @@ export const RowsWithImageAndDescription: Story = {
   }),
 }
 
-export const RowsWithDatabaseLayoutThumbnails: Story = {
-  name: "Rows — thumbnails on database child pages",
-  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
-    content: [
-      {
-        childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "rows",
-        showSummary: true,
-        showThumbnail: true,
-      },
-    ],
-  }),
-}
-
 export const RowsWithImageAndDescriptionAndContent: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
