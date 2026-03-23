@@ -9,6 +9,7 @@ export type SiteSitemapAnalysis = {
 
 /**
  * Build used sets for AST pruning. Always includes `childrenpages` in components.
+ * This is because `childrenpages` is injected into the index page during build time.
  */
 export function collectSiteUsedItems(siteAnalysis: SiteSitemapAnalysis): {
   usedLayouts: Set<string>
