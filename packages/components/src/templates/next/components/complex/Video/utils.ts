@@ -1,6 +1,10 @@
 import { VALID_VIDEO_DOMAINS } from "~/utils/validation"
 
 const YOUTUBE_PRIVACY_ENHANCED_HOST = "www.youtube-nocookie.com"
+const YOUTUBE_PRIVACY_ENHANCED_HOSTS = new Set([
+  YOUTUBE_PRIVACY_ENHANCED_HOST,
+  YOUTUBE_PRIVACY_ENHANCED_HOST.replace(/^www\./, ""),
+])
 
 /**
  * Rewrites a YouTube URL to the privacy-enhanced embed form (youtube-nocookie.com).
@@ -10,9 +14,9 @@ export const getPrivacyEnhancedYouTubeEmbedUrl = (
   urlObject: URL,
 ): string | undefined => {
   const isYouTube = VALID_VIDEO_DOMAINS.youtube.includes(urlObject.hostname)
-  const isAlreadyPrivacyEnhanced =
-    urlObject.hostname === "www.youtube-nocookie.com" ||
-    urlObject.hostname === "youtube-nocookie.com"
+  const isAlreadyPrivacyEnhanced = YOUTUBE_PRIVACY_ENHANCED_HOSTS.has(
+    urlObject.hostname,
+  )
   if (isYouTube && !isAlreadyPrivacyEnhanced) {
     urlObject.hostname = YOUTUBE_PRIVACY_ENHANCED_HOST
   }
