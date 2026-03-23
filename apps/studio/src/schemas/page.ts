@@ -179,6 +179,8 @@ export const getPrefillSchema = z.object({
 })
 
 // Zod parsers for extracting prefill data from different page layouts
+// NOTE: This is a temporary construct and the long term fix should be
+// to migrate IsomerSchema to use `Type.Intersect` rather than `Type.Composite`
 const imageSchema = z.object({
   src: z.string(),
   alt: z.string(),
