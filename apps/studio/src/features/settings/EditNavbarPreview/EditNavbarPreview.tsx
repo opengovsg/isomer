@@ -1,11 +1,11 @@
 import type { NavbarSchemaType } from "@opengovsg/isomer-components"
-import merge from "lodash/merge"
-
 import type { IframeCallbackFnProps } from "~/types/dom"
+import merge from "lodash/merge"
 import Preview from "~/features/editing-experience/components/preview/Preview"
 import { ViewportContainer } from "~/features/editing-experience/components/preview/ViewportContainer"
 import { waitForElement } from "~/utils/dom"
 import { trpc } from "~/utils/trpc"
+
 import { MOBILE_NAVIGATION_MENU_QUERY_SELECTOR } from "../constants"
 
 interface EditNavbarPreviewProps {

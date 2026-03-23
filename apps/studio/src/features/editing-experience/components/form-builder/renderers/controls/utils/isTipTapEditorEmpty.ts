@@ -1,5 +1,4 @@
 import type { JSONContent } from "@tiptap/react"
-
 import {
   HEADING_TYPE,
   PARAGRAPH_TYPE,

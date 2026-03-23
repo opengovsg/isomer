@@ -1,5 +1,6 @@
-import type { Filter } from "../../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
+
+import type { Filter } from "../../../types/Filter"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
 
 export const getYearFilter = (

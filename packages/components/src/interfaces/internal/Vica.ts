@@ -1,7 +1,6 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
 import type { IsomerSiteProps } from "~/types"
+import { Type } from "@sinclair/typebox"
 
 // We can only pass in string values to the Vica script
 // as React omit boolean props when spreading onto a DOM element,

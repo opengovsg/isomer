@@ -3,7 +3,6 @@ import type { DestinationStream } from "pino"
 import { nanoid } from "nanoid"
 import pino from "pino"
 import pinoPretty from "pino-pretty"
-
 import { env } from "~/env.mjs"
 import getIP from "~/utils/getClientIp"
 

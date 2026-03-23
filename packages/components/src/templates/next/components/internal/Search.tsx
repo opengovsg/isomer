@@ -1,15 +1,15 @@
 "use client"
 
 import type { AriaTextFieldOptions } from "@react-aria/textfield"
-import { useRef, useState } from "react"
+import type { ClassNames } from "~/utils/rac"
 import { useFocusRing } from "@react-aria/focus"
 import { useTextField } from "@react-aria/textfield"
 import { mergeProps } from "@react-aria/utils"
+import { useRef, useState } from "react"
 import { BiSearch, BiX } from "react-icons/bi"
-
-import type { ClassNames } from "~/utils/rac"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+
 import { IconButton } from "./IconButton"
 
 const inputStyles = tv({

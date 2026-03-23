@@ -1,5 +1,4 @@
 import type { TSchema } from "@sinclair/typebox"
-
 import type { IsomerPageLayoutType } from "~/types"
 import {
   ArticlePageMetaSchema,

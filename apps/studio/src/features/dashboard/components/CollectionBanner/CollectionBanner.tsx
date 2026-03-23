@@ -1,8 +1,8 @@
 import { Stack, Text } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
 import { BiX } from "react-icons/bi"
-
 import { useLocalStorage } from "~/hooks/useLocalStorage"
+
 import { BannerSvgr } from "./BannerSvgr"
 
 export const CollectionBanner = (): JSX.Element | null => {

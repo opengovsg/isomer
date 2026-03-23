@@ -1,4 +1,9 @@
 import type { IconType } from "react-icons"
+import type { FooterProps } from "~/interfaces"
+import type {
+  FooterItem as FooterItemType,
+  SocialMediaType,
+} from "~/interfaces/internal/Footer"
 import { BiLinkExternal } from "react-icons/bi"
 import {
   FaFacebook,
@@ -15,12 +20,6 @@ import {
   FaXTwitter,
 } from "react-icons/fa6"
 import { IoLogoGithub } from "react-icons/io"
-
-import type { FooterProps } from "~/interfaces"
-import type {
-  FooterItem as FooterItemType,
-  SocialMediaType,
-} from "~/interfaces/internal/Footer"
 import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
@@ -29,6 +28,7 @@ import { getFormattedDate } from "~/utils/getFormattedDate"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+
 import { Link } from "../Link"
 import { ClientCopyrightYear } from "./ClientCopyrightYear"
 

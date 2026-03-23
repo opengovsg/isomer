@@ -1,5 +1,6 @@
-import type { AppliedFilter } from "../../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
+
+import type { AppliedFilter } from "../../../types/Filter"
 import {
   FILTER_ID_CATEGORY,
   FILTER_ID_YEAR,

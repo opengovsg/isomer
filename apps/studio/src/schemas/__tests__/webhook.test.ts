@@ -4,10 +4,10 @@ import { createMocks } from "node-mocks-http"
 import { resetTables } from "tests/integration/helpers/db"
 import { createTestUser } from "tests/integration/helpers/iron-session"
 import { setupCodeBuildJob, setupUser } from "tests/integration/helpers/seed"
-
-import type { codeBuildWebhookSchema } from "../webhook"
 import handler from "~/pages/api/webhooks/updateCodebuildWebhook"
 import { WEBHOOK_X_API_KEY_HEADER } from "~/server/trpc"
+
+import type { codeBuildWebhookSchema } from "../webhook"
 
 vi.mock("~/env.mjs", async () => {
   // Import the real module first to get all default values

@@ -1,5 +1,4 @@
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
-import { useEffect, useMemo, useState } from "react"
 import { Box, Collapse, Flex, Spacer, Text, VStack } from "@chakra-ui/react"
 import {
   findUISchema,
@@ -9,9 +8,10 @@ import {
 } from "@jsonforms/core"
 import { JsonFormsDispatch } from "@jsonforms/react"
 import { Switch } from "@opengovsg/design-system-react"
+import { useEffect, useMemo, useState } from "react"
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import type { WidgetType } from "../../contexts/WidgetContext"
-import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { withJsonFormsControlWithDetailProps } from "../../contexts/JsonFormsContext"
 import { useWidget, WIDGET_CONFIG } from "../../contexts/WidgetContext"
 

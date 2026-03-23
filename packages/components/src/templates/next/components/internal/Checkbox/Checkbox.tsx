@@ -11,7 +11,6 @@ import type {
   ReactNode,
   RefObject,
 } from "react"
-import { createContext, useContext, useRef } from "react"
 import {
   useCheckbox,
   useCheckboxGroup,
@@ -22,8 +21,8 @@ import { usePress } from "@react-aria/interactions"
 import { mergeProps } from "@react-aria/utils"
 import { useCheckboxGroupState } from "@react-stately/checkbox"
 import { useToggleState } from "@react-stately/toggle"
+import { createContext, useContext, useRef } from "react"
 import { BiCheck, BiMinus } from "react-icons/bi"
-
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusRing } from "~/utils/tailwind"

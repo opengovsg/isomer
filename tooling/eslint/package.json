@@ -1,7 +1,7 @@
 {
   "name": "@isomer/eslint-config",
-  "private": true,
   "version": "0.3.0",
+  "private": true,
   "type": "module",
   "exports": {
     "./base": "./base.js",
@@ -10,13 +10,13 @@
   },
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "format": "oxfmt --check . --ignore-path ../../.gitignore",
+    "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@eslint/compat": "^1.1.0",
     "@eslint/js": "^9.10.0",
-    "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
     "@next/eslint-plugin-next": "^14.2.13",
     "eslint": "^9.10.0",
@@ -25,11 +25,9 @@
     "eslint-plugin-jsx-a11y": "^6.10.0",
     "eslint-plugin-react": "^7.36.1",
     "eslint-plugin-react-hooks": "beta",
-    "prettier": "^3.3.3",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.33.1"
   },
-  "prettier": "@isomer/prettier-config",
   "devDependencies": {
     "@types/eslint": "^9.6.1"
   }

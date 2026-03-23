@@ -1,5 +1,4 @@
 import type { ButtonProps } from "@chakra-ui/react"
-import { useEffect } from "react"
 import {
   Box,
   chakra,
@@ -9,6 +8,7 @@ import {
   useDisclosure,
   useMultiStyleConfig,
 } from "@chakra-ui/react"
+import { useEffect } from "react"
 import { BiSearch } from "react-icons/bi"
 
 import { CommandKey } from "./CommandKey"

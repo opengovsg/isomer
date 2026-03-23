@@ -1,4 +1,3 @@
-import { useState } from "react"
 import {
   HStack,
   Modal,
@@ -15,14 +14,15 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useAtom } from "jotai"
 import upperFirst from "lodash/upperFirst"
-
-import type { DeleteResourceModalState } from "../../types"
+import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import type { DeleteResourceModalState } from "../../types"
 import {
   DEFAULT_RESOURCE_MODAL_STATE,
   deleteResourceModalAtom,

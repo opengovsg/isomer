@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/react"
-
 import { LINK_TYPES_MAPPING } from "~/features/editing-experience/components/LinkEditor/constants"
+
 import { LinkEditorModal } from "../LinkEditorModal"
 
 interface LinkEditorModalProps {
