@@ -8,7 +8,7 @@ import {
   rankWith,
 } from "@jsonforms/core"
 import { JsonFormsDispatch } from "@jsonforms/react"
-import { Switch } from "@opengovsg/design-system-react"
+import { FormLabel, Switch } from "@opengovsg/design-system-react"
 import isEmpty from "lodash/isEmpty"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -28,6 +28,7 @@ function JsonFormsObjectControl({
   schema,
   enabled,
   label,
+  id,
   description,
   required,
   uischema,
@@ -71,25 +72,17 @@ function JsonFormsObjectControl({
       <HStack spacing="0.5rem" alignItems="flex-start" w="full">
         <VStack w="full" gap="0.75rem" pt="0.5rem" alignItems="start">
           <HStack alignItems="space-between" w="full" spacing="1rem">
-            <FormControl
-              display="flex"
-              alignItems="center"
-              isDisabled={!enabled}
+            <FormLabel
+              isRequired
+              description={description}
+              htmlFor={id}
+              mb={!description ? "0px" : "0.75rem"}
             >
-              <VStack gap="0.25rem" alignItems="start">
-                <Text textStyle="subhead-1" textColor="base.content.strong">
-                  {label}
-                </Text>
-
-                {description && (
-                  <Text textStyle="body-2" textColor="base.content.strong">
-                    {description}
-                  </Text>
-                )}
-              </VStack>
-            </FormControl>
+              {label}
+            </FormLabel>
 
             <Switch
+              id={id}
               size="md"
               isChecked={isChecked}
               onChange={handleToggle}
