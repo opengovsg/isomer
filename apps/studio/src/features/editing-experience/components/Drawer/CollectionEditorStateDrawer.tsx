@@ -1,22 +1,14 @@
 import type { getLayoutPageSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { useCallback } from "react"
-import {
-  Box,
-  Flex,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Text,
-  useDisclosure,
-  useTheme,
-} from "@chakra-ui/react"
-import { Button, Tab, Tabs, useToast } from "@opengovsg/design-system-react"
+import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
+import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getScopedSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import isEmpty from "lodash/isEmpty"
+import isEqual from "lodash/isEqual"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -28,12 +20,12 @@ import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
+import { DrawerHeader } from "./DrawerHeader"
 
 export default function CollectionEditorStateDrawer(): JSX.Element {
-  const theme = useTheme()
   const {
     isOpen: isDiscardChangesModalOpen,
-    // onOpen: onDiscardChangesModalOpen,
+    onOpen: onDiscardChangesModalOpen,
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const {
@@ -113,58 +105,46 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
       />
 
       <Flex flexDir="column" position="relative" h="100%" w="100%">
+        <DrawerHeader
+          isDisabled={isPending}
+          onBackClick={() => {
+            if (!isEqual(previewPageState, savedPageState)) {
+              onDiscardChangesModalOpen()
+            } else {
+              handleDiscardChanges()
+            }
+          }}
+          label="Edit collection settings"
+        />
+
         <ErrorProvider>
-          <Tabs
-            w="full"
-            h="full"
-            display="flex"
-            flexDir="column"
-            flex={1}
-            overflow="hidden"
-            position="relative"
-            size="sm"
-          >
-            <TabList
-              // This is to allow the bottom border to overlap with the one coming
-              // from the Tab component
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-              background={`linear-gradient(${theme.colors.base.divider.medium},${theme.colors.base.divider.medium}) bottom/100% 2px no-repeat`}
-              bgColor="utility.ui"
-              boxSizing="border-box"
-              paddingInline="1.5rem"
-              pt="1rem"
-            >
-              <Tab mx={0}>
-                <Text textStyle="subhead-1" textTransform="capitalize">
-                  Customise display
-                </Text>
-              </Tab>
-              <Tab mx={0}>
-                <Text textStyle="subhead-1" textTransform="capitalize">
-                  Manage filters
-                </Text>
-              </Tab>
-            </TabList>
+          <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
+            {savedPageState.layout ===
+              ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
+              <Box pb="1rem">
+                <Infobox
+                  size="sm"
+                  borderRadius="0.25rem"
+                  border="1px solid"
+                  borderColor="utility.feedback.info"
+                >
+                  <Text textStyle="body-2">
+                    To change this Collection’s title, go back to the Collection
+                    folder view and click on ‘Collection settings’.
+                  </Text>
+                </Infobox>
+              </Box>
+            )}
 
-            <TabPanels px="1.5rem" flex={1} overflowY="auto">
-              <TabPanel>
-                <Box py="1.25rem" mb="1rem" h="full">
-                  <FormBuilder<Static<typeof metadataSchema>>
-                    schema={metadataSchema}
-                    validateFn={validateFn}
-                    data={previewPageState.page}
-                    handleChange={(data) => handleChange(data)}
-                  />
-                </Box>
-              </TabPanel>
-
-              <TabPanel>
-                <Box mt="1.25rem" mb="1rem" h="full">
-                  Placeholder for manage categories form
-                </Box>
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
+            <Box mb="1rem">
+              <FormBuilder<Static<typeof metadataSchema>>
+                schema={metadataSchema}
+                validateFn={validateFn}
+                data={previewPageState.page}
+                handleChange={(data) => handleChange(data)}
+              />
+            </Box>
+          </Box>
 
           <Box
             bgColor="base.canvas.default"
