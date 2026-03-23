@@ -71,7 +71,7 @@ function JsonFormsLinkControl({
 
     // Fetch the linked page data and auto-fill empty or placeholder fields
     utils.page.getPrefill
-      .fetch({ resourceId, siteId })
+      .fetch({ resourceId, siteId: Number(siteId) })
       .then(({ title, description, thumbnail }) => {
         if (
           isEmptyOrPlaceholder(
