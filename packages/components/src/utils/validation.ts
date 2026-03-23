@@ -108,7 +108,7 @@ export const YOUTUBE_PRIVACY_ENHANCED_DOMAINS = [
   YOUTUBE_PRIVACY_ENHANCED_HOST.replace(/^www\./, ""),
 ] as const
 
-type ValidVideoDomains = {
+interface ValidVideoDomains {
   youtube: readonly string[]
   vimeo: readonly string[]
   fbvideo: readonly string[]
