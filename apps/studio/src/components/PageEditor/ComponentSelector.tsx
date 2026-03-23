@@ -147,11 +147,9 @@ function ComponentSelector() {
     // the rest should use json forms
     const nextState: DrawerState["state"] =
       sectionType === "prose" ? "nativeEditor" : "complexEditor"
-    const newComponent = DEFAULT_BLOCKS[
-      // NOTE: we satisfy default blocks because the section types
-      // is controlled by the allowed blocks section below
-      sectionType as keyof typeof DEFAULT_BLOCKS
-    ] as IsomerComponent | undefined
+    const newComponent = DEFAULT_BLOCKS[sectionType] as
+      | IsomerComponent
+      | undefined
 
     const updatedBlocks = !!newComponent
       ? [...savedPageState.content, newComponent]
