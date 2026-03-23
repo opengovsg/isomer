@@ -5,16 +5,20 @@ import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 interface GetCollectionParentProps {
   site: IsomerSiteProps
   collectionId: string
+  collectionPermalink?: string // only for sites hosted on Github
 }
 
 export const getCollectionParent = ({
   site,
   collectionId,
+  collectionPermalink,
 }: GetCollectionParentProps): IsomerCollectionPageSitemap | null => {
   const sitemapArray = getSitemapAsArray(site.siteMap)
 
   const collectionParent = sitemapArray.find(
-    (item) => item.id === collectionId && item.layout === "collection",
+    (item) =>
+      (item.id === collectionId || item.permalink === collectionPermalink) &&
+      item.layout === "collection",
   )
 
   if (collectionParent) {
