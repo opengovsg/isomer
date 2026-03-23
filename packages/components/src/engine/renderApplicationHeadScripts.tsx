@@ -1,5 +1,6 @@
 import type { IsomerSiteProps } from "~/types"
-import { Wogaa } from "~/templates/next/components/internal/Wogaa"
+
+// import { Wogaa } from "~/templates/next/components/internal/Wogaa"
 
 interface RenderApplicationHeadScriptsProps {
   site: Pick<IsomerSiteProps, "environment">
@@ -15,7 +16,7 @@ export const RenderApplicationHeadScripts = ({
       {/* and WOGAA is still gated behind techpass login. */}
       {/* Additionally, WOGAA will still load but not track metrics if the site  */}
       {/* is not registered, so no end impact to user */}
-      <Wogaa environment={site.environment} />
+      {/* <Wogaa environment={site.environment} /> */}
     </>
   )
 }
