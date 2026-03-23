@@ -7,6 +7,7 @@ import {
   COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
   getLayoutMetadataSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
+  renderPrefillText,
   schema,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
@@ -28,20 +29,15 @@ import {
   IS_SINGPASS_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
 import {
-  articlePageSchema,
   basePageSchema,
-  collectionPageSchema,
-  contentPageSchema,
   createIndexPageSchema,
   createPageSchema,
-  databasePageSchema,
   getPrefillSchema,
   getRootPageSchema,
   listPagesSchema,
   pageSettingsSchema,
   publishPageSchema,
   readPageOutputSchema,
-  refPageSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
   updatePageMetaSchema,
@@ -127,54 +123,7 @@ export const pageRouter = router({
 
       const { title, content } = resource
 
-      switch (content.layout) {
-        case "article": {
-          const page = articlePageSchema.parse(content.page)
-          return {
-            title,
-            description: page.articlePageHeader?.summary,
-            thumbnail: page.image?.src,
-          }
-        }
-        case "content":
-        case "index": {
-          const page = contentPageSchema.parse(content.page)
-          return {
-            title,
-            description: page.contentPageHeader?.summary,
-            thumbnail: page.image?.src,
-          }
-        }
-        case "database": {
-          const page = databasePageSchema.parse(content.page)
-          return {
-            title,
-            description: page.contentPageHeader?.summary,
-          }
-        }
-        case "collection": {
-          const page = collectionPageSchema.parse(content.page)
-          return {
-            title,
-            description: page.subtitle,
-          }
-        }
-        case "file":
-        case "link": {
-          const page = refPageSchema.parse(content.page)
-          return {
-            title,
-            description: page.description,
-            thumbnail: page.image?.src,
-          }
-        }
-        case "homepage":
-        case "search":
-        default:
-          return {
-            title,
-          }
-      }
+      return { title, ...renderPrefillText(content) }
     }),
 
   list: protectedProcedure
