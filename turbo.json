@@ -62,6 +62,7 @@
       "dependsOn": ["^build"],
       "outputs": ["node_modules/.cache/tsbuildinfo.json"]
     },
+    "test-ci:unit": {},
     "teardown": {},
     "test-start": {}
   }
