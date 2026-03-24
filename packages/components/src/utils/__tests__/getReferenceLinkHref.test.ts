@@ -71,6 +71,15 @@ describe("getReferenceLinkHref", () => {
     expect(result).toBe("[resource:1:999]")
   })
 
+  it("should return original reference link when sitemap array is missing", () => {
+    const result = getReferenceLinkHref(
+      "[resource:1:2]",
+      undefined,
+      "https://assets.example.com",
+    )
+    expect(result).toBe("[resource:1:2]")
+  })
+
   it("should return asset link if referenceLink is an asset link", () => {
     const result = getReferenceLinkHref(
       "/1/dc2b609a-355e-406c-af6c-003683731e7e/RFP%20Template.docx",
