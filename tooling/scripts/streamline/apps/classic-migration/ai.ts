@@ -14,6 +14,20 @@ export const generateImageAltText = async (imageUrl: string) => {
   const chatModel = foundryEngineProvider.chatModel("claude-sonnet-4-6-v1:rsn");
   const maxCharacters = 120;
 
+  // Check if the imageUrl returns a 200 status code before making the API call
+  try {
+    const response = await fetch(imageUrl, { method: "HEAD" });
+    if (!response.ok) {
+      console.warn(
+        `Image URL ${imageUrl} is not accessible. Status: ${response.status}`
+      );
+      return PLACEHOLDER_ALT_TEXT;
+    }
+  } catch (error) {
+    console.error(`Error accessing image URL ${imageUrl}:`, error);
+    return PLACEHOLDER_ALT_TEXT;
+  }
+
   try {
     const response = await generateText({
       model: chatModel,
@@ -68,45 +82,42 @@ export const generatePageSummary = async (
           role: "system",
           content: `You are a content writing expert for government agency websites.
 
-Write and return a summary text for the page content which is provided as a JSON string below. The title of this page is ${title}.
+Write and return a summary text for the page content which is provided as a JSON string below. The title of this page is { title }.
 
 This summary will be displayed at the top of a webpage and gives visitors a reason to read on.
 
 Follow these rules to craft the summary:
 
-- The first sentence should highlight the stakes or key insight to hook the reader
-- The second sentence should briefly outline what the page covers
+- The summary should have 1) the main Call-to-Action for the reader and 2) the key idea of the page.
 - Do not insert new messages or ideas that are not explicitly present in the page content
 - Do not repeat sentences from the page as-is
-- Aim for 2 sentences, but 1 or 3 are acceptable if the summary covers everything
+- Aim for 1 or 2 sentences, max 3.
+- Keep to less than 20 words per sentence.
+- Replace long or unfamiliar words with shorter, more common terms.
 - HARD LIMIT: ${maxCharacters} characters is the absolute maximum  — however, it is not a target. Use only as many characters as needed.
 - HARD REQUIREMENT: DO NOT ask for any additional information, generate the summary based on the information given, and if you think the information is insufficient, make assumptions based on typical Singapore government website content and generate the best possible summary you can. NEVER say "Based on the information provided, I don't have enough information to generate a good summary" or any similar statements. ALWAYS generate a summary regardless of the information given, and make assumptions where necessary.
 
-Make sure the copy follows these stylistic rules:
+Make sure the summary follows these stylistic rules:
 
 - Match the tone and style of the page content
 - End in a full stop
 - Do not use headers or bullet points
 - Use passive sentences only when necessary
-- Use British English and spelling by default
-- Use proper grammar
+- Use British English and spelling
 - Don't use em-dashes unless absolutely necessary
-- Keep tone light but not too friendly or casual
-- Do not use jargons or words that are redundant (e.g., "various")
-- Aim for Secondary 1 level reading level
 
 These are examples of bad summaries:
 
 - "Learn more about our open source products."
 - "Pages in this section."
 - "Stay active in your golden years with Age Well SG."
-- "Sanctions for violating anti-doping rule violation may range from a reprimand to a lifetime ban. The period of ineligibility may vary depending on the type of anti-doping rule violation, the circumstances of each case, the substance, and the possible repetition of an anti-doping rule violation."
+- “Sanctions for violating anti-doping rule violation may range from a reprimand to a lifetime ban. The period of ineligibility may vary depending on the type of anti-doping rule violation, the circumstances of each case, the substance, and the possible repetition of an anti-doping rule violation.”
 
 These are examples of better summaries:
 
-- "Discover investment opportunities and be part of Singapore's tourism future."
-- "As an athlete, you are strictly liable for any prohibited substance found in your system, regardless of intent. Learn what's banned, how to check your medications, and how to stay compliant."
-- "The "Wah! Singapore" report is a bi-annual publication that covers fun community events in Singapore. Download and read the latest edition."
+- “Discover investment opportunities and be part of Singapore's tourism future.”
+- “As an athlete, you are strictly liable for any prohibited substance found in your system, regardless of intent. Learn what's banned, how to check your medications, and how to stay compliant.”
+- “The “Wah! Singapore” report is a bi-annual publication that covers fun community events in Singapore. Download and read the latest edition.”
 
 Return ONLY the summary text, nothing else.`,
         },

@@ -1,7 +1,7 @@
 import fm from "front-matter";
 import { generateImageAltText } from "../ai";
 import { isomerSchemaValidator } from "../schema";
-import type { GetIsomerSchemaFromJekyllResponse } from "../types";
+import type { GetIsomerSchemaFromJekyllResponse, ReviewItem } from "../types";
 
 interface HomepageMigrationParams {
   content: string;
@@ -185,7 +185,7 @@ interface HeroSection {
 }
 
 const convertHero = (heroSection: HeroSection, firstInfobar?: any): any => {
-  const reviewItems: string[] = [];
+  const reviewItems: ReviewItem[] = [];
   const hero: any = {
     type: "hero",
     title: stripHtml(heroSection.title) || heroSection.title || "Home",
@@ -224,7 +224,11 @@ const convertHero = (heroSection: HeroSection, firstInfobar?: any): any => {
 
   // Flag dropdown removal
   if (heroSection.dropdown) {
-    reviewItems.push("Hero dropdown was removed");
+    reviewItems.push({
+      type: "review",
+      message: "Hero dropdown was removed",
+      action: "Review homepage layout",
+    });
   }
 
   return { hero, reviewItems };
@@ -349,8 +353,8 @@ const convertInfopic = async (
   site: string,
   domain?: string,
   useStagingBranch = false
-): Promise<{ infopic?: any; infocards?: any; reviewItems: string[] }> => {
-  const reviewItems: string[] = [];
+): Promise<{ infopic?: any; infocards?: any; reviewItems: ReviewItem[] }> => {
+  const reviewItems: ReviewItem[] = [];
 
   // Check if description contains multiple items that should be converted to infocards
   const extractedCards = infopicSection.description
@@ -359,7 +363,11 @@ const convertInfopic = async (
 
   if (extractedCards) {
     // Convert to infocards instead of infopic
-    reviewItems.push("Infopic with multiple items converted to infocards");
+    reviewItems.push({
+      type: "review",
+      message: "Infopic with multiple items converted to infocards",
+      action: "Review homepage layout",
+    });
 
     const cards = extractedCards
       .map((card) => {
@@ -398,9 +406,11 @@ const convertInfopic = async (
         : cards;
 
     if (cards.length === 0) {
-      reviewItems.push(
-        "Infopic section had no valid cards - placeholder card added"
-      );
+      reviewItems.push({
+        type: "review",
+        message: "Infopic section had no valid cards - placeholder card added",
+        action: "Review homepage layout",
+      });
     }
 
     return {
@@ -474,7 +484,11 @@ const convertInfopic = async (
           : `https://raw.githubusercontent.com/isomerpages/${site}/${useStagingBranch ? "staging" : "master"}${infopicSection.image}`;
       const generatedAltText = await generateImageAltText(fullSrc);
       infopic.imageAlt = generatedAltText || `${infopicSection.title} image`;
-      reviewItems.push("AI-generated alt text was used for infopic image");
+      reviewItems.push({
+        type: "review",
+        message: "AI-generated alt text was used for infopic image",
+        action: "Review homepage layout",
+      });
     }
   } else {
     infopic.imageAlt = `${infopicSection.title} image`;
@@ -482,7 +496,11 @@ const convertInfopic = async (
 
   // Flag subtitle removal
   if (infopicSection.subtitle) {
-    reviewItems.push("Infopic subtitle was removed");
+    reviewItems.push({
+      type: "review",
+      message: "Infopic subtitle was removed",
+      action: "Review homepage layout",
+    });
   }
 
   return { infopic, reviewItems };
@@ -499,8 +517,8 @@ interface InfobarSection {
 
 const convertInfobars = (
   infobarSections: InfobarSection[]
-): { components: any[]; reviewItems: string[] } => {
-  const reviewItems: string[] = [];
+): { components: any[]; reviewItems: ReviewItem[] } => {
+  const reviewItems: ReviewItem[] = [];
 
   if (!infobarSections || infobarSections.length === 0) {
     return { components: [], reviewItems: [] };
@@ -510,7 +528,11 @@ const convertInfobars = (
   if (infobarSections.length >= 2) {
     infobarSections.forEach((infobar) => {
       if (infobar.subtitle) {
-        reviewItems.push("Infobar subtitle was removed");
+        reviewItems.push({
+          type: "review",
+          message: "Infobar subtitle was removed",
+          action: "Review homepage layout",
+        });
       }
     });
 
@@ -547,9 +569,11 @@ const convertInfobars = (
         : cards;
 
     if (cards.length === 0) {
-      reviewItems.push(
-        "Infobars section had no valid cards - placeholder card added"
-      );
+      reviewItems.push({
+        type: "review",
+        message: "Infobars section had no valid cards - placeholder card added",
+        action: "Review homepage layout",
+      });
     }
 
     return {
@@ -570,7 +594,11 @@ const convertInfobars = (
   // Single infobar - keep as infobar
   const infobar = infobarSections[0]!;
   if (infobar.subtitle) {
-    reviewItems.push("Infobar subtitle was removed");
+    reviewItems.push({
+      type: "review",
+      message: "Infobar subtitle was removed",
+      action: "Review homepage layout",
+    });
   }
 
   const component: any = {
@@ -606,9 +634,13 @@ interface ResourcesSection {
 
 const convertResources = (
   resourcesSection: ResourcesSection
-): { component: any; reviewItems: string[] } => {
-  const reviewItems: string[] = [];
-  reviewItems.push("Collection reference link requires manual lookup");
+): { component: any; reviewItems: ReviewItem[] } => {
+  const reviewItems: ReviewItem[] = [];
+  reviewItems.push({
+    type: "review",
+    message: "Collection reference link requires manual lookup",
+    action: "Review homepage layout",
+  });
 
   const component: any = {
     type: "collectionblock",
@@ -653,11 +685,15 @@ interface TextcardsSection {
 
 const convertTextcards = (
   textcardsSection: TextcardsSection
-): { component: any; reviewItems: string[] } => {
-  const reviewItems: string[] = [];
+): { component: any; reviewItems: ReviewItem[] } => {
+  const reviewItems: ReviewItem[] = [];
 
   if (textcardsSection.subtitle) {
-    reviewItems.push("Textcards subtitle was removed");
+    reviewItems.push({
+      type: "review",
+      message: "Textcards subtitle was removed",
+      action: "Review homepage layout",
+    });
   }
 
   const hasImages = textcardsSection.cards?.some((card) => card.image);
@@ -670,7 +706,11 @@ const convertTextcards = (
     cards: (textcardsSection.cards || [])
       .map((card) => {
         if (card.linktext) {
-          reviewItems.push("Textcards with link text was removed");
+          reviewItems.push({
+            type: "review",
+            message: "Textcards with link text was removed",
+            action: "Review homepage layout",
+          });
         }
 
         const cardObj: any = {
@@ -702,9 +742,11 @@ const convertTextcards = (
   // Schema requires at least 1 card (minItems: 1)
   // If no valid cards, add a placeholder card
   if (component.cards.length === 0) {
-    reviewItems.push(
-      "Textcards section had no valid cards - placeholder card added"
-    );
+    reviewItems.push({
+      type: "review",
+      message: "Textcards section had no valid cards - placeholder card added",
+      action: "Review homepage layout",
+    });
     component.cards = [
       {
         title: "Placeholder",
@@ -730,23 +772,35 @@ interface AnnouncementsSection {
 
 const convertAnnouncements = (
   announcementsSection: AnnouncementsSection
-): { component: any; reviewItems: string[] } => {
-  const reviewItems: string[] = [];
+): { component: any; reviewItems: ReviewItem[] } => {
+  const reviewItems: ReviewItem[] = [];
 
   if (announcementsSection.subtitle) {
-    reviewItems.push("Announcement block subtitle used as description");
+    reviewItems.push({
+      type: "review",
+      message: "Announcement block subtitle used as description",
+      action: "Review homepage layout",
+    });
   }
 
   const hasDates = announcementsSection.announcements?.some((ann) => ann.date);
   if (hasDates) {
-    reviewItems.push("Announcement date was removed");
+    reviewItems.push({
+      type: "review",
+      message: "Announcement date was removed",
+      action: "Review homepage layout",
+    });
   }
 
   const hasLinkText = announcementsSection.announcements?.some(
     (ann) => ann.linktext
   );
   if (hasLinkText) {
-    reviewItems.push("Announcement block link text was removed");
+    reviewItems.push({
+      type: "review",
+      message: "Announcement block link text was removed",
+      action: "Review homepage layout",
+    });
   }
 
   const cards = (announcementsSection.announcements || [])
@@ -777,9 +831,12 @@ const convertAnnouncements = (
       : cards;
 
   if (cards.length === 0) {
-    reviewItems.push(
-      "Announcements section had no valid cards - placeholder card added"
-    );
+    reviewItems.push({
+      type: "review",
+      message:
+        "Announcements section had no valid cards - placeholder card added",
+      action: "Review homepage layout",
+    });
   }
 
   return {
@@ -813,14 +870,22 @@ interface InfocolumnsSection {
 
 const convertInfocolumns = (
   infocolumnsSection: InfocolumnsSection
-): { component: any; reviewItems: string[] } => {
-  const reviewItems: string[] = [];
+): { component: any; reviewItems: ReviewItem[] } => {
+  const reviewItems: ReviewItem[] = [];
 
   if (infocolumnsSection.subtitle) {
-    reviewItems.push("Infocolumns subtitle was removed");
+    reviewItems.push({
+      type: "review",
+      message: "Infocolumns subtitle was removed",
+      action: "Review homepage layout",
+    });
   }
   if (infocolumnsSection.linktext || infocolumnsSection.url) {
-    reviewItems.push("Infocolumns link was removed");
+    reviewItems.push({
+      type: "review",
+      message: "Infocolumns link was removed",
+      action: "Review homepage layout",
+    });
   }
 
   return {
@@ -846,7 +911,7 @@ export const migrateHomepage = async ({
   domain,
   useStagingBranch = false,
 }: HomepageMigrationParams): Promise<GetIsomerSchemaFromJekyllResponse> => {
-  const reviewItems: string[] = [];
+  const reviewItems: ReviewItem[] = [];
 
   // Parse frontmatter
   let frontmatter: any = {};
@@ -881,9 +946,11 @@ export const migrateHomepage = async ({
 
   // Handle notification banner
   if (frontmatter.notification) {
-    reviewItems.push(
-      "Notification banner requires manual configuration in Next"
-    );
+    reviewItems.push({
+      type: "review",
+      message: "Notification banner requires manual configuration in Next",
+      action: "Review homepage layout",
+    });
   }
 
   const sections = frontmatter.sections || [];
@@ -1018,7 +1085,11 @@ export const migrateHomepage = async ({
   // Validate schema
   const isValidSchema = isomerSchemaValidator(homepageSchema);
   if (!isValidSchema) {
-    reviewItems.push("Homepage schema is invalid");
+    reviewItems.push({
+      type: "review",
+      message: "Homepage schema is invalid",
+      action: "Review homepage layout",
+    });
   }
 
   if (reviewItems.length === 0) {

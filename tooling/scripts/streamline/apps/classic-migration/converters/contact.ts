@@ -1,4 +1,5 @@
 import fm from "front-matter";
+import type { ReviewItem } from "../types";
 
 interface ContactUsLocation {
   title?: string;
@@ -196,10 +197,10 @@ const contactContentToParagraphs = (
 export const migrateContactUsPage = (
   markdownContent: string,
   lastModified?: string
-): { content: any; reviewItems?: string[] } => {
+): { content: any; reviewItems?: ReviewItem[] } => {
   const { attributes, body } = fm<ContactUsFrontmatter>(markdownContent);
   const frontmatter = attributes;
-  const reviewItems: string[] = [];
+  const reviewItems: ReviewItem[] = [];
 
   if (frontmatter.layout !== "contact_us") {
     throw new Error("This is not a contact_us layout page");
@@ -251,10 +252,11 @@ export const migrateContactUsPage = (
             title: locationTitle,
           });
         } else {
-          // Invalid map URL - track as review item
-          reviewItems.push(
-            `Map URL for "${locationTitle}" is not a valid embed URL and was removed: ${location.maps_link}`
-          );
+          reviewItems.push({
+            type: "must-fix",
+            message: "Invalid Google Maps embed URL",
+            action: "Embed a Map with your location if required.",
+          });
         }
       }
     });

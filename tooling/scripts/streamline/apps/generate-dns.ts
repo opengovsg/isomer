@@ -27,6 +27,7 @@ interface ReportRow {
   cloudfront: string;
   acmRecordName: string;
   acmRecordValue: string;
+  redirectionDomain: string;
   isIndirectionLayerUpdateNeeded: boolean;
   // NOTE: We are making an assumption that the apex domain will definitely have
   // at least one of the A records, and if this is true then we will just add
@@ -42,6 +43,7 @@ const DNS_RECORDS_SHEET_COLUMNS = [
   "ACM Record Name",
   "ACM Record Value",
   "Indirection Layer",
+  "Redirection Domain",
   "Redirection Records",
 ];
 
@@ -58,10 +60,11 @@ const getReportRow = (row: ReportRow) => {
     row.acmRecordName,
     row.acmRecordValue,
     row.isIndirectionLayerUpdateNeeded
-      ? `Update to ${indirectionSlug}.hostedon.isomer.gov.sg`
+      ? `${indirectionSlug}.hostedon.isomer.gov.sg`
       : "No changes needed",
+    row.redirectionDomain,
     row.isRedirectionRecordsUpdateNeeded
-      ? "Add 2 A records pointing to 18.138.108.8 and 18.139.47.66"
+      ? "18.138.108.8 and 18.139.47.66"
       : "No changes needed",
   ];
 };
@@ -148,6 +151,7 @@ export const generateDnsRecords = async () => {
         cloudfront: cloudfrontDomain || "N/A",
         acmRecordName: record.name,
         acmRecordValue: record.value,
+        redirectionDomain: site.redirectionDomain || "N/A",
         isIndirectionLayerUpdateNeeded: !isIndirectionCorrect.isCorrect,
         isRedirectionRecordsUpdateNeeded: !isRedirectionCorrect.isCorrect,
       });

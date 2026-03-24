@@ -96,7 +96,7 @@ export const siteLaunchFirstWindow = async () => {
       }
 
       const searchSGClientId = createApplicationRes.application.applicationId;
-      await updateSiteConfig(siteId, searchSGClientId);
+      await updateSiteConfig(siteId, searchSGClientId, site.isomerDomain);
     }
 
     // Step 2: Call the AWS API to get the details of the CloudFront

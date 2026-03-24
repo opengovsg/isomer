@@ -94,7 +94,7 @@ export const siteLaunchSecondWindow = async () => {
   for (const site of siteLaunchSites) {
     const distribution = distributions.find((distribution) =>
       distribution.Origins?.Items?.some((origin) =>
-        origin.DomainName?.includes(site.siteName)
+        origin.OriginPath?.includes(site.siteName)
       )
     );
 
@@ -123,7 +123,7 @@ export const siteLaunchSecondWindow = async () => {
       console.log(`Site is live and accessible at: ${url}`);
       successfulSites.push(site);
     } catch (error) {
-      console.error(`Site is not accessible at: ${url}`, error);
+      console.error(`Site is not accessible at: ${url}`);
 
       // TODO: Prompt user to investigate and retry later
       continue;
@@ -141,17 +141,6 @@ export const siteLaunchSecondWindow = async () => {
       "Cleanup steps skipped. Please remember to perform them manually later."
     );
     return;
-  }
-
-  const isOgpVpnConnected = await confirm({
-    message: "Have you connected to the OGP VPN?",
-    default: true,
-  });
-
-  if (!isOgpVpnConnected) {
-    throw new Error(
-      "Please connect to the OGP VPN before proceeding with cleanup steps."
-    );
   }
 
   for (const site of successfulSites) {

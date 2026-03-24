@@ -10,7 +10,7 @@ export const fetchWithRetry = async (url: string, retry = 5) => {
       if (attempt === retry) {
         throw error;
       }
-      await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+      await new Promise((resolve) => setTimeout(resolve, 10000 * attempt));
     }
   }
 };

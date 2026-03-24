@@ -101,7 +101,7 @@ export const updateCloudFrontDistributionOriginPath = async (
     (build) => build.buildStatus === "SUCCEEDED"
   );
 
-  if (!latestSuccessfulBuild?.artifacts?.location) {
+  if (!latestSuccessfulBuild) {
     throw new Error(`No successful builds found for project ${siteName}`);
   }
 

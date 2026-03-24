@@ -123,7 +123,14 @@ export const createApplication = async (
   const result = (await fetch(
     "https://api.services.search.gov.sg/admin/v1/bootstrap/applications",
     options
-  ).then((response) => response.json())) as CreateApplicationResponse;
+  ).then((response) => {
+    if (response.status !== 200) {
+      throw new Error(
+        "Failed to create SearchSG application. Status code: " + response.status
+      );
+    }
+    return response.json();
+  })) as CreateApplicationResponse;
 
   return result.data;
 };

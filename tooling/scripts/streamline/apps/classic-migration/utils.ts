@@ -10,6 +10,7 @@ import {
 } from "./constants";
 import path from "path";
 import { getIsHtmlContainingRedundantDivs } from "./converters/main";
+import type { ReviewItem } from "./types";
 
 interface GetPathsToMigrateParams {
   octokit: Octokit;
@@ -54,12 +55,21 @@ export const getCollectionFolderName = async ({
 
   const parentPath = path.split("/_posts")[0];
 
-  const collectionIndex = await getFileContents({
+  let collectionIndex = await getFileContents({
     site,
     path: `${parentPath}/index.html`,
     octokit,
     useStagingBranch,
   });
+
+  if (!collectionIndex) {
+    collectionIndex = await getFileContents({
+      site,
+      path: `${parentPath}/index.md`,
+      octokit,
+      useStagingBranch,
+    });
+  }
 
   if (!collectionIndex) {
     return path;
@@ -151,32 +161,41 @@ export const getManualReviewItems = async (
   html: string
 ): Promise<{
   content: any[];
-  reviewItems: string[];
+  reviewItems: ReviewItem[];
 }> => {
-  const reviewItems: string[] = [];
+  const reviewItems: ReviewItem[] = [];
   const stringifiedContent = JSON.stringify(content);
   const stringifiedOriginalContent = JSON.stringify(originalContent);
 
   // Flag pages with custom HTML
   if (variant === "markdown" && !getIsHtmlContainingRedundantDivs(html)) {
-    reviewItems.push("Converted from HTML");
+    reviewItems.push({
+      type: "must-fix",
+      message: "Converted from custom HTML",
+      action: "Review layout and content",
+    });
   }
 
   // Images with missing alt text
-  if (
-    content.some(
-      (block) =>
-        (block.type === "image" || block.type === "contentpic") &&
-        (!block.alt || block.alt === PLACEHOLDER_ALT_TEXT)
-    )
-  ) {
-    reviewItems.push("Images with missing alt text");
-  }
+  // NOTE: Will be flagged out by the AI generation, so removing this for now
+  // if (
+  //   content.some(
+  //     (block) =>
+  //       (block.type === "image" || block.type === "contentpic") &&
+  //       (!block.alt || block.alt === PLACEHOLDER_ALT_TEXT)
+  //   )
+  // ) {
+  //   reviewItems.push("Images with missing alt text");
+  // }
 
   // Images inside tables
   if (stringifiedContent.includes(PLACEHOLDER_IMAGE_IN_TABLE_TEXT)) {
     // Already replaced in the converter script, but highlighting for manual review
-    reviewItems.push("Images inside tables were moved out");
+    reviewItems.push({
+      type: "must-fix",
+      message: "Images inside tables were moved out",
+      action: "Restructure content in the table",
+    });
   }
 
   // Flag table usages to add captions
@@ -186,12 +205,20 @@ export const getManualReviewItems = async (
     stringifiedContent.includes("tableHeader") ||
     stringifiedContent.includes("tableRow")
   ) {
-    reviewItems.push("Tables were used");
+    reviewItems.push({
+      type: "must-fix",
+      message: "Tables were used",
+      action: "Add a caption to all tables",
+    });
   }
 
   // InfoCards were used
   if (content.some((block) => block.type === "infocards")) {
-    reviewItems.push("InfoCards were used");
+    reviewItems.push({
+      type: "review",
+      message: "Cards were used",
+      action: "Add a Title to the Cards",
+    });
   }
 
   // InfoCards with more than 30 cards were used
@@ -200,7 +227,11 @@ export const getManualReviewItems = async (
       (block) => block.type === "infocards" && block.cards.length > 30
     )
   ) {
-    reviewItems.push("InfoCards with more than 30 cards were used");
+    reviewItems.push({
+      type: "must-fix",
+      message: "Cards with more than 30 cards were used",
+      action: "Reduce the number of cards to less than 30",
+    });
   }
 
   // Accordions
@@ -209,24 +240,40 @@ export const getManualReviewItems = async (
       stringifiedOriginalContent.includes("<details")) ||
     stringifiedOriginalContent.includes("jekyllcodex_accordion")
   ) {
-    reviewItems.push("Contains accordions");
+    reviewItems.push({
+      type: "must-fix",
+      message: "Contains accordions",
+      action: "Determine if any content should be placed inside an accordion",
+    });
   }
 
   // Google Slides
   if (stringifiedContent.includes(PLACEHOLDER_GOOGLE_SLIDES_TEXT)) {
     // Already replaced in the converter script, but highlighting for manual review
-    reviewItems.push("Contains Google Slides embeds");
+    reviewItems.push({
+      type: "review",
+      message: "Contains Google Slides embeds",
+      action: `Review the hyperlink "${PLACEHOLDER_GOOGLE_SLIDES_TEXT}"`,
+    });
   }
 
   // Remove Instagram embeds
   if (stringifiedContent.includes(PLACEHOLDER_INSTAGRAM_LINK_TEXT)) {
     // Already replaced in the converter script, but highlighting for manual review
-    reviewItems.push("Contains Instagram embeds");
+    reviewItems.push({
+      type: "review",
+      message: "Contains Instagram embeds",
+      action: `Review the hyperlink "${PLACEHOLDER_INSTAGRAM_LINK_TEXT}"`,
+    });
   }
 
   // Flag Iframe usages
   if (content.some((block) => block.type === "iframe")) {
-    reviewItems.push("Contains Iframes");
+    reviewItems.push({
+      type: "must-fix",
+      message: "Contains Iframes",
+      action: "Review if the Iframe displays correctly",
+    });
   }
 
   // Flag pages with descriptions that are too long
@@ -237,24 +284,37 @@ export const getManualReviewItems = async (
     !NON_CONTENT_LAYOUTS.includes(layout) &&
     description.length > 500
   ) {
-    reviewItems.push("Page summary is longer than 500 characters");
+    reviewItems.push({
+      type: "must-fix",
+      message: "Page summary is longer than 500 characters",
+      action: "Shorten the page summary to less than 500 characters",
+    });
   }
 
   // For article pages, 500 characters
   if (description && layout && layout === "post" && description.length > 500) {
-    reviewItems.push("Article summary is longer than 500 characters");
+    reviewItems.push({
+      type: "must-fix",
+      message: "Article summary is longer than 500 characters",
+      action: "Shorten the article summary to less than 500 characters",
+    });
   }
 
-  if (!description || description.length === 0) {
-    reviewItems.push("Page summary is missing");
-  }
+  // NOTE: Will be flagged out by the AI generation, so removing this for now
+  // if (!description || description.length === 0) {
+  //   reviewItems.push({ type: "must-fix", message: "Page summary is missing" });
+  // }
 
   // Flag pages that have images that used to be links
   if (
     stringifiedContent.includes('"text": "Image link"') ||
     originalContent.includes('<a class="isomer-image-wrapper" href="')
   ) {
-    reviewItems.push("Contains images that were used as links");
+    reviewItems.push({
+      type: "must-fix",
+      message: "Contains images that were used as links",
+      action: `Replace "Image link" with a descriptive copy`,
+    });
   }
 
   // Flag pages that have div style attributes

@@ -175,7 +175,8 @@ const convertFromTiptap = (schema: any) => {
         elem.innerHTML = component.content;
         const iframe = elem.querySelector("iframe");
         const src = iframe?.getAttribute("src");
-        const srcUrl = new URL(src || "");
+        const protocolUrl = src?.startsWith("//") ? "https:" + src : src;
+        const srcUrl = new URL(protocolUrl || "");
 
         if (srcUrl.host.includes("youtube.com")) {
           const title = iframe?.getAttribute("title") || "YouTube video";
@@ -183,7 +184,7 @@ const convertFromTiptap = (schema: any) => {
           outputContent.push({
             type: "video",
             title,
-            url: src,
+            url: protocolUrl,
           });
         } else if (
           srcUrl.host.includes("google.com") &&
@@ -192,7 +193,7 @@ const convertFromTiptap = (schema: any) => {
           const title = iframe?.getAttribute("title") || "Google Maps";
           // Replace the url with /d/u/[0-9]/ to just /d/, which is what we only
           // accept in Isomer Next for Google Maps embeds
-          const fixedSrc = src?.replace(/\/d\/u\/\d\//, "/d/");
+          const fixedSrc = protocolUrl?.replace(/\/d\/u\/\d\//, "/d/");
 
           outputContent.push({
             type: "map",
@@ -212,7 +213,7 @@ const convertFromTiptap = (schema: any) => {
                       {
                         type: "link",
                         attrs: {
-                          href: src,
+                          href: protocolUrl,
                         },
                       },
                     ],

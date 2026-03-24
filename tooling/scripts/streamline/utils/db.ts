@@ -75,7 +75,8 @@ export const getSiteConfig = async (
 
 export const updateSiteConfig = async (
   siteId: number,
-  searchSGClientId: string
+  searchSGClientId: string,
+  url: string
 ) => {
   const client = new Client({
     connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,
@@ -84,14 +85,35 @@ export const updateSiteConfig = async (
   try {
     await client.connect();
 
-    const res = await client.query(
-      `UPDATE "Site" SET config = jsonb_set(config, '{search}', $1::jsonb) WHERE id = $2`,
-      [JSON.stringify({ type: "searchSG", clientId: searchSGClientId }), siteId]
+    const res = await client.query(`SELECT config FROM "Site" WHERE id = $1`, [
+      siteId,
+    ]);
+
+    if (res.rows.length !== 1) {
+      throw new Error(`Site with ID ${siteId} not found.`);
+    }
+
+    const currentConfig = res.rows[0].config;
+
+    const updatedConfig = {
+      ...currentConfig,
+      search: {
+        type: "searchSG",
+        clientId: searchSGClientId,
+      },
+      url,
+    };
+
+    const updateRes = await client.query(
+      `UPDATE "Site" SET config = $1 WHERE id = $2`,
+      [updatedConfig, siteId]
     );
 
-    if (res.rowCount !== 1) {
+    if (updateRes.rowCount !== 1) {
       throw new Error(`Failed to update site with ID ${siteId}.`);
     }
+
+    console.log(`Successfully updated site with ID ${siteId}.`);
   } catch (error) {
     console.error("Error updating site config:", error);
     throw error;

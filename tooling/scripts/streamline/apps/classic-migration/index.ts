@@ -38,7 +38,8 @@ const getStatusName = (
     case "converted":
       return "Converted";
     case "manual_review":
-      return "Requires Manual Review";
+      // NOTE: We differentiate in the report using the "Priority" column instead
+      return "Converted";
     case "not_converted":
       return "Not Converted";
     default:
@@ -403,13 +404,39 @@ export const migrateSite = async ({
   console.log(
     `Saving migrated pages information into a CSV file (migrated-pages-${site}.csv)`
   );
-  const csvHeaders = "Permalink,Title,Status,Review items\n";
+  const csvHeaders =
+    "Permalink,Title,Status,Priority,Review items,Recommended actions\n";
   const csvRows = [...finishedPages, ...finishedResourceRoomPages]
-    .sort((a, b) => a.permalink.localeCompare(b.permalink))
+    .sort((a, b) => {
+      if (a.permalink === undefined) return 1;
+      if (b.permalink === undefined) return -1;
+      return a.permalink.localeCompare(b.permalink);
+    })
     .filter((pages) => pages?.permalink !== undefined)
     .map(
       (content) =>
-        `${content?.permalink},"${content.title}",${getStatusName(content?.status)},${content?.reviewItems ? '"' + content?.reviewItems.join(", ") + '"' : ""}\n`
+        [
+          content.permalink,
+          content.title,
+          getStatusName(content.status),
+          content.reviewItems
+            ? content.reviewItems.some((ri) => ri.type === "must-fix")
+              ? "Must fix"
+              : "Review"
+            : "Review",
+          content.reviewItems
+            ? '"' + content.reviewItems.map((ri) => ri.message).join(", ") + '"'
+            : content.status === "not_converted"
+              ? "Recreate page from scratch"
+              : "",
+          content.reviewItems
+            ? '"' +
+              [...new Set(content.reviewItems.map((ri) => ri.action))].join(
+                ", "
+              ) +
+              '"'
+            : "Run final checks",
+        ].join(",") + "\n"
     );
 
   const csvString = csvHeaders + csvRows.join("");
@@ -432,7 +459,7 @@ export const migrateClassicToNext = async () => {
       isResourceRoomIncluded: true,
       useStagingBranch,
     };
-    await migrateSite(migrationRequest);
+    // await migrateSite(migrationRequest);
 
     const studiofyRequest: StudiofyRequest = {
       repoName: site.repoName,

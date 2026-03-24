@@ -22,6 +22,12 @@ export type StudiofyRequest = Pick<
   "repoName" | "useStagingBranch"
 >;
 
+export interface ReviewItem {
+  type: "must-fix" | "review";
+  message: string;
+  action: string;
+}
+
 export type GetIsomerSchemaFromJekyllResponse =
   | {
       status: "not_converted";
@@ -41,12 +47,12 @@ export type GetIsomerSchemaFromJekyllResponse =
       title: string;
       permalink: string;
       third_nav_title?: string;
-      reviewItems: string[];
+      reviewItems: ReviewItem[];
     };
 
 export type ReportRow = Pick<
   GetIsomerSchemaFromJekyllResponse,
   "status" | "title" | "permalink"
 > & {
-  reviewItems?: string[];
+  reviewItems?: ReviewItem[];
 };

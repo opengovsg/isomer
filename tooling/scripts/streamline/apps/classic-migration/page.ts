@@ -320,40 +320,56 @@ export const getIsomerSchemaFromJekyll = async ({
     }
   }
   if (isPageContainingBrokenImage) {
-    reviewItems.push("Page with broken image");
+    reviewItems.push({
+      type: "must-fix",
+      message: "Image is broken",
+      action: "Fix broken image",
+    });
   }
   if (isImageAltTextUpdated) {
-    reviewItems.push("Review AI-generated alternate text.");
+    reviewItems.push({
+      type: "review",
+      message: "Image was used",
+      action: "Review AI-generated alternate text on all images",
+    });
   }
   schemaContent.content = updatedSchemaContent;
 
   // Provide an AI-generated page summary if none exists
-  if (
-    schemaContent.page?.contentPageHeader?.summary ===
-      PLACEHOLDER_PAGE_SUMMARY ||
-    schemaContent.page?.articlePageHeader?.summary === PLACEHOLDER_PAGE_SUMMARY
-  ) {
-    const pageContentString = JSON.stringify(convertedContent);
-    const aiGeneratedSummary = await generatePageSummary(
-      title,
-      pageContentString
-    );
+  // if (
+  //   schemaContent.page?.contentPageHeader?.summary ===
+  //     PLACEHOLDER_PAGE_SUMMARY ||
+  //   schemaContent.page?.articlePageHeader?.summary === PLACEHOLDER_PAGE_SUMMARY
+  // ) {
+  const pageContentString = JSON.stringify(convertedContent);
+  const aiGeneratedSummary = await generatePageSummary(
+    title,
+    pageContentString
+  );
 
-    if (schemaContent.page?.contentPageHeader) {
-      schemaContent.page.contentPageHeader.summary = aiGeneratedSummary;
-    } else if (schemaContent.page?.articlePageHeader) {
-      schemaContent.page.articlePageHeader.summary = aiGeneratedSummary;
-    }
-
-    reviewItems.push("Review AI-generated page summary.");
+  if (schemaContent.page?.contentPageHeader) {
+    schemaContent.page.contentPageHeader.summary = aiGeneratedSummary;
+  } else if (schemaContent.page?.articlePageHeader) {
+    schemaContent.page.articlePageHeader.summary = aiGeneratedSummary;
   }
+
+  reviewItems.push({
+    type: "review",
+    message: "Page summary is missing",
+    action: "Review the AI-generated page summary",
+  });
+  // }
 
   // Check if the page schema is valid
   const isValidSchema = isomerSchemaValidator(schemaContent);
 
   if (!isValidSchema) {
     // If schema is invalid, flag for manual review
-    reviewItems.push("Page schema is invalid");
+    reviewItems.push({
+      type: "must-fix",
+      message: "Page schema is invalid",
+      action: "",
+    });
   }
 
   const status = reviewItems.length === 0 ? "converted" : "manual_review";
