@@ -82,7 +82,7 @@ export const siteLaunchFirstWindow = async () => {
         try {
           createApplicationRes = await createApplication(
             searchSGAuthToken,
-            `${siteConfig.siteName} `,
+            `${siteConfig.siteName} `,
             site.isomerDomain,
             siteConfig.brandColor
           );
