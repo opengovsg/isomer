@@ -145,7 +145,7 @@ export const COLLECTION_PAGE_DEFAULT_SORT_DIRECTION =
 export const CollectionPagePageSchema = Type.Intersect([
   Type.Object({
     subtitle: Type.String({
-      title: "The subtitle of the collection",
+      title: "Summary",
       format: "textarea",
     }),
   }),
@@ -160,7 +160,11 @@ export const CollectionPagePageSchema = Type.Intersect([
           }),
           Type.Literal(COLLECTION_VARIANT_OPTIONS.Blog, { title: "2-column" }),
         ],
-        { title: "Layout", format: "collection-variant" },
+        {
+          title: "Layout",
+          format: "collection-variant",
+          default: COLLECTION_VARIANT_OPTIONS.Collection,
+        },
       ),
     ),
     sortOrder: Type.Optional(

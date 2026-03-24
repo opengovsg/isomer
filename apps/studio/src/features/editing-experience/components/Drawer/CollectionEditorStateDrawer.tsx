@@ -12,7 +12,9 @@ import isEqual from "lodash/isEqual"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { ADMIN_ROLE } from "~/lib/growthbook"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { pageSchema } from "../../schema"
@@ -36,6 +38,9 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     setPreviewPageState,
   } = useEditorDrawerContext()
 
+  const isUserIsomerAdmin = useIsUserIsomerAdmin({
+    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  })
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -55,7 +60,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   const metadataSchema = getScopedSchema({
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
     scope: "page",
-    exclude: ["tagCategories", "tags"],
+    exclude: isUserIsomerAdmin ? [] : ["tagCategories", "tags"],
   })
   const validateFn =
     ajv.compile<Static<ReturnType<typeof getLayoutPageSchema>>>(metadataSchema)
