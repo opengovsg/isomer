@@ -2,11 +2,13 @@ import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { useEffect, useState } from "react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
+import { useToast } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import get from "lodash/get"
 
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
@@ -45,6 +47,7 @@ function JsonFormsLinkControl({
   const { siteId } = useQueryParse(siteSchema)
   const ctx = useJsonForms()
   const utils = trpc.useUtils()
+  const toast = useToast()
 
   // NOTE: If this is an internal link
   // we will auto-fill the title, description and thumbnail
@@ -58,7 +61,12 @@ function JsonFormsLinkControl({
     if (!resourceId) return
 
     // NOTE: Omit last item because that points to this link control
-    const basePath = path.split(".").slice(0, -1).join(".")
+    const parts = path.split(".").slice(0, -1)
+    const basePath = parts.join(".")
+    const parent = parts[0]
+
+    // NOTE: should only  prefill for cards
+    if (parent !== "cards") return
 
     // Check if any field is empty or contains a placeholder value before fetching
     const hasEmptyOrPlaceholderField = AUTOPOPULATED_FIELDS.some((field) =>
@@ -73,6 +81,10 @@ function JsonFormsLinkControl({
     utils.page.getPrefill
       .fetch({ resourceId, siteId: Number(siteId) })
       .then(({ title, description, thumbnail }) => {
+        // NOTE: setting this up here means that if we fail the fetch,
+        // we will abort silently and never retry
+        setLastFetched(data as string)
+
         if (
           isEmptyOrPlaceholder(
             get(ctx.core?.data, `${basePath}.title`) as string | undefined,
@@ -102,21 +114,18 @@ function JsonFormsLinkControl({
           handleChange(`${basePath}.imageUrl`, thumbnail)
         }
 
-        setLastFetched(data as string)
+        toast({
+          title:
+            "Some details of the page were copied over. You can modify them.",
+          status: "success",
+          ...BRIEF_TOAST_SETTINGS,
+        })
       })
       .catch((err) => {
         // Silently fail if the linked page cannot be fetched
         console.log(err)
       })
-  }, [
-    data,
-    lastFetched,
-    siteId,
-    path,
-    ctx.core?.data,
-    handleChange,
-    utils.page.getPrefill,
-  ])
+  }, [data, lastFetched, siteId, path])
 
   return (
     <BaseLinkControl
