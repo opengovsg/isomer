@@ -1,5 +1,5 @@
 import type { CSSProperties, PropsWithChildren } from "react"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { Flex } from "@chakra-ui/react"
 import Frame, { useFrame } from "react-frame-component"
 
@@ -81,11 +81,13 @@ export const PreviewIframe = ({
           />
         }
       >
-        <div style={style}>
-          <IframeInnerComponent key={keyForRerender} callback={callback}>
-            {children}
-          </IframeInnerComponent>
-        </div>
+        <IframeInnerComponent
+          key={keyForRerender}
+          style={style}
+          callback={callback}
+        >
+          {children}
+        </IframeInnerComponent>
       </Frame>
     </Flex>
   )
@@ -93,9 +95,11 @@ export const PreviewIframe = ({
 
 const IframeInnerComponent = ({
   children,
+  style,
   callback,
-}: PropsWithChildren<Pick<PreviewIframeProps, "callback">>) => {
+}: PropsWithChildren<Pick<PreviewIframeProps, "callback" | "style">>) => {
   const { document: iframeDocument, window: iframeWindow } = useFrame()
+  const containerRef = useRef<HTMLDivElement>(null)
 
   // !! This effect might break usages of scroll lock if scroll lock is not triggered by inside the iframe.
   useEffect(() => {
@@ -123,12 +127,34 @@ const IframeInnerComponent = ({
       attributeFilter: ["style"],
     })
 
+    const portalObserver = new MutationObserver(() => {
+      const portalRoot = document.getElementById("headlessui-portal-root")
+
+      if (
+        portalRoot &&
+        !containerRef.current?.querySelector("#headlessui-portal-root")
+      ) {
+        containerRef.current?.appendChild(portalRoot)
+      }
+    })
+
+    portalObserver.observe(document.body, {
+      childList: true,
+    })
+
     if (callback) {
       callback({ document: iframeDocument, window: iframeWindow })
     }
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      portalObserver.disconnect()
+    }
   }, [callback, iframeDocument, iframeDocument?.documentElement, iframeWindow])
 
-  return children
+  return (
+    <div ref={containerRef} style={style}>
+      {children}
+    </div>
+  )
 }
