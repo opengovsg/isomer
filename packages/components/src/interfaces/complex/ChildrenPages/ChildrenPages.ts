@@ -25,7 +25,7 @@ export const ChildrenPagesSchema = Type.Object(
     showThumbnail: Type.Boolean({
       title: "Show thumbnail of all child pages",
       description:
-        "We will use the child pages' feature images as their thumbnail.",
+        "Publish the child page for thumbnail changes to appear here. Pages without a thumbnail will show the site’s logo.",
       default: false,
     }),
     // NOTE: We set this to `Optional` for now due to backcompat
