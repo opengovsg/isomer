@@ -65,6 +65,22 @@ interface ScopeLayoutMap {
   file: SchemaPathsFrom<typeof FileRefSchema>
 }
 
+function filterRequiredFields(
+  schema: Record<string, unknown>,
+  excludeSet: Set<string>,
+): void {
+  if (Array.isArray(schema.required)) {
+    const filteredRequired = (schema.required as string[]).filter(
+      (field) => !excludeSet.has(field),
+    )
+    if (filteredRequired.length > 0) {
+      schema.required = filteredRequired
+    } else {
+      delete schema.required
+    }
+  }
+}
+
 /**
  * ```ts
  * // ✅ Valid - "page.database" exists in DatabasePageSchema
@@ -128,16 +144,7 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
               ...subSchema,
               properties: filteredProperties,
             }
-            if (Array.isArray(subSchema.required)) {
-              const filteredRequired = subSchema.required.filter(
-                (field: string) => !excludeSet.has(field),
-              )
-              if (filteredRequired.length > 0) {
-                result.required = filteredRequired
-              } else {
-                delete result.required
-              }
-            }
+            filterRequiredFields(result, excludeSet)
             return result
           }
           return subSchema
@@ -163,16 +170,7 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
         ...componentSchemaDefinitions,
         properties: filteredProperties,
       }
-      if (Array.isArray(currentSchema.required)) {
-        const filteredRequired = currentSchema.required.filter(
-          (field: string) => !excludeSet.has(field),
-        )
-        if (filteredRequired.length > 0) {
-          result.required = filteredRequired
-        } else {
-          delete result.required
-        }
-      }
+      filterRequiredFields(result, excludeSet)
 
       return result as TSchema
     }
