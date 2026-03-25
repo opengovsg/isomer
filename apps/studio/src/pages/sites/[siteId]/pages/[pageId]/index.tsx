@@ -53,7 +53,7 @@ const EditPage: NextPageWithLayout = () => {
 const PageEditingView = () => {
   return (
     <Grid h="full" w="100%" templateColumns="repeat(3, 1fr)" gap={0}>
-      <GridItem colSpan={1} overflow="auto" minW="30rem">
+      <GridItem colSpan={1} overflow="auto" minW="28rem">
         <EditPageDrawer />
       </GridItem>
       <GridItem colSpan={2}>

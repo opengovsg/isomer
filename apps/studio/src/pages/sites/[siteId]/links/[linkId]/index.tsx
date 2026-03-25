@@ -47,7 +47,7 @@ export const EditLink = () => {
       gap={0}
       maxH="calc(100vh - 57px)"
     >
-      <GridItem colSpan={1} overflow="auto" minW="30rem">
+      <GridItem colSpan={1} overflow="auto" minW="28rem">
         <LinkEditorDrawer
           link={link}
           setLink={setLink}
