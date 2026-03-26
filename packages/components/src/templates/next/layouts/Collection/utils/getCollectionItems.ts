@@ -70,15 +70,14 @@ export const getCollectionItems = ({
           ? getParsedDate(item.date)
           : undefined
       const hasOriginalImage = !!item.image?.src
-      const image =
-        showThumbnail !== false
-          ? hasOriginalImage
-            ? item.image
-            : {
-                src: site.logoUrl,
-                alt: `${site.siteName} site logo`,
-              }
-          : undefined
+      const image = showThumbnail
+        ? hasOriginalImage
+          ? item.image
+          : {
+              src: site.logoUrl,
+              alt: `${site.siteName} site logo`,
+            }
+        : undefined
 
       const baseItem = {
         type: "collectionCard" as const,
