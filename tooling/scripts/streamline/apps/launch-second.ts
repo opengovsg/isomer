@@ -179,7 +179,9 @@ export const siteLaunchSecondWindow = async () => {
     "All cleanup steps completed successfully, please proceed to running the following SQL query on the Isomer CMS database to remove the site collaborators:"
   );
 
-  getRemoveAllSiteCollaboratorsQuery(
-    successfulSites.map((site) => site.repoName)
+  console.log(
+    getRemoveAllSiteCollaboratorsQuery(
+      successfulSites.map((site) => site.repoName)
+    )
   );
 };
