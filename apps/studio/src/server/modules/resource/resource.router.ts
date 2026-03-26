@@ -539,6 +539,21 @@ export const resourceRouter = router({
         siteId: Number(siteId),
       })
 
+      // Throw not found if the provided resourceId does not exist
+      if (resourceId) {
+        await db
+          .selectFrom("Resource")
+          .where("id", "=", String(resourceId))
+          .select("type")
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "NOT_FOUND",
+                message: "Resource not found",
+              }),
+          )
+      }
+
       // TODO(perf): If too slow, consider caching this count, but 4-5 million rows should be fine
       let query = db
         .selectFrom("Resource")
