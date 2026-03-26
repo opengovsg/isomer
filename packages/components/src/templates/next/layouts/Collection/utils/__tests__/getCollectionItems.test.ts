@@ -134,8 +134,66 @@ describe("getCollectionItems", () => {
       expect(result[0]!.image).toBeUndefined()
       expect(result[0]!.isFallbackImage).toBe(false)
     })
+  })
 
-    it("should use the item image when showThumbnail is not set and item has an image", () => {
+  describe("showThumbnail not explicitly set (auto-detection)", () => {
+    it("should show thumbnails when at least one item has an image", () => {
+      const itemImage = { src: "/images/thumbnail.png", alt: "Thumbnail" }
+      const site = createSiteWithChildren([
+        createArticleChild({
+          id: "article-1",
+          permalink: "/collection/article-1",
+          image: itemImage,
+        }),
+        createArticleChild({
+          id: "article-2",
+          permalink: "/collection/article-2",
+          image: undefined,
+        }),
+      ])
+
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+      })
+
+      expect(result).toHaveLength(2)
+      // Item with image uses its own image
+      expect(result[0]!.image).toEqual(itemImage)
+      expect(result[0]!.isFallbackImage).toBe(false)
+      // Item without image falls back to site logo
+      expect(result[1]!.image).toEqual({
+        src: SITE_LOGO_URL,
+        alt: `${SITE_NAME} site logo`,
+      })
+      expect(result[1]!.isFallbackImage).toBe(true)
+    })
+
+    it("should not show thumbnails when no items have images", () => {
+      const site = createSiteWithChildren([
+        createArticleChild({
+          id: "article-1",
+          permalink: "/collection/article-1",
+          image: undefined,
+        }),
+        createArticleChild({
+          id: "article-2",
+          permalink: "/collection/article-2",
+          image: { src: "", alt: "" },
+        }),
+      ])
+
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+      })
+
+      expect(result).toHaveLength(2)
+      expect(result[0]!.image).toBeUndefined()
+      expect(result[1]!.image).toBeUndefined()
+    })
+
+    it("should use the item image when only one item exists and has an image", () => {
       const itemImage = { src: "/images/thumbnail.png", alt: "Thumbnail" }
       const site = createSiteWithChildren([
         createArticleChild({ image: itemImage }),
@@ -149,24 +207,6 @@ describe("getCollectionItems", () => {
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toEqual(itemImage)
       expect(result[0]!.isFallbackImage).toBe(false)
-    })
-
-    it("should fall back to site logo when showThumbnail is not set and item has no image", () => {
-      const site = createSiteWithChildren([
-        createArticleChild({ image: undefined }),
-      ])
-
-      const result = getCollectionItems({
-        site,
-        permalink: "/collection",
-      })
-
-      expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual({
-        src: SITE_LOGO_URL,
-        alt: `${SITE_NAME} site logo`,
-      })
-      expect(result[0]!.isFallbackImage).toBe(true)
     })
   })
 })

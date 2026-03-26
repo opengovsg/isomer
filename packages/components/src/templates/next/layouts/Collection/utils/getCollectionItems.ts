@@ -57,6 +57,11 @@ export const getCollectionItems = ({
     getSitemapAsArray(child),
   )
 
+  const isAnyItemHaveImage = items.some((item) => !!item.image?.src)
+  // If showThumbnail is not explicitly set, show the thumbnail if any of the
+  // items have an image
+  const shouldShowThumbnail = showThumbnail ?? isAnyItemHaveImage
+
   const transformedItems = items
     .filter(
       (item) =>
@@ -70,7 +75,7 @@ export const getCollectionItems = ({
           ? getParsedDate(item.date)
           : undefined
       const hasOriginalImage = !!item.image?.src
-      const image = showThumbnail
+      const image = shouldShowThumbnail
         ? hasOriginalImage
           ? item.image
           : {
