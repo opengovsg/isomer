@@ -2,22 +2,9 @@ import type { GetCollectionItemsProps } from "./getCollectionItems"
 import type { AllCardProps } from "~/interfaces"
 
 interface SortCollectionItemsProps
-  extends Pick<
-    GetCollectionItemsProps,
-    "sortOrder" | "sortBy" | "sortDirection"
-  > {
+  extends Pick<GetCollectionItemsProps, "sortBy" | "sortDirection"> {
   items: AllCardProps[]
 }
-
-// Helper types to extract the sortBy and sortDirection from sortOrder
-type FirstPart<T extends string> = T extends `${infer F}-${string}` ? F : never
-type SecondPart<T extends string> = T extends `${string}-${infer S}` ? S : never
-type SortBy =
-  | FirstPart<NonNullable<GetCollectionItemsProps["sortOrder"]>>
-  | GetCollectionItemsProps["sortBy"]
-type SortDirection =
-  | SecondPart<NonNullable<GetCollectionItemsProps["sortOrder"]>>
-  | GetCollectionItemsProps["sortDirection"]
 
 const getLastModifiedDate = (item: AllCardProps): Date | undefined => {
   if (!item.lastModified) {
@@ -275,34 +262,19 @@ const sortCollectionItemsByCategory = ({
 
 export const sortCollectionItems = ({
   items,
-  sortOrder,
   sortBy,
   sortDirection,
 }: SortCollectionItemsProps): AllCardProps[] => {
-  const derivedSortBy = sortOrder ? (sortOrder.split("-")[0] as SortBy) : sortBy
-  const derivedSortDirection = sortOrder
-    ? (sortOrder.split("-")[1] as SortDirection)
-    : sortDirection
-
-  switch (derivedSortBy) {
+  switch (sortBy) {
     case "date":
     case undefined:
-      return sortCollectionItemsByDate({
-        items,
-        sortDirection: derivedSortDirection,
-      })
+      return sortCollectionItemsByDate({ items, sortDirection })
     case "title":
-      return sortCollectionItemsByTitle({
-        items,
-        sortDirection: derivedSortDirection,
-      })
+      return sortCollectionItemsByTitle({ items, sortDirection })
     case "category":
-      return sortCollectionItemsByCategory({
-        items,
-        sortDirection: derivedSortDirection,
-      })
+      return sortCollectionItemsByCategory({ items, sortDirection })
     default:
-      const _: never = derivedSortBy
+      const _: never = sortBy
       return []
   }
 }

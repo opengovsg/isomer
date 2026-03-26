@@ -1,6 +1,10 @@
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import type { UnwrapTagged } from "type-fest"
-import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
+import {
+  COLLECTION_PAGE_DEFAULT_SORT_BY,
+  COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+  ISOMER_USABLE_PAGE_LAYOUTS,
+} from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
 import type { ResourceType } from "../database"
@@ -46,7 +50,8 @@ export const createCollectionIndexJson = (title: string) => {
     page: {
       title,
       subtitle: `Read up-to-date news articles, speeches, and press releases here.`,
-      sortOrder: "date-desc",
+      defaultSortBy: COLLECTION_PAGE_DEFAULT_SORT_BY,
+      defaultSortDirection: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
     } as CollectionPagePageProps,
     content: [],
     version: "0.1.0",

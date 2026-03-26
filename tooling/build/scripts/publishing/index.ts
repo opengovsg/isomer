@@ -143,7 +143,6 @@ async function main() {
           ref: resource.content.page.ref, // For file and link layouts
           collectionPagePageProps: {
             tagCategories: resource.content.page?.tagCategories,
-            sortOrder: resource.content.page?.sortOrder,
             defaultSortBy: resource.content.page?.defaultSortBy,
             defaultSortDirection: resource.content.page?.defaultSortDirection,
           },

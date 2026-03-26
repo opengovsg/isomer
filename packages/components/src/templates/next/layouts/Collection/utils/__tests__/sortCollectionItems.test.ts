@@ -57,15 +57,10 @@ describe("sortCollectionItems", () => {
 
       // Act
       const sorted = sortCollectionItems({ items })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "date-desc",
-      })
 
       // Assert
       const expectedTitles = ["Newest", "Middle", "Oldest"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("should sort items by the published date (oldest first), if sort direction is specified as ascending", () => {
@@ -82,15 +77,10 @@ describe("sortCollectionItems", () => {
         sortBy: "date",
         sortDirection: "asc",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "date-asc",
-      })
 
       // Assert
       const expectedTitles = ["Oldest", "Middle", "Newest"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("should sort by last modified date when dates are equal", () => {
@@ -116,15 +106,10 @@ describe("sortCollectionItems", () => {
 
       // Act
       const sorted = sortCollectionItems({ items })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "date-desc",
-      })
 
       // Assert
       const expectedTitles = ["Alice", "Bob", "Charlie"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("should sort by title when dates and the last modified dates are equal", () => {
@@ -155,15 +140,10 @@ describe("sortCollectionItems", () => {
         sortBy: "title",
         sortDirection: "asc",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "title-asc",
-      })
 
       // Assert
       const expectedTitles = ["Alice", "Bob", "Charlie"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("should sort by title when dates are equal and take into account numbers in the title", () => {
@@ -181,15 +161,10 @@ describe("sortCollectionItems", () => {
         sortBy: "title",
         sortDirection: "desc",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "title-desc",
-      })
 
       // Assert
       const expectedTitles = ["10 ogpeople", "2 ogpeople", "1 ogpeople"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("should sort by title if articles do not have a published date", () => {
@@ -206,15 +181,10 @@ describe("sortCollectionItems", () => {
         sortBy: "title",
         sortDirection: "asc",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "title-asc",
-      })
 
       // Assert
       const expectedTitles = ["Alice", "Bob", "Charlie"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("should sort by last modified date if articles do not have a published date and titles are the same", () => {
@@ -239,10 +209,6 @@ describe("sortCollectionItems", () => {
 
       // Act
       const sorted = sortCollectionItems({ items })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "date-desc",
-      })
 
       // Assert
       const expectedLastModified = [
@@ -251,9 +217,6 @@ describe("sortCollectionItems", () => {
         "2025-01-01T12:00:00Z",
       ]
       expect(sorted.map((item) => item.lastModified)).toEqual(
-        expectedLastModified,
-      )
-      expect(sortedTwo.map((item) => item.lastModified)).toEqual(
         expectedLastModified,
       )
     })
@@ -269,15 +232,10 @@ describe("sortCollectionItems", () => {
 
       // Act
       const sorted = sortCollectionItems({ items, sortBy: "date" })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "date-desc",
-      })
 
       // Assert
       const expectedTitles = ["Newest", "Oldest", "Also No Date", "No Date"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
   })
 
@@ -295,15 +253,10 @@ describe("sortCollectionItems", () => {
         items,
         sortBy: "title",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "title-asc",
-      })
 
       // Assert
       const expectedTitles = ["Alice", "Bob", "Charlie"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("should sort items by title (reverse alphabetically) when sort direction is descending", () => {
@@ -320,15 +273,10 @@ describe("sortCollectionItems", () => {
         sortBy: "title",
         sortDirection: "desc",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "title-desc",
-      })
 
       // Assert
       const expectedTitles = ["Charlie", "Bob", "Alice"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("should sort items by published date (oldest first) when titles are the same", () => {
@@ -344,10 +292,6 @@ describe("sortCollectionItems", () => {
         items,
         sortBy: "title",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "title-asc",
-      })
 
       // Assert
       const expectedDates = [
@@ -356,7 +300,6 @@ describe("sortCollectionItems", () => {
         new Date("2023-12-31"),
       ]
       expect(sorted.map((item) => item.date)).toEqual(expectedDates)
-      expect(sortedTwo.map((item) => item.date)).toEqual(expectedDates)
     })
 
     it("should sort items by published date (oldest first) when titles are the same and sort direction is ascending", () => {
@@ -373,10 +316,6 @@ describe("sortCollectionItems", () => {
         sortBy: "title",
         sortDirection: "asc",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "title-asc",
-      })
 
       // Assert
       const expectedDates = [
@@ -385,7 +324,6 @@ describe("sortCollectionItems", () => {
         new Date("2023-12-31"),
       ]
       expect(sorted.map((item) => item.date)).toEqual(expectedDates)
-      expect(sortedTwo.map((item) => item.date)).toEqual(expectedDates)
     })
 
     it("should sort items by title and take into account numbers in the title", () => {
@@ -402,15 +340,10 @@ describe("sortCollectionItems", () => {
         sortBy: "title",
         sortDirection: "asc",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "title-asc",
-      })
 
       // Assert
       const expectedTitles = ["1 ogpeople", "2 ogpeople", "10 ogpeople"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("should sort items by last modified in ascending order if the titles are the same and they do not have published dates", () => {
@@ -439,10 +372,6 @@ describe("sortCollectionItems", () => {
         sortBy: "title",
         sortDirection: "asc",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "title-asc",
-      })
 
       // Assert
       const expectedLastModified = [
@@ -451,9 +380,6 @@ describe("sortCollectionItems", () => {
         "2025-03-01T12:00:00Z",
       ]
       expect(sorted.map((item) => item.lastModified)).toEqual(
-        expectedLastModified,
-      )
-      expect(sortedTwo.map((item) => item.lastModified)).toEqual(
         expectedLastModified,
       )
     })
@@ -469,10 +395,6 @@ describe("sortCollectionItems", () => {
 
       // Act
       const sorted = sortCollectionItems({ items, sortBy: "title" })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "title-asc",
-      })
 
       // Assert
       const expectedDates = [
@@ -482,7 +404,6 @@ describe("sortCollectionItems", () => {
         undefined,
       ]
       expect(sorted.map((item) => item.date)).toEqual(expectedDates)
-      expect(sortedTwo.map((item) => item.date)).toEqual(expectedDates)
     })
   })
 
@@ -500,15 +421,10 @@ describe("sortCollectionItems", () => {
         items,
         sortBy: "category",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
-      })
 
       // Assert
       const expectedCategories = ["2000", "2001", "2002"]
       expect(sorted.map((item) => item.category)).toEqual(expectedCategories)
-      expect(sortedTwo.map((item) => item.category)).toEqual(expectedCategories)
     })
 
     it("should sort items by category (reverse alphabetically) when sort direction is descending", () => {
@@ -525,15 +441,10 @@ describe("sortCollectionItems", () => {
         sortBy: "category",
         sortDirection: "desc",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-desc",
-      })
 
       // Assert
       const expectedCategories = ["2002", "2001", "2000"]
       expect(sorted.map((item) => item.category)).toEqual(expectedCategories)
-      expect(sortedTwo.map((item) => item.category)).toEqual(expectedCategories)
     })
 
     it("should sort items by title when categories are the same", () => {
@@ -549,15 +460,10 @@ describe("sortCollectionItems", () => {
         items,
         sortBy: "category",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
-      })
 
       // Assert
       const expectedTitles = ["Alice", "Bob", "Charlie"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("should sort items by published date (oldest first) when categories and titles are the same", () => {
@@ -585,10 +491,6 @@ describe("sortCollectionItems", () => {
         items,
         sortBy: "category",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
-      })
 
       // Assert
       const expectedDates = [
@@ -597,7 +499,6 @@ describe("sortCollectionItems", () => {
         new Date("2023-12-31"),
       ]
       expect(sorted.map((item) => item.date)).toEqual(expectedDates)
-      expect(sortedTwo.map((item) => item.date)).toEqual(expectedDates)
     })
 
     it("should sort items by title and take into account numbers in the title when categories are the same", () => {
@@ -613,15 +514,10 @@ describe("sortCollectionItems", () => {
         items,
         sortBy: "category",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
-      })
 
       // Assert
       const expectedTitles = ["1 ogpeople", "2 ogpeople", "10 ogpeople"]
       expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("should sort items by last modified in ascending order if the categories and titles are the same and they do not have published dates", () => {
@@ -652,10 +548,6 @@ describe("sortCollectionItems", () => {
         items,
         sortBy: "category",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
-      })
 
       // Assert
       const expectedLastModified = [
@@ -664,9 +556,6 @@ describe("sortCollectionItems", () => {
         "2025-03-01T12:00:00Z",
       ]
       expect(sorted.map((item) => item.lastModified)).toEqual(
-        expectedLastModified,
-      )
-      expect(sortedTwo.map((item) => item.lastModified)).toEqual(
         expectedLastModified,
       )
     })
@@ -685,10 +574,6 @@ describe("sortCollectionItems", () => {
         items,
         sortBy: "category",
       })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
-      })
 
       // Assert
       const expectedDates = [
@@ -698,7 +583,6 @@ describe("sortCollectionItems", () => {
         undefined,
       ]
       expect(sorted.map((item) => item.date)).toEqual(expectedDates)
-      expect(sortedTwo.map((item) => item.date)).toEqual(expectedDates)
     })
   })
 })
