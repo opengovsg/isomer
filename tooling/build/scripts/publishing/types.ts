@@ -26,7 +26,6 @@ type TagCategory = Tagged & {
 interface CollectionPagePageProps {
   defaultSortBy?: string
   defaultSortDirection?: string
-  sortOrder?: string
   tagCategories?: TagCategory[]
 }
 

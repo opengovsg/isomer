@@ -1,6 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
-import { useCallback, useMemo } from "react"
+import { useCallback } from "react"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
 import {
@@ -62,38 +62,16 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
   const metadataSchema = getLayoutPageSchema(previewPageState.layout)
 
-  const filteredSchema = useMemo(() => {
-    switch (previewPageState.layout) {
-      case ISOMER_USABLE_PAGE_LAYOUTS.Database:
-        // For database layout, exclude the database field from metadata editing
-        // since it's handled by the separate database editor (DatabaseEditorStateDrawer)
-        return getScopedSchema({
+  const filteredSchema =
+    // For database layout, exclude the database field from metadata editing
+    // since it's handled by the separate database editor (DatabaseEditorStateDrawer)
+    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Database
+      ? getScopedSchema({
           layout: ISOMER_USABLE_PAGE_LAYOUTS.Database,
           scope: "page",
           exclude: ["database"],
         })
-      case ISOMER_USABLE_PAGE_LAYOUTS.Collection:
-        // For collection layout, only show the subtitle field, as the other
-        // fields are part of the new collection index editing experience
-        return getScopedSchema({
-          layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
-          scope: "page",
-          exclude: [
-            "tagCategories",
-            "tags",
-            "variant",
-            "sortOrder",
-            "defaultSortBy",
-            "defaultSortDirection",
-            "showThumbnail",
-            "showDate",
-            "image",
-          ],
-        })
-      default:
-        return metadataSchema
-    }
-  }, [metadataSchema, previewPageState.layout])
+      : metadataSchema
 
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(filteredSchema)
 

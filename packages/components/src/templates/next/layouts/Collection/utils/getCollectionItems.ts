@@ -8,14 +8,12 @@ import { sortCollectionItems } from "./sortCollectionItems"
 
 const CATEGORY_OTHERS = "Others"
 
-export type GetCollectionItemsProps = Pick<
-  CollectionPagePageProps,
-  "sortOrder" | "showDate" | "showThumbnail" | "tagCategories"
-> & {
+export interface GetCollectionItemsProps {
   site: IsomerSiteProps
   permalink: string
   sortBy?: CollectionPagePageProps["defaultSortBy"]
   sortDirection?: CollectionPagePageProps["defaultSortDirection"]
+  tagCategories?: CollectionPagePageProps["tagCategories"]
 }
 
 export const getCollectionItems = ({
@@ -23,9 +21,6 @@ export const getCollectionItems = ({
   permalink,
   sortBy,
   sortDirection,
-  sortOrder,
-  showDate,
-  showThumbnail,
   tagCategories,
 }: GetCollectionItemsProps): AllCardProps[] => {
   let currSitemap: IsomerSitemap = site.siteMap
@@ -66,18 +61,8 @@ export const getCollectionItems = ({
     )
     .map((item) => {
       const date =
-        showDate !== false && item.date !== undefined && item.date !== ""
+        item.date !== undefined && item.date !== ""
           ? getParsedDate(item.date)
-          : undefined
-      const hasOriginalImage = !!item.image?.src
-      const image =
-        showThumbnail !== false
-          ? hasOriginalImage
-            ? item.image
-            : {
-                src: site.logoUrl,
-                alt: `${site.siteName} site logo`,
-              }
           : undefined
 
       const baseItem = {
@@ -88,8 +73,7 @@ export const getCollectionItems = ({
         category: item.category || CATEGORY_OTHERS,
         title: item.title,
         description: item.summary,
-        image,
-        isFallbackImage: showThumbnail !== false && !hasOriginalImage,
+        image: item.image,
         site,
         tags:
           tagCategories && item.tagged
@@ -121,7 +105,6 @@ export const getCollectionItems = ({
 
   return sortCollectionItems({
     items: transformedItems,
-    sortOrder,
     sortBy,
     sortDirection,
   })
