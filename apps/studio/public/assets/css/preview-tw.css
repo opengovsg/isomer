@@ -3348,10 +3348,6 @@ video {
   text-transform: lowercase;
 }
 
-.capitalize {
-  text-transform: capitalize;
-}
-
 .italic {
   font-style: italic;
 }
