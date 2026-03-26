@@ -20,7 +20,6 @@ export const processCollectionItems = (
       title,
       description,
       image,
-      isFallbackImage,
       url,
       tags,
     } = item
@@ -32,7 +31,6 @@ export const processCollectionItems = (
       title,
       description,
       image,
-      isFallbackImage,
       tags,
       referenceLinkHref: getReferenceLinkHref(
         url,

@@ -69,15 +69,12 @@ export const getCollectionItems = ({
         showDate !== false && item.date !== undefined && item.date !== ""
           ? getParsedDate(item.date)
           : undefined
-      const hasOriginalImage = !!item.image?.src
       const image =
         showThumbnail !== false
-          ? hasOriginalImage
-            ? item.image
-            : {
-                src: site.logoUrl,
-                alt: `${site.siteName} site logo`,
-              }
+          ? (item.image ?? {
+              src: site.logoUrl,
+              alt: `${site.siteName} site logo`,
+            })
           : undefined
 
       const baseItem = {
@@ -89,7 +86,6 @@ export const getCollectionItems = ({
         title: item.title,
         description: item.summary,
         image,
-        isFallbackImage: showThumbnail !== false && !hasOriginalImage,
         site,
         tags:
           tagCategories && item.tagged

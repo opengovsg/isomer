@@ -253,9 +253,9 @@ export const CollectionPagePageSchema = Type.Intersect([
           alt: AltTextSchema,
         },
         {
-          title: "Set a thumbnail",
+          title: "Collection thumbnail",
           description:
-            "When this page is linked elsewhere on your site, this thumbnail may appear alongside it.",
+            "When this Collection is linked elsewhere on your site, this thumbnail will appear.",
         },
       ),
     ),
