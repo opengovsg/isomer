@@ -1092,6 +1092,87 @@ export const pageHandlers = {
         }
       })
     },
+    indexWithInfocards: () => {
+      // @ts-expect-error incomplete types
+      return trpcMsw.page.readPageAndBlob.query(() => {
+        return {
+          title: "Index page",
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+          permalink: "_index",
+          navbar: {
+            id: 1,
+            siteId: 1,
+            content: [
+              {
+                url: "/item-one",
+                name: "Expandable nav item",
+                items: [
+                  {
+                    url: "/item-one/pa-network-one",
+                    name: "PA's network one",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                ],
+              },
+            ],
+          },
+          footer: {
+            id: 1,
+            siteId: 1,
+            content: {
+              siteNavItems: [
+                { url: "/about", title: "About us" },
+                { url: "/partners", title: "Our partners" },
+              ],
+              contactUsLink: "/contact-us",
+              termsOfUseLink: "/terms-of-use",
+              feedbackFormLink: "https://www.form.gov.sg",
+              privacyStatementLink: "/privacy",
+            },
+          },
+          content: {
+            page: {
+              title: "Index page with infocards",
+            },
+            childpages: {
+              layout: "boxes",
+              summary: false,
+              thumbnail: false,
+            },
+            layout: "content",
+            content: [
+              {
+                type: "infocards",
+                title: "Info cards block",
+                variant: "cardsWithImages",
+                cards: [
+                  {
+                    title: "First card",
+                    description: "Description for first card",
+                    imageUrl: "https://placehold.co/600x400",
+                    imageAlt: "Placeholder image for first card",
+                  },
+                  {
+                    title: "Second card",
+                    description: "Description for second card",
+                    imageUrl: "https://placehold.co/600x400",
+                    imageAlt: "Placeholder image for second card",
+                  },
+                ],
+              },
+            ],
+            version: "0.1.0",
+          },
+          type: "IndexPage",
+          theme: "isomer-next",
+          url: "https://www.isomer.gov.sg",
+          logoUrl: "",
+          siteName: "MTI",
+          isGovernment: true,
+        }
+      })
+    },
     database: () => {
       // @ts-expect-error incomplete types
       return trpcMsw.page.readPageAndBlob.query(() => {
@@ -1361,6 +1442,16 @@ export const pageHandlers = {
     database: () =>
       trpcMsw.page.getFullPermalink.query(() => {
         return "/database-layout"
+      }),
+  },
+  getPrefill: {
+    default: () =>
+      trpcMsw.page.getPrefill.query(() => {
+        return {
+          title: "Page 1",
+          description: "This is a description for Page 1",
+          thumbnail: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop",
+        }
       }),
   },
   getPermalinkTree: {
