@@ -1,39 +1,57 @@
-import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
-import type { Metadata, ResolvingMetadata } from "next"
+import type {
+  RenderComponentOutput,
+  RenderComponentProps,
+  RenderPageContentOutput,
+  RenderPageContentParams,
+} from "@opengovsg/isomer-components/templates/next/render/types"
+import type { IsomerPageSchemaType } from "@opengovsg/isomer-components/types"
+import type { Metadata } from "next"
 import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
-import {
-  getMetadata,
-  getSitemapXml,
-  RenderEngine,
-  shouldBlockIndexing,
-} from "@opengovsg/isomer-components"
+import { getSitemapAsArray } from "@opengovsg/isomer-components/engine/getSitemapAsArray"
+import { getSitemapXml } from "@opengovsg/isomer-components/engine/getSitemapXml"
+import { getMetadata } from "@opengovsg/isomer-components/engine/metadata"
+import { shouldBlockIndexing } from "@opengovsg/isomer-components/engine/shouldBlockIndexing"
+import { Accordion } from "@opengovsg/isomer-components/templates/next/components/complex/Accordion"
+import { Audio } from "@opengovsg/isomer-components/templates/next/components/complex/Audio"
+import { Blockquote } from "@opengovsg/isomer-components/templates/next/components/complex/Blockquote"
+import { Callout } from "@opengovsg/isomer-components/templates/next/components/complex/Callout"
+import { ChildrenPages } from "@opengovsg/isomer-components/templates/next/components/complex/ChildrenPages"
+import { CollectionBlock } from "@opengovsg/isomer-components/templates/next/components/complex/CollectionBlock"
+import { ContactInformation } from "@opengovsg/isomer-components/templates/next/components/complex/ContactInformation"
+import { Contentpic } from "@opengovsg/isomer-components/templates/next/components/complex/Contentpic"
+import { DynamicComponentList } from "@opengovsg/isomer-components/templates/next/components/complex/DynamicComponentList"
+import { DynamicDataBanner } from "@opengovsg/isomer-components/templates/next/components/complex/DynamicDataBanner"
+import { FormSG } from "@opengovsg/isomer-components/templates/next/components/complex/FormSG"
+import { Hero } from "@opengovsg/isomer-components/templates/next/components/complex/Hero"
+import { Iframe } from "@opengovsg/isomer-components/templates/next/components/complex/Iframe"
+import { Image } from "@opengovsg/isomer-components/templates/next/components/complex/Image"
+import { ImageGallery } from "@opengovsg/isomer-components/templates/next/components/complex/ImageGallery"
+import { Infobar } from "@opengovsg/isomer-components/templates/next/components/complex/Infobar"
+import { InfoCards } from "@opengovsg/isomer-components/templates/next/components/complex/InfoCards"
+import { InfoCols } from "@opengovsg/isomer-components/templates/next/components/complex/InfoCols"
+import { Infopic } from "@opengovsg/isomer-components/templates/next/components/complex/Infopic"
+import { KeyStatistics } from "@opengovsg/isomer-components/templates/next/components/complex/KeyStatistics"
+import { LogoCloud } from "@opengovsg/isomer-components/templates/next/components/complex/LogoCloud"
+import { Map } from "@opengovsg/isomer-components/templates/next/components/complex/Map"
+import { Video } from "@opengovsg/isomer-components/templates/next/components/complex/Video"
+import { Prose } from "@opengovsg/isomer-components/templates/next/components/native/Prose"
+import { ArticleLayoutSkeleton } from "@opengovsg/isomer-components/templates/next/layouts/ArticleSkeleton"
+import { CollectionLayout } from "@opengovsg/isomer-components/templates/next/layouts/Collection"
+import { ContentLayoutSkeleton } from "@opengovsg/isomer-components/templates/next/layouts/ContentSkeleton"
+import { DatabaseLayoutSkeleton } from "@opengovsg/isomer-components/templates/next/layouts/DatabaseSkeleton"
+import { HomepageLayoutSkeleton } from "@opengovsg/isomer-components/templates/next/layouts/HomepageSkeleton"
+import { IndexPageLayoutSkeleton } from "@opengovsg/isomer-components/templates/next/layouts/IndexPageSkeleton"
+import { NotFoundLayout } from "@opengovsg/isomer-components/templates/next/layouts/NotFound"
+import { SearchLayout } from "@opengovsg/isomer-components/templates/next/layouts/Search"
+import { renderPageContentSkeleton } from "@opengovsg/isomer-components/templates/next/render/renderPageContentSkeleton"
 
 export const dynamic = "force-static"
 
 const INDEX_PAGE_PERMALINK = "_index"
-
-interface ParamsContent {
-  permalink: string[]
-}
-interface DynamicPageProps {
-  params: Promise<ParamsContent>
-}
-
-// Note: permalink should not be able to be undefined
-// However, nextjs had some magic props passing going on that causes
-// { permalink: [""] } to be converted to {}
-// Thus the patch is necessary to convert it back if its undefined
-const getPatchedPermalink = async (
-  props: DynamicPageProps,
-): Promise<ParamsContent["permalink"]> => {
-  const params = await props.params
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  return params.permalink ?? [""]
-}
 
 const timeNow = new Date()
 const lastUpdated =
@@ -43,46 +61,7 @@ const lastUpdated =
   " " +
   timeNow.getFullYear()
 
-const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
-  const joinedPermalink: string = permalink.join("/")
-
-  const schema = (await import(`@/schema/${joinedPermalink}.json`)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    .then((module) => module.default)
-    // NOTE: If the initial import is missing,
-    // this might be the case where the file is an index page
-    // and has `_index` appended to the original permalink
-    // so we have to do another import w the appended index path
-    .catch(async () => {
-      if (joinedPermalink === "") {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`).then(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-          (module) => module.default,
-        )
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return import(
-        `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-      ).then((module) => module.default)
-    })) as IsomerPageSchemaType
-
-  const lastModified =
-    // TODO: fixup all the typing errors
-    // @ts-expect-error to fix when types are proper
-    getSitemapXml(sitemap).find(
-      ({ url }) =>
-        joinedPermalink === url.replace(/^\//, "").replace(/\/$/, ""),
-    ).lastModified || new Date().toISOString()
-
-  schema.page.permalink = "/" + joinedPermalink
-  schema.page.lastModified = lastModified
-
-  return schema
-}
-
-export const generateStaticParams = () => {
+export function generateStaticParams() {
   // TODO: fixup all the typing errors
   // @ts-expect-error to fix when types are proper
   return getSitemapXml(sitemap).map(({ url }) => ({
@@ -90,13 +69,51 @@ export const generateStaticParams = () => {
   }))
 }
 
-export const generateMetadata = async (
-  props: DynamicPageProps,
-  _parent: ResolvingMetadata,
-): Promise<Metadata> => {
-  const schema = await getSchema({
-    permalink: await getPatchedPermalink(props),
-  })
+const importSchemaDefault = async (
+  path: string,
+): Promise<IsomerPageSchemaType> => {
+  const mod = (await import(`@/schema/${path}`)) as unknown as {
+    default: IsomerPageSchemaType
+  }
+  return mod.default
+}
+
+const getSchema = async (permalinkSegments: string[] | undefined) => {
+  const segments = permalinkSegments ?? []
+  const joinedPermalink = segments.join("/")
+
+  const schema = await importSchemaDefault(`${joinedPermalink}.json`).catch(
+    async () => {
+      const path =
+        joinedPermalink === ""
+          ? `${INDEX_PAGE_PERMALINK}.json`
+          : `${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
+      return await importSchemaDefault(path)
+    },
+  )
+
+  schema.page.permalink = "/" + joinedPermalink
+
+  schema.page.lastModified =
+    // TODO: fixup all the typing errors
+    // @ts-ignore to fix when types are proper
+    getSitemapXml(sitemap).find(
+      (entry: { url: string }) =>
+        joinedPermalink === entry.url.replace(/^\//, "").replace(/\/$/, ""),
+    ).lastModified || new Date().toISOString()
+
+  return schema
+}
+
+interface PageProps {
+  params: Promise<{ permalink?: string[] }>
+}
+
+export const generateMetadata = async ({
+  params,
+}: PageProps): Promise<Metadata> => {
+  const { permalink } = await params
+  const schema = await getSchema(permalink)
   schema.site = {
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
@@ -113,10 +130,149 @@ export const generateMetadata = async (
   return getMetadata(schema)
 }
 
-const Page = async (props: DynamicPageProps) => {
-  const renderSchema = await getSchema({
-    permalink: await getPatchedPermalink(props),
-  })
+const RenderEngine = (props: IsomerPageSchemaType) => {
+  const renderProps = {
+    ...props,
+    site: {
+      ...props.site,
+      siteMapArray: getSitemapAsArray(props.site.siteMap),
+    },
+  } satisfies IsomerPageSchemaType
+
+  if (props.site.theme === "isomer-next") {
+    return renderNextLayout(renderProps)
+  }
+
+  return null
+}
+
+const renderNextLayout = (props: IsomerPageSchemaType) => {
+  switch (props.layout) {
+    case "article":
+      return (
+        <ArticleLayoutSkeleton
+          {...props}
+          renderPageContent={renderPageContent}
+        />
+      )
+    case "collection":
+      return <CollectionLayout {...props} />
+    case "content":
+      return (
+        <ContentLayoutSkeleton
+          {...props}
+          renderPageContent={renderPageContent}
+        />
+      )
+    case "database":
+      return (
+        <DatabaseLayoutSkeleton
+          {...props}
+          renderPageContent={renderPageContent}
+        />
+      )
+    case "homepage":
+      return (
+        <HomepageLayoutSkeleton
+          {...props}
+          renderPageContent={renderPageContent}
+        />
+      )
+    case "index":
+      return (
+        <IndexPageLayoutSkeleton
+          {...props}
+          renderPageContent={renderPageContent}
+        />
+      )
+    case "notfound":
+      return <NotFoundLayout {...props} />
+    case "search":
+      return <SearchLayout {...props} />
+    // These are references that we should not render to the user
+    case "file":
+    case "link":
+      return <></>
+    default:
+      return <></>
+  }
+}
+
+const renderPageContent = (
+  props: RenderPageContentParams,
+): RenderPageContentOutput => {
+  return renderPageContentSkeleton({ ...props, renderComponent })
+}
+
+const renderComponent = ({
+  elementKey,
+  component,
+  ...rest
+}: RenderComponentProps): RenderComponentOutput => {
+  switch (component.type) {
+    case "logocloud":
+      return <LogoCloud key={elementKey} {...component} {...rest} />
+    case "accordion":
+      return <Accordion key={elementKey} {...component} {...rest} />
+    case "blockquote":
+      return <Blockquote key={elementKey} {...component} {...rest} />
+    case "callout":
+      return <Callout key={elementKey} {...component} {...rest} />
+    case "contentpic":
+      return <Contentpic key={elementKey} {...component} {...rest} />
+    case "formsg":
+      return <FormSG key={elementKey} {...component} {...rest} />
+    case "hero":
+      return <Hero key={elementKey} {...component} {...rest} />
+    case "iframe":
+      return <Iframe key={elementKey} {...component} {...rest} />
+    case "image":
+      return <Image key={elementKey} {...component} {...rest} />
+    case "infobar":
+      return <Infobar key={elementKey} {...component} {...rest} />
+    case "infocards":
+      return <InfoCards key={elementKey} {...component} {...rest} />
+    case "infocols":
+      return <InfoCols key={elementKey} {...component} {...rest} />
+    case "infopic":
+      return <Infopic key={elementKey} {...component} {...rest} />
+    case "keystatistics":
+      return <KeyStatistics key={elementKey} {...component} {...rest} />
+    case "map":
+      return <Map key={elementKey} {...component} {...rest} />
+    case "childrenpages":
+      return <ChildrenPages key={elementKey} {...component} {...rest} />
+    case "prose":
+      return (
+        <Prose
+          key={elementKey}
+          {...component}
+          {...rest}
+          shouldStripContentHtmlTags
+        />
+      )
+    case "audio":
+      return <Audio key={elementKey} {...component} {...rest} />
+    case "video":
+      return <Video key={elementKey} {...component} {...rest} />
+    case "dynamicdatabanner":
+      return <DynamicDataBanner key={elementKey} {...component} {...rest} />
+    case "collectionblock":
+      return <CollectionBlock key={elementKey} {...component} {...rest} />
+    case "imagegallery":
+      return <ImageGallery key={elementKey} {...component} {...rest} />
+    case "contactinformation":
+      return <ContactInformation key={elementKey} {...component} {...rest} />
+    case "dynamiccomponentlist":
+      return <DynamicComponentList key={elementKey} {...component} {...rest} />
+    default:
+      return <></>
+  }
+}
+
+const Page = async ({ params }: PageProps) => {
+  const { permalink } = await params
+  const renderSchema = await getSchema(permalink)
 
   return (
     <RenderEngine

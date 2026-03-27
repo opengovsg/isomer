@@ -1,11 +1,13 @@
-import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
+import type { IsomerPageSchemaType } from "@opengovsg/isomer-components/types"
 import type { Metadata, ResolvingMetadata } from "next"
 import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
-import { getMetadata, RenderEngine } from "@opengovsg/isomer-components"
+import { getSitemapAsArray } from "@opengovsg/isomer-components/engine/getSitemapAsArray"
+import { getMetadata } from "@opengovsg/isomer-components/engine/metadata"
+import { NotFoundLayout } from "@opengovsg/isomer-components/templates/next/layouts/NotFound"
 
 export const dynamic = "force-static"
 
@@ -54,6 +56,31 @@ export const generateMetadata = async (
     description: PAGE_DESCRIPTION,
   }
   return getMetadata(schema)
+}
+
+const renderNextLayout = (props: IsomerPageSchemaType) => {
+  switch (props.layout) {
+    case "notfound":
+      return <NotFoundLayout {...props} />
+    default:
+      return <></>
+  }
+}
+
+const RenderEngine = (props: IsomerPageSchemaType) => {
+  const renderProps = {
+    ...props,
+    site: {
+      ...props.site,
+      siteMapArray: getSitemapAsArray(props.site.siteMap),
+    },
+  } satisfies IsomerPageSchemaType
+
+  if (props.site.theme === "isomer-next") {
+    return renderNextLayout(renderProps)
+  }
+
+  return null
 }
 
 const NotFound = () => {
