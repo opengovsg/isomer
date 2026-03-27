@@ -121,7 +121,7 @@ export const siteRouter = router({
       const updatedConfig = await db.transaction().execute(async (tx) => {
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ config: jsonb({ ...rest, siteName }) })
+          .set({ name: siteName, config: jsonb({ ...rest, siteName }) })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()

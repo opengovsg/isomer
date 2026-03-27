@@ -481,6 +481,14 @@ describe("site.router", async () => {
         url: "https://www.isomer.gov.sg",
         theme: "isomer-next",
       })
+
+      // Verify Site.name column is also updated
+      const updatedSite = await db
+        .selectFrom("Site")
+        .where("id", "=", site.id)
+        .select("name")
+        .executeTakeFirstOrThrow()
+      expect(updatedSite.name).toEqual(MOCK_SITE_NAME)
     })
     it("should generate an audit log entry", async () => {
       // Arrange
