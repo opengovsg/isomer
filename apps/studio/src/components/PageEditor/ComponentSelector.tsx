@@ -58,9 +58,11 @@ interface BlockItemProps {
   sectionType: SectionType
   description: string
   usageText?: string
+  isDisabled?: boolean
 }
 
 function BlockItem({
+  isDisabled,
   icon,
   label,
   onProceed,
@@ -73,6 +75,7 @@ function BlockItem({
     <Popover trigger="hover" placement="right" isLazy offset={[0, 20]}>
       <PopoverTrigger>
         <chakra.button
+          disabled={isDisabled}
           layerStyle="focusRing"
           w="100%"
           borderRadius="6px"
@@ -91,6 +94,12 @@ function BlockItem({
           alignItems="start"
           gap="0.75rem"
           onClick={() => onProceed(sectionType)}
+          _disabled={{
+            bg: "interaction.support.disabled",
+            borderColor: "base.divider.medium",
+            textColor: "interaction.support.disabled-content",
+            cursor: "not-allowed",
+          }}
         >
           <Flex
             p="0.5rem"
@@ -239,12 +248,18 @@ function ComponentSelector() {
             <BlockList>
               {section.types.map((type) => {
                 const blockMeta = BLOCK_TO_META[type]
+                const isDisabled = savedPageState.content.some(
+                  (block) =>
+                    block.type === "childrenpages" && type === "childrenpages",
+                )
+
                 return (
                   <BlockItem
                     key={type}
                     icon={TYPE_TO_ICON[type]}
                     onProceed={onProceed}
                     sectionType={type}
+                    isDisabled={isDisabled}
                     {...blockMeta}
                   />
                 )
