@@ -219,10 +219,13 @@ export const IndexPagePageSchema = Type.Composite([
   imageSchemaObject,
 ])
 
-export const DatabasePagePageSchema = Type.Object({
-  contentPageHeader: ContentPageHeaderSchema,
-  database: SearchableTableSchema,
-})
+export const DatabasePagePageSchema = Type.Composite([
+  Type.Object({
+    contentPageHeader: ContentPageHeaderSchema,
+    database: SearchableTableSchema,
+  }),
+  imageSchemaObject,
+])
 
 export const HomePagePageSchema = Type.Object({})
 export const NotFoundPagePageSchema = Type.Object({})
