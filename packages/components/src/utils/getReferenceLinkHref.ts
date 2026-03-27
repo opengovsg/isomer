@@ -23,7 +23,7 @@ const getSanitizedLinkHref = (url?: string) => {
 // Convert the given reference link to the actual permalink
 const convertReferenceLinks = (
   originalLink: string,
-  sitemapArray: IsomerSitemap[],
+  sitemapArray: IsomerSitemap[] | undefined,
 ) => {
   const match = /^\[resource:(\d+):(\d+)\]/.exec(originalLink)
 
@@ -37,7 +37,7 @@ const convertReferenceLinks = (
     return originalLink
   }
 
-  const refPage = sitemapArray.find(({ id }) => id === refPageId)
+  const refPage = sitemapArray?.find(({ id }) => id === refPageId)
 
   if (!refPage) {
     return originalLink
@@ -70,7 +70,7 @@ const convertAssetLinks = (
 
 export const getReferenceLinkHref = (
   referenceLink: string | undefined,
-  sitemapArray: IsomerSitemap[],
+  sitemapArray: IsomerSitemap[] | undefined,
   assetsBaseUrl: string | undefined,
 ) => {
   if (!referenceLink) {
