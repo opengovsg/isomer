@@ -752,6 +752,124 @@ describe("collection.router", async () => {
       const expectedIds = new Set(pages.map((p) => p.page.id))
       expect(allIds).toEqual(expectedIds)
     })
+
+    it("should sort by title ascending when orderBy is title-asc", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Charlie",
+        permalink: "charlie",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Alpha",
+        permalink: "alpha",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Bravo",
+        permalink: "bravo",
+      })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        orderBy: "title-asc",
+      })
+
+      // Assert
+      const titles = result.map((r) => r.title)
+      expect(titles).toEqual(["Alpha", "Bravo", "Charlie"])
+    })
+
+    it("should sort by updatedAt descending when orderBy is updated-desc", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      const page1 = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "First",
+        permalink: "first",
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Second",
+        permalink: "second",
+      })
+
+      // Update the first page so it has a newer updatedAt
+      await db
+        .updateTable("Resource")
+        .set({ title: "First Updated" })
+        .where("id", "=", page1.page.id)
+        .execute()
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        orderBy: "updated-desc",
+      })
+
+      // Assert: First Updated should appear before Second since it was updated more recently
+      expect(result[0]?.title).toEqual("First Updated")
+      expect(result[1]?.title).toEqual("Second")
+    })
+
+    it("should default to updated-desc ordering when orderBy is not specified", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      const page1 = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Older",
+        permalink: "older",
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Newer",
+        permalink: "newer",
+      })
+
+      // Update the first page so it has a newer updatedAt
+      await db
+        .updateTable("Resource")
+        .set({ title: "Older Now Latest" })
+        .where("id", "=", page1.page.id)
+        .execute()
+
+      // Act - no orderBy specified, should default to updated-desc
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+      })
+
+      // Assert
+      expect(result[0]?.title).toEqual("Older Now Latest")
+      expect(result[1]?.title).toEqual("Newer")
+    })
   })
 
   describe("readCollectionLink", () => {
