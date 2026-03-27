@@ -454,3 +454,15 @@ export const BoxesWithThumbnailAndDescription: Story = {
     childrenPagesOrdering: [],
   },
 }
+
+export const BoxesWithCustomOrdering: Story = {
+  args: {
+    variant: "boxes",
+    site,
+    permalink: "/parent",
+    LinkComponent: "a",
+    showSummary: true,
+    showThumbnail: true,
+    childrenPagesOrdering: ["6", "3", "7", "8"],
+  },
+}
