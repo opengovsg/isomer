@@ -2,8 +2,8 @@ import type { ChildPage } from "./types"
 import type { ChildrenPagesProps } from "~/interfaces"
 
 export const mergeChildrenPages = (
-  a: ChildPage,
-  b: ChildPage,
+  a: Pick<ChildPage, "id" | "title">,
+  b: Pick<ChildPage, "id" | "title">,
   childrenPagesOrdering: ChildrenPagesProps["childrenPagesOrdering"] = [],
 ) => {
   const [aIndex, bIndex] = [
