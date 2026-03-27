@@ -162,6 +162,11 @@ export const EditInfocardsLinkState: Story = {
       await userEvent.clear(textbox) 
     })
 
+    const deleteButton= await canvas.findByRole("button", {
+      name: /Remove file/i,
+    })
+    await userEvent.click(deleteButton)
+
     // Click on the "Link something..." button to open the modal
     const linkButton = await canvas.findByRole("button", {
       name: /Link something/i,
