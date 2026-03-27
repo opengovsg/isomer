@@ -22,7 +22,7 @@ import {
 } from "tests/msw/constants"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
-import { db, RoleType } from "~/server/modules/database"
+import { db, jsonb, RoleType } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
 import { userRouter } from "../user.router"
 import { isomerAdminsCount, setupIsomerAdmins } from "./utils"
@@ -50,6 +50,30 @@ describe("user.router", () => {
   })
 
   describe("create", () => {
+    it("uses Site.name fallback when Site.config is JSON null", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      await db
+        .updateTable("Site")
+        .where("id", "=", siteId)
+        // Intentionally store JSON null to simulate malformed but persisted data.
+        .set({ config: jsonb(null) })
+        .execute()
+
+      // Act + Assert
+      await expect(
+        caller.create({
+          siteId,
+          users: [{ email: TEST_EMAIL }],
+        }),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          email: TEST_EMAIL,
+          id: expect.any(String),
+        }),
+      ])
+    })
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
