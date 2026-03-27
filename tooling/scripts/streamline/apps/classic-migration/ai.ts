@@ -82,7 +82,7 @@ export const generatePageSummary = async (
           role: "system",
           content: `You are a content writing expert for government agency websites.
 
-Write and return a summary text for the page content which is provided as a JSON string below. The title of this page is { title }.
+Write and return a summary text for the page content which is provided as a JSON string below. The title of this page is ${title}.
 
 This summary will be displayed at the top of a webpage and gives visitors a reason to read on.
 
