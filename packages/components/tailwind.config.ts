@@ -8,7 +8,7 @@ import { NextPreset } from "./src/presets/next"
 
 /** @type {import('tailwindcss').Config} */
 
-const plugin = require("tailwindcss/plugin")
+const plugin = require("tailwindcss/plugin.js")
 
 export default {
   content: [
