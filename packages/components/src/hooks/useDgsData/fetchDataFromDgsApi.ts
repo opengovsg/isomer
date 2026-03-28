@@ -3,13 +3,14 @@ import type {
   DgsApiDatasetSearchResponse,
   DgsApiDatasetSearchResponseSuccess,
 } from "./types"
+import { fetchDgs } from "~/utils/dgs/fetchDgs"
 import { generateDgsUrl } from "./generateDgsUrl"
 
 export const fetchDataFromDgsApiDataset = async (
   params: DgsApiDatasetSearchParams,
 ): Promise<DgsApiDatasetSearchResponseSuccess> => {
   const url = generateDgsUrl(params)
-  const res = await fetch(url)
+  const res = await fetchDgs(url)
 
   if (!res.ok) {
     throw new Error("Failed to fetch data from DGS API")

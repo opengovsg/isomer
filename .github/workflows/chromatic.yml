@@ -56,9 +56,18 @@ jobs:
           fetch-depth: 0 # Required for v4
       - name: Setup
         uses: ./.github/actions/setup
+      - name: Check DATAGOVSG_API_KEY
+        env:
+          DATAGOVSG_API_KEY: ${{ secrets.DATAGOVSG_API_KEY }}
+        run: |
+          if [ -z "${DATAGOVSG_API_KEY:-}" ]; then
+            echo "::warning::DATAGOVSG_API_KEY is not set; Storybook/Chromatic may hit data.gov.sg rate limits"
+          fi
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@latest
+        env:
+          DATAGOVSG_API_KEY: ${{ secrets.DATAGOVSG_API_KEY }}
         # Chromatic GitHub Action options
         with:
           workingDir: packages/components
