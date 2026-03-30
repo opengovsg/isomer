@@ -1,7 +1,7 @@
 import type { Job, ScheduleOptions } from "pg-boss";
 import { PgBoss } from "pg-boss";
 import { env } from "./env";
-import type { Logger } from "pino";
+import type { BaseLogger } from "pino";
 import { type HeartbeatOptions, sendHeartbeat } from "./utils";
 
 export interface GlobalWithPgBoss {
@@ -12,7 +12,7 @@ export interface GlobalWithPgBoss {
 /* Singleton pattern using global for dev hot reload */
 const globalForPgboss = global as unknown as GlobalWithPgBoss;
 
-const createPgbossClient = async (logger: Logger): Promise<PgBoss> => {
+const createPgbossClient = async (logger: BaseLogger): Promise<PgBoss> => {
   const boss = new PgBoss({ connectionString: env.DATABASE_URL });
   boss.on("error", (err) => logger.error(err, "Pgboss client error"));
   await boss.start();
@@ -20,14 +20,14 @@ const createPgbossClient = async (logger: Logger): Promise<PgBoss> => {
   return boss;
 };
 
-const getPgbossClient = async (logger: Logger): Promise<PgBoss> => {
+const getPgbossClient = async (logger: BaseLogger): Promise<PgBoss> => {
   const boss = globalForPgboss.pgBoss ?? (await createPgbossClient(logger));
   globalForPgboss.pgBoss = boss;
   return boss;
 };
 
 export const registerPgbossJob = async (
-  logger: Logger,
+  logger: BaseLogger,
   jobName: string,
   cronExpression: string,
   handler: (job: Job) => Promise<void>,
@@ -82,7 +82,7 @@ export const registerPgbossJob = async (
   return { stop: () => boss.offWork(jobName) };
 };
 
-export const stopAllPgbossJobs = async (logger: Logger): Promise<void> => {
+export const stopAllPgbossJobs = async (logger: BaseLogger): Promise<void> => {
   const boss = await getPgbossClient(logger);
   try {
     await boss.stop({ graceful: true });

@@ -1,4 +1,4 @@
-import type { Logger } from "pino";
+import type { BaseLogger } from "pino";
 import pino from "pino";
 import type { GlobalWithPgBoss } from "..";
 import { registerPgbossJob } from "..";
@@ -6,7 +6,7 @@ import type { Mock } from "vitest";
 import type { HeartbeatOptions } from "~/utils";
 import { sendHeartbeat } from "~/utils";
 
-const logger: Logger = pino({ level: "silent" });
+const logger: BaseLogger = pino({ level: "silent" });
 
 describe("client", () => {
   let globalForPgboss: GlobalWithPgBoss;
