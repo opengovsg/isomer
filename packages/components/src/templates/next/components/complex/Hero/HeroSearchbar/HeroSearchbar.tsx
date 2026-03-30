@@ -3,7 +3,7 @@ import { ImageClient } from "../../../internal/ImageClient"
 import { SearchbarContent } from "./SearchbarContent"
 
 export const HeroSearchbar = (props: HeroSearchbarProps) => {
-  const { backgroundUrl, site, title } = props
+  const { backgroundUrl, site } = props
 
   if (backgroundUrl) {
     // Stacking (back to front): background image (no z-index) → overlay (before:z-10) → content (z-20).
@@ -16,7 +16,7 @@ export const HeroSearchbar = (props: HeroSearchbarProps) => {
         >
           <ImageClient
             src={backgroundUrl}
-            alt={title}
+            alt=""
             width="100%"
             className="absolute inset-0 h-full w-full object-cover object-center"
             assetsBaseUrl={site.assetsBaseUrl}
