@@ -42,6 +42,14 @@ Closes [insert issue #]
 
 <!-- What tests should be run to confirm functionality? -->
 
+**Manual Verification Steps**:
+
+<!-- Checklist of steps for the release deployer to manually verify that the PR functionality works correctly. Each step should be actionable and specific. -->
+
+- [ ] Step 1
+- [ ] Step 2
+- [ ] Step 3
+
 **New scripts**:
 
 - `script` : script details
