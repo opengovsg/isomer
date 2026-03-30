@@ -1,6 +1,5 @@
 import type { IsomerSiteProps } from "~/types"
 import type { IsomerCollectionPageSitemap } from "~/types/sitemap"
-import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
 interface GetCollectionParentProps {
   site: IsomerSiteProps
@@ -11,9 +10,7 @@ export const getCollectionParent = ({
   site,
   collectionId,
 }: GetCollectionParentProps): IsomerCollectionPageSitemap | null => {
-  const sitemapArray = getSitemapAsArray(site.siteMap)
-
-  const collectionParent = sitemapArray.find(
+  const collectionParent = site.siteMapArray.find(
     (item) => item.id === collectionId && item.layout === "collection",
   )
 

@@ -1,8 +1,7 @@
 import type { ImageProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { isExternalUrl } from "~/utils/isExternalUrl"
 
-import { ImageClient } from "./ImageClient"
+import { ImageClient } from "../../internal/ImageClient"
 
 const createImageStyles = tv({
   slots: {
@@ -43,15 +42,10 @@ export const Image = ({
   site,
   shouldLazyLoad = true,
 }: ImageProps) => {
-  const imgSrc =
-    isExternalUrl(src) || site.assetsBaseUrl === undefined
-      ? src
-      : `${site.assetsBaseUrl}${src}`
-
   return (
     <div className={compoundStyles.container()}>
       <ImageClient
-        src={imgSrc}
+        src={src}
         alt={alt}
         width={getSizeWidth(size)}
         className={compoundStyles.image({ size: size ?? "default" })}

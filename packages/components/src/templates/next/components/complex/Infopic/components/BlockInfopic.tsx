@@ -2,8 +2,8 @@ import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import type { InfopicProps } from "../types"
+import { ImageClient } from "../../../internal/ImageClient"
 import { LinkButton } from "../../../internal/LinkButton"
-import { ImageClient } from "../../Image"
 import { infopicStyles } from "../common"
 
 export const BlockInfopic = ({
@@ -37,7 +37,7 @@ export const BlockInfopic = ({
               LinkComponent={LinkComponent}
               href={getReferenceLinkHref(
                 buttonUrl,
-                site.siteMap,
+                site.siteMapArray,
                 site.assetsBaseUrl,
               )}
               isWithFocusVisibleHighlight

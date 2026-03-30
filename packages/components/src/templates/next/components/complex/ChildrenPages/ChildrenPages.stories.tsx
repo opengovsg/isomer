@@ -374,6 +374,19 @@ export const RowsWithThumbnailOnly: Story = {
   },
 }
 
+export const RowsWithContainAndThumbnail: Story = {
+  args: {
+    variant: "rows",
+    site,
+    permalink: "/parent",
+    LinkComponent: "a",
+    showSummary: true,
+    showThumbnail: true,
+    childrenPagesOrdering: [],
+    imageFit: "contain",
+  },
+}
+
 export const RowsWithThumbnailAndDescription: Story = {
   args: {
     variant: "rows",
@@ -404,6 +417,19 @@ export const BoxesWithDescription: Story = {
     LinkComponent: "a",
     showSummary: true,
     childrenPagesOrdering: [],
+  },
+}
+
+export const BoxesWithContainAndThumbnail: Story = {
+  args: {
+    variant: "boxes",
+    site,
+    permalink: "/parent",
+    LinkComponent: "a",
+    showSummary: true,
+    showThumbnail: true,
+    childrenPagesOrdering: [],
+    imageFit: "contain",
   },
 }
 

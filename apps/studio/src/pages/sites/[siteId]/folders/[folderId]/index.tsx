@@ -120,7 +120,11 @@ const FolderPage: NextPageWithLayout = () => {
           </>
         }
       >
-        <IndexpageRow siteId={Number(siteId)} resourceId={folderId} />
+        <IndexpageRow
+          type="folder"
+          siteId={Number(siteId)}
+          resourceId={folderId}
+        />
         <ResourceTable
           siteId={parseInt(siteId)}
           resourceId={parseInt(folderId)}

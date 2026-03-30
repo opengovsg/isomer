@@ -29,7 +29,7 @@ const COMMON_HANDLERS = [
   resourceHandlers.getMetadataById.index(),
   pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.index(),
-  pageHandlers.getFullPermalink.index(),
+  pageHandlers.getFullPermalink.collection(),
 ]
 
 const meta: Meta<typeof EditPage> = {

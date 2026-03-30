@@ -882,8 +882,10 @@ export const pageHandlers = {
               {
                 type: "childrenpages",
                 variant: "boxes",
-                summary: false,
-                thumbnail: false,
+                showSummary: false,
+                showThumbnail: true,
+                imageFit: "contain",
+                childrenPagesOrdering: ["5", "4"],
               },
             ],
             version: "0.1.0",
@@ -1347,6 +1349,10 @@ export const pageHandlers = {
     article: () =>
       trpcMsw.page.getFullPermalink.query(() => {
         return "/article-layout"
+      }),
+    collection: () =>
+      trpcMsw.page.getFullPermalink.query(() => {
+        return "/collection"
       }),
     index: () =>
       trpcMsw.page.getFullPermalink.query(() => {

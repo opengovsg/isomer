@@ -58,7 +58,7 @@ export const FullInfopic = ({
                     LinkComponent={LinkComponent}
                     href={getReferenceLinkHref(
                       buttonUrl,
-                      site.siteMap,
+                      site.siteMapArray,
                       site.assetsBaseUrl,
                     )}
                     isWithFocusVisibleHighlight

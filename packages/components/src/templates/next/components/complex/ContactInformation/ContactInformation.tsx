@@ -14,7 +14,7 @@ export const ContactInformation = ({
     ...omit(rest, ["url", "site"]),
     referenceLinkHref: getReferenceLinkHref(
       rest.url,
-      rest.site.siteMap,
+      rest.site.siteMapArray,
       rest.site.assetsBaseUrl,
     ),
   }

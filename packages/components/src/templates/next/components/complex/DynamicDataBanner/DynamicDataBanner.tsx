@@ -20,7 +20,7 @@ export const DynamicDataBanner = ({
       apiEndpoint={apiEndpoint}
       title={title}
       data={data}
-      url={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+      url={getReferenceLinkHref(url, site.siteMapArray, site.assetsBaseUrl)}
       label={label}
       errorMessageBaseParagraph={
         <BaseParagraph

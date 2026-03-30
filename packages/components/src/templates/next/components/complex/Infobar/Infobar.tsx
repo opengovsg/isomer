@@ -128,7 +128,7 @@ export const Infobar = ({
                 <LinkButton
                   href={getReferenceLinkHref(
                     buttonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   size={simplifiedLayout === "homepage" ? "lg" : "base"}
@@ -144,7 +144,7 @@ export const Infobar = ({
                 <LinkButton
                   href={getReferenceLinkHref(
                     secondaryButtonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   size={simplifiedLayout === "homepage" ? "lg" : "base"}

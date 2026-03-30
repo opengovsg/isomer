@@ -101,7 +101,7 @@ const InfoBoxes = ({
               LinkComponent={LinkComponent}
               href={getReferenceLinkHref(
                 buttonUrl,
-                site.siteMap,
+                site.siteMapArray,
                 site.assetsBaseUrl,
               )}
               key={idx}

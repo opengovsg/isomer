@@ -1,7 +1,6 @@
 import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
-import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { NavbarClient } from "./NavbarClient"
 
@@ -38,7 +37,7 @@ export const Navbar = ({
   ): NavbarProps["items"][number] => ({
     ...item,
     url:
-      getReferenceLinkHref(item.url, site.siteMap, site.assetsBaseUrl) ??
+      getReferenceLinkHref(item.url, site.siteMapArray, site.assetsBaseUrl) ??
       item.url,
     items: item.items?.map(processNavItem),
   })
@@ -50,10 +49,7 @@ export const Navbar = ({
       items={items.map(processNavItem)}
       LinkComponent={LinkComponent}
       imageClientProps={{
-        src:
-          isExternalUrl(logoUrl) || site.assetsBaseUrl === undefined
-            ? logoUrl
-            : `${site.assetsBaseUrl}${logoUrl}`,
+        src: logoUrl,
         alt: logoAlt,
         width: "100%",
         className: navbarLogoStyles({
@@ -69,7 +65,7 @@ export const Navbar = ({
               url:
                 getReferenceLinkHref(
                   callToAction.url,
-                  site.siteMap,
+                  site.siteMapArray,
                   site.assetsBaseUrl,
                 ) ?? callToAction.url,
             }
@@ -84,7 +80,7 @@ export const Navbar = ({
                 url:
                   getReferenceLinkHref(
                     item.url,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   ) ?? item.url,
               })),

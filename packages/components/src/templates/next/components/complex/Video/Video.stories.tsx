@@ -32,6 +32,14 @@ export const YouTubeVideoSeries: Story = {
   },
 }
 
+// needed to test for presence of thumbnail urls and fallback to hqdefault.jpg
+export const YouTubeOldestVideo: Story = {
+  args: {
+    title: "YouTube oldest video",
+    url: "https://www.youtube.com/embed/jNQXAC9IVRw?si=xlh9YVaMXqx5gvij",
+  },
+}
+
 export const Vimeo: Story = {
   args: {
     title: "WORMWOOD - Animation Short Film 2024 - GOBELINS",

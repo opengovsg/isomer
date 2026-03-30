@@ -82,7 +82,7 @@ export type VicaProps = Static<typeof VicaSchema>
 export type VicaWidgetClientProps = VicaProps
 
 export type VicaWidgetProps = VicaProps & {
-  site: Pick<IsomerSiteProps, "siteMap" | "assetsBaseUrl">
+  site: Pick<IsomerSiteProps, "siteMapArray" | "assetsBaseUrl">
 }
 
 export type VicaStylesheetProps = Pick<VicaProps, "useDevStagingScript">

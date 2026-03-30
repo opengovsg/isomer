@@ -114,6 +114,8 @@ const SITES_WITH_AUDIT_LOGS = [
   287, // www.mot.gov.sg
   289, // www.toteboard.gov.sg
   336, // www.caringcommuters.gov.sg
+  343, // www.motawardsceremony.gov.sg
+  397, // www.rp.edu.sg
 ]
 
 // Month and year to get audit logs for, in the format of YYYY-MM,

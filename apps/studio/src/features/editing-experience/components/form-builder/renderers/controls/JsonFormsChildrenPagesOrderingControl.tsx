@@ -74,7 +74,6 @@ const DraggableBlocks = ({
                       snapshot.isDragging || snapshot.isDropAnimating
                     return (
                       <VStack
-                        my="0.25rem"
                         w="100%"
                         ref={provided.innerRef}
                         {...provided.draggableProps}

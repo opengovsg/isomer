@@ -14,6 +14,7 @@ import {
 } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
+import { IndexpageRow } from "~/features/dashboard/components/IndexpageRow/IndexpageRow"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { CreateCollectionPageModal } from "~/features/editing-experience/components/CreateCollectionPageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
@@ -22,12 +23,11 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getCollectionHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import { ResourceType } from "../../../../../prisma/generated/generatedEnums"
-
-const sitePageSchema = z.object({
+const collectionPageSchema = z.object({
   siteId: z.coerce.number(),
-  resourceId: z.coerce.number(),
+  collectionId: z.coerce.number(),
 })
 
 const CollectionResourceListPage: NextPageWithLayout = () => {
@@ -36,38 +36,40 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
     onOpen: onPageCreateModalOpen,
     onClose: onPageCreateModalClose,
   } = useDisclosure()
-  const { siteId, resourceId } = useQueryParse(sitePageSchema)
+  const { siteId, collectionId } = useQueryParse(collectionPageSchema)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
 
   const [resource] = trpc.resource.getParentOf.useSuspenseQuery({
     siteId: Number(siteId),
-    resourceId: String(resourceId),
+    resourceId: String(collectionId),
   })
 
-  // TODO: Handle not found error in error boundary
   const [metadata] = trpc.collection.getMetadata.useSuspenseQuery({
     siteId,
-    resourceId,
+    resourceId: collectionId,
   })
 
   return (
     <>
       <DashboardLayout
         breadcrumbs={getBreadcrumbsFromRoot(resource, String(siteId)).concat({
-          href: getCollectionHref(String(siteId), String(resourceId)),
+          href: getCollectionHref(String(siteId), String(collectionId)),
           label: metadata.title,
         })}
         icon={<BiData />}
         title={metadata.title}
         buttons={
           <>
-            <AdminCreateIndexPageButton siteId={siteId} parentId={resourceId} />
+            <AdminCreateIndexPageButton
+              siteId={siteId}
+              parentId={collectionId}
+            />
             <Button
               variant="outline"
               size="md"
               onClick={() =>
                 setFolderSettingsModalState({
-                  folderId: String(resourceId),
+                  folderId: String(collectionId),
                 })
               }
             >
@@ -80,13 +82,18 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
         }
       >
         <CollectionBanner />
-        <CollectionTable resourceId={resourceId} siteId={siteId} />
+        <IndexpageRow
+          type="collection"
+          siteId={siteId}
+          resourceId={String(collectionId)}
+        />
+        <CollectionTable resourceId={collectionId} siteId={siteId} />
       </DashboardLayout>
       <CreateCollectionPageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
         siteId={siteId}
-        collectionId={resourceId}
+        collectionId={collectionId}
       />
       <DeleteResourceModal siteId={siteId} />
       <FolderSettingsModal />

@@ -346,6 +346,20 @@ export const getLocalisedSitemap = async (
   const thumbnailSql = sql<string>`
         published.content->'page'->'image'->> 'src'
     `.as("thumbnail")
+  const categorySql = sql<string>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'category')
+      ELSE ''
+    END
+`.as("category")
+  const dateSql = sql<string>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'date')
+      ELSE ''
+    END
+`.as("date")
 
   // Get the actual resource first
   const resource = await getById(db, { resourceId, siteId })
@@ -362,7 +376,13 @@ export const getLocalisedSitemap = async (
         .where("Resource.id", "=", String(resourceId))
         .leftJoin("Version", "Version.id", "publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
+        .select(() => [
+          headerSql,
+          thumbnailSql,
+          categorySql,
+          dateSql,
+          ...defaultResourceSelect,
+        ])
         .unionAll((fb) =>
           fb
             // Recursive case: Get all the ancestors of the resource
@@ -376,6 +396,8 @@ export const getLocalisedSitemap = async (
             .select(({ eb }) => [
               eb.cast<string>(eb.val(""), "text").as("summary"),
               eb.cast<string>(eb.val(""), "text").as("thumbnail"),
+              eb.cast<string>(eb.val(""), "text").as("category"),
+              eb.cast<string>(eb.val(""), "text").as("date"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -397,7 +419,13 @@ export const getLocalisedSitemap = async (
         .where("state", "=", "Published")
         .leftJoin("Version", "Version.id", "publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect]),
+        .select(() => [
+          headerSql,
+          thumbnailSql,
+          categorySql,
+          dateSql,
+          ...defaultResourceSelect,
+        ]),
     )
     // Step 3: Get all nested folders and collections
     .withRecursive("nestedResources", (eb) =>
@@ -412,7 +440,13 @@ export const getLocalisedSitemap = async (
         .where("Resource.state", "=", ResourceState.Published)
         .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
+        .select(() => [
+          headerSql,
+          thumbnailSql,
+          categorySql,
+          dateSql,
+          ...defaultResourceSelect,
+        ])
         .unionAll((fb) =>
           fb
             .selectFrom("Resource")
@@ -430,21 +464,45 @@ export const getLocalisedSitemap = async (
             .where("Resource.state", "=", ResourceState.Published)
             .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
             .leftJoin("Blob as published", "Version.blobId", "published.id")
-            .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect]),
+            .select(() => [
+              headerSql,
+              thumbnailSql,
+              categorySql,
+              dateSql,
+              ...defaultResourceSelect,
+            ]),
         ),
     )
     // Step 4: Combine all the resources in a single array
     .selectFrom("ancestors as Resource")
-    .select(["summary", "thumbnail", ...defaultResourceSelect])
+    .select([
+      "summary",
+      "thumbnail",
+      "category",
+      "date",
+      ...defaultResourceSelect,
+    ])
     .union((eb) =>
       eb
         .selectFrom("immediateSiblings as Resource")
-        .select(["summary", "thumbnail", ...defaultResourceSelect]),
+        .select([
+          "summary",
+          "thumbnail",
+          "category",
+          "date",
+          ...defaultResourceSelect,
+        ]),
     )
     .union((eb) =>
       eb
         .selectFrom("nestedResources as Resource")
-        .select(["summary", "thumbnail", ...defaultResourceSelect]),
+        .select([
+          "summary",
+          "thumbnail",
+          "category",
+          "date",
+          ...defaultResourceSelect,
+        ]),
     )
     .orderBy("title asc")
     .execute()
