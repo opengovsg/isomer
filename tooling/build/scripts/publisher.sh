@@ -41,8 +41,8 @@ start_time=$(date +%s)
 git checkout $ISOMER_BUILD_REPO_BRANCH
 calculate_duration $start_time
 
-# Perform a clean of npm cache
-npm cache clean --force
+corepack enable
+corepack prepare pnpm@10.33.0 --activate
 
 ### Create a cache key for the current build ###
 # Assumption: All production related builds are using release tags e.g. v0.2.1
@@ -74,7 +74,7 @@ else
 
   echo "Installing dependencies..."
   start_time=$(date +%s)
-  npm ci
+  pnpm install --frozen-lockfile
   calculate_duration $start_time
 
   echo "Caching node_modules..."
@@ -91,8 +91,8 @@ echo "Fetching from database..."
 start_time=$(date +%s)
 cd tooling/build/scripts/publishing
 echo $(pwd)
-npm ci
-npm run start
+pnpm install --frozen-lockfile
+pnpm run start
 calculate_duration $start_time
 
 # Prebuilding...
@@ -129,7 +129,7 @@ else
   echo "Building components..."
   start_time=$(date +%s)
   cd ../../packages/components # from tooling/template
-  npm run build
+  pnpm run build
   mv opengovsg-isomer-components-0.0.13.tgz ../../tooling/template/
   echo $(pwd)
   cd ../.. # back to root
@@ -138,13 +138,13 @@ else
   echo "Installing dependencies..."
   cd tooling/template
   start_time=$(date +%s)
-  npm ci
+  pnpm install --frozen-lockfile
   calculate_duration $start_time
 
   echo "Prebuilding..."
   start_time=$(date +%s)
   rm -rf node_modules && rm -rf .next
-  npm i opengovsg-isomer-components-0.0.13.tgz
+  pnpm add opengovsg-isomer-components-0.0.13.tgz
   calculate_duration $start_time
 
   echo "Caching node_modules..."
@@ -159,7 +159,7 @@ fi
 # Build
 echo "Building..."
 start_time=$(date +%s)
-npm run build:template
+pnpm run build:template
 calculate_duration $start_time
 
 # Check if the 'out' folder exists

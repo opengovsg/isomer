@@ -60,8 +60,10 @@ fi
 # Build the site
 echo "Building site..."
 start_time=$(date +%s)
-npm i opengovsg-isomer-components-0.0.13.tgz
-npm run build:template
+corepack enable
+corepack prepare pnpm@10.33.0 --activate
+pnpm add ./opengovsg-isomer-components-0.0.13.tgz
+pnpm run build:template
 calculate_duration $start_time
 
 # Bring the output folder to the original directory

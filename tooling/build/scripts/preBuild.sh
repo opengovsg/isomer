@@ -15,7 +15,7 @@ calculate_duration() {
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   ##### This long command is used to get the latest release tag from the Isomer repository.
   # git ls-remote: Lists references in a remote repository along with their commit hashes.
-  # --tags: Lists all tags in the repository.
+  # --tags: Lists all tags in the remote repository.
   # --sort='v:refname': Sorts the tags by version number according to the semantic versioning scheme
   # tail -n1: Gets the last line of the output.
   # awk '{print $2}': Prints the second column of the last line, which is the tag name.
@@ -44,14 +44,13 @@ start_time=$(date +%s)
 git checkout $ISOMER_BUILD_REPO_BRANCH
 calculate_duration $start_time
 
-# Perform a clean of npm cache
-npm cache clean --force
-npm i sherif@1.6.1
+corepack enable
+corepack prepare pnpm@10.33.0 --activate
 
 # Install dependencies
 echo "Installing dependencies..."
 start_time=$(date +%s)
-npm ci
+pnpm install --frozen-lockfile
 echo "Dependencies installed"
 calculate_duration $start_time
 
@@ -59,4 +58,5 @@ calculate_duration $start_time
 echo "Building components..."
 start_time=$(date +%s)
 cd packages/components
-npm run build
+pnpm run build
+calculate_duration $start_time

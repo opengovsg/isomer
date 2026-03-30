@@ -29,7 +29,7 @@
     "services:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
     "setup:test": "run-s --print-label services:setup db:sleep",
     "test": "run-s test:*",
-    "test:watch": "dotenv -e .env.test npx vitest watch"
+    "test:watch": "dotenv -e .env.test pnpm exec vitest watch"
   },
   "devDependencies": {
     "@isomer/eslint-config": "*",

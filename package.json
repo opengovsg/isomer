@@ -36,6 +36,7 @@
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
+    "dotenv-cli": "catalog:",
     "sherif": "catalog:",
     "turbo": "catalog:"
   },

@@ -40,8 +40,8 @@ RUN apk add --no-cache libc6-compat
 
 # Set working directory
 WORKDIR /app
-# Replace <your-major-version> with the major version installed in your repository. For example:
-RUN npm install -g turbo@^2
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+RUN pnpm add -g turbo@^2
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
@@ -54,13 +54,15 @@ RUN apk update
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+
 # First install the dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 
 # Build the project
 COPY --from=builder /app/out/full/ .
-RUN npx turbo run build --filter=isomer-studio...
+RUN pnpm exec turbo run build --filter=isomer-studio...
 
 FROM base AS runner
 WORKDIR /app

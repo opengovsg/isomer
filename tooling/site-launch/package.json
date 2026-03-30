@@ -2,7 +2,7 @@
   "name": "@isomer/site-launch",
   "type": "module",
   "scripts": {
-    "launch": "dotenv npx tsx ./index.ts"
+    "launch": "dotenv -- pnpm exec tsx ./index.ts"
   },
   "devDependencies": {
     "@isomer/migrate-tags": "*",

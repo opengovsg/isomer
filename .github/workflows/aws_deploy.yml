@@ -325,7 +325,7 @@ jobs:
       #     IMAGE_TAG: ${{ env.LOCAL_IMAGE_TAG }}
       #   shell: bash
       #   run: |
-      #     npm install -g @datadog/datadog-ci
+      #     pnpm add -g @datadog/datadog-ci
       #     rm -rf assets
       #     docker cp $(docker create ${IMAGE_TAG}):/opt/nemsw/services/frontend/build/assets assets
       #     datadog-ci sourcemaps upload assets \
