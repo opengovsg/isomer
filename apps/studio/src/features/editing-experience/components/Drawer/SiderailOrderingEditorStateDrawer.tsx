@@ -1,6 +1,6 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 import {
   Box,
   Flex,
@@ -18,7 +18,6 @@ import {
   BiArrowToTop,
   BiFile,
   BiFolder,
-  BiGridVertical,
   BiInfoCircle,
 } from "react-icons/bi"
 
@@ -29,6 +28,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { pageSchema } from "../../schema"
+import { BaseBlock, BaseBlockDragHandle } from "../Block/BaseBlock"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 import { mergeResourcesWithOrdering } from "../form-builder/renderers/controls/utils/mergeResourcesWithOrdering"
 import { DrawerHeader } from "./DrawerHeader"
@@ -38,6 +38,40 @@ interface ChildPageItem {
   title: string
   permalink: string
   type: "folder" | "page"
+}
+
+interface MoveIconButtonProps {
+  direction: "top" | "bottom"
+  onClick: () => void
+  isDisabled: boolean
+}
+
+const MoveIconButton = ({
+  direction,
+  onClick,
+  isDisabled,
+}: MoveIconButtonProps) => {
+  const isTop = direction === "top"
+  return (
+    <IconButton
+      size="xs"
+      variant="clear"
+      onClick={onClick}
+      isDisabled={isDisabled}
+      aria-label={isTop ? "Move to top" : "Move to bottom"}
+      icon={
+        <Icon
+          as={isTop ? BiArrowToTop : BiArrowToBottom}
+          fontSize="1rem"
+          color={
+            isDisabled
+              ? "interaction.support.disabled"
+              : "interaction.main.default"
+          }
+        />
+      }
+    />
+  )
 }
 
 interface DraggablePageItemProps {
@@ -57,10 +91,12 @@ const DraggablePageItem = ({
   isFirst,
   isLast,
 }: DraggablePageItemProps) => {
-  const [showActions, setShowActions] = useState(false)
-
   return (
-    <Draggable draggableId={page.id} index={index}>
+    <Draggable
+      draggableId={page.id}
+      index={index}
+      disableInteractiveElementBlocking
+    >
       {(provided, snapshot) => {
         const isDragging = snapshot.isDragging || snapshot.isDropAnimating
         return (
@@ -69,112 +105,46 @@ const DraggablePageItem = ({
             {...provided.draggableProps}
             w="100%"
             position="relative"
-            onMouseEnter={() => setShowActions(true)}
-            onMouseLeave={() => setShowActions(false)}
+            role="group"
           >
-            <HStack
-              w="100%"
-              borderRadius="6px"
-              border="1px solid"
-              borderColor={
-                isDragging ? "interaction.main.default" : "base.divider.medium"
+            <BaseBlock
+              icon={page.type === "folder" ? BiFolder : BiFile}
+              label={page.title}
+              description={page.permalink}
+              dragHandle={
+                <BaseBlockDragHandle
+                  isDragging={isDragging}
+                  {...provided.dragHandleProps}
+                />
               }
-              bg={isDragging ? "interaction.muted.main.hover" : "white"}
-              py="0.75rem"
-              px="0.75rem"
-              gap="0.75rem"
-              _hover={{
-                bg: "interaction.muted.main.hover",
-                borderColor: "interaction.main-subtle.hover",
-              }}
+            />
+
+            <HStack
+              position="absolute"
+              right="0.5rem"
+              top="50%"
+              transform="translateY(-50%)"
+              bg="white"
+              borderRadius="md"
+              boxShadow="sm"
+              border="1px solid"
+              borderColor="base.divider.medium"
+              p="0.25rem"
+              gap="0.25rem"
+              display="none"
+              _groupHover={{ display: isDragging ? "none" : "flex" }}
             >
-              <Box
-                {...provided.dragHandleProps}
-                display="flex"
-                cursor="grab"
-                color={isDragging ? "slate.400" : "slate.300"}
-                _hover={{ color: "slate.400" }}
-              >
-                <Icon as={BiGridVertical} fontSize="1.5rem" />
-              </Box>
-
-              <Icon
-                as={page.type === "folder" ? BiFolder : BiFile}
-                fontSize="1rem"
-                color="base.content.medium"
+              <MoveIconButton
+                direction="top"
+                onClick={onMoveToTop}
+                isDisabled={isFirst}
               />
-
-              <VStack align="start" gap="0" flex={1} overflow="hidden">
-                <Text
-                  textStyle="subhead-2"
-                  noOfLines={1}
-                  wordBreak="break-word"
-                >
-                  {page.title}
-                </Text>
-                <Text
-                  textStyle="caption-2"
-                  color="base.content.medium"
-                  noOfLines={1}
-                  wordBreak="break-word"
-                >
-                  {page.permalink}
-                </Text>
-              </VStack>
+              <MoveIconButton
+                direction="bottom"
+                onClick={onMoveToBottom}
+                isDisabled={isLast}
+              />
             </HStack>
-
-            {showActions && !isDragging && (
-              <HStack
-                position="absolute"
-                right="0.5rem"
-                top="50%"
-                transform="translateY(-50%)"
-                bg="white"
-                borderRadius="md"
-                boxShadow="sm"
-                border="1px solid"
-                borderColor="base.divider.medium"
-                p="0.25rem"
-                gap="0.25rem"
-              >
-                <IconButton
-                  size="xs"
-                  variant="clear"
-                  onClick={onMoveToTop}
-                  isDisabled={isFirst}
-                  aria-label="Move to top"
-                  icon={
-                    <Icon
-                      as={BiArrowToTop}
-                      fontSize="1rem"
-                      color={
-                        isFirst
-                          ? "interaction.support.disabled"
-                          : "interaction.main.default"
-                      }
-                    />
-                  }
-                />
-                <IconButton
-                  size="xs"
-                  variant="clear"
-                  onClick={onMoveToBottom}
-                  isDisabled={isLast}
-                  aria-label="Move to bottom"
-                  icon={
-                    <Icon
-                      as={BiArrowToBottom}
-                      fontSize="1rem"
-                      color={
-                        isLast
-                          ? "interaction.support.disabled"
-                          : "interaction.main.default"
-                      }
-                    />
-                  }
-                />
-              </HStack>
-            )}
           </Box>
         )
       }}
