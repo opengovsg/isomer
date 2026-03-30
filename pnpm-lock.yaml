@@ -1035,6 +1035,9 @@ importers:
       react-dom:
         specifier: catalog:react18
         version: 18.3.1(react@18.3.1)
+      rimraf:
+        specifier: 'catalog:'
+        version: 5.0.10
       rollup:
         specifier: 'catalog:'
         version: 4.60.1

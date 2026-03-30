@@ -114,6 +114,7 @@
     "postcss-preset-env": "catalog:",
     "react": "catalog:react18",
     "react-dom": "catalog:react18",
+    "rimraf": "catalog:",
     "rollup": "catalog:",
     "rollup-plugin-dts": "catalog:",
     "storybook": "catalog:storybook9",
