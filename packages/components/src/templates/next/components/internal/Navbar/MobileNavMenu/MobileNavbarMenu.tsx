@@ -61,6 +61,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                   isExternal={isExternalUrl(callToAction.url)}
                   className="h-fit w-full justify-center"
                   isWithFocusVisibleHighlight
+                  onClick={onCloseMenu}
                   LinkComponent={LinkComponent}
                 >
                   {callToAction.label}
@@ -80,6 +81,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                     currIdx === index ? -1 : index,
                   )
                 }
+                onCloseMenu={onCloseMenu}
                 {...item}
               />
             ))}
@@ -104,6 +106,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                         href={item.url}
                         isExternal={isExternalUrl(item.url)}
                         showExternalIcon={isExternalUrl(item.url)}
+                        onClick={onCloseMenu}
                       >
                         {item.name}
                       </Link>
