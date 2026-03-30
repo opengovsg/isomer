@@ -71,9 +71,17 @@ export const getSiteNameAndCodeBuildId = async (siteId: number) => {
     .select(["Site.codeBuildId", "Site.name", "Site.config"])
     .executeTakeFirstOrThrow()
 
+  const configSiteName =
+    typeof site.config === "object" &&
+    site.config !== null &&
+    "siteName" in site.config &&
+    typeof site.config.siteName === "string"
+      ? site.config.siteName
+      : undefined
+
   return {
     codeBuildId: site.codeBuildId,
-    name: site.config.siteName || site.name,
+    name: configSiteName || site.name,
   }
 }
 

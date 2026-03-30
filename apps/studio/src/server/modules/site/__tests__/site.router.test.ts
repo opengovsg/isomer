@@ -1918,6 +1918,28 @@ describe("site.router", async () => {
       // Assert
       expect(result).toBeUndefined() // does not return anything
     })
+
+    it("should not crash publish when site config is JSON null", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({ config: jsonb(null) })
+        .where("id", "=", site.id)
+        .execute()
+      const mockRequest = createMockRequest(session)
+      const mockGrowthBook: Partial<GrowthBook> = {
+        getFeatureValue: vi.fn().mockReturnValue({
+          core: [user.email],
+          migrators: [],
+        }),
+      }
+      mockRequest.gb = mockGrowthBook as GrowthBook
+      caller = createCaller(mockRequest)
+
+      // Act / Assert
+      await expect(caller.publish({ siteId: site.id })).resolves.toBeUndefined()
+    })
   })
 })
 
