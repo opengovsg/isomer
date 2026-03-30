@@ -40,6 +40,9 @@ RUN apk add --no-cache libc6-compat
 
 # Set working directory
 WORKDIR /app
+# pnpm global bin is under PNPM_HOME (not on PATH by default); npm's -g used /usr/local/bin.
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 RUN pnpm add -g turbo@^2
 COPY . .
@@ -58,6 +61,8 @@ RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 
 # First install the dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/pnpm-lock.yaml .
+COPY --from=builder /app/out/pnpm-workspace.yaml .
 RUN pnpm install --frozen-lockfile
 
 # Build the project
