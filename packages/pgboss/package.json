@@ -35,7 +35,8 @@
   "dependencies": {
     "pg-boss": "^12.3.0",
     "pino": "catalog:",
-    "vitest": "catalog:vitest2"
+    "vitest": "catalog:vitest2",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",

@@ -30,6 +30,8 @@ publicHoistPattern:
   - "*@opengovsg/oui*"
   - "*prisma*"
   - pg
+  - oxlint
+  - rimraf
 
 onlyBuiltDependencies:
   - "@prisma/client"
