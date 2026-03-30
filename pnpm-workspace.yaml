@@ -31,6 +31,7 @@ publicHoistPattern:
   - "*prisma*"
   - pg
   - oxlint
+  - oxlint-tsgolint
   - rimraf
   - tsc-alias
 
