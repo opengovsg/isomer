@@ -113,12 +113,17 @@ export interface IsomerGeneratedSiteProps {
   isomerMsClarityId?: string
 }
 
+export interface IsomerDerivedSiteProps {
+  siteMapArray: IsomerSitemap[]
+}
+
 export interface IsomerSiteWideComponentsProps {
   navbar: NavbarSchemaType
   footerItems: FooterSchemaType
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &
+  IsomerDerivedSiteProps &
   IsomerSiteWideComponentsProps &
   IsomerSiteConfigProps
 

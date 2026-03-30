@@ -1,9 +1,8 @@
 import type { HeroGradientProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
-import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ComponentContent } from "../../internal/customCssClass"
+import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
-import { ImageClient } from "../Image"
 
 export const HeroGradient = ({
   title,
@@ -16,11 +15,6 @@ export const HeroGradient = ({
   site,
   LinkComponent,
 }: HeroGradientProps) => {
-  const backgroundSrc =
-    isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
-      ? backgroundUrl
-      : `${site.assetsBaseUrl}${backgroundUrl}`
-
   return (
     <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">
       <div
@@ -29,7 +23,7 @@ export const HeroGradient = ({
         aria-hidden
       >
         <ImageClient
-          src={backgroundSrc}
+          src={backgroundUrl}
           alt={title}
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
@@ -51,7 +45,7 @@ export const HeroGradient = ({
                 <LinkButton
                   href={getReferenceLinkHref(
                     buttonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   size="lg"
@@ -67,7 +61,7 @@ export const HeroGradient = ({
                     size="lg"
                     href={getReferenceLinkHref(
                       secondaryButtonUrl,
-                      site.siteMap,
+                      site.siteMapArray,
                       site.assetsBaseUrl,
                     )}
                     LinkComponent={LinkComponent}

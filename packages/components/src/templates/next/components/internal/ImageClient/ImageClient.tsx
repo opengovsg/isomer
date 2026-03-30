@@ -3,6 +3,7 @@
 import { forwardRef } from "react"
 
 import type { ImageClientProps } from "~/interfaces"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 
 export const ImageClient = forwardRef<
   HTMLImageElement,
@@ -17,26 +18,24 @@ export const ImageClient = forwardRef<
       assetsBaseUrl,
       lazyLoading = true, // next/image defaults to lazy loading true too
       onLoad,
-      onError,
     },
     ref,
   ) => {
+    const imgSrc =
+      isExternalUrl(src) || assetsBaseUrl === undefined
+        ? src
+        : `${assetsBaseUrl}${src}`
+
     return (
       <img
         ref={ref}
-        src={src}
+        src={imgSrc}
         alt={alt}
         width={width}
         height="auto"
         className={className}
         onLoad={onLoad}
-        onError={(e) => {
-          if (onError) {
-            onError(e)
-            if (e.defaultPrevented) return
-          }
-
-          const { currentTarget } = e
+        onError={({ currentTarget }) => {
           currentTarget.onerror = null
           currentTarget.src = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
         }}

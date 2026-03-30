@@ -65,11 +65,16 @@ export const getSiteTheme = async (siteId: number) => {
   return theme
 }
 export const getSiteNameAndCodeBuildId = async (siteId: number) => {
-  return await db
+  const site = await db
     .selectFrom("Site")
     .where("id", "=", siteId)
-    .select(["Site.codeBuildId", "Site.name"])
+    .select(["Site.codeBuildId", "Site.name", "Site.config"])
     .executeTakeFirstOrThrow()
+
+  return {
+    codeBuildId: site.codeBuildId,
+    name: site.config.siteName || site.name,
+  }
 }
 
 export const getNotification = async (

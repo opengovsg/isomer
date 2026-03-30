@@ -1,12 +1,39 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  getPrivacyEnhancedVimeoEmbedUrl,
   getPrivacyEnhancedYouTubeEmbedUrl,
   getVimeoVideoId,
   getYouTubeVideoId,
 } from "../utils"
 
 describe("utils", () => {
+  describe("getPrivacyEnhancedVimeoEmbedUrl", () => {
+    it("adds dnt=true when URL has no existing query params", () => {
+      expect(
+        getPrivacyEnhancedVimeoEmbedUrl(
+          "https://player.vimeo.com/video/984159615",
+        ),
+      ).toBe("https://player.vimeo.com/video/984159615?dnt=true")
+    })
+
+    it("preserves existing query params while forcing dnt=true", () => {
+      expect(
+        getPrivacyEnhancedVimeoEmbedUrl(
+          "https://player.vimeo.com/video/984159615?h=945031e683",
+        ),
+      ).toBe("https://player.vimeo.com/video/984159615?h=945031e683&dnt=true")
+    })
+
+    it("overrides existing dnt value to true", () => {
+      expect(
+        getPrivacyEnhancedVimeoEmbedUrl(
+          "https://player.vimeo.com/video/984159615?dnt=false&foo=bar",
+        ),
+      ).toBe("https://player.vimeo.com/video/984159615?dnt=true&foo=bar")
+    })
+  })
+
   describe("getPrivacyEnhancedYouTubeEmbedUrl", () => {
     it("rewrites www.youtube.com to www.youtube-nocookie.com for watch URLs", () => {
       const url = new URL("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
@@ -91,6 +118,14 @@ describe("utils", () => {
         },
         {
           url: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+          expected: "dQw4w9WgXcQ",
+        },
+        {
+          url: "https://youtube.com/embed/dQw4w9WgXcQ?start=30",
+          expected: "dQw4w9WgXcQ",
+        },
+        {
+          url: "https://youtube-nocookie.com/embed/dQw4w9WgXcQ?controls=0",
           expected: "dQw4w9WgXcQ",
         },
       ]

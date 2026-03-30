@@ -96,7 +96,7 @@ export const getTextAsHtml = ({
       node.marks.forEach((mark) => {
         if (mark.type === "link") {
           output.push(
-            `<${MARK_DOM_MAPPING.link} target="${mark.attrs.target || "_self"}" href="${getReferenceLinkHref(mark.attrs.href ?? "", site.siteMap, site.assetsBaseUrl)}">`,
+            `<${MARK_DOM_MAPPING.link} target="${mark.attrs.target || "_self"}" href="${getReferenceLinkHref(mark.attrs.href ?? "", site.siteMapArray, site.assetsBaseUrl)}">`,
           )
         } else {
           output.push(`<${MARK_DOM_MAPPING[mark.type]}>`)

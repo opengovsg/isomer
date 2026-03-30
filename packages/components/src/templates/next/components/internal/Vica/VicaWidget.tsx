@@ -12,7 +12,7 @@ export const VicaWidget = ({
     <VicaWidgetClient
       app-icon={
         appIcon
-          ? getReferenceLinkHref(appIcon, site.siteMap, site.assetsBaseUrl)
+          ? getReferenceLinkHref(appIcon, site.siteMapArray, site.assetsBaseUrl)
           : undefined
       }
       {...rest}
