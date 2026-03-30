@@ -1,5 +1,5 @@
 import type { NextApiRequest } from "next"
-import type { DestinationStream } from "pino"
+import type { DestinationStream, Logger } from "pino"
 import { nanoid } from "nanoid"
 import pino from "pino"
 import pinoPretty from "pino-pretty"
@@ -30,7 +30,7 @@ class PinoLogger {
     PinoLogger.instance ??= PinoLogger.createBaseLogger()
     return PinoLogger.instance
   }
-  private static createBaseLogger = (): pino.Logger<string> => {
+  private static createBaseLogger = (): Logger<string> => {
     let transport: DestinationStream
     if (env.NODE_ENV === "development" || env.NODE_ENV === "test") {
       transport = pinoPretty({
