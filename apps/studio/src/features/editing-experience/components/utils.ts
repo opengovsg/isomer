@@ -39,8 +39,6 @@ export const generateResourceUrl = (value: string): string =>
   transliterate(value)
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "")
 
 interface UploadModifiedAssetsParams {
   block: IsomerComponent
