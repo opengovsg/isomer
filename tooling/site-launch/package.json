@@ -5,8 +5,8 @@
     "launch": "dotenv -- pnpm exec tsx ./index.ts"
   },
   "devDependencies": {
-    "@isomer/migrate-tags": "*",
-    "@isomer/tsconfig": "*",
+    "@isomer/migrate-tags": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
@@ -16,7 +16,7 @@
     "@aws-sdk/client-cloudfront": "catalog:awsSdk3",
     "@aws-sdk/credential-providers": "catalog:awsSdk3",
     "@inquirer/prompts": "catalog:",
-    "@isomer/seed-from-repo": "*",
+    "@isomer/seed-from-repo": "workspace:*",
     "@octokit/rest": "catalog:",
     "axios": "catalog:",
     "commander-ts": "catalog:",

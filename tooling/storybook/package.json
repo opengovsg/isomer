@@ -15,8 +15,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@isomer/oxlint-config": "*",
-    "@isomer/tsconfig": "*",
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

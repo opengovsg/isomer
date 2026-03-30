@@ -52,7 +52,7 @@
     "tsx": "catalog:"
   },
   "devDependencies": {
-    "@isomer/oxlint-config": "*",
+    "@isomer/oxlint-config": "workspace:*",
     "@types/jsdom": "catalog:",
     "@types/pg": "catalog:",
     "@types/request": "catalog:"

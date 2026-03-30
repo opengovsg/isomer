@@ -12,6 +12,6 @@
     "globals": "catalog:"
   },
   "devDependencies": {
-    "@isomer/oxlint-config": "*"
+    "@isomer/oxlint-config": "workspace:*"
   }
 }

@@ -6,7 +6,7 @@
     ".": "./index.ts"
   },
   "devDependencies": {
-    "@isomer/tsconfig": "*",
+    "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
@@ -14,9 +14,9 @@
     "@aws-sdk/client-acm": "catalog:awsSdk3",
     "@aws-sdk/client-cloudfront": "catalog:awsSdk3",
     "@inquirer/prompts": "catalog:",
-    "@isomer/seed-from-repo": "*",
+    "@isomer/seed-from-repo": "workspace:*",
     "@octokit/rest": "catalog:",
-    "@opengovsg/isomer-components": "*",
+    "@opengovsg/isomer-components": "workspace:*",
     "axios": "catalog:",
     "commander-ts": "catalog:",
     "npx": "catalog:",

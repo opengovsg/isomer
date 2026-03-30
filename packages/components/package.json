@@ -87,9 +87,9 @@
     "usehooks-ts": "catalog:"
   },
   "devDependencies": {
-    "@isomer/oxlint-config": "*",
-    "@isomer/storybook-config": "*",
-    "@isomer/tsconfig": "*",
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/storybook-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
     "@storybook/addon-a11y": "catalog:storybook9",
     "@storybook/addon-docs": "catalog:storybook9",
     "@storybook/addon-links": "catalog:storybook9",

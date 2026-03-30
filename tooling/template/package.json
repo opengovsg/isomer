@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@opengovsg/isomer-components": "*",
+    "@opengovsg/isomer-components": "workspace:*",
     "next": "catalog:next15",
     "postcss": "catalog:",
     "postcss-preset-env": "catalog:",
@@ -23,8 +23,8 @@
     "typescript": "catalog:"
   },
   "devDependencies": {
-    "@isomer/oxlint-config": "*",
-    "@isomer/tsconfig": "*",
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:"
   }
 }

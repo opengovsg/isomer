@@ -14,7 +14,7 @@
     "tsx": "catalog:"
   },
   "devDependencies": {
-    "@isomer/tsconfig": "*",
+    "@isomer/tsconfig": "workspace:*",
     "@types/pg": "catalog:"
   }
 }

@@ -38,8 +38,8 @@
     "vitest": "catalog:vitest2"
   },
   "devDependencies": {
-    "@isomer/oxlint-config": "*",
-    "@isomer/tsconfig": "*",
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@vitest/coverage-istanbul": "catalog:vitest2",
     "npm-run-all": "catalog:",
