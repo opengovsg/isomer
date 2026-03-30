@@ -5,6 +5,11 @@ import { useEffect, useState } from "react"
 
 import { twMerge } from "~/lib/twMerge"
 import { ImageClient } from "../../internal/ImageClient"
+import {
+  getHqYouTubeThumbnailUrl,
+  getPreferredYouTubeThumbnailUrl,
+  shouldFallbackToHqYouTubeThumbnail,
+} from "./utils"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 
 export interface LiteYouTubeEmbedProps {
@@ -42,9 +47,7 @@ export const LiteYouTubeEmbed = ({
         const data = (await response.json()) as { thumbnail_url?: string }
         if (data.thumbnail_url) {
           // Prefer sddefault; oEmbed returns hqdefault. Fallback to hqdefault is handled in onLoad.
-          setOEmbedThumbnailUrl(
-            data.thumbnail_url.replace("hqdefault", "sddefault"),
-          )
+          setOEmbedThumbnailUrl(getPreferredYouTubeThumbnailUrl(data.thumbnail_url))
         }
       } catch {
         // Best effort only; playback still works without preview image.
@@ -85,14 +88,13 @@ export const LiteYouTubeEmbed = ({
             // "missing thumbnail" case by dimensions and swap to hqdefault.jpg. Applies to both
             // single-video and oEmbed (playlist) thumbnails.
             if (
-              currentTarget.src.endsWith("/sddefault.jpg") &&
-              currentTarget.naturalWidth === 120 &&
-              currentTarget.naturalHeight === 90
+              shouldFallbackToHqYouTubeThumbnail({
+                src: currentTarget.src,
+                naturalWidth: currentTarget.naturalWidth,
+                naturalHeight: currentTarget.naturalHeight,
+              })
             ) {
-              currentTarget.src = currentTarget.src.replace(
-                "sddefault.jpg",
-                "hqdefault.jpg",
-              )
+              currentTarget.src = getHqYouTubeThumbnailUrl(currentTarget.src)
             }
           }}
           className={twMerge(

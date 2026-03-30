@@ -1,6 +1,10 @@
 import { VALID_VIDEO_DOMAINS } from "~/utils/validation"
 
 const YOUTUBE_PRIVACY_ENHANCED_HOST = "www.youtube-nocookie.com"
+const YOUTUBE_SDDEFAULT_IMAGE_NAME = "sddefault.jpg"
+const YOUTUBE_HQDEFAULT_IMAGE_NAME = "hqdefault.jpg"
+const YOUTUBE_MISSING_THUMBNAIL_WIDTH = 120
+const YOUTUBE_MISSING_THUMBNAIL_HEIGHT = 90
 
 /**
  * Rewrites a YouTube URL to the privacy-enhanced embed form (youtube-nocookie.com).
@@ -86,4 +90,28 @@ export const getVimeoVideoId = (url: string): string | null => {
   } catch {
     return null
   }
+}
+
+export const getPreferredYouTubeThumbnailUrl = (url: string): string => {
+  return url.replace(YOUTUBE_HQDEFAULT_IMAGE_NAME, YOUTUBE_SDDEFAULT_IMAGE_NAME)
+}
+
+export const shouldFallbackToHqYouTubeThumbnail = ({
+  src,
+  naturalWidth,
+  naturalHeight,
+}: {
+  src: string
+  naturalWidth: number
+  naturalHeight: number
+}): boolean => {
+  return (
+    src.endsWith(`/${YOUTUBE_SDDEFAULT_IMAGE_NAME}`) &&
+    naturalWidth === YOUTUBE_MISSING_THUMBNAIL_WIDTH &&
+    naturalHeight === YOUTUBE_MISSING_THUMBNAIL_HEIGHT
+  )
+}
+
+export const getHqYouTubeThumbnailUrl = (url: string): string => {
+  return url.replace(YOUTUBE_SDDEFAULT_IMAGE_NAME, YOUTUBE_HQDEFAULT_IMAGE_NAME)
 }

@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  getHqYouTubeThumbnailUrl,
   getPrivacyEnhancedVimeoEmbedUrl,
   getPrivacyEnhancedYouTubeEmbedUrl,
+  getPreferredYouTubeThumbnailUrl,
   getVimeoVideoId,
   getYouTubeVideoId,
+  shouldFallbackToHqYouTubeThumbnail,
 } from "../utils"
 
 describe("utils", () => {
@@ -165,6 +168,51 @@ describe("utils", () => {
       testCases.forEach((testCase) => {
         expect(getYouTubeVideoId(testCase)).toBeNull()
       })
+    })
+  })
+
+  describe("YouTube thumbnail helpers", () => {
+    it("prefers sddefault when oEmbed returns hqdefault thumbnail", () => {
+      expect(
+        getPreferredYouTubeThumbnailUrl(
+          "https://i.ytimg.com/vi/jNQXAC9IVRw/hqdefault.jpg",
+        ),
+      ).toBe("https://i.ytimg.com/vi/jNQXAC9IVRw/sddefault.jpg")
+    })
+
+    it("falls back to hqdefault when sddefault placeholder dimensions are detected", () => {
+      const shouldFallback = shouldFallbackToHqYouTubeThumbnail({
+        src: "https://i.ytimg.com/vi/jNQXAC9IVRw/sddefault.jpg",
+        naturalWidth: 120,
+        naturalHeight: 90,
+      })
+
+      expect(shouldFallback).toBe(true)
+      expect(
+        getHqYouTubeThumbnailUrl(
+          "https://i.ytimg.com/vi/jNQXAC9IVRw/sddefault.jpg",
+        ),
+      ).toBe("https://i.ytimg.com/vi/jNQXAC9IVRw/hqdefault.jpg")
+    })
+
+    it("does not fallback when dimensions differ from YouTube missing-thumbnail placeholder", () => {
+      expect(
+        shouldFallbackToHqYouTubeThumbnail({
+          src: "https://i.ytimg.com/vi/jNQXAC9IVRw/sddefault.jpg",
+          naturalWidth: 640,
+          naturalHeight: 480,
+        }),
+      ).toBe(false)
+    })
+
+    it("does not fallback for non-sddefault thumbnails", () => {
+      expect(
+        shouldFallbackToHqYouTubeThumbnail({
+          src: "https://i.ytimg.com/vi/jNQXAC9IVRw/hqdefault.jpg",
+          naturalWidth: 120,
+          naturalHeight: 90,
+        }),
+      ).toBe(false)
     })
   })
 
