@@ -4,7 +4,7 @@ import { chakra, Flex, Icon, Stack, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import type { ResourceTooltipProps } from "./UsageTooltip"
+import type { UsageTooltipProps } from "./UsageTooltip"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { type DrawerState } from "~/types/editorDrawer"
@@ -18,7 +18,7 @@ import {
   INDEX_ALLOWED_BLOCKS,
 } from "./constants"
 import { type SectionType } from "./types"
-import { ResourceTooltip } from "./UsageTooltip"
+import { UsageTooltip } from "./UsageTooltip"
 
 function Section({ children }: React.PropsWithChildren) {
   return (
@@ -40,7 +40,7 @@ function BlockList({ children }: React.PropsWithChildren) {
   return <Stack w="full">{children}</Stack>
 }
 
-interface BlockItemProps extends ResourceTooltipProps {
+type BlockItemProps = UsageTooltipProps & {
   onProceed: (sectionType: SectionType) => void
   sectionType: SectionType
 }
@@ -49,7 +49,7 @@ function BlockItem({ onProceed, sectionType, ...rest }: BlockItemProps) {
   const { icon, label, description } = rest
 
   return (
-    <ResourceTooltip {...rest}>
+    <UsageTooltip {...rest}>
       <chakra.button
         layerStyle="focusRing"
         w="100%"
@@ -82,7 +82,7 @@ function BlockItem({ onProceed, sectionType, ...rest }: BlockItemProps) {
           <Text textStyle="caption-2">{description}</Text>
         </Stack>
       </chakra.button>
-    </ResourceTooltip>
+    </UsageTooltip>
   )
 }
 
