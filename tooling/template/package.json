@@ -16,17 +16,17 @@
   },
   "dependencies": {
     "@opengovsg/isomer-components": "*",
-    "next": "^15.5.9",
-    "postcss": "^8.4.39",
-    "postcss-preset-env": "^10.0.8",
-    "tailwindcss": "^3.4.4",
-    "typescript": "^5.9.2"
+    "next": "catalog:next15",
+    "postcss": "catalog:",
+    "postcss-preset-env": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
   },
   "devDependencies": {
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21"
+    "@types/node": "catalog:"
   },
   "prettier": "@isomer/prettier-config"
 }

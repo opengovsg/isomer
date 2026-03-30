@@ -3,6 +3,10 @@
   "version": "0.0.13",
   "description": "Isomer Next",
   "private": true,
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
   "scripts": {
     "build": "dotenv -- turbo build",
     "build:template": "dotenv -- turbo build:template",
@@ -25,20 +29,15 @@
     "format:fix": "turbo format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache  --ignore-path ./.prettierignore",
     "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
-    "lint:ws": "npx sherif -i next",
-    "lint:ws:fix": "npx sherif --fix",
-    "postinstall": "npm run lint:ws"
+    "lint:ws": "pnpm exec sherif -i next -r packages-without-package-json",
+    "lint:ws:fix": "pnpm exec sherif --fix -r packages-without-package-json",
+    "postinstall": "pnpm lint:ws"
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "tooling/*"
-  ],
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
-    "sherif": "^1.6.1",
-    "turbo": "^2.5.4"
+    "sherif": "catalog:",
+    "turbo": "catalog:"
   },
-  "packageManager": "npm@10.2.3"
+  "packageManager": "pnpm@10.33.0"
 }

@@ -7,20 +7,20 @@
   },
   "devDependencies": {
     "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21",
-    "typescript": "latest"
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   },
   "dependencies": {
-    "@aws-sdk/client-acm": "^3.840.0",
-    "@aws-sdk/client-cloudfront": "^3.840.0",
-    "@inquirer/prompts": "^7.6.0",
+    "@aws-sdk/client-acm": "catalog:awsSdk3",
+    "@aws-sdk/client-cloudfront": "catalog:awsSdk3",
+    "@inquirer/prompts": "catalog:",
     "@isomer/seed-from-repo": "*",
-    "@octokit/rest": "^22.0.0",
+    "@octokit/rest": "catalog:",
     "@opengovsg/isomer-components": "*",
-    "axios": "^1.10.0",
-    "commander-ts": "^0.2.0",
-    "npx": "^10.2.2",
-    "tsx": "^4.20.4"
+    "axios": "catalog:",
+    "commander-ts": "catalog:",
+    "npx": "catalog:",
+    "tsx": "catalog:"
   },
   "prettier": "@isomer/prettier-config"
 }

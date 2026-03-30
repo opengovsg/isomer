@@ -14,6 +14,6 @@
   },
   "prettier": "@isomer/prettier-config",
   "dependencies": {
-    "globals": "^11.12.0"
+    "globals": "catalog:"
   }
 }

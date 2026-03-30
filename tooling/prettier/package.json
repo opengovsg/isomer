@@ -11,13 +11,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
-    "prettier": "^3.3.3",
-    "prettier-plugin-tailwindcss": "^0.6.5"
+    "@ianvs/prettier-plugin-sort-imports": "catalog:",
+    "prettier": "catalog:",
+    "prettier-plugin-tailwindcss": "catalog:"
   },
   "devDependencies": {
     "@isomer/tsconfig": "*",
-    "typescript": "^5.9.2"
+    "typescript": "catalog:"
   },
   "prettier": "@isomer/prettier-config"
 }

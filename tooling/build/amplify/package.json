@@ -1,5 +1,6 @@
 {
   "name": "amplify",
+  "packageManager": "pnpm@10.33.0",
   "version": "1.0.0",
   "description": "",
   "main": "create-app.js",
@@ -10,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-amplify": "^3.606.0",
-    "dotenv": "^16.3.1"
+    "@aws-sdk/client-amplify": "catalog:awsSdk3",
+    "dotenv": "catalog:"
   }
 }
