@@ -80,7 +80,7 @@ function JsonFormsCombinatorControl({
     if (!newSchema) {
       handleChange(path, {})
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const newData = createDefaultValue(newSchema, rootSchema)
 
       if (newSchema.type === "string") {
@@ -109,7 +109,7 @@ function JsonFormsCombinatorControl({
     if (options[0]) {
       setVariant(options[0].label)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

@@ -127,7 +127,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
             <TabList
               // This is to allow the bottom border to overlap with the one coming
               // from the Tab component
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              // oxlint-disable-next-line @typescript-eslint/no-unsafe-member-access
               background={`linear-gradient(${theme.colors.base.divider.medium},${theme.colors.base.divider.medium}) bottom/100% 2px no-repeat`}
               bgColor="utility.ui"
               boxSizing="border-box"

@@ -10,13 +10,13 @@
     "clean": "rm -rf .turbo node_modules",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
-    "lint": "eslint .",
+    "lint": "oxlint --type-aware .",
+    "lint:fix": "oxlint --type-aware --fix .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@isomer/eslint-config": "*",
+    "@isomer/oxlint-config": "*",
     "@isomer/tsconfig": "*",
-    "eslint": "^9.10.0",
     "typescript": "^5.9.2"
   }
 }

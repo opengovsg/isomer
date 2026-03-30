@@ -99,5 +99,5 @@ export const stopAllPgbossJobs = async (
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+// oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
 globalForPgboss.registeredPgbossJobs ||= new Set<string>()

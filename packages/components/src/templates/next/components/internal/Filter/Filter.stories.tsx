@@ -156,7 +156,7 @@ export const MobileFilterDrawerClearAll: Story = {
   play: async (context) => {
     const { canvasElement } = context
     // Required since drawer is a portal
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
     const screen = within(canvasElement.parentElement!)
 
     await MobileFilterDrawer.play?.(context)

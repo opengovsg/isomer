@@ -64,7 +64,7 @@ export const TableSettingsModal = ({
     const { caption } = editor.getAttributes("table")
     setValue("caption", String(caption || ""))
     // only done once per every time the modal is opened
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   return (

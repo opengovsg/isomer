@@ -190,7 +190,7 @@ describe("filterContactMethods", () => {
         },
         {
           // disable eslint because we want to test falsy method
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
           method: null as any, // Falsy method
           label: "Another Invalid",
           values: ["also-invalid"],

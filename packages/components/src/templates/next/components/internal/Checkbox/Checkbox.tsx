@@ -257,7 +257,7 @@ function GroupedCheckbox(props: CheckboxProps) {
   const ref = useRef<HTMLInputElement>(null)
 
   // groupContext is guaranteed to exist because this component is only rendered when isInGroup is true
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
   const context = groupContext!
   const state = context.state
 

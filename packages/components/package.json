@@ -45,8 +45,8 @@
     "dev": "tsc -w",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "oxlint --type-aware .",
+    "lint:fix": "oxlint --type-aware --fix .",
     "prebuild": "rimraf dist",
     "publish-package": "rollup -c && npm run publish",
     "rollup": "rollup -c",
@@ -87,7 +87,7 @@
     "usehooks-ts": "^3.1.1"
   },
   "devDependencies": {
-    "@isomer/eslint-config": "*",
+    "@isomer/oxlint-config": "*",
     "@isomer/storybook-config": "*",
     "@isomer/tsconfig": "*",
     "@storybook/addon-a11y": "9.1.19",

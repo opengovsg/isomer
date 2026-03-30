@@ -28,7 +28,7 @@ const TableBaseCellSchema = Type.Object({
 })
 
 // Disable rule so typescript inference can work properly
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+// oxlint-disable-next-line @typescript-eslint/consistent-type-definitions
 type TableCellProps = {
   type: "tableCell"
   attrs?: Static<typeof TableBaseCellSchema>

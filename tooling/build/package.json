@@ -5,13 +5,13 @@
   "scripts": {
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint": "oxlint --type-aware .",
+    "lint:fix": "oxlint --type-aware --fix ."
   },
   "dependencies": {
     "globals": "^11.12.0"
   },
   "devDependencies": {
-    "@isomer/eslint-config": "*"
+    "@isomer/oxlint-config": "*"
   }
 }

@@ -9,8 +9,8 @@
     "dev": "PORT=3001 next",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "oxlint --type-aware .",
+    "lint:fix": "oxlint --type-aware --fix .",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
@@ -23,7 +23,7 @@
     "typescript": "^5.9.2"
   },
   "devDependencies": {
-    "@isomer/eslint-config": "*",
+    "@isomer/oxlint-config": "*",
     "@isomer/tsconfig": "*",
     "@types/node": "^22.15.21"
   }

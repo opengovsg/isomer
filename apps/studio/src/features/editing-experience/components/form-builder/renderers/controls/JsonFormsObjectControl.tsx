@@ -36,7 +36,7 @@ function JsonFormsObjectControl({
   handleChange,
 }: ControlWithDetailProps) {
   const [isChecked, setIsChecked] = useState(!isEmpty(data))
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [dataSnapshot, setDataSnapshot] = useState(data)
   const handleToggle = () => {
     if (isChecked) {

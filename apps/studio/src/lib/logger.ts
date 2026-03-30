@@ -41,7 +41,7 @@ class PinoLogger {
     }
     return pino(
       {
-        // eslint-disable-next-line no-restricted-properties
+        // oxlint-disable-next-line node/no-process-env
         level: process.env.PINO_LOG_LEVEL || "info",
         customLevels: levels,
         useOnlyCustomLevels: true,

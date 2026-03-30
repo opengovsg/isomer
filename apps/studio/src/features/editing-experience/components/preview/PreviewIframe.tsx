@@ -1,7 +1,7 @@
 import type { CSSProperties, PropsWithChildren } from "react"
+import type { IframeCallbackFnProps } from "~/types/dom"
 import { Flex } from "@chakra-ui/react"
 import { useEffect, useMemo, useRef } from "react"
-import { useEffect, useMemo } from "react"
 import Frame, { useFrame } from "react-frame-component"
 
 import type { ViewportOptions } from "./IframeToolbar"
@@ -73,7 +73,7 @@ export const PreviewIframe = ({
         style={containerStyles}
         {...extraProps}
         head={
-          // eslint-disable-next-line @next/next/no-css-tags
+          // oxlint-disable-next-line @next/next/no-css-tags
           <link
             rel="stylesheet"
             type="text/css"

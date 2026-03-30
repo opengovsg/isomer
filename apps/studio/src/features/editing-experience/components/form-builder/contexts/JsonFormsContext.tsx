@@ -30,12 +30,12 @@ const withContextToControlWithDetailProps = (
     // NOTE: provides `handleChange` for our method.
     // Unfortunately, the `ctx` is typed as `any` here
     // and requires suppression.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const dispatchProps = ctxDispatchToControlProps(ctx.dispatch)
     // NOTE: provides `uischemas, renderers, cells`
     // The previous implementation of using `withJsonFormsDetailProps`
     // only provided this.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
     const detailProps = ctxToControlWithDetailProps(ctx, props)
     return <Component {...props} {...dispatchProps} {...detailProps} />
   }

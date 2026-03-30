@@ -75,10 +75,12 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
                   <AppBanner />
                   <VersionWrapper />
                   <ChildWithLayout {...props} />
-                  {/* eslint-disable-next-line no-restricted-properties */}
-                  {process.env.NODE_ENV !== "production" && (
-                    <ReactQueryDevtools initialIsOpen={false} />
-                  )}
+                  {
+                    // oxlint-disable-next-line node/no-process-env
+                    process.env.NODE_ENV !== "production" && (
+                      <ReactQueryDevtools initialIsOpen={false} />
+                    )
+                  }
                 </Stack>
               </Suspense>
             </ErrorBoundary>

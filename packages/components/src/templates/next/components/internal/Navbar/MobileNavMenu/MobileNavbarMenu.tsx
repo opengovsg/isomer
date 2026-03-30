@@ -71,7 +71,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={`${item.name}-${index}`}
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 LinkComponent={LinkComponent}
                 index={index}
                 isOpen={index === openNavItemIdx}

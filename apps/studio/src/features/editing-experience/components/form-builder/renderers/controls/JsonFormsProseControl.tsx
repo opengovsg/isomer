@@ -81,7 +81,7 @@ function JsonFormsProseControl({
   )
 
   const editor = EditorHook({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange: useCallback(
       (content) => {
@@ -101,7 +101,7 @@ function JsonFormsProseControl({
     if (data !== undefined) {
       const selection = editor?.state.selection
       if (!selection) return
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
       editor.commands.setContent(data)
       editor.commands.setTextSelection(selection)
     }

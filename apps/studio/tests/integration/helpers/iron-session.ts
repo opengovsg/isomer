@@ -87,7 +87,7 @@ export const applySession = () => {
     set: store.set.bind(store),
     get: store.get.bind(store),
     unset: store.unset,
-    // eslint-disable-next-line @typescript-eslint/require-await
+    // oxlint-disable-next-line @typescript-eslint/require-await
     async save() {
       store.seal()
     },

@@ -31,7 +31,7 @@ const getPatchedPermalink = async (
   props: DynamicPageProps,
 ): Promise<ParamsContent["permalink"]> => {
   const params = await props.params
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return params.permalink ?? [""]
 }
 
@@ -47,7 +47,7 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const joinedPermalink: string = permalink.join("/")
 
   const schema = (await import(`@/schema/${joinedPermalink}.json`)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     .then((module) => module.default)
     // NOTE: If the initial import is missing,
     // this might be the case where the file is an index page
@@ -55,16 +55,16 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
     // so we have to do another import w the appended index path
     .catch(async () => {
       if (joinedPermalink === "") {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
         return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`).then(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+          // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
           (module) => module.default,
         )
       }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
       return import(
         `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       ).then((module) => module.default)
     })) as IsomerPageSchemaType
 

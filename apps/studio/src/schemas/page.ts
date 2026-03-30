@@ -59,7 +59,7 @@ export const reorderBlobSchema = z.object({
 
 export const updatePageBlobSchema = basePageSchema.extend({
   content: z.string().transform((value, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = safeJsonParse(value)
     if (schemaValidator(parsed)) {
       return parsed

@@ -59,7 +59,7 @@
     },
     "lint": {
       "dependsOn": ["^build"],
-      "outputs": ["node_modules/.cache/.eslintcache"]
+      "outputs": []
     },
     "typecheck": {
       "dependsOn": ["^build"],
