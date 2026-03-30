@@ -1,7 +1,7 @@
 import { Text } from "@chakra-ui/react"
+import { getLastLoginText } from "~/features/users/utils"
 
 import type { UserTableData } from "./types"
-import { getLastLoginText } from "~/features/users/utils"
 
 type LastLoginCellProps = Pick<UserTableData, "createdAt" | "lastLoginAt">
 

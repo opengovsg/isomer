@@ -1,5 +1,4 @@
 import type { UseRadioGroupProps, UseRadioProps } from "@chakra-ui/react"
-import { forwardRef, useMemo } from "react"
 import {
   Box,
   Flex,
@@ -11,10 +10,11 @@ import {
   useRadioGroup,
 } from "@chakra-ui/react"
 import { Badge } from "@opengovsg/design-system-react"
+import { forwardRef, useMemo } from "react"
+import { getIcon } from "~/utils/resources"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { CollectionItemType } from "./constants"
-import { getIcon } from "~/utils/resources"
 import { COLLECTION_ITEM_TYPES } from "./constants"
 
 interface TypeTileProps extends UseRadioProps {

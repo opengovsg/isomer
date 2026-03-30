@@ -8,15 +8,15 @@
   },
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "format": "oxfmt --check . --ignore-path ../../.gitignore",
+    "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
+    "lint:fix": "oxlint --type-aware --fix .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@isomer/oxlint-config": "*",
-    "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
-    "prettier": "^3.3.3",
     "typescript": "^5.9.2"
   }
 }

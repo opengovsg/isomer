@@ -1,7 +1,6 @@
 import type { NavbarSchemaType } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import type { Dispatch, SetStateAction } from "react"
-import { useCallback, useMemo } from "react"
 import {
   Box,
   HStack,
@@ -22,8 +21,8 @@ import {
 } from "@opengovsg/isomer-components"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
+import { useCallback, useMemo } from "react"
 import { BiDirections } from "react-icons/bi"
-
 import {
   ErrorProvider,
   useBuilderErrors,

@@ -1,4 +1,5 @@
 import type { IsomerPageSchemaType } from "~/types"
+
 import { Footer } from "../../components/internal/Footer"
 import { Masthead } from "../../components/internal/Masthead"
 import { Navbar } from "../../components/internal/Navbar"

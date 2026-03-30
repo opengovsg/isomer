@@ -5,7 +5,6 @@ import type {
   ElementDragType,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types"
 import type { ErrorObject } from "ajv"
-import { useEffect, useMemo, useRef, useState } from "react"
 import {
   attachClosestEdge,
   extractClosestEdge,
@@ -24,6 +23,7 @@ import {
   useDisclosure,
   VStack,
 } from "@chakra-ui/react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import {
   DEFAULT_NAVBAR_ITEM_DESCRIPTION,

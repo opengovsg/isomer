@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { MastheadProps } from "~/interfaces"
+
 import Masthead from "./Masthead"
 
 const meta: Meta<MastheadProps> = {

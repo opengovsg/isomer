@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useMemo } from "react"
 import {
   Button,
   FormControl,
@@ -21,15 +20,16 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { useDebounce } from "@uidotdev/usehooks"
-import { RoleType } from "~prisma/generated/generatedEnums"
 import { useAtomValue, useSetAtom } from "jotai"
-
+import { useCallback, useEffect, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
 import { createUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
+import { RoleType } from "~prisma/generated/generatedEnums"
+
 import { addUserModalAtom, DEFAULT_ADD_USER_MODAL_STATE } from "../../atoms"
 import { SingpassConditionalTooltip } from "../SingpassConditionalTooltip"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"

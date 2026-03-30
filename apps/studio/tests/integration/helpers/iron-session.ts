@@ -1,6 +1,8 @@
 import type { RequestOptions, ResponseOptions } from "node-mocks-http"
-import { type NextApiRequest, type NextApiResponse } from "next"
+import type { Context } from "~/server/context"
+import type { User } from "~server/db"
 import { nanoid } from "nanoid"
+import { type NextApiRequest, type NextApiResponse } from "next"
 import { createMocks } from "node-mocks-http"
 import {
   MOCK_STORY_DATE,
@@ -8,11 +10,9 @@ import {
   MOCK_TEST_USER_NAME,
   MOCK_TEST_UUID,
 } from "tests/msw/constants"
-
-import type { Context } from "~/server/context"
-import type { User } from "~server/db"
 import { type Session } from "~/lib/types/session"
 import { createContextInner } from "~/server/context"
+
 import { auth } from "./auth"
 import { mockGrowthBook } from "./growthbook/mockInstance"
 

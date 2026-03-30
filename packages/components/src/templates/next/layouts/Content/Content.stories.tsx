@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { http, HttpResponse } from "msw"
+import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
-import { generateSiteConfig } from "~/stories/helpers"
 import { ContentLayout } from "./Content"
 
 const meta: Meta<typeof ContentLayout> = {

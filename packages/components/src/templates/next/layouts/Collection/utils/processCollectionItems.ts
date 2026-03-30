@@ -1,5 +1,4 @@
 import type { Exact } from "type-fest"
-
 import type {
   AllCardProps,
   ProcessedCollectionCardProps,

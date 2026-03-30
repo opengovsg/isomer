@@ -1,6 +1,5 @@
 import type { getLayoutPageSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
-import { useCallback } from "react"
 import {
   Box,
   Flex,
@@ -17,12 +16,13 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import isEmpty from "lodash/isEmpty"
-
+import { useCallback } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+
 import { pageSchema } from "../../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"

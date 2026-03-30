@@ -1,8 +1,8 @@
-import { useCallback } from "react"
+import type { GrowthbookAttributes } from "~/types/growthbook"
 import { useGrowthBook } from "@growthbook/growthbook-react"
+import { useCallback } from "react"
 
 import type { VfnStepData } from "../SignInContext"
-import type { GrowthbookAttributes } from "~/types/growthbook"
 import { useSignInContext } from "../SignInContext"
 import { EmailInput } from "./EmailInput"
 

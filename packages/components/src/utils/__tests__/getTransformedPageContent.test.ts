@@ -1,6 +1,5 @@
-import { describe, expect, it } from "vitest"
-
 import type { IsomerComponent } from "~/types"
+import { describe, expect, it } from "vitest"
 import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 
 describe("getTransformedPageContent", () => {

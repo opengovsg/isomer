@@ -1,10 +1,10 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
-
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+
 import { generateBasePermalinkSchema } from "./common"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)

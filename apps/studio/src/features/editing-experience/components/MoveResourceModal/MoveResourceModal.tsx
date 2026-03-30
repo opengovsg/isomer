@@ -1,4 +1,3 @@
-import { useState } from "react"
 import {
   Button,
   Modal,
@@ -13,7 +12,7 @@ import {
 } from "@chakra-ui/react"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-
+import { useState } from "react"
 import { ResourceSelector } from "~/components/ResourceSelector/ResourceSelector"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { usePermissions } from "~/features/permissions"
@@ -21,6 +20,7 @@ import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
+
 import { moveResourceAtom } from "../../atoms"
 
 export const MoveResourceModal = () => {

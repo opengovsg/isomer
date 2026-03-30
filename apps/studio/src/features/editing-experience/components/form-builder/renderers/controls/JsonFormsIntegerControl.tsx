@@ -21,8 +21,8 @@ import {
   FormLabel,
   NumberInput,
 } from "@opengovsg/design-system-react"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsIntegerControlTester: RankedTester = rankWith(

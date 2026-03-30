@@ -1,10 +1,8 @@
 import { useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
-
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { AdminCreateIndexPageButton } from "~/features/dashboard/components/AdminCreateIndexPageButton"
@@ -25,6 +23,7 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getCollectionHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const collectionPageSchema = z.object({
   siteId: z.coerce.number(),

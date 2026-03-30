@@ -1,10 +1,10 @@
 import { Flex } from "@chakra-ui/react"
-
 import { AppNavbar } from "~/components/AppNavbar"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { LayoutHead } from "~/components/LayoutHead"
 import { APP_GRID_COLUMN } from "~/constants/layouts"
 import { type GetLayout } from "~/lib/types"
+
 import { AppGrid } from "../AppGrid"
 
 export const AuthenticatedLayout: GetLayout = (page) => {

@@ -1,6 +1,5 @@
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
 import type { Metadata, ResolvingMetadata } from "next"
-import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
@@ -11,6 +10,7 @@ import {
   RenderEngine,
   shouldBlockIndexing,
 } from "@opengovsg/isomer-components"
+import Link from "next/link"
 
 export const dynamic = "force-static"
 

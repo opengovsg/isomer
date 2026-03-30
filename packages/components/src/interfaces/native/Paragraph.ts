@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { AttrsDirSchema } from "../internal/AttrsDir"
 import { HardBreakSchema } from "../internal/HardBreak"
 import { TextSchema } from "./Text"

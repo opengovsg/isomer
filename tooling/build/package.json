@@ -3,17 +3,15 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "format": "prettier --check . --ignore-path ../../.gitignore",
-    "format:fix": "prettier --write . --ignore-path ../../.gitignore",
+    "format": "oxfmt --check . --ignore-path ../../.gitignore",
+    "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix ."
   },
-  "devDependencies": {
-    "@isomer/oxlint-config": "*",
-    "@isomer/prettier-config": "*"
-  },
-  "prettier": "@isomer/prettier-config",
   "dependencies": {
     "globals": "^11.12.0"
+  },
+  "devDependencies": {
+    "@isomer/oxlint-config": "*"
   }
 }

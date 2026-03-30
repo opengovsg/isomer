@@ -1,8 +1,8 @@
+import { ResourceState, ResourceType } from "@prisma/client"
 import fs from "fs/promises"
 import path from "path"
-import { ResourceState, ResourceType } from "@prisma/client"
-
 import { db, jsonb } from "~/server/modules/database"
+
 import { FileLogger } from "../FileLogger"
 
 // Update the logger path if required

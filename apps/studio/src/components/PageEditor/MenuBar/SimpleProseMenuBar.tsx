@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/react"
-import { useMemo } from "react"
 import { useDisclosure } from "@chakra-ui/react"
+import { useMemo } from "react"
 import { BiBold, BiItalic, BiLink, BiUnderline } from "react-icons/bi"
 
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"

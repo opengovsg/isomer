@@ -1,9 +1,9 @@
 import { Box } from "@chakra-ui/react"
 import merge from "lodash/merge"
-
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
+
 import { LoadingPreview } from "./LoadingPreview"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"

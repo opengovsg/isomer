@@ -1,6 +1,5 @@
-import { describe, expect, it } from "vitest"
-
 import type { IsomerComponent } from "~/types"
+import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 import { getTableOfContents } from "~/utils/getTableOfContents"
 import { getTransformedPageContent } from "~/utils/getTransformedPageContent"

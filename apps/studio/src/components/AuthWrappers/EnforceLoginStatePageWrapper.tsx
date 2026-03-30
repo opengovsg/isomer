@@ -1,11 +1,11 @@
 import type { PropsWithChildren } from "react"
-import { useMemo } from "react"
 import { useRouter } from "next/router"
-
+import { useMemo } from "react"
 import { useLoginState } from "~/features/auth"
 import { SIGN_IN } from "~/lib/routes"
 import { callbackUrlSchema } from "~/schemas/url"
 import { appendWithRedirect } from "~/utils/url"
+
 import { FullscreenSpinner } from "../FullscreenSpinner"
 import { Intercom } from "../Intercom"
 

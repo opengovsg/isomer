@@ -1,5 +1,4 @@
 import type { Editor } from "@tiptap/react"
-import { useEffect } from "react"
 import {
   FormControl,
   HStack,
@@ -18,8 +17,8 @@ import {
   ModalCloseButton,
   Textarea,
 } from "@opengovsg/design-system-react"
+import { useEffect } from "react"
 import { z } from "zod"
-
 import { useZodForm } from "~/lib/form"
 
 const MAX_CAPTION_LENGTH = 200

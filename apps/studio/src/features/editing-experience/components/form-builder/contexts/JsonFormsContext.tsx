@@ -1,12 +1,12 @@
 import type { ControlWithDetailProps } from "@jsonforms/core"
 import type { JsonFormsStateContext } from "@jsonforms/react"
 import type { ComponentType } from "react"
-import { memo } from "react"
 import {
   ctxDispatchToControlProps,
   ctxToControlWithDetailProps,
   withJsonFormsContext,
 } from "@jsonforms/react"
+import { memo } from "react"
 
 export const withJsonFormsControlWithDetailProps = (
   Component: ComponentType<ControlWithDetailProps>,

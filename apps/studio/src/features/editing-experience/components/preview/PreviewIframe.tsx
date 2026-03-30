@@ -1,10 +1,10 @@
 import type { CSSProperties, PropsWithChildren } from "react"
-import { useEffect, useMemo, useRef } from "react"
+import type { IframeCallbackFnProps } from "~/types/dom"
 import { Flex } from "@chakra-ui/react"
+import { useEffect, useMemo, useRef } from "react"
 import Frame, { useFrame } from "react-frame-component"
 
 import type { ViewportOptions } from "./IframeToolbar"
-import type { IframeCallbackFnProps } from "~/types/dom"
 
 interface PreviewIframeProps {
   preventPointerEvents?: boolean

@@ -1,6 +1,5 @@
-import { useCallback } from "react"
 import { Intercom as IntercomSDK } from "@intercom/messenger-js-sdk"
-
+import { useCallback } from "react"
 import { env } from "~/env.mjs"
 import { useMe } from "~/features/me/api"
 

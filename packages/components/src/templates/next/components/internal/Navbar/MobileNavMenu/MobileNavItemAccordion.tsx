@@ -1,9 +1,9 @@
-import { BiChevronDown, BiRightArrowAlt } from "react-icons/bi"
-
 import type { NavbarProps } from "~/interfaces/internal/Navbar"
+import { BiChevronDown, BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+
 import { Link } from "../../Link"
 
 type NavItemAccordionProps = NavbarProps["items"][number] &
@@ -13,8 +13,10 @@ type NavItemAccordionProps = NavbarProps["items"][number] &
     index: number
   }
 
-interface ParentItemLinkProps
-  extends Pick<NavItemAccordionProps, "name" | "url" | "LinkComponent"> {
+interface ParentItemLinkProps extends Pick<
+  NavItemAccordionProps,
+  "name" | "url" | "LinkComponent"
+> {
   isExternal: boolean
 }
 

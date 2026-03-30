@@ -1,6 +1,6 @@
 import { generators, Issuer } from "openid-client"
-
 import { env } from "~/env.mjs"
+
 import {
   SINGPASS_ENCRYPTION_JWK,
   SINGPASS_REDIRECT_URI,

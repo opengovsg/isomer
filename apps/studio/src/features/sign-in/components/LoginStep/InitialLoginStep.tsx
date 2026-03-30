@@ -1,10 +1,10 @@
-import { useMemo } from "react"
 import { Box, Stack, Text, VStack } from "@chakra-ui/react"
 import { Infobox } from "@opengovsg/design-system-react"
-
+import { useMemo } from "react"
 import { IsomerLogo } from "~/components/Svg"
 import { useEnv } from "~/hooks/useEnv"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
+
 import { EmailLoginForm } from "../EmailLogin"
 import { useSignInContext } from "../SignInContext"
 

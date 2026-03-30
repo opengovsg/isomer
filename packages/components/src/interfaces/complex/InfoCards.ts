@@ -1,13 +1,13 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { Type } from "@sinclair/typebox"
 import { InfoCardsImageFitSchema } from "~/schemas/internal"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
+
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 

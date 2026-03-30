@@ -4,7 +4,6 @@ import { rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, SingleSelect } from "@opengovsg/design-system-react"
 import get from "lodash/get"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsMaxColumnsControlTester: RankedTester = rankWith(

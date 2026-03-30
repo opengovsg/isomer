@@ -1,9 +1,9 @@
-import { type PropsWithChildren } from "react"
 import { useRouter } from "next/router"
-
+import { type PropsWithChildren } from "react"
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
 import { callbackUrlSchema } from "~/schemas/url"
+
 import { FullscreenSpinner } from "../FullscreenSpinner"
 
 type PublicPageWrapperProps =

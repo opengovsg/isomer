@@ -1,5 +1,4 @@
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
-import { useEffect, useState } from "react"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -15,7 +14,7 @@ import {
 } from "@jsonforms/react"
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
-
+import { useEffect, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(

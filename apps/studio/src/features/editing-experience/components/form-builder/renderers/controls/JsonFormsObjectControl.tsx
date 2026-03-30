@@ -1,5 +1,4 @@
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
-import { useMemo, useState } from "react"
 import { FormControl, HStack, Text, VStack } from "@chakra-ui/react"
 import {
   findUISchema,
@@ -10,8 +9,9 @@ import {
 import { JsonFormsDispatch } from "@jsonforms/react"
 import { Switch } from "@opengovsg/design-system-react"
 import isEmpty from "lodash/isEmpty"
-
+import { useMemo, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { withJsonFormsControlWithDetailProps } from "../../contexts/JsonFormsContext"
 
 export const jsonFormsObjectControlTester: RankedTester = rankWith(

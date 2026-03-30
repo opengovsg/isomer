@@ -1,5 +1,6 @@
 import type { HeroBlockProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
