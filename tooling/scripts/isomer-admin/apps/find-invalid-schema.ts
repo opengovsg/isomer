@@ -24,15 +24,13 @@ const checkDBBlobs = async (jsonSchema: Record<string, unknown>) => {
 
   await withDbClient(async (client) => {
     const allResources = await client.query<ResourceRowWithSiteAndTitle>(
-      `SELECT "Resource".id, "Resource".title, "Resource"."siteId", "Blob".content
+      `SELECT "Resource".id, "Resource".title, "Resource"."siteId",
+              COALESCE("DraftBlob".content, "PublishedBlob".content) AS content
        FROM "Resource"
-       JOIN "Blob" ON "Resource"."draftBlobId" = "Blob".id
-       WHERE "Resource"."draftBlobId" IS NOT NULL
-       UNION
-       SELECT "Resource".id, "Resource".title, "Resource"."siteId", "Blob".content
-       FROM "Resource"
-       JOIN "Version" ON "Resource"."publishedVersionId" = "Version".id
-       JOIN "Blob" ON "Version"."blobId" = "Blob".id`
+       LEFT JOIN "Blob" AS "DraftBlob" ON "Resource"."draftBlobId" = "DraftBlob".id
+       LEFT JOIN "Version" ON "Resource"."publishedVersionId" = "Version".id
+       LEFT JOIN "Blob" AS "PublishedBlob" ON "Version"."blobId" = "PublishedBlob".id
+       WHERE COALESCE("DraftBlob".content, "PublishedBlob".content) IS NOT NULL`
     );
 
     for (const resource of allResources.rows) {

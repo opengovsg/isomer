@@ -10,28 +10,21 @@ export const extractFolderJsons = async () => {
   });
 
   if (!/^\d+$/.test(parentResourceIdInput)) {
-    console.error(
-      "Invalid parent resource ID. Please enter a numeric ID."
-    );
+    console.error("Invalid parent resource ID. Please enter a numeric ID.");
     return;
   }
 
   await withDbClient(async (client) => {
     const allResources = await client.query<ResourceRow>(
-      `SELECT "Resource".id, "Resource".permalink, "Blob".content
+      `SELECT "Resource".id, "Resource".permalink,
+              COALESCE("DraftBlob".content, "PublishedBlob".content) AS content
        FROM "Resource"
-       JOIN "Blob" ON "Resource"."draftBlobId" = "Blob".id
-       WHERE "Resource"."draftBlobId" IS NOT NULL
-       AND "Resource"."parentId" = $1
-       AND "Resource".type NOT IN ('Folder', 'Collection', 'IndexPage')
-       UNION
-       SELECT "Resource".id, "Resource".permalink, "Blob".content
-       FROM "Resource"
-       JOIN "Version" ON "Resource"."publishedVersionId" = "Version".id
-       JOIN "Blob" ON "Version"."blobId" = "Blob".id
+       LEFT JOIN "Blob" AS "DraftBlob" ON "Resource"."draftBlobId" = "DraftBlob".id
+       LEFT JOIN "Version" ON "Resource"."publishedVersionId" = "Version".id
+       LEFT JOIN "Blob" AS "PublishedBlob" ON "Version"."blobId" = "PublishedBlob".id
        WHERE "Resource"."parentId" = $1
-       AND "Resource"."draftBlobId" IS NULL
-       AND "Resource".type NOT IN ('Folder', 'Collection', 'IndexPage')`,
+       AND "Resource".type NOT IN ('Folder', 'Collection', 'IndexPage')
+       AND COALESCE("DraftBlob".content, "PublishedBlob".content) IS NOT NULL`,
       [parentResourceIdInput]
     );
 
@@ -49,6 +42,8 @@ export const extractFolderJsons = async () => {
       console.log(`Saved ${fileName}`);
     }
 
-    console.log("All JSON blobs saved successfully");
+    console.log(
+      `All JSON blobs saved successfully in ${process.cwd()}/output/`
+    );
   });
 };

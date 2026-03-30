@@ -15,20 +15,15 @@ export const exportSiteJsons = async () => {
 
   await withDbClient(async (client) => {
     const allResources = await client.query<ResourceRow>(
-      `SELECT "Resource".id, "Resource".permalink, "Blob".content
+      `SELECT "Resource".id, "Resource".permalink,
+              COALESCE("DraftBlob".content, "PublishedBlob".content) AS content
        FROM "Resource"
-       JOIN "Blob" ON "Resource"."draftBlobId" = "Blob".id
+       LEFT JOIN "Blob" AS "DraftBlob" ON "Resource"."draftBlobId" = "DraftBlob".id
+       LEFT JOIN "Version" ON "Resource"."publishedVersionId" = "Version".id
+       LEFT JOIN "Blob" AS "PublishedBlob" ON "Version"."blobId" = "PublishedBlob".id
        WHERE "Resource"."siteId" = $1
-       AND "Resource"."draftBlobId" IS NOT NULL
        AND "Resource".type NOT IN ('Folder', 'Collection')
-       UNION
-       SELECT "Resource".id, "Resource".permalink, "Blob".content
-       FROM "Resource"
-       JOIN "Version" ON "Resource"."publishedVersionId" = "Version".id
-       JOIN "Blob" ON "Version"."blobId" = "Blob".id
-       WHERE "Resource"."siteId" = $1
-       AND "Resource"."draftBlobId" IS NULL
-       AND "Resource".type NOT IN ('Folder', 'Collection')`,
+       AND COALESCE("DraftBlob".content, "PublishedBlob".content) IS NOT NULL`,
       [siteId]
     );
 
@@ -46,6 +41,8 @@ export const exportSiteJsons = async () => {
       console.log(`Saved ${fileName}`);
     }
 
-    console.log("All JSON blobs saved successfully");
+    console.log(
+      `All JSON blobs saved successfully in ${process.cwd()}/output/`
+    );
   });
 };
