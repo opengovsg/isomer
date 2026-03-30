@@ -52,6 +52,9 @@ catalogs:
     '@paralleldrive/cuid2':
       specifier: ^2.2.2
       version: 2.3.1
+    '@sinclair/typebox':
+      specifier: ^0.33.12
+      version: 0.33.22
     '@types/jsdom':
       specifier: ^21.1.7
       version: 21.1.7
@@ -499,6 +502,9 @@ importers:
       '@prisma/client':
         specifier: catalog:prisma5
         version: 5.10.2(prisma@5.10.2)
+      '@sinclair/typebox':
+        specifier: 'catalog:'
+        version: 0.33.22
       '@tanstack/query-devtools':
         specifier: ^5.85.3
         version: 5.95.2
@@ -809,6 +815,9 @@ importers:
       clean-webpack-plugin:
         specifier: 'catalog:'
         version: 4.0.0(webpack@5.105.4)
+      commander:
+        specifier: ^12.1.0
+        version: 12.1.0
       dotenv-cli:
         specifier: 'catalog:'
         version: 8.0.0
@@ -836,6 +845,9 @@ importers:
       postcss:
         specifier: 'catalog:'
         version: 8.5.8
+      postcss-load-config:
+        specifier: ^6.0.1
+        version: 6.0.1(jiti@1.21.7)(postcss@8.5.8)(tsx@4.21.0)(yaml@2.8.3)
       start-server-and-test:
         specifier: 'catalog:'
         version: 2.1.5
@@ -906,7 +918,7 @@ importers:
         specifier: ^3.9.2
         version: 3.9.5(react@18.3.1)
       '@sinclair/typebox':
-        specifier: ^0.33.12
+        specifier: 'catalog:'
         version: 0.33.22
       date-fns:
         specifier: 'catalog:'

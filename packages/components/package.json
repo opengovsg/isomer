@@ -69,7 +69,7 @@
     "@react-aria/utils": "^3.31.0",
     "@react-stately/checkbox": "^3.7.2",
     "@react-stately/toggle": "^3.9.2",
-    "@sinclair/typebox": "^0.33.12",
+    "@sinclair/typebox": "catalog:",
     "date-fns": "catalog:",
     "interweave": "^13.1.0",
     "interweave-ssr": "^2.0.0",
