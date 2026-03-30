@@ -44,6 +44,35 @@ export const isCollectionItem = (
   )
 }
 
+interface SortablePage {
+  title: string
+  id: string
+}
+export const mergeChildrenPages = (
+  a: SortablePage,
+  b: SortablePage,
+  childrenPagesOrdering: string[] = [],
+) => {
+  const [aIndex, bIndex] = [
+    childrenPagesOrdering.indexOf(a.id),
+    childrenPagesOrdering.indexOf(b.id),
+  ]
+
+  if (aIndex === bIndex) {
+    return a.title.localeCompare(b.title, undefined, { numeric: true })
+  }
+
+  if (aIndex === -1) {
+    return 1
+  }
+
+  if (bIndex === -1) {
+    return -1
+  }
+
+  return aIndex - bIndex
+}
+
 const getSitemapTreeFromArray = (
   resources: ResourceDto[],
   parentId: string | null,
