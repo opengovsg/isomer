@@ -870,6 +870,41 @@ describe("collection.router", async () => {
       expect(result[0]?.title).toEqual("Older Now Latest")
       expect(result[1]?.title).toEqual("Newer")
     })
+
+    it("should break ties using resource id ascending", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Create pages with the same title so the primary sort (title-asc) ties
+      const pageA = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Same Title",
+        permalink: "same-title-1",
+      })
+      const pageB = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Same Title",
+        permalink: "same-title-2",
+      })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        orderBy: "title-asc",
+      })
+
+      // Assert: both have the same title, so tie-break by id ascending
+      expect(result).toHaveLength(2)
+      expect(Number(result[0]?.id)).toBeLessThan(Number(result[1]?.id))
+      expect(result[0]?.id).toEqual(pageA.page.id)
+      expect(result[1]?.id).toEqual(pageB.page.id)
+    })
   })
 
   describe("readCollectionLink", () => {

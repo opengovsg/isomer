@@ -142,9 +142,10 @@ export const CollectionTable = ({
                 ([option, label]) => (
                   <Menu.Item
                     key={option}
-                    onClick={() =>
+                    onClick={() => {
                       setSortOption(option as CollectionTableSortOptions)
-                    }
+                      onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
+                    }}
                   >
                     {label}
                   </Menu.Item>
