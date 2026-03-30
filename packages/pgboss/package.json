@@ -39,6 +39,7 @@
     "@vitest/coverage-istanbul": "catalog:vitest2",
     "eslint": "catalog:",
     "prettier": "catalog:",
+    "rimraf": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {
