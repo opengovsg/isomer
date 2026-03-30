@@ -1,21 +1,10 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { useMemo } from "react"
-import Image from "next/image"
-import {
-  chakra,
-  Flex,
-  Icon,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Stack,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { chakra, Flex, Icon, Stack, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { type IconType } from "react-icons"
 
+import type { ResourceTooltipProps } from "./UsageTooltip"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { type DrawerState } from "~/types/editorDrawer"
@@ -29,6 +18,7 @@ import {
   INDEX_ALLOWED_BLOCKS,
 } from "./constants"
 import { type SectionType } from "./types"
+import { ResourceTooltip } from "./UsageTooltip"
 
 function Section({ children }: React.PropsWithChildren) {
   return (
@@ -50,83 +40,49 @@ function BlockList({ children }: React.PropsWithChildren) {
   return <Stack w="full">{children}</Stack>
 }
 
-interface BlockItemProps {
-  imageSrc?: string
-  icon: IconType
-  label: string
+interface BlockItemProps extends ResourceTooltipProps {
   onProceed: (sectionType: SectionType) => void
   sectionType: SectionType
-  description: string
-  usageText?: string
 }
 
-function BlockItem({
-  icon,
-  label,
-  onProceed,
-  sectionType,
-  description,
-  usageText,
-  imageSrc,
-}: BlockItemProps) {
+function BlockItem({ onProceed, sectionType, ...rest }: BlockItemProps) {
+  const { icon, label, description } = rest
+
   return (
-    <Popover trigger="hover" placement="right" isLazy offset={[0, 20]}>
-      <PopoverTrigger>
-        <chakra.button
-          layerStyle="focusRing"
-          w="100%"
-          borderRadius="6px"
-          border="1px solid"
-          borderColor="base.divider.medium"
-          transitionProperty="common"
-          transitionDuration="normal"
-          _hover={{
-            bg: "interaction.muted.main.hover",
-            borderColor: "interaction.main-subtle.hover",
-          }}
-          bg="white"
-          p="0.75rem"
-          flexDirection="row"
-          display="flex"
-          alignItems="start"
-          gap="0.75rem"
-          onClick={() => onProceed(sectionType)}
+    <ResourceTooltip {...rest}>
+      <chakra.button
+        layerStyle="focusRing"
+        w="100%"
+        borderRadius="6px"
+        border="1px solid"
+        borderColor="base.divider.medium"
+        transitionProperty="common"
+        transitionDuration="normal"
+        _hover={{
+          bg: "interaction.muted.main.hover",
+          borderColor: "interaction.main-subtle.hover",
+        }}
+        bg="white"
+        p="0.75rem"
+        flexDirection="row"
+        display="flex"
+        alignItems="start"
+        gap="0.75rem"
+        onClick={() => onProceed(sectionType)}
+      >
+        <Flex
+          p="0.5rem"
+          bg="interaction.main-subtle.default"
+          borderRadius="full"
         >
-          <Flex
-            p="0.5rem"
-            bg="interaction.main-subtle.default"
-            borderRadius="full"
-          >
-            <Icon as={icon} fontSize="1rem" color="base.content.default" />
-          </Flex>
-          <Stack align="start" gap="0.25rem" textAlign="start">
-            <Text textStyle="caption-1">{label}</Text>
-            <Text textStyle="caption-2">{description}</Text>
-          </Stack>
-        </chakra.button>
-      </PopoverTrigger>
-      <PopoverContent width="fit-content" overflow="hidden">
-        <Flex flexDir="column" w="292px">
-          {imageSrc && (
-            <Image height={160} width={292} src={imageSrc} alt={label} />
-          )}
-          <VStack
-            py="1rem"
-            px="1.125rem"
-            alignItems="start"
-            gap="0.75rem"
-            borderTop={imageSrc ? "1px solid" : undefined}
-            borderColor="base.divider.medium"
-          >
-            <Flex alignItems="center" gap="0.25rem" w="full">
-              <Icon as={icon} size="1.25rem" />
-              <Text textStyle="subhead-2">{label}</Text>
-            </Flex>
-            <Text textStyle="body-2">{usageText ?? description}</Text>
-          </VStack>
+          <Icon as={icon} fontSize="1rem" color="base.content.default" />
         </Flex>
-      </PopoverContent>
-    </Popover>
+        <Stack align="start" gap="0.25rem" textAlign="start">
+          <Text textStyle="caption-1">{label}</Text>
+          <Text textStyle="caption-2">{description}</Text>
+        </Stack>
+      </chakra.button>
+    </ResourceTooltip>
   )
 }
 
