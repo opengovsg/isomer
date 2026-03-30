@@ -17,10 +17,28 @@ export const useQueryParams = (): [
 ] => {
   const [queryParams, setQueryParams] = useState<Record<string, string>>({})
 
-  // Parse initial query params from the URL when component mounts
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    setQueryParams(getQueryParams(params))
+    const handleUrlChange = () => {
+      const params = new URLSearchParams(window.location.search)
+      setQueryParams(getQueryParams(params))
+    }
+
+    // pushState (used by Next.js Link) doesn't fire popstate, so we patch it
+    // to dispatch a custom event
+    const originalPushState = window.history.pushState.bind(window.history)
+    window.history.pushState = (...args) => {
+      originalPushState(...args)
+      window.dispatchEvent(new Event("pushstate"))
+    }
+
+    handleUrlChange()
+    window.addEventListener("popstate", handleUrlChange)
+    window.addEventListener("pushstate", handleUrlChange)
+    return () => {
+      window.removeEventListener("popstate", handleUrlChange)
+      window.removeEventListener("pushstate", handleUrlChange)
+      window.history.pushState = originalPushState
+    }
   }, [])
 
   const updateQueryParams = ({ newParams }: UpdateQueryParams) => {

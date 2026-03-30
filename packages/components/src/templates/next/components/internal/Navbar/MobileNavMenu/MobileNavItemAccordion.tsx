@@ -14,11 +14,10 @@ type NavItemAccordionProps = NavbarProps["items"][number] &
     index: number
   }
 
-interface ParentItemLinkProps
-  extends Pick<
-    NavItemAccordionProps,
-    "name" | "url" | "onCloseMenu" | "LinkComponent"
-  > {
+interface ParentItemLinkProps extends Pick<
+  NavItemAccordionProps,
+  "name" | "url" | "onCloseMenu" | "LinkComponent"
+> {
   isExternal: boolean
 }
 
