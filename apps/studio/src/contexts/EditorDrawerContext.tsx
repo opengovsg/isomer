@@ -21,11 +21,10 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { type DrawerState } from "~/types/editorDrawer"
 import { trpc } from "~/utils/trpc"
 
-interface DrawerContextType
-  extends Pick<
-    EditorDrawerProviderProps,
-    "type" | "permalink" | "siteId" | "pageId" | "updatedAt" | "title"
-  > {
+interface DrawerContextType extends Pick<
+  EditorDrawerProviderProps,
+  "type" | "permalink" | "siteId" | "pageId" | "updatedAt" | "title"
+> {
   currActiveIdx: number
   setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState
