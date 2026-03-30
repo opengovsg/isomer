@@ -4,30 +4,41 @@
 
 /** @type { PrettierConfig | SortImportsConfig | TailwindConfig } */
 module.exports = {
-  plugins: [
-    "@ianvs/prettier-plugin-sort-imports",
-    "prettier-plugin-tailwindcss",
-  ],
   bracketSpacing: true,
   semi: false,
   singleQuote: false,
   useTabs: false,
-  tailwindFunctions: ["tv"],
-  importOrder: [
-    "<TYPES>",
-    "^(react/(.*)$)|^(react$)|^(react-native(.*)$)",
-    "^(next/(.*)$)|^(next$)",
-    "^(expo(.*)$)|^(expo$)",
-    "<THIRD_PARTY_MODULES>",
-    "",
-    "<TYPES>^@isomer",
-    "^@isomer/(.*)$",
-    "",
-    "<TYPES>^[.|..|~]",
-    "^~/",
-    "^[../]",
-    "^[./]",
+  // Plugins apply to all files except .d.ts: @ianvs/prettier-plugin-sort-imports
+  // treats `import("pkg")` in type positions like real imports and breaks printing
+  // for ambient declaration modules (Prettier crash: reading 'type' in estree).
+  overrides: [
+    {
+      files: ["**/*"],
+      excludeFiles: ["**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
+      options: {
+        plugins: [
+          "@ianvs/prettier-plugin-sort-imports",
+          "prettier-plugin-tailwindcss",
+        ],
+        tailwindFunctions: ["tv"],
+        importOrder: [
+          "<TYPES>",
+          "^(react/(.*)$)|^(react$)|^(react-native(.*)$)",
+          "^(next/(.*)$)|^(next$)",
+          "^(expo(.*)$)|^(expo$)",
+          "<THIRD_PARTY_MODULES>",
+          "",
+          "<TYPES>^@isomer",
+          "^@isomer/(.*)$",
+          "",
+          "<TYPES>^[.|..|~]",
+          "^~/",
+          "^[../]",
+          "^[./]",
+        ],
+        importOrderParserPlugins: ["typescript", "jsx", "decorators-legacy"],
+        importOrderTypeScriptVersion: "5.5.3",
+      },
+    },
   ],
-  importOrderParserPlugins: ["typescript", "jsx", "decorators-legacy"],
-  importOrderTypeScriptVersion: "5.5.3",
 }
