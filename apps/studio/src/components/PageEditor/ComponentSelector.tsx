@@ -248,10 +248,11 @@ function ComponentSelector() {
             <BlockList>
               {section.types.map((type) => {
                 const blockMeta = BLOCK_TO_META[type]
-                const isDisabled = savedPageState.content.some(
-                  (block) =>
-                    block.type === "childrenpages" && type === "childrenpages",
-                )
+                const isDisabled =
+                  type === "childrenpages" &&
+                  savedPageState.content.some(
+                    (block) => block.type === "childrenpages",
+                  )
 
                 return (
                   <BlockItem
