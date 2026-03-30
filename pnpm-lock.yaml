@@ -1099,6 +1099,9 @@ importers:
       rimraf:
         specifier: 'catalog:'
         version: 5.0.10
+      tsc-alias:
+        specifier: 'catalog:'
+        version: 1.8.16
       typescript:
         specifier: 'catalog:'
         version: 5.9.3

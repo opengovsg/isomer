@@ -45,6 +45,7 @@
     "@vitest/coverage-istanbul": "catalog:vitest2",
     "npm-run-all": "catalog:",
     "rimraf": "catalog:",
+    "tsc-alias": "catalog:",
     "typescript": "catalog:"
   }
 }
