@@ -12,6 +12,7 @@ import HeroEditorDrawer from "./HeroEditorDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
 import RawJsonEditorModeStateDrawer from "./RawJsonEditorModeStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
+import SiderailOrderingEditorStateDrawer from "./SiderailOrderingEditorStateDrawer"
 
 const proseSchema = getComponentSchema({ component: "prose" })
 
@@ -60,6 +61,8 @@ export function EditPageDrawer(): JSX.Element {
       return <HeroEditorDrawer />
     case "collectionEditor":
       return <CollectionEditorStateDrawer />
+    case "siderailOrderingEditor":
+      return <SiderailOrderingEditorStateDrawer />
     default:
       const _: never = currState
       return <h1>Edit Page Drawer</h1>
