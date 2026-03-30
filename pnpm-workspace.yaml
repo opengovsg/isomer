@@ -30,6 +30,7 @@ publicHoistPattern:
   - "*@opengovsg/oui*"
   - "*prisma*"
   - pg
+  - oxfmt
   - oxlint
   - oxlint-tsgolint
   - rimraf
