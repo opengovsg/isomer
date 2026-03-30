@@ -38,6 +38,7 @@
     "@types/node": "catalog:",
     "@vitest/coverage-istanbul": "catalog:vitest2",
     "eslint": "catalog:",
+    "npm-run-all": "catalog:",
     "prettier": "catalog:",
     "rimraf": "catalog:",
     "typescript": "catalog:"
