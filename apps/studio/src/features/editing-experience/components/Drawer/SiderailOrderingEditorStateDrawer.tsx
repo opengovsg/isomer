@@ -1,12 +1,28 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { useCallback, useMemo, useState } from "react"
-import { Box, Flex, HStack, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
+import {
+  Box,
+  Flex,
+  HStack,
+  Icon,
+  Skeleton,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import { Button, Link, useToast } from "@opengovsg/design-system-react"
+import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import isEqual from "lodash/isEqual"
-import { BiFile, BiFolder, BiGridVertical } from "react-icons/bi"
+import {
+  BiArrowToBottom,
+  BiArrowToTop,
+  BiFile,
+  BiFolder,
+  BiGridVertical,
+  BiInfoCircle,
+} from "react-icons/bi"
 
+import { UsageTooltip } from "~/components/PageEditor/UsageTooltip"
 import Suspense from "~/components/Suspense"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -60,7 +76,9 @@ const DraggablePageItem = ({
               w="100%"
               borderRadius="6px"
               border="1px solid"
-              borderColor={isDragging ? "interaction.main.default" : "base.divider.medium"}
+              borderColor={
+                isDragging ? "interaction.main.default" : "base.divider.medium"
+              }
               bg={isDragging ? "interaction.muted.main.hover" : "white"}
               py="0.75rem"
               px="0.75rem"
@@ -87,7 +105,11 @@ const DraggablePageItem = ({
               />
 
               <VStack align="start" gap="0" flex={1} overflow="hidden">
-                <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
+                <Text
+                  textStyle="subhead-2"
+                  noOfLines={1}
+                  wordBreak="break-word"
+                >
                   {page.title}
                 </Text>
                 <Text
@@ -115,22 +137,42 @@ const DraggablePageItem = ({
                 p="0.25rem"
                 gap="0.25rem"
               >
-                <Button
+                <IconButton
                   size="xs"
                   variant="clear"
                   onClick={onMoveToTop}
                   isDisabled={isFirst}
-                >
-                  Move to top
-                </Button>
-                <Button
+                  aria-label="Move to top"
+                  icon={
+                    <Icon
+                      as={BiArrowToTop}
+                      fontSize="1rem"
+                      color={
+                        isFirst
+                          ? "interaction.support.disabled"
+                          : "interaction.main.default"
+                      }
+                    />
+                  }
+                />
+                <IconButton
                   size="xs"
                   variant="clear"
                   onClick={onMoveToBottom}
                   isDisabled={isLast}
-                >
-                  Move to bottom
-                </Button>
+                  aria-label="Move to bottom"
+                  icon={
+                    <Icon
+                      as={BiArrowToBottom}
+                      fontSize="1rem"
+                      color={
+                        isLast
+                          ? "interaction.support.disabled"
+                          : "interaction.main.default"
+                      }
+                    />
+                  }
+                />
               </HStack>
             )}
           </Box>
@@ -367,18 +409,33 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
 
       <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
         <VStack align="start" gap="1rem" w="100%">
-          <VStack align="start" gap="0.25rem">
-            <Text textStyle="body-2" color="base.content.default">
-              Drag and drop pages to change how they appear in your siderail.
+          <Flex
+            flexWrap="inherit"
+            justify="space-between"
+            w="100%"
+            alignItems="center"
+          >
+            <Text textStyle="subhead-1" color="base.content.strong">
+              Reorder siderail
             </Text>
-            <Link
-              href="https://guide.isomer.gov.sg/user-guide/index-pages/about-index-pages#what-is-the-siderail"
-              isExternal
-              textStyle="body-2"
+            <UsageTooltip
+              imageSrc="/assets/tooltip-images/siderail.png"
+              icon={BiInfoCircle}
+              label="Siderail"
+              usageText="A siderail appears on every child page in this folder. It helps visitors navigate to similar pages."
             >
-              What's a siderail?
-            </Link>
-          </VStack>
+              <Button variant="link" gap="0.25rem">
+                <Icon
+                  as={BiInfoCircle}
+                  color="interaction.main.default"
+                  boxSize="1rem"
+                />
+                <Text textStyle="caption-1" color="interaction.links.default">
+                  What's a siderail?
+                </Text>
+              </Button>
+            </UsageTooltip>
+          </Flex>
 
           {childrenPagesBlockIndex === -1 ? (
             <Text textStyle="body-2" color="base.content.medium">
