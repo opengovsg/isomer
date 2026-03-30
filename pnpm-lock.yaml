@@ -400,6 +400,9 @@ importers:
 
   .:
     devDependencies:
+      '@isomer/oxlint-config':
+        specifier: workspace:*
+        version: link:tooling/oxlint
       dotenv-cli:
         specifier: 'catalog:'
         version: 8.0.0
