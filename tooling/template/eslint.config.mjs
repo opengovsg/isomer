@@ -5,7 +5,13 @@ import reactConfig from "@isomer/eslint-config/react"
 /** @type {import('typescript-eslint').Config} */
 export default [
   {
-    ignores: [".next/**", "!.storybook/**", "out/**"],
+    ignores: [
+      ".next/**",
+      "!.storybook/**",
+      "out/**",
+      "dist/**",
+      "./next-env.d.ts",
+    ],
   },
   ...baseConfig,
   ...reactConfig,
