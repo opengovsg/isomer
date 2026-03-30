@@ -130,7 +130,7 @@ export const getTextAsHtml = ({
   })
 
   // Close off the last link mark if it exists
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (previousNodeLinkMark) {
     output.push(`</${MARK_DOM_MAPPING.link}>`)
   }

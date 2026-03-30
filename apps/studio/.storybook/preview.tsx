@@ -56,7 +56,7 @@ const StorybookEnvDecorator: Decorator = (story) => {
 
 const SetupDecorator: Decorator = (Story, { parameters }) => {
   const gb = new GrowthBook()
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
   gb.setForcedFeatures(new Map(parameters.growthbook ?? []))
 
   const [queryClient] = useState(
@@ -111,7 +111,7 @@ const WithLayoutDecorator: Decorator = (Story, { parameters }) => {
   if (!parameters.getLayout) {
     return Story()
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-call
   return <>{parameters.getLayout(<Story />)}</>
 }
 

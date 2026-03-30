@@ -36,7 +36,7 @@ const useBaseEditor = ({
         types: [HEADING_TYPE, PARAGRAPH_TYPE],
       }),
     ],
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     content: data,
     onUpdate: (e) => {
       const jsonContent = e.editor.getJSON()
