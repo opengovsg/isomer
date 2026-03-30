@@ -1,14 +1,14 @@
-import { BiRightArrowAlt } from "react-icons/bi"
-
 import type {
   CollectionBlockNumberOfCards,
   CollectionBlockProps,
   CollectionBlockSingleCardProps,
 } from "~/interfaces/complex/CollectionBlock"
+import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferenceLink"
 import { isExternalUrl } from "~/utils/isExternalUrl"
+
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"

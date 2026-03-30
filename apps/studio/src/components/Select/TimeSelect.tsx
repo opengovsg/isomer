@@ -1,12 +1,12 @@
 import type { FormatOptionLabelMeta, SelectInstance } from "chakra-react-select"
-import React from "react"
 import { Divider, Flex, Icon, Text } from "@chakra-ui/react"
 import { components } from "chakra-react-select"
 import { format, parse, set } from "date-fns"
+import React from "react"
 import { BiTimeFive } from "react-icons/bi"
+import { getTimezoneAbbreviation } from "~/lib/dates"
 
 import type { BaseSelectOption, BaseSelectProps } from "./BaseSelect"
-import { getTimezoneAbbreviation } from "~/lib/dates"
 import { BaseSelect } from "./BaseSelect"
 
 interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {

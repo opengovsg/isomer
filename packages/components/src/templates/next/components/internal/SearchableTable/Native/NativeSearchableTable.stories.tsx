@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { NativeSearchableTableProps } from "~/interfaces"
+
 import { NativeSearchableTable } from "./NativeSearchableTable"
 
 const meta: Meta<NativeSearchableTableProps> = {

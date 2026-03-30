@@ -1,8 +1,4 @@
-import {
-  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
-  PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
-  PAST_ISOMER_MEMBERS,
-} from "~prisma/constants"
+import type { Site, User } from "~/server/modules/database"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -12,14 +8,18 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-
-import type { Site, User } from "~/server/modules/database"
 import {
   sendAccountDeactivationEmail,
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
 import { db } from "~/server/modules/database"
 import { RoleType } from "~/server/modules/database/types"
+import {
+  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
+  PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
+  PAST_ISOMER_MEMBERS,
+} from "~prisma/constants"
+
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 import {
   bulkDeactivateInactiveUsers,

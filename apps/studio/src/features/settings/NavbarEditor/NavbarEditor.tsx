@@ -1,7 +1,6 @@
 import type { NavbarSchemaType } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import type { Dispatch, SetStateAction } from "react"
-import { useCallback, useMemo } from "react"
 import {
   Box,
   HStack,
@@ -22,8 +21,8 @@ import {
 } from "@opengovsg/isomer-components"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
+import { useCallback, useMemo } from "react"
 import { BiDirections } from "react-icons/bi"
-
 import {
   ErrorProvider,
   useBuilderErrors,
@@ -140,7 +139,7 @@ export const NavbarEditor = ({
           <TabList
             // This is to allow the bottom border to overlap with the one coming
             // from the Tab component
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            // oxlint-disable-next-line @typescript-eslint/no-unsafe-member-access
             background={`linear-gradient(${theme.colors.base.divider.medium},${theme.colors.base.divider.medium}) bottom/100% 2px no-repeat`}
             boxSizing="border-box"
             px="2rem"

@@ -1,5 +1,4 @@
 import { Type } from "@sinclair/typebox"
-
 import { AltTextSchema, generateImageSrcSchema } from "~/interfaces/complex"
 
 // NOTE: This is only for thumbnail images in various places, a refactor would

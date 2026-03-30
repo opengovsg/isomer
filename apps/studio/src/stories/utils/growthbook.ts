@@ -1,5 +1,4 @@
 import type { BannerProps } from "@opengovsg/design-system-react"
-
 import {
   BANNER_FEATURE_KEY,
   CATEGORY_DROPDOWN_FEATURE_KEY,

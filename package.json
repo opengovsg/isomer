@@ -25,18 +25,19 @@
     "teardown": "turbo teardown",
     "test-start": "turbo test-start",
     "typecheck": "turbo typecheck",
-    "format": "turbo format --continue -- --cache --cache-location node_modules/.cache/.prettiercache --ignore-path ./.prettierignore",
-    "format:fix": "turbo format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache  --ignore-path ./.prettierignore",
-    "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
-    "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
-    "lint:ws": "pnpm exec sherif -i next -r packages-without-package-json",
-    "lint:ws:fix": "pnpm exec sherif --fix -r packages-without-package-json",
-    "postinstall": "pnpm lint:ws"
+    "format": "turbo format --continue",
+    "format:fix": "turbo format:fix --continue",
+    "lint": "turbo lint --continue",
+    "lint:fix": "turbo lint --continue -- --fix",
+    "lint:ws": "pnpm exec sherif -i next",
+    "lint:ws:fix": "pnpm exec sherif --fix",
+    "postinstall": "pnpm run lint:ws"
   },
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
     "dotenv-cli": "catalog:",
+    "oxfmt": "^0.42.0",
     "sherif": "catalog:",
     "turbo": "catalog:"
   },

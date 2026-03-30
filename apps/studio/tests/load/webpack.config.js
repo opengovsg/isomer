@@ -31,7 +31,7 @@ module.exports = {
       },
     ],
   },
-  externals: /^(k6|https?\:\/\/)(\/.*)?(?!-trpc)/,
+  externals: /^(k6|https?:\/\/)(\/.*)?(?!-trpc)/,
   stats: {
     colors: true,
   },

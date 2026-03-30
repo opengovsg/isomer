@@ -1,4 +1,5 @@
 import { type SearchPageSchemaType } from "~/types"
+
 import { Skeleton } from "../Skeleton"
 import { SearchSG } from "./SearchSG"
 

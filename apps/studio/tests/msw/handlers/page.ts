@@ -1,9 +1,9 @@
 import type { DelayMode } from "msw"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-import { delay } from "msw"
-
 import type { getPageById } from "~/server/modules/resource/resource.service"
 import type { RouterOutput } from "~/utils/trpc"
+import { delay } from "msw"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import { trpcMsw } from "../mockTrpc"
 
 const getRootPageQuery = (wait?: DelayMode | number) => {

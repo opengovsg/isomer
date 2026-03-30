@@ -1,17 +1,15 @@
-import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
+import type { NextPageWithLayout } from "~/lib/types"
+import type { Notification } from "~/schemas/site"
 import { Box } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
   NotificationSettingsSchema,
   useIsNotificationDismissed,
 } from "@opengovsg/isomer-components"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { isEmpty, isEqual } from "lodash"
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
 import { BiWrench } from "react-icons/bi"
-
-import type { NextPageWithLayout } from "~/lib/types"
-import type { Notification } from "~/schemas/site"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -36,6 +34,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { notificationValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const validateFn = notificationValidator
 

@@ -1,5 +1,6 @@
-import type { GetCollectionItemsProps } from "./getCollectionItems"
 import type { AllCardProps } from "~/interfaces"
+
+import type { GetCollectionItemsProps } from "./getCollectionItems"
 
 interface SortCollectionItemsProps extends Pick<
   GetCollectionItemsProps,

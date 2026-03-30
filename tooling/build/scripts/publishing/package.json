@@ -1,22 +1,22 @@
 {
   "name": "publishing",
-  "packageManager": "pnpm@10.33.0",
   "version": "1.0.0",
   "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsx index.ts "
+    "start": "tsx index.ts ",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "dotenv": "catalog:",
-    "pg": "^8.12.0",
-    "tsx": "^4.19.2"
+    "pg": "catalog:",
+    "tsx": "catalog:"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.6"
-  }
+    "@types/pg": "catalog:"
+  },
+  "packageManager": "pnpm@10.33.0"
 }

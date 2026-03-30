@@ -7,7 +7,6 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
-import { useCallback, useEffect, useState } from "react"
 import {
   Box,
   Flex,
@@ -39,14 +38,15 @@ import {
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
 import { Button } from "@opengovsg/design-system-react"
+import { useCallback, useEffect, useState } from "react"
 import {
   BiDirections,
   BiLeftArrowAlt,
   BiPlusCircle,
   BiTrash,
 } from "react-icons/bi"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { FORM_BUILDER_PARENT_ID } from "../../constants"
 import { useBuilderErrors } from "../../ErrorProvider"
 import DraggableLinkButton from "./DraggableLinkButton"

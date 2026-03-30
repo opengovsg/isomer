@@ -1,9 +1,9 @@
 "use client"
 
-import { useId, useRef } from "react"
-
 import type { SearchableTableClientProps } from "~/interfaces"
+import { useId, useRef } from "react"
 import { tv } from "~/lib/tv"
+
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
 import { SearchField } from "../../../internal/Search"

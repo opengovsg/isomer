@@ -1,7 +1,7 @@
 import type { VariantProps } from "tailwind-variants"
+import type { InfopicProps as BaseInfopicProps } from "~/interfaces"
 
 import type { infopicStyles } from "./common"
-import type { InfopicProps as BaseInfopicProps } from "~/interfaces"
 
 export interface InfopicProps
   extends

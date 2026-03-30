@@ -40,7 +40,6 @@
 
     "typeRoots": ["node_modules/@types", "src/types"],
     "lib": ["es2022", "dom"],
-    "baseUrl": "./",
     "paths": {
       "~/*": ["./src/*"]
     }

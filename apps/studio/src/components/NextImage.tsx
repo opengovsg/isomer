@@ -1,5 +1,5 @@
-import Image from "next/image"
 import { chakra } from "@chakra-ui/react"
+import Image from "next/image"
 
 /**
  * Use NextJS Image component with chakra-ui

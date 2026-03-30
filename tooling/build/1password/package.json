@@ -1,17 +1,17 @@
 {
   "name": "1password",
-  "packageManager": "pnpm@10.33.0",
   "version": "1.0.0",
   "description": "1password credentials automation script",
+  "license": "ISC",
+  "author": "",
   "main": "create-1password-items.js",
   "scripts": {
     "create-items": "node create-1password-items.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@1password/sdk": "^0.3.1",
     "dotenv": "catalog:"
-  }
+  },
+  "packageManager": "pnpm@10.33.0"
 }

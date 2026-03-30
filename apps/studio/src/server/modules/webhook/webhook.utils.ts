@@ -2,7 +2,6 @@ import type { GrowthBook } from "@growthbook/growthbook"
 import type { BuildStatusType } from "@prisma/client"
 import type { Logger } from "pino"
 import _ from "lodash"
-
 import {
   sendFailedPublishEmail,
   sendSuccessfulPublishEmail,
@@ -11,6 +10,7 @@ import {
   ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY,
   ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
 } from "~/lib/growthbook"
+
 import { db } from "../database"
 
 /**

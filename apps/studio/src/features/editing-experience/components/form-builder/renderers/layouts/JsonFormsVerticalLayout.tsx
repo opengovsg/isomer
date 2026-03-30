@@ -3,11 +3,10 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
+import type { IsomerExtendedJsonSchema } from "~/types/schema"
 import { Box } from "@chakra-ui/react"
 import { rankWith, uiTypeIs } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
-
-import type { IsomerExtendedJsonSchema } from "~/types/schema"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { isVerticalLayout } from "~/types/schema"
 

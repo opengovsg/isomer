@@ -13,7 +13,7 @@ Isomer Studio uses Starter Kit as the base template.
 - 🪳 [Neon](https://neon.tech/) or Postgres integration
 - 🌇 Image upload with [R2](https://developers.cloudflare.com/r2/)
 - ⚙️ VSCode extensions
-- 🎨 ESLint + Prettier
+- 🎨 Oxlint (type-aware) + Oxfmt
 - 💚 CI setup using GitHub Actions:
   - ✅ E2E testing with [Playwright](https://playwright.dev/)
   - ✅ Linting

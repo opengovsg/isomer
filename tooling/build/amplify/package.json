@@ -1,17 +1,17 @@
 {
   "name": "amplify",
-  "packageManager": "pnpm@10.33.0",
   "version": "1.0.0",
   "description": "",
+  "license": "ISC",
+  "author": "",
   "main": "create-app.js",
   "scripts": {
     "create-apps": "node create-app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-amplify": "catalog:awsSdk3",
     "dotenv": "catalog:"
-  }
+  },
+  "packageManager": "pnpm@10.33.0"
 }

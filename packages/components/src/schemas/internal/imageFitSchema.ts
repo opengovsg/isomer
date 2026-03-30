@@ -1,5 +1,4 @@
 import { Type } from "@sinclair/typebox"
-
 import { IMAGE_FIT } from "~/interfaces/constants"
 import { ARRAY_RADIO_FORMAT } from "~/interfaces/format"
 

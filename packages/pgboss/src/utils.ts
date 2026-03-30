@@ -1,9 +1,9 @@
-import type { BaseLogger } from "pino";
+import type { BaseLogger } from "pino"
 
 export interface HeartbeatOptions {
-  maxRetries?: number;
-  delayMs?: number;
-  heartbeatURL: string;
+  maxRetries?: number
+  delayMs?: number
+  heartbeatURL: string
 }
 /**
  * Send heartbeat signals to a specified URL with retry logic
@@ -19,30 +19,30 @@ export const sendHeartbeat = async (
 ) => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch(heartbeatURL, { method: "POST" });
+      const response = await fetch(heartbeatURL, { method: "POST" })
       if (!response.ok) {
         throw new Error(
           `Sending heartbeat URL failed with status: ${response.status}`,
-        );
+        )
       }
       logger.info(
         { jobId },
         `Successfully sent heartbeat for job attempt ${attempt}`,
-      );
-      return;
+      )
+      return
     } catch (error) {
       logger.error(
         { error, jobId },
         `Error sending heartbeat for job attempt ${attempt}`,
-      );
+      )
       if (attempt < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        await new Promise((resolve) => setTimeout(resolve, delayMs))
       } else {
         logger.error(
           { jobId },
           `Max retries of ${maxRetries} reached, failed to send heartbeat for job`,
-        );
+        )
       }
     }
   }
-};
+}

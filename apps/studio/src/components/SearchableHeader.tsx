@@ -1,11 +1,11 @@
-import Image from "next/image"
-import NextLink from "next/link"
 import { Flex, Grid, GridItem, Text, Tooltip } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
-
+import Image from "next/image"
+import NextLink from "next/link"
 import { Searchbar, useSearchStyle } from "~/components/Searchbar"
 import { DASHBOARD } from "~/lib/routes"
 import { trpc } from "~/utils/trpc"
+
 import { AvatarMenu } from "./AvatarMenu"
 
 interface SearchableHeaderProps {

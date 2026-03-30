@@ -5,8 +5,8 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-
 import FolderPage from "~/pages/sites/[siteId]/folders/[folderId]"
+
 import { createBannerGbParameters } from "../utils/growthbook"
 
 const meta: Meta<typeof FolderPage> = {

@@ -21,6 +21,5 @@
     "commander-ts": "catalog:",
     "npx": "catalog:",
     "tsx": "catalog:"
-  },
-  "prettier": "@isomer/prettier-config"
+  }
 }

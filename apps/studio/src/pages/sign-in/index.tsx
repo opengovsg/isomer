@@ -1,6 +1,5 @@
 import { Flex } from "@chakra-ui/react"
 import { RestrictedGovtMasthead } from "@opengovsg/design-system-react"
-
 import { PublicPageWrapper } from "~/components/AuthWrappers"
 import { LandingLinks } from "~/components/LandingLinks"
 import { RestrictedMiniFooter } from "~/components/RestrictedMiniFooter"

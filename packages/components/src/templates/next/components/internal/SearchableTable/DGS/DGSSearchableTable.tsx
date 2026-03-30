@@ -1,10 +1,10 @@
 "use client"
 
-import { useMemo } from "react"
-
 import type { DGSSearchableTableProps } from "~/interfaces"
+import { useMemo } from "react"
 import { useDgsMetadata } from "~/hooks/useDgsMetadata"
 import { DGS_REQUEST_MAX_BYTES } from "~/utils/dgs"
+
 import { DynamicDGSSearchableTable } from "./DynamicDGSSearchableTable"
 import { StaticDGSSearchableTable } from "./StaticDGSSearchableTable"
 

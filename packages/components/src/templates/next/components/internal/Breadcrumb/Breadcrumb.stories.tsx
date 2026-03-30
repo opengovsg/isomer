@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { BreadcrumbProps } from "~/interfaces"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { BreadcrumbProps } from "~/interfaces"
 import { Breadcrumb } from "./Breadcrumb"
 
 const meta: Meta<BreadcrumbProps> = {

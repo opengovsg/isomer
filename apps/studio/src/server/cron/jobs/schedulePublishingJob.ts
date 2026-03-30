@@ -1,5 +1,3 @@
-import { registerPgbossJob } from "@isomer/pgboss"
-
 import type { Resource } from "~/server/modules/database"
 import { env } from "~/env.mjs"
 import { sendFailedPublishEmail } from "~/features/mail/service"
@@ -15,6 +13,8 @@ import {
   defaultResourceSelect,
   publishPageResource,
 } from "~/server/modules/resource/resource.service"
+
+import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "schedule-publishing"
 const CRON_SCHEDULE = "* * * * *" // every minute

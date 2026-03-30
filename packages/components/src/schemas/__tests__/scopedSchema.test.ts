@@ -247,9 +247,8 @@ describe("getScopedSchema", () => {
       expect(schema.allOf).toBeDefined()
 
       // Other fields like "variant" should still exist
-      const allProperties = schema.allOf.flatMap(
-        (s: Record<string, unknown>) =>
-          s.properties ? Object.keys(s.properties) : [],
+      const allProperties = schema.allOf.flatMap((s: Record<string, unknown>) =>
+        s.properties ? Object.keys(s.properties) : [],
       )
       expect(allProperties).toContain("variant")
       expect(allProperties).not.toContain("subtitle")
