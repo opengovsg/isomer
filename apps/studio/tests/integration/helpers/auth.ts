@@ -1,9 +1,9 @@
 import type { SetOptional } from "type-fest"
+import type { User } from "~server/db"
 import cuid2 from "@paralleldrive/cuid2"
+import { normalizeEmail } from "~/utils/email"
 import { db } from "~server/db"
 
-import type { User } from "~server/db"
-import { normalizeEmail } from "~/utils/email"
 import { setUpWhitelist } from "./seed"
 
 export const auth = async ({ id, ...user }: SetOptional<User, "id">) => {

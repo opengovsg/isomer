@@ -1,6 +1,5 @@
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"
-
 import { renderers } from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { ajv } from "~/utils/ajv"
 

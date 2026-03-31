@@ -1,3 +1,6 @@
+import { createBaseLogger } from "~/lib/logger"
+import { isValidEmail } from "~/utils/email"
+
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
@@ -12,8 +15,6 @@ import type {
   SchedulePageTemplateData,
   SuccessfulPublishTemplateData,
 } from "./templates"
-import { createBaseLogger } from "~/lib/logger"
-import { isValidEmail } from "~/utils/email"
 import { sendMail } from "../../lib/mail"
 import { templates } from "./templates"
 

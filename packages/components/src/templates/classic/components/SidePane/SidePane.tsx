@@ -1,6 +1,5 @@
-import { BiChevronDown } from "react-icons/bi"
-
 import type { SidePaneProps } from "~/interfaces"
+import { BiChevronDown } from "react-icons/bi"
 
 export interface SectionWithSiblings {
   parentTitle?: string

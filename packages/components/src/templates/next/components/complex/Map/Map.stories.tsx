@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { MapProps } from "~/interfaces"
+
 import { Map } from "./Map"
 
 const meta: Meta<MapProps> = {

@@ -11,11 +11,11 @@
 import { initTRPC, TRPCError } from "@trpc/server"
 import superjson from "superjson"
 import { ZodError } from "zod"
-
-import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
+
+import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { type Context } from "./context"
 import { db } from "./modules/database"
 import { defaultUserSelect } from "./modules/me/me.select"

@@ -1,15 +1,15 @@
 "use client"
 
 import type { Dispatch, SetStateAction } from "react"
-import { forwardRef, useRef } from "react"
+import type { NavbarClientProps } from "~/interfaces"
 import { useButton } from "@react-aria/button"
 import { FocusScope, useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
+import { forwardRef, useRef } from "react"
 import { useScrollLock } from "usehooks-ts"
-
-import type { NavbarClientProps } from "~/interfaces"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+
 import { Link } from "../../Link"
 import { LinkButton } from "../../LinkButton/LinkButton"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
@@ -71,7 +71,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={`${item.name}-${index}`}
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 LinkComponent={LinkComponent}
                 index={index}
                 isOpen={index === openNavItemIdx}

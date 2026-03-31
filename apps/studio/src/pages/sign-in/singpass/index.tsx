@@ -1,6 +1,4 @@
-import { useEffect } from "react"
-import NextLink from "next/link"
-import { useRouter } from "next/router"
+import type { NextPageWithLayout } from "~/lib/types"
 import {
   Box,
   Flex,
@@ -15,9 +13,10 @@ import {
   Infobox,
   RestrictedGovtMasthead,
 } from "@opengovsg/design-system-react"
+import NextLink from "next/link"
+import { useRouter } from "next/router"
+import { useEffect } from "react"
 import { BiChevronLeft } from "react-icons/bi"
-
-import type { NextPageWithLayout } from "~/lib/types"
 import { PublicPageWrapper } from "~/components/AuthWrappers"
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
 import { IsomerLogo } from "~/components/Svg"

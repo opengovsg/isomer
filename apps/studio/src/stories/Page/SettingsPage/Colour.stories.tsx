@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/nextjs"
 import { userEvent, within } from "storybook/test"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-
 import { DEFAULT_CONTENT_INVERSE_COLOUR } from "~/features/editing-experience/components/form-builder/renderers/controls/JsonFormsColourPickerControl"
 import ColoursSettingsPage from "~/pages/sites/[siteId]/settings/colours"
 import { ADMIN_HANDLERS } from "~/stories/handlers"

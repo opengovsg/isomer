@@ -1,6 +1,6 @@
+import type { MastheadProps } from "~/interfaces"
 import { BiChevronDown } from "react-icons/bi"
 
-import type { MastheadProps } from "~/interfaces"
 import { Link } from "../Link"
 
 const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {

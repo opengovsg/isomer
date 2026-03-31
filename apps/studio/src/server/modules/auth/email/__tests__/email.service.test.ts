@@ -1,8 +1,8 @@
 import { AuditLogEvent } from "@prisma/client"
 import { resetTables } from "tests/integration/helpers/db"
 import { setupUser } from "tests/integration/helpers/seed"
-
 import { db } from "~/server/modules/database"
+
 import { upsertUser } from "../email.service"
 
 describe("email.service", () => {

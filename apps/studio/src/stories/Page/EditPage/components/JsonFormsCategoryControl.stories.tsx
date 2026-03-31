@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { Type } from "@sinclair/typebox"
 import { pageHandlers } from "tests/msw/handlers/page"
-
 import {
   JsonFormsCategoryControl,
   jsonFormsCategoryControlTester,
 } from "~/features/editing-experience/components/form-builder/renderers/controls/JsonFormsCategoryControl"
 import { createDropdownGbParameters } from "~/stories/utils/growthbook"
+
 import { FormBuilder } from "./formBuilder"
 
 const meta: Meta<typeof FormBuilder> = {

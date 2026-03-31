@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { ImageGalleryProps } from "~/interfaces/complex/ImageGallery"
 import { omit } from "lodash-es"
 import { expect, userEvent, waitFor, within } from "storybook/test"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { ImageGalleryProps } from "~/interfaces/complex/ImageGallery"
-import { generateSiteConfig } from "~/stories/helpers"
 import { ImageGallery } from "./ImageGallery"
 
 const meta: Meta<ImageGalleryProps> = {

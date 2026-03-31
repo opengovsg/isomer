@@ -1,10 +1,8 @@
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
 import { useToast } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import isEqual from "lodash/isEqual"
-
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -25,6 +23,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const FooterSettingsPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteSchema)

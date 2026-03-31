@@ -1,6 +1,6 @@
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
-import { createContext, useCallback, useContext, useState } from "react"
 import { useGrowthBook } from "@growthbook/growthbook-react"
+import { createContext, useCallback, useContext, useState } from "react"
 import { useInterval } from "usehooks-ts"
 
 type SignInStateType = "initial" | "verification"

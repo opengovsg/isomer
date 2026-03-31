@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-
 import SiteSettingsPage from "~/pages/sites/[siteId]/settings"
 import { ADMIN_HANDLERS } from "~/stories/handlers"
 

@@ -1,7 +1,7 @@
+import type { ResourceItemContent } from "~/schemas/resource"
 import { Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 
-import type { ResourceItemContent } from "~/schemas/resource"
 import { ResourceItem, ResourceItemSkeleton } from "./ResourceItem"
 import { lastResourceItemInAncestryStack } from "./utils"
 

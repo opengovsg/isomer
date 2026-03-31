@@ -1,12 +1,10 @@
 import type { AgencySettings } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
+import type { NextPageWithLayout } from "~/lib/types"
 import { useToast } from "@opengovsg/design-system-react"
 import { AgencySettingsSchema } from "@opengovsg/isomer-components"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
 import { BiWrench } from "react-icons/bi"
-
-import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -30,6 +28,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
 

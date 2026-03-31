@@ -1,6 +1,6 @@
+import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { BiRightArrowAlt } from "react-icons/bi"
 
-import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { compoundStyles, infoCardTitleStyle } from "../common"
 
 export const InfoCardText = ({

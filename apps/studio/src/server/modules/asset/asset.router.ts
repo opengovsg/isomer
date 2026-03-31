@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server"
-
 import { deleteAssetsSchema, getPresignedPutUrlSchema } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
+
 import {
   doAllFileKeysBelongToSite,
   getFileKey,

@@ -1,9 +1,9 @@
 "use client"
 
-import { useId, useRef } from "react"
-
 import type { SearchableTableClientProps } from "~/interfaces"
+import { useId, useRef } from "react"
 import { tv } from "~/lib/tv"
+
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
 import { SearchField } from "../../../internal/Search"
@@ -37,8 +37,10 @@ const createSearchableTableStyles = tv({
 
 const compoundStyles = createSearchableTableStyles()
 
-interface SearchableTableClientUIProps
-  extends Omit<SearchableTableClientProps, "items"> {
+interface SearchableTableClientUIProps extends Omit<
+  SearchableTableClientProps,
+  "items"
+> {
   search: {
     input: string
     deferred: string

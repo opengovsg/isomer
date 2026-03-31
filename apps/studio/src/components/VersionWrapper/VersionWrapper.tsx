@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from "react"
 import { useDisclosure } from "@chakra-ui/react"
-
+import { useCallback, useEffect, useState } from "react"
 import { REQUIRE_UPDATE_EVENT } from "~/constants/version"
+
 import { VersionBanner } from "./VersionBanner"
 import { VersionModal } from "./VersionModal"
 

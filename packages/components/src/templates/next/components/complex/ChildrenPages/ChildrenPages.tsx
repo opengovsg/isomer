@@ -1,13 +1,13 @@
-import { BiRightArrowAlt } from "react-icons/bi"
-
 import type { ChildrenPagesProps, ImageClientProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types"
+import { BiRightArrowAlt } from "react-icons/bi"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { IMAGE_FIT } from "~/interfaces/constants"
 import { tv } from "~/lib/tv"
 import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
+
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
@@ -23,7 +23,8 @@ interface Childpage {
 }
 
 interface ChildpageLayoutProps
-  extends Pick<
+  extends
+    Pick<
       ChildrenPagesProps,
       | "showSummary"
       | "imageFit"

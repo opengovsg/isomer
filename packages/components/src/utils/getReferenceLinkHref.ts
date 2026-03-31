@@ -1,6 +1,5 @@
-import DOMPurify from "isomorphic-dompurify"
-
 import type { IsomerSitemap } from "~/types"
+import DOMPurify from "isomorphic-dompurify"
 
 // This function returns a sanitized version of the provided URL string
 const getSanitizedLinkHref = (url?: string) => {
