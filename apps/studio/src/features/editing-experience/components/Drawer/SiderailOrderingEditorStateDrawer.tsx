@@ -16,6 +16,7 @@ import isEqual from "lodash/isEqual"
 import {
   BiArrowToBottom,
   BiArrowToTop,
+  BiData,
   BiFile,
   BiFolder,
   BiInfoCircle,
@@ -37,7 +38,19 @@ interface ChildPageItem {
   id: string
   title: string
   permalink: string
-  type: "folder" | "page"
+  type: "Folder" | "Page" | "Collection"
+}
+
+const getIconForType = (type: ChildPageItem["type"]) => {
+  switch (type) {
+    case "Folder":
+      return BiFolder
+    case "Collection":
+      return BiData
+    case "Page":
+    default:
+      return BiFile
+  }
 }
 
 interface MoveIconButtonProps {
@@ -108,7 +121,7 @@ const DraggablePageItem = ({
             role="group"
           >
             <BaseBlock
-              icon={page.type === "folder" ? BiFolder : BiFile}
+              icon={getIconForType(page.type)}
               label={page.title}
               description={page.permalink}
               dragHandle={
@@ -133,6 +146,7 @@ const DraggablePageItem = ({
               gap="0.25rem"
               display="none"
               _groupHover={{ display: isDragging ? "none" : "flex" }}
+              _groupFocusWithin={{ display: isDragging ? "none" : "flex" }}
             >
               <MoveIconButton
                 direction="top"
@@ -169,7 +183,8 @@ const SiderailOrderingContent = ({
   })
 
   const mappings = useMemo(
-    () => new Map(childPages.map(({ title, id }) => [id, title])),
+    () =>
+      new Map(childPages.map(({ title, id, type }) => [id, { type, title }])),
     [childPages],
   )
 
@@ -178,18 +193,19 @@ const SiderailOrderingContent = ({
       mergeResourcesWithOrdering(
         ordering,
         childPages.map(({ id }) => id),
-        mappings,
+        new Map(childPages.map(({ title, id }) => [id, title])),
       ),
-    [ordering, childPages, mappings],
+    [ordering, childPages],
   )
 
   const pages: ChildPageItem[] = useMemo(
     () =>
       mergedOrdering.map((resourceId) => ({
         id: resourceId,
-        title: mappings.get(resourceId) ?? "Unknown page",
+        title: mappings.get(resourceId)?.title ?? "Unknown page",
         permalink: `/${resourceId}`,
-        type: "page" as const,
+        type: (mappings.get(resourceId)?.type ??
+          "Page") as ChildPageItem["type"],
       })),
     [mergedOrdering, mappings],
   )
