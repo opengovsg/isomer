@@ -16,15 +16,21 @@
   },
   "dependencies": {
     "@opengovsg/isomer-components": "workspace:*",
+    "isomorphic-dompurify": "catalog:",
+    "jsdom": "catalog:",
     "next": "catalog:next15",
     "postcss": "catalog:",
     "postcss-preset-env": "catalog:",
+    "react": "catalog:react18",
+    "react-dom": "catalog:react18",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
-    "@types/node": "catalog:"
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react18",
+    "@types/react-dom": "catalog:react18"
   }
 }
