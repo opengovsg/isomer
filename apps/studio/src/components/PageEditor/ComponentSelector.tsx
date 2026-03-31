@@ -1,14 +1,13 @@
-import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useMemo } from "react"
-import { chakra, Flex, Icon, Stack, Text, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import type { IsomerComponent } from "@opengovsg/isomer-components";
+import { useMemo } from "react";
+import { chakra, Flex, Icon, Stack, Text, VStack } from "@chakra-ui/react";
+import { Button } from "@opengovsg/design-system-react";
+import { ResourceType } from "~prisma/generated/generatedEnums";
 
-import type { UsageTooltipProps } from "./UsageTooltip"
-import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
-import { type DrawerState } from "~/types/editorDrawer"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import type { UsageTooltipProps } from "./UsageTooltip";
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext";
+import { TYPE_TO_ICON } from "~/features/editing-experience/constants";
+import { type DrawerState } from "~/types/editorDrawer";
 
 import {
   ARTICLE_ALLOWED_BLOCKS,
@@ -18,16 +17,16 @@ import {
   DEFAULT_BLOCKS,
   HOMEPAGE_ALLOWED_BLOCKS,
   INDEX_ALLOWED_BLOCKS,
-} from "./constants"
-import { type SectionType } from "./types"
-import { UsageTooltip } from "./UsageTooltip"
+} from "./constants";
+import { type SectionType } from "./types";
+import { UsageTooltip } from "./UsageTooltip";
 
 function Section({ children }: React.PropsWithChildren) {
   return (
     <VStack gap="1rem" alignItems="start" w="full">
       {children}
     </VStack>
-  )
+  );
 }
 
 function SectionTitle({ title }: { title: string }) {
@@ -35,20 +34,20 @@ function SectionTitle({ title }: { title: string }) {
     <Text textStyle="subhead-2" textColor="base.content.medium">
       {title}
     </Text>
-  )
+  );
 }
 
 function BlockList({ children }: React.PropsWithChildren) {
-  return <Stack w="full">{children}</Stack>
+  return <Stack w="full">{children}</Stack>;
 }
 
 type BlockItemProps = UsageTooltipProps & {
-  onProceed: (sectionType: SectionType) => void
-  sectionType: SectionType
-}
+  onProceed: (sectionType: SectionType) => void;
+  sectionType: SectionType;
+};
 
 function BlockItem({ onProceed, sectionType, ...rest }: BlockItemProps) {
-  const { icon, label, description } = rest
+  const { icon, label, description } = rest;
 
   return (
     <UsageTooltip {...rest}>
@@ -85,7 +84,7 @@ function BlockItem({ onProceed, sectionType, ...rest }: BlockItemProps) {
         </Stack>
       </chakra.button>
     </UsageTooltip>
-  )
+  );
 }
 
 function ComponentSelector() {
@@ -97,61 +96,61 @@ function ComponentSelector() {
     setPreviewPageState,
     setAddedBlockIndex,
     type,
-  } = useEditorDrawerContext()
+  } = useEditorDrawerContext();
 
   const onProceed = (sectionType: SectionType) => {
     // TODO: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
     // the rest should use json forms
     const nextState: DrawerState["state"] =
-      sectionType === "prose" ? "nativeEditor" : "complexEditor"
+      sectionType === "prose" ? "nativeEditor" : "complexEditor";
     // TODO: Remove assertion after default blocks all in
     const newComponent: IsomerComponent | undefined =
-      DEFAULT_BLOCKS[sectionType]
+      DEFAULT_BLOCKS[sectionType];
 
     const updatedBlocks = !!newComponent
       ? [...savedPageState.content, newComponent]
-      : savedPageState.content
+      : savedPageState.content;
     const nextPageState = {
       ...savedPageState,
       content: updatedBlocks,
-    }
-    setSavedPageState(nextPageState)
-    setDrawerState({ state: nextState })
-    setCurrActiveIdx(nextPageState.content.length - 1)
-    setAddedBlockIndex(nextPageState.content.length - 1)
-    setPreviewPageState(nextPageState)
-  }
+    };
+    setSavedPageState(nextPageState);
+    setDrawerState({ state: nextState });
+    setCurrActiveIdx(nextPageState.content.length - 1);
+    setAddedBlockIndex(nextPageState.content.length - 1);
+    setPreviewPageState(nextPageState);
+  };
 
   const availableBlocks = useMemo(() => {
     switch (type) {
       case ResourceType.RootPage:
-        return HOMEPAGE_ALLOWED_BLOCKS
+        return HOMEPAGE_ALLOWED_BLOCKS;
       case ResourceType.Page:
         if (savedPageState.layout === "content") {
-          return CONTENT_ALLOWED_BLOCKS
+          return CONTENT_ALLOWED_BLOCKS;
         } else if (savedPageState.layout === "article") {
-          return ARTICLE_ALLOWED_BLOCKS
+          return ARTICLE_ALLOWED_BLOCKS;
         } else if (savedPageState.layout === "database") {
-          return DATABASE_ALLOWED_BLOCKS
+          return DATABASE_ALLOWED_BLOCKS;
         }
-        throw new Error(`Unsupported page layout: ${savedPageState.layout}`)
+        throw new Error(`Unsupported page layout: ${savedPageState.layout}`);
       case ResourceType.CollectionPage:
-        return ARTICLE_ALLOWED_BLOCKS
+        return ARTICLE_ALLOWED_BLOCKS;
       case ResourceType.Collection:
       case ResourceType.CollectionLink:
-        return []
+        return [];
       case ResourceType.IndexPage:
-        return INDEX_ALLOWED_BLOCKS
+        return INDEX_ALLOWED_BLOCKS;
       case ResourceType.Folder:
       case ResourceType.FolderMeta:
       case ResourceType.CollectionMeta:
-        throw new Error(`Unsupported resource type: ${type}`)
+        throw new Error(`Unsupported resource type: ${type}`);
       default:
-        const exhaustiveCheck: never = type
-        return exhaustiveCheck
+        const exhaustiveCheck: never = type;
+        return exhaustiveCheck;
     }
-  }, [savedPageState.layout, type])
+  }, [savedPageState.layout, type]);
 
   return (
     <VStack w="full" h="full" gap="0">
@@ -176,7 +175,7 @@ function ComponentSelector() {
           size="xs"
           variant="clear"
           onClick={() => {
-            setDrawerState({ state: "root" })
+            setDrawerState({ state: "root" });
           }}
         >
           Cancel
@@ -196,7 +195,7 @@ function ComponentSelector() {
             <SectionTitle title={section.label} />
             <BlockList>
               {section.types.map((type) => {
-                const blockMeta = BLOCK_TO_META[type]
+                const blockMeta = BLOCK_TO_META[type];
                 return (
                   <BlockItem
                     key={type}
@@ -205,14 +204,14 @@ function ComponentSelector() {
                     sectionType={type}
                     {...blockMeta}
                   />
-                )
+                );
               })}
             </BlockList>
           </Section>
         ))}
       </VStack>
     </VStack>
-  )
+  );
 }
 
-export default ComponentSelector
+export default ComponentSelector;

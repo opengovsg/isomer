@@ -1,4 +1,4 @@
-import { trpcMsw } from "../mockTrpc"
+import { trpcMsw } from "../mockTrpc";
 
 export const folderHandlers = {
   getMetadata: {
@@ -8,8 +8,8 @@ export const folderHandlers = {
           title: "a folder",
           permalink: "folder",
           parentId: "1",
-        }
-      })
+        };
+      });
     },
   },
   getIndexpage: {
@@ -19,8 +19,8 @@ export const folderHandlers = {
           title: "a folder",
           id: "1",
           draftBlobId: null,
-        }
-      })
+        };
+      });
     },
   },
   listChildPages: {
@@ -28,11 +28,11 @@ export const folderHandlers = {
       return trpcMsw.folder.listChildPages.query(() => {
         return {
           childPages: [
-            { id: "5", title: "sibling1" },
-            { id: "4", title: "sibling2" },
+            { id: "5", title: "sibling1", type: "Page" },
+            { id: "4", title: "sibling2", type: "Page" },
           ],
-        }
-      })
+        };
+      });
     },
   },
-}
+};

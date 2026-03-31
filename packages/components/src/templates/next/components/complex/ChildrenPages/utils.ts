@@ -1,6 +1,7 @@
-import type { ChildrenPagesProps } from "~/interfaces"
+import type { ChildrenPagesProps } from "~/interfaces";
+import { ChildPage } from "./types";
 
-type SortablePage = Pick<ChildPage, "id" | "title">
+type SortablePage = Pick<ChildPage, "id" | "title">;
 
 /**
  * Creates a comparator function for sorting children pages.
@@ -12,24 +13,24 @@ export const createChildrenPagesComparator = (
 ) => {
   const orderingMap = new Map(
     childrenPagesOrdering.map((id, index) => [id, index]),
-  )
+  );
 
   return (a: SortablePage, b: SortablePage): number => {
-    const aIndex = orderingMap.get(a.id) ?? -1
-    const bIndex = orderingMap.get(b.id) ?? -1
+    const aIndex = orderingMap.get(a.id) ?? -1;
+    const bIndex = orderingMap.get(b.id) ?? -1;
 
     if (aIndex === bIndex) {
-      return a.title.localeCompare(b.title, undefined, { numeric: true })
+      return a.title.localeCompare(b.title, undefined, { numeric: true });
     }
 
     if (aIndex === -1) {
-      return 1
+      return 1;
     }
 
     if (bIndex === -1) {
-      return -1
+      return -1;
     }
 
-    return aIndex - bIndex
-  }
-}
+    return aIndex - bIndex;
+  };
+};
