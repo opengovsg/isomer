@@ -34,7 +34,7 @@ interface GetSiteConfigResult {
 }
 
 export const getSiteConfig = async (
-  siteId: number
+  siteId: number,
 ): Promise<GetSiteConfigResult> => {
   const client = new Client({
     connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,
@@ -45,7 +45,7 @@ export const getSiteConfig = async (
 
     const res = await client.query<SiteRow>(
       `SELECT config, theme FROM "Site" WHERE id = $1`,
-      [siteId]
+      [siteId],
     );
 
     if (res.rows.length !== 1) {
@@ -76,7 +76,7 @@ export const getSiteConfig = async (
 export const updateSiteConfig = async (
   siteId: number,
   searchSGClientId: string,
-  url: string
+  url: string,
 ) => {
   const client = new Client({
     connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,
@@ -101,12 +101,12 @@ export const updateSiteConfig = async (
         type: "searchSG",
         clientId: searchSGClientId,
       },
-      url,
+      url: `https://${url}`,
     };
 
     const updateRes = await client.query(
       `UPDATE "Site" SET config = $1 WHERE id = $2`,
-      [updatedConfig, siteId]
+      [updatedConfig, siteId],
     );
 
     if (updateRes.rowCount !== 1) {
