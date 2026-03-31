@@ -144,7 +144,7 @@ else
   echo "Prebuilding..."
   start_time=$(date +%s)
   rm -rf node_modules && rm -rf .next
-  pnpm add opengovsg-isomer-components-0.0.13.tgz
+  pnpm add ./opengovsg-isomer-components-0.0.13.tgz
   calculate_duration $start_time
 
   echo "Caching node_modules..."
