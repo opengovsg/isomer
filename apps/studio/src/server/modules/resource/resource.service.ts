@@ -20,10 +20,10 @@ import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
+  createChildrenPagesComparator,
   getSitemapTree,
   injectTagMappings,
   isCollectionItem,
-  mergeChildrenPages,
   overwriteCollectionChildrenForCollectionBlock,
 } from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
@@ -567,31 +567,29 @@ const updateOrderingForResource = async (
     return sitemap
   }
 
-  return _updateOrderingForResource(
-    sitemap,
-    parentId,
+  const comparator = createChildrenPagesComparator(
     childrenPages.childrenPagesOrdering ?? [],
   )
+
+  return _updateOrderingForResource(sitemap, parentId, comparator)
 }
 
 const _updateOrderingForResource = (
   sitemap: IsomerSitemap,
   parentId: string,
-  ordering: string[],
+  comparator: (a: IsomerSitemap, b: IsomerSitemap) => number,
 ): IsomerSitemap => {
   if (sitemap.id === parentId) {
     return {
       ...sitemap,
-      children: sitemap.children?.toSorted((a, b) =>
-        mergeChildrenPages(a, b, ordering),
-      ),
+      children: sitemap.children?.toSorted(comparator),
     }
   }
 
   return {
     ...sitemap,
     children: sitemap.children?.map((child) =>
-      _updateOrderingForResource(child, parentId, ordering),
+      _updateOrderingForResource(child, parentId, comparator),
     ),
   }
 }
