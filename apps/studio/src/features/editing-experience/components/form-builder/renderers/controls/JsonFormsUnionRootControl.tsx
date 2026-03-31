@@ -1,8 +1,7 @@
 import type { ControlElement, RankedTester } from "@jsonforms/core"
-import React from "react"
 import { rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-
+import React from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { isVerticalLayout } from "~/types/schema"
 
@@ -25,7 +24,7 @@ export const jsonFormsUnionRootControlTester: RankedTester = rankWith(
   },
 )
 
-export function JsonFormsUnionRootControl() {
+function JsonFormsUnionRootControl() {
   return <></>
 }
 

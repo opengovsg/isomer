@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from "@storybook/react"
-
-import { withChromaticModes } from "@isomer/storybook-config"
-
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
-import SearchLayout from "./Search"
+
+import { withChromaticModes } from "@isomer/storybook-config"
+
+import { SearchLayout } from "./Search"
 
 const meta: Meta<typeof SearchLayout> = {
   title: "Next/Layouts/Search",

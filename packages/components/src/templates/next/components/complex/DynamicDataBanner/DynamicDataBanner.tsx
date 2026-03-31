@@ -1,6 +1,8 @@
 import type { DynamicDataBannerProps } from "~/interfaces"
-import { getReferenceLinkHref, getTextAsHtml } from "~/utils"
-import BaseParagraph from "../../internal/BaseParagraph/BaseParagraph"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getTextAsHtml } from "~/utils/getTextAsHtml"
+
+import { BaseParagraph } from "../../internal/BaseParagraph"
 import { DynamicDataBannerClient } from "./DynamicDataBannerClient"
 
 export const DynamicDataBanner = ({
@@ -18,7 +20,7 @@ export const DynamicDataBanner = ({
       apiEndpoint={apiEndpoint}
       title={title}
       data={data}
-      url={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+      url={getReferenceLinkHref(url, site.siteMapArray, site.assetsBaseUrl)}
       label={label}
       errorMessageBaseParagraph={
         <BaseParagraph
@@ -27,7 +29,6 @@ export const DynamicDataBanner = ({
             content: errorMessage,
           })}
           className="prose-label-sm-medium [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
-          site={site}
           LinkComponent={LinkComponent}
         />
       }

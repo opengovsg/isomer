@@ -1,19 +1,22 @@
+import { createBaseLogger } from "~/lib/logger"
+import { isValidEmail } from "~/utils/email"
+
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
   BaseEmailTemplateData,
   CancelSchedulePageTemplateData,
   EmailTemplate,
+  FailedPublishTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
+  SuccessfulPublishTemplateData,
 } from "./templates"
-import { createBaseLogger } from "~/lib/logger"
-import { isValidEmail } from "~/utils/email"
 import { sendMail } from "../../lib/mail"
-import { templates } from "./templates/templates"
+import { templates } from "./templates"
 
 const logger = createBaseLogger({ path: "features/mail/service" })
 
@@ -91,13 +94,23 @@ export async function sendCancelSchedulePageEmail(
   })
 }
 
-export async function sendFailedSchedulePublishEmail(
-  data: BaseEmailTemplateData,
+export async function sendFailedPublishEmail(
+  data: FailedPublishTemplateData,
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.failedSchedulePublish(data),
-    emailType: "failed schedule publish",
+    template: templates.failedPublish(data),
+    emailType: "failed publish",
+  })
+}
+
+export async function sendSuccessfulPublishEmail(
+  data: SuccessfulPublishTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.successfulPublish(data),
+    emailType: "successful publish",
   })
 }
 

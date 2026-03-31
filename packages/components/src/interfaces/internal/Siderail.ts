@@ -1,6 +1,6 @@
 import type { LinkComponentType } from "~/types"
 
-export interface Page {
+interface Page {
   title: string
   url: string
   isCurrent?: boolean

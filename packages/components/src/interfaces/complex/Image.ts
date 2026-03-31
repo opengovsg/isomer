@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps } from "~/types"
 import { ARRAY_RADIO_FORMAT } from "../format"
 
 export const generateImageSrcSchema = ({
@@ -28,7 +28,6 @@ export const ALT_TEXT_REGEX_PATTERN =
 
 export const AltTextSchema = Type.String({
   title: "Alternate text",
-  maxLength: 120,
   description:
     "Add a descriptive text so that visually impaired users can understand your image",
   pattern: ALT_TEXT_REGEX_PATTERN,
@@ -46,7 +45,8 @@ export const ImageSchema = Type.Object(
     caption: Type.Optional(
       Type.String({
         title: "Caption",
-        maxLength: 250,
+        description:
+          "Describe the image or add attributions. To make sure your caption is readable, keep it under 250 characters.",
         format: "textarea",
       }),
     ),
@@ -68,7 +68,7 @@ export const ImageSchema = Type.Object(
     ),
   },
   {
-    title: "Image component",
+    title: "Image",
   },
 )
 

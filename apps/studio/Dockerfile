@@ -30,6 +30,10 @@ ENV NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=$NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY
 ARG NEXT_PUBLIC_INTERCOM_APP_ID
 ENV NEXT_PUBLIC_INTERCOM_APP_ID=$NEXT_PUBLIC_INTERCOM_APP_ID
 
+# Refer to this PR for the env var and why we need this.
+# https://github.com/vercel/next.js/pull/46052/changes
+ENV KEEP_ALIVE_TIMEOUT 70000
+
 FROM base AS builder
 RUN apk update
 RUN apk add --no-cache libc6-compat
@@ -37,12 +41,11 @@ RUN apk add --no-cache libc6-compat
 # Set working directory
 WORKDIR /app
 # Replace <your-major-version> with the major version installed in your repository. For example:
-# RUN npm i -g turbo@^2
 RUN npm install -g turbo@^2
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
-# Assuming "web" is the name entered in the project's package.json: { name: "web" }
+# Assuming "isomer-studio" is the name entered in the project's package.json: { name: "isomer-studio" }
 RUN turbo prune isomer-studio --docker
 
 # Add lockfile and package.json's of isolated subworkspace

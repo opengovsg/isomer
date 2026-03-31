@@ -1,1 +1,1 @@
-export { default } from "./CollectionSearch"
+export { CollectionSearch } from "./CollectionSearch"

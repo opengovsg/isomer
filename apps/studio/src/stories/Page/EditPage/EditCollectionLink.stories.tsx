@@ -1,17 +1,16 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, waitFor, within } from "@storybook/test"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { userEvent, waitFor, within } from "storybook/test"
 import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-
 import CollectionLinkPage from "~/pages/sites/[siteId]/links/[linkId]"
 import {
   createBannerGbParameters,
   createDropdownGbParameters,
 } from "~/stories/utils/growthbook"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),

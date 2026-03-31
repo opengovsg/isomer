@@ -1,21 +1,21 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { http, HttpResponse } from "msw"
-
-import { withChromaticModes } from "@isomer/storybook-config"
-
-import type { HomePageSchemaType } from "~/engine"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { HeroProps } from "~/interfaces/complex/Hero"
+import type { HomePageSchemaType } from "~/types"
+import { http, HttpResponse } from "msw"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
-import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
-import Homepage from "./Homepage"
 
-const meta: Meta<typeof Homepage> = {
+import { withChromaticModes } from "@isomer/storybook-config"
+
+import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
+import { HomepageLayout } from "./Homepage"
+
+const meta: Meta<typeof HomepageLayout> = {
   title: "Next/Layouts/Homepage",
-  component: Homepage,
+  component: HomepageLayout,
   decorators: [withSearchSgSetup()],
   argTypes: {},
   tags: ["!autodocs"],
@@ -50,7 +50,7 @@ const meta: Meta<typeof Homepage> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof Homepage>
+type Story = StoryObj<typeof HomepageLayout>
 
 const generateArgs = ({
   heroProps,
@@ -603,6 +603,24 @@ const generateArgs = ({
         url: "/",
         label: "More ways to contact us",
       },
+      {
+        type: "logocloud",
+        title: "Our partners",
+        images: [
+          {
+            src: "https://placehold.co/150",
+            alt: "placeholder logo",
+          },
+          {
+            src: "https://placehold.co/150",
+            alt: "placeholder logo",
+          },
+          {
+            src: "https://placehold.co/150",
+            alt: "placeholder logo",
+          },
+        ],
+      },
     ],
   }
 }
@@ -639,6 +657,23 @@ export const Dark: Story = {
       secondaryButtonUrl: "/",
     },
     isDarkVariant: true,
+  }),
+}
+
+export const HeroBlock: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "block",
+      backgroundUrl: "/hero-banner.png",
+      title: "Authorisations for new initiatives",
+      subtitle:
+        "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
+      buttonLabel: "Explore now",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Explore now",
+      secondaryButtonUrl: "/",
+    },
   }),
 }
 
@@ -700,6 +735,19 @@ export const HeroSearchbar: Story = {
       title: "Temasek Polytechnic",
       subtitle:
         "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
+    },
+  }),
+}
+
+export const HeroSearchbarWithImage: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "searchbar",
+      title: "Temasek Polytechnic",
+      subtitle:
+        "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
+      backgroundUrl: "/hero-banner.png",
     },
   }),
 }

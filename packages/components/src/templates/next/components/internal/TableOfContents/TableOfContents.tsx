@@ -1,8 +1,8 @@
-import { BiMinus } from "react-icons/bi"
-
 import type { TableOfContentsProps } from "~/interfaces"
+import { BiMinus } from "react-icons/bi"
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlight } from "~/utils"
+import { focusVisibleHighlight } from "~/utils/tailwind"
+
 import { Link } from "../Link"
 
 const linkStyle = tv({
@@ -10,15 +10,21 @@ const linkStyle = tv({
   base: "w-fit text-link underline-offset-4 visited:text-link-visited hover:text-link-hover hover:underline",
 })
 
-const TableOfContents = ({ items, LinkComponent }: TableOfContentsProps) => {
+export const TableOfContents = ({
+  items,
+  LinkComponent,
+}: TableOfContentsProps) => {
   return (
-    <div className="flex flex-col gap-3 rounded-lg bg-base-canvas-alt p-6">
+    <nav
+      aria-label="Table of Contents"
+      className="flex flex-col gap-3 rounded-lg bg-base-canvas-alt p-6"
+    >
       <p className="prose-headline-lg-medium text-base-content-strong">
         On this page
       </p>
-      <div className="prose-body-base flex flex-col gap-3">
+      <ul className="prose-body-base flex flex-col gap-3">
         {items.map(({ anchorLink, content }) => (
-          <div className="flex flex-row items-start gap-2">
+          <li className="flex flex-row items-start gap-2" key={anchorLink}>
             <BiMinus className="size-5 shrink-0 self-center fill-base-content-strong" />
             <Link
               href={anchorLink}
@@ -27,11 +33,9 @@ const TableOfContents = ({ items, LinkComponent }: TableOfContentsProps) => {
             >
               {content}
             </Link>
-          </div>
+          </li>
         ))}
-      </div>
-    </div>
+      </ul>
+    </nav>
   )
 }
-
-export default TableOfContents

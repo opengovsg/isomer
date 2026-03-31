@@ -1,6 +1,5 @@
 import type { IsomerSiteProps } from "~/types"
 import type { IsomerCollectionPageSitemap } from "~/types/sitemap"
-import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
 interface GetCollectionParentProps {
   site: IsomerSiteProps
@@ -10,10 +9,8 @@ interface GetCollectionParentProps {
 export const getCollectionParent = ({
   site,
   collectionId,
-}: GetCollectionParentProps): IsomerCollectionPageSitemap => {
-  const sitemapArray = getSitemapAsArray(site.siteMap)
-
-  const collectionParent = sitemapArray.find(
+}: GetCollectionParentProps): IsomerCollectionPageSitemap | null => {
+  const collectionParent = site.siteMapArray.find(
     (item) => item.id === collectionId && item.layout === "collection",
   )
 
@@ -21,7 +18,7 @@ export const getCollectionParent = ({
     return collectionParent as IsomerCollectionPageSitemap
   }
 
-  throw new Error(
-    `CollectionBlock: No collection parent found for collection ID ${collectionId}`,
-  )
+  // NOTE: Signal an error to the caller that no parent could be found
+  // so that we can fail gracefully
+  return null
 }

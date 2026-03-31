@@ -1,20 +1,21 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { PropsWithChildren } from "react"
-import { useRouter } from "next/router"
-import { Flex } from "@chakra-ui/react"
-import { BiCog, BiFolder, BiGroup, BiHelpCircle, BiStar } from "react-icons/bi"
-
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
+import { Flex } from "@chakra-ui/react"
+import { useRouter } from "next/router"
+import { BiCog, BiFolder, BiGroup, BiHelpCircle, BiStar } from "react-icons/bi"
 import { CmsContainer, CmsSidebar } from "~/components/CmsSidebar"
 import { SearchableHeader } from "~/components/SearchableHeader"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { ADMIN_ROLE } from "~/lib/growthbook"
+
 import { OpenSidebarIcon } from "../Svg/OpenSidebarIcon"
 
 interface CmsContainerWrapperProps {
   siteId: string
   sidenav?: React.ReactElement
   onSidenavOpen?: UseDisclosureReturn["onOpen"]
+  variant?: "gsib" | "basic"
 }
 
 export const CmsContainerWrapper = ({
@@ -22,6 +23,7 @@ export const CmsContainerWrapper = ({
   sidenav,
   onSidenavOpen,
   children,
+  variant,
 }: PropsWithChildren<CmsContainerWrapperProps>) => {
   const router = useRouter()
 
@@ -43,7 +45,12 @@ export const CmsContainerWrapper = ({
       label: "Collaborators",
       href: `/sites/${siteId}/users`,
     },
-    { icon: BiCog, label: "Settings", href: `/sites/${siteId}/settings` },
+    {
+      icon: BiCog,
+      label: "Settings",
+      href: `/sites/${siteId}/settings`,
+      isActive: router.asPath.startsWith(`/sites/${siteId}/settings`),
+    },
     ...(isUserIsomerAdmin
       ? [
           {
@@ -81,6 +88,7 @@ export const CmsContainerWrapper = ({
       pos="relative"
     >
       <CmsContainer
+        variant={variant}
         sidebar={
           <CmsSidebar
             topNavItems={pageNavItems}

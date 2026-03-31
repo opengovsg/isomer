@@ -1,30 +1,31 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
-
-import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 
 export const AskgovSchema = Type.Object(
   {
     "data-agency": Type.String({
-      title: "Agency Identifier",
-      description: "The agency identifier for Askgov integration.",
+      title: "AskGov ID",
+      description:
+        'This is what comes after ask.gov.sg. For example, for https://ask.gov.sg/help, "help" is the ID.',
     }),
     "data-topic": Type.Optional(
       Type.String({
         title: "Topic Identifier",
         description: "The topic identifier for Askgov integration.",
+        format: "hidden",
       }),
     ),
   },
   {
     title: "Askgov Widget",
     description: "Schema for the Askgov widget integration.",
+    format: "widget-integration/askgov",
   },
 )
 
 export type AskgovProps = Static<typeof AskgovSchema>
 
-export interface AskgovWidgetProps extends AskgovProps {
+export type AskgovWidgetProps = AskgovProps & {
   environment: IsomerSiteProps["environment"]
-  ScriptComponent: ScriptComponentType
 }

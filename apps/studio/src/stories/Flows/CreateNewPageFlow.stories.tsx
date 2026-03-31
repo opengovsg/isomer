@@ -1,10 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-
 import SitePage from "~/pages/sites/[siteId]"
 
 const meta: Meta<typeof SitePage> = {
@@ -55,6 +54,28 @@ export const SelectPageLayout: Story = {
       name: /page/i,
     })
     await userEvent.click(menuItem)
+  },
+}
+
+export const SelectArticleLayout: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const screen = within(canvasElement.ownerDocument.body)
+    await SelectPageLayout.play?.(context)
+
+    const articleLayoutCard = await screen.findByText(/Article layout/i)
+    await userEvent.click(articleLayoutCard)
+  },
+}
+
+export const SelectDatabaseLayout: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const screen = within(canvasElement.ownerDocument.body)
+    await SelectPageLayout.play?.(context)
+
+    const databaseLayoutCard = await screen.findByText(/Database layout/i)
+    await userEvent.click(databaseLayoutCard)
   },
 }
 

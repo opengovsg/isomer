@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client"
-import { type NextApiRequest } from "next"
 import { TRPCError } from "@trpc/server"
+import { type NextApiRequest } from "next"
 import {
   RateLimiterMemory,
   RateLimiterPrisma,
@@ -11,7 +11,7 @@ import { type RateLimitMetaOptions } from "./types"
 import { getRateLimitFingerprint } from "./utils"
 
 // Default 5 queries per second fallback
-export const rateLimiterMemory = new RateLimiterMemory({
+const rateLimiterMemory = new RateLimiterMemory({
   points: 5,
   duration: 1,
 })

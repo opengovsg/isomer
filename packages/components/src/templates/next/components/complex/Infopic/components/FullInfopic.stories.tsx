@@ -1,9 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { InfopicProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { InfopicProps } from "~/interfaces"
-import { generateSiteConfig } from "~/stories/helpers"
 import { Infopic } from "../Infopic"
 
 const meta: Meta<InfopicProps> = {

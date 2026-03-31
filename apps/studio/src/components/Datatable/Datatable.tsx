@@ -16,7 +16,7 @@ import { flexRender } from "@tanstack/react-table"
 
 import { DatatablePagination } from "./DatatablePagination"
 
-export interface DatatableProps<D> extends TableProps {
+interface DatatableProps<D> extends TableProps {
   instance: ReactTable<D>
   /**
    * If provided, this number will be used for pagination instead of retrieving
@@ -27,12 +27,6 @@ export interface DatatableProps<D> extends TableProps {
   isFetching?: boolean
   emptyPlaceholder?: React.ReactElement
   overflow?: LayoutProps["overflow"]
-}
-
-export function createAccessor<T>(props: (keyof T)[]) {
-  return (row: T): string => {
-    return props.map((prop) => String(row[prop])).join(" ")
-  }
 }
 
 export const Datatable = <T extends object>({

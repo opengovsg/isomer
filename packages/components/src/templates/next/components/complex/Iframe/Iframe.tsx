@@ -1,5 +1,6 @@
 import type { IframeProps } from "~/interfaces"
-import { getSanitizedIframeWithTitle } from "~/utils"
+import { getSanitizedIframeWithTitle } from "~/utils/getSanitizedIframeWithTitle"
+
 import { ComponentContent } from "../../internal/customCssClass"
 
 // Sets the appropriate padding for the iframe based on the URL
@@ -28,8 +29,14 @@ const getPaddingForEmbed = (url: string | null) => {
 /**
  * @deprecated Replaced with individual website embed components
  */
-const Iframe = ({ title, content }: IframeProps) => {
+export const Iframe = ({
+  title,
+  content,
+  shouldLazyLoad = true,
+}: IframeProps) => {
   const sanitizedIframe = getSanitizedIframeWithTitle(content, title)
+  sanitizedIframe.setAttribute("loading", shouldLazyLoad ? "lazy" : "eager")
+
   const iframeUrl = sanitizedIframe.getAttribute("src")
 
   return (
@@ -43,5 +50,3 @@ const Iframe = ({ title, content }: IframeProps) => {
     </section>
   )
 }
-
-export default Iframe

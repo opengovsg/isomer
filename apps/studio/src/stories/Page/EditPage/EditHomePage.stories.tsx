@@ -1,13 +1,12 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
@@ -85,7 +84,7 @@ export const EditKeyStatistics: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /KeyStatistics Component/i,
+      name: /Statistics/i,
     })
     await userEvent.click(button)
   },
@@ -110,7 +109,7 @@ export const NestedState: Story = {
     const canvas = within(canvasElement)
 
     const keyStatisticsButton = await canvas.findByRole("button", {
-      name: /keystatistics/i,
+      name: /statistics/i,
     })
     await userEvent.click(keyStatisticsButton)
 
@@ -122,6 +121,9 @@ export const NestedState: Story = {
 }
 
 export const ErrorNestedState: Story = {
+  parameters: {
+    disableMockDate: true, // Disable mockDateDecorator to prevent interference with error state
+  },
   play: async (context) => {
     await NestedState.play?.(context)
 
@@ -141,7 +143,7 @@ export const FullscreenPreview: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // Required since menu is a portal
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
     const screen = within(canvasElement.parentElement!)
 
     const button = await canvas.findByRole("button", { name: /default mode/i })

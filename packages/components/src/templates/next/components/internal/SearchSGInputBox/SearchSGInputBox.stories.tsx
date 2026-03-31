@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react"
-
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { NavbarSearchSGInputBoxProps } from "~/interfaces"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
 } from "~/stories/decorators"
+
 import { NavbarSearchSGInputBox } from "./SearchSGInputBox"
 
 const meta: Meta<NavbarSearchSGInputBoxProps> = {

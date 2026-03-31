@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { expect, userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { expect, userEvent, within } from "storybook/test"
 import { userHandlers } from "tests/msw/handlers/user"
-
 import UsersPage from "~/pages/sites/[siteId]/users"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
-import { ResetEditUserModalDecorator } from "../decorators/resetModalState"
+
+import { ResetEditUserModalDecorator } from "../decorators"
 import { ADMIN_HANDLERS } from "../handlers"
 
 const meta: Meta<typeof UsersPage> = {
@@ -83,6 +83,7 @@ export const Loading: Story = {
 
 export const ToastAfterEditingUser: Story = {
   parameters: {
+    disableMockDate: true,
     msw: {
       handlers: [...ADMIN_HANDLERS, userHandlers.update.success()],
     },

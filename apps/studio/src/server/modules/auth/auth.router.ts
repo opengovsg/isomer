@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
-
 import { publicProcedure, router } from "~/server/trpc"
 import getIP from "~/utils/getClientIp"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+
 import { logAuthEvent } from "../audit/audit.service"
 import { db } from "../database"
 import { emailSessionRouter } from "./email/email.router"
@@ -14,6 +14,7 @@ export const authRouter = router({
   logout: publicProcedure.mutation(async ({ ctx }) => {
     const { userId } = ctx.session
     ctx.session.destroy()
+    await ctx.gb.setAttributes({})
 
     if (!userId) {
       throw new TRPCError({ code: "BAD_REQUEST", message: "User not found" })

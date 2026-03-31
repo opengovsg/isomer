@@ -1,8 +1,8 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
 import { BaseLinkControl } from "./BaseLinkControl"
 
@@ -14,12 +14,13 @@ export const jsonFormsLinkControlTester: RankedTester = rankWith(
   ),
 )
 
-export function JsonFormsLinkControl({
+function JsonFormsLinkControl({
   data,
   label,
   handleChange,
   path,
   required,
+  errors,
 }: ControlProps) {
   return (
     <BaseLinkControl
@@ -30,6 +31,7 @@ export function JsonFormsLinkControl({
       path={path}
       linkTypes={LINK_TYPES_MAPPING}
       description="Link a page, file, external URL, or an email address"
+      errors={errors}
     />
   )
 }

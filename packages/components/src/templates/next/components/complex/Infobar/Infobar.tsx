@@ -1,7 +1,9 @@
-import type { InfobarProps } from "~/interfaces"
-import { DEFAULT_INFOBAR_VARIANT } from "~/interfaces"
+import type { InfobarProps } from "~/interfaces/complex/Infobar"
+import { DEFAULT_INFOBAR_VARIANT } from "~/interfaces/complex/Infobar/constants"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -19,18 +21,18 @@ export const createInfobarStyles = tv({
     layout: {
       homepage: {
         outerContainer: "mx-6 py-16 sm:mx-10 lg:py-24",
-        innerContainer: "items-center gap-9 text-center lg:max-w-3xl",
+        innerContainer:
+          "items-center gap-9 rounded-none text-center lg:max-w-3xl",
         headingContainer: "gap-6",
         title: "prose-display-lg",
         description: "prose-headline-lg-regular",
         buttonContainer: "items-center",
       },
       default: {
-        screenWideOuterContainer: "mt-12 first:mt-0",
-        outerContainer: "rounded-lg",
+        screenWideOuterContainer: "mt-12 rounded-lg first:mt-0",
         innerContainer: "items-start gap-7 p-8",
         headingContainer: "gap-4",
-        title: "prose-display-sm",
+        title: "prose-display-xs",
         description: "prose-body-base",
         buttonContainer: "items-start",
       },
@@ -56,14 +58,15 @@ export const createInfobarStyles = tv({
       layout: "default",
       className: {
         screenWideOuterContainer: "bg-base-canvas-backdrop",
-        outerContainer: "bg-base-canvas-backdrop",
+        outerContainer: "",
       },
     },
     {
       colorScheme: "light",
       layout: "homepage",
       className: {
-        outerContainer: "text-base-content",
+        outerContainer: "text-base-content-strong",
+        description: "text-base-content",
       },
     },
     {
@@ -71,7 +74,7 @@ export const createInfobarStyles = tv({
       layout: "default",
       className: {
         screenWideOuterContainer: "bg-base-canvas-backdrop",
-        outerContainer: "bg-base-canvas-backdrop",
+        outerContainer: "",
       },
     },
   ],
@@ -81,7 +84,7 @@ export const createInfobarStyles = tv({
   },
 })
 
-const Infobar = ({
+export const Infobar = ({
   variant,
   title,
   description,
@@ -125,7 +128,7 @@ const Infobar = ({
                 <LinkButton
                   href={getReferenceLinkHref(
                     buttonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   size={simplifiedLayout === "homepage" ? "lg" : "base"}
@@ -141,7 +144,7 @@ const Infobar = ({
                 <LinkButton
                   href={getReferenceLinkHref(
                     secondaryButtonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   size={simplifiedLayout === "homepage" ? "lg" : "base"}
@@ -160,5 +163,3 @@ const Infobar = ({
     </section>
   )
 }
-
-export default Infobar

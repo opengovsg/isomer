@@ -1,0 +1,225 @@
+/**
+  * This file contains the styles required for the Tiptap editor.
+  * It is imported in _app.tsx to ensure that the styles are applied globally.
+  */
+@use "sass:list";
+
+// List styles to cycle through, this should match the order that is defined
+// inside the OrderedList and UnorderedList components
+$orderedlist-styles: decimal, lower-alpha, lower-roman;
+$unorderedlist-styles: disc, circle, square;
+// Maximum depth of nested lists to support, the modulo of this should be 1 so
+// that we reset back to the first style after cycling through all of them
+$max-depth: 13;
+
+// Recursive mixin to apply styles for nested ordered lists
+@mixin nested-orderedlist($level: 1) {
+  $index: (($level - 1) % list.length($orderedlist-styles)) + 1;
+  list-style-type: list.nth($orderedlist-styles, $index);
+  padding-inline-start: 1.25rem;
+
+  @if $level < $max-depth {
+    > li > ol {
+      @include nested-orderedlist($level + 1);
+    }
+  }
+}
+
+// Recursive mixin to apply styles for nested unordered lists
+@mixin nested-unorderedlist($level: 1) {
+  $index: (($level - 1) % list.length($unorderedlist-styles)) + 1;
+  list-style-type: list.nth($unorderedlist-styles, $index);
+  padding-inline-start: 1.25rem;
+
+  @if $level < $max-depth {
+    > li > ul {
+      @include nested-unorderedlist($level + 1);
+    }
+  }
+}
+
+.tiptap:focus {
+  outline: none;
+}
+
+.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize;
+}
+
+.tiptap {
+  height: 100%;
+
+  h1 {
+    font-size: 3.375rem;
+    line-height: 4.5rem;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+  }
+
+  h2 {
+    font-size: 2.25rem;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+
+  h5 {
+    font-size: 1.125rem;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+
+  h6 {
+    font-size: 1rem;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  ol {
+    @include nested-orderedlist(1);
+  }
+
+  ul {
+    @include nested-unorderedlist(1);
+  }
+
+  > * + * {
+    margin-top: 0.75em;
+  }
+
+  > p.is-empty::before {
+    color: #adb5bd;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin: 0;
+    overflow: hidden;
+    table-layout: fixed;
+    width: 100%;
+
+    .selectedCell:after {
+      background: rgba(200, 200, 255, 0.2);
+      content: "";
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: 2;
+    }
+
+    td,
+    th {
+      border: 1px solid #d6d6d6;
+      box-sizing: border-box;
+      min-width: 1em;
+      padding: 0.5em 0.75em;
+      position: relative;
+      vertical-align: top;
+
+      > * {
+        margin-bottom: 0;
+      }
+    }
+
+    th {
+      color: #323232;
+      font-weight: bold;
+      text-align: left;
+    }
+  }
+
+  a {
+    color: #68cef8;
+    text-decoration: underline;
+  }
+
+  ul,
+  ol {
+    padding-left: 1rem;
+  }
+
+  code {
+    background-color: rgba(#616161, 0.1);
+    color: #616161;
+  }
+
+  pre {
+    background: #0d0d0d;
+    border-radius: 0.5rem;
+    color: #fff;
+    font-family: "JetBrainsMono", monospace;
+    padding: 0.75rem 1rem;
+
+    code {
+      background: none;
+      color: inherit;
+      font-size: 0.8rem;
+      padding: 0;
+    }
+  }
+
+  mark {
+    background-color: #faf594;
+  }
+
+  img {
+    height: auto;
+    max-width: 50%;
+  }
+
+  hr {
+    margin: 1rem 0;
+  }
+
+  blockquote {
+    border-left: 2px solid rgba(#0d0d0d, 0.1);
+    padding-left: 1rem;
+  }
+
+  hr {
+    border: none;
+    border-top: 2px solid rgba(#0d0d0d, 0.1);
+    margin: 2rem 0;
+  }
+
+  ul[data-type="taskList"] {
+    list-style: none;
+    padding: 0;
+
+    li {
+      align-items: center;
+      display: flex;
+
+      > label {
+        flex: 0 0 auto;
+        margin-right: 0.5rem;
+        user-select: none;
+      }
+
+      > div {
+        flex: 1 1 auto;
+      }
+    }
+  }
+}

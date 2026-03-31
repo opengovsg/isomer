@@ -1,10 +1,10 @@
 import type { VariantProps } from "tailwind-variants"
+import type { AccordionProps as BaseAccordionProps } from "~/interfaces/complex/Accordion"
 import { BiMinus, BiPlus } from "react-icons/bi"
-
-import type { AccordionProps as BaseAccordionProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlight } from "~/utils"
-import { Prose } from "../../native"
+import { focusVisibleHighlight } from "~/utils/tailwind"
+
+import { Prose } from "../../native/Prose"
 
 const summaryStyle = tv({
   extend: focusVisibleHighlight,
@@ -23,10 +23,9 @@ const createAccordionStyles = tv({
 const accordionStyles = createAccordionStyles()
 
 interface AccordionProps
-  extends BaseAccordionProps,
-    VariantProps<typeof createAccordionStyles> {}
+  extends BaseAccordionProps, VariantProps<typeof createAccordionStyles> {}
 
-const Accordion = ({
+export const Accordion = ({
   summary,
   details,
   LinkComponent,
@@ -52,5 +51,3 @@ const Accordion = ({
     </details>
   )
 }
-
-export default Accordion

@@ -1,8 +1,7 @@
+import type { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import type { UnwrapTagged } from "type-fest"
-import { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash"
-
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createCollectionSchema,
@@ -14,6 +13,7 @@ import {
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
+
 import { logResourceEvent } from "../audit/audit.service"
 import {
   AuditLogEvent,
@@ -279,17 +279,17 @@ export const collectionRouter = router({
       // 1. Last Edited user and time
       // 2. Page status(draft, published)
 
-      return await ctx.db
+      return await db
         .selectFrom("Resource")
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "in", [
           ResourceType.CollectionPage,
           ResourceType.CollectionLink,
-          ResourceType.IndexPage,
         ])
         .orderBy("Resource.type", "asc")
         .orderBy("Resource.title", "asc")
+        .orderBy("Resource.id", "asc") // to ensure deterministic ordering
         .limit(limit)
         .offset(offset)
         .select(defaultResourceSelect)

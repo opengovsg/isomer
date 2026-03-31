@@ -1,3 +1,5 @@
-export * from "./components"
-export * from "./layouts"
-export * from "./render"
+export {
+  renderLayout,
+  renderPageContent,
+  renderComponentPreviewText,
+} from "./render"

@@ -1,5 +1,7 @@
-import type { HeroProps } from "~/interfaces/complex/Hero"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import type { HeroBlockProps } from "~/interfaces/complex/Hero"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+
+import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
 const HERO_THEME_MAPPINGS = {
@@ -28,12 +30,7 @@ export const HeroBlock = ({
   site,
   LinkComponent,
   theme = "default",
-}: HeroProps) => {
-  const backgroundSrc =
-    isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
-      ? backgroundUrl
-      : `${site.assetsBaseUrl}${backgroundUrl}`
-
+}: HeroBlockProps) => {
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
@@ -41,13 +38,15 @@ export const HeroBlock = ({
   return (
     <section className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row">
       <div
-        className={`flex flex-row ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-12`}
+        className={`flex flex-row ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-8`}
       >
         <div
-          className={`flex w-full max-w-[532px] flex-col justify-center gap-9 ${heroTextColour}`}
+          className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
         >
           <div className="flex flex-col gap-6">
-            <h1 className="prose-display-xl break-words">{title}</h1>
+            <h1 className="wrap-break-word prose-display-xl text-balance">
+              {title}
+            </h1>
             {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
           </div>
           {buttonLabel && buttonUrl && (
@@ -55,12 +54,12 @@ export const HeroBlock = ({
               <LinkButton
                 href={getReferenceLinkHref(
                   buttonUrl,
-                  site.siteMap,
+                  site.siteMapArray,
                   site.assetsBaseUrl,
                 )}
                 size="lg"
                 variant="solid"
-                colorScheme="inverse"
+                colorScheme={heroButton}
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
               >
@@ -73,7 +72,7 @@ export const HeroBlock = ({
                   size="lg"
                   href={getReferenceLinkHref(
                     secondaryButtonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   LinkComponent={LinkComponent}
@@ -87,11 +86,18 @@ export const HeroBlock = ({
         </div>
       </div>
       <div
-        className="h-80 bg-cover bg-center bg-no-repeat lg:h-auto lg:max-h-full lg:w-1/2"
-        style={{
-          backgroundImage: `url('${backgroundSrc}')`,
-        }}
-      />
+        className="relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2"
+        style={{ contain: "layout" }}
+      >
+        <ImageClient
+          src={backgroundUrl}
+          alt={title}
+          width="100%"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          assetsBaseUrl={site.assetsBaseUrl}
+          lazyLoading={false} // hero is always above the fold
+        />
+      </div>
     </section>
   )
 }

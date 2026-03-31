@@ -1,7 +1,7 @@
-import { RoleType } from "~prisma/generated/generatedEnums"
-
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
+import { RoleType } from "~prisma/generated/generatedEnums"
+
 import {
   accountDeactivationTemplate,
   accountDeactivationWarningTemplate,

@@ -1,4 +1,5 @@
-import type { NativeContactInformationProps } from "~/interfaces/complex/ContactInformation"
+import type { NativeContactInformationProps } from "~/interfaces/complex/ContactInformation/ContactInformation"
+
 import { ContactInformationUI } from "../components"
 
 export const NativeContactInformation = ({

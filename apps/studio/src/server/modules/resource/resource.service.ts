@@ -1,10 +1,18 @@
 import type { SelectExpression } from "kysely"
 import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
+import type { ResourceItemContent } from "~/schemas/resource"
 import { TRPCError } from "@trpc/server"
+import _ from "lodash"
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import {
+  getSitemapTree,
+  injectTagMappings,
+  isCollectionItem,
+  overwriteCollectionChildrenForCollectionBlock,
+} from "~/utils/sitemap"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
-import _ from "lodash"
 
 import type {
   Footer,
@@ -16,19 +24,10 @@ import type {
   User,
 } from "../database"
 import type { SearchResultResource } from "./resource.types"
-import type { ResourceItemContent } from "~/schemas/resource"
-import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE } from "~/lib/growthbook"
-import {
-  getSitemapTree,
-  injectTagMappings,
-  isCollectionItem,
-  overwriteCollectionChildrenForCollectionBlock,
-} from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
-import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
+import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
 
@@ -46,6 +45,7 @@ export const defaultResourceSelect = [
   "Resource.createdAt",
   "Resource.updatedAt",
   "Resource.scheduledAt",
+  "Resource.scheduledBy",
 ] satisfies SelectExpression<DB, "Resource">[]
 
 const defaultResourceWithBlobSelect = [
@@ -90,13 +90,7 @@ export const getSiteResourceById = ({
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
 const getById = (
   db: SafeKysely,
-  {
-    resourceId,
-    siteId,
-  }: {
-    resourceId: number
-    siteId: number
-  },
+  { resourceId, siteId }: { resourceId: number; siteId: number },
 ) =>
   db
     .selectFrom("Resource")
@@ -106,10 +100,7 @@ const getById = (
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
 export const getFullPageById = async (
   db: SafeKysely,
-  args: {
-    resourceId: number
-    siteId: number
-  },
+  args: { resourceId: number; siteId: number },
 ) => {
   // Check if draft blob exists and return that preferentially
   const draftBlob = await getById(db, args)
@@ -281,10 +272,7 @@ export const updateBlobById = async (
     .executeTakeFirst()
 
   if (!page) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Resource not found",
-    })
+    throw new TRPCError({ code: "NOT_FOUND", message: "Resource not found" })
   }
 
   let blobIdToUpdate = page.draftBlobId
@@ -358,12 +346,23 @@ export const getLocalisedSitemap = async (
   const thumbnailSql = sql<string>`
         published.content->'page'->'image'->> 'src'
     `.as("thumbnail")
+  const categorySql = sql<string>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'category')
+      ELSE ''
+    END
+`.as("category")
+  const dateSql = sql<string>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'date')
+      ELSE ''
+    END
+`.as("date")
 
   // Get the actual resource first
-  const resource = await getById(db, {
-    resourceId,
-    siteId,
-  })
+  const resource = await getById(db, { resourceId, siteId })
     .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
 
@@ -377,7 +376,13 @@ export const getLocalisedSitemap = async (
         .where("Resource.id", "=", String(resourceId))
         .leftJoin("Version", "Version.id", "publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
+        .select(() => [
+          headerSql,
+          thumbnailSql,
+          categorySql,
+          dateSql,
+          ...defaultResourceSelect,
+        ])
         .unionAll((fb) =>
           fb
             // Recursive case: Get all the ancestors of the resource
@@ -391,6 +396,8 @@ export const getLocalisedSitemap = async (
             .select(({ eb }) => [
               eb.cast<string>(eb.val(""), "text").as("summary"),
               eb.cast<string>(eb.val(""), "text").as("thumbnail"),
+              eb.cast<string>(eb.val(""), "text").as("category"),
+              eb.cast<string>(eb.val(""), "text").as("date"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -412,7 +419,13 @@ export const getLocalisedSitemap = async (
         .where("state", "=", "Published")
         .leftJoin("Version", "Version.id", "publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect]),
+        .select(() => [
+          headerSql,
+          thumbnailSql,
+          categorySql,
+          dateSql,
+          ...defaultResourceSelect,
+        ]),
     )
     // Step 3: Get all nested folders and collections
     .withRecursive("nestedResources", (eb) =>
@@ -427,7 +440,13 @@ export const getLocalisedSitemap = async (
         .where("Resource.state", "=", ResourceState.Published)
         .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
+        .select(() => [
+          headerSql,
+          thumbnailSql,
+          categorySql,
+          dateSql,
+          ...defaultResourceSelect,
+        ])
         .unionAll((fb) =>
           fb
             .selectFrom("Resource")
@@ -445,21 +464,45 @@ export const getLocalisedSitemap = async (
             .where("Resource.state", "=", ResourceState.Published)
             .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
             .leftJoin("Blob as published", "Version.blobId", "published.id")
-            .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect]),
+            .select(() => [
+              headerSql,
+              thumbnailSql,
+              categorySql,
+              dateSql,
+              ...defaultResourceSelect,
+            ]),
         ),
     )
     // Step 4: Combine all the resources in a single array
     .selectFrom("ancestors as Resource")
-    .select(["summary", "thumbnail", ...defaultResourceSelect])
+    .select([
+      "summary",
+      "thumbnail",
+      "category",
+      "date",
+      ...defaultResourceSelect,
+    ])
     .union((eb) =>
       eb
         .selectFrom("immediateSiblings as Resource")
-        .select(["summary", "thumbnail", ...defaultResourceSelect]),
+        .select([
+          "summary",
+          "thumbnail",
+          "category",
+          "date",
+          ...defaultResourceSelect,
+        ]),
     )
     .union((eb) =>
       eb
         .selectFrom("nestedResources as Resource")
-        .select(["summary", "thumbnail", ...defaultResourceSelect]),
+        .select([
+          "summary",
+          "thumbnail",
+          "category",
+          "date",
+          ...defaultResourceSelect,
+        ]),
     )
     .orderBy("title asc")
     .execute()
@@ -552,9 +595,13 @@ export const getResourceFullPermalink = async (
 
 interface PublishPageResourceArgs {
   logger: Logger<string>
+  userId: string
   siteId: number
   resourceId: string
-  userId: string
+  sitePublish?: {
+    enableCodebuildJobs: boolean
+    isScheduled: boolean
+  }
   isSingpassEnabled?: boolean
 }
 
@@ -563,88 +610,68 @@ export const publishPageResource = async ({
   siteId,
   resourceId,
   userId,
-  isSingpassEnabled = IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+  sitePublish,
 }: PublishPageResourceArgs) => {
-  // Step 1: Create a new version
-  const by = await db
-    .selectFrom("User")
-    .selectAll()
-    .where("id", "=", userId)
-    .executeTakeFirstOrThrow(
-      () =>
-        new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Please ensure that you have logged in",
-        }),
-    )
-
-  const addedVersionResult = await db
-    .transaction()
-    .setIsolationLevel("serializable")
-    .execute(async (tx) => {
-      const fullResource = await getFullPageById(tx, {
-        resourceId: Number(resourceId),
-        siteId,
-      })
-
-      if (!fullResource) {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message:
-            "Please ensure you are attempting to publish a page that exists",
-        })
-      }
-
-      const version = await incrementVersion({
-        tx,
-        siteId,
-        resourceId,
-        userId,
-      })
-
-      const previousVersion = await tx
-        .selectFrom("Version")
-        .where("Version.versionNum", "=", Number(version.versionNum) - 1)
-        .where("Version.resourceId", "=", resourceId)
-        .select("Version.id")
-        .executeTakeFirst()
-
-      await logPublishEvent(tx, {
-        siteId,
-        by,
-        delta: {
-          before: previousVersion?.id
-            ? { versionId: previousVersion.id }
-            : null,
-          after: version,
-        },
-        eventType: AuditLogEvent.Publish,
-        metadata: fullResource,
-      })
-
-      return version
+  await db.transaction().execute(async (tx) => {
+    // Step 1: Create a new version
+    const fullResource = await getFullPageById(tx, {
+      resourceId: Number(resourceId),
+      siteId,
     })
+
+    if (!fullResource) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message:
+          "Please ensure you are attempting to publish a page that exists",
+      })
+    }
+
+    const version = await incrementVersion({ tx, siteId, resourceId, userId })
+
+    if (!version) {
+      logger.warn(
+        `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
+      )
+      return
+    }
+
+    const { previousVersion, newVersion } = version
+
+    await logPublishEvent(tx, {
+      siteId,
+      by: await getUserById(userId),
+      delta: {
+        before: previousVersion ? { versionId: previousVersion.id } : null,
+        after: { versionId: newVersion.id },
+      },
+      eventType: AuditLogEvent.Publish,
+      metadata: fullResource,
+    })
+  })
 
   // Step 2: Trigger a publish of the site
-  await publishSite(logger, siteId)
-
-  // Step 3: Send publish alert emails to all site admins minus the current user
-  // if Singpass has been disabled
-  if (!isSingpassEnabled) {
-    await alertPublishWhenSingpassDisabled({
+  if (sitePublish)
+    await publishSite(logger, {
       siteId,
-      resourceId,
-      publisherId: by.id,
-      publisherEmail: by.email,
+      codebuildJob: sitePublish.enableCodebuildJobs
+        ? {
+            resourceWithUserIds: [{ resourceId, userId }],
+            isScheduled: sitePublish.isScheduled,
+          }
+        : undefined,
     })
-  }
-
-  return addedVersionResult
 }
 
-// NOTE: The distinction here between `publishResource` and `publishPageResource` is that
-// this should be used for publishes that do not incur a change to `Blob.content`
-// and hence, don't incur a log to the `Version` table
+/**
+ * NOTE: The distinction here between `publishResource` and `publishPageResource` is that
+ * this should be used for publishes that do not incur a change to `Blob.content`
+ * and hence, don't incur a log to the `Version` table
+ * @param by The user who is publishing the resource
+ * @param resource Resource to be published
+ * @param logger Logger instance
+ * @returns
+ */
 export const publishResource = async (
   by: User["id"],
   resource: Resource,
@@ -666,15 +693,12 @@ export const publishResource = async (
     await logPublishEvent(tx, {
       siteId: resource.siteId,
       by: byUser,
-      delta: {
-        before: null,
-        after: null,
-      },
+      delta: { before: null, after: null },
       eventType: AuditLogEvent.Publish,
       metadata: resource,
     })
 
-    await publishSite(logger, resource.siteId)
+    await publishSite(logger, { siteId: resource.siteId })
   })
 }
 
@@ -702,15 +726,12 @@ export const publishSiteConfig = async (
     await logPublishEvent(tx, {
       siteId: site.id,
       by: byUser,
-      delta: {
-        before: null,
-        after: null,
-      },
+      delta: { before: null, after: null },
       eventType: AuditLogEvent.Publish,
       metadata: { site, ...rest },
     })
 
-    await publishSite(logger, site.id)
+    await publishSite(logger, { siteId: site.id })
   })
 }
 
@@ -772,10 +793,14 @@ export const getBatchAncestryWithSelfQuery = async ({
 }
 
 export const getWithFullPermalink = async ({
-  resourceId,
+  resourceIds,
 }: {
-  resourceId: string
+  resourceIds: string[]
 }) => {
+  if (resourceIds.length === 0) {
+    return []
+  }
+
   const result = await db
     .withRecursive("resourcePath", (eb) =>
       eb
@@ -805,8 +830,8 @@ export const getWithFullPermalink = async ({
     )
     .selectFrom("resourcePath as rp")
     .select(["rp.id", "rp.title", "rp.fullPermalink"])
-    .where("rp.id", "=", resourceId)
-    .executeTakeFirst()
+    .where("rp.id", "in", resourceIds)
+    .execute()
 
   return result
 }
@@ -820,7 +845,7 @@ const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) => {
       "Resource.type",
       "Resource.parentId",
       // To handle cases where either the resource or the blob is updated
-      sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
+      sql<Date | null>`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
         "lastUpdatedAt",
       ),
     ])
@@ -833,14 +858,15 @@ const getResourcesWithFullPermalink = async ({
 }: {
   resources: Omit<SearchResultResource, "fullPermalink">[]
 }): Promise<SearchResultResource[]> => {
-  return await Promise.all(
-    resources.map(async (resource) => ({
-      ...resource,
-      fullPermalink: await getWithFullPermalink({
-        resourceId: resource.id,
-      }).then((r) => r?.fullPermalink ?? ""),
-    })),
-  )
+  const result = await getWithFullPermalink({
+    resourceIds: resources.map((resource) => resource.id),
+  })
+
+  return resources.map((resource) => ({
+    ...resource,
+    fullPermalink:
+      result.find((r) => r.id === resource.id)?.fullPermalink ?? "",
+  }))
 }
 
 export const getSearchResults = async ({
@@ -908,24 +934,20 @@ export const getSearchResults = async ({
   }
   orderedResources = orderedResources.orderBy("lastUpdatedAt", "desc")
 
-  const resourcesToReturn: SearchResultResource[] = (await orderedResources
-    .offset(offset)
-    .limit(limit)
-    .execute()) as SearchResultResource[]
-
-  const totalCount: number = (
-    await db
+  const [resourcesToReturn, totalCountResult] = await Promise.all([
+    orderedResources.offset(offset).limit(limit).execute(),
+    db
       .with("queriedResources", () => queriedResources)
       .selectFrom("queriedResources")
-      .select(db.fn.countAll().as("total_count"))
-      .executeTakeFirstOrThrow()
-  ).total_count as number // needed to cast as the type can be `bigint`
+      .select(db.fn.countAll<number>().as("total_count")) // needed to cast as the type can be `bigint`
+      .executeTakeFirstOrThrow(),
+  ])
 
   return {
-    totalCount,
     resources: await getResourcesWithFullPermalink({
       resources: resourcesToReturn,
     }),
+    totalCount: totalCountResult.total_count,
   }
 }
 
@@ -937,9 +959,7 @@ export const getSearchRecentlyEdited = async ({
   limit?: number
 }): Promise<SearchResultResource[]> => {
   return await getResourcesWithFullPermalink({
-    resources: (await getResourcesWithLastUpdatedAt({
-      siteId: Number(siteId),
-    })
+    resources: await getResourcesWithLastUpdatedAt({ siteId: Number(siteId) })
       .where("Resource.type", "in", [
         // only show page-ish resources
         ResourceType.Page,
@@ -948,7 +968,7 @@ export const getSearchRecentlyEdited = async ({
       ])
       .limit(limit)
       .orderBy("lastUpdatedAt", "desc")
-      .execute()) as SearchResultResource[],
+      .execute(),
   })
 }
 
@@ -977,14 +997,4 @@ export const getSearchWithResourceIds = async ({
       lastUpdatedAt: null,
     })),
   })
-}
-
-export const getFullResourceByVersion = (versionId: string) => {
-  return db
-    .selectFrom("Version")
-    .innerJoin("Blob", "Version.blobId", "Blob.id")
-    .innerJoin("Resource", "Version.resourceId", "Resource.id")
-    .where("Version.id", "=", versionId)
-    .select(defaultResourceWithBlobSelect)
-    .executeTakeFirst()
 }

@@ -8,3 +8,10 @@ export const BRIEF_TOAST_SETTINGS: Pick<
   isClosable: true,
   duration: THREE_SECONDS_IN_MS,
 }
+
+export const SETTINGS_TOAST_MESSAGES = {
+  success: {
+    title: "Changes published",
+    description: "They'll appear on your site in 5-10 minutes.",
+  },
+}

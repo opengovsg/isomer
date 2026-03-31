@@ -1,15 +1,18 @@
-import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 import { startOfDay, subDays } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
-
-import type { ResourcePermission, Site, User } from "../database"
-import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
 import { env } from "~/env.mjs"
 import {
   sendAccountDeactivationEmail,
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
+import {
+  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
+  PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
+} from "~prisma/constants"
+
+import type { ResourcePermission, Site, User } from "../database"
+import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
 import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
@@ -116,7 +119,7 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
 interface DeactivateUsersProps {
   userIds: User["id"][]
 }
-export const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
+const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
   // prevent empty array from being passed in
   if (userIds.length === 0) return []
 
@@ -188,7 +191,7 @@ const getSiteAndAdmins = async ({ userId, siteIds }: GetSiteAndAdminsProps) => {
           .where("ResourcePermission.userId", "!=", userId) // don't want to ask users to ask themselves for permissions
           .where("ResourcePermission.deletedAt", "is", null)
           .where("ResourcePermission.role", "=", RoleType.Admin) // should only give the admin emails to request reactivation permissions from
-          .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
+          .where("User.email", "not in", PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS) // we don't want to send emails to admins and migrators
           .select([
             "Site.id as siteId",
             db.fn.agg<string[]>("array_agg", ["User.email"]).as("adminEmails"),

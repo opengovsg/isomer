@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -19,7 +19,7 @@ export const Typography: Story = {
         <section className="flex flex-col gap-2">
           <h1 className="prose-display-xl">Typography</h1>
           <div className="flex flex-col justify-between break-words rounded-lg bg-blue-700 px-4 py-8 text-white md:flex-row md:items-center md:px-12">
-            <p className="prose-display-md">Inter</p>
+            <p className="prose-display-sm">Inter</p>
             <div className="prose-headline-lg-regular flex flex-col">
               <span>ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
               <span>abcdefghijklmnopqrstuvwxyz</span>
@@ -44,6 +44,10 @@ export const Typography: Story = {
             </p>
             <p className="prose-title-md-medium">Display SM</p>
             <p className="prose-display-sm">
+              The five boxing wizards jump quickly. 1234567890
+            </p>
+            <p className="prose-title-md-medium">Display XS</p>
+            <p className="prose-display-xs">
               The five boxing wizards jump quickly. 1234567890
             </p>
           </div>

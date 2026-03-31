@@ -1,15 +1,15 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { http, HttpResponse } from "msw"
+import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
-import { generateSiteConfig } from "~/stories/helpers"
-import Content from "./Content"
+import { ContentLayout } from "./Content"
 
-const meta: Meta<typeof Content> = {
+const meta: Meta<typeof ContentLayout> = {
   title: "Next/Layouts/Content",
-  component: Content,
+  component: ContentLayout,
   argTypes: {},
   tags: ["!autodocs"],
   parameters: {
@@ -21,7 +21,7 @@ const meta: Meta<typeof Content> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof Content>
+type Story = StoryObj<typeof ContentLayout>
 
 export const Default: Story = {
   args: {
@@ -1524,6 +1524,11 @@ export const Default: Story = {
         },
         url: "/",
         label: "I can't even help myself",
+      },
+      {
+        type: "video",
+        title: "This is the video",
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       },
     ],
   },
@@ -4792,6 +4797,44 @@ export const DynamicComponentListLoading: Story = {
           methods: "[dgs:methods]",
           otherInformation: "[dgs:other_information]",
         },
+      },
+    ],
+  },
+}
+
+export const AudioEmbedStory: Story = {
+  parameters: {
+    // Delay the Chromatic snapshot so iframes have time to load and don’t appear as white blocks.
+    chromatic: {
+      ...withChromaticModes(["mobile", "tablet", "desktop"]),
+      delay: 5000,
+    },
+  },
+  args: {
+    layout: "content",
+    site: generateSiteConfig({}),
+    page: {
+      permalink: "/content",
+      title: "Content page",
+      lastModified: "2024-05-02T14:12:57.160Z",
+      contentPageHeader: {
+        showThumbnail: false,
+        summary:
+          "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",
+        buttonLabel: "Submit a proposal",
+        buttonUrl: "/submit-proposal",
+      },
+    },
+    content: [
+      {
+        type: "audio",
+        title: "Spotify show embed",
+        url: "https://open.spotify.com/embed/show/66PYiIthr1KqQhJ82XH4DN",
+      },
+      {
+        type: "audio",
+        title: "Apple Podcast show embed",
+        url: "https://embed.podcasts.apple.com/us/podcast/biblioasia-podcast/id1688142751",
       },
     ],
   },

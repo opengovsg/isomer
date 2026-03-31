@@ -1,2 +1,1 @@
-export * from "./Image"
-export * from "./ImageClient"
+export { Image } from "./Image"

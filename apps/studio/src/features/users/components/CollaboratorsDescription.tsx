@@ -1,6 +1,5 @@
-import { useContext } from "react"
 import { Text } from "@chakra-ui/react"
-
+import { useContext } from "react"
 import { UserManagementContext } from "~/features/users"
 
 export const CollaboratorsDescription = () => {
@@ -9,7 +8,7 @@ export const CollaboratorsDescription = () => {
   if (ability.can("manage", "UserManagement")) {
     return (
       <Text textStyle="body-2">
-        View and manage people that collaborate with you on this site.
+        View and manage users that work with you on this site.
       </Text>
     )
   }
@@ -17,7 +16,7 @@ export const CollaboratorsDescription = () => {
   if (ability.can("read", "UserManagement")) {
     return (
       <Text textStyle="body-2">
-        View people that you collaborate with you on this site.
+        View users that work with you on this site.
       </Text>
     )
   }

@@ -1,13 +1,13 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
-import { NON_EMPTY_STRING_REGEX } from "~/utils"
-import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { Type } from "@sinclair/typebox"
+import { InfoCardsImageFitSchema } from "~/schemas/internal"
+import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
+
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
@@ -20,22 +20,17 @@ export const INFOCARD_VARIANT = {
   default: "default",
 } as const
 
-export type InfoCardVariants = keyof typeof INFOCARD_VARIANT
-
-const IMAGE_FIT = {
-  Cover: "cover",
-  Content: "contain",
-} as const
+type InfoCardVariants = keyof typeof INFOCARD_VARIANT
 
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
-    maxLength: 100,
   }),
   description: Type.Optional(
     Type.String({
       title: "Description",
-      maxLength: 150,
+      description:
+        "To make sure your description is readable, keep it under 150 characters.",
     }),
   ),
   url: Type.Optional(
@@ -52,24 +47,7 @@ const SingleCardWithImageSchema = Type.Composite([
   SingleCardNoImageSchema,
   Type.Object({
     imageUrl: ImageSrcSchema,
-    imageFit: Type.Optional(
-      Type.Union(
-        [
-          Type.Literal(IMAGE_FIT.Cover, {
-            title: "Default (recommended)",
-          }),
-          Type.Literal(IMAGE_FIT.Content, {
-            title: "Resize image to fit",
-          }),
-        ],
-        {
-          default: IMAGE_FIT.Cover,
-          title: "Image display",
-          description: `Select "Resize image to fit" only if the image has a white background.`,
-          format: ARRAY_RADIO_FORMAT,
-        },
-      ),
-    ),
+    imageFit: Type.Optional(InfoCardsImageFitSchema),
     imageAlt: AltTextSchema,
   }),
 ])
@@ -85,7 +63,6 @@ const InfoCardsBaseSchema = Type.Object({
   ),
   title: Type.String({
     title: "Title",
-    maxLength: 100,
     pattern: NON_EMPTY_STRING_REGEX,
     errorMessage: {
       pattern: "cannot be empty or contain only spaces",
@@ -94,7 +71,6 @@ const InfoCardsBaseSchema = Type.Object({
   subtitle: Type.Optional(
     Type.String({
       title: "Description",
-      maxLength: 200,
     }),
   ),
   maxColumns: Type.Optional(
@@ -186,20 +162,25 @@ const InfoCardsNoImageSchema = Type.Object(
 export const InfoCardsSchema = Type.Intersect(
   [
     InfoCardsBaseSchema,
-    Type.Union(
-      [
+    // Use Type.Unsafe to generate oneOf (not anyOf) for AJV discriminator support
+    // Type.Union generates anyOf which doesn't work with discriminator
+    Type.Unsafe<
+      | Static<typeof InfoCardsWithImageSchema>
+      | Static<typeof InfoCardsNoImageSchema>
+      | Static<typeof InfoCardsWithFullImageSchema>
+    >({
+      oneOf: [
         InfoCardsWithImageSchema,
         InfoCardsNoImageSchema,
         InfoCardsWithFullImageSchema,
       ],
-      {
-        format: ARRAY_RADIO_FORMAT,
-        title: "Infocards style",
-      },
-    ),
+      discriminator: { propertyName: "variant" },
+      format: ARRAY_RADIO_FORMAT,
+      title: "Style",
+    }),
   ],
   {
-    title: "Cards component",
+    title: "Cards",
   },
 )
 
@@ -218,6 +199,7 @@ export type SingleCardWithImageProps = Static<
     LinkComponent?: LinkComponentType
     shouldLazyLoad?: boolean
     variant?: InfoCardVariants
+    isFallback?: boolean
   }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   layout: IsomerPageLayoutType

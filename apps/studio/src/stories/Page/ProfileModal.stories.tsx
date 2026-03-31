@@ -1,13 +1,12 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
-
 import SitePage from "~/pages/sites/[siteId]"
-import { ResetUpdateProfileModalDecorator } from "~/stories/decorators/resetModalState"
+import { ResetUpdateProfileModalDecorator } from "~/stories/decorators"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),

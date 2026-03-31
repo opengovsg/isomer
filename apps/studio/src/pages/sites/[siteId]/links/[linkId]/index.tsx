@@ -1,9 +1,12 @@
+import type { CollectionLinkProps } from "~/schemas/collection"
 import { Grid, GridItem } from "@chakra-ui/react"
+import { useMemo, useState } from "react"
 import { z } from "zod"
-
-import { EditCollectionLinkPreview } from "~/features/editing-experience/components/EditLinkPreview"
-import { LinkEditorDrawer } from "~/features/editing-experience/components/LinkEditorDrawer"
+import { LinkEditorDrawer } from "~/features/editing-experience/components/Drawer/LinkEditorDrawer"
+import { EditCollectionLinkPreview } from "~/features/editing-experience/components/preview/EditLinkPreview"
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { LinkEditingLayout } from "~/templates/layouts/LinkEditingLayout"
+import { trpc } from "~/utils/trpc"
 
 export const editLinkSchema = z.object({
   linkId: z.coerce.number().min(1),
@@ -11,6 +14,30 @@ export const editLinkSchema = z.object({
 })
 
 export const EditLink = () => {
+  const { linkId, siteId } = useQueryParse(editLinkSchema)
+
+  const [{ content, title }] =
+    trpc.collection.readCollectionLink.useSuspenseQuery(
+      {
+        linkId,
+        siteId,
+      },
+      {
+        refetchOnWindowFocus: false,
+      },
+    )
+
+  const initialLinkState = useMemo(
+    () => ({
+      ref: "",
+      category: "",
+      ...content.page,
+    }),
+    [content.page],
+  )
+
+  const [link, setLink] = useState<CollectionLinkProps>(initialLinkState)
+
   return (
     <Grid
       h="full"
@@ -19,11 +46,15 @@ export const EditLink = () => {
       gap={0}
       maxH="calc(100vh - 57px)"
     >
-      <GridItem colSpan={1} overflow="auto" minW="30rem">
-        <LinkEditorDrawer />
+      <GridItem colSpan={1} overflow="auto" minW="28rem">
+        <LinkEditorDrawer
+          link={link}
+          setLink={setLink}
+          initialLinkState={initialLinkState}
+        />
       </GridItem>
       <GridItem colSpan={2}>
-        <EditCollectionLinkPreview />
+        <EditCollectionLinkPreview link={link} title={title} />
       </GridItem>
     </Grid>
   )

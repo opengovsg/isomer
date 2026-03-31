@@ -1,7 +1,8 @@
 import type { MapProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { isValidMapEmbedUrl, isValidOGPMapsEmbedUrl } from "~/utils/validation"
-import { BaseParagraph } from "../../internal"
+
+import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
 
 const createMapStyles = tv({
@@ -20,7 +21,12 @@ const createMapStyles = tv({
   },
 })
 
-export const Map = ({ title, url, site, LinkComponent }: MapProps) => {
+export const Map = ({
+  title,
+  url,
+  LinkComponent,
+  shouldLazyLoad = true,
+}: MapProps) => {
   if (!isValidMapEmbedUrl(url)) {
     return <></>
   }
@@ -37,7 +43,6 @@ export const Map = ({ title, url, site, LinkComponent }: MapProps) => {
         <BaseParagraph
           content={`You can also view the map below on <a href="${url}">Maps.gov.sg</a>.`}
           className={compoundStyles.paragraph()}
-          site={site}
           LinkComponent={LinkComponent}
         />
       )}
@@ -51,7 +56,7 @@ export const Map = ({ title, url, site, LinkComponent }: MapProps) => {
           src={url}
           title={title || "Map embedded in the page"}
           allowFullScreen
-          loading="lazy"
+          loading={shouldLazyLoad ? "lazy" : "eager"}
           referrerPolicy="no-referrer-when-downgrade"
         />
       </div>

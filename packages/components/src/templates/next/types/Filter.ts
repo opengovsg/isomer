@@ -14,12 +14,6 @@ interface AppliedFilterItem {
   id: FilterItem["id"]
 }
 
-export interface AppliedFiltersWithLabel {
-  appliedFilterTypeId: Filter["id"]
-  appliedFilterId: FilterItem["id"]
-  label: FilterItem["label"]
-}
-
 export interface AppliedFilter {
   id: Filter["id"]
   items: AppliedFilterItem[]
@@ -32,5 +26,3 @@ export interface FilterProps {
   handleFilterToggle: (filterId: string, itemId: string) => void
   handleClearFilter: () => void
 }
-
-export default FilterProps

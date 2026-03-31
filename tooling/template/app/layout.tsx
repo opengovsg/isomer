@@ -1,11 +1,29 @@
-import config from "@/data/config.json"
-import sitemap from "@/sitemap.json"
-
-import "@/styles/globals.css"
-
 import type { Metadata } from "next"
+import config from "@/data/config.json"
+import "@/styles/globals.css"
+import sitemap from "@/sitemap.json"
+import {
+  RenderApplicationHeadScripts,
+  RenderApplicationScripts,
+} from "@opengovsg/isomer-components"
+import { Inter } from "next/font/google"
 import Script from "next/script"
-import { RenderApplicationScripts } from "@opengovsg/isomer-components"
+
+const inter = Inter({
+  // while we support other languages, we should only preload the latin subset
+  // as it is the most common subset and the most likely to be used
+  // we accept that non-latin languages will not be self hosted and preloaded
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+})
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: config.site.siteName || "Isomer",
+  url: config.site.url || "https://www.isomer.gov.sg",
+}
 
 export const dynamic = "force-static"
 
@@ -18,7 +36,19 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html lang="en" data-theme={config.site.theme || "isomer-next"}>
+    <html
+      lang="en"
+      data-theme={config.site.theme || "isomer-next"}
+      className={inter.variable}
+    >
+      <head>
+        <RenderApplicationHeadScripts
+          site={{
+            ...config.site,
+            environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+          }}
+        />
+      </head>
       <body className="antialiased">
         {children}
         <RenderApplicationScripts
@@ -29,9 +59,17 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             // @ts-expect-error to fix when types are proper
             siteMap: sitemap,
             assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
-            isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
+            isomerMsClarityId:
+              process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
           }}
           ScriptComponent={Script}
+        />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          }}
         />
       </body>
     </html>

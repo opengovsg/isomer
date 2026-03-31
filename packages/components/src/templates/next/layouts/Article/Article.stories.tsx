@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react"
-
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { generateSiteConfig } from "~/stories/helpers"
 import { type ArticlePageSchemaType } from "~/types"
-import ArticleLayout from "./Article"
+
+import { ArticleLayout } from "./Article"
 
 const meta: Meta<ArticlePageSchemaType> = {
   title: "Next/Layouts/Article",
@@ -292,6 +292,39 @@ export const Default: Story = {
                 text: "One of the highlights of the festival is the Cultural Village, where visitors can immerse themselves in the sights, sounds, and flavors of Singapore's various ethnic communities. From traditional Malay dance performances to Chinese calligraphy demonstrations and Indian culinary workshops, attendees will have the opportunity to gain a deeper appreciation for the country's multicultural heritage.",
               },
             ],
+          },
+          {
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 2,
+            },
+            content: [
+              {
+                type: "text",
+                text: "This is a large heading that is meant to be smaller than the title",
+              },
+            ],
+          },
+          {
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 3,
+            },
+            content: [{ type: "text", text: "Testing headings" }],
+          },
+          {
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 4,
+            },
+            content: [{ type: "text", text: "Testing headings" }],
+          },
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Your business must have:" }],
           },
           {
             type: "paragraph",

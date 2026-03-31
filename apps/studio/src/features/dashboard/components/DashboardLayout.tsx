@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import NextLink from "next/link"
+import type { RouterOutput } from "~/utils/trpc"
 import {
   Box,
   BreadcrumbItem,
@@ -10,8 +10,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Breadcrumb } from "@opengovsg/design-system-react"
-
-import type { RouterOutput } from "~/utils/trpc"
+import NextLink from "next/link"
 import { getFolderHref } from "~/utils/resource"
 
 /**

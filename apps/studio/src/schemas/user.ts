@@ -1,6 +1,6 @@
 import { createEmailSchema } from "@opengovsg/starter-kitty-validators/email"
-import { RoleType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { offsetPaginationSchema } from "./pagination"
 

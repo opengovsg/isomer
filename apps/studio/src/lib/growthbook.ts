@@ -1,12 +1,19 @@
 import type { GrowthBook } from "@growthbook/growthbook-react"
 
-export const ENABLE_SCHEDULED_PUBLISHING_FEATURE_KEY =
-  "enable-scheduled-publishing"
+export const ENABLE_CODEBUILD_JOBS = "enable-codebuild-jobs"
+export const ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY =
+  "enable-emails-for-scheduled-publishes"
+export const ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY =
+  "enable-emails-for-regular-publishes"
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const ISOMER_ADMIN_FEATURE_KEY = "isomer_admins"
-export const USE_NEW_SETTINGS_PAGE_FEATURE_KEY = "use-new-settings-page"
+export const IS_NEW_SETTINGS_PAGE_ENABLED_FEATURE_KEY =
+  "is-new-settings-page-enabled"
+export const IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY =
+  "is-new-collection-editing-experience-enabled"
 export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
+
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
 interface GetIsSingpassEnabledProps {
@@ -25,7 +32,7 @@ export const getIsSingpassEnabled = ({
 // Growthbook has a constraint in the typings that requires the index signature
 // of the object to be defined as a string instead of being specific to the keys
 // that we want. Hence, we have to define it as a type instead of an interface.
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+// oxlint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type GrowthbookIsomerAdminFeature = {
   [ADMIN_ROLE.CORE]: string[]
   [ADMIN_ROLE.MIGRATORS]: string[]

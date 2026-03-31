@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { IndexPageSchemaType } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { IndexPageSchemaType } from "~/types"
-import { generateSiteConfig } from "~/stories/helpers"
-import IndexPage from "./IndexPage"
+import { IndexPageLayout } from "./IndexPage"
 
 const DEFAULT_INDEX_PAGE = {
   permalink: "/parent",
@@ -117,9 +117,9 @@ const generateIndexPage = (
   }
 }
 
-const meta: Meta<typeof IndexPage> = {
+const meta: Meta<typeof IndexPageLayout> = {
   title: "Next/Layouts/IndexPage",
-  component: IndexPage,
+  component: IndexPageLayout,
   argTypes: {},
   tags: ["!autodocs"],
   parameters: {
@@ -131,7 +131,7 @@ const meta: Meta<typeof IndexPage> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof IndexPage>
+type Story = StoryObj<typeof IndexPageLayout>
 
 export const Default: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE),
@@ -176,6 +176,38 @@ export const Custom: Story = {
       ],
     },
   ),
+}
+
+export const WithTableOfContents: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        type: "prose",
+        content: [
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [{ type: "text", text: "First Section" }],
+          },
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Content for the first section." }],
+          },
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [{ type: "text", text: "Second Section" }],
+          },
+          {
+            type: "paragraph",
+            content: [
+              { type: "text", text: "Content for the second section." },
+            ],
+          },
+        ],
+      },
+    ],
+  }),
 }
 
 export const Rows: Story = {
@@ -227,6 +259,20 @@ export const RowsWithImageAndDescription: Story = {
         childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "rows",
+        showSummary: true,
+        showThumbnail: true,
+      },
+    ],
+  }),
+}
+export const RowsWithContainAndImageAndDescription: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        childrenPagesOrdering: [],
+        type: "childrenpages",
+        variant: "rows",
+        imageFit: "contain",
         showSummary: true,
         showThumbnail: true,
       },
@@ -312,6 +358,21 @@ export const BoxesWithImageAndDescription: Story = {
         childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "boxes",
+        showSummary: true,
+        showThumbnail: true,
+      },
+    ],
+  }),
+}
+
+export const BoxesWithContainAndImageAndDescription: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        childrenPagesOrdering: [],
+        type: "childrenpages",
+        variant: "boxes",
+        imageFit: "contain",
         showSummary: true,
         showThumbnail: true,
       },

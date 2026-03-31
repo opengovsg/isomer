@@ -1,7 +1,8 @@
-import type { CollectionPageSchemaType } from "~/engine"
-import { getBreadcrumbFromSiteMap } from "~/utils"
+import type { CollectionPageSchemaType } from "~/types"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
+
 import { Skeleton } from "../Skeleton"
-import CollectionClient from "./CollectionClient"
+import { CollectionClient } from "./CollectionClient"
 import {
   getAvailableFilters,
   getCollectionItems,
@@ -9,7 +10,7 @@ import {
   shouldShowDate,
 } from "./utils"
 
-const CollectionLayout = ({
+export const CollectionLayout = ({
   site,
   page,
   layout,
@@ -41,7 +42,7 @@ const CollectionLayout = ({
         page={page}
         breadcrumb={breadcrumb}
         items={processedItems}
-        filters={getAvailableFilters(processedItems)}
+        filters={getAvailableFilters(processedItems, tagCategories)}
         shouldShowDate={shouldShowDate(processedItems)}
         siteAssetsBaseUrl={site.assetsBaseUrl}
         LinkComponent={LinkComponent}
@@ -49,5 +50,3 @@ const CollectionLayout = ({
     </Skeleton>
   )
 }
-
-export default CollectionLayout

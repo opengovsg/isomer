@@ -1,13 +1,12 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
@@ -133,7 +132,9 @@ export const AddTextBlock: Story = {
     await AddBlock.play?.(context)
 
     await userEvent.click(
-      canvas.getByRole("button", { name: /Add a block of text/i }),
+      canvas.getByRole("button", {
+        name: /Add text, links, lists, and tables./i,
+      }),
     )
   },
 }

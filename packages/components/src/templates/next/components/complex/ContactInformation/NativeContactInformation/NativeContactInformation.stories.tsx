@@ -1,12 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { ContactInformationProps } from "~/interfaces"
-import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 import { NativeContactInformation } from "./NativeContactInformation"
 
-const meta: Meta<ContactInformationProps> = {
+const meta: Meta<typeof NativeContactInformation> = {
   title: "Next/Components/ContactInformation/Native",
   component: NativeContactInformation,
   argTypes: {},
@@ -87,6 +86,11 @@ export const Default: Story = {
         values: [
           "This is a really really really long address that should be wrapped in the browser so please please please wrap it thank you",
         ],
+      },
+      {
+        method: "website",
+        label: "This is not a valid URL",
+        values: ["weibo:"],
       },
     ],
     otherInformation: {

@@ -1,9 +1,15 @@
 import type { ListItemProps } from "~/interfaces"
-import OrderedList from "../OrderedList"
-import Paragraph from "../Paragraph"
-import UnorderedList from "../UnorderedList"
 
-const ListItem = ({ content, level, LinkComponent, site }: ListItemProps) => {
+import { OrderedList } from "../OrderedList"
+import { Paragraph } from "../Paragraph"
+import { UnorderedList } from "../UnorderedList"
+
+export const ListItem = ({
+  content,
+  level,
+  LinkComponent,
+  site,
+}: ListItemProps) => {
   return (
     <li className="my-[15px] pl-2 sm:my-5 [&_>_p]:inline">
       {content.map((item, index) => {
@@ -44,5 +50,3 @@ const ListItem = ({ content, level, LinkComponent, site }: ListItemProps) => {
     </li>
   )
 }
-
-export default ListItem

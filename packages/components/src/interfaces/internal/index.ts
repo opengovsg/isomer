@@ -2,6 +2,7 @@ export {
   ArticlePageHeaderSchema,
   type ArticlePageHeaderProps,
 } from "./ArticlePageHeader"
+export type { BaseParagraphProps } from "./BaseParagraph"
 export type { BreadcrumbProps } from "./Breadcrumb"
 export type {
   AllCardProps,
@@ -21,16 +22,18 @@ export { LocalSearchSchema, type LocalSearchProps } from "./LocalSearchInputBox"
 export type { MastheadProps } from "./Masthead"
 export {
   NavbarSchema,
+  NavbarAddonsSchema,
+  NavbarItemsSchema,
   type NavbarProps,
   type NavbarClientProps,
   type NavbarSchemaType,
 } from "./Navbar"
 export {
   NotificationSchema,
+  NotificationSettingsSchema,
   type NotificationProps,
   type NotificationClientProps,
 } from "./Notification"
-export type { PillProps } from "./Pill"
 export type { SearchProps } from "./Search"
 export {
   SearchSGSearchSchema,
@@ -51,11 +54,10 @@ export {
   type VicaStylesheetProps,
 } from "./Vica"
 export type {
-  GoogleTagManagerHeaderScriptProps,
   GoogleTagManagerHeaderProps,
-  GoogleTagManagerBodyScriptProps,
   GoogleTagManagerBodyProps,
 } from "./GoogleTagManager"
+export type { MicrosoftClarityProps } from "./MicrosoftClarity"
 export type { AttrsDirProps } from "./AttrsDir"
 export {
   AskgovSchema,
@@ -63,3 +65,10 @@ export {
   type AskgovProps,
 } from "./Askgov"
 export type { ImageClientProps } from "./Image"
+export {
+  SearchableTableSchema,
+  type SearchableTableProps,
+  type SearchableTableClientProps,
+  type NativeSearchableTableProps,
+  type DGSSearchableTableProps,
+} from "./SearchableTable"

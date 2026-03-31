@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react"
+import type { AdminType } from "~/schemas/user"
 import { Text, VStack } from "@chakra-ui/react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
@@ -7,14 +7,14 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-
-import type { UserTableData } from "./types"
-import type { AdminType } from "~/schemas/user"
+import { useContext, useMemo } from "react"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { UserManagementContext } from "~/features/users"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
+
+import type { UserTableData } from "./types"
 import { LastLoginCell } from "./LastLoginCell"
 import { UserTableEmptyState } from "./UserTableEmptyState"
 import { UserTableMenu } from "./UserTableMenu"
@@ -33,7 +33,7 @@ const getColumns = ({
   const baseColumns = [
     columnsHelper.display({
       id: "user_info",
-      header: () => <TableHeader>Collaborator</TableHeader>,
+      header: () => <TableHeader>User</TableHeader>,
       cell: ({ row }) => (
         <VStack gap="0.25rem" align="start">
           <Text textStyle="subhead-2" textColor="base.content.strong">

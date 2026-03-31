@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const BlockquoteSchema = Type.Object(
@@ -9,13 +9,11 @@ export const BlockquoteSchema = Type.Object(
     type: Type.Literal("blockquote", { default: "blockquote" }),
     quote: Type.String({
       title: "Quote",
-      maxLength: 300,
       format: "textarea",
     }),
     source: Type.String({
       title: "Source",
       description: "Speaker, their designation, or when they said it",
-      maxLength: 150,
     }),
     // NOTE: We are making the image optional but the alt text required as a hack,
     // because the schema does not support having dependent properties. If no
@@ -27,7 +25,7 @@ export const BlockquoteSchema = Type.Object(
     imageAlt: Type.Optional(AltTextSchema),
   },
   {
-    title: "Blockquote component",
+    title: "Blockquote",
     description:
       "The Blockquote component is used to display a quote with an image.",
   },

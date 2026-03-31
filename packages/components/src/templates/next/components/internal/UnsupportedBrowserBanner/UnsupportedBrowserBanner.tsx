@@ -1,9 +1,8 @@
 "use client"
 
+import type { SupportedBrowserBannerProps } from "~/utils/isSupportedBrowser"
 import { useEffect, useState } from "react"
 import { BiInfoCircle } from "react-icons/bi"
-
-import type { SupportedBrowserBannerProps } from "~/utils/isSupportedBrowser"
 import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 
 // TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
@@ -59,5 +58,3 @@ export const UnsupportedBrowserBanner = ({
     </div>
   )
 }
-
-export default UnsupportedBrowserBanner

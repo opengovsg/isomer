@@ -1,13 +1,15 @@
 "use client"
 
-import type { ButtonProps as AriaButtonProps } from "react-aria-components"
+import type { AriaButtonProps } from "@react-aria/button"
 import type { VariantProps } from "tailwind-variants"
-import { useEffect, useMemo, useState } from "react"
-import { Button as AriaButton, composeRenderProps } from "react-aria-components"
+import { useButton } from "@react-aria/button"
+import { useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { BiDownload, BiLoaderAlt } from "react-icons/bi"
-
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+
 import { buttonIconStyles, buttonStyles } from "../Button/common"
 import { defaultDownloadStrategies, directDownloadStrategy } from "./strategies"
 
@@ -29,10 +31,10 @@ const downloadFile = (url: string) => {
   document.body.removeChild(a)
 }
 
-export interface DownloadButtonProps
-  extends AriaButtonProps,
-    VariantProps<typeof buttonStyles> {
+interface DownloadButtonProps
+  extends AriaButtonProps<"button">, VariantProps<typeof buttonStyles> {
   url: string // URL to download the file from
+  className?: string
 }
 
 /**
@@ -49,6 +51,7 @@ export const DownloadButton = ({
 }: DownloadButtonProps) => {
   const [text, setText] = useState<string>("Download")
   const [isDownloading, setIsDownloading] = useState<boolean>(false)
+  const ref = useRef<HTMLButtonElement>(null)
 
   const strategy = useMemo(
     () =>
@@ -90,24 +93,34 @@ export const DownloadButton = ({
     void updateDisplayText()
   }, [url, strategy])
 
+  const { buttonProps } = useButton(
+    {
+      ...props,
+      isDisabled: isDownloading,
+      onPress: () => {
+        void handleDownload()
+      },
+    },
+    ref,
+  )
+  const { focusProps, isFocusVisible } = useFocusRing()
+
+  const mergedProps = mergeProps(buttonProps, focusProps)
+
   return (
-    <AriaButton
-      {...props}
-      isDisabled={isDownloading}
-      className={composeRenderProps(className, (className, renderProps) =>
-        twMerge(
-          buttonStyles({
-            ...renderProps,
-            variant,
-            size,
-            className,
-            colorScheme,
-            isDisabled: isDownloading,
-          }),
-          className,
-        ),
+    <button
+      {...mergedProps}
+      ref={ref}
+      className={twMerge(
+        buttonStyles({
+          isFocusVisible,
+          isDisabled: isDownloading,
+          variant,
+          size,
+          colorScheme,
+        }),
+        className,
       )}
-      onPress={handleDownload}
     >
       {text}
       {isDownloading ? (
@@ -117,6 +130,6 @@ export const DownloadButton = ({
       ) : (
         <BiDownload className={downloadIconStyles({ size })} />
       )}
-    </AriaButton>
+    </button>
   )
 }

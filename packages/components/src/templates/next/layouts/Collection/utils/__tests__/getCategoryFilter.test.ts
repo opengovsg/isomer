@@ -1,6 +1,6 @@
+import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
 
-import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { getCategoryFilter } from "../getCategoryFilter"
 
 describe("getCategoryFilter", () => {

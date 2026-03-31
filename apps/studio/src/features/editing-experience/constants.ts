@@ -1,20 +1,15 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { IconType } from "react-icons"
 import {
-  COLLECTION_BLOCK_TYPE,
-  CONTACT_INFORMATION_TYPE,
-  DYNAMIC_COMPONENT_LIST_TYPE,
-  DYNAMIC_DATA_BANNER_TYPE,
-  IMAGE_GALLERY_TYPE,
-} from "@opengovsg/isomer-components"
-import {
   BiChevronDown,
   BiCloud,
   BiCrown,
+  BiData,
   BiHash,
   BiImage,
   BiImages,
   BiListUl,
+  BiLogoSpotify,
   BiMap,
   BiMessageDots,
   BiMoviePlay,
@@ -24,7 +19,7 @@ import {
   BiText,
 } from "react-icons/bi"
 import { FaYoutube } from "react-icons/fa"
-import { TbApi, TbDatabase } from "react-icons/tb"
+import { TbApi } from "react-icons/tb"
 
 import { ContentpicIcon } from "./components/icons/Contentpic"
 import { FormSGIcon } from "./components/icons/FormSG"
@@ -50,13 +45,14 @@ export const TYPE_TO_ICON: Record<
   hero: BiCrown,
   iframe: FaYoutube,
   map: BiMap,
+  audio: BiLogoSpotify,
   video: BiMoviePlay,
   logocloud: BiCloud,
   blockquote: BiMessageDots,
-  [DYNAMIC_DATA_BANNER_TYPE]: TbApi,
-  [COLLECTION_BLOCK_TYPE]: TbDatabase,
-  [IMAGE_GALLERY_TYPE]: BiImages,
-  [CONTACT_INFORMATION_TYPE]: BiPhoneCall,
-  [DYNAMIC_COMPONENT_LIST_TYPE]: BiListUl,
+  dynamicdatabanner: TbApi,
+  collectionblock: BiData,
+  imagegallery: BiImages,
+  contactinformation: BiPhoneCall,
+  dynamiccomponentlist: BiListUl,
   childrenpages: BiListUl,
 }

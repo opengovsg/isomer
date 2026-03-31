@@ -1,19 +1,16 @@
 "use client"
 
-import { BiInfoCircle, BiX } from "react-icons/bi"
-import { useSessionStorage } from "usehooks-ts"
-
 import type { NotificationClientProps } from "~/interfaces"
+import { BiInfoCircle, BiX } from "react-icons/bi"
+import { useIsNotificationDismissed } from "~/hooks/useIsNotificationDismissed"
+
 import { IconButton } from "../IconButton"
 
-const NotificationClient = ({
+export const NotificationClient = ({
   title,
-  baseParagraph,
+  children,
 }: NotificationClientProps) => {
-  const [isDismissed, setIsDismissed] = useSessionStorage(
-    "notification-dismissed",
-    false,
-  )
+  const [isDismissed, setIsDismissed] = useIsNotificationDismissed()
 
   const onDismiss = () => {
     setIsDismissed(true)
@@ -26,7 +23,7 @@ const NotificationClient = ({
           <BiInfoCircle className="mt-0.5 h-6 w-6 shrink-0" />
           <div className="flex flex-1 flex-col gap-1">
             {!!title && <h2 className="prose-headline-lg-medium">{title}</h2>}
-            {baseParagraph}
+            <div className="[&_p]:!mb-0 [&_p]:!mt-0">{children}</div>
           </div>
           <div aria-hidden className="flex h-6 w-6 shrink-0" />
           <IconButton
@@ -40,5 +37,3 @@ const NotificationClient = ({
     )
   )
 }
-
-export default NotificationClient

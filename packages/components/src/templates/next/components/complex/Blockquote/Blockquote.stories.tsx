@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react"
-
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { BlockquoteProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { Blockquote } from "./Blockquote"
 
 const meta: Meta<BlockquoteProps> = {

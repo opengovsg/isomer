@@ -1,13 +1,13 @@
 import type { JSX } from "react"
-
 import type { ProseProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
-import BaseParagraph from "../../internal/BaseParagraph"
-import Divider from "../Divider"
-import Heading from "../Heading"
-import OrderedList from "../OrderedList"
-import Table from "../Table"
-import UnorderedList from "../UnorderedList"
+
+import { BaseParagraph } from "../../internal/BaseParagraph"
+import { Divider } from "../Divider"
+import { Heading } from "../Heading"
+import { OrderedList } from "../OrderedList"
+import { Table } from "../Table"
+import { UnorderedList } from "../UnorderedList"
 
 const ProseComponent = ({
   component,
@@ -39,7 +39,6 @@ const ProseComponent = ({
           })}
           className="prose-body-base text-base-content"
           attrs={component.attrs}
-          site={site}
           LinkComponent={LinkComponent}
         />
       )
@@ -56,7 +55,7 @@ const ProseComponent = ({
   }
 }
 
-const Prose = ({
+export const Prose = ({
   content,
   LinkComponent,
   site,
@@ -80,5 +79,3 @@ const Prose = ({
     </>
   )
 }
-
-export default Prose

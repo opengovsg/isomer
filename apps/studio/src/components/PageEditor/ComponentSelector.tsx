@@ -1,6 +1,4 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useMemo } from "react"
-import Image from "next/image"
 import {
   chakra,
   Flex,
@@ -13,18 +11,22 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import Image from "next/image"
+import { useMemo } from "react"
 import { type IconType } from "react-icons"
-
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { type DrawerState } from "~/types/editorDrawer"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import {
   ARTICLE_ALLOWED_BLOCKS,
   BLOCK_TO_META,
   CONTENT_ALLOWED_BLOCKS,
+  DATABASE_ALLOWED_BLOCKS,
   DEFAULT_BLOCKS,
   HOMEPAGE_ALLOWED_BLOCKS,
+  INDEX_ALLOWED_BLOCKS,
 } from "./constants"
 import { type SectionType } from "./types"
 
@@ -172,14 +174,17 @@ function ComponentSelector() {
           return CONTENT_ALLOWED_BLOCKS
         } else if (savedPageState.layout === "article") {
           return ARTICLE_ALLOWED_BLOCKS
+        } else if (savedPageState.layout === "database") {
+          return DATABASE_ALLOWED_BLOCKS
         }
         throw new Error(`Unsupported page layout: ${savedPageState.layout}`)
       case ResourceType.CollectionPage:
         return ARTICLE_ALLOWED_BLOCKS
       case ResourceType.Collection:
       case ResourceType.CollectionLink:
-      case ResourceType.IndexPage:
         return []
+      case ResourceType.IndexPage:
+        return INDEX_ALLOWED_BLOCKS
       case ResourceType.Folder:
       case ResourceType.FolderMeta:
       case ResourceType.CollectionMeta:

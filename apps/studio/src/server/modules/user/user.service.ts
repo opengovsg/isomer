@@ -1,13 +1,13 @@
-import cuid2 from "@paralleldrive/cuid2"
-import { TRPCError } from "@trpc/server"
-import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
-import isEmail from "validator/lib/isEmail"
-
-import type { DB, Transaction } from "../database"
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
+import cuid2 from "@paralleldrive/cuid2"
+import { TRPCError } from "@trpc/server"
+import isEmail from "validator/lib/isEmail"
 import { isGovEmail } from "~/utils/email"
+import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+
+import type { DB, Transaction } from "../database"
 import { logPermissionEvent, logUserEvent } from "../audit/audit.service"
 import { db, RoleType } from "../database"
 import { isEmailWhitelisted } from "../whitelist/whitelist.service"
@@ -140,6 +140,7 @@ export const createUserWithPermission = async ({
       eventType: AuditLogEvent.PermissionCreate,
       by: byUser,
       delta: { before: null, after: resourcePermission },
+      siteId,
     })
 
     return resourcePermission
@@ -260,6 +261,7 @@ export const deleteUserPermission = async ({
         eventType: AuditLogEvent.PermissionDelete,
         by: byUser,
         delta: { before, after: deletedUserPermission },
+        siteId,
       })
     }
   })
@@ -298,4 +300,12 @@ export const updateUserDetails = async ({
 
     return updatedUser
   })
+}
+
+export const getUserById = async (userId: string) => {
+  return await db
+    .selectFrom("User")
+    .selectAll()
+    .where("id", "=", userId)
+    .executeTakeFirstOrThrow()
 }

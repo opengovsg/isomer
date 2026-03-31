@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { AccordionProseSchema } from "../native/Prose"
 
 export const AccordionSchema = Type.Object(
@@ -9,11 +9,10 @@ export const AccordionSchema = Type.Object(
     type: Type.Literal("accordion", { default: "accordion" }),
     summary: Type.String({
       title: "Title",
-      maxLength: 300,
     }),
     details: AccordionProseSchema,
   },
-  { title: "Accordion component" },
+  { title: "Accordion" },
 )
 
 export type AccordionProps = Static<typeof AccordionSchema> & {

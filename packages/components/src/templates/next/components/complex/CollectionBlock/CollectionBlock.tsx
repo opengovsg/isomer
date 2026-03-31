@@ -1,21 +1,18 @@
-import { BiRightArrowAlt } from "react-icons/bi"
-
-import type { CollectionBlockProps } from "~/interfaces"
 import type {
   CollectionBlockNumberOfCards,
+  CollectionBlockProps,
   CollectionBlockSingleCardProps,
 } from "~/interfaces/complex/CollectionBlock"
+import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
-import {
-  getReferenceLinkHref,
-  getResourceIdFromReferenceLink,
-  isExternalUrl,
-} from "~/utils"
-import { getFormattedDate } from "~/utils/getFormattedDate"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferenceLink"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+
 import { ComponentContent } from "../../internal/customCssClass"
+import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
-import { ImageClient } from "../Image"
 import {
   getCollectionPages,
   getCollectionParent,
@@ -26,7 +23,7 @@ const createInfoCardsStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col gap-8 py-12 first:pt-0 md:gap-12 md:py-16`,
     headingContainer: "flex flex-col gap-2.5 lg:max-w-3xl",
-    headingTitle: "prose-display-md break-words text-base-content-strong",
+    headingTitle: "prose-display-sm break-words text-base-content-strong",
     headingSubtitle: "prose-headline-lg-regular text-base-content",
     grid: "grid grid-cols-1 items-start gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
     cardContainer: "group flex flex-col gap-5 outline-0",
@@ -82,13 +79,13 @@ const SingleCard = ({
   image,
   category,
   referenceLinkHref,
-  date,
   displayThumbnail,
   displayCategory,
   site,
   LinkComponent,
   shouldLazyLoad,
   numberOfCards,
+  formattedDate,
 }: CollectionBlockSingleCardProps): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
@@ -102,11 +99,7 @@ const SingleCard = ({
     return (
       <div className={compoundStyles.cardImageContainer({ numberOfCards })}>
         <ImageClient
-          src={
-            isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
-              ? imageSrc
-              : `${site.assetsBaseUrl}${imageSrc}`
-          }
+          src={imageSrc}
           alt={imageAlt}
           width="100%"
           className={compoundStyles.cardImage({
@@ -128,10 +121,8 @@ const SingleCard = ({
     >
       {displayThumbnail && renderImage()}
       <div className={compoundStyles.cardTextContainer()}>
-        {date && (
-          <p className={compoundStyles.cardDate()}>
-            {getFormattedDate(date.toISOString())}
-          </p>
+        {formattedDate && (
+          <p className={compoundStyles.cardDate()}>{formattedDate}</p>
         )}
 
         <h3 className={compoundStyles.cardTitle()}>
@@ -152,14 +143,19 @@ const SingleCard = ({
   )
 }
 
-const EmptyCollectionBlockSkeleton = () => {
+interface CollectionBlockSkeletonProps {
+  title: string
+  description: string
+}
+const CollectionBlockSkeleton = ({
+  title,
+  description,
+}: CollectionBlockSkeletonProps) => {
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
-        <h2 className={compoundStyles.headingTitle()}>
-          No collection selected
-        </h2>
-        <p>Choose a collection to display its content.</p>
+        <h2 className={compoundStyles.headingTitle()}>{title}</h2>
+        <p>{description}</p>
       </div>
     </section>
   )
@@ -180,10 +176,19 @@ export const CollectionBlock = ({
 
   // This happens when no collection is selected yet on Studio when the user just added the block
   if (collectionId === "") {
-    return <EmptyCollectionBlockSkeleton />
+    return (
+      <CollectionBlockSkeleton
+        title="No collection selected"
+        description="Choose a collection to display its content."
+      />
+    )
   }
 
   const collectionParent = getCollectionParent({ site, collectionId })
+
+  if (!collectionParent) {
+    return <></>
+  }
 
   const collectionPages = getCollectionPages({
     site,
@@ -225,7 +230,7 @@ export const CollectionBlock = ({
         <LinkButton
           href={getReferenceLinkHref(
             collectionReferenceLink,
-            site.siteMap,
+            site.siteMapArray,
             site.assetsBaseUrl,
           )}
           size="base"

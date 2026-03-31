@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
@@ -6,14 +5,15 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-
-import type { CollectionTableData } from "./types"
+import { useMemo } from "react"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import type { CollectionTableData } from "./types"
 import { TitleCell } from "../ResourceTable/TitleCell"
 import { CollectionTableMenu } from "./CollectionTableMenu"
 
@@ -25,6 +25,7 @@ const getColumns = ({ siteId }: CollectionTableProps) => [
     header: () => <TableHeader>Title</TableHeader>,
     cell: ({ row }) => (
       <TitleCell
+        scheduledAt={row.original.scheduledAt}
         siteId={siteId}
         id={row.original.id}
         title={row.original.title}

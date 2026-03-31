@@ -1,17 +1,17 @@
 import type { ColumnType, GeneratedAlways } from "kysely"
-
-import type {
-  AuditLogEvent,
-  ResourceState,
-  ResourceType,
-  RoleType,
-} from "./generatedEnums"
-
 export type Generated<T> =
   T extends ColumnType<infer S, infer I, infer U>
     ? ColumnType<S, I | undefined, U>
     : ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
+
+import type {
+  ResourceState,
+  ResourceType,
+  RoleType,
+  AuditLogEvent,
+  BuildStatusType,
+} from "./generatedEnums"
 
 export interface AuditLog {
   id: GeneratedAlways<string>
@@ -35,6 +35,20 @@ export interface Blob {
    * [BlobJsonContent]
    */
   content: PrismaJson.BlobJsonContent
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
+export interface CodeBuildJobs {
+  id: GeneratedAlways<string>
+  buildId: string
+  siteId: number
+  userId: string
+  status: Generated<BuildStatusType>
+  resourceId: string | null
+  startedAt: Generated<Timestamp>
+  emailSent: Generated<boolean>
+  isScheduled: Generated<boolean>
+  supersededByBuildId: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
@@ -76,6 +90,7 @@ export interface Resource {
   state: Generated<ResourceState | null>
   type: ResourceType
   scheduledAt: Timestamp | null
+  scheduledBy: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
@@ -142,6 +157,7 @@ export interface Whitelist {
 export interface DB {
   AuditLog: AuditLog
   Blob: Blob
+  CodeBuildJobs: CodeBuildJobs
   Footer: Footer
   Navbar: Navbar
   RateLimiterFlexible: RateLimiterFlexible

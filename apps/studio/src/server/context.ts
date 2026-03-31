@@ -3,9 +3,9 @@ import type { CreateNextContextOptions } from "@trpc/server/adapters/next"
 import { GrowthBook } from "@growthbook/growthbook"
 import { type User } from "@prisma/client"
 import { getIronSession } from "iron-session"
-
 import { env } from "~/env.mjs"
 import { type Session, type SessionData } from "~/lib/types/session"
+
 import { generateSessionOptions } from "./modules/auth/session"
 import { db } from "./modules/database"
 import { type defaultUserSelect } from "./modules/me/me.select"
@@ -43,6 +43,15 @@ export const createContext = async (opts: CreateNextContextOptions) => {
     session,
   })
 
+  return {
+    ...innerContext,
+    req: opts.req,
+    res: opts.res,
+    gb: await createGrowthBookContext(),
+  }
+}
+
+export const createGrowthBookContext = async () => {
   const growthbookContext = new GrowthBook({
     apiHost: "https://cdn.growthbook.io",
     clientKey: env.GROWTHBOOK_CLIENT_KEY,
@@ -50,13 +59,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
     disableCache: true,
   })
   await growthbookContext.init({ timeout: 2000 })
-
-  return {
-    ...innerContext,
-    req: opts.req,
-    res: opts.res,
-    gb: growthbookContext,
-  }
+  return growthbookContext
 }
 
 export type Context = trpc.inferAsyncReturnType<typeof createContext>

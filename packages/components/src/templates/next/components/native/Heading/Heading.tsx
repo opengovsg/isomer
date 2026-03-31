@@ -1,7 +1,7 @@
 import type { HeadingProps } from "~/interfaces"
-import { getTextAsHtml } from "~/utils"
+import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
-const Heading = ({
+export const Heading = ({
   attrs: { id, level, dir },
   content,
   site,
@@ -10,7 +10,7 @@ const Heading = ({
     return (
       <h2
         id={id}
-        className="prose-display-md text-base-content-strong [&:not(:first-child)]:mt-14"
+        className="prose-display-sm text-base-content-strong [&:not(:first-child)]:mt-14"
         dir={dir ?? undefined}
       >
         {getTextAsHtml({
@@ -25,7 +25,7 @@ const Heading = ({
     return (
       <h3
         id={id}
-        className="prose-display-sm text-base-content-strong [&:not(:first-child)]:mt-9"
+        className="prose-display-xs text-base-content-strong [&:not(:first-child)]:mt-9"
         dir={dir ?? undefined}
       >
         {getTextAsHtml({
@@ -80,5 +80,3 @@ const Heading = ({
     </h6>
   )
 }
-
-export default Heading

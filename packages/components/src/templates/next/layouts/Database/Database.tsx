@@ -1,12 +1,12 @@
-import type { DatabasePageSchemaType } from "~/engine"
+import type { DatabasePageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
-import {
-  getBreadcrumbFromSiteMap,
-  getTableOfContents,
-  getTransformedPageContent,
-} from "~/utils"
-import { SearchableTable } from "../../components/complex"
-import { ContentPageHeader, TableOfContents } from "../../components/internal"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
+import { getTableOfContents } from "~/utils/getTableOfContents"
+import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
+
+import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
+import { SearchableTable } from "../../components/internal/SearchableTable"
+import { TableOfContents } from "../../components/internal/TableOfContents"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
@@ -21,7 +21,7 @@ const createDatabaseLayoutStyles = tv({
 
 const compoundStyles = createDatabaseLayoutStyles()
 
-const DatabaseLayout = ({
+export const DatabaseLayout = ({
   site,
   page,
   layout,
@@ -73,11 +73,9 @@ const DatabaseLayout = ({
         )}
 
         <div className={compoundStyles.table()}>
-          <SearchableTable {...page.database} site={site} />
+          <SearchableTable {...page.database} />
         </div>
       </div>
     </Skeleton>
   )
 }
-
-export default DatabaseLayout

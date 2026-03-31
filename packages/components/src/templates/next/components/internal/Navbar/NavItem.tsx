@@ -1,17 +1,17 @@
 "use client"
 
+import type { NavbarProps } from "~/interfaces/internal/Navbar"
+import { FocusScope } from "@react-aria/focus"
 import { forwardRef } from "react"
-import { FocusScope } from "react-aria"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useScrollLock } from "usehooks-ts"
-
-import type { NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 import {
   focusVisibleHighlight,
   groupFocusVisibleHighlight,
-  isExternalUrl,
-} from "~/utils"
+} from "~/utils/tailwind"
+
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 
@@ -73,7 +73,12 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
 
     return (
       <li>
-        <button ref={ref} className={item({ isOpen })} onClick={onClick}>
+        <button
+          ref={ref}
+          className={item({ isOpen })}
+          onClick={onClick}
+          aria-expanded={isOpen}
+        >
           <span className={groupFocusVisibleHighlight()}>{name}</span>
           <BiChevronDown className={chevron({ isOpen })} />
         </button>
@@ -122,6 +127,7 @@ const Megamenu = ({
         isWithFocusVisibleHighlight
         href={url}
         className="group inline-flex w-fit items-center gap-1 hover:text-brand-interaction-hover hover:no-underline"
+        onClick={onCloseMegamenu}
       >
         {name}
         {!isExternal && (
@@ -142,7 +148,7 @@ const Megamenu = ({
           <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
             <div className="flex w-full flex-row items-start">
               <div className="flex flex-col gap-1">
-                <h2 className="prose-display-sm text-base-content">
+                <h2 className="prose-display-xs text-base-content">
                   {renderTitleContent()}
                 </h2>
                 {description && (
@@ -175,6 +181,7 @@ const Megamenu = ({
                         isWithFocusVisibleHighlight
                         href={subItem.url}
                         className="group prose-label-md-medium w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
+                        onClick={onCloseMegamenu}
                       >
                         {subItem.name}
                         {!isExternal && (

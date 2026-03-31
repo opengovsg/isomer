@@ -1,13 +1,15 @@
 import type { HeroProps } from "~/interfaces/complex/Hero"
 import { HERO_STYLE } from "~/interfaces/complex/Hero"
+
 import { HeroBlock } from "./HeroBlock"
 import { HeroFloating } from "./HeroFloating"
 import { HeroGradient } from "./HeroGradient"
-import { HeroLargeImage } from "./HeroLargeImage/HeroLargeImage"
+import { HeroLargeImage } from "./HeroLargeImage"
 import { HeroSearchbar } from "./HeroSearchbar"
 
-const Hero = (props: HeroProps) => {
-  switch (props.variant) {
+export const Hero = (props: HeroProps) => {
+  const { variant } = props
+  switch (variant) {
     case HERO_STYLE.gradient:
       return <HeroGradient {...props} />
     case HERO_STYLE.block:
@@ -19,9 +21,7 @@ const Hero = (props: HeroProps) => {
     case HERO_STYLE.searchbar:
       return <HeroSearchbar {...props} />
     default:
-      const _exhaustiveCheck: never = props.variant
-      return _exhaustiveCheck
+      const _exhaustiveCheck: never = variant
+      return null
   }
 }
-
-export default Hero

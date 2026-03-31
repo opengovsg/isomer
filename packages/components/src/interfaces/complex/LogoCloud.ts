@@ -1,32 +1,29 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps } from "~/types"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
-export const LOGO_CLOUD_TYPE = "logocloud"
 export const LogoCloudSchema = Type.Object(
   {
-    type: Type.Literal(LOGO_CLOUD_TYPE, { default: LOGO_CLOUD_TYPE }),
+    type: Type.Literal("logocloud", { default: "logocloud" }),
+    title: Type.String({
+      title: "Title",
+    }),
     images: Type.Array(
       Type.Object({
         src: ImageSrcSchema,
         alt: AltTextSchema,
       }),
       {
-        title: "Images for logo cloud",
+        title: "Logos",
         minItems: 1,
         maxItems: 10,
       },
     ),
-    title: Type.String({
-      title: "Title for the logo cloud",
-      description: "Upload the images for the logo cloud here or provide a url",
-      maxLength: 120,
-    }),
   },
   {
-    title: "Logocloud component",
+    title: "Logo cloud",
   },
 )
 

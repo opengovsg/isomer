@@ -1,9 +1,10 @@
 import {
   fetchDgsFileDownloadUrl,
   fetchDgsMetadata,
-  fetchFileMetadata,
   getDgsIdFromDgsLink,
-} from "~/utils"
+} from "~/utils/dgs"
+import { fetchFileMetadata } from "~/utils/fetchFileMetadata"
+import { formatBytes } from "~/utils/formatBytes"
 
 interface DownloadStrategy {
   /** Determines if this strategy can handle the given URL */
@@ -74,15 +75,16 @@ export const defaultDownloadStrategies: DownloadStrategy[] = [
 
 interface RenderDownloadTextProps {
   format: string | undefined
-  size: string | undefined
+  size: number | undefined
 }
 const renderDownloadText = ({ format, size }: RenderDownloadTextProps) => {
-  if (format && size) {
-    return `Download ${format} (${size})`
+  const formattedSize = size !== undefined ? formatBytes(size) : null
+  if (format && formattedSize) {
+    return `Download ${format} (${formattedSize})`
   } else if (format) {
     return `Download ${format}`
-  } else if (size) {
-    return `Download (${size})`
+  } else if (formattedSize) {
+    return `Download (${formattedSize})`
   } else {
     return "Download"
   }

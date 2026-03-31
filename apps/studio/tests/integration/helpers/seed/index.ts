@@ -1,12 +1,14 @@
+import type { CodeBuildJobs } from "@prisma/client"
+import { nanoid } from "nanoid"
+import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
+import { MOCK_STORY_DATE } from "tests/msw/constants"
+import { buildIdFromArn } from "~/schemas/webhook"
 import {
   ResourceState,
   ResourceType,
   RoleType,
 } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
-import { nanoid } from "nanoid"
-import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
-import { MOCK_STORY_DATE } from "tests/msw/constants"
 
 interface SetupPermissionsProps {
   userId?: string
@@ -265,6 +267,7 @@ export const setupPageResource = async ({
   parentId,
   title,
   scheduledAt = null,
+  scheduledBy = null,
 }: {
   siteId?: number
   blobId?: string
@@ -275,6 +278,7 @@ export const setupPageResource = async ({
   parentId?: string | null
   title?: string
   scheduledAt?: Date | null
+  scheduledBy?: string | null
 }) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
@@ -288,6 +292,7 @@ export const setupPageResource = async ({
       parentId,
       publishedVersionId: null,
       scheduledAt,
+      scheduledBy,
       draftBlobId: blob.id,
       type: resourceType,
       state,
@@ -631,4 +636,77 @@ export const setupFullSite = async () => {
     collectionLink,
     collectionIndex,
   }
+}
+
+type SetupCodeBuildJobParams = Pick<CodeBuildJobs, "userId" | "startedAt"> & {
+  arn: string
+} & Partial<Pick<CodeBuildJobs, "status" | "emailSent" | "isScheduled">> & {
+    omitResourceId?: boolean
+    siteId?: number
+    permalink?: string
+  }
+
+export const setupCodeBuildJob = async ({
+  userId,
+  startedAt,
+  isScheduled,
+  arn,
+  siteId,
+  permalink,
+  status = "IN_PROGRESS",
+  emailSent = false,
+  omitResourceId = false,
+}: SetupCodeBuildJobParams) => {
+  const buildId = buildIdFromArn(arn)
+  if (!buildId) {
+    throw new Error(`Invalid buildId format: ${arn}`)
+  }
+  const { page, site } = await setupPageResource({
+    resourceType: ResourceType.Page,
+    siteId,
+    permalink,
+  })
+  const codebuildJob = await db
+    .insertInto("CodeBuildJobs")
+    .values({
+      siteId: site.id,
+      resourceId: omitResourceId ? null : page.id,
+      userId,
+      buildId,
+      startedAt,
+      status,
+      emailSent,
+      isScheduled,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  return { site, page, codebuildJob }
+}
+
+export const createSupersededBuildRows = async ({
+  supersedingBuild,
+  resourceId,
+  userId,
+  numberOfSupersededBuilds = 1,
+}: {
+  supersedingBuild: Omit<CodeBuildJobs, "resourceId" | "userId" | "id">
+  resourceId: string // the resourceId does NOT need to be the same as the superseding build
+  userId: string // the userId does NOT need to be the same as the superseding build
+  numberOfSupersededBuilds?: number
+}) => {
+  await db
+    .insertInto("CodeBuildJobs")
+    .values(
+      Array.from({ length: numberOfSupersededBuilds }).map((_, i) => ({
+        buildId: "test-build-id-superseded-" + i,
+        siteId: supersedingBuild.siteId,
+        startedAt: supersedingBuild.startedAt,
+        isScheduled: supersedingBuild.isScheduled,
+        supersededByBuildId: supersedingBuild.buildId,
+        resourceId,
+        userId,
+      })),
+    )
+    .execute()
 }

@@ -1,6 +1,6 @@
+import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { describe, expect, it } from "vitest"
 
-import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { getCollectionPages } from "../getCollectionPages"
 
 describe("getCollectionPages", () => {
@@ -15,6 +15,17 @@ describe("getCollectionPages", () => {
       lastModified: "2021-01-01",
       children: [],
     },
+    siteMapArray: [
+      {
+        id: "root",
+        title: "Homepage",
+        permalink: "/",
+        layout: "homepage",
+        summary: "Homepage summary",
+        lastModified: "2021-01-01",
+        children: [],
+      },
+    ],
     lastUpdated: "2021-01-01",
     // IsomerSiteWideComponentsProps
     navbar: { items: [] }, // Provide minimal valid value
@@ -52,7 +63,7 @@ describe("getCollectionPages", () => {
     date,
   })
 
-  it("should throw an error when the collection exists but has no items", () => {
+  it("should return an empty array when the collection exists but has no items", () => {
     // Arrange
     const collectionParent: IsomerSitemap = {
       id: collectionId,
@@ -72,7 +83,8 @@ describe("getCollectionPages", () => {
     }
 
     // Act + Assert
-    expect(() => getCollectionPages({ site, collectionParent })).toThrow()
+    const actual = getCollectionPages({ site, collectionParent })
+    expect(actual).toStrictEqual([])
   })
 
   it("should return 3 items", () => {

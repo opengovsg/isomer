@@ -15,8 +15,7 @@ export interface InvitationEmailTemplateData extends BaseEmailTemplateData {
 
 export type LoginAlertEmailTemplateData = BaseEmailTemplateData
 
-export interface PublishAlertContentPublisherEmailTemplateData
-  extends BaseEmailTemplateData {
+export interface PublishAlertContentPublisherEmailTemplateData extends BaseEmailTemplateData {
   siteName: string
   resource: Resource
 }
@@ -26,25 +25,34 @@ export interface SchedulePageTemplateData extends BaseEmailTemplateData {
   scheduledAt: Date
 }
 
+export interface SuccessfulPublishTemplateData extends BaseEmailTemplateData {
+  resource: Resource // the resource that was published
+  isScheduled: boolean // whether the publish was scheduled or manual
+}
+
+export interface FailedPublishTemplateData extends BaseEmailTemplateData {
+  isScheduled: boolean // whether the publish was scheduled or manual
+  resource: Resource // the resource that failed to be published
+}
+
 export interface CancelSchedulePageTemplateData extends BaseEmailTemplateData {
   resource: Resource
 }
 
-export interface PublishAlertSiteAdminEmailTemplateData
-  extends BaseEmailTemplateData {
+export interface PublishAlertSiteAdminEmailTemplateData extends BaseEmailTemplateData {
   publisherEmail: string
   siteName: string
   resource: Resource
 }
 
 export interface AccountDeactivationWarningEmailTemplateData
-  extends BaseEmailTemplateData,
+  extends
+    BaseEmailTemplateData,
     Pick<BulkSendAccountDeactivationWarningEmailsProps, "inHowManyDays"> {
   siteNames: string[]
 }
 
-export interface AccountDeactivationEmailTemplateData
-  extends BaseEmailTemplateData {
+export interface AccountDeactivationEmailTemplateData extends BaseEmailTemplateData {
   sitesAndAdmins: {
     siteName: string
     adminEmails: string[]

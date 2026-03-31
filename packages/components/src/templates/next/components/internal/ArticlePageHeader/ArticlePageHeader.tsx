@@ -1,33 +1,15 @@
 import type { ArticlePageHeaderProps } from "~/interfaces"
-import { getFormattedDate } from "~/utils"
-import BaseParagraph from "../BaseParagraph"
-import Breadcrumb from "../Breadcrumb"
+import { getFormattedDate } from "~/utils/getFormattedDate"
+
+import { Breadcrumb } from "../Breadcrumb"
 import { Tag } from "../Tag"
 
-const ArticleSummaryContent = ({
-  summary,
-  site,
-  LinkComponent,
-}: Pick<ArticlePageHeaderProps, "summary" | "site" | "LinkComponent">) => {
-  if (summary.trim().length === 0) {
-    return <></>
-  }
-  return (
-    <BaseParagraph
-      content={summary}
-      site={site}
-      LinkComponent={LinkComponent}
-    />
-  )
-}
-
-const ArticlePageHeader = ({
+export const ArticlePageHeader = ({
   breadcrumb,
   category,
   title,
   date,
   summary,
-  site,
   LinkComponent,
   tags = [],
 }: ArticlePageHeaderProps) => {
@@ -63,16 +45,12 @@ const ArticlePageHeader = ({
           </p>
         )}
 
-        <div className="prose-title-lg text-base-content-light">
-          <ArticleSummaryContent
-            summary={summary}
-            site={site}
-            LinkComponent={LinkComponent}
-          />
-        </div>
+        {summary && (
+          <p className="prose-title-lg whitespace-pre-wrap text-base-content-light">
+            {summary}
+          </p>
+        )}
       </div>
     </div>
   )
 }
-
-export default ArticlePageHeader

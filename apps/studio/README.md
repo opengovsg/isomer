@@ -13,7 +13,7 @@ Isomer Studio uses Starter Kit as the base template.
 - 🪳 [Neon](https://neon.tech/) or Postgres integration
 - 🌇 Image upload with [R2](https://developers.cloudflare.com/r2/)
 - ⚙️ VSCode extensions
-- 🎨 ESLint + Prettier
+- 🎨 Oxlint (type-aware) + Oxfmt
 - 💚 CI setup using GitHub Actions:
   - ✅ E2E testing with [Playwright](https://playwright.dev/)
   - ✅ Linting
@@ -63,7 +63,7 @@ cp .env.example .env.development.local
 ```
 
 Optionally set `POSTMAN_API_KEY` to send login OTP emails via [Postman](https://postman.gov.sg).
-If not set, OTP emails will be logged to the console instead.e
+If not set, OTP emails will be logged to the console instead.
 
 #### Retrieving client-side environment variables in code
 
@@ -104,6 +104,129 @@ npm run test-start # runs e2e tests on `next start` - build required before
 npm run test:unit  # runs normal Vitest unit tests
 npm run test:e2e   # runs e2e tests
 ```
+
+## Developer runbook (current behavior)
+
+This section documents the current behavior of Studio's frequently touched backend workflows.
+When changing these flows, update this section in the same PR.
+
+### Permissions model (site-wide today)
+
+Codepaths:
+
+- `src/server/modules/permissions/permissions.service.ts`
+- `src/server/modules/permissions/permissions.util.ts`
+
+Current permission checks are **site-wide** (`resourceId: null`) for most flows.
+If a user has multiple roles for the same site, abilities are combined (union of allowed actions).
+
+Role behavior:
+
+- `Editor`: full CRUD + `move` on non-root resources (`parentId != null`), `read` + `update` on root resources (`parentId == null`)
+- `Publisher`: `Editor` permissions + `publish`
+- `Admin`: all resource actions + full site CRUD
+
+User-management behavior:
+
+- Any existing role can `read` user permissions list
+- Only `Admin` can `manage` user permissions
+
+### Resource move workflow and constraints
+
+Codepath:
+
+- `src/server/modules/resource/resource.router.ts` (`resource.move`)
+
+The move flow validates both authorization and data invariants before updating parent IDs.
+
+Guardrails enforced server-side:
+
+- Destination must be root/folder/collection (and in the same site)
+- Cannot move to the same folder
+- Cannot move a resource into itself
+- Collection items (`CollectionPage`/`CollectionLink`) can only move into collections
+- Non-collection items cannot move into collections
+- Folders/collections/root pages cannot be moved into their own descendants
+
+After a successful move, Studio republishes via `publishResource(...)`.
+
+Common API errors to expect:
+
+- `"Please ensure that you are trying to move your resource into a valid destination"`
+- `"Collection items can only be moved to another collection"`
+- `"Folder items can only be moved to another folder"`
+- `"Cannot move a folder into one of its descendants"`
+
+### Recursive resource query limits
+
+Codepaths:
+
+- `src/schemas/resource.ts`
+- `src/components/ResourceSelector/useResourceQuery.tsx`
+
+To prevent expensive recursive lookups, batch resource queries are capped:
+
+- `MAX_BATCH_RESOURCE_IDS = 25`
+- Applied to `resource.getBatchAncestryWithSelf` and `resource.searchWithResourceIds`
+- Resource selector pagination also uses this limit
+
+If you change this value, update both schema validation and UI assumptions together.
+
+### Asset upload and delete workflow
+
+Codepaths:
+
+- `src/schemas/asset.ts`
+- `src/server/modules/asset/asset.router.ts`
+- `src/server/modules/asset/asset.service.ts`
+- `src/lib/s3.ts`
+- `src/hooks/useUploadAssetMutation.ts`
+
+Upload flow (`asset.getPresignedPutUrl` -> browser `PUT`):
+
+1. Validate asset permissions (site-level if no `resourceId`, otherwise scoped to resource/site)
+2. Validate `fileName`:
+   - Must start with `[a-zA-Z0-9-_]`
+   - Must include an allowlisted extension from upload constants
+3. Generate key format: `<siteId>/<uuid>/<sanitizedFileName>`
+4. Derive trusted `Content-Type`/`Content-Disposition` server-side from key
+5. Return signed URL where `content-type` and `content-disposition` are signed headers
+6. Client must upload using returned headers exactly
+
+Delete flow (`asset.deleteAssets`):
+
+- Validates delete permission first
+- Rejects any key not prefixed with `<siteId>/`
+- Performs soft-delete by setting S3 tag `ISOMER_STATUS=DELETED`
+
+### OTP email sign-in troubleshooting
+
+Codepaths:
+
+- `src/server/modules/auth/email/email.router.ts`
+- `src/lib/mail.ts`
+
+Flow summary:
+
+1. `emailSession.login` requires user to be allowlisted and not deleted
+2. OTP token is generated, hashed, and stored as verification token
+3. `sendMail(...)` is called
+4. `emailSession.verifyOtp` verifies token, upserts user, and creates session state
+
+Operational notes:
+
+- `sendMail` has an allowlist safety check before sending
+- If `POSTMAN_API_KEY` is unset, email payload is logged to console instead of being sent
+- OTP issuance and delivery failures are logged with structured context
+
+Quick failure guide:
+
+| Symptom                               | Likely cause                                 | Where to check                                  |
+| ------------------------------------- | -------------------------------------------- | ----------------------------------------------- |
+| `UNAUTHORIZED: Email address...`      | Email not in allowlist or user is deleted    | `email.router.ts` login checks                  |
+| `INTERNAL_SERVER_ERROR: Failed to...` | Postman API/network failure while sending    | `lib/mail.ts` logs                              |
+| `Please request for another OTP`      | Missing/expired verification token           | verification token table and OTP fingerprinting |
+| OTP not received locally              | `POSTMAN_API_KEY` missing (console fallback) | local server console output                     |
 
 ## Files of note
 

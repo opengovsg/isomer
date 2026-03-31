@@ -3,11 +3,10 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
+import type { IsomerExtendedJsonSchema } from "~/types/schema"
 import { Box } from "@chakra-ui/react"
 import { rankWith, uiTypeIs } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
-
-import type { IsomerExtendedJsonSchema } from "~/types/schema"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { isVerticalLayout } from "~/types/schema"
 
@@ -90,7 +89,7 @@ function getUiSchemaWithGroup(
   return newUiSchema
 }
 
-export function JsonFormsVerticalLayoutRenderer({
+function JsonFormsVerticalLayoutRenderer({
   uischema,
   schema,
   path,
@@ -102,7 +101,10 @@ export function JsonFormsVerticalLayoutRenderer({
   // type definitions.
   // Ref: https://github.com/eclipsesource/jsonforms/blob/c3cead71d08ff11837bdeb5fbea66e5313137218/packages/material-renderers/src/layouts/MaterialVerticalLayout.tsx#L57
   const elements = isVerticalLayout(uischema) ? uischema.elements : []
-  const newElements = getUiSchemaWithGroup(schema, elements)
+  const newElements = getUiSchemaWithGroup(
+    schema,
+    elements as UISchemaElementWithScope[],
+  )
 
   return (
     <Box w="100%" display="flex" flexDirection="column" gap="1.25rem" h="full">

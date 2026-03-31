@@ -1,11 +1,12 @@
 import type { ImageProps } from "~/interfaces"
 import type {
   ArticlePagePageProps,
+  FormattedDate,
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
 
-export interface FileDetails {
+interface FileDetails {
   type: string
   size: string
 }
@@ -24,10 +25,7 @@ interface BaseCardProps {
   site: IsomerSiteProps
 }
 
-// NOTE: exported for storybook compat
-export type Tag = NonNullable<BaseCardProps["tags"]>[number]
-
-export interface ArticleCardProps extends BaseCardProps {
+interface ArticleCardProps extends BaseCardProps {
   variant: "article"
 }
 
@@ -36,7 +34,7 @@ export interface FileCardProps extends BaseCardProps {
   fileDetails: FileDetails
 }
 
-export interface LinkCardProps extends BaseCardProps {
+interface LinkCardProps extends BaseCardProps {
   variant: "link"
 }
 
@@ -59,6 +57,7 @@ export type CollectionCardProps = Pick<
   referenceLinkHref: string | undefined
   imageSrc: string | undefined
   itemTitle: string
+  formattedDate?: FormattedDate
 }
 
 // NOTE: This is to ensure no additional props are being passed to this component

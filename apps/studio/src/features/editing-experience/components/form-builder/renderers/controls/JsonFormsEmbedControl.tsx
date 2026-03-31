@@ -33,14 +33,15 @@ import {
 } from "@opengovsg/isomer-components"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useZodForm } from "~/lib/form"
+
 import {
   EMBED_NAME_MAPPING,
   getEmbedNameFromUrl,
   getIframeSrc,
 } from "../../../utils"
+import { getCustomErrorMessage } from "./utils"
 
 const SUPPORTED_FORMS = Object.keys(FORMSG_EMBED_URL_REGEXES).map(
   (key) => EMBED_NAME_MAPPING[key as keyof typeof FORMSG_EMBED_URL_REGEXES],
@@ -167,7 +168,7 @@ function EmbedCodeModal({
   )
 }
 
-export function JsonFormsEmbedControl({
+function JsonFormsEmbedControl({
   data,
   label,
   handleChange,
@@ -237,7 +238,7 @@ export function JsonFormsEmbedControl({
           </HStack>
 
           <FormErrorMessage>
-            {label} {errors}
+            {label} {getCustomErrorMessage(errors)}
           </FormErrorMessage>
         </FormControl>
       </Box>

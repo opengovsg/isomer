@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { userEvent, within } from "storybook/test"
+import { folderHandlers } from "tests/msw/handlers/folder"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
@@ -23,6 +23,7 @@ const COMMON_HANDLERS = [
   resourceHandlers.getAncestryStack.default(),
   resourceHandlers.getBatchAncestryWithSelf.default(),
   resourceHandlers.getRolesFor.admin(),
+  folderHandlers.listChildPages.default(),
   // NOTE: Handlers that return custom data for this story
   sitesHandlers.getLocalisedSitemap.index(),
   resourceHandlers.getWithFullPermalink.index(),
@@ -59,6 +60,7 @@ type Story = StoryObj<typeof EditPage>
 export const Default: Story = {}
 
 export const EditFixedBlockState: Story = {
+  parameters: { disableMockDate: true },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
@@ -69,6 +71,7 @@ export const EditFixedBlockState: Story = {
 }
 
 export const SaveToast: Story = {
+  parameters: { disableMockDate: true },
   play: async ({ canvasElement, ...rest }) => {
     await EditFixedBlockState.play?.({ canvasElement, ...rest })
     const canvas = within(canvasElement)
@@ -125,14 +128,6 @@ export const CustomIndexPage: Story = {
         pageHandlers.readPageAndBlob.customIndex(),
         ...COMMON_HANDLERS,
       ],
-    },
-  },
-}
-
-export const CollectionIndexPage: Story = {
-  parameters: {
-    msw: {
-      handlers: [pageHandlers.readPageAndBlob.collection(), ...COMMON_HANDLERS],
     },
   },
 }

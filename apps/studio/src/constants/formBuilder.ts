@@ -8,17 +8,35 @@ export const JSON_FORMS_RANKING = {
   HiddenControl: 99999999999, // Always rendered first
   ImageControl: 2,
   IntegerControl: 4,
+  EnumControl: 2,
   TextAreaControl: 1,
+  ColourPickerControl: 2,
   TextControl: 1,
   // NOTE: has to be higher than `TextControl`
   UuidControl: 2,
+  WidgetControl: 3,
   ObjectControl: 2,
+  // NOTE: Needs to have higher priority than anyof
+  // as we need to conditionally render this depending
+  // on the parent variant
+  ChildrenPagesColControl: 4,
   // NOTE: needs to have higher priority than anyof
   ChildrenPagesControl: 4,
+  // NOTE: needs to have higher priority than anyof
+  CollectionVariantControl: 4,
   // NOTE: needs to have higher priority than array
   ChildrenPagesOrderingControl: 5,
+  // NOTE: needs to have higher priority than array
+  NavbarControl: 5,
+  // NOTE: needs to have higher priority than array
+  LinkArrayControl: 5,
+  // NOTE: needs to have higher priority than array
+  SocialMediaControl: 5,
   AllOfControl: 3,
+  // NOTE: Needs to be above `AnyOfControl`
+  SearchSGControl: 4,
   AnyOfControl: 3,
+  OneOfControl: 3,
   CategoryControl: 3,
   CollectionDropdownControl: 3,
   ProseControl: 3,
@@ -30,6 +48,6 @@ export const JSON_FORMS_RANKING = {
   Catchall: -99999999999,
 }
 
-export const PROSE_COMPONENT_NAME = "Text component"
+export const PROSE_COMPONENT_NAME = "Text"
 
 export const TEXTAREA_CHARACTERS_PER_ROW = 70

@@ -1,15 +1,18 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { DatabasePageSchemaType } from "~/types"
+import { expect, userEvent, waitFor, within } from "storybook/test"
+import {
+  DGS_SMALL_DATASET_RESOURCE_ID,
+  generateSiteConfig,
+} from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { DatabasePageSchemaType } from "~/engine"
-import { generateSiteConfig } from "~/stories/helpers"
-import Database from "./Database"
+import { DatabaseLayout } from "./Database"
 
-const meta: Meta<typeof Database> = {
+const meta: Meta<typeof DatabaseLayout> = {
   title: "Next/Layouts/Database",
-  component: Database,
+  component: DatabaseLayout,
   argTypes: {},
   tags: ["!autodocs"],
   parameters: {
@@ -21,7 +24,7 @@ const meta: Meta<typeof Database> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof Database>
+type Story = StoryObj<typeof DatabaseLayout>
 
 const generateArgs = ({
   database,
@@ -146,7 +149,7 @@ export const Default: Story = {
       items: [
         [
           "Cell copy 1",
-          '=HYPERLINK("https://www.isomer.gov.sg", Cell copy)',
+          '<a href="https://www.isomer.gov.sg">Cell copy</a>',
           "Cell copy",
           "Cell copy",
           "Cell copy",
@@ -704,7 +707,7 @@ export const NoSearchResults: Story = {
       items: [
         [
           "Cell copy 1",
-          '=HYPERLINK("https://www.isomer.gov.sg", Cell copy)',
+          '<a href="https://www.isomer.gov.sg">Cell copy</a>',
           "Cell copy",
           "Cell copy",
           "Cell copy",
@@ -899,10 +902,23 @@ export const NoSearchResults: Story = {
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
+
     const searchElem = screen.getByRole("searchbox", {
       name: /Search table/i,
     })
+
+    await expect(searchElem).toHaveAttribute(
+      "placeholder",
+      "Enter a search term",
+    )
+
     await userEvent.type(searchElem, "some whacky search term")
+
+    await waitFor(() => {
+      screen.getByText(
+        "Check if you have a spelling error or try a different search term.",
+      )
+    })
   },
 }
 
@@ -913,7 +929,32 @@ export const DGSSearchableTable: Story = {
       title: "Sample DGS Table",
       dataSource: {
         type: "dgs",
-        resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352", // hardcoded
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+      },
+    },
+  }),
+}
+
+export const DGSSearchableTableWithDefaultTitle: Story = {
+  name: "DGS Searchable Table (with default title)",
+  args: generateArgs({
+    database: {
+      dataSource: {
+        type: "dgs",
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+      },
+    },
+  }),
+}
+
+export const DGSSearchableTableWithHeaders: Story = {
+  name: "DGS Searchable Table (with headers)",
+  args: generateArgs({
+    database: {
+      title: "Sample DGS Table",
+      dataSource: {
+        type: "dgs",
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
       },
       headers: [
         { label: "Year", key: "year" },
@@ -921,15 +962,21 @@ export const DGSSearchableTable: Story = {
         { label: "School", key: "school" },
         { label: "Degree", key: "degree" },
         { label: "Monthly Median", key: "gross_monthly_median" },
-        {
-          label: "Monthly 25th Percentile",
-          key: "gross_mthly_25_percentile",
-        },
-        {
-          label: "Monthly 75th Percentile",
-          key: "gross_mthly_75_percentile",
-        },
       ],
+    },
+  }),
+}
+
+export const DGSSearchableTableWithFilters: Story = {
+  name: "DGS Searchable Table (with column filters)",
+  args: generateArgs({
+    database: {
+      title: "Graduate Employment by Year",
+      dataSource: {
+        type: "dgs",
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+        filters: [{ fieldKey: "year", fieldValue: "2022" }],
+      },
     },
   }),
 }

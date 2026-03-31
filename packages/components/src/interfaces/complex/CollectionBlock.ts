@@ -1,17 +1,14 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
 import type { ProcessedCollectionCardProps } from "~/interfaces/internal/CollectionCard"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { Type } from "@sinclair/typebox"
 import { COLLECTION_DROPDOWN_FORMAT } from "~/interfaces/format"
 import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
 
-export const COLLECTION_BLOCK_TYPE = "collectionblock"
-
 export const CollectionBlockSchema = Type.Object(
   {
-    type: Type.Literal(COLLECTION_BLOCK_TYPE, {
-      default: COLLECTION_BLOCK_TYPE,
+    type: Type.Literal("collectionblock", {
+      default: "collectionblock",
     }),
     collectionReferenceLink: Type.String({
       title: "Collection",
@@ -24,13 +21,11 @@ export const CollectionBlockSchema = Type.Object(
     customTitle: Type.Optional(
       Type.String({
         title: "Custom title",
-        maxLength: 100,
       }),
     ),
     customDescription: Type.Optional(
       Type.String({
         title: "Custom description",
-        maxLength: 200,
       }),
     ),
     displayThumbnail: Type.Boolean({
@@ -49,7 +44,7 @@ export const CollectionBlockSchema = Type.Object(
     }),
   },
   {
-    title: "CollectionBlock component",
+    title: "Linked Collection",
   },
 )
 
@@ -61,7 +56,7 @@ export type CollectionBlockProps = Static<typeof CollectionBlockSchema> & {
 
 export type CollectionBlockSingleCardProps = Pick<
   ProcessedCollectionCardProps,
-  "title" | "image" | "category" | "referenceLinkHref" | "date"
+  "title" | "image" | "category" | "referenceLinkHref" | "formattedDate"
 > &
   Pick<CollectionBlockProps, "displayThumbnail" | "displayCategory"> &
   CollectionBlockNumberOfCards & {

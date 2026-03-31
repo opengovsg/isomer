@@ -1,5 +1,4 @@
 import tracer from "dd-trace"
-
 import { env } from "~/env.mjs"
 
 // initialized in a different file to avoid hoisting.

@@ -145,9 +145,61 @@ export const VIDEO_EMBED_URL_PATTERN = Object.values(VIDEO_EMBED_URL_REGEXES)
   .map((re) => `(${re})`)
   .join("|")
 
+// Validation for audio embed URLs (Spotify or Apple Podcast) for the "audio" component
+// Only these variants are supported: Spotify episode or show; Apple Podcast show or episode
+const VALID_AUDIO_EMBED_DOMAINS = {
+  spotify: "open.spotify.com",
+  applepodcast: "embed.podcasts.apple.com",
+}
+
+export const AUDIO_EMBED_URL_REGEXES = {
+  spotify: "^https://open\\.spotify\\.com/embed/(episode|show)/[a-zA-Z0-9]+.*$",
+  applepodcast: "^https://embed\\.podcasts\\.apple\\.com/[a-z]{2}/[a-z-]+/.*$",
+} as const
+
+export const AUDIO_EMBED_URL_PATTERN = Object.values(AUDIO_EMBED_URL_REGEXES)
+  .map((re) => `(${re})`)
+  .join("|")
+
+export const isValidAudioEmbedUrl = (url: string) => {
+  if (!url) {
+    return false
+  }
+
+  try {
+    const urlObject = new URL(url)
+    const allValidAudioEmbedDomains = Object.values(
+      VALID_AUDIO_EMBED_DOMAINS,
+    ).flat()
+    return (
+      allValidAudioEmbedDomains.includes(urlObject.hostname) &&
+      new RegExp(AUDIO_EMBED_URL_PATTERN).test(url)
+    )
+  } catch (_) {
+    return false
+  }
+}
+
+export const isApplePodcastUrl = (url: string) => {
+  try {
+    return new URL(url).hostname === VALID_AUDIO_EMBED_DOMAINS.applepodcast
+  } catch {
+    return false
+  }
+}
+
 // ✅ "hello"
 // ✅ " hello " (has non-whitespace in the middle)
 // ✅ " a " (one letter surrounded by spaces)
 // ❌ "" (empty string)
 // ❌ " " (only whitespace)
 export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
+
+// ✅ "d_a" (minimum 3 characters, starts with "d_")
+// ✅ "d_abc" (more than 3 characters, starts with "d_")
+// ❌ "d_" (only 2 characters)
+// ❌ "a_bc" (doesn't start with "d_")
+// ❌ "d" (only 1 character)
+// ❌ "d_ab c" (contains space)
+// ❌ "d_ab_c" (contains underscore after prefix)
+export const DGS_ID_STRING_REGEX = "^d_[a-zA-Z0-9]+$"

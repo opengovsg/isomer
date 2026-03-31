@@ -1,11 +1,10 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 export const KeyStatisticsSchema = Type.Object(
@@ -20,18 +19,15 @@ export const KeyStatisticsSchema = Type.Object(
     ),
     title: Type.String({
       title: "Title",
-      maxLength: 100,
     }),
     statistics: Type.Array(
       Type.Object({
         label: Type.String({
           title: "Description",
-          maxLength: 100,
         }),
         value: Type.String({
           title: "Number",
-          description: "Keep it succinct. E.g., 3.3%, $12M",
-          maxLength: 7,
+          description: "Keep it succinct, e.g., 3.3%, 880,000, $12M",
         }),
       }),
       {
@@ -64,7 +60,7 @@ export const KeyStatisticsSchema = Type.Object(
         fields: ["label", "url"],
       },
     ],
-    title: "KeyStatistics component",
+    title: "Statistics",
     description: "A component that displays KeyStatistics",
   },
 )

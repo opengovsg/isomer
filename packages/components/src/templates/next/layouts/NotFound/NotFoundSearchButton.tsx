@@ -1,9 +1,9 @@
 "use client"
 
+import type { NotFoundPageSchemaType } from "~/types"
 import { useEffect, useState } from "react"
+import { getWordsFromPermalink } from "~/utils/getWordsFromPermalink"
 
-import type { NotFoundPageSchemaType } from "~/engine"
-import { getWordsFromPermalink } from "~/utils"
 import { LinkButton } from "../../components/internal/LinkButton"
 
 type NotFoundSearchButtonProps = Pick<NotFoundPageSchemaType, "LinkComponent">

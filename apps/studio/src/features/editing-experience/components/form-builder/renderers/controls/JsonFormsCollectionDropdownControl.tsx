@@ -4,7 +4,6 @@ import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, SingleSelect } from "@opengovsg/design-system-react"
 import { COLLECTION_DROPDOWN_FORMAT } from "@opengovsg/isomer-components"
-
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { siteSchema } from "~/features/editing-experience/schema"
@@ -53,7 +52,7 @@ function SuspendableJsonFormsCollectionDropdownControl({
   )
 }
 
-export function JsonFormsCollectionDropdownControl({
+function JsonFormsCollectionDropdownControl({
   description,
   required,
   label,

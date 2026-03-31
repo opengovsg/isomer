@@ -1,12 +1,12 @@
-import omit from "lodash/omit"
-
 import type { ContactInformationProps } from "~/interfaces"
+import { omit } from "lodash-es"
 import { DATA_SOURCE_TYPE } from "~/interfaces/integration"
-import { getReferenceLinkHref } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+
 import { DgsContactInformation } from "./DgsContactInformation"
 import { NativeContactInformation } from "./NativeContactInformation"
 
-const ContactInformation = ({
+export const ContactInformation = ({
   dataSource,
   ...rest
 }: ContactInformationProps) => {
@@ -14,7 +14,7 @@ const ContactInformation = ({
     ...omit(rest, ["url", "site"]),
     referenceLinkHref: getReferenceLinkHref(
       rest.url,
-      rest.site.siteMap,
+      rest.site.siteMapArray,
       rest.site.assetsBaseUrl,
     ),
   }
@@ -35,5 +35,3 @@ const ContactInformation = ({
       return _exhaustiveCheck
   }
 }
-
-export default ContactInformation

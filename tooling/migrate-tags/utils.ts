@@ -1,5 +1,6 @@
-import { randomUUID, UUID } from "crypto"
-import { CollectionPagePageProps } from "@opengovsg/isomer-components"
+import { randomUUID } from "crypto"
+import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
+import type { UUID } from "crypto"
 import { db, sql } from "~server/modules/database"
 import _ from "lodash"
 

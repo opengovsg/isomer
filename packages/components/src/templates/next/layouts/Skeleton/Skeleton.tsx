@@ -1,13 +1,12 @@
-import type { IsomerPageSchemaType } from "~/engine"
-import {
-  Footer,
-  Masthead,
-  Navbar,
-  Notification,
-  ScrollToTop,
-  SkipToContent,
-  UnsupportedBrowserBanner,
-} from "../../components/internal"
+import type { IsomerPageSchemaType } from "~/types"
+
+import { Footer } from "../../components/internal/Footer"
+import { Masthead } from "../../components/internal/Masthead"
+import { Navbar } from "../../components/internal/Navbar"
+import { Notification } from "../../components/internal/Notification"
+import { ScrollToTop } from "../../components/internal/ScrollToTop"
+import { SkipToContent } from "../../components/internal/SkipToContent"
+import { UnsupportedBrowserBanner } from "../../components/internal/UnsupportedBrowserBanner"
 import { SKIP_TO_CONTENT_ANCHOR_ID } from "../../constants"
 
 export const Skeleton = ({
@@ -29,7 +28,7 @@ export const Skeleton = ({
 
         {site.isGovernment && <Masthead isStaging={isStaging} />}
 
-        {site.notification && (
+        {site.notification?.title && (
           <Notification
             {...site.notification}
             LinkComponent={LinkComponent}

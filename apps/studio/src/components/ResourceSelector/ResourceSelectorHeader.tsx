@@ -1,8 +1,7 @@
+import type { ResourceItemContent } from "~/schemas/resource"
 import { Flex, HStack, Spacer, Text } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
-
-import type { ResourceItemContent } from "~/schemas/resource"
 
 const HomeHeader = () => {
   return (

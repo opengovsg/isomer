@@ -1,5 +1,4 @@
 import type { UseRadioGroupProps, UseRadioProps } from "@chakra-ui/react"
-import { forwardRef, useState } from "react"
 import {
   Box,
   Flex,
@@ -11,11 +10,12 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Badge } from "@opengovsg/design-system-react"
+import { forwardRef, useState } from "react"
 import { BiShow } from "react-icons/bi"
+import { NextImage } from "~/components/NextImage"
 
 import type { Layout } from "./constants"
-import { NextImage } from "~/components/NextImage"
-import { LAYOUT_RENDER_DATA, LAYOUT_TYPES } from "./constants"
+import { LAYOUT_RENDER_DATA } from "./constants"
 
 interface LayoutTileProps extends UseRadioProps {
   value: Layout
@@ -124,9 +124,11 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
                 </Badge>
               )}
             </Stack>
-            <Text textStyle="body-1" color="base.content.default">
-              {description}
-            </Text>
+            {isSelected && (
+              <Text textStyle="body-1" color="base.content.default">
+                {description}
+              </Text>
+            )}
           </Stack>
         </VStack>
       </Box>
@@ -144,14 +146,16 @@ export const LayoutOptionsInput = forwardRef<
 
   const group = getRootProps()
 
+  const layoutKeys = Object.keys(LAYOUT_RENDER_DATA) as Layout[]
+
   return (
     <Stack {...group} gap="2rem">
-      {LAYOUT_TYPES.map((value, index) => {
-        const radio = getRadioProps({ value })
+      {layoutKeys.map((key, index) => {
+        const radio = getRadioProps({ value: key })
         return (
           <LayoutOptionRadio
-            key={value}
-            value={value}
+            key={key}
+            value={key}
             {...radio}
             ref={index === 0 ? ref : undefined}
           />

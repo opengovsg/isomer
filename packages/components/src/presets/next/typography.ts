@@ -7,7 +7,7 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     ".prose-display-xl": {
       fontWeight: theme("fontWeight.semibold"),
       letterSpacing: "-0.022em",
-      "@apply text-[3rem] lg:text-[4.25rem] leading-[1.2] lg:leading-[1.1]": {},
+      "@apply text-[3rem] xl:text-[4.25rem] leading-[1.2] xl:leading-[1.1]": {},
     },
     ".prose-display-lg": {
       fontWeight: theme("fontWeight.semibold"),
@@ -17,9 +17,14 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     ".prose-display-md": {
       fontWeight: theme("fontWeight.semibold"),
       letterSpacing: "-0.022em",
-      "@apply text-[1.75rem] md:text-[2.25rem] leading-[1.2]": {},
+      "@apply text-[1.75rem] lg:text-[2.25rem] leading-[1.2]": {},
     },
     ".prose-display-sm": {
+      fontWeight: theme("fontWeight.semibold"),
+      letterSpacing: "-0.022em",
+      "@apply text-[1.5rem] lg:text-[1.938rem] leading-[1.2]": {},
+    },
+    ".prose-display-xs": {
       fontWeight: theme("fontWeight.semibold"),
       letterSpacing: "-0.022em",
       "@apply text-[1.25rem] lg:text-[1.5rem] leading-[1.2]": {},
@@ -85,7 +90,10 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     ".prose-body-base": {
       fontWeight: theme("fontWeight.normal"),
       letterSpacing: "0",
-      "@apply text-[0.9375rem] lg:text-[1rem] leading-[1.5]": {},
+      // keeping text-[1rem] to ensure it has minimum height of 1.5rem, even on mobile
+      // This is to ensure it does not violate WCAG 2.2 (https://dequeuniversity.com/rules/axe/4.10/target-size)
+      // Reference: https://github.com/opengovsg/isomer/pull/1640
+      "@apply text-[1rem] leading-[1.5]": {},
     },
     ".prose-body-sm": {
       fontWeight: theme("fontWeight.normal"),

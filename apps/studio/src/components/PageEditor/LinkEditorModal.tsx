@@ -1,4 +1,5 @@
 import type { IconType } from "react-icons"
+import type { LinkTypes } from "~/features/editing-experience/components/LinkEditor/constants"
 import {
   Box,
   FormControl,
@@ -19,8 +20,6 @@ import {
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { isEmpty } from "lodash"
 import { z } from "zod"
-
-import type { LinkTypes } from "~/features/editing-experience/components/LinkEditor/constants"
 import {
   FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   MAX_FILE_SIZE_BYTES,
@@ -39,6 +38,7 @@ import {
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink } from "~/utils/link"
+
 import { AttachmentData } from "../AttachmentData"
 import { ResourceSelector } from "../ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
@@ -236,7 +236,9 @@ const ModalLinkEditor = () => {
             maxSizeInBytes={MAX_FILE_SIZE_BYTES}
             acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
             siteId={Number(siteId)}
-            resourceId={String(pageId ?? linkId)}
+            resourceId={
+              (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
+            }
             setHref={(href) => setHref(href ?? "")}
             shouldFetchResource={false}
           />

@@ -1,16 +1,16 @@
-import { type SearchPageSchemaType } from "~/engine"
-import { Skeleton } from "../Skeleton"
-import SearchSG from "./SearchSG"
+import { type SearchPageSchemaType } from "~/types"
 
-const SearchLayout = ({
+import { Skeleton } from "../Skeleton"
+import { SearchSG } from "./SearchSG"
+
+export const SearchLayout = ({
   site,
   page,
   layout,
   LinkComponent,
 }: SearchPageSchemaType) => {
   const clientId =
-    (site.search && site.search.type === "searchSG" && site.search.clientId) ||
-    ""
+    (site.search?.type === "searchSG" && site.search.clientId) || ""
 
   return (
     <Skeleton
@@ -19,15 +19,10 @@ const SearchLayout = ({
       layout={layout}
       LinkComponent={LinkComponent}
     >
-      {/* Local search */}
-      {site.search && site.search.type === "localSearch" && <></>}
-
       {/* SearchSG-powered search */}
-      {site.search && site.search.type === "searchSG" && clientId && (
+      {site.search?.type === "searchSG" && clientId && (
         <SearchSG clientId={clientId} />
       )}
     </Skeleton>
   )
 }
-
-export default SearchLayout

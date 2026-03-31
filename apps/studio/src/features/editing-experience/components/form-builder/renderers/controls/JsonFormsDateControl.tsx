@@ -7,8 +7,9 @@ import {
   FormErrorMessage,
   FormLabel,
 } from "@opengovsg/design-system-react"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
+import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsDateControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextControl,
@@ -18,7 +19,7 @@ export const jsonFormsDateControlTester: RankedTester = rankWith(
   ),
 )
 
-export function JsonFormsDateControl({
+function JsonFormsDateControl({
   data,
   label,
   handleChange,
@@ -32,12 +33,12 @@ export function JsonFormsDateControl({
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <DatePicker
-          inputValue={!!data ? String(data) : undefined}
+          inputValue={typeof data === "string" ? String(data) : undefined}
           allowManualInput={true}
-          onInputValueChange={(date) => handleChange(path, date.toString())}
+          onInputValueChange={(date) => handleChange(path, date)}
         />
         <FormErrorMessage>
-          {label} {errors}
+          {label} {getCustomErrorMessage(errors)}
         </FormErrorMessage>
       </FormControl>
     </Box>

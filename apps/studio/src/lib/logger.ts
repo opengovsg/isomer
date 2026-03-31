@@ -1,9 +1,8 @@
+import type { NextApiRequest } from "next"
 import type { DestinationStream } from "pino"
-import { NextApiRequest } from "next"
 import { nanoid } from "nanoid"
 import pino from "pino"
 import pinoPretty from "pino-pretty"
-
 import { env } from "~/env.mjs"
 import getIP from "~/utils/getClientIp"
 
@@ -24,7 +23,7 @@ interface LoggerOptions {
   req?: NextApiRequest
 }
 
-export class PinoLogger {
+class PinoLogger {
   private static instance?: pino.Logger<string>
   private static getInstance() {
     PinoLogger.instance ??= PinoLogger.createBaseLogger()
@@ -42,7 +41,7 @@ export class PinoLogger {
     }
     return pino(
       {
-        // eslint-disable-next-line no-restricted-properties
+        // oxlint-disable-next-line node/no-process-env
         level: process.env.PINO_LOG_LEVEL || "info",
         customLevels: levels,
         useOnlyCustomLevels: true,
@@ -69,7 +68,7 @@ export class PinoLogger {
     return PinoLogger.getInstance().child({
       path,
       clientIp: req && getIP(req),
-      id: nanoid(),
+      id: nanoid<string>(),
       trace_id: req?.headers["x-datadog-trace-id"],
     })
   }

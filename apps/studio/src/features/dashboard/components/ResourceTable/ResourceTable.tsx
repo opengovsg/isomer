@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import type { RouterOutput } from "~/utils/trpc"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
@@ -6,13 +6,13 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-
-import type { RouterOutput } from "~/utils/trpc"
+import { useMemo } from "react"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
+
 import { ResourceTableMenu } from "./ResourceTableMenu"
 import { TitleCell } from "./TitleCell"
 
@@ -31,6 +31,7 @@ const getColumns = ({ siteId }: ResourceTableProps) => [
         title={row.original.title}
         permalink={`/${row.original.permalink}`}
         type={row.original.type}
+        scheduledAt={row.original.scheduledAt}
       />
     ),
   }),

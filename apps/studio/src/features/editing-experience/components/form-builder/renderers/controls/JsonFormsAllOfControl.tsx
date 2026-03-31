@@ -5,7 +5,6 @@ import {
   rankWith,
 } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsAllOfProps } from "@jsonforms/react"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsAllOfControlTester: RankedTester = rankWith(
@@ -13,7 +12,7 @@ export const jsonFormsAllOfControlTester: RankedTester = rankWith(
   isAllOfControl,
 )
 
-export function JsonFormsAllOfControl({
+function JsonFormsAllOfControl({
   schema,
   path,
   renderers,

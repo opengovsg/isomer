@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { CollectionCardProps } from "~/interfaces"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { CollectionCardProps } from "~/interfaces"
 import { BlogCard } from "./BlogCard"
 
 const meta: Meta<typeof BlogCard> = {
@@ -114,7 +114,7 @@ export const TagsWithImage: Story = {
       {
         category: "long",
         selected: [
-          "This is a very long tag that shuold be reflowed on smaller screens maybe",
+          "This is a very long tag that should be reflowed on smaller screens maybe",
         ],
       },
     ],

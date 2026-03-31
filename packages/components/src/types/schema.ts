@@ -1,9 +1,5 @@
 import type { Static } from "@sinclair/typebox"
 import type { SimplifyDeep } from "type-fest"
-import { Type } from "@sinclair/typebox"
-
-import type { NotFoundPageMetaProps, SearchPageMetaProps } from "./meta"
-import type { IsomerSiteProps } from "./site"
 import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
@@ -16,6 +12,11 @@ import type {
   NotFoundPagePageProps,
   SearchPagePageProps,
 } from "~/types"
+import { Type } from "@sinclair/typebox"
+import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
+
+import type { NotFoundPageMetaProps, SearchPageMetaProps } from "./meta"
+import type { IsomerSiteProps } from "./site"
 import { IsomerComponentsSchemas } from "./components"
 import {
   ArticlePageMetaSchema,
@@ -38,23 +39,6 @@ import {
   LinkRefPageSchema,
   SearchPagePageSchema,
 } from "./page"
-
-export const ISOMER_USABLE_PAGE_LAYOUTS = {
-  Article: "article",
-  Collection: "collection",
-  Content: "content",
-  Homepage: "homepage",
-  Index: "index",
-  Database: "database",
-  File: "file",
-  Link: "link",
-} as const
-
-export const ISOMER_PAGE_LAYOUTS = {
-  ...ISOMER_USABLE_PAGE_LAYOUTS,
-  NotFound: "notfound",
-  Search: "search",
-} as const
 
 const BaseItemSchema = Type.Object({
   version: Type.String({

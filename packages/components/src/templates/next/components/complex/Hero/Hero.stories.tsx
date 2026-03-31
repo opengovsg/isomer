@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from "@storybook/react"
-
-import { withChromaticModes } from "@isomer/storybook-config"
-
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
-import Hero from "./Hero"
+
+import { withChromaticModes } from "@isomer/storybook-config"
+
+import { Hero } from "./Hero"
 
 const meta: Meta<typeof Hero> = {
   title: "Next/Components/Hero",
@@ -70,6 +70,23 @@ export const ColourBlockInverse: Story = {
     secondaryButtonUrl: "/",
     variant: "block",
     theme: "inverse",
+  },
+}
+
+export const ColourBlockLongWord: Story = {
+  args: {
+    site: generateSiteConfig(),
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "International Accreditation Pronouncements",
+    subtitle:
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
+    buttonLabel: "Main CTA",
+    buttonUrl: "/",
+    secondaryButtonLabel: "Sub CTA",
+    secondaryButtonUrl: "/",
+    variant: "block",
+    theme: "default",
   },
 }
 
@@ -149,6 +166,25 @@ export const Searchbar: Story = {
     title: "Temasek Polytechnic",
     subtitle:
       "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
+    variant: "searchbar",
+  },
+}
+
+export const SearchbarWithImage: Story = {
+  decorators: [withSearchSgSetup()],
+  args: {
+    site: generateSiteConfig({
+      search: {
+        type: "searchSG",
+        clientId: SEARCHSG_TEST_CLIENT_ID,
+      },
+    }),
+
+    title: "Temasek Polytechnic",
+    subtitle:
+      "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1594318142972-1e2ea7487a3e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1740",
     variant: "searchbar",
   },
 }

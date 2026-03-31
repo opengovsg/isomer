@@ -1,4 +1,4 @@
-export interface SingleCard {
+interface SingleCard {
   id: number
   title: string
   href: string

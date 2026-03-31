@@ -1,8 +1,6 @@
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { PiUsersBold } from "react-icons/pi"
 import { z } from "zod"
-
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { UserManagementProvider } from "~/features/users"
 import {
@@ -16,6 +14,7 @@ import { CollaboratorsDescription } from "~/features/users/components/Collaborat
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const siteUsersSchema = z.object({
   siteId: z.coerce.number(),
@@ -61,7 +60,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
                   textOverflow="ellipsis"
                   wordBreak="break-all"
                 >
-                  Collaborators
+                  Users
                 </Text>
               </HStack>
               <CollaboratorsDescription />

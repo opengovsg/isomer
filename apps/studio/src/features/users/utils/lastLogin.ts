@@ -8,7 +8,7 @@ import { differenceInDays, isBefore } from "date-fns"
 export const isBeforeUserMgmtLaunch = (createdAt: Date | null) =>
   isBefore(createdAt ?? new Date(), new Date("2025-03-07"))
 
-export const getDaysFromLastLogin = (lastLoginAt: Date) =>
+const getDaysFromLastLogin = (lastLoginAt: Date) =>
   differenceInDays(new Date(), lastLoginAt)
 
 interface GetLastLoginTextProps {

@@ -1,5 +1,5 @@
-import type { IsomerSitemap } from "~/engine"
 import type { BreadcrumbProps } from "~/interfaces"
+import type { IsomerSitemap } from "~/types"
 
 // Traverse the sitemap to get the breadcrumb for the page with the given
 // permalink

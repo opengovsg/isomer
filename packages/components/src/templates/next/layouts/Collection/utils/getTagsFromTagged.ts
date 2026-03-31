@@ -1,4 +1,4 @@
-import { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
+import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
 
 export const getTagsFromTagged = (
   tagged: NonNullable<ArticlePagePageProps["tagged"]>,

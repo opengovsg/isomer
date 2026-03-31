@@ -1,13 +1,11 @@
 // Replace your-framework with the framework you are using (e.g., react, vue3)
-import type { Decorator, Preview } from "@storybook/react"
+import type { Decorator, Preview } from "@storybook/react-vite"
 import { withThemeByDataAttribute } from "@storybook/addon-themes"
-import { MINIMAL_VIEWPORTS } from "@storybook/addon-viewport"
 import mockdate from "mockdate"
 import { initialize, mswLoader } from "msw-storybook-addon"
-
+import { MINIMAL_VIEWPORTS } from "storybook/viewport"
 import "bootstrap-icons/font/bootstrap-icons.css"
 import "../src/index.css"
-
 import { viewport } from "@isomer/storybook-config"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
@@ -86,9 +84,10 @@ initialize({
 
 const preview: Preview = {
   loaders: [mswLoader],
+
   parameters: {
     viewport: {
-      viewports: {
+      options: {
         ...viewport.viewports,
         ...MINIMAL_VIEWPORTS,
         ...CUSTOM_GENERAL_VIEWPORTS,
@@ -110,6 +109,8 @@ const preview: Preview = {
       prefersReducedMotion: "reduce",
     },
   },
+
+  tags: ["autodocs"],
 }
 
 const LayoutDecorator: Decorator = (storyFn) => (

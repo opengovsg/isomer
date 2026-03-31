@@ -1,8 +1,9 @@
 import { TRPCError } from "@trpc/server"
-
 import { deleteAssetsSchema, getPresignedPutUrlSchema } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
+
 import {
+  doAllFileKeysBelongToSite,
   getFileKey,
   getPresignedPutUrl,
   markFileAsDeleted,
@@ -22,9 +23,10 @@ export const assetRouter = router({
 
       const fileKey = getFileKey({ siteId, fileName })
 
-      const presignedPutUrl = await getPresignedPutUrl({
-        key: fileKey,
-      })
+      const { presignedPutUrl, contentType, contentDisposition } =
+        await getPresignedPutUrl({
+          key: fileKey,
+        })
 
       ctx.logger.info(
         {
@@ -39,6 +41,8 @@ export const assetRouter = router({
       return {
         fileKey,
         presignedPutUrl,
+        contentType,
+        contentDisposition,
       }
     }),
 
@@ -51,6 +55,14 @@ export const assetRouter = router({
         action: "delete",
         userId: ctx.user.id,
       })
+
+      if (!doAllFileKeysBelongToSite({ fileKeys, siteId })) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "One or more file keys do not belong to the specified site. You may only delete assets for the site you are authorized for.",
+        })
+      }
 
       await Promise.allSettled(
         fileKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),

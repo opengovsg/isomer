@@ -1,13 +1,12 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps } from "~/types"
 import { AttrsDirSchema } from "../internal/AttrsDir"
 import { TextSchema } from "./Text"
 
 // excludes 1 as it should only be used for the page title i.e ContentPageHeader
 export const HeadingLevels = [2, 3, 4, 5, 6] as const
-export type HeadingLevel = (typeof HeadingLevels)[number]
 
 export const HeadingSchema = Type.Object(
   {

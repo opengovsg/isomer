@@ -59,18 +59,18 @@ fi
 
 # Try to fetch cached node_modules from S3
 echo "Fetching cached node_modules..."
-NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/isomer/node_modules.tar.gz"
-aws s3 cp --only-show-errors $NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
-if [ -f "node_modules.tar.gz" ]; then
-  echo "node_modules.tar.gz found in cache"
+NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/isomer/node_modules.tar.zst"
+aws s3 cp --only-show-errors $NODE_MODULES_CACHE_PATH node_modules.tar.zst || true
+if [ -f "node_modules.tar.zst" ]; then
+  echo "node_modules.tar.zst found in cache"
 
   echo "Using cached node_modules"
   start_time=$(date +%s)
-  tar -xzf node_modules.tar.gz
-  rm node_modules.tar.gz
+  tar --use-compress-program=zstd -xf node_modules.tar.zst
+  rm node_modules.tar.zst
   calculate_duration $start_time
 else
-  echo "node_modules.tar.gz not found in cache"
+  echo "node_modules.tar.zst not found in cache"
 
   echo "Installing dependencies..."
   start_time=$(date +%s)
@@ -79,9 +79,9 @@ else
 
   echo "Caching node_modules..."
   start_time=$(date +%s)
-  tar -czf node_modules.tar.gz node_modules/
-  aws s3 cp --only-show-errors node_modules.tar.gz $NODE_MODULES_CACHE_PATH
-  rm node_modules.tar.gz
+  tar --use-compress-program="zstd -6" -cf node_modules.tar.zst node_modules/
+  aws s3 cp --only-show-errors node_modules.tar.zst $NODE_MODULES_CACHE_PATH
+  rm node_modules.tar.zst
   echo "Cached node_modules"
   calculate_duration $start_time
 fi
@@ -112,18 +112,18 @@ if [ ! -f "schema/not-found.json" ]; then
 fi
 echo $(pwd)
 echo "Fetching cached tooling-template node_modules..."
-TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/isomer-tooling-template/node_modules.tar.gz"
-aws s3 cp --only-show-errors $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
-if [ -f "node_modules.tar.gz" ]; then
-  echo "node_modules.tar.gz found in cache"
+TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/isomer-tooling-template/node_modules.tar.zst"
+aws s3 cp --only-show-errors $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH node_modules.tar.zst || true
+if [ -f "node_modules.tar.zst" ]; then
+  echo "node_modules.tar.zst found in cache"
 
   echo "Using cached node_modules"
   start_time=$(date +%s)
-  tar -xzf node_modules.tar.gz
-  rm node_modules.tar.gz
+  tar --use-compress-program=zstd -xf node_modules.tar.zst
+  rm node_modules.tar.zst
   calculate_duration $start_time
 else
-  echo "node_modules.tar.gz not found in cache"
+  echo "node_modules.tar.zst not found in cache"
 
   # Build components
   echo "Building components..."
@@ -149,9 +149,9 @@ else
 
   echo "Caching node_modules..."
   start_time=$(date +%s)
-  tar -czf node_modules.tar.gz node_modules/
-  aws s3 cp --only-show-errors node_modules.tar.gz $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH
-  rm node_modules.tar.gz
+  tar --use-compress-program="zstd -6" -cf node_modules.tar.zst node_modules/
+  aws s3 cp --only-show-errors node_modules.tar.zst $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH
+  rm node_modules.tar.zst
   echo "Cached node_modules"
   calculate_duration $start_time
 fi

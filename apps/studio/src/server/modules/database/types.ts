@@ -1,7 +1,6 @@
 import type { Transaction as NativeTransaction } from "kysely"
-import { Kysely as NativeKysely } from "kysely"
-
 import type { DB } from "~prisma/generated/generatedTypes"
+import { Kysely as NativeKysely } from "kysely"
 
 /**
  * Do not edit ~prisma/generated/generatedTypes and ~prisma/generated/generatedEnums files directly.
@@ -13,14 +12,13 @@ export * as Model from "~prisma/generated/generatedTypes"
 export type { DB } from "~prisma/generated/generatedTypes"
 export * from "~prisma/generated/generatedEnums"
 export * from "~prisma/generated/selectableTypes"
-export type { Insertable, Updateable, QueryNode } from "kysely"
 export { sql } from "kysely"
 
 export class Kysely<DB> extends NativeKysely<DB> {
   static readonly #identifier: unique symbol = Symbol()
 
   #identity(): symbol {
-    return (Kysely<DB>).#identifier
+    return Kysely.#identifier
   }
 }
 

@@ -1,11 +1,11 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import type { DividerProps } from "./Divider"
 import type { OrderedListProps } from "./OrderedList"
 import type { ParagraphProps } from "./Paragraph"
 import type { UnorderedListProps } from "./UnorderedList"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { OrderedListSchema } from "./OrderedList"
 import { ParagraphSchema } from "./Paragraph"
 import { UnorderedListSchema } from "./UnorderedList"
@@ -28,7 +28,7 @@ const TableBaseCellSchema = Type.Object({
 })
 
 // Disable rule so typescript inference can work properly
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+// oxlint-disable-next-line @typescript-eslint/consistent-type-definitions
 type TableCellProps = {
   type: "tableCell"
   attrs?: Static<typeof TableBaseCellSchema>
@@ -105,7 +105,6 @@ export const TableSchema = Type.Object(
       caption: Type.String({
         title: "Table caption",
         description: "The caption of the table",
-        maxLength: 200,
       }),
     }),
     content: Type.Array(

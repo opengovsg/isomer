@@ -1,23 +1,20 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { Type } from "@sinclair/typebox"
 import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
-export const InfoBoxSchema = Type.Object({
+const InfoBoxSchema = Type.Object({
   title: Type.String({
     title: "Title",
-    maxLength: 100,
   }),
   description: Type.Optional(
     Type.String({
       title: "Description",
-      maxLength: 200,
     }),
   ),
   icon: Type.Optional(
@@ -64,12 +61,10 @@ export const InfoColsSchema = Type.Object(
     ),
     title: Type.String({
       title: "Title",
-      maxLength: 100,
     }),
     subtitle: Type.Optional(
       Type.String({
         title: "Description",
-        maxLength: 150,
       }),
     ),
     infoBoxes: Type.Array(InfoBoxSchema, {
@@ -79,7 +74,7 @@ export const InfoColsSchema = Type.Object(
     }),
   },
   {
-    title: "Infocols component",
+    title: "Columns of text",
   },
 )
 

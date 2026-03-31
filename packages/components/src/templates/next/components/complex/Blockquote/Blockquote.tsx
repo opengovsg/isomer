@@ -1,10 +1,10 @@
-import { BiSolidQuoteAltLeft } from "react-icons/bi"
-
 import type { BlockquoteProps } from "~/interfaces"
+import { BiSolidQuoteAltLeft } from "react-icons/bi"
 import { tv } from "~/lib/tv"
-import { getTailwindVariantLayout, isExternalUrl } from "~/utils"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+
 import { ComponentContent } from "../../internal/customCssClass"
-import { ImageClient } from "../Image"
+import { ImageClient } from "../../internal/ImageClient"
 
 const createBlockquoteStyles = tv({
   slots: {
@@ -25,7 +25,7 @@ const createBlockquoteStyles = tv({
         quoteContainer: "gap-4",
         openApostrophe: "text-[64px]",
         textContainer: "gap-4",
-        blockquote: "prose-display-md not-italic",
+        blockquote: "prose-display-sm not-italic",
         citation: "prose-headline-lg-medium",
         image: "h-60 min-h-60 w-60 min-w-60",
       },
@@ -81,11 +81,7 @@ export const Blockquote = ({
 
         {imageSrc && imageAlt && (
           <ImageClient
-            src={
-              isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
-                ? imageSrc
-                : `${site.assetsBaseUrl}${imageSrc}`
-            }
+            src={imageSrc}
             alt={imageAlt}
             width="100%"
             className={compoundStyles.image()}

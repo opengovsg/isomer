@@ -1,9 +1,8 @@
 import type { LayoutProps, RankedTester } from "@jsonforms/core"
-import React from "react"
 import { Box, Divider, Heading } from "@chakra-ui/react"
 import { rankWith, uiTypeIs } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
-
+import React from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { isGroupLayout } from "~/types/schema"
 
@@ -33,7 +32,7 @@ const GroupComponent = React.memo(function GroupComponent({
 
   return (
     <Box display="flex" flexDirection="column" gap="1.25rem">
-      <Divider borderColor="base.divider.strong" />
+      <Divider borderColor="base.divider.medium" />
 
       <Box w="100%">
         <Heading textStyle="h6" as="h6" size="m" fontWeight="500">
@@ -56,7 +55,7 @@ const GroupComponent = React.memo(function GroupComponent({
   )
 })
 
-export function JsonFormsGroupLayoutRenderer({
+function JsonFormsGroupLayoutRenderer({
   uischema,
   schema,
   path,

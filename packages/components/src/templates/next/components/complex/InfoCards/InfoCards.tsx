@@ -5,7 +5,9 @@ import {
   CARDS_WITHOUT_IMAGES,
   INFOCARD_VARIANT,
 } from "~/interfaces/complex/InfoCards"
-import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+
 import { LinkButton } from "../../internal/LinkButton"
 import { compoundStyles } from "./common"
 import {
@@ -15,7 +17,7 @@ import {
 } from "./components"
 import { calculateGridDimensions } from "./utils"
 
-const InfoCards = ({
+export const InfoCards = ({
   id,
   title,
   subtitle,
@@ -132,7 +134,11 @@ const InfoCards = ({
       {!!url && !!label && (
         <div className={compoundStyles.urlButtonContainer()}>
           <LinkButton
-            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            href={getReferenceLinkHref(
+              url,
+              site.siteMapArray,
+              site.assetsBaseUrl,
+            )}
             size="base"
             variant="outline"
             isWithFocusVisibleHighlight
@@ -145,5 +151,3 @@ const InfoCards = ({
     </section>
   )
 }
-
-export default InfoCards

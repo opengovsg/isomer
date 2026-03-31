@@ -7,7 +7,6 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
-import { useCallback, useMemo, useState } from "react"
 import { Box, Flex, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
@@ -18,21 +17,21 @@ import {
   isPrimitiveArrayControl,
   or,
   rankWith,
-  Resolve,
 } from "@jsonforms/core"
 import {
   JsonFormsDispatch,
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
+import { useCallback, useMemo, useState } from "react"
 import {
   BiLeftArrowAlt,
   BiPlusCircle,
   BiRightArrowAlt,
   BiTrash,
 } from "react-icons/bi"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
 import DraggableDrawerButton from "./DraggableDrawerButton"
@@ -141,7 +140,7 @@ function ComplexEditorNestedDrawer({
   )
 }
 
-export function JsonFormsArrayControl({
+function JsonFormsArrayControl({
   data,
   path,
   visible,
@@ -151,7 +150,7 @@ export function JsonFormsArrayControl({
   removeItems,
   moveUp,
   moveDown,
-  minItems,
+  arraySchema,
   schema,
   rootSchema,
   renderers,
@@ -161,12 +160,8 @@ export function JsonFormsArrayControl({
 }: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const [selectedIndex, setSelectedIndex] = useState<number>()
-  const resolvedSchema = Resolve.schema(rootSchema, uischema.scope, rootSchema)
-  const maxItems =
-    // NOTE: resolvedSchema can potentially be undefined
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    resolvedSchema !== undefined ? resolvedSchema.maxItems : undefined
-  const isRemoveItemDisabled = minItems !== undefined && data <= minItems
+  const isRemoveItemDisabled =
+    arraySchema.minItems !== undefined && data <= arraySchema.minItems
   const handleRemoveItem = useCallback(
     (path: string, index: number) => () => {
       if (selectedIndex === undefined || !removeItems || isRemoveItemDisabled) {
@@ -252,7 +247,9 @@ export function JsonFormsArrayControl({
           variant="clear"
           size="xs"
           leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-          isDisabled={maxItems !== undefined && data >= maxItems}
+          isDisabled={
+            arraySchema.maxItems !== undefined && data >= arraySchema.maxItems
+          }
         >
           Add item
         </Button>

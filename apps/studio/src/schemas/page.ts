@@ -1,23 +1,24 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
-
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+
 import { generateBasePermalinkSchema } from "./common"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
-const NEW_PAGE_LAYOUT_VALUES = [
-  "article",
+export const NEW_PAGE_LAYOUT_VALUES = [
   "content",
+  "article",
+  "database",
 ] as const satisfies readonly PrismaJson.BlobJsonContent["layout"][]
 
-export const MAX_TITLE_LENGTH = 150
-export const MAX_PAGE_URL_LENGTH = 250
+export const MAX_TITLE_LENGTH = 250
+export const MAX_PAGE_URL_LENGTH = 500
 
-export const pageTitleSchema = z
+const pageTitleSchema = z
   .string({
     required_error: "Enter a title for this page",
   })
@@ -26,7 +27,7 @@ export const pageTitleSchema = z
     message: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
   })
 
-export const permalinkSchema = generateBasePermalinkSchema("page")
+const permalinkSchema = generateBasePermalinkSchema("page")
   .min(1, { message: "Enter a URL for this page" })
   .max(MAX_PAGE_URL_LENGTH, {
     message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
@@ -58,7 +59,7 @@ export const reorderBlobSchema = z.object({
 
 export const updatePageBlobSchema = basePageSchema.extend({
   content: z.string().transform((value, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = safeJsonParse(value)
     if (schemaValidator(parsed)) {
       return parsed
@@ -123,7 +124,7 @@ export const basePageSettingsSchema = basePageSchema.extend({
   title: pageTitleSchema,
 })
 
-export const rootPageSettingsSchema = basePageSettingsSchema.extend({
+const rootPageSettingsSchema = basePageSettingsSchema.extend({
   type: z.literal(ResourceType.RootPage),
 })
 
@@ -156,6 +157,7 @@ export const readPageOutputSchema = z.object({
   state: z.nativeEnum(ResourceState).nullable(),
   type: z.nativeEnum(ResourceType),
   scheduledAt: z.date().nullable(),
+  scheduledBy: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

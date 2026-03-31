@@ -1,6 +1,8 @@
 import type { KeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -18,7 +20,7 @@ const createKeyStatisticsStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col`,
     title:
-      "prose-display-md w-full max-w-[47.5rem] break-words text-base-content-strong",
+      "prose-display-sm w-full max-w-[47.5rem] break-words text-base-content-strong",
     urlButtonContainer: "mx-auto mt-2 block",
     statistics: "flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row",
     itemContainer: "flex grow flex-col gap-3",
@@ -56,7 +58,7 @@ const createKeyStatisticsStyles = tv({
 
 const compoundStyles = createKeyStatisticsStyles()
 
-const KeyStatistics = ({
+export const KeyStatistics = ({
   id,
   title,
   statistics,
@@ -94,7 +96,11 @@ const KeyStatistics = ({
       {!!url && (
         <div className={compoundStyles.urlButtonContainer()}>
           <LinkButton
-            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            href={getReferenceLinkHref(
+              url,
+              site.siteMapArray,
+              site.assetsBaseUrl,
+            )}
             size="base"
             variant="outline"
             LinkComponent={LinkComponent}
@@ -107,5 +113,3 @@ const KeyStatistics = ({
     </section>
   )
 }
-
-export default KeyStatistics

@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { CalloutProseSchema } from "../native/Prose"
 
 export const CalloutSchema = Type.Object(
@@ -10,7 +10,7 @@ export const CalloutSchema = Type.Object(
     content: CalloutProseSchema,
   },
   {
-    title: "Callout component",
+    title: "Callout",
     description: "A component that highlights important information",
   },
 )

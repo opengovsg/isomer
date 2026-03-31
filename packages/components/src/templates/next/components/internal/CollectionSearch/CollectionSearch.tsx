@@ -1,7 +1,7 @@
 import type { CollectionSearchProps } from "../../../types/CollectionSearch"
 import { SearchField } from "../Search"
 
-const CollectionSearch = ({
+export const CollectionSearch = ({
   placeholder,
   search,
   setSearch,
@@ -15,5 +15,3 @@ const CollectionSearch = ({
     />
   )
 }
-
-export default CollectionSearch

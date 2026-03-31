@@ -1,0 +1,48 @@
+{
+  "name": "@isomer/pgboss",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "dist/cjs",
+    "dist/esm"
+  ],
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/cjs/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "run-p build:*",
+    "build:main": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build:module": "tsc -p tsconfig.module.build.json && tsc-alias -p tsconfig.module.build.json",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "db:sleep": "sleep 3",
+    "format": "oxfmt --check . --ignore-path ../../.gitignore",
+    "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
+    "lint": "oxlint --type-aware .",
+    "lint:fix": "oxlint --type-aware --fix .",
+    "prebuild": "rimraf dist",
+    "services:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
+    "setup:test": "run-s --print-label services:setup db:sleep",
+    "test": "run-s test:*",
+    "test:watch": "dotenv -e .env.test npx vitest watch"
+  },
+  "dependencies": {
+    "pg-boss": "^12.3.0",
+    "pino": "^9.6.0",
+    "vitest": "^2.1.1"
+  },
+  "devDependencies": {
+    "@isomer/oxlint-config": "*",
+    "@isomer/tsconfig": "*",
+    "@types/node": "^22.15.21",
+    "@vitest/coverage-istanbul": "^2.1.2",
+    "eslint": "^9.10.0",
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,7 +1,5 @@
 import type { Static, StringOptions } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
-
-import type { CollectionVariant } from "./variants"
 import {
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
@@ -28,7 +26,7 @@ export const TagCategoryUuidSchema = generateUuidSchema({
 // NOTE: single value for now but we might extend this in the future with additional metadata,
 // so we will leave it as is
 const DropdownItemSchema = Type.Object({
-  label: Type.String({ maxLength: 50 }),
+  label: Type.String({ maxLength: 70 }),
   id: TagOptionUuidSchema,
 })
 const TagOptionSchema = DropdownItemSchema
@@ -90,7 +88,7 @@ const BaseRefPageSchema = Type.Composite([
         description:
           "Add a short description to explain what this collection item is about",
         format: "textarea",
-        maxLength: 120,
+        maxLength: 500,
       }),
     ),
   }),
@@ -121,6 +119,11 @@ export const ArticlePagePageSchema = Type.Composite([
   imageSchemaObject,
 ])
 
+export const COLLECTION_VARIANT_OPTIONS = {
+  Blog: "blog",
+  Collection: "collection",
+} as const
+
 const COLLECTION_PAGE_SORT_BY = {
   date: "date",
   title: "title",
@@ -145,6 +148,17 @@ export const CollectionPagePageSchema = Type.Intersect([
   TagCategoriesSchema,
   TagsSchema,
   Type.Object({
+    variant: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal(COLLECTION_VARIANT_OPTIONS.Collection, {
+            title: "1-column",
+          }),
+          Type.Literal(COLLECTION_VARIANT_OPTIONS.Blog, { title: "2-column" }),
+        ],
+        { title: "Layout", format: "collection-variant" },
+      ),
+    ),
     defaultSortBy: Type.Optional(
       Type.Union(
         [
@@ -231,16 +245,11 @@ interface ArticlePageAdditionalProps {
   tags?: CollectionPagePageProps["tags"]
 }
 
-interface CollectionVariantProps {
-  variant?: CollectionVariant
-}
-
 export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &
   BasePageAdditionalProps &
   ArticlePageAdditionalProps
 export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
-  BasePageAdditionalProps &
-  CollectionVariantProps
+  BasePageAdditionalProps
 export type ContentPagePageProps = Static<typeof ContentPagePageSchema> &
   BasePageAdditionalProps
 export type IndexPagePageProps = Static<typeof IndexPagePageSchema> &

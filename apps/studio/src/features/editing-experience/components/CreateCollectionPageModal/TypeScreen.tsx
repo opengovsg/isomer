@@ -10,8 +10,8 @@ import {
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { Controller } from "react-hook-form"
-
 import { AppGrid } from "~/templates/AppGrid"
+
 import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"
 import { TypeOptionsInput } from "./TypeOptionsInput"
 

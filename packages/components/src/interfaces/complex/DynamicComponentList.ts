@@ -1,29 +1,24 @@
 import type { Static } from "@sinclair/typebox"
-import { Omit, Type } from "@sinclair/typebox"
-
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
-import { DgsDataSourceFieldsSchema } from "../integration"
-import {
-  CONTACT_INFORMATION_TYPE,
-  DgsContactInformationSchema,
-} from "./ContactInformation"
+import { Omit, Type } from "@sinclair/typebox"
 
-export const DYNAMIC_COMPONENT_LIST_TYPE = "dynamiccomponentlist"
+import { DgsDataSourceFieldsSchema } from "../integration"
+import { DgsContactInformationSchema } from "./ContactInformation/ContactInformation"
 
 const ContactInformationComponentSchema = Type.Intersect([
   Type.Object({
-    type: Type.Literal(CONTACT_INFORMATION_TYPE),
+    type: Type.Literal("contactinformation"),
   }),
   Omit(DgsContactInformationSchema, ["dataSource"]),
 ])
 
 export const DynamicComponentListSchema = Type.Object({
-  type: Type.Literal(DYNAMIC_COMPONENT_LIST_TYPE, {
-    default: DYNAMIC_COMPONENT_LIST_TYPE,
+  type: Type.Literal("dynamiccomponentlist", {
+    default: "dynamiccomponentlist",
   }),
   dataSource: Type.Union([DgsDataSourceFieldsSchema]),
   component: Type.Union([ContactInformationComponentSchema]),
@@ -35,10 +30,4 @@ export type DynamicComponentListProps = Static<
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
-}
-
-export type DgsTransformedContactInformationProps = Static<
-  typeof ContactInformationComponentSchema
-> & {
-  record: Record<string, string | number>
 }

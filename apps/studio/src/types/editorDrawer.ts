@@ -1,29 +1,37 @@
-export interface RootDrawerState {
+interface RootDrawerState {
   state: "root"
 }
 
-export interface RawJsonEditorModeDrawerState {
+interface RawJsonEditorModeDrawerState {
   state: "rawJsonEditor"
 }
 
-export interface AddNewBlockState {
+interface AddNewBlockState {
   state: "addBlock"
 }
 
-export interface NativeEditorState {
+interface NativeEditorState {
   state: "nativeEditor"
 }
 
-export interface ComplexEditorState {
+interface ComplexEditorState {
   state: "complexEditor"
 }
 
-export interface MetadataEditorState {
+interface MetadataEditorState {
   state: "metadataEditor"
 }
 
-export interface HeroEditorState {
+interface HeroEditorState {
   state: "heroEditor"
+}
+
+interface DatabaseEditorState {
+  state: "databaseEditor"
+}
+
+export interface CollectionEditorState {
+  state: "collectionEditor"
 }
 
 export type DrawerState =
@@ -33,4 +41,6 @@ export type DrawerState =
   | NativeEditorState
   | ComplexEditorState
   | MetadataEditorState
+  | DatabaseEditorState
   | HeroEditorState
+  | CollectionEditorState

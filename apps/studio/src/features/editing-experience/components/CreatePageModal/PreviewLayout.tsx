@@ -1,12 +1,12 @@
-import { useMemo } from "react"
 import { Box, Flex, Skeleton, Stack, Text } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
-
+import { useMemo } from "react"
 import Suspense from "~/components/Suspense"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
-import { PreviewIframe } from "../PreviewIframe"
-import PreviewWithoutSitemap from "../PreviewWithoutSitemap"
+
+import { PreviewIframe } from "../preview/PreviewIframe"
+import PreviewWithCustomSitemap from "../preview/PreviewWithCustomSitemap"
 import { LAYOUT_RENDER_DATA } from "./constants"
 import { useCreatePageWizard } from "./CreatePageWizardContext"
 
@@ -77,6 +77,9 @@ const SuspendableLayoutPreview = () => {
       case "content": {
         return {}
       }
+      case "database": {
+        return {}
+      }
     }
   }, [currentLayout])
   return (
@@ -85,7 +88,7 @@ const SuspendableLayoutPreview = () => {
       keyForRerender={currentLayout}
       style={themeCssVars}
     >
-      <PreviewWithoutSitemap
+      <PreviewWithCustomSitemap
         overrides={previewOverrides}
         siteId={siteId}
         permalink={currentPermalink}

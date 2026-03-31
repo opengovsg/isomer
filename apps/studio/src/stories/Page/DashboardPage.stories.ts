@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/nextjs"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-
 import DashboardPage from "~/pages/index"
+
 import { createBannerGbParameters } from "../utils/growthbook"
 
 const meta: Meta<typeof DashboardPage> = {

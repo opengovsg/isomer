@@ -1,69 +1,38 @@
-import {
-  add,
-  format,
-  isBefore,
-  isValid,
-  parse,
-  set,
-  startOfDay,
-} from "date-fns"
-import { fromZonedTime } from "date-fns-tz"
+import { add, format, isBefore, isValid, set, startOfDay } from "date-fns"
 import { z } from "zod"
+import { parseTimeStringToDate } from "~/components/Select/TimeSelect"
 
 import { basePageSchema } from "./page"
 
-export const MINIMUM_SCHEDULE_LEAD_TIME_MINUTES = 10
-
-export enum PublishMode {
-  NOW = "Now",
-  SCHEDULED = "Scheduled",
-}
-
-/**
- * The schema for publishing the page immediately
- */
-const nowPublishClientSchema = basePageSchema.extend({
-  publishMode: z.enum([PublishMode.NOW]),
-})
+export const MINIMUM_SCHEDULE_LEAD_TIME_MINUTES = 2
 
 /**
  * This schema includes the publish date and time for the scheduled publication
  */
-export const schedulePublishClientSchema = basePageSchema.extend({
-  publishMode: z.enum([PublishMode.SCHEDULED]),
-  publishDate: z.date(),
-  publishTime: z.string().refine((time) => {
-    // check that time is in HH:mm format
-    const parsed = parse(time, "HH:mm", new Date())
-    return isValid(parsed) && format(parsed, "HH:mm") === time
-  }),
-})
-
-export const publishClientSchema = z
-  .discriminatedUnion("publishMode", [
-    nowPublishClientSchema,
-    schedulePublishClientSchema,
-  ])
+export const schedulePublishClientSchema = basePageSchema
+  .extend({
+    publishDate: z.date(),
+    publishTime: z.string().refine((time) => {
+      // check that time is in HH:mm format
+      const parsed = parseTimeStringToDate(time)
+      return isValid(parsed) && format(parsed, "HH:mm") === time
+    }),
+  })
   .transform((schema) => {
-    if (schema.publishMode === PublishMode.NOW) return schema
     const { publishDate, publishTime, ...rest } = schema
     // combine publishDate and publishTime into a single Date object
     const [hours, minutes] = publishTime.split(":").map(Number)
     return {
       ...rest,
-      scheduledAt: fromZonedTime(
-        set(publishDate, {
-          hours,
-          minutes,
-          seconds: 0,
-          milliseconds: 0,
-        }),
-        "Asia/Singapore",
-      ),
+      scheduledAt: set(publishDate, {
+        hours,
+        minutes,
+        seconds: 0,
+        milliseconds: 0,
+      }),
     }
   })
   .superRefine((schema, ctx) => {
-    if (schema.publishMode === PublishMode.NOW) return
     const { scheduledAt } = schema
     const earliestScheduleTime = add(new Date(), {
       minutes: MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
@@ -75,7 +44,7 @@ export const publishClientSchema = z
       ctx.addIssue({
         path: isDateBeforeToday ? ["publishDate"] : ["publishTime"],
         code: z.ZodIssueCode.custom,
-        message: `Earliest publish time allowable is ${format(earliestScheduleTime, "MMMM d, yyyy hh:mm a")}`,
+        message: "Date can't be in the past",
       })
     }
   })

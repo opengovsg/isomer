@@ -1,8 +1,6 @@
 import "@fontsource/ibm-plex-mono" // Import if using code textStyles.
 import "inter-ui/inter.css" // Strongly recommended.
-import "../styles/tailwind.css"
-import "../styles/editor/editorStyles.scss"
-
+import "../styles/tiptap.scss"
 import type { AppProps, AppType } from "next/app"
 import { Skeleton, Stack } from "@chakra-ui/react"
 import { datadogRum } from "@datadog/browser-rum"
@@ -11,7 +9,6 @@ import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ErrorBoundary } from "react-error-boundary"
-
 import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider } from "~/components/AppProviders"
 import { DefaultFallback } from "~/components/ErrorBoundary/DefaultFallback"
@@ -78,10 +75,12 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
                   <AppBanner />
                   <VersionWrapper />
                   <ChildWithLayout {...props} />
-                  {/* eslint-disable-next-line no-restricted-properties */}
-                  {process.env.NODE_ENV !== "production" && (
-                    <ReactQueryDevtools initialIsOpen={false} />
-                  )}
+                  {
+                    // oxlint-disable-next-line node/no-process-env
+                    process.env.NODE_ENV !== "production" && (
+                      <ReactQueryDevtools initialIsOpen={false} />
+                    )
+                  }
                 </Stack>
               </Suspense>
             </ErrorBoundary>

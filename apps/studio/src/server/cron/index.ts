@@ -1,16 +1,24 @@
 import { createBaseLogger } from "../../lib/logger"
-import { deactivateInactiveUsersJob } from "./jobs"
+import { deactivateInactiveUsersJob } from "./jobs/deactivateInactiveUsersJob"
+import { schedulePublishingJob } from "./jobs/schedulePublishingJob"
+import { sendAccountDeactivationWarningEmailsJob } from "./jobs/sendAccountDeactivationWarningEmailsJob"
 
 const logger = createBaseLogger({ path: "cron:index" })
 
 // Track cron job instances for proper cleanup
 const cronJobs: { stop: () => void }[] = []
 
-export const initializeCronJobs = () => {
+export const initializeCronJobs = async () => {
   logger.info("Initializing cron jobs...")
 
   // Initialize and track all cron jobs
-  cronJobs.push(deactivateInactiveUsersJob())
+  cronJobs.push(
+    await deactivateInactiveUsersJob(),
+    await schedulePublishingJob(),
+    await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 1 }),
+    await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 7 }),
+    await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 14 }),
+  )
 
   logger.info("Cron jobs initialized successfully")
 }

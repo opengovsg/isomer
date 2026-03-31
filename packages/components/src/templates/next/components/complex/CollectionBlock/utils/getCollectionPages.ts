@@ -1,6 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { IsomerSiteProps } from "~/types"
 import type { IsomerCollectionPageSitemap } from "~/types/sitemap"
+
 import {
   getCollectionItems,
   processCollectionItems,
@@ -24,12 +25,6 @@ export const getCollectionPages = ({
     sortDirection:
       collectionParent.collectionPagePageProps?.defaultSortDirection,
   })
-
-  if (items.length === 0) {
-    throw new Error(
-      `CollectionBlock: No collection items found for reference link ${collectionParent.permalink}`,
-    )
-  }
 
   return processCollectionItems(items).slice(0, NUMBER_OF_PAGES_TO_DISPLAY)
 }

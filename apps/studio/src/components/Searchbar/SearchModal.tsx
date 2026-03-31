@@ -1,4 +1,3 @@
-import { useCallback, useState } from "react"
 import {
   Modal,
   ModalContent,
@@ -8,9 +7,10 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
-
+import { useCallback, useState } from "react"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
+
 import { CommandKey } from "./CommandKey"
 import {
   InitialState,

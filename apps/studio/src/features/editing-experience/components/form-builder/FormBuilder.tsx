@@ -4,9 +4,9 @@ import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"
 import { groupBy } from "lodash"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { ajv } from "~/utils/ajv"
+
 import { useBuilderErrors } from "./ErrorProvider"
 import {
   JsonFormsAllOfControl,
@@ -25,12 +25,20 @@ import {
   jsonFormsChildrenPagesOrderingControlTester,
   JsonFormsCollectionDropdownControl,
   jsonFormsCollectionDropdownControlTester,
+  JsonFormsCollectionVariantControl,
+  jsonFormsCollectionVariantControlTester,
+  JsonFormsColourPickerControl,
+  jsonFormsColourPickerControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
   jsonFormsDateControlTester,
+  JsonFormsDgsDatasetIdControl,
+  jsonFormsDgsDatasetIdControlTester,
   JsonFormsEmbedControl,
   jsonFormsEmbedControlTester,
+  JsonFormsEnumControl,
+  jsonFormsEnumControlTester,
   jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
   JsonFormsHiddenControl,
@@ -39,16 +47,28 @@ import {
   jsonFormsImageControlTester,
   JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
+  JsonFormsLinkArrayControl,
+  jsonFormsLinkArrayControlTester,
   JsonFormsLinkControl,
   jsonFormsLinkControlTester,
+  JsonFormsMaxColumnsControl,
+  jsonFormsMaxColumnsControlTester,
   JsonFormsMetaImageControl,
   jsonFormsMetaImageControlTester,
+  JsonFormsNavbarControl,
+  jsonFormsNavbarControlTester,
   JsonFormsObjectControl,
   jsonFormsObjectControlTester,
+  JsonFormsOneOfControl,
+  jsonFormsOneOfControlTester,
   JsonFormsProseControl,
   jsonFormsProseControlTester,
   JsonFormsRefControl,
   jsonFormsRefControlTester,
+  JsonFormsSearchSGControl,
+  jsonFormsSearchSGControlTester,
+  JsonFormsSocialMediaControl,
+  jsonFormsSocialMediaControlTester,
   JsonFormsTagCategoriesControl,
   jsonFormsTagCategoriesControlTester,
   JsonFormsTaggedControl,
@@ -63,9 +83,23 @@ import {
   jsonFormsUuidControlTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
+  JsonFormsWidgetIntegrationControl,
+  jsonFormsWidgetIntegrationControlTester,
 } from "./renderers"
 
 export const renderers: JsonFormsRendererRegistryEntry[] = [
+  {
+    renderer: JsonFormsColourPickerControl,
+    tester: jsonFormsColourPickerControlTester,
+  },
+  {
+    renderer: JsonFormsWidgetIntegrationControl,
+    tester: jsonFormsWidgetIntegrationControlTester,
+  },
+  {
+    renderer: JsonFormsSearchSGControl,
+    tester: jsonFormsSearchSGControlTester,
+  },
   {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,
@@ -75,6 +109,18 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     renderer: JsonFormsChildrenPagesOrderingControl,
     tester: jsonFormsChildrenPagesOrderingControlTester,
+  },
+  {
+    renderer: JsonFormsNavbarControl,
+    tester: jsonFormsNavbarControlTester,
+  },
+  {
+    renderer: JsonFormsLinkArrayControl,
+    tester: jsonFormsLinkArrayControlTester,
+  },
+  {
+    renderer: JsonFormsSocialMediaControl,
+    tester: jsonFormsSocialMediaControlTester,
   },
   {
     tester: jsonFormsProseControlTester,
@@ -90,10 +136,15 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsUnionRootControl,
   },
   { tester: jsonFormsEmbedControlTester, renderer: JsonFormsEmbedControl },
+  {
+    tester: jsonFormsDgsDatasetIdControlTester,
+    renderer: JsonFormsDgsDatasetIdControl,
+  },
   { tester: jsonFormsHiddenControlTester, renderer: JsonFormsHiddenControl },
   { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
   { tester: jsonFormsLinkControlTester, renderer: JsonFormsLinkControl },
+  { tester: jsonFormsEnumControlTester, renderer: JsonFormsEnumControl },
   {
     tester: jsonFormsTextAreaControlTester,
     renderer: JsonFormsTextAreaControl,
@@ -102,6 +153,7 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsRefControlTester, renderer: JsonFormsRefControl },
   { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
   { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
+  { tester: jsonFormsOneOfControlTester, renderer: JsonFormsOneOfControl },
   {
     tester: jsonFormsGroupLayoutTester,
     renderer: jsonFormsGroupLayoutRenderer,
@@ -117,6 +169,14 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsChildrenPagesLayoutControlTester,
     renderer: JsonFormsChildrenPagesLayoutControl,
+  },
+  {
+    tester: jsonFormsMaxColumnsControlTester,
+    renderer: JsonFormsMaxColumnsControl,
+  },
+  {
+    tester: jsonFormsCollectionVariantControlTester,
+    renderer: JsonFormsCollectionVariantControl,
   },
   {
     // NOTE: If we fall through all our previous testers,

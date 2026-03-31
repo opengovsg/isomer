@@ -1,9 +1,8 @@
 import { Box } from "@chakra-ui/react"
-import { type Meta, type StoryObj } from "@storybook/react"
+import { type Meta, type StoryObj } from "@storybook/nextjs"
+import { VersionModal } from "~/components/VersionWrapper/VersionModal"
 
 import { withChromaticModes } from "@isomer/storybook-config"
-
-import { VersionModal } from "~/components/VersionWrapper/VersionModal"
 
 const meta: Meta<typeof VersionModal> = {
   title: "Components/VersionModal",

@@ -1,14 +1,14 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { expect, userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { expect, userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
 import { whitelistHandlers } from "tests/msw/handlers/whitelist"
-
 import UsersPage from "~/pages/sites/[siteId]/users"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
-import { ResetAddUserModalDecorator } from "../decorators/resetModalState"
+
+import { ResetAddUserModalDecorator } from "../decorators"
 
 const EMAIL = "chillguy@isomer.gov.sg"
 const COMMON_HANDLERS = [

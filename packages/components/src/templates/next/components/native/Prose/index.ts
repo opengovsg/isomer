@@ -1,1 +1,1 @@
-export { default } from "./Prose"
+export { Prose } from "./Prose"

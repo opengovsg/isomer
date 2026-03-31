@@ -1,7 +1,6 @@
-import { useEffect } from "react"
-import { type Decorator } from "@storybook/react"
+import type { Decorator } from "@storybook/nextjs"
 import { useSetAtom } from "jotai"
-
+import { useEffect } from "react"
 import {
   addUserModalAtom,
   DEFAULT_ADD_USER_MODAL_STATE,

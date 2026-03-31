@@ -24,5 +24,4 @@
     "tsx": "^4.20.4",
     "type-fest": "^4.41.0"
   },
-  "prettier": "@isomer/prettier-config"
 }

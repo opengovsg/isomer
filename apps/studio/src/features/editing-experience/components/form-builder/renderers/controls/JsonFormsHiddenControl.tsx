@@ -1,7 +1,6 @@
 import type { RankedTester } from "@jsonforms/core"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsHiddenControlTester: RankedTester = rankWith(
@@ -9,7 +8,7 @@ export const jsonFormsHiddenControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "hidden"),
 )
 
-export function JsonFormsHiddenControl() {
+function JsonFormsHiddenControl() {
   return <></>
 }
 

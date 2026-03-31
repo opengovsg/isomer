@@ -1,14 +1,14 @@
-import type { ControlProps, RankedTester } from "@jsonforms/core"
+import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
-
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
+
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   MAX_IMG_FILE_SIZE_BYTES,
@@ -24,8 +24,9 @@ export const jsonFormsImageControlTester: RankedTester = rankWith(
 )
 interface JsonFormsImageControlProps extends ControlProps {
   data: string
+  schema: JsonSchema & { maxSizeInBytes?: number }
 }
-export function JsonFormsImageControl({
+function JsonFormsImageControl({
   label,
   handleChange,
   path,
@@ -33,6 +34,7 @@ export function JsonFormsImageControl({
   errors,
   description,
   data,
+  schema,
 }: JsonFormsImageControlProps) {
   const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
 
@@ -46,10 +48,10 @@ export function JsonFormsImageControl({
         />
       ) : (
         <FileAttachment
-          maxSizeInBytes={MAX_IMG_FILE_SIZE_BYTES}
+          maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
           acceptedFileTypes={IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
           siteId={siteId}
-          resourceId={String(pageId ?? linkId)}
+          resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
           setHref={(src) => handleChange(path, src)}
         />
       )}

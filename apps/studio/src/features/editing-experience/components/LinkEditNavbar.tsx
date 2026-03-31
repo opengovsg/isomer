@@ -1,4 +1,3 @@
-import Link from "next/link"
 import {
   BreadcrumbItem,
   BreadcrumbLink,
@@ -7,14 +6,13 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Breadcrumb } from "@opengovsg/design-system-react"
-import { useAtomValue } from "jotai"
-
+import Link from "next/link"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
-import { linkRefAtom } from "../atoms"
+
 import PublishButton from "./PublishButton"
 
 interface NavigationBreadcrumbsProps {
@@ -96,7 +94,6 @@ const NavigationBreadcrumbs = ({
 
 export const LinkEditNavbar = (): JSX.Element => {
   const { linkId, siteId } = useQueryParse(editLinkSchema)
-  const ref = useAtomValue(linkRefAtom)
 
   return (
     <Flex
@@ -117,7 +114,7 @@ export const LinkEditNavbar = (): JSX.Element => {
 
       {linkId && siteId && (
         <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
-          <PublishButton pageId={linkId} siteId={siteId} isDisabled={!ref} />
+          <PublishButton pageId={linkId} siteId={siteId} />
         </Flex>
       )}
     </Flex>

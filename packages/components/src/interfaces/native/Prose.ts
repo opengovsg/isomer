@@ -1,13 +1,17 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { DividerSchema } from "./Divider"
 import { HeadingSchema } from "./Heading"
 import { OrderedListSchema } from "./OrderedList"
 import { ParagraphSchema } from "./Paragraph"
 import { TableSchema } from "./Table"
 import { UnorderedListSchema } from "./UnorderedList"
+
+const PROSE_CONTENT_VALUE_SCHEMA = Type.Array(
+  Type.Union([DividerSchema, ParagraphSchema]),
+)
 
 const PROSE_CONTENT_SCHEMA = Type.Array(
   Type.Union([
@@ -33,6 +37,7 @@ export type ComponentsWithProse =
   | "accordion"
   | "callout"
   | "contentpic"
+  | "simple-prose"
 
 const generateProseSchema = ({
   id,
@@ -58,10 +63,22 @@ const generateProseSchema = ({
   )
 }
 
+// NOTE: We need this for other parts of our codebase
+// that relies on json forms but is not part of components.
+// because our original prose schema uses `Type.Ref`,
+// these sections of our codebase are unable to extract the reference
+// leading to errors
+export const SimpleProseSchema = Type.Object(
+  {
+    type: Type.Literal("prose"),
+    content: PROSE_CONTENT_VALUE_SCHEMA,
+  },
+  { format: "simple-prose" },
+)
+
 export const ProseSchema = generateProseSchema({
   id: "components-native-prose",
 })
-export const BaseProseSchema = generateProseSchema({})
 export const AccordionProseSchema = generateProseSchema({
   format: "accordion",
   isRequired: true,

@@ -21,7 +21,7 @@ export const SUPPORTED_ICON_NAMES = [
 
 export type SupportedIconName = (typeof SUPPORTED_ICON_NAMES)[number]
 // TODO: use union types to support more icon libraries apart from react-icons
-export type SupportedIconType = IconType
+type SupportedIconType = IconType
 export const SUPPORTED_ICONS_MAP: Record<SupportedIconName, SupportedIconType> =
   {
     "right-arrow": BiRightArrowAlt,

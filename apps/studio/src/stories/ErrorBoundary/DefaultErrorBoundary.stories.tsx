@@ -1,5 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react/*"
-
+import type { Meta, StoryObj } from "@storybook/nextjs"
 import { DefaultTrpcError } from "~/components/ErrorBoundary/DefaultTrpcError"
 
 const meta: Meta<typeof DefaultTrpcError> = {

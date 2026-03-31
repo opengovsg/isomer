@@ -1,5 +1,12 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
+import type { ModifiedAsset } from "~/types/assets"
+import type { ResourceType } from "~prisma/generated/generatedEnums"
+import { useToast } from "@opengovsg/design-system-react"
+import {
+  DEFAULT_CHILDREN_PAGES_BLOCK,
+  ISOMER_USABLE_PAGE_LAYOUTS,
+} from "@opengovsg/isomer-components"
 import {
   createContext,
   useCallback,
@@ -7,25 +14,16 @@ import {
   useEffect,
   useState,
 } from "react"
-import { useToast } from "@opengovsg/design-system-react"
-import {
-  DEFAULT_CHILDREN_PAGES_BLOCK,
-  ISOMER_USABLE_PAGE_LAYOUTS,
-} from "@opengovsg/isomer-components"
 import { flushSync } from "react-dom"
-
-import type { ModifiedAsset } from "~/types/assets"
-import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { type DrawerState } from "~/types/editorDrawer"
 import { trpc } from "~/utils/trpc"
 
-export interface DrawerContextType
-  extends Pick<
-    EditorDrawerProviderProps,
-    "type" | "permalink" | "siteId" | "pageId" | "updatedAt" | "title"
-  > {
+interface DrawerContextType extends Pick<
+  EditorDrawerProviderProps,
+  "type" | "permalink" | "siteId" | "pageId" | "updatedAt" | "title"
+> {
   currActiveIdx: number
   setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState

@@ -1,5 +1,4 @@
 export { getBreadcrumbFromSiteMap } from "./getBreadcrumbFromSiteMap"
-export { getDigestFromText } from "./getDigestFromText"
 export { getFormattedDate } from "./getFormattedDate"
 export { getNodeFromSiteMap } from "./getNodeFromSiteMap"
 export { getParsedDate } from "./getParsedDate"
@@ -22,9 +21,8 @@ export {
   getDgsIdFromDgsLink,
 } from "./dgs"
 export { fetchFileMetadata } from "./fetchFileMetadata"
-export { orderedListSchemaBuilder } from "./orderedListSchemaBuilder"
+export { formatBytes } from "./formatBytes"
 export * from "./tailwind"
-export { unorderedListSchemaBuilder } from "./unorderedListSchemaBuilder"
 export { getWordsFromPermalink } from "./getWordsFromPermalink"
 export {
   getResourceIdFromReferenceLink,

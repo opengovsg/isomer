@@ -1,5 +1,4 @@
 import { z } from "zod"
-
 import { OTP_LENGTH } from "~/lib/auth"
 import { isValidEmail } from "~/utils/email"
 import { normaliseEmail } from "~/utils/zod"

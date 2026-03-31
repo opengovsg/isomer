@@ -1,12 +1,12 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
-import { createContext, useContext, useMemo, useState } from "react"
-import { useRouter } from "next/router"
 import { merge } from "lodash"
-
+import { useRouter } from "next/router"
+import { createContext, useContext, useMemo, useState } from "react"
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
+import databaseLayoutPreview from "~/features/editing-experience/data/databaseLayoutPreview.json"
 import { useZodForm } from "~/lib/form"
 import { createPageSchema } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
@@ -26,7 +26,7 @@ interface CreatePageWizardProps extends Pick<UseDisclosureReturn, "onClose"> {
   folderId?: number
 }
 
-export type CreatePageWizardContextReturn = ReturnType<
+type CreatePageWizardContextReturn = ReturnType<
   typeof useCreatePageWizardContext
 >
 
@@ -44,8 +44,7 @@ export const useCreatePageWizard = (): CreatePageWizardContextReturn => {
   return context
 }
 
-export const INITIAL_STEP_STATE: CreatePageFlowStates =
-  CreatePageFlowStates.Layout
+const INITIAL_STEP_STATE: CreatePageFlowStates = CreatePageFlowStates.Layout
 
 const useCreatePageWizardContext = ({
   siteId,
@@ -75,8 +74,18 @@ const useCreatePageWizardContext = ({
     )
 
   const layoutPreviewJson: IsomerSchema = useMemo(() => {
-    const jsonPreview =
-      layout === "content" ? contentLayoutPreview : articleLayoutPreview
+    let jsonPreview
+    switch (layout) {
+      case "content":
+        jsonPreview = contentLayoutPreview
+        break
+      case "article":
+        jsonPreview = articleLayoutPreview
+        break
+      case "database":
+        jsonPreview = databaseLayoutPreview
+        break
+    }
     return merge(jsonPreview, {
       page: {
         title: title || "Page title here",

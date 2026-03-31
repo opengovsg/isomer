@@ -1,13 +1,15 @@
 "use client"
 
 import type { Dispatch, SetStateAction } from "react"
-import { forwardRef } from "react"
-import { FocusScope } from "react-aria"
-import { Button } from "react-aria-components"
-import { useScrollLock } from "usehooks-ts"
-
 import type { NavbarClientProps } from "~/interfaces"
-import { focusVisibleHighlight, isExternalUrl } from "~/utils"
+import { useButton } from "@react-aria/button"
+import { FocusScope, useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
+import { forwardRef, useRef } from "react"
+import { useScrollLock } from "usehooks-ts"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+import { focusVisibleHighlight } from "~/utils/tailwind"
+
 import { Link } from "../../Link"
 import { LinkButton } from "../../LinkButton/LinkButton"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
@@ -37,6 +39,10 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     mobileMenuRef,
   ) => {
     useScrollLock()
+    const buttonRef = useRef<HTMLButtonElement>(null)
+    const { buttonProps } = useButton({ onPress: onCloseMenu }, buttonRef)
+    const { focusProps } = useFocusRing()
+    const mergedButtonProps = mergeProps(buttonProps, focusProps)
 
     return (
       <div
@@ -46,7 +52,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
           top,
         }}
       >
-        <FocusScope contain restoreFocus>
+        <FocusScope restoreFocus>
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
             {!!callToAction && (
               <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
@@ -55,6 +61,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                   isExternal={isExternalUrl(callToAction.url)}
                   className="h-fit w-full justify-center"
                   isWithFocusVisibleHighlight
+                  onClick={onCloseMenu}
                   LinkComponent={LinkComponent}
                 >
                   {callToAction.label}
@@ -65,7 +72,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={`${item.name}-${index}`}
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 LinkComponent={LinkComponent}
                 index={index}
                 isOpen={index === openNavItemIdx}
@@ -74,6 +81,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                     currIdx === index ? -1 : index,
                   )
                 }
+                onCloseMenu={onCloseMenu}
                 {...item}
               />
             ))}
@@ -98,6 +106,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                         href={item.url}
                         isExternal={isExternalUrl(item.url)}
                         showExternalIcon={isExternalUrl(item.url)}
+                        onClick={onCloseMenu}
                       >
                         {item.name}
                       </Link>
@@ -107,15 +116,16 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
               </div>
             )}
 
-            <Button
+            <button
+              {...mergedButtonProps}
+              ref={buttonRef}
               className={focusVisibleHighlight({
                 className:
                   "prose-headline-base-medium absolute -left-[100000px] flex h-[1px] w-[1px] items-center justify-between gap-6 overflow-hidden px-6 py-3 text-left text-base-content focus:static focus:h-auto focus:w-full",
               })}
-              onPress={onCloseMenu}
             >
               Exit navigation menu
-            </Button>
+            </button>
           </div>
         </FocusScope>
       </div>

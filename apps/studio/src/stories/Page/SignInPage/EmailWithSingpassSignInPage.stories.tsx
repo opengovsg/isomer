@@ -1,12 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { expect, userEvent, within } from "@storybook/test"
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { expect, userEvent, within } from "storybook/test"
 import { authEmailHandlers } from "tests/msw/handlers/auth/email"
 import { meHandlers } from "tests/msw/handlers/me"
-
-import { withChromaticModes } from "@isomer/storybook-config"
-
 import SignInPage from "~/pages/sign-in"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
+
+import { withChromaticModes } from "@isomer/storybook-config"
 
 const VALID_AUTH_EMAIL = "test@example.gov.sg"
 

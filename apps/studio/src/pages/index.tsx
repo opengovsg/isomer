@@ -1,5 +1,4 @@
 import { Flex, Text } from "@chakra-ui/react"
-
 import { SiteList } from "~/features/dashboard/SiteList"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"

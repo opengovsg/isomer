@@ -1,8 +1,9 @@
-import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
-import { ISOMER_PAGE_LAYOUTS } from "~/types"
-import { getSitemapAsArray } from "~/utils"
+import type { IsomerPageSchemaType } from "~/types/schema"
+import type { IsomerSitemap } from "~/types/sitemap"
+import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
+import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
-const getMetaTitle = (props: IsomerPageSchemaType) => {
+const getOpenGraphTitle = (props: IsomerPageSchemaType) => {
   // NOTE: We show the site name as the title for the homepage, as places like
   // WhatsApp do not use the site_name property of the OpenGraph metadata when
   // displaying the page preview, which can be confusing for users
@@ -92,7 +93,9 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
 
   const metadata = {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
-    title: getMetaTitle(props),
+    // NOTE: The title will be used like "{title} | {siteName}" inside the
+    // NextJS template
+    title: props.page.title,
     description: getMetaDescription(props),
     robots: {
       index:
@@ -107,7 +110,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
       shortcut: faviconUrl,
     },
     openGraph: {
-      title: getMetaTitle(props),
+      title: getOpenGraphTitle(props),
       description: getMetaDescription(props),
       url: canonicalUrl,
       siteName: props.site.siteName,
@@ -150,10 +153,16 @@ export const getRobotsTxt = (props: IsomerPageSchemaType) => {
   return {
     sitemap: props.site.url ? `${props.site.url}/sitemap.xml` : undefined,
     rules: shouldBlockIndexing(props.site.environment)
-      ? {
-          userAgent: "*",
-          disallow: "/",
-        }
+      ? [
+          {
+            userAgent: "*",
+            disallow: "/",
+          },
+          {
+            userAgent: "SearchSG",
+            allow: "/",
+          },
+        ]
       : rules,
   }
 }
@@ -165,8 +174,17 @@ export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
         item.layout !== ISOMER_PAGE_LAYOUTS.File &&
         item.layout !== ISOMER_PAGE_LAYOUTS.Link,
     )
-    .map(({ permalink, lastModified }) => ({
-      url: siteUrl !== undefined ? `${siteUrl}${permalink}` : permalink,
-      lastModified,
-    }))
+    .map(({ permalink, lastModified }) => {
+      const permalinkWithTrailingSlash = permalink.endsWith("/")
+        ? permalink
+        : `${permalink}/`
+
+      return {
+        url:
+          siteUrl !== undefined
+            ? `${siteUrl}${permalinkWithTrailingSlash}`
+            : permalinkWithTrailingSlash,
+        lastModified,
+      }
+    })
 }
