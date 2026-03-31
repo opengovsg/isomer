@@ -8,6 +8,7 @@ const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
     <summary className="group/summary flex w-full cursor-pointer list-none gap-1 text-start leading-5 outline-none lg:flex-row lg:items-center [&::-webkit-details-marker]:hidden">
       <div className="mx-auto flex w-full max-w-screen-xl gap-1 px-6 text-start md:px-10 lg:flex-row lg:items-center">
         <svg
+          aria-hidden
           version="1.1"
           xmlns="http://www.w3.org/2000/svg"
           width="32"
@@ -50,6 +51,7 @@ const RestrictedContent = ({
         <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
           <div className="-mt-[0.1rem] lg:mt-[0.2rem]">
             <svg
+              aria-hidden
               xmlns="http://www.w3.org/2000/svg"
               width="17"
               height="17"
@@ -76,6 +78,7 @@ const RestrictedContent = ({
               >
                 Trusted websites
                 <svg
+                  aria-hidden
                   version="1.1"
                   xmlns="http://www.w3.org/2000/svg"
                   width="18"
@@ -93,6 +96,7 @@ const RestrictedContent = ({
         <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
           <div className="-mt-[0.1rem]">
             <svg
+              aria-hidden
               xmlns="http://www.w3.org/2000/svg"
               width="15"
               height="18"
@@ -110,6 +114,7 @@ const RestrictedContent = ({
             <article>
               Look for a <b>lock</b> (
               <svg
+                aria-hidden
                 xmlns="http://www.w3.org/2000/svg"
                 width="15"
                 height="18"
