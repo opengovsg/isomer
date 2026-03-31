@@ -550,17 +550,24 @@ const updateOrderingForResource = async (
   sitemap: IsomerSitemap,
   parentId: string,
 ) => {
-  // NOTE: First, find the published index blob of the parent
-  const publishedIndexBlob = await getPublishedIndexBlobByParentId({
-    db,
-    resourceId: parentId,
-  })
+  // NOTE: First, try to find the published index blob of the parent
+  let indexBlob = undefined
+
+  // NOTE: early return if no index blob
+  // as that means that there is no ordering defined
+  try {
+    indexBlob = await getPublishedIndexBlobByParentId({
+      db,
+      resourceId: parentId,
+    })
+  } catch {
+    return sitemap
+  }
 
   // NOTE: Next, get the content and see if we have defined a `childrenPagesOrdering`
-  const childrenPages = publishedIndexBlob.content.content.find(({ type }) => {
+  const childrenPages = indexBlob.content.content.find(({ type }) => {
     return type === "childrenpages"
   })
-
   // No need to do anything
   // NOTE: Need to narrow type for inference hence the duplicate check on `type`
   if (!childrenPages || childrenPages.type !== "childrenpages") {
