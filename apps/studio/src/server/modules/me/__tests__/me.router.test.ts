@@ -9,8 +9,8 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import { setupUser } from "tests/integration/helpers/seed"
-
 import { createCallerFactory } from "~/server/trpc"
+
 import { meRouter } from "../me.router"
 
 const createCaller = createCallerFactory(meRouter)

@@ -3,7 +3,6 @@ import type {
   IsomerComponent,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
-import { useCallback, useState } from "react"
 import {
   Box,
   Button,
@@ -23,6 +22,7 @@ import {
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiCog, BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
+import { useCallback, useState } from "react"
 import { Disable } from "~/components/Disable"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BlockEditingPlaceholder } from "~/components/Svg"
@@ -34,6 +34,8 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import { TYPE_TO_ICON } from "../../constants"
 import { pageSchema } from "../../schema"
 import { getIsHeroFirstBlock } from "../../utils/getIsHeroFirstBlock"

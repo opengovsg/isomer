@@ -2,10 +2,18 @@ import type { SelectExpression } from "kysely"
 import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
+import type { ResourceItemContent } from "~/schemas/resource"
 import { TRPCError } from "@trpc/server"
+import _ from "lodash"
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import {
+  getSitemapTree,
+  injectTagMappings,
+  isCollectionItem,
+  overwriteCollectionChildrenForCollectionBlock,
+} from "~/utils/sitemap"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
-import _ from "lodash"
 
 import type {
   Footer,

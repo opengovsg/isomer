@@ -8,6 +8,8 @@ import type { UsageTooltipProps } from "./UsageTooltip"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { type DrawerState } from "~/types/editorDrawer"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import {
   ARTICLE_ALLOWED_BLOCKS,
   BLOCK_TO_META,

@@ -1,4 +1,3 @@
-import { useCallback } from "react"
 import {
   Button,
   Modal,
@@ -10,6 +9,7 @@ import {
   useBreakpointValue,
 } from "@chakra-ui/react"
 import { ModalCloseButton } from "@opengovsg/design-system-react"
+import { useCallback } from "react"
 import { BiRefresh } from "react-icons/bi"
 
 interface VersionModalProps {

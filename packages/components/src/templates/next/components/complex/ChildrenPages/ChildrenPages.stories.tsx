@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { ChildrenPagesProps } from "~/interfaces"
 import type { IsomerSiteProps } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { ChildrenPages } from "./ChildrenPages"
 
 const meta: Meta<ChildrenPagesProps> = {

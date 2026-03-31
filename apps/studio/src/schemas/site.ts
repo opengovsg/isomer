@@ -7,7 +7,6 @@ import {
   SiteThemeSchema,
 } from "@opengovsg/isomer-components"
 import { z } from "zod"
-
 import { ajv } from "~/utils/ajv"
 
 export type Notification = Static<typeof NotificationSettingsSchema>

@@ -11,10 +11,10 @@ import {
 } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
-
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { trpc } from "~/utils/trpc"
+
 import {
   DEFAULT_REMOVE_USER_MODAL_STATE,
   removeUserModalAtom,

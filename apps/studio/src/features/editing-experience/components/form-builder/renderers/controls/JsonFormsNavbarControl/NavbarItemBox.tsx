@@ -5,7 +5,6 @@ import type {
   ElementDragType,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types"
 import type { Dispatch, SetStateAction } from "react"
-import { useEffect, useRef, useState } from "react"
 import {
   attachClosestEdge,
   extractClosestEdge,
@@ -31,6 +30,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
+import { useEffect, useRef, useState } from "react"
 import {
   BiChevronDown,
   BiDotsHorizontalRounded,

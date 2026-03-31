@@ -1,7 +1,8 @@
-import { registerPgbossJob } from "@isomer/pgboss"
-
 import type { BulkSendAccountDeactivationWarningEmailsProps } from "~/server/modules/user/types"
 import { bulkSendAccountDeactivationWarningEmails } from "~/server/modules/user/inactiveUsers.service"
+
+import { registerPgbossJob } from "@isomer/pgboss"
+
 import { createBaseLogger } from "../../../lib/logger"
 
 const CRON_SCHEDULE = "0 0 * * *" // every day at 00:00 (midnight)

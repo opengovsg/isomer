@@ -1,4 +1,3 @@
-import type { ChildPage } from "./types"
 import type { ChildrenPagesProps } from "~/interfaces"
 
 type SortablePage = Pick<ChildPage, "id" | "title">

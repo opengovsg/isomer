@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { InfoCardsProps } from "~/interfaces"
 import type { IsomerPageLayoutType } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { InfoCards } from "./InfoCards"
 
 const meta: Meta<InfoCardsProps> = {

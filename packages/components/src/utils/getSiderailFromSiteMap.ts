@@ -1,5 +1,6 @@
 import type { SiderailProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types"
+
 import { getNodeFromSiteMap } from "./getNodeFromSiteMap"
 
 export const getSiderailFromSiteMap = (

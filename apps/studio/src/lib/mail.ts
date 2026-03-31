@@ -1,5 +1,4 @@
 import wretch from "wretch"
-
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 import { isEmailWhitelisted } from "~/server/modules/whitelist/whitelist.service"

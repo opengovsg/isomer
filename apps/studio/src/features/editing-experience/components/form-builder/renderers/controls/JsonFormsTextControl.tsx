@@ -8,9 +8,9 @@ import {
   FormLabel,
   Input,
 } from "@opengovsg/design-system-react"
-
 import { MarkdownLabel } from "~/components/MarkdownLabel"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsTextControlTester: RankedTester = rankWith(
