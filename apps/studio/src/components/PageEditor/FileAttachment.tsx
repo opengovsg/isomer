@@ -11,6 +11,7 @@ import {
 } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { RiskyFileUploadModal } from "./RiskyFileUploadModal"
 
 interface FileAttachmentProps {
   setHref: (href?: string) => void
@@ -115,7 +116,14 @@ export const FileAttachment = ({
         </Text>
       </FormControl>
 
-      {pendingAckRiskyFile && <>{/* TODO: add modal */}</>}
+      {pendingAckRiskyFile && (
+        <RiskyFileUploadModal
+          isOpen={!!pendingAckRiskyFile}
+          fileExtension={getFileExtension(pendingAckRiskyFile.name)}
+          onConfirm={() => doUpload(pendingAckRiskyFile)}
+          onClose={() => setPendingAckRiskyFile(null)}
+        />
+      )}
     </>
   )
 }
