@@ -391,36 +391,57 @@ export const folderRouter = router({
         // However, we will use the `IndexPage` as a filter as we should only
         // show the preview for published `IndexPages` (draft pages won't show on end site)
         .with("publishedCousinIndexPages", (eb) => {
-          return (
-            eb
-              .selectFrom("Resource")
-              .where("parentId", "in", (qb) =>
-                qb
-                  .selectFrom("directChildren")
-                  .where("type", "in", [
-                    ResourceType.Folder,
-                    ResourceType.Collection,
-                  ])
-                  .select("id"),
-              )
-              // NOTE: Keeping in line with how we select resources for sitemap,
-              // we will only select published index pages here
-              .where("state", "=", ResourceState.Published)
-              .where("type", "=", ResourceType.IndexPage)
-              .select(["Resource.parentId"])
-          )
+          return eb
+            .selectFrom("Resource")
+            .where("parentId", "in", (qb) =>
+              qb
+                .selectFrom("directChildren")
+                .where("type", "in", [
+                  ResourceType.Folder,
+                  ResourceType.Collection,
+                ])
+                .select("id"),
+            )
+            // NOTE: Keeping in line with how we select resources for sitemap,
+            // we will only select published index pages here
+            .where("state", "=", ResourceState.Published)
+            .where("type", "=", ResourceType.IndexPage)
+            .select([
+              "Resource.parentId",
+              (eb) =>
+                eb
+                  .selectFrom("Resource as Parent")
+                  .whereRef("Parent.id", "=", "Resource.parentId")
+                  .select("Parent.type")
+                  .as("parentType"),
+            ])
         })
         .selectFrom("Resource")
         .where("siteId", "=", Number(siteId))
         .where("id", "in", (qb) =>
-          qb.selectFrom("publishedCousinIndexPages").select("parentId"),
+          qb
+            .selectFrom("publishedCousinIndexPages")
+            .where("parentType", "=", ResourceType.Folder)
+            .select("parentId"),
         )
-        .select(["id", "title"])
+        .select(["id", "title", "type"])
+        .unionAll((qb) => {
+          return qb
+            .selectFrom("Resource")
+            .where("siteId", "=", Number(siteId))
+            .where("id", "in", (innerQb) =>
+              innerQb
+                .selectFrom("publishedCousinIndexPages")
+                .where("parentType", "=", ResourceType.Collection)
+                .select("parentId"),
+            )
+            .select(["id", "title", "type"])
+        })
         .unionAll((qb) => {
           return qb
             .selectFrom("directChildren")
             .where("type", "=", ResourceType.Page)
-            .select(["id", "title"])
+            .select(["id", "title", "type"])
         })
         .execute()
 
