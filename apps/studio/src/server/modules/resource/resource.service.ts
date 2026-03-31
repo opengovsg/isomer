@@ -1,7 +1,7 @@
 import type { SelectExpression } from "kysely"
 import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
-import { IsomerSitemap } from "@opengovsg/isomer-components"
+import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
