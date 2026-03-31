@@ -122,6 +122,13 @@ if [ -f "node_modules.tar.zst" ]; then
   tar --use-compress-program=zstd -xf node_modules.tar.zst
   rm node_modules.tar.zst
   calculate_duration $start_time
+
+  # pnpm (unlike npm) symlinks deps from the workspace store; a tarball restore can leave those
+  # links wrong. One `pnpm install` fixes it without rebuilding deps.
+  echo "Reconciling pnpm after template cache restore..."
+  start_time=$(date +%s)
+  pnpm install --frozen-lockfile
+  calculate_duration $start_time
 else
   echo "node_modules.tar.zst not found in cache"
 
