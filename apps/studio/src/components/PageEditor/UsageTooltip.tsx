@@ -1,6 +1,5 @@
 import type { PropsWithChildren } from "react"
 import type { RequireAtLeastOne } from "type-fest"
-import Image from "next/image"
 import {
   Flex,
   Icon,
@@ -11,6 +10,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
+import Image from "next/image"
 import { type IconType } from "react-icons"
 
 type UsageOrDescription = RequireAtLeastOne<

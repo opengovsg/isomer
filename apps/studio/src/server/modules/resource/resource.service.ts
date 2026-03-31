@@ -1,10 +1,20 @@
-import type { SelectExpression } from "kysely";
-import type { Logger } from "pino";
-import type { UnwrapTagged } from "type-fest";
-import type { IsomerSitemap } from "@opengovsg/isomer-components";
-import _ from "lodash";
-import { AuditLogEvent } from "~prisma/generated/generatedEnums";
-import { type DB } from "~prisma/generated/generatedTypes";
+import type { IsomerSitemap } from "@opengovsg/isomer-components"
+import type { SelectExpression } from "kysely"
+import type { Logger } from "pino"
+import type { UnwrapTagged } from "type-fest"
+import type { ResourceItemContent } from "~/schemas/resource"
+import { TRPCError } from "@trpc/server"
+import _ from "lodash"
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import {
+  createChildrenPagesComparator,
+  getSitemapTree,
+  injectTagMappings,
+  isCollectionItem,
+  overwriteCollectionChildrenForCollectionBlock,
+} from "~/utils/sitemap"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+import { type DB } from "~prisma/generated/generatedTypes"
 
 import type {
   Footer,
@@ -14,24 +24,14 @@ import type {
   Site,
   Transaction,
   User,
-} from "../database";
-import type { SearchResultResource } from "./resource.types";
-import type { ResourceItemContent } from "~/schemas/resource";
-import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap";
-import {
-  createChildrenPagesComparator,
-  getSitemapTree,
-  injectTagMappings,
-  isCollectionItem,
-  overwriteCollectionChildrenForCollectionBlock,
-} from "~/utils/sitemap";
-import { logPublishEvent } from "../audit/audit.service";
-import { publishSite } from "../aws/codebuild.service";
-import { db, jsonb, ResourceState, ResourceType, sql } from "../database";
-import { getUserById } from "../user/user.service";
-import { incrementVersion } from "../version/version.service";
-import { type Page } from "./resource.types";
-import { TRPCError } from "@trpc/server";
+} from "../database"
+import type { SearchResultResource } from "./resource.types"
+import { logPublishEvent } from "../audit/audit.service"
+import { publishSite } from "../aws/codebuild.service"
+import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
+import { getUserById } from "../user/user.service"
+import { incrementVersion } from "../version/version.service"
+import { type Page } from "./resource.types"
 
 // Specify the default columns to return from the Resource table
 export const defaultResourceSelect = [
@@ -48,46 +48,46 @@ export const defaultResourceSelect = [
   "Resource.updatedAt",
   "Resource.scheduledAt",
   "Resource.scheduledBy",
-] satisfies SelectExpression<DB, "Resource">[];
+] satisfies SelectExpression<DB, "Resource">[]
 
 const defaultResourceWithBlobSelect = [
   ...defaultResourceSelect,
   "Blob.content",
   "Blob.updatedAt",
-] satisfies SelectExpression<DB, "Resource" | "Blob">[];
+] satisfies SelectExpression<DB, "Resource" | "Blob">[]
 
 const defaultNavbarSelect = [
   "Navbar.id",
   "Navbar.siteId",
   "Navbar.content",
-] satisfies SelectExpression<DB, "Navbar">[];
+] satisfies SelectExpression<DB, "Navbar">[]
 
 const defaultFooterSelect = [
   "Footer.id",
   "Footer.siteId",
   "Footer.content",
-] satisfies SelectExpression<DB, "Footer">[];
+] satisfies SelectExpression<DB, "Footer">[]
 
 export const getSiteResourceById = ({
   siteId,
   resourceId,
   type,
 }: {
-  siteId: Resource["siteId"];
-  resourceId: Resource["id"];
-  type?: Resource["type"];
+  siteId: Resource["siteId"]
+  resourceId: Resource["id"]
+  type?: Resource["type"]
 }) => {
   let query = db
     .selectFrom("Resource")
     .where("Resource.siteId", "=", siteId)
     .where("Resource.id", "=", resourceId)
-    .select(defaultResourceSelect);
+    .select(defaultResourceSelect)
   if (type) {
-    query = query.where("Resource.type", "=", type);
+    query = query.where("Resource.type", "=", type)
   }
 
-  return query.executeTakeFirst();
-};
+  return query.executeTakeFirst()
+}
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
 const getById = (
@@ -97,7 +97,7 @@ const getById = (
   db
     .selectFrom("Resource")
     .where("Resource.id", "=", String(resourceId))
-    .where("siteId", "=", siteId);
+    .where("siteId", "=", siteId)
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
 export const getFullPageById = async (
@@ -110,9 +110,9 @@ export const getFullPageById = async (
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
     .forUpdate()
-    .executeTakeFirst();
+    .executeTakeFirst()
   if (draftBlob) {
-    return draftBlob;
+    return draftBlob
   }
 
   const publishedBlob = await getById(db, args)
@@ -121,10 +121,10 @@ export const getFullPageById = async (
     .innerJoin("Blob", "Version.blobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
     .forUpdate()
-    .executeTakeFirst();
+    .executeTakeFirst()
 
-  return publishedBlob;
-};
+  return publishedBlob
+}
 
 // There are 7 types of pages this get query supports:
 // Page, CollectionPage, RootPage, IndexPage, CollectionLink, FolderMeta, CollectionMeta
@@ -145,19 +145,19 @@ export const getPageById = (
       ]),
     )
     .select(defaultResourceSelect)
-    .executeTakeFirst();
-};
+    .executeTakeFirst()
+}
 
 export const updatePageById = (
   page: Partial<Omit<Page, "id" | "siteId" | "parentId">> & {
-    id: number;
-    siteId: number;
-    parentId?: number;
+    id: number
+    siteId: number
+    parentId?: number
   },
   dbInstance?: SafeKysely,
 ) => {
-  const dbObj = dbInstance ?? db;
-  const { id, parentId, ...rest } = page;
+  const dbObj = dbInstance ?? db
+  const { id, parentId, ...rest } = page
 
   return dbObj
     .updateTable("Resource")
@@ -165,12 +165,12 @@ export const updatePageById = (
     .where("siteId", "=", page.siteId)
     .where("id", "=", String(id))
     .returningAll()
-    .executeTakeFirst();
-};
+    .executeTakeFirst()
+}
 
 interface GetBlobProps {
-  db: SafeKysely;
-  resourceId: string;
+  db: SafeKysely
+  resourceId: string
 }
 
 export const getBlobOfResource = async ({ db, resourceId }: GetBlobProps) => {
@@ -184,7 +184,7 @@ export const getBlobOfResource = async ({ db, resourceId }: GetBlobProps) => {
           code: "NOT_FOUND",
           message: "The specified resource could not be found",
         }),
-    );
+    )
 
   if (draftBlobId) {
     return (
@@ -194,7 +194,7 @@ export const getBlobOfResource = async ({ db, resourceId }: GetBlobProps) => {
         .selectAll()
         // NOTE: Guaranteed to exist since this is a foreign key
         .executeTakeFirstOrThrow()
-    );
+    )
   }
 
   return db
@@ -206,8 +206,8 @@ export const getBlobOfResource = async ({ db, resourceId }: GetBlobProps) => {
         .where("id", "=", publishedVersionId)
         .select("blobId"),
     )
-    .executeTakeFirstOrThrow();
-};
+    .executeTakeFirstOrThrow()
+}
 
 // NOTE: This function gets the published blob preferentially,
 // and if it fails to get a published blob (because the resource has never been published),
@@ -227,7 +227,7 @@ export const getPublishedIndexBlobByParentId = async ({
           code: "NOT_FOUND",
           message: "The specified resource could not be found",
         }),
-    );
+    )
 
   if (publishedVersionId) {
     return db
@@ -239,7 +239,7 @@ export const getPublishedIndexBlobByParentId = async ({
           .where("id", "=", publishedVersionId)
           .select("blobId"),
       )
-      .executeTakeFirstOrThrow();
+      .executeTakeFirstOrThrow()
   }
 
   return (
@@ -249,8 +249,8 @@ export const getPublishedIndexBlobByParentId = async ({
       .selectAll()
       // NOTE: Guaranteed to exist since this is a foreign key
       .executeTakeFirstOrThrow()
-  );
-};
+  )
+}
 
 export const updateBlobById = async (
   tx: Transaction<DB>,
@@ -259,9 +259,9 @@ export const updateBlobById = async (
     content,
     siteId,
   }: {
-    pageId: number;
-    content: UnwrapTagged<PrismaJson.BlobJsonContent>;
-    siteId: number;
+    pageId: number
+    content: UnwrapTagged<PrismaJson.BlobJsonContent>
+    siteId: number
   },
 ) => {
   const page = await tx
@@ -271,13 +271,13 @@ export const updateBlobById = async (
     // NOTE: We update the draft first
     // Main should only be updated at build
     .select("draftBlobId")
-    .executeTakeFirst();
+    .executeTakeFirst()
 
   if (!page) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Resource not found" });
+    throw new TRPCError({ code: "NOT_FOUND", message: "Resource not found" })
   }
 
-  let blobIdToUpdate = page.draftBlobId;
+  let blobIdToUpdate = page.draftBlobId
 
   if (!page.draftBlobId) {
     // NOTE: no draft for this yet, need to create a new one
@@ -285,13 +285,13 @@ export const updateBlobById = async (
       .insertInto("Blob")
       .values({ content: jsonb(content) })
       .returning("id")
-      .executeTakeFirstOrThrow();
-    blobIdToUpdate = newBlob.id;
+      .executeTakeFirstOrThrow()
+    blobIdToUpdate = newBlob.id
     await tx
       .updateTable("Resource")
       .where("id", "=", String(pageId))
       .set({ draftBlobId: newBlob.id })
-      .execute();
+      .execute()
   }
 
   return (
@@ -302,8 +302,8 @@ export const updateBlobById = async (
       .where("Blob.id", "=", blobIdToUpdate)
       .returningAll()
       .executeTakeFirstOrThrow()
-  );
-};
+  )
+}
 
 // TODO: should be selecting from new table
 export const getNavBar = async (db: SafeKysely, siteId: number) => {
@@ -312,10 +312,10 @@ export const getNavBar = async (db: SafeKysely, siteId: number) => {
     .where("siteId", "=", siteId)
     .select(defaultNavbarSelect)
     // NOTE: Throwing here is acceptable because each site should have a navbar
-    .executeTakeFirstOrThrow();
+    .executeTakeFirstOrThrow()
 
-  return { ...rest, content };
-};
+  return { ...rest, content }
+}
 
 export const getFooter = async (db: SafeKysely, siteId: number) => {
   const { content, ...rest } = await db
@@ -323,10 +323,10 @@ export const getFooter = async (db: SafeKysely, siteId: number) => {
     .where("siteId", "=", siteId)
     .select(defaultFooterSelect)
     // NOTE: Throwing here is acceptable because each site should have a footer
-    .executeTakeFirstOrThrow();
+    .executeTakeFirstOrThrow()
 
-  return { ...rest, content };
-};
+  return { ...rest, content }
+}
 
 // Returns a sparse IsomerSitemap object that revolves around the given
 // resourceId, which includes:
@@ -344,29 +344,29 @@ export const getLocalisedSitemap = async (
       THEN (published.content -> 'page' ->> 'subtitle')
       ELSE (published.content -> 'page' -> 'articlePageHeader' ->> 'summary')
     END
-`.as("summary");
+`.as("summary")
   const thumbnailSql = sql<string>`
         published.content->'page'->'image'->> 'src'
-    `.as("thumbnail");
+    `.as("thumbnail")
   const categorySql = sql<string>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
       THEN (published.content -> 'page' ->> 'category')
       ELSE ''
     END
-`.as("category");
+`.as("category")
   const dateSql = sql<string>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
       THEN (published.content -> 'page' ->> 'date')
       ELSE ''
     END
-`.as("date");
+`.as("date")
 
   // Get the actual resource first
   const resource = await getById(db, { resourceId, siteId })
     .select(defaultResourceSelect)
-    .executeTakeFirstOrThrow();
+    .executeTakeFirstOrThrow()
 
   const allResources = await db
     // Step 1: Get all the ancestors of the resource
@@ -412,9 +412,9 @@ export const getLocalisedSitemap = async (
         .where("Resource.id", "!=", String(resourceId))
         .where((fb) => {
           if (resource.parentId === null) {
-            return fb("Resource.parentId", "is", null);
+            return fb("Resource.parentId", "is", null)
           }
-          return fb("Resource.parentId", "=", String(resource.parentId));
+          return fb("Resource.parentId", "=", String(resource.parentId))
         })
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
@@ -507,7 +507,7 @@ export const getLocalisedSitemap = async (
         ]),
     )
     .orderBy("title asc")
-    .execute();
+    .execute()
 
   // Step 5: Construct the localised sitemap object
   const rootResource = await db
@@ -515,36 +515,36 @@ export const getLocalisedSitemap = async (
     .where("Resource.siteId", "=", siteId)
     .where("Resource.type", "=", ResourceType.RootPage)
     .select(defaultResourceSelect)
-    .executeTakeFirst();
+    .executeTakeFirst()
 
   if (rootResource === undefined) {
     // This case will never happen, because we have guaranteed that there is
     // always the root resource
-    throw new Error("Root item not found");
+    throw new Error("Root item not found")
   }
 
-  const sitemapTree = getSitemapTree(rootResource, allResources);
+  const sitemapTree = getSitemapTree(rootResource, allResources)
 
   // We do this because collectionblock renders based on the children of the collection
   // and we want to overwrite what's being shown on studio
   // Assumption: Collection Block is only being used on the root page
   if (resource.type === ResourceType.RootPage) {
-    return overwriteCollectionChildrenForCollectionBlock(sitemapTree);
+    return overwriteCollectionChildrenForCollectionBlock(sitemapTree)
   }
 
   // NOTE: If the resource is part of a collection,
   // we need to inject tag mappings for the preview
   if (isCollectionItem(resource)) {
-    return injectTagMappings(sitemapTree, resource);
+    return injectTagMappings(sitemapTree, resource)
   }
 
   // NOTE: Need to override ordering for this resource
   if (resource.type === ResourceType.Page && !!resource.parentId) {
-    return updateOrderingForResource(sitemapTree, resource.parentId);
+    return updateOrderingForResource(sitemapTree, resource.parentId)
   }
 
-  return sitemapTree;
-};
+  return sitemapTree
+}
 
 const updateOrderingForResource = async (
   sitemap: IsomerSitemap,
@@ -554,25 +554,25 @@ const updateOrderingForResource = async (
   const publishedIndexBlob = await getPublishedIndexBlobByParentId({
     db,
     resourceId: parentId,
-  });
+  })
 
   // NOTE: Next, get the content and see if we have defined a `childrenPagesOrdering`
   const childrenPages = publishedIndexBlob.content.content.find(({ type }) => {
-    return type === "childrenpages";
-  });
+    return type === "childrenpages"
+  })
 
   // No need to do anything
   // NOTE: Need to narrow type for inference hence the duplicate check on `type`
   if (!childrenPages || childrenPages.type !== "childrenpages") {
-    return sitemap;
+    return sitemap
   }
 
   const comparator = createChildrenPagesComparator(
     childrenPages.childrenPagesOrdering ?? [],
-  );
+  )
 
-  return _updateOrderingForResource(sitemap, parentId, comparator);
-};
+  return _updateOrderingForResource(sitemap, parentId, comparator)
+}
 
 const _updateOrderingForResource = (
   sitemap: IsomerSitemap,
@@ -583,7 +583,7 @@ const _updateOrderingForResource = (
     return {
       ...sitemap,
       children: sitemap.children?.toSorted(comparator),
-    };
+    }
   }
 
   return {
@@ -591,8 +591,8 @@ const _updateOrderingForResource = (
     children: sitemap.children?.map((child) =>
       _updateOrderingForResource(child, parentId, comparator),
     ),
-  };
-};
+  }
+}
 
 export const getResourcePermalinkTree = async (
   siteId: number,
@@ -603,10 +603,10 @@ export const getResourcePermalinkTree = async (
     const resource = await getById(tx, {
       siteId,
       resourceId,
-    }).executeTakeFirst();
+    }).executeTakeFirst()
 
     if (!resource) {
-      return [];
+      return []
     }
 
     const resourcePermalinks = await tx
@@ -628,36 +628,36 @@ export const getResourcePermalinkTree = async (
       )
       .selectFrom("Ancestors")
       .select("Ancestors.permalink")
-      .execute();
+      .execute()
 
     return resourcePermalinks
       .map((r) => r.permalink)
       .reverse()
-      .filter((v) => v !== INDEX_PAGE_PERMALINK);
-  });
-};
+      .filter((v) => v !== INDEX_PAGE_PERMALINK)
+  })
+}
 
 export const getResourceFullPermalink = async (
   siteId: number,
   resourceId: number,
 ) => {
-  const permalinkTree = await getResourcePermalinkTree(siteId, resourceId);
+  const permalinkTree = await getResourcePermalinkTree(siteId, resourceId)
   if (permalinkTree.length === 0) {
-    return null;
+    return null
   }
-  return `/${permalinkTree.join("/")}`;
-};
+  return `/${permalinkTree.join("/")}`
+}
 
 interface PublishPageResourceArgs {
-  logger: Logger<string>;
-  userId: string;
-  siteId: number;
-  resourceId: string;
+  logger: Logger<string>
+  userId: string
+  siteId: number
+  resourceId: string
   sitePublish?: {
-    enableCodebuildJobs: boolean;
-    isScheduled: boolean;
-  };
-  isSingpassEnabled?: boolean;
+    enableCodebuildJobs: boolean
+    isScheduled: boolean
+  }
+  isSingpassEnabled?: boolean
 }
 
 export const publishPageResource = async ({
@@ -672,26 +672,26 @@ export const publishPageResource = async ({
     const fullResource = await getFullPageById(tx, {
       resourceId: Number(resourceId),
       siteId,
-    });
+    })
 
     if (!fullResource) {
       throw new TRPCError({
         code: "PRECONDITION_FAILED",
         message:
           "Please ensure you are attempting to publish a page that exists",
-      });
+      })
     }
 
-    const version = await incrementVersion({ tx, siteId, resourceId, userId });
+    const version = await incrementVersion({ tx, siteId, resourceId, userId })
 
     if (!version) {
       logger.warn(
         `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
-      );
-      return;
+      )
+      return
     }
 
-    const { previousVersion, newVersion } = version;
+    const { previousVersion, newVersion } = version
 
     await logPublishEvent(tx, {
       siteId,
@@ -702,8 +702,8 @@ export const publishPageResource = async ({
       },
       eventType: AuditLogEvent.Publish,
       metadata: fullResource,
-    });
-  });
+    })
+  })
 
   // Step 2: Trigger a publish of the site
   if (sitePublish)
@@ -715,8 +715,8 @@ export const publishPageResource = async ({
             isScheduled: sitePublish.isScheduled,
           }
         : undefined,
-    });
-};
+    })
+}
 
 /**
  * NOTE: The distinction here between `publishResource` and `publishPageResource` is that
@@ -742,7 +742,7 @@ export const publishResource = async (
           code: "BAD_REQUEST",
           message: "Please ensure that you are logged in!",
         }),
-    );
+    )
 
   return db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
@@ -751,11 +751,11 @@ export const publishResource = async (
       delta: { before: null, after: null },
       eventType: AuditLogEvent.Publish,
       metadata: resource,
-    });
+    })
 
-    await publishSite(logger, { siteId: resource.siteId });
-  });
-};
+    await publishSite(logger, { siteId: resource.siteId })
+  })
+}
 
 export const publishSiteConfig = async (
   by: string,
@@ -775,7 +775,7 @@ export const publishSiteConfig = async (
           code: "BAD_REQUEST",
           message: "Please ensure that you are logged in!",
         }),
-    );
+    )
 
   return db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
@@ -784,18 +784,18 @@ export const publishSiteConfig = async (
       delta: { before: null, after: null },
       eventType: AuditLogEvent.Publish,
       metadata: { site, ...rest },
-    });
+    })
 
-    await publishSite(logger, { siteId: site.id });
-  });
-};
+    await publishSite(logger, { siteId: site.id })
+  })
+}
 
 export const getBatchAncestryWithSelfQuery = async ({
   siteId,
   resourceIds,
 }: {
-  siteId: number;
-  resourceIds: string[];
+  siteId: number
+  resourceIds: string[]
 }): Promise<ResourceItemContent[][]> => {
   const resourceObject = sql<ResourceItemContent>`jsonb_build_object(
     'title', "Resource"."title",
@@ -803,7 +803,7 @@ export const getBatchAncestryWithSelfQuery = async ({
     'type', "Resource"."type",
     'id', "Resource"."id"::text,
     'parentId', "Resource"."parentId"::text
-  )`;
+  )`
 
   const result = await db
     .withRecursive("recursiveResources", (eb) =>
@@ -842,18 +842,18 @@ export const getBatchAncestryWithSelfQuery = async ({
     .selectFrom("recursiveResources")
     .select("recursiveResources.groupedByPath")
     .where("recursiveResources.parentId", "is", null)
-    .execute();
+    .execute()
 
-  return result.map((r) => r.groupedByPath);
-};
+  return result.map((r) => r.groupedByPath)
+}
 
 export const getWithFullPermalink = async ({
   resourceIds,
 }: {
-  resourceIds: string[];
+  resourceIds: string[]
 }) => {
   if (resourceIds.length === 0) {
-    return [];
+    return []
   }
 
   const result = await db
@@ -886,10 +886,10 @@ export const getWithFullPermalink = async ({
     .selectFrom("resourcePath as rp")
     .select(["rp.id", "rp.title", "rp.fullPermalink"])
     .where("rp.id", "in", resourceIds)
-    .execute();
+    .execute()
 
-  return result;
-};
+  return result
+}
 
 const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) => {
   return db
@@ -905,24 +905,24 @@ const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) => {
       ),
     ])
     .leftJoin("Blob", "Resource.draftBlobId", "Blob.id")
-    .where("Resource.siteId", "=", siteId);
-};
+    .where("Resource.siteId", "=", siteId)
+}
 
 const getResourcesWithFullPermalink = async ({
   resources,
 }: {
-  resources: Omit<SearchResultResource, "fullPermalink">[];
+  resources: Omit<SearchResultResource, "fullPermalink">[]
 }): Promise<SearchResultResource[]> => {
   const result = await getWithFullPermalink({
     resourceIds: resources.map((resource) => resource.id),
-  });
+  })
 
   return resources.map((resource) => ({
     ...resource,
     fullPermalink:
       result.find((r) => r.id === resource.id)?.fullPermalink ?? "",
-  }));
-};
+  }))
+}
 
 export const getSearchResults = async ({
   siteId,
@@ -931,18 +931,18 @@ export const getSearchResults = async ({
   limit,
   resourceTypes,
 }: {
-  siteId: number;
-  query: string;
-  offset: number;
-  limit: number;
-  resourceTypes: ResourceType[];
+  siteId: number
+  query: string
+  offset: number
+  limit: number
+  resourceTypes: ResourceType[]
 }): Promise<{
-  totalCount: number | null;
-  resources: SearchResultResource[];
+  totalCount: number | null
+  resources: SearchResultResource[]
 }> => {
   const searchTerms: string[] = Array.from(
     new Set(query.trim().toLowerCase().split(/\s+/)),
-  );
+  )
 
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
@@ -958,11 +958,11 @@ export const getSearchResults = async ({
           ),
         ),
       ),
-    );
+    )
 
   // Currently ordered by number of words matched
   // followed by `lastUpdatedAt` if there's a tie-break
-  let orderedResources = queriedResources;
+  let orderedResources = queriedResources
   if (searchTerms.length > 1) {
     orderedResources = orderedResources.orderBy(
       sql`(
@@ -985,9 +985,9 @@ export const getSearchResults = async ({
           sql` + `,
         )}
       ) DESC`,
-    );
+    )
   }
-  orderedResources = orderedResources.orderBy("lastUpdatedAt", "desc");
+  orderedResources = orderedResources.orderBy("lastUpdatedAt", "desc")
 
   const [resourcesToReturn, totalCountResult] = await Promise.all([
     orderedResources.offset(offset).limit(limit).execute(),
@@ -996,22 +996,22 @@ export const getSearchResults = async ({
       .selectFrom("queriedResources")
       .select(db.fn.countAll<number>().as("total_count")) // needed to cast as the type can be `bigint`
       .executeTakeFirstOrThrow(),
-  ]);
+  ])
 
   return {
     resources: await getResourcesWithFullPermalink({
       resources: resourcesToReturn,
     }),
     totalCount: totalCountResult.total_count,
-  };
-};
+  }
+}
 
 export const getSearchRecentlyEdited = async ({
   siteId,
   limit = 5, // Hardcoded for now to be 5
 }: {
-  siteId: number;
-  limit?: number;
+  siteId: number
+  limit?: number
 }): Promise<SearchResultResource[]> => {
   return await getResourcesWithFullPermalink({
     resources: await getResourcesWithLastUpdatedAt({ siteId: Number(siteId) })
@@ -1024,15 +1024,15 @@ export const getSearchRecentlyEdited = async ({
       .limit(limit)
       .orderBy("lastUpdatedAt", "desc")
       .execute(),
-  });
-};
+  })
+}
 
 export const getSearchWithResourceIds = async ({
   siteId,
   resourceIds,
 }: {
-  siteId: number;
-  resourceIds: string[];
+  siteId: number
+  resourceIds: string[]
 }): Promise<SearchResultResource[]> => {
   const resources = await db
     .selectFrom("Resource")
@@ -1044,12 +1044,12 @@ export const getSearchWithResourceIds = async ({
       "Resource.title",
       "Resource.parentId",
     ])
-    .execute();
+    .execute()
 
   return await getResourcesWithFullPermalink({
     resources: resources.map((resource) => ({
       ...resource,
       lastUpdatedAt: null,
     })),
-  });
-};
+  })
+}

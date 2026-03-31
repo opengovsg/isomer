@@ -1,8 +1,8 @@
-import type { DropResult } from "@hello-pangea/dnd";
+import type { DropResult } from "@hello-pangea/dnd"
 import type {
   IsomerComponent,
   IsomerSchema,
-} from "@opengovsg/isomer-components";
+} from "@opengovsg/isomer-components"
 import {
   Box,
   Button,
@@ -11,50 +11,49 @@ import {
   Text,
   useDisclosure,
   VStack,
-} from "@chakra-ui/react";
-import { DragDropContext, Droppable } from "@hello-pangea/dnd";
-import { Infobox, useToast } from "@opengovsg/design-system-react";
+} from "@chakra-ui/react"
+import { DragDropContext, Droppable } from "@hello-pangea/dnd"
+import { Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getComponentSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
-} from "@opengovsg/isomer-components";
-import { BiCog, BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi";
+} from "@opengovsg/isomer-components"
+import { useCallback, useState } from "react"
+import { BiCog, BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
+import { Disable } from "~/components/Disable"
+import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
+import { BlockEditingPlaceholder } from "~/components/Svg"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useNewCollectionEditingExperience } from "~/hooks/useNewCollectionEditingExperience"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { ADMIN_ROLE } from "~/lib/growthbook"
+import { ajv } from "~/utils/ajv"
+import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import { useCallback, useState } from "react";
-import { Disable } from "~/components/Disable";
-import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants";
-import { BlockEditingPlaceholder } from "~/components/Svg";
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast";
-import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext";
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin";
-import { useNewCollectionEditingExperience } from "~/hooks/useNewCollectionEditingExperience";
-import { useQueryParse } from "~/hooks/useQueryParse";
-import { ADMIN_ROLE } from "~/lib/growthbook";
-import { ajv } from "~/utils/ajv";
-import { trpc } from "~/utils/trpc";
-import { ResourceType } from "~prisma/generated/generatedEnums";
-
-import { TYPE_TO_ICON } from "../../constants";
-import { pageSchema } from "../../schema";
-import { getIsHeroFirstBlock } from "../../utils/getIsHeroFirstBlock";
-import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode";
-import { BaseBlock } from "../Block/BaseBlock";
-import { DraggableBlock } from "../Block/DraggableBlock";
-import { ConfirmConvertIndexPageModal } from "../ConfirmConvertIndexPageModal";
-import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants";
+import { TYPE_TO_ICON } from "../../constants"
+import { pageSchema } from "../../schema"
+import { getIsHeroFirstBlock } from "../../utils/getIsHeroFirstBlock"
+import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
+import { BaseBlock } from "../Block/BaseBlock"
+import { DraggableBlock } from "../Block/DraggableBlock"
+import { ConfirmConvertIndexPageModal } from "../ConfirmConvertIndexPageModal"
+import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 
 const validateHeroComponentFn = ajv.compile<IsomerComponent>(
   getComponentSchema({ component: "hero" }),
-);
+)
 
-const validateFn = ajv.compile<IsomerSchema>(schema);
+const validateFn = ajv.compile<IsomerSchema>(schema)
 
-const invalidBlockDescription = "Fix errors in this block to publish";
+const invalidBlockDescription = "Fix errors in this block to publish"
 
 interface FixedBlockContent {
-  label: string;
-  description: string;
+  label: string
+  description: string
 }
 
 const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
@@ -74,24 +73,24 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
     label: "Header",
     description: "Summary, Button label and Button URL",
   },
-};
+}
 
 const FixedBlock = () => {
   const { setCurrActiveIdx, setDrawerState, previewPageState } =
-    useEditorDrawerContext();
-  const pageLayout = previewPageState.layout;
-  const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, previewPageState);
-  const isNewEditingExperienceEnabled = useNewCollectionEditingExperience();
+    useEditorDrawerContext()
+  const pageLayout = previewPageState.layout
+  const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, previewPageState)
+  const isNewEditingExperienceEnabled = useNewCollectionEditingExperience()
 
   if (isHeroFixedBlock) {
     // Assuming only one fixedBlock can exist at a time for now
-    const fixedBlock = previewPageState.content[0];
-    const isValid = validateHeroComponentFn(fixedBlock);
+    const fixedBlock = previewPageState.content[0]
+    const isValid = validateHeroComponentFn(fixedBlock)
     return (
       <BaseBlock
         onClick={() => {
-          setCurrActiveIdx(0);
-          setDrawerState({ state: "heroEditor" });
+          setCurrActiveIdx(0)
+          setDrawerState({ state: "heroEditor" })
         }}
         label="Hero banner"
         description="Title, subtitle, and Call-to-Action"
@@ -100,7 +99,7 @@ const FixedBlock = () => {
           !isValid ? { description: invalidBlockDescription } : undefined
         }
       />
-    );
+    )
   }
 
   if (
@@ -110,14 +109,14 @@ const FixedBlock = () => {
     return (
       <BaseBlock
         onClick={() => {
-          setCurrActiveIdx(0);
-          setDrawerState({ state: "collectionEditor" });
+          setCurrActiveIdx(0)
+          setDrawerState({ state: "collectionEditor" })
         }}
         label="Collection settings"
         description="Summary, style, categories and sorting"
         icon={BiPin}
       />
-    );
+    )
   }
 
   if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Database) {
@@ -125,7 +124,7 @@ const FixedBlock = () => {
       <VStack gap="1rem" w="100%" align="start">
         <BaseBlock
           onClick={() => {
-            setDrawerState({ state: "metadataEditor" });
+            setDrawerState({ state: "metadataEditor" })
           }}
           label="Page header"
           description="Summary, Button label, and Button URL"
@@ -133,20 +132,20 @@ const FixedBlock = () => {
         />
         <BaseBlock
           onClick={() => {
-            setDrawerState({ state: "databaseEditor" });
+            setDrawerState({ state: "databaseEditor" })
           }}
           label="Database"
           description="Link your dataset from Data.gov.sg"
           icon={BiData}
         />
       </VStack>
-    );
+    )
   }
 
   return (
     <BaseBlock
       onClick={() => {
-        setDrawerState({ state: "metadataEditor" });
+        setDrawerState({ state: "metadataEditor" })
       }}
       label={
         FIXED_BLOCK_CONTENT[pageLayout]?.label || "Page description and summary"
@@ -156,8 +155,8 @@ const FixedBlock = () => {
       }
       icon={BiPin}
     />
-  );
-};
+  )
+}
 
 export default function RootStateDrawer() {
   const {
@@ -168,27 +167,27 @@ export default function RootStateDrawer() {
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
-  } = useEditorDrawerContext();
-  const [isPreviewingIndexPage, setIsPreviewingIndexPage] = useState(false);
+  } = useEditorDrawerContext()
+  const [isPreviewingIndexPage, setIsPreviewingIndexPage] = useState(false)
   const {
     isOpen: isConfirmConvertIndexPageModalOpen,
     onOpen: onConfirmConvertIndexPageModalOpen,
     onClose: onConfirmConvertIndexPageModalClose,
-  } = useDisclosure();
-  const { pageId, siteId } = useQueryParse(pageSchema);
+  } = useDisclosure()
+  const { pageId, siteId } = useQueryParse(pageSchema)
   const [{ scheduledAt }] = trpc.page.readPage.useSuspenseQuery({
     pageId,
     siteId,
-  });
-  const disableBlocks = isPreviewingIndexPage || !!scheduledAt;
-  const utils = trpc.useUtils();
+  })
+  const disableBlocks = isPreviewingIndexPage || !!scheduledAt
+  const utils = trpc.useUtils()
   const isUserIsomerAdmin = useIsUserIsomerAdmin({
     roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
-  });
-  const toast = useToast();
+  })
+  const toast = useToast()
   const { mutate } = trpc.page.reorderBlock.useMutation({
     onSuccess: async () => {
-      await utils.page.readPage.invalidate({ pageId, siteId });
+      await utils.page.readPage.invalidate({ pageId, siteId })
     },
     onError: (error, variables) => {
       // NOTE: rollback to last known good state
@@ -199,63 +198,63 @@ export default function RootStateDrawer() {
       setPreviewPageState((prevPreview) => ({
         ...prevPreview,
         content: variables.blocks,
-      }));
+      }))
       // @ts-expect-error See above
       setSavedPageState((prevSavedPageState) => ({
         ...prevSavedPageState,
         content: variables.blocks,
-      }));
+      }))
       toast({
         title: "Failed to update blocks",
         description: error.message,
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
-      });
+      })
     },
-  });
+  })
 
   const { mutate: savePage, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
-        await utils.page.readPageAndBlob.invalidate({ pageId, siteId });
-        await utils.page.readPage.invalidate({ pageId, siteId });
+        await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+        await utils.page.readPage.invalidate({ pageId, siteId })
         toast({
           status: "success",
           title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
           ...BRIEF_TOAST_SETTINGS,
-        });
+        })
       },
-    });
+    })
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
-      if (!result.destination) return;
+      if (!result.destination) return
 
-      const from = result.source.index;
-      const to = result.destination.index;
-      const contentLength = savedPageState.content.length;
+      const from = result.source.index
+      const to = result.destination.index
+      const contentLength = savedPageState.content.length
 
       if (from >= contentLength || to >= contentLength || from < 0 || to < 0)
-        return;
+        return
 
       // NOTE: We eagerly update their page state here
       // and if it fails on the backend,
       // we rollback to what we passed them
-      const updatedBlocks = Array.from(savedPageState.content);
-      const [movedBlock] = updatedBlocks.splice(from, 1);
+      const updatedBlocks = Array.from(savedPageState.content)
+      const [movedBlock] = updatedBlocks.splice(from, 1)
 
       if (!!movedBlock) {
-        updatedBlocks.splice(to, 0, movedBlock);
+        updatedBlocks.splice(to, 0, movedBlock)
         const newPageState = {
           ...savedPageState,
           content: updatedBlocks,
-        };
-        setPreviewPageState(newPageState);
-        setSavedPageState(newPageState);
+        }
+        setPreviewPageState(newPageState)
+        setSavedPageState(newPageState)
       }
 
       // NOTE: drive an update to the db with the updated index
-      mutate({ pageId, from, to, blocks: savedPageState.content, siteId });
+      mutate({ pageId, from, to, blocks: savedPageState.content, siteId })
     },
     [
       mutate,
@@ -265,32 +264,32 @@ export default function RootStateDrawer() {
       setSavedPageState,
       siteId,
     ],
-  );
+  )
 
   const handleConversionToIndexPage = useCallback(() => {
     // NOTE: This is defined but we just do the assertion here
     // because the type for `DEFAULT_BLOCKS` is possibly undefined
     // so `ts` cannot infer
-    if (!DEFAULT_BLOCKS.childrenpages) return;
+    if (!DEFAULT_BLOCKS.childrenpages) return
 
     const newPageState = {
       ...savedPageState,
-    };
+    }
     // NOTE: This layout needs to be outside, otherwise it is treated as a
     // string type rather than the array of layout consts
-    newPageState.layout = "index";
+    newPageState.layout = "index"
     newPageState.content = [
       ...savedPageState.content,
       DEFAULT_BLOCKS.childrenpages,
-    ];
-    setPreviewPageState(newPageState);
-    setIsPreviewingIndexPage(true);
-  }, [savedPageState, setPreviewPageState]);
+    ]
+    setPreviewPageState(newPageState)
+    setIsPreviewingIndexPage(true)
+  }, [savedPageState, setPreviewPageState])
 
   const handleCancelConversionToIndexPage = useCallback(() => {
-    setIsPreviewingIndexPage(false);
-    setPreviewPageState(savedPageState);
-  }, [savedPageState, setPreviewPageState]);
+    setIsPreviewingIndexPage(false)
+    setPreviewPageState(savedPageState)
+  }, [savedPageState, setPreviewPageState])
 
   const handleSaveConversionToIndexPage = useCallback(() => {
     savePage(
@@ -301,13 +300,13 @@ export default function RootStateDrawer() {
       },
       {
         onSuccess: () => {
-          setIsPreviewingIndexPage(false);
-          setSavedPageState(previewPageState);
-          onConfirmConvertIndexPageModalClose();
-          setDrawerState({ state: "root" });
+          setIsPreviewingIndexPage(false)
+          setSavedPageState(previewPageState)
+          onConfirmConvertIndexPageModalClose()
+          setDrawerState({ state: "root" })
         },
       },
-    );
+    )
   }, [
     onConfirmConvertIndexPageModalClose,
     pageId,
@@ -316,24 +315,24 @@ export default function RootStateDrawer() {
     setDrawerState,
     setSavedPageState,
     siteId,
-  ]);
+  ])
 
-  const pageLayout = previewPageState.layout;
+  const pageLayout = previewPageState.layout
 
   // NOTE: because we migrate from github -> studio
   // and also becuase our underlying is just json,
   // it's not guaranteed that our `rootpage` will always
   // have a hero banner
-  const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, savedPageState);
+  const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, savedPageState)
 
   const isCustomContentIndexPage =
     type === ResourceType.IndexPage &&
     pageLayout !== "index" &&
-    pageLayout !== "collection";
+    pageLayout !== "collection"
 
-  validateFn(savedPageState);
+  validateFn(savedPageState)
 
-  const contentIndexRegex = /^\/content\/(\d+)/;
+  const contentIndexRegex = /^\/content\/(\d+)/
   const invalidBlockIndexes = new Set(
     (validateFn.errors ?? [])
       // When validating content array directly,
@@ -342,14 +341,14 @@ export default function RootStateDrawer() {
       .map((e) => contentIndexRegex.exec(e.instancePath)?.[1])
       .filter(Boolean)
       .map(Number),
-  );
+  )
 
   // NOTE: if a page has either of these `layouts`,
   // we should disable them from adding blocks
   // because folder index pages aren't intended to have
   // content yet and components don't render content
   // for collection index pages
-  const canAddBlocks = pageLayout !== "collection";
+  const canAddBlocks = pageLayout !== "collection"
 
   return (
     <Flex direction="column" h="full">
@@ -546,7 +545,7 @@ export default function RootStateDrawer() {
                             <Flex flexDirection="column" mt="-0.25rem">
                               {previewPageState.content.map((block, index) => {
                                 if (isHeroFixedBlock && index === 0) {
-                                  return <></>;
+                                  return <></>
                                 }
 
                                 return (
@@ -558,15 +557,15 @@ export default function RootStateDrawer() {
                                     draggableId={`${block.type}-${index}`}
                                     index={index}
                                     onClick={() => {
-                                      setCurrActiveIdx(index);
+                                      setCurrActiveIdx(index)
                                       // TODO: we should automatically do this probably?
                                       const nextState =
                                         savedPageState.content[index]?.type ===
                                         "prose"
                                           ? "nativeEditor"
-                                          : "complexEditor";
+                                          : "complexEditor"
                                       // NOTE: SNAPSHOT
-                                      setDrawerState({ state: nextState });
+                                      setDrawerState({ state: nextState })
                                     }}
                                     invalidProps={
                                       invalidBlockIndexes.has(index)
@@ -577,7 +576,7 @@ export default function RootStateDrawer() {
                                         : undefined
                                     }
                                   />
-                                );
+                                )
                               })}
                             </Flex>
                           </Box>
@@ -630,5 +629,5 @@ export default function RootStateDrawer() {
         </Box>
       )}
     </Flex>
-  );
+  )
 }

@@ -1,6 +1,5 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useCallback, useMemo } from "react"
 import {
   Box,
   Flex,
@@ -13,6 +12,7 @@ import {
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import isEqual from "lodash/isEqual"
+import { useCallback, useMemo } from "react"
 import {
   BiArrowToBottom,
   BiArrowToTop,
@@ -21,13 +21,13 @@ import {
   BiFolder,
   BiInfoCircle,
 } from "react-icons/bi"
-
 import { UsageTooltip } from "~/components/PageEditor/UsageTooltip"
 import Suspense from "~/components/Suspense"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
+
 import { pageSchema } from "../../schema"
 import { BaseBlock, BaseBlockDragHandle } from "../Block/BaseBlock"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"

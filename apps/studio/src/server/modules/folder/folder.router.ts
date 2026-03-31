@@ -391,30 +391,32 @@ export const folderRouter = router({
         // However, we will use the `IndexPage` as a filter as we should only
         // show the preview for published `IndexPages` (draft pages won't show on end site)
         .with("publishedCousinIndexPages", (eb) => {
-          return eb
-            .selectFrom("Resource")
-            .where("parentId", "in", (qb) =>
-              qb
-                .selectFrom("directChildren")
-                .where("type", "in", [
-                  ResourceType.Folder,
-                  ResourceType.Collection,
-                ])
-                .select("id"),
-            )
-            // NOTE: Keeping in line with how we select resources for sitemap,
-            // we will only select published index pages here
-            .where("state", "=", ResourceState.Published)
-            .where("type", "=", ResourceType.IndexPage)
-            .select([
-              "Resource.parentId",
-              (eb) =>
-                eb
-                  .selectFrom("Resource as Parent")
-                  .whereRef("Parent.id", "=", "Resource.parentId")
-                  .select("Parent.type")
-                  .as("parentType"),
-            ])
+          return (
+            eb
+              .selectFrom("Resource")
+              .where("parentId", "in", (qb) =>
+                qb
+                  .selectFrom("directChildren")
+                  .where("type", "in", [
+                    ResourceType.Folder,
+                    ResourceType.Collection,
+                  ])
+                  .select("id"),
+              )
+              // NOTE: Keeping in line with how we select resources for sitemap,
+              // we will only select published index pages here
+              .where("state", "=", ResourceState.Published)
+              .where("type", "=", ResourceType.IndexPage)
+              .select([
+                "Resource.parentId",
+                (eb) =>
+                  eb
+                    .selectFrom("Resource as Parent")
+                    .whereRef("Parent.id", "=", "Resource.parentId")
+                    .select("Parent.type")
+                    .as("parentType"),
+              ])
+          )
         })
         .selectFrom("Resource")
         .where("siteId", "=", Number(siteId))
