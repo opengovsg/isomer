@@ -49,19 +49,19 @@ export const studiofySite = async ({
 export const prepareSite = async (
   client: Client,
   siteName: string,
-  useStagingBranch = false
+  useStagingBranch = false,
 ) => {
   // Step 1: Perform a sanity check that the conversion output directory exists
   const conversionDir = path.join(
     __dirname,
     "..",
     CONVERSION_OUTPUT_DIR,
-    siteName
+    siteName,
   );
 
   if (!fs.existsSync(conversionDir)) {
     throw new Error(
-      `Conversion output directory does not exist for site ${siteName} at path ${conversionDir}`
+      `Conversion output directory does not exist for site ${siteName} at path ${conversionDir}`,
     );
   }
 
@@ -88,7 +88,7 @@ export const prepareSite = async (
         } else {
           resolve();
         }
-      }
+      },
     );
   });
 
@@ -117,7 +117,7 @@ export const prepareSite = async (
         } else {
           resolve();
         }
-      }
+      },
     );
   });
   await fs.promises.rm(tarballPath);
@@ -143,7 +143,7 @@ export const prepareSite = async (
   });
   const result = await client.query(
     `INSERT INTO public."Site" (name, "codeBuildId", config, theme) VALUES ($1, $2, $3, $4) RETURNING id`,
-    [siteHumanReadableName, siteName, {}, {}]
+    [siteHumanReadableName, siteName, {}, {}],
   );
 
   return result.rows[0].id as number;
@@ -153,7 +153,7 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
   async function processDirectory(
     dirPath: string,
     parentId: number | null,
-    isParentCollection?: boolean
+    isParentCollection?: boolean,
   ) {
     const entries = fs.readdirSync(dirPath, { withFileTypes: true });
     const folders = entries.filter((entry) => entry.isDirectory());
@@ -162,7 +162,7 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
       (entry) =>
         !entry.isDirectory() &&
         entry.name.endsWith(".json") &&
-        !folderNames.includes(entry.name.slice(0, -5))
+        !folderNames.includes(entry.name.slice(0, -5)),
     );
 
     for (const folder of folders) {
@@ -171,7 +171,7 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
 
       // Find for the corresponding index page if it exists
       const isIndexPagePresent = entries.some(
-        (entry) => !entry.isDirectory() && entry.name === `${folder.name}.json`
+        (entry) => !entry.isDirectory() && entry.name === `${folder.name}.json`,
       );
 
       if (isIndexPagePresent) {
@@ -304,7 +304,7 @@ async function createBlob(client: Client, content: any): Promise<number> {
     // For _meta.json
     const result = await client.query(
       `INSERT INTO public."Blob" (content) VALUES ($1) RETURNING id`,
-      [JSON.stringify(content)]
+      [JSON.stringify(content)],
     );
     return result.rows[0].id;
   }
@@ -317,7 +317,7 @@ async function createBlob(client: Client, content: any): Promise<number> {
 
   const result = await client.query(
     `INSERT INTO public."Blob" (content) VALUES ($1) RETURNING id`,
-    [JSON.stringify(newContent)]
+    [JSON.stringify(newContent)],
   );
   return result.rows[0].id;
 }
@@ -344,11 +344,11 @@ async function createResource(
       | "CollectionLink"
       | "FolderMeta";
     siteId: number;
-  }
+  },
 ): Promise<number> {
   const result = await client.query(
     `INSERT INTO public."Resource" (title, permalink, "parentId", type, state, "publishedVersionId", "siteId") VALUES ($1, $2, $3, $4, $5, NULL, $6) RETURNING id`,
-    [title, permalink, parentId, type, "Published", siteId]
+    [title, permalink, parentId, type, "Published", siteId],
   );
   return result.rows[0].id;
 }
@@ -356,25 +356,25 @@ async function createResource(
 async function createVersion(
   client: Client,
   resourceId: number,
-  blobId: number
+  blobId: number,
 ) {
   const result = await client.query(
     `INSERT INTO public."Version" ("resourceId", "blobId", "versionNum", "publishedBy") VALUES ($1, $2, $3, $4) RETURNING id`,
-    [resourceId, blobId, 1, process.env.PUBLISHER_USER_ID]
+    [resourceId, blobId, 1, process.env.PUBLISHER_USER_ID],
   );
   const versionId = result.rows[0].id;
 
   // Update the resource with the new publishedVersionId
   await client.query(
     `UPDATE public."Resource" SET "publishedVersionId" = $1 WHERE id = $2`,
-    [versionId, resourceId]
+    [versionId, resourceId],
   );
 }
 
 async function importSiteConfig(
   client: Client,
   siteId: number,
-  siteName: string
+  siteName: string,
 ) {
   console.log("Importing site config");
   const siteConfigPath = path.join(
@@ -383,7 +383,7 @@ async function importSiteConfig(
     "repos",
     siteName,
     "data",
-    "config.json"
+    "config.json",
   );
 
   // Split config and theme
@@ -403,7 +403,7 @@ async function importSiteConfig(
 
   await client.query(
     `UPDATE public."Site" SET config = $1, theme = $2 WHERE id = $3`,
-    [siteConfig, theme, siteId]
+    [siteConfig, theme, siteId],
   );
 }
 
@@ -415,13 +415,13 @@ async function importNavbar(client: Client, siteId: number, siteName: string) {
     "repos",
     siteName,
     "data",
-    "navbar.json"
+    "navbar.json",
   );
   const navbar = fs.readFileSync(navbarPath, "utf-8");
 
   await client.query(
     `INSERT INTO public."Navbar" ("siteId", content) VALUES ($1, $2)`,
-    [siteId, navbar]
+    [siteId, navbar],
   );
 }
 
@@ -433,13 +433,13 @@ async function importFooter(client: Client, siteId: number, siteName: string) {
     "repos",
     siteName,
     "data",
-    "footer.json"
+    "footer.json",
   );
   const footer = fs.readFileSync(footerPath, "utf-8");
 
   await client.query(
     `INSERT INTO public."Footer" ("siteId", content) VALUES ($1, $2)`,
-    [siteId, footer]
+    [siteId, footer],
   );
 }
 
@@ -458,7 +458,7 @@ async function studioifySite(client: Client, siteId: number, siteName: string) {
       content,
       siteId,
       assetsMap,
-      resourcesMap
+      resourcesMap,
     );
     await updateBlob(client, resource!.blobId!, updatedContent);
   }
@@ -469,7 +469,7 @@ async function studioifySite(client: Client, siteId: number, siteName: string) {
     navbarContent,
     siteId,
     assetsMap,
-    resourcesMap
+    resourcesMap,
   );
   await updateNavbar(client, siteId, updatedNavbar);
 
@@ -478,7 +478,7 @@ async function studioifySite(client: Client, siteId: number, siteName: string) {
     footerContent,
     siteId,
     assetsMap,
-    resourcesMap
+    resourcesMap,
   );
   await updateFooter(client, siteId, updatedFooter);
 
@@ -487,7 +487,7 @@ async function studioifySite(client: Client, siteId: number, siteName: string) {
     siteConfigContent,
     siteId,
     assetsMap,
-    resourcesMap
+    resourcesMap,
   );
   await updateSiteConfig(client, siteId, updatedSiteConfig);
 
@@ -499,7 +499,7 @@ async function studioifySite(client: Client, siteId: number, siteName: string) {
   fs.writeFileSync(
     path.join(__dirname, "..", `asset-mappings-${siteName}.csv`),
     assetsCsvHeaders + assetsCsv,
-    "utf-8"
+    "utf-8",
   );
 }
 
@@ -512,10 +512,10 @@ function getAssetsMapping(siteId: number, siteName: string) {
   const assetsDir = path.join(__dirname, "..", "assets");
 
   const images = getFiles(imagesDir).map((file) =>
-    path.relative(publicDir, file)
+    path.relative(publicDir, file),
   );
   const files = getFiles(filesDir).map((file) =>
-    path.relative(publicDir, file)
+    path.relative(publicDir, file),
   );
   const allAssets = [...images, ...files];
 
@@ -545,7 +545,7 @@ function getAssetsMapping(siteId: number, siteName: string) {
     // Store the mapping
     assetsMap[path.join("/", asset)] = path.join(
       "/",
-      path.relative(assetsDir, newAssetPath)
+      path.relative(assetsDir, newAssetPath),
     );
   }
 
@@ -581,7 +581,7 @@ async function getResourceMapping(client: Client, siteId: number) {
 
 async function getSitemapArray(
   client: Client,
-  siteId: number
+  siteId: number,
 ): Promise<Resource[]> {
   const result = await client.query(GET_ALL_RESOURCES_WITH_FULL_PERMALINKS, [
     siteId,
@@ -592,7 +592,7 @@ async function getSitemapArray(
 async function getBlob(client: Client, blobId: number): Promise<string> {
   const result = await client.query(
     `SELECT content FROM public."Blob" WHERE id = $1`,
-    [blobId]
+    [blobId],
   );
   return JSON.stringify(result.rows[0].content);
 }
@@ -613,7 +613,7 @@ async function updateBlob(client: Client, blobId: number, content: string) {
 async function getNavbar(client: Client, siteId: number): Promise<string> {
   const result = await client.query(
     `SELECT content FROM public."Navbar" WHERE "siteId" = $1`,
-    [siteId]
+    [siteId],
   );
   return JSON.stringify(result.rows[0].content);
 }
@@ -622,7 +622,7 @@ async function updateNavbar(client: Client, siteId: number, content: string) {
   try {
     await client.query(
       `UPDATE public."Navbar" SET content = $1 WHERE "siteId" = $2`,
-      [content, siteId]
+      [content, siteId],
     );
   } catch (err) {
     console.error(content);
@@ -634,7 +634,7 @@ async function updateNavbar(client: Client, siteId: number, content: string) {
 async function getFooter(client: Client, siteId: number): Promise<string> {
   const result = await client.query(
     `SELECT content FROM public."Footer" WHERE "siteId" = $1`,
-    [siteId]
+    [siteId],
   );
   return JSON.stringify(result.rows[0].content);
 }
@@ -643,7 +643,7 @@ async function updateFooter(client: Client, siteId: number, content: string) {
   try {
     await client.query(
       `UPDATE public."Footer" SET content = $1 WHERE "siteId" = $2`,
-      [content, siteId]
+      [content, siteId],
     );
   } catch (err) {
     console.error(content);
@@ -655,7 +655,7 @@ async function updateFooter(client: Client, siteId: number, content: string) {
 async function getSiteConfig(client: Client, siteId: number): Promise<string> {
   const result = await client.query(
     `SELECT config FROM public."Site" WHERE id = $1`,
-    [siteId]
+    [siteId],
   );
   return JSON.stringify(result.rows[0].config);
 }
@@ -663,7 +663,7 @@ async function getSiteConfig(client: Client, siteId: number): Promise<string> {
 async function updateSiteConfig(
   client: Client,
   siteId: number,
-  config: string
+  config: string,
 ) {
   try {
     await client.query(`UPDATE public."Site" SET config = $1 WHERE id = $2`, [
@@ -681,7 +681,7 @@ function studioifyContent(
   content: string,
   siteId: number,
   assetsMap: Record<string, string>,
-  resourcesMap: Record<string, Resource>
+  resourcesMap: Record<string, Resource>,
 ): string {
   let newContent = content;
 
@@ -697,19 +697,19 @@ function studioifyContent(
     newContent = newContent
       .replaceAll(
         `"${page}/"`,
-        `"[resource:${String(siteId)}:${String(resourcesMap[page]!.id)}]"`
+        `"[resource:${String(siteId)}:${String(resourcesMap[page]!.id)}]"`,
       )
       .replaceAll(
         `"${page}"`,
-        `"[resource:${String(siteId)}:${String(resourcesMap[page]!.id)}]"`
+        `"[resource:${String(siteId)}:${String(resourcesMap[page]!.id)}]"`,
       )
       .replaceAll(
         `'${page}/'`,
-        `'[resource:${String(siteId)}:${String(resourcesMap[page]!.id)}]'`
+        `'[resource:${String(siteId)}:${String(resourcesMap[page]!.id)}]'`,
       )
       .replaceAll(
         `'${page}'`,
-        `'[resource:${String(siteId)}:${String(resourcesMap[page]!.id)}]'`
+        `'[resource:${String(siteId)}:${String(resourcesMap[page]!.id)}]'`,
       );
   }
 
@@ -748,7 +748,7 @@ const s3Sync = async (siteId: number) => {
         __dirname,
         "..",
         "assets",
-        String(siteId)
+        String(siteId),
       )}/ ${process.env.S3_BUCKET_URI}/${siteId}/`,
       (err) => {
         if (err) {
@@ -756,7 +756,7 @@ const s3Sync = async (siteId: number) => {
         } else {
           resolve();
         }
-      }
+      },
     );
   });
 };

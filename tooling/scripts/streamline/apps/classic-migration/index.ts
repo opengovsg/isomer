@@ -32,7 +32,7 @@ const octokit = new Octokit({
 });
 
 const getStatusName = (
-  status: "converted" | "manual_review" | "not_converted"
+  status: "converted" | "manual_review" | "not_converted",
 ) => {
   switch (status) {
     case "converted":
@@ -99,6 +99,7 @@ const migrateCollectionPage = async ({
     path,
     isResourceRoomPage: true,
     domain,
+    useStagingBranch,
   });
 
   if (!migrationResponse) {
@@ -146,7 +147,7 @@ const saveContentsToFile = async ({
     __dirname,
     CONVERSION_OUTPUT_DIR,
     site,
-    permalink === "/" ? "index" : permalink.toLocaleLowerCase()
+    permalink === "/" ? "index" : permalink.toLocaleLowerCase(),
   );
   const fileName = `${path.basename(filePath)}.json`;
   const folderPath = path.dirname(filePath);
@@ -177,7 +178,7 @@ const saveContentsToFile = async ({
 const createIndexIfNotExists = async (
   site: string,
   permalink: string,
-  title: string
+  title: string,
 ) => {
   const indexPage = {
     page: {
@@ -193,7 +194,7 @@ const createIndexIfNotExists = async (
 
   if (
     fs.existsSync(
-      path.join(__dirname, CONVERSION_OUTPUT_DIR, site, `${permalink}.json`)
+      path.join(__dirname, CONVERSION_OUTPUT_DIR, site, `${permalink}.json`),
     )
   ) {
     return;
@@ -209,12 +210,14 @@ const createIndexIfNotExists = async (
 
 const createCollectionIndex = async (
   site: string,
-  resourceRoomName: string
+  resourceRoomName: string,
+  useStagingBranch = false,
 ) => {
   const title = await getResourceTitleName({
     site,
     octokit,
     resourceRoomName,
+    useStagingBranch,
   });
 
   const indexPage = {
@@ -248,7 +251,7 @@ export const migrateSite = async ({
   console.log(
     "Migrating site contents from",
     site,
-    `(https://github.com/isomerpages/${site})`
+    `(https://github.com/isomerpages/${site})`,
   );
   const domain = isomerDomain.startsWith("http")
     ? isomerDomain.replace("http://", "https://")
@@ -262,7 +265,7 @@ export const migrateSite = async ({
   }
   const migrationReportPath = path.join(
     __dirname,
-    `migrated-pages-${site}.csv`
+    `migrated-pages-${site}.csv`,
   );
   if (fs.existsSync(migrationReportPath)) {
     console.log("NOTE: Removing previous migration report...");
@@ -306,7 +309,7 @@ export const migrateSite = async ({
 
   console.log(
     "Total pages to migrate:",
-    allPages.length + allResourceRoomPages.length
+    allPages.length + allResourceRoomPages.length,
   );
 
   // Migrate all non-resource room pages
@@ -320,6 +323,7 @@ export const migrateSite = async ({
       path,
       isResourceRoomPage: false,
       domain,
+      useStagingBranch,
     });
 
     if (!content) {
@@ -335,7 +339,7 @@ export const migrateSite = async ({
       site,
       content: content.content,
       permalink: getLegalPermalink(
-        content.permalink ?? path.split("/").pop()?.split(".")[0]
+        content.permalink ?? path.split("/").pop()?.split(".")[0],
       ),
     });
 
@@ -348,7 +352,7 @@ export const migrateSite = async ({
       await createIndexIfNotExists(
         site,
         getLegalPermalink(parentPermalink),
-        content.third_nav_title
+        content.third_nav_title,
       );
     }
 
@@ -397,12 +401,12 @@ export const migrateSite = async ({
   }
 
   if (resourceRoomName) {
-    await createCollectionIndex(site, resourceRoomName);
+    await createCollectionIndex(site, resourceRoomName, useStagingBranch);
   }
 
   // Save the migrated pages information into a CSV file
   console.log(
-    `Saving migrated pages information into a CSV file (migrated-pages-${site}.csv)`
+    `Saving migrated pages information into a CSV file (migrated-pages-${site}.csv)`,
   );
   const csvHeaders =
     "Permalink,Title,Status,Priority,Review items,Recommended actions\n";
@@ -432,11 +436,11 @@ export const migrateSite = async ({
           content.reviewItems
             ? '"' +
               [...new Set(content.reviewItems.map((ri) => ri.action))].join(
-                ", "
+                ", ",
               ) +
               '"'
             : "Run final checks",
-        ].join(",") + "\n"
+        ].join(",") + "\n",
     );
 
   const csvString = csvHeaders + csvRows.join("");
@@ -459,7 +463,7 @@ export const migrateClassicToNext = async () => {
       isResourceRoomIncluded: true,
       useStagingBranch,
     };
-    // await migrateSite(migrationRequest);
+    await migrateSite(migrationRequest);
 
     const studiofyRequest: StudiofyRequest = {
       repoName: site.repoName,
@@ -482,12 +486,12 @@ export const migrateClassicToNext = async () => {
           domainAliases: site.isomerDomain,
         },
       ],
-      "PREVIEW_ONLY"
+      "PREVIEW_ONLY",
     );
   }
 
   console.log("Completed automated migration of Classic sites to Next.");
   console.log(
-    "Please proceed to perform a `pulumi up` on isomer-next-infra to create the CloudFront sites."
+    "Please proceed to perform a `pulumi up` on isomer-next-infra to create the CloudFront sites.",
   );
 };
