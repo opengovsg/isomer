@@ -10,6 +10,7 @@ interface BaseLinkProps {
   showExternalIcon?: boolean
   className?: string
   label?: string
+  onClick?: () => void
   LinkComponent?: LinkComponentType
 }
 
