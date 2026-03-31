@@ -42,7 +42,7 @@ git checkout $ISOMER_BUILD_REPO_BRANCH
 calculate_duration $start_time
 
 corepack enable
-corepack prepare pnpm@10.33.0 --activate
+corepack install -g pnpm@10.33.0
 
 # Use a project-local store only in this CodeBuild job so the S3 tarball is self-contained.
 # Do not set storeDir in pnpm-workspace.yaml: local dev keeps the default global store.
