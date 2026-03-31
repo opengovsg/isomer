@@ -2,6 +2,7 @@ import {
   isEmailWhitelistedInputSchema,
   isEmailWhitelistedOutputSchema,
 } from "~/schemas/whitelist"
+
 import { protectedProcedure, router } from "../../trpc"
 import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
 import { isEmailWhitelisted } from "./whitelist.service"

@@ -13,8 +13,8 @@ import {
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
-
 import { createCallerFactory } from "~/server/trpc"
+
 import { whitelistRouter } from "../whitelist.router"
 
 const createCaller = createCallerFactory(whitelistRouter)

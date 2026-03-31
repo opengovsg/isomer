@@ -1,15 +1,15 @@
 import type { ButtonProps } from "@chakra-ui/react"
-import { useContext } from "react"
 import { Button, Tooltip } from "@chakra-ui/react"
 import { useSetAtom } from "jotai"
+import { useContext } from "react"
 import { BiPlus } from "react-icons/bi"
-
 import { UserManagementContext } from "~/features/users"
 import {
   addUserModalAtom,
   DEFAULT_ADD_USER_MODAL_STATE,
 } from "~/features/users/atoms"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
+
 import { SingpassConditionalTooltip } from "./SingpassConditionalTooltip"
 
 interface AddNewUserButtonProps extends Omit<ButtonProps, "onClick"> {

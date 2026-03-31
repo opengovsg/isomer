@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest"
-
 import type { ContactInformationUIProps } from "~/interfaces"
 import type { CONTACT_INFORMATION_SUPPORT_METHODS } from "~/interfaces/complex/ContactInformation/constants"
+import { describe, expect, it } from "vitest"
+
 import { filterContactMethods } from "../filterContactMethods"
 
 // Helper function to create mock contact methods
@@ -190,7 +190,7 @@ describe("filterContactMethods", () => {
         },
         {
           // disable eslint because we want to test falsy method
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
           method: null as any, // Falsy method
           label: "Another Invalid",
           values: ["also-invalid"],

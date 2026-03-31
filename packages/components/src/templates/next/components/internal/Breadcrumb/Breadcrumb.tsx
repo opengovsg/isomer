@@ -1,10 +1,10 @@
 import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react"
-import { BiChevronRight } from "react-icons/bi"
-
 import type { BreadcrumbProps, LinkProps } from "~/interfaces"
+import { BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+
 import { Link } from "../Link"
 
 const createBreadcrumbLinkStyles = tv({

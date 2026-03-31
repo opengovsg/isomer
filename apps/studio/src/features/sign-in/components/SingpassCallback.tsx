@@ -1,9 +1,8 @@
-import { useEffect } from "react"
-import NextLink from "next/link"
-import { useRouter } from "next/router"
 import { Button, Flex, Grid, GridItem, Text } from "@chakra-ui/react"
 import { RestrictedGovtMasthead } from "@opengovsg/design-system-react"
-
+import NextLink from "next/link"
+import { useRouter } from "next/router"
+import { useEffect } from "react"
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
 import { IsomerLogo } from "~/components/Svg"
 import { useLoginState } from "~/features/auth"

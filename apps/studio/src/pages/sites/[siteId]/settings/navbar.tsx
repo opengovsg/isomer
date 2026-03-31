@@ -1,11 +1,9 @@
 import type { NavbarSchemaType } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
-import { useToast } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-import isEqual from "lodash/isEqual"
-
 import type { NextPageWithLayout } from "~/lib/types"
+import { useToast } from "@opengovsg/design-system-react"
+import isEqual from "lodash/isEqual"
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -26,6 +24,7 @@ import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const NavbarSettingsPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteSchema)

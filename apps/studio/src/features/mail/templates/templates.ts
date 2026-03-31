@@ -1,5 +1,10 @@
-import { RoleType } from "~prisma/generated/generatedEnums"
 import { toZonedTime } from "date-fns-tz"
+import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
+import { env } from "~/env.mjs"
+import { formatScheduledAtDate } from "~/lib/dates"
+import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
+import { getStudioResourceUrl } from "~/utils/resources"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import type {
   AccountDeactivationEmailTemplateData,
@@ -15,11 +20,6 @@ import type {
   SchedulePageTemplateData,
   SuccessfulPublishTemplateData,
 } from "./types"
-import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
-import { env } from "~/env.mjs"
-import { formatScheduledAtDate } from "~/lib/dates"
-import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
-import { getStudioResourceUrl } from "~/utils/resources"
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${env.NEXT_PUBLIC_APP_URL}">${env.NEXT_PUBLIC_APP_URL?.replace("https://", "")}</a>`

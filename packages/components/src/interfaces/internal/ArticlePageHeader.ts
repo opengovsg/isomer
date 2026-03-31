@@ -1,9 +1,9 @@
 import type { Static } from "@sinclair/typebox"
+import type { LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
 import type { CollectionCardProps } from "./CollectionCard"
-import type { LinkComponentType } from "~/types"
 
 export const ArticlePageHeaderSchema = Type.Object({
   summary: Type.String({

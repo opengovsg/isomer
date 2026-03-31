@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import { generateSiteConfig } from "~/stories/helpers"
 import { type ArticlePageSchemaType } from "~/types"
+
 import { ArticleLayout } from "./Article"
 
 const meta: Meta<ArticlePageSchemaType> = {

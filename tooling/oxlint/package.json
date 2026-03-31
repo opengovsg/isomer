@@ -1,0 +1,16 @@
+{
+  "name": "@isomer/oxlint-config",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Shared Oxlint presets and pinned oxlint / oxlint-tsgolint for the monorepo and consumers",
+  "type": "module",
+  "exports": {
+    ".": "./package.json",
+    "./base": "./base.json",
+    "./base.json": "./base.json"
+  },
+  "dependencies": {
+    "oxlint": "^1.56.0",
+    "oxlint-tsgolint": "^0.17.1"
+  }
+}

@@ -1,5 +1,6 @@
 import type { ImageProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+
 import { ImageClient } from "../../internal/ImageClient"
 
 const createImageStyles = tv({

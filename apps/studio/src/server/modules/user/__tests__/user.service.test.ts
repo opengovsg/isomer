@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server"
-import { RoleType } from "~prisma/generated/generatedEnums"
 import _ from "lodash"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -9,8 +8,9 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
-
 import { db } from "~/server/modules/database"
+import { RoleType } from "~prisma/generated/generatedEnums"
+
 import { createUserWithPermission, isUserDeleted } from "../user.service"
 
 describe("user.service", () => {

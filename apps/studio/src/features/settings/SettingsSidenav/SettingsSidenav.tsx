@@ -1,12 +1,12 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IconType } from "react-icons"
-import { useRouter } from "next/router"
 import { VStack } from "@chakra-ui/react"
+import { useRouter } from "next/router"
 import { BiDirections, BiPaint, BiWrench } from "react-icons/bi"
-
 import { CmsCollapsibleSidenav } from "~/components/CmsSidebar/CmsCollapsibleSidenav"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
+
 import { HeaderRow } from "./components"
 import { SettingsItem } from "./components/SettingsItem"
 

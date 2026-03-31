@@ -1,6 +1,5 @@
-import { scryptSync, timingSafeEqual } from "node:crypto"
 import { customAlphabet } from "nanoid"
-
+import { scryptSync, timingSafeEqual } from "node:crypto"
 import {
   OTP_ALPHABET,
   OTP_LENGTH,

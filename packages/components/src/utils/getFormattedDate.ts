@@ -1,6 +1,6 @@
+import type { FormattedDate } from "~/types"
 import { format } from "date-fns"
 
-import type { FormattedDate } from "~/types"
 import { getParsedDate } from "./getParsedDate"
 
 // Standardise the format of dates displayed on the site

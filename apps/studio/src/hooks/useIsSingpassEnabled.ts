@@ -1,5 +1,4 @@
 import { useFeatureValue } from "@growthbook/growthbook-react"
-
 import {
   IS_SINGPASS_ENABLED_FEATURE_KEY,
   IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,

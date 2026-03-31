@@ -1,16 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { ResourceState } from "~prisma/generated/generatedEnums"
 import { userEvent, waitFor, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import {
   createBannerGbParameters,
   createDropdownGbParameters,
 } from "~/stories/utils/growthbook"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),

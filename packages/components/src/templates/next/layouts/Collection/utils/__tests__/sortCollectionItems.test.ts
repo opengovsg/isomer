@@ -1,6 +1,6 @@
+import type { AllCardProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
 
-import type { AllCardProps } from "~/interfaces"
 import { sortCollectionItems } from "../sortCollectionItems"
 
 describe("sortCollectionItems", () => {

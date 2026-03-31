@@ -1,9 +1,8 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
-import { useEffect, useState } from "react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
 import uniq from "lodash/uniq"
-
+import { useEffect, useState } from "react"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { ONE_MB_IN_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"

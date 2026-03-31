@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { MastheadProps } from "~/interfaces"
 import { userEvent, within } from "storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { MastheadProps } from "~/interfaces"
 import { Masthead } from "./Masthead"
 
 const meta: Meta<MastheadProps> = {

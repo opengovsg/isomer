@@ -1,8 +1,8 @@
 import { Skeleton } from "@chakra-ui/react"
-
-import type { PreviewProps } from "./PreviewWithCustomSitemap"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
+
+import type { PreviewProps } from "./PreviewWithCustomSitemap"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 
 function SuspendablePreview({
