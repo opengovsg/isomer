@@ -1,10 +1,8 @@
-import type { GrowthBook } from "@growthbook/growthbook"
-import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
+import type { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { TRPCError } from "@trpc/server"
 import get from "lodash/get"
 import partition from "lodash/partition"
-import { ADMIN_ROLE, ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
 import { AuditLogEvent, RoleType } from "~prisma/generated/generatedEnums"
 
 import type {
@@ -50,6 +48,12 @@ export const definePermissionsForResource = async ({
 
   roles.map(({ role }) => buildPermissionsForResource(role, builder))
 
+  const isUserIsomerAdmin = await isActiveIsomerAdmin(userId)
+
+  if (isUserIsomerAdmin) {
+    buildPermissionsForResource(RoleType.Admin, builder)
+  }
+
   return builder.build({ detectSubjectType: () => "Resource" })
 }
 
@@ -66,13 +70,14 @@ export const definePermissionsForSite = async ({
     .where("deletedAt", "is", null)
     .select("role")
     .execute()
+  const isUserIsomerAdmin = await isActiveIsomerAdmin(userId)
 
   // NOTE: Any role should be able to read site
-  if (roles.length > 0) {
+  if (roles.length > 0 || isUserIsomerAdmin) {
     builder.can("read", "Site")
   }
 
-  if (roles.some(({ role }) => role === RoleType.Admin)) {
+  if (roles.some(({ role }) => role === RoleType.Admin) || isUserIsomerAdmin) {
     CRUD_ACTIONS.map((action) => {
       builder.can(action, "Site")
     })
@@ -176,7 +181,16 @@ export const getResourcePermission = async ({
   // because there's no granular resource role
   query = query.where("resourceId", "is", null)
 
-  return query.select("role").execute()
+  const roles = await query.select("role").execute()
+  const isUserIsomerAdmin = await isActiveIsomerAdmin(userId)
+
+  // Isomer admins have implicit Admin role on any site regardless of any
+  // explicit roles they have on the site
+  if (isUserIsomerAdmin) {
+    return [{ role: RoleType.Admin }]
+  }
+
+  return roles
 }
 
 export const validatePermissionsForManagingUsers = async ({
@@ -186,6 +200,8 @@ export const validatePermissionsForManagingUsers = async ({
 }: Omit<PermissionsProps, "resourceId"> & {
   action: UserManagementActions
 }) => {
+  if (await isActiveIsomerAdmin(userId)) return
+
   const roles = await getResourcePermission({ userId, siteId })
   const perms = buildUserManagementPermissions(roles)
 
@@ -284,39 +300,40 @@ export const updateUserSitewidePermission = async ({
   })
 }
 
-interface ValidateUserIsIsomerAdminProps {
-  userId: string
-  gb: GrowthBook
-  roles: (typeof ADMIN_ROLE)[keyof typeof ADMIN_ROLE][]
+export const isActiveIsomerAdmin = async (
+  userId: string,
+  roles?: IsomerAdminRole[],
+): Promise<boolean> => {
+  const now = new Date()
+  let query = db
+    .selectFrom("IsomerAdmin")
+    .where("userId", "=", userId)
+    .where("deletedAt", "is", null)
+    .where((eb) => eb.or([eb("expiry", "is", null), eb("expiry", ">", now)]))
+
+  if (roles && roles.length > 0) {
+    query = query.where("role", "in", roles)
+  }
+
+  const result = await query.select("id").executeTakeFirst()
+  return !!result
 }
 
-export const validateUserIsIsomerCoreAdmin = async ({
+interface ValidateUserIsIsomerAdminProps {
+  userId: string
+  roles: IsomerAdminRole[]
+}
+
+export const validateUserIsIsomerAdmin = async ({
   userId,
-  gb,
   roles,
 }: ValidateUserIsIsomerAdminProps) => {
-  const user = await db
-    .selectFrom("User")
-    .where("id", "=", userId)
-    .where("deletedAt", "is", null)
-    .select(["email"])
-    .executeTakeFirstOrThrow()
+  const isAdmin = await isActiveIsomerAdmin(userId, roles)
 
-  const { core, migrators } = gb.getFeatureValue<GrowthbookIsomerAdminFeature>(
-    ISOMER_ADMIN_FEATURE_KEY,
-    { core: [], migrators: [] },
-  )
-
-  if (roles.includes(ADMIN_ROLE.CORE) && core.includes(user.email)) {
-    return
+  if (!isAdmin) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have sufficient permissions to perform this action",
+    })
   }
-
-  if (roles.includes(ADMIN_ROLE.MIGRATORS) && migrators.includes(user.email)) {
-    return
-  }
-
-  throw new TRPCError({
-    code: "FORBIDDEN",
-    message: "You do not have sufficient permissions to perform this action",
-  })
 }

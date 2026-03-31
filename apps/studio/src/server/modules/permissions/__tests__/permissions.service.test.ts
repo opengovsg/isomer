@@ -5,18 +5,25 @@ import {
   setupAdminPermissions,
   setupEditorPermissions,
   setupFolder,
+  setupIsomerAdmin,
   setupPageResource,
   setupPublisherPermissions,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
 import { describe, expect, it } from "vitest"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import type { ResourceAbility } from "../permissions.type"
 import { db, ResourceType, RoleType } from "../../database"
 import {
   bulkValidateUserPermissionsForResources,
+  definePermissionsForResource,
+  definePermissionsForSite,
   getResourcePermission,
+  isActiveIsomerAdmin,
+  validatePermissionsForManagingUsers,
+  validateUserIsIsomerAdmin,
 } from "../permissions.service"
 import { CRUD_ACTIONS } from "../permissions.type"
 import {
@@ -1074,6 +1081,49 @@ describe("permissions.service", () => {
         await expect(validation).rejects.toThrow("Resource not found")
       })
     })
+
+    describe("Isomer Admin", () => {
+      beforeEach(async () => {
+        await resetTables("IsomerAdmin")
+      })
+
+      it("should allow an Isomer Admin to perform all actions including root-level create/delete", async () => {
+        // Arrange
+        await setupIsomerAdmin({ userId: user.id })
+
+        for (const action of [...CRUD_ACTIONS, "publish"] as const) {
+          // Act
+          const validation = bulkValidateUserPermissionsForResources({
+            action,
+            resourceIds,
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert
+          await expect(validation).resolves.not.toThrow()
+        }
+      })
+
+      it("should not allow an expired Isomer Admin to perform root-level actions", async () => {
+        // Arrange
+        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+        await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+
+        // Act
+        const validation = bulkValidateUserPermissionsForResources({
+          action: "create",
+          resourceIds: [null],
+          userId: user.id,
+          siteId: site.id,
+        })
+
+        // Assert
+        await expect(validation).rejects.toThrow(
+          "You do not have sufficient permissions to perform this action",
+        )
+      })
+    })
   })
 })
 
@@ -1267,5 +1317,401 @@ describe("getResourcePermission", () => {
     expect(permissions1[0]?.role).toBe(RoleType.Admin)
     expect(permissions2).toHaveLength(1)
     expect(permissions2[0]?.role).toBe(RoleType.Editor)
+  })
+
+  describe("Isomer Admin", () => {
+    it("should return Admin role for an Isomer Admin without any explicit ResourcePermission", async () => {
+      // Arrange
+      const user = await setupUser({ email: "test@example.com" })
+      const site = await setupSite()
+      await setupIsomerAdmin({ userId: user.id })
+
+      // Act
+      const permissions = await getResourcePermission({
+        userId: user.id,
+        siteId: site.site.id,
+        resourceId: null,
+      })
+
+      // Assert
+      expect(permissions).toHaveLength(1)
+      expect(permissions[0]?.role).toBe(RoleType.Admin)
+    })
+
+    it("should return Admin role for an Isomer Admin even if they have an explicit non-admin role", async () => {
+      // Arrange
+      const user = await setupUser({ email: "test@example.com" })
+      const site = await setupSite()
+      await setupIsomerAdmin({ userId: user.id })
+      await setupEditorPermissions({ userId: user.id, siteId: site.site.id })
+
+      // Act
+      const permissions = await getResourcePermission({
+        userId: user.id,
+        siteId: site.site.id,
+        resourceId: null,
+      })
+
+      // Assert — Isomer Admin overrides explicit Editor role
+      expect(permissions).toHaveLength(1)
+      expect(permissions[0]?.role).toBe(RoleType.Admin)
+    })
+
+    it("should return the explicit role when Isomer Admin entry is expired", async () => {
+      // Arrange
+      const user = await setupUser({ email: "test@example.com" })
+      const site = await setupSite()
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+      await setupEditorPermissions({ userId: user.id, siteId: site.site.id })
+
+      // Act
+      const permissions = await getResourcePermission({
+        userId: user.id,
+        siteId: site.site.id,
+        resourceId: null,
+      })
+
+      // Assert — expired Isomer Admin falls back to explicit role
+      expect(permissions).toHaveLength(1)
+      expect(permissions[0]?.role).toBe(RoleType.Editor)
+    })
+
+    it("should return the explicit role when Isomer Admin entry is soft-deleted", async () => {
+      // Arrange
+      const user = await setupUser({ email: "test@example.com" })
+      const site = await setupSite()
+      await setupEditorPermissions({ userId: user.id, siteId: site.site.id })
+      await db
+        .insertInto("IsomerAdmin")
+        .values({
+          userId: user.id,
+          role: IsomerAdminRole.Core,
+          deletedAt: new Date(),
+        })
+        .execute()
+
+      // Act
+      const permissions = await getResourcePermission({
+        userId: user.id,
+        siteId: site.site.id,
+        resourceId: null,
+      })
+
+      // Assert — soft-deleted Isomer Admin falls back to explicit role
+      expect(permissions).toHaveLength(1)
+      expect(permissions[0]?.role).toBe(RoleType.Editor)
+    })
+  })
+})
+
+describe("isActiveIsomerAdmin", () => {
+  beforeEach(async () => {
+    await resetTables("IsomerAdmin", "User")
+  })
+
+  it("should return true for an active Isomer Admin with no expiry", async () => {
+    const user = await setupUser({ email: "test@example.com" })
+    await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+
+    expect(await isActiveIsomerAdmin(user.id)).toBe(true)
+  })
+
+  it("should return true for an active Isomer Admin with a future expiry", async () => {
+    const user = await setupUser({ email: "test@example.com" })
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    await setupIsomerAdmin({ userId: user.id, expiry: tomorrow })
+
+    expect(await isActiveIsomerAdmin(user.id)).toBe(true)
+  })
+
+  it("should return false for an expired Isomer Admin", async () => {
+    const user = await setupUser({ email: "test@example.com" })
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+
+    expect(await isActiveIsomerAdmin(user.id)).toBe(false)
+  })
+
+  it("should return false for a soft-deleted Isomer Admin", async () => {
+    const user = await setupUser({ email: "test@example.com" })
+    await db
+      .insertInto("IsomerAdmin")
+      .values({
+        userId: user.id,
+        role: IsomerAdminRole.Core,
+        deletedAt: new Date(),
+      })
+      .execute()
+
+    expect(await isActiveIsomerAdmin(user.id)).toBe(false)
+  })
+
+  it("should return false for a user with no IsomerAdmin row", async () => {
+    const user = await setupUser({ email: "test@example.com" })
+
+    expect(await isActiveIsomerAdmin(user.id)).toBe(false)
+  })
+
+  describe("role filtering", () => {
+    it("should return true when the user's role matches the requested roles", async () => {
+      const user = await setupUser({ email: "test@example.com" })
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+
+      expect(await isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).toBe(
+        true,
+      )
+    })
+
+    it("should return false when the user's role does not match the requested roles", async () => {
+      const user = await setupUser({ email: "test@example.com" })
+      await setupIsomerAdmin({
+        userId: user.id,
+        role: IsomerAdminRole.Migrator,
+      })
+
+      expect(await isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).toBe(
+        false,
+      )
+    })
+
+    it("should return true when the user's role is among multiple requested roles", async () => {
+      const user = await setupUser({ email: "test@example.com" })
+      await setupIsomerAdmin({
+        userId: user.id,
+        role: IsomerAdminRole.Migrator,
+      })
+
+      expect(
+        await isActiveIsomerAdmin(user.id, [
+          IsomerAdminRole.Core,
+          IsomerAdminRole.Migrator,
+        ]),
+      ).toBe(true)
+    })
+  })
+})
+
+describe("validateUserIsIsomerAdmin", () => {
+  beforeEach(async () => {
+    await resetTables("IsomerAdmin", "User")
+  })
+
+  it("should not throw for an active Isomer Admin with a matching role", async () => {
+    const user = await setupUser({ email: "test@example.com" })
+    await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+
+    await expect(
+      validateUserIsIsomerAdmin({
+        userId: user.id,
+        roles: [IsomerAdminRole.Core],
+      }),
+    ).resolves.not.toThrow()
+  })
+
+  it("should throw FORBIDDEN for a user with no IsomerAdmin row", async () => {
+    const user = await setupUser({ email: "test@example.com" })
+
+    await expect(
+      validateUserIsIsomerAdmin({
+        userId: user.id,
+        roles: [IsomerAdminRole.Core],
+      }),
+    ).rejects.toThrow(
+      new TRPCError({
+        code: "FORBIDDEN",
+        message:
+          "You do not have sufficient permissions to perform this action",
+      }),
+    )
+  })
+
+  it("should throw FORBIDDEN for an expired Isomer Admin", async () => {
+    const user = await setupUser({ email: "test@example.com" })
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+
+    await expect(
+      validateUserIsIsomerAdmin({
+        userId: user.id,
+        roles: [IsomerAdminRole.Core],
+      }),
+    ).rejects.toThrow(
+      new TRPCError({
+        code: "FORBIDDEN",
+        message:
+          "You do not have sufficient permissions to perform this action",
+      }),
+    )
+  })
+
+  it("should throw FORBIDDEN when role does not match", async () => {
+    const user = await setupUser({ email: "test@example.com" })
+    await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Migrator })
+
+    await expect(
+      validateUserIsIsomerAdmin({
+        userId: user.id,
+        roles: [IsomerAdminRole.Core],
+      }),
+    ).rejects.toThrow(
+      new TRPCError({
+        code: "FORBIDDEN",
+        message:
+          "You do not have sufficient permissions to perform this action",
+      }),
+    )
+  })
+})
+
+describe("definePermissionsForResource", () => {
+  beforeEach(async () => {
+    await resetTables(
+      "IsomerAdmin",
+      "ResourcePermission",
+      "User",
+      "Site",
+      "Resource",
+    )
+  })
+
+  it("should grant full resource permissions to an Isomer Admin without any ResourcePermission", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { site } = await setupSite()
+    await setupIsomerAdmin({ userId: user.id })
+
+    // Act
+    const perms = await definePermissionsForResource({
+      userId: user.id,
+      siteId: site.id,
+    })
+
+    // Assert — Isomer Admin can create/delete at root
+    expect(perms.can("create", { parentId: null })).toBe(true)
+    expect(perms.can("delete", { parentId: null })).toBe(true)
+    expect(perms.can("read", { parentId: null })).toBe(true)
+    expect(perms.can("update", { parentId: null })).toBe(true)
+  })
+
+  it("should not grant admin resource permissions to an expired Isomer Admin without ResourcePermission", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { site } = await setupSite()
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+
+    // Act
+    const perms = await definePermissionsForResource({
+      userId: user.id,
+      siteId: site.id,
+    })
+
+    // Assert — expired Isomer Admin has no permissions
+    expect(perms.can("create", { parentId: null })).toBe(false)
+    expect(perms.can("delete", { parentId: null })).toBe(false)
+  })
+})
+
+describe("definePermissionsForSite", () => {
+  beforeEach(async () => {
+    await resetTables("IsomerAdmin", "ResourcePermission", "User", "Site")
+  })
+
+  it("should grant full site permissions to an Isomer Admin without any ResourcePermission", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { site } = await setupSite()
+    await setupIsomerAdmin({ userId: user.id })
+
+    // Act
+    const perms = await definePermissionsForSite({
+      userId: user.id,
+      siteId: site.id,
+    })
+
+    // Assert
+    expect(perms.can("read", "Site")).toBe(true)
+    CRUD_ACTIONS.forEach((action) => {
+      expect(perms.can(action, "Site")).toBe(true)
+    })
+  })
+
+  it("should not grant site permissions to an expired Isomer Admin without ResourcePermission", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { site } = await setupSite()
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+
+    // Act
+    const perms = await definePermissionsForSite({
+      userId: user.id,
+      siteId: site.id,
+    })
+
+    // Assert
+    expect(perms.can("read", "Site")).toBe(false)
+    CRUD_ACTIONS.forEach((action) => {
+      expect(perms.can(action, "Site")).toBe(false)
+    })
+  })
+})
+
+describe("validatePermissionsForManagingUsers", () => {
+  beforeEach(async () => {
+    await resetTables("IsomerAdmin", "ResourcePermission", "User", "Site")
+  })
+
+  it("should allow an Isomer Admin to manage users without any ResourcePermission", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { site } = await setupSite()
+    await setupIsomerAdmin({ userId: user.id })
+
+    // Act & Assert
+    await expect(
+      validatePermissionsForManagingUsers({
+        userId: user.id,
+        siteId: site.id,
+        action: "manage",
+      }),
+    ).resolves.not.toThrow()
+  })
+
+  it("should throw FORBIDDEN for a non-admin user without ResourcePermission", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { site } = await setupSite()
+
+    // Act & Assert
+    await expect(
+      validatePermissionsForManagingUsers({
+        userId: user.id,
+        siteId: site.id,
+        action: "manage",
+      }),
+    ).rejects.toThrow(
+      "You do not have sufficient permissions to perform this action",
+    )
+  })
+
+  it("should throw FORBIDDEN for an expired Isomer Admin without ResourcePermission", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { site } = await setupSite()
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+
+    // Act & Assert
+    await expect(
+      validatePermissionsForManagingUsers({
+        userId: user.id,
+        siteId: site.id,
+        action: "manage",
+      }),
+    ).rejects.toThrow(
+      "You do not have sufficient permissions to perform this action",
+    )
   })
 })
