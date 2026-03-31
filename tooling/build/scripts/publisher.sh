@@ -44,6 +44,10 @@ calculate_duration $start_time
 corepack enable
 corepack prepare pnpm@10.33.0 --activate
 
+# Use a project-local store only in this CodeBuild job so the S3 tarball is self-contained.
+# Do not set storeDir in pnpm-workspace.yaml: local dev keeps the default global store.
+pnpm config set store-dir .pnpm-store --location project
+
 ### Create a cache key for the current build ###
 # Assumption: All production related builds are using release tags e.g. v0.2.1
 if [[ -z "$IS_USING_RELEASE_TAG" ]]; then
@@ -57,17 +61,23 @@ else
   UNIQUE_CACHE_KEY=$ISOMER_BUILD_REPO_BRANCH
 fi
 
-# Root + tooling/template node_modules are one artifact: pnpm links the template tree to the root
-# .pnpm store, so the tarball must include both paths.
+# Shared S3 dependency cache (same bucket/prefix pattern is used by multiple CodeBuild projects).
+# pnpm keeps package bytes in a content-addressable store; `store-dir` is set above for this run only.
+# We archive only `.pnpm-store`; `pnpm install` recreates node_modules from the store + lockfile.
 TEMPLATE_DEPS_TGZ="isomer-template-deps.tar.zst"
 TEMPLATE_DEPS_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$TEMPLATE_DEPS_TGZ"
-echo "Fetching cached template dependencies..."
+echo "Fetching cached pnpm store..."
 aws s3 cp --only-show-errors $TEMPLATE_DEPS_CACHE_PATH $TEMPLATE_DEPS_TGZ || true
 if [ -f "$TEMPLATE_DEPS_TGZ" ]; then
   echo "$TEMPLATE_DEPS_TGZ found in cache"
   start_time=$(date +%s)
   tar --use-compress-program=zstd -xf $TEMPLATE_DEPS_TGZ
   rm $TEMPLATE_DEPS_TGZ
+  calculate_duration $start_time
+
+  echo "Re-linking workspace from cached store..."
+  start_time=$(date +%s)
+  pnpm install --frozen-lockfile
   calculate_duration $start_time
 else
   echo "$TEMPLATE_DEPS_TGZ not found in cache"
@@ -76,27 +86,20 @@ else
   pnpm install --frozen-lockfile
   calculate_duration $start_time
 
-  echo "Building @opengovsg/isomer-components and installing tooling/template..."
+  echo "Caching pnpm store to S3..."
   start_time=$(date +%s)
-  cd packages/components
-  pnpm run build
-  mv opengovsg-isomer-components-0.0.13.tgz ../../tooling/template/
-  cd ../..
-  cd tooling/template
-  pnpm install --frozen-lockfile
-  rm -rf node_modules && rm -rf .next
-  pnpm add ./opengovsg-isomer-components-0.0.13.tgz
-  cd ../..
-  calculate_duration $start_time
-
-  echo "Caching template dependencies..."
-  start_time=$(date +%s)
-  tar --use-compress-program="zstd -6" -cf $TEMPLATE_DEPS_TGZ node_modules tooling/template/node_modules
+  tar --use-compress-program="zstd -6" -cf $TEMPLATE_DEPS_TGZ .pnpm-store
   aws s3 cp --only-show-errors $TEMPLATE_DEPS_TGZ $TEMPLATE_DEPS_CACHE_PATH
   rm $TEMPLATE_DEPS_TGZ
-  echo "Cached template dependencies"
+  echo "Cached pnpm store"
   calculate_duration $start_time
 fi
+
+# packages/components/dist is gitignored; Next resolves @opengovsg/isomer-components via workspace.
+echo "Building @opengovsg/isomer-components..."
+start_time=$(date +%s)
+pnpm --filter @opengovsg/isomer-components run build
+calculate_duration $start_time
 
 # Fetch from database
 echo "Fetching from database..."
