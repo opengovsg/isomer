@@ -24,7 +24,10 @@ export const jsonFormsImageControlTester: RankedTester = rankWith(
 )
 interface JsonFormsImageControlProps extends ControlProps {
   data: string
-  schema: JsonSchema & { maxSizeInBytes?: number }
+  schema: JsonSchema & {
+    maxSizeInBytes?: number
+    allowedMimeTypeMappings?: Record<string, string>
+  }
 }
 function JsonFormsImageControl({
   label,
@@ -49,7 +52,10 @@ function JsonFormsImageControl({
       ) : (
         <FileAttachment
           maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
-          acceptedFileTypes={IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
+          acceptedFileTypes={
+            schema.allowedMimeTypeMappings ??
+            IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING
+          }
           siteId={siteId}
           resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
           setHref={(src) => handleChange(path, src)}

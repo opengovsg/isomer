@@ -4,6 +4,17 @@ import { Type } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { ARRAY_RADIO_FORMAT } from "../format"
 
+export const IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
+  ".jpg": "image/jpeg", // same MIME type as .jpeg
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".gif": "image/gif",
+  ".svg": "image/svg+xml",
+  ".tiff": "image/tiff",
+  ".bmp": "image/bmp",
+  ".webp": "image/webp",
+}
+
 export const generateImageSrcSchema = ({
   title = "Image",
   description,
@@ -15,6 +26,7 @@ export const generateImageSrcSchema = ({
     title,
     format: "image",
     description,
+    allowedMimeTypeMappings: IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   })
 }
 
