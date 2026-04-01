@@ -91,7 +91,7 @@ export const HeroBlock = ({
       >
         <ImageClient
           src={backgroundUrl}
-          alt={title}
+          alt=""
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
           assetsBaseUrl={site.assetsBaseUrl}

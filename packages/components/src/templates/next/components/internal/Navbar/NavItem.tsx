@@ -127,6 +127,7 @@ const Megamenu = ({
         isWithFocusVisibleHighlight
         href={url}
         className="group inline-flex w-fit items-center gap-1 hover:text-brand-interaction-hover hover:no-underline"
+        onClick={onCloseMegamenu}
       >
         {name}
         {!isExternal && (
@@ -180,6 +181,7 @@ const Megamenu = ({
                         isWithFocusVisibleHighlight
                         href={subItem.url}
                         className="group prose-label-md-medium w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
+                        onClick={onCloseMegamenu}
                       >
                         {subItem.name}
                         {!isExternal && (

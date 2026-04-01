@@ -65,7 +65,7 @@ export const HeroLargeImage = ({
       </div>
       <ImageContainer
         imageSrc={backgroundUrl}
-        imageAlt={title}
+        imageAlt=""
         assetsBaseUrl={site.assetsBaseUrl}
       />
     </section>
