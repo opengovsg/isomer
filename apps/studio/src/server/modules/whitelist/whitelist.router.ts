@@ -1,11 +1,16 @@
+import { ADMIN_ROLE } from "~/lib/growthbook"
 import {
   isEmailWhitelistedInputSchema,
   isEmailWhitelistedOutputSchema,
+  whitelistEmailsInputSchema,
 } from "~/schemas/whitelist"
 
 import { protectedProcedure, router } from "../../trpc"
-import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
-import { isEmailWhitelisted } from "./whitelist.service"
+import {
+  validatePermissionsForManagingUsers,
+  validateUserIsIsomerCoreAdmin,
+} from "../permissions/permissions.service"
+import { isEmailWhitelisted, whitelistEmails } from "./whitelist.service"
 
 export const whitelistRouter = router({
   isEmailWhitelisted: protectedProcedure
@@ -22,5 +27,16 @@ export const whitelistRouter = router({
       })
 
       return await isEmailWhitelisted(email)
+    }),
+  whitelistEmails: protectedProcedure
+    .input(whitelistEmailsInputSchema)
+    .mutation(async ({ ctx, input: { adminEmails, vendorEmails } }) => {
+      await validateUserIsIsomerCoreAdmin({
+        userId: ctx.user.id,
+        gb: ctx.gb,
+        roles: [ADMIN_ROLE.CORE],
+      })
+
+      return whitelistEmails({ adminEmails, vendorEmails })
     }),
 })

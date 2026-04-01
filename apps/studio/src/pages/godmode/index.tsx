@@ -23,6 +23,10 @@ const GODMODE_LINKS = [
     href: "/godmode/publishing",
     label: "Publishing",
   },
+  {
+    href: "/godmode/whitelist",
+    label: "Whitelist",
+  },
 ] as const
 
 const GodModePage: NextPageWithLayout = () => {

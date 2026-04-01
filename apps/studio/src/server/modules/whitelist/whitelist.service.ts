@@ -3,6 +3,62 @@ import { isValidEmail } from "~/utils/email"
 
 import { db } from "../database"
 
+export const whitelistEmails = async ({
+  adminEmails,
+  vendorEmails,
+}: {
+  adminEmails: string[]
+  vendorEmails: string[]
+}) => {
+  // Calculate vendor expiry (90 days from now)
+  const vendorExpiry = new Date()
+  vendorExpiry.setDate(vendorExpiry.getDate() + 90)
+
+  // Use transaction for bulk insert
+  return db.transaction().execute(async (tx) => {
+    // Batch insert admin emails (no expiry)
+    if (adminEmails.length > 0) {
+      await tx
+        .insertInto("Whitelist")
+        .values(
+          adminEmails.map((email) => ({
+            email: email.toLowerCase(),
+            expiry: null,
+          })),
+        )
+        .onConflict((oc) =>
+          oc
+            .column("email")
+            .doUpdateSet({ expiry: null, updatedAt: new Date() }),
+        )
+        .execute()
+    }
+
+    // Batch insert vendor emails (90-day expiry)
+    if (vendorEmails.length > 0) {
+      await tx
+        .insertInto("Whitelist")
+        .values(
+          vendorEmails.map((email) => ({
+            email: email.toLowerCase(),
+            expiry: vendorExpiry,
+          })),
+        )
+        .onConflict((oc) =>
+          oc
+            .column("email")
+            .doUpdateSet({ expiry: vendorExpiry, updatedAt: new Date() }),
+        )
+        .execute()
+    }
+
+    return {
+      adminCount: adminEmails.length,
+      vendorCount: vendorEmails.length,
+    }
+  })
+}
+
 export const isEmailWhitelisted = async (email: string) => {
   const lowercaseEmail = email.toLowerCase()
 
