@@ -67,7 +67,7 @@ export const LogoSettingsSchema = Type.Object({
     Type.String({
       title: "Favicon",
       description:
-        "This appears on a browser tab to help people recognise your site. We recommend a minimum size of 24px by 24px, in .ico, .svg, or .png format.",
+        "This appears on a browser tab to help people recognise your site. We recommend a minimum size of 24px by 24px, in .svg, or .png format.",
       format: "image",
       maxSizeInBytes: 50000, // NOTE: 50 kB
     }),
