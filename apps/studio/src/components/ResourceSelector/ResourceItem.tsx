@@ -1,9 +1,8 @@
 import type { ButtonProps } from "@opengovsg/design-system-react"
+import type { ResourceItemContent } from "~/schemas/resource"
 import { Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { dataAttr } from "@chakra-ui/utils"
 import { Button } from "@opengovsg/design-system-react"
-
-import type { ResourceItemContent } from "~/schemas/resource"
 import { getIcon } from "~/utils/resources"
 
 interface ResourceItemProps {

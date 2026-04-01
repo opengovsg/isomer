@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { LinkComponentType } from "~/types"
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { DgsDataSourceSchema, NativeDataSourceSchema } from "../integration"
 

@@ -1,10 +1,9 @@
 import type { PropsWithChildren } from "react"
-import { createContext, useContext, useState } from "react"
-
 import type {
   LinkTypeMapping,
   LinkTypes,
 } from "~/features/editing-experience/components/LinkEditor/constants"
+import { createContext, useContext, useState } from "react"
 import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
 
 type LinkEditorContextReturn = ReturnType<typeof useLinkEditorContext>

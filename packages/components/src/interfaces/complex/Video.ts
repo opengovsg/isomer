@@ -1,6 +1,5 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
-
 import { VIDEO_EMBED_URL_PATTERN } from "~/utils/validation"
 
 export const VideoSchema = Type.Object(

@@ -1,8 +1,8 @@
 "use client"
 
-import { forwardRef } from "react"
-
 import type { ImageClientProps } from "~/interfaces"
+import { forwardRef } from "react"
+import { isExternalUrl } from "~/utils/isExternalUrl"
 
 export const ImageClient = forwardRef<
   HTMLImageElement,
@@ -20,10 +20,15 @@ export const ImageClient = forwardRef<
     },
     ref,
   ) => {
+    const imgSrc =
+      isExternalUrl(src) || assetsBaseUrl === undefined
+        ? src
+        : `${assetsBaseUrl}${src}`
+
     return (
       <img
         ref={ref}
-        src={src}
+        src={imgSrc}
         alt={alt}
         width={width}
         height="auto"

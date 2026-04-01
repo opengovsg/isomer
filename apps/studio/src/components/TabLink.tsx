@@ -1,6 +1,6 @@
 import type { LinkProps } from "@chakra-ui/react"
-import NextLink from "next/link"
 import { chakra, useMultiStyleConfig } from "@chakra-ui/react"
+import NextLink from "next/link"
 
 const Link = chakra(NextLink)
 

@@ -1,5 +1,4 @@
 import { type Attributes, type ComponentType, type ReactNode } from "react"
-
 import Suspense from "~/components/Suspense"
 
 /**

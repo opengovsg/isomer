@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 describe("isExternalUrl", () => {

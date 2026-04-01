@@ -1,17 +1,26 @@
-import type { z } from "zod"
-import { useEffect } from "react"
-import Link from "next/link"
-import { HStack, IconButton, Skeleton, Text, VStack } from "@chakra-ui/react"
+import {
+  HStack,
+  Icon,
+  IconButton,
+  Skeleton,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
 import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
-import { ResourceState } from "~prisma/generated/generatedEnums"
-import { BiChevronRight, BiFile, BiSolidCircle } from "react-icons/bi"
-
-import type { getIndexpageSchema } from "~/schemas/folder"
+import Link from "next/link"
+import { useEffect } from "react"
+import { BiChevronRight, BiSolidCircle } from "react-icons/bi"
 import { trpc } from "~/utils/trpc"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 
-type IndexpageRowProps = z.infer<typeof getIndexpageSchema>
+import type { IndexpageRowProps } from "./types"
+import { getIndexPageIcon, getIndexPageSubtitle } from "./utils"
 
-export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
+export const IndexpageRow = ({
+  type,
+  siteId,
+  resourceId,
+}: IndexpageRowProps) => {
   const trpcUtils = trpc.useUtils()
   const { mutate: createIndexPage, isPending } =
     trpc.page.createIndexPage.useMutation()
@@ -56,7 +65,7 @@ export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
         _hover={{ background: "interaction.muted.main.hover" }}
         data-group
       >
-        <BiFile fontSize={"1.25rem"} />
+        <Icon as={getIndexPageIcon(type)} fontSize="1.25rem" />
         <VStack flex={1} gap="0.25rem" alignItems="flex-start">
           <HStack gap="0.25rem">
             <Text textStyle="subhead-2">{data?.title}</Text>
@@ -77,7 +86,7 @@ export const IndexpageRow = ({ siteId, resourceId }: IndexpageRowProps) => {
           {/* as a relative time. */}
           {/* we also need to give the user who did the update */}
           <Text textStyle="caption-2" textColor="base.content.medium">
-            Customise the index page for this folder
+            {getIndexPageSubtitle(type)}
           </Text>
         </VStack>
         <Text

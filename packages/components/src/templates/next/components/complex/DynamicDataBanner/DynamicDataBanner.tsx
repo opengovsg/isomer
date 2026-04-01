@@ -1,6 +1,7 @@
 import type { DynamicDataBannerProps } from "~/interfaces"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
+
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { DynamicDataBannerClient } from "./DynamicDataBannerClient"
 

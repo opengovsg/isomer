@@ -1,19 +1,19 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useCallback } from "react"
+import type { ModifiedAsset } from "~/types/assets"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import cloneDeep from "lodash/cloneDeep"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
-
-import type { ModifiedAsset } from "~/types/assets"
+import { useCallback } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+
 import { pageSchema } from "../../schema"
 import {
   CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,

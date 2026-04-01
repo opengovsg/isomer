@@ -1,17 +1,17 @@
 "use client"
 
-import { useMemo } from "react"
-import { omit, pick } from "lodash-es"
-
 import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type {
   ContactInformationUIProps,
   DgsContactInformationProps,
   DgsTransformedContactInformationProps,
 } from "~/interfaces"
+import { omit, pick } from "lodash-es"
+import { useMemo } from "react"
 import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
 import { InjectableContactInformationKeys } from "~/interfaces/complex/ContactInformation/constants"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+
 import { ContactInformationUI } from "../components"
 
 export const DgsContactInformation = ({

@@ -1,4 +1,10 @@
+import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
+import {
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "~/server/modules/database"
 import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
 import { addUsersToSite } from "~prisma/scripts/addUsersToSite"
 
@@ -10,12 +16,6 @@ import type {
   Version,
 } from "../database"
 import type { UserPermissionsProps } from "../permissions/permissions.type"
-import type { Notification } from "~/schemas/site"
-import {
-  ResourceState,
-  ResourceType,
-  RoleType,
-} from "~/server/modules/database"
 import { logConfigEvent } from "../audit/audit.service"
 import { AuditLogEvent, db, jsonb } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
@@ -65,11 +65,16 @@ export const getSiteTheme = async (siteId: number) => {
   return theme
 }
 export const getSiteNameAndCodeBuildId = async (siteId: number) => {
-  return await db
+  const site = await db
     .selectFrom("Site")
     .where("id", "=", siteId)
-    .select(["Site.codeBuildId", "Site.name"])
+    .select(["Site.codeBuildId", "Site.name", "Site.config"])
     .executeTakeFirstOrThrow()
+
+  return {
+    codeBuildId: site.codeBuildId,
+    name: site.config.siteName || site.name,
+  }
 }
 
 export const getNotification = async (

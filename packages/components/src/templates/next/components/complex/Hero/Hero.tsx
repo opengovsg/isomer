@@ -1,5 +1,6 @@
 import type { HeroProps } from "~/interfaces/complex/Hero"
 import { HERO_STYLE } from "~/interfaces/complex/Hero"
+
 import { HeroBlock } from "./HeroBlock"
 import { HeroFloating } from "./HeroFloating"
 import { HeroGradient } from "./HeroGradient"

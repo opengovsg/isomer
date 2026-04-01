@@ -1,4 +1,5 @@
 import type { GrowthBook } from "@growthbook/growthbook"
+import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash"
 import { auth } from "tests/integration/helpers/auth"
@@ -16,11 +17,10 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-
-import type { User } from "../../database"
-import type { Notification } from "~/schemas/site"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
+
+import type { User } from "../../database"
 import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
 import { siteRouter } from "../site.router"
 
@@ -481,6 +481,14 @@ describe("site.router", async () => {
         url: "https://www.isomer.gov.sg",
         theme: "isomer-next",
       })
+
+      // Verify Site.name column is also updated
+      const updatedSite = await db
+        .selectFrom("Site")
+        .where("id", "=", site.id)
+        .select("name")
+        .executeTakeFirstOrThrow()
+      expect(updatedSite.name).toEqual(MOCK_SITE_NAME)
     })
     it("should generate an audit log entry", async () => {
       // Arrange

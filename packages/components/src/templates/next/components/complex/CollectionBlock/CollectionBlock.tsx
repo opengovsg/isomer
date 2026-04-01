@@ -1,18 +1,18 @@
-import { BiRightArrowAlt } from "react-icons/bi"
-
 import type {
   CollectionBlockNumberOfCards,
   CollectionBlockProps,
   CollectionBlockSingleCardProps,
 } from "~/interfaces/complex/CollectionBlock"
+import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferenceLink"
 import { isExternalUrl } from "~/utils/isExternalUrl"
+
 import { ComponentContent } from "../../internal/customCssClass"
+import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
-import { ImageClient } from "../Image"
 import {
   getCollectionPages,
   getCollectionParent,
@@ -99,11 +99,7 @@ const SingleCard = ({
     return (
       <div className={compoundStyles.cardImageContainer({ numberOfCards })}>
         <ImageClient
-          src={
-            isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
-              ? imageSrc
-              : `${site.assetsBaseUrl}${imageSrc}`
-          }
+          src={imageSrc}
           alt={imageAlt}
           width="100%"
           className={compoundStyles.cardImage({

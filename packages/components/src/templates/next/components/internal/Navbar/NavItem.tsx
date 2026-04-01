@@ -1,17 +1,17 @@
 "use client"
 
-import { forwardRef } from "react"
+import type { NavbarProps } from "~/interfaces/internal/Navbar"
 import { FocusScope } from "@react-aria/focus"
+import { forwardRef } from "react"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useScrollLock } from "usehooks-ts"
-
-import type { NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import {
   focusVisibleHighlight,
   groupFocusVisibleHighlight,
 } from "~/utils/tailwind"
+
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 
@@ -127,6 +127,7 @@ const Megamenu = ({
         isWithFocusVisibleHighlight
         href={url}
         className="group inline-flex w-fit items-center gap-1 hover:text-brand-interaction-hover hover:no-underline"
+        onClick={onCloseMegamenu}
       >
         {name}
         {!isExternal && (
@@ -180,6 +181,7 @@ const Megamenu = ({
                         isWithFocusVisibleHighlight
                         href={subItem.url}
                         className="group prose-label-md-medium w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
+                        onClick={onCloseMegamenu}
                       >
                         {subItem.name}
                         {!isExternal && (

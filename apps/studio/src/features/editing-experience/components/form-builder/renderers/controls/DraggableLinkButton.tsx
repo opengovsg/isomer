@@ -27,12 +27,12 @@ import {
   BiSolidErrorCircle,
   BiTrash,
 } from "react-icons/bi"
-
-import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import Suspense from "~/components/Suspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
+
+import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
 import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"

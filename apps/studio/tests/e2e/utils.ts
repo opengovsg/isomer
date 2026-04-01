@@ -1,5 +1,4 @@
 import { scryptSync } from "crypto"
-
 import { getIpFingerprint } from "~/server/modules/auth/email/utils"
 import { db } from "~/server/modules/database"
 

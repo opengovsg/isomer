@@ -10,7 +10,6 @@ import {
   FaThreads,
   FaYoutube,
 } from "react-icons/fa6"
-
 import { IconFlickr, IconInstagram, IconWhatsApp } from "~/components/icons"
 
 interface SocialMediaLink {

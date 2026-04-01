@@ -1,13 +1,13 @@
 import type { FlexProps } from "@chakra-ui/react"
 import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
-import { useMemo, useState } from "react"
-import { Flex, Portal } from "@chakra-ui/react"
-
-import type { ViewportOptions } from "./IframeToolbar"
 import type { IframeCallbackFnProps } from "~/types/dom"
+import { Flex, Portal } from "@chakra-ui/react"
+import { useMemo, useState } from "react"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { convertThemeToCss } from "~/features/settings/utils"
+
+import type { ViewportOptions } from "./IframeToolbar"
 import { IframeToolbar } from "./IframeToolbar"
 import { PreviewIframe } from "./PreviewIframe"
 

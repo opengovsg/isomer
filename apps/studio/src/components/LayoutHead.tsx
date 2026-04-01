@@ -1,5 +1,4 @@
 import Head from "next/head"
-
 import { useEnv } from "~/hooks/useEnv"
 
 export const LayoutHead = () => {

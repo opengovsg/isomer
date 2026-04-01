@@ -1,6 +1,5 @@
 import { Box } from "@chakra-ui/react"
 import { Banner } from "@opengovsg/design-system-react"
-
 import { APP_BANNER_ID, useBanner } from "~/hooks/useBanner"
 
 export const AppBanner = () => {

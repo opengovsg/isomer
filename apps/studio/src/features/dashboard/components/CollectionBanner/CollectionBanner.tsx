@@ -1,8 +1,9 @@
-import { Stack, Text } from "@chakra-ui/react"
-import { IconButton } from "@opengovsg/design-system-react"
-import { BiX } from "react-icons/bi"
-
+import { Icon, Stack, Text } from "@chakra-ui/react"
+import { IconButton, Link } from "@opengovsg/design-system-react"
+import NextLink from "next/link"
+import { BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
+
 import { BannerSvgr } from "./BannerSvgr"
 
 export const CollectionBanner = (): JSX.Element | null => {
@@ -44,21 +45,19 @@ export const CollectionBanner = (): JSX.Element | null => {
             Collections are perfect for your press releases, speeches, and
             publications.
           </Text>
+          <Link
+            size="xs"
+            variant="standalone"
+            isExternal
+            externalLinkIcon={<></>}
+            p={0}
+            as={NextLink}
+            href="https://support.isomer.gov.sg/en/articles/11693839-introducing-collections"
+          >
+            Learn about collections on the Isomer Guide{" "}
+            <Icon as={BiRightArrowAlt} fontSize="1rem" />
+          </Link>
         </Stack>
-        {/* TODO: Only show this link once the user guide page is up
-        <Link
-          mt="1rem"
-          size="xs"
-          variant="standalone"
-          isExternal
-          p={0}
-          as={NextLink}
-          // TODO: Add link to the correct page
-          href="https://guide.isomer.gov.sg/"
-        >
-          Learn about collections on the Isomer Guide{" "}
-          <BiRightArrowAlt fontSize="1rem" />
-        </Link> */}
       </Stack>
       <BannerSvgr display={{ base: "none", md: "block" }} mr="4rem" />
     </Stack>

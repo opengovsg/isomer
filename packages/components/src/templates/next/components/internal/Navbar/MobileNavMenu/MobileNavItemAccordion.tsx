@@ -1,20 +1,23 @@
-import { BiChevronDown, BiRightArrowAlt } from "react-icons/bi"
-
 import type { NavbarProps } from "~/interfaces/internal/Navbar"
+import { BiChevronDown, BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+
 import { Link } from "../../Link"
 
 type NavItemAccordionProps = NavbarProps["items"][number] &
   Pick<NavbarProps, "LinkComponent"> & {
     isOpen: boolean
     onClick: () => void
+    onCloseMenu: () => void
     index: number
   }
 
-interface ParentItemLinkProps
-  extends Pick<NavItemAccordionProps, "name" | "url" | "LinkComponent"> {
+interface ParentItemLinkProps extends Pick<
+  NavItemAccordionProps,
+  "name" | "url" | "onCloseMenu" | "LinkComponent"
+> {
   isExternal: boolean
 }
 
@@ -66,6 +69,7 @@ const ParentItemLink = ({
   name,
   url,
   isExternal,
+  onCloseMenu,
   LinkComponent,
 }: ParentItemLinkProps) => {
   // This is a hack to ensure that the rightArrow is always at the end of the last word even on smaller screens
@@ -90,6 +94,7 @@ const ParentItemLink = ({
           className: `group/parent-item ${focusVisibleHighlight()}`,
           itemType: "parentItem",
         })}
+        onClick={onCloseMenu}
       >
         <span className="row-gap-0 flex flex-row flex-wrap items-baseline gap-1">
           Pages in
@@ -117,6 +122,7 @@ export const MobileNavItemAccordion = ({
   items,
   isOpen,
   onClick,
+  onCloseMenu,
   index,
   LinkComponent,
 }: NavItemAccordionProps) => {
@@ -130,6 +136,7 @@ export const MobileNavItemAccordion = ({
             className: focusVisibleHighlight(),
           })}
           href={url}
+          onClick={onCloseMenu}
         >
           {name}
         </Link>
@@ -174,6 +181,7 @@ export const MobileNavItemAccordion = ({
                     className={nestedItem({
                       className: focusVisibleHighlight(),
                     })}
+                    onClick={onCloseMenu}
                   >
                     {subItem.name}
                   </Link>
@@ -187,6 +195,7 @@ export const MobileNavItemAccordion = ({
             name={name}
             url={url}
             isExternal={isExternalUrl(url)}
+            onCloseMenu={onCloseMenu}
             LinkComponent={LinkComponent}
           />
         )}

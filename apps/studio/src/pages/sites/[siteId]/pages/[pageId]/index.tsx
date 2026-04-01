@@ -1,7 +1,5 @@
-import { Grid, GridItem } from "@chakra-ui/react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-
 import type { NextPageWithLayout } from "~/lib/types"
+import { Grid, GridItem } from "@chakra-ui/react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { EditPageDrawer } from "~/features/editing-experience/components/Drawer/EditPageDrawer"
@@ -11,6 +9,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useResourceLocalViewHistory } from "~/hooks/useResourceLocalViewHistory"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const EditPage: NextPageWithLayout = () => {
   const { pageId, siteId } = useQueryParse(pageSchema)
@@ -53,7 +52,7 @@ const EditPage: NextPageWithLayout = () => {
 const PageEditingView = () => {
   return (
     <Grid h="full" w="100%" templateColumns="repeat(3, 1fr)" gap={0}>
-      <GridItem colSpan={1} overflow="auto" minW="30rem">
+      <GridItem colSpan={1} overflow="auto" minW="28rem">
         <EditPageDrawer />
       </GridItem>
       <GridItem colSpan={2}>

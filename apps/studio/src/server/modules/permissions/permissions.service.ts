@@ -1,9 +1,11 @@
 import type { GrowthBook } from "@growthbook/growthbook"
+import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { TRPCError } from "@trpc/server"
-import { AuditLogEvent, RoleType } from "~prisma/generated/generatedEnums"
 import get from "lodash/get"
 import partition from "lodash/partition"
+import { ADMIN_ROLE, ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
+import { AuditLogEvent, RoleType } from "~prisma/generated/generatedEnums"
 
 import type {
   BulkPermissionsProps,
@@ -13,8 +15,6 @@ import type {
   SiteAbility,
   UserManagementActions,
 } from "./permissions.type"
-import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
-import { ADMIN_ROLE, ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
 import { logPermissionEvent } from "../audit/audit.service"
 import { db } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -84,8 +84,7 @@ export const definePermissionsForSite = async ({
 // We do bulk validation to reduce the number of DB queries: currently at max. 1-2 queries
 // TODO: this is using site wide permissions for now
 // we should fetch the oldest `parent` of this resource eventually
-interface BulkValidateUserPermissionsForResourcesProps
-  extends BulkPermissionsProps {
+interface BulkValidateUserPermissionsForResourcesProps extends BulkPermissionsProps {
   action: CrudResourceActions | "publish"
 }
 export const bulkValidateUserPermissionsForResources = async ({

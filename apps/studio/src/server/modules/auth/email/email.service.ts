@@ -1,11 +1,11 @@
 import cuid2 from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
-
-import type { DB, Transaction, User } from "../../database"
 import {
   sendPublishAlertContentPublisherEmail,
   sendPublishAlertSiteAdminEmail,
 } from "~/features/mail/service"
+
+import type { DB, Transaction, User } from "../../database"
 import { logUserEvent } from "../../audit/audit.service"
 import { AuditLogEvent, db, RoleType } from "../../database"
 

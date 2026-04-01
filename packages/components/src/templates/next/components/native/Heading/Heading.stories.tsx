@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { AttrsDirProps, HeadingProps } from "~/interfaces"
 import { HeadingLevels } from "~/interfaces/native/Heading"
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { Heading } from "./Heading"
 
 const meta: Meta<typeof Heading> = {

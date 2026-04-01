@@ -1,8 +1,8 @@
+import { program } from "commander"
 import { mkdirSync, writeFileSync } from "fs"
+import * as jose from "jose"
 import { dirname, join } from "path"
 import { fileURLToPath } from "url"
-import { program } from "commander"
-import * as jose from "jose"
 import { z } from "zod"
 
 program.option(

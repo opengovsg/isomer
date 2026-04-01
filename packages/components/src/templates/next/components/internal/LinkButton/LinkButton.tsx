@@ -1,10 +1,10 @@
 import type { ElementType } from "react"
 import type { VariantProps } from "tailwind-variants"
-import { BiLinkExternal } from "react-icons/bi"
-
 import type { LinkProps } from "~/interfaces/internal/Link"
+import { BiLinkExternal } from "react-icons/bi"
 import { twMerge } from "~/lib/twMerge"
 import { isExternalUrl } from "~/utils/isExternalUrl"
+
 import { buttonIconStyles, buttonStyles } from "../Button/common"
 import { Link } from "../Link"
 

@@ -4,11 +4,10 @@ import type { AriaButtonProps } from "@react-aria/button"
 import type { IconType } from "react-icons"
 import type { VariantProps } from "tailwind-variants"
 import type { SetRequired } from "type-fest"
-import { forwardRef, useRef } from "react"
 import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
-
+import { forwardRef, useRef } from "react"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { mergeRefs } from "~/utils/rac"
@@ -57,10 +56,8 @@ const iconButtonIconStyles = tv({
 })
 
 interface IconButtonProps
-  extends SetRequired<
-      Omit<AriaButtonProps<"button">, "children">,
-      "aria-label"
-    >,
+  extends
+    SetRequired<Omit<AriaButtonProps<"button">, "children">, "aria-label">,
     VariantProps<typeof iconButtonStyles> {
   icon: IconType
   className?: string

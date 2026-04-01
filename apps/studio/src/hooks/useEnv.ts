@@ -1,6 +1,5 @@
-import { useContext } from "react"
-
 import type { EnvContextReturn } from "~/components/AppProviders"
+import { useContext } from "react"
 import { EnvContext } from "~/components/AppProviders"
 
 export const useEnv = (): EnvContextReturn => {

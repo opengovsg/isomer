@@ -1,5 +1,4 @@
 import { useDisclosure } from "@chakra-ui/react"
-
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { CmsContainerWrapper } from "~/components/CmsSidebar"
 import { LayoutHead } from "~/components/LayoutHead"

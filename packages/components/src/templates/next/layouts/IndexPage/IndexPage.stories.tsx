@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { IndexPageSchemaType } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { IndexPageSchemaType } from "~/types"
-import { generateSiteConfig } from "~/stories/helpers"
 import { IndexPageLayout } from "./IndexPage"
 
 const DEFAULT_INDEX_PAGE = {
@@ -265,6 +265,20 @@ export const RowsWithImageAndDescription: Story = {
     ],
   }),
 }
+export const RowsWithContainAndImageAndDescription: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        childrenPagesOrdering: [],
+        type: "childrenpages",
+        variant: "rows",
+        imageFit: "contain",
+        showSummary: true,
+        showThumbnail: true,
+      },
+    ],
+  }),
+}
 
 export const RowsWithImageAndDescriptionAndContent: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
@@ -344,6 +358,21 @@ export const BoxesWithImageAndDescription: Story = {
         childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "boxes",
+        showSummary: true,
+        showThumbnail: true,
+      },
+    ],
+  }),
+}
+
+export const BoxesWithContainAndImageAndDescription: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        childrenPagesOrdering: [],
+        type: "childrenpages",
+        variant: "boxes",
+        imageFit: "contain",
         showSummary: true,
         showThumbnail: true,
       },

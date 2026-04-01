@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { OrderedListProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { OrderedList } from "./OrderedList"
 
 // Template for stories

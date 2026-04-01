@@ -1,6 +1,5 @@
-import React from "react" // Import React
-
 import type { HeaderProps } from "~/interfaces"
+import React from "react" // Import React
 
 interface Breadcrumb {
   name: string

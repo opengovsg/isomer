@@ -1,5 +1,4 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
-
 import type { Navbar } from "~/server/modules/resource/resource.types"
 
 export const PAGE_BLOB: IsomerSchema = {

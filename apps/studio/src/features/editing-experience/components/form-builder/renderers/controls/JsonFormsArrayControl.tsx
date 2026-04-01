@@ -7,7 +7,6 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
-import { useCallback, useMemo, useState } from "react"
 import { Box, Flex, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
@@ -24,14 +23,15 @@ import {
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
+import { useCallback, useMemo, useState } from "react"
 import {
   BiLeftArrowAlt,
   BiPlusCircle,
   BiRightArrowAlt,
   BiTrash,
 } from "react-icons/bi"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
 import DraggableDrawerButton from "./DraggableDrawerButton"

@@ -1,5 +1,4 @@
 import cuid2 from "@paralleldrive/cuid2"
-
 import { db, RoleType } from "~/server/modules/database"
 
 interface User {

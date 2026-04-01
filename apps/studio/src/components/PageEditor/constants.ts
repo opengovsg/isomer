@@ -491,13 +491,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
 
-export const INDEX_ALLOWED_BLOCKS: AllowedBlockSections = [
-  { label: "Basic content blocks", types: ["prose", "image"] },
-  {
-    label: "Add a new section",
-    types: ["infocards"],
-  },
-]
+export const INDEX_ALLOWED_BLOCKS: AllowedBlockSections = CONTENT_ALLOWED_BLOCKS
 
 export const DATABASE_ALLOWED_BLOCKS: AllowedBlockSections =
   CONTENT_ALLOWED_BLOCKS

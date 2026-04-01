@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { expect, userEvent, waitFor, within } from "storybook/test"
-
-import { withChromaticModes } from "@isomer/storybook-config"
-
 import type { DatabasePageSchemaType } from "~/types"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import {
   DGS_SMALL_DATASET_RESOURCE_ID,
   generateSiteConfig,
 } from "~/stories/helpers"
+
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import { DatabaseLayout } from "./Database"
 
 const meta: Meta<typeof DatabaseLayout> = {

@@ -4,7 +4,6 @@ import type {
   IsomerSiteWideComponentsProps,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import {
   createSiteSchema,
@@ -23,6 +22,7 @@ import {
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+
 import { logConfigEvent, logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db, jsonb } from "../database"
@@ -121,7 +121,7 @@ export const siteRouter = router({
       const updatedConfig = await db.transaction().execute(async (tx) => {
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ config: jsonb({ ...rest, siteName }) })
+          .set({ name: siteName, config: jsonb({ ...rest, siteName }) })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()

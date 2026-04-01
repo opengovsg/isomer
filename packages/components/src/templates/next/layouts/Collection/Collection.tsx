@@ -1,5 +1,6 @@
 import type { CollectionPageSchemaType } from "~/types"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
+
 import { Skeleton } from "../Skeleton"
 import { CollectionClient } from "./CollectionClient"
 import {

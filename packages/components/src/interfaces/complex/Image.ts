@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps } from "~/types"
 import { ARRAY_RADIO_FORMAT } from "../format"
 
 export const IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {

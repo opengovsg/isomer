@@ -1,9 +1,7 @@
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
-
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal"
@@ -19,6 +17,7 @@ import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 export const sitePageSchema = z.object({
   siteId: z.coerce.number(),
