@@ -35,6 +35,7 @@ import {
   pageOrLinkSchema,
   siteSchema,
 } from "~/features/editing-experience/schema"
+import { useLinkEditorFileMetaSuffix } from "~/hooks/useLinkEditorFileMetaSuffix"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink } from "~/utils/link"
@@ -80,6 +81,12 @@ const LinkEditorModalContent = ({
   onSave,
   linkTypes,
 }: LinkEditorModalContentProps) => {
+  const { strippedLinkTextForForm, onUploadedFile, buildFinalLinkTextForSave } =
+    useLinkEditorFileMetaSuffix({
+      initialLinkText: linkText,
+      showLinkText,
+    })
+
   const {
     handleSubmit,
     setValue,
@@ -94,7 +101,7 @@ const LinkEditorModalContent = ({
       linkHref: z.string().min(1).optional(),
     }),
     defaultValues: {
-      linkText,
+      linkText: strippedLinkTextForForm,
       linkHref,
     },
     reValidateMode: "onChange",
@@ -105,7 +112,9 @@ const LinkEditorModalContent = ({
   const onSubmit = handleSubmit(
     // TODO: Refactor to not have to check for !!linkHref
     // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
-    ({ linkText, linkHref }) => !!linkHref && onSave(linkText, linkHref),
+    ({ linkText, linkHref }) =>
+      !!linkHref &&
+      onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref),
   )
 
   return (
@@ -150,7 +159,7 @@ const LinkEditorModalContent = ({
               }
               error={errors.linkHref?.message}
             >
-              <ModalLinkEditor />
+              <ModalLinkEditor onUploadedFile={onUploadedFile} />
               {errors.linkHref?.message && (
                 <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
               )}
@@ -217,7 +226,11 @@ export const LinkEditorModal = ({
   </Modal>
 )
 
-const ModalLinkEditor = () => {
+const ModalLinkEditor = ({
+  onUploadedFile,
+}: {
+  onUploadedFile?: (file: File) => void
+}) => {
   const { error, curHref, setHref } = useLinkEditor()
   const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
 
@@ -241,6 +254,7 @@ const ModalLinkEditor = () => {
             }
             setHref={(href) => setHref(href ?? "")}
             shouldFetchResource={false}
+            onUploadedFile={onUploadedFile}
           />
         )
       }
