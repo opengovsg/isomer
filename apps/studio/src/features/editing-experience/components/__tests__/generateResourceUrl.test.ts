@@ -86,6 +86,30 @@ describe("generateResourceUrl", () => {
     })
   })
 
+  describe("Emoji", () => {
+    it("produces an empty string for emoji-only titles (transliterate omits emoji)", () => {
+      // Arrange
+      const title = "🎉🎊"
+
+      // Act
+      const result = generateResourceUrl(title)
+
+      // Assert
+      expect(result).toBe("")
+    })
+
+    it("leaves a leading and trailing hyphen when the title ends with emoji", () => {
+      // Arrange
+      const title = "🎉 hello 🎉"
+
+      // Act
+      const result = generateResourceUrl(title)
+
+      // Assert
+      expect(result).toBe("-hello-")
+    })
+  })
+
   describe("German", () => {
     it("converts umlauts to their ASCII equivalents", () => {
       // Arrange
