@@ -1,5 +1,4 @@
-// apps/studio/src/components/PageEditor/RiskyFileUploadModal.tsx
-import { useState } from "react";
+import { useState } from "react"
 import {
   Modal,
   ModalBody,
@@ -9,18 +8,18 @@ import {
   ModalOverlay,
   Stack,
   Text,
-} from "@chakra-ui/react";
+} from "@chakra-ui/react"
 import {
   Button,
   Checkbox,
   ModalCloseButton,
-} from "@opengovsg/design-system-react";
+} from "@opengovsg/design-system-react"
 
 interface RiskyFileUploadModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  fileExtension: string;
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => void
+  fileExtension: string
 }
 
 export const RiskyFileUploadModal = ({
@@ -29,9 +28,9 @@ export const RiskyFileUploadModal = ({
   onConfirm,
   fileExtension,
 }: RiskyFileUploadModalProps) => {
-  const [isChecked, setIsChecked] = useState(false);
-  const [hasClickedConfirm, setHasClickedConfirm] = useState(false);
-  const showUncheckedError = hasClickedConfirm && !isChecked;
+  const [isChecked, setIsChecked] = useState(false)
+  const [hasClickedConfirm, setHasClickedConfirm] = useState(false)
+  const showUncheckedError = hasClickedConfirm && !isChecked
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -96,10 +95,10 @@ export const RiskyFileUploadModal = ({
           <Button
             variant="solid"
             onClick={() => {
-              setHasClickedConfirm(true);
+              setHasClickedConfirm(true)
               if (isChecked) {
-                onConfirm();
-                onClose();
+                onConfirm()
+                onClose()
               }
             }}
           >
@@ -108,5 +107,5 @@ export const RiskyFileUploadModal = ({
         </ModalFooter>
       </ModalContent>
     </Modal>
-  );
-};
+  )
+}
