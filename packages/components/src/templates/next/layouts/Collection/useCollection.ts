@@ -1,9 +1,9 @@
-import { useCallback, useMemo } from "react"
+import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { isEmpty } from "lodash-es"
+import { useCallback, useMemo } from "react"
+import { useQueryParams } from "~/hooks/useQueryParams"
 
 import type { AppliedFilter } from "../../types/Filter"
-import type { ProcessedCollectionCardProps } from "~/interfaces"
-import { useQueryParams } from "~/hooks/useQueryParams"
 import {
   getFilteredItems,
   getPaginatedItems,

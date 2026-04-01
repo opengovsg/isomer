@@ -6,7 +6,6 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsAnyOfProps } from "@jsonforms/react"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsSearchSGControlTester: RankedTester = rankWith(

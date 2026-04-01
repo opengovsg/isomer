@@ -6,7 +6,6 @@ import {
 } from "tests/integration/helpers/iron-session"
 import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
 import { describe, expect, it, vi } from "vitest"
-
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
 import * as growthbookLib from "~/lib/growthbook"
@@ -14,6 +13,7 @@ import * as mailLib from "~/lib/mail"
 import { AuditLogEvent, db } from "~/server/modules/database"
 import { prisma } from "~/server/prisma"
 import { createCallerFactory } from "~/server/trpc"
+
 import { createTokenHash } from "../../auth.util"
 import { emailSessionRouter } from "../email.router"
 import { getIpFingerprint, LOCALHOST } from "../utils"

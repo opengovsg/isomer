@@ -1,7 +1,8 @@
-import { registerPgbossJob } from "@isomer/pgboss"
-
 import { env } from "~/env.mjs"
 import { bulkDeactivateInactiveUsers } from "~/server/modules/user/inactiveUsers.service"
+
+import { registerPgbossJob } from "@isomer/pgboss"
+
 import { createBaseLogger } from "../../../lib/logger"
 
 const JOB_NAME = "deactivate-inactive-users"

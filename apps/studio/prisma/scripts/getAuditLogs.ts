@@ -1,10 +1,9 @@
-import fs from "fs"
-import path, { dirname } from "path"
-import { fileURLToPath } from "url"
 import type { RawBuilder } from "kysely"
 import { endOfMonth, format, parse, startOfMonth, subMonths } from "date-fns"
+import fs from "fs"
 import Papa from "papaparse"
-
+import path, { dirname } from "path"
+import { fileURLToPath } from "url"
 import { AuditLogEvent, db, sql } from "~/server/modules/database"
 
 const __filename = fileURLToPath(import.meta.url)
@@ -342,7 +341,7 @@ const getAuditLogQuery = ({
         .orderBy("al.createdAt", "asc")
     default:
       const _: never = type
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      // oxlint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`Unknown type: ${type}`)
   }
 }
@@ -364,7 +363,7 @@ const getAuditLogsForSite = async () => {
   // If MONTH_YEAR is provided, use that, else get the previous month from today
   const now = new Date()
   const previousMonth = subMonths(now, 1)
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const monthYear = MONTH_YEAR ? MONTH_YEAR : format(previousMonth, "yyyy-MM")
 
   for (const siteId of SITES_WITH_AUDIT_LOGS) {

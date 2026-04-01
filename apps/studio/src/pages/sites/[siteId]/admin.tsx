@@ -1,5 +1,3 @@
-import { useState } from "react"
-import { useRouter } from "next/router"
 import {
   Button,
   Center,
@@ -15,9 +13,9 @@ import {
   Textarea,
   useToast,
 } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { useRouter } from "next/router"
+import { useState } from "react"
 import { z } from "zod"
-
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -31,6 +29,7 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { setSiteConfigByAdminSchema } from "~/schemas/site"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const siteAdminSchema = z.object({
   siteId: z.coerce.number(),

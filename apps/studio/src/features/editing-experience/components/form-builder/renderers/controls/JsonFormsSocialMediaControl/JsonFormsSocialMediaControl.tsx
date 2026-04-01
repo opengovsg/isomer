@@ -6,7 +6,6 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
-import { useCallback, useEffect, useState } from "react"
 import {
   Box,
   Button,
@@ -38,14 +37,15 @@ import {
   useJsonForms,
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
+import { useCallback, useEffect, useState } from "react"
 import {
   BiLeftArrowAlt,
   BiPlusCircle,
   BiSitemap,
   BiTrash,
 } from "react-icons/bi"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { FORM_BUILDER_PARENT_ID } from "../../../constants"
 import { useBuilderErrors } from "../../../ErrorProvider"
 import { SOCIAL_MEDIA_LINKS } from "./constants"

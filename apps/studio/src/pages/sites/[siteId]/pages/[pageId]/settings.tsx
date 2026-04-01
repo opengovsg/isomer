@@ -1,12 +1,10 @@
 import type { Static } from "@sinclair/typebox"
+import type { NextPageWithLayout } from "~/lib/types"
 import { Box, chakra, Grid, GridItem, Text, VStack } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { Controller } from "react-hook-form"
 import { z } from "zod"
-
-import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
@@ -19,6 +17,7 @@ import { updatePageMetaSchema } from "~/schemas/page"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const SUCCESS_TOAST_ID = "save-page-settings-success"
 

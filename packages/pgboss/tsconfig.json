@@ -10,7 +10,6 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": "./",
     "paths": {
       "~/*": ["./src/*"]
     },

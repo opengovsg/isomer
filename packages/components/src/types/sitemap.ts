@@ -1,7 +1,8 @@
-import type { IsomerPageLayoutType } from "./schema"
 import type { CollectionCardProps } from "~/interfaces"
 import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
 import type { CollectionPagePageProps } from "~/types"
+
+import type { IsomerPageLayoutType } from "./schema"
 
 interface IsomerBaseSitemap {
   id: string

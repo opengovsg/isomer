@@ -18,9 +18,9 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
+
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db, ResourceState, ResourceType } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"

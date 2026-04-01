@@ -1,5 +1,6 @@
 import type { HeadingLink } from "~/interfaces/internal/TableOfContents"
 import type { IsomerComponent, IsomerSiteProps } from "~/types"
+
 import { getTextAsHtml } from "./getTextAsHtml"
 
 // Generates the table of contents given the blocks of the page

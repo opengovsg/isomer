@@ -1,6 +1,5 @@
-import { useFeatureValue } from "@growthbook/growthbook-react"
-
 import type { GrowthbookIsomerAdminFeature } from "~/lib/growthbook"
+import { useFeatureValue } from "@growthbook/growthbook-react"
 import { useMe } from "~/features/me/api"
 import { ADMIN_ROLE, ISOMER_ADMIN_FEATURE_KEY } from "~/lib/growthbook"
 

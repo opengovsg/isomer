@@ -1,14 +1,14 @@
 import type { Static } from "@sinclair/typebox"
 import type { Except, SimplifyDeep } from "type-fest"
-import { Type } from "@sinclair/typebox"
-
 import type { DgsApiDatasetSearchResponseSuccess } from "~/hooks/useDgsData/types"
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+
 import { createDgsSchema, NativeDataSourceSchema } from "../../integration"
 import { CONTACT_INFORMATION_SUPPORT_METHODS } from "./constants"
 
@@ -173,8 +173,10 @@ export type ContactInformationProps = Static<typeof ContactInformationSchema> &
     site: IsomerSiteProps
   }
 
-export interface DgsTransformedContactInformationProps
-  extends Except<DgsContactInformationProps, "dataSource"> {
+export interface DgsTransformedContactInformationProps extends Except<
+  DgsContactInformationProps,
+  "dataSource"
+> {
   record: DgsApiDatasetSearchResponseSuccess["result"]["records"][number]
   isLoading?: ContactInformationUIProps["isLoading"]
 }

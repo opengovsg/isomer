@@ -1,6 +1,7 @@
-import type { Filter } from "../../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
+
+import type { Filter } from "../../../types/Filter"
 import { getCategoryFilter } from "./getCategoryFilter"
 import { getTagFilters } from "./getTagFilters"
 import { getYearFilter } from "./getYearFilter"

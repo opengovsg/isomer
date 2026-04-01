@@ -1,5 +1,6 @@
 import type { ImageGalleryProps } from "~/interfaces/complex/ImageGallery"
 import { isExternalUrl } from "~/utils/isExternalUrl"
+
 import { ImageGalleryClient } from "./ImageGalleryClient"
 
 export const ImageGallery = (props: ImageGalleryProps) => {

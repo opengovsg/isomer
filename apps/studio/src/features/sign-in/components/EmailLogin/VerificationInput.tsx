@@ -1,5 +1,3 @@
-import { useState } from "react"
-import { useRouter } from "next/router"
 import {
   FormControl,
   InputGroup,
@@ -13,9 +11,10 @@ import {
   Infobox,
   Input,
 } from "@opengovsg/design-system-react"
+import { useRouter } from "next/router"
+import { useState } from "react"
 import { Controller } from "react-hook-form"
 import { useInterval } from "usehooks-ts"
-
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
@@ -25,6 +24,7 @@ import { SIGN_IN_SINGPASS } from "~/lib/routes"
 import { emailVerifyOtpSchema } from "~/schemas/auth/email/sign-in"
 import { callbackUrlSchema } from "~/schemas/url"
 import { trpc } from "~/utils/trpc"
+
 import { useSignInContext } from "../SignInContext"
 import { ResendOtpButton } from "./ResendOtpButton"
 

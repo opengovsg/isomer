@@ -6,8 +6,8 @@ import {
   Tabs,
   useMultiStyleConfig,
 } from "@chakra-ui/react"
-
 import { trpc } from "~/utils/trpc"
+
 import { UserTable } from "../UserTable"
 import { IsomerAdminAccessBanner } from "./Banners"
 import { UserTableTab } from "./UserTableTab"

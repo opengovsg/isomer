@@ -1,5 +1,6 @@
 import type { IframeProps } from "~/interfaces"
 import { getSanitizedIframeWithTitle } from "~/utils/getSanitizedIframeWithTitle"
+
 import { ComponentContent } from "../../internal/customCssClass"
 
 // Sets the appropriate padding for the iframe based on the URL

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { AppliedFilter } from "~/templates/next/types/Filter"
 import { useState } from "react"
 import { userEvent, within } from "storybook/test"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
-import type { AppliedFilter } from "~/templates/next/types/Filter"
 import { Filter } from "./Filter"
 
 const meta: Meta<typeof Filter> = {
@@ -156,7 +156,7 @@ export const MobileFilterDrawerClearAll: Story = {
   play: async (context) => {
     const { canvasElement } = context
     // Required since drawer is a portal
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
     const screen = within(canvasElement.parentElement!)
 
     await MobileFilterDrawer.play?.(context)

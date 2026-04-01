@@ -1,5 +1,3 @@
-import { useEffect } from "react"
-import Link from "next/link"
 import {
   HStack,
   Icon,
@@ -9,11 +7,13 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+import Link from "next/link"
+import { useEffect } from "react"
 import { BiChevronRight, BiSolidCircle } from "react-icons/bi"
+import { trpc } from "~/utils/trpc"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 
 import type { IndexpageRowProps } from "./types"
-import { trpc } from "~/utils/trpc"
 import { getIndexPageIcon, getIndexPageSubtitle } from "./utils"
 
 export const IndexpageRow = ({

@@ -1,5 +1,5 @@
 import type { IconType } from "react-icons"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import type { Resource } from "~/server/modules/database"
 import {
   BiCog,
   BiData,
@@ -9,9 +9,8 @@ import {
   BiLink,
   BiSort,
 } from "react-icons/bi"
-
-import type { Resource } from "~/server/modules/database"
 import { env } from "~/env.mjs"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 export const isAllowedToHaveChildren = (
   resourceType: ResourceType,

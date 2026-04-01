@@ -1,11 +1,11 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
-import { useMemo } from "react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-
 import type { CollectionLinkProps } from "~/schemas/collection"
+import { useMemo } from "react"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 

@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
@@ -15,9 +14,10 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { vi } from "vitest"
-
 import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import { assetRouter } from "../asset.router"
 
 // Mock the S3 client to prevent credential loading issues in CI

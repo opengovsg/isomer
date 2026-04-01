@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { flatten, times } from "lodash-es"
 import { expect, userEvent, within } from "storybook/test"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
-import { generateSiteConfig } from "~/stories/helpers"
 import { CollectionLayout } from "./Collection"
 
 const COLLECTION_ITEMS: IsomerSitemap[] = flatten(

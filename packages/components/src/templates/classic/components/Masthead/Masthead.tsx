@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
-
 import type { MastheadProps } from "~/interfaces"
+import { useState } from "react"
 
 export const Masthead = ({ isStaging }: MastheadProps) => {
   const [isMastheadContentVisible, setIsMastheadContentVisible] =
