@@ -1,5 +1,6 @@
-import type { ChildPage } from "./types"
 import type { ChildrenPagesProps } from "~/interfaces"
+
+import type { ChildPage } from "./types"
 
 export const mergeChildrenPages = (
   a: ChildPage,

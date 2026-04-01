@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import {
   Flex,
   Icon,
@@ -8,6 +7,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
+import { useMemo } from "react"
 import { BiShow, BiX } from "react-icons/bi"
 
 export type ViewportOptions = "mobile" | "tablet" | "responsive" | "fullscreen"

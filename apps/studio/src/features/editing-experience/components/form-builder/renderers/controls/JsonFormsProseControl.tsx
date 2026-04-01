@@ -1,15 +1,14 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { ComponentsWithProse } from "@opengovsg/isomer-components"
-import { useCallback, useEffect, useMemo } from "react"
-import { Box, FormControl } from "@chakra-ui/react"
-import { and, rankWith, schemaMatches } from "@jsonforms/core"
-import { withJsonFormsControlProps } from "@jsonforms/react"
-import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
-
 import type {
   BaseEditorProps,
   BaseEditorType,
 } from "~/features/editing-experience/hooks/useTextEditor"
+import { Box, FormControl } from "@chakra-ui/react"
+import { and, rankWith, schemaMatches } from "@jsonforms/core"
+import { withJsonFormsControlProps } from "@jsonforms/react"
+import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
+import { useCallback, useEffect, useMemo } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import {
   useAccordionEditor,
@@ -17,6 +16,7 @@ import {
   useProseEditor,
 } from "~/features/editing-experience/hooks/useTextEditor"
 import { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
+
 import {
   TiptapAccordionEditor,
   TiptapCalloutEditor,
@@ -81,7 +81,7 @@ function JsonFormsProseControl({
   )
 
   const editor = EditorHook({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange: useCallback(
       (content) => {
@@ -101,7 +101,7 @@ function JsonFormsProseControl({
     if (data !== undefined) {
       const selection = editor?.state.selection
       if (!selection) return
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
       editor.commands.setContent(data)
       editor.commands.setTextSelection(selection)
     }

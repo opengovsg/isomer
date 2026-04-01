@@ -1,6 +1,6 @@
+import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
 
-import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { NO_SPECIFIED_YEAR_FILTER_ID } from "../constants"
 import { getYearFilter } from "../getYearFilter"
 

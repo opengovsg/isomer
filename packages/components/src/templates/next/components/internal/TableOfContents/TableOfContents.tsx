@@ -1,8 +1,8 @@
-import { BiMinus } from "react-icons/bi"
-
 import type { TableOfContentsProps } from "~/interfaces"
+import { BiMinus } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+
 import { Link } from "../Link"
 
 const linkStyle = tv({

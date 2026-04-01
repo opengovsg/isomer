@@ -1,7 +1,6 @@
-import { type ReactNode } from "react"
-import { Box, HStack, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
-
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
+import { Box, HStack, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
+import { type ReactNode } from "react"
 import { formatDate } from "~/utils/formatDate"
 import { getLinkToResource } from "~/utils/resource"
 import { getIcon, isAllowedToHaveLastEditedText } from "~/utils/resources"

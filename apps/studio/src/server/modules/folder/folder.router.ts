@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import get from "lodash/get"
 import pick from "lodash/pick"
-
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createFolderSchema,
@@ -11,6 +10,7 @@ import {
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
+
 import { logResourceEvent } from "../audit/audit.service"
 import {
   AuditLogEvent,

@@ -8,11 +8,11 @@ import {
   FormLabel,
   Textarea,
 } from "@opengovsg/design-system-react"
-
 import {
   JSON_FORMS_RANKING,
   TEXTAREA_CHARACTERS_PER_ROW,
 } from "~/constants/formBuilder"
+
 import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsTextAreaControlTester: RankedTester = rankWith(

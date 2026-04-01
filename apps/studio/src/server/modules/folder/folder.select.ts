@@ -1,5 +1,4 @@
 import type { SelectExpression } from "kysely"
-
 import type { DB } from "~prisma/generated/generatedTypes"
 
 export const defaultFolderSelect = [

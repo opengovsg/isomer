@@ -1,20 +1,19 @@
 import type { IconType } from "react-icons"
-import { useMemo } from "react"
-import NextLink from "next/link"
 import { Badge, HStack, Icon, Text, Tooltip, VStack } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
+import NextLink from "next/link"
+import { useMemo } from "react"
 import { BiTimeFive } from "react-icons/bi"
-
-import type { ResourceTableData } from "./types"
 import { getLinkToResource } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 
-interface TitleCellProps
-  extends Pick<
-    ResourceTableData,
-    "title" | "permalink" | "type" | "id" | "scheduledAt"
-  > {
+import type { ResourceTableData } from "./types"
+
+interface TitleCellProps extends Pick<
+  ResourceTableData,
+  "title" | "permalink" | "type" | "id" | "scheduledAt"
+> {
   siteId: number
 }
 

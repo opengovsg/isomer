@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { CollectionBlockProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types/sitemap"
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { CollectionBlock } from "./CollectionBlock"
 
 const meta: Meta<CollectionBlockProps> = {

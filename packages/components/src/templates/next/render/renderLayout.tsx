@@ -1,4 +1,5 @@
 import type { IsomerPageSchemaType } from "~/types"
+
 import { ArticleLayout } from "../layouts/Article"
 import { CollectionLayout } from "../layouts/Collection"
 import { ContentLayout } from "../layouts/Content"

@@ -1,11 +1,10 @@
 import type { UnwrapTagged } from "type-fest"
+import type { NEW_PAGE_LAYOUT_VALUES } from "~/schemas/page"
 import {
   DEFAULT_CHILDREN_PAGES_BLOCK,
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
-
-import type { NEW_PAGE_LAYOUT_VALUES } from "~/schemas/page"
 
 export const createDefaultPage = ({
   layout,

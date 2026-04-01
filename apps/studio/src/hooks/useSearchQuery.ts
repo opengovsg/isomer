@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useDebounce } from "@uidotdev/usehooks"
-
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import type { ResourceType } from "~prisma/generated/generatedEnums"
+import { useDebounce } from "@uidotdev/usehooks"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { trpc } from "~/utils/trpc"
 
 interface UseSearchQueryProps {

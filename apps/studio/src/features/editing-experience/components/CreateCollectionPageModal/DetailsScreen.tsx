@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import {
   chakra,
   Flex,
@@ -11,23 +10,24 @@ import {
   Text,
   UnorderedList,
   Wrap,
-} from "@chakra-ui/react"
+} from "@chakra-ui/react";
 import {
   Button,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
   Infobox,
-} from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-import { Controller } from "react-hook-form"
-import { BiLink } from "react-icons/bi"
+} from "@opengovsg/design-system-react";
+import { useEffect } from "react";
+import { Controller } from "react-hook-form";
+import { BiLink } from "react-icons/bi";
+import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page";
+import { AppGrid } from "~/templates/AppGrid";
+import { generateResourceUrl } from "../utils";
+import { ResourceType } from "~prisma/generated/generatedEnums";
 
-import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
-import { AppGrid } from "~/templates/AppGrid"
-import { generateResourceUrl } from "../utils"
-import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"
-import { PreviewLayout } from "./PreviewLayout"
+import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext";
+import { PreviewLayout } from "./PreviewLayout";
 
 export const CreateCollectionPageDetailsScreen = () => {
   const {
@@ -37,7 +37,7 @@ export const CreateCollectionPageDetailsScreen = () => {
     handleCreatePage,
     isLoading,
     fullPermalink,
-  } = useCreateCollectionPageWizard()
+  } = useCreateCollectionPageWizard();
 
   const {
     register,
@@ -46,9 +46,9 @@ export const CreateCollectionPageDetailsScreen = () => {
     getFieldState,
     setValue,
     formState: { errors },
-  } = formMethods
+  } = formMethods;
 
-  const [title, url, type] = watch(["title", "permalink", "type"])
+  const [title, url, type] = watch(["title", "permalink", "type"]);
 
   /**
    * As user edits the Page title, Page URL is updated as an hyphenated form of the page title.
@@ -61,7 +61,7 @@ export const CreateCollectionPageDetailsScreen = () => {
    * 5. starts typing new page title B -> page url syncs w new page title B
    */
   useEffect(() => {
-    const permalinkFieldState = getFieldState("permalink")
+    const permalinkFieldState = getFieldState("permalink");
     // This allows the syncing to happen only when the page title is not dirty
     // Dirty means user has changed the value AND the value is not the same as the default value of "".
     // Once the value has been cleared, dirty state will reset.
@@ -78,9 +78,9 @@ export const CreateCollectionPageDetailsScreen = () => {
         {
           shouldValidate: !!title,
         },
-      )
+      );
     }
-  }, [getFieldState, setValue, title])
+  }, [getFieldState, setValue, title]);
 
   return (
     <>
@@ -203,7 +203,7 @@ export const CreateCollectionPageDetailsScreen = () => {
                             0,
                             MAX_PAGE_URL_LENGTH,
                           ),
-                        )
+                        );
                       }}
                     />
                   )}
@@ -241,5 +241,5 @@ export const CreateCollectionPageDetailsScreen = () => {
         </AppGrid>
       </ModalBody>
     </>
-  )
-}
+  );
+};

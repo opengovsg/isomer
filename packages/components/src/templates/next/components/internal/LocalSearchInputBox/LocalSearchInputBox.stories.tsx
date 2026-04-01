@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { LocalSearchProps } from "~/interfaces"
+
 import { LocalSearchInputBox } from "./LocalSearchInputBox"
 
 const meta: Meta<LocalSearchProps> = {

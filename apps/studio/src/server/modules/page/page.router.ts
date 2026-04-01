@@ -10,14 +10,8 @@ import {
   schema,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import {
-  AuditLogEvent,
-  ResourceState,
-  ResourceType,
-} from "~prisma/generated/generatedEnums"
 import { format, isBefore } from "date-fns"
 import _, { get, isEmpty, isEqual } from "lodash"
-
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   sendCancelSchedulePageEmail,
@@ -44,6 +38,12 @@ import { scheduledPublishServerSchema } from "~/schemas/schedule"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+import {
+  AuditLogEvent,
+  ResourceState,
+  ResourceType,
+} from "~prisma/generated/generatedEnums"
+
 import { logResourceEvent } from "../audit/audit.service"
 import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { db, jsonb, sql } from "../database"
@@ -234,7 +234,7 @@ export const pageRouter = router({
           permalink,
           navbar,
           footer,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore type instantiation is excessively deep and possibly infinite
           content,
           title,

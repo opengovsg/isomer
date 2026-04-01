@@ -1,4 +1,5 @@
 import type { IsomerComponent } from "~/types"
+
 import { getDigestFromText } from "./getDigestFromText"
 
 // if block.id is not present for heading level 2, we auto-generate one

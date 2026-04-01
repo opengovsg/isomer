@@ -4,8 +4,8 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
-
 import UsersPage from "~/pages/sites/[siteId]/users"
+
 import { ADMIN_HANDLERS } from "../handlers"
 
 const meta: Meta<typeof UsersPage> = {

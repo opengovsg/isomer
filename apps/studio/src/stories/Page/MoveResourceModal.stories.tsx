@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/nextjs"
 import { userEvent, within } from "storybook/test"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
-
 import SitePage from "~/pages/sites/[siteId]"
+
 import { ADMIN_HANDLERS } from "../handlers"
 
 const SHARED_HANDLERS = [
