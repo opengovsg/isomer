@@ -60,13 +60,13 @@ export const getMonographPage = ({
     monographName.endsWith("#") || landingPageRelatedMonographs.length > 0;
 
   const postMarketingInfoProcessed = postMarketingInfo.flatMap(
-    (info) => getHtmlAsJson(info).content[0].content
+    (info) => getHtmlAsJson(info).content[0].content,
   );
   const postMarketingTags = [
     ...new Set(
       postMarketingInfoProcessed.map(
-        (item) => item.content[0].text.split(" ")[0]
-      )
+        (item) => item.content[0].text.split(" ")[0],
+      ),
     ),
   ].map((indicator) => POST_MARKETING_INFO_MAPPING[indicator!] || indicator);
 
@@ -134,440 +134,19 @@ export const getMonographPage = ({
                   },
                   content: [
                     {
-                      text: "Legend",
                       type: "text",
                       marks: [
                         {
-                          type: "bold",
+                          type: "link",
+                          attrs: {
+                            href: "/about-us/list-of-legends",
+                            target: "_self",
+                            rel: "",
+                            class: null,
+                          },
                         },
                       ],
-                    },
-                  ],
-                },
-                {
-                  type: "paragraph",
-                  attrs: {
-                    dir: "ltr",
-                  },
-                  content: [
-                    {
-                      text: "This section shows the following:",
-                      type: "text",
-                    },
-                  ],
-                },
-                {
-                  type: "unorderedList",
-                  content: [
-                    {
-                      type: "listItem",
-                      content: [
-                        {
-                          type: "paragraph",
-                          attrs: {
-                            dir: "ltr",
-                          },
-                          content: [
-                            {
-                              text: "Subsidy Scheme and Clinical Indication",
-                              type: "text",
-                              marks: [
-                                {
-                                  type: "bold",
-                                },
-                              ],
-                            },
-                            {
-                              text: " (where applicable) of drugs listed in the ",
-                              type: "text",
-                            },
-                            {
-                              text: "MOH List of Subsidised Drugs",
-                              type: "text",
-                              marks: [
-                                {
-                                  type: "link",
-                                  attrs: {
-                                    rel: "",
-                                    href: "https://www.moh.gov.sg/managing-expenses/schemes-and-subsidies/list-of-subsidised-drugs/",
-                                    class:
-                                      "focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:decoration-transparent focus-visible:shadow-focus-visible focus-visible:outline-0 focus-visible:transition-none focus-visible:hover:decoration-transparent outline-none outline-0",
-                                    target: "_self",
-                                  },
-                                },
-                                {
-                                  type: "bold",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: "listItem",
-                      content: [
-                        {
-                          type: "paragraph",
-                          attrs: {
-                            dir: "ltr",
-                          },
-                          content: [
-                            {
-                              text: "Subsidised brands of vaccines",
-                              type: "text",
-                              marks: [
-                                {
-                                  type: "bold",
-                                },
-                              ],
-                            },
-                            {
-                              text: " recommended in the National Immunisation Schedules listed in the ",
-                              type: "text",
-                            },
-                            {
-                              text: "MOH Subsidised Vaccine List",
-                              type: "text",
-                              marks: [
-                                {
-                                  type: "link",
-                                  attrs: {
-                                    rel: "",
-                                    href: "https://www.moh.gov.sg/others/subsidised-vaccine-list/",
-                                    class:
-                                      "focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:decoration-transparent focus-visible:shadow-focus-visible focus-visible:outline-0 focus-visible:transition-none focus-visible:hover:decoration-transparent outline-none outline-0",
-                                    target: "_self",
-                                  },
-                                },
-                                {
-                                  type: "bold",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: "listItem",
-                      content: [
-                        {
-                          type: "paragraph",
-                          attrs: {
-                            dir: "ltr",
-                          },
-                          content: [
-                            {
-                              text: "Cancer Drug and Clinical Indication",
-                              type: "text",
-                              marks: [
-                                {
-                                  type: "bold",
-                                },
-                              ],
-                            },
-                            {
-                              text: " listed in the ",
-                              type: "text",
-                            },
-                            {
-                              text: "MediShield Life Cancer Drug List",
-                              type: "text",
-                              marks: [
-                                {
-                                  type: "link",
-                                  attrs: {
-                                    rel: "",
-                                    href: "https://www.moh.gov.sg/managing-expenses/schemes-and-subsidies/medishield-life/cancer-drug-list/",
-                                    class:
-                                      "focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:decoration-transparent focus-visible:shadow-focus-visible focus-visible:outline-0 focus-visible:transition-none focus-visible:hover:decoration-transparent outline-none outline-0",
-                                    target: "_self",
-                                  },
-                                },
-                                {
-                                  type: "bold",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  type: "paragraph",
-                  attrs: {
-                    dir: "ltr",
-                  },
-                  content: [
-                    {
-                      text: "As this website is updated monthly, please refer to MOH List of Subsidised Drugs, MOH Subsidised Vaccine List or MediShield Life Cancer Drug List for the most updated information.",
-                      type: "text",
-                    },
-                  ],
-                },
-                {
-                  type: "table",
-                  attrs: {
-                    caption: "Legend list",
-                  },
-                  content: [
-                    {
-                      type: "tableRow",
-                      content: [
-                        {
-                          type: "tableHeader",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  text: "Indicator",
-                                  type: "text",
-                                  marks: [
-                                    {
-                                      type: "bold",
-                                    },
-                                  ],
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                        {
-                          type: "tableHeader",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  text: "Legend",
-                                  type: "text",
-                                  marks: [
-                                    {
-                                      type: "bold",
-                                    },
-                                  ],
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: "tableRow",
-                      content: [
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  text: "SDL",
-                                  type: "text",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  text: "Standard Drug List",
-                                  type: "text",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: "tableRow",
-                      content: [
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  text: "MAF",
-                                  type: "text",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  text: "Medical Assistance Fund",
-                                  type: "text",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: "tableRow",
-                      content: [
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  text: "SVL",
-                                  type: "text",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  text: "Subsidised Vaccine List",
-                                  type: "text",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: "tableRow",
-                      content: [
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  text: "MSHL",
-                                  type: "text",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  text: "Cancer Drug and Clinical Indication listed in the MediShield Life Cancer Drug List",
-                                  type: "text",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
+                      text: "View legend",
                     },
                   ],
                 },
@@ -596,7 +175,7 @@ export const getMonographPage = ({
           content: drugGuidance.length
             ? [
                 ...drugGuidance.flatMap((info, index) =>
-                  getDrugGuidance(info, guidanceRecommendation[index] || "")
+                  getDrugGuidance(info, guidanceRecommendation[index] || ""),
                 ),
                 {
                   type: "divider",
@@ -611,207 +190,16 @@ export const getMonographPage = ({
                       type: "text",
                       marks: [
                         {
-                          type: "bold",
-                        },
-                      ],
-                      text: "Legend",
-                    },
-                  ],
-                },
-                {
-                  type: "paragraph",
-                  attrs: {
-                    dir: "ltr",
-                  },
-                  content: [
-                    {
-                      type: "text",
-                      text: "This section displays recommendation from the MOH Drug Advisory Committee for subsidy and appropriate use of the drug as extracted from the Agency for Care Effectiveness (ACE) Drug Guidances. As this website is updated monthly, please refer to the ",
-                    },
-                    {
-                      type: "text",
-                      marks: [
-                        {
                           type: "link",
                           attrs: {
-                            href: "https://www.ace-hta.gov.sg/healthcare-professionals/ace-technology-guidances",
-                            target: "_blank",
-                            rel: "noopener nofollow",
-                            class:
-                              "focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:decoration-transparent focus-visible:shadow-focus-visible focus-visible:outline-0 focus-visible:transition-none focus-visible:hover:decoration-transparent outline-none outline-0",
+                            href: "/about-us/list-of-legends",
+                            target: "_self",
+                            rel: "",
+                            class: null,
                           },
                         },
                       ],
-                      text: "ACE website",
-                    },
-                    {
-                      type: "text",
-                      text: " for the most updated information.",
-                    },
-                  ],
-                },
-                {
-                  type: "table",
-                  attrs: {
-                    caption: "Legend list",
-                  },
-                  content: [
-                    {
-                      type: "tableRow",
-                      content: [
-                        {
-                          type: "tableHeader",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  type: "text",
-                                  marks: [
-                                    {
-                                      type: "bold",
-                                    },
-                                  ],
-                                  text: "Indicator",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                        {
-                          type: "tableHeader",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  type: "text",
-                                  marks: [
-                                    {
-                                      type: "bold",
-                                    },
-                                  ],
-                                  text: "Legend",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: "tableRow",
-                      content: [
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  type: "text",
-                                  text: "R",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  type: "text",
-                                  text: "Recommended for subsidy",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: "tableRow",
-                      content: [
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  type: "text",
-                                  text: "NR",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                        {
-                          type: "tableCell",
-                          attrs: {
-                            colspan: 1,
-                            rowspan: 1,
-                            colwidth: null,
-                          },
-                          content: [
-                            {
-                              type: "paragraph",
-                              attrs: {
-                                dir: "ltr",
-                              },
-                              content: [
-                                {
-                                  type: "text",
-                                  text: "Not recommended for subsidy",
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
+                      text: "View legend",
                     },
                   ],
                 },
@@ -852,104 +240,19 @@ export const getMonographPage = ({
                     },
                     content: [
                       {
-                        text: "Educational materials for healthcare professionals",
-                        type: "text",
-                        marks: [
-                          {
-                            type: "bold",
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  {
-                    type: "paragraph",
-                    attrs: {
-                      dir: "ltr",
-                    },
-                    content: [
-                      {
-                        type: "text",
-                        text: "Educational materials highlight specific safety concerns associated with the use of selected therapeutic products and provide advice on the actions required to optimize safe and effective use of these products.",
-                      },
-                    ],
-                  },
-                  {
-                    type: "paragraph",
-                    attrs: {
-                      dir: "ltr",
-                    },
-                    content: [
-                      {
-                        type: "text",
-                        text: "Only educational materials approved by the Health Sciences Authority of Singapore (HSA) are listed. These materials are published with the agreement of the company responsible for producing them and are not intended to replace medical advice offered by healthcare professionals (HCP). As this website is updated monthly, please refer to ",
-                      },
-                      {
                         type: "text",
                         marks: [
                           {
                             type: "link",
                             attrs: {
-                              href: "https://www.hsa.gov.sg/educational-materials-for-HCP",
+                              href: "/about-us/list-of-legends",
                               target: "_self",
                               rel: "",
                               class: null,
                             },
                           },
                         ],
-                        text: "HSA website",
-                      },
-                      {
-                        type: "text",
-                        text: " for the most updated information.",
-                      },
-                    ],
-                  },
-                  {
-                    type: "paragraph",
-                    attrs: {
-                      dir: "ltr",
-                    },
-                    content: [
-                      {
-                        type: "text",
-                        marks: [
-                          {
-                            type: "bold",
-                          },
-                        ],
-                        text: "Dear Healthcare Professional Letters (DHCPLs)",
-                      },
-                    ],
-                  },
-                  {
-                    type: "paragraph",
-                    attrs: {
-                      dir: "ltr",
-                    },
-                    content: [
-                      {
-                        type: "text",
-                        text: "Dear Healthcare Professional Letters (DHCPL) are letters issued by a manufacturer or the HSA to healthcare professionals to communicate new or emerging safety, efficacy or quality information associated with the use of specific marketed therapeutic products.  As this website is updated monthly, please refer to ",
-                      },
-                      {
-                        type: "text",
-                        marks: [
-                          {
-                            type: "link",
-                            attrs: {
-                              href: "https://www.hsa.gov.sg/announcements?contenttype=dear%20healthcare%20professional%20letters)",
-                              target: "_self",
-                              rel: "",
-                              class: null,
-                            },
-                          },
-                        ],
-                        text: "HSA website",
-                      },
-                      {
-                        type: "text",
-                        text: " for the most updated information.",
+                        text: "View legend",
                       },
                     ],
                   },
@@ -1116,7 +419,7 @@ export const getMonographPage = ({
                         ],
                       },
                       ...generalAvailability.map((info) =>
-                        getGeneralAvailability(info)
+                        getGeneralAvailability(info),
                       ),
                     ],
                   },
@@ -1571,7 +874,7 @@ export const getProductInformationPage = ({
                     },
                     content: getJoinedParagraph(
                       manufacturer,
-                      countryOfManufacture
+                      countryOfManufacture,
                     ),
                   },
                 ],
@@ -1831,7 +1134,7 @@ export const getProductInformationPage = ({
                     },
                     content:
                       getHtmlAsJson(exemptions).content.find(
-                        (c: any) => c.type === "prose"
+                        (c: any) => c.type === "prose",
                       ).content || [],
                   },
                 ],
