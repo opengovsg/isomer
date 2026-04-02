@@ -200,8 +200,6 @@ export const validatePermissionsForManagingUsers = async ({
 }: Omit<PermissionsProps, "resourceId"> & {
   action: UserManagementActions
 }) => {
-  if (await isActiveIsomerAdmin(userId)) return
-
   const roles = await getResourcePermission({ userId, siteId })
   const perms = buildUserManagementPermissions(roles)
 

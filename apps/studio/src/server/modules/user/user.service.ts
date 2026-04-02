@@ -162,6 +162,9 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
         .selectFrom("ResourcePermission")
         .where("deletedAt", "is", null)
         .where("siteId", "=", siteId)
+        // Site-wide permissions only; resource-level rows would cause duplicate
+        // users in the join once resource-level permissions are introduced.
+        .where("resourceId", "is", null)
         .selectAll(),
     )
     .with("ActiveIsomerAdmin", (qb) =>

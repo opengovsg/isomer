@@ -196,11 +196,11 @@ export const userRouter = router({
           "ActiveUser.name",
           "ActiveUser.createdAt",
           "ActiveUser.lastLoginAt",
-          eb.fn
-            .coalesce(
-              eb.ref("ActiveResourcePermission.role"),
-              eb.val(RoleType.Admin),
-            )
+          // Agency users always have an explicit ResourcePermission row (enforced
+          // by the query filter), so role is guaranteed non-null here.
+          eb
+            .ref("ActiveResourcePermission.role")
+            .$castTo<RoleType>()
             .as("role"),
         ])
         .executeTakeFirst()
