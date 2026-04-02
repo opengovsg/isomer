@@ -1,6 +1,3 @@
-import { useEffect, useState } from "react"
-import NextLink from "next/link"
-import { useRouter } from "next/router"
 import {
   Box,
   Breadcrumb,
@@ -11,7 +8,9 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Textarea, useToast } from "@opengovsg/design-system-react"
-
+import NextLink from "next/link"
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { ADMIN_ROLE } from "~/lib/growthbook"
@@ -28,7 +27,7 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
   const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE],
+    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
   })
 
   const [vendorEmails, setVendorEmails] = useState<string[]>([])

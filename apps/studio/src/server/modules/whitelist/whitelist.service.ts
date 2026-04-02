@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { isValidEmail } from "~/utils/email"
+
 import { DB, db, Transaction } from "../database"
 
 const normalise = (email: string) => {

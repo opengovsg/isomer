@@ -34,7 +34,7 @@ export const whitelistRouter = router({
       await validateUserIsIsomerCoreAdmin({
         userId: ctx.user.id,
         gb: ctx.gb,
-        roles: [ADMIN_ROLE.CORE],
+        roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
       })
 
       return whitelistEmails({ adminEmails, vendorEmails })
