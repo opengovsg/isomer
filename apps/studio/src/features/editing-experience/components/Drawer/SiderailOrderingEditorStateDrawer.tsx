@@ -184,7 +184,12 @@ const SiderailOrderingContent = ({
 
   const mappings = useMemo(
     () =>
-      new Map(childPages.map(({ title, id, type }) => [id, { type, title }])),
+      new Map(
+        childPages.map(({ title, id, type, permalink }) => [
+          id,
+          { type, title, permalink },
+        ]),
+      ),
     [childPages],
   )
 
@@ -203,7 +208,7 @@ const SiderailOrderingContent = ({
       mergedOrdering.map((resourceId) => ({
         id: resourceId,
         title: mappings.get(resourceId)?.title ?? "Unknown page",
-        permalink: `/${resourceId}`,
+        permalink: `/${mappings.get(resourceId)?.permalink ?? ""}`,
         type: (mappings.get(resourceId)?.type ??
           "Page") as ChildPageItem["type"],
       })),

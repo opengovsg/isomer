@@ -383,7 +383,7 @@ export const folderRouter = router({
               ResourceType.Collection,
               ResourceType.Page,
             ])
-            .select(["Resource.id", "title", "type"])
+            .select(["Resource.id", "title", "type", "permalink"])
         })
         // NOTE: we need to select the `Folder/Collection`.`id`
         // rather than the `IndexPage` as our publishing script
@@ -426,7 +426,7 @@ export const folderRouter = router({
             .where("parentType", "=", ResourceType.Folder)
             .select("parentId"),
         )
-        .select(["id", "title", "type"])
+        .select(["id", "title", "type", "permalink"])
         .unionAll((qb) => {
           return qb
             .selectFrom("Resource")
@@ -437,13 +437,13 @@ export const folderRouter = router({
                 .where("parentType", "=", ResourceType.Collection)
                 .select("parentId"),
             )
-            .select(["id", "title", "type"])
+            .select(["id", "title", "type", "permalink"])
         })
         .unionAll((qb) => {
           return qb
             .selectFrom("directChildren")
             .where("type", "=", ResourceType.Page)
-            .select(["id", "title", "type"])
+            .select(["id", "title", "type", "permalink"])
         })
         .execute()
 
