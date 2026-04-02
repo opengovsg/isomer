@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server"
 import { isValidEmail } from "~/utils/email"
 
-import { DB, db, Transaction } from "../database"
+import type { DB, Transaction } from "../database"
+import { db } from "../database"
 
 const normalise = (email: string) => {
   return email.toLowerCase().trim()
@@ -20,7 +21,7 @@ const getBaseQuery = (emails: string[], tx: Transaction<DB>) => {
 }
 
 const insertAdminEmails = async (emails: string[], tx: Transaction<DB>) => {
-  let query = getBaseQuery(emails, tx)
+  const query = getBaseQuery(emails, tx)
   if (!query) return
 
   return await query
@@ -36,7 +37,7 @@ const insertVendorEmails = async (
   expiry: Date,
   tx: Transaction<DB>,
 ) => {
-  let query = getBaseQuery(emails, tx)
+  const query = getBaseQuery(emails, tx)
   if (!query) return
 
   return await query
@@ -66,12 +67,16 @@ export const whitelistEmails = async ({
   // Use transaction for bulk insert
   return db.transaction().execute(async (tx) => {
     // Batch insert admin emails (no expiry) and vendor emails (90 day expiry)
-    await insertAdminEmails(adminEmails, tx)
-    await insertVendorEmails(vendorEmails, vendorExpiry, tx)
+    const insertedAdmins = await insertAdminEmails(adminEmails, tx)
+    const insertedVendors = await insertVendorEmails(
+      vendorEmails,
+      vendorExpiry,
+      tx,
+    )
 
     return {
-      adminCount: adminEmails.length,
-      vendorCount: vendorEmails.length,
+      adminCount: insertedAdmins?.length || 0,
+      vendorCount: insertedVendors?.length || 0,
     }
   })
 }
