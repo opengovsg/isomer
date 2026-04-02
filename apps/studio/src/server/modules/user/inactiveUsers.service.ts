@@ -213,8 +213,14 @@ const getSiteAndAdmins = async ({ userId, siteIds }: GetSiteAndAdminsProps) => {
             sb
               .selectFrom("IsomerAdmin")
               .where("IsomerAdmin.deletedAt", "is", null)
+              .where((eb) =>
+                eb.or([
+                  eb("IsomerAdmin.expiry", "is", null),
+                  eb("IsomerAdmin.expiry", ">", new Date()),
+                ]),
+              )
               .select("IsomerAdmin.userId"),
-          ) // we don't want to send emails to admins and migrators
+          ) // we don't want to send emails to active admins and migrators
           .select([
             "Site.id as siteId",
             db.fn.agg<string[]>("array_agg", ["User.email"]).as("adminEmails"),

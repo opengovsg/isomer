@@ -233,14 +233,16 @@ export const userRouter = router({
           "ActiveUser.name",
           "ActiveUser.lastLoginAt",
           "ActiveUser.createdAt",
-          // Isomer admins may not have a ResourcePermission entry for the site;
-          // their effective role is always Admin
-          eb.fn
-            .coalesce(
-              eb.ref("ActiveResourcePermission.role"),
-              eb.val(RoleType.Admin),
-            )
-            .as("role"),
+          // Isomer admins always have an effective Admin role regardless of
+          // any explicit ResourcePermission entry; agency users use coalesce
+          // to fall back to Admin only when no explicit role exists.
+          (adminType === "isomer"
+            ? eb.val(RoleType.Admin)
+            : eb.fn.coalesce(
+                eb.ref("ActiveResourcePermission.role"),
+                eb.val(RoleType.Admin),
+              )
+          ).as("role"),
         ])
         .limit(limit)
         .offset(offset)

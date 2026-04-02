@@ -15,7 +15,13 @@ CREATE TABLE "IsomerAdmin" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "IsomerAdmin_userId_role_deletedAt_key" ON "IsomerAdmin"("userId", "role", "deletedAt");
+-- Use NULLS NOT DISTINCT so that multiple rows with the same (userId, role)
+-- and deletedAt = NULL are rejected, matching the pattern used by
+-- ResourcePermission and User.
+CREATE UNIQUE INDEX "IsomerAdmin_userId_role_deletedAt_key" ON "IsomerAdmin"("userId", "role", "deletedAt") NULLS NOT DISTINCT;
 
 -- AddForeignKey
 ALTER TABLE "IsomerAdmin" ADD CONSTRAINT "IsomerAdmin_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- Auto-update updatedAt on row modification (matches other table patterns)
+CREATE TRIGGER update_timestamp BEFORE UPDATE ON "IsomerAdmin" FOR EACH ROW EXECUTE PROCEDURE moddatetime("updatedAt");
