@@ -1,11 +1,12 @@
-import { TRPCError } from "@trpc/server"
+import { ADMIN_ROLE } from "~/lib/growthbook"
 import { deleteAssetsSchema, getPresignedPutUrlSchema } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
 
+import { validateUserIsIsomerCoreAdmin } from "../permissions/permissions.service"
 import {
-  doAllFileKeysBelongToSite,
   getFileKey,
   getPresignedPutUrl,
+  invalidateAssetsBySiteIds,
   markFileAsDeleted,
   validateUserPermissionsForAsset,
 } from "./asset.service"
@@ -48,24 +49,18 @@ export const assetRouter = router({
 
   deleteAssets: protectedProcedure
     .input(deleteAssetsSchema)
-    .mutation(async ({ ctx, input: { siteId, resourceId, fileKeys } }) => {
-      await validateUserPermissionsForAsset({
-        siteId,
-        resourceId,
-        action: "delete",
+    .mutation(async ({ ctx, input: { fileKeys } }) => {
+      await validateUserIsIsomerCoreAdmin({
         userId: ctx.user.id,
+        gb: ctx.gb,
+        roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
       })
 
-      if (!doAllFileKeysBelongToSite({ fileKeys, siteId })) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "One or more file keys do not belong to the specified site. You may only delete assets for the site you are authorized for.",
-        })
-      }
-
-      await Promise.allSettled(
-        fileKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),
+      const results = await Promise.allSettled(
+        fileKeys.map(async (fileKey) => {
+          await markFileAsDeleted({ key: fileKey })
+          return fileKey
+        }),
       ).then((results) => {
         const deleteFailedCounts = results.filter(
           (result) => result.status === "rejected",
@@ -81,12 +76,26 @@ export const assetRouter = router({
               totalDeleteCounts,
             },
           })
-
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to delete files/images",
-          })
         }
+
+        return results
       })
+
+      const successfulDeletes = results
+        .filter((res) => {
+          return res.status === "fulfilled"
+        })
+        .map((res) => {
+          // NOTE: The key is of format: `<siteId>/<uuid>/<filename>`
+          return res.value.split("/").at(0) ?? ""
+        })
+        .filter(Boolean)
+
+      const invalidatedSites =
+        await invalidateAssetsBySiteIds(successfulDeletes)
+
+      return {
+        invalidatedSites,
+      }
     }),
 })

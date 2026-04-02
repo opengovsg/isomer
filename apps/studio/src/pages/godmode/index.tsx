@@ -23,6 +23,10 @@ const GODMODE_LINKS = [
     href: "/godmode/publishing",
     label: "Publishing",
   },
+  {
+    href: "/godmode/delete-s3-assets",
+    label: "Delete S3 assets",
+  },
 ] as const
 
 const GodModePage: NextPageWithLayout = () => {
