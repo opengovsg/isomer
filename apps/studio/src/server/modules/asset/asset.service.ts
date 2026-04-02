@@ -96,16 +96,6 @@ export const getFileKey = ({ siteId, fileName }: GetFileKeyProps) => {
   return `${siteId}/${folderName}/${sanitizedFileName}`
 }
 
-export const doAllFileKeysBelongToSite = ({
-  fileKeys,
-  siteId,
-}: {
-  fileKeys: string[]
-  siteId: number
-}) => {
-  return fileKeys.every((key) => key.startsWith(`${siteId}/`))
-}
-
 export const getPresignedPutUrl = async ({
   key,
 }: {
@@ -127,7 +117,7 @@ export const getPresignedPutUrl = async ({
 }
 
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
-  await deleteFile({
+  return await deleteFile({
     Key: key,
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
   })

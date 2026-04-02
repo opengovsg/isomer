@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  doAllFileKeysBelongToSite,
   getContentDispositionForKey,
   getContentTypeFromKey,
   getFileKey,
@@ -206,73 +205,6 @@ describe("asset.service", () => {
 
       // Assert
       expect(result).toMatch(/^909\/[0-9a-f-]{36}\/English中文العربية\.txt$/)
-    })
-  })
-
-  describe("doAllFileKeysBelongToSite", () => {
-    it("should return true when all file keys start with the siteId prefix", () => {
-      expect(
-        doAllFileKeysBelongToSite({
-          siteId: 25,
-          fileKeys: ["25/uuid-1/image.png", "25/uuid-2/doc.pdf"],
-        }),
-      ).toBe(true)
-    })
-
-    it("should return true for empty file keys array", () => {
-      expect(
-        doAllFileKeysBelongToSite({
-          siteId: 25,
-          fileKeys: [],
-        }),
-      ).toBe(true)
-    })
-
-    it("should return true for single key belonging to site", () => {
-      expect(
-        doAllFileKeysBelongToSite({
-          siteId: 1,
-          fileKeys: ["1/abc-123/file.jpg"],
-        }),
-      ).toBe(true)
-    })
-
-    it("should return false when one key belongs to another site", () => {
-      expect(
-        doAllFileKeysBelongToSite({
-          siteId: 25,
-          fileKeys: ["25/uuid-1/image.png", "99/other-site/attacker.png"],
-        }),
-      ).toBe(false)
-    })
-
-    it("should return false when key has no site prefix", () => {
-      expect(
-        doAllFileKeysBelongToSite({
-          siteId: 25,
-          fileKeys: ["bare-filename.png"],
-        }),
-      ).toBe(false)
-    })
-
-    it("should return false when key prefix is a different site id (no slash collision)", () => {
-      // siteId 2 should not match "25/..."
-      expect(
-        doAllFileKeysBelongToSite({
-          siteId: 2,
-          fileKeys: ["25/uuid/file.png"],
-        }),
-      ).toBe(false)
-    })
-
-    it("should return true when siteId is substring but key has correct prefix with slash", () => {
-      // "2/" prefix only matches siteId 2
-      expect(
-        doAllFileKeysBelongToSite({
-          siteId: 2,
-          fileKeys: ["2/uuid/file.png"],
-        }),
-      ).toBe(true)
     })
   })
 })
