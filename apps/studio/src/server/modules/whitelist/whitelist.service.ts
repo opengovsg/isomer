@@ -6,27 +6,48 @@ const normalise = (email: string) => {
   return email.toLowerCase().trim()
 }
 
-const insertIntoWhitelist = async (
+const getBaseQuery = (emails: string[], tx: Transaction<DB>) => {
+  const dedupedEmails = Array.from(new Set(emails))
+  if (dedupedEmails.length === 0) return
+
+  return tx.insertInto("Whitelist").values(
+    dedupedEmails.map((email) => ({
+      email: normalise(email),
+      expiry: null,
+    })),
+  )
+}
+
+const insertAdminEmails = async (emails: string[], tx: Transaction<DB>) => {
+  let query = getBaseQuery(emails, tx)
+  if (!query) return
+
+  return await query
+    .onConflict((oc) =>
+      // Always upgrade to admin (no expiry)
+      oc.column("email").doUpdateSet({ expiry: null, updatedAt: new Date() }),
+    )
+    .execute()
+}
+
+const insertVendorEmails = async (
   emails: string[],
-  expiry: Date | null,
+  expiry: Date,
   tx: Transaction<DB>,
 ) => {
-  const dedupedEmails = Array.from(new Set(emails))
+  let query = getBaseQuery(emails, tx)
+  if (!query) return
 
-  if (emails.length > 0) {
-    await tx
-      .insertInto("Whitelist")
-      .values(
-        dedupedEmails.map((email) => ({
-          email: normalise(email),
-          expiry,
-        })),
-      )
-      .onConflict((oc) =>
-        oc.column("email").doUpdateSet({ expiry: null, updatedAt: new Date() }),
-      )
-      .execute()
-  }
+  return await query
+    .onConflict((oc) =>
+      // Only update expiry if existing record is a vendor (has expiry).
+      // If existing record is admin (expiry is null), do nothing.
+      oc
+        .column("email")
+        .doUpdateSet({ expiry, updatedAt: new Date() })
+        .where("Whitelist.expiry", "is not", null),
+    )
+    .execute()
 }
 
 export const whitelistEmails = async ({
@@ -44,8 +65,8 @@ export const whitelistEmails = async ({
   // Use transaction for bulk insert
   return db.transaction().execute(async (tx) => {
     // Batch insert admin emails (no expiry) and vendor emails (90 day expiry)
-    await insertIntoWhitelist(adminEmails, null, tx)
-    await insertIntoWhitelist(vendorEmails, vendorExpiry, tx)
+    await insertAdminEmails(adminEmails, tx)
+    await insertVendorEmails(vendorEmails, vendorExpiry, tx)
 
     return {
       adminCount: adminEmails.length,

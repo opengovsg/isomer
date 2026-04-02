@@ -19,6 +19,11 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
 
+// Normalize (trim + lowercase), filter empty, and deduplicate
+const normalizeEmails = (emails: string[]) => [
+  ...new Set(emails.map((e) => e.trim()).filter((e) => e.length > 0)),
+]
+
 const GodModeWhitelistPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
@@ -103,7 +108,7 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
         <Textarea
           value={adminEmails.join("\n")}
           onChange={(e) => {
-            const newEmails = e.target.value.split("\n")
+            const newEmails = e.target.value.split(/\r?\n/).map((s) => s.trim())
             setAdminEmails(newEmails)
           }}
         />
@@ -113,22 +118,15 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
         <Textarea
           value={vendorEmails.join("\n")}
           onChange={(e) => {
-            const newEmails = e.target.value.split("\n")
+            const newEmails = e.target.value.split(/\r?\n/).map((s) => s.trim())
             setVendorEmails(newEmails)
           }}
         />
         <Button
           onClick={() => {
-            // Filter out empty strings and deduplicate
-            const cleanAdminEmails = [
-              ...new Set(adminEmails.filter((e) => e.trim())),
-            ]
-            const cleanVendorEmails = [
-              ...new Set(vendorEmails.filter((e) => e.trim())),
-            ]
             whitelistMutation.mutate({
-              adminEmails: cleanAdminEmails,
-              vendorEmails: cleanVendorEmails,
+              adminEmails: normalizeEmails(adminEmails),
+              vendorEmails: normalizeEmails(vendorEmails),
             })
           }}
           isLoading={whitelistMutation.isPending}
