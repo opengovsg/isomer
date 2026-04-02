@@ -236,12 +236,8 @@ model IsomerAdmin {
   expiry    DateTime?
   createdAt DateTime        @default(now())
   updatedAt DateTime        @default(now()) @updatedAt
-  deletedAt DateTime?
 
-  // This unique index is subsequently replaced with a custom index that
-  // treats nulls as not distinct, so that only one active row per (userId, role)
-  // is allowed. This comment prevents Prisma from dropping the custom index.
-  @@unique([userId, role, deletedAt])
+  @@unique([userId, role])
 }
 
 model RateLimiterFlexible {

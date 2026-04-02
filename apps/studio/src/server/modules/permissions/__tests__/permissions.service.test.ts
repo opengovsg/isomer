@@ -1377,19 +1377,13 @@ describe("getResourcePermission", () => {
       expect(permissions[0]?.role).toBe(RoleType.Editor)
     })
 
-    it("should return the explicit role when Isomer Admin entry is soft-deleted", async () => {
+    it("should return the explicit role when Isomer Admin entry has expired", async () => {
       // Arrange
       const user = await setupUser({ email: "test@example.com" })
       const site = await setupSite()
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
       await setupEditorPermissions({ userId: user.id, siteId: site.site.id })
-      await db
-        .insertInto("IsomerAdmin")
-        .values({
-          userId: user.id,
-          role: IsomerAdminRole.Core,
-          deletedAt: new Date(),
-        })
-        .execute()
+      await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
 
       // Act
       const permissions = await getResourcePermission({
@@ -1398,7 +1392,7 @@ describe("getResourcePermission", () => {
         resourceId: null,
       })
 
-      // Assert — soft-deleted Isomer Admin falls back to explicit role
+      // Assert — expired Isomer Admin falls back to explicit role
       expect(permissions).toHaveLength(1)
       expect(permissions[0]?.role).toBe(RoleType.Editor)
     })
@@ -1433,16 +1427,11 @@ describe("isActiveIsomerAdmin", () => {
     expect(await isActiveIsomerAdmin(user.id)).toBe(false)
   })
 
-  it("should return false for a soft-deleted Isomer Admin", async () => {
+  it("should return false for an Isomer Admin whose expiry is exactly now", async () => {
     const user = await setupUser({ email: "test@example.com" })
-    await db
-      .insertInto("IsomerAdmin")
-      .values({
-        userId: user.id,
-        role: IsomerAdminRole.Core,
-        deletedAt: new Date(),
-      })
-      .execute()
+    // Set expiry to a moment in the past to simulate just-expired
+    const justExpired = new Date(Date.now() - 1000)
+    await setupIsomerAdmin({ userId: user.id, expiry: justExpired })
 
     expect(await isActiveIsomerAdmin(user.id)).toBe(false)
   })

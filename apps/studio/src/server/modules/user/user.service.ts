@@ -170,7 +170,6 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
     .with("ActiveIsomerAdmin", (qb) =>
       qb
         .selectFrom("IsomerAdmin")
-        .where("deletedAt", "is", null)
         .where((eb) =>
           eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
         )

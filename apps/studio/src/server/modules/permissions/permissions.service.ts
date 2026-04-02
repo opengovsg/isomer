@@ -306,7 +306,6 @@ export const isActiveIsomerAdmin = async (
   let query = db
     .selectFrom("IsomerAdmin")
     .where("userId", "=", userId)
-    .where("deletedAt", "is", null)
     .where((eb) => eb.or([eb("expiry", "is", null), eb("expiry", ">", now)]))
 
   if (roles && roles.length > 0) {

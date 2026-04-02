@@ -71,7 +71,6 @@ export interface IsomerAdmin {
   expiry: Timestamp | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
-  deletedAt: Timestamp | null
 }
 export interface Navbar {
   id: GeneratedAlways<number>

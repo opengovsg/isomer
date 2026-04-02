@@ -1,6 +1,5 @@
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash"
-import { z } from "zod"
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { sendInvitation } from "~/features/mail/service"
 import { canResendInviteToUser } from "~/features/users/utils"
@@ -14,6 +13,8 @@ import {
   deleteUserOutputSchema,
   getUserInputSchema,
   getUserOutputSchema,
+  isIsomerAdminInputSchema,
+  isIsomerAdminOutputSchema,
   listUsersInputSchema,
   listUsersOutputSchema,
   resendInviteInputSchema,
@@ -23,7 +24,6 @@ import {
   updateUserInputSchema,
   updateUserOutputSchema,
 } from "~/schemas/user"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { protectedProcedure, router } from "../../trpc"
 import { db, RoleType } from "../database"
@@ -333,12 +333,8 @@ export const userRouter = router({
     }),
 
   isIsomerAdmin: protectedProcedure
-    .input(
-      z.object({
-        roles: z.array(z.nativeEnum(IsomerAdminRole)).min(1),
-      }),
-    )
-    .output(z.boolean())
+    .input(isIsomerAdminInputSchema)
+    .output(isIsomerAdminOutputSchema)
     .query(async ({ ctx, input: { roles } }) => {
       return isActiveIsomerAdmin(ctx.user.id, roles)
     }),
