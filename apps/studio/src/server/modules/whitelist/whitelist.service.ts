@@ -1,7 +1,33 @@
 import { TRPCError } from "@trpc/server"
 import { isValidEmail } from "~/utils/email"
+import { DB, db, Transaction } from "../database"
 
-import { db } from "../database"
+const normalise = (email: string) => {
+  return email.toLowerCase().trim()
+}
+
+const insertIntoWhitelist = async (
+  emails: string[],
+  expiry: Date | null,
+  tx: Transaction<DB>,
+) => {
+  const dedupedEmails = Array.from(new Set(emails))
+
+  if (emails.length > 0) {
+    await tx
+      .insertInto("Whitelist")
+      .values(
+        dedupedEmails.map((email) => ({
+          email: normalise(email),
+          expiry,
+        })),
+      )
+      .onConflict((oc) =>
+        oc.column("email").doUpdateSet({ expiry: null, updatedAt: new Date() }),
+      )
+      .execute()
+  }
+}
 
 export const whitelistEmails = async ({
   adminEmails,
@@ -13,44 +39,13 @@ export const whitelistEmails = async ({
   // Calculate vendor expiry (90 days from now)
   const vendorExpiry = new Date()
   vendorExpiry.setDate(vendorExpiry.getDate() + 90)
+  vendorExpiry.setHours(0, 0, 0, 0)
 
   // Use transaction for bulk insert
   return db.transaction().execute(async (tx) => {
-    // Batch insert admin emails (no expiry)
-    if (adminEmails.length > 0) {
-      await tx
-        .insertInto("Whitelist")
-        .values(
-          adminEmails.map((email) => ({
-            email: email.toLowerCase(),
-            expiry: null,
-          })),
-        )
-        .onConflict((oc) =>
-          oc
-            .column("email")
-            .doUpdateSet({ expiry: null, updatedAt: new Date() }),
-        )
-        .execute()
-    }
-
-    // Batch insert vendor emails (90-day expiry)
-    if (vendorEmails.length > 0) {
-      await tx
-        .insertInto("Whitelist")
-        .values(
-          vendorEmails.map((email) => ({
-            email: email.toLowerCase(),
-            expiry: vendorExpiry,
-          })),
-        )
-        .onConflict((oc) =>
-          oc
-            .column("email")
-            .doUpdateSet({ expiry: vendorExpiry, updatedAt: new Date() }),
-        )
-        .execute()
-    }
+    // Batch insert admin emails (no expiry) and vendor emails (90 day expiry)
+    await insertIntoWhitelist(adminEmails, null, tx)
+    await insertIntoWhitelist(vendorEmails, vendorExpiry, tx)
 
     return {
       adminCount: adminEmails.length,
