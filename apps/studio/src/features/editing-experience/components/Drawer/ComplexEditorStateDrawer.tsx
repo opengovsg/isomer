@@ -16,10 +16,7 @@ import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
 import { pageSchema } from "../../schema"
-import {
-  CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
-  PLACEHOLDER_IMAGE_FILENAME,
-} from "../constants"
+import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 import { DeleteBlockModal } from "../DeleteBlockModal"
 import { DiscardChangesModal } from "../DiscardChangesModal"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
@@ -70,8 +67,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
   const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
     useUploadAssetMutation({ siteId, resourceId: String(pageId) })
-  const { mutate: deleteAssets, isPending: isDeletingAssets } =
-    trpc.asset.deleteAssets.useMutation()
 
   const handleDeleteBlock = useCallback(() => {
     const updatedBlocks = Array.from(savedPageState.content)
@@ -196,25 +191,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       if (!isUploadingSuccessful) {
         return
       }
-
-      // Delete the original assets for those that have been modified
-      // This is done by deleting the file key stored in the src attribute, as
-      // it would have been replaced by new file keys after uploading
-      const assetsToDelete = modifiedAssets
-        .map(({ src }) => src?.slice(1))
-        .filter((src) => src !== PLACEHOLDER_IMAGE_FILENAME)
-        .reduce<string[]>((acc, curr) => {
-          if (curr !== undefined) {
-            acc.push(curr)
-          }
-          return acc
-        }, [])
-
-      deleteAssets({
-        siteId,
-        resourceId: String(pageId),
-        fileKeys: assetsToDelete,
-      })
     }
 
     savePage(
@@ -235,7 +211,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     )
   }, [
     currActiveIdx,
-    deleteAssets,
     modifiedAssets,
     pageId,
     previewPageState,
@@ -250,7 +225,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     uploadAsset,
   ])
 
-  const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
+  const isLoading = isSavingPage || isUploadingAsset
 
   if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
     return <></>
