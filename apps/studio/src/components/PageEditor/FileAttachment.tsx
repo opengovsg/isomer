@@ -10,6 +10,8 @@ import {
 } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { getFileExtension } from "~/utils/getFileExtension"
+
 import { RiskyFileUploadModal } from "./RiskyFileUploadModal"
 
 interface FileAttachmentProps {
@@ -23,9 +25,6 @@ interface FileAttachmentProps {
 }
 
 type FileRejections = AttachmentProps<false>["rejections"]
-
-const getFileExtension = (fileName: string): string =>
-  fileName.toLowerCase().substring(fileName.lastIndexOf("."))
 
 export const FileAttachment = ({
   setHref,
@@ -118,7 +117,7 @@ export const FileAttachment = ({
       {pendingAckRiskyFile && (
         <RiskyFileUploadModal
           isOpen={!!pendingAckRiskyFile}
-          fileExtension={getFileExtension(pendingAckRiskyFile.name)}
+          file={pendingAckRiskyFile}
           onConfirm={() => doUpload(pendingAckRiskyFile)}
           onClose={() => setPendingAckRiskyFile(null)}
         />

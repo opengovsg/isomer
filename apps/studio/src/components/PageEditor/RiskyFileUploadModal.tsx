@@ -1,4 +1,3 @@
-import { useState } from "react"
 import {
   Modal,
   ModalBody,
@@ -14,23 +13,27 @@ import {
   Checkbox,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
+import { useState } from "react"
+import { RISKY_FILE_EXTENSIONS } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { getFileExtension } from "~/utils/getFileExtension"
+
+const RISKY_EXTENSIONS_JOINED = [...RISKY_FILE_EXTENSIONS].sort().join("/")
 
 interface RiskyFileUploadModalProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: () => void
-  fileExtension: string
+  file: File
 }
 
 export const RiskyFileUploadModal = ({
   isOpen,
   onClose,
   onConfirm,
-  fileExtension,
+  file,
 }: RiskyFileUploadModalProps) => {
+  const fileExtension = getFileExtension(file.name)
   const [isChecked, setIsChecked] = useState(false)
-  const [hasClickedConfirm, setHasClickedConfirm] = useState(false)
-  const showUncheckedError = hasClickedConfirm && !isChecked
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -65,8 +68,8 @@ export const RiskyFileUploadModal = ({
                 <Text as="span" textStyle="subhead-2">
                   {fileExtension}
                 </Text>
-                . It&apos;s difficult to view .docx/.xlsx files on mobile.
-                Consider whether this affects your users.
+                . It&apos;s difficult to view {RISKY_EXTENSIONS_JOINED} files on
+                mobile. Consider whether this affects your users.
               </Text>
             </Stack>
           </Stack>
@@ -75,18 +78,13 @@ export const RiskyFileUploadModal = ({
             risks. Otherwise, consider converting your file(s) into a .pdf
             instead.
           </Text>
-          <Stack mt="1rem" backgroundColor="#f8f9f9">
+          <Stack mt="1rem" backgroundColor="base.canvas.alt">
             <Stack p="1rem" gap={0}>
               <Checkbox onChange={() => setIsChecked((prev) => !prev)}>
                 <Text textStyle="body-2">
                   I&apos;ve read and accept the risks.
                 </Text>
               </Checkbox>
-              {showUncheckedError && (
-                <Text textStyle="body-2" color="red" ml="2.5rem">
-                  You must accept the risks to accept the file(s).
-                </Text>
-              )}
             </Stack>
           </Stack>
         </ModalBody>
@@ -94,12 +92,10 @@ export const RiskyFileUploadModal = ({
         <ModalFooter gap="0.75rem">
           <Button
             variant="solid"
+            isDisabled={!isChecked}
             onClick={() => {
-              setHasClickedConfirm(true)
-              if (isChecked) {
-                onConfirm()
-                onClose()
-              }
+              onConfirm()
+              onClose()
             }}
           >
             Upload file(s)
