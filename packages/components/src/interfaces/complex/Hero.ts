@@ -1,13 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import type { Simplify } from "type-fest"
-<<<<<<< chore/remove-gif
-import { Type } from "@sinclair/typebox"
-import omit from "lodash-es/omit"
-
-=======
->>>>>>> main
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
+import { omit } from "lodash-es"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
