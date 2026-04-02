@@ -7,6 +7,7 @@ import {
   SearchSGSearchSchema,
   VicaSchema,
 } from "~/interfaces"
+import { IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/interfaces/complex/Image"
 import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
 
 import type { IsomerSitemap } from "./sitemap"
@@ -62,6 +63,7 @@ export const LogoSettingsSchema = Type.Object({
     description:
       "The logo appears on the navigation bar. It may also be used as a thumbnail if there’s no thumbnail set on a page.",
     format: "image",
+    allowedMimeTypeMappings: IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   }),
   favicon: Type.Optional(
     Type.String({
@@ -69,6 +71,7 @@ export const LogoSettingsSchema = Type.Object({
       description:
         "This appears on a browser tab to help people recognise your site. We recommend a minimum size of 24px by 24px, in .ico, .svg, or .png format.",
       format: "image",
+      allowedMimeTypeMappings: IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
       maxSizeInBytes: 50000, // NOTE: 50 kB
     }),
   ),
