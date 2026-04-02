@@ -1,6 +1,7 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
+import dynamic from "next/dynamic"
 import uniq from "lodash/uniq"
 import { useEffect, useState } from "react"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
@@ -12,7 +13,10 @@ import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { getFileExtension } from "~/utils/getFileExtension"
 
-import { RiskyFileUploadModal } from "./RiskyFileUploadModal"
+const RiskyFileUploadModal = dynamic(
+  () =>
+    import("./RiskyFileUploadModal").then((mod) => mod.RiskyFileUploadModal),
+)
 
 interface FileAttachmentProps {
   setHref: (href?: string) => void
@@ -22,6 +26,7 @@ interface FileAttachmentProps {
   maxSizeInBytes: number
   acceptedFileTypes: Record<string, string>
   shouldFetchResource?: boolean
+  enableRiskyFileWarning?: boolean
 }
 
 type FileRejections = AttachmentProps<false>["rejections"]
@@ -33,6 +38,7 @@ export const FileAttachment = ({
   maxSizeInBytes,
   acceptedFileTypes,
   shouldFetchResource = true,
+  enableRiskyFileWarning = false,
 }: FileAttachmentProps) => {
   const [rejections, setRejections] = useState<FileRejections>([])
   const [pendingAckRiskyFile, setPendingAckRiskyFile] = useState<File | null>(
@@ -81,7 +87,7 @@ export const FileAttachment = ({
               }
 
               const ext = getFileExtension(file.name)
-              if (RISKY_FILE_EXTENSIONS.has(ext)) {
+              if (enableRiskyFileWarning && RISKY_FILE_EXTENSIONS.has(ext)) {
                 setPendingAckRiskyFile(file)
                 return
               }
@@ -114,7 +120,7 @@ export const FileAttachment = ({
         </Text>
       </FormControl>
 
-      {pendingAckRiskyFile && (
+      {enableRiskyFileWarning && pendingAckRiskyFile && (
         <RiskyFileUploadModal
           isOpen={!!pendingAckRiskyFile}
           file={pendingAckRiskyFile}

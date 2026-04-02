@@ -241,6 +241,7 @@ const ModalLinkEditor = () => {
             }
             setHref={(href) => setHref(href ?? "")}
             shouldFetchResource={false}
+            enableRiskyFileWarning={true}
           />
         )
       }
