@@ -8,14 +8,18 @@ const normalise = (email: string) => {
   return email.toLowerCase().trim()
 }
 
-const getBaseQuery = (emails: string[], tx: Transaction<DB>) => {
+const getBaseQuery = (
+  emails: string[],
+  tx: Transaction<DB>,
+  expiry: Date | null = null,
+) => {
   const dedupedEmails = Array.from(new Set(emails))
   if (dedupedEmails.length === 0) return
 
   return tx.insertInto("Whitelist").values(
     dedupedEmails.map((email) => ({
       email: normalise(email),
-      expiry: null,
+      expiry,
     })),
   )
 }
@@ -37,7 +41,7 @@ const insertVendorEmails = async (
   expiry: Date,
   tx: Transaction<DB>,
 ) => {
-  const query = getBaseQuery(emails, tx)
+  const query = getBaseQuery(emails, tx, expiry)
   if (!query) return
 
   return await query
@@ -75,8 +79,8 @@ export const whitelistEmails = async ({
     )
 
     return {
-      adminCount: insertedAdmins?.length || 0,
-      vendorCount: insertedVendors?.length || 0,
+      adminCount: Number(insertedAdmins?.[0]?.numInsertedOrUpdatedRows ?? 0n),
+      vendorCount: Number(insertedVendors?.[0]?.numInsertedOrUpdatedRows ?? 0n),
     }
   })
 }
