@@ -18,7 +18,6 @@ export interface ResourceRowWithSiteAndTitle {
 }
 
 export type IsomerAdminScriptType =
-  | "add-isomer-collaborators"
   | "bulk-upload-assets"
   | "export-individual-jsons"
   | "export-site-jsons"
