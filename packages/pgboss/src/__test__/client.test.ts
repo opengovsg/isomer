@@ -1,12 +1,26 @@
+import { Writable } from "node:stream"
+
+import type { Logger } from "@isomer/logging"
+import { createRootLogger } from "@isomer/logging"
 import type { Mock } from "vitest"
 import type { HeartbeatOptions } from "~/utils"
-import pino from "pino"
 import { sendHeartbeat } from "~/utils"
 
 import type { GlobalWithPgBoss } from ".."
 import { registerPgbossJob } from ".."
 
-const logger: pino.Logger<string> = pino({ level: "silent" })
+const silentDestination = new Writable({
+  write(_chunk, _encoding, callback) {
+    callback()
+  },
+})
+
+const logger: Logger<string> = createRootLogger({
+  nodeEnv: "test",
+  appEnvLabel: "pgboss-test",
+  logLevel: "emerg",
+  destination: silentDestination,
+})
 
 describe("client", () => {
   let globalForPgboss: GlobalWithPgBoss

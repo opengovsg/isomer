@@ -33,8 +33,8 @@
     "test:watch": "dotenv -e .env.test npx vitest watch"
   },
   "dependencies": {
+    "@isomer/logging": "*",
     "pg-boss": "^12.3.0",
-    "pino": "^9.6.0",
     "vitest": "^2.1.1"
   },
   "devDependencies": {
