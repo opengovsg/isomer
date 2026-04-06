@@ -80,6 +80,12 @@ export const DownloadButton = ({
   }
 
   useEffect(() => {
+    // This is to ensure this hook does not run during server-side rendering
+    // as DGS has rate limits for unauthenticated requests for non-whitelisted domains
+    if (typeof window === "undefined") {
+      return
+    }
+
     const updateDisplayText = async () => {
       try {
         const displayText = await strategy.getDisplayText(url)

@@ -24,6 +24,13 @@ export const useDgsMetadata = ({
       return
     }
 
+    // This is to ensure this hook does not run during server-side rendering
+    // as DGS has rate limits for unauthenticated requests for non-whitelisted domains
+    if (typeof window === "undefined") {
+      setIsLoading(false)
+      return
+    }
+
     const fetchMetadata = async () => {
       setIsLoading(true)
       try {
