@@ -136,7 +136,9 @@ const SuspendableSiteList = (): JSX.Element => {
         <Site
           siteId={site.id}
           siteName={site.config.siteName}
-          siteLogoUrl={generateAssetUrl(site.config.logoUrl)}
+          siteLogoUrl={
+            site.config.logoUrl ? generateAssetUrl(site.config.logoUrl) : ""
+          }
         />
       ))}
     </SiteListSection>

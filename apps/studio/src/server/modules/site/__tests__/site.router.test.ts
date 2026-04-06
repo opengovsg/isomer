@@ -175,6 +175,31 @@ describe("site.router", async () => {
       ])
     })
 
+    it("should fall back to Site.name when Site.config is JSON null", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .where("id", "=", site.id)
+        .set({ config: jsonb(null) })
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.list()
+
+      // Assert
+      expect(result).toEqual([
+        {
+          id: site.id,
+          config: { siteName: site.name },
+        },
+      ])
+    })
+
     it("should only include sites that the user has any role permission for", async () => {
       // Arrange
       const { site: site1 } = await setupSite()
@@ -292,6 +317,37 @@ describe("site.router", async () => {
       // Assert
       expect(result).toEqual([pick(site, ["id", "config", "codeBuildId"])])
     })
+
+    it("should fall back to Site.name when Site.config is JSON null", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .where("id", "=", site.id)
+        .set({ config: jsonb(null) })
+        .execute()
+      const mockRequest = createMockRequest(session)
+      const mockGrowthBook: Partial<GrowthBook> = {
+        getFeatureValue: vi.fn().mockReturnValue({
+          core: [user.email],
+          migrators: [],
+        }),
+      }
+      mockRequest.gb = mockGrowthBook as GrowthBook
+      caller = createCaller(mockRequest)
+
+      // Act
+      const result = await caller.listAllSites()
+
+      // Assert
+      expect(result).toEqual([
+        {
+          id: site.id,
+          codeBuildId: site.codeBuildId,
+          config: { siteName: site.name },
+        },
+      ])
+    })
   })
 
   describe("getSiteName", () => {
@@ -316,6 +372,26 @@ describe("site.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+
+      // Act
+      const result = await caller.getSiteName({ siteId: site.id })
+
+      // Assert
+      expect(result).toEqual({ name: site.name })
+    })
+
+    it("should fall back to Site.name when Site.config is JSON null", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await db
+        .updateTable("Site")
+        .where("id", "=", site.id)
+        .set({ config: jsonb(null) })
+        .execute()
 
       // Act
       const result = await caller.getSiteName({ siteId: site.id })
@@ -489,6 +565,37 @@ describe("site.router", async () => {
         .select("name")
         .executeTakeFirstOrThrow()
       expect(updatedSite.name).toEqual(MOCK_SITE_NAME)
+    })
+
+    it("should still update the site config when Site.config is JSON null", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({ config: jsonb(null) })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+      })
     })
     it("should generate an audit log entry", async () => {
       // Arrange
@@ -779,6 +886,31 @@ describe("site.router", async () => {
       await db
         .updateTable("Site")
         .set({ theme: jsonb(MOCK_BLACK_THEME) })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.setTheme({
+        theme: MOCK_ISOMER_THEME,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toMatchObject({
+        theme: MOCK_ISOMER_THEME,
+      })
+    })
+
+    it("should still update the site theme when Site.config is JSON null", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({ theme: jsonb(MOCK_BLACK_THEME), config: jsonb(null) })
         .where("id", "=", site.id)
         .execute()
       await setupAdminPermissions({

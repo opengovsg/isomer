@@ -43,17 +43,39 @@ import {
   validateUserPermissionsForSite,
 } from "./site.service"
 
+const getSafeSiteConfig = (
+  config: unknown,
+): Partial<IsomerSiteConfigProps> | null => {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    return null
+  }
+
+  return config as Partial<IsomerSiteConfigProps>
+}
+
 export const siteRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
     // NOTE: Any role should be able to read site
-    return db
+    const sites = await db
       .selectFrom("Site")
       .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
       .where("ResourcePermission.deletedAt", "is", null)
       .where("ResourcePermission.userId", "=", ctx.user.id)
-      .select(["Site.id", "Site.config"])
-      .groupBy(["Site.id", "Site.config"])
+      .select(["Site.id", "Site.name", "Site.config"])
+      .groupBy(["Site.id", "Site.name", "Site.config"])
       .execute()
+
+    return sites.map(({ id, name, config }) => {
+      const siteConfig = getSafeSiteConfig(config)
+
+      return {
+        id,
+        config: {
+          ...(siteConfig ?? {}),
+          siteName: siteConfig?.siteName || name,
+        },
+      }
+    })
   }),
   listAllSites: protectedProcedure.query(async ({ ctx }) => {
     await validateUserIsIsomerCoreAdmin({
@@ -62,11 +84,24 @@ export const siteRouter = router({
       roles: [ADMIN_ROLE.CORE],
     })
 
-    return db
+    const sites = await db
       .selectFrom("Site")
-      .select(["Site.id", "Site.config", "Site.codeBuildId"])
+      .select(["Site.id", "Site.name", "Site.config", "Site.codeBuildId"])
       .orderBy("Site.id", "asc")
       .execute()
+
+    return sites.map(({ id, name, config, codeBuildId }) => {
+      const siteConfig = getSafeSiteConfig(config)
+
+      return {
+        id,
+        codeBuildId,
+        config: {
+          ...(siteConfig ?? {}),
+          siteName: siteConfig?.siteName || name,
+        },
+      }
+    })
   }),
   getSiteName: protectedProcedure
     .input(getNameSchema)
@@ -77,13 +112,14 @@ export const siteRouter = router({
         action: "read",
       })
 
-      const { config } = await db
+      const { config, name } = await db
         .selectFrom("Site")
         .where("Site.id", "=", siteId)
-        .select("config")
+        .select(["config", "name"])
         .executeTakeFirstOrThrow()
 
-      return { name: config.siteName }
+      const siteConfig = getSafeSiteConfig(config)
+      return { name: siteConfig?.siteName || name }
     }),
   getConfig: protectedProcedure
     .input(getConfigSchema)
@@ -116,7 +152,7 @@ export const siteRouter = router({
         .selectAll()
         .executeTakeFirstOrThrow()
 
-      const { config } = site
+      const currentConfig = getSafeSiteConfig(site.config)
 
       const updatedConfig = await db.transaction().execute(async (tx) => {
         const updatedSite = await tx
@@ -144,8 +180,8 @@ export const siteRouter = router({
       // and not super critical to update
       if (
         updatedConfig.search?.type === "searchSG" &&
-        (config.search?.type !== "searchSG" ||
-          config.siteName !== updatedConfig.siteName)
+        (currentConfig?.search?.type !== "searchSG" ||
+          currentConfig?.siteName !== updatedConfig.siteName)
       )
         void updateSearchSGConfig(
           { name: siteName, _kind: "name" },
@@ -229,6 +265,7 @@ export const siteRouter = router({
       }
 
       const oldTheme = site.theme
+      const siteConfig = getSafeSiteConfig(site.config)
 
       if (!oldTheme) {
         throw new TRPCError({
@@ -279,14 +316,14 @@ export const siteRouter = router({
       // NOTE: if the users update their `canvas.inverse`
       // we also need to update their searchsg theme settings
       if (
-        site.config.search?.type === "searchSG" &&
+        siteConfig?.search?.type === "searchSG" &&
         oldTheme.colors.brand.canvas.inverse !==
           theme.colors.brand.canvas.inverse
       ) {
         void updateSearchSGConfig(
           { colour: theme.colors.brand.canvas.inverse, _kind: "colour" },
-          site.config.search.clientId,
-          site.config.url,
+          siteConfig.search.clientId,
+          siteConfig.url,
         )
       }
 
@@ -524,7 +561,10 @@ export const siteRouter = router({
 
       await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
 
-      return site.config.notification
+      const siteConfig = site.config as
+        | { notification?: Notification["notification"] }
+        | null
+      return siteConfig?.notification
     },
   ),
   setSiteConfigByAdmin: protectedProcedure

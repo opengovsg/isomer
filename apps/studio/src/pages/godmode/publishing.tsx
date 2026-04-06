@@ -107,8 +107,8 @@ const GodModePublishingPage: NextPageWithLayout = () => {
           <Tbody>
             {sites.map((site) => (
               <Tr key={site.id}>
+                <Td>{site.config.siteName ?? `Site ${site.id}`}</Td>
                 <Td>{site.id}</Td>
-                <Td>{site.config.siteName}</Td>
                 <Td>{site.codeBuildId || "-"}</Td>
                 <Td>
                   {site.codeBuildId && (
