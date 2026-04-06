@@ -15,7 +15,6 @@ import {
   InfoCardWithFullImage,
   InfoCardWithImage,
 } from "./components"
-import { calculateGridDimensions } from "./utils"
 
 export const InfoCards = ({
   id,
@@ -36,9 +35,6 @@ export const InfoCards = ({
     variant === CARDS_WITH_FULL_IMAGES
       ? INFOCARD_VARIANT.bold
       : INFOCARD_VARIANT.default
-
-  const { cols } = calculateGridDimensions(cards)
-  const computedMaxCols = variant === CARDS_WITH_FULL_IMAGES ? cols : maxColumns
 
   const InfoCardsToRender = () => {
     switch (variant) {
@@ -78,7 +74,7 @@ export const InfoCards = ({
               <InfoCardWithFullImage
                 key={idx}
                 {...card}
-                maxColumns={computedMaxCols}
+                maxColumns={maxColumns}
                 layout={layout}
                 site={site}
                 LinkComponent={LinkComponent}
@@ -124,7 +120,7 @@ export const InfoCards = ({
 
       <div
         className={compoundStyles.grid({
-          maxColumns: computedMaxCols,
+          maxColumns,
           variant: cardVariant,
         })}
       >
