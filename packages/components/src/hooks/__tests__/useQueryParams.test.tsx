@@ -1,8 +1,8 @@
 /* @vitest-environment jsdom */
 
-import { act } from "react-dom/test-utils"
+import { act } from "react"
 import { createRoot } from "react-dom/client"
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { useQueryParams } from "../useQueryParams"
 
@@ -30,6 +30,7 @@ describe("useQueryParams", () => {
   let originalPushState: History["pushState"]
 
   beforeEach(() => {
+    ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
     container = document.createElement("div")
     document.body.appendChild(container)
     root = createRoot(container)
@@ -117,9 +118,10 @@ describe("useQueryParams", () => {
     })
   })
 
-  it("should restore the original pushState implementation on unmount", () => {
+  it("should stop emitting pushstate events after unmount", () => {
     // Arrange
-    const initialPushState = window.history.pushState
+    const onPushState = vi.fn()
+    window.addEventListener("pushstate", onPushState)
     act(() => {
       root.render(
         <HookConsumer
@@ -129,17 +131,22 @@ describe("useQueryParams", () => {
         />,
       )
     })
+    act(() => {
+      window.history.pushState({}, "", "/?page=1")
+    })
 
     // Assert
-    expect(window.history.pushState).not.toBe(initialPushState)
+    expect(onPushState).toHaveBeenCalledTimes(1)
 
     // Act
     act(() => {
       root.unmount()
     })
+    window.history.pushState({}, "", "/?page=2")
 
     // Assert
-    expect(window.history.pushState).toBe(initialPushState)
+    expect(onPushState).toHaveBeenCalledTimes(1)
+    window.removeEventListener("pushstate", onPushState)
 
     // Re-create root for afterEach cleanup.
     root = createRoot(container)
