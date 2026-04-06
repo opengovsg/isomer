@@ -22,7 +22,7 @@ import {
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 import { db, jsonb, RoleType } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
-import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { userRouter } from "../user.router"
 import { isomerAdminsCount, setupIsomerAdmins } from "./utils"
@@ -654,10 +654,18 @@ describe("user.router", () => {
       await setupAdminPermissions({ userId: session.userId, siteId })
 
       const isomerAdmin = await setupUser({
-        email: ISOMER_ADMINS_AND_MIGRATORS_EMAILS[0]!,
+        email: "testisomeradmin@open.gov.sg",
         isDeleted: false,
       })
       await setupAdminPermissions({ userId: isomerAdmin.id, siteId })
+      await db
+        .insertInto("IsomerAdmin")
+        .values({
+          userId: isomerAdmin.id,
+          role: IsomerAdminRole.Core,
+          expiry: null,
+        })
+        .execute()
 
       // Act
       const result = caller.delete({ siteId, userId: isomerAdmin.id })
