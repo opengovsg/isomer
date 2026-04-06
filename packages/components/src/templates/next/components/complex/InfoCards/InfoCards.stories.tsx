@@ -262,3 +262,23 @@ export const Content6CardsWithFullImage: Story = {
     numCards: 6,
   }),
 }
+
+/** Full-image grid uses `maxColumns` (here: 7 cards with 2 columns). */
+export const FullImageSevenCardsMaxColumnsTwo: Story = {
+  name: "Full Image: 7 cards (maxColumns 2)",
+  args: generateArgs({
+    maxColumns: "2",
+    variant: "cardsWithFullImages",
+    numCards: 7,
+  }),
+}
+
+/** Same card count with `maxColumns` 3 for comparison. */
+export const FullImageFourCardsMaxColumnsTwo: Story = {
+  name: "Full Image: 7 cards (maxColumns 3)",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    numCards: 7,
+  }),
+}
