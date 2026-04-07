@@ -79,8 +79,8 @@ export const whitelistEmails = async ({
     )
 
     return {
-      adminCount: Number(insertedAdmins?.[0]?.numInsertedOrUpdatedRows ?? 0n),
-      vendorCount: Number(insertedVendors?.[0]?.numInsertedOrUpdatedRows ?? 0n),
+      adminCount: Number(insertedAdmins?.[0]?.numInsertedOrUpdatedRows ?? 0),
+      vendorCount: Number(insertedVendors?.[0]?.numInsertedOrUpdatedRows ?? 0),
     }
   })
 }

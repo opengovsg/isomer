@@ -13,16 +13,16 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type NextPageWithLayout } from "~/lib/types"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
 
 const GodModeWhitelistPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  const { isAdmin: isUserIsomerAdmin, isLoading } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
 
   const [vendorEmails, setVendorEmails] = useState<string[]>([])
@@ -48,7 +48,7 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
   })
 
   useEffect(() => {
-    if (!isUserIsomerAdmin) {
+    if (!isLoading && !isUserIsomerAdmin) {
       toast({
         title: "You do not have permission to access this page.",
         status: "error",
@@ -56,7 +56,7 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
       })
       void router.push(`/`)
     }
-  }, [isUserIsomerAdmin, router, toast])
+  }, [isUserIsomerAdmin, isLoading, router, toast])
 
   if (!isUserIsomerAdmin) {
     return null
