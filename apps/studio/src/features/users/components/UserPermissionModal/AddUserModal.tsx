@@ -169,7 +169,7 @@ export const AddUserModal = () => {
       {
         onSuccess: () => reset(),
         onSettled: () => {
-          void handleOnClose()
+           handleOnClose()
         },
       },
     )
