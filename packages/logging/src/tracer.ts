@@ -1,5 +1,6 @@
 import tracer from "dd-trace"
-import { env } from "~/env.mjs"
+
+import { env } from "./env"
 
 // initialized in a different file to avoid hoisting.
 tracer.init({

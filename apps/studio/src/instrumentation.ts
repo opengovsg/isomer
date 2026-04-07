@@ -3,7 +3,7 @@ export async function register() {
   // oxlint-disable-next-line node/no-process-env
   if (process.env.NEXT_RUNTIME === "nodejs") {
     console.log("Instrumenting Next.js Server")
-    await import("~/server/modules/tracer")
+    await import("@isomer/logging/tracer")
 
     // Import only if runtime is nodejs. This avoids running it on the browser, build time etc.
     const { initializeCronJobs, stopCronJobs } = await import("~/server/cron")
