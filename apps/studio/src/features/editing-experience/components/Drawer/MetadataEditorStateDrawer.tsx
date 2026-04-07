@@ -85,6 +85,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             "sortOrder",
             "defaultSortBy",
             "defaultSortDirection",
+            "showThumbnail",
             "showDate",
             "image",
           ],
