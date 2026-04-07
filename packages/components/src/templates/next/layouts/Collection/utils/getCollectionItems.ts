@@ -11,7 +11,7 @@ const CATEGORY_OTHERS = "Others"
 
 export type GetCollectionItemsProps = Pick<
   CollectionPagePageProps,
-  "sortOrder" | "showDate" | "tagCategories"
+  "sortOrder" | "showDate" | "showThumbnail" | "tagCategories"
 > & {
   site: IsomerSiteProps
   permalink: string
@@ -26,6 +26,7 @@ export const getCollectionItems = ({
   sortDirection,
   sortOrder,
   showDate,
+  showThumbnail,
   tagCategories,
 }: GetCollectionItemsProps): AllCardProps[] => {
   let currSitemap: IsomerSitemap = site.siteMap
@@ -62,11 +63,25 @@ export const getCollectionItems = ({
         item.layout === "article",
     )
 
+  const isAnyItemHaveImage = items.some((item) => !!item.image?.src)
+  // If showThumbnail is not explicitly set, show the thumbnail if any of the
+  // items have an image
+  const shouldShowThumbnail = showThumbnail ?? isAnyItemHaveImage
+
   const transformedItems = items.map((item) => {
     const date =
       showDate !== false && item.date !== undefined && item.date !== ""
         ? getParsedDate(item.date)
         : undefined
+    const hasOriginalImage = !!item.image?.src
+    const image = shouldShowThumbnail
+      ? hasOriginalImage
+        ? item.image
+        : {
+            src: site.logoUrl,
+            alt: `${site.siteName} site logo`,
+          }
+      : undefined
 
     const baseItem = {
       type: "collectionCard" as const,
@@ -76,7 +91,8 @@ export const getCollectionItems = ({
       category: item.category || CATEGORY_OTHERS,
       title: item.title,
       description: item.summary,
-      image: item.image,
+      image,
+      isFallbackImage: shouldShowThumbnail && !hasOriginalImage,
       site,
       tags:
         tagCategories && item.tagged

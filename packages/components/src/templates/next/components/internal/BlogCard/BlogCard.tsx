@@ -12,6 +12,7 @@ export const BlogCard = ({
   description,
   category,
   image,
+  isFallbackImage,
   referenceLinkHref,
   imageSrc,
   itemTitle,
@@ -36,13 +37,13 @@ export const BlogCard = ({
       isExternal={isExternalLink}
     >
       {image && (
-        <div className="relative mb-3 aspect-[2/1] h-auto min-h-40 shrink-0">
+        <div className="relative mb-3 flex aspect-[2/1] h-auto min-h-40 shrink-0 items-center justify-center">
           {
             <ImageClient
               src={imageSrc || ""}
               alt={image.alt}
               width="100%"
-              className="absolute left-0 h-full w-full rounded object-cover"
+              className={`absolute left-0 h-full w-full rounded ${isFallbackImage ? "object-contain" : "object-cover"}`}
               assetsBaseUrl={siteAssetsBaseUrl}
             />
           }
