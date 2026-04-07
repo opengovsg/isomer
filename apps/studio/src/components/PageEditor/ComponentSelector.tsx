@@ -120,8 +120,9 @@ function ComponentSelector() {
     const nextState: DrawerState["state"] =
       sectionType === "prose" ? "nativeEditor" : "complexEditor"
     // TODO: Remove assertion after default blocks all in
-    const newComponent: IsomerComponent | undefined =
-      DEFAULT_BLOCKS[sectionType]
+    const newComponent: IsomerComponent | undefined = DEFAULT_BLOCKS[
+      sectionType
+    ] as IsomerComponent | undefined
 
     const updatedBlocks = !!newComponent
       ? [...savedPageState.content, newComponent]
