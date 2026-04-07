@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react"
 import { useJsonForms } from "@jsonforms/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import get from "lodash/get"
-
+import { useEffect, useState } from "react"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { siteSchema } from "~/features/editing-experience/schema"

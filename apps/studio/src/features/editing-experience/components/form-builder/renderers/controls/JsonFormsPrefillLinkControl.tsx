@@ -1,8 +1,8 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
 import { usePrefillForCards } from "../../hooks/usePrefill"
 import { BaseLinkControl } from "./BaseLinkControl"
