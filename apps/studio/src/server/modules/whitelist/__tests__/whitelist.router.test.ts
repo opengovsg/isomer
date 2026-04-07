@@ -1,4 +1,3 @@
-import type { GrowthBook } from "@growthbook/growthbook"
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -9,12 +8,14 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
+  setupIsomerAdmin,
   setupPublisherPermissions,
   setupSite,
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { createCallerFactory } from "~/server/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database"
 import { db } from "../../database"
@@ -112,7 +113,7 @@ describe("whitelist.router", async () => {
     let user: User
 
     beforeEach(async () => {
-      await resetTables("User", "Whitelist")
+      await resetTables("User", "Whitelist", "IsomerAdmin")
       caller = createCaller(createMockRequest(session))
       unauthedCaller = createCaller(createMockRequest(applySession()))
       user = await setupUser({
@@ -136,16 +137,7 @@ describe("whitelist.router", async () => {
     })
 
     it("should throw 403 if user is not an Isomer Core Admin or Migrator", async () => {
-      // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      // Arrange - user is not set up as IsomerAdmin, so should be rejected
 
       // Act
       const result = caller.whitelistEmails({
@@ -165,15 +157,7 @@ describe("whitelist.router", async () => {
 
     it("should whitelist admin emails successfully if user is an Isomer Core Admin", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
       const adminEmail = "admin@test.com"
 
       // Act
@@ -202,15 +186,7 @@ describe("whitelist.router", async () => {
 
     it("should whitelist vendor emails with 90-day expiry if user is an Isomer Core Admin", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
       const vendorEmail = "vendor@test.com"
 
       // Act
@@ -245,15 +221,10 @@ describe("whitelist.router", async () => {
 
     it("should whitelist emails successfully if user is an Isomer Migrator", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [],
-          migrators: [user.email],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({
+        userId: user.id,
+        role: IsomerAdminRole.Migrator,
+      })
       const adminEmail = "admin@test.com"
       const vendorEmail = "vendor@test.com"
 
@@ -289,15 +260,7 @@ describe("whitelist.router", async () => {
 
     it("should whitelist multiple admin and vendor emails", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
       const adminEmails = ["admin1@test.com", "admin2@test.com"]
       const vendorEmails = ["vendor1@test.com", "vendor2@test.com"]
 
@@ -326,15 +289,7 @@ describe("whitelist.router", async () => {
 
     it("should normalise emails to lowercase", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
       const uppercaseEmail = "ADMIN@TEST.COM"
 
       // Act
@@ -356,15 +311,7 @@ describe("whitelist.router", async () => {
 
     it("should deduplicate emails within the same request", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
       const duplicateEmail = "admin@test.com"
 
       // Act
@@ -392,15 +339,7 @@ describe("whitelist.router", async () => {
 
     it("should upgrade existing vendor to admin when same email is submitted as admin", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
       const email = "user@test.com"
 
       // First whitelist as vendor
@@ -435,15 +374,7 @@ describe("whitelist.router", async () => {
 
     it("should not downgrade admin to vendor when same email is submitted as vendor", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
       const email = "user@test.com"
 
       // First whitelist as admin
@@ -478,15 +409,7 @@ describe("whitelist.router", async () => {
 
     it("should return zero counts when empty arrays are provided", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
 
       // Act
       const result = await caller.whitelistEmails({
