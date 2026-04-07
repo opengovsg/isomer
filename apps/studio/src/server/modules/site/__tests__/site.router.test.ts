@@ -1,4 +1,3 @@
-import type { GrowthBook } from "@growthbook/growthbook"
 import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash"
@@ -12,6 +11,7 @@ import {
 import {
   setupAdminPermissions,
   setupEditorPermissions,
+  setupIsomerAdmin,
   setupPageResource,
   setupPublisherPermissions,
   setupSite,
@@ -19,6 +19,7 @@ import {
 } from "tests/integration/helpers/seed"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database"
 import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
@@ -124,12 +125,14 @@ describe("site.router", async () => {
   })
 
   beforeEach(async () => {
-    await resetTables("Site", "ResourcePermission", "User")
+    await resetTables("Site", "ResourcePermission", "IsomerAdmin", "User")
     user = await setupUser({
       userId: session.userId,
       email: "test@mock.com",
     })
     await auth(user)
+    // Re-create the caller after resetTables to ensure a clean state
+    caller = createCaller(createMockRequest(session))
   })
 
   describe("list", () => {
@@ -231,6 +234,26 @@ describe("site.router", async () => {
         },
       ])
     })
+
+    it("should return all sites if the user is an active Isomer admin", async () => {
+      // Arrange
+      const { site: site1 } = await setupSite()
+      const { site: site2 } = await setupSite()
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
+
+      // Act
+      const result = await caller.list()
+
+      // Assert
+      expect(result).toEqual(
+        [site1, site2]
+          .sort((a, b) => a.id - b.id)
+          .map((site) => ({ id: site.id, config: site.config })),
+      )
+    })
   })
 
   describe("listAllSites", () => {
@@ -250,15 +273,7 @@ describe("site.router", async () => {
 
     it("should throw 403 if user is not an Isomer Core Admin", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      // user has no IsomerAdmin entry — should be rejected
 
       // Act
       const result = caller.listAllSites()
@@ -276,15 +291,10 @@ describe("site.router", async () => {
     it("should return all sites if user is an Isomer Core Admin", async () => {
       // Arrange
       const { site } = await setupSite()
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
 
       // Act
       const result = await caller.listAllSites()
@@ -1621,15 +1631,7 @@ describe("site.router", async () => {
 
     it("should throw 403 if user is not an Isomer Core Admin", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      // user has no IsomerAdmin entry — should be rejected
 
       // Act
       const result = caller.setSiteConfigByAdmin({
@@ -1657,15 +1659,10 @@ describe("site.router", async () => {
       const NEW_NAVBAR = `"navbar"`
       const NEW_FOOTER = `"footer"`
       const { site } = await setupSite()
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
 
       // Act
       await caller.setSiteConfigByAdmin({
@@ -1723,15 +1720,10 @@ describe("site.router", async () => {
       const NEW_NAVBAR = `"navbar"`
       const NEW_FOOTER = `"footer"`
       const { site } = await setupSite()
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [],
-          migrators: [user.email],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Migrator,
+      })
 
       // Act
       await caller.setSiteConfigByAdmin({
@@ -1802,15 +1794,7 @@ describe("site.router", async () => {
 
     it("should throw 403 if user is not an Isomer Core Admin", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      // user has no IsomerAdmin entry — should be rejected
 
       // Act
       const result = caller.create({
@@ -1829,15 +1813,10 @@ describe("site.router", async () => {
 
     it("should create a new site successfully if user is an Isomer Core Admin", async () => {
       // Arrange
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
 
       // Act
       const result = await caller.create({
@@ -1872,15 +1851,7 @@ describe("site.router", async () => {
     it("should throw 403 if user is not an Isomer Core Admin", async () => {
       // Arrange
       const { site } = await setupSite()
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      // user has no IsomerAdmin entry — should be rejected
 
       // Act
       const result = caller.publish({
@@ -1900,15 +1871,10 @@ describe("site.router", async () => {
     it("should publish a site successfully if user is an Isomer Core Admin", async () => {
       // Arrange
       const { site } = await setupSite()
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
 
       // Act
       const result = await caller.publish({

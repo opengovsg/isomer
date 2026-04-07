@@ -4,6 +4,7 @@ import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 import { buildIdFromArn } from "~/schemas/webhook"
 import {
+  IsomerAdminRole,
   ResourceState,
   ResourceType,
   RoleType,
@@ -560,6 +561,22 @@ export const setUpWhitelist = async ({
         .column("email")
         .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
     )
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+export const setupIsomerAdmin = async ({
+  userId,
+  role = IsomerAdminRole.Core,
+  expiry = null,
+}: {
+  userId: string
+  role?: IsomerAdminRole
+  expiry?: Date | null
+}) => {
+  return db
+    .insertInto("IsomerAdmin")
+    .values({ userId, role, expiry })
     .returningAll()
     .executeTakeFirstOrThrow()
 }

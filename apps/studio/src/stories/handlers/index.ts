@@ -9,4 +9,5 @@ export const ADMIN_HANDLERS = [
   sitesHandlers.getSiteName.default(),
   userHandlers.count.default(),
   userHandlers.list.users(),
+  userHandlers.isIsomerAdmin.default(),
 ]

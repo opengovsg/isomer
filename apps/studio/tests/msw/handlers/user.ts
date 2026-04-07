@@ -197,4 +197,16 @@ export const userHandlers = {
       })
     },
   },
+  isIsomerAdmin: {
+    default: () => {
+      return trpcMsw.user.isIsomerAdmin.query(() => {
+        return false
+      })
+    },
+    admin: () => {
+      return trpcMsw.user.isIsomerAdmin.query(() => {
+        return true
+      })
+    },
+  },
 }
