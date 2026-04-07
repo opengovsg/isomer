@@ -133,6 +133,7 @@ const ContentSecurityPolicy = `
     https://www.youtube.com
     https://player.vimeo.com
     https://fast.wistia.net
+    ;
   worker-src
     'self'
     blob:
