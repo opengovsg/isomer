@@ -59,9 +59,10 @@ const ContentSecurityPolicy = `
     'self'
     'unsafe-eval'
     https://*.wogaa.sg
-    https://app.intercom.io
-    https://widget.intercom.io
     https://js.intercomcdn.com
+    https://downloads.intercomcdn.com
+    https://downloads.intercomcdn.eu
+    https://downloads.au.intercomcdn.com
     https://embed-cdn.spotifycdn.com
     https://open.spotify.com
     https://js-cdn.music.apple.com
@@ -101,6 +102,8 @@ const ContentSecurityPolicy = `
     https://api-iam.eu.intercom.io
     https://api-iam.au.intercom.io
     https://api-ping.intercom.io
+    https://*.intercom-messenger.com
+    wss://*.intercom-messenger.com
     https://nexus-websocket-a.intercom.io
     wss://nexus-websocket-a.intercom.io
     https://nexus-websocket-b.intercom.io
@@ -123,6 +126,13 @@ const ContentSecurityPolicy = `
     https://*.podcasts.apple.com
     https://*.xp.apple.com
     ;
+  child-src
+    'self'
+    https://intercom-sheets.com
+    https://www.intercom-reporting.com 
+    https://www.youtube.com
+    https://player.vimeo.com
+    https://fast.wistia.net
   worker-src
     'self'
     blob:
