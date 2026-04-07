@@ -55,31 +55,41 @@ function BlockItem({
   onProceed,
   sectionType,
   description,
-  usageText,
-  imageSrc,
+  ...rest
 }: BlockItemProps) {
   return (
-    <Popover trigger="hover" placement="right" isLazy offset={[0, 20]}>
-      <PopoverTrigger>
-        <chakra.button
-          layerStyle="focusRing"
-          w="100%"
-          borderRadius="6px"
-          border="1px solid"
-          borderColor="base.divider.medium"
-          transitionProperty="common"
-          transitionDuration="normal"
-          _hover={{
-            bg: "interaction.muted.main.hover",
-            borderColor: "interaction.main-subtle.hover",
-          }}
-          bg="white"
-          p="0.75rem"
-          flexDirection="row"
-          display="flex"
-          alignItems="start"
-          gap="0.75rem"
-          onClick={() => onProceed(sectionType)}
+    <UsageTooltip {...rest} icon={icon} label={label} description={description}>
+      <chakra.button
+        disabled={isDisabled}
+        layerStyle="focusRing"
+        w="100%"
+        borderRadius="6px"
+        border="1px solid"
+        borderColor="base.divider.medium"
+        transitionProperty="common"
+        transitionDuration="normal"
+        _hover={{
+          bg: "interaction.muted.main.hover",
+          borderColor: "interaction.main-subtle.hover",
+        }}
+        bg="white"
+        p="0.75rem"
+        flexDirection="row"
+        display="flex"
+        alignItems="start"
+        gap="0.75rem"
+        onClick={() => onProceed(sectionType)}
+        _disabled={{
+          bg: "interaction.support.disabled",
+          borderColor: "base.divider.medium",
+          textColor: "interaction.support.disabled-content",
+          cursor: "not-allowed",
+        }}
+      >
+        <Flex
+          p="0.5rem"
+          bg="interaction.main-subtle.default"
+          borderRadius="full"
         >
           <Icon as={icon} fontSize="1rem" color="base.content.default" />
         </Flex>
@@ -109,9 +119,9 @@ function ComponentSelector() {
     // the rest should use json forms
     const nextState: DrawerState["state"] =
       sectionType === "prose" ? "nativeEditor" : "complexEditor"
-    const newComponent = DEFAULT_BLOCKS[sectionType] as
-      | IsomerComponent
-      | undefined
+    // TODO: Remove assertion after default blocks all in
+    const newComponent: IsomerComponent | undefined =
+      DEFAULT_BLOCKS[sectionType]
 
     const updatedBlocks = !!newComponent
       ? [...savedPageState.content, newComponent]
