@@ -1,9 +1,9 @@
-import { useCallback, useMemo } from "react"
-import { useRouter } from "next/router"
 import { useGrowthBook } from "@growthbook/growthbook-react"
-
+import { useRouter } from "next/router"
+import { useCallback, useMemo } from "react"
 import { useLoginState } from "~/features/auth"
 import { trpc } from "~/utils/trpc"
+
 import { isUserOnboarded } from "./isUserOnboarded"
 
 export const useMe = () => {

@@ -7,8 +7,8 @@ import {
 } from "tests/integration/helpers/iron-session"
 import { setUpWhitelist } from "tests/integration/helpers/seed"
 import { describe, expect, it } from "vitest"
-
 import { createCallerFactory } from "~/server/trpc"
+
 import * as authService from "../../audit/audit.service"
 import { db } from "../../database"
 import { authRouter } from "../auth.router"

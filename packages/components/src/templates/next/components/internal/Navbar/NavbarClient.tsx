@@ -1,18 +1,18 @@
 "use client"
 
+import type { NavbarClientProps } from "~/interfaces"
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
-
-import type { NavbarClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
-import { ImageClient } from "../../complex/Image"
+
 import { LinkButton } from "../../internal/LinkButton"
 import { LocalSearchInputBox } from "../../internal/LocalSearchInputBox"
 import { NavbarSearchSGInputBox } from "../../internal/SearchSGInputBox"
 import { IconButton } from "../IconButton"
+import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
 import { NavItem } from "./NavItem"
@@ -179,7 +179,7 @@ export const NavbarClient = ({
                       )
                     }}
                     isOpen={openNavItemIdx === index && !isHamburgerOpen}
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     LinkComponent={LinkComponent}
                   />
                 ))}
@@ -272,7 +272,7 @@ export const NavbarClient = ({
           setOpenNavItemIdx={setOpenNavItemIdx}
           callToAction={callToAction}
           utility={utility}
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
           LinkComponent={LinkComponent}
           onCloseMenu={onCloseMenu}
         />

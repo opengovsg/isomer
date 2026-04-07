@@ -5,12 +5,12 @@ import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
-
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
+
 import { BaseBlock, BaseBlockDragHandle } from "../../../Block/BaseBlock"
 import { mergeResourcesWithOrdering } from "./utils/mergeResourcesWithOrdering"
 
@@ -74,7 +74,6 @@ const DraggableBlocks = ({
                       snapshot.isDragging || snapshot.isDropAnimating
                     return (
                       <VStack
-                        my="0.25rem"
                         w="100%"
                         ref={provided.innerRef}
                         {...provided.draggableProps}

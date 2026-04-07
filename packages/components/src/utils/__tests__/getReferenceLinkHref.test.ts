@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest"
-
 import type { IsomerSitemap } from "~/types"
+import { describe, expect, it } from "vitest"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
+
 import { getReferenceLinkHref } from "../getReferenceLinkHref"
 
 const EXAMPLE_SITEMAP_ARRAY: IsomerSitemap[] = getSitemapAsArray({

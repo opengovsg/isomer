@@ -1,7 +1,7 @@
 import { Box, Stack, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-
 import { IsomerLogo } from "~/components/Svg"
+
 import { VerificationInput } from "../EmailLogin/VerificationInput"
 import { useSignInContext } from "../SignInContext"
 

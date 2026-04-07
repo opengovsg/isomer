@@ -1,5 +1,3 @@
-import { useState } from "react"
-import { useRouter } from "next/router"
 import {
   Button,
   Center,
@@ -15,9 +13,9 @@ import {
   Textarea,
   useToast,
 } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { useRouter } from "next/router"
+import { useState } from "react"
 import { z } from "zod"
-
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -26,11 +24,11 @@ import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
-import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type NextPageWithLayout } from "~/lib/types"
 import { setSiteConfigByAdminSchema } from "~/schemas/site"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 import { trpc } from "~/utils/trpc"
+import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
 const siteAdminSchema = z.object({
   siteId: z.coerce.number(),
@@ -48,11 +46,11 @@ const SiteAdminPage: NextPageWithLayout = () => {
   const router = useRouter()
   const trpcUtils = trpc.useUtils()
   const { siteId } = useQueryParse(siteAdminSchema)
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  const { isAdmin: isUserIsomerAdmin, isLoading } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
 
-  if (!isUserIsomerAdmin) {
+  if (!isLoading && !isUserIsomerAdmin) {
     toast({
       title: "You do not have permission to access this page.",
       status: "error",

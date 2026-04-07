@@ -1,4 +1,3 @@
-import { useRouter } from "next/router"
 import {
   Modal,
   ModalBody,
@@ -9,6 +8,7 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
+import { useRouter } from "next/router"
 
 interface UnsavedSettingModalProps {
   isOpen: boolean

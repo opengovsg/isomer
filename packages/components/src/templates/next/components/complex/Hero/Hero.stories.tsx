@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
-import { withChromaticModes } from "@isomer/storybook-config"
-
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
+
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import { Hero } from "./Hero"
 
 const meta: Meta<typeof Hero> = {

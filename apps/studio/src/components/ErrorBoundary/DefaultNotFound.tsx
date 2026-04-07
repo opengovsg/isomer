@@ -1,6 +1,6 @@
 import { Flex, Link, Text } from "@chakra-ui/react"
-
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
+
 import { NoResultIcon } from "../Svg/NoResultIcon"
 
 export const DefaultNotFound = () => {

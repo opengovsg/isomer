@@ -5,6 +5,7 @@ import { z } from "zod"
 
 import { generateBasePermalinkSchema } from "./common"
 import { MAX_FOLDER_PERMALINK_LENGTH, MAX_FOLDER_TITLE_LENGTH } from "./folder"
+import { offsetPaginationSchema } from "./pagination"
 
 export type CollectionLinkProps = Static<typeof LinkRefPageSchema>
 
@@ -88,3 +89,19 @@ export const getCollectionsSchema = z.object({
   siteId: z.number().min(1),
   hasChildren: z.boolean().optional().default(false),
 })
+
+export const readCollectionOrderByOptions = [
+  "updated-desc",
+  "title-asc",
+] as const
+
+export const readCollectionSchema = z
+  .object({
+    siteId: z.number().min(1),
+    resourceId: z.number().min(1),
+    orderBy: z
+      .enum(readCollectionOrderByOptions)
+      .optional()
+      .default("updated-desc"),
+  })
+  .merge(offsetPaginationSchema)

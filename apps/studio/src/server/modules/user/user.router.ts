@@ -1,7 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 import { pick } from "lodash"
-
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { sendInvitation } from "~/features/mail/service"
 import { canResendInviteToUser } from "~/features/users/utils"
@@ -15,6 +13,8 @@ import {
   deleteUserOutputSchema,
   getUserInputSchema,
   getUserOutputSchema,
+  isIsomerAdminInputSchema,
+  isIsomerAdminOutputSchema,
   listUsersInputSchema,
   listUsersOutputSchema,
   resendInviteInputSchema,
@@ -24,10 +24,12 @@ import {
   updateUserInputSchema,
   updateUserOutputSchema,
 } from "~/schemas/user"
+
 import { protectedProcedure, router } from "../../trpc"
 import { db, RoleType } from "../database"
 import {
   getResourcePermission,
+  isActiveIsomerAdmin,
   updateUserSitewidePermission,
   validatePermissionsForManagingUsers,
 } from "../permissions/permissions.service"
@@ -153,12 +155,10 @@ export const userRouter = router({
         })
       }
 
-      const isRequestingUserIsomerAdmin =
-        PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS.includes(ctx.user.email)
-      const isUserToDeleteIsomerAdmin =
-        PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS.includes(
-          userToDeletePermissionsFrom.email,
-        )
+      const isRequestingUserIsomerAdmin = await isActiveIsomerAdmin(ctx.user.id)
+      const isUserToDeleteIsomerAdmin = await isActiveIsomerAdmin(
+        userToDeletePermissionsFrom.id,
+      )
       if (!isRequestingUserIsomerAdmin && isUserToDeleteIsomerAdmin) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -196,7 +196,12 @@ export const userRouter = router({
           "ActiveUser.name",
           "ActiveUser.createdAt",
           "ActiveUser.lastLoginAt",
-          eb.ref("ActiveResourcePermission.role").as("role"),
+          // Agency users always have an explicit ResourcePermission row (enforced
+          // by the query filter), so role is guaranteed non-null here.
+          eb
+            .ref("ActiveResourcePermission.role")
+            .$castTo<RoleType>()
+            .as("role"),
         ])
         .executeTakeFirst()
 
@@ -228,7 +233,16 @@ export const userRouter = router({
           "ActiveUser.name",
           "ActiveUser.lastLoginAt",
           "ActiveUser.createdAt",
-          eb.ref("ActiveResourcePermission.role").as("role"),
+          // Isomer admins always have an effective Admin role regardless of
+          // any explicit ResourcePermission entry; agency users use coalesce
+          // to fall back to Admin only when no explicit role exists.
+          (adminType === "isomer"
+            ? eb.val(RoleType.Admin)
+            : eb.fn.coalesce(
+                eb.ref("ActiveResourcePermission.role"),
+                eb.val(RoleType.Admin),
+              )
+          ).as("role"),
         ])
         .limit(limit)
         .offset(offset)
@@ -316,6 +330,13 @@ export const userRouter = router({
       })
 
       return pick(updatedUser, ["name", "phone"])
+    }),
+
+  isIsomerAdmin: protectedProcedure
+    .input(isIsomerAdminInputSchema)
+    .output(isIsomerAdminOutputSchema)
+    .query(async ({ ctx, input: { roles } }) => {
+      return isActiveIsomerAdmin(ctx.user.id, roles)
     }),
 
   resendInvite: protectedProcedure

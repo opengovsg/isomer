@@ -1,6 +1,7 @@
-import type { Filter, FilterItem } from "../../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
+
+import type { Filter, FilterItem } from "../../../types/Filter"
 
 export const getTagFilters = (
   items: ProcessedCollectionCardProps[],

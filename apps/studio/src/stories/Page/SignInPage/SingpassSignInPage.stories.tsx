@@ -1,11 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { authSingpassHandlers } from "tests/msw/handlers/auth/singpass"
 import { meHandlers } from "tests/msw/handlers/me"
-
-import { withChromaticModes } from "@isomer/storybook-config"
-
 import SingpassSignInPage from "~/pages/sign-in/singpass"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
+
+import { withChromaticModes } from "@isomer/storybook-config"
 
 const meta: Meta<typeof SingpassSignInPage> = {
   title: "Pages/Sign In Page/Singpass Sign In Page",

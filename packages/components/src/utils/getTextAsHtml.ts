@@ -1,9 +1,9 @@
-import DOMPurify from "isomorphic-dompurify"
-import { isEqual } from "lodash-es"
-
 import type { HardBreakProps } from "~/interfaces"
 import type { Marks, TextProps } from "~/interfaces/native/Text"
 import type { IsomerSiteProps } from "~/types"
+import DOMPurify from "isomorphic-dompurify"
+import { isEqual } from "lodash-es"
+
 import { getReferenceLinkHref } from "./getReferenceLinkHref"
 
 type MarkTypes = Marks["type"]
@@ -130,7 +130,7 @@ export const getTextAsHtml = ({
   })
 
   // Close off the last link mark if it exists
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (previousNodeLinkMark) {
     output.push(`</${MARK_DOM_MAPPING.link}>`)
   }

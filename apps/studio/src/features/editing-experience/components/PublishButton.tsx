@@ -18,11 +18,11 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { BiChevronDown, BiTimeFive } from "react-icons/bi"
-
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
+
 import { PublishingModal, ScheduledPublishingModal } from "./PublishingModal"
 import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
 

@@ -1,4 +1,5 @@
 import type { CollectionCardProps } from "~/interfaces"
+
 import { ExternalLinkTitle } from "./ExternalLinkTitle"
 import { InternalLinkTitle } from "./InternalLinkTitle"
 

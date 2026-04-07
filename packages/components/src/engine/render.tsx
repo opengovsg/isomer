@@ -1,5 +1,4 @@
 import type { DistributedOmit } from "type-fest"
-
 import type { IsomerPageSchemaType } from "~/types"
 import { renderLayout as renderNextLayout } from "~/templates/next"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"

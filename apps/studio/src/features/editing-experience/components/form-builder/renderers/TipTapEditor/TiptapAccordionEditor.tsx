@@ -1,5 +1,6 @@
 import type { useAccordionEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { AccordionMenuBar } from "~/components/PageEditor/MenuBar"
+
 import { Editor } from "./components"
 
 export function TiptapAccordionEditor({

@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { LinkComponentType } from "~/types"
 
 import type { ParagraphSchema } from "../native"
-import type { LinkComponentType } from "~/types"
 
 export type BaseParagraphProps = Omit<
   Static<typeof ParagraphSchema>,

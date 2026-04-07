@@ -1,5 +1,5 @@
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultResource } from "../server/modules/resource/resource.types"
 import {

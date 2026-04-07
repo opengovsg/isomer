@@ -1,0 +1,60 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "semi": false,
+  "singleQuote": false,
+  "bracketSpacing": true,
+  "useTabs": false,
+  "ignorePatterns": [],
+  "sortPackageJson": {
+    "sortScripts": true
+  },
+  "sortTailwindcss": {
+    "config": "./apps/studio/tailwind.config.js",
+    "functions": ["tv"]
+  },
+  "overrides": [
+    {
+      "files": ["apps/studio/**"],
+      "options": {
+        "sortTailwindcss": {
+          "config": "./apps/studio/tailwind.config.js",
+          "functions": ["tv"]
+        }
+      }
+    },
+    {
+      "files": ["packages/components/**"],
+      "options": {
+        "sortTailwindcss": {
+          "config": "./packages/components/tailwind.config.ts",
+          "functions": ["tv"]
+        }
+      }
+    },
+    {
+      "files": ["tooling/template/**"],
+      "options": {
+        "sortTailwindcss": {
+          "config": "./tooling/template/tailwind.config.js",
+          "functions": ["tv"]
+        }
+      }
+    }
+  ],
+  "sortImports": {
+    "newlinesBetween": false,
+    "internalPattern": ["@isomer"],
+    "groups": [
+      "type-import",
+      ["value-builtin", "value-external"],
+      { "newlinesBetween": true },
+      "type-internal",
+      "value-internal",
+      { "newlinesBetween": true },
+      ["type-parent", "type-sibling", "type-index"],
+      ["value-parent", "value-sibling", "value-index"],
+      "unknown"
+    ]
+  }
+}

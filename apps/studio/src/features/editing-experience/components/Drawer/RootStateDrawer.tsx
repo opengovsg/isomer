@@ -3,7 +3,6 @@ import type {
   IsomerComponent,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
-import { useCallback, useState } from "react"
 import {
   Box,
   Button,
@@ -20,9 +19,8 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
 } from "@opengovsg/isomer-components"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { useCallback, useState } from "react"
 import { BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
-
 import { Disable } from "~/components/Disable"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BlockEditingPlaceholder } from "~/components/Svg"
@@ -31,9 +29,10 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useNewCollectionEditingExperience } from "~/hooks/useNewCollectionEditingExperience"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { ADMIN_ROLE } from "~/lib/growthbook"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
+
 import { TYPE_TO_ICON } from "../../constants"
 import { pageSchema } from "../../schema"
 import { getIsHeroFirstBlock } from "../../utils/getIsHeroFirstBlock"
@@ -181,8 +180,8 @@ export default function RootStateDrawer() {
   })
   const disableBlocks = isPreviewingIndexPage || !!scheduledAt
   const utils = trpc.useUtils()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
   const toast = useToast()
   const { mutate } = trpc.page.reorderBlock.useMutation({

@@ -1,7 +1,6 @@
 import type { TSchema } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
 import type { IsomerComponentTypes, IsomerPageLayoutType } from "~/types"
+import { Type } from "@sinclair/typebox"
 import {
   AccordionSchema,
   AudioSchema,

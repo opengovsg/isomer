@@ -3,8 +3,9 @@ import { tv } from "~/lib/tv"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { isExternalUrl } from "~/utils/isExternalUrl"
-import { ImageClient } from "../../complex/Image"
+
 import { Breadcrumb } from "../Breadcrumb"
+import { ImageClient } from "../ImageClient"
 import { LinkButton } from "../LinkButton"
 
 const createContentPageHeaderStyles = tv({

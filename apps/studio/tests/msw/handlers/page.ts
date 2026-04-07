@@ -1,9 +1,9 @@
 import type { DelayMode } from "msw"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-import { delay } from "msw"
-
 import type { getPageById } from "~/server/modules/resource/resource.service"
 import type { RouterOutput } from "~/utils/trpc"
+import { delay } from "msw"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import { trpcMsw } from "../mockTrpc"
 
 const getRootPageQuery = (wait?: DelayMode | number) => {
@@ -882,8 +882,10 @@ export const pageHandlers = {
               {
                 type: "childrenpages",
                 variant: "boxes",
-                summary: false,
-                thumbnail: false,
+                showSummary: false,
+                showThumbnail: true,
+                imageFit: "contain",
+                childrenPagesOrdering: ["5", "4"],
               },
             ],
             version: "0.1.0",
@@ -1428,6 +1430,10 @@ export const pageHandlers = {
     article: () =>
       trpcMsw.page.getFullPermalink.query(() => {
         return "/article-layout"
+      }),
+    collection: () =>
+      trpcMsw.page.getFullPermalink.query(() => {
+        return "/collection"
       }),
     index: () =>
       trpcMsw.page.getFullPermalink.query(() => {

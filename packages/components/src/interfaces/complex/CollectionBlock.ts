@@ -1,8 +1,7 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
 import type { ProcessedCollectionCardProps } from "~/interfaces/internal/CollectionCard"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { Type } from "@sinclair/typebox"
 import { COLLECTION_DROPDOWN_FORMAT } from "~/interfaces/format"
 import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
 

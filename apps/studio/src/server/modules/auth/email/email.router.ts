@@ -1,9 +1,8 @@
+import type { SessionData } from "~/lib/types/session"
+import type { GrowthbookAttributes } from "~/types/growthbook"
 import { TRPCError } from "@trpc/server"
 import pick from "lodash/pick"
 import set from "lodash/set"
-
-import type { SessionData } from "~/lib/types/session"
-import type { GrowthbookAttributes } from "~/types/growthbook"
 import { env } from "~/env.mjs"
 import { sendLoginAlertEmail } from "~/features/mail/service"
 import { getIsSingpassEnabled } from "~/lib/growthbook"
@@ -14,6 +13,7 @@ import {
 } from "~/schemas/auth/email/sign-in"
 import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
+
 import { db } from "../../database"
 import { defaultUserSelect } from "../../me/me.select"
 import { isUserDeleted } from "../../user/user.service"

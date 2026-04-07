@@ -1,5 +1,4 @@
 import type { PropsWithChildren } from "react"
-
 import type { LinkComponentType } from "~/types"
 
 interface BaseLinkProps {
@@ -11,6 +10,7 @@ interface BaseLinkProps {
   showExternalIcon?: boolean
   className?: string
   label?: string
+  onClick?: () => void
   LinkComponent?: LinkComponentType
 }
 

@@ -1,10 +1,8 @@
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
-
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import {
@@ -25,6 +23,7 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getFolderHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const folderPageSchema = z.object({
   siteId: z.string(),
@@ -121,7 +120,11 @@ const FolderPage: NextPageWithLayout = () => {
           </>
         }
       >
-        <IndexpageRow siteId={Number(siteId)} resourceId={folderId} />
+        <IndexpageRow
+          type="folder"
+          siteId={Number(siteId)}
+          resourceId={folderId}
+        />
         <ResourceTable
           siteId={parseInt(siteId)}
           resourceId={parseInt(folderId)}

@@ -1,9 +1,9 @@
+import * as dotenv from "dotenv"
 import * as fs from "fs"
 import * as path from "path"
 import { performance } from "perf_hooks"
-import { ResourceType } from "~generated/generatedEnums"
-import * as dotenv from "dotenv"
 import { Client } from "pg"
+import { ResourceType } from "~generated/generatedEnums"
 
 import type { PageResourceType } from "./constants"
 import type { PageOnlySitemapEntry, Resource, SitemapEntry } from "./types"
