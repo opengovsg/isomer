@@ -21,6 +21,7 @@ export const getCollectionPages = ({
   const items = getCollectionItems({
     site,
     permalink: collectionParent.permalink,
+    sortOrder: collectionParent.collectionPagePageProps?.sortOrder,
     sortBy: collectionParent.collectionPagePageProps?.defaultSortBy,
     sortDirection:
       collectionParent.collectionPagePageProps?.defaultSortDirection,
