@@ -3,17 +3,7 @@ import type { Logger } from "pino"
 import { env } from "~/env.mjs"
 import getIP from "~/utils/getClientIp"
 
-import { createChildLogger, createRootLogger } from "@isomer/logging"
-
-let root: Logger<string> | undefined
-
-function getRootLogger(): Logger<string> {
-  root ??= createRootLogger({
-    nodeEnv: env.NODE_ENV,
-    appEnvLabel: env.NEXT_PUBLIC_APP_ENV,
-  })
-  return root
-}
+import { createBaseLogger } from "@isomer/logging"
 
 function datadogTraceIdFromRequest(req: NextApiRequest | undefined) {
   const raw = req?.headers["x-datadog-trace-id"]
@@ -32,7 +22,9 @@ interface LoggerOptions {
 }
 
 export function createLogger({ path, req }: LoggerOptions): Logger<string> {
-  return createChildLogger(getRootLogger(), {
+  return createBaseLogger({
+    nodeEnv: env.NODE_ENV,
+    appEnvLabel: env.NEXT_PUBLIC_APP_ENV,
     path,
     clientIp: req ? getIP(req) : undefined,
     traceId: datadogTraceIdFromRequest(req),

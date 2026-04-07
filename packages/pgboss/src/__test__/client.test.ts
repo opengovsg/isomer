@@ -3,8 +3,7 @@ import type { HeartbeatOptions } from "~/utils"
 import { Writable } from "node:stream"
 import { sendHeartbeat } from "~/utils"
 
-import type { Logger } from "@isomer/logging"
-import { createRootLogger } from "@isomer/logging"
+import { createBaseLogger, type Logger } from "@isomer/logging"
 
 import type { GlobalWithPgBoss } from ".."
 import { registerPgbossJob } from ".."
@@ -15,11 +14,12 @@ const silentDestination = new Writable({
   },
 })
 
-const logger: Logger<string> = createRootLogger({
+const logger: Logger<string> = createBaseLogger({
   nodeEnv: "test",
   appEnvLabel: "pgboss-test",
   logLevel: "emerg",
   destination: silentDestination,
+  path: "pgboss-test",
 })
 
 describe("client", () => {
