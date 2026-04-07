@@ -9,3 +9,4 @@ export {
   createChildLogger,
   type CreateChildLoggerOptions,
 } from "./create-child-logger"
+export { createBaseLogger } from "./logger"
