@@ -20,9 +20,9 @@ import {
   MOCK_TEST_USER_NAME,
 } from "tests/msw/constants"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
-import { db, RoleType } from "~/server/modules/database"
+import { db, jsonb, RoleType } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
-import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { userRouter } from "../user.router"
 import { isomerAdminsCount, setupIsomerAdmins } from "./utils"
@@ -654,10 +654,18 @@ describe("user.router", () => {
       await setupAdminPermissions({ userId: session.userId, siteId })
 
       const isomerAdmin = await setupUser({
-        email: ISOMER_ADMINS_AND_MIGRATORS_EMAILS[0]!,
+        email: "testisomeradmin@open.gov.sg",
         isDeleted: false,
       })
       await setupAdminPermissions({ userId: isomerAdmin.id, siteId })
+      await db
+        .insertInto("IsomerAdmin")
+        .values({
+          userId: isomerAdmin.id,
+          role: IsomerAdminRole.Core,
+          expiry: null,
+        })
+        .execute()
 
       // Act
       const result = caller.delete({ siteId, userId: isomerAdmin.id })
@@ -2314,6 +2322,36 @@ describe("user.router", () => {
         .set({ createdAt: new Date("2025-03-10") })
         .execute()
       await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.resendInvite({ siteId, userId: user.id })
+
+      // Assert
+      expect(result).toEqual({ email: user.email })
+    })
+
+    it("should fall back to Site.name when Site.config is JSON null", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({
+        email: TEST_EMAIL,
+        isDeleted: false,
+        lastLoginAt: null,
+      })
+      await db
+        .updateTable("User")
+        .where("id", "=", user.id)
+        .set({ createdAt: new Date("2025-03-10") })
+        .execute()
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Simulate malformed-but-allowed JSONB payload written by admin JSON API.
+      await db
+        .updateTable("Site")
+        .where("id", "=", siteId)
+        .set({ config: jsonb(null) })
+        .execute()
 
       // Act
       const result = await caller.resendInvite({ siteId, userId: user.id })

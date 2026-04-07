@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
+import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
 
@@ -15,6 +16,7 @@ export const generateImageSrcSchema = ({
     title,
     format: "image",
     description,
+    allowedMimeTypeMappings: IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
   })
 }
 

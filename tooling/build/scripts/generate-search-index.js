@@ -8,8 +8,8 @@ let indexId = 0 // Counter for the running order of each index's record
 function decodeAndStripMarkdown(base64Content) {
   const decodedContent = Buffer.from(base64Content, "base64").toString("utf-8")
   const strippedContent = decodedContent
-    .replace(/!\[[^\]]*\]\([^\)]+\)/g, "") // Remove images
-    .replace(/\[[^\]]+\]\([^\)]+\)/g, "") // Remove links
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, "") // Remove images
+    .replace(/\[[^\]]+\]\([^)]+\)/g, "") // Remove links
     .replace(/[*_~`>#-]+/g, "") // Remove styling characters
     .replace(/\n+/g, " ") // Replace newlines with spaces
   return strippedContent
