@@ -51,6 +51,8 @@ dist/
 **/*.tgz
 
 .aider*
+
+*.ssl.conf
 biome.json
 
 storybook-static/
