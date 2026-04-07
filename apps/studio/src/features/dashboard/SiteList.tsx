@@ -18,6 +18,8 @@ import { withSuspense } from "~/hocs/withSuspense"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
 
+const DEFAULT_ASSET_LOGO = "/assets/isomer-logo-color.svg"
+
 const Site = ({
   siteId,
   siteName,
@@ -136,7 +138,9 @@ const SuspendableSiteList = (): JSX.Element => {
         <Site
           siteId={site.id}
           siteName={site.config.siteName}
-          siteLogoUrl={generateAssetUrl(site.config.logoUrl)}
+          siteLogoUrl={generateAssetUrl(
+            site.config.logoUrl ?? DEFAULT_ASSET_LOGO,
+          )}
         />
       ))}
     </SiteListSection>
