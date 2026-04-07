@@ -1,9 +1,9 @@
-import type { Static } from "@sinclair/typebox";
-import type { IsomerSiteProps, LinkComponentType } from "~/types";
-import { Type } from "@sinclair/typebox";
-import { ChildrenPagesImageFitSchema } from "~/schemas/internal";
+import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { Type } from "@sinclair/typebox"
+import { ChildrenPagesImageFitSchema } from "~/schemas/internal"
 
-import { CHILDREN_PAGES_LAYOUT_OPTIONS } from "./constants";
+import { CHILDREN_PAGES_LAYOUT_OPTIONS } from "./constants"
 
 export const ChildrenPagesSchema = Type.Object(
   {
@@ -68,11 +68,11 @@ export const ChildrenPagesSchema = Type.Object(
     description:
       "The child page component is used to display information about pages inside this folder",
   },
-);
+)
 
 export interface ChildrenPagesProps extends Static<typeof ChildrenPagesSchema> {
-  shouldLazyLoad?: boolean;
-  permalink: string;
-  site: IsomerSiteProps;
-  LinkComponent?: LinkComponentType;
+  shouldLazyLoad?: boolean
+  permalink: string
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
 }

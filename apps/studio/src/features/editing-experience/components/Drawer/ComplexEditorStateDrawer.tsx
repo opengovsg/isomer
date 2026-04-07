@@ -7,7 +7,7 @@ import cloneDeep from "lodash/cloneDeep"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
 import { useCallback } from "react"
-import { BiShow, BiTrash } from "react-icons/bi"
+import { BiTrash } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -280,12 +280,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const { title } = subSchema
   const validateFn = ajv.compile<IsomerComponent>(subSchema)
   const componentName = title || "component"
-
-  // Check if current block is a hidden childrenpages block
-  const isHiddenChildrenPagesBlock =
-    component.type === "childrenpages" &&
-    "isHidden" in component &&
-    component.isHidden
 
   return (
     <>

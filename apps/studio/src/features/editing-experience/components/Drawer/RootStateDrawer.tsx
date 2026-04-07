@@ -543,7 +543,7 @@ export default function RootStateDrawer() {
                                       // TODO: we should automatically do this probably?
                                       const nextState =
                                         savedPageState.content[index]?.type ===
-                                          "prose"
+                                        "prose"
                                           ? "nativeEditor"
                                           : "complexEditor"
                                       // NOTE: SNAPSHOT
@@ -552,9 +552,9 @@ export default function RootStateDrawer() {
                                     invalidProps={
                                       invalidBlockIndexes.has(index)
                                         ? {
-                                          description:
-                                            invalidBlockDescription,
-                                        }
+                                            description:
+                                              invalidBlockDescription,
+                                          }
                                         : undefined
                                     }
                                     isHidden={isHiddenChildrenPages}
