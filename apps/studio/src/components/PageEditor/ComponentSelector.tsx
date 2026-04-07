@@ -43,37 +43,43 @@ function BlockList({ children }: React.PropsWithChildren) {
 type BlockItemProps = UsageTooltipProps & {
   onProceed: (sectionType: SectionType) => void
   sectionType: SectionType
+  description: string
+  usageText?: string
+  isDisabled?: boolean
 }
 
-function BlockItem({ onProceed, sectionType, ...rest }: BlockItemProps) {
-  const { icon, label, description } = rest
-
+function BlockItem({
+  isDisabled,
+  icon,
+  label,
+  onProceed,
+  sectionType,
+  description,
+  usageText,
+  imageSrc,
+}: BlockItemProps) {
   return (
-    <UsageTooltip {...rest}>
-      <chakra.button
-        layerStyle="focusRing"
-        w="100%"
-        borderRadius="6px"
-        border="1px solid"
-        borderColor="base.divider.medium"
-        transitionProperty="common"
-        transitionDuration="normal"
-        _hover={{
-          bg: "interaction.muted.main.hover",
-          borderColor: "interaction.main-subtle.hover",
-        }}
-        bg="white"
-        p="0.75rem"
-        flexDirection="row"
-        display="flex"
-        alignItems="start"
-        gap="0.75rem"
-        onClick={() => onProceed(sectionType)}
-      >
-        <Flex
-          p="0.5rem"
-          bg="interaction.main-subtle.default"
-          borderRadius="full"
+    <Popover trigger="hover" placement="right" isLazy offset={[0, 20]}>
+      <PopoverTrigger>
+        <chakra.button
+          layerStyle="focusRing"
+          w="100%"
+          borderRadius="6px"
+          border="1px solid"
+          borderColor="base.divider.medium"
+          transitionProperty="common"
+          transitionDuration="normal"
+          _hover={{
+            bg: "interaction.muted.main.hover",
+            borderColor: "interaction.main-subtle.hover",
+          }}
+          bg="white"
+          p="0.75rem"
+          flexDirection="row"
+          display="flex"
+          alignItems="start"
+          gap="0.75rem"
+          onClick={() => onProceed(sectionType)}
         >
           <Icon as={icon} fontSize="1rem" color="base.content.default" />
         </Flex>
@@ -195,12 +201,19 @@ function ComponentSelector() {
             <BlockList>
               {section.types.map((type) => {
                 const blockMeta = BLOCK_TO_META[type]
+                const isDisabled =
+                  type === "childrenpages" &&
+                  savedPageState.content.some(
+                    (block) => block.type === "childrenpages",
+                  )
+
                 return (
                   <BlockItem
                     key={type}
                     icon={TYPE_TO_ICON[type]}
                     onProceed={onProceed}
                     sectionType={type}
+                    isDisabled={isDisabled}
                     {...blockMeta}
                   />
                 )

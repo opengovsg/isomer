@@ -92,35 +92,6 @@ export function EditorDrawerProvider({
     },
   )
 
-  useEffect(() => {
-    if (
-      initialPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Index &&
-      initialPageState.content.every(({ type }) => {
-        return type !== DEFAULT_CHILDREN_PAGES_BLOCK.type
-      })
-    ) {
-      // NOTE: This is defined but we just do the assertion here
-      // because the type for `DEFAULT_BLOCKS` is possibly undefined
-      // so `ts` cannot infer
-      if (!DEFAULT_BLOCKS.childrenpages) return
-
-      const content = Array.from(initialPageState.content)
-      const newPageState = {
-        ...initialPageState,
-        content: [...content, DEFAULT_BLOCKS.childrenpages],
-      }
-
-      setPreviewPageState(newPageState)
-      setSavedPageState(newPageState)
-
-      insertChildpageBlock({
-        siteId,
-        pageId,
-        content: JSON.stringify(newPageState),
-      })
-    }
-  }, [])
-
   const setPreviewPageState = useCallback(
     (previewPageState: SetStateAction<IsomerSchema>) => {
       // NOTE: We need this because our `JSONForms` instance writes to this state

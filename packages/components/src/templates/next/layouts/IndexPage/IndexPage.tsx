@@ -1,5 +1,4 @@
 import type { IndexPageSchemaType } from "~/types"
-import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages/constants"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getTableOfContents } from "~/utils/getTableOfContents"
@@ -33,12 +32,8 @@ export const IndexPageLayout = ({
     page.permalink.split("/").slice(1),
   )
 
-  const hasChildpageBlock = content.some(({ type }) => type === "childrenpages")
-  const pageContent: IndexPageSchemaType["content"] = hasChildpageBlock
-    ? content
-    : [...content, DEFAULT_CHILDREN_PAGES_BLOCK]
   // auto-inject ids for heading level 2 blocks if does not exist
-  const transformedContent = getTransformedPageContent(pageContent)
+  const transformedContent = getTransformedPageContent(content)
   const tableOfContents = getTableOfContents(site, transformedContent)
 
   return (
