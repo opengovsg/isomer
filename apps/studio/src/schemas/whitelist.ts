@@ -13,9 +13,7 @@ const emailArraySchema = z
   .array(z.string())
   .transform((emails) => [
     ...new Set(
-      emails
-        .map((e) => e.trim().toLowerCase())
-        .filter((e) => e.length > 0),
+      emails.map((e) => e.trim().toLowerCase()).filter((e) => e.length > 0),
     ),
   ])
   .pipe(z.array(z.string().email()))

@@ -6,27 +6,27 @@ import {
   Button,
   Flex,
   Text,
-} from "@chakra-ui/react";
-import { Textarea, useToast } from "@opengovsg/design-system-react";
-import NextLink from "next/link";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast";
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin";
-import { type NextPageWithLayout } from "~/lib/types";
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums";
-import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout";
-import { trpc } from "~/utils/trpc";
+} from "@chakra-ui/react"
+import { Textarea, useToast } from "@opengovsg/design-system-react"
+import NextLink from "next/link"
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { type NextPageWithLayout } from "~/lib/types"
+import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
+import { trpc } from "~/utils/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 const GodModeWhitelistPage: NextPageWithLayout = () => {
-  const toast = useToast();
-  const router = useRouter();
+  const toast = useToast()
+  const router = useRouter()
   const { isAdmin: isUserIsomerAdmin, isLoading } = useIsUserIsomerAdmin({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  });
+  })
 
-  const [vendorEmails, setVendorEmails] = useState<string[]>([]);
-  const [adminEmails, setAdminEmails] = useState<string[]>([]);
+  const [vendorEmails, setVendorEmails] = useState<string[]>([])
+  const [adminEmails, setAdminEmails] = useState<string[]>([])
 
   const whitelistMutation = trpc.whitelist.whitelistEmails.useMutation({
     onSuccess: (data) => {
@@ -34,18 +34,18 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
         title: `Successfully whitelisted ${data.adminCount} admin(s) and ${data.vendorCount} vendor(s)`,
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
-      });
-      setAdminEmails([]);
-      setVendorEmails([]);
+      })
+      setAdminEmails([])
+      setVendorEmails([])
     },
     onError: (error) => {
       toast({
         title: error.message,
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
-      });
+      })
     },
-  });
+  })
 
   useEffect(() => {
     if (!isLoading && !isUserIsomerAdmin) {
@@ -53,13 +53,13 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
         title: "You do not have permission to access this page.",
         status: "error",
         ...BRIEF_TOAST_SETTINGS,
-      });
-      void router.push(`/`);
+      })
+      void router.push(`/`)
     }
-  }, [isUserIsomerAdmin, isLoading, router, toast]);
+  }, [isUserIsomerAdmin, isLoading, router, toast])
 
   if (!isUserIsomerAdmin) {
-    return null;
+    return null
   }
 
   return (
@@ -102,10 +102,8 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
         <Textarea
           value={adminEmails.join("\n")}
           onChange={(e) => {
-            const newEmails = e.target.value
-              .split(/\r?\n/)
-              .map((s) => s.trim());
-            setAdminEmails(newEmails);
+            const newEmails = e.target.value.split(/\r?\n/).map((s) => s.trim())
+            setAdminEmails(newEmails)
           }}
         />
         <h1>
@@ -114,10 +112,8 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
         <Textarea
           value={vendorEmails.join("\n")}
           onChange={(e) => {
-            const newEmails = e.target.value
-              .split(/\r?\n/)
-              .map((s) => s.trim());
-            setVendorEmails(newEmails);
+            const newEmails = e.target.value.split(/\r?\n/).map((s) => s.trim())
+            setVendorEmails(newEmails)
           }}
         />
         <Button
@@ -125,7 +121,7 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
             whitelistMutation.mutate({
               adminEmails,
               vendorEmails,
-            });
+            })
           }}
           isLoading={whitelistMutation.isPending}
         >
@@ -133,9 +129,9 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
         </Button>
       </Flex>
     </Flex>
-  );
-};
+  )
+}
 
-GodModeWhitelistPage.getLayout = AuthenticatedLayout;
+GodModeWhitelistPage.getLayout = AuthenticatedLayout
 
-export default GodModeWhitelistPage;
+export default GodModeWhitelistPage
