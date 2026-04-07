@@ -33,7 +33,7 @@ export const IndexpageRow = ({
   useEffect(() => {
     if (isError) {
       if (error.data?.code === "NOT_FOUND") {
-        void createIndexPage({ siteId, parentId: resourceId })
+        createIndexPage({ siteId, parentId: resourceId })
         void trpcUtils.folder.getIndexpage.refetch()
         void trpcUtils.resource.getChildrenOf.invalidate()
       }

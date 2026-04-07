@@ -1,10 +1,10 @@
+import type { Mock } from "vitest"
+import type { HeartbeatOptions } from "~/utils"
 import { Writable } from "node:stream"
+import { sendHeartbeat } from "~/utils"
 
 import type { Logger } from "@isomer/logging"
 import { createRootLogger } from "@isomer/logging"
-import type { Mock } from "vitest"
-import type { HeartbeatOptions } from "~/utils"
-import { sendHeartbeat } from "~/utils"
 
 import type { GlobalWithPgBoss } from ".."
 import { registerPgbossJob } from ".."
