@@ -15,7 +15,7 @@ const UnauthorizedError = ({
   const router = useRouter()
   void utils.invalidate()
   void router.push("/")
-   resetErrorBoundary()
+  resetErrorBoundary()
 
   return <FullscreenSpinner />
 }
