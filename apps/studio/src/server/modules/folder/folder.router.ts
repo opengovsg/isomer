@@ -383,7 +383,7 @@ export const folderRouter = router({
               ResourceType.Collection,
               ResourceType.Page,
             ])
-            .select(["Resource.id", "title", "type"])
+            .select(["Resource.id", "title", "type", "permalink"])
         })
         // NOTE: we need to select the `Folder/Collection`.`id`
         // rather than the `IndexPage` as our publishing script
@@ -407,20 +407,43 @@ export const folderRouter = router({
               // we will only select published index pages here
               .where("state", "=", ResourceState.Published)
               .where("type", "=", ResourceType.IndexPage)
-              .select(["Resource.parentId"])
+              .select([
+                "Resource.parentId",
+                (eb) =>
+                  eb
+                    .selectFrom("Resource as Parent")
+                    .whereRef("Parent.id", "=", "Resource.parentId")
+                    .select("Parent.type")
+                    .as("parentType"),
+              ])
           )
         })
         .selectFrom("Resource")
         .where("siteId", "=", Number(siteId))
         .where("id", "in", (qb) =>
-          qb.selectFrom("publishedCousinIndexPages").select("parentId"),
+          qb
+            .selectFrom("publishedCousinIndexPages")
+            .where("parentType", "=", ResourceType.Folder)
+            .select("parentId"),
         )
-        .select(["id", "title"])
+        .select(["id", "title", "type", "permalink"])
+        .unionAll((qb) => {
+          return qb
+            .selectFrom("Resource")
+            .where("siteId", "=", Number(siteId))
+            .where("id", "in", (innerQb) =>
+              innerQb
+                .selectFrom("publishedCousinIndexPages")
+                .where("parentType", "=", ResourceType.Collection)
+                .select("parentId"),
+            )
+            .select(["id", "title", "type", "permalink"])
+        })
         .unionAll((qb) => {
           return qb
             .selectFrom("directChildren")
             .where("type", "=", ResourceType.Page)
-            .select(["id", "title"])
+            .select(["id", "title", "type", "permalink"])
         })
         .execute()
 

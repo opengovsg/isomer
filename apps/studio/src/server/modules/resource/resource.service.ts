@@ -1,3 +1,4 @@
+import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { SelectExpression } from "kysely"
 import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
@@ -6,6 +7,7 @@ import { TRPCError } from "@trpc/server"
 import _ from "lodash"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
+  createChildrenPagesComparator,
   getSitemapTree,
   injectTagMappings,
   isCollectionItem,
@@ -536,7 +538,67 @@ export const getLocalisedSitemap = async (
     return injectTagMappings(sitemapTree, resource)
   }
 
+  // NOTE: Need to override ordering for this resource
+  if (resource.type === ResourceType.Page && !!resource.parentId) {
+    return updateOrderingForResource(sitemapTree, resource.parentId)
+  }
+
   return sitemapTree
+}
+
+const updateOrderingForResource = async (
+  sitemap: IsomerSitemap,
+  parentId: string,
+) => {
+  // NOTE: First, try to find the published index blob of the parent
+  let indexBlob = undefined
+
+  // NOTE: early return if no index blob
+  // as that means that there is no ordering defined
+  try {
+    indexBlob = await getPublishedIndexBlobByParentId({
+      db,
+      resourceId: parentId,
+    })
+  } catch {
+    return sitemap
+  }
+
+  // NOTE: Next, get the content and see if we have defined a `childrenPagesOrdering`
+  const childrenPages = indexBlob.content.content.find(({ type }) => {
+    return type === "childrenpages"
+  })
+  // No need to do anything
+  // NOTE: Need to narrow type for inference hence the duplicate check on `type`
+  if (!childrenPages || childrenPages.type !== "childrenpages") {
+    return sitemap
+  }
+
+  const comparator = createChildrenPagesComparator(
+    childrenPages.childrenPagesOrdering ?? [],
+  )
+
+  return _updateOrderingForResource(sitemap, parentId, comparator)
+}
+
+const _updateOrderingForResource = (
+  sitemap: IsomerSitemap,
+  parentId: string,
+  comparator: (a: IsomerSitemap, b: IsomerSitemap) => number,
+): IsomerSitemap => {
+  if (sitemap.id === parentId) {
+    return {
+      ...sitemap,
+      children: sitemap.children?.toSorted(comparator),
+    }
+  }
+
+  return {
+    ...sitemap,
+    children: sitemap.children?.map((child) =>
+      _updateOrderingForResource(child, parentId, comparator),
+    ),
+  }
 }
 
 export const getResourcePermalinkTree = async (

@@ -20,7 +20,7 @@ import {
   schema,
 } from "@opengovsg/isomer-components"
 import { useCallback, useState } from "react"
-import { BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
+import { BiCog, BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 import { Disable } from "~/components/Disable"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BlockEditingPlaceholder } from "~/components/Svg"
@@ -429,12 +429,35 @@ export default function RootStateDrawer() {
                 <VStack gap="0.25rem" align="start">
                   <Text textStyle="subhead-1">Fixed blocks</Text>
                   <Text textStyle="caption-2" color="base.content.medium">
-                    These are built into the layout, so you can’t delete them.
+                    These are built into the layout, so you can't delete them.
                   </Text>
                 </VStack>
 
                 <FixedBlock />
               </VStack>
+
+              {pageLayout === "index" && (
+                <Button
+                  // NOTE: Top offset is only `1rem` but the `gap` on parent component is `1.5rem`
+                  marginTop="-0.5rem"
+                  variant="link"
+                  gap="0.25rem"
+                  cursor="pointer"
+                  alignSelf="flex-start"
+                  onClick={() =>
+                    setDrawerState({ state: "siderailOrderingEditor" })
+                  }
+                >
+                  <Icon
+                    as={BiCog}
+                    color="interaction.main.default"
+                    boxSize="1.25rem"
+                  />
+                  <Text textStyle="subhead-2" color="interaction.links.default">
+                    Reorder siderail for this folder
+                  </Text>
+                </Button>
+              )}
 
               {/* Custom Blocks Section */}
               <VStack gap="1.5rem" w="100%">
