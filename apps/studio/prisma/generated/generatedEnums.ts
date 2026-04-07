@@ -21,6 +21,12 @@ export const RoleType = {
   Publisher: "Publisher",
 } as const
 export type RoleType = (typeof RoleType)[keyof typeof RoleType]
+export const IsomerAdminRole = {
+  Core: "Core",
+  Migrator: "Migrator",
+} as const
+export type IsomerAdminRole =
+  (typeof IsomerAdminRole)[keyof typeof IsomerAdminRole]
 export const AuditLogEvent = {
   ResourceCreate: "ResourceCreate",
   ResourceUpdate: "ResourceUpdate",

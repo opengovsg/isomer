@@ -11,9 +11,9 @@ import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 const GODMODE_LINKS = [
   {
@@ -33,23 +33,17 @@ const GODMODE_LINKS = [
 const GodModePage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE],
+  const { isAdmin: isUserIsomerAdmin, isLoading } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core],
   })
 
-  useEffect(() => {
-    if (!isUserIsomerAdmin) {
-      toast({
-        title: "You do not have permission to access this page.",
-        status: "error",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-      void router.push(`/`)
-    }
-  }, [isUserIsomerAdmin, router, toast])
-
-  if (!isUserIsomerAdmin) {
-    return null
+  if (!isLoading && !isUserIsomerAdmin) {
+    toast({
+      title: "You do not have permission to access this page.",
+      status: "error",
+      ...BRIEF_TOAST_SETTINGS,
+    })
+    void router.push(`/`)
   }
 
   return (
