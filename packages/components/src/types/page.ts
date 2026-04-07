@@ -219,6 +219,14 @@ export const CollectionPagePageSchema = Type.Intersect([
         },
       ),
     ),
+    showThumbnail: Type.Optional(
+      Type.Boolean({
+        title: "Show thumbnail on all items",
+        description:
+          "If an item doesn't have a thumbnail, we'll display the site's logo.",
+        default: false,
+      }),
+    ),
     showDate: Type.Optional(
       Type.Boolean({
         title: "Show date on all items",
