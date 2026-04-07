@@ -1,6 +1,5 @@
 import { select } from "@inquirer/prompts";
 import type { IsomerAdminScriptType } from "./types";
-import { addIsomerCollaborators } from "./apps/add-isomer-collaborators";
 import { bulkUploadAssets } from "./apps/bulk-upload-assets";
 import { exportIndividualJsons } from "./apps/export-individual-jsons";
 import { exportSiteJsons } from "./apps/export-site-jsons";
@@ -12,12 +11,6 @@ const main = async () => {
   const script = await select<IsomerAdminScriptType>({
     message: "Select an Isomer admin script to run",
     choices: [
-      {
-        name: "Add Isomer collaborators",
-        description:
-          "Add Isomer admins and migrators as collaborators to sites.",
-        value: "add-isomer-collaborators",
-      },
       {
         name: "Bulk upload assets",
         description:
@@ -57,9 +50,6 @@ const main = async () => {
   });
 
   switch (script) {
-    case "add-isomer-collaborators":
-      await addIsomerCollaborators();
-      break;
     case "bulk-upload-assets":
       await bulkUploadAssets();
       break;

@@ -7,7 +7,7 @@ import { BiCog, BiFolder, BiGroup, BiHelpCircle, BiStar } from "react-icons/bi"
 import { CmsContainer, CmsSidebar } from "~/components/CmsSidebar"
 import { SearchableHeader } from "~/components/SearchableHeader"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { ADMIN_ROLE } from "~/lib/growthbook"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { OpenSidebarIcon } from "../Svg/OpenSidebarIcon"
 
@@ -27,8 +27,8 @@ export const CmsContainerWrapper = ({
 }: PropsWithChildren<CmsContainerWrapperProps>) => {
   const router = useRouter()
 
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
 
   const pageNavItems: CmsSidebarItem[] = [
