@@ -31,7 +31,7 @@ interface LoggerOptions {
   req?: NextApiRequest
 }
 
-export function createBaseLogger({ path, req }: LoggerOptions): Logger<string> {
+export function createLogger({ path, req }: LoggerOptions): Logger<string> {
   return createChildLogger(getRootLogger(), {
     path,
     clientIp: req ? getIP(req) : undefined,

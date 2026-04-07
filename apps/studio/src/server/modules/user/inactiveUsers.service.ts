@@ -5,7 +5,7 @@ import {
   sendAccountDeactivationEmail,
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
-import { createBaseLogger } from "~/lib/logger"
+import { createLogger } from "~/lib/logger"
 import {
   ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
   PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
@@ -17,7 +17,7 @@ import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
 
-const logger = createBaseLogger({
+const logger = createLogger({
   path: "server/modules/user/inactiveUsers.service",
 })
 
