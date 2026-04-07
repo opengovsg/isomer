@@ -156,13 +156,12 @@ export const EditInfocardsLinkState: Story = {
     })
     await userEvent.click(firstCard)
 
-
     const textboxes = await canvas.findAllByRole("textbox")
-    textboxes.forEach(async (textbox) => {
-      await userEvent.clear(textbox) 
-    })
+    for (const textbox of textboxes) {
+      await userEvent.clear(textbox)
+    }
 
-    const deleteButton= await canvas.findByRole("button", {
+    const deleteButton = await canvas.findByRole("button", {
       name: /Remove file/i,
     })
     await userEvent.click(deleteButton)
@@ -178,7 +177,7 @@ export const EditInfocardsLinkState: Story = {
     const page = await body.findByText("Page 1")
     await userEvent.click(page)
 
-    const addLinkButton= await body.findByRole("button", {
+    const addLinkButton = await body.findByRole("button", {
       name: /Add link/i,
     })
     await userEvent.click(addLinkButton)

@@ -1444,7 +1444,8 @@ export const pageHandlers = {
         return {
           title: "Page 1",
           description: "This is a description for Page 1",
-          thumbnail: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop",
+          thumbnail:
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop",
         }
       }),
   },

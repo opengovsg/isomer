@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { IsomerSchema } from "~/types"
+import type { IsomerSchema } from "~/types"
 
 // Zod parsers for extracting prefill data from different page layouts
 // NOTE: This is a temporary construct and the long term fix should be
