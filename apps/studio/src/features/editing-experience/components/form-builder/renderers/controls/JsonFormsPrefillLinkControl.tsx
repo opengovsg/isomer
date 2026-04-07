@@ -1,0 +1,42 @@
+import type { ControlProps, RankedTester } from "@jsonforms/core"
+import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
+import { withJsonFormsControlProps } from "@jsonforms/react"
+
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
+import { usePrefillForCards } from "../../hooks/usePrefill"
+import { BaseLinkControl } from "./BaseLinkControl"
+
+export const jsonFormsPrefillLinkControlTester: RankedTester = rankWith(
+  JSON_FORMS_RANKING.LinkControl,
+  and(
+    isStringControl,
+    schemaMatches((schema) => schema.format === "prefill-link"),
+  ),
+)
+
+function JsonFormsPrefillLinkControl({
+  data,
+  label,
+  handleChange,
+  path,
+  required,
+  errors,
+}: ControlProps) {
+  usePrefillForCards({ data, path, handleChange })
+
+  return (
+    <BaseLinkControl
+      data={data as string}
+      label={label}
+      required={required}
+      handleChange={handleChange}
+      path={path}
+      linkTypes={LINK_TYPES_MAPPING}
+      description="Link a page, file, external URL, or an email address"
+      errors={errors}
+    />
+  )
+}
+
+export default withJsonFormsControlProps(JsonFormsPrefillLinkControl)

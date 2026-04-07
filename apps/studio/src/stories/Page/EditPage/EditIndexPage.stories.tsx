@@ -155,3 +155,57 @@ export const AddBlockWithChildrenPagesEnabled: Story = {
     await userEvent.click(button)
   },
 }
+
+export const EditInfocardsLinkState: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        pageHandlers.readPageAndBlob.indexWithInfocards(),
+        pageHandlers.getPrefill.default(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    // Click on the infocards block
+    const infocardsBlock = await canvas.findByRole("button", {
+      name: /Info cards block/i,
+    })
+    await userEvent.click(infocardsBlock)
+
+    // Click on the first card item
+    const firstCard = await canvas.findByRole("button", {
+      name: /First card/i,
+    })
+    await userEvent.click(firstCard)
+
+
+    const textboxes = await canvas.findAllByRole("textbox")
+    textboxes.forEach(async (textbox) => {
+      await userEvent.clear(textbox) 
+    })
+
+    const deleteButton= await canvas.findByRole("button", {
+      name: /Remove file/i,
+    })
+    await userEvent.click(deleteButton)
+
+    // Click on the "Link something..." button to open the modal
+    const linkButton = await canvas.findByRole("button", {
+      name: /Link something/i,
+    })
+    await userEvent.click(linkButton)
+
+    // Modal renders in a portal outside canvasElement, so query from document.body
+    const body = within(document.body)
+    const page = await body.findByText("Page 1")
+    await userEvent.click(page)
+
+    const addLinkButton= await body.findByRole("button", {
+      name: /Add link/i,
+    })
+    await userEvent.click(addLinkButton)
+  },
+}
