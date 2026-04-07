@@ -126,14 +126,6 @@ const ContentSecurityPolicy = `
     https://*.podcasts.apple.com
     https://*.xp.apple.com
     ;
-  child-src
-    'self'
-    https://intercom-sheets.com
-    https://www.intercom-reporting.com 
-    https://www.youtube.com
-    https://player.vimeo.com
-    https://fast.wistia.net
-    ;
   worker-src
     'self'
     blob:
