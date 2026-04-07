@@ -2,7 +2,7 @@ import type { ButtonProps, StackProps } from "@chakra-ui/react"
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd"
 import type { IconType } from "react-icons"
 import { chakra, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
-import { BiGridVertical, BiHide, BiSolidErrorCircle } from "react-icons/bi"
+import { BiGridVertical, BiSolidErrorCircle } from "react-icons/bi"
 
 export interface BaseBlockProps {
   icon?: IconType

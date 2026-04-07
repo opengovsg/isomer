@@ -122,40 +122,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     siteId,
   ])
 
-  const handleShowBlock = useCallback(() => {
-    const currentBlock = savedPageState.content[currActiveIdx]
-    if (currentBlock?.type !== "childrenpages") return
-
-    const updatedBlocks = Array.from(savedPageState.content)
-    updatedBlocks[currActiveIdx] = {
-      ...currentBlock,
-      isHidden: false,
-    }
-
-    const newPageState = {
-      ...previewPageState,
-      content: updatedBlocks,
-    }
-    setDrawerState({ state: "root" })
-    savePage({
-      pageId,
-      siteId,
-      content: JSON.stringify(newPageState),
-    })
-    setSavedPageState(newPageState)
-    setPreviewPageState(newPageState)
-  }, [
-    currActiveIdx,
-    pageId,
-    previewPageState,
-    savePage,
-    savedPageState.content,
-    setDrawerState,
-    setPreviewPageState,
-    setSavedPageState,
-    siteId,
-  ])
-
   const handleDiscardChanges = useCallback(() => {
     if (addedBlockIndex !== null) {
       const updatedBlocks = Array.from(savedPageState.content)
@@ -366,23 +332,13 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             px="2rem"
           >
             <HStack spacing="0.75rem">
-              {isHiddenChildrenPagesBlock ? (
-                <IconButton
-                  icon={<BiShow fontSize="1.25rem" />}
-                  variant="outline"
-                  aria-label="Show block"
-                  onClick={handleShowBlock}
-                  isLoading={isLoading}
-                />
-              ) : (
-                <IconButton
-                  icon={<BiTrash fontSize="1.25rem" />}
-                  variant="outline"
-                  colorScheme="critical"
-                  aria-label="Delete block"
-                  onClick={onDeleteBlockModalOpen}
-                />
-              )}
+              <IconButton
+                icon={<BiTrash fontSize="1.25rem" />}
+                variant="outline"
+                colorScheme="critical"
+                aria-label="Delete block"
+                onClick={onDeleteBlockModalOpen}
+              />
               <Box w="100%">
                 <SaveButton onClick={handleSave} isLoading={isLoading} />
               </Box>

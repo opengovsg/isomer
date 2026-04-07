@@ -12,8 +12,10 @@ import type { BaseBlockProps } from "./BaseBlock"
 import { TYPE_TO_ICON } from "../../constants"
 import { BaseBlock, BaseBlockDragHandle } from "./BaseBlock"
 
-interface DraggableBlockProps
-  extends Pick<BaseBlockProps, "invalidProps" | "isHidden"> {
+interface DraggableBlockProps extends Pick<
+  BaseBlockProps,
+  "invalidProps" | "isHidden"
+> {
   block: IsomerSchema["content"][number]
   draggableId: string
   index: number
@@ -60,6 +62,7 @@ export const DraggableBlock = ({
             {...provided.draggableProps}
           >
             <BaseBlock
+              isHidden={isHidden}
               onClick={onClick}
               dragHandle={
                 <BaseBlockDragHandle
@@ -75,7 +78,6 @@ export const DraggableBlock = ({
               description={blockComponentName}
               icon={icon}
               invalidProps={invalidProps}
-              isHidden={isHidden}
             />
           </VStack>
         )
