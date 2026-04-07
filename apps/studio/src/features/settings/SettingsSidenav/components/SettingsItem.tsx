@@ -1,5 +1,5 @@
-import NextLink from "next/link"
 import { Link, Text } from "@chakra-ui/react"
+import NextLink from "next/link"
 
 interface SettingsItemProps {
   label: string

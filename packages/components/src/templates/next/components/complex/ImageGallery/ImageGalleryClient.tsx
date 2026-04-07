@@ -1,10 +1,10 @@
 "use client"
 
-import { useCallback, useMemo, useRef, useState, useTransition } from "react"
-
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
+import { useCallback, useMemo, useRef, useState, useTransition } from "react"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
+
 import { ImageClient } from "../../internal/ImageClient"
 import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./assets"
 import { getEndingPreviewIndices, getPreviewIndices } from "./utils"

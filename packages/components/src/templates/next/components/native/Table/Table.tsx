@@ -1,7 +1,7 @@
-import { useId } from "react"
-
 import type { TableProps } from "~/interfaces"
+import { useId } from "react"
 import { tv } from "~/lib/tv"
+
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { Divider } from "../Divider"
 import { OrderedList } from "../OrderedList"

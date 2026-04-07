@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react"
 import { Accordion, AccordionItem, AccordionPanel } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-
+import { useEffect, useMemo, useState } from "react"
 import { getResourceSubpath } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import { RowEntry } from "./RowEntry"
 import { useIsActive } from "./useIsActive"
 

@@ -6,11 +6,11 @@ import {
   BiChevronRight,
   BiDotsHorizontalRounded,
 } from "react-icons/bi"
-
-import type { ButtonProps } from "../Button"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { dataAttr } from "~/utils/rac"
+
+import type { ButtonProps } from "../Button"
 import { Button } from "../Button"
 
 const createPaginationStyles = tv({

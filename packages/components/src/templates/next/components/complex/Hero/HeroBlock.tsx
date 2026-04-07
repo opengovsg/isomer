@@ -1,5 +1,6 @@
 import type { HeroBlockProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
@@ -90,7 +91,7 @@ export const HeroBlock = ({
       >
         <ImageClient
           src={backgroundUrl}
-          alt={title}
+          alt=""
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
           assetsBaseUrl={site.assetsBaseUrl}

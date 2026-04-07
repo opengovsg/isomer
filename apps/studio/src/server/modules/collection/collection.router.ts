@@ -2,18 +2,19 @@ import type { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash"
-
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createCollectionSchema,
   editLinkSchema,
   getCollectionsSchema,
   getCollectionTagsSchema,
+  readCollectionSchema,
   readLinkSchema,
 } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
+
 import { logResourceEvent } from "../audit/audit.service"
 import {
   AuditLogEvent,
@@ -268,33 +269,48 @@ export const collectionRouter = router({
       return { pageId: resource.id }
     }),
   list: protectedProcedure
-    .input(readFolderSchema)
-    .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-      // Things that aren't working yet:
-      // 1. Last Edited user and time
-      // 2. Page status(draft, published)
+    .input(readCollectionSchema)
+    .query(
+      async ({
+        ctx,
+        input: { resourceId, siteId, orderBy, limit, offset },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          siteId,
+          action: "read",
+          userId: ctx.user.id,
+        })
+        // Things that aren't working yet:
+        // 1. Last Edited user and time
+        // 2. Page status(draft, published)
 
-      return await db
-        .selectFrom("Resource")
-        .where("parentId", "=", String(resourceId))
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "in", [
-          ResourceType.CollectionPage,
-          ResourceType.CollectionLink,
-        ])
-        .orderBy("Resource.type", "asc")
-        .orderBy("Resource.title", "asc")
-        .orderBy("Resource.id", "asc") // to ensure deterministic ordering
-        .limit(limit)
-        .offset(offset)
-        .select(defaultResourceSelect)
-        .execute()
-    }),
+        let query = db
+          .selectFrom("Resource")
+          .where("parentId", "=", String(resourceId))
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "in", [
+            ResourceType.CollectionPage,
+            ResourceType.CollectionLink,
+          ])
+
+        switch (orderBy) {
+          case "title-asc":
+            query = query.orderBy("Resource.title", "asc")
+            break
+          case "updated-desc":
+          default:
+            query = query.orderBy("Resource.updatedAt", "desc")
+            break
+        }
+
+        return await query
+          .orderBy("Resource.id", "asc") // to ensure deterministic ordering
+          .limit(limit)
+          .offset(offset)
+          .select(defaultResourceSelect)
+          .execute()
+      },
+    ),
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
     .query(async ({ ctx, input: { linkId, siteId } }) => {

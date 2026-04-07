@@ -1,5 +1,5 @@
 import type { z } from "zod"
-import { useMemo } from "react"
+import type { schedulePublishClientSchema } from "~/schemas/schedule"
 import { FormControl, HStack, VStack } from "@chakra-ui/react"
 import {
   DatePicker,
@@ -7,14 +7,14 @@ import {
   FormLabel,
 } from "@opengovsg/design-system-react"
 import { add, isBefore, startOfDay } from "date-fns"
+import { useMemo } from "react"
 import { Controller, useFormContext } from "react-hook-form"
-
-import type { schedulePublishClientSchema } from "~/schemas/schedule"
 import {
   parseTimeStringToDate,
   TimeSelect,
 } from "~/components/Select/TimeSelect"
 import { MINIMUM_SCHEDULE_LEAD_TIME_MINUTES } from "~/schemas/schedule"
+
 import { QuickSelectTimeSection } from "./QuickSelectTimeSection"
 import { getEarliestAllowableTime } from "./utils"
 

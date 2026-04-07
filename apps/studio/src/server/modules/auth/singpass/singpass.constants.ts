@@ -1,5 +1,4 @@
 import { calculateJwkThumbprint, exportJWK, importPKCS8 } from "jose"
-
 import { env } from "~/env.mjs"
 import { getBaseUrl } from "~/utils/getBaseUrl"
 

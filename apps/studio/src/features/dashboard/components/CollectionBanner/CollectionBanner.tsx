@@ -1,9 +1,9 @@
-import NextLink from "next/link"
 import { Icon, Stack, Text } from "@chakra-ui/react"
 import { IconButton, Link } from "@opengovsg/design-system-react"
+import NextLink from "next/link"
 import { BiRightArrowAlt, BiX } from "react-icons/bi"
-
 import { useLocalStorage } from "~/hooks/useLocalStorage"
+
 import { BannerSvgr } from "./BannerSvgr"
 
 export const CollectionBanner = (): JSX.Element | null => {

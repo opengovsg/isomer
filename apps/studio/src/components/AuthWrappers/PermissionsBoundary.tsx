@@ -1,5 +1,4 @@
 import type { ReactNode } from "react"
-
 import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { PermissionsErrorBoundary } from "~/features/dashboard/PermissionsErrorPage"
 import { Can, PermissionsProvider } from "~/features/permissions"

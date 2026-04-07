@@ -1,14 +1,14 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { PropsWithChildren } from "react"
-import { useRouter } from "next/router"
-import { Flex } from "@chakra-ui/react"
-import { BiCog, BiFolder, BiGroup, BiHelpCircle, BiStar } from "react-icons/bi"
-
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
+import { Flex } from "@chakra-ui/react"
+import { useRouter } from "next/router"
+import { BiCog, BiFolder, BiGroup, BiHelpCircle, BiStar } from "react-icons/bi"
 import { CmsContainer, CmsSidebar } from "~/components/CmsSidebar"
 import { SearchableHeader } from "~/components/SearchableHeader"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { ADMIN_ROLE } from "~/lib/growthbook"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
 import { OpenSidebarIcon } from "../Svg/OpenSidebarIcon"
 
 interface CmsContainerWrapperProps {
@@ -27,8 +27,8 @@ export const CmsContainerWrapper = ({
 }: PropsWithChildren<CmsContainerWrapperProps>) => {
   const router = useRouter()
 
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
 
   const pageNavItems: CmsSidebarItem[] = [

@@ -1,4 +1,3 @@
-import NextLink from "next/link"
 import {
   Box,
   Button,
@@ -12,12 +11,14 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
-
+import NextLink from "next/link"
 import { NoResultIcon } from "~/components/Svg/NoResultIcon"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { withSuspense } from "~/hocs/withSuspense"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
+
+const DEFAULT_ASSET_LOGO = "/assets/isomer-logo-color.svg"
 
 const Site = ({
   siteId,
@@ -137,7 +138,9 @@ const SuspendableSiteList = (): JSX.Element => {
         <Site
           siteId={site.id}
           siteName={site.config.siteName}
-          siteLogoUrl={generateAssetUrl(site.config.logoUrl)}
+          siteLogoUrl={generateAssetUrl(
+            site.config.logoUrl ?? DEFAULT_ASSET_LOGO,
+          )}
         />
       ))}
     </SiteListSection>

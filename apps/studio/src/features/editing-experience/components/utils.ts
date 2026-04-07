@@ -3,6 +3,12 @@ import type {
   IsomerGeneratedSiteProps,
 } from "@opengovsg/isomer-components"
 import type { UseMutateAsyncFunction } from "@tanstack/react-query"
+import type collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
+import type {
+  UploadAssetMutationInput,
+  UploadAssetMutationOutput,
+} from "~/hooks/useUploadAssetMutation"
+import type { ModifiedAsset } from "~/types/assets"
 import {
   FORMSG_EMBED_URL_REGEXES,
   MAPS_EMBED_URL_REGEXES,
@@ -11,12 +17,6 @@ import {
 import DOMPurify from "isomorphic-dompurify"
 import set from "lodash/set"
 
-import type collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
-import type {
-  UploadAssetMutationInput,
-  UploadAssetMutationOutput,
-} from "~/hooks/useUploadAssetMutation"
-import type { ModifiedAsset } from "~/types/assets"
 import { PLACEHOLDER_IMAGE_FILENAME } from "./constants"
 
 export const EMBED_NAME_MAPPING: Record<

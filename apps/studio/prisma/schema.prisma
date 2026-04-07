@@ -134,6 +134,7 @@ model User {
   lastLoginAt DateTime?
 
   ResourcePermission ResourcePermission[]
+  IsomerAdmin        IsomerAdmin[]
   versions           Version[]
   AuditLog           AuditLog[]
   CodeBuildJobs      CodeBuildJobs[]
@@ -220,6 +221,23 @@ enum RoleType {
   Admin
   Editor
   Publisher
+}
+
+enum IsomerAdminRole {
+  Core
+  Migrator
+}
+
+model IsomerAdmin {
+  id        BigInt          @id @default(autoincrement())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id])
+  role      IsomerAdminRole
+  expiry    DateTime?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @default(now()) @updatedAt
+
+  @@unique([userId, role])
 }
 
 model RateLimiterFlexible {

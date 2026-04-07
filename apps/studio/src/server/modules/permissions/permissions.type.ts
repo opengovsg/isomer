@@ -29,8 +29,10 @@ export interface PermissionsProps {
   resourceId?: string | null
 }
 
-export interface BulkPermissionsProps
-  extends Omit<PermissionsProps, "resourceId"> {
+export interface BulkPermissionsProps extends Omit<
+  PermissionsProps,
+  "resourceId"
+> {
   action: CrudResourceActions | "publish"
   siteId: Site["id"]
   resourceIds?: (string | null)[]
@@ -40,8 +42,10 @@ export interface UserPermissionsProps extends PermissionsProps {
   action: CrudResourceActions
 }
 
-export interface AssetPermissionsProps
-  extends Pick<PermissionsProps, "siteId" | "userId"> {
+export interface AssetPermissionsProps extends Pick<
+  PermissionsProps,
+  "siteId" | "userId"
+> {
   resourceId?: string
   action: "create" | "delete"
 }

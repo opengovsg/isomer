@@ -1,6 +1,4 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useMemo } from "react"
-import Image from "next/image"
 import {
   chakra,
   Flex,
@@ -13,12 +11,14 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import Image from "next/image"
+import { useMemo } from "react"
 import { type IconType } from "react-icons"
-
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { type DrawerState } from "~/types/editorDrawer"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import {
   ARTICLE_ALLOWED_BLOCKS,
   BLOCK_TO_META,
@@ -151,6 +151,33 @@ function ComponentSelector() {
   } = useEditorDrawerContext()
 
   const onProceed = (sectionType: SectionType) => {
+    if (
+      sectionType === "childrenpages" &&
+      savedPageState.content.some(
+        (block) => block.type === "childrenpages" && block.isHidden,
+      )
+    ) {
+      const nextPageState = {
+        ...savedPageState,
+        content: savedPageState.content.map((block) => {
+          if (block.type === "childrenpages") {
+            return { ...block, isHidden: false } satisfies IsomerComponent
+          }
+
+          return block satisfies IsomerComponent
+        }),
+      }
+      const childrenpagesIdx = savedPageState.content.findIndex(
+        (block) => block.type === "childrenpages",
+      )
+      setDrawerState({ state: "complexEditor" })
+      setSavedPageState(nextPageState)
+      setCurrActiveIdx(childrenpagesIdx)
+      setAddedBlockIndex(childrenpagesIdx)
+      setPreviewPageState(nextPageState)
+      return
+    }
+
     // TODO: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
     // the rest should use json forms
@@ -160,7 +187,7 @@ function ComponentSelector() {
     const newComponent: IsomerComponent | undefined =
       DEFAULT_BLOCKS[sectionType]
 
-    const updatedBlocks = !!newComponent
+    const updatedBlocks = newComponent
       ? [...savedPageState.content, newComponent]
       : savedPageState.content
     const nextPageState = {
@@ -251,7 +278,8 @@ function ComponentSelector() {
                 const isDisabled =
                   type === "childrenpages" &&
                   savedPageState.content.some(
-                    (block) => block.type === "childrenpages",
+                    (block) =>
+                      block.type === "childrenpages" && !block.isHidden,
                   )
 
                 return (

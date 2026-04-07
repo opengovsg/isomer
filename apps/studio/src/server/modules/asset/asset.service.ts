@@ -1,16 +1,14 @@
-import { randomUUID } from "crypto"
 import type { z } from "zod"
+import type { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { randomUUID } from "crypto"
 import filenamify from "filenamify"
+import { env } from "~/env.mjs"
+import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
-import type { getPresignedPutUrlSchema } from "~/schemas/asset"
-import { env } from "~/env.mjs"
-import {
-  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-  IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
-import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
 import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
@@ -18,7 +16,7 @@ const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
 const EXTENSION_TO_MIME: Record<string, string> = {
-  ...IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  ...IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
   ...FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 }
 

@@ -15,7 +15,7 @@ import type {
 import type { Tagged } from "type-fest"
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+  // oxlint-disable-next-line @typescript-eslint/no-namespace
   namespace PrismaJson {
     // TODO: Rename all with XXXYYYJson instead of XXXJsonYYY
     type SiteJsonConfig = Tagged<_IsomerSiteConfigProps, "JSONB">

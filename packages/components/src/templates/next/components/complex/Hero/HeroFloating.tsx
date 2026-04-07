@@ -1,5 +1,6 @@
 import type { HeroFloatingProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
@@ -49,7 +50,7 @@ export const HeroFloating = ({
       <div className="lg:flex lg:w-full lg:justify-end">
         <ImageClient
           src={backgroundUrl}
-          alt={title}
+          alt=""
           width="100%"
           className="aspect-[3/2] w-full object-cover object-center lg:w-[66.67%]"
           assetsBaseUrl={site.assetsBaseUrl}

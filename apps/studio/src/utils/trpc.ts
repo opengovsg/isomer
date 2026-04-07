@@ -1,15 +1,14 @@
 import type { TRPCLink } from "@trpc/client"
-import { type NextPageContext } from "next"
+// ℹ️ Type-only import:
+// https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#type-only-imports-and-export
+import type { AppRouter } from "~/server/modules/_app"
 import { httpLink, loggerLink, TRPCClientError } from "@trpc/client"
 import { createTRPCNext } from "@trpc/next"
 import { type inferRouterOutputs } from "@trpc/server"
 import { observable } from "@trpc/server/observable"
 import { type TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
+import { type NextPageContext } from "next"
 import superjson from "superjson"
-
-// ℹ️ Type-only import:
-// https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#type-only-imports-and-export
-import type { AppRouter } from "~/server/modules/_app"
 import { LOGGED_IN_KEY } from "~/constants/localStorage"
 import {
   APP_VERSION_HEADER_KEY,
@@ -17,6 +16,7 @@ import {
 } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { TRPCWithErrorCodeSchema } from "~/utils/error"
+
 import { getBaseUrl } from "./getBaseUrl"
 
 const NON_RETRYABLE_ERROR_CODES = new Set<TRPC_ERROR_CODE_KEY>([
@@ -80,7 +80,7 @@ const custom401Link: TRPCLink<AppRouter> = () => {
         // Handle 401 errors
         error(err) {
           observer.error(err)
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (window !== undefined && err.data?.code === "UNAUTHORIZED") {
             // Clear logged in state on localStorage
             // NOTE: This error is not handled in the /api/[trpc] API route as API routes are invoked
@@ -142,7 +142,7 @@ export const trpc = createTRPCNext<AppRouter, SSRContext>({
         // adds pretty logs to your console in development and logs errors in production
         loggerLink({
           enabled: (opts) =>
-            // eslint-disable-next-line no-restricted-properties
+            // oxlint-disable-next-line node/no-process-env
             process.env.NODE_ENV === "development" ||
             (opts.direction === "down" && opts.result instanceof Error),
         }),

@@ -1,9 +1,9 @@
 import type { IsomerComponent, ProseProps } from "@opengovsg/isomer-components"
 import { getComponentSchema } from "@opengovsg/isomer-components"
-
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { ajv } from "~/utils/ajv"
+
 import TipTapProseComponent from "../TipTapProseComponent"
 import CollectionEditorStateDrawer from "./CollectionEditorStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"

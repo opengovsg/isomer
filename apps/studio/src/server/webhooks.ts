@@ -1,6 +1,5 @@
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next"
 import type { NextApiRequest, NextApiResponse } from "next"
-
 import type { Context } from "~/server/context"
 import { createGrowthBookContext } from "~/server/context"
 import { db } from "~/server/modules/database"
@@ -57,7 +56,7 @@ export const webhookHandlers = {
         .createCaller(ctx)
         // We disable the eslint rule here because the input is validated by the trpc procedure
         // so we don't want to re-validate it here
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
         .updateCodebuildWebhook(req.body)
     )
   },

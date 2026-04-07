@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { TableOfContentsProps } from "~/interfaces"
+
 import { TableOfContents } from "./TableOfContents"
 
 const meta: Meta<TableOfContentsProps> = {

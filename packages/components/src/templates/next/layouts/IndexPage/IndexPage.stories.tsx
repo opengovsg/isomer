@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { IndexPageSchemaType } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { IndexPageSchemaType } from "~/types"
-import { generateSiteConfig } from "~/stories/helpers"
 import { IndexPageLayout } from "./IndexPage"
 
 const DEFAULT_INDEX_PAGE = {
