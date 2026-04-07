@@ -45,6 +45,12 @@ export const ChildrenPagesSchema = Type.Object(
       ),
     ),
     imageFit: Type.Optional(ChildrenPagesImageFitSchema),
+    isHidden: Type.Optional(
+      Type.Boolean({
+        default: false,
+        format: "hidden", // Hide from form editor UI
+      }),
+    ),
     // NOTE: We set this to `Optional` for now due to backcompat
     // TODO: Remove this chunk after we run the forward migration to
     // add this property to all index pages

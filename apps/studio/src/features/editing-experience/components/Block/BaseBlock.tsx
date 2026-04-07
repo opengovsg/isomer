@@ -2,7 +2,7 @@ import type { ButtonProps, StackProps } from "@chakra-ui/react"
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd"
 import type { IconType } from "react-icons"
 import { chakra, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
-import { BiGridVertical, BiSolidErrorCircle } from "react-icons/bi"
+import { BiGridVertical, BiHide, BiSolidErrorCircle } from "react-icons/bi"
 
 export interface BaseBlockProps {
   icon?: IconType
@@ -15,6 +15,7 @@ export interface BaseBlockProps {
   invalidProps?: {
     description: string
   }
+  isHidden?: boolean
 }
 
 export const BaseBlock = ({
@@ -26,10 +27,22 @@ export const BaseBlock = ({
   containerProps,
   onClick,
   invalidProps,
+  isHidden,
 }: BaseBlockProps): JSX.Element => {
   const actualDraggableProps = draggableProps ?? {}
 
   const Description = () => {
+    if (isHidden) {
+      return (
+        <HStack gap="0.25rem">
+          <Icon as={BiHide} fontSize="1rem" color="base.content.medium" />
+          <Text textStyle="caption-1" color="base.content.medium">
+            Hidden from page
+          </Text>
+        </HStack>
+      )
+    }
+
     if (invalidProps) {
       return (
         <HStack gap="0.25rem">
@@ -88,13 +101,14 @@ export const BaseBlock = ({
         bg: "utility.feedback.critical-subtle",
         borderColor: "utility.feedback.critical",
       }}
-      bg="white"
+      bg={isHidden ? "gray.100" : "white"}
       py="0.75rem"
       px="0.75rem"
       flexDirection="row"
       align="center"
       textAlign="start"
       onClick={onClick}
+      opacity={isHidden ? 0.7 : 1}
       {...actualDraggableProps}
       {...containerProps}
     >
@@ -102,15 +116,24 @@ export const BaseBlock = ({
       {icon && (
         <Flex
           p="0.25rem"
-          bg="interaction.main-subtle.default"
+          bg={isHidden ? "gray.200" : "interaction.main-subtle.default"}
           borderRadius="4px"
           mr="0.25rem"
         >
-          <Icon as={icon} fontSize="0.75rem" color="base.content.default" />
+          <Icon
+            as={icon}
+            fontSize="0.75rem"
+            color={isHidden ? "base.content.medium" : "base.content.default"}
+          />
         </Flex>
       )}
       <Stack align="start" gap="0.25rem" overflow="auto">
-        <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
+        <Text
+          textStyle="subhead-2"
+          noOfLines={1}
+          wordBreak="break-word"
+          color={isHidden ? "base.content.medium" : undefined}
+        >
           {label}
         </Text>
         <Description />

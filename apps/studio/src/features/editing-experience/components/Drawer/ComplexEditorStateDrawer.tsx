@@ -6,7 +6,7 @@ import { getComponentSchema } from "@opengovsg/isomer-components"
 import cloneDeep from "lodash/cloneDeep"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
-import { BiTrash } from "react-icons/bi"
+import { BiShow, BiTrash } from "react-icons/bi"
 
 import type { ModifiedAsset } from "~/types/assets"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -74,8 +74,19 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     trpc.asset.deleteAssets.useMutation()
 
   const handleDeleteBlock = useCallback(() => {
+    const currentBlock = savedPageState.content[currActiveIdx]
     const updatedBlocks = Array.from(savedPageState.content)
-    updatedBlocks.splice(currActiveIdx, 1)
+
+    // For childrenpages blocks, hide instead of delete
+    if (currentBlock?.type === "childrenpages") {
+      updatedBlocks[currActiveIdx] = {
+        ...currentBlock,
+        isHidden: true,
+      }
+    } else {
+      updatedBlocks.splice(currActiveIdx, 1)
+    }
+
     const newPageState = {
       ...previewPageState,
       content: updatedBlocks,
@@ -105,6 +116,40 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     savePage,
     savedPageState.content,
     setAddedBlockIndex,
+    setDrawerState,
+    setPreviewPageState,
+    setSavedPageState,
+    siteId,
+  ])
+
+  const handleShowBlock = useCallback(() => {
+    const currentBlock = savedPageState.content[currActiveIdx]
+    if (currentBlock?.type !== "childrenpages") return
+
+    const updatedBlocks = Array.from(savedPageState.content)
+    updatedBlocks[currActiveIdx] = {
+      ...currentBlock,
+      isHidden: false,
+    }
+
+    const newPageState = {
+      ...previewPageState,
+      content: updatedBlocks,
+    }
+    setDrawerState({ state: "root" })
+    savePage({
+      pageId,
+      siteId,
+      content: JSON.stringify(newPageState),
+    })
+    setSavedPageState(newPageState)
+    setPreviewPageState(newPageState)
+  }, [
+    currActiveIdx,
+    pageId,
+    previewPageState,
+    savePage,
+    savedPageState.content,
     setDrawerState,
     setPreviewPageState,
     setSavedPageState,
@@ -270,6 +315,12 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const validateFn = ajv.compile<IsomerComponent>(subSchema)
   const componentName = title || "component"
 
+  // Check if current block is a hidden childrenpages block
+  const isHiddenChildrenPagesBlock =
+    component.type === "childrenpages" &&
+    "isHidden" in component &&
+    component.isHidden
+
   return (
     <>
       <DeleteBlockModal
@@ -315,13 +366,23 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             px="2rem"
           >
             <HStack spacing="0.75rem">
-              <IconButton
-                icon={<BiTrash fontSize="1.25rem" />}
-                variant="outline"
-                colorScheme="critical"
-                aria-label="Delete block"
-                onClick={onDeleteBlockModalOpen}
-              />
+              {isHiddenChildrenPagesBlock ? (
+                <IconButton
+                  icon={<BiShow fontSize="1.25rem" />}
+                  variant="outline"
+                  aria-label="Show block"
+                  onClick={handleShowBlock}
+                  isLoading={isLoading}
+                />
+              ) : (
+                <IconButton
+                  icon={<BiTrash fontSize="1.25rem" />}
+                  variant="outline"
+                  colorScheme="critical"
+                  aria-label="Delete block"
+                  onClick={onDeleteBlockModalOpen}
+                />
+              )}
               <Box w="100%">
                 <SaveButton onClick={handleSave} isLoading={isLoading} />
               </Box>

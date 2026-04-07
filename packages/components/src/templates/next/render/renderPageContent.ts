@@ -19,14 +19,24 @@ export const renderPageContent = ({
   content,
   ...rest
 }: RenderPageContentParams) => {
+  // Filter out hidden childrenpages blocks
+  const visibleContent = content.filter(
+    (component) =>
+      !(
+        component.type === "childrenpages" &&
+        "isHidden" in component &&
+        component.isHidden
+      ),
+  )
+
   // Find index of first component with image
-  const firstImageIndex = content.findIndex((component) =>
+  const firstImageIndex = visibleContent.findIndex((component) =>
     doesComponentHaveImage({ component }),
   )
 
   let isInfopicTextOnRight = false
 
-  return content.map((component, index) => {
+  return visibleContent.map((component, index) => {
     // Lazy load components with images that appear after the first image.
     // We assume that only the first image component will be visible above the fold,
     // while subsequent components should be lazy loaded to enhance the Lighthouse performance score.
