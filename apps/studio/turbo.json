@@ -17,7 +17,8 @@
     "generate": {
       "dependsOn": [
         "@opengovsg/isomer-components#build",
-        "@isomer/pgboss#build"
+        "@isomer/pgboss#build",
+        "@isomer/logging#build"
       ],
       "inputs": ["prisma/schema.prisma"],
       "cache": false
