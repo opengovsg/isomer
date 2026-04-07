@@ -1,26 +1,11 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  Skeleton,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { Box, Flex, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
+import { Button, useToast } from "@opengovsg/design-system-react"
 import isEqual from "lodash/isEqual"
 import { useCallback, useMemo } from "react"
-import {
-  BiArrowToBottom,
-  BiArrowToTop,
-  BiData,
-  BiFile,
-  BiFolder,
-  BiInfoCircle,
-} from "react-icons/bi"
+import { BiData, BiFile, BiFolder, BiInfoCircle } from "react-icons/bi"
 import { UsageTooltip } from "~/components/PageEditor/UsageTooltip"
 import Suspense from "~/components/Suspense"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -53,57 +38,12 @@ const getIconForType = (type: ChildPageItem["type"]) => {
   }
 }
 
-interface MoveIconButtonProps {
-  direction: "top" | "bottom"
-  onClick: () => void
-  isDisabled: boolean
-}
-
-const MoveIconButton = ({
-  direction,
-  onClick,
-  isDisabled,
-}: MoveIconButtonProps) => {
-  const isTop = direction === "top"
-  return (
-    <IconButton
-      size="xs"
-      variant="clear"
-      onClick={onClick}
-      isDisabled={isDisabled}
-      aria-label={isTop ? "Move to top" : "Move to bottom"}
-      icon={
-        <Icon
-          as={isTop ? BiArrowToTop : BiArrowToBottom}
-          fontSize="1rem"
-          color={
-            isDisabled
-              ? "interaction.support.disabled"
-              : "interaction.main.default"
-          }
-        />
-      }
-    />
-  )
-}
-
 interface DraggablePageItemProps {
   page: ChildPageItem
   index: number
-  onMoveToTop: () => void
-  onMoveToBottom: () => void
-  isFirst: boolean
-  isLast: boolean
 }
 
-const DraggablePageItem = ({
-  page,
-  index,
-  onMoveToTop,
-  onMoveToBottom,
-  isFirst,
-  isLast,
-}: DraggablePageItemProps) => {
+const DraggablePageItem = ({ page, index }: DraggablePageItemProps) => {
   return (
     <Draggable
       draggableId={page.id}
@@ -131,34 +71,6 @@ const DraggablePageItem = ({
                 />
               }
             />
-
-            <HStack
-              position="absolute"
-              right="0.5rem"
-              top="50%"
-              transform="translateY(-50%)"
-              bg="white"
-              borderRadius="md"
-              boxShadow="sm"
-              border="1px solid"
-              borderColor="base.divider.medium"
-              p="0.25rem"
-              gap="0.25rem"
-              display="none"
-              _groupHover={{ display: isDragging ? "none" : "flex" }}
-              _groupFocusWithin={{ display: isDragging ? "none" : "flex" }}
-            >
-              <MoveIconButton
-                direction="top"
-                onClick={onMoveToTop}
-                isDisabled={isFirst}
-              />
-              <MoveIconButton
-                direction="bottom"
-                onClick={onMoveToBottom}
-                isDisabled={isLast}
-              />
-            </HStack>
           </Box>
         )
       }}
@@ -237,30 +149,6 @@ const SiderailOrderingContent = ({
     [pages.length, mergedOrdering, onOrderingChange],
   )
 
-  const handleMoveToTop = useCallback(
-    (index: number) => {
-      if (index === 0) return
-      const updatedOrdering = Array.from(mergedOrdering)
-      const [movedItem] = updatedOrdering.splice(index, 1)
-      if (!movedItem) return
-      updatedOrdering.unshift(movedItem)
-      onOrderingChange(updatedOrdering)
-    },
-    [mergedOrdering, onOrderingChange],
-  )
-
-  const handleMoveToBottom = useCallback(
-    (index: number) => {
-      if (index === mergedOrdering.length - 1) return
-      const updatedOrdering = Array.from(mergedOrdering)
-      const [movedItem] = updatedOrdering.splice(index, 1)
-      if (!movedItem) return
-      updatedOrdering.push(movedItem)
-      onOrderingChange(updatedOrdering)
-    },
-    [mergedOrdering, onOrderingChange],
-  )
-
   if (pages.length === 0) {
     return (
       <Text textStyle="body-2" color="base.content.medium">
@@ -280,15 +168,7 @@ const SiderailOrderingContent = ({
             gap="0.5rem"
           >
             {pages.map((page, index) => (
-              <DraggablePageItem
-                key={page.id}
-                page={page}
-                index={index}
-                onMoveToTop={() => handleMoveToTop(index)}
-                onMoveToBottom={() => handleMoveToBottom(index)}
-                isFirst={index === 0}
-                isLast={index === pages.length - 1}
-              />
+              <DraggablePageItem key={page.id} page={page} index={index} />
             ))}
             {provided.placeholder}
           </VStack>
