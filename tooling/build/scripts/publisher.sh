@@ -96,10 +96,33 @@ else
 fi
 
 # packages/components/dist is gitignored; Next resolves @opengovsg/isomer-components via workspace.
-echo "Building @opengovsg/isomer-components..."
-start_time=$(date +%s)
-pnpm --filter @opengovsg/isomer-components run build
-calculate_duration $start_time
+# Cache dist separately from .pnpm-store: restoring plain files does not affect the content-addressable store or node_modules linking.
+COMPONENTS_DIST_TGZ="isomer-components-dist.tar.zst"
+COMPONENTS_DIST_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$COMPONENTS_DIST_TGZ"
+echo "Fetching cached isomer-components dist..."
+aws s3 cp --only-show-errors $COMPONENTS_DIST_CACHE_PATH $COMPONENTS_DIST_TGZ || true
+if [ -f "$COMPONENTS_DIST_TGZ" ]; then
+  echo "$COMPONENTS_DIST_TGZ found in cache"
+  start_time=$(date +%s)
+  mkdir -p packages/components
+  tar --use-compress-program=zstd -xf $COMPONENTS_DIST_TGZ -C packages/components
+  rm $COMPONENTS_DIST_TGZ
+  calculate_duration $start_time
+else
+  echo "$COMPONENTS_DIST_TGZ not found in cache"
+  echo "Building @opengovsg/isomer-components..."
+  start_time=$(date +%s)
+  pnpm --filter @opengovsg/isomer-components run build
+  calculate_duration $start_time
+
+  echo "Caching isomer-components dist to S3..."
+  start_time=$(date +%s)
+  tar --use-compress-program="zstd -6" -cf $COMPONENTS_DIST_TGZ -C packages/components dist
+  aws s3 cp --only-show-errors $COMPONENTS_DIST_TGZ $COMPONENTS_DIST_CACHE_PATH
+  rm $COMPONENTS_DIST_TGZ
+  echo "Cached isomer-components dist"
+  calculate_duration $start_time
+fi
 
 # Fetch from database
 echo "Fetching from database..."
