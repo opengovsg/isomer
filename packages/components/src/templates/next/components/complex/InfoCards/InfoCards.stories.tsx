@@ -274,7 +274,7 @@ export const FullImageSevenCardsMaxColumnsTwo: Story = {
 }
 
 /** Same card count with `maxColumns` 3 for comparison. */
-export const FullImageFourCardsMaxColumnsTwo: Story = {
+export const FullImageSevenCardsMaxColumnsThree: Story = {
   name: "Full Image: 7 cards (maxColumns 3)",
   args: generateArgs({
     maxColumns: "3",
