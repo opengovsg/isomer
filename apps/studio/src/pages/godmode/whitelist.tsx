@@ -18,11 +18,6 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
 
-// Normalize (trim + lowercase), filter empty, and deduplicate
-const normalizeEmails = (emails: string[]) => [
-  ...new Set(emails.map((e) => e.trim()).filter((e) => e.length > 0)),
-]
-
 const GodModeWhitelistPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
@@ -88,7 +83,7 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
 
       <Box mt={8} bg="white" borderRadius="md" p={4}>
         <Text fontWeight="bold" mb={4}>
-          What happens when you whitelist a email?
+          What happens when you whitelist an email?
         </Text>
         <Text>
           The user with the given email will be able to log into Isomer Studio.
@@ -124,8 +119,8 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
         <Button
           onClick={() => {
             whitelistMutation.mutate({
-              adminEmails: normalizeEmails(adminEmails),
-              vendorEmails: normalizeEmails(vendorEmails),
+              adminEmails,
+              vendorEmails,
             })
           }}
           isLoading={whitelistMutation.isPending}

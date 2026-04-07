@@ -8,6 +8,7 @@ import {
 import { useToast } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
+import { useEffect } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { ADMIN_ROLE } from "~/lib/growthbook"
@@ -36,13 +37,19 @@ const GodModePage: NextPageWithLayout = () => {
     roles: [ADMIN_ROLE.CORE],
   })
 
+  useEffect(() => {
+    if (!isUserIsomerAdmin) {
+      toast({
+        title: "You do not have permission to access this page.",
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+      void router.push(`/`)
+    }
+  }, [isUserIsomerAdmin, router, toast])
+
   if (!isUserIsomerAdmin) {
-    toast({
-      title: "You do not have permission to access this page.",
-      status: "error",
-      ...BRIEF_TOAST_SETTINGS,
-    })
-    void router.push(`/`)
+    return null
   }
 
   return (
