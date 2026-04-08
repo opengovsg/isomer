@@ -45,16 +45,11 @@ import {
   setSiteNotification,
   validateUserPermissionsForSite,
 } from "./site.service"
-
-const getSafeSiteConfig = (
-  config: unknown,
-): Partial<IsomerSiteConfigProps> | null => {
-  if (!config || typeof config !== "object" || Array.isArray(config)) {
-    return null
-  }
-
-  return config as Partial<IsomerSiteConfigProps>
-}
+import {
+  getNotificationFromSiteConfig,
+  hasSearchSgConfig,
+  toSiteConfigOrNull,
+} from "./utils"
 
 export const siteRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
@@ -79,7 +74,7 @@ export const siteRouter = router({
       .execute()
 
     return sites.map(({ id, name, config }) => {
-      const siteConfig = getSafeSiteConfig(config)
+      const siteConfig = toSiteConfigOrNull(config)
 
       return {
         id,
@@ -103,7 +98,7 @@ export const siteRouter = router({
       .execute()
 
     return sites.map(({ id, name, config, codeBuildId }) => {
-      const siteConfig = getSafeSiteConfig(config)
+      const siteConfig = toSiteConfigOrNull(config)
 
       return {
         id,
@@ -130,7 +125,7 @@ export const siteRouter = router({
         .select(["config", "name"])
         .executeTakeFirstOrThrow()
 
-      const siteConfig = getSafeSiteConfig(config)
+      const siteConfig = toSiteConfigOrNull(config)
       return { name: siteConfig?.siteName || name }
     }),
   getConfig: protectedProcedure
@@ -164,7 +159,7 @@ export const siteRouter = router({
         .selectAll()
         .executeTakeFirstOrThrow()
 
-      const currentConfig = getSafeSiteConfig(site.config)
+      const currentConfig = toSiteConfigOrNull(site.config)
 
       const updatedConfig = await db.transaction().execute(async (tx) => {
         const updatedSite = await tx
@@ -277,7 +272,7 @@ export const siteRouter = router({
       }
 
       const oldTheme = site.theme
-      const siteConfig = getSafeSiteConfig(site.config)
+      const siteConfig = toSiteConfigOrNull(site.config)
 
       if (!oldTheme) {
         throw new TRPCError({
@@ -328,9 +323,7 @@ export const siteRouter = router({
       // NOTE: if the users update their `canvas.inverse`
       // we also need to update their searchsg theme settings
       if (
-        siteConfig?.search?.type === "searchSG" &&
-        typeof siteConfig.search.clientId === "string" &&
-        typeof siteConfig.url === "string" &&
+        hasSearchSgConfig(siteConfig) &&
         oldTheme.colors.brand.canvas.inverse !==
           theme.colors.brand.canvas.inverse
       ) {
@@ -575,10 +568,7 @@ export const siteRouter = router({
 
       await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
 
-      const siteConfig = site.config as { notification?: unknown } | null
-      return siteConfig?.notification
-        ? { notification: siteConfig.notification }
-        : {}
+      return getNotificationFromSiteConfig(site.config)
     },
   ),
   setSiteConfigByAdmin: protectedProcedure
