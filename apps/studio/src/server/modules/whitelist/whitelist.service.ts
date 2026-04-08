@@ -1,7 +1,89 @@
 import { TRPCError } from "@trpc/server"
 import { isValidEmail } from "~/utils/email"
 
+import type { DB, Transaction } from "../database"
 import { db } from "../database"
+
+const normalise = (email: string) => {
+  return email.toLowerCase().trim()
+}
+
+const getBaseQuery = (
+  emails: string[],
+  tx: Transaction<DB>,
+  expiry: Date | null = null,
+) => {
+  const dedupedEmails = Array.from(new Set(emails))
+  if (dedupedEmails.length === 0) return
+
+  return tx.insertInto("Whitelist").values(
+    dedupedEmails.map((email) => ({
+      email: normalise(email),
+      expiry,
+    })),
+  )
+}
+
+const insertAdminEmails = async (emails: string[], tx: Transaction<DB>) => {
+  const query = getBaseQuery(emails, tx)
+  if (!query) return
+
+  return await query
+    .onConflict((oc) =>
+      // Always upgrade to admin (no expiry)
+      oc.column("email").doUpdateSet({ expiry: null, updatedAt: new Date() }),
+    )
+    .execute()
+}
+
+const insertVendorEmails = async (
+  emails: string[],
+  expiry: Date,
+  tx: Transaction<DB>,
+) => {
+  const query = getBaseQuery(emails, tx, expiry)
+  if (!query) return
+
+  return await query
+    .onConflict((oc) =>
+      // Only update expiry if existing record is a vendor (has expiry).
+      // If existing record is admin (expiry is null), do nothing.
+      oc
+        .column("email")
+        .doUpdateSet({ expiry, updatedAt: new Date() })
+        .where("Whitelist.expiry", "is not", null),
+    )
+    .execute()
+}
+
+export const whitelistEmails = async ({
+  adminEmails,
+  vendorEmails,
+}: {
+  adminEmails: string[]
+  vendorEmails: string[]
+}) => {
+  // Calculate vendor expiry (90 days from now)
+  const vendorExpiry = new Date()
+  vendorExpiry.setDate(vendorExpiry.getDate() + 90)
+  vendorExpiry.setHours(0, 0, 0, 0)
+
+  // Use transaction for bulk insert
+  return db.transaction().execute(async (tx) => {
+    // Batch insert admin emails (no expiry) and vendor emails (90 day expiry)
+    const insertedAdmins = await insertAdminEmails(adminEmails, tx)
+    const insertedVendors = await insertVendorEmails(
+      vendorEmails,
+      vendorExpiry,
+      tx,
+    )
+
+    return {
+      adminCount: Number(insertedAdmins?.[0]?.numInsertedOrUpdatedRows ?? 0),
+      vendorCount: Number(insertedVendors?.[0]?.numInsertedOrUpdatedRows ?? 0),
+    }
+  })
+}
 
 export const isEmailWhitelisted = async (email: string) => {
   const lowercaseEmail = email.toLowerCase()
