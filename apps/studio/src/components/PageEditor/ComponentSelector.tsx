@@ -1,4 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import type { RequireAllOrNone } from "type-fest"
 import {
   chakra,
   Flex,
@@ -10,7 +11,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
 import Image from "next/image"
 import { useMemo } from "react"
 import { type IconType } from "react-icons"
@@ -50,7 +51,7 @@ function BlockList({ children }: React.PropsWithChildren) {
   return <Stack w="full">{children}</Stack>
 }
 
-interface BlockItemProps {
+type BlockItemProps = {
   imageSrc?: string
   icon: IconType
   label: string
@@ -58,11 +59,14 @@ interface BlockItemProps {
   sectionType: SectionType
   description: string
   usageText?: string
-  isDisabled?: boolean
-}
+} & RequireAllOrNone<{
+  isDisabled: boolean
+  disabledText: string
+}>
 
 function BlockItem({
   isDisabled,
+  disabledText,
   icon,
   label,
   onProceed,
@@ -74,45 +78,62 @@ function BlockItem({
   return (
     <Popover trigger="hover" placement="right" isLazy offset={[0, 20]}>
       <PopoverTrigger>
-        <chakra.button
-          disabled={isDisabled}
-          layerStyle="focusRing"
-          w="100%"
-          borderRadius="6px"
-          border="1px solid"
-          borderColor="base.divider.medium"
-          transitionProperty="common"
-          transitionDuration="normal"
-          _hover={{
-            bg: "interaction.muted.main.hover",
-            borderColor: "interaction.main-subtle.hover",
-          }}
-          bg="white"
-          p="0.75rem"
-          flexDirection="row"
-          display="flex"
-          alignItems="start"
-          gap="0.75rem"
-          onClick={() => onProceed(sectionType)}
-          _disabled={{
-            bg: "interaction.support.disabled",
-            borderColor: "base.divider.medium",
-            textColor: "interaction.support.disabled-content",
-            cursor: "not-allowed",
-          }}
+        <TouchableTooltip
+          label={disabledText}
+          display={isDisabled ? "flex" : "none"}
         >
-          <Flex
-            p="0.5rem"
-            bg="interaction.main-subtle.default"
-            borderRadius="full"
+          <chakra.button
+            disabled={isDisabled}
+            layerStyle="focusRing"
+            w="100%"
+            borderRadius="6px"
+            border="1px solid"
+            borderColor="base.divider.medium"
+            transitionProperty="common"
+            transitionDuration="normal"
+            _hover={{
+              bg: "interaction.muted.main.hover",
+              borderColor: "interaction.main-subtle.hover",
+            }}
+            bg="white"
+            p="0.75rem"
+            flexDirection="row"
+            display="flex"
+            alignItems="start"
+            gap="0.75rem"
+            onClick={() => onProceed(sectionType)}
+            _disabled={{
+              bg: "interaction.support.disabled",
+              borderColor: "base.divider.medium",
+              textColor: "interaction.support.disabled-content",
+              cursor: "not-allowed",
+              opacity: "75%",
+            }}
+            data-group
           >
-            <Icon as={icon} fontSize="1rem" color="base.content.default" />
-          </Flex>
-          <Stack align="start" gap="0.25rem" textAlign="start">
-            <Text textStyle="caption-1">{label}</Text>
-            <Text textStyle="caption-2">{description}</Text>
-          </Stack>
-        </chakra.button>
+            <Flex
+              p="0.5rem"
+              bg="interaction.main-subtle.default"
+              borderRadius="full"
+              _groupDisabled={{
+                background: "interaction.neutral-subtle.default",
+              }}
+            >
+              <Icon
+                as={icon}
+                fontSize="1rem"
+                color={"base.content.default"}
+                _groupDisabled={{
+                  fill: "interaction.support.disabled-content",
+                }}
+              />
+            </Flex>
+            <Stack align="start" gap="0.25rem" textAlign="start">
+              <Text textStyle="caption-1">{label}</Text>
+              <Text textStyle="caption-2">{description}</Text>
+            </Stack>
+          </chakra.button>
+        </TouchableTooltip>
       </PopoverTrigger>
       <PopoverContent width="fit-content" overflow="hidden">
         <Flex flexDir="column" w="292px">
@@ -288,7 +309,8 @@ function ComponentSelector() {
                     icon={TYPE_TO_ICON[type]}
                     onProceed={onProceed}
                     sectionType={type}
-                    isDisabled={isDisabled}
+                    isDisabled={!!isDisabled}
+                    disabledText="This page already has a child pages block."
                     {...blockMeta}
                   />
                 )

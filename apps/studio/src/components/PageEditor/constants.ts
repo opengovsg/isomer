@@ -313,7 +313,7 @@ export const BLOCK_TO_META: Record<
   },
   childrenpages: {
     label: "Child pages",
-    description: "Automatically display all child pages in this folder",
+    description: "Automatically display all child pages in this folder.",
     imageSrc: "/assets/block-images/Childrenpages.png",
   },
   image: {
