@@ -313,7 +313,8 @@ export const BLOCK_TO_META: Record<
   },
   childrenpages: {
     label: "Child pages",
-    description: "Edit how child pages of this folder are displayed.",
+    description: "Automatically display all child pages in this folder.",
+    imageSrc: "/assets/block-images/Childrenpages.png",
   },
   image: {
     label: "Image",
@@ -491,7 +492,10 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
 
-export const INDEX_ALLOWED_BLOCKS: AllowedBlockSections = CONTENT_ALLOWED_BLOCKS
+export const INDEX_ALLOWED_BLOCKS: AllowedBlockSections = [
+  { label: "Auto-link pages", types: ["childrenpages"] },
+  ...CONTENT_ALLOWED_BLOCKS,
+]
 
 export const DATABASE_ALLOWED_BLOCKS: AllowedBlockSections =
   CONTENT_ALLOWED_BLOCKS
