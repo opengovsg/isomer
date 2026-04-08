@@ -15,6 +15,7 @@ export interface BaseBlockProps {
   invalidProps?: {
     description: string
   }
+  isHidden?: boolean
 }
 
 export const BaseBlock = ({
@@ -26,7 +27,8 @@ export const BaseBlock = ({
   containerProps,
   onClick,
   invalidProps,
-}: BaseBlockProps): JSX.Element => {
+  isHidden,
+}: BaseBlockProps): JSX.Element | false => {
   const actualDraggableProps = draggableProps ?? {}
 
   const Description = () => {
@@ -62,60 +64,72 @@ export const BaseBlock = ({
   }
 
   return (
-    <HStack
-      as="button"
-      layerStyle="focusRing"
-      w="100%"
-      borderRadius="6px"
-      border="1px solid"
-      borderColor="base.divider.medium"
-      transitionProperty="common"
-      transitionDuration="normal"
-      aria-invalid={!!invalidProps}
-      _hover={{
-        bg: "interaction.muted.main.hover",
-        borderColor: "interaction.main-subtle.hover",
-        _invalid: {
-          shadow: "0px 1px 6px 0px #C0343426",
-        },
-      }}
-      _active={{
-        bg: "interaction.main-subtle.default",
-        borderColor: "interaction.main-subtle.hover",
-        shadow: "0px 1px 6px 0px #1361F026",
-      }}
-      _invalid={{
-        bg: "utility.feedback.critical-subtle",
-        borderColor: "utility.feedback.critical",
-      }}
-      bg="white"
-      py="0.75rem"
-      px="0.75rem"
-      flexDirection="row"
-      align="center"
-      textAlign="start"
-      onClick={onClick}
-      {...actualDraggableProps}
-      {...containerProps}
-    >
-      {dragHandle}
-      {icon && (
-        <Flex
-          p="0.25rem"
-          bg="interaction.main-subtle.default"
-          borderRadius="4px"
-          mr="0.25rem"
-        >
-          <Icon as={icon} fontSize="0.75rem" color="base.content.default" />
-        </Flex>
-      )}
-      <Stack align="start" gap="0.25rem" overflow="auto">
-        <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
-          {label}
-        </Text>
-        <Description />
-      </Stack>
-    </HStack>
+    !isHidden && (
+      <HStack
+        as="button"
+        layerStyle="focusRing"
+        w="100%"
+        borderRadius="6px"
+        border="1px solid"
+        borderColor="base.divider.medium"
+        transitionProperty="common"
+        transitionDuration="normal"
+        aria-invalid={!!invalidProps}
+        _hover={{
+          bg: "interaction.muted.main.hover",
+          borderColor: "interaction.main-subtle.hover",
+          _invalid: {
+            shadow: "0px 1px 6px 0px #C0343426",
+          },
+        }}
+        _active={{
+          bg: "interaction.main-subtle.default",
+          borderColor: "interaction.main-subtle.hover",
+          shadow: "0px 1px 6px 0px #1361F026",
+        }}
+        _invalid={{
+          bg: "utility.feedback.critical-subtle",
+          borderColor: "utility.feedback.critical",
+        }}
+        bg={isHidden ? "gray.100" : "white"}
+        py="0.75rem"
+        px="0.75rem"
+        flexDirection="row"
+        align="center"
+        textAlign="start"
+        onClick={onClick}
+        opacity={isHidden ? 0.7 : 1}
+        {...actualDraggableProps}
+        {...containerProps}
+      >
+        {dragHandle}
+        {icon && (
+          <Flex
+            p="0.25rem"
+            bg={isHidden ? "gray.200" : "interaction.main-subtle.default"}
+            borderRadius="4px"
+            mr="0.25rem"
+          >
+            <Icon
+              as={icon}
+              fontSize="0.75rem"
+              color={isHidden ? "base.content.medium" : "base.content.default"}
+            />
+          </Flex>
+        )}
+        <Stack align="start" gap="0.25rem" overflow="auto">
+          <Text
+            textStyle="subhead-2"
+            noOfLines={1}
+            wordBreak="break-word"
+            color={isHidden ? "base.content.medium" : undefined}
+          >
+            {label}
+          </Text>
+          <Description />
+        </Stack>
+      </HStack>
+    )
   )
 }
 

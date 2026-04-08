@@ -2,23 +2,9 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import type { ModifiedAsset } from "~/types/assets"
 import type { ResourceType } from "~prisma/generated/generatedEnums"
-import { useToast } from "@opengovsg/design-system-react"
-import {
-  DEFAULT_CHILDREN_PAGES_BLOCK,
-  ISOMER_USABLE_PAGE_LAYOUTS,
-} from "@opengovsg/isomer-components"
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react"
+import { createContext, useCallback, useContext, useState } from "react"
 import { flushSync } from "react-dom"
-import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { type DrawerState } from "~/types/editorDrawer"
-import { trpc } from "~/utils/trpc"
 
 interface DrawerContextType extends Pick<
   EditorDrawerProviderProps,
@@ -73,48 +59,6 @@ export function EditorDrawerProvider({
   // Holding state for images/files that have been modified in the page
   const [modifiedAssets, setModifiedAssets] = useState<ModifiedAsset[]>([])
   const [addedBlockIndex, setAddedBlockIndex] = useState<number | null>(null)
-  const toast = useToast({ status: "error" })
-  const utils = trpc.useUtils()
-  const { mutate: insertChildpageBlock } = trpc.page.updatePageBlob.useMutation(
-    {
-      onSuccess: async () => {
-        await utils.page.readPage.invalidate({ pageId, siteId })
-        await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-      },
-      onError: (error) => {
-        toast({
-          status: "error",
-          title: "Failed to update blocks",
-          description: error.message,
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-    },
-  )
-
-  useEffect(() => {
-    if (
-      initialPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Index &&
-      initialPageState.content.every(({ type }) => {
-        return type !== DEFAULT_CHILDREN_PAGES_BLOCK.type
-      })
-    ) {
-      const content = Array.from(initialPageState.content)
-      const newPageState = {
-        ...initialPageState,
-        content: [...content, DEFAULT_BLOCKS.childrenpages],
-      }
-
-      setPreviewPageState(newPageState)
-      setSavedPageState(newPageState)
-
-      insertChildpageBlock({
-        siteId,
-        pageId,
-        content: JSON.stringify(newPageState),
-      })
-    }
-  }, [])
 
   const setPreviewPageState = useCallback(
     (previewPageState: SetStateAction<IsomerSchema>) => {

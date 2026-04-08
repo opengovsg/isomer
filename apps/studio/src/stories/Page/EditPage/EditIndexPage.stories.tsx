@@ -184,3 +184,27 @@ export const EditInfocardsLinkState: Story = {
     await userEvent.click(addLinkButton)
   },
 }
+
+export const AddBlockWithChildrenPagesDisabled: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", { name: /add block/i })
+    await userEvent.click(button)
+  },
+}
+
+export const AddBlockWithChildrenPagesEnabled: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        pageHandlers.readPageAndBlob.indexWithoutChildrenPages(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", { name: /add block/i })
+    await userEvent.click(button)
+  },
+}

@@ -519,6 +519,12 @@ export default function RootStateDrawer() {
                                   return <></>
                                 }
 
+                                // Check if block is a hidden childrenpages block
+                                const isHiddenChildrenPages =
+                                  block.type === "childrenpages" &&
+                                  "isHidden" in block &&
+                                  block.isHidden
+
                                 return (
                                   <DraggableBlock
                                     block={block}
@@ -546,6 +552,7 @@ export default function RootStateDrawer() {
                                           }
                                         : undefined
                                     }
+                                    isHidden={isHiddenChildrenPages}
                                   />
                                 )
                               })}

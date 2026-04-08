@@ -25,17 +25,9 @@ import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
 import { AppGrid } from "~/templates/AppGrid"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import { generateResourceUrl } from "../utils"
 import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"
 import { PreviewLayout } from "./PreviewLayout"
-
-const generatePageUrl = (value: string) => {
-  return (
-    value
-      .toLowerCase()
-      // Replace non-alphanum characters with hyphen for UX
-      .replace(/[^a-z0-9]/g, "-")
-  )
-}
 
 export const CreateCollectionPageDetailsScreen = () => {
   const {
@@ -81,7 +73,7 @@ export const CreateCollectionPageDetailsScreen = () => {
         // This is because the `CollectionLink` will point to the actual resource
         // at compile time rather than the permalink given here.
         type === ResourceType.CollectionPage
-          ? generatePageUrl(title)
+          ? generateResourceUrl(title)
           : crypto.randomUUID(),
         {
           shouldValidate: !!title,
@@ -207,7 +199,7 @@ export const CreateCollectionPageDetailsScreen = () => {
                       {...field}
                       onChange={(e) => {
                         onChange(
-                          generatePageUrl(e.target.value).slice(
+                          generateResourceUrl(e.target.value).slice(
                             0,
                             MAX_PAGE_URL_LENGTH,
                           ),
