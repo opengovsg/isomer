@@ -1,11 +1,16 @@
 import {
   isEmailWhitelistedInputSchema,
   isEmailWhitelistedOutputSchema,
+  whitelistEmailsInputSchema,
 } from "~/schemas/whitelist"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { protectedProcedure, router } from "../../trpc"
-import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
-import { isEmailWhitelisted } from "./whitelist.service"
+import {
+  validatePermissionsForManagingUsers,
+  validateUserIsIsomerAdmin,
+} from "../permissions/permissions.service"
+import { isEmailWhitelisted, whitelistEmails } from "./whitelist.service"
 
 export const whitelistRouter = router({
   isEmailWhitelisted: protectedProcedure
@@ -22,5 +27,15 @@ export const whitelistRouter = router({
       })
 
       return await isEmailWhitelisted(email)
+    }),
+  whitelistEmails: protectedProcedure
+    .input(whitelistEmailsInputSchema)
+    .mutation(async ({ ctx, input: { adminEmails, vendorEmails } }) => {
+      await validateUserIsIsomerAdmin({
+        userId: ctx.user.id,
+        roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
+      })
+
+      return whitelistEmails({ adminEmails, vendorEmails })
     }),
 })
