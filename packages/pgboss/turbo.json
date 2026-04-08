@@ -5,7 +5,7 @@
     "test:watch": {},
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": []
     },
     "test-ci:unit": {}
   }

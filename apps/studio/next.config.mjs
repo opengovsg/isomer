@@ -161,6 +161,8 @@ const config = {
     return config
   },
   transpilePackages: [
+    "@isomer/logging",
+    "@isomer/pgboss",
     "@sinclair/typebox",
     "@opengovsg/starter-kitty-validators",
   ],

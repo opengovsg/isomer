@@ -13,6 +13,6 @@ export const initTracer = ({ service }: { service?: string } = {}) => {
     logInjection: true,
     runtimeMetrics: true,
     reportHostname: true,
-    profiling: env.NODE_ENV === "production",
+    profiling: process.env.NODE_ENV === "production",
   })
 }

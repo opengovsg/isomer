@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
+    "noEmit": true,
     "types": ["node", "vitest/globals"],
     "declaration": true,
     "rootDir": "src",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strict": true,
@@ -16,5 +18,5 @@
     "lib": ["es2021"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules"]
 }
