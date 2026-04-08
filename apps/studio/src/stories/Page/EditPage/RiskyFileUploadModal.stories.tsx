@@ -54,7 +54,7 @@ export const ErrorState: Story = {
       await screen.findByRole("button", { name: "Upload file" }),
     )
     const errorMessage = await screen.findByText(
-      "Please confirm you've read and accept the risks.",
+      "You must accept the risks to upload the file.",
     )
     await expect(errorMessage).toBeVisible()
   },
