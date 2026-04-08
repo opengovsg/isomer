@@ -1,12 +1,6 @@
 import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
-import {
-  ResourceState,
-  ResourceType,
-  RoleType,
-} from "~/server/modules/database"
-import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
-import { addUsersToSite } from "~prisma/scripts/addUsersToSite"
+import { ResourceState, ResourceType } from "~/server/modules/database"
 
 import type {
   DB,
@@ -71,9 +65,11 @@ export const getSiteNameAndCodeBuildId = async (siteId: number) => {
     .select(["Site.codeBuildId", "Site.name", "Site.config"])
     .executeTakeFirstOrThrow()
 
+  const siteConfig = site.config as { siteName?: string } | null
+
   return {
     codeBuildId: site.codeBuildId,
-    name: site.config.siteName || site.name,
+    name: siteConfig?.siteName || site.name,
   }
 }
 
@@ -388,14 +384,6 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     await createRootPage({ tx, siteId, userId })
     await createSearchPage({ tx, siteId, userId })
     return siteId
-  })
-
-  await addUsersToSite({
-    siteId,
-    users: [...ISOMER_ADMINS, ...ISOMER_MIGRATORS].map((email) => ({
-      email: `${email}@open.gov.sg`,
-      role: RoleType.Admin,
-    })),
   })
 
   return { siteId, siteName }
