@@ -1,8 +1,8 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
-import dynamic from "next/dynamic"
 import uniq from "lodash/uniq"
+import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import {
@@ -13,9 +13,8 @@ import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { getFileExtension } from "~/utils/getFileExtension"
 
-const RiskyFileUploadModal = dynamic(
-  () =>
-    import("./RiskyFileUploadModal").then((mod) => mod.RiskyFileUploadModal),
+const RiskyFileUploadModal = dynamic(() =>
+  import("./RiskyFileUploadModal").then((mod) => mod.RiskyFileUploadModal),
 )
 
 interface FileAttachmentProps {
