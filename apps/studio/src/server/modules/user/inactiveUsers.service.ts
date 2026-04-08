@@ -6,10 +6,6 @@ import {
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
 import { createLogger } from "~/lib/logger"
-import {
-  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
-  PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
-} from "~prisma/constants"
 
 import type { ResourcePermission, Site, User } from "../database"
 import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
