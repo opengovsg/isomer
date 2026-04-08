@@ -6,7 +6,7 @@ import { REFERENCE_LINK_REGEX } from "@opengovsg/isomer-components"
 export const getHtmlWithRelativeReferenceLinks = (html: string) =>
   html.replaceAll(
     new RegExp(
-      `href="(?:http|https):\/\/[^[]*\/${REFERENCE_LINK_REGEX.source}"`,
+      `href="(?:http|https)://[^[]*/${REFERENCE_LINK_REGEX.source}"`,
       "g",
     ),
     (_, siteId, resourceId) => {

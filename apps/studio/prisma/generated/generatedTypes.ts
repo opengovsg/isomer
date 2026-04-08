@@ -9,6 +9,7 @@ import type {
   ResourceState,
   ResourceType,
   RoleType,
+  IsomerAdminRole,
   AuditLogEvent,
   BuildStatusType,
 } from "./generatedEnums"
@@ -60,6 +61,14 @@ export interface Footer {
    * [FooterJsonContent]
    */
   content: PrismaJson.FooterJsonContent
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
+export interface IsomerAdmin {
+  id: GeneratedAlways<string>
+  userId: string
+  role: IsomerAdminRole
+  expiry: Timestamp | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
@@ -159,6 +168,7 @@ export interface DB {
   Blob: Blob
   CodeBuildJobs: CodeBuildJobs
   Footer: Footer
+  IsomerAdmin: IsomerAdmin
   Navbar: Navbar
   RateLimiterFlexible: RateLimiterFlexible
   Resource: Resource

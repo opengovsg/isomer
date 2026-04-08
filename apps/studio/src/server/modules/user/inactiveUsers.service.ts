@@ -6,10 +6,6 @@ import {
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
-import {
-  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
-  PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
-} from "~prisma/constants"
 
 import type { ResourcePermission, Site, User } from "../database"
 import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
@@ -20,6 +16,17 @@ import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
 const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
 })
+
+// Returns a subquery that selects userIds of currently active Isomer admins
+// (i.e. those whose expiry is null or in the future). Used to exclude Isomer
+// admins from inactive-user queries.
+const activeIsomerAdminUserIds = () =>
+  db
+    .selectFrom("IsomerAdmin")
+    .where((eb) =>
+      eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
+    )
+    .select("userId")
 
 export function getDateOnlyInSG(daysAgo: number): Date {
   const singaporeTime = toZonedTime(new Date(), "Asia/Singapore")
@@ -44,7 +51,7 @@ export const getInactiveUsers = async ({
     .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
     .where("User.deletedAt", "is", null)
     .where("ResourcePermission.deletedAt", "is", null)
-    .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // needed to provide support for agencies
+    .where("User.id", "not in", activeIsomerAdminUserIds()) // needed to provide support for agencies
     .where((eb) =>
       eb.or([
         // Users who have never logged in
@@ -87,7 +94,7 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
       .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
       .innerJoin("Site", "Site.id", "ResourcePermission.siteId")
       .where("User.id", "in", userIds)
-      .where("User.email", "not in", ISOMER_ADMINS_AND_MIGRATORS_EMAILS) // we don't want to send emails to admins and migrators
+      .where("User.id", "not in", activeIsomerAdminUserIds()) // we don't want to send emails to admins and migrators
       .where("User.deletedAt", "is", null)
       .where("ResourcePermission.deletedAt", "is", null)
       .select([
@@ -191,7 +198,7 @@ const getSiteAndAdmins = async ({ userId, siteIds }: GetSiteAndAdminsProps) => {
           .where("ResourcePermission.userId", "!=", userId) // don't want to ask users to ask themselves for permissions
           .where("ResourcePermission.deletedAt", "is", null)
           .where("ResourcePermission.role", "=", RoleType.Admin) // should only give the admin emails to request reactivation permissions from
-          .where("User.email", "not in", PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS) // we don't want to send emails to admins and migrators
+          .where("User.id", "not in", activeIsomerAdminUserIds()) // we don't want to send emails to active admins and migrators
           .select([
             "Site.id as siteId",
             db.fn.agg<string[]>("array_agg", ["User.email"]).as("adminEmails"),

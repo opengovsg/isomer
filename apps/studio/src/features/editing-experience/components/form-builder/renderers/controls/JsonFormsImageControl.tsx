@@ -3,16 +3,14 @@ import { Box, FormControl } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
+import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 
-import {
-  IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-  MAX_IMG_FILE_SIZE_BYTES,
-} from "./constants"
+import { MAX_IMG_FILE_SIZE_BYTES } from "./constants"
 import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
@@ -53,8 +51,7 @@ function JsonFormsImageControl({
         <FileAttachment
           maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
           acceptedFileTypes={
-            schema.allowedMimeTypeMappings ??
-            IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING
+            schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING
           }
           siteId={siteId}
           resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
