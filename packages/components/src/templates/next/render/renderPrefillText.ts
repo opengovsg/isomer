@@ -43,6 +43,7 @@ const refPageSchema = z.object({
 interface PrefillContent {
   description?: string
   thumbnail?: string
+  thumbnailAlt?: string
 }
 export const renderPrefillText = (content: IsomerSchema): PrefillContent => {
   switch (content.layout) {
@@ -51,6 +52,7 @@ export const renderPrefillText = (content: IsomerSchema): PrefillContent => {
       return {
         description: page.articlePageHeader?.summary,
         thumbnail: page.image?.src,
+        thumbnailAlt: page.image?.alt,
       }
     }
     case "content":
@@ -59,6 +61,7 @@ export const renderPrefillText = (content: IsomerSchema): PrefillContent => {
       return {
         description: page.contentPageHeader?.summary,
         thumbnail: page.image?.src,
+        thumbnailAlt: page.image?.alt,
       }
     }
     case "database": {
@@ -79,6 +82,7 @@ export const renderPrefillText = (content: IsomerSchema): PrefillContent => {
       return {
         description: page.description,
         thumbnail: page.image?.src,
+        thumbnailAlt: page.image?.alt,
       }
     }
     case "homepage":

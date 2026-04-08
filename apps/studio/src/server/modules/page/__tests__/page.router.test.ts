@@ -163,6 +163,7 @@ describe("page.router", async () => {
         title: "Test Article Page",
         description: "Article summary text",
         thumbnail: "/images/article-thumb.jpg",
+        thumbnailAlt: "Article image",
       })
     })
 
@@ -213,6 +214,7 @@ describe("page.router", async () => {
         title: "Test Content Page",
         description: "Content page summary",
         thumbnail: "/images/content-thumb.png",
+        thumbnailAlt: "Content image",
       })
     })
 
@@ -263,6 +265,7 @@ describe("page.router", async () => {
         title: "Test Index Page",
         description: "Index page summary",
         thumbnail: "/images/index-thumb.png",
+        thumbnailAlt: "Index image",
       })
     })
 
@@ -409,6 +412,7 @@ describe("page.router", async () => {
         title: "Test File Page",
         description: "File description text",
         thumbnail: "/images/file-thumb.png",
+        thumbnailAlt: "File image",
       })
     })
 
@@ -459,6 +463,7 @@ describe("page.router", async () => {
         title: "Test Link Page",
         description: "Link description text",
         thumbnail: "/images/link-thumb.png",
+        thumbnailAlt: "Link image",
       })
     })
 
@@ -553,6 +558,7 @@ describe("page.router", async () => {
         title: "Article Without Image",
         description: "Article without image",
         thumbnail: undefined,
+        thumbnailAlt: undefined,
       })
     })
 
@@ -657,6 +663,7 @@ describe("page.router", async () => {
         title: "Folder Index Page",
         description: "Folder index summary",
         thumbnail: "/images/folder-index.png",
+        thumbnailAlt: "Folder",
       })
     })
   })
