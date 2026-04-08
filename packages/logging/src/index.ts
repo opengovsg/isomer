@@ -1,3 +1,2 @@
-export type { Logger } from "pino"
-
-export { createBaseLogger, type CreateBaseLoggerOptions } from "./logger"
+export * from "./logger"
+export * from "./types"
