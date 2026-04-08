@@ -134,15 +134,14 @@ function JsonFormsPrefillLinkControl({
         description="Link a page, file, external URL, or an email address"
         errors={errors}
       />
-      {props.isOpen && (
-        <ReplaceContentModal
-          {...props}
-          onProceed={() => {
-            overrideFields()
-            props.onClose()
-          }}
-        />
-      )}
+
+      <ReplaceContentModal
+        {...props}
+        onProceed={() => {
+          overrideFields()
+          props.onClose()
+        }}
+      />
     </>
   )
 }
