@@ -12,7 +12,6 @@ const formatQuotient = ({
   const q = bytes / unitSize
   if (Number.isInteger(q)) return String(q)
   const rounded = Math.round(q * 100) / 100
-  if (Number.isInteger(rounded)) return String(rounded)
   return String(rounded)
 }
 
