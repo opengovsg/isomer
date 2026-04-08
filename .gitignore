@@ -56,3 +56,4 @@ biome.json
 storybook-static/
 
 .claude/worktrees/*
+.worktrees/*
