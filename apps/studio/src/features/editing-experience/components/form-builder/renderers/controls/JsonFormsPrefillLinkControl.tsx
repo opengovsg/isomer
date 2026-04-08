@@ -87,7 +87,11 @@ function JsonFormsPrefillLinkControl({
     data,
     path,
   })
-  const { ...props } = useDisclosure()
+  const {
+    isOpen: isPrefillModalOpen,
+    onClose: onPrefillModalClose,
+    onOpen: onPrefillModalOpen,
+  } = useDisclosure()
   const overrideFields = () => {
     if (!prefill?.data) return
     const data = prefill.data as Record<string, string | undefined>
@@ -114,10 +118,10 @@ function JsonFormsPrefillLinkControl({
     }
 
     if (prefill.needsConfirmation && data) {
-      props.onOpen()
+      onPrefillModalOpen()
       return
     }
-  }, [data, prefill?.data, props.onOpen, canPrefill])
+  }, [data, prefill?.data, onPrefillModalOpen, canPrefill])
 
   return (
     <>
@@ -136,10 +140,11 @@ function JsonFormsPrefillLinkControl({
       />
 
       <ReplaceContentModal
-        {...props}
+        isOpen={isPrefillModalOpen}
+        onClose={onPrefillModalClose}
         onProceed={() => {
           overrideFields()
-          props.onClose()
+          onPrefillModalClose()
         }}
       />
     </>
