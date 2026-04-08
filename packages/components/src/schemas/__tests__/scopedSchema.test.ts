@@ -300,4 +300,97 @@ describe("getScopedSchema", () => {
       expect(schemaWithEmptyExclude).toEqual(originalSchema)
     })
   })
+
+  describe("include functionality", () => {
+    it("should keep only specified fields in collection layout (allOf)", () => {
+      const schema = getScopedSchema({
+        layout: "collection",
+        scope: "page",
+        include: ["subtitle"],
+      })
+
+      expect(schema).toBeDefined()
+      expect(schema.allOf).toBeDefined()
+
+      const allProperties = schema.allOf.flatMap((s: Record<string, unknown>) =>
+        s.properties ? Object.keys(s.properties) : [],
+      )
+      expect(allProperties).toEqual(["subtitle"])
+    })
+
+    it("should keep multiple specified fields across allOf sub-schemas", () => {
+      const schema = getScopedSchema({
+        layout: "collection",
+        scope: "page",
+        include: ["subtitle", "variant"],
+      })
+
+      expect(schema).toBeDefined()
+      expect(schema.allOf).toBeDefined()
+
+      const allProperties = schema.allOf.flatMap((s: Record<string, unknown>) =>
+        s.properties ? Object.keys(s.properties) : [],
+      )
+      expect(allProperties).toContain("subtitle")
+      expect(allProperties).toContain("variant")
+      expect(allProperties).not.toContain("sortOrder")
+      expect(allProperties).not.toContain("image")
+    })
+
+    it("should keep only specified fields in flat (non-allOf) schemas", () => {
+      const schema = getScopedSchema({
+        layout: "database",
+        scope: "page",
+        include: ["database"],
+      })
+
+      expect(schema).toBeDefined()
+      expect(schema.properties).toBeDefined()
+      expect(schema.properties.database).toBeDefined()
+      expect(schema.properties.contentPageHeader).toBeUndefined()
+    })
+
+    it("should filter required array to only included fields", () => {
+      const schema = getScopedSchema({
+        layout: "collection",
+        scope: "page",
+        include: ["subtitle"],
+      })
+
+      expect(schema).toBeDefined()
+      for (const subSchema of schema.allOf) {
+        if (Array.isArray(subSchema.required)) {
+          for (const field of subSchema.required) {
+            expect(field).toBe("subtitle")
+          }
+        }
+      }
+    })
+
+    it("should throw when both include and exclude are provided", () => {
+      expect(() =>
+        getScopedSchema({
+          layout: "collection",
+          scope: "page",
+          include: ["subtitle"],
+          exclude: ["variant"],
+        }),
+      ).toThrow("mutually exclusive")
+    })
+
+    it("should return original schema when include is empty array", () => {
+      const originalSchema = getScopedSchema({
+        layout: "database",
+        scope: "page",
+      })
+
+      const schemaWithEmptyInclude = getScopedSchema({
+        layout: "database",
+        scope: "page",
+        include: [],
+      })
+
+      expect(schemaWithEmptyInclude).toEqual(originalSchema)
+    })
+  })
 })

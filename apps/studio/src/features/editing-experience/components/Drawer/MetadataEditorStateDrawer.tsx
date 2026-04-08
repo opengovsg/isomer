@@ -78,16 +78,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
         return getScopedSchema({
           layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
           scope: "page",
-          exclude: [
-            "tagCategories",
-            "tags",
-            "variant",
-            "sortOrder",
-            "defaultSortBy",
-            "defaultSortDirection",
-            "showDate",
-            "image",
-          ],
+          include: ["subtitle"],
         })
       default:
         return metadataSchema
