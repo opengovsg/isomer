@@ -1,8 +1,8 @@
 import wretch from "wretch"
 import { env } from "~/env.mjs"
-import { createBaseLogger } from "~/lib/logger"
+import { createLogger } from "~/lib/logger"
 
-const logger = createBaseLogger({ path: "searchsg.service" })
+const logger = createLogger({ path: "searchsg.service" })
 
 const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin"
 

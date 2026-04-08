@@ -2,9 +2,9 @@ import crypto from "crypto"
 import { calculateJwkThumbprint, exportJWK } from "jose"
 import { type NextApiRequest, type NextApiResponse } from "next"
 import { env } from "~/env.mjs"
-import { createBaseLogger } from "~/lib/logger"
+import { createLogger } from "~/lib/logger"
 
-const logger = createBaseLogger({ path: "singpass-jwks" })
+const logger = createLogger({ path: "singpass-jwks" })
 
 async function constructPublicJWK({
   key,
