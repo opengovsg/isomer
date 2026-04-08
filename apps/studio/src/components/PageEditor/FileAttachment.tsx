@@ -16,6 +16,7 @@ interface FileAttachmentProps {
   maxSizeInBytes: number
   acceptedFileTypes: Record<string, string>
   shouldFetchResource?: boolean
+  onUploadedFile?: (file: File) => void
 }
 
 type FileRejections = AttachmentProps<false>["rejections"]
@@ -27,6 +28,7 @@ export const FileAttachment = ({
   maxSizeInBytes,
   acceptedFileTypes,
   shouldFetchResource = true,
+  onUploadedFile,
 }: FileAttachmentProps) => {
   const [rejections, setRejections] = useState<FileRejections>([])
   // TODO: Add a mutation for deletion next time of s3 resources
@@ -61,6 +63,7 @@ export const FileAttachment = ({
               { file },
               {
                 onSuccess: ({ path }) => {
+                  onUploadedFile?.(file)
                   if (shouldFetchResource) {
                     void handleAssetUpload(path).then((src) => setHref(src))
                   } else setHref(path)
