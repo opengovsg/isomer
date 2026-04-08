@@ -44,8 +44,6 @@ export const defaultResourceSelect = [
   "Resource.state",
   "Resource.createdAt",
   "Resource.updatedAt",
-  "Resource.scheduledAt",
-  "Resource.scheduledBy",
 ] satisfies SelectExpression<DB, "Resource">[]
 
 const defaultResourceWithBlobSelect = [
@@ -157,18 +155,19 @@ export const getPageById = (
   args: { resourceId: number; siteId: number },
 ) => {
   return getById(db, args)
+    .leftJoin("ScheduledJobs", "Resource.id", "ScheduledJobs.resourceId")
     .where((eb) =>
       eb.or([
-        eb("type", "=", ResourceType.Page),
-        eb("type", "=", ResourceType.CollectionPage),
-        eb("type", "=", ResourceType.RootPage),
-        eb("type", "=", ResourceType.IndexPage),
-        eb("type", "=", ResourceType.CollectionLink),
-        eb("type", "=", ResourceType.FolderMeta),
-        eb("type", "=", ResourceType.CollectionMeta),
+        eb("Resource.type", "=", ResourceType.Page),
+        eb("Resource.type", "=", ResourceType.CollectionPage),
+        eb("Resource.type", "=", ResourceType.RootPage),
+        eb("Resource.type", "=", ResourceType.IndexPage),
+        eb("Resource.type", "=", ResourceType.CollectionLink),
+        eb("Resource.type", "=", ResourceType.FolderMeta),
+        eb("Resource.type", "=", ResourceType.CollectionMeta),
       ]),
     )
-    .select(defaultResourceSelect)
+    .select([...defaultResourceSelect, "ScheduledJobs.scheduledAt"])
     .executeTakeFirst()
 }
 

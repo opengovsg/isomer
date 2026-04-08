@@ -292,14 +292,24 @@ export const setupPageResource = async ({
       siteId: site.id,
       parentId,
       publishedVersionId: null,
-      scheduledAt,
-      scheduledBy,
       draftBlobId: blob.id,
       type: resourceType,
       state,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
+
+  if (scheduledAt && scheduledBy) {
+    await db
+      .insertInto("ScheduledJobs")
+      .values({
+        resourceId: page.id,
+        scheduledAt,
+        scheduledBy,
+        type: "PublishResource",
+      })
+      .execute()
+  }
 
   if (state === ResourceState.Published && !userId) {
     throw new Error(

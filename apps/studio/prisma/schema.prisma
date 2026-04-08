@@ -68,12 +68,6 @@ model Resource {
   state ResourceState? @default(Draft)
   type  ResourceType
 
-  // This is only set if the resource is scheduled to be published at a later date
-  // If set, this indicates the time at which the resource should be published
-  scheduledAt DateTime?
-  scheduledBy String?
-  scheduler   User?     @relation(fields: [scheduledBy], references: [id])
-
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   ResourcePermission ResourcePermission[]
@@ -139,7 +133,6 @@ model User {
   versions           Version[]
   AuditLog           AuditLog[]
   CodeBuildJobs      CodeBuildJobs[]
-  ScheduledResources Resource[]
   scheduledJobs      ScheduledJobs[]
 
   // This unique index is subsequently replaced with a custom index that
@@ -304,6 +297,11 @@ enum BuildStatusType {
   STOPPED
 }
 
+enum ScheduledJobType {
+  PublishResource
+  PushDocument
+}
+
 model CodeBuildJobs {
   id                  BigInt          @id @default(autoincrement())
   buildId             String // The AWS CodeBuild build ID
@@ -329,11 +327,6 @@ model CodeBuildJobs {
   @@index([siteId])
   @@index([userId])
   @@index([buildId])
-}
-
-enum ScheduledJobType {
-  PublishResource
-  PushDocument
 }
 
 model ScheduledJobs {

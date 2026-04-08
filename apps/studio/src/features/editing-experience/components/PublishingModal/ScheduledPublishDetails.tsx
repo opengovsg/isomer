@@ -14,7 +14,7 @@ import {
   TimeSelect,
 } from "~/components/Select/TimeSelect"
 import { MINIMUM_SCHEDULE_LEAD_TIME_MINUTES } from "~/schemas/schedule"
-
+import { DocumentIngestionCheckbox } from "./DocumentIngestionCheckbox"
 import { QuickSelectTimeSection } from "./QuickSelectTimeSection"
 import { getEarliestAllowableTime } from "./utils"
 
@@ -24,6 +24,7 @@ export const SchedulePublishDetails = () => {
     watch,
     control,
     formState: { errors },
+    register,
   } = useFormContext<z.input<typeof schedulePublishClientSchema>>()
 
   const publishDate = watch("publishDate")
@@ -93,6 +94,7 @@ export const SchedulePublishDetails = () => {
         </FormControl>
       </HStack>
       <QuickSelectTimeSection earliestAllowableTime={earliestAllowableTime} />
+      <DocumentIngestionCheckbox {...register("shouldIngestDocument")} />
     </VStack>
   )
 }

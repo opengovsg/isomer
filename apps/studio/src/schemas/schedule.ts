@@ -17,6 +17,7 @@ export const schedulePublishClientSchema = basePageSchema
       const parsed = parseTimeStringToDate(time)
       return isValid(parsed) && format(parsed, "HH:mm") === time
     }),
+    shouldIngestDocument: z.boolean().optional().default(false),
   })
   .transform((schema) => {
     const { publishDate, publishTime, ...rest } = schema
@@ -51,4 +52,5 @@ export const schedulePublishClientSchema = basePageSchema
 
 export const scheduledPublishServerSchema = basePageSchema.extend({
   scheduledAt: z.date(),
+  shouldIngestDocument: z.boolean().optional().default(false),
 })
