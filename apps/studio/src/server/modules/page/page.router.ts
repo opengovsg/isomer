@@ -3,10 +3,9 @@ import type {
   IsomerSchema,
 } from "@opengovsg/isomer-components"
 import {
-  COLLECTION_PAGE_DEFAULT_SORT_BY,
-  COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
   getLayoutMetadataSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
+  renderPrefillText,
   schema,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
@@ -25,6 +24,7 @@ import {
   basePageSchema,
   createIndexPageSchema,
   createPageSchema,
+  getPrefillSchema,
   getRootPageSchema,
   listPagesSchema,
   pageSettingsSchema,
@@ -98,6 +98,32 @@ const validatedPageProcedure = protectedProcedure.use(
 )
 
 export const pageRouter = router({
+  getPrefill: protectedProcedure
+    .input(getPrefillSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const resource = await getFullPageById(db, {
+        resourceId: Number(resourceId),
+        siteId,
+      })
+
+      if (!resource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      const { title, content } = resource
+
+      return { title, ...renderPrefillText(content) }
+    }),
+
   list: protectedProcedure
     .input(listPagesSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
@@ -957,8 +983,7 @@ export const pageRouter = router({
               page: {
                 title: parent.title,
                 subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
-                defaultSortBy: COLLECTION_PAGE_DEFAULT_SORT_BY,
-                defaultSortDirection: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+                sortOrder: "date-desc",
               } as CollectionPagePageProps,
               content: [],
               version: "0.1.0",
