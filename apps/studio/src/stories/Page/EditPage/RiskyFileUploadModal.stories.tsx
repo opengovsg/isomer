@@ -1,5 +1,6 @@
 import { Box } from "@chakra-ui/react"
 import { type Meta, type StoryObj } from "@storybook/nextjs"
+import { expect, userEvent, within } from "storybook/test"
 import { RiskyFileUploadModal } from "~/components/PageEditor/RiskyFileUploadModal"
 
 import { withChromaticModes } from "@isomer/storybook-config"
@@ -16,7 +17,10 @@ const meta: Meta<typeof RiskyFileUploadModal> = {
   ],
   parameters: {
     layout: "fullscreen",
-    chromatic: { delay: 200 },
+    chromatic: {
+      delay: 200,
+      ...withChromaticModes(["gsib", "desktop"]),
+    },
   },
   args: {
     isOpen: true,
@@ -40,7 +44,18 @@ type Story = StoryObj<typeof RiskyFileUploadModal>
 
 export const Default: Story = {
   name: "RiskyFileUploadModal",
-  parameters: {
-    chromatic: withChromaticModes(["gsib", "desktop"]),
+}
+
+export const ErrorState: Story = {
+  name: "RiskyFileUploadModal (checkbox error)",
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body)
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Upload file" }),
+    )
+    const errorMessage = await screen.findByText(
+      "Please confirm you've read and accept the risks.",
+    )
+    await expect(errorMessage).toBeVisible()
   },
 }
