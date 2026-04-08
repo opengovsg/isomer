@@ -329,6 +329,8 @@ export const siteRouter = router({
       // we also need to update their searchsg theme settings
       if (
         siteConfig?.search?.type === "searchSG" &&
+        typeof siteConfig.search.clientId === "string" &&
+        typeof siteConfig.url === "string" &&
         oldTheme.colors.brand.canvas.inverse !==
           theme.colors.brand.canvas.inverse
       ) {
@@ -573,10 +575,10 @@ export const siteRouter = router({
 
       await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
 
-      const siteConfig = site.config as
-        | { notification?: Notification["notification"] }
-        | null
+      const siteConfig = site.config as { notification?: unknown } | null
       return siteConfig?.notification
+        ? { notification: siteConfig.notification }
+        : {}
     },
   ),
   setSiteConfigByAdmin: protectedProcedure

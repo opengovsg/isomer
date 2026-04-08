@@ -336,15 +336,10 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .set({ config: jsonb(null) })
         .execute()
-      const mockRequest = createMockRequest(session)
-      const mockGrowthBook: Partial<GrowthBook> = {
-        getFeatureValue: vi.fn().mockReturnValue({
-          core: [user.email],
-          migrators: [],
-        }),
-      }
-      mockRequest.gb = mockGrowthBook as GrowthBook
-      caller = createCaller(mockRequest)
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
 
       // Act
       const result = await caller.listAllSites()
