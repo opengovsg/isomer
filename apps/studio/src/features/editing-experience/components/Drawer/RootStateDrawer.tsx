@@ -29,10 +29,9 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useNewCollectionEditingExperience } from "~/hooks/useNewCollectionEditingExperience"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { ADMIN_ROLE } from "~/lib/growthbook"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { TYPE_TO_ICON } from "../../constants"
 import { pageSchema } from "../../schema"
@@ -181,8 +180,8 @@ export default function RootStateDrawer() {
   })
   const disableBlocks = isPreviewingIndexPage || !!scheduledAt
   const utils = trpc.useUtils()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
   const toast = useToast()
   const { mutate } = trpc.page.reorderBlock.useMutation({

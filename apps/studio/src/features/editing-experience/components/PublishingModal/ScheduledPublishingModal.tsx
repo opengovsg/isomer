@@ -60,7 +60,7 @@ export const ScheduledPublishingModal = ({
       const valid = schedulePublishClientSchema.safeParse(methods.getValues())
       setIsScheduledPublishValid(valid.success)
     }
-    const subscription = methods.watch(() => void validateForm())
+    const subscription = methods.watch(() => validateForm())
     return () => subscription.unsubscribe()
   }, [methods])
 
