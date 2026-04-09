@@ -1,3 +1,5 @@
+import { logDgsDebug } from "./debug"
+
 interface FetchDgsMetadataProps {
   resourceId: string
 }
@@ -36,6 +38,10 @@ export type FetchDgsMetadataOutput = Pick<
 export const fetchDgsMetadata = async ({
   resourceId,
 }: FetchDgsMetadataProps): Promise<FetchDgsMetadataOutput | undefined> => {
+  logDgsDebug("fetchDgsMetadata: about to fetch metadata API", {
+    resourceId,
+  })
+
   try {
     // For simplicity sake, we will always use data.gov.sg production API
     const response = await fetch(

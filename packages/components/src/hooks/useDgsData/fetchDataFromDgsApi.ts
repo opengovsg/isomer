@@ -3,12 +3,18 @@ import type {
   DgsApiDatasetSearchResponse,
   DgsApiDatasetSearchResponseSuccess,
 } from "./types"
+import { logDgsDebug } from "~/utils/dgs/debug"
 import { generateDgsUrl } from "./generateDgsUrl"
 
 export const fetchDataFromDgsApiDataset = async (
   params: DgsApiDatasetSearchParams,
 ): Promise<DgsApiDatasetSearchResponseSuccess> => {
   const url = generateDgsUrl(params)
+  logDgsDebug("fetchDataFromDgsApiDataset: about to fetch datastore_search", {
+    resourceId: params.resourceId,
+    url,
+  })
+
   const res = await fetch(url)
 
   if (!res.ok) {

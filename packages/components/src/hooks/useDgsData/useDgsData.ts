@@ -6,6 +6,7 @@ import type {
   DgsApiDatasetSearchParams,
   DgsApiDatasetSearchResponseSuccess,
 } from "./types"
+import { logDgsDebug } from "~/utils/dgs/debug"
 import { fetchDataFromDgsApiDataset } from "./fetchDataFromDgsApi"
 
 interface UseDgsData extends DgsApiDatasetSearchParams {
@@ -86,6 +87,11 @@ export const useDgsData = ({
       return
     }
 
+    logDgsDebug(
+      "useDgsData: useEffect invoking fetchDataFromDgsApiDataset (browser)",
+      { resourceId, fetchAll },
+    )
+
     const fetchData = async () => {
       setIsLoading(true)
       try {
@@ -103,7 +109,7 @@ export const useDgsData = ({
     }
 
     void fetchData()
-  }, [fetchAll, fetchAllRecords, fetchRecords])
+  }, [fetchAll, fetchAllRecords, fetchRecords, resourceId])
 
   return {
     records: data?.result.records,

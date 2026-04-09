@@ -2,6 +2,7 @@
 
 import type { FetchDgsMetadataOutput } from "~/utils/dgs/fetchDgsMetadata"
 import { useEffect, useState } from "react"
+import { logDgsDebug } from "~/utils/dgs/debug"
 import { fetchDgsMetadata } from "~/utils/dgs/fetchDgsMetadata"
 
 interface UseDgsMetadataProps {
@@ -30,6 +31,10 @@ export const useDgsMetadata = ({
       setIsLoading(false)
       return
     }
+
+    logDgsDebug("useDgsMetadata: useEffect invoking fetchDgsMetadata (browser)", {
+      resourceId,
+    })
 
     const fetchMetadata = async () => {
       setIsLoading(true)

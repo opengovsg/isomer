@@ -1,3 +1,5 @@
+import { logDgsDebug } from "./debug"
+
 interface FetchDgsFileDownloadUrlProps {
   resourceId: string
 }
@@ -15,6 +17,10 @@ interface FetchDgsFileDownloadUrlOutput {
 export const fetchDgsFileDownloadUrl = async ({
   resourceId,
 }: FetchDgsFileDownloadUrlProps): Promise<FetchDgsFileDownloadUrlOutput | null> => {
+  logDgsDebug("fetchDgsFileDownloadUrl: about to fetch download endpoints", {
+    resourceId,
+  })
+
   try {
     // For simplicity sake, we will always use data.gov.sg production API
     // The 'initiate' endpoint is less performant and has scalability limitations.
