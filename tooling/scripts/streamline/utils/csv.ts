@@ -43,11 +43,11 @@ interface SitesProductionCSVRow {
 
 export const updateSitesProductionCSV = async (
   sites: SitesProductionCSVRow[],
-  state: "PREVIEW_ONLY" | "PRELAUNCH" | "LAUNCHED"
+  state: "PREVIEW_ONLY" | "PRELAUNCH" | "LAUNCHED",
 ) => {
   const csvFilePath = path.join(process.env.SITES_CSV_PATH || "");
   const fileContent = await fs.promises.readFile(csvFilePath, "utf-8");
-  const parsed = Papa.parse<SitesProductionCSVRow>(fileContent, {
+  const parsed = Papa.parse<SitesProductionCSVRow>(fileContent.trim(), {
     header: true,
     skipEmptyLines: true,
   });
