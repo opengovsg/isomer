@@ -8,7 +8,7 @@ dotenv.config({
 
 export const createOrUpdateIndirectionRecord = async (
   domain: string,
-  cloudfrontDomain: string
+  cloudfrontDomain: string,
 ) => {
   const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
@@ -57,6 +57,18 @@ export const createRecords = (zoneId: string): Record[] => {
     repo: "isomer-indirection",
     path: `dns/${domainWithoutWww}.ts`,
   });
+
+  // Skip if the upstream file is already the same as the template to avoid
+  // creating unnecessary commits
+  if (
+    // @ts-expect-error unable to narrow the types
+    Buffer.from(response.data.content).toString("base64") === template
+  ) {
+    console.log(
+      `No changes needed on indirection for ${domainWithoutWww}. Skipping commit.`,
+    );
+    return;
+  }
 
   await octokit.rest.repos.createOrUpdateFileContents({
     owner: "isomerpages",
