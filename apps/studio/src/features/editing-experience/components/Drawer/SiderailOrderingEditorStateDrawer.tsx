@@ -117,13 +117,16 @@ const SiderailOrderingContent = ({
 
   const pages: ChildPageItem[] = useMemo(
     () =>
-      mergedOrdering.map((resourceId) => ({
-        id: resourceId,
-        title: mappings.get(resourceId)?.title ?? "Unknown page",
-        permalink: `/${mappings.get(resourceId)?.permalink ?? ""}`,
-        type: (mappings.get(resourceId)?.type ??
-          "Page") as ChildPageItem["type"],
-      })),
+      mergedOrdering.map((resourceId) => {
+        const resource = mappings.get(resourceId)
+
+        return {
+          id: resourceId,
+          title: resource?.title ?? "Unknown page",
+          permalink: `/${resource?.permalink ?? ""}`,
+          type: (resource?.type ?? "Page") as ChildPageItem["type"],
+        }
+      }),
     [mergedOrdering, mappings],
   )
 
