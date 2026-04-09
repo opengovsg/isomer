@@ -1,6 +1,6 @@
+import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
-import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
-import { addUsersToSite } from "~prisma/scripts/addUsersToSite"
+import { ResourceState, ResourceType } from "~/server/modules/database"
 
 import type {
   DB,
@@ -10,12 +10,6 @@ import type {
   Version,
 } from "../database"
 import type { UserPermissionsProps } from "../permissions/permissions.type"
-import type { Notification } from "~/schemas/site"
-import {
-  ResourceState,
-  ResourceType,
-  RoleType,
-} from "~/server/modules/database"
 import { logConfigEvent } from "../audit/audit.service"
 import { AuditLogEvent, db, jsonb } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
@@ -65,11 +59,18 @@ export const getSiteTheme = async (siteId: number) => {
   return theme
 }
 export const getSiteNameAndCodeBuildId = async (siteId: number) => {
-  return await db
+  const site = await db
     .selectFrom("Site")
     .where("id", "=", siteId)
-    .select(["Site.codeBuildId", "Site.name"])
+    .select(["Site.codeBuildId", "Site.name", "Site.config"])
     .executeTakeFirstOrThrow()
+
+  const siteConfig = site.config as { siteName?: string } | null
+
+  return {
+    codeBuildId: site.codeBuildId,
+    name: siteConfig?.siteName || site.name,
+  }
 }
 
 export const getNotification = async (
@@ -383,14 +384,6 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     await createRootPage({ tx, siteId, userId })
     await createSearchPage({ tx, siteId, userId })
     return siteId
-  })
-
-  await addUsersToSite({
-    siteId,
-    users: [...ISOMER_ADMINS, ...ISOMER_MIGRATORS].map((email) => ({
-      email: `${email}@open.gov.sg`,
-      role: RoleType.Admin,
-    })),
   })
 
   return { siteId, siteName }

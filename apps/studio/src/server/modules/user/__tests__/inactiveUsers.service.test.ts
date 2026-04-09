@@ -1,8 +1,4 @@
-import {
-  ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
-  PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
-  PAST_ISOMER_MEMBERS,
-} from "~prisma/constants"
+import type { Site, User } from "~/server/modules/database"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -12,14 +8,14 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-
-import type { Site, User } from "~/server/modules/database"
 import {
   sendAccountDeactivationEmail,
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
 import { db } from "~/server/modules/database"
 import { RoleType } from "~/server/modules/database/types"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 import {
   bulkDeactivateInactiveUsers,
@@ -27,6 +23,50 @@ import {
   getDateOnlyInSG,
   getInactiveUsers,
 } from "../inactiveUsers.service"
+
+const TEST_ISOMER_ADMIN_EMAILS = [
+  "testadmin1@open.gov.sg",
+  "testadmin2@open.gov.sg",
+  "testmigrator1@open.gov.sg",
+]
+
+const setupIsomerAdminUser = async ({
+  siteId,
+  email,
+  createdDaysAgo,
+  lastLoginDaysAgo,
+}: {
+  siteId: number
+  email: string
+  createdDaysAgo: number
+  lastLoginDaysAgo: number | null
+}) => {
+  const user = await setupUser({
+    email,
+    lastLoginAt: lastLoginDaysAgo ? getDateOnlyInSG(lastLoginDaysAgo) : null,
+  })
+  await setupAdminPermissions({ siteId, userId: user.id })
+  await db
+    .insertInto("IsomerAdmin")
+    .values({
+      userId: user.id,
+      role: email.includes("migrator")
+        ? IsomerAdminRole.Migrator
+        : IsomerAdminRole.Core,
+      expiry: null,
+    })
+    .execute()
+
+  if (createdDaysAgo) {
+    await db
+      .updateTable("User")
+      .where("id", "=", user.id)
+      .set({ createdAt: getDateOnlyInSG(createdDaysAgo) })
+      .execute()
+  }
+
+  return user
+}
 
 interface SetupUserWrapperProps {
   siteId?: number
@@ -378,7 +418,7 @@ describe("inactiveUsers.service", () => {
       expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
     })
 
-    it("should not include isomer admins and migrators (including former members) in the email", async () => {
+    it("should not include active isomer admins and migrators in the email", async () => {
       // Arrange
       const userToDeactivate = await setupUserWrapper({
         siteId: site.id,
@@ -386,8 +426,8 @@ describe("inactiveUsers.service", () => {
         lastLoginDaysAgo: null,
       })
       await Promise.all(
-        PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS.map((email) =>
-          setupUserWrapper({
+        TEST_ISOMER_ADMIN_EMAILS.map((email) =>
+          setupIsomerAdminUser({
             siteId: site.id,
             email,
             createdDaysAgo: 91,
@@ -400,11 +440,8 @@ describe("inactiveUsers.service", () => {
       await bulkDeactivateInactiveUsers()
 
       // Assert
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(
-        1 +
-          // we actually want to send the email to ex-isomer members as well
-          PAST_ISOMER_MEMBERS.length,
-      ) // send to deactivated user and all past isomer members
+      // Only the non-isomer-admin user should be deactivated
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
       expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
         recipientEmail: userToDeactivate.email,
         sitesAndAdmins: expect.any(Array),
@@ -728,8 +765,8 @@ describe("inactiveUsers.service", () => {
     it("should NOT select isomer admins and migrators", async () => {
       // Arrange
       await Promise.all(
-        ISOMER_ADMINS_AND_MIGRATORS_EMAILS.map((email) =>
-          setupUserWrapper({
+        TEST_ISOMER_ADMIN_EMAILS.map((email) =>
+          setupIsomerAdminUser({
             siteId: site.id,
             email,
             createdDaysAgo: 91,
@@ -745,6 +782,38 @@ describe("inactiveUsers.service", () => {
 
       // Assert
       expect(inactiveUsers).toHaveLength(0)
+    })
+
+    it("should select isomer admins with expired entries as inactive", async () => {
+      // Arrange
+      const expiredAdminEmail = "expiredadmin@open.gov.sg"
+      const expiredAdmin = await setupUser({
+        email: expiredAdminEmail,
+        lastLoginAt: null,
+      })
+      await setupAdminPermissions({ siteId: site.id, userId: expiredAdmin.id })
+      await db
+        .insertInto("IsomerAdmin")
+        .values({
+          userId: expiredAdmin.id,
+          role: IsomerAdminRole.Core,
+          expiry: new Date(Date.now() - 24 * 60 * 60 * 1000), // expired yesterday
+        })
+        .execute()
+      await db
+        .updateTable("User")
+        .where("id", "=", expiredAdmin.id)
+        .set({ createdAt: getDateOnlyInSG(91) })
+        .execute()
+
+      // Act
+      const inactiveUsers = await getInactiveUsers({
+        toDaysAgo: MAX_DAYS_FROM_LAST_LOGIN,
+      })
+
+      // Assert - expired isomer admin should be treated as a regular user
+      expect(inactiveUsers).toHaveLength(1)
+      expect(inactiveUsers[0]?.id).toBe(expiredAdmin.id)
     })
 
     it("should filter users by fromDaysAgo when provided", async () => {

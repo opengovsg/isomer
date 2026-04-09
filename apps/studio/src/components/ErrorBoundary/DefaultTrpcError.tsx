@@ -1,8 +1,8 @@
 import type { FallbackProps } from "react-error-boundary"
-import { useRouter } from "next/router"
 import { type TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
-
+import { useRouter } from "next/router"
 import { trpc } from "~/utils/trpc"
+
 import { FullscreenSpinner } from "../FullscreenSpinner"
 import { DefaultNotFound } from "./DefaultNotFound"
 import { DefaultServerError } from "./DefaultServerError"
@@ -15,7 +15,7 @@ const UnauthorizedError = ({
   const router = useRouter()
   void utils.invalidate()
   void router.push("/")
-  void resetErrorBoundary()
+  resetErrorBoundary()
 
   return <FullscreenSpinner />
 }

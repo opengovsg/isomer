@@ -1,9 +1,9 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { rankWith, schemaMatches } from "@jsonforms/core"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { ADMIN_ROLE } from "~/lib/growthbook"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
 import JsonFormsArrayControl from "./JsonFormsArrayControl"
 
 export const jsonFormsTagCategoriesControlTester: RankedTester = rankWith(
@@ -12,8 +12,8 @@ export const jsonFormsTagCategoriesControlTester: RankedTester = rankWith(
 )
 
 const JsonFormsTagCategoriesControl = (props: ArrayLayoutProps) => {
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
 
   if (!isUserIsomerAdmin) {

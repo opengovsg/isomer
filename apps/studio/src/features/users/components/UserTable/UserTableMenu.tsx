@@ -1,4 +1,3 @@
-import { useContext } from "react"
 import {
   IconButton,
   Menu,
@@ -8,26 +7,28 @@ import {
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
+import { useContext } from "react"
 import {
   BiDotsVerticalRounded,
   BiMailSend,
   BiPencil,
   BiTrash,
 } from "react-icons/bi"
-
-import type { UserTableData } from "./types"
-import type { UserTableProps } from "./UserTable"
 import { MenuItem } from "~/components/Menu"
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UserManagementContext } from "~/features/users"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { trpc } from "~/utils/trpc"
+
+import type { UserTableData } from "./types"
+import type { UserTableProps } from "./UserTable"
 import { removeUserModalAtom, updateUserModalAtom } from "../../atoms"
 import { canResendInviteToUser } from "../../utils"
 
 interface UserTableMenuProps
-  extends Pick<UserTableProps, "siteId">,
+  extends
+    Pick<UserTableProps, "siteId">,
     Pick<UserTableData, "createdAt" | "lastLoginAt" | "email" | "role"> {
   userId: UserTableData["id"]
   userName: UserTableData["name"]

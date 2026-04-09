@@ -1,5 +1,6 @@
 import type { NotificationProps } from "~/interfaces"
-import { getTextAsHtml } from "~/utils"
+import { getTextAsHtml } from "~/utils/getTextAsHtml"
+
 import { Prose } from "../../native/Prose"
 import { hasContent } from "../../native/Prose/utils"
 import { BaseParagraph } from "../BaseParagraph"

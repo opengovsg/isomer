@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
-
-import { getWordsFromPermalink } from "~/utils"
+import { getWordsFromPermalink } from "~/utils/getWordsFromPermalink"
 
 describe("getWordsFromPermalink", () => {
   it("should trim out all symbols and return the permalink as a space separated sentence for single level permalinks", () => {

@@ -1,10 +1,18 @@
 import type { SelectExpression } from "kysely"
 import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
+import type { ResourceItemContent } from "~/schemas/resource"
 import { TRPCError } from "@trpc/server"
+import _ from "lodash"
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import {
+  getSitemapTree,
+  injectTagMappings,
+  isCollectionItem,
+  overwriteCollectionChildrenForCollectionBlock,
+} from "~/utils/sitemap"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
-import _ from "lodash"
 
 import type {
   Footer,
@@ -16,14 +24,6 @@ import type {
   User,
 } from "../database"
 import type { SearchResultResource } from "./resource.types"
-import type { ResourceItemContent } from "~/schemas/resource"
-import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import {
-  getSitemapTree,
-  injectTagMappings,
-  isCollectionItem,
-  overwriteCollectionChildrenForCollectionBlock,
-} from "~/utils/sitemap"
 import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
@@ -102,8 +102,34 @@ export const getFullPageById = async (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
 ) => {
+  // Check if the resource is a Collection or Folder, and if so, use its IndexPage
+  const resource = await getById(db, args)
+    .select(["Resource.id", "Resource.type"])
+    .executeTakeFirst()
+
+  let targetResourceId = args.resourceId
+
+  if (
+    resource?.type === ResourceType.Collection ||
+    resource?.type === ResourceType.Folder
+  ) {
+    const indexPage = await db
+      .selectFrom("Resource")
+      .where("Resource.parentId", "=", String(args.resourceId))
+      .where("Resource.siteId", "=", args.siteId)
+      .where("Resource.type", "=", ResourceType.IndexPage)
+      .select("Resource.id")
+      .executeTakeFirst()
+
+    if (indexPage) {
+      targetResourceId = Number(indexPage.id)
+    }
+  }
+
+  const targetArgs = { ...args, resourceId: targetResourceId }
+
   // Check if draft blob exists and return that preferentially
-  const draftBlob = await getById(db, args)
+  const draftBlob = await getById(db, targetArgs)
     .where("Resource.draftBlobId", "is not", null)
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
@@ -113,7 +139,7 @@ export const getFullPageById = async (
     return draftBlob
   }
 
-  const publishedBlob = await getById(db, args)
+  const publishedBlob = await getById(db, targetArgs)
     .where("Resource.publishedVersionId", "is not", null)
     .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
     .innerJoin("Blob", "Version.blobId", "Blob.id")
@@ -346,6 +372,20 @@ export const getLocalisedSitemap = async (
   const thumbnailSql = sql<string>`
         published.content->'page'->'image'->> 'src'
     `.as("thumbnail")
+  const categorySql = sql<string>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'category')
+      ELSE ''
+    END
+`.as("category")
+  const dateSql = sql<string>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'date')
+      ELSE ''
+    END
+`.as("date")
 
   // Get the actual resource first
   const resource = await getById(db, { resourceId, siteId })
@@ -362,7 +402,13 @@ export const getLocalisedSitemap = async (
         .where("Resource.id", "=", String(resourceId))
         .leftJoin("Version", "Version.id", "publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
+        .select(() => [
+          headerSql,
+          thumbnailSql,
+          categorySql,
+          dateSql,
+          ...defaultResourceSelect,
+        ])
         .unionAll((fb) =>
           fb
             // Recursive case: Get all the ancestors of the resource
@@ -376,6 +422,8 @@ export const getLocalisedSitemap = async (
             .select(({ eb }) => [
               eb.cast<string>(eb.val(""), "text").as("summary"),
               eb.cast<string>(eb.val(""), "text").as("thumbnail"),
+              eb.cast<string>(eb.val(""), "text").as("category"),
+              eb.cast<string>(eb.val(""), "text").as("date"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -397,7 +445,13 @@ export const getLocalisedSitemap = async (
         .where("state", "=", "Published")
         .leftJoin("Version", "Version.id", "publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect]),
+        .select(() => [
+          headerSql,
+          thumbnailSql,
+          categorySql,
+          dateSql,
+          ...defaultResourceSelect,
+        ]),
     )
     // Step 3: Get all nested folders and collections
     .withRecursive("nestedResources", (eb) =>
@@ -412,7 +466,13 @@ export const getLocalisedSitemap = async (
         .where("Resource.state", "=", ResourceState.Published)
         .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect])
+        .select(() => [
+          headerSql,
+          thumbnailSql,
+          categorySql,
+          dateSql,
+          ...defaultResourceSelect,
+        ])
         .unionAll((fb) =>
           fb
             .selectFrom("Resource")
@@ -430,21 +490,45 @@ export const getLocalisedSitemap = async (
             .where("Resource.state", "=", ResourceState.Published)
             .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
             .leftJoin("Blob as published", "Version.blobId", "published.id")
-            .select(() => [headerSql, thumbnailSql, ...defaultResourceSelect]),
+            .select(() => [
+              headerSql,
+              thumbnailSql,
+              categorySql,
+              dateSql,
+              ...defaultResourceSelect,
+            ]),
         ),
     )
     // Step 4: Combine all the resources in a single array
     .selectFrom("ancestors as Resource")
-    .select(["summary", "thumbnail", ...defaultResourceSelect])
+    .select([
+      "summary",
+      "thumbnail",
+      "category",
+      "date",
+      ...defaultResourceSelect,
+    ])
     .union((eb) =>
       eb
         .selectFrom("immediateSiblings as Resource")
-        .select(["summary", "thumbnail", ...defaultResourceSelect]),
+        .select([
+          "summary",
+          "thumbnail",
+          "category",
+          "date",
+          ...defaultResourceSelect,
+        ]),
     )
     .union((eb) =>
       eb
         .selectFrom("nestedResources as Resource")
-        .select(["summary", "thumbnail", ...defaultResourceSelect]),
+        .select([
+          "summary",
+          "thumbnail",
+          "category",
+          "date",
+          ...defaultResourceSelect,
+        ]),
     )
     .orderBy("title asc")
     .execute()

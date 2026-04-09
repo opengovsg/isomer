@@ -1,14 +1,14 @@
 import type { Static, TSchema } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
-import type { OrderedListProps } from "./OrderedList"
-import type { ParagraphProps } from "./Paragraph"
-import type { UnorderedListProps } from "./UnorderedList"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { Type } from "@sinclair/typebox"
 import {
   orderedListSchemaBuilder,
   unorderedListSchemaBuilder,
 } from "~/schemas/utils"
+
+import type { OrderedListProps } from "./OrderedList"
+import type { ParagraphProps } from "./Paragraph"
+import type { UnorderedListProps } from "./UnorderedList"
 import { ParagraphSchema } from "./Paragraph"
 
 interface ListItem {

@@ -1,6 +1,5 @@
 import { UrlValidator } from "@opengovsg/starter-kitty-validators"
 import { z } from "zod"
-
 import { DASHBOARD } from "~/lib/routes"
 import { getBaseUrl } from "~/utils/getBaseUrl"
 

@@ -9,7 +9,6 @@ export default async () => {
     CONTAINER_CONFIGURATIONS.mockpass,
   ])
 
-  // eslint-disable-next-line no-restricted-properties
   Object.defineProperty(process.env, "testcontainers", {
     value: stringify(
       containers.map((container) => {

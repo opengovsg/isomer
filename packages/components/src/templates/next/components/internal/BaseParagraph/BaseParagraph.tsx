@@ -1,9 +1,9 @@
 import type { Node } from "interweave"
-import { Interweave } from "interweave"
-
 import type { BaseParagraphProps } from "~/interfaces"
+import { Interweave } from "interweave"
 import { twMerge } from "~/lib/twMerge"
-import { isExternalUrl } from "~/utils"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+
 import { Link } from "../Link"
 
 // This will be tree-shaken out of client bundles

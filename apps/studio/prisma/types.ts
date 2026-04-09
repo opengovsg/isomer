@@ -6,7 +6,6 @@
  */
 
 import type {
-  IsomerLayoutVariants as _IsomerLayoutVariants,
   IsomerPageSchemaType as _IsomerPageSchemaType,
   IsomerSchema as _IsomerSchema,
   IsomerSiteConfigProps as _IsomerSiteConfigProps,
@@ -16,15 +15,11 @@ import type {
 import type { Tagged } from "type-fest"
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+  // oxlint-disable-next-line @typescript-eslint/no-namespace
   namespace PrismaJson {
     // TODO: Rename all with XXXYYYJson instead of XXXJsonYYY
     type SiteJsonConfig = Tagged<_IsomerSiteConfigProps, "JSONB">
     type SiteThemeJson = Tagged<_IsomerSiteThemeProps, "JSONB">
-    type CollectionThemeJson = Tagged<
-      _IsomerLayoutVariants["collection"],
-      "JSONB"
-    >
     type BlobJsonContent = Tagged<_IsomerSchema, "JSONB">
     type NavbarJsonContent = Tagged<
       _IsomerSiteWideComponentsProps["navbar"],

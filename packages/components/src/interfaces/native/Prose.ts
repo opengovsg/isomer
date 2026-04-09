@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { DividerSchema } from "./Divider"
 import { HeadingSchema } from "./Heading"
 import { OrderedListSchema } from "./OrderedList"

@@ -1,5 +1,6 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { Filter } from "~/templates/next/types/Filter"
+
 import { FILTER_ID_CATEGORY } from "./constants"
 
 export const getCategoryFilter = (

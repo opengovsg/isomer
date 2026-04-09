@@ -1,17 +1,17 @@
-import Image from "next/image"
-import NextLink from "next/link"
 import { Flex, HStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
+import Image from "next/image"
+import NextLink from "next/link"
 import { BiLinkExternal } from "react-icons/bi"
-
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { ADMIN_ROLE } from "~/lib/growthbook"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
 import { AvatarMenu } from "./AvatarMenu"
 
 export function AppNavbar(): JSX.Element {
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE],
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core],
   })
 
   return (

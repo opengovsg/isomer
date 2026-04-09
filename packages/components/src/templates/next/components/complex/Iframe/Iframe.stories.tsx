@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { IframeProps } from "~/interfaces"
+
 import { Iframe } from "./Iframe"
 
 const meta: Meta<IframeProps> = {

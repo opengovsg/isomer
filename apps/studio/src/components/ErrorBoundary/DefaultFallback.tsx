@@ -1,7 +1,7 @@
 import { type ComponentType } from "react"
 import { type FallbackProps } from "react-error-boundary"
-
 import { TRPCWithErrorCodeSchema } from "~/utils/error"
+
 import { DefaultTrpcError } from "./DefaultTrpcError"
 import { UnexpectedErrorCard } from "./UnexpectedErrorCard"
 

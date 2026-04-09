@@ -1,18 +1,22 @@
 import type { AllCardProps } from "~/interfaces"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import type { CollectionPagePageProps } from "~/types/page"
-import { getParsedDate, getSitemapAsArray } from "~/utils"
+import { getParsedDate } from "~/utils/getParsedDate"
+import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
+
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
 
 const CATEGORY_OTHERS = "Others"
 
-export interface GetCollectionItemsProps {
+export type GetCollectionItemsProps = Pick<
+  CollectionPagePageProps,
+  "sortOrder" | "showDate" | "tagCategories"
+> & {
   site: IsomerSiteProps
   permalink: string
   sortBy?: CollectionPagePageProps["defaultSortBy"]
   sortDirection?: CollectionPagePageProps["defaultSortDirection"]
-  tagCategories?: CollectionPagePageProps["tagCategories"]
 }
 
 export const getCollectionItems = ({
@@ -20,6 +24,8 @@ export const getCollectionItems = ({
   permalink,
   sortBy,
   sortDirection,
+  sortOrder,
+  showDate,
   tagCategories,
 }: GetCollectionItemsProps): AllCardProps[] => {
   let currSitemap: IsomerSitemap = site.siteMap
@@ -47,63 +53,62 @@ export const getCollectionItems = ({
     return []
   }
 
-  const items = currSitemap.children.flatMap((child) =>
-    getSitemapAsArray(child),
-  )
-
-  const transformedItems = items
+  const items = currSitemap.children
+    .flatMap((child) => getSitemapAsArray(child))
     .filter(
       (item) =>
         item.layout === "file" ||
         item.layout === "link" ||
         item.layout === "article",
     )
-    .map((item) => {
-      const date =
-        item.date !== undefined && item.date !== ""
-          ? getParsedDate(item.date)
-          : undefined
 
-      const baseItem = {
-        type: "collectionCard" as const,
-        id: item.permalink,
-        date,
-        lastModified: item.lastModified,
-        category: item.category || CATEGORY_OTHERS,
-        title: item.title,
-        description: item.summary,
-        image: item.image,
-        site,
-        tags:
-          tagCategories && item.tagged
-            ? getTagsFromTagged(item.tagged, tagCategories)
-            : item.tags,
-      }
+  const transformedItems = items.map((item) => {
+    const date =
+      showDate !== false && item.date !== undefined && item.date !== ""
+        ? getParsedDate(item.date)
+        : undefined
 
-      if (item.layout === "file") {
-        return {
-          ...baseItem,
-          variant: "file",
-          url: item.ref,
-          fileDetails: item.fileDetails,
-        }
-      } else if (item.layout === "link") {
-        return {
-          ...baseItem,
-          variant: "link",
-          url: item.ref,
-        }
-      }
+    const baseItem = {
+      type: "collectionCard" as const,
+      id: item.permalink,
+      date,
+      lastModified: item.lastModified,
+      category: item.category || CATEGORY_OTHERS,
+      title: item.title,
+      description: item.summary,
+      image: item.image,
+      site,
+      tags:
+        tagCategories && item.tagged
+          ? getTagsFromTagged(item.tagged, tagCategories)
+          : item.tags,
+    }
 
+    if (item.layout === "file") {
       return {
         ...baseItem,
-        variant: "article",
-        url: item.permalink,
+        variant: "file",
+        url: item.ref,
+        fileDetails: item.fileDetails,
       }
-    }) satisfies AllCardProps[]
+    } else if (item.layout === "link") {
+      return {
+        ...baseItem,
+        variant: "link",
+        url: item.ref,
+      }
+    }
+
+    return {
+      ...baseItem,
+      variant: "article",
+      url: item.permalink,
+    }
+  }) satisfies AllCardProps[]
 
   return sortCollectionItems({
     items: transformedItems,
+    sortOrder,
     sortBy,
     sortDirection,
   })

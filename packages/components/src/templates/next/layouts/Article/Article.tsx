@@ -1,6 +1,7 @@
 import { type ArticlePageSchemaType } from "~/types"
-import { getBreadcrumbFromSiteMap } from "~/utils"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
+
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"

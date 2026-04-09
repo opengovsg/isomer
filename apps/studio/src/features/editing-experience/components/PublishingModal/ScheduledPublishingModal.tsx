@@ -1,6 +1,5 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { z } from "zod"
-import { useEffect, useState } from "react"
 import {
   HStack,
   Icon,
@@ -19,15 +18,16 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
+import { useEffect, useState } from "react"
 import { FormProvider, useFormContext } from "react-hook-form"
 import { BiHourglass } from "react-icons/bi"
-
 import { parseTimeStringToDate } from "~/components/Select/TimeSelect"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { getTimezoneAbbreviation } from "~/lib/dates"
 import { useZodForm } from "~/lib/form"
 import { schedulePublishClientSchema } from "~/schemas/schedule"
 import { trpc } from "~/utils/trpc"
+
 import { SchedulePublishDetails } from "./ScheduledPublishDetails"
 
 interface ScheduledPublishingModalProps extends UseDisclosureReturn {
@@ -60,7 +60,7 @@ export const ScheduledPublishingModal = ({
       const valid = schedulePublishClientSchema.safeParse(methods.getValues())
       setIsScheduledPublishValid(valid.success)
     }
-    const subscription = methods.watch(() => void validateForm())
+    const subscription = methods.watch(() => validateForm())
     return () => subscription.unsubscribe()
   }, [methods])
 

@@ -1,5 +1,4 @@
 import { type SessionOptions } from "iron-session"
-
 import { env } from "~/env.mjs"
 
 interface GenerateSessionOptionsProps {

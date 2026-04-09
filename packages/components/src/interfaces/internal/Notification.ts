@@ -1,8 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import type { PropsWithChildren } from "react"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { TextSchema } from "../native"
 import { SimpleProseSchema } from "../native/Prose"
 

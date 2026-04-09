@@ -1,5 +1,6 @@
 import type { HeroLargeImageProps } from "~/interfaces/complex/Hero"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+
 import { ComponentContent } from "../../../internal/customCssClass"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
 import { ImageContainer } from "./ImageContainer"
@@ -15,11 +16,6 @@ export const HeroLargeImage = ({
   site,
   LinkComponent,
 }: HeroLargeImageProps) => {
-  const backgroundSrc =
-    isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
-      ? backgroundUrl
-      : `${site.assetsBaseUrl}${backgroundUrl}`
-
   return (
     <section className="flex w-full flex-col">
       {/* Text and button container */}
@@ -39,7 +35,7 @@ export const HeroLargeImage = ({
             <LinkButton
               href={getReferenceLinkHref(
                 buttonUrl,
-                site.siteMap,
+                site.siteMapArray,
                 site.assetsBaseUrl,
               )}
               size="lg"
@@ -54,7 +50,7 @@ export const HeroLargeImage = ({
                 size="lg"
                 href={getReferenceLinkHref(
                   secondaryButtonUrl,
-                  site.siteMap,
+                  site.siteMapArray,
                   site.assetsBaseUrl,
                 )}
                 LinkComponent={LinkComponent}
@@ -66,7 +62,11 @@ export const HeroLargeImage = ({
           </div>
         )}
       </div>
-      <ImageContainer imageSrc={backgroundSrc} imageAlt={title} />
+      <ImageContainer
+        imageSrc={backgroundUrl}
+        imageAlt=""
+        assetsBaseUrl={site.assetsBaseUrl}
+      />
     </section>
   )
 }

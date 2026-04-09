@@ -1,5 +1,6 @@
 import type { ArticlePageHeaderProps } from "~/interfaces"
-import { getFormattedDate } from "~/utils"
+import { getFormattedDate } from "~/utils/getFormattedDate"
+
 import { Breadcrumb } from "../Breadcrumb"
 import { Tag } from "../Tag"
 

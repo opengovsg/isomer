@@ -1,5 +1,5 @@
-import React from "react"
 import { Badge, Tab, Text, useTab } from "@chakra-ui/react"
+import React from "react"
 
 interface UserTableTabProps {
   label: string

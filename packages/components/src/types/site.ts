@@ -1,8 +1,7 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
-import type { IsomerSitemap } from "./sitemap"
 import type { FooterSchemaType, NavbarSchemaType } from "~/interfaces"
+import { Type } from "@sinclair/typebox"
+import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import {
   AskgovSchema,
   LocalSearchSchema,
@@ -10,6 +9,8 @@ import {
   VicaSchema,
 } from "~/interfaces"
 import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
+
+import type { IsomerSitemap } from "./sitemap"
 
 export const AgencySettingsSchema = Type.Object({
   siteName: Type.String({
@@ -62,6 +63,7 @@ export const LogoSettingsSchema = Type.Object({
     description:
       "The logo appears on the navigation bar. It may also be used as a thumbnail if there’s no thumbnail set on a page.",
     format: "image",
+    allowedMimeTypeMappings: IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
   }),
   favicon: Type.Optional(
     Type.String({
@@ -69,6 +71,7 @@ export const LogoSettingsSchema = Type.Object({
       description:
         "This appears on a browser tab to help people recognise your site. We recommend a minimum size of 24px by 24px, in .ico, .svg, or .png format.",
       format: "image",
+      allowedMimeTypeMappings: IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
       maxSizeInBytes: 50000, // NOTE: 50 kB
     }),
   ),
@@ -113,12 +116,17 @@ export interface IsomerGeneratedSiteProps {
   isomerMsClarityId?: string
 }
 
+export interface IsomerDerivedSiteProps {
+  siteMapArray: IsomerSitemap[]
+}
+
 export interface IsomerSiteWideComponentsProps {
   navbar: NavbarSchemaType
   footerItems: FooterSchemaType
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &
+  IsomerDerivedSiteProps &
   IsomerSiteWideComponentsProps &
   IsomerSiteConfigProps
 

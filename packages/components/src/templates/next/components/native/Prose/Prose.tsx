@@ -1,7 +1,7 @@
 import type { JSX } from "react"
-
 import type { ProseProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
+
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { Divider } from "../Divider"
 import { Heading } from "../Heading"

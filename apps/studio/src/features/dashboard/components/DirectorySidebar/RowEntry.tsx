@@ -1,5 +1,4 @@
 import type { IconType } from "react-icons"
-import NextLink from "next/link"
 import {
   AccordionButton,
   AccordionIcon,
@@ -9,6 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Button, Spinner } from "@opengovsg/design-system-react"
+import NextLink from "next/link"
 
 interface RowEntryProps {
   icon: IconType

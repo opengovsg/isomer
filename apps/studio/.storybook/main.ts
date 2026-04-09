@@ -1,5 +1,5 @@
-import { dirname, join } from "node:path"
 import type { StorybookConfig } from "@storybook/nextjs"
+import { dirname, join } from "node:path"
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
@@ -27,7 +27,6 @@ const config: StorybookConfig = {
   env: (config) => ({
     ...config,
     SKIP_ENV_VALIDATION: "true",
-    // eslint-disable-next-line no-restricted-properties
     STORYBOOK_ENVIRONMENT: JSON.stringify(process.env),
   }),
 

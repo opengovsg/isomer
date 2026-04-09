@@ -1,5 +1,6 @@
 import type { ContactInformationUIProps } from "~/interfaces"
-import { getTailwindVariantLayout } from "~/utils"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+
 import { DefaultContactInformationUI } from "./DefaultContactInformationUI"
 import { HomepageContactInformationUI } from "./HomepageContactInformationUI"
 

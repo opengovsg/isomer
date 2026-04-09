@@ -27,6 +27,7 @@ export const doesComponentHaveImage = ({
     case "contentpic":
     case "iframe":
     case "map":
+    case "audio":
     case "video":
     case "imagegallery":
     case "childrenpages":

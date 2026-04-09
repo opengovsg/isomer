@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { DynamicComponentListProps } from "~/interfaces"
 import { http, HttpResponse } from "msw"
+import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { DynamicComponentListProps } from "~/interfaces"
-import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { DynamicComponentList } from "./DynamicComponentList"
 
 const meta: Meta<DynamicComponentListProps> = {

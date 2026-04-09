@@ -5,7 +5,6 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
-
 import SitePage from "~/pages/sites/[siteId]"
 import { ResetUpdateProfileModalDecorator } from "~/stories/decorators"
 

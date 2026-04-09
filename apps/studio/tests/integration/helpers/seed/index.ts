@@ -1,15 +1,15 @@
 import type { CodeBuildJobs } from "@prisma/client"
+import { nanoid } from "nanoid"
+import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
+import { MOCK_STORY_DATE } from "tests/msw/constants"
+import { buildIdFromArn } from "~/schemas/webhook"
 import {
+  IsomerAdminRole,
   ResourceState,
   ResourceType,
   RoleType,
 } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
-import { nanoid } from "nanoid"
-import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
-import { MOCK_STORY_DATE } from "tests/msw/constants"
-
-import { buildIdFromArn } from "~/schemas/webhook"
 
 interface SetupPermissionsProps {
   userId?: string
@@ -561,6 +561,22 @@ export const setUpWhitelist = async ({
         .column("email")
         .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
     )
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+export const setupIsomerAdmin = async ({
+  userId,
+  role = IsomerAdminRole.Core,
+  expiry = null,
+}: {
+  userId: string
+  role?: IsomerAdminRole
+  expiry?: Date | null
+}) => {
+  return db
+    .insertInto("IsomerAdmin")
+    .values({ userId, role, expiry })
     .returningAll()
     .executeTakeFirstOrThrow()
 }

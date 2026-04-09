@@ -1,5 +1,4 @@
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
-import { useEffect, useState } from "react"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -15,7 +14,7 @@ import {
 } from "@jsonforms/react"
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
-
+import { useEffect, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
@@ -81,7 +80,7 @@ function JsonFormsCombinatorControl({
     if (!newSchema) {
       handleChange(path, {})
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const newData = createDefaultValue(newSchema, rootSchema)
 
       if (newSchema.type === "string") {
@@ -110,7 +109,7 @@ function JsonFormsCombinatorControl({
     if (options[0]) {
       setVariant(options[0].label)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

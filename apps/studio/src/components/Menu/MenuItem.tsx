@@ -1,6 +1,6 @@
 import type { MenuItemProps as ChakraMenuItemProps } from "@chakra-ui/react"
-import { useMemo } from "react"
 import { MenuItem as ChakraMenuItem, cssVar, Tooltip } from "@chakra-ui/react"
+import { useMemo } from "react"
 
 const $bg = cssVar("menu-bg")
 

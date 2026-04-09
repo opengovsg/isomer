@@ -1,15 +1,13 @@
-import { BiRightArrowAlt } from "react-icons/bi"
-
 import type { SupportedIconName } from "~/common/icons"
 import type { InfoColsProps } from "~/interfaces"
+import { BiRightArrowAlt } from "react-icons/bi"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"
-import {
-  getReferenceLinkHref,
-  getTailwindVariantLayout,
-  groupFocusVisibleHighlight,
-  isExternalUrl,
-} from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+import { groupFocusVisibleHighlight } from "~/utils/tailwind"
+
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
@@ -19,7 +17,7 @@ const createInfoColsStyles = tv({
     outerContainer: `${ComponentContent}`,
     innerContainer: "flex flex-col gap-12",
     header: "flex w-full max-w-[47.5rem] flex-col items-start text-left",
-    headerTitle: "prose-display-md break-words text-base-content-strong",
+    headerTitle: "prose-display-sm break-words text-base-content-strong",
     headerSubtitle: "prose-headline-lg-regular text-base-content",
     infoBoxesContainer:
       "grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 md:gap-y-12 lg:grid-cols-3",
@@ -103,7 +101,7 @@ const InfoBoxes = ({
               LinkComponent={LinkComponent}
               href={getReferenceLinkHref(
                 buttonUrl,
-                site.siteMap,
+                site.siteMapArray,
                 site.assetsBaseUrl,
               )}
               key={idx}

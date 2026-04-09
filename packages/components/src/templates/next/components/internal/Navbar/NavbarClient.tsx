@@ -1,17 +1,18 @@
 "use client"
 
+import type { NavbarClientProps } from "~/interfaces"
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
-
-import type { NavbarClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlight, isExternalUrl } from "~/utils"
-import { ImageClient } from "../../complex/Image"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+import { focusVisibleHighlight } from "~/utils/tailwind"
+
 import { LinkButton } from "../../internal/LinkButton"
 import { LocalSearchInputBox } from "../../internal/LocalSearchInputBox"
 import { NavbarSearchSGInputBox } from "../../internal/SearchSGInputBox"
 import { IconButton } from "../IconButton"
+import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
 import { NavItem } from "./NavItem"
@@ -34,7 +35,7 @@ const createNavbarStyles = tv({
     utilityItemsHeader: "prose-label-sm-medium text-base-content-strong",
     utilityItem: [
       focusVisibleHighlight(),
-      "prose-label-sm-medium text-base-content-subtle hover:underline",
+      "prose-label-sm-medium inline-block py-1 text-base-content-subtle hover:underline",
     ],
     navbarItems:
       "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-4 pl-6 pr-3 md:px-10",
@@ -178,7 +179,7 @@ export const NavbarClient = ({
                       )
                     }}
                     isOpen={openNavItemIdx === index && !isHamburgerOpen}
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     LinkComponent={LinkComponent}
                   />
                 ))}
@@ -271,7 +272,7 @@ export const NavbarClient = ({
           setOpenNavItemIdx={setOpenNavItemIdx}
           callToAction={callToAction}
           utility={utility}
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
           LinkComponent={LinkComponent}
           onCloseMenu={onCloseMenu}
         />

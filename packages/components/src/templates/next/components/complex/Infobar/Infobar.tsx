@@ -1,7 +1,9 @@
-import type { InfobarProps } from "~/interfaces"
+import type { InfobarProps } from "~/interfaces/complex/Infobar"
 import { DEFAULT_INFOBAR_VARIANT } from "~/interfaces/complex/Infobar/constants"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -30,7 +32,7 @@ export const createInfobarStyles = tv({
         screenWideOuterContainer: "mt-12 rounded-lg first:mt-0",
         innerContainer: "items-start gap-7 p-8",
         headingContainer: "gap-4",
-        title: "prose-display-sm",
+        title: "prose-display-xs",
         description: "prose-body-base",
         buttonContainer: "items-start",
       },
@@ -126,7 +128,7 @@ export const Infobar = ({
                 <LinkButton
                   href={getReferenceLinkHref(
                     buttonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   size={simplifiedLayout === "homepage" ? "lg" : "base"}
@@ -142,7 +144,7 @@ export const Infobar = ({
                 <LinkButton
                   href={getReferenceLinkHref(
                     secondaryButtonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   size={simplifiedLayout === "homepage" ? "lg" : "base"}

@@ -2,10 +2,7 @@ import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
-export const DEFAULT_BLOCKS: Record<
-  IsomerComponent["type"],
-  IsomerComponent | undefined
-> = {
+export const DEFAULT_BLOCKS = {
   prose: {
     type: "prose",
     content: [
@@ -181,6 +178,11 @@ export const DEFAULT_BLOCKS: Record<
     title: "Singapore region",
     url: "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d127639.0647119137!2d103.79481771806647!3d1.343949056391766!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ssg!4v1731681854346!5m2!1sen!2ssg",
   },
+  audio: {
+    type: "audio",
+    title: "As scammers adapt and evolve, how can technology keep up?",
+    url: "https://open.spotify.com/embed/episode/1xaBZfZ3tffBZdgBdy1Kh6",
+  },
   video: {
     type: "video",
     title: "Rick Astley - Never Gonna Give You Up",
@@ -308,7 +310,8 @@ export const BLOCK_TO_META: Record<
   },
   childrenpages: {
     label: "Child pages",
-    description: "Edit how child pages of this folder are displayed.",
+    description: "Automatically display all child pages in this folder.",
+    imageSrc: "/assets/block-images/Childrenpages.png",
   },
   image: {
     label: "Image",
@@ -379,6 +382,12 @@ export const BLOCK_TO_META: Record<
     usageText: "Direct people to your office or an event location.",
     imageSrc: "/assets/block-images/Map.png",
   },
+  // TODO: Add image source (skipped because component not available on studio yet)
+  audio: {
+    label: "Audio",
+    description: "Embed an audio from Spotify or Apple Podcast.",
+    usageText: "The audio will be playable directly on the page.",
+  },
   video: {
     label: "Video",
     description: "Embed a video from YouTube, Vimeo, or Facebook Watch.",
@@ -437,7 +446,7 @@ export const BLOCK_TO_META: Record<
       "Get mailing list sign-ups or quick feedback directly on the page.",
     imageSrc: "/assets/block-images/FormSG.png",
   },
-}
+} as const
 
 type AllowedBlockSections = {
   label: string
@@ -478,6 +487,11 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
     types: ["infocards", "infocols", "keystatistics"],
   },
   { label: "Embed external content", types: ["map", "video", "formsg"] },
+]
+
+export const INDEX_ALLOWED_BLOCKS: AllowedBlockSections = [
+  { label: "Auto-link pages", types: ["childrenpages"] },
+  ...CONTENT_ALLOWED_BLOCKS,
 ]
 
 export const DATABASE_ALLOWED_BLOCKS: AllowedBlockSections =

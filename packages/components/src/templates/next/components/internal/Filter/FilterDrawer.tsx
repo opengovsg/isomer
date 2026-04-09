@@ -1,16 +1,16 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react"
 import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
+import { useEffect, useRef, useState } from "react"
 import { BiChevronDown, BiX } from "react-icons/bi"
-
-import type { AppliedFilter, FilterProps } from "../../../types/Filter"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { focusRing } from "~/utils"
+import { focusRing } from "~/utils/tailwind"
+
+import type { AppliedFilter, FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { IconButton } from "../IconButton"

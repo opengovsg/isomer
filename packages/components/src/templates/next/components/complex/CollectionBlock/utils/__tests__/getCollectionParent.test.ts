@@ -1,6 +1,6 @@
+import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { describe, expect, it } from "vitest"
 
-import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { getCollectionParent } from "../getCollectionParent"
 
 describe("getCollectionParent", () => {
@@ -15,6 +15,17 @@ describe("getCollectionParent", () => {
       lastModified: "2021-01-01",
       children: [],
     },
+    siteMapArray: [
+      {
+        id: "root",
+        title: "Homepage",
+        permalink: "/",
+        layout: "homepage",
+        summary: "Homepage summary",
+        lastModified: "2021-01-01",
+        children: [],
+      },
+    ],
     lastUpdated: "2021-01-01",
     // IsomerSiteWideComponentsProps
     navbar: { items: [] }, // Provide minimal valid value
@@ -46,12 +57,14 @@ describe("getCollectionParent", () => {
   it("should return `null` when collectionId does not match any siteMap child", () => {
     // Arrange
     const nonExistentCollectionId = `${collectionId}9999999`
+    const updatedSitemap = {
+      ...site.siteMap,
+      children: [collectionNode],
+    }
     site = {
       ...site,
-      siteMap: {
-        ...site.siteMap,
-        children: [collectionNode],
-      },
+      siteMap: updatedSitemap,
+      siteMapArray: [updatedSitemap, collectionNode],
     }
 
     // Act + Assert
@@ -65,12 +78,14 @@ describe("getCollectionParent", () => {
 
   it("should return the collection node when collectionId matches a siteMap child", () => {
     // Arrange
+    const updatedSitemap = {
+      ...site.siteMap,
+      children: [collectionNode],
+    }
     site = {
       ...site,
-      siteMap: {
-        ...site.siteMap,
-        children: [collectionNode],
-      },
+      siteMap: updatedSitemap,
+      siteMapArray: [updatedSitemap, collectionNode],
     }
 
     // Act
@@ -82,12 +97,14 @@ describe("getCollectionParent", () => {
 
   it("should throw an error when siteMap has no children", () => {
     // Arrange
+    const updatedSitemap = {
+      ...site.siteMap,
+      children: [],
+    }
     site = {
       ...site,
-      siteMap: {
-        ...site.siteMap,
-        children: [],
-      },
+      siteMap: updatedSitemap,
+      siteMapArray: [],
     }
 
     // Act + Assert
@@ -106,12 +123,14 @@ describe("getCollectionParent", () => {
       lastModified: "2021-01-01",
       children: [collectionNode],
     }
+    const updatedSitemap = {
+      ...site.siteMap,
+      children: [nestedCollectionNode],
+    }
     site = {
       ...site,
-      siteMap: {
-        ...site.siteMap,
-        children: [nestedCollectionNode],
-      },
+      siteMap: updatedSitemap,
+      siteMapArray: [updatedSitemap, nestedCollectionNode, collectionNode],
     }
 
     // Act

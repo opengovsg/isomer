@@ -1,6 +1,5 @@
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
 import type { Metadata, ResolvingMetadata } from "next"
-import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
@@ -11,6 +10,7 @@ import {
   RenderEngine,
   shouldBlockIndexing,
 } from "@opengovsg/isomer-components"
+import Link from "next/link"
 
 export const dynamic = "force-static"
 
@@ -31,7 +31,7 @@ const getPatchedPermalink = async (
   props: DynamicPageProps,
 ): Promise<ParamsContent["permalink"]> => {
   const params = await props.params
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return params.permalink ?? [""]
 }
 
@@ -47,7 +47,7 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const joinedPermalink: string = permalink.join("/")
 
   const schema = (await import(`@/schema/${joinedPermalink}.json`)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     .then((module) => module.default)
     // NOTE: If the initial import is missing,
     // this might be the case where the file is an index page
@@ -55,16 +55,16 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
     // so we have to do another import w the appended index path
     .catch(async () => {
       if (joinedPermalink === "") {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
         return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`).then(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+          // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
           (module) => module.default,
         )
       }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
       return import(
         `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       ).then((module) => module.default)
     })) as IsomerPageSchemaType
 
@@ -72,7 +72,8 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
     // TODO: fixup all the typing errors
     // @ts-expect-error to fix when types are proper
     getSitemapXml(sitemap).find(
-      ({ url }) => joinedPermalink === url.replace(/^\//, ""),
+      ({ url }) =>
+        joinedPermalink === url.replace(/^\//, "").replace(/\/$/, ""),
     ).lastModified || new Date().toISOString()
 
   schema.page.permalink = "/" + joinedPermalink
@@ -85,7 +86,7 @@ export const generateStaticParams = () => {
   // TODO: fixup all the typing errors
   // @ts-expect-error to fix when types are proper
   return getSitemapXml(sitemap).map(({ url }) => ({
-    permalink: url.replace(/^\//, "").split("/"),
+    permalink: url.replace(/^\//, "").replace(/\/$/, "").split("/"),
   }))
 }
 

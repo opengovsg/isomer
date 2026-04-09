@@ -1,6 +1,6 @@
 import { ResourceState } from "@prisma/client"
-
 import { db } from "~/server/modules/database"
+
 import { FileLogger } from "../FileLogger"
 
 // Update the logger path if required

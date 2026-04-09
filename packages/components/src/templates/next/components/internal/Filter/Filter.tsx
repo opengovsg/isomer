@@ -1,14 +1,14 @@
 "use client"
 
-import { useRef, useState } from "react"
 import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
+import { useRef, useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
+import { tv } from "~/lib/tv"
+import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
 import type { FilterProps } from "../../../types/Filter"
-import { tv } from "~/lib/tv"
-import { groupFocusVisibleHighlight } from "~/utils"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { FilterDrawer } from "./FilterDrawer"

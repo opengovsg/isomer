@@ -1,11 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
+import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import { TRPCError } from "@trpc/server"
-import {
-  AuditLogEvent,
-  ResourceState,
-  ResourceType,
-} from "~prisma/generated/generatedEnums"
 import { addDays, set, subDays } from "date-fns"
 import { omit, pick } from "lodash"
 import MockDate from "mockdate"
@@ -26,12 +22,16 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { createCallerFactory } from "~/server/trpc"
+import {
+  AuditLogEvent,
+  ResourceState,
+  ResourceType,
+} from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database"
-import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
-import { createCallerFactory } from "~/server/trpc"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
-import { db } from "../../database"
+import { db, jsonb } from "../../database"
 import { getBlobOfResource, getPageById } from "../../resource/resource.service"
 import { pageRouter } from "../page.router"
 import { createDefaultPage } from "../page.service"
@@ -60,6 +60,612 @@ describe("page.router", async () => {
       isDeleted: false,
     })
     await auth(user)
+  })
+
+  describe("getPrefill", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getPrefill({ siteId: 1, resourceId: "1" })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+
+      // Act
+      const result = caller.getPrefill({
+        siteId: site.id,
+        resourceId: page.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw 404 if resource does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getPrefill({
+        siteId: site.id,
+        resourceId: "99999",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
+      )
+    })
+
+    it("should return prefill data for article page layout", async () => {
+      // Arrange
+      const articleBlob = await db
+        .insertInto("Blob")
+        .values({
+          content: jsonb({
+            layout: "article",
+            page: {
+              articlePageHeader: { summary: "Article summary text" },
+              image: { src: "/images/article-thumb.jpg", alt: "Article image" },
+            },
+            content: [],
+            version: "0.1.0",
+          }),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      const { site } = await setupSite()
+      const page = await db
+        .insertInto("Resource")
+        .values({
+          title: "Test Article Page",
+          permalink: "test-article",
+          siteId: site.id,
+          draftBlobId: articleBlob.id,
+          type: ResourceType.Page,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPrefill({
+        siteId: site.id,
+        resourceId: page.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        title: "Test Article Page",
+        description: "Article summary text",
+        thumbnail: "/images/article-thumb.jpg",
+        thumbnailAlt: "Article image",
+      })
+    })
+
+    it("should return prefill data for content page layout", async () => {
+      // Arrange
+      const contentBlob = await db
+        .insertInto("Blob")
+        .values({
+          content: jsonb({
+            layout: "content",
+            page: {
+              contentPageHeader: { summary: "Content page summary" },
+              image: { src: "/images/content-thumb.png", alt: "Content image" },
+            },
+            content: [],
+            version: "0.1.0",
+          }),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      const { site } = await setupSite()
+      const page = await db
+        .insertInto("Resource")
+        .values({
+          title: "Test Content Page",
+          permalink: "test-content",
+          siteId: site.id,
+          draftBlobId: contentBlob.id,
+          type: ResourceType.Page,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPrefill({
+        siteId: site.id,
+        resourceId: page.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        title: "Test Content Page",
+        description: "Content page summary",
+        thumbnail: "/images/content-thumb.png",
+        thumbnailAlt: "Content image",
+      })
+    })
+
+    it("should return prefill data for index page layout", async () => {
+      // Arrange
+      const indexBlob = await db
+        .insertInto("Blob")
+        .values({
+          content: jsonb({
+            layout: "index",
+            page: {
+              contentPageHeader: { summary: "Index page summary" },
+              image: { src: "/images/index-thumb.png", alt: "Index image" },
+            },
+            content: [],
+            version: "0.1.0",
+          }),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      const { site } = await setupSite()
+      const page = await db
+        .insertInto("Resource")
+        .values({
+          title: "Test Index Page",
+          permalink: "_index",
+          siteId: site.id,
+          draftBlobId: indexBlob.id,
+          type: ResourceType.IndexPage,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPrefill({
+        siteId: site.id,
+        resourceId: page.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        title: "Test Index Page",
+        description: "Index page summary",
+        thumbnail: "/images/index-thumb.png",
+        thumbnailAlt: "Index image",
+      })
+    })
+
+    it("should return prefill data for database page layout", async () => {
+      // Arrange
+      const databaseBlob = await db
+        .insertInto("Blob")
+        .values({
+          content: jsonb({
+            layout: "database",
+            page: {
+              contentPageHeader: { summary: "Database page description" },
+            },
+            content: [],
+            version: "0.1.0",
+          }),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      const { site } = await setupSite()
+      const page = await db
+        .insertInto("Resource")
+        .values({
+          title: "Test Database Page",
+          permalink: "test-database",
+          siteId: site.id,
+          draftBlobId: databaseBlob.id,
+          type: ResourceType.Page,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPrefill({
+        siteId: site.id,
+        resourceId: page.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        title: "Test Database Page",
+        description: "Database page description",
+      })
+    })
+
+    it("should return prefill data for collection page layout", async () => {
+      // Arrange
+      const collectionBlob = await db
+        .insertInto("Blob")
+        .values({
+          content: jsonb({
+            layout: "collection",
+            page: {
+              subtitle: "Collection subtitle text",
+            },
+            content: [],
+            version: "0.1.0",
+          }),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      const { site } = await setupSite()
+      const page = await db
+        .insertInto("Resource")
+        .values({
+          title: "Test Collection Page",
+          permalink: "test-collection",
+          siteId: site.id,
+          draftBlobId: collectionBlob.id,
+          type: ResourceType.IndexPage,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPrefill({
+        siteId: site.id,
+        resourceId: page.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        title: "Test Collection Page",
+        description: "Collection subtitle text",
+      })
+    })
+
+    it("should return prefill data for file ref page layout", async () => {
+      // Arrange
+      const fileBlob = await db
+        .insertInto("Blob")
+        .values({
+          content: jsonb({
+            layout: "file",
+            page: {
+              description: "File description text",
+              image: { src: "/images/file-thumb.png", alt: "File image" },
+            },
+            content: [],
+            version: "0.1.0",
+          }),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      const { site } = await setupSite()
+      const page = await db
+        .insertInto("Resource")
+        .values({
+          title: "Test File Page",
+          permalink: "test-file",
+          siteId: site.id,
+          draftBlobId: fileBlob.id,
+          type: ResourceType.Page,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPrefill({
+        siteId: site.id,
+        resourceId: page.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        title: "Test File Page",
+        description: "File description text",
+        thumbnail: "/images/file-thumb.png",
+        thumbnailAlt: "File image",
+      })
+    })
+
+    it("should return prefill data for link ref page layout", async () => {
+      // Arrange
+      const linkBlob = await db
+        .insertInto("Blob")
+        .values({
+          content: jsonb({
+            layout: "link",
+            page: {
+              description: "Link description text",
+              image: { src: "/images/link-thumb.png", alt: "Link image" },
+            },
+            content: [],
+            version: "0.1.0",
+          }),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      const { site } = await setupSite()
+      const page = await db
+        .insertInto("Resource")
+        .values({
+          title: "Test Link Page",
+          permalink: "test-link",
+          siteId: site.id,
+          draftBlobId: linkBlob.id,
+          type: ResourceType.Page,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPrefill({
+        siteId: site.id,
+        resourceId: page.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        title: "Test Link Page",
+        description: "Link description text",
+        thumbnail: "/images/link-thumb.png",
+        thumbnailAlt: "Link image",
+      })
+    })
+
+    it("should return only title for homepage layout", async () => {
+      // Arrange
+      const homepageBlob = await db
+        .insertInto("Blob")
+        .values({
+          content: jsonb({
+            layout: "homepage",
+            page: {},
+            content: [],
+            version: "0.1.0",
+          }),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      const { site } = await setupSite()
+      const page = await db
+        .insertInto("Resource")
+        .values({
+          title: "Homepage",
+          permalink: "",
+          siteId: site.id,
+          draftBlobId: homepageBlob.id,
+          type: ResourceType.RootPage,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPrefill({
+        siteId: site.id,
+        resourceId: page.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        title: "Homepage",
+      })
+    })
+
+    it("should handle missing optional fields gracefully", async () => {
+      // Arrange - article page without image
+      const articleBlob = await db
+        .insertInto("Blob")
+        .values({
+          content: jsonb({
+            layout: "article",
+            page: {
+              articlePageHeader: { summary: "Article without image" },
+            },
+            content: [],
+            version: "0.1.0",
+          }),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      const { site } = await setupSite()
+      const page = await db
+        .insertInto("Resource")
+        .values({
+          title: "Article Without Image",
+          permalink: "article-no-image",
+          siteId: site.id,
+          draftBlobId: articleBlob.id,
+          type: ResourceType.Page,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPrefill({
+        siteId: site.id,
+        resourceId: page.id,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        title: "Article Without Image",
+        description: "Article without image",
+        thumbnail: undefined,
+        thumbnailAlt: undefined,
+      })
+    })
+
+    it("should resolve Collection resource to its IndexPage", async () => {
+      // Arrange
+      const { site, collection } = await setupCollection()
+
+      // Create an IndexPage for the collection with specific content
+      const indexBlob = await db
+        .insertInto("Blob")
+        .values({
+          content: jsonb({
+            layout: "collection",
+            page: {
+              subtitle: "Collection index page subtitle",
+            },
+            content: [],
+            version: "0.1.0",
+          }),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await db
+        .insertInto("Resource")
+        .values({
+          title: "Collection Index",
+          permalink: "_index",
+          siteId: site.id,
+          parentId: collection.id,
+          draftBlobId: indexBlob.id,
+          type: ResourceType.IndexPage,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act - request prefill for the Collection resource
+      const result = await caller.getPrefill({
+        siteId: site.id,
+        resourceId: collection.id,
+      })
+
+      // Assert - should get data from the IndexPage
+      expect(result).toEqual({
+        title: "Collection Index",
+        description: "Collection index page subtitle",
+      })
+    })
+
+    it("should resolve Folder resource to its IndexPage", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+
+      // Create an IndexPage for the folder with specific content
+      const indexBlob = await db
+        .insertInto("Blob")
+        .values({
+          content: jsonb({
+            layout: "index",
+            page: {
+              contentPageHeader: { summary: "Folder index summary" },
+              image: { src: "/images/folder-index.png", alt: "Folder" },
+            },
+            content: [],
+            version: "0.1.0",
+          }),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await db
+        .insertInto("Resource")
+        .values({
+          title: "Folder Index Page",
+          permalink: "_index",
+          siteId: site.id,
+          parentId: folder.id,
+          draftBlobId: indexBlob.id,
+          type: ResourceType.IndexPage,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act - request prefill for the Folder resource
+      const result = await caller.getPrefill({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert - should get data from the IndexPage
+      expect(result).toEqual({
+        title: "Folder Index Page",
+        description: "Folder index summary",
+        thumbnail: "/images/folder-index.png",
+        thumbnailAlt: "Folder",
+      })
+    })
   })
 
   describe("list", () => {

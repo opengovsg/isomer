@@ -1,10 +1,9 @@
-import { useMemo, useState } from "react"
-import { Grid, GridItem } from "@chakra-ui/react"
-import { z } from "zod"
-
 import type { CollectionLinkProps } from "~/schemas/collection"
-import { EditCollectionLinkPreview } from "~/features/editing-experience/components/EditLinkPreview"
-import { LinkEditorDrawer } from "~/features/editing-experience/components/LinkEditorDrawer"
+import { Grid, GridItem } from "@chakra-ui/react"
+import { useMemo, useState } from "react"
+import { z } from "zod"
+import { LinkEditorDrawer } from "~/features/editing-experience/components/Drawer/LinkEditorDrawer"
+import { EditCollectionLinkPreview } from "~/features/editing-experience/components/preview/EditLinkPreview"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { LinkEditingLayout } from "~/templates/layouts/LinkEditingLayout"
 import { trpc } from "~/utils/trpc"
@@ -47,7 +46,7 @@ export const EditLink = () => {
       gap={0}
       maxH="calc(100vh - 57px)"
     >
-      <GridItem colSpan={1} overflow="auto" minW="30rem">
+      <GridItem colSpan={1} overflow="auto" minW="28rem">
         <LinkEditorDrawer
           link={link}
           setLink={setLink}

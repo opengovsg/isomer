@@ -1,3 +1,4 @@
+import type { SessionData } from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -6,11 +7,10 @@ import {
 } from "tests/integration/helpers/iron-session"
 import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
 import { expect, vi } from "vitest"
-
-import type { SessionData } from "~/lib/types/session"
 import { env } from "~/env.mjs"
 import { AuditLogEvent, db } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
+
 import { singpassRouter } from "../singpass.router"
 import * as SingpassService from "../singpass.service"
 
