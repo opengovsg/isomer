@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && npm run build",
-    "build:template": "next build",
+    "build:template": "next build --debug-prerender",
     "clean": "git clean -xdf .next .turbo node_modules out",
     "dev": "PORT=3001 next",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
