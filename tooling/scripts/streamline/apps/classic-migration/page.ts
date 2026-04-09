@@ -265,7 +265,7 @@ export const getIsomerSchemaFromJekyll = async ({
     description,
     layout,
     variant,
-    html
+    html,
   );
 
   // Extract date from filename if not present in frontmatter
@@ -315,6 +315,31 @@ export const getIsomerSchemaFromJekyll = async ({
       } else {
         isImageAltTextUpdated = true;
       }
+    } else if (
+      block.type === "infocards" &&
+      Array.isArray(block.cards) &&
+      block.cards.some((card: any) => !!card.imageUrl)
+    ) {
+      for (const card of block.cards) {
+        if (card.imageUrl) {
+          const fullSrc = card.imageUrl.startsWith("http")
+            ? card.imageUrl
+            : domain
+              ? `${domain}${card.imageUrl}`
+              : `https://raw.githubusercontent.com/isomerpages/${site}/${useStagingBranch ? "staging" : "master"}${card.imageUrl}`;
+          const generatedAltText = await generateImageAltText(fullSrc);
+
+          if (!generatedAltText) {
+            isPageContainingBrokenImage = true;
+          } else {
+            isImageAltTextUpdated = true;
+          }
+
+          card.imageAlt = generatedAltText ?? "This image does not exist";
+        }
+      }
+
+      updatedSchemaContent.push(block);
     } else {
       updatedSchemaContent.push(block);
     }
@@ -344,7 +369,7 @@ export const getIsomerSchemaFromJekyll = async ({
   const pageContentString = JSON.stringify(convertedContent);
   const aiGeneratedSummary = await generatePageSummary(
     title,
-    pageContentString
+    pageContentString,
   );
 
   if (schemaContent.page?.contentPageHeader) {

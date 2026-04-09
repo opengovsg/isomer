@@ -421,7 +421,7 @@ export const migrateSite = async ({
       (content) =>
         [
           content.permalink,
-          content.title,
+          `"${content.title.replace(/"/g, '""')}"`,
           getStatusName(content.status),
           content.reviewItems
             ? content.reviewItems.some((ri) => ri.type === "must-fix")
@@ -429,15 +429,24 @@ export const migrateSite = async ({
               : "Review"
             : "Review",
           content.reviewItems
-            ? '"' + content.reviewItems.map((ri) => ri.message).join(", ") + '"'
+            ? '"' +
+              content.reviewItems
+                .filter((ri) => ri.message.trim() !== "")
+                .map((ri) => ri.message)
+                .join(", ") +
+              '"'
             : content.status === "not_converted"
               ? "Recreate page from scratch"
               : "",
           content.reviewItems
             ? '"' +
-              [...new Set(content.reviewItems.map((ri) => ri.action))].join(
-                ", ",
-              ) +
+              [
+                ...new Set(
+                  content.reviewItems.map((ri) =>
+                    ri.action.replace(/"/g, '""'),
+                  ),
+                ),
+              ].join(", ") +
               '"'
             : "Run final checks",
         ].join(",") + "\n",
