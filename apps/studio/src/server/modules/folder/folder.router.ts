@@ -423,22 +423,13 @@ export const folderRouter = router({
         .where("id", "in", (qb) =>
           qb
             .selectFrom("publishedCousinIndexPages")
-            .where("parentType", "=", ResourceType.Folder)
+            .where("parentType", "in", [
+              ResourceType.Collection,
+              ResourceType.Folder,
+            ])
             .select("parentId"),
         )
         .select(["id", "title", "type", "permalink"])
-        .unionAll((qb) => {
-          return qb
-            .selectFrom("Resource")
-            .where("siteId", "=", Number(siteId))
-            .where("id", "in", (innerQb) =>
-              innerQb
-                .selectFrom("publishedCousinIndexPages")
-                .where("parentType", "=", ResourceType.Collection)
-                .select("parentId"),
-            )
-            .select(["id", "title", "type", "permalink"])
-        })
         .unionAll((qb) => {
           return qb
             .selectFrom("directChildren")
