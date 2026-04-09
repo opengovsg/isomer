@@ -4,6 +4,7 @@ import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
+import { generateImageSrcSchema } from "~/interfaces"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
@@ -71,9 +72,8 @@ const BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING = omit(
   ".gif",
 )
 
-const BackgroundUrlSchema = Type.String({
+const BackgroundUrlSchema = generateImageSrcSchema({
   title: "Hero image",
-  format: "image",
   allowedMimeTypeMappings: BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 })
 
