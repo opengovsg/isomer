@@ -41,7 +41,7 @@ export const UsageTooltip = ({
       <PopoverTrigger>{children}</PopoverTrigger>
       <Portal>
         <PopoverContent width="fit-content" overflow="hidden">
-          <Flex flexDir="column" w="292px">
+          <Flex flexDir="column" w="18.25rem">
             {imageSrc && (
               <Image height={160} width={292} src={imageSrc} alt={label} />
             )}
