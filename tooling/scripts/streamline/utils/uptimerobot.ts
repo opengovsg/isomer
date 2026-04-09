@@ -28,7 +28,7 @@ export const getUptimeRobotMonitors = async () => {
 
   while (true) {
     const result = (await fetch(url, options).then((response) =>
-      response.json()
+      response.json(),
     )) as GetUptimeRobotMonitorsResponse;
 
     monitors.push(...result.data);
@@ -44,7 +44,12 @@ export const getUptimeRobotMonitors = async () => {
 };
 
 export const createMaintenanceWindow = async (monitorIds: number[]) => {
-  const launchDate = moment().add(7, "days").format("YYYY-MM-DD");
+  // Site launch is by default scheduled for 2 days later at 8pm SGT, and the
+  // maintenance window is set to last for 4 hours
+  const daysUntilLaunch = 2; // Change this if it is not 2 days from today
+  const hourOfLaunch = "20:00:00"; // Change this if the launch time is not 8pm SGT
+
+  const launchDate = moment().add(daysUntilLaunch, "days").format("YYYY-MM-DD");
   const options = {
     method: "POST",
     headers: {
@@ -56,14 +61,14 @@ export const createMaintenanceWindow = async (monitorIds: number[]) => {
       autoAddMonitors: false,
       interval: "once",
       date: launchDate,
-      time: "14:00:00",
-      duration: 120,
+      time: hourOfLaunch,
+      duration: 4 * 60, // Duration in minutes (4 hours)
       monitorIds,
     }),
   };
 
   (await fetch(
     "https://api.uptimerobot.com/v3/maintenance-windows",
-    options
+    options,
   ).then((response) => response.json())) as unknown;
 };
