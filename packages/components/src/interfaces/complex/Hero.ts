@@ -4,8 +4,8 @@ import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
-import { generateImageSrcSchema } from "~/interfaces"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { generateImageSrcSchema } from "./Image"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
 
