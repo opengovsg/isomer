@@ -5,9 +5,9 @@ import { Type } from "@sinclair/typebox"
 import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
-import { generateImageSrcSchema } from "./Image"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
+import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
   gradient: "gradient",
