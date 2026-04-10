@@ -3,6 +3,7 @@ import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
 import { cloneDeep } from "lodash-es"
 import { get } from "lodash-es"
 import { set } from "lodash-es"
+
 import type {
   MoveItemOperation,
   NavbarItemIndices,

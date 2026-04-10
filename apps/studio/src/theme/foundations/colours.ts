@@ -1,4 +1,5 @@
 import { merge } from "lodash-es"
+
 import { colours as generatedColours } from "../generated/colours"
 
 const customColours = {
