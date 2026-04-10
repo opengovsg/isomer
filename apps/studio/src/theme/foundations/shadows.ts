@@ -1,5 +1,4 @@
-import merge from "lodash/merge"
-
+import { merge } from "lodash-es"
 import { shadows as generatedShadows } from "../generated/shadows"
 
 const customShadows = {

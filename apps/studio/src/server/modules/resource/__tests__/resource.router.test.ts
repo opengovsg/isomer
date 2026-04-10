@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import _, { pick } from "lodash"
+import _, { pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {

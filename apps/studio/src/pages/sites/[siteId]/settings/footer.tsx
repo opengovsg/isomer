@@ -1,6 +1,6 @@
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
 import { useToast } from "@opengovsg/design-system-react"
-import isEqual from "lodash/isEqual"
+import { isEqual } from "lodash-es"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"

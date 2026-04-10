@@ -3,7 +3,7 @@ import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { TRPCError } from "@trpc/server"
-import _ from "lodash"
+import _ from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   getSitemapTree,

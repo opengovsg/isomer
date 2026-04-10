@@ -10,7 +10,7 @@ import {
   SimpleIntegrationsSettingsSchema,
 } from "@opengovsg/isomer-components"
 import { Value } from "@sinclair/typebox/value"
-import { isEqual, pickBy } from "lodash"
+import { isEqual, pickBy } from "lodash-es"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { BiWrench } from "react-icons/bi"

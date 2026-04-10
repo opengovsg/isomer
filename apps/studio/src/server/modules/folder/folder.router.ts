@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
-import get from "lodash/get"
-import pick from "lodash/pick"
+import { get } from "lodash-es"
+import { pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createFolderSchema,

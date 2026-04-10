@@ -9,8 +9,8 @@ import {
   getScopedSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
-import isEmpty from "lodash/isEmpty"
-import isEqual from "lodash/isEqual"
+import { isEmpty } from "lodash-es"
+import { isEqual } from "lodash-es"
 import { useCallback } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"

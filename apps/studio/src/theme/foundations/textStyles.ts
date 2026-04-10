@@ -1,5 +1,4 @@
-import merge from "lodash/merge"
-
+import { merge } from "lodash-es"
 import { textStyles as generatedTextStyles } from "../generated/textStyles"
 
 const customTextStyles = {

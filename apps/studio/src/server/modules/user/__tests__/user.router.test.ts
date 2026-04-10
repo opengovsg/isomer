@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import _ from "lodash"
+import _ from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,

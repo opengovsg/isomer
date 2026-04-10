@@ -6,7 +6,7 @@ import {
   NotificationSettingsSchema,
   useIsNotificationDismissed,
 } from "@opengovsg/isomer-components"
-import { isEmpty, isEqual } from "lodash"
+import { isEmpty, isEqual } from "lodash-es"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { BiWrench } from "react-icons/bi"

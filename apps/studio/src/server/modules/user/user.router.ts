@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { pick } from "lodash"
+import { pick } from "lodash-es"
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { sendInvitation } from "~/features/mail/service"
 import { canResendInviteToUser } from "~/features/users/utils"
