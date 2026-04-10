@@ -8,15 +8,20 @@ import { ARRAY_RADIO_FORMAT } from "../format"
 export const generateImageSrcSchema = ({
   title = "Image",
   description,
+  allowedMimeTypeMappings = IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+  maxSizeInBytes,
 }: {
   title?: string
   description?: string
+  allowedMimeTypeMappings?: Record<string, string>
+  maxSizeInBytes?: number
 }) => {
   return Type.String({
     title,
     format: "image",
     description,
-    allowedMimeTypeMappings: IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+    allowedMimeTypeMappings,
+    maxSizeInBytes,
   })
 }
 

@@ -37,7 +37,7 @@ const SingleCardNoImageSchema = Type.Object({
     Type.String({
       title: "Link destination",
       description: "When this is clicked, open:",
-      format: "link",
+      format: "prefill-link",
       pattern: LINK_HREF_PATTERN,
     }),
   ),

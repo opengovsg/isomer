@@ -1,15 +1,5 @@
 import { z } from "zod"
 
-// Coerces a string to true if it's "true", false if "false".
-const coerceBoolean = z
-  .string()
-  // only allow "true" or "false" or empty string
-  .refine((s) => s === "true" || s === "false" || s === "")
-  // transform to boolean
-  .transform((s) => s === "true")
-  // make sure tranform worked
-  .pipe(z.boolean())
-
 const s3Schema = z.object({
   NEXT_PUBLIC_S3_REGION: z.string().default("us-east-1"),
   NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),

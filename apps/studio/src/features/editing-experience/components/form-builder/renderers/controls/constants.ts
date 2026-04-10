@@ -15,4 +15,11 @@ export const FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
   ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   ".csv": "text/csv",
   ".tsv": "text/tab-separated-values",
+  ".doc": "application/msword",
+  ".docx":
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 }
+
+export const RISKY_FILE_EXTENSIONS = new Set<
+  keyof typeof FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING
+>([".doc", ".docx", ".xls", ".xlsx"])
