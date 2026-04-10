@@ -5,12 +5,10 @@ import uniq from "lodash/uniq"
 import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
-import {
-  ONE_MB_IN_BYTES,
-  RISKY_FILE_EXTENSIONS,
-} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { RISKY_FILE_EXTENSIONS } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 import { getFileExtension } from "~/utils/getFileExtension"
 
 const RiskyFileUploadModal = dynamic(() =>
@@ -113,7 +111,7 @@ export const FileAttachment = ({
           />
         </Skeleton>
         <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
-          {`Maximum file size: ${maxSizeInBytes / ONE_MB_IN_BYTES} MB`}
+          {`Maximum file size: ${formatFileSizeLimit({ bytes: maxSizeInBytes })}`}
           <br />
           {`Accepted file types: ${Object.keys(acceptedFileTypes).join(", ")}`}
         </Text>
