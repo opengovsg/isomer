@@ -43,6 +43,8 @@ export const basePageSchema = z.object({
   siteId: z.number().min(1),
 })
 
+export const duplicatePageSchema = basePageSchema
+
 export const reorderBlobSchema = z.object({
   pageId: z.number().min(1),
   from: z.number().min(0),
