@@ -66,7 +66,7 @@ export const ResourceTableMenu = ({
           title: "Page duplicated",
           ...BRIEF_TOAST_SETTINGS,
         })
-        void router.push(`/sites/${siteId}/pages/${data.pageId}`)
+         router.push(`/sites/${siteId}/pages/${data.pageId}`)
       },
       onError: (error) => {
         toast({

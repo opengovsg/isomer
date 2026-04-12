@@ -2049,7 +2049,7 @@ describe("page.router", async () => {
 
       // Assert
       expect(copySpy).toHaveBeenCalledTimes(1)
-      const destKey = copySpy.mock.calls[0]?.[0].destinationKey as string
+      const destKey = copySpy.mock.calls[0]?.[0].destinationKey!
       expect(destKey).toMatch(
         new RegExp(`^${site.id}/[0-9a-f-]{36}/photo\\.png$`),
       )
