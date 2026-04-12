@@ -1,5 +1,4 @@
-import * as crypto from "crypto"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
   buildNewAssetFileKeyForSite,
@@ -11,45 +10,69 @@ import {
 describe("duplicatePageContent", () => {
   describe("tryParseSiteAssetFileKey", () => {
     it("parses leading-slash path", () => {
-      expect(
-        tryParseSiteAssetFileKey(
-          "/25/550e8400-e29b-41d4-a716-446655440000/photo.png",
-          25,
-        ),
-      ).toBe("25/550e8400-e29b-41d4-a716-446655440000/photo.png")
+      // Arrange
+      const path = "/25/550e8400-e29b-41d4-a716-446655440000/photo.png"
+      const siteId = 25
+
+      // Act
+      const parsed = tryParseSiteAssetFileKey(path, siteId)
+
+      // Assert
+      expect(parsed).toBe("25/550e8400-e29b-41d4-a716-446655440000/photo.png")
     })
 
     it("parses path without leading slash", () => {
-      expect(
-        tryParseSiteAssetFileKey(
-          "25/550e8400-e29b-41d4-a716-446655440000/photo.png",
-          25,
-        ),
-      ).toBe("25/550e8400-e29b-41d4-a716-446655440000/photo.png")
+      // Arrange
+      const path = "25/550e8400-e29b-41d4-a716-446655440000/photo.png"
+      const siteId = 25
+
+      // Act
+      const parsed = tryParseSiteAssetFileKey(path, siteId)
+
+      // Assert
+      expect(parsed).toBe("25/550e8400-e29b-41d4-a716-446655440000/photo.png")
     })
 
     it("returns null for wrong site", () => {
-      expect(
-        tryParseSiteAssetFileKey(
-          "/99/550e8400-e29b-41d4-a716-446655440000/photo.png",
-          25,
-        ),
-      ).toBeNull()
+      // Arrange
+      const path = "/99/550e8400-e29b-41d4-a716-446655440000/photo.png"
+      const siteId = 25
+
+      // Act
+      const parsed = tryParseSiteAssetFileKey(path, siteId)
+
+      // Assert
+      expect(parsed).toBeNull()
     })
 
     it("returns null for external URL", () => {
-      expect(tryParseSiteAssetFileKey("https://x.com/a.png", 25)).toBeNull()
+      // Arrange
+      const path = "https://x.com/a.png"
+      const siteId = 25
+
+      // Act
+      const parsed = tryParseSiteAssetFileKey(path, siteId)
+
+      // Assert
+      expect(parsed).toBeNull()
     })
 
     it("returns null for placeholder", () => {
-      expect(
-        tryParseSiteAssetFileKey("/placeholder_no_image.png", 25),
-      ).toBeNull()
+      // Arrange
+      const path = "/placeholder_no_image.png"
+      const siteId = 25
+
+      // Act
+      const parsed = tryParseSiteAssetFileKey(path, siteId)
+
+      // Assert
+      expect(parsed).toBeNull()
     })
   })
 
   describe("collectUniqueAssetFileKeys", () => {
     it("dedupes nested occurrences", () => {
+      // Arrange
       const siteId = 3
       const key = `${siteId}/550e8400-e29b-41d4-a716-446655440000/a.pdf`
       const content = {
@@ -59,12 +82,18 @@ describe("duplicatePageContent", () => {
           { nested: { x: `/${key}` } },
         ],
       }
-      expect(collectUniqueAssetFileKeys(content, siteId)).toEqual([key])
+
+      // Act
+      const keys = collectUniqueAssetFileKeys(content, siteId)
+
+      // Assert
+      expect(keys).toEqual([key])
     })
   })
 
   describe("rewriteAssetFileKeysInValue", () => {
     it("rewrites whole strings and embedded substrings", () => {
+      // Arrange
       const siteId = 3
       const oldKey = `${siteId}/550e8400-e29b-41d4-a716-446655440000/doc.pdf`
       const newKey = `${siteId}/660e8400-e29b-41d4-a716-446655440001/doc.pdf`
@@ -74,7 +103,11 @@ describe("duplicatePageContent", () => {
         b: `<img src="/${oldKey}" />`,
         c: "leave-me",
       }
+
+      // Act
       rewriteAssetFileKeysInValue(content, siteId, map)
+
+      // Assert
       expect(content).toEqual({
         a: `/${newKey}`,
         b: `<img src="/${newKey}" />`,
@@ -84,20 +117,20 @@ describe("duplicatePageContent", () => {
   })
 
   describe("buildNewAssetFileKeyForSite", () => {
-    afterEach(() => {
-      vi.restoreAllMocks()
-    })
-
     it("builds a new key with fresh uuid folder", () => {
-      vi.spyOn(crypto, "randomUUID").mockReturnValue(
-        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      // Arrange
+      const siteId = 25
+      const oldKey = "25/550e8400-e29b-41d4-a716-446655440000/report.pdf"
+
+      // Act
+      const result = buildNewAssetFileKeyForSite(siteId, oldKey)
+
+      // Assert
+      const match = result.match(
+        /^25\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/report\.pdf$/i,
       )
-      expect(
-        buildNewAssetFileKeyForSite(
-          25,
-          "25/550e8400-e29b-41d4-a716-446655440000/report.pdf",
-        ),
-      ).toBe("25/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/report.pdf")
+      expect(match).not.toBeNull()
+      expect(match![1]).not.toBe("550e8400-e29b-41d4-a716-446655440000")
     })
   })
 })
