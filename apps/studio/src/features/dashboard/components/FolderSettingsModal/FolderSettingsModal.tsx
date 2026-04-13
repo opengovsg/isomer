@@ -1,4 +1,3 @@
-import { Suspense } from "react"
 import {
   Box,
   chakra,
@@ -24,9 +23,9 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
+import { Suspense } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
-
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -38,6 +37,7 @@ import {
   MAX_FOLDER_TITLE_LENGTH,
 } from "~/schemas/folder"
 import { trpc } from "~/utils/trpc"
+
 import {
   DEFAULT_FOLDER_SETTINGS_MODAL_STATE,
   folderSettingsModalAtom,

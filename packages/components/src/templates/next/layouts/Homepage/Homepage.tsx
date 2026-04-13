@@ -1,4 +1,5 @@
 import { type HomePageSchemaType } from "~/types"
+
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 

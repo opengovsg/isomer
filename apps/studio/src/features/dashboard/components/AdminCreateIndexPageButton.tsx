@@ -1,11 +1,10 @@
 import { Tooltip } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { BiLogoDevTo } from "react-icons/bi"
-
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { ADMIN_ROLE } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 interface AdminCreateIndexPageButtonProps {
   siteId: number
@@ -17,8 +16,8 @@ export const AdminCreateIndexPageButton = ({
 }: AdminCreateIndexPageButtonProps) => {
   const toast = useToast()
   const utils = trpc.useUtils()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
 
   const { data: indexPage } = trpc.resource.getIndexPage.useQuery({

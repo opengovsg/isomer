@@ -1,6 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { IsomerSiteProps } from "~/types"
 import type { IsomerCollectionPageSitemap } from "~/types/sitemap"
+
 import {
   getCollectionItems,
   processCollectionItems,
@@ -20,6 +21,7 @@ export const getCollectionPages = ({
   const items = getCollectionItems({
     site,
     permalink: collectionParent.permalink,
+    sortOrder: collectionParent.collectionPagePageProps?.sortOrder,
     sortBy: collectionParent.collectionPagePageProps?.defaultSortBy,
     sortDirection:
       collectionParent.collectionPagePageProps?.defaultSortDirection,

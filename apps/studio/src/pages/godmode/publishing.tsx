@@ -1,5 +1,3 @@
-import NextLink from "next/link"
-import { useRouter } from "next/router"
 import {
   Box,
   Breadcrumb,
@@ -16,22 +14,24 @@ import {
   Tr,
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-
+import NextLink from "next/link"
+import { useRouter } from "next/router"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 const GodModePublishingPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE],
-  })
+  const { isAdmin: isUserIsomerAdmin, isLoading: isAdminCheckLoading } =
+    useIsUserIsomerAdmin({
+      roles: [IsomerAdminRole.Core],
+    })
 
-  if (!isUserIsomerAdmin) {
+  if (!isAdminCheckLoading && !isUserIsomerAdmin) {
     toast({
       title: "You do not have permission to access this page.",
       status: "error",

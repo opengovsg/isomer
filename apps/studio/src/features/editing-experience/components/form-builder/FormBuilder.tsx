@@ -4,9 +4,9 @@ import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"
 import { groupBy } from "lodash"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { ajv } from "~/utils/ajv"
+
 import { useBuilderErrors } from "./ErrorProvider"
 import {
   JsonFormsAllOfControl,
@@ -51,6 +51,8 @@ import {
   jsonFormsLinkArrayControlTester,
   JsonFormsLinkControl,
   jsonFormsLinkControlTester,
+  JsonFormsMaxColumnsControl,
+  jsonFormsMaxColumnsControlTester,
   JsonFormsMetaImageControl,
   jsonFormsMetaImageControlTester,
   JsonFormsNavbarControl,
@@ -59,6 +61,8 @@ import {
   jsonFormsObjectControlTester,
   JsonFormsOneOfControl,
   jsonFormsOneOfControlTester,
+  JsonFormsPrefillLinkControl,
+  jsonFormsPrefillLinkControlTester,
   JsonFormsProseControl,
   jsonFormsProseControlTester,
   JsonFormsRefControl,
@@ -169,6 +173,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsChildrenPagesLayoutControl,
   },
   {
+    tester: jsonFormsMaxColumnsControlTester,
+    renderer: JsonFormsMaxColumnsControl,
+  },
+  {
     tester: jsonFormsCollectionVariantControlTester,
     renderer: JsonFormsCollectionVariantControl,
   },
@@ -185,6 +193,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsCollectionDropdownControlTester,
     renderer: JsonFormsCollectionDropdownControl,
+  },
+  {
+    tester: jsonFormsPrefillLinkControlTester,
+    renderer: JsonFormsPrefillLinkControl,
   },
 ]
 

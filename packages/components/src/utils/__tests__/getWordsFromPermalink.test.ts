@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-
 import { getWordsFromPermalink } from "~/utils/getWordsFromPermalink"
 
 describe("getWordsFromPermalink", () => {

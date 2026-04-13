@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { AudioProps } from "~/interfaces"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { AudioProps } from "~/interfaces"
 import { Audio } from "./Audio"
 
 const meta: Meta<AudioProps> = {

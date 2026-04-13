@@ -21,17 +21,17 @@ interface StorybookViewportParameter {
   viewports: Record<
     string,
     {
-      name: string;
+      name: string
     } & (
       | {
           styles: {
-            width: string;
-            height?: string;
-          };
+            width: string
+            height?: string
+          }
         }
       | number
     )
-  >;
+  >
 }
 
 /**
@@ -50,4 +50,4 @@ export const viewport = {
     xl: { name: "xl", styles: { width: "1440px", height: "100%" } },
     "2xl": { name: "2xl", styles: { width: "1536px", height: "100%" } },
   },
-} as const satisfies StorybookViewportParameter;
+} as const satisfies StorybookViewportParameter

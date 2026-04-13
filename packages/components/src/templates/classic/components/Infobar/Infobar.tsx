@@ -1,6 +1,6 @@
+import type { InfobarProps } from "~/interfaces"
 import { BiRightArrowAlt } from "react-icons/bi"
 
-import type { InfobarProps } from "~/interfaces"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 const Infobar = ({

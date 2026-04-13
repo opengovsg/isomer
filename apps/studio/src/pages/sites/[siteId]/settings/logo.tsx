@@ -1,14 +1,12 @@
-import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
+import type { NextPageWithLayout } from "~/lib/types"
+import type { LogoSettings } from "~/schemas/site"
 import { Box } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { LogoSettingsSchema } from "@opengovsg/isomer-components"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { isEqual } from "lodash"
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
 import { BiPaint } from "react-icons/bi"
-
-import type { NextPageWithLayout } from "~/lib/types"
-import type { LogoSettings } from "~/schemas/site"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -32,6 +30,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { logoSettingsValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const LogoSettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)

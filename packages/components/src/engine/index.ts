@@ -1,4 +1,8 @@
-export { RenderEngine, renderComponentPreviewText } from "./render"
+export {
+  RenderEngine,
+  renderComponentPreviewText,
+  renderPrefillText,
+} from "./render"
 export { RenderApplicationScripts } from "./renderApplicationScripts"
 export { RenderApplicationHeadScripts } from "./renderApplicationHeadScripts"
 export {

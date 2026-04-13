@@ -1,6 +1,6 @@
 import type { TSchema } from "@sinclair/typebox"
-
 import { IsomerPageSchema } from "~/types"
+
 import { componentSchemaDefinitions } from "./components"
 
 export const schema: TSchema = {

@@ -2,6 +2,7 @@ import type { KeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -95,7 +96,11 @@ export const KeyStatistics = ({
       {!!url && (
         <div className={compoundStyles.urlButtonContainer()}>
           <LinkButton
-            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            href={getReferenceLinkHref(
+              url,
+              site.siteMapArray,
+              site.assetsBaseUrl,
+            )}
             size="base"
             variant="outline"
             LinkComponent={LinkComponent}

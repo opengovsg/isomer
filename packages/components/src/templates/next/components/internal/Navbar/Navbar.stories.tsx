@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { NavbarProps } from "~/interfaces"
 import { expect, userEvent, within } from "storybook/test"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
-import type { NavbarProps } from "~/interfaces"
-import { generateSiteConfig } from "~/stories/helpers"
 import { Button } from "../Button"
 import { Masthead } from "../Masthead"
 import { Navbar } from "./Navbar"

@@ -1,5 +1,4 @@
 import { withErrorBoundary } from "react-error-boundary"
-
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
 import { SingpassCallback } from "~/features/sign-in/components"
 import { SingpassErrorFallback } from "~/features/sign-in/components/SingpassErrorFallback/SingpassErrorFallback"

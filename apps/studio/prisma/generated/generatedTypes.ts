@@ -1,18 +1,18 @@
 import type { ColumnType, GeneratedAlways } from "kysely"
-
-import type {
-  AuditLogEvent,
-  BuildStatusType,
-  ResourceState,
-  ResourceType,
-  RoleType,
-} from "./generatedEnums"
-
 export type Generated<T> =
   T extends ColumnType<infer S, infer I, infer U>
     ? ColumnType<S, I | undefined, U>
     : ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
+
+import type {
+  ResourceState,
+  ResourceType,
+  RoleType,
+  IsomerAdminRole,
+  AuditLogEvent,
+  BuildStatusType,
+} from "./generatedEnums"
 
 export interface AuditLog {
   id: GeneratedAlways<string>
@@ -61,6 +61,14 @@ export interface Footer {
    * [FooterJsonContent]
    */
   content: PrismaJson.FooterJsonContent
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
+export interface IsomerAdmin {
+  id: GeneratedAlways<string>
+  userId: string
+  role: IsomerAdminRole
+  expiry: Timestamp | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
@@ -160,6 +168,7 @@ export interface DB {
   Blob: Blob
   CodeBuildJobs: CodeBuildJobs
   Footer: Footer
+  IsomerAdmin: IsomerAdmin
   Navbar: Navbar
   RateLimiterFlexible: RateLimiterFlexible
   Resource: Resource

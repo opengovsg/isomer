@@ -1,20 +1,20 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useCallback } from "react"
+import type { ModifiedAsset } from "~/types/assets"
 import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import cloneDeep from "lodash/cloneDeep"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
+import { useCallback } from "react"
 import { BiTrash } from "react-icons/bi"
-
-import type { ModifiedAsset } from "~/types/assets"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+
 import { pageSchema } from "../../schema"
 import {
   CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
@@ -74,8 +74,19 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     trpc.asset.deleteAssets.useMutation()
 
   const handleDeleteBlock = useCallback(() => {
+    const currentBlock = savedPageState.content[currActiveIdx]
     const updatedBlocks = Array.from(savedPageState.content)
-    updatedBlocks.splice(currActiveIdx, 1)
+
+    // For childrenpages blocks, hide instead of delete
+    if (currentBlock?.type === "childrenpages") {
+      updatedBlocks[currActiveIdx] = {
+        ...currentBlock,
+        isHidden: true,
+      }
+    } else {
+      updatedBlocks.splice(currActiveIdx, 1)
+    }
+
     const newPageState = {
       ...previewPageState,
       content: updatedBlocks,
@@ -315,15 +326,13 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             px="2rem"
           >
             <HStack spacing="0.75rem">
-              {component.type !== "childrenpages" && (
-                <IconButton
-                  icon={<BiTrash fontSize="1.25rem" />}
-                  variant="outline"
-                  colorScheme="critical"
-                  aria-label="Delete block"
-                  onClick={onDeleteBlockModalOpen}
-                />
-              )}
+              <IconButton
+                icon={<BiTrash fontSize="1.25rem" />}
+                variant="outline"
+                colorScheme="critical"
+                aria-label="Delete block"
+                onClick={onDeleteBlockModalOpen}
+              />
               <Box w="100%">
                 <SaveButton onClick={handleSave} isLoading={isLoading} />
               </Box>

@@ -1,9 +1,9 @@
 "use client"
 
-import { BiInfoCircle, BiX } from "react-icons/bi"
-
 import type { NotificationClientProps } from "~/interfaces"
+import { BiInfoCircle, BiX } from "react-icons/bi"
 import { useIsNotificationDismissed } from "~/hooks/useIsNotificationDismissed"
+
 import { IconButton } from "../IconButton"
 
 export const NotificationClient = ({

@@ -1,8 +1,8 @@
 import type { PropsWithChildren } from "react"
-
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+
 import { Link } from "../../../internal/Link"
 import { compoundStyles } from "../common"
 
@@ -21,7 +21,7 @@ export const InfoCardContainer = ({
 >): JSX.Element => {
   return url ? (
     <Link
-      href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+      href={getReferenceLinkHref(url, site.siteMapArray, site.assetsBaseUrl)}
       className={compoundStyles.cardContainer({ variant })}
       LinkComponent={LinkComponent}
       isExternal={isExternalLink}

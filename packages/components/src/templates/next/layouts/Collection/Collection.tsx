@@ -1,5 +1,6 @@
 import type { CollectionPageSchemaType } from "~/types"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
+
 import { Skeleton } from "../Skeleton"
 import { CollectionClient } from "./CollectionClient"
 import {
@@ -15,14 +16,23 @@ export const CollectionLayout = ({
   layout,
   LinkComponent,
 }: CollectionPageSchemaType) => {
-  const { permalink, defaultSortBy, defaultSortDirection, tagCategories } = page
+  const {
+    permalink,
+    sortOrder,
+    defaultSortBy,
+    defaultSortDirection,
+    tagCategories,
+    showDate,
+  } = page
 
   const items = getCollectionItems({
     site,
     permalink,
+    sortOrder,
     sortBy: defaultSortBy,
     sortDirection: defaultSortDirection,
     tagCategories,
+    showDate,
   })
   const processedItems = processCollectionItems(items)
   const breadcrumb = getBreadcrumbFromSiteMap(

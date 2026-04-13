@@ -1,18 +1,21 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
-import { useMemo } from "react"
 import { VStack } from "@chakra-ui/react"
 import { Draggable } from "@hello-pangea/dnd"
 import {
   getComponentSchema,
   renderComponentPreviewText,
 } from "@opengovsg/isomer-components"
+import { useMemo } from "react"
+import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 
 import type { BaseBlockProps } from "./BaseBlock"
-import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { TYPE_TO_ICON } from "../../constants"
 import { BaseBlock, BaseBlockDragHandle } from "./BaseBlock"
 
-interface DraggableBlockProps extends Pick<BaseBlockProps, "invalidProps"> {
+interface DraggableBlockProps extends Pick<
+  BaseBlockProps,
+  "invalidProps" | "isHidden"
+> {
   block: IsomerSchema["content"][number]
   draggableId: string
   index: number
@@ -25,6 +28,7 @@ export const DraggableBlock = ({
   index,
   onClick,
   invalidProps,
+  isHidden,
 }: DraggableBlockProps): JSX.Element => {
   const icon = TYPE_TO_ICON[block.type]
 
@@ -58,6 +62,7 @@ export const DraggableBlock = ({
             {...provided.draggableProps}
           >
             <BaseBlock
+              isHidden={isHidden}
               onClick={onClick}
               dragHandle={
                 <BaseBlockDragHandle

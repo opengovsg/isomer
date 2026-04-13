@@ -1,8 +1,8 @@
-import NextLink from "next/link"
 import { Flex, Link, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-
+import NextLink from "next/link"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
+
 import { LiftUnderRepair } from "../Svg"
 
 export const DefaultServerError = () => {

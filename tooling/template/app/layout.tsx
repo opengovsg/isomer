@@ -1,15 +1,13 @@
-import config from "@/data/config.json"
-import sitemap from "@/sitemap.json"
-
-import "@/styles/globals.css"
-
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import Script from "next/script"
+import config from "@/data/config.json"
+import "@/styles/globals.css"
+import sitemap from "@/sitemap.json"
 import {
   RenderApplicationHeadScripts,
   RenderApplicationScripts,
 } from "@opengovsg/isomer-components"
+import { Inter } from "next/font/google"
+import Script from "next/script"
 
 const inter = Inter({
   // while we support other languages, we should only preload the latin subset

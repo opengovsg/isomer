@@ -7,6 +7,7 @@ import {
 } from "~/interfaces/complex/InfoCards"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+
 import { LinkButton } from "../../internal/LinkButton"
 import { compoundStyles } from "./common"
 import {
@@ -14,7 +15,6 @@ import {
   InfoCardWithFullImage,
   InfoCardWithImage,
 } from "./components"
-import { calculateGridDimensions } from "./utils"
 
 export const InfoCards = ({
   id,
@@ -35,9 +35,6 @@ export const InfoCards = ({
     variant === CARDS_WITH_FULL_IMAGES
       ? INFOCARD_VARIANT.bold
       : INFOCARD_VARIANT.default
-
-  const { cols } = calculateGridDimensions(cards)
-  const computedMaxCols = variant === CARDS_WITH_FULL_IMAGES ? cols : maxColumns
 
   const InfoCardsToRender = () => {
     switch (variant) {
@@ -77,7 +74,7 @@ export const InfoCards = ({
               <InfoCardWithFullImage
                 key={idx}
                 {...card}
-                maxColumns={computedMaxCols}
+                maxColumns={maxColumns}
                 layout={layout}
                 site={site}
                 LinkComponent={LinkComponent}
@@ -123,7 +120,7 @@ export const InfoCards = ({
 
       <div
         className={compoundStyles.grid({
-          maxColumns: computedMaxCols,
+          maxColumns,
           variant: cardVariant,
         })}
       >
@@ -133,7 +130,11 @@ export const InfoCards = ({
       {!!url && !!label && (
         <div className={compoundStyles.urlButtonContainer()}>
           <LinkButton
-            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            href={getReferenceLinkHref(
+              url,
+              site.siteMapArray,
+              site.assetsBaseUrl,
+            )}
             size="base"
             variant="outline"
             isWithFocusVisibleHighlight

@@ -1,6 +1,5 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { z } from "zod"
-import { useEffect } from "react"
 import {
   Box,
   FormControl,
@@ -22,9 +21,9 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import { useEffect } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
-
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 import { createCollectionSchema } from "~/schemas/collection"
@@ -33,6 +32,7 @@ import {
   MAX_FOLDER_TITLE_LENGTH,
 } from "~/schemas/folder"
 import { trpc } from "~/utils/trpc"
+
 import { generateResourceUrl } from "../utils"
 
 type CreateCollectionProps = z.infer<typeof createCollectionSchema>

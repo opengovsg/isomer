@@ -7,7 +7,6 @@ import {
   CHILDREN_PAGES_LAYOUT_OPTIONS,
   DEFAULT_CHILDREN_PAGES_BLOCK,
 } from "@opengovsg/isomer-components"
-
 import { IconBoxes, IconRows } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 

@@ -1,4 +1,5 @@
-import { useMemo } from "react"
+import { HStack, Text } from "@chakra-ui/react"
+import { Menu } from "@opengovsg/design-system-react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
@@ -6,16 +7,18 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-
-import type { CollectionTableData } from "./types"
+import { useMemo, useState } from "react"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import type { CollectionTableData, CollectionTableSortOptions } from "./types"
 import { TitleCell } from "../ResourceTable/TitleCell"
 import { CollectionTableMenu } from "./CollectionTableMenu"
+import { COLLECTION_TABLE_SORT_OPTIONS } from "./constants"
 
 const columnsHelper = createColumnHelper<CollectionTableData>()
 
@@ -63,6 +66,9 @@ export const CollectionTable = ({
   siteId,
   resourceId,
 }: CollectionTableProps): JSX.Element => {
+  const [sortOption, setSortOption] =
+    useState<CollectionTableSortOptions>("updated-desc")
+
   const columns = useMemo(
     () => getColumns({ siteId, resourceId }),
     [siteId, resourceId],
@@ -85,6 +91,7 @@ export const CollectionTable = ({
     {
       siteId,
       resourceId,
+      orderBy: sortOption,
       limit,
       offset: skip,
     },
@@ -109,22 +116,63 @@ export const CollectionTable = ({
   })
 
   return (
-    <Datatable
-      pagination
-      isFetching={isFetching || isCountLoading}
-      emptyPlaceholder={
-        <EmptyTablePlaceholder
-          groupLabel="collection"
-          entityName="collection page"
-          hasSearchTerm={false}
-        />
-      }
-      instance={tableInstance}
-      sx={{
-        tableLayout: "auto",
-        overflowX: "auto",
-      }}
-      totalRowCount={totalRowCount}
-    />
+    <>
+      <HStack px="0.75rem" w="full" justifyContent="space-between">
+        <Text textStyle="caption-1" color="base.content.default">
+          {totalRowCount} items
+        </Text>
+
+        <HStack>
+          <Text textStyle="caption-1" color="base.content.default">
+            Sort by:
+          </Text>
+          <Menu size="sm" variant="clear">
+            <Menu.Button
+              variant="clear"
+              size="xs"
+              p="0"
+              minH="auto"
+              colorScheme="sub"
+              fontSize="0.75rem"
+            >
+              {COLLECTION_TABLE_SORT_OPTIONS[sortOption]}
+            </Menu.Button>
+            <Menu.List>
+              {Object.entries(COLLECTION_TABLE_SORT_OPTIONS).map(
+                ([option, label]) => (
+                  <Menu.Item
+                    key={option}
+                    onClick={() => {
+                      setSortOption(option as CollectionTableSortOptions)
+                      onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
+                    }}
+                  >
+                    {label}
+                  </Menu.Item>
+                ),
+              )}
+            </Menu.List>
+          </Menu>
+        </HStack>
+      </HStack>
+
+      <Datatable
+        pagination
+        isFetching={isFetching || isCountLoading}
+        emptyPlaceholder={
+          <EmptyTablePlaceholder
+            groupLabel="collection"
+            entityName="collection page"
+            hasSearchTerm={false}
+          />
+        }
+        instance={tableInstance}
+        sx={{
+          tableLayout: "auto",
+          overflowX: "auto",
+        }}
+        totalRowCount={totalRowCount}
+      />
+    </>
   )
 }

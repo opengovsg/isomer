@@ -21,6 +21,5 @@
     "commander-ts": "^0.2.0",
     "npx": "^10.2.2",
     "tsx": "^4.20.4"
-  },
-  "prettier": "@isomer/prettier-config"
+  }
 }

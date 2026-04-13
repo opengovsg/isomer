@@ -5,7 +5,6 @@ import { assetHandler } from "tests/msw/handlers/asset"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
-
 import PageSettings from "~/pages/sites/[siteId]/pages/[pageId]/settings"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"

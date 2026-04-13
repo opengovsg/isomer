@@ -7,21 +7,23 @@ import {
   FormErrorMessage,
   FormLabel,
 } from "@opengovsg/design-system-react"
-import { META_IMAGE_FORMAT } from "@opengovsg/isomer-components"
+import {
+  IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+  META_IMAGE_FORMAT,
+} from "@opengovsg/isomer-components"
 import uniq from "lodash/uniq"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
+
 import { useAssetUpload } from "../../hooks/useAssetUpload"
 import { useS3Image } from "../../hooks/useS3Image"
 import {
   ACCEPTED_IMAGE_TYPES_MESSAGE,
-  IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   MAX_IMG_FILE_SIZE_BYTES,
-  ONE_MB_IN_BYTES,
 } from "./constants"
 import { getCustomErrorMessage } from "./utils"
 
@@ -53,8 +55,8 @@ function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
       <Skeleton isLoaded={!isLoading}>
         <Attachment
           accept={uniq([
-            ...Object.keys(IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
-            ...Object.values(IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
+            ...Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING),
+            ...Object.values(IMAGE_ACCEPTED_MIME_TYPE_MAPPING),
           ])}
           maxSize={MAX_IMG_FILE_SIZE_BYTES}
           multiple={false}
@@ -93,7 +95,7 @@ function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
         />
       </Skeleton>
       <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
-        {`Maximum file size: ${MAX_IMG_FILE_SIZE_BYTES / ONE_MB_IN_BYTES} MB`}
+        {`Maximum file size: ${formatFileSizeLimit({ bytes: MAX_IMG_FILE_SIZE_BYTES })}`}
         <br />
         {`Accepted file types: ${ACCEPTED_IMAGE_TYPES_MESSAGE}`}
       </Text>

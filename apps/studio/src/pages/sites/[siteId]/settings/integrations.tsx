@@ -2,8 +2,7 @@ import type {
   ComplexIntegrationsSettings,
   SimpleIntegrationsSettings,
 } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
+import type { NextPageWithLayout } from "~/lib/types"
 import { Box, Text } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
@@ -11,11 +10,10 @@ import {
   SimpleIntegrationsSettingsSchema,
 } from "@opengovsg/isomer-components"
 import { Value } from "@sinclair/typebox/value"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { isEqual, pickBy } from "lodash"
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
 import { BiWrench } from "react-icons/bi"
-
-import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -40,6 +38,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 export const DEFAULT_SIMPLE_INTEGRATION_SETTINGS = Value.Parse(
   SimpleIntegrationsSettingsSchema,

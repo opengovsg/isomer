@@ -1,13 +1,13 @@
 "use client"
 
-import { useMemo } from "react"
-
 import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type {
   DGSSearchableTableProps,
   SearchableTableClientProps,
 } from "~/interfaces"
+import { useMemo } from "react"
 import { useDgsData } from "~/hooks/useDgsData"
+
 import { SearchableTableClient } from "../shared"
 
 interface StaticDGSSearchableTableProps extends DGSSearchableTableProps {

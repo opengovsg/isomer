@@ -1,8 +1,8 @@
 import type { HeroBlockProps } from "~/interfaces/complex/Hero"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
-import { isExternalUrl } from "~/utils/isExternalUrl"
+
+import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
-import { ImageClient } from "../Image"
 
 const HERO_THEME_MAPPINGS = {
   hero: {
@@ -31,11 +31,6 @@ export const HeroBlock = ({
   LinkComponent,
   theme = "default",
 }: HeroBlockProps) => {
-  const backgroundSrc =
-    isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
-      ? backgroundUrl
-      : `${site.assetsBaseUrl}${backgroundUrl}`
-
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
@@ -59,7 +54,7 @@ export const HeroBlock = ({
               <LinkButton
                 href={getReferenceLinkHref(
                   buttonUrl,
-                  site.siteMap,
+                  site.siteMapArray,
                   site.assetsBaseUrl,
                 )}
                 size="lg"
@@ -77,7 +72,7 @@ export const HeroBlock = ({
                   size="lg"
                   href={getReferenceLinkHref(
                     secondaryButtonUrl,
-                    site.siteMap,
+                    site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
                   LinkComponent={LinkComponent}
@@ -95,8 +90,8 @@ export const HeroBlock = ({
         style={{ contain: "layout" }}
       >
         <ImageClient
-          src={backgroundSrc}
-          alt={title}
+          src={backgroundUrl}
+          alt=""
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
           assetsBaseUrl={site.assetsBaseUrl}

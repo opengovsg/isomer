@@ -65,6 +65,60 @@ interface ScopeLayoutMap {
   file: SchemaPathsFrom<typeof FileRefSchema>
 }
 
+type FilterMode = "include" | "exclude"
+
+function shouldKeepField(
+  field: string,
+  fieldSet: Set<string>,
+  mode: FilterMode,
+): boolean {
+  return mode === "include" ? fieldSet.has(field) : !fieldSet.has(field)
+}
+
+function filterRequiredFields(
+  schema: Record<string, unknown>,
+  fieldSet: Set<string>,
+  mode: FilterMode,
+): void {
+  if (Array.isArray(schema.required)) {
+    const filteredRequired = (schema.required as string[]).filter((field) =>
+      shouldKeepField(field, fieldSet, mode),
+    )
+    if (filteredRequired.length > 0) {
+      schema.required = filteredRequired
+    } else {
+      delete schema.required
+    }
+  }
+}
+
+// Filters a single schema object's properties and required fields.
+// Returns null if all properties were removed.
+function filterSchemaProperties(
+  schema: Record<string, unknown>,
+  fieldSet: Set<string>,
+  mode: FilterMode,
+): Record<string, unknown> | null {
+  if (!schema.properties || typeof schema.properties !== "object") {
+    return schema
+  }
+  const filteredProperties: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(schema.properties)) {
+    if (shouldKeepField(key, fieldSet, mode)) {
+      filteredProperties[key] = value
+    }
+  }
+  if (Object.keys(filteredProperties).length === 0) {
+    return null
+  }
+  const result: Record<string, unknown> = {
+    ...schema,
+    properties: filteredProperties,
+  }
+  filterRequiredFields(result, fieldSet, mode)
+  return result
+}
+
 /**
  * ```ts
  * // ✅ Valid - "page.database" exists in DatabasePageSchema
@@ -72,12 +126,12 @@ interface ScopeLayoutMap {
 
  * // ❌ Type error - "page.database" doesn't exist in ArticlePageSchema
  * const schema = getScopedSchema({ layout: "article", scope: "page.database" })
- * 
+ *
  * // ✅ Exclude specific fields from the schema
- * const schema = getScopedSchema({ 
- *   layout: "database", 
- *   scope: "page", 
- *   exclude: ["contentPageHeader", "database"] 
+ * const schema = getScopedSchema({
+ *   layout: "database",
+ *   scope: "page",
+ *   exclude: ["contentPageHeader", "database"]
  * })
  * ```
  */
@@ -85,11 +139,19 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
   layout,
   scope,
   exclude,
+  include,
 }: {
   layout: T
   scope: T extends keyof ScopeLayoutMap ? ScopeLayoutMap[T] : never
-  exclude?: string[] // no typing as it complex and expensive to derive + this is a best-effort argument that is tolerant to invalid inputs
+  exclude?: string[]
+  include?: string[]
 }): TSchema {
+  if (exclude?.length && include?.length) {
+    throw new Error(
+      "getScopedSchema: 'include' and 'exclude' are mutually exclusive — specify one or neither",
+    )
+  }
+
   let currentSchema = LAYOUT_SCHEMA_MAP[layout] // root schema
 
   for (const part of scope.split(".")) {
@@ -102,19 +164,38 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
     currentSchema = currentSchema.properties[part] as TSchema
   }
 
-  // If exclude is provided, remove the specified fields from the schema
-  if (exclude && exclude.length > 0 && currentSchema.properties) {
-    const filteredProperties = { ...currentSchema.properties }
+  const fieldSet = include?.length
+    ? new Set(include)
+    : exclude?.length
+      ? new Set(exclude)
+      : null
+  const mode: FilterMode = include?.length ? "include" : "exclude"
 
-    for (const fieldToExclude of exclude) {
-      delete filteredProperties[fieldToExclude]
+  if (fieldSet) {
+    if (currentSchema.allOf) {
+      const filteredAllOf = currentSchema.allOf
+        .map((subSchema: Record<string, unknown>) =>
+          filterSchemaProperties(subSchema, fieldSet, mode),
+        )
+        .filter(Boolean)
+
+      return {
+        ...currentSchema,
+        ...componentSchemaDefinitions,
+        allOf: filteredAllOf,
+      } as TSchema
     }
 
-    return {
-      ...currentSchema,
-      ...componentSchemaDefinitions,
-      properties: filteredProperties,
-    } as TSchema
+    if (currentSchema.properties) {
+      const result = filterSchemaProperties(currentSchema, fieldSet, mode) ?? {
+        ...currentSchema,
+        properties: {},
+      }
+      return {
+        ...result,
+        ...componentSchemaDefinitions,
+      } as TSchema
+    }
   }
 
   return {

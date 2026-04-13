@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useMediaQuery } from "usehooks-ts"
-
 import { getBannerHeightInPx } from "~/hooks/useBanner"
 
 const topOffsetInPx = 8

@@ -1,4 +1,9 @@
 import type { IconType } from "react-icons"
+import type { FooterProps } from "~/interfaces"
+import type {
+  FooterItem as FooterItemType,
+  SocialMediaType,
+} from "~/interfaces/internal/Footer"
 import { BiLinkExternal } from "react-icons/bi"
 import {
   FaFacebook,
@@ -15,12 +20,6 @@ import {
   FaXTwitter,
 } from "react-icons/fa6"
 import { IoLogoGithub } from "react-icons/io"
-
-import type { FooterProps } from "~/interfaces"
-import type {
-  FooterItem as FooterItemType,
-  SocialMediaType,
-} from "~/interfaces/internal/Footer"
 import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
@@ -29,6 +28,7 @@ import { getFormattedDate } from "~/utils/getFormattedDate"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+
 import { Link } from "../Link"
 import { ClientCopyrightYear } from "./ClientCopyrightYear"
 
@@ -110,7 +110,7 @@ const NavSection = ({
             url={
               getReferenceLinkHref(
                 item.url,
-                site.siteMap,
+                site.siteMapArray,
                 site.assetsBaseUrl,
               ) ?? item.url
             }
@@ -126,7 +126,7 @@ const NavSection = ({
             url={
               getReferenceLinkHref(
                 item.url,
-                site.siteMap,
+                site.siteMapArray,
                 site.assetsBaseUrl,
               ) ?? item.url
             }
@@ -158,7 +158,7 @@ const SocialMediaSection = ({
               key={link.url}
               href={getReferenceLinkHref(
                 link.url,
-                site.siteMap,
+                site.siteMapArray,
                 site.assetsBaseUrl,
               )}
               isExternal
@@ -193,7 +193,7 @@ const ContactUsSection = ({
           url={
             getReferenceLinkHref(
               contactUsLink,
-              site.siteMap,
+              site.siteMapArray,
               site.assetsBaseUrl,
             ) ?? contactUsLink
           }
@@ -206,7 +206,7 @@ const ContactUsSection = ({
           url={
             getReferenceLinkHref(
               feedbackFormLink,
-              site.siteMap,
+              site.siteMapArray,
               site.assetsBaseUrl,
             ) ?? feedbackFormLink
           }
@@ -288,7 +288,7 @@ const LegalSection = ({
               url={
                 getReferenceLinkHref(
                   privacyStatementLink,
-                  site.siteMap,
+                  site.siteMapArray,
                   site.assetsBaseUrl,
                 ) ?? privacyStatementLink
               }
@@ -301,7 +301,7 @@ const LegalSection = ({
               url={
                 getReferenceLinkHref(
                   termsOfUseLink,
-                  site.siteMap,
+                  site.siteMapArray,
                   site.assetsBaseUrl,
                 ) ?? termsOfUseLink
               }

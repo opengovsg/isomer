@@ -2,9 +2,9 @@
 
 import type { SVGProps, SyntheticEvent } from "react"
 import { useEffect, useState } from "react"
-
 import { twMerge } from "~/lib/twMerge"
-import { ImageClient } from "../Image/ImageClient"
+
+import { ImageClient } from "../../internal/ImageClient"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 
 export interface LiteYouTubeEmbedProps {
@@ -41,7 +41,10 @@ export const LiteYouTubeEmbed = ({
 
         const data = (await response.json()) as { thumbnail_url?: string }
         if (data.thumbnail_url) {
-          setOEmbedThumbnailUrl(data.thumbnail_url)
+          // Prefer sddefault; oEmbed returns hqdefault. Fallback to hqdefault is handled in onLoad.
+          setOEmbedThumbnailUrl(
+            data.thumbnail_url.replace("hqdefault", "sddefault"),
+          )
         }
       } catch {
         // Best effort only; playback still works without preview image.
@@ -75,16 +78,21 @@ export const LiteYouTubeEmbed = ({
           alt={`Thumbnail for ${title || "video"}`}
           width="100%"
           lazyLoading={shouldLazyLoad}
-          onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
-            if (!videoId) return
-
+          onLoad={(e: SyntheticEvent<HTMLImageElement, Event>) => {
             const { currentTarget } = e
+            // When sddefault.jpg is missing, YouTube returns HTTP 404 with a valid 120×90 JPEG
+            // (a placeholder). The browser then fires onLoad, not onError, so we detect the
+            // "missing thumbnail" case by dimensions and swap to hqdefault.jpg. Applies to both
+            // single-video and oEmbed (playlist) thumbnails.
             if (
-              currentTarget.src ===
-              `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`
+              currentTarget.src.endsWith("/sddefault.jpg") &&
+              currentTarget.naturalWidth === 120 &&
+              currentTarget.naturalHeight === 90
             ) {
-              currentTarget.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
-              e.preventDefault()
+              currentTarget.src = currentTarget.src.replace(
+                "sddefault.jpg",
+                "hqdefault.jpg",
+              )
             }
           }}
           className={twMerge(
