@@ -1,13 +1,14 @@
 import type { Static } from "@sinclair/typebox"
 import type { FooterSchemaType, NavbarSchemaType } from "~/interfaces"
 import { Type } from "@sinclair/typebox"
+import { FAVICON_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import {
   AskgovSchema,
+  generateImageSrcSchema,
   LocalSearchSchema,
   SearchSGSearchSchema,
   VicaSchema,
 } from "~/interfaces"
-import { IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/interfaces/complex/Image"
 import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
 
 import type { IsomerSitemap } from "./sitemap"
@@ -58,21 +59,18 @@ export const IntegrationsSettingsSchema = Type.Intersect([
 ])
 
 export const LogoSettingsSchema = Type.Object({
-  logoUrl: Type.String({
+  logoUrl: generateImageSrcSchema({
     title: "Logo",
     description:
       "The logo appears on the navigation bar. It may also be used as a thumbnail if there’s no thumbnail set on a page.",
-    format: "image",
-    allowedMimeTypeMappings: IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   }),
   favicon: Type.Optional(
-    Type.String({
+    generateImageSrcSchema({
       title: "Favicon",
       description:
-        "This appears on a browser tab to help people recognise your site. We recommend a minimum size of 24px by 24px, in .ico, .svg, or .png format.",
-      format: "image",
-      allowedMimeTypeMappings: IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-      maxSizeInBytes: 50000, // NOTE: 50 kB
+        "This appears on a browser tab to help people recognise your site. We recommend a minimum size of 24px by 24px, in .png or .svg format.",
+      allowedMimeTypeMappings: FAVICON_ACCEPTED_MIME_TYPE_MAPPING,
+      maxSizeInBytes: 20000, // NOTE: 20 kB
     }),
   ),
 })

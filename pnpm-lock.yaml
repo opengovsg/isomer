@@ -724,6 +724,9 @@ importers:
       tiptap-text-direction:
         specifier: ^0.3.1
         version: 0.3.3(@tiptap/core@2.27.2(@tiptap/pm@2.22.3))(@tiptap/pm@2.22.3)
+      transliteration:
+        specifier: ^2.6.1
+        version: 2.6.1
       type-fest:
         specifier: 'catalog:'
         version: 4.41.0
@@ -965,6 +968,9 @@ importers:
       usehooks-ts:
         specifier: 'catalog:'
         version: 3.1.1(react@18.3.1)
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -11146,6 +11152,11 @@ packages:
   tr46@6.0.0:
     resolution: {integrity: sha512-bLVMLPtstlZ4iMQHpFHTR7GAGj2jxi8Dg0s2h2MafAE4uSWF98FC/3MomU51iQAMf8/qDUbKWf5GxuvvVcXEhw==}
     engines: {node: '>=20'}
+
+  transliteration@2.6.1:
+    resolution: {integrity: sha512-hJ9BhrQAOnNTbpOr1MxsNjZISkn7ppvF5TKUeFmTE1mG4ZPD/XVxF0L0LUoIUCWmQyxH0gJpVtfYLAWf298U9w==}
+    engines: {node: '>=20.0.0'}
+    hasBin: true
 
   trim-lines@3.0.1:
     resolution: {integrity: sha512-kRj8B+YHZCc9kQYdWfJB2/oUl9rA99qbowYYBtr4ui4mZyAQ2JpvVBd/6U2YloATfqBhBTSMhTpgBHtU0Mf3Rg==}
@@ -23492,6 +23503,8 @@ snapshots:
   tr46@6.0.0:
     dependencies:
       punycode: 2.3.1
+
+  transliteration@2.6.1: {}
 
   trim-lines@3.0.1: {}
 

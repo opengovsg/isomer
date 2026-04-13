@@ -154,6 +154,7 @@
     "sass": "^1.83.4",
     "superjson": "^2.2.1",
     "tiptap-text-direction": "^0.3.1",
+    "transliteration": "^2.6.1",
     "type-fest": "catalog:",
     "usehooks-ts": "catalog:",
     "validator": "^13.15.22",
