@@ -1,25 +1,45 @@
 import type { AntiScamDisclaimerBannerProps } from "~/interfaces"
-import { BiShield } from "react-icons/bi"
+import { BiError } from "react-icons/bi"
 
 import { ComponentContent } from "../../internal/customCssClass"
+import { Link } from "../../internal/Link"
 
 export const AntiScamDisclaimerBanner = ({
   LinkComponent,
 }: AntiScamDisclaimerBannerProps) => {
   return (
     <div
-      className={`${ComponentContent} bg-utility-feedback-warning-subtle rounded-lg border border-utility-feedback-warning px-5 py-4 md:px-6 md:py-5 [&:not(:first-child)]:mt-7`}
+      className={`${ComponentContent} w-full rounded-lg bg-base-canvas px-5 py-12 md:px-6 lg:w-fit lg:max-w-full lg:py-16`}
       role="region"
       aria-label="Anti-scam notice"
     >
-      <div className="flex flex-col gap-3 md:flex-row md:gap-4">
-        <BiShield
-          className="mt-0.5 h-6 w-6 shrink-0 text-utility-feedback-warning"
-          aria-hidden
-        />
-        <p className="prose-body-base text-base-content [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0">
-          Anti-scam disclaimer banner (content to be configured).
-        </p>
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-utility-feedback-warning-subtle">
+          <BiError
+            className="h-5 w-5 text-utility-feedback-warning"
+            aria-hidden
+          />
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <p className="prose-headline-lg-medium m-0 text-base-content-strong">
+            Government officials will never ask you to transfer money over a
+            phone call.
+          </p>
+          <p className="prose-headline-lg-regular m-0 text-base-content-medium">
+            If you're unsure if something is a scam, call{" "}
+            <Link
+              LinkComponent={LinkComponent}
+              href="https://www.scamshield.gov.sg"
+              isExternal
+              showExternalIcon
+              isWithFocusVisibleHighlight
+              className="text-link underline underline-offset-4 visited:text-link-visited hover:text-link-hover"
+            >
+              ScamShield
+            </Link>{" "}
+            at 1799.
+          </p>
+        </div>
       </div>
     </div>
   )
