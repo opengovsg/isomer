@@ -38,7 +38,7 @@
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
     "dotenv-cli": "catalog:",
-    "oxfmt": "^0.42.0",
+    "oxfmt": "catalog:",
     "sherif": "catalog:",
     "turbo": "catalog:"
   },

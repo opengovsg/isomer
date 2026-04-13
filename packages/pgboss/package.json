@@ -33,7 +33,7 @@
     "test:watch": "dotenv -e .env.test pnpm exec vitest watch"
   },
   "dependencies": {
-    "pg-boss": "^12.3.0",
+    "pg-boss": "catalog:",
     "pino": "catalog:",
     "vitest": "catalog:vitest2",
     "zod": "catalog:"

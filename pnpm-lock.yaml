@@ -5,6 +5,13 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
+  atlaskitPragmaticDnd:
+    '@atlaskit/pragmatic-drag-and-drop':
+      specifier: ^1.7.7
+      version: 1.7.9
+    '@atlaskit/pragmatic-drag-and-drop-hitbox':
+      specifier: ^1.1.0
+      version: 1.1.0
   awsSdk3:
     '@aws-sdk/client-acm':
       specifier: ^3.840.0
@@ -27,7 +34,7 @@ catalogs:
     '@aws-sdk/s3-request-presigner':
       specifier: 3.837.0
       version: 3.837.0
-  default:
+  babel7:
     '@babel/plugin-transform-class-properties':
       specifier: ^7.27.1
       version: 7.28.6
@@ -40,21 +47,93 @@ catalogs:
     '@babel/preset-typescript':
       specifier: ^7.27.1
       version: 7.28.5
+  casl:
+    '@casl/ability':
+      specifier: ^6.7.1
+      version: 6.8.0
+    '@casl/react':
+      specifier: ^5.0.0
+      version: 5.0.1
+  chakra2:
+    '@chakra-ui/anatomy':
+      specifier: ^2.3.4
+      version: 2.3.4
     '@chakra-ui/cli':
       specifier: ^2.5.8
       version: 2.5.8
+    '@chakra-ui/react':
+      specifier: ^2.10.5
+      version: 2.10.9
+    '@chakra-ui/styled-system':
+      specifier: ^2.9.2
+      version: 2.12.0
+    '@chakra-ui/theme-tools':
+      specifier: ^2.2.6
+      version: 2.2.6
+    '@chakra-ui/utils':
+      specifier: ^2.2.2
+      version: 2.2.2
+  default:
+    '@1password/sdk':
+      specifier: ^0.3.1
+      version: 0.3.1
+    '@datadog/browser-rum':
+      specifier: ^5.29.1
+      version: 5.35.1
+    '@fontsource/ibm-plex-mono':
+      specifier: ^5.1.1
+      version: 5.2.7
+    '@formkit/auto-animate':
+      specifier: ^0.8.2
+      version: 0.8.4
+    '@govtechsg/sgds-react':
+      specifier: ^2.7.6
+      version: 2.7.7
+    '@headlessui/react':
+      specifier: ^2.1.2
+      version: 2.2.9
+    '@hello-pangea/dnd':
+      specifier: ^17.0.0
+      version: 17.0.0
+    '@hookform/resolvers':
+      specifier: ^3.8.0
+      version: 3.10.0
     '@inquirer/prompts':
       specifier: ^7.6.0
       version: 7.10.1
+    '@intercom/messenger-js-sdk':
+      specifier: ^0.0.14
+      version: 0.0.14
     '@octokit/rest':
       specifier: ^22.0.0
       version: 22.0.1
+    '@opengovsg/design-system-react':
+      specifier: ^1.31.0
+      version: 1.34.0
+    '@opengovsg/starter-kitty-validators':
+      specifier: ^1.2.13
+      version: 1.2.14
     '@paralleldrive/cuid2':
       specifier: ^2.2.2
       version: 2.3.1
+    '@playwright/test':
+      specifier: ^1.40.1
+      version: 1.58.2
     '@sinclair/typebox':
       specifier: ^0.33.12
       version: 0.33.22
+    '@tanstack/query-devtools':
+      specifier: ^5.85.3
+      version: 5.95.2
+    '@tanstack/react-query':
+      specifier: ^5.85.3
+      version: 5.95.2
+    '@tanstack/react-query-devtools':
+      specifier: ^5.85.3
+      version: 5.95.2
+    '@tanstack/react-table':
+      specifier: ^8.21.2
+      version: 8.21.3
     '@types/jsdom':
       specifier: ^21.1.7
       version: 21.1.7
@@ -82,9 +161,15 @@ catalogs:
     '@types/validator':
       specifier: ^13.15.2
       version: 13.15.10
+    '@uidotdev/usehooks':
+      specifier: ^2.4.1
+      version: 2.4.1
     ajv:
       specifier: ^8.17.1
       version: 8.18.0
+    ajv-errors:
+      specifier: ^3.0.0
+      version: 3.0.0
     autoprefixer:
       specifier: ^10.4.21
       version: 10.4.27
@@ -97,6 +182,9 @@ catalogs:
     browserslist-useragent-regexp:
       specifier: ^4.1.3
       version: 4.1.3
+    chakra-react-select:
+      specifier: ^5.0.5
+      version: 5.1.0
     cheerio:
       specifier: ^1.0.0
       version: 1.2.0
@@ -106,30 +194,87 @@ catalogs:
     clean-webpack-plugin:
       specifier: ^4.0.0
       version: 4.0.0
+    commander:
+      specifier: ^12.1.0
+      version: 12.1.0
     commander-ts:
       specifier: ^0.2.0
       version: 0.2.0
     date-fns:
       specifier: ^4.1.0
       version: 4.1.0
+    date-fns-tz:
+      specifier: ^3.1.3
+      version: 3.2.0
     dayjs:
       specifier: ^1.11.13
       version: 1.11.20
+    dd-trace:
+      specifier: ^5.24.0
+      version: 5.93.0
     dotenv:
       specifier: ^16.4.5
       version: 16.6.1
     dotenv-cli:
       specifier: ^8.0.0
       version: 8.0.0
+    exponential-backoff:
+      specifier: ^3.1.2
+      version: 3.1.3
+    filenamify:
+      specifier: ^6.0.0
+      version: 6.0.0
+    flat:
+      specifier: ^6.0.1
+      version: 6.0.1
     globals:
       specifier: ^11.12.0
       version: 11.12.0
+    inter-ui:
+      specifier: ^4.1.0
+      version: 4.1.1
+    interweave:
+      specifier: ^13.1.0
+      version: 13.1.1
+    interweave-ssr:
+      specifier: ^2.0.0
+      version: 2.0.0
+    iron-session:
+      specifier: ^8.0.4
+      version: 8.0.4
     isomorphic-dompurify:
       specifier: ^3.6.0
       version: 3.7.1
+    jose:
+      specifier: ^6.0.11
+      version: 6.2.2
+    jotai:
+      specifier: ^2.12.5
+      version: 2.19.0
+    js-base64:
+      specifier: ^3.7.7
+      version: 3.7.8
+    js-md5:
+      specifier: ^0.8.3
+      version: 0.8.3
     jsdom:
       specifier: ^24.1.0
       version: 24.1.3
+    kysely:
+      specifier: ^0.27.3
+      version: 0.27.6
+    lodash:
+      specifier: ^4.18.1
+      version: 4.18.1
+    lodash-es:
+      specifier: ^4.18.1
+      version: 4.18.1
+    markdown-to-jsx:
+      specifier: ^7.7.8
+      version: 7.7.17
+    minisearch:
+      specifier: ^7.1.2
+      version: 7.2.0
     mockdate:
       specifier: ^3.0.5
       version: 3.0.5
@@ -142,6 +287,9 @@ catalogs:
     msw-trpc:
       specifier: ^2.0.1
       version: 2.0.1
+    nanoid:
+      specifier: ^5.0.9
+      version: 5.1.7
     node-mocks-http:
       specifier: ^1.16.2
       version: 1.17.2
@@ -151,9 +299,27 @@ catalogs:
     npx:
       specifier: ^10.2.2
       version: 10.2.2
+    openid-client:
+      specifier: ^5.7.1
+      version: 5.7.1
+    oxfmt:
+      specifier: ^0.42.0
+      version: 0.42.0
+    oxlint:
+      specifier: ^1.56.0
+      version: 1.57.0
+    oxlint-tsgolint:
+      specifier: ^0.17.1
+      version: 0.17.4
+    papaparse:
+      specifier: ^5.5.3
+      version: 5.5.3
     pg:
       specifier: ^8.16.2
       version: 8.20.0
+    pg-boss:
+      specifier: ^12.3.0
+      version: 12.14.0
     pino:
       specifier: ^9.6.0
       version: 9.14.0
@@ -163,12 +329,33 @@ catalogs:
     postcss:
       specifier: ^8.4.39
       version: 8.5.8
+    postcss-load-config:
+      specifier: ^6.0.1
+      version: 6.0.1
     postcss-preset-env:
       specifier: ^10.0.8
       version: 10.6.1
+    rate-limiter-flexible:
+      specifier: ^5.0.3
+      version: 5.0.5
+    react-error-boundary:
+      specifier: ^5.0.0
+      version: 5.0.0
+    react-frame-component:
+      specifier: ^5.2.7
+      version: 5.3.2
+    react-hook-form:
+      specifier: ^7.52.1
+      version: 7.72.0
     react-icons:
       specifier: ^5.2.0
       version: 5.6.0
+    react-markdown:
+      specifier: ^10.1.0
+      version: 10.1.0
+    rehype-external-links:
+      specifier: ^3.0.0
+      version: 3.0.0
     rimraf:
       specifier: ^5.0.10
       version: 5.0.10
@@ -178,18 +365,39 @@ catalogs:
     rollup-plugin-dts:
       specifier: ^6.2.1
       version: 6.4.1
+    sass:
+      specifier: ^1.83.4
+      version: 1.98.0
     sherif:
       specifier: ^1.6.1
       version: 1.11.0
     start-server-and-test:
       specifier: ^2.0.11
       version: 2.1.5
+    superjson:
+      specifier: ^2.2.1
+      version: 2.2.6
+    tailwind-merge:
+      specifier: ^2.4.0
+      version: 2.6.1
+    tailwind-variants:
+      specifier: ^0.3.1
+      version: 0.3.1
     tailwindcss:
       specifier: ^3.4.4
       version: 3.4.19
+    tailwindcss-react-aria-components:
+      specifier: ^1.1.4
+      version: 1.2.0
     testcontainers:
       specifier: ^10.13.1
       version: 10.28.0
+    tiptap-text-direction:
+      specifier: ^0.3.1
+      version: 0.3.3
+    transliteration:
+      specifier: ^2.6.1
+      version: 2.6.1
     tsc-alias:
       specifier: ^1.8.16
       version: 1.8.16
@@ -211,15 +419,35 @@ catalogs:
     usehooks-ts:
       specifier: ^3.1.1
       version: 3.1.1
+    validator:
+      specifier: ^13.15.22
+      version: 13.15.26
     webpack-cli:
       specifier: ^6.0.1
       version: 6.0.1
     webpack-glob-entries:
       specifier: ^1.0.1
       version: 1.0.1
+    wretch:
+      specifier: ^2.11.0
+      version: 2.11.1
     zod:
       specifier: ^3.22.4
       version: 3.25.76
+  growthbook:
+    '@growthbook/growthbook':
+      specifier: ^1.2.0
+      version: 1.6.5
+    '@growthbook/growthbook-react':
+      specifier: ^1.2.0
+      version: 1.6.5
+  jsonforms3:
+    '@jsonforms/core':
+      specifier: ^3.5.1
+      version: 3.7.0
+    '@jsonforms/react':
+      specifier: ^3.5.1
+      version: 3.7.0
   next15:
     next:
       specifier: ^15.5.9
@@ -250,6 +478,31 @@ catalogs:
     react-dom:
       specifier: ^18.3.1
       version: 18.3.1
+  reactAria3:
+    '@react-aria/button':
+      specifier: ^3.14.2
+      version: 3.14.5
+    '@react-aria/checkbox':
+      specifier: ^3.16.2
+      version: 3.16.5
+    '@react-aria/focus':
+      specifier: ^3.21.2
+      version: 3.21.5
+    '@react-aria/interactions':
+      specifier: ^3.25.6
+      version: 3.27.1
+    '@react-aria/textfield':
+      specifier: ^3.18.2
+      version: 3.18.5
+    '@react-aria/utils':
+      specifier: ^3.31.0
+      version: 3.33.1
+    '@react-stately/checkbox':
+      specifier: ^3.7.2
+      version: 3.7.5
+    '@react-stately/toggle':
+      specifier: ^3.9.2
+      version: 3.9.5
   storybook9:
     '@storybook/addon-a11y':
       specifier: 9.1.19
@@ -410,7 +663,7 @@ importers:
         specifier: 'catalog:'
         version: 8.0.0
       oxfmt:
-        specifier: ^0.42.0
+        specifier: 'catalog:'
         version: 0.42.0
       sherif:
         specifier: 'catalog:'
@@ -422,10 +675,10 @@ importers:
   apps/studio:
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop':
-        specifier: ^1.7.7
+        specifier: catalog:atlaskitPragmaticDnd
         version: 1.7.9
       '@atlaskit/pragmatic-drag-and-drop-hitbox':
-        specifier: ^1.1.0
+        specifier: catalog:atlaskitPragmaticDnd
         version: 1.1.0
       '@aws-sdk/client-codebuild':
         specifier: catalog:awsSdk3
@@ -437,64 +690,64 @@ importers:
         specifier: catalog:awsSdk3
         version: 3.837.0
       '@casl/ability':
-        specifier: ^6.7.1
+        specifier: catalog:casl
         version: 6.8.0
       '@casl/react':
-        specifier: ^5.0.0
+        specifier: catalog:casl
         version: 5.0.1(@casl/ability@6.8.0)(react@18.3.1)
       '@chakra-ui/anatomy':
-        specifier: ^2.3.4
+        specifier: catalog:chakra2
         version: 2.3.4
       '@chakra-ui/react':
-        specifier: ^2.10.5
+        specifier: catalog:chakra2
         version: 2.10.9(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(framer-motion@12.38.0(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@chakra-ui/styled-system':
-        specifier: ^2.9.2
+        specifier: catalog:chakra2
         version: 2.12.0(react@18.3.1)
       '@chakra-ui/theme-tools':
-        specifier: ^2.2.6
+        specifier: catalog:chakra2
         version: 2.2.6(@chakra-ui/styled-system@2.12.0(react@18.3.1))(react@18.3.1)
       '@chakra-ui/utils':
-        specifier: ^2.2.2
+        specifier: catalog:chakra2
         version: 2.2.2(react@18.3.1)
       '@datadog/browser-rum':
-        specifier: ^5.29.1
+        specifier: 'catalog:'
         version: 5.35.1
       '@fontsource/ibm-plex-mono':
-        specifier: ^5.1.1
+        specifier: 'catalog:'
         version: 5.2.7
       '@formkit/auto-animate':
-        specifier: ^0.8.2
+        specifier: 'catalog:'
         version: 0.8.4
       '@growthbook/growthbook':
-        specifier: ^1.2.0
+        specifier: catalog:growthbook
         version: 1.6.5
       '@growthbook/growthbook-react':
-        specifier: ^1.2.0
+        specifier: catalog:growthbook
         version: 1.6.5(react@18.3.1)
       '@hello-pangea/dnd':
-        specifier: ^17.0.0
+        specifier: 'catalog:'
         version: 17.0.0(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@hookform/resolvers':
-        specifier: ^3.8.0
+        specifier: 'catalog:'
         version: 3.10.0(react-hook-form@7.72.0(react@18.3.1))
       '@intercom/messenger-js-sdk':
-        specifier: ^0.0.14
+        specifier: 'catalog:'
         version: 0.0.14
       '@jsonforms/core':
-        specifier: ^3.5.1
+        specifier: catalog:jsonforms3
         version: 3.7.0
       '@jsonforms/react':
-        specifier: ^3.5.1
+        specifier: catalog:jsonforms3
         version: 3.7.0(@jsonforms/core@3.7.0)(react@18.3.1)
       '@opengovsg/design-system-react':
-        specifier: ^1.31.0
+        specifier: 'catalog:'
         version: 1.34.0(@chakra-ui/react@2.10.9(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(framer-motion@12.38.0(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.28)(prop-types@15.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@opengovsg/isomer-components':
         specifier: workspace:*
         version: link:../../packages/components
       '@opengovsg/starter-kitty-validators':
-        specifier: ^1.2.13
+        specifier: 'catalog:'
         version: 1.2.14
       '@paralleldrive/cuid2':
         specifier: 'catalog:'
@@ -506,16 +759,16 @@ importers:
         specifier: 'catalog:'
         version: 0.33.22
       '@tanstack/query-devtools':
-        specifier: ^5.85.3
+        specifier: 'catalog:'
         version: 5.95.2
       '@tanstack/react-query':
-        specifier: ^5.85.3
+        specifier: 'catalog:'
         version: 5.95.2(react@18.3.1)
       '@tanstack/react-query-devtools':
-        specifier: ^5.85.3
+        specifier: 'catalog:'
         version: 5.95.2(@tanstack/react-query@5.95.2(react@18.3.1))(react@18.3.1)
       '@tanstack/react-table':
-        specifier: ^8.21.2
+        specifier: 'catalog:'
         version: 8.21.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tiptap/extension-bold':
         specifier: catalog:tiptap2
@@ -608,67 +861,67 @@ importers:
         specifier: catalog:trpc11
         version: 11.16.0(typescript@5.9.3)
       '@uidotdev/usehooks':
-        specifier: ^2.4.1
+        specifier: 'catalog:'
         version: 2.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ajv:
         specifier: 'catalog:'
         version: 8.18.0
       ajv-errors:
-        specifier: ^3.0.0
+        specifier: 'catalog:'
         version: 3.0.0(ajv@8.18.0)
       chakra-react-select:
-        specifier: ^5.0.5
+        specifier: 'catalog:'
         version: 5.1.0(@chakra-ui/react@2.10.9(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(framer-motion@12.38.0(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       date-fns:
         specifier: 'catalog:'
         version: 4.1.0
       date-fns-tz:
-        specifier: ^3.1.3
+        specifier: 'catalog:'
         version: 3.2.0(date-fns@4.1.0)
       dd-trace:
-        specifier: ^5.24.0
+        specifier: 'catalog:'
         version: 5.93.0(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)
       exponential-backoff:
-        specifier: ^3.1.2
+        specifier: 'catalog:'
         version: 3.1.3
       filenamify:
-        specifier: ^6.0.0
+        specifier: 'catalog:'
         version: 6.0.0
       flat:
-        specifier: ^6.0.1
+        specifier: 'catalog:'
         version: 6.0.1
       inter-ui:
-        specifier: ^4.1.0
+        specifier: 'catalog:'
         version: 4.1.1
       iron-session:
-        specifier: ^8.0.4
+        specifier: 'catalog:'
         version: 8.0.4
       isomorphic-dompurify:
         specifier: 'catalog:'
         version: 3.7.1(@noble/hashes@1.8.0)
       jose:
-        specifier: ^6.0.11
+        specifier: 'catalog:'
         version: 6.2.2
       jotai:
-        specifier: ^2.12.5
+        specifier: 'catalog:'
         version: 2.19.0(@babel/core@7.29.0)(@babel/template@7.28.6)(@types/react@18.3.28)(react@18.3.1)
       kysely:
-        specifier: ^0.27.3
+        specifier: 'catalog:'
         version: 0.27.6
       lodash:
-        specifier: ^4.18.1
+        specifier: 'catalog:'
         version: 4.18.1
       nanoid:
-        specifier: ^5.0.9
+        specifier: 'catalog:'
         version: 5.1.7
       next:
         specifier: catalog:next15
         version: 15.5.14(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.98.0)
       openid-client:
-        specifier: ^5.7.1
+        specifier: 'catalog:'
         version: 5.7.1
       papaparse:
-        specifier: ^5.5.3
+        specifier: 'catalog:'
         version: 5.5.3
       pg:
         specifier: 'catalog:'
@@ -689,7 +942,7 @@ importers:
         specifier: catalog:prisma5
         version: 1.8.0
       rate-limiter-flexible:
-        specifier: ^5.0.3
+        specifier: 'catalog:'
         version: 5.0.5
       react:
         specifier: catalog:react18
@@ -698,34 +951,34 @@ importers:
         specifier: catalog:react18
         version: 18.3.1(react@18.3.1)
       react-error-boundary:
-        specifier: ^5.0.0
+        specifier: 'catalog:'
         version: 5.0.0(react@18.3.1)
       react-frame-component:
-        specifier: ^5.2.7
+        specifier: 'catalog:'
         version: 5.3.2(prop-types@15.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-hook-form:
-        specifier: ^7.52.1
+        specifier: 'catalog:'
         version: 7.72.0(react@18.3.1)
       react-icons:
         specifier: 'catalog:'
         version: 5.6.0(react@18.3.1)
       react-markdown:
-        specifier: ^10.1.0
+        specifier: 'catalog:'
         version: 10.1.0(@types/react@18.3.28)(react@18.3.1)
       rehype-external-links:
-        specifier: ^3.0.0
+        specifier: 'catalog:'
         version: 3.0.0
       sass:
-        specifier: ^1.83.4
+        specifier: 'catalog:'
         version: 1.98.0
       superjson:
-        specifier: ^2.2.1
+        specifier: 'catalog:'
         version: 2.2.6
       tiptap-text-direction:
-        specifier: ^0.3.1
+        specifier: 'catalog:'
         version: 0.3.3(@tiptap/core@2.27.2(@tiptap/pm@2.22.3))(@tiptap/pm@2.22.3)
       transliteration:
-        specifier: ^2.6.1
+        specifier: 'catalog:'
         version: 2.6.1
       type-fest:
         specifier: 'catalog:'
@@ -734,29 +987,29 @@ importers:
         specifier: 'catalog:'
         version: 3.1.1(react@18.3.1)
       validator:
-        specifier: ^13.15.22
+        specifier: 'catalog:'
         version: 13.15.26
       wretch:
-        specifier: ^2.11.0
+        specifier: 'catalog:'
         version: 2.11.1
       zod:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
       '@babel/plugin-transform-class-properties':
-        specifier: 'catalog:'
+        specifier: catalog:babel7
         version: 7.28.6(@babel/core@7.29.0)
       '@babel/plugin-transform-object-rest-spread':
-        specifier: 'catalog:'
+        specifier: catalog:babel7
         version: 7.28.6(@babel/core@7.29.0)
       '@babel/preset-env':
-        specifier: 'catalog:'
+        specifier: catalog:babel7
         version: 7.29.2(@babel/core@7.29.0)
       '@babel/preset-typescript':
-        specifier: 'catalog:'
+        specifier: catalog:babel7
         version: 7.28.5(@babel/core@7.29.0)
       '@chakra-ui/cli':
-        specifier: 'catalog:'
+        specifier: catalog:chakra2
         version: 2.5.8(react@18.3.1)(ws@8.20.0)
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -771,7 +1024,7 @@ importers:
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@playwright/test':
-        specifier: ^1.40.1
+        specifier: 'catalog:'
         version: 1.58.2
       '@storybook/addon-a11y':
         specifier: catalog:storybook9
@@ -819,7 +1072,7 @@ importers:
         specifier: 'catalog:'
         version: 4.0.0(webpack@5.105.4)
       commander:
-        specifier: ^12.1.0
+        specifier: 'catalog:'
         version: 12.1.0
       dotenv-cli:
         specifier: 'catalog:'
@@ -849,7 +1102,7 @@ importers:
         specifier: 'catalog:'
         version: 8.5.8
       postcss-load-config:
-        specifier: ^6.0.1
+        specifier: 'catalog:'
         version: 6.0.1(jiti@1.21.7)(postcss@8.5.8)(tsx@4.21.0)(yaml@2.8.3)
       start-server-and-test:
         specifier: 'catalog:'
@@ -891,34 +1144,34 @@ importers:
   packages/components:
     dependencies:
       '@govtechsg/sgds-react':
-        specifier: ^2.7.6
+        specifier: 'catalog:'
         version: 2.7.7(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@headlessui/react':
-        specifier: ^2.1.2
+        specifier: 'catalog:'
         version: 2.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/button':
-        specifier: ^3.14.2
+        specifier: catalog:reactAria3
         version: 3.14.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/checkbox':
-        specifier: ^3.16.2
+        specifier: catalog:reactAria3
         version: 3.16.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/focus':
-        specifier: ^3.21.2
+        specifier: catalog:reactAria3
         version: 3.21.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/interactions':
-        specifier: ^3.25.6
+        specifier: catalog:reactAria3
         version: 3.27.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/textfield':
-        specifier: ^3.18.2
+        specifier: catalog:reactAria3
         version: 3.18.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/utils':
-        specifier: ^3.31.0
+        specifier: catalog:reactAria3
         version: 3.33.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-stately/checkbox':
-        specifier: ^3.7.2
+        specifier: catalog:reactAria3
         version: 3.7.5(react@18.3.1)
       '@react-stately/toggle':
-        specifier: ^3.9.2
+        specifier: catalog:reactAria3
         version: 3.9.5(react@18.3.1)
       '@sinclair/typebox':
         specifier: 'catalog:'
@@ -927,40 +1180,40 @@ importers:
         specifier: 'catalog:'
         version: 4.1.0
       interweave:
-        specifier: ^13.1.0
+        specifier: 'catalog:'
         version: 13.1.1(react@18.3.1)
       interweave-ssr:
-        specifier: ^2.0.0
+        specifier: 'catalog:'
         version: 2.0.0
       isomorphic-dompurify:
         specifier: 'catalog:'
         version: 3.7.1(@noble/hashes@1.8.0)
       js-base64:
-        specifier: ^3.7.7
+        specifier: 'catalog:'
         version: 3.7.8
       js-md5:
-        specifier: ^0.8.3
+        specifier: 'catalog:'
         version: 0.8.3
       lodash-es:
-        specifier: ^4.18.1
+        specifier: 'catalog:'
         version: 4.18.1
       markdown-to-jsx:
-        specifier: ^7.7.8
+        specifier: 'catalog:'
         version: 7.7.17(react@18.3.1)
       minisearch:
-        specifier: ^7.1.2
+        specifier: 'catalog:'
         version: 7.2.0
       react-icons:
         specifier: 'catalog:'
         version: 5.6.0(react@18.3.1)
       tailwind-merge:
-        specifier: ^2.4.0
+        specifier: 'catalog:'
         version: 2.6.1
       tailwind-variants:
-        specifier: ^0.3.1
+        specifier: 'catalog:'
         version: 0.3.1(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.8.3))
       tailwindcss-react-aria-components:
-        specifier: ^1.1.4
+        specifier: 'catalog:'
         version: 1.2.0(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.8.3))
       type-fest:
         specifier: 'catalog:'
@@ -1023,9 +1276,6 @@ importers:
       chromatic:
         specifier: 'catalog:'
         version: 11.29.0
-      eslint:
-        specifier: ^9.10.0
-        version: 9.39.4(jiti@2.6.1)
       eslint-plugin-storybook:
         specifier: catalog:storybook9
         version: 9.1.20(eslint@9.39.4(jiti@2.6.1))(storybook@9.1.19(@testing-library/dom@10.4.1)(msw@2.12.14(@types/node@25.5.0)(typescript@5.9.3))(prettier@3.8.1)(vite@5.4.21(@types/node@25.5.0)(sass@1.98.0)(terser@5.46.1)))(typescript@5.9.3)
@@ -1093,7 +1343,7 @@ importers:
   packages/pgboss:
     dependencies:
       pg-boss:
-        specifier: ^12.3.0
+        specifier: 'catalog:'
         version: 12.14.0
       pino:
         specifier: 'catalog:'
@@ -1143,7 +1393,7 @@ importers:
   tooling/build/1password:
     dependencies:
       '@1password/sdk':
-        specifier: ^0.3.1
+        specifier: 'catalog:'
         version: 0.3.1
       dotenv:
         specifier: 'catalog:'
@@ -1257,10 +1507,10 @@ importers:
   tooling/oxlint:
     dependencies:
       oxlint:
-        specifier: ^1.56.0
+        specifier: 'catalog:'
         version: 1.57.0(oxlint-tsgolint@0.17.4)
       oxlint-tsgolint:
-        specifier: ^0.17.1
+        specifier: 'catalog:'
         version: 0.17.4
 
   tooling/scripts:
@@ -17109,7 +17359,7 @@ snapshots:
 
   '@types/node-fetch@2.6.13':
     dependencies:
-      '@types/node': 22.19.15
+      '@types/node': 25.5.0
       form-data: 4.0.5
 
   '@types/node@18.19.130':
