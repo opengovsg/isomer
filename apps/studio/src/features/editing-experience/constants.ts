@@ -14,6 +14,7 @@ import {
   BiMessageDots,
   BiMoviePlay,
   BiPhoneCall,
+  BiError,
   BiPointer,
   BiSolidQuoteAltLeft,
   BiText,
@@ -31,6 +32,7 @@ export const TYPE_TO_ICON: Record<
   IsomerSchema["content"][number]["type"],
   IconType
 > = {
+  antiscamdisclaimerbanner: BiError,
   prose: BiText,
   image: BiImage,
   infopic: InfopicIcon,

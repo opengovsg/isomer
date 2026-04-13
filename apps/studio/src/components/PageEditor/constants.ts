@@ -228,6 +228,9 @@ export const DEFAULT_BLOCKS = {
       },
     ],
   },
+  antiscamdisclaimerbanner: {
+    type: "antiscamdisclaimerbanner",
+  },
   logocloud: {
     type: "logocloud",
     images: [
@@ -399,6 +402,13 @@ export const BLOCK_TO_META: Record<
     description: "Display a dynamic data banner.",
     usageText: "This block supports fetching data from an API endpoint.",
   },
+  antiscamdisclaimerbanner: {
+    label: "Anti-scam disclaimer",
+    description: "Show a warning against scams.",
+    usageText:
+      "Comes with a pre-approved text that warns against Government Officials Impersonation Scams.",
+    imageSrc: "/assets/block-images/AntiScamDisclaimerBanner.png",
+  },
   logocloud: {
     label: "Logo cloud",
     description: "Display logos of partner organisations or accolades.",
@@ -510,6 +520,7 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "blockquote",
       "collectionblock",
       "logocloud",
+      "antiscamdisclaimerbanner",
     ],
   },
 ]
