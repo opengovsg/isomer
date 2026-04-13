@@ -6,6 +6,7 @@ import type {
 } from "~/types"
 
 import { Accordion } from "../components/complex/Accordion"
+import { AntiScamDisclaimerBanner } from "../components/complex/AntiScamDisclaimerBanner"
 import { Audio } from "../components/complex/Audio"
 import { Blockquote } from "../components/complex/Blockquote"
 import { Callout } from "../components/complex/Callout"
@@ -50,6 +51,10 @@ export const renderComponent = ({
       return <LogoCloud key={elementKey} {...component} {...rest} />
     case "accordion":
       return <Accordion key={elementKey} {...component} {...rest} />
+    case "antiscamdisclaimerbanner":
+      return (
+        <AntiScamDisclaimerBanner key={elementKey} {...component} {...rest} />
+      )
     case "blockquote":
       return <Blockquote key={elementKey} {...component} {...rest} />
     case "callout":
@@ -93,6 +98,7 @@ export const renderComponent = ({
       return <Video key={elementKey} {...component} {...rest} />
     case "dynamicdatabanner":
       return <DynamicDataBanner key={elementKey} {...component} {...rest} />
+
     case "collectionblock":
       return <CollectionBlock key={elementKey} {...component} {...rest} />
     case "imagegallery":
