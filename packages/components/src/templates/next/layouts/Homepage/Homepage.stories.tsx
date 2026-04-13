@@ -621,6 +621,9 @@ const generateArgs = ({
           },
         ],
       },
+      {
+        type: "antiscamdisclaimerbanner",
+      },
     ],
   }
 }
