@@ -109,12 +109,8 @@ export const YOUTUBE_PRIVACY_ENHANCED_DOMAINS = [
 
 export const YOUTUBE_PRIVACY_ENHANCED_HOST = YOUTUBE_PRIVACY_ENHANCED_DOMAINS[0]
 
-export const isYoutubePrivacyEnhancedHost = (hostname: string): boolean => {
-  for (const h of YOUTUBE_PRIVACY_ENHANCED_DOMAINS) {
-    if (h === hostname) return true
-  }
-  return false
-}
+export const isYoutubePrivacyEnhancedHost = (hostname: string): boolean =>
+  YOUTUBE_PRIVACY_ENHANCED_DOMAINS.some((h) => h === hostname)
 
 export const VALID_VIDEO_DOMAINS = {
   youtube: [
