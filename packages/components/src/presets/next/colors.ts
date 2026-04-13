@@ -60,7 +60,6 @@ export const colors = {
       warning: {
         DEFAULT: twColors.yellow["600"],
         subtle: twColors.yellow["100"],
-        banner: "#FFCC15",
       },
       alert: "#B91C1C",
     },
