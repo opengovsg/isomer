@@ -1,46 +1,46 @@
 {
   "name": "isomer-next",
   "version": "0.0.13",
-  "description": "Isomer Next",
   "private": true,
-  "engines": {
-    "node": ">=22",
-    "pnpm": ">=10"
-  },
+  "description": "Isomer Next",
+  "license": "ISC",
+  "author": "Isomer Team",
   "scripts": {
     "build": "dotenv -- turbo build",
+    "build-storybook": "turbo run build-storybook --parallel",
     "build:template": "dotenv -- turbo build:template",
     "clean": "turbo clean",
-    "dev": "dotenv -- turbo run dev",
     "db:connect": "dotenv -- turbo run db:connect",
     "db:connect:staging": "dotenv -- turbo run db:connect:staging",
     "db:connect:uat": "dotenv -- turbo run db:connect:uat",
     "db:connect:vapt": "dotenv -- turbo run db:connect:vapt",
-    "watch:packages": "dotenv -- turbo watch build --filter='./packages/*'",
+    "dev": "dotenv -- turbo run dev",
     "dev:e2e": "dotenv -- turbo run dev:e2e",
-    "test:e2e": "dotenv -- turbo run test:e2e",
-    "setup:test": "turbo setup:test",
-    "storybook": "dotenv -- turbo run storybook --parallel",
-    "build-storybook": "turbo run build-storybook --parallel",
-    "teardown": "turbo teardown",
-    "test-start": "turbo test-start",
-    "typecheck": "turbo typecheck",
     "format": "turbo format --continue",
     "format:fix": "turbo format:fix --continue",
     "lint": "turbo lint --continue",
     "lint:fix": "turbo lint --continue -- --fix",
-    "lint:ws": "pnpm exec sherif -i next",
+    "lint:ws": "pnpm exec sherif",
     "lint:ws:fix": "pnpm exec sherif --fix",
-    "postinstall": "pnpm run lint:ws"
+    "postinstall": "pnpm run lint:ws",
+    "setup:test": "turbo setup:test",
+    "storybook": "dotenv -- turbo run storybook --parallel",
+    "teardown": "turbo teardown",
+    "test-start": "turbo test-start",
+    "test:e2e": "dotenv -- turbo run test:e2e",
+    "typecheck": "turbo typecheck",
+    "watch:packages": "dotenv -- turbo watch build --filter='./packages/*'"
   },
-  "author": "Isomer Team",
-  "license": "ISC",
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
     "dotenv-cli": "catalog:",
     "oxfmt": "catalog:",
     "sherif": "catalog:",
     "turbo": "catalog:"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
   },
   "packageManager": "pnpm@10.33.0"
 }
