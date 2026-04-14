@@ -53,9 +53,18 @@ const StorybookEnvDecorator: Decorator = (story) => {
 
 const SetupDecorator: Decorator = (Story, { parameters }) => {
   const gb = new GrowthBook()
-  const forcedGrowthbookFeatures = new Map<string, unknown>(
-    parameters.growthbook ?? [],
-  )
+  const forcedGrowthbookFeatures = new Map<string, unknown>()
+  if (Array.isArray(parameters.growthbook)) {
+    for (const feature of parameters.growthbook) {
+      if (
+        Array.isArray(feature) &&
+        feature.length === 2 &&
+        typeof feature[0] === "string"
+      ) {
+        forcedGrowthbookFeatures.set(feature[0], feature[1])
+      }
+    }
+  }
   forcedGrowthbookFeatures.set(
     IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
     true,
