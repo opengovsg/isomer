@@ -12,7 +12,7 @@ const meta: Meta<typeof AntiScamDisclaimerBanner> = {
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
   },
   args: {
-    type: "antiscamdisclaimerbanner",
+    type: "antiscambanner",
   },
 }
 

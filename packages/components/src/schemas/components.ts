@@ -55,7 +55,7 @@ export const IsomerComplexComponentsMap = {
   video: VideoSchema,
   childrenpages: ChildrenPagesSchema,
   dynamicdatabanner: DynamicDataBannerSchema,
-  antiscamdisclaimerbanner: AntiScamDisclaimerBannerSchema,
+  antiscambanner: AntiScamDisclaimerBannerSchema,
   logocloud: LogoCloudSchema,
   collectionblock: CollectionBlockSchema,
   imagegallery: ImageGallerySchema,

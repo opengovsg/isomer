@@ -51,7 +51,7 @@ export const renderComponent = ({
       return <LogoCloud key={elementKey} {...component} {...rest} />
     case "accordion":
       return <Accordion key={elementKey} {...component} {...rest} />
-    case "antiscamdisclaimerbanner":
+    case "antiscambanner":
       return (
         <AntiScamDisclaimerBanner key={elementKey} {...component} {...rest} />
       )

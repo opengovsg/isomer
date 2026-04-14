@@ -4,8 +4,8 @@ import { Type } from "@sinclair/typebox"
 
 export const AntiScamDisclaimerBannerSchema = Type.Object(
   {
-    type: Type.Literal("antiscamdisclaimerbanner", {
-      default: "antiscamdisclaimerbanner",
+    type: Type.Literal("antiscambanner", {
+      default: "antiscambanner",
     }),
   },
   {

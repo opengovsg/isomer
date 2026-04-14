@@ -622,7 +622,7 @@ const generateArgs = ({
         ],
       },
       {
-        type: "antiscamdisclaimerbanner",
+        type: "antiscambanner",
       },
     ],
   }

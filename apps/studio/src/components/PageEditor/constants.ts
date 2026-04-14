@@ -228,8 +228,8 @@ export const DEFAULT_BLOCKS = {
       },
     ],
   },
-  antiscamdisclaimerbanner: {
-    type: "antiscamdisclaimerbanner",
+  antiscambanner: {
+    type: "antiscambanner",
   },
   logocloud: {
     type: "logocloud",
@@ -402,7 +402,7 @@ export const BLOCK_TO_META: Record<
     description: "Display a dynamic data banner.",
     usageText: "This block supports fetching data from an API endpoint.",
   },
-  antiscamdisclaimerbanner: {
+  antiscambanner: {
     label: "Anti-scam disclaimer",
     description: "Show a warning against scams.",
     usageText:
@@ -520,7 +520,7 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "blockquote",
       "collectionblock",
       "logocloud",
-      "antiscamdisclaimerbanner",
+      "antiscambanner",
     ],
   },
 ]

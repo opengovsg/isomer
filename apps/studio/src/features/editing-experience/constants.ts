@@ -32,7 +32,7 @@ export const TYPE_TO_ICON: Record<
   IsomerSchema["content"][number]["type"],
   IconType
 > = {
-  antiscamdisclaimerbanner: BiError,
+  antiscambanner: BiError,
   prose: BiText,
   image: BiImage,
   infopic: InfopicIcon,
