@@ -83,6 +83,8 @@ import {
   jsonFormsUnionRootControlTester,
   JsonFormsUuidControl,
   jsonFormsUuidControlTester,
+  jsonFormsAntiScamDisclaimerBannerLayoutRenderer,
+  jsonFormsAntiScamDisclaimerBannerLayoutTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
   JsonFormsWidgetIntegrationControl,
@@ -159,6 +161,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsGroupLayoutTester,
     renderer: jsonFormsGroupLayoutRenderer,
+  },
+  {
+    tester: jsonFormsAntiScamDisclaimerBannerLayoutTester,
+    renderer: jsonFormsAntiScamDisclaimerBannerLayoutRenderer,
   },
   {
     tester: jsonFormsVerticalLayoutTester,

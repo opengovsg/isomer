@@ -9,7 +9,7 @@ export const AntiScamDisclaimerBannerSchema = Type.Object(
     }),
   },
   {
-    title: "Anti-scam disclaimer banner",
+    title: "Anti-scam disclaimer",
   },
 )
 
