@@ -11,12 +11,14 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
+import { useFeatureValue } from "@growthbook/growthbook-react"
 import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
 import Image from "next/image"
 import { useMemo } from "react"
 import { type IconType } from "react-icons"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
+import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { type DrawerState } from "~/types/editorDrawer"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -26,7 +28,7 @@ import {
   CONTENT_ALLOWED_BLOCKS,
   DATABASE_ALLOWED_BLOCKS,
   DEFAULT_BLOCKS,
-  HOMEPAGE_ALLOWED_BLOCKS,
+  getHomepageAllowedBlocks,
   INDEX_ALLOWED_BLOCKS,
 } from "./constants"
 import { type SectionType } from "./types"
@@ -171,6 +173,11 @@ function ComponentSelector() {
     type,
   } = useEditorDrawerContext()
 
+  const isHomepageAntiScamBannerEnabled = useFeatureValue<boolean>(
+    IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
+    false,
+  )
+
   const onProceed = (sectionType: SectionType) => {
     if (
       sectionType === "childrenpages" &&
@@ -225,7 +232,9 @@ function ComponentSelector() {
   const availableBlocks = useMemo(() => {
     switch (type) {
       case ResourceType.RootPage:
-        return HOMEPAGE_ALLOWED_BLOCKS
+        return getHomepageAllowedBlocks({
+          includeAntiScamBanner: isHomepageAntiScamBannerEnabled,
+        })
       case ResourceType.Page:
         if (savedPageState.layout === "content") {
           return CONTENT_ALLOWED_BLOCKS
@@ -250,7 +259,7 @@ function ComponentSelector() {
         const exhaustiveCheck: never = type
         return exhaustiveCheck
     }
-  }, [savedPageState.layout, type])
+  }, [isHomepageAntiScamBannerEnabled, savedPageState.layout, type])
 
   return (
     <VStack w="full" h="full" gap="0">
