@@ -7,6 +7,7 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
+import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
   gradient: "gradient",
@@ -71,9 +72,8 @@ const BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING = omit(
   ".gif",
 )
 
-const BackgroundUrlSchema = Type.String({
+const BackgroundUrlSchema = generateImageSrcSchema({
   title: "Hero image",
-  format: "image",
   allowedMimeTypeMappings: BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 })
 

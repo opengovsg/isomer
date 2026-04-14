@@ -266,11 +266,6 @@ export default function RootStateDrawer() {
   )
 
   const handleConversionToIndexPage = useCallback(() => {
-    // NOTE: This is defined but we just do the assertion here
-    // because the type for `DEFAULT_BLOCKS` is possibly undefined
-    // so `ts` cannot infer
-    if (!DEFAULT_BLOCKS.childrenpages) return
-
     const newPageState = {
       ...savedPageState,
     }
@@ -547,6 +542,12 @@ export default function RootStateDrawer() {
                                   return <></>
                                 }
 
+                                // Check if block is a hidden childrenpages block
+                                const isHiddenChildrenPages =
+                                  block.type === "childrenpages" &&
+                                  "isHidden" in block &&
+                                  block.isHidden
+
                                 return (
                                   <DraggableBlock
                                     block={block}
@@ -574,6 +575,7 @@ export default function RootStateDrawer() {
                                           }
                                         : undefined
                                     }
+                                    isHidden={isHiddenChildrenPages}
                                   />
                                 )
                               })}

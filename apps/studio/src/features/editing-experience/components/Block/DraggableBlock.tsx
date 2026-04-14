@@ -12,7 +12,10 @@ import type { BaseBlockProps } from "./BaseBlock"
 import { TYPE_TO_ICON } from "../../constants"
 import { BaseBlock, BaseBlockDragHandle } from "./BaseBlock"
 
-interface DraggableBlockProps extends Pick<BaseBlockProps, "invalidProps"> {
+interface DraggableBlockProps extends Pick<
+  BaseBlockProps,
+  "invalidProps" | "isHidden"
+> {
   block: IsomerSchema["content"][number]
   draggableId: string
   index: number
@@ -25,6 +28,7 @@ export const DraggableBlock = ({
   index,
   onClick,
   invalidProps,
+  isHidden,
 }: DraggableBlockProps): JSX.Element => {
   const icon = TYPE_TO_ICON[block.type]
 
@@ -58,6 +62,7 @@ export const DraggableBlock = ({
             {...provided.draggableProps}
           >
             <BaseBlock
+              isHidden={isHidden}
               onClick={onClick}
               dragHandle={
                 <BaseBlockDragHandle

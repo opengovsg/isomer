@@ -1,8 +1,10 @@
 import type { Static, StringOptions } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 import {
+  AltTextSchema,
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
+  generateImageSrcSchema,
   SearchableTableSchema,
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
@@ -135,18 +137,13 @@ const COLLECTION_PAGE_SORT_DIRECTION = {
   desc: "desc",
 } as const
 
-export const COLLECTION_PAGE_DEFAULT_SORT_BY = COLLECTION_PAGE_SORT_BY.date
-export const COLLECTION_PAGE_DEFAULT_SORT_DIRECTION =
-  COLLECTION_PAGE_SORT_DIRECTION.desc
-
 export const CollectionPagePageSchema = Type.Intersect([
   Type.Object({
     subtitle: Type.String({
-      title: "The subtitle of the collection",
+      title: "Summary",
+      format: "textarea",
     }),
   }),
-  TagCategoriesSchema,
-  TagsSchema,
   Type.Object({
     variant: Type.Optional(
       Type.Union(
@@ -156,9 +153,36 @@ export const CollectionPagePageSchema = Type.Intersect([
           }),
           Type.Literal(COLLECTION_VARIANT_OPTIONS.Blog, { title: "2-column" }),
         ],
-        { title: "Layout", format: "collection-variant" },
+        {
+          title: "Layout",
+          format: "collection-variant",
+          default: COLLECTION_VARIANT_OPTIONS.Collection,
+        },
       ),
     ),
+    sortOrder: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("date-desc", {
+            title: "By article date, newest → oldest",
+          }),
+          Type.Literal("date-asc", {
+            title: "By article date, oldest → newest",
+          }),
+          Type.Literal("title-asc", { title: "By title, A → Z" }),
+          Type.Literal("title-desc", { title: "By title, Z → A" }),
+          Type.Literal("category-asc", { title: "By category, A → Z" }),
+          Type.Literal("category-desc", { title: "By category, Z → A" }),
+        ],
+        {
+          title: "Sort items by",
+          description: "This might take a while to reflect on the preview.",
+          type: "string",
+          default: "date-desc",
+        },
+      ),
+    ),
+    // Deprecated, will be replaced with sortOrder above
     defaultSortBy: Type.Optional(
       Type.Union(
         [
@@ -171,10 +195,11 @@ export const CollectionPagePageSchema = Type.Intersect([
           description: "The default sort order of the collection",
           format: "hidden",
           type: "string",
-          default: COLLECTION_PAGE_DEFAULT_SORT_BY,
+          default: COLLECTION_PAGE_SORT_BY.date,
         },
       ),
     ),
+    // Deprecated, will be replaced with sortOrder above
     defaultSortDirection: Type.Optional(
       Type.Union(
         [
@@ -190,11 +215,38 @@ export const CollectionPagePageSchema = Type.Intersect([
           description: "The default sort direction of the collection",
           format: "hidden",
           type: "string",
-          default: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+          default: COLLECTION_PAGE_SORT_DIRECTION.desc,
+        },
+      ),
+    ),
+    showDate: Type.Optional(
+      Type.Boolean({
+        title: "Show date on all items",
+        description:
+          "If an item doesn't have a date, we'll display a dash (-).",
+        default: true,
+      }),
+    ),
+    image: Type.Optional(
+      Type.Object(
+        {
+          src: generateImageSrcSchema({
+            title: "Thumbnail",
+            description:
+              "Upload an image if you want to have a custom thumbnail",
+          }),
+          alt: AltTextSchema,
+        },
+        {
+          title: "Set a thumbnail",
+          description:
+            "When this page is linked elsewhere on your site, this thumbnail may appear alongside it.",
         },
       ),
     ),
   }),
+  TagCategoriesSchema,
+  TagsSchema,
 ])
 
 export const ContentPagePageSchema = Type.Composite([
