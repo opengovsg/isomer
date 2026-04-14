@@ -20,54 +20,7 @@ const meta: Meta<NotificationProps> = {
 export default meta
 type Story = StoryObj<typeof Notification>
 
-export const NoTitle: Story = {
-  args: {
-    content: {
-      type: "prose",
-      content: [
-        {
-          type: "paragraph",
-          content: [
-            {
-              text: "This site will be on maintenance from 0900 to 1400 (Standard Singapore Time) this Tuesday, 24th May. E-services may be intermittently available during this period. For more information, please reach out to ",
-              type: "text",
-            },
-            {
-              text: "hello@example.com",
-              type: "text",
-              marks: [
-                {
-                  type: "link",
-                  attrs: {
-                    href: "mailto:hello@example.com",
-                    target: "_blank",
-                  },
-                },
-              ],
-            },
-            { text: ". ", type: "text" },
-          ],
-        },
-      ],
-    },
-  },
-}
-
-export const ShortText: Story = {
-  args: {
-    content: {
-      type: "prose",
-      content: [
-        {
-          type: "paragraph",
-          content: [{ type: "text", text: "This is a short notification" }],
-        },
-      ],
-    },
-  },
-}
-
-export const WithTitle: Story = {
+export const TitleAndDescription: Story = {
   args: {
     title: "This is a staging site for internal testing purposes.",
     content: {
@@ -78,6 +31,65 @@ export const WithTitle: Story = {
           content: [
             {
               text: "Contents on this site are neither accurate nor are representative of any Ministry's views. ",
+              type: "text",
+            },
+            {
+              text: "Internal link",
+              type: "text",
+              marks: [
+                {
+                  type: "link",
+                  attrs: {
+                    href: "/internal-link",
+                  },
+                },
+              ],
+            },
+            { text: ", ", type: "text" },
+            {
+              text: "external link",
+              type: "text",
+              marks: [
+                {
+                  type: "link",
+                  attrs: {
+                    href: "https://open.gov.sg/",
+                    target: "_blank",
+                  },
+                },
+              ],
+            },
+            { text: ".", type: "text" },
+          ],
+        },
+      ],
+    },
+  },
+}
+
+export const ShortTitle: Story = {
+  args: {
+    title: "Short notification with just a title. Description is optional.",
+  },
+}
+
+export const LongTitle: Story = {
+  args: {
+    title: "This is a staging site for internal testing purposes. You should not use this site for any official purposes. This is a long title that spans multiple lines.",
+  },
+}
+
+export const LongContent: Story = {
+  args: {
+    title: "This is a staging site for internal testing purposes. You should not use this site for any official purposes. This is a long title that spans multiple lines.",
+    content: {
+      type: "prose",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              text: "Contents on this site are neither accurate nor are representative of any Ministry's views. It may contain outdated or incorrect information. For accurate information, go to individual agency websites. ",
               type: "text",
             },
             {
