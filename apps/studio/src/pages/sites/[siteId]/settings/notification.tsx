@@ -103,11 +103,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             title="Notification banner"
             icon={BiWrench}
             isLoading={notificationMutation.isPending}
-            isDisabled={
-              !state.notification ||
-              !isSiteNotificationActive(state.notification) ||
-              !isDirty
-            }
+            isDisabled={!isDirty}
           />
           <Box w="100%">
             <Box mb="-0.5rem" />
