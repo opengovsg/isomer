@@ -19,7 +19,7 @@ describe("sitemap utils", () => {
       const sorted = [...pages].sort(comparator)
 
       // Assert
-      expect(sorted.map(({ id }) => id)).toEqual(["3", "1", "4", "2"])
+      expect(sorted.map(({ id }) => id)).toEqual(ordering)
     })
 
     it("should place pages not in ordering at the end, sorted alphabetically", () => {

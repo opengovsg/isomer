@@ -296,7 +296,7 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
               imageSrc="/assets/tooltip-images/siderail.png"
               icon={BiInfoCircle}
               label="What's a siderail"
-              usageText="A siderail appears on every child page in this folder. It helps visitors navigate to similar pages."
+              usageText="A siderail appears on every child page in this folder. It helps visitors navigate to similar pages. Only published pages appear here."
             >
               <Button variant="link" gap="0.25rem">
                 <Icon
