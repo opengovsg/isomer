@@ -28,6 +28,7 @@ import { DefaultFallback } from "~/components/ErrorBoundary"
 import Suspense from "~/components/Suspense"
 import { env } from "~/env.mjs"
 import { LoginStateContext } from "~/features/auth"
+import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { theme } from "~/theme"
 
 import { viewport, withChromaticModes } from "@isomer/storybook-config"
@@ -52,8 +53,12 @@ const StorybookEnvDecorator: Decorator = (story) => {
 
 const SetupDecorator: Decorator = (Story, { parameters }) => {
   const gb = new GrowthBook()
+  const forcedGrowthbookFeatures = new Map<string, unknown>([
+    [IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY, true],
+    ...(parameters.growthbook ?? []),
+  ])
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
-  gb.setForcedFeatures(new Map(parameters.growthbook ?? []))
+  gb.setForcedFeatures(forcedGrowthbookFeatures)
 
   const [queryClient] = useState(
     new QueryClient({
