@@ -58,59 +58,58 @@ function BlockItem({
 }: BlockItemProps) {
   const { icon, label, description } = rest
 
-  return (
-    <UsageTooltip {...rest}>
-      <TouchableTooltip
-        label={disabledText}
-        display={isDisabled ? "flex" : "none"}
+  const button = (
+    <chakra.button
+      disabled={isDisabled}
+      layerStyle="focusRing"
+      w="100%"
+      borderRadius="6px"
+      border="1px solid"
+      borderColor="base.divider.medium"
+      transitionProperty="common"
+      transitionDuration="normal"
+      _hover={{
+        bg: "interaction.muted.main.hover",
+        borderColor: "interaction.main-subtle.hover",
+      }}
+      bg="white"
+      p="0.75rem"
+      flexDirection="row"
+      display="flex"
+      alignItems="start"
+      gap="0.75rem"
+      onClick={() => onProceed(sectionType)}
+      _disabled={{
+        bg: "interaction.support.disabled",
+        borderColor: "base.divider.medium",
+        textColor: "interaction.support.disabled-content",
+        cursor: "not-allowed",
+        opacity: "75%",
+      }}
+      data-group
+    >
+      <Flex
+        p="0.5rem"
+        bg="interaction.main-subtle.default"
+        borderRadius="full"
+        _groupDisabled={{
+          background: "interaction.neutral-subtle.default",
+        }}
       >
-        <chakra.button
-          disabled={isDisabled}
-          layerStyle="focusRing"
-          w="100%"
-          borderRadius="6px"
-          border="1px solid"
-          borderColor="base.divider.medium"
-          transitionProperty="common"
-          transitionDuration="normal"
-          _hover={{
-            bg: "interaction.muted.main.hover",
-            borderColor: "interaction.main-subtle.hover",
-          }}
-          bg="white"
-          p="0.75rem"
-          flexDirection="row"
-          display="flex"
-          alignItems="start"
-          gap="0.75rem"
-          onClick={() => onProceed(sectionType)}
-          _disabled={{
-            bg: "interaction.support.disabled",
-            borderColor: "base.divider.medium",
-            textColor: "interaction.support.disabled-content",
-            cursor: "not-allowed",
-            opacity: "75%",
-          }}
-          data-group
-        >
-          <Flex
-            p="0.5rem"
-            bg="interaction.main-subtle.default"
-            borderRadius="full"
-            _groupDisabled={{
-              background: "interaction.neutral-subtle.default",
-            }}
-          >
-            <Icon as={icon} fontSize="1rem" color="base.content.default" />
-          </Flex>
-          <Stack align="start" gap="0.25rem" textAlign="start">
-            <Text textStyle="caption-1">{label}</Text>
-            <Text textStyle="caption-2">{description}</Text>
-          </Stack>
-        </chakra.button>
-      </TouchableTooltip>
-    </UsageTooltip>
+        <Icon as={icon} fontSize="1rem" color="base.content.default" />
+      </Flex>
+      <Stack align="start" gap="0.25rem" textAlign="start">
+        <Text textStyle="caption-1">{label}</Text>
+        <Text textStyle="caption-2">{description}</Text>
+      </Stack>
+    </chakra.button>
   )
+
+  if (isDisabled) {
+    return <TouchableTooltip label={disabledText}>{button}</TouchableTooltip>
+  }
+
+  return <UsageTooltip {...rest}>{button}</UsageTooltip>
 }
 
 function ComponentSelector() {
