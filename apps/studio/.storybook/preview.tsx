@@ -54,7 +54,9 @@ const StorybookEnvDecorator: Decorator = (story) => {
 const SetupDecorator: Decorator = (Story, { parameters }) => {
   const gb = new GrowthBook()
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
-  const forcedGrowthbookFeatures = new Map<string, unknown>(parameters.growthbook ?? [])
+  const forcedGrowthbookFeatures = new Map<string, unknown>(
+    parameters.growthbook ?? [],
+  )
   forcedGrowthbookFeatures.set(
     IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
     true,
