@@ -53,10 +53,13 @@ const StorybookEnvDecorator: Decorator = (story) => {
 
 const SetupDecorator: Decorator = (Story, { parameters }) => {
   const gb = new GrowthBook()
-  const forcedGrowthbookFeatures = new Map<string, unknown>([
-    [IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY, true],
-    ...(parameters.growthbook ?? []),
-  ])
+  const forcedGrowthbookFeatures = new Map<string, unknown>(
+    parameters.growthbook ?? [],
+  )
+  forcedGrowthbookFeatures.set(
+    IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
+    true,
+  )
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
   gb.setForcedFeatures(forcedGrowthbookFeatures)
 
