@@ -51,12 +51,12 @@ describe("isSiteNotificationActive", () => {
     })
   })
 
-  describe('when type is "gois"', () => {
-    it("returns true when useGOISmessage is true", () => {
+  describe('when type is "antiscam"', () => {
+    it("returns true when useAntiScamMessage is true", () => {
       // Arrange
       const notification = {
-        type: "gois" as const,
-        useGOISmessage: true,
+        type: "antiscam" as const,
+        useAntiScamMessage: true,
       }
 
       // Act
@@ -66,11 +66,11 @@ describe("isSiteNotificationActive", () => {
       expect(result).toBe(true)
     })
 
-    it("returns false when useGOISmessage is false", () => {
+    it("returns false when useAntiScamMessage is false", () => {
       // Arrange
       const notification = {
-        type: "gois" as const,
-        useGOISmessage: false,
+        type: "antiscam" as const,
+        useAntiScamMessage: false,
       }
 
       // Act

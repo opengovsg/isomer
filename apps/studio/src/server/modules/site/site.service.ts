@@ -99,7 +99,7 @@ export const getNotification = async (
     return {}
   }
 
-  if (notification.type === "gois") {
+  if (notification.type === "antiscam") {
     return result
   }
 

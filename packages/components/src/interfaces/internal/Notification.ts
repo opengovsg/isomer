@@ -30,24 +30,24 @@ const NotificationCustomSchema = Type.Object(
   },
 )
 
-const NotificationGoisSchema = Type.Object(
+const NotificationAntiScamSchema = Type.Object(
   {
-    type: Type.Literal("gois", {
-      default: "gois",
+    type: Type.Literal("antiscam", {
+      default: "antiscam",
     }),
-    useGOISmessage: Type.Boolean({
-      title: "Use GOIS message",
+    useAntiScamMessage: Type.Boolean({
+      title: "Use AntiScam message",
       description:
         "Use the pre-approved text that warns against Government Officials Impersonation Scams (GOIS).",
     }),
   },
   {
-    title: "GOIS advisory message",
+    title: "AntiScam advisory message",
   },
 )
 
 export const NotificationSchema = Type.Union(
-  [NotificationCustomSchema, NotificationGoisSchema],
+  [NotificationCustomSchema, NotificationAntiScamSchema],
   {
     title: "Display a banner",
     description:

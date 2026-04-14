@@ -118,9 +118,9 @@ export const WithTitle: Story = {
   },
 }
 
-export const GOIS: Story = {
+export const AntiScam: Story = {
   args: {
-    type: "gois",
-    useGOISmessage: true,
+    type: "antiscam",
+    useAntiScamMessage: true,
   },
 }

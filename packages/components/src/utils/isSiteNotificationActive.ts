@@ -11,8 +11,8 @@ export const isSiteNotificationActive = (
   switch (notification.type) {
     case "custom":
       return !!notification.title
-    case "gois":
-      return notification.useGOISmessage
+    case "antiscam":
+      return notification.useAntiScamMessage
     default:
       const _exhaustiveCheck: never = notification.type
       return _exhaustiveCheck

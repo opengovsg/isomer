@@ -5,7 +5,7 @@ import { getTextAsHtml } from "~/utils/getTextAsHtml"
 import { Prose } from "../../native/Prose"
 import { hasContent } from "../../native/Prose/utils"
 import { BaseParagraph } from "../BaseParagraph"
-import { GOIS_SITE_NOTIFICATION } from "./goisSiteNotification"
+import { antiScamSiteNotification } from "./antiScamSiteNotification"
 import { NotificationClient } from "./NotificationClient"
 
 export const Notification = (props: NotificationProps) => {
@@ -14,13 +14,13 @@ export const Notification = (props: NotificationProps) => {
   let title: string
   let body: ReactNode
 
-  if (type === "gois") {
-    title = GOIS_SITE_NOTIFICATION.title
+  if (type === "antiscam") {
+    title = antiScamSiteNotification.title
     body = (
       <BaseParagraph
         content={getTextAsHtml({
           site,
-          content: GOIS_SITE_NOTIFICATION.content,
+          content: antiScamSiteNotification.content,
         })}
         className="prose-body-base"
         LinkComponent={LinkComponent}
