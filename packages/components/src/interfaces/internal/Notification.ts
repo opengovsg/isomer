@@ -35,11 +35,6 @@ const NotificationAntiScamSchema = Type.Object(
     type: Type.Literal("antiscam", {
       default: "antiscam",
     }),
-    useAntiScamMessage: Type.Boolean({
-      title: "Use AntiScam message",
-      description:
-        "Use the pre-approved text that warns against Government Officials Impersonation Scams (GOIS).",
-    }),
   },
   {
     title: "AntiScam advisory message",

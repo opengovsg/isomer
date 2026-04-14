@@ -12,7 +12,7 @@ export const isSiteNotificationActive = (
     case "custom":
       return !!notification.title
     case "antiscam":
-      return notification.useAntiScamMessage
+      return true
     default:
       const _exhaustiveCheck: never = notification.type
       return _exhaustiveCheck

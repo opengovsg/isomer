@@ -121,6 +121,5 @@ export const WithTitle: Story = {
 export const AntiScam: Story = {
   args: {
     type: "antiscam",
-    useAntiScamMessage: true,
   },
 }
