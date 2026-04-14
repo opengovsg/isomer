@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest"
 
-import { isNotificationActive } from "../isNotificationActive"
+import { isSiteNotificationActive } from "../isSiteNotificationActive"
 
-describe("isNotificationActive", () => {
+describe("isSiteNotificationActive", () => {
   describe("when type is omitted (backward compatibility)", () => {
     it("returns true when title is non-empty", () => {
       // Arrange
       const notification = { title: "Maintenance" }
 
       // Act
-      const result = isNotificationActive(notification)
+      const result = isSiteNotificationActive(notification)
 
       // Assert
       expect(result).toBe(true)
@@ -20,7 +20,7 @@ describe("isNotificationActive", () => {
       const notification = { title: "" }
 
       // Act
-      const result = isNotificationActive(notification)
+      const result = isSiteNotificationActive(notification)
 
       // Assert
       expect(result).toBe(false)
@@ -33,7 +33,7 @@ describe("isNotificationActive", () => {
       const notification = { type: "custom" as const, title: "Notice" }
 
       // Act
-      const result = isNotificationActive(notification)
+      const result = isSiteNotificationActive(notification)
 
       // Assert
       expect(result).toBe(true)
@@ -44,7 +44,7 @@ describe("isNotificationActive", () => {
       const notification = { type: "custom" as const, title: "" }
 
       // Act
-      const result = isNotificationActive(notification)
+      const result = isSiteNotificationActive(notification)
 
       // Assert
       expect(result).toBe(false)
@@ -60,7 +60,7 @@ describe("isNotificationActive", () => {
       }
 
       // Act
-      const result = isNotificationActive(notification)
+      const result = isSiteNotificationActive(notification)
 
       // Assert
       expect(result).toBe(true)
@@ -74,7 +74,7 @@ describe("isNotificationActive", () => {
       }
 
       // Act
-      const result = isNotificationActive(notification)
+      const result = isSiteNotificationActive(notification)
 
       // Assert
       expect(result).toBe(false)

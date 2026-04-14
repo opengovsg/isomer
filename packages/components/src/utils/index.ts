@@ -34,3 +34,4 @@ export {
   VIDEO_EMBED_URL_REGEXES,
   NON_EMPTY_STRING_REGEX,
 } from "./validation"
+export { isSiteNotificationActive } from "./isSiteNotificationActive"

@@ -8,6 +8,7 @@ export {
   getResourceIdFromReferenceLink,
   REFERENCE_LINK_REGEX,
   NON_EMPTY_STRING_REGEX,
+  isSiteNotificationActive,
 } from "./utils"
 export * from "./schemas"
 export * from "./types"

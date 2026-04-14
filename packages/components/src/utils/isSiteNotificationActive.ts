@@ -1,6 +1,6 @@
 import type { SiteNotificationConfig } from "~/interfaces/internal/Notification"
 
-export const isNotificationActive = (
+export const isSiteNotificationActive = (
   notification: SiteNotificationConfig,
 ): boolean => {
   // For backward compatibility, where type is not provided,

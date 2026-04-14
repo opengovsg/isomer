@@ -1,12 +1,10 @@
 import type { IsomerPageSchemaType } from "~/types"
 
+import { isSiteNotificationActive } from "../../../../utils/isSiteNotificationActive"
 import { Footer } from "../../components/internal/Footer"
 import { Masthead } from "../../components/internal/Masthead"
 import { Navbar } from "../../components/internal/Navbar"
-import {
-  Notification,
-  isNotificationActive,
-} from "../../components/internal/Notification"
+import { Notification } from "../../components/internal/Notification"
 import { ScrollToTop } from "../../components/internal/ScrollToTop"
 import { SkipToContent } from "../../components/internal/SkipToContent"
 import { UnsupportedBrowserBanner } from "../../components/internal/UnsupportedBrowserBanner"
@@ -31,14 +29,13 @@ export const Skeleton = ({
 
         {site.isGovernment && <Masthead isStaging={isStaging} />}
 
-        {site.notification &&
-          isNotificationActive(site.notification) && (
-            <Notification
-              {...site.notification}
-              LinkComponent={LinkComponent}
-              site={site}
-            />
-          )}
+        {site.notification && isSiteNotificationActive(site.notification) && (
+          <Notification
+            {...site.notification}
+            LinkComponent={LinkComponent}
+            site={site}
+          />
+        )}
 
         <UnsupportedBrowserBanner />
 
