@@ -1,6 +1,5 @@
 import type { ChildrenPagesProps } from "~/interfaces"
-
-import { ChildPage } from "./types"
+import type { ChildPage } from "~/templates/next/components/complex/ChildrenPages/types"
 
 type SortablePage = Pick<ChildPage, "id" | "title">
 

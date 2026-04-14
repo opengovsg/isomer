@@ -4,6 +4,7 @@ import { BiRightArrowAlt } from "react-icons/bi"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { IMAGE_FIT } from "~/interfaces/constants"
 import { tv } from "~/lib/tv"
+import { createChildrenPagesComparator } from "~/utils/createChildrenPagesComparator"
 import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
@@ -13,7 +14,6 @@ import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
 import { compoundStyles, infoCardTitleStyle } from "../InfoCards/common"
 import { InfoCardNoImage, InfoCardWithImage } from "../InfoCards/components"
-import { createChildrenPagesComparator } from "./utils"
 
 interface Childpage {
   title: string

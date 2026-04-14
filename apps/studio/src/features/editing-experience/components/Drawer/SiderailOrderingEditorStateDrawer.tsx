@@ -5,7 +5,9 @@ import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import isEqual from "lodash/isEqual"
 import { useCallback, useMemo } from "react"
-import { BiData, BiFile, BiFolder, BiInfoCircle } from "react-icons/bi"
+import { BiInfoCircle } from "react-icons/bi"
+import { getIcon } from "~/utils/resources"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { UsageTooltip } from "~/components/PageEditor/UsageTooltip"
 import Suspense from "~/components/Suspense"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -23,19 +25,7 @@ interface ChildPageItem {
   id: string
   title: string
   permalink: string
-  type: "Folder" | "Page" | "Collection"
-}
-
-const getIconForType = (type: ChildPageItem["type"]) => {
-  switch (type) {
-    case "Folder":
-      return BiFolder
-    case "Collection":
-      return BiData
-    case "Page":
-    default:
-      return BiFile
-  }
+  type: ResourceType
 }
 
 interface DraggablePageItemProps {
@@ -61,7 +51,7 @@ const DraggablePageItem = ({ page, index }: DraggablePageItemProps) => {
             role="group"
           >
             <BaseBlock
-              icon={getIconForType(page.type)}
+              icon={getIcon(page.type)}
               label={page.title}
               description={page.permalink}
               dragHandle={
@@ -124,7 +114,7 @@ const SiderailOrderingContent = ({
           id: resourceId,
           title: resource?.title ?? "Unknown page",
           permalink: `/${resource?.permalink ?? ""}`,
-          type: (resource?.type ?? "Page") as ChildPageItem["type"],
+          type: resource?.type ?? ResourceType.Page,
         }
       }),
     [mergedOrdering, mappings],

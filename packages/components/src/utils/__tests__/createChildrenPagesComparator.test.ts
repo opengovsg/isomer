@@ -1,8 +1,8 @@
+import type { ChildPage } from "~/templates/next/components/complex/ChildrenPages/types"
 import { cloneDeep } from "lodash-es"
 import { describe, expect, it } from "vitest"
 
-import type { ChildPage } from "../types"
-import { createChildrenPagesComparator } from "../utils"
+import { createChildrenPagesComparator } from "../createChildrenPagesComparator"
 
 const generateChildrenPages = (extraPages: ChildPage[] = []): ChildPage[] => {
   return [

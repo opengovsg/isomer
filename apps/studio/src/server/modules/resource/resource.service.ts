@@ -1,13 +1,15 @@
-import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { SelectExpression } from "kysely"
 import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
 import type { ResourceItemContent } from "~/schemas/resource"
+import {
+  createChildrenPagesComparator,
+  type IsomerSitemap,
+} from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import _ from "lodash"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
-  createChildrenPagesComparator,
   getSitemapTree,
   injectTagMappings,
   isCollectionItem,
@@ -718,9 +720,9 @@ export const publishPageResource = async ({
       siteId,
       codebuildJob: sitePublish.enableCodebuildJobs
         ? {
-            resourceWithUserIds: [{ resourceId, userId }],
-            isScheduled: sitePublish.isScheduled,
-          }
+          resourceWithUserIds: [{ resourceId, userId }],
+          isScheduled: sitePublish.isScheduled,
+        }
         : undefined,
     })
 }
@@ -974,11 +976,11 @@ export const getSearchResults = async ({
     orderedResources = orderedResources.orderBy(
       sql`(
         ${sql.join(
-          searchTerms.map(
-            (searchTerm) =>
-              // 1. Match if the search term is at the start of the title
-              // 2. Match if the search term is in the middle of the title (after a space)
-              sql`
+        searchTerms.map(
+          (searchTerm) =>
+            // 1. Match if the search term is at the start of the title
+            // 2. Match if the search term is in the middle of the title (after a space)
+            sql`
                 CASE
                   WHEN (
                     "Resource"."title" ILIKE ${searchTerm + "%"} OR
@@ -988,9 +990,9 @@ export const getSearchResults = async ({
                   ELSE 0
                 END
               `,
-          ),
-          sql` + `,
-        )}
+        ),
+        sql` + `,
+      )}
       ) DESC`,
     )
   }
