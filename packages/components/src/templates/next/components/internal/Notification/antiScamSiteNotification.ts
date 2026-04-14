@@ -1,6 +1,6 @@
 import type { NotificationTitleContentConfig } from "~/interfaces/internal/Notification"
 
-/** Standard AntiScam (Government Official Impersonation Scam) advisory, aligned with AntiScamDisclaimerBanner. */
+/** Standard anti-scam GOIS (Government Official Impersonation Scam) disclaimer, aligned with AntiScamDisclaimerBanner. */
 export const antiScamSiteNotification = {
   title:
     "Government officials will never ask you to transfer money over a phone call.",

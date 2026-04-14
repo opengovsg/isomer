@@ -37,16 +37,14 @@ const NotificationAntiScamSchema = Type.Object(
     }),
   },
   {
-    title: "AntiScam advisory message",
+    title: "Anti-scam disclaimer",
   },
 )
 
 export const NotificationSchema = Type.Union(
   [NotificationCustomSchema, NotificationAntiScamSchema],
   {
-    title: "Display a banner",
-    description:
-      "The site notification will always be visible on the site until it is dismissed by the user.",
+    title: "Type",
     format: ARRAY_RADIO_FORMAT,
   },
 )
@@ -67,6 +65,13 @@ export type NotificationClientProps = PropsWithChildren<
   Pick<Static<typeof NotificationCustomSchema>, "title">
 >
 
-export const NotificationSettingsSchema = Type.Object({
-  notification: Type.Optional(NotificationSchema),
-})
+export const NotificationSettingsSchema = Type.Object(
+  {
+    notification: Type.Optional(NotificationSchema),
+  },
+  {
+    title: "Display a banner",
+    description:
+      "The site notification will always be visible on the site until it is dismissed by the user.",
+  },
+)

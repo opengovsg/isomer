@@ -118,7 +118,7 @@ export const WithTitle: Story = {
   },
 }
 
-export const AntiScam: Story = {
+export const Antiscam: Story = {
   args: {
     type: "antiscam",
   },
