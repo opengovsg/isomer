@@ -26,7 +26,7 @@ export const getPrivacyEnhancedYouTubeEmbedUrl = (
   }
   if (pathname.startsWith("/watch")) {
     const videoId = searchParams.get("v")
-    if (!videoId) return ""
+    if (!videoId) return undefined
     urlObject.pathname = `/embed/${videoId}`
     urlObject.search = ""
     return urlObject.toString()

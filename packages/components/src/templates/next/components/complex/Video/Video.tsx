@@ -27,10 +27,13 @@ const parseVideo = (url: string): ParsedVideo | null => {
   const urlObject = new URL(url)
 
   if (VALID_VIDEO_DOMAINS.youtube.includes(urlObject.hostname)) {
+    const embedUrl = getPrivacyEnhancedYouTubeEmbedUrl(urlObject)
+    const videoId = getYouTubeVideoId(url)
+    if (!embedUrl || !videoId) return null
     return {
       type: "youtube",
-      embedUrl: getPrivacyEnhancedYouTubeEmbedUrl(urlObject) ?? "",
-      videoId: getYouTubeVideoId(url) ?? "",
+      embedUrl,
+      videoId,
     }
   } else if (VALID_VIDEO_DOMAINS.vimeo.includes(urlObject.hostname)) {
     return {

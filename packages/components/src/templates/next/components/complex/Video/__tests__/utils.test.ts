@@ -77,9 +77,14 @@ describe("utils", () => {
       )
     })
 
-    it("returns empty string for watch URL without v parameter", () => {
+    it("returns undefined for watch URL without v parameter", () => {
       const url = new URL("https://www.youtube.com/watch")
-      expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBe("")
+      expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBeUndefined()
+    })
+
+    it("returns undefined for watch URL with empty v parameter", () => {
+      const url = new URL("https://www.youtube.com/watch?v=")
+      expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBeUndefined()
     })
 
     it("returns undefined for unsupported path", () => {
