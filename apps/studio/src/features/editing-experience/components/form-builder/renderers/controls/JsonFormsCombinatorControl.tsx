@@ -118,9 +118,7 @@ function JsonFormsCombinatorControl({
         <FormControl isRequired gap="0.5rem">
           <FormLabel
             description={description}
-            mb={
-              schema.format === ARRAY_RADIO_FORMAT ? "0.5rem" : undefined
-            }
+            mb={schema.format === ARRAY_RADIO_FORMAT ? "0.5rem" : undefined}
           >
             {label || "Variant"}
           </FormLabel>
