@@ -20,15 +20,6 @@ export const generateSiteConfig = (
     isGovernment: true,
     url: "https://www.isomer.gov.sg",
     logoUrl: "/isomer-logo.svg",
-    notification: {
-      title: "Government officials will never ask you to transfer money over a phone call.",
-      content: [
-        {
-          type: "text",
-          text: "If you're unsure if something is a scam, call ScamShield at 1799.",
-        },
-      ],
-    },
     navbar: {
       items: [
         {
