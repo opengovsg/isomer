@@ -17,6 +17,12 @@ import { RoleType } from "~/server/modules/database/types"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
+
+// Mock must be at module level to be hoisted correctly
+vi.mock("~/features/mail/service", () => ({
+  sendAccountDeactivationEmail: vi.fn(),
+  sendAccountDeactivationWarningEmail: vi.fn(),
+}))
 import {
   bulkDeactivateInactiveUsers,
   bulkSendAccountDeactivationWarningEmails,
@@ -120,11 +126,6 @@ const setupUserWrapper = async ({
 describe("inactiveUsers.service", () => {
   describe("bulkDeactivateInactiveUsers", () => {
     let site: Site
-
-    vi.mock("~/features/mail/service", () => ({
-      sendAccountDeactivationEmail: vi.fn(),
-      sendAccountDeactivationWarningEmail: vi.fn(),
-    }))
 
     beforeEach(async () => {
       vi.clearAllMocks()

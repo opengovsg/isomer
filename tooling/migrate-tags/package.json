@@ -1,15 +1,10 @@
 {
   "name": "@isomer/migrate-tags",
   "type": "module",
-  "scripts": {},
   "exports": {
     ".": "./index.ts"
   },
-  "devDependencies": {
-    "@isomer/tsconfig": "workspace:*",
-    "@types/node": "catalog:",
-    "typescript": "catalog:"
-  },
+  "scripts": {},
   "dependencies": {
     "@aws-sdk/client-acm": "catalog:awsSdk3",
     "@aws-sdk/client-cloudfront": "catalog:awsSdk3",
@@ -21,5 +16,10 @@
     "commander-ts": "catalog:",
     "npx": "catalog:",
     "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }

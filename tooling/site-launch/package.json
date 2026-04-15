@@ -4,12 +4,6 @@
   "scripts": {
     "launch": "dotenv -- pnpm exec tsx ./index.ts"
   },
-  "devDependencies": {
-    "@isomer/migrate-tags": "workspace:*",
-    "@isomer/tsconfig": "workspace:*",
-    "@types/node": "catalog:",
-    "typescript": "catalog:"
-  },
   "dependencies": {
     "@aws-sdk/client-acm": "catalog:awsSdk3",
     "@aws-sdk/client-amplify": "catalog:awsSdk3",
@@ -23,5 +17,11 @@
     "dotenv-cli": "catalog:",
     "npx": "catalog:",
     "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "@isomer/migrate-tags": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }
