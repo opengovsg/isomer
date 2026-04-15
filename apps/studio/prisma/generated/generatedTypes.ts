@@ -12,6 +12,7 @@ import type {
   IsomerAdminRole,
   AuditLogEvent,
   BuildStatusType,
+  ScheduledJobType,
 } from "./generatedEnums"
 
 export interface AuditLog {
@@ -113,6 +114,15 @@ export interface ResourcePermission {
   updatedAt: Generated<Timestamp>
   deletedAt: Timestamp | null
 }
+export interface ScheduledJobs {
+  id: GeneratedAlways<string>
+  type: ScheduledJobType
+  resourceId: string
+  scheduledAt: Timestamp
+  scheduledBy: string
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
 export interface Site {
   id: GeneratedAlways<number>
   name: string
@@ -173,6 +183,7 @@ export interface DB {
   RateLimiterFlexible: RateLimiterFlexible
   Resource: Resource
   ResourcePermission: ResourcePermission
+  ScheduledJobs: ScheduledJobs
   Site: Site
   User: User
   VerificationToken: VerificationToken

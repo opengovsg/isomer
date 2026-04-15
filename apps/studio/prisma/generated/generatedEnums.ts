@@ -55,3 +55,9 @@ export const BuildStatusType = {
 } as const
 export type BuildStatusType =
   (typeof BuildStatusType)[keyof typeof BuildStatusType]
+export const ScheduledJobType = {
+  PublishResource: "PublishResource",
+  PushDocument: "PushDocument",
+} as const
+export type ScheduledJobType =
+  (typeof ScheduledJobType)[keyof typeof ScheduledJobType]
