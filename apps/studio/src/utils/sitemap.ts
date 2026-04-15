@@ -244,9 +244,9 @@ export const injectTagMappings = async (
     // of a collection item
     (
       draftBlobOfResource.content.page as
-      | ArticlePagePageProps
-      | FileRefPageProps
-      | LinkRefPageProps
+        | ArticlePagePageProps
+        | FileRefPageProps
+        | LinkRefPageProps
     ).tagged,
     (publishedIndexBlob.content.page as unknown as CollectionPagePageProps)
       .tagCategories,

@@ -45,9 +45,9 @@ type BlockItemProps = UsageTooltipProps & {
   onProceed: (sectionType: SectionType) => void
   sectionType: SectionType
 } & RequireAllOrNone<{
-  isDisabled: boolean
-  disabledText: string
-}>
+    isDisabled: boolean
+    disabledText: string
+  }>
 
 function BlockItem({
   onProceed,
