@@ -117,9 +117,9 @@ export const CollectionTable = ({
 
   return (
     <>
-      <HStack px="0.75rem" w="full" justifyContent="space-between">
+      <HStack px="0.75rem" mb="-0.25rem" w="full" justifyContent="space-between">
         <Text textStyle="caption-1" color="base.content.default">
-          {totalRowCount} items
+          {totalRowCount} {totalRowCount === 1 ? "item" : "items"}
         </Text>
 
         <HStack>
@@ -129,7 +129,7 @@ export const CollectionTable = ({
           <Menu size="sm" variant="clear">
             <Menu.Button
               variant="clear"
-              size="xs"
+              size="sm"
               p="0"
               minH="auto"
               colorScheme="sub"
