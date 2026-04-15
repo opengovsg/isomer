@@ -116,7 +116,14 @@ function JsonFormsCombinatorControl({
     <>
       <Box>
         <FormControl isRequired gap="0.5rem">
-          <FormLabel description={description}>{label || "Variant"}</FormLabel>
+          <FormLabel
+            description={description}
+            mb={
+              schema.format === ARRAY_RADIO_FORMAT ? "0.5rem" : undefined
+            }
+          >
+            {label || "Variant"}
+          </FormLabel>
           {schema.format === ARRAY_RADIO_FORMAT ? (
             <RadioGroup
               onChange={onChange}
