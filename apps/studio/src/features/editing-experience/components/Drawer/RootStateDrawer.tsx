@@ -115,6 +115,7 @@ const FixedBlock = () => {
     return (
       <>
         <BaseBlock
+          variant="vertical"
           onClick={() => {
             setCurrActiveIdx(0)
             setDrawerState({ state: "collectionEditor" })
@@ -124,6 +125,7 @@ const FixedBlock = () => {
           icon={BiCog}
         />
         <BaseBlock
+          variant="vertical"
           onClick={() => console.log("to implement")}
           label="Filters"
           description="Define and manage filters for this Collection."
