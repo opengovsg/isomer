@@ -7,8 +7,7 @@ import {
   useIsNotificationDismissed,
 } from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
-import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { BiWrench } from "react-icons/bi"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
@@ -29,7 +28,6 @@ import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
-import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { notificationValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
@@ -40,17 +38,12 @@ const validateFn = notificationValidator
 
 const NotificationSettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
-  const router = useRouter()
   const siteId = Number(rawSiteId)
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
     siteId,
   })
-  const isEnabled = useNewSettingsPage()
-  useEffect(() => {
-    if (!isEnabled) void router.replace(`/sites/${siteId}/settings`)
-  }, [isEnabled, router, siteId])
 
   const [, setIsDismissed] = useIsNotificationDismissed()
 
