@@ -136,7 +136,11 @@ const FixedBlock = () => {
           iconProps={iconProps}
         />
         <BaseBlock
-          onClick={() => console.log("to implement")}
+          onClick={() => {
+            // TODO: Implement filter editor
+            setCurrActiveIdx(0)
+            setDrawerState({ state: "collectionEditor" })
+          }}
           label="Filters"
           description="Define and manage filters for this Collection."
           containerProps={containerProps}
