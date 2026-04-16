@@ -194,6 +194,14 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
         ...BRIEF_TOAST_SETTINGS,
       })
     },
+    onError: (error) => {
+      toast({
+        status: "error",
+        title: "Failed to save changes",
+        description: error.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
   })
 
   const childrenPagesBlockIndex = useMemo(
@@ -236,7 +244,6 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
   )
 
   const handleSaveChanges = useCallback(() => {
-    setSavedPageState(previewPageState)
     mutate(
       {
         pageId,
@@ -244,7 +251,10 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
         content: JSON.stringify(previewPageState),
       },
       {
-        onSuccess: () => setDrawerState({ state: "root" }),
+        onSuccess: () => {
+          setSavedPageState(previewPageState)
+          setDrawerState({ state: "root" })
+        },
       },
     )
   }, [
