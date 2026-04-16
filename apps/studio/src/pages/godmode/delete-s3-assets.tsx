@@ -35,7 +35,7 @@ const GodModeDeleteS3AssetsPage: NextPageWithLayout = () => {
   const deleteAssetsMutation = trpc.asset.deleteAssets.useMutation({
     onSuccess: (data) => {
       toast({
-        title: `Successfully deleted ${assetsToDelete.length} assets`,
+        title: `Successfully deleted assets`,
         description: `Invalidated site(s) - invalidation id: ${data.invalidatedSites.invalidationId}`,
         status: "success",
         ...BRIEF_TOAST_SETTINGS,

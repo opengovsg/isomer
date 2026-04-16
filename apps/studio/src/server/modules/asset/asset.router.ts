@@ -1,3 +1,5 @@
+import { TRPCError } from "@trpc/server"
+
 import { ADMIN_ROLE } from "~/lib/growthbook"
 import { deleteAssetsSchema, getPresignedPutUrlSchema } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
@@ -55,6 +57,16 @@ export const assetRouter = router({
         gb: ctx.gb,
         roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
       })
+
+      // Validate fileKey format: <siteId>/<uuid>/<filename>
+      const fileKeyPattern = /^\d+\/[a-f0-9-]{36}\/.+$/
+      const invalidKeys = fileKeys.filter((key) => !fileKeyPattern.test(key))
+      if (invalidKeys.length > 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Invalid file key format. Expected format: <siteId>/<uuid>/<filename>. Invalid keys: ${invalidKeys.slice(0, 3).join(", ")}${invalidKeys.length > 3 ? "..." : ""}`,
+        })
+      }
 
       const results = await Promise.allSettled(
         fileKeys.map(async (fileKey) => {

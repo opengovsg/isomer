@@ -144,7 +144,14 @@ const getDistributionId = async (): Promise<string> => {
   })
 
   const response = await ssmClient.send(command)
-  cachedDistributionId = response.Parameter?.Value || ""
+  cachedDistributionId = response.Parameter?.Value ?? null
+
+  // NOTE: if we cannot find the distribution,
+  // this is a clear error and we should throw.
+  if (!cachedDistributionId) {
+    throw new Error("CloudFront Distribution ID is not set in SSM")
+  }
+
   return cachedDistributionId
 }
 
