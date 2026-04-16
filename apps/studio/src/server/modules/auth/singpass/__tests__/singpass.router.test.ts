@@ -196,7 +196,7 @@ describe("auth.singpass", () => {
       )
     })
 
-    it("should throw an error if the user's UUID from Singpass does not match the one stored in the database", async () => {
+    it("should throw NOT_FOUND if the user's UUID from Singpass does not match the one stored in the database", async () => {
       // Arrange
       const user = await db
         .updateTable("User")
@@ -228,7 +228,7 @@ describe("auth.singpass", () => {
         }),
       ).rejects.toThrowError(
         new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
+          code: "NOT_FOUND",
           message: "Singpass profile does not match user",
         }),
       )

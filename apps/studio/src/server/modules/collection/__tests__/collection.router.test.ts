@@ -60,6 +60,7 @@ describe("collection.router", async () => {
     })
     await auth(user)
     auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+    auditSpy.mockClear()
   })
 
   describe("create", () => {
@@ -106,7 +107,7 @@ describe("collection.router", async () => {
       await assertAuditLogRows()
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { site } = await setupSite()
@@ -126,7 +127,7 @@ describe("collection.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -348,7 +349,7 @@ describe("collection.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -372,7 +373,7 @@ describe("collection.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -443,7 +444,7 @@ describe("collection.router", async () => {
       await assertAuditLogRows()
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { collection, site } = await setupCollection()
@@ -465,7 +466,7 @@ describe("collection.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -638,7 +639,7 @@ describe("collection.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -980,7 +981,7 @@ describe("collection.router", async () => {
       )
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { site } = await setupSite()
@@ -999,7 +1000,7 @@ describe("collection.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -1042,7 +1043,7 @@ describe("collection.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),

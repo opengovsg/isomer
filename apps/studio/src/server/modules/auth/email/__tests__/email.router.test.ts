@@ -473,12 +473,10 @@ describe("auth.email", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Token is invalid or has expired",
-        }),
-      )
+      await expect(result).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+        message: "Token is invalid or has expired",
+      })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
@@ -501,12 +499,10 @@ describe("auth.email", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Token is invalid or has expired",
-        }),
-      )
+      await expect(result).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+        message: "Token is invalid or has expired",
+      })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
@@ -530,12 +526,10 @@ describe("auth.email", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Too many attempts",
-        }),
-      )
+      await expect(result).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+        message: "Too many attempts",
+      })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)

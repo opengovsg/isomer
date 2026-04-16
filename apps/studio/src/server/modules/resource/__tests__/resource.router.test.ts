@@ -1208,6 +1208,10 @@ describe("resource.router", async () => {
   })
 
   describe("move", () => {
+    beforeEach(() => {
+      vi.spyOn(auditService, "logResourceEvent").mockClear()
+    })
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2250,6 +2254,10 @@ describe("resource.router", async () => {
   })
 
   describe("delete", () => {
+    beforeEach(() => {
+      vi.spyOn(auditService, "logResourceEvent").mockClear()
+    })
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2268,7 +2276,7 @@ describe("resource.router", async () => {
       )
     })
 
-    it("should return 400 if resource to delete does not exist", async () => {
+    it("should return NOT_FOUND if resource to delete does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
@@ -2284,10 +2292,10 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
+      expect(auditSpy).not.toHaveBeenCalled()
     })
 
     it("should delete a page resource successfully", async () => {

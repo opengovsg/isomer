@@ -29,7 +29,7 @@ describe("auth.email", () => {
   })
 
   describe("logout", () => {
-    it("should not log anything if there is an error thrown while logging out", async () => {
+    it("should throw BAD_REQUEST and not log auth event if user row is missing while logging out", async () => {
       // Arrange
       const spy = vi.spyOn(authService, "logAuthEvent")
       await db.deleteFrom("User").where("id", "=", session.userId!).execute()
@@ -38,10 +38,10 @@ describe("auth.email", () => {
       const result = caller.logout()
 
       // Assert
-      expect(spy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
+        new TRPCError({ code: "BAD_REQUEST", message: "User not found" }),
       )
+      expect(spy).not.toHaveBeenCalled()
     })
     it("should log the user out and have an audit log of the change", async () => {
       // Arrange

@@ -1845,7 +1845,7 @@ describe("page.router", async () => {
       })
     })
 
-    it("should throw 400 if folderId does not exist", async () => {
+    it("should throw 404 if folderId does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
       const expectedPageArgs = {
@@ -1866,13 +1866,13 @@ describe("page.router", async () => {
       await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "BAD_REQUEST",
+          code: "NOT_FOUND",
           message: "Folder not found or folderId is not a folder",
         }),
       )
     })
 
-    it("should throw 400 if folderId is not a Folder resource", async () => {
+    it("should throw 404 if folderId is not a Folder resource", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
       const expectedPageArgs = {
@@ -1893,7 +1893,7 @@ describe("page.router", async () => {
       await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "BAD_REQUEST",
+          code: "NOT_FOUND",
           message: "Folder not found or folderId is not a folder",
         }),
       )
@@ -2747,12 +2747,11 @@ describe("page.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
-    it("should throw an error if the resource is not found", async () => {
+    it("should throw NOT_FOUND if the page resource does not exist", async () => {
       //  Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
       })
-      // The user is only an editor, not a publisher
       await setupPublisherPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
@@ -2766,7 +2765,7 @@ describe("page.router", async () => {
 
       // Assert
       await expect(scheduleCaller).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
   })
@@ -2890,7 +2889,7 @@ describe("page.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
-    it("should throw an error if the resource is not found", async () => {
+    it("should throw NOT_FOUND if the page resource does not exist", async () => {
       // Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
@@ -2914,7 +2913,7 @@ describe("page.router", async () => {
 
       // Assert
       await expect(cancelScheduleCaller).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
   })
