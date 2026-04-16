@@ -35,13 +35,13 @@
   "dependencies": {
     "pg-boss": "^12.3.0",
     "pino": "^9.6.0",
-    "vitest": "^2.1.1"
+    "vitest": "^4.1.4"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "*",
     "@isomer/tsconfig": "*",
     "@types/node": "^22.15.21",
-    "@vitest/coverage-istanbul": "^2.1.2",
+    "@vitest/coverage-istanbul": "^4.1.4",
     "eslint": "^9.10.0",
     "typescript": "^5.9.2"
   }
