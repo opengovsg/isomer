@@ -22,7 +22,7 @@ export const getIndexPageSubtitle = (
 ): string => {
   switch (type) {
     case "collection":
-      return "Manage how your Collection looks like and behaves"
+      return "Manage the Collection’s layout, filters, and sorting."
     case "folder":
       return "Customise the index page for this folder"
     default:
