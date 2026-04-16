@@ -83,6 +83,10 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
 }
 
 const FixedBlock = () => {
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
+  })
+
   const { setCurrActiveIdx, setDrawerState, previewPageState } =
     useEditorDrawerContext()
   const pageLayout = previewPageState.layout
@@ -135,14 +139,16 @@ const FixedBlock = () => {
           icon={BiCog}
           iconProps={iconProps}
         />
-        <BaseBlock
-          onClick={() => console.log("to implement")}
-          label="Filters"
-          description="Define and manage filters for this Collection."
-          containerProps={containerProps}
-          icon={BiSlider}
-          iconProps={iconProps}
-        />
+        {isUserIsomerAdmin && (
+          <BaseBlock
+            onClick={() => console.log("to implement")}
+            label="Filters"
+            description="Define and manage filters for this Collection."
+            containerProps={containerProps}
+            icon={BiSlider}
+            iconProps={iconProps}
+          />
+        )}
       </>
     )
   }
