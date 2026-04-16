@@ -39,7 +39,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     setPreviewPageState,
   } = useEditorDrawerContext()
 
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
   const { pageId, siteId } = useQueryParse(pageSchema)
