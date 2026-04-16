@@ -117,8 +117,36 @@ export const NewCollectionIndexEditingExperience: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    await canvas.findByText(/Manage Collection/i)
+  },
+}
+
+export const NewCollectionIndexEditingExperienceForDisplay: Story = {
+  parameters: {
+    growthbook: [
+      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Collection settings/i,
+      name: /Collection display/i,
+    })
+    await userEvent.click(button)
+    await canvas.findByText(/Edit collection settings/i)
+  },
+}
+
+export const NewCollectionIndexEditingExperienceForFilters: Story = {
+  parameters: {
+    growthbook: [
+      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", {
+      name: /Filters/i,
     })
     await userEvent.click(button)
   },
