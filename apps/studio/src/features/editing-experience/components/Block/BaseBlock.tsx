@@ -139,7 +139,7 @@ export const BaseBlock = ({
             {icon && (
               <Flex
                 p="0.25rem"
-                bg={isHidden ? "gray.200" : "interaction.main-subtle.default"}
+                bg="interaction.main-subtle.default"
                 borderRadius="4px"
                 mr="0.25rem"
               >
