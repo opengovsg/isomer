@@ -244,7 +244,7 @@ function JsonFormsArrayControl({
   }
 
   return (
-    <VStack spacing="0.375rem" align="start">
+    <VStack spacing={0} align="start">
       <VStack align="start" spacing="0.25rem" w="full">
         <HStack w="full" justifyContent="space-between" align="flex-start">
           <Text textStyle="subhead-1" flex={1}>
@@ -269,78 +269,79 @@ function JsonFormsArrayControl({
           </Text>
         ) : null}
       </VStack>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="blocks">
-          {({ droppableProps, innerRef, placeholder }) => (
-            <VStack
-              {...droppableProps}
-              align="baseline"
-              w="100%"
-              h="100%"
-              spacing={0}
-              ref={innerRef}
-              mt="-0.25rem"
-            >
-              {data === 0 && (
-                <Flex
-                  alignItems="center"
-                  flexDir="column"
-                  px="1.5rem"
-                  p="3.75rem"
-                  mt="0.25rem"
-                  justifyContent="center"
-                  w="100%"
-                >
-                  <Text
-                    textStyle="subhead-1"
-                    textColor="base.content.default"
-                    textAlign="center"
+      <Box w="full" mt="0.75rem">
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="blocks">
+            {({ droppableProps, innerRef, placeholder }) => (
+              <VStack
+                {...droppableProps}
+                align="baseline"
+                w="100%"
+                h="100%"
+                spacing={0}
+                ref={innerRef}
+              >
+                {data === 0 && (
+                  <Flex
+                    alignItems="center"
+                    flexDir="column"
+                    px="1.5rem"
+                    p="3.75rem"
+                    mt="0.25rem"
+                    justifyContent="center"
+                    w="100%"
                   >
-                    Items you add will appear here
-                  </Text>
-                </Flex>
-              )}
+                    <Text
+                      textStyle="subhead-1"
+                      textColor="base.content.default"
+                      textAlign="center"
+                    >
+                      Items you add will appear here
+                    </Text>
+                  </Flex>
+                )}
 
-              {[...Array(data).keys()].map((index) => {
-                const childPath = composePaths(path, `${index}`)
-                const hasError = hasErrorAt(childPath)
+                {[...Array(data).keys()].map((index) => {
+                  const childPath = composePaths(path, `${index}`)
+                  const hasError = hasErrorAt(childPath)
 
-                return (
-                  <Draggable
-                    key={childPath}
-                    draggableId={childPath}
-                    disableInteractiveElementBlocking
-                    index={index}
-                  >
-                    {({ draggableProps, dragHandleProps, innerRef }) => (
-                      <DraggableDrawerButton
-                        draggableProps={draggableProps}
-                        dragHandleProps={dragHandleProps}
-                        isError={hasError}
-                        ref={innerRef}
-                        index={index}
-                        path={path}
-                        schema={schema}
-                        enabled={enabled}
-                        handleSelect={() => () => undefined}
-                        removeItem={handleRemoveItem}
-                        selected={false}
-                        key={index}
-                        uischema={childUiSchema}
-                        childLabelProp={undefined}
-                        translations={{}}
-                        setSelectedIndex={setSelectedIndex}
-                      />
-                    )}
-                  </Draggable>
-                )
-              })}
+                  return (
+                    <Draggable
+                      key={childPath}
+                      draggableId={childPath}
+                      disableInteractiveElementBlocking
+                      index={index}
+                    >
+                      {({ draggableProps, dragHandleProps, innerRef }) => (
+                        <DraggableDrawerButton
+                          draggableProps={draggableProps}
+                          dragHandleProps={dragHandleProps}
+                          isError={hasError}
+                          ref={innerRef}
+                          index={index}
+                          path={path}
+                          schema={schema}
+                          enabled={enabled}
+                          handleSelect={() => () => undefined}
+                          removeItem={handleRemoveItem}
+                          selected={false}
+                          key={index}
+                          uischema={childUiSchema}
+                          childLabelProp={undefined}
+                          translations={{}}
+                          setSelectedIndex={setSelectedIndex}
+                        />
+                      )}
+                    </Draggable>
+                  )
+                })}
 
-              {placeholder}
-            </VStack>
-          )}
-        </Droppable>
-      </DragDropContext>
+                {placeholder}
+              </VStack>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </Box>
     </VStack>
   )
 }
