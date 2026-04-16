@@ -1,3 +1,4 @@
+import type { StackProps, IconProps } from "@chakra-ui/react"
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   IsomerComponent,
@@ -112,24 +113,35 @@ const FixedBlock = () => {
     pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
     isNewEditingExperienceEnabled
   ) {
+    const containerProps: StackProps = {
+      p: "1.25rem",
+      flexDirection: "column",
+      gap: "0.75rem",
+      align: "flex-start",
+    }
+    const iconProps: IconProps = {
+      boxSize: "1.25rem",
+    }
     return (
       <>
         <BaseBlock
-          variant="vertical"
           onClick={() => {
             setCurrActiveIdx(0)
             setDrawerState({ state: "collectionEditor" })
           }}
           label="Collection display"
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
+          containerProps={containerProps}
           icon={BiCog}
+          iconProps={iconProps}
         />
         <BaseBlock
-          variant="vertical"
           onClick={() => console.log("to implement")}
           label="Filters"
           description="Define and manage filters for this Collection."
+          containerProps={containerProps}
           icon={BiSlider}
+          iconProps={iconProps}
         />
       </>
     )
