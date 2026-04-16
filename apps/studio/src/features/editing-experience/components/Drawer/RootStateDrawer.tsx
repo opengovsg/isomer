@@ -160,15 +160,23 @@ const FixedBlock = () => {
 
   if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
     return (
-      <BaseBlock
-        onClick={() => {
-          setCurrActiveIdx(0)
-          setDrawerState({ state: "collectionEditor", type: "display" })
-        }}
-        label="Collection settings"
-        description="Summary, style, categories and sorting"
-        icon={BiPin}
-      />
+      <>
+        <BaseBlock
+          onClick={() => {
+            setCurrActiveIdx(0)
+            setDrawerState({ state: "collectionEditor" })
+          }}
+          label="Collection display"
+          description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
+          icon={BiCog}
+        />
+        <BaseBlock
+          onClick={() => console.log("to implement")}
+          label="Filters"
+          description="Define and manage filters for this Collection."
+          icon={BiSlider}
+        />
+      </>
     )
   }
 
