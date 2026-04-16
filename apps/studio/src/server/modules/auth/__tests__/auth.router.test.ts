@@ -38,7 +38,7 @@ describe("auth.email", () => {
       const result = caller.logout()
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "BAD_REQUEST", message: "User not found" }),
       )
       expect(spy).not.toHaveBeenCalled()

@@ -38,7 +38,7 @@ describe("auth.singpass", () => {
       const result = caller.login({ landingUrl: new URL("http://localhost") })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Email verification has not been completed",
@@ -86,7 +86,7 @@ describe("auth.singpass", () => {
       const result = caller.getUserProps()
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Invalid login flow",
@@ -112,7 +112,7 @@ describe("auth.singpass", () => {
       const result = caller.getUserProps()
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
       )
     })
@@ -156,7 +156,7 @@ describe("auth.singpass", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Invalid login flow",
@@ -188,7 +188,7 @@ describe("auth.singpass", () => {
           state: JSON.stringify({ state: expect.any(String) }),
           code: "code",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Singpass login failed",
@@ -226,7 +226,7 @@ describe("auth.singpass", () => {
           state: JSON.stringify({ state: expect.any(String) }),
           code: "code",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Singpass profile does not match user",

@@ -61,7 +61,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
 
@@ -83,7 +83,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -107,7 +107,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
 
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
@@ -223,7 +223,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "User already has permission for this site",
@@ -247,7 +247,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "There are non-gov.sg domains that need to be whitelisted.",
@@ -272,7 +272,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -512,7 +512,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
 
@@ -538,7 +538,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -562,7 +562,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -584,7 +584,7 @@ describe("user.router", () => {
       const result = caller.delete({ siteId, userId: user.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User permissions not found",
@@ -614,7 +614,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User permissions not found",
@@ -637,7 +637,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You cannot delete your own account",
@@ -671,7 +671,7 @@ describe("user.router", () => {
       const result = caller.delete({ siteId, userId: isomerAdmin.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have permission to delete this user",
@@ -849,7 +849,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -862,7 +862,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -882,7 +882,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -905,7 +905,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -927,7 +927,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -972,7 +972,7 @@ describe("user.router", () => {
       const result = unauthedCaller.list({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -982,7 +982,7 @@ describe("user.router", () => {
       const result = caller.list({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1240,7 +1240,7 @@ describe("user.router", () => {
       const result = unauthedCaller.count({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1250,7 +1250,7 @@ describe("user.router", () => {
       const result = caller.count({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1375,7 +1375,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
 
@@ -1398,7 +1398,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1423,7 +1423,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -1449,7 +1449,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User permission not found",
@@ -1480,7 +1480,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User permission not found",
@@ -1506,7 +1506,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -1530,7 +1530,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You cannot update your own role",
@@ -1560,7 +1560,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1894,7 +1894,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
 
@@ -2191,7 +2191,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2204,7 +2204,7 @@ describe("user.router", () => {
       const result = caller.resendInvite({ siteId, userId: "123" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2221,7 +2221,7 @@ describe("user.router", () => {
       const result = caller.resendInvite({ siteId, userId: "123" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -2244,7 +2244,7 @@ describe("user.router", () => {
       const result = caller.resendInvite({ siteId, userId: user.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "User has already logged in",
@@ -2272,7 +2272,7 @@ describe("user.router", () => {
       const result = caller.resendInvite({ siteId, userId: user.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "User has already logged in",
@@ -2299,7 +2299,7 @@ describe("user.router", () => {
       const result = caller.resendInvite({ siteId, userId: user.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "User has no permissions",

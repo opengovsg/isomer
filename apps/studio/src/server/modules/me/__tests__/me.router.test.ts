@@ -38,7 +38,7 @@ describe("me.router", async () => {
       const result = unauthedCaller.get()
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })

@@ -73,7 +73,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
@@ -97,7 +97,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
@@ -125,7 +125,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -153,7 +153,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Parent folder does not exist",
@@ -182,7 +182,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -347,7 +347,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -371,7 +371,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -399,7 +399,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
@@ -434,7 +434,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
@@ -464,7 +464,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -493,7 +493,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Parent collection does not exist",
@@ -523,7 +523,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Parent collection does not exist",
@@ -637,7 +637,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -659,7 +659,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -675,7 +675,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -917,7 +917,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -933,7 +933,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -976,7 +976,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -998,7 +998,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1022,7 +1022,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection not found",
@@ -1041,7 +1041,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1081,7 +1081,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
@@ -1099,7 +1099,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Unable to find the requested collection link",
@@ -1120,7 +1120,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Unable to find the requested collection link",
@@ -1142,7 +1142,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1165,7 +1165,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1208,7 +1208,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
@@ -1229,7 +1229,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Unable to find the requested collection link",
@@ -1253,7 +1253,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Unable to find the requested collection link",
@@ -1278,7 +1278,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1304,7 +1304,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1414,7 +1414,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1429,7 +1429,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
