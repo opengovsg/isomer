@@ -1,10 +1,9 @@
 import { TRPCError } from "@trpc/server"
-
-import { ADMIN_ROLE } from "~/lib/growthbook"
 import { deleteAssetsSchema, getPresignedPutUrlSchema } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import { validateUserIsIsomerCoreAdmin } from "../permissions/permissions.service"
+import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
 import {
   getFileKey,
   getPresignedPutUrl,
@@ -52,10 +51,9 @@ export const assetRouter = router({
   deleteAssets: protectedProcedure
     .input(deleteAssetsSchema)
     .mutation(async ({ ctx, input: { fileKeys } }) => {
-      await validateUserIsIsomerCoreAdmin({
+      await validateUserIsIsomerAdmin({
         userId: ctx.user.id,
-        gb: ctx.gb,
-        roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+        roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
       })
 
       // Validate fileKey format: <siteId>/<uuid>/<filename>

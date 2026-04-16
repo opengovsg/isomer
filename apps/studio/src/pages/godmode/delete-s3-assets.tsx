@@ -13,16 +13,16 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { ADMIN_ROLE } from "~/lib/growthbook"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 const GodModeDeleteS3AssetsPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
   const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
 
   const [assetsToDeleteText, setAssetsToDeleteText] = useState("")
