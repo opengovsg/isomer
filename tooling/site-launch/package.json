@@ -15,7 +15,6 @@
     "axios": "catalog:",
     "commander-ts": "catalog:",
     "dotenv-cli": "catalog:",
-    "npx": "catalog:",
     "tsx": "catalog:"
   },
   "devDependencies": {

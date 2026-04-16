@@ -14,7 +14,6 @@
     "@opengovsg/isomer-components": "workspace:*",
     "axios": "catalog:",
     "commander-ts": "catalog:",
-    "npx": "catalog:",
     "tsx": "catalog:"
   },
   "devDependencies": {

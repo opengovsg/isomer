@@ -299,9 +299,6 @@ catalogs:
     npm-run-all:
       specifier: ^4.1.5
       version: 4.1.5
-    npx:
-      specifier: ^10.2.2
-      version: 10.2.2
     openid-client:
       specifier: ^5.7.1
       version: 5.7.1
@@ -1474,9 +1471,6 @@ importers:
       commander-ts:
         specifier: 'catalog:'
         version: 0.2.0(reflect-metadata@0.1.14)
-      npx:
-        specifier: 'catalog:'
-        version: 10.2.2
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -1680,9 +1674,6 @@ importers:
       dotenv-cli:
         specifier: 'catalog:'
         version: 8.0.0
-      npx:
-        specifier: 'catalog:'
-        version: 10.2.2
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -9395,14 +9386,6 @@ packages:
   npm-run-path@4.0.1:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
     engines: {node: '>=8'}
-
-  npx@10.2.2:
-    resolution: {integrity: sha512-eImmySusyeWphzs5iNh791XbZnZG0FSNvM4KSah34pdQQIDsdTDhIwg1sjN3AIVcjGLpbQ/YcfqHPshKZQK1fA==}
-    deprecated: This package is now part of the npm CLI.
-    hasBin: true
-    bundledDependencies:
-      - npm
-      - libnpx
 
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
@@ -21329,8 +21312,6 @@ snapshots:
   npm-run-path@4.0.1:
     dependencies:
       path-key: 3.1.1
-
-  npx@10.2.2: {}
 
   nth-check@2.1.1:
     dependencies:
