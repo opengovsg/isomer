@@ -422,9 +422,15 @@ export default function RootStateDrawer() {
               {/* Fixed Blocks Section */}
               <VStack gap="1rem" w="100%" align="start">
                 <VStack gap="0.25rem" align="start">
-                  <Text textStyle="subhead-1">Fixed blocks</Text>
+                  <Text textStyle="subhead-1">
+                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
+                      ? "Manage Collection"
+                      : "Fixed blocks"}
+                  </Text>
                   <Text textStyle="caption-2" color="base.content.medium">
-                    These are built into the layout, so you can't delete them.
+                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
+                      ? "Modify the Collection's look and feel or manage filters."
+                      : "These are built into the layout, so you can't delete them."}
                   </Text>
                 </VStack>
 
