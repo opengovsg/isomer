@@ -207,15 +207,15 @@ catalogs:
     "@react-stately/checkbox": ^3.7.2
     "@react-stately/toggle": ^3.9.2
   storybook:
-    storybook: 9.1.19
-    "@storybook/addon-a11y": 9.1.19
-    "@storybook/addon-docs": 9.1.19
-    "@storybook/addon-links": 9.1.19
-    "@storybook/addon-themes": 9.1.19
-    "@storybook/nextjs": 9.1.19
-    "@storybook/react-vite": 9.1.19
-    eslint-plugin-storybook: ^9.1.19
-    storybook-addon-pseudo-states: 9.1.19
+    storybook: 9.1.20
+    "@storybook/addon-a11y": 9.1.20
+    "@storybook/addon-docs": 9.1.20
+    "@storybook/addon-links": 9.1.20
+    "@storybook/addon-themes": 9.1.20
+    "@storybook/nextjs": 9.1.20
+    "@storybook/react-vite": 9.1.20
+    eslint-plugin-storybook: 9.1.20
+    storybook-addon-pseudo-states: 9.1.20
     storybook-mock-date-decorator: ^3.0.0
   tiptap:
     "@tiptap/core": ^2.22.3
