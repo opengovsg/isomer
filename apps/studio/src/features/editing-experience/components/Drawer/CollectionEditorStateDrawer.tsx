@@ -8,7 +8,7 @@ import {
 } from "@opengovsg/isomer-components"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
@@ -31,6 +31,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const {
+    drawerState,
     setDrawerState,
     savedPageState,
     setSavedPageState,
@@ -101,6 +102,13 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     setDrawerState({ state: "root" })
   }
 
+  const drawerStateType = useMemo(() => {
+    if (drawerState.state === "collectionEditor") {
+      return drawerState.type
+    }
+    return "display"
+  }, [drawerState])
+
   return (
     <>
       <DiscardChangesModal
@@ -119,7 +127,11 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
               handleDiscardChanges()
             }
           }}
-          label="Edit collection settings"
+          label={
+            drawerStateType === "display"
+              ? "Collection display"
+              : "Manage filters"
+          }
         />
 
         <ErrorProvider>
