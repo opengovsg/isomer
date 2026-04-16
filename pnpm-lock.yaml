@@ -261,8 +261,8 @@ catalogs:
       specifier: ^24.1.0
       version: 24.1.3
     kysely:
-      specifier: ^0.27.3
-      version: 0.27.6
+      specifier: ^0.28.14
+      version: 0.28.16
     lodash:
       specifier: ^4.18.1
       version: 4.18.1
@@ -359,12 +359,6 @@ catalogs:
     rimraf:
       specifier: ^5.0.10
       version: 5.0.10
-    rollup:
-      specifier: ^4.32.1
-      version: 4.60.1
-    rollup-plugin-dts:
-      specifier: ^6.2.1
-      version: 6.4.1
     sass:
       specifier: ^1.83.4
       version: 1.98.0
@@ -907,7 +901,7 @@ importers:
         version: 2.19.0(@babel/core@7.29.0)(@babel/template@7.28.6)(@types/react@18.3.28)(react@18.3.1)
       kysely:
         specifier: 'catalog:'
-        version: 0.27.6
+        version: 0.28.16
       lodash:
         specifier: 'catalog:'
         version: 4.18.1
@@ -1306,12 +1300,6 @@ importers:
       rimraf:
         specifier: 'catalog:'
         version: 5.0.10
-      rollup:
-        specifier: 'catalog:'
-        version: 4.60.1
-      rollup-plugin-dts:
-        specifier: 'catalog:'
-        version: 6.4.1(rollup@4.60.1)(typescript@5.9.3)
       storybook:
         specifier: catalog:storybook9
         version: 9.1.19(@testing-library/dom@10.4.1)(msw@2.12.14(@types/node@25.5.0)(typescript@5.9.3))(prettier@3.8.1)(vite@5.4.21(@types/node@25.5.0)(sass@1.98.0)(terser@5.46.1))
@@ -8803,9 +8791,9 @@ packages:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
 
-  kysely@0.27.6:
-    resolution: {integrity: sha512-FIyV/64EkKhJmjgC0g2hygpBv5RNWVPyNCqSAD7eTCv6eFWNIi4PN1UvdSJGicN/o35bnevgis4Y0UDC0qi8jQ==}
-    engines: {node: '>=14.0.0'}
+  kysely@0.28.16:
+    resolution: {integrity: sha512-3i5pmOiZvMDj00qhrIVbH0AnioVTx22DMP7Vn5At4yJO46iy+FM8Y/g61ltenLVSo3fiO8h8Q3QOFgf/gQ72ww==}
+    engines: {node: '>=20.0.0'}
 
   langbase@1.2.4:
     resolution: {integrity: sha512-bbZ3n79mWlQw6Gp+Vg9b/8nVJg4WF28PmZD70mq0X9K+F8lA5wdI5sIyBRkV3Jj1jqv3OXJFu4I5l6gVzRh51g==}
@@ -10680,13 +10668,6 @@ packages:
   ripemd160@2.0.3:
     resolution: {integrity: sha512-5Di9UC0+8h1L6ZD2d7awM7E/T4uA1fJRlx6zk/NvdCCVEoAnFqvHmCuNeIKoCeIixBX/q8uM+6ycDvF8woqosA==}
     engines: {node: '>= 0.8'}
-
-  rollup-plugin-dts@6.4.1:
-    resolution: {integrity: sha512-l//F3Zf7ID5GoOfLfD8kroBjQKEKpy1qfhtAdnpibFZMffPaylrg1CoDC2vGkPeTeyxUe4bVFCln2EFuL7IGGg==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      rollup: ^3.29.4 || ^4
-      typescript: ^4.5 || ^5.0 || ^6.0
 
   rollup@4.60.1:
     resolution: {integrity: sha512-VmtB2rFU/GroZ4oL8+ZqXgSA38O6GR8KSIvWmEFv63pQ0G6KaBH9s07PO8XTXP4vI+3UJUEypOfjkGfmSBBR0w==}
@@ -20615,7 +20596,7 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  kysely@0.27.6: {}
+  kysely@0.28.16: {}
 
   langbase@1.2.4(react@18.3.1)(ws@8.20.0):
     dependencies:
@@ -22879,17 +22860,6 @@ snapshots:
     dependencies:
       hash-base: 3.1.2
       inherits: 2.0.4
-
-  rollup-plugin-dts@6.4.1(rollup@4.60.1)(typescript@5.9.3):
-    dependencies:
-      '@jridgewell/remapping': 2.3.5
-      '@jridgewell/sourcemap-codec': 1.5.5
-      convert-source-map: 2.0.0
-      magic-string: 0.30.21
-      rollup: 4.60.1
-      typescript: 5.9.3
-    optionalDependencies:
-      '@babel/code-frame': 7.29.0
 
   rollup@4.60.1:
     dependencies:
