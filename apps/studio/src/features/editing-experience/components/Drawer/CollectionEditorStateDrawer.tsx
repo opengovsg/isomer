@@ -58,10 +58,32 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     },
   })
 
+  const drawerStateType = useMemo(() => {
+    if (drawerState.state !== "collectionEditor") {
+      return "display"
+    }
+    return drawerState.type
+  }, [drawerState])
+
+  const schemaFields = useMemo(() => {
+    if (isUserIsomerAdmin) {
+      return drawerStateType === "display"
+        ? {
+            exclude: ["tagCategories", "tags"],
+          }
+        : {
+            include: ["tagCategories", "tags"],
+          }
+    }
+    return {
+      exclude: ["tagCategories", "tags"],
+    }
+  }, [drawerStateType, isUserIsomerAdmin])
+
   const metadataSchema = getScopedSchema({
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
     scope: "page",
-    exclude: isUserIsomerAdmin ? [] : ["tagCategories", "tags"],
+    ...schemaFields,
   })
   const validateFn =
     ajv.compile<Static<ReturnType<typeof getLayoutPageSchema>>>(metadataSchema)
@@ -102,13 +124,6 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     setDrawerState({ state: "root" })
   }
 
-  const drawerStateType = useMemo(() => {
-    if (drawerState.state === "collectionEditor") {
-      return drawerState.type
-    }
-    return "display"
-  }, [drawerState])
-
   return (
     <>
       <DiscardChangesModal
@@ -136,8 +151,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
 
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
-            {savedPageState.layout ===
-              ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
+            {drawerStateType === "display" && (
               <Box pb="1rem">
                 <Infobox
                   size="sm"
