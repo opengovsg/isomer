@@ -20,7 +20,14 @@ import {
   schema,
 } from "@opengovsg/isomer-components"
 import { useCallback, useState } from "react"
-import { BiCog, BiData, BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
+import {
+  BiCog,
+  BiData,
+  BiPin,
+  BiPlus,
+  BiPlusCircle,
+  BiSlider,
+} from "react-icons/bi"
 import { Disable } from "~/components/Disable"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BlockEditingPlaceholder } from "~/components/Svg"
@@ -106,15 +113,23 @@ const FixedBlock = () => {
     isNewEditingExperienceEnabled
   ) {
     return (
-      <BaseBlock
-        onClick={() => {
-          setCurrActiveIdx(0)
-          setDrawerState({ state: "collectionEditor" })
-        }}
-        label="Collection settings"
-        description="Summary, style, categories and sorting"
-        icon={BiPin}
-      />
+      <>
+        <BaseBlock
+          onClick={() => {
+            setCurrActiveIdx(0)
+            setDrawerState({ state: "collectionEditor" })
+          }}
+          label="Collection display"
+          description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
+          icon={BiCog}
+        />
+        <BaseBlock
+          onClick={() => console.log("to implement")}
+          label="Filters"
+          description="Define and manage filters for this Collection."
+          icon={BiSlider}
+        />
+      </>
     )
   }
 
@@ -344,6 +359,8 @@ export default function RootStateDrawer() {
   // for collection index pages
   const canAddBlocks = pageLayout !== "collection"
 
+  const isNewEditingExperienceEnabled = useNewCollectionEditingExperience()
+
   return (
     <Flex direction="column" h="full">
       <ConfirmConvertIndexPageModal
@@ -417,185 +434,201 @@ export default function RootStateDrawer() {
             </Infobox>
           )}
 
-          <Disable when={disableBlocks}>
-            <VStack gap="1.5rem" flex={1} w="full">
-              {/* Fixed Blocks Section */}
-              <VStack gap="1rem" w="100%" align="start">
-                <VStack gap="0.25rem" align="start">
-                  <Text textStyle="subhead-1">
-                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
-                      ? "Manage Collection"
-                      : "Fixed blocks"}
-                  </Text>
-                  <Text textStyle="caption-2" color="base.content.medium">
-                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
-                      ? "Modify the Collection's look and feel or manage filters."
-                      : "These are built into the layout, so you can't delete them."}
-                  </Text>
-                </VStack>
-
-                <FixedBlock />
+          {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
+          isNewEditingExperienceEnabled ? (
+            <VStack gap="1rem" w="100%" align="start">
+              <VStack gap="0.25rem" align="start">
+                <Text textStyle="subhead-1">Manage Collection</Text>
+                <Text textStyle="caption-2" color="base.content.medium">
+                  Modify the Collection’s look and feel or manage filters.
+                </Text>
               </VStack>
 
-              {pageLayout === "index" && (
-                <Button
-                  // NOTE: Top offset is only `1rem` but the `gap` on parent component is `1.5rem`
-                  marginTop="-0.5rem"
-                  variant="link"
-                  gap="0.25rem"
-                  cursor="pointer"
-                  alignSelf="flex-start"
-                  onClick={() =>
-                    setDrawerState({ state: "siderailOrderingEditor" })
-                  }
-                >
-                  <Icon
-                    as={BiCog}
-                    color="interaction.main.default"
-                    boxSize="1.25rem"
-                  />
-                  <Text textStyle="subhead-2" color="interaction.links.default">
-                    Reorder siderail for this folder
-                  </Text>
-                </Button>
-              )}
+              <FixedBlock />
+            </VStack>
+          ) : (
+            <Disable when={disableBlocks}>
+              <VStack gap="1.5rem" flex={1} w="full">
+                {/* Fixed Blocks Section */}
+                <VStack gap="1rem" w="100%" align="start">
+                  <VStack gap="0.25rem" align="start">
+                    <Text textStyle="subhead-1">Fixed blocks</Text>
+                    <Text textStyle="caption-2" color="base.content.medium">
+                      These are built into the layout, so you can't delete them.
+                    </Text>
+                  </VStack>
 
-              {/* Custom Blocks Section */}
-              <VStack gap="1.5rem" w="100%">
-                <VStack w="100%" h="100%" gap="1rem">
-                  <Flex flexDirection="row" w="100%">
-                    {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
-                      <VStack gap="0.25rem" align="start" flex={1}>
-                        <Text textStyle="subhead-1">Custom blocks</Text>
-                        <Text textStyle="caption-2" color="base.content.medium">
-                          Use blocks to display your content.
-                        </Text>
-                      </VStack>
-                    )}
-                    {/* TODO: we should swap over to using the `resource.type` */}
-                    {/* rather than the `page.layout` but we are unable to do so due */}
-                    {/* to the existence of custom index page that are `layout: */}
-                    {/* content` but have `resource.type: index` */}
-                    {canAddBlocks && (
-                      <Button
-                        size="xs"
-                        flexShrink={0}
-                        leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-                        variant="clear"
-                        onClick={() => setDrawerState({ state: "addBlock" })}
-                      >
-                        Add block
-                      </Button>
-                    )}
-                  </Flex>
-                  <DragDropContext onDragEnd={onDragEnd}>
-                    <Droppable droppableId="blocks">
-                      {(provided) => (
-                        <VStack
-                          {...provided.droppableProps}
-                          w="100%"
-                          ref={provided.innerRef}
-                        >
-                          <Box w="100%">
-                            {!isPreviewingIndexPage &&
-                              ((isHeroFixedBlock &&
-                                savedPageState.content.length === 1) ||
-                                (savedPageState.content.length === 0 &&
-                                  canAddBlocks)) && (
-                                <>
-                                  <VStack
-                                    justifyContent="center"
-                                    spacing={0}
-                                    mt="2.75rem"
-                                    mb="1.5rem"
-                                  >
-                                    <BlockEditingPlaceholder />
-                                    <Text
-                                      mt="0.75rem"
-                                      textStyle="subhead-1"
-                                      color="base.content.default"
-                                    >
-                                      Blocks you add will appear here
-                                    </Text>
-                                    <Text
-                                      mt="0.25rem"
-                                      textStyle="caption-2"
-                                      color="base.content.medium"
-                                    >
-                                      Click the ‘Add block’ button above to add
-                                      blocks to this page
-                                    </Text>
-                                  </VStack>
+                  <FixedBlock />
+                </VStack>
 
-                                  <Button
-                                    variant="outline"
-                                    w="100%"
-                                    onClick={() =>
-                                      setDrawerState({ state: "addBlock" })
-                                    }
-                                    leftIcon={
-                                      <Icon as={BiPlus} fontSize="1.25rem" />
-                                    }
-                                  >
-                                    Add a new block
-                                  </Button>
-                                </>
-                              )}
+                {pageLayout === "index" && (
+                  <Button
+                    // NOTE: Top offset is only `1rem` but the `gap` on parent component is `1.5rem`
+                    marginTop="-0.5rem"
+                    variant="link"
+                    gap="0.25rem"
+                    cursor="pointer"
+                    alignSelf="flex-start"
+                    onClick={() =>
+                      setDrawerState({ state: "siderailOrderingEditor" })
+                    }
+                  >
+                    <Icon
+                      as={BiCog}
+                      color="interaction.main.default"
+                      boxSize="1.25rem"
+                    />
+                    <Text
+                      textStyle="subhead-2"
+                      color="interaction.links.default"
+                    >
+                      Reorder siderail for this folder
+                    </Text>
+                  </Button>
+                )}
 
-                            <Flex flexDirection="column" mt="-0.25rem">
-                              {previewPageState.content.map((block, index) => {
-                                if (isHeroFixedBlock && index === 0) {
-                                  return <></>
-                                }
-
-                                // Check if block is a hidden childrenpages block
-                                const isHiddenChildrenPages =
-                                  block.type === "childrenpages" &&
-                                  "isHidden" in block &&
-                                  block.isHidden
-
-                                return (
-                                  <DraggableBlock
-                                    block={block}
-                                    // TODO: Generate a block ID instead of index
-                                    key={`${block.type}-${index}`}
-                                    // TODO: Use block ID when instead of index for uniquely identifying blocks
-                                    draggableId={`${block.type}-${index}`}
-                                    index={index}
-                                    onClick={() => {
-                                      setCurrActiveIdx(index)
-                                      // TODO: we should automatically do this probably?
-                                      const nextState =
-                                        savedPageState.content[index]?.type ===
-                                        "prose"
-                                          ? "nativeEditor"
-                                          : "complexEditor"
-                                      // NOTE: SNAPSHOT
-                                      setDrawerState({ state: nextState })
-                                    }}
-                                    invalidProps={
-                                      invalidBlockIndexes.has(index)
-                                        ? {
-                                            description:
-                                              invalidBlockDescription,
-                                          }
-                                        : undefined
-                                    }
-                                    isHidden={isHiddenChildrenPages}
-                                  />
-                                )
-                              })}
-                            </Flex>
-                          </Box>
-                          {provided.placeholder}
+                {/* Custom Blocks Section */}
+                <VStack gap="1.5rem" w="100%">
+                  <VStack w="100%" h="100%" gap="1rem">
+                    <Flex flexDirection="row" w="100%">
+                      {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
+                        <VStack gap="0.25rem" align="start" flex={1}>
+                          <Text textStyle="subhead-1">Custom blocks</Text>
+                          <Text
+                            textStyle="caption-2"
+                            color="base.content.medium"
+                          >
+                            Use blocks to display your content.
+                          </Text>
                         </VStack>
                       )}
-                    </Droppable>
-                  </DragDropContext>
+                      {/* TODO: we should swap over to using the `resource.type` */}
+                      {/* rather than the `page.layout` but we are unable to do so due */}
+                      {/* to the existence of custom index page that are `layout: */}
+                      {/* content` but have `resource.type: index` */}
+                      {canAddBlocks && (
+                        <Button
+                          size="xs"
+                          flexShrink={0}
+                          leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+                          variant="clear"
+                          onClick={() => setDrawerState({ state: "addBlock" })}
+                        >
+                          Add block
+                        </Button>
+                      )}
+                    </Flex>
+                    <DragDropContext onDragEnd={onDragEnd}>
+                      <Droppable droppableId="blocks">
+                        {(provided) => (
+                          <VStack
+                            {...provided.droppableProps}
+                            w="100%"
+                            ref={provided.innerRef}
+                          >
+                            <Box w="100%">
+                              {!isPreviewingIndexPage &&
+                                ((isHeroFixedBlock &&
+                                  savedPageState.content.length === 1) ||
+                                  (savedPageState.content.length === 0 &&
+                                    canAddBlocks)) && (
+                                  <>
+                                    <VStack
+                                      justifyContent="center"
+                                      spacing={0}
+                                      mt="2.75rem"
+                                      mb="1.5rem"
+                                    >
+                                      <BlockEditingPlaceholder />
+                                      <Text
+                                        mt="0.75rem"
+                                        textStyle="subhead-1"
+                                        color="base.content.default"
+                                      >
+                                        Blocks you add will appear here
+                                      </Text>
+                                      <Text
+                                        mt="0.25rem"
+                                        textStyle="caption-2"
+                                        color="base.content.medium"
+                                      >
+                                        Click the ‘Add block’ button above to
+                                        add blocks to this page
+                                      </Text>
+                                    </VStack>
+
+                                    <Button
+                                      variant="outline"
+                                      w="100%"
+                                      onClick={() =>
+                                        setDrawerState({ state: "addBlock" })
+                                      }
+                                      leftIcon={
+                                        <Icon as={BiPlus} fontSize="1.25rem" />
+                                      }
+                                    >
+                                      Add a new block
+                                    </Button>
+                                  </>
+                                )}
+
+                              <Flex flexDirection="column" mt="-0.25rem">
+                                {previewPageState.content.map(
+                                  (block, index) => {
+                                    if (isHeroFixedBlock && index === 0) {
+                                      return <></>
+                                    }
+
+                                    // Check if block is a hidden childrenpages block
+                                    const isHiddenChildrenPages =
+                                      block.type === "childrenpages" &&
+                                      "isHidden" in block &&
+                                      block.isHidden
+
+                                    return (
+                                      <DraggableBlock
+                                        block={block}
+                                        // TODO: Generate a block ID instead of index
+                                        key={`${block.type}-${index}`}
+                                        // TODO: Use block ID when instead of index for uniquely identifying blocks
+                                        draggableId={`${block.type}-${index}`}
+                                        index={index}
+                                        onClick={() => {
+                                          setCurrActiveIdx(index)
+                                          // TODO: we should automatically do this probably?
+                                          const nextState =
+                                            savedPageState.content[index]
+                                              ?.type === "prose"
+                                              ? "nativeEditor"
+                                              : "complexEditor"
+                                          // NOTE: SNAPSHOT
+                                          setDrawerState({ state: nextState })
+                                        }}
+                                        invalidProps={
+                                          invalidBlockIndexes.has(index)
+                                            ? {
+                                                description:
+                                                  invalidBlockDescription,
+                                              }
+                                            : undefined
+                                        }
+                                        isHidden={isHiddenChildrenPages}
+                                      />
+                                    )
+                                  },
+                                )}
+                              </Flex>
+                            </Box>
+                            {provided.placeholder}
+                          </VStack>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                  </VStack>
                 </VStack>
               </VStack>
-            </VStack>
-          </Disable>
+            </Disable>
+          )}
         </VStack>
       </VStack>
 
