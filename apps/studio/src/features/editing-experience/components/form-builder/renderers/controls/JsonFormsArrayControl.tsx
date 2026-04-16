@@ -246,7 +246,7 @@ function JsonFormsArrayControl({
   return (
     <VStack spacing={0} align="start">
       <VStack align="start" spacing="0.25rem" w="full">
-        <HStack w="full" justifyContent="space-between" align="flex-start">
+        <HStack w="full" justifyContent="space-between" align="center">
           <Text textStyle="subhead-1" flex={1}>
             {label}
           </Text>
