@@ -1,5 +1,10 @@
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
+import {
+  CloudFrontClient,
+  CreateInvalidationCommand,
+} from "@aws-sdk/client-cloudfront"
+import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
@@ -94,16 +99,6 @@ export const getFileKey = ({ siteId, fileName }: GetFileKeyProps) => {
   return `${siteId}/${folderName}/${sanitizedFileName}`
 }
 
-export const doAllFileKeysBelongToSite = ({
-  fileKeys,
-  siteId,
-}: {
-  fileKeys: string[]
-  siteId: number
-}) => {
-  return fileKeys.every((key) => key.startsWith(`${siteId}/`))
-}
-
 export const getPresignedPutUrl = async ({
   key,
 }: {
@@ -125,8 +120,74 @@ export const getPresignedPutUrl = async ({
 }
 
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
-  await deleteFile({
+  return await deleteFile({
     Key: key,
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
   })
+}
+
+const cloudfrontClient = new CloudFrontClient({})
+const ssmClient = new SSMClient({})
+
+let cachedDistributionId: string | null = null
+
+const getDistributionId = async (): Promise<string> => {
+  if (cachedDistributionId) {
+    return cachedDistributionId
+  }
+
+  const command = new GetParameterCommand({
+    Name: "/cloudfront/assets-distribution-id",
+    WithDecryption: false,
+  })
+
+  const response = await ssmClient.send(command)
+  cachedDistributionId = response.Parameter?.Value ?? null
+
+  // NOTE: if we cannot find the distribution,
+  // this is a clear error and we should throw.
+  if (!cachedDistributionId) {
+    throw new Error("CloudFront Distribution ID is not set in SSM")
+  }
+
+  return cachedDistributionId
+}
+
+export const invalidateAssetsBySiteIds = async (
+  siteIds: string[],
+): Promise<{ success: boolean; invalidationId?: string; error?: string }> => {
+  if (siteIds.length === 0) {
+    return { success: true }
+  }
+
+  const sitesToInvalidate = Array.from(new Set(siteIds))
+
+  // Create invalidation paths for each siteId (invalidates all assets under that siteId)
+  const paths = Array.from(sitesToInvalidate).map((siteId) => `/${siteId}/*`)
+
+  try {
+    const distributionId = await getDistributionId()
+
+    const command = new CreateInvalidationCommand({
+      DistributionId: distributionId,
+      InvalidationBatch: {
+        CallerReference: `delete-assets-${Date.now()}`,
+        Paths: {
+          Quantity: paths.length,
+          Items: paths,
+        },
+      },
+    })
+
+    const response = await cloudfrontClient.send(command)
+    return {
+      success: true,
+      invalidationId: response.Invalidation?.Id,
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
+  }
 }

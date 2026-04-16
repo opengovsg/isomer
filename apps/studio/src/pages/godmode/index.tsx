@@ -24,6 +24,10 @@ const GODMODE_LINKS = [
     label: "Publishing",
   },
   {
+    href: "/godmode/delete-s3-assets",
+    label: "Delete S3 assets",
+  },
+  {
     href: "/godmode/whitelist",
     label: "Whitelist",
   },

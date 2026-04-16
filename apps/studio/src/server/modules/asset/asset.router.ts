@@ -1,11 +1,13 @@
 import { TRPCError } from "@trpc/server"
 import { deleteAssetsSchema, getPresignedPutUrlSchema } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
+import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
 import {
-  doAllFileKeysBelongToSite,
   getFileKey,
   getPresignedPutUrl,
+  invalidateAssetsBySiteIds,
   markFileAsDeleted,
   validateUserPermissionsForAsset,
 } from "./asset.service"
@@ -48,24 +50,27 @@ export const assetRouter = router({
 
   deleteAssets: protectedProcedure
     .input(deleteAssetsSchema)
-    .mutation(async ({ ctx, input: { siteId, resourceId, fileKeys } }) => {
-      await validateUserPermissionsForAsset({
-        siteId,
-        resourceId,
-        action: "delete",
+    .mutation(async ({ ctx, input: { fileKeys } }) => {
+      await validateUserIsIsomerAdmin({
         userId: ctx.user.id,
+        roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
       })
 
-      if (!doAllFileKeysBelongToSite({ fileKeys, siteId })) {
+      // Validate fileKey format: <siteId>/<uuid>/<filename>
+      const fileKeyPattern = /^\d+\/[a-f0-9-]{36}\/.+$/
+      const invalidKeys = fileKeys.filter((key) => !fileKeyPattern.test(key))
+      if (invalidKeys.length > 0) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "One or more file keys do not belong to the specified site. You may only delete assets for the site you are authorized for.",
+          code: "BAD_REQUEST",
+          message: `Invalid file key format. Expected format: <siteId>/<uuid>/<filename>. Invalid keys: ${invalidKeys.slice(0, 3).join(", ")}${invalidKeys.length > 3 ? "..." : ""}`,
         })
       }
 
-      await Promise.allSettled(
-        fileKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),
+      const results = await Promise.allSettled(
+        fileKeys.map(async (fileKey) => {
+          await markFileAsDeleted({ key: fileKey })
+          return fileKey
+        }),
       ).then((results) => {
         const deleteFailedCounts = results.filter(
           (result) => result.status === "rejected",
@@ -81,12 +86,26 @@ export const assetRouter = router({
               totalDeleteCounts,
             },
           })
-
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to delete files/images",
-          })
         }
+
+        return results
       })
+
+      const successfulDeletes = results
+        .filter((res) => {
+          return res.status === "fulfilled"
+        })
+        .map((res) => {
+          // NOTE: The key is of format: `<siteId>/<uuid>/<filename>`
+          return res.value.split("/").at(0) ?? ""
+        })
+        .filter(Boolean)
+
+      const invalidatedSites =
+        await invalidateAssetsBySiteIds(successfulDeletes)
+
+      return {
+        invalidatedSites,
+      }
     }),
 })
