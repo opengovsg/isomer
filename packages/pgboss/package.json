@@ -43,7 +43,7 @@
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@vitest/coverage-istanbul": "catalog:vitest",
-    "npm-run-all": "catalog:",
+    "npm-run-all2": "catalog:",
     "rimraf": "catalog:",
     "tsc-alias": "catalog:",
     "typescript": "catalog:"

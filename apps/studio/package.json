@@ -195,7 +195,7 @@
     "msw-storybook-addon": "catalog:",
     "msw-trpc": "catalog:",
     "node-mocks-http": "catalog:",
-    "npm-run-all": "catalog:",
+    "npm-run-all2": "catalog:",
     "postcss": "catalog:",
     "postcss-load-config": "catalog:",
     "start-server-and-test": "catalog:",
