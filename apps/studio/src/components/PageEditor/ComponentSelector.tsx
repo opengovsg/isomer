@@ -1,24 +1,14 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import {
-  chakra,
-  Flex,
-  Icon,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Stack,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
-import Image from "next/image"
+import type { RequireAllOrNone } from "type-fest"
+import { chakra, Flex, Icon, Stack, Text, VStack } from "@chakra-ui/react"
+import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
 import { useMemo } from "react"
-import { type IconType } from "react-icons"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { type DrawerState } from "~/types/editorDrawer"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import type { UsageTooltipProps } from "./UsageTooltip"
 import {
   ARTICLE_ALLOWED_BLOCKS,
   BLOCK_TO_META,
@@ -29,6 +19,7 @@ import {
   INDEX_ALLOWED_BLOCKS,
 } from "./constants"
 import { type SectionType } from "./types"
+import { UsageTooltip } from "./UsageTooltip"
 
 function Section({ children }: React.PropsWithChildren) {
   return (
@@ -50,84 +41,75 @@ function BlockList({ children }: React.PropsWithChildren) {
   return <Stack w="full">{children}</Stack>
 }
 
-interface BlockItemProps {
-  imageSrc?: string
-  icon: IconType
-  label: string
+type BlockItemProps = UsageTooltipProps & {
   onProceed: (sectionType: SectionType) => void
   sectionType: SectionType
-  description: string
-  usageText?: string
-}
+} & RequireAllOrNone<{
+    isDisabled: boolean
+    disabledText: string
+  }>
 
 function BlockItem({
-  icon,
-  label,
   onProceed,
   sectionType,
-  description,
-  usageText,
-  imageSrc,
+  isDisabled,
+  disabledText,
+  ...rest
 }: BlockItemProps) {
-  return (
-    <Popover trigger="hover" placement="right" isLazy offset={[0, 20]}>
-      <PopoverTrigger>
-        <chakra.button
-          layerStyle="focusRing"
-          w="100%"
-          borderRadius="6px"
-          border="1px solid"
-          borderColor="base.divider.medium"
-          transitionProperty="common"
-          transitionDuration="normal"
-          _hover={{
-            bg: "interaction.muted.main.hover",
-            borderColor: "interaction.main-subtle.hover",
-          }}
-          bg="white"
-          p="0.75rem"
-          flexDirection="row"
-          display="flex"
-          alignItems="start"
-          gap="0.75rem"
-          onClick={() => onProceed(sectionType)}
-        >
-          <Flex
-            p="0.5rem"
-            bg="interaction.main-subtle.default"
-            borderRadius="full"
-          >
-            <Icon as={icon} fontSize="1rem" color="base.content.default" />
-          </Flex>
-          <Stack align="start" gap="0.25rem" textAlign="start">
-            <Text textStyle="caption-1">{label}</Text>
-            <Text textStyle="caption-2">{description}</Text>
-          </Stack>
-        </chakra.button>
-      </PopoverTrigger>
-      <PopoverContent width="fit-content" overflow="hidden">
-        <Flex flexDir="column" w="292px">
-          {imageSrc && (
-            <Image height={160} width={292} src={imageSrc} alt={label} />
-          )}
-          <VStack
-            py="1rem"
-            px="1.125rem"
-            alignItems="start"
-            gap="0.75rem"
-            borderTop={imageSrc ? "1px solid" : undefined}
-            borderColor="base.divider.medium"
-          >
-            <Flex alignItems="center" gap="0.25rem" w="full">
-              <Icon as={icon} size="1.25rem" />
-              <Text textStyle="subhead-2">{label}</Text>
-            </Flex>
-            <Text textStyle="body-2">{usageText ?? description}</Text>
-          </VStack>
-        </Flex>
-      </PopoverContent>
-    </Popover>
+  const { icon, label, description } = rest
+
+  const button = (
+    <chakra.button
+      disabled={isDisabled}
+      layerStyle="focusRing"
+      w="100%"
+      borderRadius="6px"
+      border="1px solid"
+      borderColor="base.divider.medium"
+      transitionProperty="common"
+      transitionDuration="normal"
+      _hover={{
+        bg: "interaction.muted.main.hover",
+        borderColor: "interaction.main-subtle.hover",
+      }}
+      bg="white"
+      p="0.75rem"
+      flexDirection="row"
+      display="flex"
+      alignItems="start"
+      gap="0.75rem"
+      onClick={() => onProceed(sectionType)}
+      _disabled={{
+        bg: "interaction.support.disabled",
+        borderColor: "base.divider.medium",
+        textColor: "interaction.support.disabled-content",
+        cursor: "not-allowed",
+        opacity: "75%",
+      }}
+      data-group
+    >
+      <Flex
+        p="0.5rem"
+        bg="interaction.main-subtle.default"
+        borderRadius="full"
+        _groupDisabled={{
+          background: "interaction.neutral-subtle.default",
+        }}
+      >
+        <Icon as={icon} fontSize="1rem" color="base.content.default" />
+      </Flex>
+      <Stack align="start" gap="0.25rem" textAlign="start">
+        <Text textStyle="caption-1">{label}</Text>
+        <Text textStyle="caption-2">{description}</Text>
+      </Stack>
+    </chakra.button>
   )
+
+  if (isDisabled) {
+    return <TouchableTooltip label={disabledText}>{button}</TouchableTooltip>
+  }
+
+  return <UsageTooltip {...rest}>{button}</UsageTooltip>
 }
 
 function ComponentSelector() {
@@ -142,16 +124,43 @@ function ComponentSelector() {
   } = useEditorDrawerContext()
 
   const onProceed = (sectionType: SectionType) => {
+    if (
+      sectionType === "childrenpages" &&
+      savedPageState.content.some(
+        (block) => block.type === "childrenpages" && block.isHidden,
+      )
+    ) {
+      const nextPageState = {
+        ...savedPageState,
+        content: savedPageState.content.map((block) => {
+          if (block.type === "childrenpages") {
+            return { ...block, isHidden: false } satisfies IsomerComponent
+          }
+
+          return block satisfies IsomerComponent
+        }),
+      }
+      const childrenpagesIdx = savedPageState.content.findIndex(
+        (block) => block.type === "childrenpages",
+      )
+      setDrawerState({ state: "complexEditor" })
+      setSavedPageState(nextPageState)
+      setCurrActiveIdx(childrenpagesIdx)
+      setAddedBlockIndex(childrenpagesIdx)
+      setPreviewPageState(nextPageState)
+      return
+    }
+
     // TODO: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
     // the rest should use json forms
     const nextState: DrawerState["state"] =
       sectionType === "prose" ? "nativeEditor" : "complexEditor"
-    // TODO: Remove assertion after default blocks all in
-    const newComponent: IsomerComponent | undefined =
-      DEFAULT_BLOCKS[sectionType]
+    const newComponent = DEFAULT_BLOCKS[sectionType] as
+      | IsomerComponent
+      | undefined
 
-    const updatedBlocks = !!newComponent
+    const updatedBlocks = newComponent
       ? [...savedPageState.content, newComponent]
       : savedPageState.content
     const nextPageState = {
@@ -239,12 +248,21 @@ function ComponentSelector() {
             <BlockList>
               {section.types.map((type) => {
                 const blockMeta = BLOCK_TO_META[type]
+                const isDisabled =
+                  type === "childrenpages" &&
+                  savedPageState.content.some(
+                    (block) =>
+                      block.type === "childrenpages" && !block.isHidden,
+                  )
+
                 return (
                   <BlockItem
                     key={type}
                     icon={TYPE_TO_ICON[type]}
                     onProceed={onProceed}
                     sectionType={type}
+                    isDisabled={!!isDisabled}
+                    disabledText="This page already has a child pages block."
                     {...blockMeta}
                   />
                 )

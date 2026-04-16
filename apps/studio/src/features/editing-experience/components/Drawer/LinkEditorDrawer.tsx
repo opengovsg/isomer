@@ -10,10 +10,10 @@ import { z } from "zod"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { ADMIN_ROLE } from "~/lib/growthbook"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
@@ -46,8 +46,8 @@ const InnerDrawer = ({
   setDrawerState,
 }: LinkEditorDrawerStateProps) => {
   const { errors } = useBuilderErrors()
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
-    roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
 
   return (

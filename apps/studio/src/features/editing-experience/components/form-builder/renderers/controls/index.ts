@@ -140,3 +140,8 @@ export {
   default as JsonFormsCollectionVariantControl,
   jsonFormsCollectionVariantControlTester,
 } from "./JsonFormsCollectionVariantControl"
+
+export {
+  default as JsonFormsPrefillLinkControl,
+  jsonFormsPrefillLinkControlTester,
+} from "./JsonFormsPrefillLinkControl"

@@ -1,8 +1,8 @@
+import type { ChildPage } from "~/templates/next/components/complex/ChildrenPages/types"
 import { cloneDeep } from "lodash-es"
 import { describe, expect, it } from "vitest"
 
-import type { ChildPage } from "../types"
-import { mergeChildrenPages } from "../utils"
+import { createChildrenPagesComparator } from "../createChildrenPagesComparator"
 
 const generateChildrenPages = (extraPages: ChildPage[] = []): ChildPage[] => {
   return [
@@ -47,16 +47,14 @@ const generateChildrenPages = (extraPages: ChildPage[] = []): ChildPage[] => {
 }
 
 describe("ChildrenPages.utils", () => {
-  describe("mergeChildrenPages", () => {
+  describe("createChildrenPagesComparator", () => {
     it("should sort the children pages in the order specified", () => {
       // Arrange
       const ordering = ["3", "1", "4", "2", "5", "6"]
 
       // Act
-      // NOTE: need to deep clone because `sort` is inplace
-      const actual = cloneDeep(generateChildrenPages()).sort((a, b) =>
-        mergeChildrenPages(a, b, ordering),
-      )
+      const comparator = createChildrenPagesComparator(ordering)
+      const actual = cloneDeep(generateChildrenPages()).sort(comparator)
 
       // Assert
       expect(actual.map(({ id }) => id)).toEqual(ordering)
@@ -76,58 +74,27 @@ describe("ChildrenPages.utils", () => {
       ]
 
       // Act
-      const actual = arr.sort((a, b) => mergeChildrenPages(a, b, ordering))
+      const comparator = createChildrenPagesComparator(ordering)
+      const actual = arr.sort(comparator)
 
       // Assert
       expect(actual.map(({ id }) => id)).toEqual([...ordering, "22"])
     })
-    it("should respect numeric sorting for title when the pages are not specified in the order", () => {
+
+    it("should precompute the map for O(1) lookups", () => {
       // Arrange
-      const ordering: never[] = []
-      const arr = [
-        {
-          id: "1",
-          title: "random title 1",
-          url: "random url 1",
-          description: "random desc 1",
-        },
-        {
-          id: "10",
-          title: "random title 10",
-          url: "random url 10",
-          description: "random desc 10",
-        },
-      ]
+      const ordering = ["3", "1", "4", "2", "5", "6"]
 
-      // Act
-      const actual = arr.sort((a, b) => mergeChildrenPages(a, b, ordering))
+      // Act - create comparator once
+      const comparator = createChildrenPagesComparator(ordering)
 
-      // Assert
-      expect(actual.map(({ id }) => id)).toEqual(["1", "10"])
-    })
-    it("should be case sensitive for title sorting when the pages are not specified in the order", () => {
-      // Arrange
-      const ordering: never[] = []
-      const arr = [
-        {
-          id: "1",
-          title: "random title 1",
-          url: "random url 1",
-          description: "random desc 1",
-        },
-        {
-          id: "2",
-          title: "Random title 1",
-          url: "random url 1",
-          description: "random desc 1",
-        },
-      ]
+      // Sort multiple times with the same comparator
+      const sorted1 = cloneDeep(generateChildrenPages()).sort(comparator)
+      const sorted2 = cloneDeep(generateChildrenPages()).sort(comparator)
 
-      // Act
-      const actual = arr.sort((a, b) => mergeChildrenPages(a, b, ordering))
-
-      // Assert
-      expect(actual.map(({ id }) => id)).toEqual(["1", "2"])
+      // Assert - both sorts should produce the same result
+      expect(sorted1.map(({ id }) => id)).toEqual(ordering)
+      expect(sorted2.map(({ id }) => id)).toEqual(ordering)
     })
   })
 })

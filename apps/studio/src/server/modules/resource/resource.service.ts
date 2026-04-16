@@ -2,6 +2,10 @@ import type { SelectExpression } from "kysely"
 import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
 import type { ResourceItemContent } from "~/schemas/resource"
+import {
+  createChildrenPagesComparator,
+  type IsomerSitemap,
+} from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import _ from "lodash"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -102,8 +106,34 @@ export const getFullPageById = async (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
 ) => {
+  // Check if the resource is a Collection or Folder, and if so, use its IndexPage
+  const resource = await getById(db, args)
+    .select(["Resource.id", "Resource.type"])
+    .executeTakeFirst()
+
+  let targetResourceId = args.resourceId
+
+  if (
+    resource?.type === ResourceType.Collection ||
+    resource?.type === ResourceType.Folder
+  ) {
+    const indexPage = await db
+      .selectFrom("Resource")
+      .where("Resource.parentId", "=", String(args.resourceId))
+      .where("Resource.siteId", "=", args.siteId)
+      .where("Resource.type", "=", ResourceType.IndexPage)
+      .select("Resource.id")
+      .executeTakeFirst()
+
+    if (indexPage) {
+      targetResourceId = Number(indexPage.id)
+    }
+  }
+
+  const targetArgs = { ...args, resourceId: targetResourceId }
+
   // Check if draft blob exists and return that preferentially
-  const draftBlob = await getById(db, args)
+  const draftBlob = await getById(db, targetArgs)
     .where("Resource.draftBlobId", "is not", null)
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
@@ -113,7 +143,7 @@ export const getFullPageById = async (
     return draftBlob
   }
 
-  const publishedBlob = await getById(db, args)
+  const publishedBlob = await getById(db, targetArgs)
     .where("Resource.publishedVersionId", "is not", null)
     .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
     .innerJoin("Blob", "Version.blobId", "Blob.id")
@@ -536,7 +566,67 @@ export const getLocalisedSitemap = async (
     return injectTagMappings(sitemapTree, resource)
   }
 
+  // NOTE: Need to override ordering for this resource
+  if (resource.type === ResourceType.Page && !!resource.parentId) {
+    return updateOrderingForResource(sitemapTree, resource.parentId)
+  }
+
   return sitemapTree
+}
+
+const updateOrderingForResource = async (
+  sitemap: IsomerSitemap,
+  parentId: string,
+) => {
+  // NOTE: First, try to find the published index blob of the parent
+  let indexBlob = undefined
+
+  // NOTE: early return if no index blob
+  // as that means that there is no ordering defined
+  try {
+    indexBlob = await getPublishedIndexBlobByParentId({
+      db,
+      resourceId: parentId,
+    })
+  } catch {
+    return sitemap
+  }
+
+  // NOTE: Next, get the content and see if we have defined a `childrenPagesOrdering`
+  const childrenPages = indexBlob.content.content.find(({ type }) => {
+    return type === "childrenpages"
+  })
+  // No need to do anything
+  // NOTE: Need to narrow type for inference hence the duplicate check on `type`
+  if (!childrenPages || childrenPages.type !== "childrenpages") {
+    return sitemap
+  }
+
+  const comparator = createChildrenPagesComparator(
+    childrenPages.childrenPagesOrdering ?? [],
+  )
+
+  return _updateOrderingForResource(sitemap, parentId, comparator)
+}
+
+const _updateOrderingForResource = (
+  sitemap: IsomerSitemap,
+  parentId: string,
+  comparator: (a: IsomerSitemap, b: IsomerSitemap) => number,
+): IsomerSitemap => {
+  if (sitemap.id === parentId) {
+    return {
+      ...sitemap,
+      children: sitemap.children?.toSorted(comparator),
+    }
+  }
+
+  return {
+    ...sitemap,
+    children: sitemap.children?.map((child) =>
+      _updateOrderingForResource(child, parentId, comparator),
+    ),
+  }
 }
 
 export const getResourcePermalinkTree = async (

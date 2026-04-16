@@ -69,8 +69,19 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     useUploadAssetMutation({ siteId, resourceId: String(pageId) })
 
   const handleDeleteBlock = useCallback(() => {
+    const currentBlock = savedPageState.content[currActiveIdx]
     const updatedBlocks = Array.from(savedPageState.content)
-    updatedBlocks.splice(currActiveIdx, 1)
+
+    // For childrenpages blocks, hide instead of delete
+    if (currentBlock?.type === "childrenpages") {
+      updatedBlocks[currActiveIdx] = {
+        ...currentBlock,
+        isHidden: true,
+      }
+    } else {
+      updatedBlocks.splice(currActiveIdx, 1)
+    }
+
     const newPageState = {
       ...previewPageState,
       content: updatedBlocks,
@@ -290,15 +301,13 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             px="2rem"
           >
             <HStack spacing="0.75rem">
-              {component.type !== "childrenpages" && (
-                <IconButton
-                  icon={<BiTrash fontSize="1.25rem" />}
-                  variant="outline"
-                  colorScheme="critical"
-                  aria-label="Delete block"
-                  onClick={onDeleteBlockModalOpen}
-                />
-              )}
+              <IconButton
+                icon={<BiTrash fontSize="1.25rem" />}
+                variant="outline"
+                colorScheme="critical"
+                aria-label="Delete block"
+                onClick={onDeleteBlockModalOpen}
+              />
               <Box w="100%">
                 <SaveButton onClick={handleSave} isLoading={isLoading} />
               </Box>

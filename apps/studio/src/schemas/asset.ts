@@ -1,12 +1,10 @@
+import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { z } from "zod"
-import {
-  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-  IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 
 // Combine allowed extensions from existing constants
 const ALLOWED_EXTENSIONS = [
-  ...Object.keys(IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
+  ...Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING),
   ...Object.keys(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
 ]
 
