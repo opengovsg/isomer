@@ -30,7 +30,7 @@ export const BaseBlock = ({
   onClick,
   invalidProps,
   isHidden,
-}: BaseBlockProps): JSX.Element | false => {
+}: BaseBlockProps): JSX.Element | null => {
   const actualDraggableProps = draggableProps ?? {}
 
   const Description = () => {
@@ -65,106 +65,92 @@ export const BaseBlock = ({
     }
   }
 
+  if (isHidden) {
+    return null
+  }
+
   return (
-    !isHidden && (
-      <HStack
-        as="button"
-        layerStyle="focusRing"
-        w="100%"
-        borderRadius="6px"
-        border="1px solid"
-        borderColor="base.divider.medium"
-        transitionProperty="common"
-        transitionDuration="normal"
-        aria-invalid={!!invalidProps}
-        _hover={{
-          bg: "interaction.muted.main.hover",
-          borderColor: "interaction.main-subtle.hover",
-          _invalid: {
-            shadow: "0px 1px 6px 0px #C0343426",
-          },
-        }}
-        _active={{
-          bg: "interaction.main-subtle.default",
-          borderColor: "interaction.main-subtle.hover",
-          shadow: "0px 1px 6px 0px #1361F026",
-        }}
-        _invalid={{
-          bg: "utility.feedback.critical-subtle",
-          borderColor: "utility.feedback.critical",
-        }}
-        bg={isHidden ? "gray.100" : "white"}
-        py={variant === "vertical" ? "1.25rem" : "0.75rem"}
-        px={variant === "vertical" ? "1.25rem" : "0.75rem"}
-        flexDirection="row"
-        align={variant === "vertical" ? "flex-start" : "center"}
-        textAlign="start"
-        onClick={onClick}
-        opacity={isHidden ? 0.7 : 1}
-        {...actualDraggableProps}
-        {...containerProps}
-      >
-        {dragHandle}
-        {variant === "vertical" ? (
-          <Flex direction="column" align="flex-start" gap="0.75rem">
+    <HStack
+      as="button"
+      layerStyle="focusRing"
+      w="100%"
+      borderRadius="6px"
+      border="1px solid"
+      borderColor="base.divider.medium"
+      transitionProperty="common"
+      transitionDuration="normal"
+      aria-invalid={!!invalidProps}
+      _hover={{
+        bg: "interaction.muted.main.hover",
+        borderColor: "interaction.main-subtle.hover",
+        _invalid: {
+          shadow: "0px 1px 6px 0px #C0343426",
+        },
+      }}
+      _active={{
+        bg: "interaction.main-subtle.default",
+        borderColor: "interaction.main-subtle.hover",
+        shadow: "0px 1px 6px 0px #1361F026",
+      }}
+      _invalid={{
+        bg: "utility.feedback.critical-subtle",
+        borderColor: "utility.feedback.critical",
+      }}
+      bg="white"
+      py={variant === "vertical" ? "1.25rem" : "0.75rem"}
+      px={variant === "vertical" ? "1.25rem" : "0.75rem"}
+      flexDirection="row"
+      align={variant === "vertical" ? "flex-start" : "center"}
+      textAlign="start"
+      onClick={onClick}
+      {...actualDraggableProps}
+      {...containerProps}
+    >
+      {dragHandle}
+      {variant === "vertical" ? (
+        <Flex direction="column" align="flex-start" gap="0.75rem">
+          <Flex
+            p="0.25rem"
+            bg="interaction.main-subtle.default"
+            borderRadius="0.25rem"
+            align="center"
+            justify="center"
+          >
+            <Icon
+              as={icon}
+              boxSize="1.25rem"
+              flexShrink={0}
+              color="base.content.default"
+            />
+          </Flex>
+          <Stack align="start" gap="0.25rem" overflow="auto" w="100%" minW={0}>
+            <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
+              {label}
+            </Text>
+            <Description />
+          </Stack>
+        </Flex>
+      ) : (
+        <>
+          {icon && (
             <Flex
               p="0.25rem"
               bg="interaction.main-subtle.default"
-              borderRadius="0.25rem"
-              align="center"
-              justify="center"
+              borderRadius="4px"
+              mr="0.25rem"
             >
-              <Icon
-                as={icon}
-                boxSize="1.25rem"
-                flexShrink={0}
-                color="base.content.default"
-              />
+              <Icon as={icon} fontSize="0.75rem" color="base.content.default" />
             </Flex>
-            <Stack
-              align="start"
-              gap="0.25rem"
-              overflow="auto"
-              w="100%"
-              minW={0}
-            >
-              <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
-                {label}
-              </Text>
-              <Description />
-            </Stack>
-          </Flex>
-        ) : (
-          <>
-            {icon && (
-              <Flex
-                p="0.25rem"
-                bg="interaction.main-subtle.default"
-                borderRadius="4px"
-                mr="0.25rem"
-              >
-                <Icon
-                  as={icon}
-                  fontSize="0.75rem"
-                  color="base.content.default"
-                />
-              </Flex>
-            )}
-            <Stack align="start" gap="0.25rem" overflow="auto">
-              <Text
-                textStyle="subhead-2"
-                noOfLines={1}
-                wordBreak="break-word"
-                color={isHidden ? "base.content.medium" : undefined}
-              >
-                {label}
-              </Text>
-              <Description />
-            </Stack>
-          </>
-        )}
-      </HStack>
-    )
+          )}
+          <Stack align="start" gap="0.25rem" overflow="auto">
+            <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
+              {label}
+            </Text>
+            <Description />
+          </Stack>
+        </>
+      )}
+    </HStack>
   )
 }
 
