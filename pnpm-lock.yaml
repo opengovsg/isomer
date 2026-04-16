@@ -1500,6 +1500,8 @@ importers:
         specifier: 'catalog:'
         version: 0.17.4
 
+  tooling/s3: {}
+
   tooling/scripts:
     dependencies:
       '@inquirer/prompts':
