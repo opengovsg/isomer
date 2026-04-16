@@ -155,7 +155,7 @@ export const BaseBlock = ({
                 textStyle="subhead-2"
                 noOfLines={1}
                 wordBreak="break-word"
-                color={isHidden ? "base.content.medium" : undefined}
+                color={undefined}
               >
                 {label}
               </Text>
