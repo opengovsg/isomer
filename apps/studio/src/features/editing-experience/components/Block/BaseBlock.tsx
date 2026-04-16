@@ -146,9 +146,7 @@ export const BaseBlock = ({
                 <Icon
                   as={icon}
                   fontSize="0.75rem"
-                  color={
-                    isHidden ? "base.content.medium" : "base.content.default"
-                  }
+                  color="base.content.default"
                 />
               </Flex>
             )}
