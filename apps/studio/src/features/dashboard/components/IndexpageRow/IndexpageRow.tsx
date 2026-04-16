@@ -10,6 +10,7 @@ import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
 import Link from "next/link"
 import { useEffect } from "react"
 import { BiChevronRight, BiSolidCircle } from "react-icons/bi"
+import { useNewCollectionEditingExperience } from "~/hooks/useNewCollectionEditingExperience"
 import { trpc } from "~/utils/trpc"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
@@ -47,6 +48,9 @@ export const IndexpageRow = ({
     siteId,
     resourceId,
   ])
+
+  const isNewCollectionEditingExperienceEnabled =
+    useNewCollectionEditingExperience()
 
   return (
     <Skeleton w="full" isLoaded={!isPending && !!data}>
@@ -86,7 +90,10 @@ export const IndexpageRow = ({
           {/* as a relative time. */}
           {/* we also need to give the user who did the update */}
           <Text textStyle="caption-2" textColor="base.content.medium">
-            {getIndexPageSubtitle(type)}
+            {getIndexPageSubtitle({
+              type,
+              isNewCollectionEditingExperienceEnabled,
+            })}
           </Text>
         </VStack>
         <Text
