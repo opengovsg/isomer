@@ -438,16 +438,18 @@ export default function RootStateDrawer() {
 
           {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
           isNewEditingExperienceEnabled ? (
-            <VStack gap="1rem" w="100%" align="start">
-              <VStack gap="0.25rem" align="start">
-                <Text textStyle="subhead-1">Manage Collection</Text>
-                <Text textStyle="caption-2" color="base.content.medium">
-                  Modify the Collection’s look and feel or manage filters.
-                </Text>
-              </VStack>
+            <Disable when={disableBlocks}>
+              <VStack gap="1rem" w="100%" align="start">
+                <VStack gap="0.25rem" align="start">
+                  <Text textStyle="subhead-1">Manage Collection</Text>
+                  <Text textStyle="caption-2" color="base.content.medium">
+                    Modify the Collection’s look and feel or manage filters.
+                  </Text>
+                </VStack>
 
-              <FixedBlock />
-            </VStack>
+                <FixedBlock />
+              </VStack>
+            </Disable>
           ) : (
             <Disable when={disableBlocks}>
               <VStack gap="1.5rem" flex={1} w="full">
