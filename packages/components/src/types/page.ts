@@ -41,7 +41,13 @@ const TagCategorySchema = Type.Composite([
 // NOTE: can be optional because the categories might not exist
 const TagCategoriesSchema = Type.Object({
   tagCategories: Type.Optional(
-    Type.Array(TagCategorySchema, { format: "tag-categories" }),
+    Type.Array(TagCategorySchema, {
+      title: "Filters",
+      description:
+        "Add filters so visitors can find what they need. Editors can assign these options on items they create.",
+      addItemLabel: "Add a filter",
+      format: "tag-categories",
+    }),
   ),
 })
 const TaggedSchema = Type.Optional(

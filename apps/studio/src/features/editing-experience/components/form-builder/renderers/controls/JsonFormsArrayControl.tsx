@@ -7,7 +7,7 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
-import { Box, Flex, Stack, Text, VStack } from "@chakra-ui/react"
+import { Box, Flex, HStack, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,
@@ -157,8 +157,13 @@ function JsonFormsArrayControl({
   cells,
   uischemas,
   uischema,
+  description,
 }: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
+  const arraySchemaWithExtensions = arraySchema as JsonSchema & {
+    addItemLabel?: string
+  }
+  const addItemLabel = arraySchemaWithExtensions.addItemLabel ?? "Add item"
   const [selectedIndex, setSelectedIndex] = useState<number>()
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
@@ -240,20 +245,30 @@ function JsonFormsArrayControl({
 
   return (
     <VStack spacing="0.375rem" align="start">
-      <Stack flexDir="row" justify="space-between" align="center" w="full">
-        <Text textStyle="subhead-1">{label}</Text>
-        <Button
-          onClick={addItem(path, createDefaultValue(schema, rootSchema))}
-          variant="clear"
-          size="xs"
-          leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-          isDisabled={
-            arraySchema.maxItems !== undefined && data >= arraySchema.maxItems
-          }
-        >
-          Add item
-        </Button>
-      </Stack>
+      <VStack align="start" spacing="0.25rem" w="full">
+        <HStack w="full" justifyContent="space-between" align="flex-start">
+          <Text textStyle="subhead-1" flex={1}>
+            {label}
+          </Text>
+          <Button
+            onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+            variant="clear"
+            size="xs"
+            leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+            isDisabled={
+              arraySchema.maxItems !== undefined && data >= arraySchema.maxItems
+            }
+            flexShrink={0}
+          >
+            {addItemLabel}
+          </Button>
+        </HStack>
+        {description ? (
+          <Text textStyle="body-2" textColor="base.content.default">
+            {description}
+          </Text>
+        ) : null}
+      </VStack>
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="blocks">
           {({ droppableProps, innerRef, placeholder }) => (
