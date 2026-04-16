@@ -5,10 +5,10 @@
     "launch": "dotenv -- pnpm exec tsx ./index.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-acm": "catalog:awsSdk3",
-    "@aws-sdk/client-amplify": "catalog:awsSdk3",
-    "@aws-sdk/client-cloudfront": "catalog:awsSdk3",
-    "@aws-sdk/credential-providers": "catalog:awsSdk3",
+    "@aws-sdk/client-acm": "catalog:aws-sdk",
+    "@aws-sdk/client-amplify": "catalog:aws-sdk",
+    "@aws-sdk/client-cloudfront": "catalog:aws-sdk",
+    "@aws-sdk/credential-providers": "catalog:aws-sdk",
     "@inquirer/prompts": "catalog:",
     "@isomer/seed-from-repo": "workspace:*",
     "@octokit/rest": "catalog:",

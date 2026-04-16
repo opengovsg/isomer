@@ -35,14 +35,14 @@
   "dependencies": {
     "pg-boss": "catalog:",
     "pino": "catalog:",
-    "vitest": "catalog:vitest2",
+    "vitest": "catalog:vitest",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "@vitest/coverage-istanbul": "catalog:vitest2",
+    "@vitest/coverage-istanbul": "catalog:vitest",
     "npm-run-all": "catalog:",
     "rimraf": "catalog:",
     "tsc-alias": "catalog:",
