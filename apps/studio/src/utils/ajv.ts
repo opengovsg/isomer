@@ -1,5 +1,6 @@
 import Ajv from "ajv"
 import addErrors from "ajv-errors"
+import ajvKeywords from "ajv-keywords"
 
 export const ajv = new Ajv({
   useDefaults: true,
@@ -9,3 +10,4 @@ export const ajv = new Ajv({
   discriminator: true,
 })
 addErrors(ajv)
+ajvKeywords(ajv, ["uniqueItemProperties"])

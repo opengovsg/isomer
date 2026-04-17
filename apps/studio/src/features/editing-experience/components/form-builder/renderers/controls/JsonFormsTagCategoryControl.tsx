@@ -29,7 +29,13 @@ import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
+import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
+
+/** Matches `hasErrorAt` / AJV JSON Pointer for this control's `path`. */
+function jsonFormsPathToAjvInstancePath(path: string): string {
+  return `/${path.replace(/\./g, "/")}`
+}
 
 function DeleteFilterModal({
   isOpen,
@@ -98,7 +104,12 @@ function DeleteFilterModal({
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { path, removeItems, data, arraySchema } = props
   const { core } = useJsonForms()
+  const { errors } = useBuilderErrors()
   const page = core?.data as CollectionPagePageProps | undefined
+
+  const hasDuplicateFilterNameError = errors[
+    jsonFormsPathToAjvInstancePath(path)
+  ]?.some((e) => e.keyword === "uniqueItemProperties")
 
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
@@ -165,6 +176,16 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
             </Portal>
           </Menu>
         )}
+        belowDescription={
+          hasDuplicateFilterNameError ? (
+            <Infobox width="100%" size="sm" variant="error" mt="0.5rem">
+              <Text textStyle="body-2">
+                Each filter must have a unique name. Names are not
+                case-sensitive, so rename the duplicate before saving changes.
+              </Text>
+            </Infobox>
+          ) : undefined
+        }
       />
       {deleteTarget && (
         <DeleteFilterModal

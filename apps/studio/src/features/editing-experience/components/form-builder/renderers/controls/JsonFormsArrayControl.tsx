@@ -54,6 +54,8 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   renderListItemTrailing?: (index: number) => ReactNode
   /** Caption under the list item title (e.g. option counts). */
   renderListItemSubtitle?: (index: number) => ReactNode
+  /** Rendered after the schema description and before the draggable list. */
+  belowDescription?: ReactNode
 }
 
 interface ComplexEditorNestedDrawerProps {
@@ -178,6 +180,7 @@ export function JsonFormsArrayControlView({
   listItemContentProps,
   renderListItemTrailing,
   renderListItemSubtitle,
+  belowDescription,
 }: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
   const arraySchemaWithExtensions = arraySchema as JsonSchema & {
@@ -288,8 +291,12 @@ export function JsonFormsArrayControlView({
             {description}
           </Text>
         )}
+        {belowDescription}
       </VStack>
-      <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
+      <Box
+        w="full"
+        mt={description || belowDescription ? "0.75rem" : "0.25rem"}
+      >
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="blocks">
             {({ droppableProps, innerRef, placeholder }) => (
