@@ -7,6 +7,7 @@ import type {
   StatePropsOfMasterItem,
 } from "@jsonforms/core"
 import type { IconType } from "react-icons"
+import type { BoxProps } from "@chakra-ui/react"
 import {
   Box,
   Flex,
@@ -26,6 +27,8 @@ interface DraggableDrawerButtonProps extends OwnPropsOfMasterListItem {
   setSelectedIndex: (selectedIndex?: number) => void
   isError: boolean
   listItemIcon?: IconType
+  /** Merged into padding on the drag handle and label button (e.g. tighter `py`). */
+  listItemContentProps?: BoxProps
 }
 
 const DraggableDrawerButtonText = withJsonFormsMasterListItemProps(
@@ -45,10 +48,16 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
       index,
       isError,
       listItemIcon,
+      listItemContentProps,
       ...rest
     },
     ref,
   ) => {
+    const mergedRowProps: BoxProps = {
+      py: isError ? "0.75rem" : "1.25rem",
+      ...listItemContentProps,
+    }
+
     return (
       <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
         <HStack
@@ -89,66 +98,79 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
               mr="-6px"
             />
           )}
-          <Flex
-            cursor="grab"
-            pl="0.5rem"
-            pr="0.25rem"
-            py="1.25rem"
-            layerStyle="focusRing"
-            {...dragHandleProps}
-          >
-            <Icon as={BiGridVertical} fontSize="1.5rem" color="slate.300" />
-          </Flex>
-          <Box
-            layerStyle="focusRing"
-            as="button"
-            onClick={() => setSelectedIndex(index)}
-            pl="0.25rem"
-            pr="1rem"
-            py={isError ? "0.75rem" : "1rem"}
+          <HStack
+            flex={1}
+            align="stretch"
+            spacing="0.5rem"
+            minW={0}
             w="100%"
           >
-            <HStack align="stretch" spacing="0.75rem" w="full">
-              {listItemIcon && (
-                <Flex
-                  p="0.25rem"
-                  bg="interaction.main-subtle.default"
-                  borderRadius="0.25rem"
-                  alignItems="center"
-                  justifyContent="center"
-                  flexShrink={0}
-                  alignSelf="center"
-                >
-                  <Icon
-                    as={listItemIcon}
-                    fontSize="0.75rem"
-                    color="base.content.default"
-                    aria-hidden
-                  />
-                </Flex>
-              )}
-              <Stack align="start" gap="0.25rem" flex={1} minW={0}>
-                <DraggableDrawerButtonText {...rest} index={index} />
-                {isError && (
-                  <Text
-                    as="span"
-                    textStyle="caption-2"
-                    color="utility.feedback.critical"
-                    display="flex"
+            <Flex
+              cursor="grab"
+              flexShrink={0}
+              align="center"
+              layerStyle="focusRing"
+              {...mergedRowProps}
+              pl="1rem"
+              {...dragHandleProps}
+            >
+              <Icon as={BiGridVertical} fontSize="1.5rem" color="slate.300" />
+            </Flex>
+            <Box
+              layerStyle="focusRing"
+              as="button"
+              type="button"
+              flex={1}
+              minW={0}
+              display="flex"
+              alignItems="center"
+              cursor="pointer"
+              {...mergedRowProps}
+              pr="1rem"
+              onClick={() => setSelectedIndex(index)}
+            >
+              <HStack align="stretch" spacing="0.75rem" w="full">
+                {listItemIcon && (
+                  <Flex
+                    p="0.25rem"
+                    bg="interaction.main-subtle.default"
+                    borderRadius="0.25rem"
                     alignItems="center"
+                    justifyContent="center"
+                    flexShrink={0}
+                    alignSelf="center"
                   >
                     <Icon
-                      aria-hidden
-                      as={BiInfoCircle}
+                      as={listItemIcon}
                       fontSize="0.75rem"
-                      mr="0.25rem"
+                      color="base.content.default"
+                      aria-hidden
                     />
-                    Fix issues before saving
-                  </Text>
+                  </Flex>
                 )}
-              </Stack>
-            </HStack>
-          </Box>
+                <Stack align="start" gap="0.25rem" flex={1} minW={0}>
+                  <DraggableDrawerButtonText {...rest} index={index} />
+                  {isError && (
+                    <Text
+                      as="span"
+                      textStyle="caption-2"
+                      color="utility.feedback.critical"
+                      display="flex"
+                      alignItems="center"
+                    >
+                      <Icon
+                        aria-hidden
+                        as={BiInfoCircle}
+                        fontSize="0.75rem"
+                        mr="0.25rem"
+                      />
+                      Fix issues before saving
+                    </Text>
+                  )}
+                </Stack>
+              </HStack>
+            </Box>
+          </HStack>
         </HStack>
       </Box>
     )

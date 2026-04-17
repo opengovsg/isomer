@@ -12,6 +12,7 @@ const JsonFormsTagCategoryOptionsArrayLayout = withJsonFormsArrayLayoutProps(
   (props: ArrayLayoutProps) => (
     <JsonFormsArrayControlView
       {...props}
+      listItemContentProps={{ py: "0.5rem" }}
       emptyState={
         <VStack spacing="0.25rem" align="center">
           <Text

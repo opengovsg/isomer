@@ -9,6 +9,7 @@ import type {
 } from "@jsonforms/core"
 import type { ReactNode } from "react"
 import type { IconType } from "react-icons"
+import type { BoxProps } from "@chakra-ui/react"
 import { Box, Flex, HStack, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
@@ -47,6 +48,8 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   listItemIcon?: IconType
   /** When the array is empty, replaces the default placeholder inside the empty-state container. */
   emptyState?: ReactNode
+  /** Merged into row padding on the drag handle and label button (after defaults). */
+  listItemContentProps?: BoxProps
 }
 
 interface ComplexEditorNestedDrawerProps {
@@ -168,6 +171,7 @@ export function JsonFormsArrayControlView({
   description,
   listItemIcon,
   emptyState,
+  listItemContentProps,
 }: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
   const arraySchemaWithExtensions = arraySchema as JsonSchema & {
@@ -343,6 +347,7 @@ export function JsonFormsArrayControlView({
                           translations={{}}
                           setSelectedIndex={setSelectedIndex}
                           listItemIcon={listItemIcon}
+                          listItemContentProps={listItemContentProps}
                         />
                       )}
                     </Draggable>
