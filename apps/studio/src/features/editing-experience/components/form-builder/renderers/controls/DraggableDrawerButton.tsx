@@ -53,8 +53,12 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
     },
     ref,
   ) => {
-    const mergedRowProps: BoxProps = {
+    const mergedDragHandleProps: BoxProps = {
       py: isError ? "0.75rem" : "1.25rem",
+      ...listItemContentProps,
+    }
+    const mergedLabelButtonProps: BoxProps = {
+      py: isError ? "0.75rem" : "1rem",
       ...listItemContentProps,
     }
 
@@ -104,7 +108,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
               flexShrink={0}
               align="center"
               layerStyle="focusRing"
-              {...mergedRowProps}
+              {...mergedDragHandleProps}
               pl="1rem"
               {...dragHandleProps}
             >
@@ -119,7 +123,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
               display="flex"
               alignItems="center"
               cursor="pointer"
-              {...mergedRowProps}
+              {...mergedLabelButtonProps}
               pr="1rem"
               onClick={() => setSelectedIndex(index)}
             >
