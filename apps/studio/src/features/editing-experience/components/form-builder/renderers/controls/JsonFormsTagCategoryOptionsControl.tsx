@@ -151,6 +151,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
               display="flex"
               alignItems="center"
               justifyContent="center"
+              aria-label={`Option ${index + 1} actions`}
               onClick={(e) => e.stopPropagation()}
             />
             <Portal>
