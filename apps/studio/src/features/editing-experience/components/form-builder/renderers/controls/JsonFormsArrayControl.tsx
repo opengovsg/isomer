@@ -1,3 +1,4 @@
+import type { BoxProps } from "@chakra-ui/react"
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   ArrayLayoutProps,
@@ -9,7 +10,6 @@ import type {
 } from "@jsonforms/core"
 import type { ReactNode } from "react"
 import type { IconType } from "react-icons"
-import type { BoxProps } from "@chakra-ui/react"
 import { Box, Flex, HStack, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
@@ -277,13 +277,13 @@ export function JsonFormsArrayControlView({
             {addItemLabel}
           </Button>
         </HStack>
-        {description ? (
+        {description && (
           <Text textStyle="body-2" textColor="base.content.default">
             {description}
           </Text>
-        ) : null}
+        )}
       </VStack>
-      <Box w="full" mt="0.75rem">
+      <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="blocks">
             {({ droppableProps, innerRef, placeholder }) => (
