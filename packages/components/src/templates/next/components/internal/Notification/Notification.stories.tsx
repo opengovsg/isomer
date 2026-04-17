@@ -75,13 +75,15 @@ export const ShortTitle: Story = {
 
 export const LongTitle: Story = {
   args: {
-    title: "This is a staging site for internal testing purposes. You should not use this site for any official purposes. This is a long title that spans multiple lines.",
+    title:
+      "This is a staging site for internal testing purposes. You should not use this site for any official purposes. This is a long title that spans multiple lines.",
   },
 }
 
 export const LongContent: Story = {
   args: {
-    title: "This is a staging site for internal testing purposes. You should not use this site for any official purposes. This is a long title that spans multiple lines.",
+    title:
+      "This is a staging site for internal testing purposes. You should not use this site for any official purposes. This is a long title that spans multiple lines.",
     content: {
       type: "prose",
       content: [
