@@ -1,59 +1,192 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import { Text } from "@chakra-ui/react"
+import {
+  HStack,
+  MenuButton,
+  MenuList,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Portal,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { useCallback } from "react"
-import { BiPurchaseTag } from "react-icons/bi"
+import {
+  Button,
+  Checkbox,
+  IconButton,
+  Infobox,
+  Menu,
+  ModalCloseButton,
+} from "@opengovsg/design-system-react"
+import { useState } from "react"
+import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
+import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 
-const JsonFormsTagCategoriesArrayLayout = withJsonFormsArrayLayoutProps(
-  (props: ArrayLayoutProps) => {
-    const { core } = useJsonForms()
-    const renderListItemSubtitle = useCallback(
-      (index: number) => {
-        // Collection metadata form uses the page object as JsonForms `data` (see CollectionEditorStateDrawer).
-        const page = core?.data as CollectionPagePageProps | undefined
-        const count = page?.tagCategories?.[index]?.options?.length ?? 0
-        const optionsLabel = count <= 1 ? "option" : "options"
-        return (
-          <Text textStyle="caption-2" color="base.content.medium">
-            {count} {optionsLabel}
-          </Text>
-        )
-      },
-      [core?.data],
-    )
+function DeleteFilterModal({
+  isOpen,
+  label,
+  onClose,
+  onConfirm,
+}: {
+  isOpen: boolean
+  label: string
+  onClose: () => void
+  onConfirm: () => void
+}) {
+  const [isChecked, setIsChecked] = useState(false)
 
-    return (
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader mr="3.5rem">
+          {label.length > 0 ? `Delete filter "${label}"?` : "Delete filter?"}
+        </ModalHeader>
+        <ModalCloseButton size="lg" />
+
+        <ModalBody>
+          <VStack align="stretch" spacing="1.5rem">
+            <Infobox width="100%" size="md" variant="warning">
+              <Text textStyle="body-1" color="base.content.strong">
+                This removes the filter and its options from the collection.
+                Collection items that use these options may need to be updated
+                manually.
+              </Text>
+            </Infobox>
+            <HStack align="start">
+              <Checkbox
+                isChecked={isChecked}
+                onChange={(e) => setIsChecked(e.target.checked)}
+              >
+                <Text textStyle="body-2">
+                  Yes, delete this filter permanently
+                </Text>
+              </Checkbox>
+            </HStack>
+          </VStack>
+        </ModalBody>
+
+        <ModalFooter>
+          <HStack spacing="1rem">
+            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+              No, keep filter
+            </Button>
+            <Button
+              isDisabled={!isChecked}
+              variant="solid"
+              colorScheme="critical"
+              onClick={onConfirm}
+            >
+              Delete filter
+            </Button>
+          </HStack>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  )
+}
+
+function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
+  const { path, removeItems, data, arraySchema } = props
+  const { core } = useJsonForms()
+  const page = core?.data as CollectionPagePageProps | undefined
+
+  const [deleteTarget, setDeleteTarget] = useState<null | {
+    index: number
+    label: string
+  }>(null)
+
+  const isRemoveItemDisabled =
+    arraySchema.minItems !== undefined && data <= arraySchema.minItems
+
+  return (
+    <>
       <JsonFormsArrayControlView
         {...props}
         listItemIcon={BiPurchaseTag}
-        renderListItemSubtitle={renderListItemSubtitle}
+        listItemContentProps={{ py: "0.5rem" }}
+        renderListItemSubtitle={(index) => {
+          const count = page?.tagCategories?.[index]?.options?.length ?? 0
+          const subtitle =
+            count === 0
+              ? "No option"
+              : `${count} ${count > 1 ? "options" : "option"}`
+          return (
+            <Text textStyle="caption-2" color="base.content.medium">
+              {subtitle}
+            </Text>
+          )
+        }}
+        renderListItemTrailing={(index) => (
+          <Menu isLazy>
+            <MenuButton
+              as={IconButton}
+              colorScheme="neutral"
+              icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
+              variant="clear"
+              h="2.125rem"
+              w="2.125rem"
+              minH="2.125rem"
+              minW="2.125rem"
+              p="0.25rem"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              isDisabled={isRemoveItemDisabled}
+              aria-label="Filter actions"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <Portal>
+              <MenuList>
+                <MenuItem
+                  colorScheme="critical"
+                  icon={<BiTrash fontSize="1rem" />}
+                  isDisabled={isRemoveItemDisabled}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setDeleteTarget({
+                      index,
+                      label: page?.tagCategories?.[index]?.label?.trim() ?? "",
+                    })
+                  }}
+                >
+                  Delete filter
+                </MenuItem>
+              </MenuList>
+            </Portal>
+          </Menu>
+        )}
       />
-    )
-  },
-)
+      {deleteTarget && (
+        <DeleteFilterModal
+          isOpen
+          label={deleteTarget.label}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={() => {
+            if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
+            removeItems(path, [deleteTarget.index])()
+            setDeleteTarget(null)
+          }}
+        />
+      )}
+    </>
+  )
+}
 
 export const jsonFormsTagCategoriesControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TagCategoryControl,
   schemaMatches((schema) => schema.format === "tag-categories"),
 )
 
-const JsonFormsTagCategoriesControl = (props: ArrayLayoutProps) => {
-  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
-
-  if (!isUserIsomerAdmin) {
-    return null
-  }
-
-  return <JsonFormsTagCategoriesArrayLayout {...props} />
-}
-
-export default JsonFormsTagCategoriesControl
+export default withJsonFormsArrayLayoutProps(
+  JsonFormsTagCategoriesArrayLayoutInner,
+)
