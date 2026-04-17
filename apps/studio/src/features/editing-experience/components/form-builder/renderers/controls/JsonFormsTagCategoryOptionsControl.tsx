@@ -31,7 +31,9 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
+import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
+import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 
 const DeleteOptionModal = ({
   isOpen,
@@ -102,6 +104,12 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
 ) => {
   const { path } = props
   const { core } = useJsonForms()
+  const { errors } = useBuilderErrors()
+  const hasDuplicateOptionNameError = hasUniqueItemPropertiesError({
+    errors,
+    jsonFormsPath: path,
+  })
+
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
     label: string
@@ -170,6 +178,16 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
             </Portal>
           </Menu>
         )}
+        belowDescription={
+          hasDuplicateOptionNameError ? (
+            <Infobox width="100%" size="sm" variant="error" mt="0.5rem">
+              <Text textStyle="body-2">
+                Each option must have a unique name. Names are not
+                case-sensitive, so rename the duplicate before saving changes.
+              </Text>
+            </Infobox>
+          ) : undefined
+        }
         emptyState={
           <VStack spacing="0.25rem" align="center">
             <Text

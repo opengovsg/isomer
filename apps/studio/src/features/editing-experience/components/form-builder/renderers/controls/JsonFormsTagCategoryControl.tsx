@@ -31,11 +31,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
-
-/** Matches `hasErrorAt` / AJV JSON Pointer for this control's `path`. */
-function jsonFormsPathToAjvInstancePath(path: string): string {
-  return `/${path.replace(/\./g, "/")}`
-}
+import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 
 function DeleteFilterModal({
   isOpen,
@@ -107,9 +103,10 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { errors } = useBuilderErrors()
   const page = core?.data as CollectionPagePageProps | undefined
 
-  const hasDuplicateFilterNameError = errors[
-    jsonFormsPathToAjvInstancePath(path)
-  ]?.some((e) => e.keyword === "uniqueItemProperties")
+  const hasDuplicateFilterNameError = hasUniqueItemPropertiesError({
+    errors,
+    jsonFormsPath: path,
+  })
 
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number

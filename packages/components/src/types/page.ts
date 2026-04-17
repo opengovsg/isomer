@@ -43,6 +43,11 @@ const TagCategorySchema = Type.Composite([
           "Collection filter will display options in this order. Only options that are in use will appear on the Preview.",
         addItemLabel: "Add option",
         format: "tag-category-options",
+        /**
+         * ajv-keywords: duplicate option names in a filter fail validation in JsonForms.
+         * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
+         */
+        uniqueItemProperties: ["label"],
       },
     ),
   }),
