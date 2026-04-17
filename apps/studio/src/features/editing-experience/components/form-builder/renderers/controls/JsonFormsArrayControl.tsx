@@ -7,6 +7,7 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
+import type { ReactNode } from "react"
 import type { IconType } from "react-icons"
 import { Box, Flex, HStack, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
@@ -44,6 +45,8 @@ export const jsonFormsArrayControlTester: RankedTester = rankWith(
 
 export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   listItemIcon?: IconType
+  /** When the array is empty, replaces the default placeholder inside the empty-state container. */
+  emptyState?: ReactNode
 }
 
 interface ComplexEditorNestedDrawerProps {
@@ -164,6 +167,7 @@ export function JsonFormsArrayControlView({
   uischema,
   description,
   listItemIcon,
+  emptyState,
 }: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
   const arraySchemaWithExtensions = arraySchema as JsonSchema & {
@@ -297,13 +301,15 @@ export function JsonFormsArrayControlView({
                     justifyContent="center"
                     w="100%"
                   >
-                    <Text
-                      textStyle="subhead-1"
-                      textColor="base.content.default"
-                      textAlign="center"
-                    >
-                      Items you add will appear here
-                    </Text>
+                    {emptyState ?? (
+                      <Text
+                        textStyle="subhead-1"
+                        textColor="base.content.default"
+                        textAlign="center"
+                      >
+                        Items you add will appear here
+                      </Text>
+                    )}
                   </Flex>
                 )}
 
