@@ -300,7 +300,7 @@ export function JsonFormsArrayControlView({
                     alignItems="center"
                     flexDir="column"
                     px="1.5rem"
-                    p="3.75rem"
+                    py="3.75rem"
                     mt="0.25rem"
                     justifyContent="center"
                     w="100%"
