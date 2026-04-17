@@ -1,3 +1,4 @@
+import type { BoxProps } from "@chakra-ui/react"
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   ArrayLayoutProps,
