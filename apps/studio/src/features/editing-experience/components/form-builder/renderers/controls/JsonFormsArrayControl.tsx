@@ -52,6 +52,8 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   listItemContentProps?: BoxProps
   /** Per-row content after the label (e.g. actions menu), flush right in the row. */
   renderListItemTrailing?: (index: number) => ReactNode
+  /** Caption under the list item title (e.g. option counts). */
+  renderListItemSubtitle?: (index: number) => ReactNode
 }
 
 interface ComplexEditorNestedDrawerProps {
@@ -175,6 +177,7 @@ export function JsonFormsArrayControlView({
   emptyState,
   listItemContentProps,
   renderListItemTrailing,
+  renderListItemSubtitle,
 }: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
   const arraySchemaWithExtensions = arraySchema as JsonSchema & {
@@ -352,6 +355,7 @@ export function JsonFormsArrayControlView({
                           listItemIcon={listItemIcon}
                           listItemContentProps={listItemContentProps}
                           listItemTrailing={renderListItemTrailing?.(index)}
+                          listItemSubtitle={renderListItemSubtitle?.(index)}
                         />
                       )}
                     </Draggable>

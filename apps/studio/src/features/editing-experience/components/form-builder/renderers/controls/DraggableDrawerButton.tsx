@@ -32,6 +32,8 @@ interface DraggableDrawerButtonProps extends OwnPropsOfMasterListItem {
   listItemContentProps?: BoxProps
   /** Rendered after the label area, typically flush right (e.g. row actions menu). */
   listItemTrailing?: ReactNode
+  /** Caption under the row title (stacked with 0.25rem gap). */
+  listItemSubtitle?: ReactNode
 }
 
 const DraggableDrawerButtonText = withJsonFormsMasterListItemProps(
@@ -53,6 +55,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
       listItemIcon,
       listItemContentProps,
       listItemTrailing,
+      listItemSubtitle,
       ...rest
     },
     ref,
@@ -152,6 +155,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
                 )}
                 <Stack align="start" gap="0.25rem" flex={1} minW={0}>
                   <DraggableDrawerButtonText {...rest} index={index} />
+                  {listItemSubtitle}
                   {isError && (
                     <Text
                       as="span"
