@@ -7,6 +7,7 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
+import type { IconType } from "react-icons"
 import { Box, Flex, HStack, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
@@ -40,6 +41,10 @@ export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
   or(isObjectArrayControl, isPrimitiveArrayControl),
 )
+
+export type JsonFormsArrayControlProps = ArrayLayoutProps & {
+  listItemIcon?: IconType
+}
 
 interface ComplexEditorNestedDrawerProps {
   renderers?: JsonFormsRendererRegistryEntry[]
@@ -140,7 +145,7 @@ function ComplexEditorNestedDrawer({
   )
 }
 
-function JsonFormsArrayControl({
+export function JsonFormsArrayControlView({
   data,
   path,
   visible,
@@ -158,7 +163,8 @@ function JsonFormsArrayControl({
   uischemas,
   uischema,
   description,
-}: ArrayLayoutProps) {
+  listItemIcon,
+}: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
   const arraySchemaWithExtensions = arraySchema as JsonSchema & {
     addItemLabel?: string
@@ -330,6 +336,7 @@ function JsonFormsArrayControl({
                           childLabelProp={undefined}
                           translations={{}}
                           setSelectedIndex={setSelectedIndex}
+                          listItemIcon={listItemIcon}
                         />
                       )}
                     </Draggable>
@@ -344,6 +351,10 @@ function JsonFormsArrayControl({
       </Box>
     </VStack>
   )
+}
+
+function JsonFormsArrayControl(props: ArrayLayoutProps) {
+  return <JsonFormsArrayControlView {...props} />
 }
 
 export default withJsonFormsArrayLayoutProps(JsonFormsArrayControl)

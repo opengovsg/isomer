@@ -6,6 +6,7 @@ import type {
   OwnPropsOfMasterListItem,
   StatePropsOfMasterItem,
 } from "@jsonforms/core"
+import type { IconType } from "react-icons"
 import {
   Box,
   Flex,
@@ -24,6 +25,7 @@ interface DraggableDrawerButtonProps extends OwnPropsOfMasterListItem {
   dragHandleProps: DraggableProvidedDragHandleProps | null
   setSelectedIndex: (selectedIndex?: number) => void
   isError: boolean
+  listItemIcon?: IconType
 }
 
 const DraggableDrawerButtonText = withJsonFormsMasterListItemProps(
@@ -42,6 +44,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
       setSelectedIndex,
       index,
       isError,
+      listItemIcon,
       ...rest
     },
     ref,
@@ -105,26 +108,46 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
             py={isError ? "0.75rem" : "1rem"}
             w="100%"
           >
-            <Stack align="start" gap="0.25rem">
-              <DraggableDrawerButtonText {...rest} index={index} />
-              {isError && (
-                <Text
-                  as="span"
-                  textStyle="caption-2"
-                  color="utility.feedback.critical"
-                  display="flex"
+            <HStack align="stretch" spacing="0.75rem" w="full">
+              {listItemIcon && (
+                <Flex
+                  p="0.25rem"
+                  bg="interaction.main-subtle.default"
+                  borderRadius="0.25rem"
                   alignItems="center"
+                  justifyContent="center"
+                  flexShrink={0}
+                  alignSelf="center"
                 >
                   <Icon
-                    aria-hidden
-                    as={BiInfoCircle}
+                    as={listItemIcon}
                     fontSize="0.75rem"
-                    mr="0.25rem"
+                    color="base.content.default"
+                    aria-hidden
                   />
-                  Fix issues before saving
-                </Text>
+                </Flex>
               )}
-            </Stack>
+              <Stack align="start" gap="0.25rem" flex={1} minW={0}>
+                <DraggableDrawerButtonText {...rest} index={index} />
+                {isError && (
+                  <Text
+                    as="span"
+                    textStyle="caption-2"
+                    color="utility.feedback.critical"
+                    display="flex"
+                    alignItems="center"
+                  >
+                    <Icon
+                      aria-hidden
+                      as={BiInfoCircle}
+                      fontSize="0.75rem"
+                      mr="0.25rem"
+                    />
+                    Fix issues before saving
+                  </Text>
+                )}
+              </Stack>
+            </HStack>
           </Box>
         </HStack>
       </Box>

@@ -1,10 +1,18 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { rankWith, schemaMatches } from "@jsonforms/core"
+import { withJsonFormsArrayLayoutProps } from "@jsonforms/react"
+import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import JsonFormsArrayControl from "./JsonFormsArrayControl"
+import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
+
+const JsonFormsTagCategoriesArrayLayout = withJsonFormsArrayLayoutProps(
+  (props: ArrayLayoutProps) => (
+    <JsonFormsArrayControlView {...props} listItemIcon={BiPurchaseTag} />
+  ),
+)
 
 export const jsonFormsTagCategoriesControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TagCategoryControl,
@@ -20,7 +28,7 @@ const JsonFormsTagCategoriesControl = (props: ArrayLayoutProps) => {
     return null
   }
 
-  return <JsonFormsArrayControl {...props} />
+  return <JsonFormsTagCategoriesArrayLayout {...props} />
 }
 
 export default JsonFormsTagCategoriesControl
