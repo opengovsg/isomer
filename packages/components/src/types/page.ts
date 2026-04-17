@@ -55,6 +55,19 @@ const TagCategorySchema = Type.Composite([
     ),
   }),
   Type.Object({
+    // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
+    // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
+    // same default to legacy rows that omit this key. New filters set `isRequired: true` in
+    // the tag-categories JsonForms control when adding an item.
+    isRequired: Type.Optional(
+      Type.Boolean({
+        title: "This filter is required",
+        description:
+          "Every item must have at least one option selected from this filter.",
+      }),
+    ),
+  }),
+  Type.Object({
     options: Type.Array(
       Type.Object({
         label: Type.String({
