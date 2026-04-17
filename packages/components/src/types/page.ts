@@ -83,6 +83,11 @@ const TagCategoriesSchema = Type.Object({
       description:
         "Add filters so visitors can find what they need. Editors can assign these options on items they create.",
       format: "tag-categories",
+      /**
+       * ajv-keywords: duplicate filter names fail validation in JsonForms.
+       * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
+       */
+      uniqueItemProperties: ["label"],
     }),
   ),
 })
