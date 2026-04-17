@@ -56,6 +56,11 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   renderListItemSubtitle?: (index: number) => ReactNode
   /** Rendered after the schema description and before the draggable list. */
   belowDescription?: ReactNode
+  /**
+   * Applied to the value from `createDefaultValue` when adding an array item.
+   * Use when schema `default` would be wrong under AJV `useDefaults` (e.g. legacy rows).
+   */
+  mapNewArrayItem?: (item: unknown) => unknown
 }
 
 interface ComplexEditorNestedDrawerProps {
@@ -181,6 +186,7 @@ export function JsonFormsArrayControlView({
   renderListItemTrailing,
   renderListItemSubtitle,
   belowDescription,
+  mapNewArrayItem,
 }: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
   const arraySchemaWithExtensions = arraySchema as JsonSchema & {
@@ -274,7 +280,12 @@ export function JsonFormsArrayControlView({
             {label}
           </Text>
           <Button
-            onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+            onClick={addItem(
+              path,
+              mapNewArrayItem
+                ? mapNewArrayItem(createDefaultValue(schema, rootSchema))
+                : createDefaultValue(schema, rootSchema),
+            )}
             variant="clear"
             size="xs"
             leftIcon={<BiPlusCircle fontSize="1.25rem" />}

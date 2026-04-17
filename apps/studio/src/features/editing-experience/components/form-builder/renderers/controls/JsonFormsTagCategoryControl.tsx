@@ -122,6 +122,13 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
         {...props}
         listItemIcon={BiPurchaseTag}
         listItemContentProps={{ py: "0.5rem" }}
+        mapNewArrayItem={(item) => ({
+          ...(item as Record<string, unknown>),
+          // we set this to true by default for new filters
+          // we don't set this on JSON Schema because Studio AJV runs with useDefaults, which would apply the
+          // same default to legacy rows that omit this key.
+          isRequired: true,
+        })}
         renderListItemSubtitle={(index) => {
           const count = page?.tagCategories?.[index]?.options?.length ?? 0
           const subtitle =
