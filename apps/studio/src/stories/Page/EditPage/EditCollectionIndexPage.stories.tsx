@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { userEvent, within } from "storybook/test"
+import { expect, userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -55,6 +55,67 @@ const meta: Meta<typeof EditPage> = {
 
 export default meta
 type Story = StoryObj<typeof EditPage>
+
+const newCollectionFiltersIsomerAdminParameters = {
+  growthbook: [
+    [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+  ],
+  msw: {
+    handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
+  },
+} satisfies Story["parameters"]
+
+async function playOpenManageFilters(canvasElement: HTMLElement) {
+  const canvas = within(canvasElement)
+  const filtersEntry = await canvas.findByRole("button", { name: /Filters/i })
+  await userEvent.click(filtersEntry)
+  await canvas.findByText(/Manage filters/i)
+}
+
+/** Ensures at least one filter row exists, opens nested "Edit Filters" editor. */
+async function playOpenFirstFilterEditor(canvasElement: HTMLElement) {
+  const canvas = within(canvasElement)
+  if (!canvas.queryByRole("button", { name: /Item 1/i })) {
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Add a filter/i }),
+    )
+  }
+  await userEvent.click(await canvas.findByRole("button", { name: /Item 1/i }))
+  await canvas.findByText(/Edit Filters/i)
+}
+
+/** From "Edit Filters": add three options and assert default row labels. */
+async function playFillFilterNameAndAddThreeOptions(
+  canvasElement: HTMLElement,
+) {
+  const canvas = within(canvasElement)
+  const filterNameInput = await canvas.findByPlaceholderText(/Filter name/i)
+  await userEvent.clear(filterNameInput)
+  await userEvent.type(filterNameInput, "Test filter")
+  const addOption = await canvas.findByRole("button", { name: /^Add option$/i })
+  await userEvent.click(addOption)
+  await userEvent.click(addOption)
+  await userEvent.click(addOption)
+  await canvas.findByRole("button", { name: /Item 1/i })
+  await canvas.findByRole("button", { name: /Item 2/i })
+  await canvas.findByRole("button", { name: /Item 3/i })
+}
+
+async function clickOptionActionsMenu(
+  canvasElement: HTMLElement,
+  optionIndex1Based: number,
+) {
+  const canvas = within(canvasElement)
+  const trigger = await canvas.findByRole("button", {
+    name: `Option ${optionIndex1Based} actions`,
+  })
+  await userEvent.click(trigger)
+}
+
+/** Chakra portals render into the story iframe body, not the parent `document.body`. */
+function withinPortals(canvasElement: HTMLElement) {
+  return within(canvasElement.ownerDocument.body)
+}
 
 export const Default: Story = {}
 
@@ -156,20 +217,168 @@ export const NewCollectionIndexEditingExperienceForDisplay: Story = {
 
 // Currently only accessible by Isomer Admin
 export const NewCollectionIndexEditingExperienceForFilters: Story = {
-  parameters: {
-    growthbook: [
-      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
-    ],
-    msw: {
-      handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
-    },
-  },
+  parameters: newCollectionFiltersIsomerAdminParameters,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", {
-      name: /Filters/i,
-    })
-    await userEvent.click(button)
-    await canvas.findByText(/Manage filters/i)
+    await playOpenManageFilters(canvasElement)
   },
 }
+
+export const NewCollectionIndexEditingExperienceFiltersAddThreeOptions: Story =
+  {
+    parameters: newCollectionFiltersIsomerAdminParameters,
+    play: async ({ canvasElement }) => {
+      await playOpenManageFilters(canvasElement)
+      await playOpenFirstFilterEditor(canvasElement)
+      await playFillFilterNameAndAddThreeOptions(canvasElement)
+    },
+  }
+
+export const NewCollectionIndexEditingExperienceFiltersOptionNameCharacterCount: Story =
+  {
+    parameters: newCollectionFiltersIsomerAdminParameters,
+    play: async ({ canvasElement }) => {
+      await playOpenManageFilters(canvasElement)
+      await playOpenFirstFilterEditor(canvasElement)
+      await playFillFilterNameAndAddThreeOptions(canvasElement)
+      const canvas = within(canvasElement)
+      await userEvent.click(
+        await canvas.findByRole("button", { name: /Item 1/i }),
+      )
+      const optionNameInput = await canvas.findByPlaceholderText(/Option name/i)
+      await userEvent.clear(optionNameInput)
+      await userEvent.type(optionNameInput, "hello")
+      await canvas.findByText(/65 characters left/i)
+    },
+  }
+
+export const NewCollectionIndexEditingExperienceFiltersOpenOptionRowMenu: Story =
+  {
+    parameters: newCollectionFiltersIsomerAdminParameters,
+    play: async ({ canvasElement }) => {
+      await playOpenManageFilters(canvasElement)
+      await playOpenFirstFilterEditor(canvasElement)
+      await playFillFilterNameAndAddThreeOptions(canvasElement)
+      await clickOptionActionsMenu(canvasElement, 1)
+      const portals = withinPortals(canvasElement)
+      await expect(await portals.findByText(/^Delete option$/i)).toBeVisible()
+    },
+  }
+
+export const NewCollectionIndexEditingExperienceFiltersDeleteOptionModalDisabledCta: Story =
+  {
+    parameters: newCollectionFiltersIsomerAdminParameters,
+    play: async ({ canvasElement }) => {
+      await playOpenManageFilters(canvasElement)
+      await playOpenFirstFilterEditor(canvasElement)
+      await playFillFilterNameAndAddThreeOptions(canvasElement)
+      await clickOptionActionsMenu(canvasElement, 1)
+      const portals = withinPortals(canvasElement)
+      await userEvent.click(await portals.findByText(/^Delete option$/i), {
+        pointerEventsCheck: 0,
+      })
+      await portals.findByText(/Delete option\?/i)
+      await expect(
+        await portals.findByRole("button", { name: /^Delete option$/i }),
+      ).toBeDisabled()
+    },
+  }
+
+export const NewCollectionIndexEditingExperienceFiltersDeleteOptionModalEnabledCta: Story =
+  {
+    parameters: newCollectionFiltersIsomerAdminParameters,
+    play: async (context) => {
+      await NewCollectionIndexEditingExperienceFiltersDeleteOptionModalDisabledCta.play?.(
+        context,
+      )
+      const portals = withinPortals(context.canvasElement)
+      await userEvent.click(
+        portals.getByRole("checkbox", {
+          name: /Yes, delete this option permanently/i,
+        }),
+      )
+      await expect(
+        await portals.findByRole("button", { name: /^Delete option$/i }),
+      ).not.toBeDisabled()
+    },
+  }
+
+export const NewCollectionIndexEditingExperienceFiltersBackShowsOptionCount: Story =
+  {
+    parameters: newCollectionFiltersIsomerAdminParameters,
+    play: async ({ canvasElement }) => {
+      await playOpenManageFilters(canvasElement)
+      await playOpenFirstFilterEditor(canvasElement)
+      await playFillFilterNameAndAddThreeOptions(canvasElement)
+      const canvas = within(canvasElement)
+      await userEvent.click(
+        await canvas.findByRole("button", { name: /Return to Filters/i }),
+      )
+      await canvas.findByText(/Manage filters/i)
+      await canvas.findByText(/3 options/i)
+    },
+  }
+
+export const NewCollectionIndexEditingExperienceFiltersOpenFilterRowMenu: Story =
+  {
+    parameters: newCollectionFiltersIsomerAdminParameters,
+    play: async ({ canvasElement }) => {
+      await playOpenManageFilters(canvasElement)
+      await playOpenFirstFilterEditor(canvasElement)
+      await playFillFilterNameAndAddThreeOptions(canvasElement)
+      const canvas = within(canvasElement)
+      await userEvent.click(
+        await canvas.findByRole("button", { name: /Return to Filters/i }),
+      )
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Filter actions/i }),
+    )
+    const portals = withinPortals(canvasElement)
+    await expect(
+      await portals.findByRole("menuitem", { name: /Delete filter/i }),
+    ).toBeVisible()
+    },
+  }
+
+export const NewCollectionIndexEditingExperienceFiltersDeleteFilterModalDisabledCta: Story =
+  {
+    parameters: newCollectionFiltersIsomerAdminParameters,
+    play: async ({ canvasElement }) => {
+      await playOpenManageFilters(canvasElement)
+      await playOpenFirstFilterEditor(canvasElement)
+      await playFillFilterNameAndAddThreeOptions(canvasElement)
+      const canvas = within(canvasElement)
+      await userEvent.click(
+        await canvas.findByRole("button", { name: /Return to Filters/i }),
+      )
+      await userEvent.click(
+        await canvas.findByRole("button", { name: /Filter actions/i }),
+      )
+      const portals = withinPortals(canvasElement)
+      await userEvent.click(
+        await portals.findByRole("menuitem", { name: /Delete filter/i }),
+      )
+      await portals.findByText(/Delete filter "Test filter"\?/i)
+      await expect(
+        await portals.findByRole("button", { name: /^Delete filter$/i }),
+      ).toBeDisabled()
+    },
+  }
+
+export const NewCollectionIndexEditingExperienceFiltersDeleteFilterModalEnabledCta: Story =
+  {
+    parameters: newCollectionFiltersIsomerAdminParameters,
+    play: async (context) => {
+      await NewCollectionIndexEditingExperienceFiltersDeleteFilterModalDisabledCta.play?.(
+        context,
+      )
+      const portals = withinPortals(context.canvasElement)
+      await userEvent.click(
+        portals.getByRole("checkbox", {
+          name: /Yes, delete this filter permanently/i,
+        }),
+      )
+      await expect(
+        await portals.findByRole("button", { name: /^Delete filter$/i }),
+      ).not.toBeDisabled()
+    },
+  }
