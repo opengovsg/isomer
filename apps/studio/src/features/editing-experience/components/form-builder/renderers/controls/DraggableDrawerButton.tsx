@@ -1,3 +1,4 @@
+import type { BoxProps } from "@chakra-ui/react"
 import type {
   DraggableProvidedDraggableProps,
   DraggableProvidedDragHandleProps,
@@ -7,7 +8,6 @@ import type {
   StatePropsOfMasterItem,
 } from "@jsonforms/core"
 import type { IconType } from "react-icons"
-import type { BoxProps } from "@chakra-ui/react"
 import {
   Box,
   Flex,
@@ -98,13 +98,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
               mr="-6px"
             />
           )}
-          <HStack
-            flex={1}
-            align="stretch"
-            spacing="0.5rem"
-            minW={0}
-            w="100%"
-          >
+          <HStack flex={1} align="stretch" spacing="0.5rem" minW={0} w="100%">
             <Flex
               cursor="grab"
               flexShrink={0}
