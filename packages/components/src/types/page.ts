@@ -25,23 +25,26 @@ export const TagCategoryUuidSchema = generateUuidSchema({
   description:
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
-// NOTE: single value for now but we might extend this in the future with additional metadata,
-// so we will leave it as is
-const DropdownItemSchema = Type.Object({
-  label: Type.String({ maxLength: 70, title: "Option name" }),
-  id: TagOptionUuidSchema,
-})
-const TagOptionSchema = DropdownItemSchema
+
 const TagCategorySchema = Type.Composite([
   Type.Object({
-    options: Type.Array(TagOptionSchema, {
-      title: "Options",
-      description:
-        "Collection filter will display options in this order. Only options that are in use will appear on the Preview.",
-      addItemLabel: "Add option",
-    }),
+    label: Type.String({ maxLength: 70, title: "Filter name" }),
+    id: TagOptionUuidSchema,
   }),
-  DropdownItemSchema,
+  Type.Object({
+    options: Type.Array(
+      Type.Object({
+        label: Type.String({ maxLength: 70, title: "Option name" }),
+        id: TagOptionUuidSchema,
+      }),
+      {
+        title: "Options",
+        description:
+          "Collection filter will display options in this order. Only options that are in use will appear on the Preview.",
+        addItemLabel: "Add option",
+      },
+    ),
+  }),
 ])
 // NOTE: can be optional because the categories might not exist
 const TagCategoriesSchema = Type.Object({
