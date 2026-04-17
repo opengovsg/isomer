@@ -42,6 +42,7 @@ const TagCategorySchema = Type.Composite([
         description:
           "Collection filter will display options in this order. Only options that are in use will appear on the Preview.",
         addItemLabel: "Add option",
+        format: "tag-category-options",
       },
     ),
   }),
