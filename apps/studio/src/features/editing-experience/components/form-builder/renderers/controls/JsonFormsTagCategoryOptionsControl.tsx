@@ -102,13 +102,16 @@ const DeleteOptionModal = ({
 const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   props: ArrayLayoutProps,
 ) => {
-  const { path } = props
+  const { path, removeItems, data, arraySchema } = props
   const { core } = useJsonForms()
   const { errors } = useBuilderErrors()
   const hasDuplicateOptionNameError = hasUniqueItemPropertiesError({
     errors,
     jsonFormsPath: path,
   })
+
+  const isRemoveItemDisabled =
+    arraySchema.minItems !== undefined && data <= arraySchema.minItems
 
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
@@ -128,14 +131,8 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   }
 
   const handleConfirmDelete = () => {
-    if (!deleteTarget) return
-    // TODO: remove option from form state, persist collection page blob, and re-sync tagged values on items
-    console.log("Delete tag category option (stub)", {
-      path,
-      index: deleteTarget.index,
-      label: deleteTarget.label,
-      tagId: deleteTarget.tagId,
-    })
+    if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
+    removeItems(path, [deleteTarget.index])()
     setDeleteTarget(null)
   }
 
@@ -159,6 +156,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
               display="flex"
               alignItems="center"
               justifyContent="center"
+              isDisabled={isRemoveItemDisabled}
               aria-label={`Option ${index + 1} actions`}
               onClick={(e) => e.stopPropagation()}
             />
@@ -167,6 +165,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                 <MenuItem
                   colorScheme="critical"
                   icon={<BiTrash fontSize="1rem" />}
+                  isDisabled={isRemoveItemDisabled}
                   onClick={(e) => {
                     e.stopPropagation()
                     openDeleteModal(index)
