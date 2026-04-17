@@ -7,6 +7,7 @@ import type {
   OwnPropsOfMasterListItem,
   StatePropsOfMasterItem,
 } from "@jsonforms/core"
+import type { ReactNode } from "react"
 import type { IconType } from "react-icons"
 import {
   Box,
@@ -29,6 +30,8 @@ interface DraggableDrawerButtonProps extends OwnPropsOfMasterListItem {
   listItemIcon?: IconType
   /** Merged into padding on the drag handle and label button (e.g. tighter `py`). */
   listItemContentProps?: BoxProps
+  /** Rendered after the label area, typically flush right (e.g. row actions menu). */
+  listItemTrailing?: ReactNode
 }
 
 const DraggableDrawerButtonText = withJsonFormsMasterListItemProps(
@@ -49,6 +52,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
       isError,
       listItemIcon,
       listItemContentProps,
+      listItemTrailing,
       ...rest
     },
     ref,
@@ -168,6 +172,16 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
                 </Stack>
               </HStack>
             </Box>
+            {listItemTrailing && (
+              <Flex
+                alignItems="center"
+                flexShrink={0}
+                p="0.5rem"
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                {listItemTrailing}
+              </Flex>
+            )}
           </HStack>
         </HStack>
       </Box>
