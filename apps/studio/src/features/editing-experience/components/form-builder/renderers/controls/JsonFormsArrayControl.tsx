@@ -51,7 +51,7 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   /** Merged into row padding on the drag handle and label button (after defaults). */
   listItemContentProps?: BoxProps
   /** Per-row content after the label (e.g. actions menu), flush right in the row. */
-  renderListItemTrailing?: ReactNode
+  renderListItemTrailing?: (index: number) => ReactNode
 }
 
 interface ComplexEditorNestedDrawerProps {
@@ -351,7 +351,7 @@ export function JsonFormsArrayControlView({
                           setSelectedIndex={setSelectedIndex}
                           listItemIcon={listItemIcon}
                           listItemContentProps={listItemContentProps}
-                          listItemTrailing={renderListItemTrailing}
+                          listItemTrailing={renderListItemTrailing?.(index)}
                         />
                       )}
                     </Draggable>
