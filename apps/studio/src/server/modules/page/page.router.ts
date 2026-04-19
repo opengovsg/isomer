@@ -36,8 +36,6 @@ import {
   reorderBlobSchema,
   updatePageBlobSchema,
   updatePageMetaSchema,
-  MAX_PAGE_URL_LENGTH,
-  MAX_TITLE_LENGTH,
 } from "~/schemas/page"
 import { scheduledPublishServerSchema } from "~/schemas/schedule"
 import { protectedProcedure, router } from "~/server/trpc"
@@ -73,6 +71,7 @@ import {
   collectUniqueAssetFileKeys,
   rewriteAssetFileKeysInValue,
 } from "./helpers/duplicatePageContent"
+import { assertDuplicatePagePreconditions } from "./helpers/duplicatePagePreconditions"
 import {
   getUserForAuditLog,
   insertPageBlobResourceAndAudit,
@@ -626,36 +625,12 @@ export const pageRouter = router({
 
   duplicatePage: protectedProcedure
     .input(duplicatePageSchema)
-    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
-      const source = await getPageById(db, {
-        resourceId: pageId,
+    .mutation(async ({ ctx, input: { siteId, pageId, title, permalink } }) => {
+      const { parentKey } = await assertDuplicatePagePreconditions({
         siteId,
-      })
-
-      if (!source || source.type !== ResourceType.Page) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
-        })
-      }
-
-      const parentKey =
-        source.parentId !== null && source.parentId !== undefined
-          ? String(source.parentId)
-          : null
-
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
+        pageId,
+        permalink,
         userId: ctx.user.id,
-        resourceIds: [String(pageId)],
-      })
-
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "create",
-        userId: ctx.user.id,
-        resourceIds: [parentKey],
       })
 
       const fullPage = await getFullPageById(db, {
@@ -674,29 +649,23 @@ export const pageRouter = router({
       const newContent = cloneDeep(fullPage.content) as IsomerSchema
       const assetKeys = collectUniqueAssetFileKeys(newContent, siteId)
       const oldToNew = new Map<string, string>()
-
-      for (const oldKey of assetKeys) {
+      const copyTasks = assetKeys.map((oldKey) => {
         const newKey = buildNewAssetFileKeyForSite(siteId, oldKey)
         oldToNew.set(oldKey, newKey)
-        try {
-          await copyObjectInBucket({
-            Bucket: env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-            sourceKey: oldKey,
-            destinationKey: newKey,
-          })
-        } catch (cause) {
-          ctx.logger.error(
-            { cause, siteId, oldKey, newKey },
-            "Failed to copy asset for duplicate page",
-          )
+        return copyObjectInBucket({
+          Bucket: env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+          sourceKey: oldKey,
+          destinationKey: newKey,
+        }).catch((cause) => {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message:
               "Could not copy one or more files for this page. Try again later.",
             cause,
           })
-        }
-      }
+        })
+      })
+      await Promise.all(copyTasks)
 
       rewriteAssetFileKeysInValue(newContent, siteId, oldToNew)
 
@@ -709,50 +678,16 @@ export const pageRouter = router({
         })
       }
 
-      const duplicateTitle = `Copy of ${source.title}`.slice(
-        0,
-        MAX_TITLE_LENGTH,
-      )
-
       const by = await getUserForAuditLog(db, ctx.user.id)
 
       const resource = await db.transaction().execute(async (tx) => {
-        let candidatePermalink = `${source.permalink}-copy`
-        let suffix = 2
-
-        const permalinkTaken = async (permalink: string) => {
-          let q = tx
-            .selectFrom("Resource")
-            .where("siteId", "=", siteId)
-            .where("permalink", "=", permalink)
-            .select("id")
-          q =
-            parentKey === null
-              ? q.where("parentId", "is", null)
-              : q.where("parentId", "=", parentKey)
-          const row = await q.executeTakeFirst()
-          return !!row
-        }
-
-        while (await permalinkTaken(candidatePermalink)) {
-          candidatePermalink = `${source.permalink}-copy-${suffix}`
-          suffix++
-          if (candidatePermalink.length > MAX_PAGE_URL_LENGTH) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message:
-                "Could not allocate a unique URL for the duplicate. Shorten the original page URL and try again.",
-            })
-          }
-        }
-
         return insertPageBlobResourceAndAudit(tx, {
           siteId,
           by,
           blobContent: newContent as unknown as PrismaJson.BlobJsonContent,
           resource: {
-            title: duplicateTitle,
-            permalink: candidatePermalink,
+            title,
+            permalink,
             siteId,
             parentId: parentKey ?? undefined,
             type: ResourceType.Page,

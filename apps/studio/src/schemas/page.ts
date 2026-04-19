@@ -18,7 +18,7 @@ export const NEW_PAGE_LAYOUT_VALUES = [
 export const MAX_TITLE_LENGTH = 250
 export const MAX_PAGE_URL_LENGTH = 500
 
-const pageTitleSchema = z
+export const pageTitleSchema = z
   .string({
     required_error: "Enter a title for this page",
   })
@@ -27,7 +27,7 @@ const pageTitleSchema = z
     message: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
   })
 
-const permalinkSchema = generateBasePermalinkSchema("page")
+export const permalinkSchema = generateBasePermalinkSchema("page")
   .min(1, { message: "Enter a URL for this page" })
   .max(MAX_PAGE_URL_LENGTH, {
     message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
@@ -43,7 +43,16 @@ export const basePageSchema = z.object({
   siteId: z.number().min(1),
 })
 
-export const duplicatePageSchema = basePageSchema
+export const duplicatePageSchema = basePageSchema.extend({
+  title: pageTitleSchema,
+  permalink: permalinkSchema,
+})
+
+/** Form fields for {@link duplicatePageSchema} (client duplicate-page modal). */
+export const duplicatePageFormSchema = duplicatePageSchema.omit({
+  siteId: true,
+  pageId: true,
+})
 
 export const reorderBlobSchema = z.object({
   pageId: z.number().min(1),

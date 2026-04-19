@@ -1929,6 +1929,8 @@ describe("page.router", async () => {
       const result = unauthedCaller.duplicatePage({
         siteId: 1,
         pageId: 1,
+        title: "Copy of Page",
+        permalink: "page-copy",
       })
 
       // Assert
@@ -1954,6 +1956,8 @@ describe("page.router", async () => {
       const result = caller.duplicatePage({
         siteId: site.id,
         pageId: Number(page.id),
+        title: "Copy",
+        permalink: "copy",
       })
 
       // Assert
@@ -1978,6 +1982,8 @@ describe("page.router", async () => {
       const result = await caller.duplicatePage({
         siteId: site.id,
         pageId: Number(page.id),
+        title: "Copy of About us",
+        permalink: "about-us-copy",
       })
 
       // Assert
@@ -2045,6 +2051,8 @@ describe("page.router", async () => {
       await caller.duplicatePage({
         siteId: site.id,
         pageId: Number(page.id),
+        title: "Copy of With asset",
+        permalink: "with-asset-copy",
       })
 
       // Assert
@@ -2066,6 +2074,39 @@ describe("page.router", async () => {
         ?.src
       expect(src).toBe(`/${destKey}`)
       expect(src).not.toBe(`/${assetKey}`)
+    })
+
+    it("should return CONFLICT when the chosen permalink already exists", async () => {
+      const { site, page: first } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        permalink: "page-a",
+        title: "First",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.Page,
+        permalink: "page-b",
+        title: "Second",
+        parentId: first.parentId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.duplicatePage({
+        siteId: site.id,
+        pageId: Number(first.id),
+        title: "Copy of First",
+        permalink: "page-b",
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A resource with the same permalink already exists",
+        }),
+      )
     })
   })
 
