@@ -9,3 +9,13 @@ export interface DeleteResourceModalState {
 export interface FolderSettingsModalState {
   folderId: string
 }
+
+export interface DuplicatePageModalState {
+  siteId: number
+  pageId: string
+  sourceTitle: string
+  sourcePermalink: string
+  parentId: string | null
+  /** Scope used to invalidate `resource.listWithoutRoot` after duplication. */
+  tableScopeResourceId?: number
+}
