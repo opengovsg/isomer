@@ -43,6 +43,8 @@ import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesErr
 type CollectionTagCategory = NonNullable<
   CollectionPagePageProps["tagCategories"]
 >[number]
+type CollectionTagOption = NonNullable<CollectionTagCategory["options"]>[number]
+type CollectionTagOptionId = NonNullable<CollectionTagOption["id"]>
 
 const TagCategoryUsageCount = ({
   siteId,
@@ -51,7 +53,7 @@ const TagCategoryUsageCount = ({
 }: {
   siteId: number
   pageId: number
-  tagOptionIds: string[]
+  tagOptionIds: CollectionTagOptionId[]
 }) => {
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
     siteId,
@@ -74,8 +76,8 @@ function DeleteFilterModal({
   isOpen: boolean
   siteId: number
   pageId: number
-  tagOptionIds: string[]
-  label: string
+  tagOptionIds: CollectionTagOptionId[]
+  label: CollectionTagCategory["label"]
   onClose: () => void
   onConfirm: () => void
 }) {
@@ -169,8 +171,8 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
 
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
-    label: string
-    tagOptionIds: string[]
+    label: CollectionTagCategory["label"]
+    tagOptionIds: CollectionTagOptionId[]
   }>(null)
 
   const { siteId, pageId } = useQueryParse(pageSchema)

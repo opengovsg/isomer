@@ -1,4 +1,5 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
+import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import {
   HStack,
   MenuButton,
@@ -37,7 +38,6 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import { CollectionPagePageProps } from "../../../../../../../../../packages/components/dist/esm/types/page"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
@@ -46,6 +46,8 @@ type CollectionTagOption = NonNullable<
   CollectionPagePageProps["tagCategories"]
 >[number]["options"][number]
 
+type CollectionTagOptionId = NonNullable<CollectionTagOption["id"]>
+
 const TagOptionUsageCount = ({
   siteId,
   pageId,
@@ -53,7 +55,7 @@ const TagOptionUsageCount = ({
 }: {
   siteId: number
   pageId: number
-  tagOptionId: string
+  tagOptionId: CollectionTagOptionId
 }) => {
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
     siteId,
@@ -76,8 +78,8 @@ const DeleteOptionModal = ({
   isOpen: boolean
   siteId: number
   pageId: number
-  tagOptionId: string
-  label: string
+  tagOptionId: CollectionTagOptionId
+  label: CollectionTagOption["label"]
   onClose: () => void
   onConfirm: () => void
 }) => {
@@ -169,8 +171,8 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
 
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
-    label: string
-    tagId: string
+    label: CollectionTagOption["label"]
+    tagId: CollectionTagOptionId
   }>(null)
 
   const { siteId, pageId } = useQueryParse(pageSchema)
