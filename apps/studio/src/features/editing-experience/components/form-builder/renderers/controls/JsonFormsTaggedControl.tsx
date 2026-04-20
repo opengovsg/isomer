@@ -23,7 +23,6 @@ export function JsonFormsTaggedControl({
   data,
   path,
   description,
-  required,
   handleChange,
 }: TaggedControlProps) {
   return (
@@ -32,7 +31,6 @@ export function JsonFormsTaggedControl({
         data={data}
         path={path}
         description={description}
-        required={required}
         handleChange={handleChange}
       />
     </Suspense>
@@ -41,14 +39,13 @@ export function JsonFormsTaggedControl({
 
 type SuspendableJsonFormsTaggedControlProps = Pick<
   TaggedControlProps,
-  "data" | "required" | "handleChange" | "description" | "path"
+  "data" | "handleChange" | "description" | "path"
 >
 
 const SuspendableJsonFormsTaggedControl = ({
   path,
   data,
   handleChange,
-  required,
   description,
 }: SuspendableJsonFormsTaggedControlProps) => {
   const { siteId, linkId, pageId } = useQueryParse(collectionItemSchema)
@@ -69,14 +66,17 @@ const SuspendableJsonFormsTaggedControl = ({
       <VStack spacing="1.25rem">
         {tags
           .filter(({ options }) => options.length > 0)
-          .map(({ label, options }) => {
+          .map(({ label, options, isRequired }) => {
             const currentTagCategoryOptions = options.filter(({ id }) =>
               data?.some((selectedTagId) => selectedTagId === id),
             )
             const tagOptionsIds = options.map(({ id }) => id)
 
             return (
-              <FormControl isRequired={required} gap="0.5rem">
+              <FormControl
+                isRequired={Boolean(isRequired)}
+                gap="0.5rem"
+              >
                 <FormLabel description={description}>{label}</FormLabel>
                 <MultiSelect
                   size="sm"
