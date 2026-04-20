@@ -40,6 +40,10 @@ import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 
+type CollectionTagCategory = NonNullable<
+  CollectionPagePageProps["tagCategories"]
+>[number]
+
 const TagCategoryUsageCount = ({
   siteId,
   pageId,
@@ -176,7 +180,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
 
   const handleDeleteFilterMenuItemClick = (index: number) => {
     const cat = get(core?.data, composePaths(path, `${index}`)) as
-      | { label?: string; id?: string; options?: { id?: string }[] }
+      | Partial<CollectionTagCategory>
       | undefined
 
     const tagId = cat?.id?.trim()

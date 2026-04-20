@@ -37,9 +37,14 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
+import { CollectionPagePageProps } from "../../../../../../../../../packages/components/dist/esm/types/page"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
+
+type CollectionTagOption = NonNullable<
+  CollectionPagePageProps["tagCategories"]
+>[number]["options"][number]
 
 const TagOptionUsageCount = ({
   siteId,
@@ -172,7 +177,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
 
   const handleDeleteOptionMenuItemClick = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
-      | { label?: string; id?: string }
+      | Partial<CollectionTagOption>
       | undefined
 
     const tagId = item?.id?.trim()
