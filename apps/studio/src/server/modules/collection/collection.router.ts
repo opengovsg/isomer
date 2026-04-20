@@ -360,7 +360,7 @@ export const collectionRouter = router({
         uniqueTagOptionIds.map((id) => sql`${id}::text`),
         sql`, `,
       )
-      const queriedOptionIds = sql`to_jsonb(ARRAY[${optionIdsAsSqlArray}]::text[])`
+      const tagOptionIdArray = sql`ARRAY[${optionIdsAsSqlArray}]::text[]`
 
       const row = await db
         .selectFrom("Resource as r")
@@ -375,9 +375,20 @@ export const collectionRouter = router({
         ])
         .where(
           sql<boolean>`(
-            COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb) && ${queriedOptionIds}
-            OR
-            COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb) && ${queriedOptionIds}
+            EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements_text(
+                COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb)
+              ) AS tag
+              WHERE tag = ANY(${tagOptionIdArray})
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements_text(
+                COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb)
+              ) AS tag
+              WHERE tag = ANY(${tagOptionIdArray})
+            )
           )`,
         )
         .select(sql<number>`cast(count(*) as int)`.as("count"))
