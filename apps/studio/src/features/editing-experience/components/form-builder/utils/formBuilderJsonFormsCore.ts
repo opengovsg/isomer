@@ -1,5 +1,5 @@
-import type { ErrorObject } from "ajv"
 import type { Middleware } from "@jsonforms/core"
+import type { ErrorObject } from "ajv"
 import get from "lodash/get"
 
 /** Tag **options** (`format: "tag-category-options"`). */
@@ -68,7 +68,9 @@ function expandDuplicateLabelsInArray(
   }
 }
 
-function shouldStripArrayLevelUniquenessError(instancePath: string | undefined): boolean {
+function shouldStripArrayLevelUniquenessError(
+  instancePath: string | undefined,
+): boolean {
   if (!instancePath) return false
   return (
     instancePath === TAG_CATEGORIES_ARRAY_PATH ||
@@ -133,7 +135,10 @@ export function postProcessFormBuilderCoreErrors(
     ) {
       return false
     }
-    if (e.keyword === "errorMessage" && shouldStripArrayLevelUniquenessError(e.instancePath)) {
+    if (
+      e.keyword === "errorMessage" &&
+      shouldStripArrayLevelUniquenessError(e.instancePath)
+    ) {
       const nested = (e.params as { errors?: ErrorObject[] })?.errors
       const first = nested?.[0]
       if (

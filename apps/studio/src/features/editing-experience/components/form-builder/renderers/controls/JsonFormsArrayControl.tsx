@@ -300,10 +300,7 @@ export function JsonFormsArrayControlView({
           </Text>
         )}
       </VStack>
-      <Box
-        w="full"
-        mt={description ? "0.75rem" : "0.25rem"}
-      >
+      <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="blocks">
             {({ droppableProps, innerRef, placeholder }) => (

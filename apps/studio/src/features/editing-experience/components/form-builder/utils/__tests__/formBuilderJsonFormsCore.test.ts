@@ -32,9 +32,9 @@ describe("postProcessFormBuilderCoreErrors", () => {
     expect(
       out.some((e) => e.keyword === "uniqueItemPropertiesIgnoreCase"),
     ).toBe(false)
-    expect(out.filter((e) => e.keyword === "duplicateOptionLabel")).toHaveLength(
-      2,
-    )
+    expect(
+      out.filter((e) => e.keyword === "duplicateOptionLabel"),
+    ).toHaveLength(2)
     expect(
       out.every(
         (e) =>
@@ -52,7 +52,8 @@ describe("postProcessFormBuilderCoreErrors", () => {
     const errors = [
       {
         instancePath: "/tagCategories/0/options",
-        schemaPath: "#/properties/tagCategories/items/properties/options/errorMessage",
+        schemaPath:
+          "#/properties/tagCategories/items/properties/options/errorMessage",
         keyword: "errorMessage",
         message: "dup",
         params: {
@@ -83,8 +84,8 @@ describe("postProcessFormBuilderCoreErrors", () => {
     }
     const out = postProcessFormBuilderCoreErrors(errors, data)
     expect(out.some((e) => e.keyword === "errorMessage")).toBe(false)
-    expect(out.filter((e) => e.keyword === "duplicateOptionLabel")).toHaveLength(
-      2,
-    )
+    expect(
+      out.filter((e) => e.keyword === "duplicateOptionLabel"),
+    ).toHaveLength(2)
   })
 })

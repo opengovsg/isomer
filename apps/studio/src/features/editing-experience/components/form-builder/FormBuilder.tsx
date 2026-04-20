@@ -8,7 +8,6 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { ajv } from "~/utils/ajv"
 
 import { useBuilderErrors } from "./ErrorProvider"
-import { formBuilderJsonFormsMiddleware } from "./utils/formBuilderJsonFormsCore"
 import {
   JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
@@ -91,6 +90,7 @@ import {
   JsonFormsWidgetIntegrationControl,
   jsonFormsWidgetIntegrationControlTester,
 } from "./renderers"
+import { formBuilderJsonFormsMiddleware } from "./utils/formBuilderJsonFormsCore"
 
 export const renderers: JsonFormsRendererRegistryEntry[] = [
   {

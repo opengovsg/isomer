@@ -18,7 +18,9 @@ const KEYWORD = "uniqueItemPropertiesIgnoreCase" as const
 type ItemProperties = Record<string, Record<string, unknown> | undefined>
 
 /** JSON Schema `type` for a string field (not a runtime typeof check). */
-function isSchemaStringType(prop: Record<string, unknown> | undefined): boolean {
+function isSchemaStringType(
+  prop: Record<string, unknown> | undefined,
+): boolean {
   return prop?.type === "string"
 }
 
@@ -26,7 +28,9 @@ function assertIgnoreCaseStringKeys(
   keys: string[],
   parentSchema: Record<string, unknown>,
 ): void {
-  const items = parentSchema.items as { properties?: ItemProperties } | undefined
+  const items = parentSchema.items as
+    | { properties?: ItemProperties }
+    | undefined
   const props = items?.properties
   if (!props) {
     throw new Error(`${KEYWORD}: parent schema must define items.properties`)
@@ -37,7 +41,9 @@ function assertIgnoreCaseStringKeys(
       throw new Error(`${KEYWORD}: missing items.properties.${key}`)
     }
     if (!isSchemaStringType(prop)) {
-      throw new Error(`${KEYWORD}: items.properties.${key} must be type "string"`)
+      throw new Error(
+        `${KEYWORD}: items.properties.${key} must be type "string"`,
+      )
     }
     if (prop.isomerUniqueStringCompare !== "ignoreCase") {
       throw new Error(
@@ -62,7 +68,10 @@ function normalizedStringForCompare(raw: string): string {
   return raw.trim().toLowerCase()
 }
 
-function readStringProperty(item: unknown, propertyKey: string): string | undefined {
+function readStringProperty(
+  item: unknown,
+  propertyKey: string,
+): string | undefined {
   if (!isPlainObject(item)) return undefined
   const value = item[propertyKey]
   return isStringPrimitive(value) ? value : undefined
@@ -72,7 +81,10 @@ function readStringProperty(item: unknown, propertyKey: string): string | undefi
  * True when two or more array elements have the same normalized string for `propertyKey`.
  * Slots without a string at that key do not participate (no error for that index).
  */
-function hasDuplicateNormalizedValues(arrayItems: unknown[], propertyKey: string): boolean {
+function hasDuplicateNormalizedValues(
+  arrayItems: unknown[],
+  propertyKey: string,
+): boolean {
   const seen = new Set<string>()
   for (const item of arrayItems) {
     const raw = readStringProperty(item, propertyKey)
