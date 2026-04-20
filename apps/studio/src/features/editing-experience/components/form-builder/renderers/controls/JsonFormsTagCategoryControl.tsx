@@ -25,7 +25,7 @@ import {
   Menu,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import get from "lodash/get"
+import { compact, map, get } from "lodash"
 import { useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
@@ -190,14 +190,10 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     }
 
     // Persisted filter: show the modal so we can warn about existing item usage before delete.
-    const tagOptionIds =
-      cat?.options
-        ?.map((o) => o.id?.trim())
-        .filter((id): id is string => Boolean(id)) ?? []
     setDeleteTarget({
       index,
       label: cat?.label?.trim() ?? "",
-      tagOptionIds,
+      tagOptionIds: compact(map(cat?.options, (o) => o.id?.trim())),
     })
   }
 
