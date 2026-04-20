@@ -356,6 +356,7 @@ export const collectionRouter = router({
         return { count: 0 }
       }
 
+      // Bound parameters as a Postgres text[] for use with = ANY(...).
       const optionIdsAsSqlArray = sql.join(
         uniqueTagOptionIds.map((id) => sql`${id}::text`),
         sql`, `,
@@ -373,6 +374,9 @@ export const collectionRouter = router({
           ResourceType.CollectionPage,
           ResourceType.CollectionLink,
         ])
+        // Match child resources whose page.tagged JSON array overlaps the queried
+        // option ids. Postgres has no jsonb && jsonb overlap; unnest to text and use ANY.
+        // Draft or published blob alone is enough; one row per resource still counts once.
         .where(
           sql<boolean>`(
             EXISTS (
