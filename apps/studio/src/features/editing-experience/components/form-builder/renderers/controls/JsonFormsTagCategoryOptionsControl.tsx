@@ -71,7 +71,7 @@ const DeleteOptionModal = ({
   isOpen: boolean
   siteId: number
   pageId: number
-  tagOptionId?: string
+  tagOptionId: string
   label: string
   onClose: () => void
   onConfirm: () => void
@@ -92,29 +92,25 @@ const DeleteOptionModal = ({
             <Infobox width="100%" size="md" variant="warning">
               <Text textStyle="body-2">
                 This option is being used in{" "}
-                {!tagOptionId ? (
-                  "—"
-                ) : (
-                  <ErrorBoundary fallbackRender={() => <>—</>}>
-                    <Suspense
-                      fallback={
-                        <Skeleton
-                          as="span"
-                          display="inline-block"
-                          verticalAlign="middle"
-                          height="1em"
-                          width="2ch"
-                        />
-                      }
-                    >
-                      <TagOptionUsageCount
-                        siteId={siteId}
-                        pageId={pageId}
-                        tagOptionId={tagOptionId}
+                <ErrorBoundary fallbackRender={() => <>—</>}>
+                  <Suspense
+                    fallback={
+                      <Skeleton
+                        as="span"
+                        display="inline-block"
+                        verticalAlign="middle"
+                        height="1em"
+                        width="2ch"
                       />
-                    </Suspense>
-                  </ErrorBoundary>
-                )}{" "}
+                    }
+                  >
+                    <TagOptionUsageCount
+                      siteId={siteId}
+                      pageId={pageId}
+                      tagOptionId={tagOptionId}
+                    />
+                  </Suspense>
+                </ErrorBoundary>{" "}
                 items. To undo this change, you will need to create and
                 re-assign this option to all items.
               </Text>
@@ -169,19 +165,31 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
     label: string
-    tagId?: string
+    tagId: string
   }>(null)
 
   const { siteId, pageId } = useQueryParse(pageSchema)
 
-  const openDeleteModal = (index: number) => {
+  const handleDeleteOptionMenuItemClick = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
       | { label?: string; id?: string }
       | undefined
+
+    const tagId = item?.id?.trim()
+
+    // No id means the option is new and never saved — nothing references it in the DB,
+    // so we remove the row immediately instead of opening the usage warning modal.
+    if (!tagId) {
+      if (!removeItems || isRemoveItemDisabled) return
+      removeItems(path, [index])()
+      return
+    }
+    
+    // Persisted option: show the modal so we can warn about existing item usage before delete.
     setDeleteTarget({
       index,
       label: item?.label?.trim() ?? "",
-      tagId: item?.id,
+      tagId,
     })
   }
 
@@ -223,7 +231,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                   isDisabled={isRemoveItemDisabled}
                   onClick={(e) => {
                     e.stopPropagation()
-                    openDeleteModal(index)
+                    handleDeleteOptionMenuItemClick(index)
                   }}
                 >
                   Delete option

@@ -15,7 +15,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { rankWith, schemaMatches } from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import {
   Button,
@@ -25,6 +25,7 @@ import {
   Menu,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
+import get from "lodash/get"
 import { useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
@@ -69,7 +70,7 @@ function DeleteFilterModal({
   isOpen: boolean
   siteId: number
   pageId: number
-  tagCategory?: { label: string; id?: string }
+  tagCategory: { label: string; id: string }
   label: string
   onClose: () => void
   onConfirm: () => void
@@ -91,32 +92,28 @@ function DeleteFilterModal({
               <VStack align="stretch" spacing="0rem">
                 <Text textStyle="subhead-1" color="base.content.strong">
                   You are deleting an entire filter. It’s being used on{" "}
-                  {!tagCategory?.id ? (
-                    "—"
-                  ) : (
-                    <ErrorBoundary fallbackRender={() => <>—</>}>
-                      <Suspense
-                        fallback={
-                          <Skeleton
-                            as="span"
-                            display="inline-block"
-                            verticalAlign="middle"
-                            height="1em"
-                            width="2ch"
-                          />
-                        }
-                      >
-                        <TagCategoryUsageCount
-                          siteId={siteId}
-                          pageId={pageId}
-                          tagCategory={{
-                            label: tagCategory.label,
-                            id: tagCategory.id,
-                          }}
+                  <ErrorBoundary fallbackRender={() => <>—</>}>
+                    <Suspense
+                      fallback={
+                        <Skeleton
+                          as="span"
+                          display="inline-block"
+                          verticalAlign="middle"
+                          height="1em"
+                          width="2ch"
                         />
-                      </Suspense>
-                    </ErrorBoundary>
-                  )}{" "}
+                      }
+                    >
+                      <TagCategoryUsageCount
+                        siteId={siteId}
+                        pageId={pageId}
+                        tagCategory={{
+                          label: tagCategory.label,
+                          id: tagCategory.id,
+                        }}
+                      />
+                    </Suspense>
+                  </ErrorBoundary>{" "}
                   items.
                 </Text>
                 <Text textStyle="body-1" color="base.content.strong">
@@ -172,13 +169,45 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
     label: string
-    tagCategory?: { label: string; id?: string }
+    tagCategory: { label: string; id: string }
   }>(null)
 
   const { siteId, pageId } = useQueryParse(pageSchema)
 
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
+
+  const handleDeleteFilterMenuItemClick = (index: number) => {
+    const cat = get(core?.data, composePaths(path, `${index}`)) as
+      | { label?: string; id?: string }
+      | undefined
+
+    const tagId = cat?.id?.trim()
+
+    // No id means the filter is new and never saved — nothing references it in the DB,
+    // so we remove the row immediately instead of opening the usage warning modal.
+    if (!tagId) {
+      if (!removeItems || isRemoveItemDisabled) return
+      removeItems(path, [index])()
+      return
+    }
+    
+    // Persisted filter: show the modal so we can warn about existing item usage before delete.
+    setDeleteTarget({
+      index,
+      label: cat?.label?.trim() ?? "",
+      tagCategory: {
+        label: cat?.label?.trim() ?? "",
+        id: tagId,
+      },
+    })
+  }
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
+    removeItems(path, [deleteTarget.index])()
+    setDeleteTarget(null)
+  }
 
   return (
     <>
@@ -232,14 +261,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                   isDisabled={isRemoveItemDisabled}
                   onClick={(e) => {
                     e.stopPropagation()
-                    const cat = page?.tagCategories?.[index]
-                    setDeleteTarget({
-                      index,
-                      label: cat?.label?.trim() ?? "",
-                      tagCategory: cat
-                        ? { label: cat.label?.trim() ?? "", id: cat.id }
-                        : undefined,
-                    })
+                    handleDeleteFilterMenuItemClick(index)
                   }}
                 >
                   Delete filter
@@ -267,11 +289,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
           tagCategory={deleteTarget.tagCategory}
           label={deleteTarget.label}
           onClose={() => setDeleteTarget(null)}
-          onConfirm={() => {
-            if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
-            removeItems(path, [deleteTarget.index])()
-            setDeleteTarget(null)
-          }}
+          onConfirm={handleConfirmDelete}
         />
       )}
     </>
