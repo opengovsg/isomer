@@ -1,6 +1,6 @@
+import type { IndexPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages/constants"
-import type { IndexPageSchemaType } from "~/types"
 
 import { ensureChildrenPagesBlock } from "../IndexPage"
 
