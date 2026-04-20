@@ -11,6 +11,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Portal,
+  Skeleton,
   Text,
   VStack,
 } from "@chakra-ui/react"
@@ -25,21 +26,50 @@ import {
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
+import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { trpc } from "~/utils/trpc"
 
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 
+const TagCategoryUsageCount = ({
+  siteId,
+  pageId,
+  tagCategory,
+}: {
+  siteId: number
+  pageId: number
+  tagCategory: { label: string; id: string }
+}) => {
+  const [{ count }] = trpc.collection.countTagCategoryUsage.useSuspenseQuery({
+    siteId,
+    pageId,
+    tagCategory,
+  })
+
+  return <>{count ?? "—"}</>
+}
+
 function DeleteFilterModal({
   isOpen,
+  siteId,
+  pageId,
+  tagCategory,
   label,
   onClose,
   onConfirm,
 }: {
   isOpen: boolean
+  siteId: number
+  pageId: number
+  tagCategory?: { label: string; id?: string }
   label: string
   onClose: () => void
   onConfirm: () => void
@@ -58,11 +88,42 @@ function DeleteFilterModal({
         <ModalBody>
           <VStack align="stretch" spacing="1.5rem">
             <Infobox width="100%" size="md" variant="warning">
-              <Text textStyle="body-1" color="base.content.strong">
-                This removes the filter and its options from the collection.
-                Collection items that use these options may need to be updated
-                manually.
-              </Text>
+              <VStack align="stretch" spacing="0rem">
+                <Text textStyle="subhead-1" color="base.content.strong">
+                  You are deleting an entire filter. It’s being used on{" "}
+                  {!tagCategory?.id ? (
+                    "—"
+                  ) : (
+                    <ErrorBoundary fallbackRender={() => <>—</>}>
+                      <Suspense
+                        fallback={
+                          <Skeleton
+                            as="span"
+                            display="inline-block"
+                            verticalAlign="middle"
+                            height="1em"
+                            width="2ch"
+                          />
+                        }
+                      >
+                        <TagCategoryUsageCount
+                          siteId={siteId}
+                          pageId={pageId}
+                          tagCategory={{
+                            label: tagCategory.label,
+                            id: tagCategory.id,
+                          }}
+                        />
+                      </Suspense>
+                    </ErrorBoundary>
+                  )}{" "}
+                  items.
+                </Text>
+                <Text textStyle="body-1" color="base.content.strong">
+                  To undo this change, you will need to recreate this filter and
+                  assign options to each item individually.
+                </Text>
+              </VStack>
             </Infobox>
             <HStack align="start">
               <Checkbox
@@ -111,7 +172,10 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
     label: string
+    tagCategory?: { label: string; id?: string }
   }>(null)
+
+  const { siteId, pageId } = useQueryParse(pageSchema)
 
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
@@ -168,9 +232,13 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                   isDisabled={isRemoveItemDisabled}
                   onClick={(e) => {
                     e.stopPropagation()
+                    const cat = page?.tagCategories?.[index]
                     setDeleteTarget({
                       index,
-                      label: page?.tagCategories?.[index]?.label?.trim() ?? "",
+                      label: cat?.label?.trim() ?? "",
+                      tagCategory: cat
+                        ? { label: cat.label?.trim() ?? "", id: cat.id }
+                        : undefined,
                     })
                   }}
                 >
@@ -194,6 +262,9 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
       {deleteTarget && (
         <DeleteFilterModal
           isOpen
+          siteId={siteId}
+          pageId={pageId}
+          tagCategory={deleteTarget.tagCategory}
           label={deleteTarget.label}
           onClose={() => setDeleteTarget(null)}
           onConfirm={() => {
