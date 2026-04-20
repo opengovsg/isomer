@@ -60,7 +60,7 @@ function JsonFormsImageControl({
       )}
       {!!errors && (
         <FormErrorMessage>
-          {label} {getCustomErrorMessage(errors)}
+          {getCustomErrorMessage({ error: errors, fieldLabel: label })}
         </FormErrorMessage>
       )}
     </Box>

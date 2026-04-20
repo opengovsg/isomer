@@ -51,7 +51,9 @@ function JsonFormsBooleanControl({
             isChecked={!!data}
             onChange={(e) => handleChange(path, e.target.checked)}
           />
-          <FormErrorMessage>{getCustomErrorMessage(errors)}</FormErrorMessage>
+          <FormErrorMessage>
+            {getCustomErrorMessage({ error: errors })}
+          </FormErrorMessage>
         </Flex>
       </FormControl>
     </Box>

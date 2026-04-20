@@ -38,7 +38,7 @@ function JsonFormsDateControl({
           onInputValueChange={(date) => handleChange(path, date)}
         />
         <FormErrorMessage>
-          {label} {getCustomErrorMessage(errors)}
+          {getCustomErrorMessage({ error: errors, fieldLabel: label })}
         </FormErrorMessage>
       </FormControl>
     </Box>

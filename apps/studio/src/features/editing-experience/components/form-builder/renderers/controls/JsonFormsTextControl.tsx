@@ -86,7 +86,7 @@ export function JsonFormsTextControl({
           </FormHelperText>
         )}
         <FormErrorMessage mt={0}>
-          {label} {getCustomErrorMessage(errors)}
+          {getCustomErrorMessage({ error: errors, fieldLabel: label })}
         </FormErrorMessage>
       </FormControl>
     </Box>

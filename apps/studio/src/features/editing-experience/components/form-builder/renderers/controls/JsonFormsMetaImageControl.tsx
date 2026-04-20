@@ -101,7 +101,7 @@ function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
       </Text>
       {!!errors && (
         <FormErrorMessage>
-          {label} {getCustomErrorMessage(errors)}
+          {getCustomErrorMessage({ error: errors, fieldLabel: label })}
         </FormErrorMessage>
       )}
     </Box>

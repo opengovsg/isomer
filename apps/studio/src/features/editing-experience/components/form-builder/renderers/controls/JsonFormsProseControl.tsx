@@ -113,7 +113,7 @@ function JsonFormsProseControl({
         <FormLabel description={description}>{label}</FormLabel>
         <Editor editor={editor} />
         <FormErrorMessage>
-          {label} {getCustomErrorMessage(errors)}
+          {getCustomErrorMessage({ error: errors, fieldLabel: label })}
         </FormErrorMessage>
       </FormControl>
     </Box>

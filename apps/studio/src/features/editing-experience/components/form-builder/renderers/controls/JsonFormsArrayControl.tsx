@@ -54,8 +54,6 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   renderListItemTrailing?: (index: number) => ReactNode
   /** Caption under the list item title (e.g. option counts). */
   renderListItemSubtitle?: (index: number) => ReactNode
-  /** Rendered after the schema description and before the draggable list. */
-  belowDescription?: ReactNode
   /**
    * Applied to the value from `createDefaultValue` when adding an array item.
    * Use when schema `default` would be wrong under AJV `useDefaults` (e.g. legacy rows).
@@ -185,7 +183,6 @@ export function JsonFormsArrayControlView({
   listItemContentProps,
   renderListItemTrailing,
   renderListItemSubtitle,
-  belowDescription,
   mapNewArrayItem,
 }: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
@@ -302,11 +299,10 @@ export function JsonFormsArrayControlView({
             {description}
           </Text>
         )}
-        {belowDescription}
       </VStack>
       <Box
         w="full"
-        mt={description || belowDescription ? "0.75rem" : "0.25rem"}
+        mt={description ? "0.75rem" : "0.25rem"}
       >
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="blocks">

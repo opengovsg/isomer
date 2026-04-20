@@ -28,7 +28,15 @@ export const TagCategoryUuidSchema = generateUuidSchema({
 
 const TagCategorySchema = Type.Composite([
   Type.Object({
-    label: Type.String({ maxLength: 70, title: "Filter name" }),
+    label: Type.String({
+      maxLength: 70,
+      title: "Filter name",
+      /**
+       * Isomer-only: paired with `uniqueItemPropertiesIgnoreCase` on `tagCategories`;
+       * see `apps/studio/src/utils/ajvUniqueItemPropertiesIgnoreCase.ts`.
+       */
+      isomerUniqueStringCompare: "ignoreCase",
+    }),
     id: TagOptionUuidSchema,
   }),
   Type.Object({
@@ -47,7 +55,15 @@ const TagCategorySchema = Type.Composite([
   Type.Object({
     options: Type.Array(
       Type.Object({
-        label: Type.String({ maxLength: 70, title: "Option name" }),
+        label: Type.String({
+          maxLength: 70,
+          title: "Option name",
+          /**
+           * Isomer-only: Studio AJV `uniqueItemPropertiesIgnoreCase` reads this on compile;
+           * must match `apps/studio/src/utils/ajvUniqueItemPropertiesIgnoreCase.ts`.
+           */
+          isomerUniqueStringCompare: "ignoreCase",
+        }),
         id: TagOptionUuidSchema,
       }),
       {
@@ -57,10 +73,10 @@ const TagCategorySchema = Type.Composite([
         addItemLabel: "Add option",
         format: "tag-category-options",
         /**
-         * ajv-keywords: duplicate option names in a filter fail validation in JsonForms.
+         * Studio AJV: case-insensitive duplicate option names (trim + lowercase compare only).
          * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
          */
-        uniqueItemProperties: ["label"],
+        uniqueItemPropertiesIgnoreCase: ["label"],
       },
     ),
   }),
@@ -75,10 +91,10 @@ const TagCategoriesSchema = Type.Object({
       addItemLabel: "Add a filter",
       format: "tag-categories",
       /**
-       * ajv-keywords: duplicate filter names fail validation in JsonForms.
+       * Studio AJV: case-insensitive duplicate filter names.
        * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
        */
-      uniqueItemProperties: ["label"],
+      uniqueItemPropertiesIgnoreCase: ["label"],
     }),
   ),
 })

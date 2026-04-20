@@ -8,6 +8,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { ajv } from "~/utils/ajv"
 
 import { useBuilderErrors } from "./ErrorProvider"
+import { formBuilderJsonFormsMiddleware } from "./utils/formBuilderJsonFormsCore"
 import {
   JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
@@ -226,11 +227,12 @@ export default function FormBuilder<T>({
       schema={schema}
       data={data}
       renderers={renderers}
+      middleware={formBuilderJsonFormsMiddleware}
       onChange={({ data, errors }) => {
         if (validateFn(data)) {
           handleChange(data)
         }
-        setErrors(groupBy(errors, "instancePath"))
+        setErrors(groupBy(errors ?? [], "instancePath"))
       }}
       ajv={ajv}
     />
