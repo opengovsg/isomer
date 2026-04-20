@@ -14,21 +14,34 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-const GODMODE_CORE_LINKS = [
+type GodmodeLink = {
+  href: string
+  label: string
+  /** Isomer admin roles that may see this hub link */
+  roles: readonly IsomerAdminRole[]
+}
+
+const GODMODE_LINKS: readonly GodmodeLink[] = [
   {
     href: "/godmode/create-site",
     label: "Create a new site",
+    roles: [IsomerAdminRole.Core],
   },
   {
     href: "/godmode/publishing",
     label: "Publishing",
+    roles: [IsomerAdminRole.Core],
   },
-] as const
+  {
+    href: "/godmode/whitelist",
+    label: "Whitelist",
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
+  },
+]
 
-const GODMODE_WHITELIST_LINK = {
-  href: "/godmode/whitelist",
-  label: "Whitelist",
-} as const
+const GODMODE_PAGE_ACCESS_ROLES: readonly IsomerAdminRole[] = [
+  ...new Set(GODMODE_LINKS.flatMap((link) => [...link.roles])),
+]
 
 const GodModePage: NextPageWithLayout = () => {
   const toast = useToast()
@@ -43,10 +56,20 @@ const GodModePage: NextPageWithLayout = () => {
     })
 
   const isLoading = isCoreRoleLoading || isMigratorRoleLoading
-  const canAccessGodmode = isCoreIsomerAdmin || isMigratorIsomerAdmin
-  const godmodeLinks = isCoreIsomerAdmin
-    ? [...GODMODE_CORE_LINKS, GODMODE_WHITELIST_LINK]
-    : [GODMODE_WHITELIST_LINK]
+  const userGodmodeRoles = new Set<IsomerAdminRole>()
+  if (isCoreIsomerAdmin) {
+    userGodmodeRoles.add(IsomerAdminRole.Core)
+  }
+  if (isMigratorIsomerAdmin) {
+    userGodmodeRoles.add(IsomerAdminRole.Migrator)
+  }
+
+  const visibleGodmodeLinks = GODMODE_LINKS.filter((link) =>
+    link.roles.some((role) => userGodmodeRoles.has(role)),
+  )
+  const canAccessGodmode = GODMODE_PAGE_ACCESS_ROLES.some((role) =>
+    userGodmodeRoles.has(role),
+  )
 
   if (!isLoading && !canAccessGodmode) {
     toast({
@@ -73,7 +96,7 @@ const GodModePage: NextPageWithLayout = () => {
 
       <Flex flexDirection="column" mt="1.5rem" gap="1rem">
         {!isLoading &&
-          godmodeLinks.map((link) => (
+          visibleGodmodeLinks.map((link) => (
             <Flex
               key={link.href}
               as={NextLink}
