@@ -14,7 +14,7 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-const GODMODE_LINKS = [
+const GODMODE_CORE_LINKS = [
   {
     href: "/godmode/create-site",
     label: "Create a new site",
@@ -23,20 +23,32 @@ const GODMODE_LINKS = [
     href: "/godmode/publishing",
     label: "Publishing",
   },
-  {
-    href: "/godmode/whitelist",
-    label: "Whitelist",
-  },
 ] as const
+
+const GODMODE_WHITELIST_LINK = {
+  href: "/godmode/whitelist",
+  label: "Whitelist",
+} as const
 
 const GodModePage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
-  const { isAdmin: isUserIsomerAdmin, isLoading } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core],
-  })
+  const { isAdmin: isCoreIsomerAdmin, isLoading: isCoreRoleLoading } =
+    useIsUserIsomerAdmin({
+      roles: [IsomerAdminRole.Core],
+    })
+  const { isAdmin: isMigratorIsomerAdmin, isLoading: isMigratorRoleLoading } =
+    useIsUserIsomerAdmin({
+      roles: [IsomerAdminRole.Migrator],
+    })
 
-  if (!isLoading && !isUserIsomerAdmin) {
+  const isLoading = isCoreRoleLoading || isMigratorRoleLoading
+  const canAccessGodmode = isCoreIsomerAdmin || isMigratorIsomerAdmin
+  const godmodeLinks = isCoreIsomerAdmin
+    ? [...GODMODE_CORE_LINKS, GODMODE_WHITELIST_LINK]
+    : [GODMODE_WHITELIST_LINK]
+
+  if (!isLoading && !canAccessGodmode) {
     toast({
       title: "You do not have permission to access this page.",
       status: "error",
@@ -60,22 +72,24 @@ const GodModePage: NextPageWithLayout = () => {
       </Text>
 
       <Flex flexDirection="column" mt="1.5rem" gap="1rem">
-        {GODMODE_LINKS.map((link) => (
-          <Flex
-            as={NextLink}
-            href={link.href}
-            p="1rem"
-            borderWidth="1px"
-            alignItems="center"
-            bg="base.canvas.default"
-            border="1px solid"
-            borderColor="base.divider.medium"
-            borderRadius="0.5rem"
-            _hover={{ background: "interaction.muted.main.hover" }}
-          >
-            <Text textStyle="subhead-2">{link.label}</Text>
-          </Flex>
-        ))}
+        {!isLoading &&
+          godmodeLinks.map((link) => (
+            <Flex
+              key={link.href}
+              as={NextLink}
+              href={link.href}
+              p="1rem"
+              borderWidth="1px"
+              alignItems="center"
+              bg="base.canvas.default"
+              border="1px solid"
+              borderColor="base.divider.medium"
+              borderRadius="0.5rem"
+              _hover={{ background: "interaction.muted.main.hover" }}
+            >
+              <Text textStyle="subhead-2">{link.label}</Text>
+            </Flex>
+          ))}
       </Flex>
     </Flex>
   )
