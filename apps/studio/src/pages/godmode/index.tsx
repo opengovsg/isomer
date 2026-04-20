@@ -39,10 +39,6 @@ const GODMODE_LINKS: readonly GodmodeLink[] = [
   },
 ]
 
-const GODMODE_PAGE_ACCESS_ROLES: readonly IsomerAdminRole[] = [
-  ...new Set(GODMODE_LINKS.flatMap((link) => [...link.roles])),
-]
-
 const GodModePage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
@@ -67,11 +63,8 @@ const GodModePage: NextPageWithLayout = () => {
   const visibleGodmodeLinks = GODMODE_LINKS.filter((link) =>
     link.roles.some((role) => userGodmodeRoles.has(role)),
   )
-  const canAccessGodmode = GODMODE_PAGE_ACCESS_ROLES.some((role) =>
-    userGodmodeRoles.has(role),
-  )
 
-  if (!isLoading && !canAccessGodmode) {
+  if (!isLoading && visibleGodmodeLinks.length === 0) {
     toast({
       title: "You do not have permission to access this page.",
       status: "error",
