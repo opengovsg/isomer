@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
+  countTagOptionUsageSchema,
   createCollectionSchema,
   editLinkSchema,
   getCollectionsSchema,
@@ -22,6 +23,7 @@ import {
   jsonb,
   ResourceState,
   ResourceType,
+  sql,
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
@@ -311,6 +313,70 @@ export const collectionRouter = router({
           .execute()
       },
     ),
+
+  countTagOptionUsage: protectedProcedure
+    .input(countTagOptionUsageSchema)
+    .query(async ({ ctx, input: { siteId, pageId, tagOptionId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(pageId))
+        .where("siteId", "=", siteId)
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["parentId"])
+        .executeTakeFirst()
+
+      const parentId = indexPage?.parentId
+      if (!parentId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page not found",
+        })
+      }
+
+      const collection = await getSiteResourceById({
+        siteId,
+        resourceId: parentId,
+        type: ResourceType.Collection,
+      })
+      if (!collection) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        })
+      }
+
+      const row = await db
+        .selectFrom("Resource as r")
+        .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
+        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+        .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
+        .where("r.parentId", "=", parentId)
+        .where("r.siteId", "=", siteId)
+        .where("r.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+        ])
+        .where(
+          sql<boolean>`(
+            COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb)
+              @> jsonb_build_array(${tagOptionId}::text)
+            OR
+            COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb)
+              @> jsonb_build_array(${tagOptionId}::text)
+          )`,
+        )
+        .select(sql<number>`cast(count(*) as int)`.as("count"))
+        .executeTakeFirstOrThrow()
+
+      return { count: row.count }
+    }),
+
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
     .query(async ({ ctx, input: { linkId, siteId } }) => {

@@ -105,3 +105,9 @@ export const readCollectionSchema = z
       .default("updated-desc"),
   })
   .merge(offsetPaginationSchema)
+
+export const countTagOptionUsageSchema = z.object({
+  siteId: z.number().min(1),
+  pageId: z.number().min(1), // pageId is the collection index page resource id
+  tagOptionId: z.string().uuid(),
+})

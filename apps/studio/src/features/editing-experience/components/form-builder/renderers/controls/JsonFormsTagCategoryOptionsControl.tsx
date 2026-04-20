@@ -10,6 +10,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Portal,
+  Skeleton,
   Text,
   VStack,
 } from "@chakra-ui/react"
@@ -25,23 +26,52 @@ import {
 } from "@opengovsg/design-system-react"
 import get from "lodash/get"
 import { useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import { BiDotsHorizontalRounded, BiTrash } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
+import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 
+const TagOptionUsageCount = ({
+  siteId,
+  pageId,
+  tagOptionId,
+}: {
+  siteId: number
+  pageId: number
+  tagOptionId: string
+}) => {
+  const [{ count }] = trpc.collection.countTagOptionUsage.useSuspenseQuery({
+    siteId,
+    pageId,
+    tagOptionId,
+  })
+
+  return <>{count ?? "—"}</>
+}
+
 const DeleteOptionModal = ({
   isOpen,
+  siteId,
+  pageId,
+  tagOptionId,
   label,
   onClose,
   onConfirm,
 }: {
   isOpen: boolean
+  siteId: number
+  pageId: number
+  tagOptionId?: string
   label: string
   onClose: () => void
   onConfirm: () => void
@@ -61,9 +91,32 @@ const DeleteOptionModal = ({
           <VStack align="stretch" spacing="1.5rem">
             <Infobox width="100%" size="md" variant="warning">
               <Text textStyle="body-2">
-                {/* TODO: replace XX with usage count from backend */}
-                This option is being used in XX items. To undo this change, you
-                will need to create and re-assign this option to all items.
+                This option is being used in{" "}
+                {!tagOptionId ? (
+                  "—"
+                ) : (
+                  <ErrorBoundary fallbackRender={() => <>—</>}>
+                    <Suspense
+                      fallback={
+                        <Skeleton
+                          as="span"
+                          display="inline-block"
+                          verticalAlign="middle"
+                          height="1em"
+                          width="2ch"
+                        />
+                      }
+                    >
+                      <TagOptionUsageCount
+                        siteId={siteId}
+                        pageId={pageId}
+                        tagOptionId={tagOptionId}
+                      />
+                    </Suspense>
+                  </ErrorBoundary>
+                )}{" "}
+                items. To undo this change, you will need to create and
+                re-assign this option to all items.
               </Text>
             </Infobox>
             <HStack align="start">
@@ -118,6 +171,8 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     label: string
     tagId?: string
   }>(null)
+
+  const { siteId, pageId } = useQueryParse(pageSchema)
 
   const openDeleteModal = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
@@ -209,6 +264,9 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
       {deleteTarget && (
         <DeleteOptionModal
           isOpen
+          siteId={siteId}
+          pageId={pageId}
+          tagOptionId={deleteTarget.tagId}
           label={deleteTarget.label}
           onClose={() => setDeleteTarget(null)}
           onConfirm={handleConfirmDelete}

@@ -1,4 +1,5 @@
 import type { CodeBuildJobs } from "@prisma/client"
+import type { UnwrapTagged } from "type-fest"
 import { nanoid } from "nanoid"
 import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
@@ -258,6 +259,19 @@ const getFallbackPermalink = (resourceType: ResourceType) => {
   }
 }
 
+interface SetupPageResourceProps {
+  siteId?: number
+  blobId?: string
+  resourceType: ResourceType
+  state?: ResourceState
+  userId?: string
+  permalink?: string
+  parentId?: string | null
+  title?: string
+  scheduledAt?: Date | null
+  scheduledBy?: string | null
+}
+
 export const setupPageResource = async ({
   siteId: siteIdProp,
   blobId: blobIdProp,
@@ -269,18 +283,7 @@ export const setupPageResource = async ({
   title,
   scheduledAt = null,
   scheduledBy = null,
-}: {
-  siteId?: number
-  blobId?: string
-  resourceType: ResourceType
-  state?: ResourceState
-  userId?: string
-  permalink?: string
-  parentId?: string | null
-  title?: string
-  scheduledAt?: Date | null
-  scheduledBy?: string | null
-}) => {
+}: SetupPageResourceProps) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
 
@@ -413,6 +416,46 @@ export const setupCollection = async ({
     footer,
     collection,
   }
+}
+
+export const collectionPageBlobContent = (
+  tagged: string[] = [],
+): UnwrapTagged<PrismaJson.BlobJsonContent> => ({
+  layout: "article",
+  page: {
+    date: "01/01/2026",
+    category: "Feature Articles",
+    articlePageHeader: {
+      summary: "A concise summary of the main points regarding this article.",
+    },
+    tagged,
+  },
+  content: [],
+  version: "0.1.0",
+})
+
+export const setupCollectionPage = async (
+  args: Omit<SetupPageResourceProps, "resourceType" | "blobId"> & {
+    tagged?: string[]
+  },
+) => {
+  const { tagged = [], ...rest } = args
+
+  const blob = await db
+    .insertInto("Blob")
+    .values({
+      content: jsonb(collectionPageBlobContent(tagged)),
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  const { page } = await setupPageResource({
+    ...rest,
+    resourceType: ResourceType.CollectionPage,
+    blobId: blob.id,
+  })
+
+  return { page, blob }
 }
 
 export const setupCollectionLink = async ({
