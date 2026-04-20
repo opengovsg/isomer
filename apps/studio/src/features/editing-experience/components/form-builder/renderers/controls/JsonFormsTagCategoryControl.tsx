@@ -43,16 +43,16 @@ import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesErr
 const TagCategoryUsageCount = ({
   siteId,
   pageId,
-  tagCategory,
+  tagOptionIds,
 }: {
   siteId: number
   pageId: number
-  tagCategory: { label: string; id: string }
+  tagOptionIds: string[]
 }) => {
-  const [{ count }] = trpc.collection.countTagCategoryUsage.useSuspenseQuery({
+  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
     siteId,
     pageId,
-    tagCategory,
+    tagOptionIds,
   })
 
   return <>{count ?? "—"}</>
@@ -62,7 +62,7 @@ function DeleteFilterModal({
   isOpen,
   siteId,
   pageId,
-  tagCategory,
+  tagOptionIds,
   label,
   onClose,
   onConfirm,
@@ -70,7 +70,7 @@ function DeleteFilterModal({
   isOpen: boolean
   siteId: number
   pageId: number
-  tagCategory: { label: string; id: string }
+  tagOptionIds: string[]
   label: string
   onClose: () => void
   onConfirm: () => void
@@ -107,10 +107,7 @@ function DeleteFilterModal({
                       <TagCategoryUsageCount
                         siteId={siteId}
                         pageId={pageId}
-                        tagCategory={{
-                          label: tagCategory.label,
-                          id: tagCategory.id,
-                        }}
+                        tagOptionIds={tagOptionIds}
                       />
                     </Suspense>
                   </ErrorBoundary>{" "}
@@ -169,7 +166,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
     label: string
-    tagCategory: { label: string; id: string }
+    tagOptionIds: string[]
   }>(null)
 
   const { siteId, pageId } = useQueryParse(pageSchema)
@@ -179,7 +176,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
 
   const handleDeleteFilterMenuItemClick = (index: number) => {
     const cat = get(core?.data, composePaths(path, `${index}`)) as
-      | { label?: string; id?: string }
+      | { label?: string; id?: string; options?: { id?: string }[] }
       | undefined
 
     const tagId = cat?.id?.trim()
@@ -191,15 +188,16 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
       removeItems(path, [index])()
       return
     }
-    
+
     // Persisted filter: show the modal so we can warn about existing item usage before delete.
+    const tagOptionIds =
+      cat?.options
+        ?.map((o) => o.id?.trim())
+        .filter((id): id is string => Boolean(id)) ?? []
     setDeleteTarget({
       index,
       label: cat?.label?.trim() ?? "",
-      tagCategory: {
-        label: cat?.label?.trim() ?? "",
-        id: tagId,
-      },
+      tagOptionIds,
     })
   }
 
@@ -286,7 +284,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
           isOpen
           siteId={siteId}
           pageId={pageId}
-          tagCategory={deleteTarget.tagCategory}
+          tagOptionIds={deleteTarget.tagOptionIds}
           label={deleteTarget.label}
           onClose={() => setDeleteTarget(null)}
           onConfirm={handleConfirmDelete}

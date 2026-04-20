@@ -4,8 +4,7 @@ import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
-  countTagCategoryUsageSchema,
-  countTagOptionUsageSchema,
+  countTagOptionsUsageSchema,
   createCollectionSchema,
   editLinkSchema,
   getCollectionsSchema,
@@ -42,35 +41,6 @@ import {
   createCollectionLinkJson,
   createCollectionPageJson,
 } from "./collection.service"
-
-async function getCollectionIndexTagCategoriesFromResource({
-  draftBlobId,
-  publishedVersionId,
-}: {
-  draftBlobId: string | null
-  publishedVersionId: string | null
-}) {
-  let blobId: string | null = draftBlobId
-  if (!blobId && publishedVersionId) {
-    const version = await db
-      .selectFrom("Version")
-      .where("id", "=", publishedVersionId)
-      .select("blobId")
-      .executeTakeFirst()
-    blobId = version?.blobId ?? null
-  }
-  if (!blobId) {
-    return undefined
-  }
-
-  const { content } = await db
-    .selectFrom("Blob")
-    .where("id", "=", blobId)
-    .selectAll()
-    .executeTakeFirstOrThrow()
-
-  return (content as unknown as CollectionPageSchemaType).page.tagCategories
-}
 
 export const collectionRouter = router({
   getMetadata: protectedProcedure
@@ -344,9 +314,9 @@ export const collectionRouter = router({
       },
     ),
 
-  countTagOptionUsage: protectedProcedure
-    .input(countTagOptionUsageSchema)
-    .query(async ({ ctx, input: { siteId, pageId, tagOptionId } }) => {
+  countTagOptionsUsage: protectedProcedure
+    .input(countTagOptionsUsageSchema)
+    .query(async ({ ctx, input: { siteId, pageId, tagOptionIds } }) => {
       await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
@@ -381,6 +351,17 @@ export const collectionRouter = router({
         })
       }
 
+      const uniqueTagOptionIds = [...new Set(tagOptionIds)]
+      if (uniqueTagOptionIds.length === 0) {
+        return { count: 0 }
+      }
+
+      const optionIdsAsSqlArray = sql.join(
+        uniqueTagOptionIds.map((id) => sql`${id}::text`),
+        sql`, `,
+      )
+      const queriedOptionIds = sql`to_jsonb(ARRAY[${optionIdsAsSqlArray}]::text[])`
+
       const row = await db
         .selectFrom("Resource as r")
         .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
@@ -394,97 +375,11 @@ export const collectionRouter = router({
         ])
         .where(
           sql<boolean>`(
-            COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb)
-              @> jsonb_build_array(${tagOptionId}::text)
+            COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb) && ${queriedOptionIds}
             OR
-            COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb)
-              @> jsonb_build_array(${tagOptionId}::text)
+            COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb) && ${queriedOptionIds}
           )`,
         )
-        .select(sql<number>`cast(count(*) as int)`.as("count"))
-        .executeTakeFirstOrThrow()
-
-      return { count: row.count }
-    }),
-
-  countTagCategoryUsage: protectedProcedure
-    .input(countTagCategoryUsageSchema)
-    .query(async ({ ctx, input: { siteId, pageId, tagCategory } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      const indexPage = await db
-        .selectFrom("Resource")
-        .where("id", "=", String(pageId))
-        .where("siteId", "=", siteId)
-        .where("type", "=", ResourceType.IndexPage)
-        .select(["parentId", "draftBlobId", "publishedVersionId"])
-        .executeTakeFirst()
-
-      if (!indexPage?.parentId) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Collection index page not found",
-        })
-      }
-
-      const { parentId, draftBlobId, publishedVersionId } = indexPage
-
-      const collection = await getSiteResourceById({
-        siteId,
-        resourceId: parentId,
-        type: ResourceType.Collection,
-      })
-      if (!collection) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Collection not found",
-        })
-      }
-
-      const tagCategories = await getCollectionIndexTagCategoriesFromResource({
-        draftBlobId,
-        publishedVersionId,
-      })
-      const category = tagCategories?.find((c) => c.id === tagCategory.id)
-      const tagOptionIds =
-        category?.options
-          ?.map((o) => o.id)
-          .filter((id): id is string => Boolean(id)) ?? []
-
-      if (tagOptionIds.length === 0) {
-        return { count: 0 }
-      }
-
-      const usagePredicate = sql<boolean>`(${sql.join(
-        tagOptionIds.map(
-          (id) =>
-            sql`(
-            COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb)
-              @> jsonb_build_array(${id}::text)
-            OR
-            COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb)
-              @> jsonb_build_array(${id}::text)
-          )`,
-        ),
-        sql` OR `,
-      )})`
-
-      const row = await db
-        .selectFrom("Resource as r")
-        .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
-        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
-        .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
-        .where("r.parentId", "=", parentId)
-        .where("r.siteId", "=", siteId)
-        .where("r.type", "in", [
-          ResourceType.CollectionPage,
-          ResourceType.CollectionLink,
-        ])
-        .where(usagePredicate)
         .select(sql<number>`cast(count(*) as int)`.as("count"))
         .executeTakeFirstOrThrow()
 

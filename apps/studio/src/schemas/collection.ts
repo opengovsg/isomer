@@ -106,18 +106,9 @@ export const readCollectionSchema = z
   })
   .merge(offsetPaginationSchema)
 
-export const countTagOptionUsageSchema = z.object({
+/** Counts child collection pages/links whose `tagged` includes any of these option ids. */
+export const countTagOptionsUsageSchema = z.object({
   siteId: z.number().min(1),
   pageId: z.number().min(1), // pageId is the collection index page resource id
-  tagOptionId: z.string().uuid(),
-})
-
-/** Matches the filter head in `TagCategorySchema` (label + id) in page types. */
-export const countTagCategoryUsageSchema = z.object({
-  siteId: z.number().min(1),
-  pageId: z.number().min(1), // pageId is the collection index page resource id
-  tagCategory: z.object({
-    label: z.string().max(70),
-    id: z.string().uuid(),
-  }),
+  tagOptionIds: z.array(z.string().uuid()),
 })

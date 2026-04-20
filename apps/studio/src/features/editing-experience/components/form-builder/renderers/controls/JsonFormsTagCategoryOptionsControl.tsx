@@ -50,10 +50,10 @@ const TagOptionUsageCount = ({
   pageId: number
   tagOptionId: string
 }) => {
-  const [{ count }] = trpc.collection.countTagOptionUsage.useSuspenseQuery({
+  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
     siteId,
     pageId,
-    tagOptionId,
+    tagOptionIds: [tagOptionId],
   })
 
   return <>{count ?? "—"}</>
@@ -184,7 +184,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
       removeItems(path, [index])()
       return
     }
-    
+
     // Persisted option: show the modal so we can warn about existing item usage before delete.
     setDeleteTarget({
       index,

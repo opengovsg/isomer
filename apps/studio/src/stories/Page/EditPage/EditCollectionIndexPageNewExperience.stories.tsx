@@ -30,8 +30,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.index(),
   pageHandlers.getFullPermalink.collection(),
-  collectionHandlers.countTagCategoryUsage.default(),
-  collectionHandlers.countTagOptionUsage.default(),
+  collectionHandlers.countTagOptionsUsage.default(),
 ]
 
 const meta: Meta<typeof EditPage> = {

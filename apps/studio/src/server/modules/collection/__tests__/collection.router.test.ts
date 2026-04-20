@@ -1,4 +1,3 @@
-import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
 import _, { omit } from "lodash"
@@ -22,7 +21,6 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import * as auditService from "~/server/modules/audit/audit.service"
-import { createCollectionIndexJson } from "~/server/modules/collection/collection.service"
 import { createCallerFactory } from "~/server/trpc"
 
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
@@ -1591,8 +1589,9 @@ describe("collection.router", async () => {
     })
   })
 
-  describe("countTagOptionUsage", () => {
+  describe("countTagOptionsUsage", () => {
     const TAG_OPTION_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+    const TAG_OPTION_B = "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12"
 
     async function setupCollectionWithIndexPage() {
       const { collection, site } = await setupCollection()
@@ -1610,10 +1609,10 @@ describe("collection.router", async () => {
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
-      const result = unauthedCaller.countTagOptionUsage({
+      const result = unauthedCaller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
-        tagOptionId: TAG_OPTION_ID,
+        tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
@@ -1627,10 +1626,10 @@ describe("collection.router", async () => {
       const { site, indexPage } = await setupCollectionWithIndexPage()
 
       // Act
-      const result = caller.countTagOptionUsage({
+      const result = caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
-        tagOptionId: TAG_OPTION_ID,
+        tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
@@ -1649,10 +1648,10 @@ describe("collection.router", async () => {
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
-      const result = caller.countTagOptionUsage({
+      const result = caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: 99999,
-        tagOptionId: TAG_OPTION_ID,
+        tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
@@ -1670,10 +1669,10 @@ describe("collection.router", async () => {
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
-      const result = caller.countTagOptionUsage({
+      const result = caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(page.id),
-        tagOptionId: TAG_OPTION_ID,
+        tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
@@ -1693,10 +1692,10 @@ describe("collection.router", async () => {
       await setupEditorPermissions({ userId: session.userId, siteId: siteB.id })
 
       // Act
-      const result = caller.countTagOptionUsage({
+      const result = caller.countTagOptionsUsage({
         siteId: siteB.id,
         pageId: Number(indexPage.id),
-        tagOptionId: TAG_OPTION_ID,
+        tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
@@ -1714,10 +1713,10 @@ describe("collection.router", async () => {
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
-      const result = await caller.countTagOptionUsage({
+      const result = await caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
-        tagOptionId: TAG_OPTION_ID,
+        tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
@@ -1737,10 +1736,10 @@ describe("collection.router", async () => {
       })
 
       // Act
-      const result = await caller.countTagOptionUsage({
+      const result = await caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
-        tagOptionId: TAG_OPTION_ID,
+        tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
@@ -1760,10 +1759,10 @@ describe("collection.router", async () => {
       })
 
       // Act
-      const result = await caller.countTagOptionUsage({
+      const result = await caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
-        tagOptionId: TAG_OPTION_ID,
+        tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
@@ -1816,10 +1815,10 @@ describe("collection.router", async () => {
         .execute()
 
       // Act
-      const result = await caller.countTagOptionUsage({
+      const result = await caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
-        tagOptionId: TAG_OPTION_ID,
+        tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
@@ -1870,10 +1869,10 @@ describe("collection.router", async () => {
         .execute()
 
       // Act
-      const result = await caller.countTagOptionUsage({
+      const result = await caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
-        tagOptionId: TAG_OPTION_ID,
+        tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
@@ -1911,149 +1910,66 @@ describe("collection.router", async () => {
         .execute()
 
       // Act
-      const result = await caller.countTagOptionUsage({
+      const result = await caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
-        tagOptionId: TAG_OPTION_ID,
+        tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
       expect(result).toEqual({ count: 2 })
     })
-  })
 
-  describe("countTagCategoryUsage", () => {
-    const FILTER_ID = "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
-    const TAG_OPTION_A = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
-    const TAG_OPTION_B = "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12"
-
-    async function setupCollectionWithIndexPage() {
-      const { collection, site } = await setupCollection()
-      const { page: indexPage, blob: indexBlob } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.IndexPage,
-        parentId: collection.id,
-      })
-      return { collection, site, indexPage, indexBlob }
-    }
-
-    async function seedIndexPageTagCategories(
-      indexBlobId: string,
-      tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]>,
-    ) {
-      const base = createCollectionIndexJson("Test collection")
-      await db
-        .updateTable("Blob")
-        .set({
-          content: jsonb({
-            ...base,
-            page: { ...base.page, tagCategories },
-          }),
-        })
-        .where("id", "=", indexBlobId)
-        .execute()
-    }
-
-    it("should return 0 when the filter id is not on the index page", async () => {
-      // Arrange
+    it("should return 0 when tagOptionIds is empty", async () => {
       const { site, indexPage } = await setupCollectionWithIndexPage()
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
 
-      // Act
-      const result = await caller.countTagCategoryUsage({
+      const result = await caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
-        tagCategory: { label: "Missing", id: FILTER_ID },
+        tagOptionIds: [],
       })
 
-      // Assert
       expect(result).toEqual({ count: 0 })
     })
 
-    it("should throw 404 if index page does not exist", async () => {
-      // Arrange
-      const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
-
-      // Act
-      const result = caller.countTagCategoryUsage({
-        siteId: site.id,
-        pageId: 99999,
-        tagCategory: { label: "F", id: TAG_OPTION_A },
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "Collection index page not found",
-        }),
-      )
-    })
-
-    it("should return 1 when a child item lists one of the filter's options", async () => {
-      // Arrange
-      const { collection, site, indexPage, indexBlob } =
+    it("should return 1 when a child item lists one of several queried tag options", async () => {
+      const { collection, site, indexPage } =
         await setupCollectionWithIndexPage()
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
-      await seedIndexPageTagCategories(indexBlob.id, [
-        {
-          id: FILTER_ID,
-          label: "Filter",
-          options: [
-            { id: TAG_OPTION_A, label: "A" },
-            { id: TAG_OPTION_B, label: "B" },
-          ],
-        },
-      ])
       await setupCollectionPage({
         siteId: site.id,
         parentId: collection.id,
         permalink: "tagged-page",
-        tagged: [TAG_OPTION_A],
+        tagged: [TAG_OPTION_ID],
       })
 
-      // Act
-      const result = await caller.countTagCategoryUsage({
+      const result = await caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
-        tagCategory: { label: "Filter", id: FILTER_ID },
+        tagOptionIds: [TAG_OPTION_ID, TAG_OPTION_B],
       })
 
-      // Assert
       expect(result).toEqual({ count: 1 })
     })
 
-    it("should count a resource once when tagged lists multiple options from the filter", async () => {
-      // Arrange
-      const { collection, site, indexPage, indexBlob } =
+    it("should count a resource once when tagged lists multiple of the queried option ids", async () => {
+      const { collection, site, indexPage } =
         await setupCollectionWithIndexPage()
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
-      await seedIndexPageTagCategories(indexBlob.id, [
-        {
-          id: FILTER_ID,
-          label: "Filter",
-          options: [
-            { id: TAG_OPTION_A, label: "A" },
-            { id: TAG_OPTION_B, label: "B" },
-          ],
-        },
-      ])
       await setupCollectionPage({
         siteId: site.id,
         parentId: collection.id,
         permalink: "multi-tag-page",
-        tagged: [TAG_OPTION_A, TAG_OPTION_B],
+        tagged: [TAG_OPTION_ID, TAG_OPTION_B],
       })
 
-      // Act
-      const result = await caller.countTagCategoryUsage({
+      const result = await caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
-        tagCategory: { label: "Filter", id: FILTER_ID },
+        tagOptionIds: [TAG_OPTION_ID, TAG_OPTION_B],
       })
 
-      // Assert
       expect(result).toEqual({ count: 1 })
     })
   })
