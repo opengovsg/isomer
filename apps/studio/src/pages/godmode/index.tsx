@@ -14,7 +14,7 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-type GodmodeLink = {
+interface GodmodeLink {
   href: string
   label: string
   /** Isomer admin roles that may see this hub link */
