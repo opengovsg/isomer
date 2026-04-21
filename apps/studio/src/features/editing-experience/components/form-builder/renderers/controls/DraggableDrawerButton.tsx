@@ -36,11 +36,6 @@ interface DraggableDrawerButtonProps extends OwnPropsOfMasterListItem {
   listItemSubtitle?: ReactNode
   /** When `isError` is true, replaces the default “Fix issues before saving” line. */
   listItemErrorCaption?: string
-  /**
-   * When true (default), invalid rows use a subtle critical background and border
-   * (see `DraggableLinkButton`). When false, only the left accent bar indicates error.
-   */
-  listItemErrorSurfaceHighlight?: boolean
 }
 
 const DraggableDrawerButtonText = withJsonFormsMasterListItemProps(
@@ -64,7 +59,6 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
       listItemTrailing,
       listItemSubtitle,
       listItemErrorCaption,
-      listItemErrorSurfaceHighlight = true,
       ...rest
     },
     ref,
@@ -89,13 +83,6 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
           transitionProperty="common"
           transitionDuration="normal"
           aria-invalid={isError}
-          {...(listItemErrorSurfaceHighlight && {
-            _invalid: {
-              borderWidth: "1.5px",
-              borderColor: "utility.feedback.critical",
-              bg: "utility.feedback.critical-subtle",
-            },
-          })}
           _hover={{
             bg: "interaction.muted.main.hover",
             borderColor: "interaction.main-subtle.hover",
@@ -117,7 +104,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
           align="stretch"
           overflow="hidden"
         >
-          {isError && !listItemErrorSurfaceHighlight && (
+          {isError && (
             <Box
               aria-hidden
               bg="utility.feedback.critical"
@@ -125,14 +112,15 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
               mr="-6px"
             />
           )}
-          <HStack flex={1} align="stretch" spacing="0.5rem" minW={0} w="100%">
+          <HStack flex={1} align="stretch" spacing={0} minW={0} w="100%">
             <Flex
               cursor="grab"
               flexShrink={0}
               align="center"
               layerStyle="focusRing"
               {...mergedDragHandleProps}
-              pl="1rem"
+              pl="0.5rem"
+              pr="0.25rem"
               {...dragHandleProps}
             >
               <Icon as={BiGridVertical} fontSize="1.5rem" color="slate.300" />
@@ -147,6 +135,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
               alignItems="center"
               cursor="pointer"
               {...mergedLabelButtonProps}
+              pl="0.25rem"
               pr="1rem"
               onClick={() => setSelectedIndex(index)}
             >
@@ -176,18 +165,15 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
                     <Text
                       as="span"
                       textStyle="caption-2"
-                      textAlign="left"
                       color="utility.feedback.critical"
                       display="flex"
-                      alignItems="flex-start"
+                      alignItems="center"
                     >
                       <Icon
                         aria-hidden
                         as={BiInfoCircle}
                         fontSize="0.75rem"
                         mr="0.25rem"
-                        mt="0.125rem"
-                        flexShrink={0}
                       />
                       {listItemErrorCaption ?? "Fix issues before saving"}
                     </Text>
