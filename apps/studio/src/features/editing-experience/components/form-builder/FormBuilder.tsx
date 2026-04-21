@@ -73,6 +73,8 @@ import {
   jsonFormsSocialMediaControlTester,
   JsonFormsTagCategoriesControl,
   jsonFormsTagCategoriesControlTester,
+  JsonFormsCategoryOptionsControl,
+  jsonFormsCategoryOptionsControlTester,
   JsonFormsTagCategoryOptionsControl,
   jsonFormsTagCategoryOptionsControlTester,
   JsonFormsTaggedControl,
@@ -109,6 +111,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,
+  },
+  {
+    tester: jsonFormsCategoryOptionsControlTester,
+    renderer: JsonFormsCategoryOptionsControl,
   },
   {
     tester: jsonFormsTagCategoryOptionsControlTester,
