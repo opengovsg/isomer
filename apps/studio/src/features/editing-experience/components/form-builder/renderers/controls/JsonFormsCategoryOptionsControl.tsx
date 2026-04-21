@@ -16,6 +16,7 @@ import {
   Skeleton,
   Stack,
   Text,
+  VisuallyHidden,
   VStack,
 } from "@chakra-ui/react"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
@@ -101,7 +102,10 @@ const DeleteCategoryOptionModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader mr="3.5rem">
-          {label.length > 0 ? `Delete option "${label}"?` : "Delete option?"}
+          <VisuallyHidden>Delete category option</VisuallyHidden>
+          <Text as="span" aria-hidden display="block">
+            {label.length > 0 ? `Delete option "${label}"?` : "Delete option?"}
+          </Text>
         </ModalHeader>
         <ModalCloseButton size="lg" />
 
@@ -128,10 +132,9 @@ const DeleteCategoryOptionModal = ({
                       categoryId={categoryId}
                     />
                   </Suspense>
-                </ErrorBoundary>
-                {" "}
-                items. To undo this change, you will need to create and re-assign
-                this option to all items.
+                </ErrorBoundary>{" "}
+                items. To undo this change, you will need to create and
+                re-assign this option to all items.
               </Text>
             </Infobox>
             <HStack align="start">
