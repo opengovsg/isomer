@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -311,5 +311,67 @@ export const FiltersDeleteFilterModalEnabledCta: Story = {
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/i }),
     ).not.toBeDisabled()
+  },
+}
+
+export const CollectionDisplaySaveToast: Story = {
+  parameters: {
+    growthbook: [
+      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+    ],
+    msw: {
+      handlers: [pageHandlers.getCategories.default(), ...COMMON_HANDLERS],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Collection display/i }),
+    )
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Save changes/i }),
+    )
+    await waitFor(
+      () => {
+        expect(
+          withinPortals(canvasElement).getByText(
+            /Collection display saved\. Remember to publish the changes so that other users can see your updates\./,
+          ),
+        ).toBeVisible()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+export const ManageFiltersSaveToast: Story = {
+  parameters: {
+    growthbook: [
+      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+    ],
+    msw: {
+      handlers: [
+        userHandlers.isIsomerAdmin.admin(),
+        pageHandlers.getCategories.default(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    await playOpenManageFilters(canvasElement)
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Save changes/i }),
+    )
+    await waitFor(
+      () => {
+        expect(
+          withinPortals(canvasElement).getByText(
+            /Filter saved\. Remember to publish the changes so that other users can use the new filter options\./,
+          ),
+        ).toBeVisible()
+      },
+      { timeout: 5000 },
+    )
   },
 }
