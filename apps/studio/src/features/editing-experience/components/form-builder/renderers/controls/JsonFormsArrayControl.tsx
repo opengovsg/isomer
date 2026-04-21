@@ -1,3 +1,4 @@
+import type { BoxProps } from "@chakra-ui/react"
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   ArrayLayoutProps,
@@ -7,7 +8,9 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
-import { Box, Flex, Stack, Text, VStack } from "@chakra-ui/react"
+import type { ReactNode } from "react"
+import type { IconType } from "react-icons"
+import { Box, Flex, HStack, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,
@@ -40,6 +43,32 @@ export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
   or(isObjectArrayControl, isPrimitiveArrayControl),
 )
+
+export type JsonFormsArrayControlProps = ArrayLayoutProps & {
+  listItemIcon?: IconType
+  /** When the array is empty, replaces the default placeholder inside the empty-state container. */
+  emptyState?: ReactNode
+  /** Merged into row padding on the drag handle and label button (after defaults). */
+  listItemContentProps?: BoxProps
+  /** Per-row content after the label (e.g. actions menu), flush right in the row. */
+  renderListItemTrailing?: (index: number) => ReactNode
+  /** Caption under the list item title (e.g. option counts). */
+  renderListItemSubtitle?: (index: number) => ReactNode
+  /**
+   * Extra row error state (e.g. array-level `uniqueItemPropertiesIgnoreCase` where AJV’s path
+   * is the array, not each item). Merged with `hasErrorAt` for the row.
+   */
+  getListItemHasError?: (index: number) => boolean
+  /** When the row is in error, replaces the default “Fix issues before saving” caption. */
+  renderListItemErrorCaption?: (index: number) => string | undefined
+  /** Rendered after the schema description and before the draggable list. */
+  belowDescription?: ReactNode
+  /**
+   * Applied to the value from `createDefaultValue` when adding an array item.
+   * Use when schema `default` would be wrong under AJV `useDefaults` (e.g. legacy rows).
+   */
+  mapNewArrayItem?: (item: unknown) => unknown
+}
 
 interface ComplexEditorNestedDrawerProps {
   renderers?: JsonFormsRendererRegistryEntry[]
@@ -140,7 +169,7 @@ function ComplexEditorNestedDrawer({
   )
 }
 
-function JsonFormsArrayControl({
+export function JsonFormsArrayControlView({
   data,
   path,
   visible,
@@ -157,8 +186,22 @@ function JsonFormsArrayControl({
   cells,
   uischemas,
   uischema,
-}: ArrayLayoutProps) {
+  description,
+  listItemIcon,
+  emptyState,
+  listItemContentProps,
+  renderListItemTrailing,
+  renderListItemSubtitle,
+  getListItemHasError,
+  renderListItemErrorCaption,
+  belowDescription,
+  mapNewArrayItem,
+}: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
+  const arraySchemaWithExtensions = arraySchema as JsonSchema & {
+    addItemLabel?: string
+  }
+  const addItemLabel = arraySchemaWithExtensions.addItemLabel ?? "Add item"
   const [selectedIndex, setSelectedIndex] = useState<number>()
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
@@ -239,95 +282,130 @@ function JsonFormsArrayControl({
   }
 
   return (
-    <VStack spacing="0.375rem" align="start">
-      <Stack flexDir="row" justify="space-between" align="center" w="full">
-        <Text textStyle="subhead-1">{label}</Text>
-        <Button
-          onClick={addItem(path, createDefaultValue(schema, rootSchema))}
-          variant="clear"
-          size="xs"
-          leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-          isDisabled={
-            arraySchema.maxItems !== undefined && data >= arraySchema.maxItems
-          }
-        >
-          Add item
-        </Button>
-      </Stack>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="blocks">
-          {({ droppableProps, innerRef, placeholder }) => (
-            <VStack
-              {...droppableProps}
-              align="baseline"
-              w="100%"
-              h="100%"
-              spacing={0}
-              ref={innerRef}
-              mt="-0.25rem"
-            >
-              {data === 0 && (
-                <Flex
-                  alignItems="center"
-                  flexDir="column"
-                  px="1.5rem"
-                  p="3.75rem"
-                  mt="0.25rem"
-                  justifyContent="center"
-                  w="100%"
-                >
-                  <Text
-                    textStyle="subhead-1"
-                    textColor="base.content.default"
-                    textAlign="center"
+    <VStack spacing={0} align="start">
+      <VStack align="start" spacing="0.25rem" w="full">
+        <HStack w="full" justifyContent="space-between" align="center">
+          <Text textStyle="subhead-1" flex={1}>
+            {label}
+          </Text>
+          <Button
+            onClick={addItem(
+              path,
+              mapNewArrayItem
+                ? mapNewArrayItem(createDefaultValue(schema, rootSchema))
+                : createDefaultValue(schema, rootSchema),
+            )}
+            variant="clear"
+            size="xs"
+            leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+            isDisabled={
+              arraySchema.maxItems !== undefined && data >= arraySchema.maxItems
+            }
+            flexShrink={0}
+          >
+            {addItemLabel}
+          </Button>
+        </HStack>
+        {description && (
+          <Text textStyle="body-2" textColor="base.content.default">
+            {description}
+          </Text>
+        )}
+        {belowDescription}
+      </VStack>
+      <Box
+        w="full"
+        mt={description || belowDescription ? "0.75rem" : "0.25rem"}
+      >
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="blocks">
+            {({ droppableProps, innerRef, placeholder }) => (
+              <VStack
+                {...droppableProps}
+                align="baseline"
+                w="100%"
+                h="100%"
+                spacing={0}
+                ref={innerRef}
+              >
+                {data === 0 && (
+                  <Flex
+                    alignItems="center"
+                    flexDir="column"
+                    px="1.5rem"
+                    py="3.75rem"
+                    mt="0.25rem"
+                    justifyContent="center"
+                    w="100%"
                   >
-                    Items you add will appear here
-                  </Text>
-                </Flex>
-              )}
-
-              {[...Array(data).keys()].map((index) => {
-                const childPath = composePaths(path, `${index}`)
-                const hasError = hasErrorAt(childPath)
-
-                return (
-                  <Draggable
-                    key={childPath}
-                    draggableId={childPath}
-                    disableInteractiveElementBlocking
-                    index={index}
-                  >
-                    {({ draggableProps, dragHandleProps, innerRef }) => (
-                      <DraggableDrawerButton
-                        draggableProps={draggableProps}
-                        dragHandleProps={dragHandleProps}
-                        isError={hasError}
-                        ref={innerRef}
-                        index={index}
-                        path={path}
-                        schema={schema}
-                        enabled={enabled}
-                        handleSelect={() => () => undefined}
-                        removeItem={handleRemoveItem}
-                        selected={false}
-                        key={index}
-                        uischema={childUiSchema}
-                        childLabelProp={undefined}
-                        translations={{}}
-                        setSelectedIndex={setSelectedIndex}
-                      />
+                    {emptyState ?? (
+                      <Text
+                        textStyle="subhead-1"
+                        textColor="base.content.default"
+                        textAlign="center"
+                      >
+                        Items you add will appear here
+                      </Text>
                     )}
-                  </Draggable>
-                )
-              })}
+                  </Flex>
+                )}
 
-              {placeholder}
-            </VStack>
-          )}
-        </Droppable>
-      </DragDropContext>
+                {[...Array(data).keys()].map((index) => {
+                  const childPath = composePaths(path, `${index}`)
+                  const hasError =
+                    hasErrorAt(childPath) ||
+                    (getListItemHasError?.(index) ?? false)
+
+                  return (
+                    <Draggable
+                      key={childPath}
+                      draggableId={childPath}
+                      disableInteractiveElementBlocking
+                      index={index}
+                    >
+                      {({ draggableProps, dragHandleProps, innerRef }) => (
+                        <DraggableDrawerButton
+                          draggableProps={draggableProps}
+                          dragHandleProps={dragHandleProps}
+                          isError={hasError}
+                          ref={innerRef}
+                          index={index}
+                          path={path}
+                          schema={schema}
+                          enabled={enabled}
+                          handleSelect={() => () => undefined}
+                          removeItem={handleRemoveItem}
+                          selected={false}
+                          key={index}
+                          uischema={childUiSchema}
+                          childLabelProp={undefined}
+                          translations={{}}
+                          setSelectedIndex={setSelectedIndex}
+                          listItemIcon={listItemIcon}
+                          listItemContentProps={listItemContentProps}
+                          listItemTrailing={renderListItemTrailing?.(index)}
+                          listItemSubtitle={renderListItemSubtitle?.(index)}
+                          listItemErrorCaption={renderListItemErrorCaption?.(
+                            index,
+                          )}
+                        />
+                      )}
+                    </Draggable>
+                  )
+                })}
+
+                {placeholder}
+              </VStack>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </Box>
     </VStack>
   )
+}
+
+function JsonFormsArrayControl(props: ArrayLayoutProps) {
+  return <JsonFormsArrayControlView {...props} />
 }
 
 export default withJsonFormsArrayLayoutProps(JsonFormsArrayControl)

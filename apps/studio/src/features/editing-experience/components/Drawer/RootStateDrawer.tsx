@@ -132,7 +132,7 @@ const FixedBlock = () => {
         <BaseBlock
           onClick={() => {
             setCurrActiveIdx(0)
-            setDrawerState({ state: "collectionEditor" })
+            setDrawerState({ state: "collectionEditor", type: "display" })
           }}
           label="Collection display"
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
@@ -142,7 +142,10 @@ const FixedBlock = () => {
         />
         {isUserIsomerAdmin && (
           <BaseBlock
-            onClick={() => console.log("to implement")}
+            onClick={() => {
+              setCurrActiveIdx(0)
+              setDrawerState({ state: "collectionEditor", type: "filter" })
+            }}
             label="Filters"
             description="Define and manage filters for this Collection."
             containerProps={containerProps}

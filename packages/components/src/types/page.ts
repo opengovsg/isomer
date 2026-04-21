@@ -15,33 +15,71 @@ import { REF_HREF_PATTERN } from "~/utils/validation"
 const generateUuidSchema = (options: Omit<StringOptions, "format">) =>
   Type.String({ format: "uuid", ...options })
 
-export const TagOptionUuidSchema = generateUuidSchema({
+const TagOptionUuidSchema = generateUuidSchema({
   title: "Uuid of a single tag option",
   description:
     "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
 })
-export const TagCategoryUuidSchema = generateUuidSchema({
+const TagCategoryUuidSchema = generateUuidSchema({
   title: "Uuid of a single tag",
   description:
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
-// NOTE: single value for now but we might extend this in the future with additional metadata,
-// so we will leave it as is
-const DropdownItemSchema = Type.Object({
-  label: Type.String({ maxLength: 70 }),
-  id: TagOptionUuidSchema,
-})
-const TagOptionSchema = DropdownItemSchema
+
 const TagCategorySchema = Type.Composite([
   Type.Object({
-    options: Type.Array(TagOptionSchema),
+    label: Type.String({ maxLength: 70, title: "Filter name" }),
+    id: TagCategoryUuidSchema,
   }),
-  DropdownItemSchema,
+  Type.Object({
+    // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
+    // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
+    // same default to legacy rows that omit this key. New filters set `isRequired: true` in
+    // the tag-categories JsonForms control when adding an item.
+    isRequired: Type.Optional(
+      Type.Boolean({
+        title: "This filter is required",
+        description:
+          "Every item must have at least one option selected from this filter.",
+      }),
+    ),
+  }),
+  Type.Object({
+    options: Type.Array(
+      Type.Object({
+        label: Type.String({ maxLength: 70, title: "Option name" }),
+        id: TagOptionUuidSchema,
+      }),
+      {
+        title: "Options",
+        description:
+          "Collection filter will display options in this order. Only options that are in use will appear on the Preview.",
+        addItemLabel: "Add option",
+        format: "tag-category-options",
+        /**
+         * Studio AJV: duplicate option names (case-insensitive, trim) fail validation in JsonForms.
+         * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
+         */
+        uniqueItemPropertiesIgnoreCase: ["label"],
+      },
+    ),
+  }),
 ])
 // NOTE: can be optional because the categories might not exist
 const TagCategoriesSchema = Type.Object({
   tagCategories: Type.Optional(
-    Type.Array(TagCategorySchema, { format: "tag-categories" }),
+    Type.Array(TagCategorySchema, {
+      title: "Filters",
+      description:
+        "Add filters so visitors can find what they need. Editors can assign these options on items they create.",
+      addItemLabel: "Add a filter",
+      format: "tag-categories",
+      /**
+       * Studio AJV: duplicate filter names (case-insensitive, trim) fail validation in JsonForms.
+       * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
+       */
+      uniqueItemPropertiesIgnoreCase: ["label"],
+    }),
   ),
 })
 const TaggedSchema = Type.Optional(
