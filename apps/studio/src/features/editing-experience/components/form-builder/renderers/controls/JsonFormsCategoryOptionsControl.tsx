@@ -303,14 +303,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
           textStyle="subhead-1"
           backAriaLabel="Return to Category"
         />
-        <Box
-          w="100%"
-          flex={1}
-          minH={0}
-          px="1.5rem"
-          py="1rem"
-          overflow="auto"
-        >
+        <Box w="100%" flex={1} minH={0} px="1.5rem" py="1rem" overflow="auto">
           <CategoryOptionsExpandedEditor {...props} />
         </Box>
         <Box
