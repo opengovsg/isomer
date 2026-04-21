@@ -1,3 +1,4 @@
+import type { BoxProps } from "@chakra-ui/react"
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   ArrayLayoutProps,
@@ -8,6 +9,7 @@ import type {
   UISchemaElement,
 } from "@jsonforms/core"
 import type { ReactNode } from "react"
+import type { IconType } from "react-icons"
 import { Box, Flex, HStack, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
@@ -33,10 +35,9 @@ import {
 } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import type { DraggableArrayItemRenderProps } from "./types"
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
-import DraggableTagButton from "./DraggableTagButton"
+import DraggableDrawerButton from "./DraggableDrawerButton"
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
@@ -44,10 +45,32 @@ export const jsonFormsArrayControlTester: RankedTester = rankWith(
 )
 
 export type JsonFormsArrayControlProps = ArrayLayoutProps & {
-  /** When the array is empty, replaces the default placeholder inside the empty-state container. */
-  emptyState?: ReactNode
-  /** Custom row renderer. Receives per-row draggable wiring and metadata; must render and forward the ref. */
-  renderListItem?: (props: DraggableArrayItemRenderProps) => ReactNode
+  listItemIcon?: IconType
+  /**
+   * When the array is empty: replaces the default placeholder inside the empty-state container.
+   * Pass `null` to show no placeholder (no padded empty area).
+   */
+  emptyState?: ReactNode | null
+  /** Merged into row padding on the drag handle and label button (after defaults). */
+  listItemContentProps?: BoxProps
+  /** Per-row content after the label (e.g. actions menu), flush right in the row. */
+  renderListItemTrailing?: (index: number) => ReactNode
+  /** Caption under the list item title (e.g. option counts). */
+  renderListItemSubtitle?: (index: number) => ReactNode
+  /**
+   * Extra row error state (e.g. array-level `uniqueItemPropertiesIgnoreCase` where AJV's path
+   * is the array, not each item). Merged with `hasErrorAt` for the row.
+   */
+  getListItemHasError?: (index: number) => boolean
+  /** When the row is in error, replaces the default "Fix issues before saving" caption. */
+  renderListItemErrorCaption?: (index: number) => string | undefined
+  /** Rendered after the schema description and before the draggable list. */
+  belowDescription?: ReactNode
+  /**
+   * Applied to the value from `createDefaultValue` when adding an array item.
+   * Use when schema `default` would be wrong under AJV `useDefaults` (e.g. legacy rows).
+   */
+  mapNewArrayItem?: (item: unknown) => unknown
 }
 
 interface ComplexEditorNestedDrawerProps {
@@ -167,8 +190,15 @@ export function JsonFormsArrayControlView({
   uischemas,
   uischema,
   description,
+  listItemIcon,
   emptyState,
-  renderListItem,
+  listItemContentProps,
+  renderListItemTrailing,
+  renderListItemSubtitle,
+  getListItemHasError,
+  renderListItemErrorCaption,
+  belowDescription,
+  mapNewArrayItem,
 }: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
   const arraySchemaWithExtensions = arraySchema as JsonSchema & {
@@ -262,7 +292,12 @@ export function JsonFormsArrayControlView({
             {label}
           </Text>
           <Button
-            onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+            onClick={addItem(
+              path,
+              mapNewArrayItem
+                ? mapNewArrayItem(createDefaultValue(schema, rootSchema))
+                : createDefaultValue(schema, rootSchema),
+            )}
             variant="clear"
             size="xs"
             leftIcon={<BiPlusCircle fontSize="1.25rem" />}
@@ -279,8 +314,12 @@ export function JsonFormsArrayControlView({
             {description}
           </Text>
         )}
+        {belowDescription}
       </VStack>
-      <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
+      <Box
+        w="full"
+        mt={description || belowDescription ? "0.75rem" : "0.25rem"}
+      >
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="blocks">
             {({ droppableProps, innerRef, placeholder }) => (
@@ -292,31 +331,34 @@ export function JsonFormsArrayControlView({
                 spacing={0}
                 ref={innerRef}
               >
-                {data === 0 && (
-                  <Flex
-                    alignItems="center"
-                    flexDir="column"
-                    px="1.5rem"
-                    py="3.75rem"
-                    mt="0.25rem"
-                    justifyContent="center"
-                    w="100%"
-                  >
-                    {emptyState ?? (
-                      <Text
-                        textStyle="subhead-1"
-                        textColor="base.content.default"
-                        textAlign="center"
-                      >
-                        Items you add will appear here
-                      </Text>
-                    )}
-                  </Flex>
-                )}
+                {data === 0 &&
+                  (emptyState === null ? null : (
+                    <Flex
+                      alignItems="center"
+                      flexDir="column"
+                      px="1.5rem"
+                      py="3.75rem"
+                      mt="0.25rem"
+                      justifyContent="center"
+                      w="100%"
+                    >
+                      {emptyState ?? (
+                        <Text
+                          textStyle="subhead-1"
+                          textColor="base.content.default"
+                          textAlign="center"
+                        >
+                          Items you add will appear here
+                        </Text>
+                      )}
+                    </Flex>
+                  ))}
 
                 {[...Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, `${index}`)
-                  const hasError = hasErrorAt(childPath)
+                  const hasError =
+                    hasErrorAt(childPath) ||
+                    (getListItemHasError?.(index) ?? false)
 
                   return (
                     <Draggable
@@ -325,30 +367,33 @@ export function JsonFormsArrayControlView({
                       disableInteractiveElementBlocking
                       index={index}
                     >
-                      {({ draggableProps, dragHandleProps, innerRef }) => {
-                        const rowProps: DraggableArrayItemRenderProps = {
-                          draggableProps,
-                          dragHandleProps,
-                          isError: hasError,
-                          ref: innerRef,
-                          index,
-                          path,
-                          schema,
-                          enabled,
-                          handleSelect: () => () => undefined,
-                          removeItem: handleRemoveItem,
-                          selected: false,
-                          uischema: childUiSchema,
-                          childLabelProp: undefined,
-                          translations: {},
-                          setSelectedIndex,
-                        }
-                        return renderListItem ? (
-                          renderListItem(rowProps)
-                        ) : (
-                          <DraggableTagButton {...rowProps} />
-                        )
-                      }}
+                      {({ draggableProps, dragHandleProps, innerRef }) => (
+                        <DraggableDrawerButton
+                          draggableProps={draggableProps}
+                          dragHandleProps={dragHandleProps}
+                          isError={hasError}
+                          ref={innerRef}
+                          index={index}
+                          path={path}
+                          schema={schema}
+                          enabled={enabled}
+                          handleSelect={() => () => undefined}
+                          removeItem={handleRemoveItem}
+                          selected={false}
+                          key={index}
+                          uischema={childUiSchema}
+                          childLabelProp={undefined}
+                          translations={{}}
+                          setSelectedIndex={setSelectedIndex}
+                          listItemIcon={listItemIcon}
+                          listItemContentProps={listItemContentProps}
+                          listItemTrailing={renderListItemTrailing?.(index)}
+                          listItemSubtitle={renderListItemSubtitle?.(index)}
+                          listItemErrorCaption={renderListItemErrorCaption?.(
+                            index,
+                          )}
+                        />
+                      )}
                     </Draggable>
                   )
                 })}
