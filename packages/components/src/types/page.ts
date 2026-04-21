@@ -15,12 +15,12 @@ import { REF_HREF_PATTERN } from "~/utils/validation"
 const generateUuidSchema = (options: Omit<StringOptions, "format">) =>
   Type.String({ format: "uuid", ...options })
 
-export const TagOptionUuidSchema = generateUuidSchema({
+const TagOptionUuidSchema = generateUuidSchema({
   title: "Uuid of a single tag option",
   description:
     "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
 })
-export const TagCategoryUuidSchema = generateUuidSchema({
+const TagCategoryUuidSchema = generateUuidSchema({
   title: "Uuid of a single tag",
   description:
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
@@ -29,7 +29,7 @@ export const TagCategoryUuidSchema = generateUuidSchema({
 const TagCategorySchema = Type.Composite([
   Type.Object({
     label: Type.String({ maxLength: 70, title: "Filter name" }),
-    id: TagOptionUuidSchema,
+    id: TagCategoryUuidSchema,
   }),
   Type.Object({
     // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
