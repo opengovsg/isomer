@@ -38,7 +38,7 @@ function JsonFormsCategoryIdSelect({
         label: category,
         value: category,
       }))}
-      isClearable={false}
+      isClearable={true} // TODO: change to false after migration where it's no longer optional
       onChange={(value) => {
         handleChange(path, value)
       }}
