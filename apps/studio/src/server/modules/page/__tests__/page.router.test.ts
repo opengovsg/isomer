@@ -830,6 +830,31 @@ describe("page.router", async () => {
       expect(result.categoryOptions).toEqual([])
     })
 
+    it("should throw 404 when the resource has no parent collection", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.RootPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection page not found",
+        }),
+      )
+    })
+
     it("should return category options from the published collection index blob", async () => {
       // Arrange
       const { collection, site } = await setupCollection()

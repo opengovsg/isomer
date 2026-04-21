@@ -213,19 +213,27 @@ export const pageRouter = router({
         userId: ctx.user.id,
       })
 
-      const { parentId } = await db
+      const page = await db
         .selectFrom("Resource")
         .where("siteId", "=", siteId)
         .where("id", "=", String(pageId))
         .select("parentId")
-        .executeTakeFirstOrThrow()
+        .executeTakeFirst()
+
+      const parentId = page?.parentId
+      if (!parentId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection page not found",
+        })
+      }
 
       const row = await db
         .selectFrom("Resource as r")
         .innerJoin("Version as v", "r.publishedVersionId", "v.id")
         .innerJoin("Blob as vb", "v.blobId", "vb.id")
         .where("r.siteId", "=", siteId)
-        .where("r.parentId", "=", String(parentId))
+        .where("r.parentId", "=", parentId)
         .where("r.type", "=", ResourceType.IndexPage)
         .select(
           sql<
