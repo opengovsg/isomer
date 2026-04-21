@@ -77,6 +77,10 @@ export {
   jsonFormsCategoryControlTester,
 } from "./JsonFormsCategoryControl"
 export {
+  default as JsonFormsCategoryIdControl,
+  jsonFormsCategoryIdControlTester,
+} from "./JsonFormsCategoryIdControl"
+export {
   default as JsonFormsCollectionDropdownControl,
   jsonFormsCollectionDropdownControlTester,
 } from "./JsonFormsCollectionDropdownControl"
