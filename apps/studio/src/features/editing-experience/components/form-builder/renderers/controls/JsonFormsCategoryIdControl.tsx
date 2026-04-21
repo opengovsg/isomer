@@ -9,8 +9,6 @@ import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { CATEGORY_ID_DROPDOWN_FEATURE_KEY } from "~/lib/growthbook"
 
-import { JsonFormsTextControl } from "./JsonFormsTextControl"
-
 export const jsonFormsCategoryIdControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.CategoryIdControl,
   and(schemaMatches((schema) => schema.format === "category-id")),
@@ -63,21 +61,12 @@ export function JsonFormsCategoryIdControl({
     { enabledSites: [] },
   )
 
-  const isDropdownEnabled = enabledSites.includes(siteId.toString())
-
-  return isDropdownEnabled ? (
+  return enabledSites.includes(siteId.toString()) ? (
     <FormControl isRequired={required} gap="0.5rem">
       <FormLabel description={description}>{label}</FormLabel>
       <JsonFormsCategoryIdSelect {...props} label={label} />
     </FormControl>
-  ) : (
-    <JsonFormsTextControl
-      {...props}
-      description={description}
-      required={required}
-      label={label}
-    />
-  )
+  ) : null
 }
 
 export default withJsonFormsControlProps(JsonFormsCategoryIdControl)
