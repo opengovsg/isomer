@@ -9,6 +9,7 @@ export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY =
   "is-new-collection-editing-experience-enabled"
 export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
+export const CATEGORY_ID_DROPDOWN_FEATURE_KEY = "category-id-dropdown"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true

@@ -19,6 +19,8 @@ import {
   jsonFormsBooleanControlTester,
   JsonFormsCategoryControl,
   jsonFormsCategoryControlTester,
+  JsonFormsCategoryIdControl,
+  jsonFormsCategoryIdControlTester,
   JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
   JsonFormsChildrenPagesOrderingControl,
@@ -201,6 +203,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsCategoryControlTester,
     renderer: JsonFormsCategoryControl,
+  },
+  {
+    tester: jsonFormsCategoryIdControlTester,
+    renderer: JsonFormsCategoryIdControl,
   },
   {
     tester: jsonFormsCollectionDropdownControlTester,
