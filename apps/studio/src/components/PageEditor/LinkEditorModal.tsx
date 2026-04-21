@@ -18,7 +18,7 @@ import {
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
-import { isEmpty } from "lodash"
+import { isEmpty } from "lodash-es"
 import { z } from "zod"
 import {
   FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,

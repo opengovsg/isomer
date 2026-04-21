@@ -1,4 +1,4 @@
-import { difference } from "lodash"
+import { difference } from "lodash-es"
 
 export const mergeResourcesWithOrdering = (
   base: string[],

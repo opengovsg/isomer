@@ -7,7 +7,6 @@ import {
   type IsomerSitemap,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import _ from "lodash"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   getSitemapTree,
