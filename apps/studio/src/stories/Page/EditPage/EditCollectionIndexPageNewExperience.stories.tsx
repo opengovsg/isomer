@@ -415,8 +415,8 @@ export const CategoryOptionsDeleteOptionModalDisabledCta: Story = {
     const deleteCategoryOptionDialog = await portals.findByRole("dialog", {
       name: /Delete category option/i,
     })
-    await expect(deleteCategoryOptionDialog).toHaveTextContent(
-      /being used in 3 items/i,
+    await within(deleteCategoryOptionDialog).findByText(
+      /This option is being used in 3 items\./i,
     )
     await expect(
       await portals.findByRole("button", { name: /^Delete option$/i }),
