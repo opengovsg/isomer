@@ -34,6 +34,13 @@ interface DraggableDrawerButtonProps extends OwnPropsOfMasterListItem {
   listItemTrailing?: ReactNode
   /** Caption under the row title (stacked with 0.25rem gap). */
   listItemSubtitle?: ReactNode
+  /** When `isError` is true, replaces the default “Fix issues before saving” line. */
+  listItemErrorCaption?: string
+  /**
+   * When true (default), invalid rows use a subtle critical background and border
+   * (see `DraggableLinkButton`). When false, only the left accent bar indicates error.
+   */
+  listItemErrorSurfaceHighlight?: boolean
 }
 
 const DraggableDrawerButtonText = withJsonFormsMasterListItemProps(
@@ -56,6 +63,8 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
       listItemContentProps,
       listItemTrailing,
       listItemSubtitle,
+      listItemErrorCaption,
+      listItemErrorSurfaceHighlight = true,
       ...rest
     },
     ref,
@@ -80,6 +89,13 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
           transitionProperty="common"
           transitionDuration="normal"
           aria-invalid={isError}
+          {...(listItemErrorSurfaceHighlight && {
+            _invalid: {
+              borderWidth: "1.5px",
+              borderColor: "utility.feedback.critical",
+              bg: "utility.feedback.critical-subtle",
+            },
+          })}
           _hover={{
             bg: "interaction.muted.main.hover",
             borderColor: "interaction.main-subtle.hover",
@@ -101,7 +117,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
           align="stretch"
           overflow="hidden"
         >
-          {isError && (
+          {isError && !listItemErrorSurfaceHighlight && (
             <Box
               aria-hidden
               bg="utility.feedback.critical"
@@ -160,17 +176,20 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
                     <Text
                       as="span"
                       textStyle="caption-2"
+                      textAlign="left"
                       color="utility.feedback.critical"
                       display="flex"
-                      alignItems="center"
+                      alignItems="flex-start"
                     >
                       <Icon
                         aria-hidden
                         as={BiInfoCircle}
                         fontSize="0.75rem"
                         mr="0.25rem"
+                        mt="0.125rem"
+                        flexShrink={0}
                       />
-                      Fix issues before saving
+                      {listItemErrorCaption ?? "Fix issues before saving"}
                     </Text>
                   )}
                 </Stack>

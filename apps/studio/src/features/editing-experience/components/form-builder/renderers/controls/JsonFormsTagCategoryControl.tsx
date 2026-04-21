@@ -2,6 +2,7 @@ import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import {
   HStack,
+  Icon,
   MenuButton,
   MenuList,
   Modal,
@@ -16,6 +17,7 @@ import {
 } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
+import get from "lodash/get"
 import {
   Button,
   Checkbox,
@@ -24,14 +26,20 @@ import {
   Menu,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import { useState } from "react"
-import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
+import { useMemo, useState } from "react"
+import {
+  BiDotsHorizontalRounded,
+  BiPurchaseTag,
+  BiSolidErrorCircle,
+  BiTrash,
+} from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
+import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 function DeleteFilterModal({
   isOpen,
@@ -102,6 +110,13 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { core } = useJsonForms()
   const { errors } = useBuilderErrors()
   const page = core?.data as CollectionPagePageProps | undefined
+
+  const duplicateFilterIndices = useMemo(() => {
+    const items = get(core?.data, path) as
+      | { label?: string }[]
+      | undefined
+    return indicesWithDuplicateLabels(items)
+  }, [core?.data, path])
 
   const hasDuplicateFilterNameError = hasUniqueItemPropertiesError({
     errors,
@@ -182,13 +197,30 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
         )}
         belowDescription={
           hasDuplicateFilterNameError ? (
-            <Infobox width="100%" size="sm" variant="error" mt="0.5rem">
-              <Text textStyle="body-2">
-                Each filter must have a unique name. Names are not
-                case-sensitive, so rename the duplicate before saving changes.
-              </Text>
-            </Infobox>
+            <HStack align="start" gap="0.5rem" mt="0.5rem" w="100%">
+              <Icon
+                as={BiSolidErrorCircle}
+                fontSize="1rem"
+                color="utility.feedback.critical"
+                mt="0.125rem"
+                flexShrink={0}
+              />
+              <VStack align="start" spacing={0}>
+                <Text textStyle="subhead-2" color="utility.feedback.critical">
+                  Remove duplicate filters before saving.
+                </Text>
+                <Text textStyle="body-2" color="utility.feedback.critical">
+                  Filter names are not case-sensitive.
+                </Text>
+              </VStack>
+            </HStack>
           ) : undefined
+        }
+        getListItemHasError={(index) => duplicateFilterIndices.has(index)}
+        renderListItemErrorCaption={(index) =>
+          duplicateFilterIndices.has(index)
+            ? "A filter with this name already exists."
+            : undefined
         }
       />
       {deleteTarget && (
