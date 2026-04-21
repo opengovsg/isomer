@@ -308,7 +308,7 @@ export const CollectionDisplaySaveToast: Story = {
     )
     await waitFor(
       () => {
-        expect(
+        void expect(
           withinPortals(canvasElement).getByText(
             /Collection display saved\. Remember to publish the changes so that other users can see your updates\./,
           ),
@@ -340,7 +340,7 @@ export const ManageFiltersSaveToast: Story = {
     )
     await waitFor(
       () => {
-        expect(
+        void expect(
           withinPortals(canvasElement).getByText(
             /Filter saved\. Remember to publish the changes so that other users can use the new filter options\./,
           ),
