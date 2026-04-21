@@ -16,7 +16,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
-import { merge } from "lodash"
+import { merge } from "lodash-es"
 import { initialize, mswLoader } from "msw-storybook-addon"
 import { useCallback, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"

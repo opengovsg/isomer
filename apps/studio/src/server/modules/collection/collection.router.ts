@@ -1,7 +1,7 @@
 import type { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
-import { get, pick } from "lodash"
+import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createCollectionSchema,

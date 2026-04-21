@@ -17,11 +17,11 @@ updates:
         applies-to: version-updates
         patterns:
           - "@babel/*"
-      lodash:
+      lodash-es:
         applies-to: version-updates
         patterns:
-          - "lodash"
-          - "@types/lodash"
+          - "lodash-es"
+          - "@types/lodash-es"
       next:
         applies-to: version-updates
         patterns:
