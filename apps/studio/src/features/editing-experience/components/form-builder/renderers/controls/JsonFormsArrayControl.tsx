@@ -46,8 +46,11 @@ export const jsonFormsArrayControlTester: RankedTester = rankWith(
 
 export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   listItemIcon?: IconType
-  /** When the array is empty, replaces the default placeholder inside the empty-state container. */
-  emptyState?: ReactNode
+  /**
+   * When the array is empty: replaces the default placeholder inside the empty-state container.
+   * Pass `null` to show no placeholder (no padded empty area).
+   */
+  emptyState?: ReactNode | null
   /** Merged into row padding on the drag handle and label button (after defaults). */
   listItemContentProps?: BoxProps
   /** Per-row content after the label (e.g. actions menu), flush right in the row. */
@@ -328,27 +331,28 @@ export function JsonFormsArrayControlView({
                 spacing={0}
                 ref={innerRef}
               >
-                {data === 0 && (
-                  <Flex
-                    alignItems="center"
-                    flexDir="column"
-                    px="1.5rem"
-                    py="3.75rem"
-                    mt="0.25rem"
-                    justifyContent="center"
-                    w="100%"
-                  >
-                    {emptyState ?? (
-                      <Text
-                        textStyle="subhead-1"
-                        textColor="base.content.default"
-                        textAlign="center"
-                      >
-                        Items you add will appear here
-                      </Text>
-                    )}
-                  </Flex>
-                )}
+                {data === 0 &&
+                  (emptyState === null ? null : (
+                    <Flex
+                      alignItems="center"
+                      flexDir="column"
+                      px="1.5rem"
+                      py="3.75rem"
+                      mt="0.25rem"
+                      justifyContent="center"
+                      w="100%"
+                    >
+                      {emptyState ?? (
+                        <Text
+                          textStyle="subhead-1"
+                          textColor="base.content.default"
+                          textAlign="center"
+                        >
+                          Items you add will appear here
+                        </Text>
+                      )}
+                    </Flex>
+                  ))}
 
                 {[...Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, `${index}`)
