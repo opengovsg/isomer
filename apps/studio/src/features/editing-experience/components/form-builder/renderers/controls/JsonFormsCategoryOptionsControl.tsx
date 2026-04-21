@@ -328,6 +328,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
               hasDuplicateOptionNameError ||
               hasErrorAt(path)
             }
+            aria-label="Save category options"
             onClick={() => setExpandedOpen(false)}
           >
             Save changes
