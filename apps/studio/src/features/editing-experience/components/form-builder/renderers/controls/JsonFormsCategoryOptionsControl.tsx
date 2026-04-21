@@ -285,6 +285,17 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
     return items?.some((item) => !(item?.label?.trim() ?? "")) ?? false
   }, [core?.data, path])
 
+  const cannotLeaveExpandedCategoryOptions =
+    hasBlankOptionLabel ||
+    duplicateOptionIndices.size > 0 ||
+    hasDuplicateOptionNameError ||
+    hasErrorAt(path)
+
+  const handleCloseExpandedCategoryOptions = () => {
+    if (cannotLeaveExpandedCategoryOptions) return
+    setExpandedOpen(false)
+  }
+
   if (expandedOpen) {
     return (
       <VStack
@@ -299,7 +310,8 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
       >
         <DrawerHeader
           label="Edit Category"
-          onBackClick={() => setExpandedOpen(false)}
+          isDisabled={cannotLeaveExpandedCategoryOptions}
+          onBackClick={handleCloseExpandedCategoryOptions}
           textStyle="subhead-1"
           backAriaLabel="Return to Category"
         />
@@ -315,14 +327,9 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
         >
           <Button
             w="100%"
-            isDisabled={
-              hasBlankOptionLabel ||
-              duplicateOptionIndices.size > 0 ||
-              hasDuplicateOptionNameError ||
-              hasErrorAt(path)
-            }
+            isDisabled={cannotLeaveExpandedCategoryOptions}
             aria-label="Save category options"
-            onClick={() => setExpandedOpen(false)}
+            onClick={handleCloseExpandedCategoryOptions}
           >
             Save changes
           </Button>
