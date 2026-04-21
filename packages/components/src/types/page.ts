@@ -99,14 +99,16 @@ const CategoriesSchema = Type.Object({
   categoryOptions: Type.Optional(
     Type.Array(
       Type.Object({
-        label: Type.String({ title: "Article category" }),
+        label: Type.String({ title: "Option name" }),
         id: generateUuidSchema({
           title: "Category id",
           description:
-            "Unique id for this category; used when assigning items in this collection.",
+            "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
         }),
       }),
       {
+        title: "Options",
+        addItemLabel: "Add option",
         format: "category-options",
         default: [],
         /**
