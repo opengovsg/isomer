@@ -11,8 +11,6 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { CATEGORY_ID_DROPDOWN_FEATURE_KEY } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
 
-import { JsonFormsTextControl } from "./JsonFormsTextControl"
-
 export const jsonFormsCategoryIdControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.CategoryIdControl,
   and(schemaMatches((schema) => schema.format === "category-id")),
@@ -43,7 +41,7 @@ function SuspendableJsonFormsCategoryIdSelect({
         label: optionLabel,
         value: id,
       }))}
-      isClearable={false}
+      isClearable={true} // TODO: change to false after migration where it's no longer optional
       onChange={(value) => {
         handleChange(path, value)
       }}
@@ -66,23 +64,14 @@ export function JsonFormsCategoryIdControl({
     { enabledSites: [] },
   )
 
-  const isDropdownEnabled = enabledSites.includes(siteId.toString())
-
-  return isDropdownEnabled ? (
+  return enabledSites.includes(siteId.toString()) ? (
     <FormControl isRequired={required} gap="0.5rem">
       <FormLabel description={description}>{label}</FormLabel>
       <Suspense fallback={<Skeleton />}>
         <SuspendableJsonFormsCategoryIdSelect {...props} label={label} />
       </Suspense>
     </FormControl>
-  ) : (
-    <JsonFormsTextControl
-      {...props}
-      description={description}
-      required={required}
-      label={label}
-    />
-  )
+  ) : null
 }
 
 export default withJsonFormsControlProps(JsonFormsCategoryIdControl)
