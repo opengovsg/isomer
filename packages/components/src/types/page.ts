@@ -85,10 +85,10 @@ const TagCategorySchema = Type.Composite([
           "Collection filter will display options in this order. Only options that are in use will appear on the Preview.",
         format: "tag-category-options",
         /**
-         * ajv-keywords: duplicate option names in a filter fail validation in JsonForms.
+         * Studio AJV: duplicate option names (case-insensitive, trim) fail validation in JsonForms.
          * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
          */
-        uniqueItemProperties: ["label"],
+        uniqueItemPropertiesIgnoreCase: ["label"],
       },
     ),
   }),
@@ -102,10 +102,10 @@ const TagCategoriesSchema = Type.Object({
         "Add filters so visitors can find what they need. Editors can assign these options on items they create.",
       format: "tag-categories",
       /**
-       * ajv-keywords: duplicate filter names fail validation in JsonForms.
+       * Studio AJV: duplicate filter names (case-insensitive, trim) fail validation in JsonForms.
        * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
        */
-      uniqueItemProperties: ["label"],
+      uniqueItemPropertiesIgnoreCase: ["label"],
     }),
   ),
 })
