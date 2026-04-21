@@ -2,6 +2,7 @@ import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import {
   HStack,
+  Icon,
   MenuButton,
   MenuList,
   Modal,
@@ -25,10 +26,14 @@ import {
   Menu,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import get from "lodash/get"
-import { useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import { BiDotsHorizontalRounded, BiTrash } from "react-icons/bi"
+import { get } from "lodash"
+import { useMemo, useState } from "react"
+import {
+  BiDotsHorizontalRounded,
+  BiSolidErrorCircle,
+  BiTrash,
+} from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -41,6 +46,7 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
+import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 type CollectionTagOption = NonNullable<
   CollectionPagePageProps["tagCategories"]
@@ -161,6 +167,11 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const { path, removeItems, data, arraySchema } = props
   const { core } = useJsonForms()
   const { errors } = useBuilderErrors()
+  const duplicateOptionIndices = useMemo(() => {
+    const items = get(core?.data, path) as { label?: string }[] | undefined
+    return indicesWithDuplicateLabels(items)
+  }, [core?.data, path])
+
   const hasDuplicateOptionNameError = hasUniqueItemPropertiesError({
     errors,
     jsonFormsPath: path,
@@ -249,13 +260,30 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
         )}
         belowDescription={
           hasDuplicateOptionNameError ? (
-            <Infobox width="100%" size="sm" variant="error" mt="0.5rem">
-              <Text textStyle="body-2">
-                Each option must have a unique name. Names are not
-                case-sensitive, so rename the duplicate before saving changes.
-              </Text>
-            </Infobox>
+            <HStack align="start" gap="0.5rem" mt="0.5rem" w="100%">
+              <Icon
+                as={BiSolidErrorCircle}
+                fontSize="1rem"
+                color="utility.feedback.critical"
+                mt="0.125rem"
+                flexShrink={0}
+              />
+              <VStack align="start" spacing={0}>
+                <Text textStyle="subhead-2" color="utility.feedback.critical">
+                  Remove duplicate options before saving.
+                </Text>
+                <Text textStyle="body-2" color="utility.feedback.critical">
+                  Option names are not case-sensitive.
+                </Text>
+              </VStack>
+            </HStack>
           ) : undefined
+        }
+        getListItemHasError={(index) => duplicateOptionIndices.has(index)}
+        renderListItemErrorCaption={(index) =>
+          duplicateOptionIndices.has(index)
+            ? "An option with this name already exists."
+            : undefined
         }
         emptyState={
           <VStack spacing="0.25rem" align="center">

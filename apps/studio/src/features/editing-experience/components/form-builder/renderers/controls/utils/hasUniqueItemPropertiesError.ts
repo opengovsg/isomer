@@ -1,4 +1,5 @@
 import type { ErrorObject } from "ajv"
+import { UNIQUE_ITEM_PROPERTIES_IGNORE_CASE_KEYWORD } from "~/utils/ajvKeywords/uniqueItemPropertiesIgnoreCase"
 
 /** Map of AJV `instancePath` → errors, as produced by FormBuilder’s `groupBy(errors, "instancePath")`. */
 type BuilderErrorsByInstancePath = Record<string, ErrorObject[] | undefined>
@@ -12,7 +13,7 @@ function jsonFormsPathToAjvInstancePath(path: string): string {
   return `/${path.replace(/\./g, "/")}`
 }
 
-/** `uniqueItemProperties` on this array (e.g. duplicate `label` among items). */
+/** Array-level duplicate label among items (`uniqueItemProperties` or `uniqueItemPropertiesIgnoreCase`). */
 export function hasUniqueItemPropertiesError({
   errors,
   jsonFormsPath,
@@ -22,7 +23,9 @@ export function hasUniqueItemPropertiesError({
 }): boolean {
   return (
     errors[jsonFormsPathToAjvInstancePath(jsonFormsPath)]?.some(
-      (e) => e.keyword === "uniqueItemProperties",
+      (e) =>
+        e.keyword === "uniqueItemProperties" ||
+        e.keyword === UNIQUE_ITEM_PROPERTIES_IGNORE_CASE_KEYWORD,
     ) ?? false
   )
 }
