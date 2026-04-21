@@ -49,6 +49,7 @@ const SuspendablePublishButton = ({
     onSettled: async () => {
       await utils.page.readPage.refetch({ pageId, siteId })
       await utils.page.getCategories.invalidate({ pageId, siteId })
+      await utils.page.getCategoryOptions.invalidate({ pageId, siteId })
       await utils.site.getLocalisedSitemap.invalidate({
         resourceId: pageId,
         siteId,
