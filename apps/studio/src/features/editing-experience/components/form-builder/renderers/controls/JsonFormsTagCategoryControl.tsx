@@ -133,6 +133,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     <>
       <JsonFormsArrayControlView
         {...props}
+        emptyState={null}
         listItemIcon={BiPurchaseTag}
         listItemContentProps={{ py: "0.5rem" }}
         mapNewArrayItem={(item) => ({
