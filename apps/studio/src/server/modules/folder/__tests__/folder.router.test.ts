@@ -57,7 +57,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await expect(
@@ -82,7 +82,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
@@ -93,7 +93,7 @@ describe("folder.router", async () => {
       ).resolves.toHaveLength(0)
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { site } = await setupSite()
@@ -111,9 +111,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -137,7 +137,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Parent folder does not exist",
@@ -167,7 +167,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Resource ID does not point to a folder",
@@ -290,9 +290,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -316,9 +316,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -340,12 +340,12 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { site } = await setupSite()
@@ -362,9 +362,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -386,7 +386,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "This folder does not exist",
@@ -405,9 +405,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -447,7 +447,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await expect(
@@ -476,7 +476,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
@@ -519,7 +519,7 @@ describe("folder.router", async () => {
       expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { site, folder } = await setupFolder()
@@ -538,9 +538,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -606,9 +606,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -633,7 +633,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource does not exist",
@@ -658,7 +658,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource does not exist",
@@ -747,7 +747,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -768,7 +768,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -828,7 +828,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -880,9 +880,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -906,7 +906,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "No index page with the specified id could be found",
@@ -929,7 +929,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",

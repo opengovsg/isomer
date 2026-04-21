@@ -65,8 +65,8 @@ describe("audit.service", () => {
           .updateTable("AuditLog")
           .set({ eventType: AuditLogEvent.UserDelete })
           .execute(),
-      ).rejects.toThrowError()
-      await expect(db.deleteFrom("AuditLog").execute()).rejects.toThrowError()
+      ).rejects.toThrow()
+      await expect(db.deleteFrom("AuditLog").execute()).rejects.toThrow()
     })
   })
 })
