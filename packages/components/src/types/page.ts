@@ -137,6 +137,21 @@ const categorySchemaObject = Type.Object({
     description:
       "The category is used for filtering in the parent collection page",
   }),
+  /**
+   * `categoryId` is optional for backward compatibility: persisted blobs may omit it, and we
+   * avoid misleading inferred types (Static<>) that claim the field is always present before
+   * migration from string `category`. After rollout, populate items with `categoryId` aligned
+   * with `categoryOptions` on the parent collection, then we can make this property required
+   * and deprecate `category`.
+   *
+   * @see {@link CategoriesSchema} for the parent collection's `categoryOptions` shape (`id` on each option).
+   */
+  categoryId: Type.Optional(
+    Type.String({
+      title: "Category",
+      format: "category-id",
+    }),
+  ),
 })
 
 const dateSchemaObject = Type.Object({
