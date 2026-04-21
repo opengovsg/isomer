@@ -27,8 +27,8 @@ import {
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { compact, map, get } from "lodash"
-import { ErrorBoundary } from "react-error-boundary"
 import { useMemo, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import {
   BiDotsHorizontalRounded,
   BiPurchaseTag,
