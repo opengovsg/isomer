@@ -55,7 +55,7 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   /** Caption under the list item title (e.g. option counts). */
   renderListItemSubtitle?: (index: number) => ReactNode
   /**
-   * Extra row error state (e.g. array-level `uniqueItemProperties` where AJV’s path
+   * Extra row error state (e.g. array-level `uniqueItemPropertiesIgnoreCase` where AJV’s path
    * is the array, not each item). Merged with `hasErrorAt` for the row.
    */
   getListItemHasError?: (index: number) => boolean

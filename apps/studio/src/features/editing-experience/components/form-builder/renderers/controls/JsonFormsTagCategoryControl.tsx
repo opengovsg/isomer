@@ -17,7 +17,6 @@ import {
 } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import get from "lodash/get"
 import {
   Button,
   Checkbox,
@@ -26,6 +25,7 @@ import {
   Menu,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
+import { get } from "lodash"
 import { useMemo, useState } from "react"
 import {
   BiDotsHorizontalRounded,
@@ -112,9 +112,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const page = core?.data as CollectionPagePageProps | undefined
 
   const duplicateFilterIndices = useMemo(() => {
-    const items = get(core?.data, path) as
-      | { label?: string }[]
-      | undefined
+    const items = get(core?.data, path) as { label?: string }[] | undefined
     return indicesWithDuplicateLabels(items)
   }, [core?.data, path])
 

@@ -32,11 +32,7 @@ describe("indicesWithDuplicateLabels", () => {
   it("returns every index in a duplicate group", () => {
     // Arrange
     const pair = [{ label: "a" }, { label: "a" }]
-    const triple = [
-      { label: "x" },
-      { label: "x" },
-      { label: "x" },
-    ]
+    const triple = [{ label: "x" }, { label: "x" }, { label: "x" }]
 
     // Act
     const resultPair = indicesWithDuplicateLabels(pair)
@@ -77,11 +73,7 @@ describe("indicesWithDuplicateLabels", () => {
 
   it("only includes indices that belong to a duplicated label", () => {
     // Arrange
-    const items = [
-      { label: "dup" },
-      { label: "dup" },
-      { label: "other" },
-    ]
+    const items = [{ label: "dup" }, { label: "dup" }, { label: "other" }]
 
     // Act
     const result = indicesWithDuplicateLabels(items)

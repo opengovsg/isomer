@@ -57,10 +57,10 @@ const TagCategorySchema = Type.Composite([
         addItemLabel: "Add option",
         format: "tag-category-options",
         /**
-         * ajv-keywords: duplicate option names in a filter fail validation in JsonForms.
+         * Studio AJV: duplicate option names (case-insensitive, trim) fail validation in JsonForms.
          * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
          */
-        uniqueItemProperties: ["label"],
+        uniqueItemPropertiesIgnoreCase: ["label"],
       },
     ),
   }),
@@ -75,10 +75,10 @@ const TagCategoriesSchema = Type.Object({
       addItemLabel: "Add a filter",
       format: "tag-categories",
       /**
-       * ajv-keywords: duplicate filter names fail validation in JsonForms.
+       * Studio AJV: duplicate filter names (case-insensitive, trim) fail validation in JsonForms.
        * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
        */
-      uniqueItemProperties: ["label"],
+      uniqueItemPropertiesIgnoreCase: ["label"],
     }),
   ),
 })

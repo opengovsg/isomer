@@ -24,7 +24,7 @@ import {
   Menu,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import get from "lodash/get"
+import { get } from "lodash"
 import { useMemo, useState } from "react"
 import {
   BiDotsHorizontalRounded,
@@ -112,9 +112,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const { core } = useJsonForms()
   const { errors } = useBuilderErrors()
   const duplicateOptionIndices = useMemo(() => {
-    const items = get(core?.data, path) as
-      | { label?: string }[]
-      | undefined
+    const items = get(core?.data, path) as { label?: string }[] | undefined
     return indicesWithDuplicateLabels(items)
   }, [core?.data, path])
 
