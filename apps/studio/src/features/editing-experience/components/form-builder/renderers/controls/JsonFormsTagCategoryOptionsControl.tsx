@@ -187,6 +187,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   }>(null)
 
   const { siteId, pageId } = useQueryParse(pageSchema)
+  const utils = trpc.useUtils()
 
   const handleDeleteOptionMenuItemClick = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
@@ -211,10 +212,15 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     })
   }
 
+  const closeDeleteModal = () => {
+    void utils.collection.countTagOptionsUsage.invalidate()
+    setDeleteTarget(null)
+  }
+
   const handleConfirmDelete = () => {
     if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
     removeItems(path, [deleteTarget.index])()
-    setDeleteTarget(null)
+    closeDeleteModal()
   }
 
   return (
@@ -311,7 +317,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           pageId={pageId}
           tagOptionId={deleteTarget.tagId}
           label={deleteTarget.label}
-          onClose={() => setDeleteTarget(null)}
+          onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}
         />
       )}

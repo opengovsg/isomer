@@ -188,6 +188,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   }>(null)
 
   const { siteId, pageId } = useQueryParse(pageSchema)
+  const utils = trpc.useUtils()
 
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
@@ -215,10 +216,15 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     })
   }
 
+  const closeDeleteModal = () => {
+    void utils.collection.countTagOptionsUsage.invalidate()
+    setDeleteTarget(null)
+  }
+
   const handleConfirmDelete = () => {
     if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
     removeItems(path, [deleteTarget.index])()
-    setDeleteTarget(null)
+    closeDeleteModal()
   }
 
   return (
@@ -317,7 +323,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
           pageId={pageId}
           tagOptionIds={deleteTarget.tagOptionIds}
           label={deleteTarget.label}
-          onClose={() => setDeleteTarget(null)}
+          onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}
         />
       )}
