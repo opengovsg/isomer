@@ -87,10 +87,12 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
 
   const handleChange = (data: unknown) => {
     if (validateFn(data)) {
+      // Type narrowing issue: previewPageState is a union type and
+      // page prop type varies by layout. Safe to cast since we validate above.
       setPreviewPageState({
         ...previewPageState,
         page: data,
-      })
+      } as typeof previewPageState)
     }
   }
 

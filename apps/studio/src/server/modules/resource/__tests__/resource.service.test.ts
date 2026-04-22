@@ -14,7 +14,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import type { Resource } from "../../database"
-import { db, ResourceState } from "../../database"
+import { db, jsonb, ResourceState } from "../../database"
 import {
   getBatchAncestryWithSelfQuery,
   getFullPageById,
@@ -930,14 +930,17 @@ describe("resource.service", () => {
         .updateTable("Blob")
         .where("id", "=", blob.id)
         .set({
-          content: {
-            ...blob.content,
+          content: jsonb({
+            version: "0.1.0",
+            layout: "index",
+            content: [],
             page: {
               contentPageHeader: {
                 summary: "Hello im the index page",
+                showThumbnail: false,
               },
             },
-          },
+          }),
         })
         .execute()
 
@@ -973,14 +976,17 @@ describe("resource.service", () => {
         .updateTable("Blob")
         .where("id", "=", blob.id)
         .set({
-          content: {
-            ...blob.content,
+          content: jsonb({
+            version: "0.1.0",
+            layout: "index",
+            content: [],
             page: {
               contentPageHeader: {
                 summary: "Hello im the index page",
+                showThumbnail: false,
               },
             },
-          },
+          }),
         })
         .execute()
 
@@ -1017,14 +1023,17 @@ describe("resource.service", () => {
         .updateTable("Blob")
         .where("id", "=", blob.id)
         .set({
-          content: {
-            ...blob.content,
+          content: jsonb({
+            version: "0.1.0",
+            layout: "index",
+            content: [],
             page: {
               contentPageHeader: {
                 summary: "Hello im the index page",
+                showThumbnail: false,
               },
             },
-          },
+          }),
         })
         .execute()
 
@@ -1060,14 +1069,17 @@ describe("resource.service", () => {
         .updateTable("Blob")
         .where("id", "=", blob.id)
         .set({
-          content: {
-            ...blob.content,
+          content: jsonb({
+            version: "0.1.0",
+            layout: "index",
+            content: [],
             page: {
               contentPageHeader: {
                 summary: "Hello im the index page",
+                showThumbnail: false,
               },
             },
-          },
+          }),
         })
         .execute()
 
@@ -1117,15 +1129,21 @@ describe("resource.service", () => {
         .updateTable("Blob")
         .where("id", "=", pageBlob.id)
         .set({
-          content: {
-            ...pageBlob.content,
+          content: jsonb({
+            version: "0.1.0",
+            layout: "content",
+            content: [],
             page: {
+              contentPageHeader: {
+                summary: "This is the page summary",
+                showThumbnail: false,
+              },
               image: {
                 src: "https://pageblob.com",
                 alt: "im a page blob image alt text",
               },
             },
-          },
+          }),
         })
         .execute()
 
@@ -1149,18 +1167,21 @@ describe("resource.service", () => {
         .updateTable("Blob")
         .where("id", "=", folderAIndexPageBlob.id)
         .set({
-          content: {
-            ...folderAIndexPageBlob.content,
+          content: jsonb({
+            version: "0.1.0",
+            layout: "index",
+            content: [],
             page: {
               contentPageHeader: {
                 summary: "Hello im the index page",
+                showThumbnail: false,
               },
               image: {
                 src: "https://indexpageblob.com",
                 alt: "im a index page blob image alt text",
               },
             },
-          },
+          }),
         })
         .execute()
 
@@ -1254,14 +1275,17 @@ describe("resource.service", () => {
         .updateTable("Blob")
         .where("id", "=", collection2IndexPageBlob.id)
         .set({
-          content: {
-            ...collection2IndexPageBlob.content,
+          content: jsonb({
+            version: "0.1.0",
+            layout: "index",
+            content: [],
             page: {
               contentPageHeader: {
                 summary: "Hello im the index page",
+                showThumbnail: false,
               },
             },
-          },
+          }),
         })
         .execute()
 

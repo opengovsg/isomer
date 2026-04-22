@@ -405,7 +405,7 @@ export const collectionRouter = router({
           const blob = await updateBlobById(tx, {
             content: {
               ...content,
-              page: { description, ref, date, category, image, tags, tagged },
+              page: { description, ref, date, category, image, tagged },
             },
             pageId: linkId,
             siteId,
