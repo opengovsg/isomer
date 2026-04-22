@@ -15,8 +15,14 @@ function SuspendablePreview({
     resourceId,
   })
 
+  // Type narrowing issue: PreviewProps is a union and can't narrow from rest params
   return (
-    <PreviewWithCustomSitemap {...rest} siteMap={siteMap} siteId={siteId} />
+    <PreviewWithCustomSitemap
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      {...(rest as any)}
+      siteMap={siteMap}
+      siteId={siteId}
+    />
   )
 }
 
