@@ -769,6 +769,149 @@ describe("page.router", async () => {
     })
   })
 
+  describe("getCategoryOptions", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.getCategoryOptions({ siteId: 1, pageId: 1 })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.CollectionPage,
+      })
+
+      // Act
+      const result = caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      expect(result.categoryOptions).toEqual([])
+    })
+
+    it("should throw 404 when the resource has no parent collection", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.RootPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection page not found",
+        }),
+      )
+    })
+
+    it("should return category options from the published collection index blob", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { blob: indexBlob } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: user.id,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", indexBlob.id)
+        .set({
+          content: jsonb({
+            ...indexBlob.content,
+            page: {
+              ...indexBlob.content.page,
+              categoryOptions: [
+                {
+                  id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                  label: "Alpha",
+                },
+                {
+                  id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+                  label: "Beta",
+                },
+              ],
+            },
+          }),
+        })
+        .execute()
+
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(collectionPage.id),
+      })
+
+      // Assert
+      expect(result.categoryOptions).toEqual([
+        { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", label: "Alpha" },
+        { id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", label: "Beta" },
+      ])
+    })
+  })
+
   describe("readPage", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()

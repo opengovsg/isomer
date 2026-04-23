@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { expect, userEvent, within } from "storybook/test"
+import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -29,6 +30,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.index(),
   pageHandlers.getFullPermalink.collection(),
+  collectionHandlers.getCategoryOptionUsageCount.default(),
 ]
 
 const meta: Meta<typeof EditPage> = {
@@ -135,6 +137,23 @@ async function playFillThreeCategoryOptionNames(canvasElement: HTMLElement) {
       await canvas.findByRole("button", { name: /Return to Options/i }),
     )
   }
+}
+
+/**
+ * Each option only receives an `id` after its row is opened (hidden UUID control mounts). Fill
+ * names, save to leave “Edit Category”, then open it again so delete can show the usage modal
+ * instead of removing the row immediately.
+ */
+async function playFillNamesSaveCategoryOptionsAndReopenEditCategory(
+  canvasElement: HTMLElement,
+) {
+  await playFillThreeCategoryOptionNames(canvasElement)
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    await canvas.findByRole("button", { name: /Save category options/i }),
+  )
+  await canvas.findByText(/Manage filters/i)
+  await playOpenCategoryOptionsEditor(canvasElement)
 }
 
 async function clickOptionActionsMenu(
@@ -254,7 +273,7 @@ export const FiltersDeleteOptionModalDisabledCta: Story = {
     await userEvent.click(await portals.findByText(/^Delete option$/i), {
       pointerEventsCheck: 0,
     })
-    await portals.findByText(/Delete option\?/i)
+    await portals.findByRole("dialog", { name: /Delete filter option/i })
     await expect(
       await portals.findByRole("button", { name: /^Delete option$/i }),
     ).toBeDisabled()
@@ -387,12 +406,18 @@ export const CategoryOptionsDeleteOptionModalDisabledCta: Story = {
     await playOpenManageFilters(canvasElement)
     await playOpenCategoryOptionsEditor(canvasElement)
     await playAddThreeCategoryOptions(canvasElement)
+    await playFillNamesSaveCategoryOptionsAndReopenEditCategory(canvasElement)
     await clickOptionActionsMenu(canvasElement, 1)
     const portals = withinPortals(canvasElement)
     await userEvent.click(await portals.findByText(/^Delete option$/i), {
       pointerEventsCheck: 0,
     })
-    await portals.findByText(/Delete option\?/i)
+    const deleteCategoryOptionDialog = await portals.findByRole("dialog", {
+      name: /Delete category option/i,
+    })
+    await within(deleteCategoryOptionDialog).findByText(
+      /This option is being used in 3 items\./i,
+    )
     await expect(
       await portals.findByRole("button", { name: /^Delete option$/i }),
     ).toBeDisabled()

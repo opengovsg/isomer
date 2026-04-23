@@ -14,7 +14,10 @@ const meta: Meta<typeof FormBuilder> = {
   component: FormBuilder,
   parameters: {
     msw: {
-      handlers: [pageHandlers.getCategories.default()],
+      handlers: [
+        pageHandlers.getCategories.default(),
+        pageHandlers.getCategoryOptions.default(),
+      ],
     },
     nextjs: {
       router: {
@@ -56,7 +59,10 @@ export const Dropdown: Story = {
   parameters: {
     growthbook: [createDropdownGbParameters("1")],
     msw: {
-      handlers: [pageHandlers.getCategories.default()],
+      handlers: [
+        pageHandlers.getCategories.default(),
+        pageHandlers.getCategoryOptions.default(),
+      ],
     },
   },
   args: {

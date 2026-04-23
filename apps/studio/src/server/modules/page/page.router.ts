@@ -1,4 +1,5 @@
 import type {
+  CollectionPageCategoryOption,
   CollectionPagePageProps,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
@@ -66,6 +67,16 @@ import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage, createFolderIndexPage } from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
+
+function isCollectionPageCategoryOption(
+  value: unknown,
+): value is CollectionPageCategoryOption {
+  if (!value || typeof value !== "object") {
+    return false
+  }
+  const rec = value as Record<string, unknown>
+  return typeof rec.id === "string" && typeof rec.label === "string"
+}
 
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
@@ -191,6 +202,52 @@ export const pageRouter = router({
         .filter((c) => !!c && !!c.trim())
 
       return { categories }
+    }),
+
+  getCategoryOptions: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const page = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", siteId)
+        .where("id", "=", String(pageId))
+        .select("parentId")
+        .executeTakeFirst()
+
+      const parentId = page?.parentId
+      if (!parentId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection page not found",
+        })
+      }
+
+      const row = await db
+        .selectFrom("Resource as r")
+        .innerJoin("Version as v", "r.publishedVersionId", "v.id")
+        .innerJoin("Blob as vb", "v.blobId", "vb.id")
+        .where("r.siteId", "=", siteId)
+        .where("r.parentId", "=", parentId)
+        .where("r.type", "=", ResourceType.IndexPage)
+        .select(
+          sql<
+            CollectionPageCategoryOption[] | null
+          >`vb.content->'page'->'categoryOptions'`.as("categoryOptions"),
+        )
+        .executeTakeFirst()
+
+      const raw = row?.categoryOptions
+      return {
+        categoryOptions: Array.isArray(raw)
+          ? raw.filter(isCollectionPageCategoryOption)
+          : [],
+      }
     }),
 
   readPage: protectedProcedure

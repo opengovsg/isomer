@@ -85,6 +85,12 @@ export const getCollectionTagsSchema = z.object({
   siteId: z.number().min(1),
 })
 
+export const getCategoryOptionUsageCountSchema = z.object({
+  siteId: z.number().min(1),
+  pageId: z.number().min(1),
+  categoryId: z.string().uuid(),
+})
+
 export const getCollectionsSchema = z.object({
   siteId: z.number().min(1),
   hasChildren: z.boolean().optional().default(false),

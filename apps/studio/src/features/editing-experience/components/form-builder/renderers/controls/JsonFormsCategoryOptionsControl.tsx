@@ -13,8 +13,10 @@ import {
   ModalHeader,
   ModalOverlay,
   Portal,
+  Skeleton,
   Stack,
   Text,
+  VisuallyHidden,
   VStack,
 } from "@chakra-ui/react"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
@@ -28,7 +30,8 @@ import {
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { get } from "lodash"
-import { useMemo, useState } from "react"
+import { Suspense, useMemo, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import {
   BiDotsHorizontalRounded,
   BiGridVertical,
@@ -39,6 +42,9 @@ import {
 } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { trpc } from "~/utils/trpc"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
@@ -46,15 +52,46 @@ import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
+/** Matches category option rows from JsonForms (`categoryOptions` array on collection index). */
+type CategoryOptionItem = Partial<{
+  id: string
+  label: string
+}>
+
+function CategoryOptionUsageCount({
+  siteId,
+  pageId,
+  categoryId,
+}: {
+  siteId: number
+  pageId: number
+  categoryId: string
+}) {
+  const [{ count }] =
+    trpc.collection.getCategoryOptionUsageCount.useSuspenseQuery({
+      siteId,
+      pageId,
+      categoryId,
+    })
+
+  return <>{count}</>
+}
+
 /** Duplicated from tag filter options modal; diverge copy/behaviour for category options when needed. */
 const DeleteCategoryOptionModal = ({
   isOpen,
   label,
+  siteId,
+  pageId,
+  categoryId,
   onClose,
   onConfirm,
 }: {
   isOpen: boolean
   label: string
+  siteId: number
+  pageId: number
+  categoryId: string
   onClose: () => void
   onConfirm: () => void
 }) => {
@@ -65,7 +102,10 @@ const DeleteCategoryOptionModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader mr="3.5rem">
-          {label.length > 0 ? `Delete option "${label}"?` : "Delete option?"}
+          <VisuallyHidden>Delete category option</VisuallyHidden>
+          <Text as="span" aria-hidden display="block">
+            {label.length > 0 ? `Delete option "${label}"?` : "Delete option?"}
+          </Text>
         </ModalHeader>
         <ModalCloseButton size="lg" />
 
@@ -73,9 +113,28 @@ const DeleteCategoryOptionModal = ({
           <VStack align="stretch" spacing="1.5rem">
             <Infobox width="100%" size="md" variant="warning">
               <Text textStyle="body-2">
-                {/* TODO: replace XX with usage count from backend */}
-                This option is being used in XX items. To undo this change, you
-                will need to create and re-assign this option to all items.
+                This option is being used in{" "}
+                <ErrorBoundary fallbackRender={() => <>—</>}>
+                  <Suspense
+                    fallback={
+                      <Skeleton
+                        as="span"
+                        display="inline-block"
+                        verticalAlign="middle"
+                        height="1em"
+                        width="2ch"
+                      />
+                    }
+                  >
+                    <CategoryOptionUsageCount
+                      siteId={siteId}
+                      pageId={pageId}
+                      categoryId={categoryId}
+                    />
+                  </Suspense>
+                </ErrorBoundary>{" "}
+                items. To undo this change, you will need to create and
+                re-assign this option to all items.
               </Text>
             </Infobox>
             <HStack align="start">
@@ -115,6 +174,7 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
   const { path, removeItems, data, arraySchema } = props
   const { core } = useJsonForms()
   const { errors } = useBuilderErrors()
+  const { pageId, siteId } = useQueryParse(pageSchema)
 
   const duplicateOptionIndices = useMemo(() => {
     const items = get(core?.data, path) as { label?: string }[] | undefined
@@ -132,15 +192,29 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
     label: string
+    categoryId: string
   }>(null)
 
-  const openDeleteModal = (index: number) => {
+  const handleDeleteOptionMenuItemClick = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
-      | { label?: string; id?: string }
+      | CategoryOptionItem
       | undefined
+
+    const categoryId = item?.id?.trim()
+
+    // No id means the option is new and never saved — nothing references it in the DB,
+    // so we remove the row immediately instead of opening the usage warning modal.
+    if (!categoryId) {
+      if (!removeItems || isRemoveItemDisabled) return
+      removeItems(path, [index])()
+      return
+    }
+
+    // Persisted option: show the modal so we can warn about existing item usage before delete.
     setDeleteTarget({
       index,
       label: item?.label?.trim() ?? "",
+      categoryId,
     })
   }
 
@@ -196,7 +270,7 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
                     isDisabled={isRemoveItemDisabled}
                     onClick={(e) => {
                       e.stopPropagation()
-                      openDeleteModal(index)
+                      handleDeleteOptionMenuItemClick(index)
                     }}
                   >
                     Delete option
@@ -256,6 +330,9 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
         <DeleteCategoryOptionModal
           isOpen
           label={deleteTarget.label}
+          siteId={siteId}
+          pageId={pageId}
+          categoryId={deleteTarget.categoryId}
           onClose={() => setDeleteTarget(null)}
           onConfirm={handleConfirmDelete}
         />
