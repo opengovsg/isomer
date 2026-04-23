@@ -178,6 +178,7 @@ export const LinkEditorDrawer = ({
     trpc.collection.updateCollectionLink.useMutation({
       onSuccess: () => {
         void utils.collection.readCollectionLink.invalidate()
+        void utils.collection.countTagOptionsUsage.invalidate()
         void utils.page.readPage.invalidate()
         toast({
           title: "Link updated!",
