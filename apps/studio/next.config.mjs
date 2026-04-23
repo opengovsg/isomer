@@ -145,6 +145,10 @@ const ContentSecurityPolicy = `
 const config = {
   output: "standalone",
   reactStrictMode: true,
+  // isomer-components → isomorphic-dompurify → jsdom. Declare those deps in package.json too so
+  // Next resolves them the same from the app root as from the workspace package (pnpm); otherwise
+  // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
+  serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
   /**
    * Dynamic configuration available for the browser and server.
    * Note: requires `ssr: true` or a `getInitialProps` in `_app.tsx`
