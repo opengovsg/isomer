@@ -4,6 +4,7 @@ import { Footer } from "../../components/internal/Footer"
 import { Masthead } from "../../components/internal/Masthead"
 import { Navbar } from "../../components/internal/Navbar"
 import { Notification } from "../../components/internal/Notification"
+import { Polyglot } from "../../components/internal/Polyglot"
 import { ScrollToTop } from "../../components/internal/ScrollToTop"
 import { SkipToContent } from "../../components/internal/SkipToContent"
 import { UnsupportedBrowserBanner } from "../../components/internal/UnsupportedBrowserBanner"
@@ -22,12 +23,10 @@ export const Skeleton = ({
   return (
     <>
       <ScrollToTop />
-
+      {site.enablePolyglot && <Polyglot isStaging={isStaging} />}
       <header>
         <SkipToContent LinkComponent={LinkComponent} />
-
         {site.isGovernment && <Masthead isStaging={isStaging} />}
-
         {site.notification?.title && (
           <Notification
             {...site.notification}
@@ -35,9 +34,7 @@ export const Skeleton = ({
             site={site}
           />
         )}
-
         <UnsupportedBrowserBanner />
-
         <Navbar
           logoUrl={site.logoUrl}
           logoAlt={site.siteName}
@@ -54,6 +51,7 @@ export const Skeleton = ({
         tabIndex={-1}
         className="focus-visible:outline-none"
       >
+        <div id="polyglot-widget"></div>
         {children}
       </main>
 
