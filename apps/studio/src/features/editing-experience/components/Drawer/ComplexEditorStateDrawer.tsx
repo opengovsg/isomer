@@ -10,11 +10,11 @@ import { useCallback } from "react"
 import { BiTrash } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
 import {
