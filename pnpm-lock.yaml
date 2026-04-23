@@ -1416,6 +1416,9 @@ importers:
       '@inquirer/prompts':
         specifier: 'catalog:'
         version: 7.10.1(@types/node@22.19.15)
+      dotenv:
+        specifier: 'catalog:'
+        version: 16.6.1
       pg:
         specifier: 'catalog:'
         version: 8.20.0
@@ -1507,6 +1510,9 @@ importers:
       ajv:
         specifier: 'catalog:'
         version: 8.18.0
+      dotenv:
+        specifier: 'catalog:'
+        version: 16.6.1
       dotenv-cli:
         specifier: 'catalog:'
         version: 8.0.0
@@ -1677,6 +1683,9 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
     devDependencies:
       '@isomer/migrate-tags':
         specifier: workspace:*

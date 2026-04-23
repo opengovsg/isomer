@@ -9,6 +9,7 @@
     "@inquirer/prompts": "catalog:",
     "@paralleldrive/cuid2": "catalog:",
     "ajv": "catalog:",
+    "dotenv": "catalog:",
     "dotenv-cli": "catalog:",
     "pg": "catalog:",
     "tsx": "catalog:"

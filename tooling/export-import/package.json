@@ -19,6 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "@inquirer/prompts": "catalog:",
+    "dotenv": "catalog:",
     "pg": "catalog:"
   }
 }

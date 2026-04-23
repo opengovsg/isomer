@@ -15,7 +15,8 @@
     "axios": "catalog:",
     "commander-ts": "catalog:",
     "dotenv-cli": "catalog:",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@isomer/migrate-tags": "workspace:*",
