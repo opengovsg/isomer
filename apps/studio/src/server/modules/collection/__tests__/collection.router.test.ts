@@ -1,6 +1,7 @@
 import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
 import _, { omit } from "lodash"
+import { randomUUID } from "node:crypto"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -1640,6 +1641,22 @@ describe("collection.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+    })
+
+    it("should reject when tagOptionIds exceeds the maximum length", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: Array.from({ length: 100 + 1 }, () => randomUUID()),
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
     it("should throw 404 if index page does not exist", async () => {

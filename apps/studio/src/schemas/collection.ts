@@ -110,5 +110,11 @@ export const readCollectionSchema = z
 export const countTagOptionsUsageSchema = z.object({
   siteId: z.number().min(1),
   pageId: z.number().min(1), // pageId is the collection index page resource id
-  tagOptionIds: z.array(z.string().uuid()),
+  tagOptionIds: z
+    .array(z.string().uuid())
+    /** Upper bound to limit request parsing and SQL cost (ANY(...) on text[]). */
+    // This is an arbitrary limit to prevent abuse, might have to adjust based on
+    .max(100, {
+      message: `At most 100 tag options can be queried at once`,
+    }),
 })
