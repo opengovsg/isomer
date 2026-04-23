@@ -12,10 +12,11 @@ import {
   ModalHeader,
   ModalOverlay,
   Portal,
+  Skeleton,
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { rankWith, schemaMatches } from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import {
   Button,
@@ -25,8 +26,9 @@ import {
   Menu,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import { get } from "lodash"
+import { compact, map, get } from "lodash"
 import { useMemo, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import {
   BiDotsHorizontalRounded,
   BiPurchaseTag,
@@ -34,21 +36,55 @@ import {
   BiTrash,
 } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
+import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { trpc } from "~/utils/trpc"
 
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
+type CollectionTagCategory = NonNullable<
+  CollectionPagePageProps["tagCategories"]
+>[number]
+type CollectionTagOption = NonNullable<CollectionTagCategory["options"]>[number]
+type CollectionTagOptionId = NonNullable<CollectionTagOption["id"]>
+
+const TagCategoryUsageCount = ({
+  siteId,
+  pageId,
+  tagOptionIds,
+}: {
+  siteId: number
+  pageId: number
+  tagOptionIds: CollectionTagOptionId[]
+}) => {
+  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
+    siteId,
+    pageId,
+    tagOptionIds,
+  })
+
+  return <>{count ?? "—"}</>
+}
+
 function DeleteFilterModal({
   isOpen,
+  siteId,
+  pageId,
+  tagOptionIds,
   label,
   onClose,
   onConfirm,
 }: {
   isOpen: boolean
-  label: string
+  siteId: number
+  pageId: number
+  tagOptionIds: CollectionTagOptionId[]
+  label: CollectionTagCategory["label"]
   onClose: () => void
   onConfirm: () => void
 }) {
@@ -66,11 +102,35 @@ function DeleteFilterModal({
         <ModalBody>
           <VStack align="stretch" spacing="1.5rem">
             <Infobox width="100%" size="md" variant="warning">
-              <Text textStyle="body-1" color="base.content.strong">
-                This removes the filter and its options from the collection.
-                Collection items that use these options may need to be updated
-                manually.
-              </Text>
+              <VStack align="stretch" spacing="0rem">
+                <Text textStyle="subhead-1" color="base.content.strong">
+                  You are deleting an entire filter. It’s being used on{" "}
+                  <ErrorBoundary fallbackRender={() => <>—</>}>
+                    <Suspense
+                      fallback={
+                        <Skeleton
+                          as="span"
+                          display="inline-block"
+                          verticalAlign="middle"
+                          height="1em"
+                          width="2ch"
+                        />
+                      }
+                    >
+                      <TagCategoryUsageCount
+                        siteId={siteId}
+                        pageId={pageId}
+                        tagOptionIds={tagOptionIds}
+                      />
+                    </Suspense>
+                  </ErrorBoundary>{" "}
+                  items.
+                </Text>
+                <Text textStyle="body-1" color="base.content.strong">
+                  To undo this change, you will need to recreate this filter and
+                  assign options to each item individually.
+                </Text>
+              </VStack>
             </Infobox>
             <HStack align="start">
               <Checkbox
@@ -123,11 +183,49 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
 
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
-    label: string
+    label: CollectionTagCategory["label"]
+    tagOptionIds: CollectionTagOptionId[]
   }>(null)
+
+  const { siteId, pageId } = useQueryParse(pageSchema)
+  const utils = trpc.useUtils()
 
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
+
+  const handleDeleteFilterMenuItemClick = (index: number) => {
+    const cat = get(core?.data, composePaths(path, `${index}`)) as
+      | Partial<CollectionTagCategory>
+      | undefined
+
+    const tagId = cat?.id?.trim()
+
+    // No id means the filter is new and never saved — nothing references it in the DB,
+    // so we remove the row immediately instead of opening the usage warning modal.
+    if (!tagId) {
+      if (!removeItems || isRemoveItemDisabled) return
+      removeItems(path, [index])()
+      return
+    }
+
+    // Persisted filter: show the modal so we can warn about existing item usage before delete.
+    setDeleteTarget({
+      index,
+      label: cat?.label?.trim() ?? "",
+      tagOptionIds: compact(map(cat?.options, (o) => o.id?.trim())),
+    })
+  }
+
+  const closeDeleteModal = () => {
+    void utils.collection.countTagOptionsUsage.invalidate()
+    setDeleteTarget(null)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
+    removeItems(path, [deleteTarget.index])()
+    closeDeleteModal()
+  }
 
   return (
     <>
@@ -181,10 +279,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                   isDisabled={isRemoveItemDisabled}
                   onClick={(e) => {
                     e.stopPropagation()
-                    setDeleteTarget({
-                      index,
-                      label: page?.tagCategories?.[index]?.label?.trim() ?? "",
-                    })
+                    handleDeleteFilterMenuItemClick(index)
                   }}
                 >
                   Delete filter
@@ -224,13 +319,12 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
       {deleteTarget && (
         <DeleteFilterModal
           isOpen
+          siteId={siteId}
+          pageId={pageId}
+          tagOptionIds={deleteTarget.tagOptionIds}
           label={deleteTarget.label}
-          onClose={() => setDeleteTarget(null)}
-          onConfirm={() => {
-            if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
-            removeItems(path, [deleteTarget.index])()
-            setDeleteTarget(null)
-          }}
+          onClose={closeDeleteModal}
+          onConfirm={handleConfirmDelete}
         />
       )}
     </>

@@ -1,4 +1,5 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
+import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import {
   HStack,
   Icon,
@@ -11,6 +12,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Portal,
+  Skeleton,
   Text,
   VStack,
 } from "@chakra-ui/react"
@@ -26,14 +28,19 @@ import {
 } from "@opengovsg/design-system-react"
 import { get } from "lodash"
 import { useMemo, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import {
   BiDotsHorizontalRounded,
   BiSolidErrorCircle,
   BiTrash,
 } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
+import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { useBuilderErrors } from "../../ErrorProvider"
@@ -41,14 +48,44 @@ import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
+type CollectionTagOption = NonNullable<
+  CollectionPagePageProps["tagCategories"]
+>[number]["options"][number]
+
+type CollectionTagOptionId = NonNullable<CollectionTagOption["id"]>
+
+const TagOptionUsageCount = ({
+  siteId,
+  pageId,
+  tagOptionId,
+}: {
+  siteId: number
+  pageId: number
+  tagOptionId: CollectionTagOptionId
+}) => {
+  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
+    siteId,
+    pageId,
+    tagOptionIds: [tagOptionId],
+  })
+
+  return <>{count ?? "—"}</>
+}
+
 const DeleteOptionModal = ({
   isOpen,
+  siteId,
+  pageId,
+  tagOptionId,
   label,
   onClose,
   onConfirm,
 }: {
   isOpen: boolean
-  label: string
+  siteId: number
+  pageId: number
+  tagOptionId: CollectionTagOptionId
+  label: CollectionTagOption["label"]
   onClose: () => void
   onConfirm: () => void
 }) => {
@@ -67,9 +104,28 @@ const DeleteOptionModal = ({
           <VStack align="stretch" spacing="1.5rem">
             <Infobox width="100%" size="md" variant="warning">
               <Text textStyle="body-2">
-                {/* TODO: replace XX with usage count from backend */}
-                This option is being used in XX items. To undo this change, you
-                will need to create and re-assign this option to all items.
+                This option is being used in{" "}
+                <ErrorBoundary fallbackRender={() => <>—</>}>
+                  <Suspense
+                    fallback={
+                      <Skeleton
+                        as="span"
+                        display="inline-block"
+                        verticalAlign="middle"
+                        height="1em"
+                        width="2ch"
+                      />
+                    }
+                  >
+                    <TagOptionUsageCount
+                      siteId={siteId}
+                      pageId={pageId}
+                      tagOptionId={tagOptionId}
+                    />
+                  </Suspense>
+                </ErrorBoundary>{" "}
+                items. To undo this change, you will need to create and
+                re-assign this option to all items.
               </Text>
             </Infobox>
             <HStack align="start">
@@ -126,25 +182,45 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
 
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
-    label: string
-    tagId?: string
+    label: CollectionTagOption["label"]
+    tagId: CollectionTagOptionId
   }>(null)
 
-  const openDeleteModal = (index: number) => {
+  const { siteId, pageId } = useQueryParse(pageSchema)
+  const utils = trpc.useUtils()
+
+  const handleDeleteOptionMenuItemClick = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
-      | { label?: string; id?: string }
+      | Partial<CollectionTagOption>
       | undefined
+
+    const tagId = item?.id?.trim()
+
+    // No id means the option is new and never saved — nothing references it in the DB,
+    // so we remove the row immediately instead of opening the usage warning modal.
+    if (!tagId) {
+      if (!removeItems || isRemoveItemDisabled) return
+      removeItems(path, [index])()
+      return
+    }
+
+    // Persisted option: show the modal so we can warn about existing item usage before delete.
     setDeleteTarget({
       index,
       label: item?.label?.trim() ?? "",
-      tagId: item?.id,
+      tagId,
     })
+  }
+
+  const closeDeleteModal = () => {
+    void utils.collection.countTagOptionsUsage.invalidate()
+    setDeleteTarget(null)
   }
 
   const handleConfirmDelete = () => {
     if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
     removeItems(path, [deleteTarget.index])()
-    setDeleteTarget(null)
+    closeDeleteModal()
   }
 
   return (
@@ -179,7 +255,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                   isDisabled={isRemoveItemDisabled}
                   onClick={(e) => {
                     e.stopPropagation()
-                    openDeleteModal(index)
+                    handleDeleteOptionMenuItemClick(index)
                   }}
                 >
                   Delete option
@@ -237,8 +313,11 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
       {deleteTarget && (
         <DeleteOptionModal
           isOpen
+          siteId={siteId}
+          pageId={pageId}
+          tagOptionId={deleteTarget.tagId}
           label={deleteTarget.label}
-          onClose={() => setDeleteTarget(null)}
+          onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}
         />
       )}

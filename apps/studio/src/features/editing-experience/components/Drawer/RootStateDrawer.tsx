@@ -255,6 +255,9 @@ export default function RootStateDrawer() {
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
+        if (type === ResourceType.CollectionPage) {
+          void utils.collection.countTagOptionsUsage.invalidate()
+        }
         toast({
           status: "success",
           title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
