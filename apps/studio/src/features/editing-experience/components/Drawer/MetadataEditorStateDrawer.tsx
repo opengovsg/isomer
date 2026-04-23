@@ -51,8 +51,8 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
-      await utils.page.getCategoryOptions.invalidate({ pageId, siteId })
+      await utils.page.getCategories.invalidate()
+      await utils.page.getCategoryOptions.invalidate()
       await utils.collection.getCategoryOptionUsageCount.invalidate()
       toast({
         status: "success",
