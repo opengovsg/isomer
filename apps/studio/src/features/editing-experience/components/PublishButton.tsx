@@ -50,6 +50,7 @@ const SuspendablePublishButton = ({
       await utils.page.readPage.refetch({ pageId, siteId })
       await utils.page.getCategories.invalidate({ pageId, siteId })
       await utils.page.getCategoryOptions.invalidate({ pageId, siteId })
+      await utils.collection.getCategoryOptionUsageCount.invalidate()
       await utils.site.getLocalisedSitemap.invalidate({
         resourceId: pageId,
         siteId,
