@@ -48,7 +48,7 @@ catalog:
   dotenv: ^16.4.5
   dotenv-cli: ^8.0.0
   jsdom: ^24.1.0
-  isomorphic-dompurify: ^3.6.0
+  isomorphic-dompurify: ^3.9.0
   mockdate: ^3.0.5
   msw: ^2.8.6
   msw-storybook-addon: ^2.0.4
@@ -73,9 +73,9 @@ catalog:
   react-icons: ^5.2.0
   rimraf: ^5.0.10
   sherif: ^1.6.1
-  start-server-and-test: ^2.0.11
+  start-server-and-test: ^3.0.2
   tailwindcss: ^3.4.4
-  testcontainers: ^10.13.1
+  testcontainers: ^11.14.0
   tslib: ^2.6.3
   tsc-alias: ^1.8.16
   type-fest: ^4.23.0
@@ -156,13 +156,13 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^1.7.7
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.1.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.840.0
-    "@aws-sdk/client-amplify": ^3.886.0
-    "@aws-sdk/client-cloudfront": ^3.840.0
-    "@aws-sdk/client-codebuild": ^3.835.0
-    "@aws-sdk/client-s3": 3.837.0
-    "@aws-sdk/s3-request-presigner": 3.837.0
-    "@aws-sdk/credential-providers": ^3.886.0
+    "@aws-sdk/client-acm": 3.1034.0
+    "@aws-sdk/client-amplify": 3.1034.0
+    "@aws-sdk/client-cloudfront": 3.1034.0
+    "@aws-sdk/client-codebuild": 3.1034.0
+    "@aws-sdk/client-s3": 3.1034.0
+    "@aws-sdk/s3-request-presigner": 3.1034.0
+    "@aws-sdk/credential-providers": 3.1034.0
   babel:
     "@babel/plugin-transform-class-properties": ^7.27.1
     "@babel/plugin-transform-object-rest-spread": ^7.27.3
@@ -185,10 +185,10 @@ catalogs:
     "@jsonforms/core": ^3.5.1
     "@jsonforms/react": ^3.5.1
   prisma:
-    "@prisma/client": 5.10.2
-    prisma: 5.10.2
-    prisma-json-types-generator: 3.2.3
-    prisma-kysely: ^1.8.0
+    "@prisma/client": 6.19.3
+    prisma: 6.19.3
+    prisma-json-types-generator: 3.6.2
+    prisma-kysely: 2.3.0
   react:
     react: ^18.3.1
     react-dom: ^18.3.1
