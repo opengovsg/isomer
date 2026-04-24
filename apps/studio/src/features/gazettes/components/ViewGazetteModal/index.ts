@@ -1,0 +1,1 @@
+export { ViewGazetteModal } from "./ViewGazetteModal"
