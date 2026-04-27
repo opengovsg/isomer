@@ -87,5 +87,16 @@
     "Archived": "true",
     "Imported": "true",
     "S3Sync": "true"
+  },
+  "www.ndf.gov.sg": {
+    "Domain": "www.ndf.gov.sg",
+    "Acm": "_5147af134def3cd9fc42ef6e94b4f048.www.ndf.gov.sg   CNAME   _33c18a388b1d1dacc5f23f9cca433dea.jkddzztszm.acm-validations.aws",
+    "LongName": "National Drug Formulary",
+    "CodeBuildId": "moh-ndf",
+    "GithubName": "moh-ndf-next",
+    "SearchSg": "f03d6061-0d3c-4e02-92a5-6fd4f0f09137",
+    "StudioSiteId": "544",
+    "Archived": "true",
+    "Imported": "true"
   }
 }
