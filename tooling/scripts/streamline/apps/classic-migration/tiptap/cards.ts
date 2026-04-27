@@ -56,7 +56,7 @@ export const IsomerCard = Node.create({
         default: null,
         parseHTML: (element) => {
           const description = element.querySelector(
-            "div.isomer-card-description"
+            "div.isomer-card-description",
           );
           return description ? description.textContent : null;
         },
@@ -71,8 +71,16 @@ export const IsomerCard = Node.create({
       linkHref: {
         default: null,
         parseHTML: (element) => {
-          const link = element.querySelector("a.isomer-card");
-          return link ? link.getAttribute("href") : null;
+          try {
+            const link = element.querySelector("a.isomer-card");
+            return link
+              ? link.getAttribute("href")
+              : (element as HTMLAnchorElement).href
+                ? (element as HTMLAnchorElement).href
+                : null;
+          } catch {
+            return null;
+          }
         },
       },
     };
