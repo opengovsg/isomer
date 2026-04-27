@@ -14,30 +14,7 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-interface GodmodeLink {
-  href: string
-  label: string
-  /** Isomer admin roles that may see this hub link */
-  roles: readonly IsomerAdminRole[]
-}
-
-const GODMODE_LINKS: readonly GodmodeLink[] = [
-  {
-    href: "/godmode/create-site",
-    label: "Create a new site",
-    roles: [IsomerAdminRole.Core],
-  },
-  {
-    href: "/godmode/publishing",
-    label: "Publishing",
-    roles: [IsomerAdminRole.Core],
-  },
-  {
-    href: "/godmode/whitelist",
-    label: "Whitelist",
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  },
-]
+import { getVisibleGodmodeLinks } from "./utils"
 
 const GodModePage: NextPageWithLayout = () => {
   const toast = useToast()
@@ -60,9 +37,7 @@ const GodModePage: NextPageWithLayout = () => {
     userGodmodeRoles.add(IsomerAdminRole.Migrator)
   }
 
-  const visibleGodmodeLinks = GODMODE_LINKS.filter((link) =>
-    link.roles.some((role) => userGodmodeRoles.has(role)),
-  )
+  const visibleGodmodeLinks = getVisibleGodmodeLinks(userGodmodeRoles)
 
   if (!isLoading && visibleGodmodeLinks.length === 0) {
     toast({
