@@ -21,9 +21,7 @@ describe("getVisibleGodmodeLinks", () => {
     const links = getVisibleGodmodeLinks([IsomerAdminRole.Migrator])
 
     // Assert
-    expect(links.map((link) => link.href)).toStrictEqual([
-      "/godmode/whitelist",
-    ])
+    expect(links.map((link) => link.href)).toStrictEqual(["/godmode/whitelist"])
   })
 
   it("shows no links without a God Mode role", () => {
