@@ -11,7 +11,7 @@ export const Polyglot = ({
   return (
     <ScriptComponent
       type="text/javascript"
-      src={`https://${host}/polyglot.widget.js`}
+      src={`https://${host}/widget.js`}
     />
   )
 }
