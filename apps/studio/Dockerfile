@@ -65,6 +65,12 @@ RUN npx turbo run build --filter=isomer-studio...
 FROM base AS runner
 WORKDIR /app
 
+# Datadog source code integration
+ARG DD_GIT_REPOSITORY_URL
+ARG DD_GIT_COMMIT_SHA
+ENV DD_GIT_REPOSITORY_URL=${DD_GIT_REPOSITORY_URL}
+ENV DD_GIT_COMMIT_SHA=${DD_GIT_COMMIT_SHA}
+
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -75,5 +81,8 @@ USER nextjs
 COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/.next/static ./apps/studio/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/public ./apps/studio/public
+
+# Remove sourcemaps from production image (they are uploaded to Datadog separately)
+RUN find . -name "*.map" -type f -delete
 
 CMD ["node", "apps/studio/server.js"]
