@@ -273,7 +273,7 @@ jobs:
           # Upload sourcemaps (extracted earlier from installer stage)
           datadog-ci sourcemaps upload .next-static \
             --service=isomer-next \
-            --release-version=${{ github.sha }} \
+            --release-version=${{ inputs.app-version }} \
             --minified-path-prefix=/_next/static \
             --repository-url=https://github.com/${{ github.repository }}
 
