@@ -89,11 +89,15 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   ])
 
   // Type predicate wrapper: validateFn validates data against the collection page schema
-  const isCollectionPageProps = (data: unknown): data is CollectionPagePageProps =>
-    validateFn(data)
+  const isCollectionPageProps = (
+    data: unknown,
+  ): data is CollectionPagePageProps => validateFn(data)
 
   const handleChange = (data: unknown) => {
-    if (isCollectionPageProps(data) && previewPageState.layout === "collection") {
+    if (
+      isCollectionPageProps(data) &&
+      previewPageState.layout === "collection"
+    ) {
       setPreviewPageState({
         ...previewPageState,
         layout: "collection",
