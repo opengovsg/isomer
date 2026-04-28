@@ -260,10 +260,14 @@ jobs:
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
       - name: Upload sourcemaps to Datadog
-        if: ${{ secrets.DD_API_KEY != '' }}
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
         run: |
+          if [ -z "$DD_API_KEY" ]; then
+            echo "DD_API_KEY not set, skipping sourcemap upload"
+            exit 0
+          fi
+
           npm install -g @datadog/datadog-ci
 
           # Upload sourcemaps (extracted earlier from installer stage)
