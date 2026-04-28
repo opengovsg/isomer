@@ -10,11 +10,19 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
+import {
+  Button,
+  ModalCloseButton,
+  useToast,
+} from "@opengovsg/design-system-react"
+import { format, parse } from "date-fns"
 import { useState } from "react"
 import { BiBlock } from "react-icons/bi"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { useZodForm } from "~/lib/form"
 import { createGazetteSchema } from "~/schemas/gazette"
+import { trpc } from "~/utils/trpc"
 
 import { GazetteFormFields } from "../GazetteModal"
 
@@ -26,6 +34,7 @@ interface ModifyGazetteInitialData {
   publishDate: Date
   publishTime: string
   fileId: string
+  fileKey?: string
   fileName?: string
   fileSize?: number
 }
@@ -35,6 +44,8 @@ interface ModifyGazetteModalProps extends Pick<
   "isOpen" | "onClose"
 > {
   gazetteId: string | number
+  siteId: number
+  collectionId: number
   initialData: ModifyGazetteInitialData
 }
 
@@ -42,6 +53,8 @@ export const ModifyGazetteModal = ({
   isOpen,
   onClose,
   gazetteId,
+  siteId,
+  collectionId,
   initialData,
 }: ModifyGazetteModalProps): JSX.Element => {
   return (
@@ -51,6 +64,8 @@ export const ModifyGazetteModal = ({
         key={String(isOpen)}
         onClose={onClose}
         gazetteId={gazetteId}
+        siteId={siteId}
+        collectionId={collectionId}
         initialData={initialData}
       />
     </Modal>
@@ -59,20 +74,40 @@ export const ModifyGazetteModal = ({
 
 type ModifyGazetteModalContentProps = Pick<
   ModifyGazetteModalProps,
-  "onClose" | "gazetteId" | "initialData"
+  "onClose" | "gazetteId" | "siteId" | "collectionId" | "initialData"
 >
 
 const ModifyGazetteModalContent = ({
   onClose,
   gazetteId,
+  siteId,
+  collectionId,
   initialData,
 }: ModifyGazetteModalContentProps) => {
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false)
+  const [newFile, setNewFile] = useState<File | undefined>()
+  const [hasFile, setHasFile] = useState(!!initialData.fileId)
+
+  const toast = useToast()
+  const utils = trpc.useUtils()
+
+  const { mutateAsync: uploadFile, isPending: isUploading } =
+    useUploadAssetMutation({
+      siteId,
+      resourceId: String(collectionId),
+    })
+  const { mutateAsync: updateGazette, isPending: isUpdatingGazette } =
+    trpc.gazette.update.useMutation()
+  const { mutateAsync: deleteResource, isPending: isDeleting } =
+    trpc.resource.delete.useMutation()
+
+  const isSubmitting = isUploading || isUpdatingGazette || isDeleting
 
   const {
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isValid },
   } = useZodForm({
     defaultValues: {
@@ -88,21 +123,87 @@ const ModifyGazetteModalContent = ({
     mode: "onChange",
   })
 
-  const onSubmit = handleSubmit((data) => {
-    // TODO: Implement API call to update gazette
-    console.log("Updating gazette:", gazetteId, data)
-    onClose()
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      // If the user attached a fresh file, upload first and pass the new key
+      // to the server. If only the filename changed, hand `desiredFileName` to
+      // the server so the S3 rename + DB ref update happen as one operation.
+      let newRef: string | undefined
+      let desiredFileName: string | undefined
+
+      if (newFile) {
+        const { path } = await uploadFile({
+          file: newFile,
+          fileName: data.fileId,
+        })
+        newRef = path
+      } else if (initialData.fileKey && initialData.fileId !== data.fileId) {
+        desiredFileName = data.fileId
+      }
+
+      const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
+
+      await updateGazette({
+        siteId,
+        gazetteId: Number(gazetteId),
+        title: data.title,
+        newRef,
+        desiredFileName,
+        category: data.category,
+        date: format(data.publishDate, "dd/MM/yyyy"),
+        description: data.notificationNumber,
+        tagged: [data.subcategory],
+        scheduledAt,
+      })
+
+      void utils.gazette.list.invalidate()
+      toast({
+        status: "success",
+        title: "Gazette updated successfully",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+      onClose()
+    } catch (error) {
+      toast({
+        status: "error",
+        title: "Failed to update gazette",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
   })
 
-  const onCancelPublish = () => {
-    // TODO: Implement API call to cancel gazette publication
-    console.log("Cancelling gazette publication:", gazetteId)
-    onClose()
+  const onCancelPublish = async () => {
+    try {
+      // NOTE: we delete the resource here to keep in line with legacy
+      // behaviour for egazette and avoid showing it to the users
+      await deleteResource({
+        resourceId: String(gazetteId),
+        siteId,
+      })
+      void utils.gazette.list.invalidate()
+      toast({
+        status: "success",
+        title: "Gazette cancelled successfully",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+      onClose()
+    } catch (error) {
+      toast({
+        status: "error",
+        title: "Failed to cancel gazette",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
   }
 
-  const initialFile = initialData.fileName
-    ? new File([], initialData.fileName, { type: "application/pdf" })
-    : undefined
+  const handleFileChange = (file: File | undefined) => {
+    setNewFile(file)
+    setHasFile(!!file)
+  }
 
   return (
     <ModalContent>
@@ -115,7 +216,10 @@ const ModifyGazetteModalContent = ({
           register={register}
           control={control}
           errors={errors}
-          initialFile={initialFile}
+          setValue={setValue}
+          initialFileName={initialData.fileId || undefined}
+          initialFileSize={initialData.fileSize}
+          onFileChange={handleFileChange}
         />
       </ModalBody>
 
@@ -154,7 +258,12 @@ const ModifyGazetteModalContent = ({
           </Button>
         )}
         {!isConfirmingCancel && (
-          <Button isDisabled={!isValid} type="submit" onClick={onSubmit}>
+          <Button
+            isDisabled={!isValid || isSubmitting || !hasFile}
+            isLoading={isSubmitting}
+            type="submit"
+            onClick={onSubmit}
+          >
             Save changes
           </Button>
         )}

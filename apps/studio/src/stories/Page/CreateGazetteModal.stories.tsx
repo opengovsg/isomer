@@ -19,6 +19,8 @@ const meta: Meta<typeof CreateGazetteModal> = {
   args: {
     isOpen: true,
     onClose: () => console.log("close"),
+    siteId: 1,
+    collectionId: 30,
   },
 }
 

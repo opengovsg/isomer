@@ -15,12 +15,7 @@ export interface GazetteTableData {
   subcategory: string
   status: GazetteStatus
   fileId: string
-  fileUrl: string | null
+  fileKey: string | null
+  fileSize: number | null
   publishTime: Date
 }
-
-export type GazetteTableSortOptions =
-  | "publish-time-desc"
-  | "publish-time-asc"
-  | "notification-no-desc"
-  | "notification-no-asc"

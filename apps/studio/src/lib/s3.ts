@@ -1,9 +1,15 @@
 import type {
+  CopyObjectCommandInput,
+  GetObjectCommandInput,
+  HeadObjectCommandInput,
   PutObjectCommandInput,
   PutObjectTaggingCommandInput,
 } from "@aws-sdk/client-s3"
 import {
+  CopyObjectCommand,
+  GetObjectCommand,
   GetObjectTaggingCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   PutObjectTaggingCommand,
   S3Client,
@@ -43,6 +49,22 @@ export const generateSignedPutUrl = async ({
   )
 }
 
+export const generateSignedGetUrl = async ({
+  Bucket,
+  Key,
+}: Pick<GetObjectCommandInput, "Bucket" | "Key">): Promise<string> => {
+  return getSignedUrl(
+    storage,
+    new GetObjectCommand({
+      Bucket,
+      Key,
+    }),
+    {
+      expiresIn: 60 * 5, // 5 minutes
+    },
+  )
+}
+
 export const deleteFile = async ({
   Key,
   Bucket,
@@ -72,6 +94,37 @@ export const deleteFile = async ({
           },
         ],
       },
+    }),
+  )
+}
+
+export const getFileSize = async ({
+  Key,
+  Bucket,
+}: Pick<HeadObjectCommandInput, "Key" | "Bucket">): Promise<number | null> => {
+  try {
+    const response = await storage.send(
+      new HeadObjectCommand({ Bucket, Key }),
+    )
+    return response.ContentLength ?? null
+  } catch {
+    return null
+  }
+}
+
+export const copyFile = async ({
+  SourceKey,
+  DestKey,
+  Bucket,
+}: Pick<CopyObjectCommandInput, "Bucket"> & {
+  SourceKey: string
+  DestKey: string
+}) => {
+  return storage.send(
+    new CopyObjectCommand({
+      Bucket,
+      CopySource: `${Bucket}/${SourceKey}`,
+      Key: DestKey,
     }),
   )
 }
