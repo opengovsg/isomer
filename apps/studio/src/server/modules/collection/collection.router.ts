@@ -358,7 +358,6 @@ export const collectionRouter = router({
           description,
           ref,
           image,
-          tags,
           tagged,
         },
         ctx,
