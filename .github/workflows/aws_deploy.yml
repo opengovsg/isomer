@@ -261,10 +261,10 @@ jobs:
 
       - name: Upload sourcemaps to Datadog
         env:
-          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
         run: |
-          if [ -z "$DD_API_KEY" ]; then
-            echo "DD_API_KEY not set, skipping sourcemap upload"
+          if [ -z "$DATADOG_API_KEY" ]; then
+            echo "DATADOG_API_KEY not set, skipping sourcemap upload"
             exit 0
           fi
 
