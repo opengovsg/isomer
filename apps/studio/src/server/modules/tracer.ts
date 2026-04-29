@@ -8,5 +8,8 @@ tracer.init({
   version: env.NEXT_PUBLIC_APP_VERSION,
   runtimeMetrics: true,
   logInjection: true,
+  profiling:
+    env.NEXT_PUBLIC_APP_ENV !== "development" &&
+    env.NEXT_PUBLIC_APP_ENV !== "test",
 })
 export default tracer
