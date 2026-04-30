@@ -255,7 +255,10 @@ export const getIsomerSchemaFromJekyll = async ({
 
   // Pages are either in Tiptap (which we know how to handle), or have redundant
   // or no divs, so we can directly convert to the Isomer Schema
-  const convertedContent = await convertHtmlToSchema(html, domain);
+  const convertedContent = await convertHtmlToSchema(html, domain, {
+    site,
+    baseDir: __dirname,
+  });
 
   // Check through the output schema to flag out the issues that need manual
   // review (e.g. long/missing alt text, missing table captions, etc)

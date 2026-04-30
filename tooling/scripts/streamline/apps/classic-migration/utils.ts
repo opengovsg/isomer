@@ -29,8 +29,8 @@ export const getPathsToMigrate = async ({
 }: GetPathsToMigrateParams) => {
   const allFolderPages = await Promise.all(
     folders.map((folder) =>
-      getRecursiveTree({ site, path: folder, octokit, useStagingBranch })
-    )
+      getRecursiveTree({ site, path: folder, octokit, useStagingBranch }),
+    ),
   ).then((results) => results.flat());
 
   return [...allFolderPages, ...orphanPages];
@@ -158,7 +158,7 @@ export const getManualReviewItems = async (
   description: any,
   layout: any,
   variant: any,
-  html: string
+  html: string,
 ): Promise<{
   content: any[];
   reviewItems: ReviewItem[];
@@ -224,7 +224,7 @@ export const getManualReviewItems = async (
   // InfoCards with more than 30 cards were used
   if (
     content.some(
-      (block) => block.type === "infocards" && block.cards.length > 30
+      (block) => block.type === "infocards" && block.cards.length > 30,
     )
   ) {
     reviewItems.push({
@@ -247,13 +247,22 @@ export const getManualReviewItems = async (
     });
   }
 
-  // Google Slides
+  // Google Slides (but not converted)
   if (stringifiedContent.includes(PLACEHOLDER_GOOGLE_SLIDES_TEXT)) {
     // Already replaced in the converter script, but highlighting for manual review
     reviewItems.push({
       type: "review",
       message: "Contains Google Slides embeds",
       action: `Review the hyperlink "${PLACEHOLDER_GOOGLE_SLIDES_TEXT}"`,
+    });
+  }
+
+  if (content.some((block) => block.type === "imagegallery")) {
+    reviewItems.push({
+      type: "review",
+      message: "Contains Google Slides embeds",
+      action:
+        "Review the conversion of Google Slides embeds to image galleries",
     });
   }
 
