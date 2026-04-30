@@ -1,3 +1,4 @@
+import type { UnwrapTagged } from "type-fest"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { MOCK_STORY_DATE } from "../constants"
@@ -71,10 +72,7 @@ export const collectionHandlers = {
           layout: "link",
           content: [],
           version: "0.1.0",
-          // TODO: not too sure why this error happens
-          // but there's a typing issue where we are not satisfying the opaque type
-          // oddly enough, this doesn't happen on other handlers
-        } as unknown as PrismaJson.BlobJsonContent,
+        } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>,
         title: "yet another link",
       }))
     },
@@ -91,10 +89,7 @@ export const collectionHandlers = {
           layout: "link",
           content: [],
           version: "0.1.0",
-          // TODO: not too sure why this error happens
-          // but there's a typing issue where we are not satisfying the opaque type
-          // oddly enough, this doesn't happen on other handlers
-        } as unknown as PrismaJson.BlobJsonContent,
+        } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>,
         title: "Link with image",
       }))
     },
