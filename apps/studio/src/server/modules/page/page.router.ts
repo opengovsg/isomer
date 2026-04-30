@@ -980,16 +980,16 @@ export const pageRouter = router({
       const blobContent =
         parent.type === ResourceType.Collection
           ? {
-            layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
-            page: {
-              title: parent.title,
-              subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
-              sortOrder: "date-desc",
-              variant: COLLECTION_VARIANT_OPTIONS.Collection,
-            } as CollectionPagePageProps,
-            content: [],
-            version: "0.1.0",
-          }
+              layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
+              page: {
+                title: parent.title,
+                subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
+                sortOrder: "date-desc",
+                variant: COLLECTION_VARIANT_OPTIONS.Collection,
+              } as CollectionPagePageProps,
+              content: [],
+              version: "0.1.0",
+            }
           : createFolderIndexPage(parent.title)
 
       const page = await db.transaction().execute(async (tx) => {
