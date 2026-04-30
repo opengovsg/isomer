@@ -11,7 +11,7 @@ Isomer Next is a monorepo for a government CMS/site builder platform (Open Gover
 ### Development
 ```bash
 npm run dev              # Start all dev servers
-npm run storybook        # Start Storybook on port 6007
+npm run storybook        # Start Storybook in multiple workspaces (e.g. Studio on 6007, Components on 6006)
 npm run watch:packages   # Watch and rebuild packages
 ```
 
