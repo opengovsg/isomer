@@ -118,9 +118,9 @@ export const setup = async (
         type === "image"
           ? new GenericContainer(configuration.image)
           : await GenericContainer.fromDockerfile(
-            context,
-            configuration.dockerfile,
-          ).build(name)
+              context,
+              configuration.dockerfile,
+            ).build(name)
 
       if (ports.length) {
         container = container.withExposedPorts(...ports)
