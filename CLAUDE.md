@@ -25,7 +25,7 @@ npm run dev:e2e          # Start dev server + run E2E tests
 npm run test:unit        # Run Vitest unit tests
 npm run test:watch       # Watch mode for unit tests
 npx playwright test tests/e2e/specific-test.spec.ts  # Run single E2E test
-npx vitest run src/path/to/test.test.ts              # Run single unit test
+npm run test:unit -- src/path/to/test.test.ts        # Run single unit test
 ```
 
 ### Code Quality
