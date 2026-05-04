@@ -4,6 +4,7 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
+import { PdfReader } from "pdfreader"
 import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import {
@@ -18,11 +19,19 @@ import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
+const pdfReader = new PdfReader({})
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
 const EXTENSION_TO_MIME: Record<string, string> = {
   ...IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
   ...FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+}
+
+// NOTE: The format that s3 expects is in this format:
+// Tagging: "key1=value1&key2=value2"
+export const generateTagsQueryString = (tags: { key: string; value: string }[]) => {
+  const entries = tags.map(({ key, value }) => `${key}=${value}`)
+  return entries.join("&")
 }
 
 /**
@@ -111,8 +120,10 @@ export const doAllFileKeysBelongToSite = ({
 
 export const getPresignedPutUrl = async ({
   key,
+  tags,
 }: {
   key: string
+  tags?: { key: string; value: string }[]
 }): Promise<{
   presignedPutUrl: string
   contentType: string
@@ -120,11 +131,13 @@ export const getPresignedPutUrl = async ({
 }> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
+  const stringifiedTags = tags && generateTagsQueryString(tags)
   const presignedPutUrl = await generateSignedPutUrl({
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
     Key: key,
     ContentType: contentType,
     ContentDisposition: contentDisposition,
+    Tagging: tags && stringifiedTags,
   })
   return { presignedPutUrl, contentType, contentDisposition }
 }
@@ -185,4 +198,22 @@ export const copyFileWithNewName = async ({
   })
 
   return newKey
+}
+
+// Taken as is from egazette codebase.
+export const parseFullTextFromPDF = async (pdfBuffer: Uint8Array) => {
+  const data: string[] = await new Promise((resolve, reject) => {
+    const parsedData: string[] = []
+    pdfReader.parseBuffer(Buffer.from(pdfBuffer), (err, item) => {
+      if (err) {
+        reject(new Error(err))
+      } else if (!item) {
+        resolve(parsedData)
+      } else if (item.text) {
+        parsedData.push(item.text)
+      }
+    })
+  })
+
+  return data.join(" ")
 }

@@ -19,7 +19,7 @@ import { format, parse } from "date-fns"
 import { useState } from "react"
 import { BiBlock } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
+import { useUploadGazetteMutation } from "~/hooks/useUploadGazetteMutation"
 import { useZodForm } from "~/lib/form"
 import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
@@ -92,16 +92,16 @@ const ModifyGazetteModalContent = ({
   const utils = trpc.useUtils()
 
   const { mutateAsync: uploadFile, isPending: isUploading } =
-    useUploadAssetMutation({
+    useUploadGazetteMutation({
       siteId,
       resourceId: String(collectionId),
     })
   const { mutateAsync: updateGazette, isPending: isUpdatingGazette } =
     trpc.gazette.update.useMutation()
-  const { mutateAsync: deleteResource, isPending: isDeleting } =
-    trpc.resource.delete.useMutation()
+  const { mutateAsync: cancelScheduledPublish, isPending: isCancelling } =
+    trpc.gazette.cancelScheduledPublish.useMutation()
 
-  const isSubmitting = isUploading || isUpdatingGazette || isDeleting
+  const isSubmitting = isUploading || isUpdatingGazette || isCancelling
 
   const {
     register,
@@ -131,17 +131,21 @@ const ModifyGazetteModalContent = ({
       let newRef: string | undefined
       let desiredFileName: string | undefined
 
+      const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
+
       if (newFile) {
         const { path } = await uploadFile({
           file: newFile,
           fileName: data.fileId,
+          scheduledAt,
+          year: data.publishDate.getFullYear(),
+          category: data.category,
+          subcategory: data.subcategory,
         })
         newRef = path
       } else if (initialData.fileKey && initialData.fileId !== data.fileId) {
         desiredFileName = data.fileId
       }
-
-      const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
 
       await updateGazette({
         siteId,
@@ -176,10 +180,8 @@ const ModifyGazetteModalContent = ({
 
   const onCancelPublish = async () => {
     try {
-      // NOTE: we delete the resource here to keep in line with legacy
-      // behaviour for egazette and avoid showing it to the users
-      await deleteResource({
-        resourceId: String(gazetteId),
+      await cancelScheduledPublish({
+        gazetteId: Number(gazetteId),
         siteId,
       })
       void utils.gazette.list.invalidate()

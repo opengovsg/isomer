@@ -15,7 +15,7 @@ import {
 import { format, parse } from "date-fns"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
+import { useUploadGazetteMutation } from "~/hooks/useUploadGazetteMutation"
 import { useZodForm } from "~/lib/form"
 import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
@@ -80,7 +80,7 @@ const CreateGazetteModalContent = ({
   const utils = trpc.useUtils()
 
   const { mutateAsync: uploadFile, isPending: isUploading } =
-    useUploadAssetMutation({
+    useUploadGazetteMutation({
       siteId,
       resourceId: String(collectionId),
     })
@@ -103,7 +103,14 @@ const CreateGazetteModalContent = ({
     const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
 
     try {
-      const { path: ref } = await uploadFile({ file, fileName: data.fileId })
+      const { path: ref } = await uploadFile({
+        file,
+        fileName: data.fileId,
+        scheduledAt,
+        year: data.publishDate.getFullYear(),
+        category: data.category,
+        subcategory: data.subcategory,
+      })
 
       await createGazette({
         siteId,

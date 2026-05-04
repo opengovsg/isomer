@@ -58,6 +58,8 @@ const server = z
     SESSION_SECRET: z.string().min(32),
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
     STUDIO_SSM_WEBHOOK_API_KEY: z.string().optional(),
+    S3_GAZETTE_BUCKET_NAME: z.string().optional(),
+    S3_GAZETTE_DOMAIN_NAME: z.string().optional(),
     SEARCHSG_API_KEY: z.string(),
   })
   .merge(s3Schema)
@@ -80,6 +82,8 @@ const processEnv = {
   POSTMAN_API_KEY: process.env.POSTMAN_API_KEY,
   SESSION_SECRET: process.env.SESSION_SECRET,
   GROWTHBOOK_CLIENT_KEY: process.env.GROWTHBOOK_CLIENT_KEY,
+  S3_GAZETTE_BUCKET_NAME: process.env.S3_GAZETTE_BUCKET_NAME,
+  S3_GAZETTE_DOMAIN_NAME: process.env.S3_GAZETTE_DOMAIN_NAME,
   NEXT_PUBLIC_S3_REGION: process.env.NEXT_PUBLIC_S3_REGION,
   NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME:
     process.env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,

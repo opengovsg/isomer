@@ -8,6 +8,7 @@ export type CodeBuildJobs = Selectable<T.CodeBuildJobs>
 export type Footer = Selectable<T.Footer>
 export type IsomerAdmin = Selectable<T.IsomerAdmin>
 export type Navbar = Selectable<T.Navbar>
+export type PushDocumentJob = Selectable<T.PushDocumentJob>
 export type RateLimiterFlexible = Selectable<T.RateLimiterFlexible>
 export type Redirect = Selectable<T.Redirect>
 export type Resource = Selectable<T.Resource>
