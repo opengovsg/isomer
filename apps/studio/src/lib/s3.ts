@@ -11,7 +11,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { env } from "~/env.mjs"
 
-const DELETE_TAG = 'deletedAt'
+const DELETE_TAG = "deletedAt"
 const { NEXT_PUBLIC_S3_REGION } = env
 
 const storage = new S3Client({
