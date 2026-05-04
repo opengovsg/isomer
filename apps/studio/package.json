@@ -136,6 +136,7 @@
     "next": "catalog:",
     "openid-client": "catalog:",
     "papaparse": "catalog:",
+    "pdfreader": "^3.0.8",
     "pg": "catalog:",
     "pino": "catalog:",
     "pino-pretty": "catalog:",
