@@ -13,10 +13,7 @@ import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
 import { pageSchema } from "../../schema"
-import {
-  CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
-  PLACEHOLDER_IMAGE_FILENAME,
-} from "../constants"
+import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
@@ -60,10 +57,8 @@ export default function HeroEditorDrawer(): JSX.Element {
     })
   const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
     useUploadAssetMutation({ siteId, resourceId: String(pageId) })
-  const { mutate: deleteAssets, isPending: isDeletingAssets } =
-    trpc.asset.deleteAssets.useMutation()
 
-  const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
+  const isLoading = isSavingPage || isUploadingAsset
 
   const handleSaveChanges = useCallback(async () => {
     let newPageState = previewPageState
@@ -107,25 +102,6 @@ export default function HeroEditorDrawer(): JSX.Element {
       if (!isUploadingSuccessful) {
         return
       }
-
-      // Delete the original assets for those that have been modified
-      // This is done by deleting the file key stored in the src attribute, as
-      // it would have been replaced by new file keys after uploading
-      const assetsToDelete = modifiedAssets
-        .map(({ src }) => src?.slice(1))
-        .filter((src) => src !== PLACEHOLDER_IMAGE_FILENAME)
-        .reduce<string[]>((acc, curr) => {
-          if (curr !== undefined) {
-            acc.push(curr)
-          }
-          return acc
-        }, [])
-
-      deleteAssets({
-        siteId,
-        resourceId: String(pageId),
-        fileKeys: assetsToDelete,
-      })
     }
 
     mutate(
@@ -145,7 +121,6 @@ export default function HeroEditorDrawer(): JSX.Element {
     )
   }, [
     currActiveIdx,
-    deleteAssets,
     modifiedAssets,
     mutate,
     pageId,

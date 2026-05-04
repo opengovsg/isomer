@@ -33,6 +33,10 @@ const GODMODE_LINKS: readonly GodmodeLink[] = [
     roles: [IsomerAdminRole.Core],
   },
   {
+    href: "/godmode/delete-s3-assets",
+    label: "Delete S3 assets",
+  },
+  {
     href: "/godmode/whitelist",
     label: "Whitelist",
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],

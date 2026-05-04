@@ -63,10 +63,10 @@ export const deleteFile = async ({
       // until the page is published
       Tagging: {
         TagSet: [
-          ...originalTagSet.filter(({ Key }) => Key !== "ISOMER_STATUS"),
+          ...originalTagSet.filter(({ Key }) => Key !== "deletedAt"),
           {
-            Key: "ISOMER_STATUS",
-            Value: "DELETED",
+            Key: "deletedAt",
+            Value: Date.now().toString(),
           },
         ],
       },
