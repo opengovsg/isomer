@@ -1,4 +1,7 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import {
+  COLLECTION_VARIANT_OPTIONS,
+  type IsomerSchema,
+} from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import { TRPCError } from "@trpc/server"
@@ -2577,6 +2580,53 @@ describe("page.router", async () => {
 
       // Assert
       expect(result).toEqual({ pageId: expect.any(String) })
+    })
+
+    it("should create a collection index page with the default collection variant", async () => {
+      // Arrange
+      const { site, collection } = await setupCollection({
+        title: "Press Releases",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.createIndexPage({
+        siteId: site.id,
+        parentId: collection.id,
+      })
+
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
+        .where("Resource.id", "=", result.pageId)
+        .select([
+          "Resource.parentId",
+          "Resource.permalink",
+          "Resource.type",
+          "Blob.content",
+        ])
+        .executeTakeFirstOrThrow()
+
+      expect(actual).toMatchObject({
+        parentId: collection.id,
+        permalink: "index",
+        type: ResourceType.IndexPage,
+        content: {
+          layout: "collection",
+          page: {
+            title: "Press Releases",
+            subtitle: "Read more on press releases here.",
+            sortOrder: "date-desc",
+            variant: COLLECTION_VARIANT_OPTIONS.Collection,
+          },
+          content: [],
+          version: "0.1.0",
+        },
+      })
     })
   })
   describe("schedulePage", () => {
