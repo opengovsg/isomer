@@ -10,6 +10,14 @@ const ALLOWED_EXTENSIONS = [
 
 export const getPresignedPutUrlSchema = z.object({
   siteId: z.number().min(1),
+  tags: z
+    .array(
+      z.object({
+        key: z.string(),
+        value: z.string(),
+      }),
+    )
+    .optional(),
   resourceId: z.string().optional(),
   fileName: z
     .string({
