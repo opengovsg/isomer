@@ -67,7 +67,7 @@ export const deleteFile = async ({
           ...originalTagSet.filter(({ Key }) => Key !== DELETE_TAG),
           {
             Key: DELETE_TAG,
-            // NOTE: UNIX time
+            // NOTE: milliseconds since epoch
             Value: Date.now().toString(),
           },
         ],
