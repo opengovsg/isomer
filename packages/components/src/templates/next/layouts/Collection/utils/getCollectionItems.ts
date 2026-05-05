@@ -9,6 +9,59 @@ import { sortCollectionItems } from "./sortCollectionItems"
 
 const CATEGORY_OTHERS = "Others"
 
+interface GetItemImageProps {
+  showThumbnail: CollectionPagePageProps["showThumbnail"]
+  item: IsomerSitemap
+  site: IsomerSiteProps
+}
+
+type GetItemImageResult =
+  | {
+      src: string
+      alt: string
+      isContainNeeded?: boolean
+    }
+  | undefined
+
+const getItemImage = ({
+  showThumbnail,
+  item,
+  site,
+}: GetItemImageProps): GetItemImageResult => {
+  // If showThumbnail is undefined, we will hide all the thumbnails of the
+  // collection, regardless of whether the individual items have images or not
+  if (!showThumbnail) {
+    return undefined
+  }
+
+  // If the item has an image, we will show the item's image
+  if (item.image?.src) {
+    return item.image
+  }
+
+  switch (showThumbnail.fallback) {
+    case "logo":
+      return {
+        src: site.logoUrl,
+        alt: `${site.siteName} site logo`,
+        isContainNeeded: true,
+      }
+    case "first-image":
+      if (item.firstImage?.src) {
+        return item.firstImage
+      }
+
+      return {
+        src: site.logoUrl,
+        alt: `${site.siteName} site logo`,
+        isContainNeeded: true,
+      }
+    default:
+      const _: never = showThumbnail.fallback
+      return undefined
+  }
+}
+
 export type GetCollectionItemsProps = Pick<
   CollectionPagePageProps,
   "sortOrder" | "showDate" | "showThumbnail" | "tagCategories"
@@ -63,25 +116,12 @@ export const getCollectionItems = ({
         item.layout === "article",
     )
 
-  const isAnyItemHaveImage = items.some((item) => !!item.image?.src)
-  // If showThumbnail is not explicitly set, show the thumbnail if any of the
-  // items have an image
-  const shouldShowThumbnail = showThumbnail ?? isAnyItemHaveImage
-
   const transformedItems = items.map((item) => {
     const date =
       showDate !== false && item.date !== undefined && item.date !== ""
         ? getParsedDate(item.date)
         : undefined
-    const hasOriginalImage = !!item.image?.src
-    const image = shouldShowThumbnail
-      ? hasOriginalImage
-        ? item.image
-        : {
-            src: site.logoUrl,
-            alt: `${site.siteName} site logo`,
-          }
-      : undefined
+    const image = getItemImage({ showThumbnail, item, site })
 
     const baseItem = {
       type: "collectionCard" as const,
@@ -92,7 +132,7 @@ export const getCollectionItems = ({
       title: item.title,
       description: item.summary,
       image,
-      isFallbackImage: shouldShowThumbnail && !hasOriginalImage,
+      isContainNeeded: image?.isContainNeeded || false,
       site,
       tags:
         tagCategories && item.tagged

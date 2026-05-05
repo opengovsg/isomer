@@ -2,6 +2,7 @@ import type { Static, StringOptions } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 import {
   AltTextSchema,
+  ARRAY_RADIO_FORMAT,
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
   generateImageSrcSchema,
@@ -220,12 +221,26 @@ export const CollectionPagePageSchema = Type.Intersect([
       ),
     ),
     showThumbnail: Type.Optional(
-      Type.Boolean({
-        title: "Show thumbnail on all items",
-        description:
-          "If an item doesn't have a thumbnail, we'll display the site's logo.",
-        default: false,
-      }),
+      Type.Object(
+        {
+          fallback: Type.Union(
+            [
+              Type.Literal("logo", { title: "Use site logo" }),
+              Type.Literal("first-image", {
+                title: "Use first image on page, if available",
+              }),
+            ],
+            {
+              title: "If an item doesn’t have a thumbnail",
+              format: ARRAY_RADIO_FORMAT,
+              default: "logo",
+            },
+          ),
+        },
+        {
+          title: "Display thumbnail on all items",
+        },
+      ),
     ),
     showDate: Type.Optional(
       Type.Boolean({

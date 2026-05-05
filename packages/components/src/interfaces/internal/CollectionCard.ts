@@ -21,7 +21,7 @@ interface BaseCardProps {
   url: string
   description: string
   image?: Pick<ImageProps, "src" | "alt">
-  isFallbackImage?: boolean
+  isContainNeeded?: boolean
   LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
@@ -54,7 +54,7 @@ export type CollectionCardProps = Pick<
   | "image"
   | "tags"
   | "tagged"
-  | "isFallbackImage"
+  | "isContainNeeded"
 > & {
   referenceLinkHref: string | undefined
   imageSrc: string | undefined

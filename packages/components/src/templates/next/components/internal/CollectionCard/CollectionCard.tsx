@@ -12,7 +12,7 @@ export const CollectionCard = ({
   description,
   category,
   image,
-  isFallbackImage,
+  isContainNeeded,
   referenceLinkHref,
   imageSrc,
   itemTitle,
@@ -69,7 +69,7 @@ export const CollectionCard = ({
             src={imageSrc || ""}
             alt={image.alt}
             width="100%"
-            className={`absolute left-0 h-full w-full rounded ${isFallbackImage ? "object-contain" : "object-cover"}`}
+            className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
             assetsBaseUrl={siteAssetsBaseUrl}
           />
         </div>
