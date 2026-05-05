@@ -85,15 +85,13 @@ export const publishScheduledResources = async (
     ])
     .execute()
 
-  // Reset the scheduledAt and scheduledBy fields for all resources that are being published
-  await resetScheduledAtForPublishedResources(scheduledAtCutoff)
-
   for (const resource of resourcesWithUser) {
     const { id: resourceId, siteId, scheduledBy } = resource
     if (!scheduledBy) {
       logger.error(
         `Resource ${resourceId} is missing user information, skipping publish`,
       )
+      await resetScheduledAtForPublishedResource(resourceId, scheduledAtCutoff)
       continue
     }
     try {
@@ -105,6 +103,7 @@ export const publishScheduledResources = async (
         userId: scheduledBy,
       })
       logger.info(`Successfully published page for resource: ${resourceId}`)
+      await resetScheduledAtForPublishedResource(resourceId, scheduledAtCutoff)
       // Group resources by siteId for site publishing later
       siteResourcesMap[siteId] = siteResourcesMap[siteId] ?? []
       siteResourcesMap[siteId].push({ ...resource, scheduledBy })
@@ -191,17 +190,21 @@ export const publishScheduledSites = async (
 }
 
 /**
- * Reset the scheduledAt field for all resources that have been published as of the given cutoff date
- * Even IF there were errors publishing some resources, we still reset the scheduledAt for all resources
- * as the publishing job has already attempted to publish them, and the user should login to the portal to check the status again
+ * Reset the scheduledAt field for a resource after the publishing job has
+ * finished processing it.
+ * Only resources still due at the original cutoff are cleared so a concurrent
+ * reschedule to a later time is not lost.
+ * @param resourceId Resource whose schedule should be reset
  * @param scheduledAtCutoff Date as of which to reset the scheduledAt field
  */
-const resetScheduledAtForPublishedResources = async (
+const resetScheduledAtForPublishedResource = async (
+  resourceId: Resource["id"],
   scheduledAtCutoff: Date,
 ) => {
   await db
     .updateTable("Resource")
     .set({ scheduledAt: null, scheduledBy: null })
+    .where("id", "=", resourceId)
     .where("scheduledAt", "<=", scheduledAtCutoff)
     .execute()
 }

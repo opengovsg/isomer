@@ -87,6 +87,13 @@ describe("schedulePublishingJob", async () => {
         resourceId: page.id,
         versionNum: 1,
       })
+      const publishedResource = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .select(["scheduledAt", "scheduledBy"])
+        .executeTakeFirstOrThrow()
+      expect(publishedResource.scheduledAt).toBeNull()
+      expect(publishedResource.scheduledBy).toBeNull()
 
       // expect the audit log to be created with the correct info corresponding to the publish action
       const auditLogs = await db
@@ -164,6 +171,13 @@ describe("schedulePublishingJob", async () => {
         .execute()
 
       expect(versions).toHaveLength(0)
+      const failedResource = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .select(["scheduledAt", "scheduledBy"])
+        .executeTakeFirstOrThrow()
+      expect(failedResource.scheduledAt).toEqual(FIXED_NOW)
+      expect(failedResource.scheduledBy).toEqual(session.userId)
       expect(result[site.id]).toBeUndefined()
       expect(sendFailedPublishEmailSpy).toHaveBeenCalledTimes(1)
       expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
@@ -234,6 +248,13 @@ describe("schedulePublishingJob", async () => {
         .selectAll()
         .execute()
       expect(versionsPage1).toHaveLength(0)
+      const failedResource = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .select(["scheduledAt", "scheduledBy"])
+        .executeTakeFirstOrThrow()
+      expect(failedResource.scheduledAt).toEqual(FIXED_NOW)
+      expect(failedResource.scheduledBy).toEqual(session.userId)
 
       const versionsPage2 = await db
         .selectFrom("Version")
@@ -246,6 +267,13 @@ describe("schedulePublishingJob", async () => {
         resourceId: page2.id,
         versionNum: 1,
       })
+      const publishedResource = await db
+        .selectFrom("Resource")
+        .where("id", "=", page2.id)
+        .select(["scheduledAt", "scheduledBy"])
+        .executeTakeFirstOrThrow()
+      expect(publishedResource.scheduledAt).toBeNull()
+      expect(publishedResource.scheduledBy).toBeNull()
     })
     it("a resource without userId inside scheduledBy is skipped and does not prevent other resources from being published", async () => {
       // Arrange
