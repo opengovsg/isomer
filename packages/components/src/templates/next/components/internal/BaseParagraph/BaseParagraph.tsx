@@ -17,7 +17,9 @@ if (typeof window === "undefined") {
 
 // Explicitly excluding span tags as they can be abused to adjust the font size,
 // colours and other styles of the text, which can cause accessibility issues
-const ALLOWED_TAG_LIST_WITHOUT_SPAN = ALLOWED_TAG_LIST.filter((tag) => tag !== 'span')
+const ALLOWED_TAG_LIST_WITHOUT_SPAN = ALLOWED_TAG_LIST.filter(
+  (tag) => tag !== "span",
+)
 
 export const BaseParagraph = ({
   content,
