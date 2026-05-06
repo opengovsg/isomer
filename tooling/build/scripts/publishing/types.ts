@@ -44,6 +44,10 @@ export type SitemapEntry = Pick<
     src?: string
     alt?: string
   }
+  firstImage?: {
+    src?: string
+    alt?: string
+  }
   ref?: string
   children?: SitemapEntry[]
   tags?: Tag[]
