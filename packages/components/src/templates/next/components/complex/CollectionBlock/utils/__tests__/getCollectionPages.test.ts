@@ -49,10 +49,14 @@ describe("getCollectionPages", () => {
     id,
     permalink,
     date = "2021-01-01",
+    image,
+    firstImage,
   }: {
     id: string
     permalink: string
     date?: string
+    image?: IsomerSitemap["image"]
+    firstImage?: IsomerSitemap["firstImage"]
   }): IsomerSitemap => ({
     id,
     title: `${id} title`,
@@ -61,6 +65,8 @@ describe("getCollectionPages", () => {
     lastModified: date,
     layout: "article",
     date,
+    image,
+    firstImage,
   })
 
   it("should return an empty array when the collection exists but has no items", () => {
@@ -211,5 +217,102 @@ describe("getCollectionPages", () => {
     // Assert
     expect(result[0]?.itemTitle).toEqual(`${collectionId}2 title`)
     expect(result[1]?.itemTitle).toEqual(`${collectionId}1 title`)
+  })
+
+  it("should preserve collection item thumbnails", () => {
+    // Arrange
+    const image = { src: "/images/thumbnail.jpg", alt: "Thumbnail" }
+    const collectionParent: IsomerSitemap = {
+      id: collectionId,
+      title: "Collection 1",
+      permalink: collectionPermalink,
+      layout: "collection",
+      summary: "Collection 1 summary",
+      lastModified: new Date("2021-01-01").toISOString(),
+      children: [
+        createMockCollectionItem({
+          id: `${collectionId}1`,
+          permalink: `${collectionPermalink}/1`,
+          image,
+        }),
+      ],
+    }
+    site = {
+      ...site,
+      siteMap: {
+        ...site.siteMap,
+        children: [collectionParent],
+      },
+    }
+
+    // Act
+    const result = getCollectionPages({ site, collectionParent })
+
+    // Assert
+    expect(result[0]?.image).toEqual(image)
+  })
+
+  it("should preserve first-image fallback for collection items without thumbnails", () => {
+    // Arrange
+    const firstImage = { src: "/images/first-image.jpg", alt: "First image" }
+    const collectionParent: IsomerSitemap = {
+      id: collectionId,
+      title: "Collection 1",
+      permalink: collectionPermalink,
+      layout: "collection",
+      summary: "Collection 1 summary",
+      lastModified: new Date("2021-01-01").toISOString(),
+      children: [
+        createMockCollectionItem({
+          id: `${collectionId}1`,
+          permalink: `${collectionPermalink}/1`,
+          firstImage,
+        }),
+      ],
+    }
+    site = {
+      ...site,
+      siteMap: {
+        ...site.siteMap,
+        children: [collectionParent],
+      },
+    }
+
+    // Act
+    const result = getCollectionPages({ site, collectionParent })
+
+    // Assert
+    expect(result[0]?.image).toEqual(firstImage)
+  })
+
+  it("should leave collection item image empty when only the logo fallback is available", () => {
+    // Arrange
+    const collectionParent: IsomerSitemap = {
+      id: collectionId,
+      title: "Collection 1",
+      permalink: collectionPermalink,
+      layout: "collection",
+      summary: "Collection 1 summary",
+      lastModified: new Date("2021-01-01").toISOString(),
+      children: [
+        createMockCollectionItem({
+          id: `${collectionId}1`,
+          permalink: `${collectionPermalink}/1`,
+        }),
+      ],
+    }
+    site = {
+      ...site,
+      siteMap: {
+        ...site.siteMap,
+        children: [collectionParent],
+      },
+    }
+
+    // Act
+    const result = getCollectionPages({ site, collectionParent })
+
+    // Assert
+    expect(result[0]?.image).toBeUndefined()
   })
 })
