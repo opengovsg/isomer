@@ -88,6 +88,14 @@ export interface RateLimiterFlexible {
   points: number
   expire: Timestamp | null
 }
+export interface Redirect {
+  id: GeneratedAlways<string>
+  siteId: number
+  source: string
+  destination: string
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
 export interface Resource {
   id: GeneratedAlways<string>
   title: string
@@ -171,6 +179,7 @@ export interface DB {
   IsomerAdmin: IsomerAdmin
   Navbar: Navbar
   RateLimiterFlexible: RateLimiterFlexible
+  Redirect: Redirect
   Resource: Resource
   ResourcePermission: ResourcePermission
   Site: Site
