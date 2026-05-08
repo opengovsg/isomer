@@ -49,10 +49,14 @@ describe("getCollectionPages", () => {
     id,
     permalink,
     date = "2021-01-01",
+    image,
+    firstImage,
   }: {
     id: string
     permalink: string
     date?: string
+    image?: { src: string; alt: string }
+    firstImage?: { src: string; alt: string }
   }): IsomerSitemap => ({
     id,
     title: `${id} title`,
@@ -61,6 +65,8 @@ describe("getCollectionPages", () => {
     lastModified: date,
     layout: "article",
     date,
+    image,
+    firstImage,
   })
 
   it("should return an empty array when the collection exists but has no items", () => {
@@ -173,6 +179,128 @@ describe("getCollectionPages", () => {
     // Assert
     expect(result[0]?.itemTitle).toEqual(`${collectionId}2 title`)
     expect(result[1]?.itemTitle).toEqual(`${collectionId}1 title`)
+  })
+
+  describe("thumbnail resolution", () => {
+    const itemWithImage = createMockCollectionItem({
+      id: `${collectionId}1`,
+      permalink: `${collectionPermalink}/1`,
+      image: { src: "/item-image.jpg", alt: "Item image" },
+    })
+    const itemWithoutImageButWithFirstImage = createMockCollectionItem({
+      id: `${collectionId}2`,
+      permalink: `${collectionPermalink}/2`,
+      firstImage: { src: "/first-image.jpg", alt: "First image" },
+    })
+    const itemWithNoImages = createMockCollectionItem({
+      id: `${collectionId}3`,
+      permalink: `${collectionPermalink}/3`,
+    })
+
+    const buildSite = () => ({
+      ...site,
+      siteMap: {
+        ...site.siteMap,
+        children: [collectionParent],
+      },
+    })
+
+    let collectionParent: IsomerSitemap
+
+    it("should use the item's own image when present, regardless of showThumbnail setting", () => {
+      collectionParent = {
+        id: collectionId,
+        title: "Collection 1",
+        permalink: collectionPermalink,
+        layout: "collection",
+        summary: "summary",
+        lastModified: new Date("2021-01-01").toISOString(),
+        children: [itemWithImage],
+        collectionPagePageProps: {
+          showThumbnail: { fallback: "first-image" },
+        },
+      }
+      const result = getCollectionPages({ site: buildSite(), collectionParent })
+      expect(result[0]?.image).toEqual({
+        src: "/item-image.jpg",
+        alt: "Item image",
+      })
+      expect(result[0]?.isContainNeeded).toBeFalsy()
+    })
+
+    it("should fall back to the site logo when showThumbnail is undefined on the referenced Collection", () => {
+      collectionParent = {
+        id: collectionId,
+        title: "Collection 1",
+        permalink: collectionPermalink,
+        layout: "collection",
+        summary: "summary",
+        lastModified: new Date("2021-01-01").toISOString(),
+        children: [itemWithoutImageButWithFirstImage, itemWithNoImages],
+      }
+      const result = getCollectionPages({ site: buildSite(), collectionParent })
+      // Both items should resolve to the site logo since showThumbnail is undefined
+      result.forEach((item) => {
+        expect(item.image).toEqual({
+          src: site.logoUrl,
+          alt: `${site.siteName} site logo`,
+          isContainNeeded: true,
+        })
+        expect(item.isContainNeeded).toBe(true)
+      })
+    })
+
+    it("should fall back to the site logo when showThumbnail.fallback is 'logo'", () => {
+      collectionParent = {
+        id: collectionId,
+        title: "Collection 1",
+        permalink: collectionPermalink,
+        layout: "collection",
+        summary: "summary",
+        lastModified: new Date("2021-01-01").toISOString(),
+        children: [itemWithoutImageButWithFirstImage],
+        collectionPagePageProps: {
+          showThumbnail: { fallback: "logo" },
+        },
+      }
+      const result = getCollectionPages({ site: buildSite(), collectionParent })
+      expect(result[0]?.image).toEqual({
+        src: site.logoUrl,
+        alt: `${site.siteName} site logo`,
+        isContainNeeded: true,
+      })
+    })
+
+    it("should fall back to the first image on the page when showThumbnail.fallback is 'first-image'", () => {
+      collectionParent = {
+        id: collectionId,
+        title: "Collection 1",
+        permalink: collectionPermalink,
+        layout: "collection",
+        summary: "summary",
+        lastModified: new Date("2021-01-01").toISOString(),
+        children: [itemWithoutImageButWithFirstImage, itemWithNoImages],
+        collectionPagePageProps: {
+          showThumbnail: { fallback: "first-image" },
+        },
+      }
+      const result = getCollectionPages({ site: buildSite(), collectionParent })
+      const first = result.find(
+        (r) => r.id === itemWithoutImageButWithFirstImage.permalink,
+      )
+      const second = result.find((r) => r.id === itemWithNoImages.permalink)
+      expect(first?.image).toEqual({
+        src: "/first-image.jpg",
+        alt: "First image",
+      })
+      // When 'first-image' is set but no firstImage exists, should still
+      // fall back to the site logo
+      expect(second?.image).toEqual({
+        src: site.logoUrl,
+        alt: `${site.siteName} site logo`,
+        isContainNeeded: true,
+      })
+    })
   })
 
   it("should use default sort values (date desc) when collectionPagePageProps sort values are absent", () => {
