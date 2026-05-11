@@ -11,6 +11,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { env } from "~/env.mjs"
 
+const DELETE_TAG = "deletedAt"
 const { NEXT_PUBLIC_S3_REGION } = env
 
 const storage = new S3Client({
@@ -63,10 +64,11 @@ export const deleteFile = async ({
       // until the page is published
       Tagging: {
         TagSet: [
-          ...originalTagSet.filter(({ Key }) => Key !== "ISOMER_STATUS"),
+          ...originalTagSet.filter(({ Key }) => Key !== DELETE_TAG),
           {
-            Key: "ISOMER_STATUS",
-            Value: "DELETED",
+            Key: DELETE_TAG,
+            // NOTE: milliseconds since epoch
+            Value: Date.now().toString(),
           },
         ],
       },

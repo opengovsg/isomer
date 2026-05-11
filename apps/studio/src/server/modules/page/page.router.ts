@@ -3,6 +3,7 @@ import type {
   IsomerSchema,
 } from "@opengovsg/isomer-components"
 import {
+  COLLECTION_VARIANT_OPTIONS,
   getLayoutMetadataSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
   renderPrefillText,
@@ -10,7 +11,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { format, isBefore } from "date-fns"
-import _, { get, isEmpty, isEqual } from "lodash"
+import { get, isEmpty, isEqual, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   sendCancelSchedulePageEmail,
@@ -876,7 +877,7 @@ export const pageRouter = router({
             // page settings immediately visible on the end site
             await publishResource(ctx.user.id, updatedResource, ctx.logger)
 
-            return _.pick(updatedResource, [
+            return pick(updatedResource, [
               "id",
               "type",
               "title",
@@ -984,6 +985,7 @@ export const pageRouter = router({
                 title: parent.title,
                 subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
                 sortOrder: "date-desc",
+                variant: COLLECTION_VARIANT_OPTIONS.Collection,
               } as CollectionPagePageProps,
               content: [],
               version: "0.1.0",

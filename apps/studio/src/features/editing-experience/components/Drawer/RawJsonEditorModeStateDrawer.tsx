@@ -1,7 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useToast } from "@opengovsg/design-system-react"
 import { schema } from "@opengovsg/isomer-components"
-import isEqual from "lodash/isEqual"
+import { isEqual } from "lodash-es"
 import { useCallback, useMemo, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"

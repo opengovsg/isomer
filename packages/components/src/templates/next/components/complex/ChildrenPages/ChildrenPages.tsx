@@ -4,6 +4,7 @@ import { BiRightArrowAlt } from "react-icons/bi"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { IMAGE_FIT } from "~/interfaces/constants"
 import { tv } from "~/lib/tv"
+import { createChildrenPagesComparator } from "~/utils/createChildrenPagesComparator"
 import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
@@ -13,7 +14,6 @@ import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
 import { compoundStyles, infoCardTitleStyle } from "../InfoCards/common"
 import { InfoCardNoImage, InfoCardWithImage } from "../InfoCards/components"
-import { mergeChildrenPages } from "./utils"
 
 interface Childpage {
   title: string
@@ -238,6 +238,7 @@ export const ChildrenPages = ({
     return <></>
   }
 
+  const comparator = createChildrenPagesComparator(childrenPagesOrdering)
   const children = currentPageNode.children
     .map((child) => ({
       id: child.id,
@@ -246,7 +247,7 @@ export const ChildrenPages = ({
       description: child.summary,
       image: child.image,
     }))
-    .sort((a, b) => mergeChildrenPages(a, b, childrenPagesOrdering))
+    .sort(comparator)
 
   if (variant === "boxes") {
     return (

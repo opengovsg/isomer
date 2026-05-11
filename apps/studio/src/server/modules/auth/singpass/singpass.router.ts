@@ -1,6 +1,6 @@
 import type { SessionData } from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
-import set from "lodash/set"
+import { set } from "lodash-es"
 import { DASHBOARD } from "~/lib/routes"
 import {
   singpassCallbackSchema,
