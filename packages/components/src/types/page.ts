@@ -9,7 +9,7 @@ import {
   SearchableTableSchema,
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
-import { REF_HREF_PATTERN } from "~/utils/validation"
+import { NON_EMPTY_STRING_REGEX, REF_HREF_PATTERN } from "~/utils/validation"
 
 // NOTE: a tag value is simply a uuid that maps to a given label;
 // essentially, it is just a pointer
@@ -29,7 +29,7 @@ export const TagCategoryUuidSchema = generateUuidSchema({
 // NOTE: single value for now but we might extend this in the future with additional metadata,
 // so we will leave it as is
 const DropdownItemSchema = Type.Object({
-  label: Type.String({ maxLength: 70 }),
+  label: Type.String({ pattern: NON_EMPTY_STRING_REGEX }),
   id: TagOptionUuidSchema,
 })
 const TagOptionSchema = DropdownItemSchema
