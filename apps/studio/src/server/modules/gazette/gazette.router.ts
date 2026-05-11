@@ -148,7 +148,8 @@ export const gazetteRouter = router({
 
           if (!ref) {
             return {
-              ...result, fileSize: null,
+              ...result,
+              fileSize: null,
               scheduledAt: result.scheduledAt ?? result.publishedAt,
             }
           }

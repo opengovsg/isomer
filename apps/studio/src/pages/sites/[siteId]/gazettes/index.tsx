@@ -5,7 +5,7 @@ import { Suspense, useEffect } from "react"
 import { BiData, BiPlus } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { ISOMER_SUPPORT_LINK } from "~/constants/misc";
+import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
 import {

@@ -103,9 +103,7 @@ export const getFileSize = async ({
   Bucket,
 }: Pick<HeadObjectCommandInput, "Key" | "Bucket">): Promise<number | null> => {
   try {
-    const response = await storage.send(
-      new HeadObjectCommand({ Bucket, Key }),
-    )
+    const response = await storage.send(new HeadObjectCommand({ Bucket, Key }))
     return response.ContentLength ?? null
   } catch {
     return null

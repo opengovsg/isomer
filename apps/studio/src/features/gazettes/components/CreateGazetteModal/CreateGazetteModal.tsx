@@ -101,8 +101,7 @@ const CreateGazetteModalContent = ({
       return
     }
 
-    const scheduledAt =
-      parse(data.publishTime, "HH:mm", data.publishDate)
+    const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
 
     try {
       const { path: ref } = await uploadFile({ file, fileName: data.fileId })

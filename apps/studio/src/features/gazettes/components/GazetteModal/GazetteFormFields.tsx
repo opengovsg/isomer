@@ -164,7 +164,9 @@ export const GazetteFormFields = ({
           <Controller
             name="publishTime"
             control={control}
-            render={({ field }) => <TimeSelect minutesStep={5} size="md" {...field} />}
+            render={({ field }) => (
+              <TimeSelect minutesStep={5} size="md" {...field} />
+            )}
           />
           {errors.publishTime?.message && (
             <FormErrorMessage>{errors.publishTime.message}</FormErrorMessage>
