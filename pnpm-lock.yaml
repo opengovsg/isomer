@@ -26,13 +26,13 @@ catalogs:
       specifier: ^3.835.0
       version: 3.1019.0
     '@aws-sdk/client-s3':
-      specifier: 3.837.0
+      specifier: ^3.837.0
       version: 3.837.0
     '@aws-sdk/credential-providers':
       specifier: ^3.886.0
       version: 3.1019.0
     '@aws-sdk/s3-request-presigner':
-      specifier: 3.837.0
+      specifier: ^3.837.0
       version: 3.837.0
   babel:
     '@babel/plugin-transform-class-properties':
@@ -11502,10 +11502,12 @@ packages:
 
   uuid@9.0.0:
     resolution: {integrity: sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   validate-npm-package-license@3.0.4:
