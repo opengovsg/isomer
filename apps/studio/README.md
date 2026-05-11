@@ -197,7 +197,7 @@ Delete flow (`asset.deleteAssets`):
 
 - Validates delete permission first
 - Rejects any key not prefixed with `<siteId>/`
-- Performs soft-delete by setting S3 tag `ISOMER_STATUS=DELETED`
+- Performs soft-delete by setting S3 tag `deletedAt=<timestamp>`
 
 ### OTP email sign-in troubleshooting
 

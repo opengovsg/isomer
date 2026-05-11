@@ -389,6 +389,13 @@ export const getLocalisedSitemap = async (
       ELSE ''
     END
 `.as("date")
+  const contentSql = sql<string>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN published.content ->> 'content'
+      ELSE ''
+    END
+`.as("content")
 
   // Get the actual resource first
   const resource = await getById(db, { resourceId, siteId })
@@ -410,6 +417,7 @@ export const getLocalisedSitemap = async (
           thumbnailSql,
           categorySql,
           dateSql,
+          contentSql,
           ...defaultResourceSelect,
         ])
         .unionAll((fb) =>
@@ -427,6 +435,7 @@ export const getLocalisedSitemap = async (
               eb.cast<string>(eb.val(""), "text").as("thumbnail"),
               eb.cast<string>(eb.val(""), "text").as("category"),
               eb.cast<string>(eb.val(""), "text").as("date"),
+              eb.cast<string>(eb.val(""), "text").as("content"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -453,6 +462,7 @@ export const getLocalisedSitemap = async (
           thumbnailSql,
           categorySql,
           dateSql,
+          contentSql,
           ...defaultResourceSelect,
         ]),
     )
@@ -474,6 +484,7 @@ export const getLocalisedSitemap = async (
           thumbnailSql,
           categorySql,
           dateSql,
+          contentSql,
           ...defaultResourceSelect,
         ])
         .unionAll((fb) =>
@@ -498,6 +509,7 @@ export const getLocalisedSitemap = async (
               thumbnailSql,
               categorySql,
               dateSql,
+              contentSql,
               ...defaultResourceSelect,
             ]),
         ),
@@ -509,6 +521,7 @@ export const getLocalisedSitemap = async (
       "thumbnail",
       "category",
       "date",
+      "content",
       ...defaultResourceSelect,
     ])
     .union((eb) =>
@@ -519,6 +532,7 @@ export const getLocalisedSitemap = async (
           "thumbnail",
           "category",
           "date",
+          "content",
           ...defaultResourceSelect,
         ]),
     )
@@ -530,6 +544,7 @@ export const getLocalisedSitemap = async (
           "thumbnail",
           "category",
           "date",
+          "content",
           ...defaultResourceSelect,
         ]),
     )
