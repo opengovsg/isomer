@@ -1,7 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import get from "lodash/get"
-import pick from "lodash/pick"
-
+import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createFolderSchema,
@@ -11,6 +9,7 @@ import {
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
+
 import { logResourceEvent } from "../audit/audit.service"
 import {
   AuditLogEvent,
@@ -383,7 +382,7 @@ export const folderRouter = router({
               ResourceType.Collection,
               ResourceType.Page,
             ])
-            .select(["Resource.id", "title", "type"])
+            .select(["Resource.id", "title", "type", "permalink"])
         })
         // NOTE: we need to select the `Folder/Collection`.`id`
         // rather than the `IndexPage` as our publishing script
@@ -407,20 +406,34 @@ export const folderRouter = router({
               // we will only select published index pages here
               .where("state", "=", ResourceState.Published)
               .where("type", "=", ResourceType.IndexPage)
-              .select(["Resource.parentId"])
+              .select([
+                "Resource.parentId",
+                (eb) =>
+                  eb
+                    .selectFrom("Resource as Parent")
+                    .whereRef("Parent.id", "=", "Resource.parentId")
+                    .select("Parent.type")
+                    .as("parentType"),
+              ])
           )
         })
         .selectFrom("Resource")
         .where("siteId", "=", Number(siteId))
         .where("id", "in", (qb) =>
-          qb.selectFrom("publishedCousinIndexPages").select("parentId"),
+          qb
+            .selectFrom("publishedCousinIndexPages")
+            .where("parentType", "in", [
+              ResourceType.Collection,
+              ResourceType.Folder,
+            ])
+            .select("parentId"),
         )
-        .select(["id", "title"])
+        .select(["id", "title", "type", "permalink"])
         .unionAll((qb) => {
           return qb
             .selectFrom("directChildren")
             .where("type", "=", ResourceType.Page)
-            .select(["id", "title"])
+            .select(["id", "title", "type", "permalink"])
         })
         .execute()
 

@@ -1,22 +1,22 @@
-import type { UseCollectionReturn } from "./useCollection"
-import type { CollectionPageSchemaType, CollectionVariant } from "~/types"
+import type { CollectionPageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
+
+import type { UseCollectionReturn } from "./useCollection"
 import { BlogCard } from "../../components/internal/BlogCard"
 import { CollectionCard } from "../../components/internal/CollectionCard"
 
-interface CollectionResultProps
-  extends Pick<
-    UseCollectionReturn,
-    | "paginatedItems"
-    | "appliedFilters"
-    | "searchValue"
-    | "filteredCount"
-    | "handleClearFilter"
-    | "totalCount"
-  > {
+interface CollectionResultProps extends Pick<
+  UseCollectionReturn,
+  | "paginatedItems"
+  | "appliedFilters"
+  | "searchValue"
+  | "filteredCount"
+  | "handleClearFilter"
+  | "totalCount"
+> {
   shouldShowDate?: boolean
-  variant?: CollectionVariant
-  siteAssetsBaseUrl: string | undefined
+  variant?: CollectionPageSchemaType["page"]["variant"]
+  siteAssetsBaseUrl?: string
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }
 

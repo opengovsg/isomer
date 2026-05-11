@@ -4,6 +4,7 @@ import type {
   SearchableTableProps,
 } from "~/interfaces"
 import { DATA_SOURCE_TYPE } from "~/interfaces/integration"
+
 import { DGSSearchableTable } from "./DGS"
 import { NativeSearchableTable } from "./Native"
 

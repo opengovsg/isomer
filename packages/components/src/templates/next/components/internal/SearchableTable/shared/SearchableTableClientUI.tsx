@@ -1,9 +1,9 @@
 "use client"
 
-import { useId, useRef } from "react"
-
 import type { SearchableTableClientProps } from "~/interfaces"
+import { useId, useRef } from "react"
 import { tv } from "~/lib/tv"
+
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
 import { SearchField } from "../../../internal/Search"
@@ -13,7 +13,7 @@ import { EmptyState, FallbackEmptyState } from "./EmptyState"
 const createSearchableTableStyles = tv({
   slots: {
     container: "mx-auto w-full",
-    title: "prose-display-md mb-9 break-words text-base-content-strong",
+    title: "prose-display-sm mb-9 break-words text-base-content-strong",
     tableContainer: "mt-8 overflow-x-auto",
     table:
       "[&_>_tbody_>_tr:nth-child(even)_>_td]:bg-base-canvas-default w-full border-collapse border-spacing-0 [&_>_tbody_>_tr:nth-child(odd)_>_td]:bg-base-canvas-alt",
@@ -37,8 +37,10 @@ const createSearchableTableStyles = tv({
 
 const compoundStyles = createSearchableTableStyles()
 
-interface SearchableTableClientUIProps
-  extends Omit<SearchableTableClientProps, "items"> {
+interface SearchableTableClientUIProps extends Omit<
+  SearchableTableClientProps,
+  "items"
+> {
   search: {
     input: string
     deferred: string

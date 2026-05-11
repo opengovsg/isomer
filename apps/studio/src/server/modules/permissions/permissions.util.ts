@@ -1,8 +1,8 @@
+import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import type { ResourceAbility } from "./permissions.type"
-import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
 import { ALL_ACTIONS, CRUD_ACTIONS } from "./permissions.type"
 
 const giveBasePermissions = (
@@ -42,7 +42,7 @@ export const buildUserManagementPermissions = (roles: { role: RoleType }[]) => {
   const builder = new AbilityBuilder<UserManagementAbility>(createMongoAbility)
 
   // NOTE: Any role should be able to read the list of user permissions
-  if (roles.length === 1) {
+  if (roles.length > 0) {
     builder.can("read", "UserManagement")
   }
 

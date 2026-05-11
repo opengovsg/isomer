@@ -11,7 +11,6 @@ import type {
   ReactNode,
   RefObject,
 } from "react"
-import { createContext, useContext, useRef } from "react"
 import {
   useCheckbox,
   useCheckboxGroup,
@@ -22,11 +21,11 @@ import { usePress } from "@react-aria/interactions"
 import { mergeProps } from "@react-aria/utils"
 import { useCheckboxGroupState } from "@react-stately/checkbox"
 import { useToggleState } from "@react-stately/toggle"
+import { createContext, useContext, useRef } from "react"
 import { BiCheck, BiMinus } from "react-icons/bi"
-
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { focusRing } from "~/utils"
+import { focusRing } from "~/utils/tailwind"
 
 interface CheckboxGroupContextValue {
   state: CheckboxGroupState
@@ -258,7 +257,7 @@ function GroupedCheckbox(props: CheckboxProps) {
   const ref = useRef<HTMLInputElement>(null)
 
   // groupContext is guaranteed to exist because this component is only rendered when isInGroup is true
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
   const context = groupContext!
   const state = context.state
 

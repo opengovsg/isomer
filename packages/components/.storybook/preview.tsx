@@ -4,10 +4,8 @@ import { withThemeByDataAttribute } from "@storybook/addon-themes"
 import mockdate from "mockdate"
 import { initialize, mswLoader } from "msw-storybook-addon"
 import { MINIMAL_VIEWPORTS } from "storybook/viewport"
-
 import "bootstrap-icons/font/bootstrap-icons.css"
 import "../src/index.css"
-
 import { viewport } from "@isomer/storybook-config"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
@@ -115,16 +113,18 @@ const preview: Preview = {
   tags: ["autodocs"],
 }
 
-const LayoutDecorator: Decorator = (storyFn) => (
-  <div className="antialiased">{storyFn()}</div>
+const LayoutDecorator: Decorator = (Story) => (
+  <div className="antialiased">
+    <Story />
+  </div>
 )
 
-const MockDateDecorator: Decorator = (storyFn) => {
+const MockDateDecorator: Decorator = (Story) => {
   mockdate.reset()
   const defaultDate = "2025-08-09T12:00:00.000Z"
   mockdate.set(defaultDate)
 
-  return storyFn()
+  return <Story />
 }
 
 export const decorators: Decorator[] = [

@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest"
-
 import type { IsomerSitemap } from "~/types"
+import { describe, expect, it } from "vitest"
+import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
+
 import { getReferenceLinkHref } from "../getReferenceLinkHref"
 
-const EXAMPLE_SITEMAP: IsomerSitemap = {
+const EXAMPLE_SITEMAP_ARRAY: IsomerSitemap[] = getSitemapAsArray({
   id: "1",
   title: "Home",
   summary: "",
@@ -20,13 +21,13 @@ const EXAMPLE_SITEMAP: IsomerSitemap = {
       layout: "content",
     },
   ],
-}
+})
 
 describe("getReferenceLinkHref", () => {
   it("should return undefined if referenceLink is undefined", () => {
     const result = getReferenceLinkHref(
       undefined,
-      EXAMPLE_SITEMAP,
+      EXAMPLE_SITEMAP_ARRAY,
       "https://assets.example.com",
     )
     expect(result).toBeUndefined()
@@ -45,7 +46,7 @@ describe("getReferenceLinkHref", () => {
     testCases.forEach((testCase) => {
       const result = getReferenceLinkHref(
         testCase,
-        EXAMPLE_SITEMAP,
+        EXAMPLE_SITEMAP_ARRAY,
         "https://assets.example.com",
       )
       expect(result).toBe(testCase)
@@ -55,7 +56,7 @@ describe("getReferenceLinkHref", () => {
   it("should return permalink if referenceLink is a reference link", () => {
     const result = getReferenceLinkHref(
       "[resource:1:2]",
-      EXAMPLE_SITEMAP,
+      EXAMPLE_SITEMAP_ARRAY,
       "https://assets.example.com",
     )
     expect(result).toBe("/page-1")
@@ -64,7 +65,7 @@ describe("getReferenceLinkHref", () => {
   it("should return original link if reference page is not found", () => {
     const result = getReferenceLinkHref(
       "[resource:1:999]",
-      EXAMPLE_SITEMAP,
+      EXAMPLE_SITEMAP_ARRAY,
       "https://assets.example.com",
     )
     expect(result).toBe("[resource:1:999]")
@@ -73,7 +74,7 @@ describe("getReferenceLinkHref", () => {
   it("should return asset link if referenceLink is an asset link", () => {
     const result = getReferenceLinkHref(
       "/1/dc2b609a-355e-406c-af6c-003683731e7e/RFP%20Template.docx",
-      EXAMPLE_SITEMAP,
+      EXAMPLE_SITEMAP_ARRAY,
       "https://assets.example.com",
     )
     expect(result).toBe(

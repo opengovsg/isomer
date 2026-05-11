@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { InfoColsProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { InfoCols } from "./InfoCols"
 
 const meta: Meta<InfoColsProps> = {

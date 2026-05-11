@@ -1,8 +1,12 @@
 import type { IndexPageSchemaType } from "~/types"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages/constants"
 import { tv } from "~/lib/tv"
-import { getBreadcrumbFromSiteMap } from "~/utils"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
+import { getTableOfContents } from "~/utils/getTableOfContents"
+import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
+
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
+import { TableOfContents } from "../../components/internal/TableOfContents"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
@@ -17,6 +21,18 @@ const createIndexPageLayoutStyles = tv({
 
 const compoundStyles = createIndexPageLayoutStyles()
 
+export const ensureChildrenPagesBlock = (
+  content: IndexPageSchemaType["content"],
+): IndexPageSchemaType["content"] => {
+  const hasChildrenPagesBlock = content.some(
+    ({ type }) => type === "childrenpages",
+  )
+
+  return hasChildrenPagesBlock
+    ? content
+    : [...content, DEFAULT_CHILDREN_PAGES_BLOCK]
+}
+
 export const IndexPageLayout = ({
   site,
   page,
@@ -29,10 +45,10 @@ export const IndexPageLayout = ({
     page.permalink.split("/").slice(1),
   )
 
-  const hasChildpageBlock = content.some(({ type }) => type === "childrenpages")
-  const pageContent: IndexPageSchemaType["content"] = hasChildpageBlock
-    ? content
-    : [...content, DEFAULT_CHILDREN_PAGES_BLOCK]
+  const pageContent = ensureChildrenPagesBlock(content)
+  // auto-inject ids for heading level 2 blocks if does not exist
+  const transformedContent = getTransformedPageContent(pageContent)
+  const tableOfContents = getTableOfContents(site, transformedContent)
 
   return (
     <Skeleton
@@ -52,8 +68,14 @@ export const IndexPageLayout = ({
       />
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.content()}>
+          {tableOfContents.length > 1 && (
+            <TableOfContents
+              items={tableOfContents}
+              LinkComponent={LinkComponent}
+            />
+          )}
           {renderPageContent({
-            content: pageContent,
+            content: transformedContent,
             layout,
             site,
             LinkComponent,

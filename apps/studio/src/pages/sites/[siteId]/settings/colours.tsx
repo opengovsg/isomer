@@ -1,14 +1,11 @@
-import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
+import type { NextPageWithLayout } from "~/lib/types"
+import type { SiteTheme } from "~/schemas/site"
 import { Box } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { SiteThemeSchema } from "@opengovsg/isomer-components"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-import { isEqual } from "lodash"
+import { isEqual } from "lodash-es"
+import { useState } from "react"
 import { BiPaint } from "react-icons/bi"
-
-import type { NextPageWithLayout } from "~/lib/types"
-import type { SiteTheme } from "~/schemas/site"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -19,25 +16,23 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
-import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
+import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
-import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { siteThemeValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const ColoursSettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
-  const router = useRouter()
-  const isEnabled = useNewSettingsPage()
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const [theme] = trpc.site.getTheme.useSuspenseQuery({
@@ -46,10 +41,6 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
   const [{ name: siteName }] = trpc.site.getSiteName.useSuspenseQuery({
     siteId,
   })
-
-  useEffect(() => {
-    if (!isEnabled) void router.replace(`/sites/${siteId}/settings`)
-  }, [isEnabled, router, siteId])
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl

@@ -1,0 +1,91 @@
+import type {
+  IsomerGeneratedSiteProps,
+  IsomerPageSchemaType,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
+import type { PropsWithChildren } from "react"
+import type { PartialDeep } from "type-fest"
+import { Skeleton } from "@chakra-ui/react"
+import { RenderEngine } from "@opengovsg/isomer-components"
+import { merge } from "lodash-es"
+import Script from "next/script"
+import { forwardRef } from "react"
+import { withSuspense } from "~/hocs/withSuspense"
+import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
+import { trpc } from "~/utils/trpc"
+
+export type PreviewProps = IsomerSchema & {
+  permalink: string
+  lastModified?: string
+  siteId: number
+  overrides?: PartialDeep<IsomerPageSchemaType>
+  siteMap: IsomerGeneratedSiteProps["siteMap"]
+}
+
+// Add a fake link component to prevent the preview from navigating away
+const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
+  ({ children, ...rest }, ref) => (
+    <a {...rest} ref={ref} onClick={(e) => e.preventDefault()}>
+      {children}
+    </a>
+  ),
+)
+
+const defaultLastModified = new Date().toISOString()
+
+function SuspendablePreviewWithCustomSitemap({
+  permalink,
+  lastModified = defaultLastModified,
+  siteId,
+  overrides = {},
+  siteMap,
+  ...props
+}: PreviewProps) {
+  const [baseSiteConfig] = trpc.site.getConfig.useSuspenseQuery({ id: siteId })
+  const [{ content: footer }] = trpc.site.getFooter.useSuspenseQuery({
+    id: siteId,
+  })
+  const [{ content: navbar }] = trpc.site.getNavbar.useSuspenseQuery({
+    id: siteId,
+  })
+
+  const renderProps = merge(props, overrides, {
+    page: {
+      permalink,
+      lastModified,
+    },
+  })
+
+  const siteConfig = {
+    ...baseSiteConfig,
+    navbar,
+    footerItems: footer,
+    ...overrides.site,
+  }
+
+  return (
+    <RenderEngine
+      {...renderProps}
+      // TODO: fixup all the typing errors
+      // @ts-expect-error to fix when types are proper
+      site={{
+        ...siteConfig,
+        siteMap,
+        environment: "production",
+        search: {
+          type: "localSearch",
+          searchUrl: "/search",
+        },
+        assetsBaseUrl: ASSETS_BASE_URL,
+      }}
+      LinkComponent={FakeLink}
+      ScriptComponent={Script}
+    />
+  )
+}
+
+const PreviewWithCustomSitemap = withSuspense(
+  SuspendablePreviewWithCustomSitemap,
+  <Skeleton width="100%" height="100%" />,
+)
+export default PreviewWithCustomSitemap

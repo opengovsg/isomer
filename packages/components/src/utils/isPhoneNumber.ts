@@ -28,7 +28,7 @@ export const isPhoneNumber = (phone: string): boolean => {
 export const sanitizePhoneNumber = (phone: string): string => {
   // wrap in try-catch as this is being used in runtime
   try {
-    return phone.replace(/[\s\-\(\)\.]/g, "")
+    return phone.replace(/[\s\-().]/g, "")
   } catch {
     return phone
   }

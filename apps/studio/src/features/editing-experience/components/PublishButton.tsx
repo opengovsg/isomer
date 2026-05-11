@@ -11,7 +11,6 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react"
-import { useGrowthBook } from "@growthbook/growthbook-react"
 import {
   Button,
   Menu,
@@ -19,12 +18,11 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { BiChevronDown, BiTimeFive } from "react-icons/bi"
-
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
-import { getIsScheduledPublishingEnabledForSite } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
+
 import { PublishingModal, ScheduledPublishingModal } from "./PublishingModal"
 import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
 
@@ -38,17 +36,11 @@ const SuspendablePublishButton = ({
   siteId,
   ...rest
 }: PublishButtonProps): JSX.Element => {
-  const gb = useGrowthBook()
   const toast = useToast()
   const utils = trpc.useUtils()
   // the current disclosures for the publish modals
   const publishNowDisclosure = useDisclosure()
   const scheduledPublishingDisclosure = useDisclosure()
-  // determine if the scheduled publishing feature is enabled for this site
-  const enableScheduledPublishing = getIsScheduledPublishingEnabledForSite({
-    gb,
-    siteId,
-  })
 
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
   const isChangesPendingPublish = !!currPage.draftBlobId
@@ -119,56 +111,45 @@ const SuspendablePublishButton = ({
                     size="sm"
                     isDisabled={!isChangesPendingPublish}
                     isLoading={isPending}
-                    borderRightRadius={
-                      enableScheduledPublishing ? 0 : undefined
-                    }
-                    onClick={() => {
-                      if (enableScheduledPublishing) {
-                        publishNowDisclosure.onOpen()
-                      } else {
-                        mutate({ pageId, siteId })
-                      }
-                    }}
+                    borderRightRadius={0}
+                    onClick={() => publishNowDisclosure.onOpen()}
                     {...rest}
                   >
                     Publish
                   </Button>
-                  {enableScheduledPublishing && (
-                    <>
-                      <Divider
-                        orientation="vertical"
-                        borderColor="base.canvas.default"
-                        height="auto"
+                  <>
+                    <Divider
+                      orientation="vertical"
+                      borderColor="base.canvas.default"
+                      height="auto"
+                    />
+                    <Menu preventOverflow={true} isLazy>
+                      <MenuButton
+                        as={IconButton}
+                        aria-label="More options"
+                        icon={<Icon as={BiChevronDown} boxSize="1rem" />}
+                        size="sm"
+                        variant="solid"
+                        isDisabled={!isChangesPendingPublish || isPending}
+                        borderLeftRadius={0}
                       />
-                      <Menu preventOverflow={true} isLazy>
-                        <MenuButton
-                          as={IconButton}
-                          aria-label="More options"
-                          icon={<Icon as={BiChevronDown} boxSize="1rem" />}
-                          size="sm"
-                          variant="solid"
-                          isDisabled={!isChangesPendingPublish || isPending}
-                          borderLeftRadius={0}
-                        />
-                        <MenuList>
-                          <MenuItem
-                            onClick={scheduledPublishingDisclosure.onOpen}
-                            isDisabled={!enableScheduledPublishing}
-                          >
-                            <HStack spacing="0.5rem" alignItems="center">
-                              <Icon as={BiTimeFive} boxSize="1rem" />
-                              <Text
-                                textStyle="body-2"
-                                color="base.content.strong"
-                              >
-                                Schedule for later
-                              </Text>
-                            </HStack>
-                          </MenuItem>
-                        </MenuList>
-                      </Menu>
-                    </>
-                  )}
+                      <MenuList>
+                        <MenuItem
+                          onClick={scheduledPublishingDisclosure.onOpen}
+                        >
+                          <HStack spacing="0.5rem" alignItems="center">
+                            <Icon as={BiTimeFive} boxSize="1rem" />
+                            <Text
+                              textStyle="body-2"
+                              color="base.content.strong"
+                            >
+                              Schedule for later
+                            </Text>
+                          </HStack>
+                        </MenuItem>
+                      </MenuList>
+                    </Menu>
+                  </>
                 </HStack>
               )}
             </>

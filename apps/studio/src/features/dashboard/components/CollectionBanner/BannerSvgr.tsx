@@ -1,6 +1,6 @@
 import type { SVGProps } from "react"
-import * as React from "react"
 import { chakra } from "@chakra-ui/react"
+import * as React from "react"
 
 export const BannerSvgr = chakra((props: SVGProps<SVGSVGElement>) => (
   <svg

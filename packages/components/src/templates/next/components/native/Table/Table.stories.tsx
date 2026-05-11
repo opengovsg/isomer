@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { Table } from "./Table"
 
 const meta: Meta<typeof Table> = {

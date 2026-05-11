@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from "react"
+import type { PageSettingsState } from "~/features/dashboard/atoms"
 import {
   chakra,
   FormControl,
@@ -22,13 +22,11 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useAtom } from "jotai"
+import { Suspense, useMemo } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
-
-import type { PageSettingsState } from "~/features/dashboard/atoms"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { pageSettingsModalAtom } from "~/features/dashboard/atoms"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -40,6 +38,8 @@ import {
   MAX_TITLE_LENGTH,
 } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
 import { generateResourceUrl } from "../../editing-experience/components/utils"
 
 const editSettingsSchema = z.object({

@@ -21,10 +21,10 @@
     "teardown": "turbo teardown",
     "test-start": "turbo test-start",
     "typecheck": "turbo typecheck",
-    "format": "turbo format --continue -- --cache --cache-location node_modules/.cache/.prettiercache --ignore-path ./.prettierignore",
-    "format:fix": "turbo format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache  --ignore-path ./.prettierignore",
-    "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
-    "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
+    "format": "turbo format --continue",
+    "format:fix": "turbo format:fix --continue",
+    "lint": "turbo lint --continue",
+    "lint:fix": "turbo lint --continue -- --fix",
     "lint:ws": "npx sherif -i next",
     "lint:ws:fix": "npx sherif --fix",
     "postinstall": "npm run lint:ws"
@@ -37,6 +37,7 @@
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
+    "oxfmt": "^0.41.0",
     "sherif": "^1.6.1",
     "turbo": "^2.5.4"
   },

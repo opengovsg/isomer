@@ -3,21 +3,15 @@ import type {
   IsomerSchema,
 } from "@opengovsg/isomer-components"
 import {
-  COLLECTION_PAGE_DEFAULT_SORT_BY,
-  COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+  COLLECTION_VARIANT_OPTIONS,
   getLayoutMetadataSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
+  renderPrefillText,
   schema,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import {
-  AuditLogEvent,
-  ResourceState,
-  ResourceType,
-} from "~prisma/generated/generatedEnums"
 import { format, isBefore } from "date-fns"
-import _, { get, isEmpty, isEqual } from "lodash"
-
+import { get, isEmpty, isEqual, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   sendCancelSchedulePageEmail,
@@ -31,6 +25,7 @@ import {
   basePageSchema,
   createIndexPageSchema,
   createPageSchema,
+  getPrefillSchema,
   getRootPageSchema,
   listPagesSchema,
   pageSettingsSchema,
@@ -44,6 +39,12 @@ import { scheduledPublishServerSchema } from "~/schemas/schedule"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+import {
+  AuditLogEvent,
+  ResourceState,
+  ResourceType,
+} from "~prisma/generated/generatedEnums"
+
 import { logResourceEvent } from "../audit/audit.service"
 import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { db, jsonb, sql } from "../database"
@@ -98,6 +99,32 @@ const validatedPageProcedure = protectedProcedure.use(
 )
 
 export const pageRouter = router({
+  getPrefill: protectedProcedure
+    .input(getPrefillSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const resource = await getFullPageById(db, {
+        resourceId: Number(resourceId),
+        siteId,
+      })
+
+      if (!resource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      const { title, content } = resource
+
+      return { title, ...renderPrefillText(content) }
+    }),
+
   list: protectedProcedure
     .input(listPagesSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
@@ -234,7 +261,7 @@ export const pageRouter = router({
           permalink,
           navbar,
           footer,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore type instantiation is excessively deep and possibly infinite
           content,
           title,
@@ -850,7 +877,7 @@ export const pageRouter = router({
             // page settings immediately visible on the end site
             await publishResource(ctx.user.id, updatedResource, ctx.logger)
 
-            return _.pick(updatedResource, [
+            return pick(updatedResource, [
               "id",
               "type",
               "title",
@@ -957,8 +984,8 @@ export const pageRouter = router({
               page: {
                 title: parent.title,
                 subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
-                defaultSortBy: COLLECTION_PAGE_DEFAULT_SORT_BY,
-                defaultSortDirection: COLLECTION_PAGE_DEFAULT_SORT_DIRECTION,
+                sortOrder: "date-desc",
+                variant: COLLECTION_VARIANT_OPTIONS.Collection,
               } as CollectionPagePageProps,
               content: [],
               version: "0.1.0",

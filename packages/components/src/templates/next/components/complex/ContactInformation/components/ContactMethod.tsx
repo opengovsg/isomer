@@ -1,17 +1,14 @@
-import { BiEnvelope } from "react-icons/bi"
-
-import type { commonContactMethodStyles } from "./common"
 import type { ContactInformationUIProps } from "~/interfaces"
+import { BiEnvelope } from "react-icons/bi"
 import { twMerge } from "~/lib/twMerge"
 import { Link } from "~/templates/next/components/internal/Link"
-import {
-  focusVisibleHighlight,
-  isEmail,
-  isExternalUrl,
-  isPhoneNumber,
-  isUrl,
-  sanitizePhoneNumber,
-} from "~/utils"
+import { isEmail } from "~/utils/isEmail"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+import { isPhoneNumber, sanitizePhoneNumber } from "~/utils/isPhoneNumber"
+import { isUrl } from "~/utils/isUrl"
+import { focusVisibleHighlight } from "~/utils/tailwind"
+
+import type { commonContactMethodStyles } from "./common"
 import { METHODS_MAPPING } from "./mapping"
 
 type ContactMethodProps = ContactInformationUIProps["methods"][number] & {

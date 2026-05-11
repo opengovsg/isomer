@@ -1,7 +1,6 @@
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { PartialDeep } from "type-fest"
-import { useCallback, useEffect, useState } from "react"
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine"
@@ -27,11 +26,12 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import get from "lodash/get"
+import { get } from "lodash-es"
+import { useCallback, useEffect, useState } from "react"
 import { BiPlusCircle } from "react-icons/bi"
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import type { NavbarItems } from "./types"
-import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getParentPath } from "../utils"
 import { EditNavbarItem } from "./EditNavbarItem"
 import { StackableNavbarItem } from "./StackableNavbarItem"

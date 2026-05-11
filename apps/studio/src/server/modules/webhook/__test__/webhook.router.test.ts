@@ -1,6 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { User } from "@prisma/client"
 import type { Mock } from "vitest"
+import type { Session } from "~/lib/types/session"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -15,14 +16,13 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-
-import type { Session } from "~/lib/types/session"
 import {
   sendFailedPublishEmail,
   sendSuccessfulPublishEmail,
 } from "~/features/mail/service"
 import { buildIdFromArn } from "~/schemas/webhook"
 import { createCallerFactory } from "~/server/trpc"
+
 import { db } from "../../database"
 import { webhookRouter } from "../webhook.router"
 

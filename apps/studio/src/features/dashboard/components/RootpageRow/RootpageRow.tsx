@@ -1,10 +1,9 @@
-import Link from "next/link"
 import { HStack, IconButton, Text, VStack } from "@chakra-ui/react"
 import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+import Link from "next/link"
 import { BiChevronRight, BiHomeAlt, BiSolidCircle } from "react-icons/bi"
-
 import { trpc } from "~/utils/trpc"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 
 interface RootpageRowProps {
   siteId: number

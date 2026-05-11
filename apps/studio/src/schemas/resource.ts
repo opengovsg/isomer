@@ -1,5 +1,5 @@
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultResource } from "../server/modules/resource/resource.types"
 import {
@@ -99,9 +99,12 @@ export const getAncestryStackOutputSchema = z.array(
   z.custom<ResourceItemContent>(),
 )
 
+// Limit array size to prevent DoS via expensive recursive queries
+export const MAX_BATCH_RESOURCE_IDS = 25
+
 export const getBatchAncestryWithSelfSchema = z.object({
   siteId: z.string(),
-  resourceIds: z.array(z.string()),
+  resourceIds: z.array(z.string()).max(MAX_BATCH_RESOURCE_IDS),
 })
 
 export const getBatchAncestryWithSelfOutputSchema = z.array(
@@ -136,7 +139,7 @@ export const searchOutputSchema = z.object({
 
 export const searchWithResourceIdsSchema = z.object({
   siteId: z.string(),
-  resourceIds: z.array(bigIntSchema),
+  resourceIds: z.array(bigIntSchema).max(MAX_BATCH_RESOURCE_IDS),
 })
 
 export const searchWithResourceIdsOutputSchema = z.array(

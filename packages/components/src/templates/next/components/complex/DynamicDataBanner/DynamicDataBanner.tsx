@@ -1,5 +1,7 @@
 import type { DynamicDataBannerProps } from "~/interfaces"
-import { getReferenceLinkHref, getTextAsHtml } from "~/utils"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getTextAsHtml } from "~/utils/getTextAsHtml"
+
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { DynamicDataBannerClient } from "./DynamicDataBannerClient"
 
@@ -18,7 +20,7 @@ export const DynamicDataBanner = ({
       apiEndpoint={apiEndpoint}
       title={title}
       data={data}
-      url={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+      url={getReferenceLinkHref(url, site.siteMapArray, site.assetsBaseUrl)}
       label={label}
       errorMessageBaseParagraph={
         <BaseParagraph

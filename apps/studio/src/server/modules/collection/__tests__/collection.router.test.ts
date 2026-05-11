@@ -1,6 +1,6 @@
 import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
-import _, { omit } from "lodash"
+import { omit } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -18,9 +18,9 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
+
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db, ResourceState, ResourceType } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
@@ -752,6 +752,159 @@ describe("collection.router", async () => {
       const expectedIds = new Set(pages.map((p) => p.page.id))
       expect(allIds).toEqual(expectedIds)
     })
+
+    it("should sort by title ascending when orderBy is title-asc", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Charlie",
+        permalink: "charlie",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Alpha",
+        permalink: "alpha",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Bravo",
+        permalink: "bravo",
+      })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        orderBy: "title-asc",
+      })
+
+      // Assert
+      const titles = result.map((r) => r.title)
+      expect(titles).toEqual(["Alpha", "Bravo", "Charlie"])
+    })
+
+    it("should sort by updatedAt descending when orderBy is updated-desc", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      const page1 = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "First",
+        permalink: "first",
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Second",
+        permalink: "second",
+      })
+
+      // Update the first page so it has a newer updatedAt
+      await db
+        .updateTable("Resource")
+        .set({ title: "First Updated" })
+        .where("id", "=", page1.page.id)
+        .execute()
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        orderBy: "updated-desc",
+      })
+
+      // Assert: First Updated should appear before Second since it was updated more recently
+      expect(result[0]?.title).toEqual("First Updated")
+      expect(result[1]?.title).toEqual("Second")
+    })
+
+    it("should default to updated-desc ordering when orderBy is not specified", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      const page1 = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Older",
+        permalink: "older",
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Newer",
+        permalink: "newer",
+      })
+
+      // Update the first page so it has a newer updatedAt
+      await db
+        .updateTable("Resource")
+        .set({ title: "Older Now Latest" })
+        .where("id", "=", page1.page.id)
+        .execute()
+
+      // Act - no orderBy specified, should default to updated-desc
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+      })
+
+      // Assert
+      expect(result[0]?.title).toEqual("Older Now Latest")
+      expect(result[1]?.title).toEqual("Newer")
+    })
+
+    it("should break ties using resource id ascending", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Create pages with the same title so the primary sort (title-asc) ties
+      const pageA = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Same Title",
+        permalink: "same-title-1",
+      })
+      const pageB = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Same Title",
+        permalink: "same-title-2",
+      })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        orderBy: "title-asc",
+      })
+
+      // Assert: both have the same title, so tie-break by id ascending
+      expect(result).toHaveLength(2)
+      expect(Number(result[0]?.id)).toBeLessThan(Number(result[1]?.id))
+      expect(result[0]?.id).toEqual(pageA.page.id)
+      expect(result[1]?.id).toEqual(pageB.page.id)
+    })
   })
 
   describe("readCollectionLink", () => {
@@ -1192,12 +1345,12 @@ describe("collection.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(auditEntry.delta.before!).toMatchObject({
-        blob: _.omit(originalBlob, ["createdAt", "updatedAt"]),
-        resource: _.omit(page, ["createdAt", "updatedAt"]),
+        blob: omit(originalBlob, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
       expect(auditEntry.delta.after!).toMatchObject({
-        blob: _.omit(expected, ["createdAt", "updatedAt"]),
-        resource: _.omit(page, ["createdAt", "updatedAt"]),
+        blob: omit(expected, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
       expect(auditEntry.userId).toBe(session.userId)
       const actual = getCollectionItemByPermalink(page.permalink, page.parentId)
@@ -1231,12 +1384,12 @@ describe("collection.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(auditEntry.delta.before!).toMatchObject({
-        blob: _.omit(originalBlob, ["createdAt", "updatedAt"]),
-        resource: _.omit(page, ["createdAt", "updatedAt"]),
+        blob: omit(originalBlob, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
       expect(auditEntry.delta.after!).toMatchObject({
-        blob: _.omit(expected, ["createdAt", "updatedAt"]),
-        resource: _.omit(page, ["createdAt", "updatedAt"]),
+        blob: omit(expected, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
       expect(auditEntry.userId).toBe(session.userId)
       // NOTE: For collection links, they have no content.

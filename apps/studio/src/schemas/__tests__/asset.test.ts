@@ -1,9 +1,7 @@
+import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
+import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 
-import {
-  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-  IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { getPresignedPutUrlSchema } from "../asset"
 
 describe("getPresignedPutUrlSchema", () => {
@@ -15,18 +13,16 @@ describe("getPresignedPutUrlSchema", () => {
   describe("fileName validation", () => {
     describe("file extension validation", () => {
       // Test all allowed image extensions
-      Object.keys(IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING).forEach(
-        (extension) => {
-          it(`should accept valid image extension: ${extension}`, () => {
-            const fileName = `test-image${extension}`
-            const result = getPresignedPutUrlSchema.safeParse({
-              ...validBaseData,
-              fileName,
-            })
-            expect(result.success).toBe(true)
+      Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING).forEach((extension) => {
+        it(`should accept valid image extension: ${extension}`, () => {
+          const fileName = `test-image${extension}`
+          const result = getPresignedPutUrlSchema.safeParse({
+            ...validBaseData,
+            fileName,
           })
-        },
-      )
+          expect(result.success).toBe(true)
+        })
+      })
 
       // Test all allowed file extensions
       Object.keys(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING).forEach(

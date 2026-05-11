@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { userEvent, within } from "storybook/test"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { generateSiteConfig } from "~/stories/helpers"
 import { Accordion } from "./Accordion"
 
 const meta: Meta<typeof Accordion> = {

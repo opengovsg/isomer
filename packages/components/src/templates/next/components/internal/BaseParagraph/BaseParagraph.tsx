@@ -1,9 +1,9 @@
 import type { Node } from "interweave"
-import { Interweave } from "interweave"
-
 import type { BaseParagraphProps } from "~/interfaces"
+import { ALLOWED_TAG_LIST, Interweave } from "interweave"
 import { twMerge } from "~/lib/twMerge"
-import { isExternalUrl } from "~/utils"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+
 import { Link } from "../Link"
 
 // This will be tree-shaken out of client bundles
@@ -14,6 +14,12 @@ if (typeof window === "undefined") {
     polyfill()
   })
 }
+
+// Explicitly excluding span tags as they can be abused to adjust the font size,
+// colours and other styles of the text, which can cause accessibility issues
+const ALLOWED_TAG_LIST_WITHOUT_SPAN = ALLOWED_TAG_LIST.filter(
+  (tag) => tag !== "span",
+)
 
 export const BaseParagraph = ({
   content,
@@ -44,7 +50,7 @@ export const BaseParagraph = ({
 
   return (
     <Interweave
-      allowList={allowedTags}
+      allowList={allowedTags ?? ALLOWED_TAG_LIST_WITHOUT_SPAN}
       attributes={{
         ...(attrs?.dir && { dir: attrs.dir }),
       }}

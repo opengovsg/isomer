@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { CalloutProseSchema } from "../native/Prose"
 
 export const CalloutSchema = Type.Object(

@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { ChildrenPagesProps } from "~/interfaces"
 import type { IsomerSiteProps } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { ChildrenPages } from "./ChildrenPages"
 
 const meta: Meta<ChildrenPagesProps> = {
@@ -374,6 +374,19 @@ export const RowsWithThumbnailOnly: Story = {
   },
 }
 
+export const RowsWithContainAndThumbnail: Story = {
+  args: {
+    variant: "rows",
+    site,
+    permalink: "/parent",
+    LinkComponent: "a",
+    showSummary: true,
+    showThumbnail: true,
+    childrenPagesOrdering: [],
+    imageFit: "contain",
+  },
+}
+
 export const RowsWithThumbnailAndDescription: Story = {
   args: {
     variant: "rows",
@@ -407,6 +420,19 @@ export const BoxesWithDescription: Story = {
   },
 }
 
+export const BoxesWithContainAndThumbnail: Story = {
+  args: {
+    variant: "boxes",
+    site,
+    permalink: "/parent",
+    LinkComponent: "a",
+    showSummary: true,
+    showThumbnail: true,
+    childrenPagesOrdering: [],
+    imageFit: "contain",
+  },
+}
+
 export const BoxesWithThumbnailOnly: Story = {
   args: {
     variant: "boxes",
@@ -426,5 +452,17 @@ export const BoxesWithThumbnailAndDescription: Story = {
     showSummary: true,
     showThumbnail: true,
     childrenPagesOrdering: [],
+  },
+}
+
+export const BoxesWithCustomOrdering: Story = {
+  args: {
+    variant: "boxes",
+    site,
+    permalink: "/parent",
+    LinkComponent: "a",
+    showSummary: true,
+    showThumbnail: true,
+    childrenPagesOrdering: ["6", "3", "7", "8"],
   },
 }

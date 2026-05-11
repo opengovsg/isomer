@@ -1163,6 +1163,10 @@ video {
   top: 0px;
 }
 
+.top-1 {
+  top: 0.25rem;
+}
+
 .top-1\/2 {
   top: 50%;
 }
@@ -1437,6 +1441,10 @@ video {
   margin-top: 2.25rem;
 }
 
+.mt-\[3px\] {
+  margin-top: 3px;
+}
+
 .box-border {
   box-sizing: border-box;
 }
@@ -1704,10 +1712,6 @@ video {
 
 .min-h-60 {
   min-height: 15rem;
-}
-
-.min-h-80 {
-  min-height: 20rem;
 }
 
 .min-h-\[15rem\] {
@@ -4351,6 +4355,20 @@ video {
   --color: #991b1b;
 }
 
+.group:where([data-rac])[data-open] .group-open\:rotate-180 {
+  --tw-rotate: 180deg;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y))
+    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
+    scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.group:where(:not([data-rac]))[open] .group-open\:rotate-180 {
+  --tw-rotate: 180deg;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y))
+    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
+    scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
 .current\:bg-base-content-subtle[data-current] {
   --tw-bg-opacity: 1;
   background-color: rgb(75 85 99 / var(--tw-bg-opacity));
@@ -4621,6 +4639,12 @@ video {
     scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
+.group\/summary:where([data-rac])[data-hovered]
+  .group-hover\/summary\:text-link-hover {
+  --tw-text-opacity: 1;
+  color: rgb(21 71 190 / var(--tw-text-opacity));
+}
+
 .group:where([data-rac])[data-hovered] .group-hover\:text-brand-canvas-inverse {
   color: var(--color-brand-canvas-inverse);
 }
@@ -4668,6 +4692,12 @@ video {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y))
     rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
     scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.group\/summary:where(:not([data-rac])):hover
+  .group-hover\/summary\:text-link-hover {
+  --tw-text-opacity: 1;
+  color: rgb(21 71 190 / var(--tw-text-opacity));
 }
 
 .group:where(:not([data-rac])):hover .group-hover\:text-brand-canvas-inverse {
@@ -5198,6 +5228,12 @@ video {
   text-decoration-color: transparent;
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:bg-utility-highlight {
+  --tw-bg-opacity: 1;
+  background-color: rgb(251 191 36 / var(--tw-bg-opacity));
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:bg-utility-highlight {
   --tw-bg-opacity: 1;
@@ -5209,15 +5245,36 @@ video {
   fill: #111827;
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:text-base-content-strong {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity));
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:text-base-content-strong {
   --tw-text-opacity: 1;
   color: rgb(17 24 39 / var(--tw-text-opacity));
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:decoration-transparent {
+  text-decoration-color: transparent;
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:decoration-transparent {
   text-decoration-color: transparent;
+}
+
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:shadow-focus-visible {
+  --tw-shadow: 0px -2px #fbbf24, 0 2px #111827;
+  --tw-shadow-colored:
+    0px -2px var(--tw-shadow-color), 0 2px var(--tw-shadow-color);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow);
 }
 
 .group:where([data-rac])[data-focus-visible]
@@ -5228,15 +5285,31 @@ video {
   box-shadow:
     var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
     var(--tw-shadow);
+}
+
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:outline-0 {
+  outline-width: 0px;
 }
 
 .group:where([data-rac])[data-focus-visible] .group-focus-visible\:outline-0 {
   outline-width: 0px;
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:transition-none {
+  transition-property: none;
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:transition-none {
   transition-property: none;
+}
+
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:bg-utility-highlight {
+  --tw-bg-opacity: 1;
+  background-color: rgb(251 191 36 / var(--tw-bg-opacity));
 }
 
 .group:where(:not([data-rac])):focus-visible
@@ -5250,15 +5323,36 @@ video {
   fill: #111827;
 }
 
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:text-base-content-strong {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity));
+}
+
 .group:where(:not([data-rac])):focus-visible
   .group-focus-visible\:text-base-content-strong {
   --tw-text-opacity: 1;
   color: rgb(17 24 39 / var(--tw-text-opacity));
 }
 
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:decoration-transparent {
+  text-decoration-color: transparent;
+}
+
 .group:where(:not([data-rac])):focus-visible
   .group-focus-visible\:decoration-transparent {
   text-decoration-color: transparent;
+}
+
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:shadow-focus-visible {
+  --tw-shadow: 0px -2px #fbbf24, 0 2px #111827;
+  --tw-shadow-colored:
+    0px -2px var(--tw-shadow-color), 0 2px var(--tw-shadow-color);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow);
 }
 
 .group:where(:not([data-rac])):focus-visible
@@ -5271,8 +5365,18 @@ video {
     var(--tw-shadow);
 }
 
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:outline-0 {
+  outline-width: 0px;
+}
+
 .group:where(:not([data-rac])):focus-visible .group-focus-visible\:outline-0 {
   outline-width: 0px;
+}
+
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:transition-none {
+  transition-property: none;
 }
 
 .group:where(:not([data-rac])):focus-visible
@@ -5280,8 +5384,22 @@ video {
   transition-property: none;
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:hover\:decoration-transparent:where(
+    [data-rac]
+  )[data-hovered] {
+  text-decoration-color: transparent;
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:hover\:decoration-transparent:where(
+    [data-rac]
+  )[data-hovered] {
+  text-decoration-color: transparent;
+}
+
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:hover\:decoration-transparent:where(
     [data-rac]
   )[data-hovered] {
   text-decoration-color: transparent;
@@ -5294,8 +5412,22 @@ video {
   text-decoration-color: transparent;
 }
 
+.group\/summary:where([data-rac])[data-focus-visible]
+  .group-focus-visible\/summary\:hover\:decoration-transparent:where(
+    :not([data-rac])
+  ):hover {
+  text-decoration-color: transparent;
+}
+
 .group:where([data-rac])[data-focus-visible]
   .group-focus-visible\:hover\:decoration-transparent:where(
+    :not([data-rac])
+  ):hover {
+  text-decoration-color: transparent;
+}
+
+.group\/summary:where(:not([data-rac])):focus-visible
+  .group-focus-visible\/summary\:hover\:decoration-transparent:where(
     :not([data-rac])
   ):hover {
   text-decoration-color: transparent;
@@ -5829,6 +5961,11 @@ video {
     padding-bottom: 4rem;
   }
 
+  .md\:py-4 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
   .md\:py-5 {
     padding-top: 1.25rem;
     padding-bottom: 1.25rem;
@@ -6136,6 +6273,10 @@ video {
     align-items: flex-end;
   }
 
+  .lg\:items-center {
+    align-items: center;
+  }
+
   .lg\:justify-end {
     justify-content: flex-end;
   }
@@ -6288,8 +6429,16 @@ video {
     font-size: 1.5rem;
   }
 
+  .lg\:text-\[1\.938rem\] {
+    font-size: 1.938rem;
+  }
+
   .lg\:text-\[1rem\] {
     font-size: 1rem;
+  }
+
+  .lg\:text-\[2\.25rem\] {
+    font-size: 2.25rem;
   }
 
   .lg\:text-\[3rem\] {
@@ -6422,6 +6571,10 @@ video {
 }
 
 .group:where(:not([data-rac]))[open] .\[\&\.plus\]\:group-open\:hidden.plus {
+  display: none;
+}
+
+.\[\&\:\:-webkit-details-marker\]\:hidden::-webkit-details-marker {
   display: none;
 }
 

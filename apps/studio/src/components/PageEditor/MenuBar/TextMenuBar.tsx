@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/react"
-import { useMemo } from "react"
 import { Icon, useDisclosure } from "@chakra-ui/react"
+import { useMemo } from "react"
 import {
   BiBold,
   BiCog,
@@ -14,8 +14,6 @@ import {
   BiWrench,
 } from "react-icons/bi"
 import { MdHorizontalRule, MdSubscript, MdSuperscript } from "react-icons/md"
-
-import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import {
   IconAddColLeft,
   IconAddColRight,
@@ -26,6 +24,8 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
+
+import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import { TableSettingsModal } from "../TableSettingsModal"
 import { MenuBar } from "./MenuBar"
 import { TiptapLinkEditorModal } from "./TiptapLinkEditorModal"

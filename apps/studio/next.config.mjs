@@ -4,6 +4,8 @@
  */
 const { env } = await import("./src/env.mjs")
 
+// NOTE: Keep the `unsafe-eval` for `script-src` as the removal
+// led to nextjs crashing on start
 /*
 TODO: Removing this CSP first
   // img-src 'self' data: blob: ${
@@ -57,9 +59,10 @@ const ContentSecurityPolicy = `
     'self'
     'unsafe-eval'
     https://*.wogaa.sg
-    https://app.intercom.io
-    https://widget.intercom.io
     https://js.intercomcdn.com
+    https://downloads.intercomcdn.com
+    https://downloads.intercomcdn.eu
+    https://downloads.au.intercomcdn.com
     https://embed-cdn.spotifycdn.com
     https://open.spotify.com
     https://js-cdn.music.apple.com
@@ -99,6 +102,8 @@ const ContentSecurityPolicy = `
     https://api-iam.eu.intercom.io
     https://api-iam.au.intercom.io
     https://api-ping.intercom.io
+    https://*.intercom-messenger.com
+    wss://*.intercom-messenger.com
     https://nexus-websocket-a.intercom.io
     wss://nexus-websocket-a.intercom.io
     https://nexus-websocket-b.intercom.io
@@ -114,6 +119,7 @@ const ContentSecurityPolicy = `
     https://uploads.intercomusercontent.com
     https://data.gov.sg
     https://*.data.gov.sg
+    https://www.youtube.com
     https://vimeo.com
     https://*.spotify.com
     https://*.wg.spotify.com
@@ -139,6 +145,7 @@ const ContentSecurityPolicy = `
 const config = {
   output: "standalone",
   reactStrictMode: true,
+  productionBrowserSourceMaps: true,
   /**
    * Dynamic configuration available for the browser and server.
    * Note: requires `ssr: true` or a `getInitialProps` in `_app.tsx`
@@ -154,6 +161,8 @@ const config = {
         // don't bundle `dd-trace` on the client side
         "dd-trace": "dd-trace",
       })
+      // Use 'hidden-source-map' to include sourcesContent but not expose sourcemap URLs
+      config.devtool = "hidden-source-map"
     }
     return config
   },
@@ -161,7 +170,7 @@ const config = {
     "@sinclair/typebox",
     "@opengovsg/starter-kitty-validators",
   ],
-  /** We run eslint as a separate task in CI */
+  /** We run oxlint as a separate task in CI */
   eslint: { ignoreDuringBuilds: true },
   images: {
     domains: [env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME ?? ""].filter((d) => d),

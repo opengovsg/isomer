@@ -1,10 +1,13 @@
 import type { Static } from "@sinclair/typebox"
 import type { Simplify } from "type-fest"
-import { Type } from "@sinclair/typebox"
-
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { Type } from "@sinclair/typebox"
+import { omit } from "lodash-es"
+import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+
 import { ARRAY_RADIO_FORMAT } from "../format"
+import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
   gradient: "gradient",
@@ -64,9 +67,14 @@ const CallToActionsSchema = Type.Object({
   ),
 })
 
-const BackgroundUrlSchema = Type.String({
+const BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING = omit(
+  IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+  ".gif",
+)
+
+const BackgroundUrlSchema = generateImageSrcSchema({
   title: "Hero image",
-  format: "image",
+  allowedMimeTypeMappings: BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 })
 
 const GROUPINGS = {

@@ -1,4 +1,5 @@
-import { type ResourceItemContent } from "~/schemas/resource"
+import type { ResourceItemContent } from "~/schemas/resource"
+import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"
 
 interface UseResourceQueryProps {
@@ -32,7 +33,7 @@ export const useResourceQuery = ({
       resourceId:
         (isResourceHighlighted ? parentDest?.id : moveDest?.id) ?? null,
       siteId: String(siteId),
-      limit: 25,
+      limit: MAX_BATCH_RESOURCE_IDS,
     },
     {
       getNextPageParam: (lastPage) => lastPage.nextOffset,
@@ -55,7 +56,7 @@ export const useResourceQuery = ({
 
   return {
     resourceItemsWithAncestryStack,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    // oxlint-disable-next-line @typescript-eslint/no-empty-function
     fetchNextPage: useResourceIdsFromSearch ? () => {} : fetchNextPage,
     hasNextPage: useResourceIdsFromSearch ? false : hasNextPage,
     isFetchingNextPage: useResourceIdsFromSearch ? false : isFetchingNextPage,

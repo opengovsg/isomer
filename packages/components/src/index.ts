@@ -8,7 +8,9 @@ export {
   getResourceIdFromReferenceLink,
   REFERENCE_LINK_REGEX,
   NON_EMPTY_STRING_REGEX,
+  createChildrenPagesComparator,
 } from "./utils"
 export * from "./schemas"
 export * from "./types"
 export * from "./interfaces"
+export * from "./constants"

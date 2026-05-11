@@ -30,6 +30,14 @@ interface DatabaseEditorState {
   state: "databaseEditor"
 }
 
+export interface CollectionEditorState {
+  state: "collectionEditor"
+}
+
+interface SiderailOrderingEditorState {
+  state: "siderailOrderingEditor"
+}
+
 export type DrawerState =
   | RootDrawerState
   | RawJsonEditorModeDrawerState
@@ -39,3 +47,5 @@ export type DrawerState =
   | MetadataEditorState
   | DatabaseEditorState
   | HeroEditorState
+  | CollectionEditorState
+  | SiderailOrderingEditorState

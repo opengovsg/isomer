@@ -1,10 +1,10 @@
 "use client"
 
-import { useMemo } from "react"
-
 import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type { DynamicComponentListProps } from "~/interfaces"
+import { useMemo } from "react"
 import { useDgsData } from "~/hooks/useDgsData"
+
 import { DgsTransformedContactInformation } from "../ContactInformation"
 
 // We do not know how many records will be returned

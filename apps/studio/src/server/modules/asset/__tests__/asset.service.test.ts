@@ -1,8 +1,62 @@
 import { describe, expect, it } from "vitest"
 
-import { getFileKey } from "../asset.service"
+import {
+  doAllFileKeysBelongToSite,
+  getContentDispositionForKey,
+  getContentTypeFromKey,
+  getFileKey,
+} from "../asset.service"
 
 describe("asset.service", () => {
+  describe("getContentTypeFromKey", () => {
+    it("should return image MIME for image extensions", () => {
+      expect(getContentTypeFromKey("1/abc/test.png")).toBe("image/png")
+      expect(getContentTypeFromKey("1/abc/photo.jpg")).toBe("image/jpeg")
+      expect(getContentTypeFromKey("1/abc/photo.jpeg")).toBe("image/jpeg")
+      expect(getContentTypeFromKey("1/abc/icon.svg")).toBe("image/svg+xml")
+      expect(getContentTypeFromKey("1/abc/art.webp")).toBe("image/webp")
+    })
+
+    it("should return document MIME for file extensions", () => {
+      expect(getContentTypeFromKey("1/abc/doc.pdf")).toBe("application/pdf")
+      expect(getContentTypeFromKey("1/abc/data.csv")).toBe("text/csv")
+      expect(getContentTypeFromKey("1/abc/sheet.xlsx")).toBe(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      )
+    })
+
+    it("should return application/octet-stream for unknown extension", () => {
+      expect(getContentTypeFromKey("1/abc/file.xyz")).toBe(
+        "application/octet-stream",
+      )
+    })
+
+    it("should use lowercase extension for lookup", () => {
+      expect(getContentTypeFromKey("1/abc/file.PNG")).toBe("image/png")
+    })
+
+    it("should derive extension from lowercased segment so length-changing Unicode (e.g. İ) does not break lookup", () => {
+      // İ (U+0130) → toLowerCase() is i + combining dot (2 code units). Using the
+      // original segment's lastIndexOf(".") on the lowercased string would slice
+      // at the wrong index and yield application/octet-stream without the fix.
+      expect(getContentTypeFromKey("1/abc/İ.png")).toBe("image/png")
+    })
+  })
+
+  describe("getContentDispositionForKey", () => {
+    it("should return inline with filename from key segment", () => {
+      const result = getContentDispositionForKey("1/abc-uuid/test.png")
+      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
+      expect(result).toContain(encodeURIComponent("test.png"))
+    })
+
+    it("should encode special characters in filename", () => {
+      const result = getContentDispositionForKey("1/abc/测试文件.pdf")
+      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
+      expect(result).toContain(encodeURIComponent("测试文件.pdf"))
+    })
+  })
+
   describe("getFileKey", () => {
     it("should generate a file key with basic ASCII filename", () => {
       // Arrange
@@ -152,6 +206,73 @@ describe("asset.service", () => {
 
       // Assert
       expect(result).toMatch(/^909\/[0-9a-f-]{36}\/English中文العربية\.txt$/)
+    })
+  })
+
+  describe("doAllFileKeysBelongToSite", () => {
+    it("should return true when all file keys start with the siteId prefix", () => {
+      expect(
+        doAllFileKeysBelongToSite({
+          siteId: 25,
+          fileKeys: ["25/uuid-1/image.png", "25/uuid-2/doc.pdf"],
+        }),
+      ).toBe(true)
+    })
+
+    it("should return true for empty file keys array", () => {
+      expect(
+        doAllFileKeysBelongToSite({
+          siteId: 25,
+          fileKeys: [],
+        }),
+      ).toBe(true)
+    })
+
+    it("should return true for single key belonging to site", () => {
+      expect(
+        doAllFileKeysBelongToSite({
+          siteId: 1,
+          fileKeys: ["1/abc-123/file.jpg"],
+        }),
+      ).toBe(true)
+    })
+
+    it("should return false when one key belongs to another site", () => {
+      expect(
+        doAllFileKeysBelongToSite({
+          siteId: 25,
+          fileKeys: ["25/uuid-1/image.png", "99/other-site/attacker.png"],
+        }),
+      ).toBe(false)
+    })
+
+    it("should return false when key has no site prefix", () => {
+      expect(
+        doAllFileKeysBelongToSite({
+          siteId: 25,
+          fileKeys: ["bare-filename.png"],
+        }),
+      ).toBe(false)
+    })
+
+    it("should return false when key prefix is a different site id (no slash collision)", () => {
+      // siteId 2 should not match "25/..."
+      expect(
+        doAllFileKeysBelongToSite({
+          siteId: 2,
+          fileKeys: ["25/uuid/file.png"],
+        }),
+      ).toBe(false)
+    })
+
+    it("should return true when siteId is substring but key has correct prefix with slash", () => {
+      // "2/" prefix only matches siteId 2
+      expect(
+        doAllFileKeysBelongToSite({
+          siteId: 2,
+          fileKeys: ["2/uuid/file.png"],
+        }),
+      ).toBe(true)
     })
   })
 })

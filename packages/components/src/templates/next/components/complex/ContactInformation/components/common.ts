@@ -1,4 +1,5 @@
 import { tv } from "~/lib/tv"
+
 import { ComponentContent } from "../../../internal/customCssClass"
 
 export const commonContactInformationStyles = tv({
@@ -6,11 +7,11 @@ export const commonContactInformationStyles = tv({
     screenWideOuterContainer: "",
     container: `${ComponentContent} flex flex-col`,
     titleAndDescriptionContainer: "flex flex-col",
-    title: "prose-display-md text-base-content-strong",
+    title: "prose-display-sm text-base-content-strong",
     description: "text-base-content-strong [&:not(:first-child)]:mt-0",
     contactMethodsContainer: "flex flex-col gap-10",
     otherInformationContainer: "mt-8 flex flex-col gap-6",
-    otherInformationTitle: "prose-display-sm text-base-content-strong",
+    otherInformationTitle: "prose-display-xs text-base-content-strong",
     urlButtonContainer: "mx-auto",
   },
   variants: {

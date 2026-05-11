@@ -1,5 +1,4 @@
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
-import { useMemo, useState } from "react"
 import { FormControl, HStack, Text, VStack } from "@chakra-ui/react"
 import {
   findUISchema,
@@ -9,9 +8,10 @@ import {
 } from "@jsonforms/core"
 import { JsonFormsDispatch } from "@jsonforms/react"
 import { Switch } from "@opengovsg/design-system-react"
-import isEmpty from "lodash/isEmpty"
-
+import { isEmpty } from "lodash-es"
+import { useMemo, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { withJsonFormsControlWithDetailProps } from "../../contexts/JsonFormsContext"
 
 export const jsonFormsObjectControlTester: RankedTester = rankWith(
@@ -36,7 +36,7 @@ function JsonFormsObjectControl({
   handleChange,
 }: ControlWithDetailProps) {
   const [isChecked, setIsChecked] = useState(!isEmpty(data))
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [dataSnapshot, setDataSnapshot] = useState(data)
   const handleToggle = () => {
     if (isChecked) {

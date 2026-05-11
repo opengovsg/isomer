@@ -1,19 +1,18 @@
 import { MenuButton, MenuList, Portal } from "@chakra-ui/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
 import {
   BiCog,
   BiDotsHorizontalRounded,
-  BiDuplicate,
   BiFolderOpen,
   BiTrash,
 } from "react-icons/bi"
-
-import type { ResourceTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
 import { Can } from "~/features/permissions"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import type { ResourceTableData } from "./types"
 import {
   deleteResourceModalAtom,
   folderSettingsModalAtom,
@@ -55,7 +54,7 @@ export const ResourceTableMenu = ({
         variant="clear"
       />
       <Portal>
-        <MenuList>
+        <MenuList minWidth="8rem">
           {/* TODO: Open edit modal depending on resource  */}
           {type === ResourceType.Page && (
             <>
@@ -70,13 +69,6 @@ export const ResourceTableMenu = ({
               >
                 Edit settings
               </MenuItem>
-
-              {/* TODO(ISOM-1552): Add back duplicate page functionality when implemented */}
-              <Can do="create" on={{ parentId }}>
-                <MenuItem isDisabled icon={<BiDuplicate fontSize="1rem" />}>
-                  Duplicate page
-                </MenuItem>
-              </Can>
             </>
           )}
           {type === ResourceType.Folder && (

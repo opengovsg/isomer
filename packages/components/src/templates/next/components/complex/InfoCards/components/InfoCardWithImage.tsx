@@ -1,5 +1,6 @@
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
-import { isExternalUrl } from "~/utils"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+
 import { InfoCardContainer } from "./InfoCardContainer"
 import { InfoCardImage } from "./InfoCardImage"
 import { InfoCardText } from "./InfoCardText"
@@ -16,6 +17,7 @@ export const InfoCardWithImage = ({
   site,
   LinkComponent,
   shouldLazyLoad = true,
+  isFallback,
 }: SingleCardWithImageProps): JSX.Element => {
   const isExternalLink = isExternalUrl(url)
   return (
@@ -26,6 +28,7 @@ export const InfoCardWithImage = ({
       LinkComponent={LinkComponent}
     >
       <InfoCardImage
+        isFallback={isFallback}
         imageFit={imageFit}
         imageUrl={imageUrl}
         imageAlt={imageAlt}

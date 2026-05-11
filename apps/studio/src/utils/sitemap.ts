@@ -2,13 +2,12 @@ import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
   FileRefPageProps,
+  IsomerComponent,
   IsomerSitemap,
   LinkRefPageProps,
 } from "@opengovsg/isomer-components"
-import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-
 import type { Resource } from "~prisma/generated/selectableTypes"
+import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { env } from "~/env.mjs"
 import { db } from "~/server/modules/database"
@@ -16,6 +15,7 @@ import {
   getBlobOfResource,
   getPublishedIndexBlobByParentId,
 } from "~/server/modules/resource/resource.service"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 type ResourceDto = Omit<
   Resource,
@@ -25,6 +25,9 @@ type ResourceDto = Omit<
   parentId: string | null
   summary?: string
   thumbnail?: string
+  category?: string
+  date?: string
+  content?: string
 }
 
 type CollectionItemResourceDto = Omit<ResourceDto, "type" | "parentId"> & {
@@ -70,23 +73,81 @@ const getSitemapTreeFromArray = (
   // TODO: Sort the children by the page ordering if the FolderMeta resource exists
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
+    const parsedContent =
+      typeof resource.content === "string" && resource.content !== ""
+        ? (JSON.parse(resource.content) as IsomerComponent[])
+        : undefined
+    const firstImageComponent = Array.isArray(parsedContent)
+      ? parsedContent.find(
+          (item): item is Extract<IsomerComponent, { type: "image" }> =>
+            item.type === "image",
+        )
+      : undefined
 
-    if (
-      resource.type === ResourceType.Page ||
-      resource.type === ResourceType.CollectionPage
-    ) {
+    if (resource.type === ResourceType.Page) {
       return {
         id: resource.id,
-        layout: "content", // Note: We are not using the layout field in our sitemap for preview
+        type: ResourceType.Page,
+        layout: "content",
         title: resource.title,
         summary: resource.summary ?? "",
-        lastModified: new Date() // TODO: Update this to the updated_at field in DB
-          .toISOString(),
+        lastModified: resource.updatedAt.toISOString(),
         permalink,
         image: {
           src: resource.thumbnail ?? "",
           alt: "",
         },
+        firstImage: firstImageComponent
+          ? {
+              src: firstImageComponent.src,
+              alt: firstImageComponent.alt,
+            }
+          : undefined,
+      }
+    } else if (resource.type === ResourceType.CollectionPage) {
+      return {
+        id: resource.id,
+        type: ResourceType.CollectionPage,
+        layout: "article",
+        title: resource.title,
+        summary: resource.summary ?? "",
+        lastModified: resource.updatedAt.toISOString(),
+        permalink,
+        category: resource.category ?? "Others",
+        date: resource.date ?? "",
+        image: {
+          src: resource.thumbnail ?? "",
+          alt: "",
+        },
+        firstImage: firstImageComponent
+          ? {
+              src: firstImageComponent.src,
+              alt: firstImageComponent.alt,
+            }
+          : undefined,
+      }
+    } else if (resource.type === ResourceType.CollectionLink) {
+      return {
+        id: resource.id,
+        type: ResourceType.CollectionLink,
+        layout: "link",
+        title: resource.title,
+        summary: resource.summary ?? "",
+        lastModified: resource.updatedAt.toISOString(),
+        permalink,
+        category: resource.category ?? "Others",
+        date: resource.date ?? "",
+        image: {
+          src: resource.thumbnail ?? "",
+          alt: "",
+        },
+        firstImage: firstImageComponent
+          ? {
+              src: firstImageComponent.src,
+              alt: firstImageComponent.alt,
+            }
+          : undefined,
+        ref: "/",
       }
     }
 
@@ -114,6 +175,12 @@ const getSitemapTreeFromArray = (
       permalink,
       image: !!indexPage?.thumbnail
         ? { src: indexPage.thumbnail, alt: "" }
+        : undefined,
+      firstImage: firstImageComponent
+        ? {
+            src: firstImageComponent.src,
+            alt: firstImageComponent.alt,
+          }
         : undefined,
       children: getSitemapTreeFromArray(
         resources,

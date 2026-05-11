@@ -1,6 +1,6 @@
+import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { describe, expect, it } from "vitest"
 
-import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { getCollectionPages } from "../getCollectionPages"
 
 describe("getCollectionPages", () => {
@@ -15,6 +15,17 @@ describe("getCollectionPages", () => {
       lastModified: "2021-01-01",
       children: [],
     },
+    siteMapArray: [
+      {
+        id: "root",
+        title: "Homepage",
+        permalink: "/",
+        layout: "homepage",
+        summary: "Homepage summary",
+        lastModified: "2021-01-01",
+        children: [],
+      },
+    ],
     lastUpdated: "2021-01-01",
     // IsomerSiteWideComponentsProps
     navbar: { items: [] }, // Provide minimal valid value

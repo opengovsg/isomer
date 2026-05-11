@@ -1,15 +1,17 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
-import type { IsomerSitemap } from "./sitemap"
 import type { FooterSchemaType, NavbarSchemaType } from "~/interfaces"
+import { Type } from "@sinclair/typebox"
+import { FAVICON_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import {
   AskgovSchema,
+  generateImageSrcSchema,
   LocalSearchSchema,
   SearchSGSearchSchema,
   VicaSchema,
 } from "~/interfaces"
 import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
+
+import type { IsomerSitemap } from "./sitemap"
 
 export const AgencySettingsSchema = Type.Object({
   siteName: Type.String({
@@ -57,19 +59,18 @@ export const IntegrationsSettingsSchema = Type.Intersect([
 ])
 
 export const LogoSettingsSchema = Type.Object({
-  logoUrl: Type.String({
+  logoUrl: generateImageSrcSchema({
     title: "Logo",
     description:
       "The logo appears on the navigation bar. It may also be used as a thumbnail if there’s no thumbnail set on a page.",
-    format: "image",
   }),
   favicon: Type.Optional(
-    Type.String({
+    generateImageSrcSchema({
       title: "Favicon",
       description:
-        "This appears on a browser tab to help people recognise your site. We recommend a minimum size of 24px by 24px, in .ico, .svg, or .png format.",
-      format: "image",
-      maxSizeInBytes: 50000, // NOTE: 50 kB
+        "This appears on a browser tab to help people recognise your site. We recommend a minimum size of 24px by 24px, in .png or .svg format.",
+      allowedMimeTypeMappings: FAVICON_ACCEPTED_MIME_TYPE_MAPPING,
+      maxSizeInBytes: 20000, // NOTE: 20 kB
     }),
   ),
 })
@@ -113,12 +114,17 @@ export interface IsomerGeneratedSiteProps {
   isomerMsClarityId?: string
 }
 
+export interface IsomerDerivedSiteProps {
+  siteMapArray: IsomerSitemap[]
+}
+
 export interface IsomerSiteWideComponentsProps {
   navbar: NavbarSchemaType
   footerItems: FooterSchemaType
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &
+  IsomerDerivedSiteProps &
   IsomerSiteWideComponentsProps &
   IsomerSiteConfigProps
 

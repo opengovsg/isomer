@@ -1,11 +1,10 @@
 import type { ContentPageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
-import {
-  getBreadcrumbFromSiteMap,
-  getSiderailFromSiteMap,
-  getTableOfContents,
-  getTransformedPageContent,
-} from "~/utils"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
+import { getSiderailFromSiteMap } from "~/utils/getSiderailFromSiteMap"
+import { getTableOfContents } from "~/utils/getTableOfContents"
+import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
+
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
 import { Siderail } from "../../components/internal/Siderail"

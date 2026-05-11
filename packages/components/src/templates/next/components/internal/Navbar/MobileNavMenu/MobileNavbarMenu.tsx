@@ -1,14 +1,15 @@
 "use client"
 
 import type { Dispatch, SetStateAction } from "react"
-import { forwardRef, useRef } from "react"
+import type { NavbarClientProps } from "~/interfaces"
 import { useButton } from "@react-aria/button"
 import { FocusScope, useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
+import { forwardRef, useRef } from "react"
 import { useScrollLock } from "usehooks-ts"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+import { focusVisibleHighlight } from "~/utils/tailwind"
 
-import type { NavbarClientProps } from "~/interfaces"
-import { focusVisibleHighlight, isExternalUrl } from "~/utils"
 import { Link } from "../../Link"
 import { LinkButton } from "../../LinkButton/LinkButton"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
@@ -60,6 +61,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                   isExternal={isExternalUrl(callToAction.url)}
                   className="h-fit w-full justify-center"
                   isWithFocusVisibleHighlight
+                  onClick={onCloseMenu}
                   LinkComponent={LinkComponent}
                 >
                   {callToAction.label}
@@ -70,7 +72,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={`${item.name}-${index}`}
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 LinkComponent={LinkComponent}
                 index={index}
                 isOpen={index === openNavItemIdx}
@@ -79,6 +81,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                     currIdx === index ? -1 : index,
                   )
                 }
+                onCloseMenu={onCloseMenu}
                 {...item}
               />
             ))}
@@ -103,6 +106,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                         href={item.url}
                         isExternal={isExternalUrl(item.url)}
                         showExternalIcon={isExternalUrl(item.url)}
+                        onClick={onCloseMenu}
                       >
                         {item.name}
                       </Link>

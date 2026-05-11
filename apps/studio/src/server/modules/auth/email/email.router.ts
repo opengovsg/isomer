@@ -1,9 +1,7 @@
-import { TRPCError } from "@trpc/server"
-import pick from "lodash/pick"
-import set from "lodash/set"
-
 import type { SessionData } from "~/lib/types/session"
 import type { GrowthbookAttributes } from "~/types/growthbook"
+import { TRPCError } from "@trpc/server"
+import { pick, set } from "lodash-es"
 import { env } from "~/env.mjs"
 import { sendLoginAlertEmail } from "~/features/mail/service"
 import { getIsSingpassEnabled } from "~/lib/growthbook"
@@ -14,6 +12,7 @@ import {
 } from "~/schemas/auth/email/sign-in"
 import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
+
 import { db } from "../../database"
 import { defaultUserSelect } from "../../me/me.select"
 import { isUserDeleted } from "../../user/user.service"
@@ -96,6 +95,11 @@ export const emailSessionRouter = router({
           message: "Failed to send OTP email",
         })
       }
+
+      ctx.logger.info(
+        { email, expires },
+        "OTP token stored and sign-in email sent",
+      )
       return { email, otpPrefix }
     }),
   verifyOtp: publicProcedure

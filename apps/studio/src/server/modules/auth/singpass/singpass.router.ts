@@ -1,14 +1,14 @@
-import { TRPCError } from "@trpc/server"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
-import set from "lodash/set"
-
 import type { SessionData } from "~/lib/types/session"
+import { TRPCError } from "@trpc/server"
+import { set } from "lodash-es"
 import { DASHBOARD } from "~/lib/routes"
 import {
   singpassCallbackSchema,
   singpassLoginSchema,
 } from "~/schemas/auth/singpass"
 import { publicProcedure, router } from "~/server/trpc"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+
 import { logUserEvent } from "../../audit/audit.service"
 import { recordUserLogin } from "../auth.service"
 import { generateSessionOptions } from "../session"

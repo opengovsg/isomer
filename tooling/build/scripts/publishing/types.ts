@@ -1,5 +1,6 @@
-import type { PAGE_RESOURCE_TYPES } from "./constants"
 import type { Resource as DbResource } from "~generated/selectableTypes"
+
+import type { PAGE_RESOURCE_TYPES } from "./constants"
 
 // NOTE: this needs the `omit` because the `parentId`
 // we defined in studio
@@ -26,6 +27,7 @@ type TagCategory = Tagged & {
 interface CollectionPagePageProps {
   defaultSortBy?: string
   defaultSortDirection?: string
+  sortOrder?: string
   tagCategories?: TagCategory[]
 }
 
@@ -39,6 +41,10 @@ export type SitemapEntry = Pick<
   category?: string
   date?: string
   image?: {
+    src?: string
+    alt?: string
+  }
+  firstImage?: {
     src?: string
     alt?: string
   }

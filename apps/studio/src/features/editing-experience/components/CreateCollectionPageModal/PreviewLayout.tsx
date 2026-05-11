@@ -1,13 +1,13 @@
-import { Suspense, useMemo } from "react"
 import { Box, Flex, Skeleton, Stack } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { format } from "date-fns"
-
+import { Suspense, useMemo } from "react"
 import collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
-import { PreviewIframe } from "../PreviewIframe"
-import PreviewWithoutSitemap from "../PreviewWithoutSitemap"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { PreviewIframe } from "../preview/PreviewIframe"
+import PreviewWithCustomSitemap from "../preview/PreviewWithCustomSitemap"
 import { generatePreviewSitemap } from "../utils"
 import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"
 
@@ -82,7 +82,7 @@ const SuspendableLayoutPreview = () => {
       keyForRerender={currentType}
       style={themeCssVars}
     >
-      <PreviewWithoutSitemap
+      <PreviewWithCustomSitemap
         overrides={previewOverrides}
         siteId={siteId}
         siteMap={generatePreviewSitemap(collectionSitemap, title)}

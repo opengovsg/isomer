@@ -2,25 +2,26 @@ import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import type { z } from "zod"
-import { createContext, useContext, useMemo, useState } from "react"
+import { merge } from "lodash-es"
 import { useRouter } from "next/router"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-import { merge } from "lodash"
-
+import { createContext, useContext, useMemo, useState } from "react"
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import collectionLinkPreview from "~/features/editing-experience/data/collectionLinkPreview.json"
 import { useZodForm } from "~/lib/form"
 import { createCollectionPageFormSchema } from "~/schemas/page"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 export enum CreateCollectionPageFlowStates {
   Type = "type",
   Details = "details",
 }
 
-interface CreateCollectionPageWizardProps
-  extends Pick<UseDisclosureReturn, "onClose"> {
+interface CreateCollectionPageWizardProps extends Pick<
+  UseDisclosureReturn,
+  "onClose"
+> {
   siteId: number
   collectionId: number
 }

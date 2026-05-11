@@ -1,7 +1,8 @@
-import type { IsomerPageLayoutType } from "./schema"
 import type { CollectionCardProps } from "~/interfaces"
 import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
 import type { CollectionPagePageProps } from "~/types"
+
+import type { IsomerPageLayoutType } from "./schema"
 
 interface IsomerBaseSitemap {
   id: string
@@ -14,6 +15,7 @@ interface IsomerBaseSitemap {
   // so that the properties that are exclusive to, for example, `CollectionCard`
   // will only be available there
   image?: CollectionCardProps["image"]
+  firstImage?: CollectionCardProps["image"]
   date?: string
   children?: IsomerSitemap[]
   tags?: CollectionCardProps["tags"]
@@ -29,6 +31,7 @@ export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
   // TODO: Reconsider how this is done as currently every item in the sitemap has the same props
   collectionPagePageProps?: {
     tagCategories?: CollectionPagePageProps["tagCategories"]
+    sortOrder?: CollectionPagePageProps["sortOrder"]
     defaultSortBy?: CollectionPagePageProps["defaultSortBy"]
     defaultSortDirection?: CollectionPagePageProps["defaultSortDirection"]
   }

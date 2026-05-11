@@ -2,10 +2,7 @@ import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
-export const DEFAULT_BLOCKS: Record<
-  IsomerComponent["type"],
-  IsomerComponent | undefined
-> = {
+export const DEFAULT_BLOCKS = {
   prose: {
     type: "prose",
     content: [
@@ -313,7 +310,8 @@ export const BLOCK_TO_META: Record<
   },
   childrenpages: {
     label: "Child pages",
-    description: "Edit how child pages of this folder are displayed.",
+    description: "Automatically display all child pages in this folder.",
+    imageSrc: "/assets/block-images/Childrenpages.png",
   },
   image: {
     label: "Image",
@@ -448,7 +446,7 @@ export const BLOCK_TO_META: Record<
       "Get mailing list sign-ups or quick feedback directly on the page.",
     imageSrc: "/assets/block-images/FormSG.png",
   },
-}
+} as const
 
 type AllowedBlockSections = {
   label: string
@@ -489,6 +487,11 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
     types: ["infocards", "infocols", "keystatistics"],
   },
   { label: "Embed external content", types: ["map", "video", "formsg"] },
+]
+
+export const INDEX_ALLOWED_BLOCKS: AllowedBlockSections = [
+  { label: "Auto-link pages", types: ["childrenpages"] },
+  ...CONTENT_ALLOWED_BLOCKS,
 ]
 
 export const DATABASE_ALLOWED_BLOCKS: AllowedBlockSections =

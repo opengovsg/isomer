@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { ResourceState } from "~prisma/generated/generatedEnums"
 import { userEvent, within } from "storybook/test"
+import { folderHandlers } from "tests/msw/handlers/folder"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
@@ -23,6 +23,7 @@ const COMMON_HANDLERS = [
   resourceHandlers.getAncestryStack.default(),
   resourceHandlers.getBatchAncestryWithSelf.default(),
   resourceHandlers.getRolesFor.admin(),
+  folderHandlers.listChildPages.default(),
   // NOTE: Handlers that return custom data for this story
   sitesHandlers.getLocalisedSitemap.index(),
   resourceHandlers.getWithFullPermalink.index(),
@@ -131,10 +132,92 @@ export const CustomIndexPage: Story = {
   },
 }
 
-export const CollectionIndexPage: Story = {
+export const ReorderSiderailState: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", {
+      name: /Reorder siderail for this folder/i,
+    })
+    await userEvent.click(button)
+
+    const helpButton = canvas.getByText("What's a siderail?")
+    await userEvent.hover(helpButton)
+  },
+}
+
+export const EditInfocardsLinkState: Story = {
   parameters: {
     msw: {
-      handlers: [pageHandlers.readPageAndBlob.collection(), ...COMMON_HANDLERS],
+      handlers: [
+        pageHandlers.readPageAndBlob.indexWithInfocards(),
+        pageHandlers.getPrefill.default(),
+        ...COMMON_HANDLERS,
+      ],
     },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    // Click on the infocards block
+    const infocardsBlock = await canvas.findByRole("button", {
+      name: /Info cards block/i,
+    })
+    await userEvent.click(infocardsBlock)
+
+    // Click on the first card item
+    const firstCard = await canvas.findByRole("button", {
+      name: /First card/i,
+    })
+    await userEvent.click(firstCard)
+
+    const textboxes = await canvas.findAllByRole("textbox")
+    for (const textbox of textboxes) {
+      await userEvent.clear(textbox)
+    }
+
+    const deleteButton = await canvas.findByRole("button", {
+      name: /Remove file/i,
+    })
+    await userEvent.click(deleteButton)
+
+    // Click on the "Link something..." button to open the modal
+    const linkButton = await canvas.findByRole("button", {
+      name: /Link something/i,
+    })
+    await userEvent.click(linkButton)
+
+    // Modal renders in a portal outside canvasElement, so query from document.body
+    const body = within(document.body)
+    const page = await body.findByText("Page 1")
+    await userEvent.click(page)
+
+    const addLinkButton = await body.findByRole("button", {
+      name: /Add link/i,
+    })
+    await userEvent.click(addLinkButton)
+  },
+}
+
+export const AddBlockWithChildrenPagesDisabled: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", { name: /add block/i })
+    await userEvent.click(button)
+  },
+}
+
+export const AddBlockWithChildrenPagesEnabled: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        pageHandlers.readPageAndBlob.indexWithoutChildrenPages(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", { name: /add block/i })
+    await userEvent.click(button)
   },
 }

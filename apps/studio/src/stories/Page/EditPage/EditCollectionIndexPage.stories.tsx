@@ -1,0 +1,125 @@
+import type { Meta, StoryObj } from "@storybook/nextjs"
+import { userEvent, within } from "storybook/test"
+import { meHandlers } from "tests/msw/handlers/me"
+import { pageHandlers } from "tests/msw/handlers/page"
+import { resourceHandlers } from "tests/msw/handlers/resource"
+import { sitesHandlers } from "tests/msw/handlers/sites"
+import { IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
+import { createBannerGbParameters } from "~/stories/utils/growthbook"
+import { ResourceState } from "~prisma/generated/generatedEnums"
+
+const COMMON_HANDLERS = [
+  meHandlers.me(),
+  pageHandlers.listWithoutRoot.default(),
+  pageHandlers.updatePageBlob.default(),
+  pageHandlers.getRootPage.default(),
+  pageHandlers.countWithoutRoot.default(),
+  sitesHandlers.getTheme.default(),
+  sitesHandlers.getConfig.default(),
+  sitesHandlers.getFooter.default(),
+  sitesHandlers.getNavbar.default(),
+  resourceHandlers.getChildrenOf.default(),
+  resourceHandlers.getAncestryStack.default(),
+  resourceHandlers.getBatchAncestryWithSelf.default(),
+  resourceHandlers.getRolesFor.admin(),
+  // NOTE: Handlers that return custom data for this story
+  sitesHandlers.getLocalisedSitemap.collection(),
+  resourceHandlers.getWithFullPermalink.index(),
+  resourceHandlers.getMetadataById.index(),
+  pageHandlers.readPageAndBlob.collection(),
+  pageHandlers.readPage.index(),
+  pageHandlers.getFullPermalink.collection(),
+]
+
+const meta: Meta<typeof EditPage> = {
+  title: "Pages/Edit Page/Collection Index Page",
+  component: EditPage,
+  parameters: {
+    getLayout: EditPage.getLayout,
+    msw: {
+      handlers: COMMON_HANDLERS,
+    },
+    nextjs: {
+      router: {
+        query: {
+          siteId: "1",
+          pageId: "1",
+        },
+        pathname: "/sites/[siteId]/pages/[pageId]",
+      },
+    },
+  },
+}
+
+export default meta
+type Story = StoryObj<typeof EditPage>
+
+export const Default: Story = {}
+
+export const EditFixedBlockState: Story = {
+  parameters: { disableMockDate: true },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", {
+      name: /Page description and summary/i,
+    })
+    await userEvent.click(button)
+  },
+}
+
+export const SaveToast: Story = {
+  parameters: { disableMockDate: true },
+  play: async ({ canvasElement, ...rest }) => {
+    await EditFixedBlockState.play?.({ canvasElement, ...rest })
+    const canvas = within(canvasElement)
+
+    const textbox = await canvas.findByPlaceholderText("Summary")
+    await userEvent.type(textbox, "very cool summary")
+
+    const saveButton = await canvas.findByRole("button", {
+      name: /Save changes/i,
+    })
+    await userEvent.click(saveButton)
+  },
+}
+
+export const PublishedState: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        pageHandlers.readPage.content({
+          state: ResourceState.Published,
+          draftBlobId: null,
+        }),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+}
+
+export const WithBanner: Story = {
+  parameters: {
+    growthbook: [
+      createBannerGbParameters({
+        variant: "info",
+        message: "This is a test banner",
+      }),
+    ],
+  },
+}
+
+export const NewCollectionIndexEditingExperience: Story = {
+  parameters: {
+    growthbook: [
+      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", {
+      name: /Collection settings/i,
+    })
+    await userEvent.click(button)
+  },
+}

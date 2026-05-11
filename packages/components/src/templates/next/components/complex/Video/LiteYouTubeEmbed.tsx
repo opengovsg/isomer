@@ -1,9 +1,10 @@
 "use client"
 
-import type { SVGProps } from "react"
-import { useState } from "react"
-
+import type { SVGProps, SyntheticEvent } from "react"
+import { useEffect, useState } from "react"
 import { twMerge } from "~/lib/twMerge"
+
+import { ImageClient } from "../../internal/ImageClient"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
 
 export interface LiteYouTubeEmbedProps {
@@ -21,6 +22,37 @@ export const LiteYouTubeEmbed = ({
   shouldLazyLoad = true,
 }: LiteYouTubeEmbedProps) => {
   const [activated, setActivated] = useState(false)
+  const [oEmbedThumbnailUrl, setOEmbedThumbnailUrl] = useState<string | null>(
+    null,
+  )
+
+  useEffect(() => {
+    // For playlist/video-series embeds, fetch an actual preview image via oEmbed.
+    if (videoId) {
+      setOEmbedThumbnailUrl(null)
+      return
+    }
+
+    const fetchThumbnail = async () => {
+      try {
+        const oEmbedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(src)}&format=json`
+        const response = await fetch(oEmbedUrl)
+        if (!response.ok) return
+
+        const data = (await response.json()) as { thumbnail_url?: string }
+        if (data.thumbnail_url) {
+          // Prefer sddefault; oEmbed returns hqdefault. Fallback to hqdefault is handled in onLoad.
+          setOEmbedThumbnailUrl(
+            data.thumbnail_url.replace("hqdefault", "sddefault"),
+          )
+        }
+      } catch {
+        // Best effort only; playback still works without preview image.
+      }
+    }
+
+    void fetchThumbnail()
+  }, [src, videoId])
 
   //  We add autoplay here because the user already click on the facade button once,
   // and we don't them to have to click again to play.
@@ -30,17 +62,45 @@ export const LiteYouTubeEmbed = ({
     return u.toString()
   }
 
+  // Single-video: use static thumbnail.
+  // Playlist/video series: resolve thumbnail via oEmbed.
+  const thumbnailUrl = videoId
+    ? // we use sddefault as its the best balance between quality and size
+      // note: maxresdefault is not available for all videos
+      `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`
+    : oEmbedThumbnailUrl
+
   return (
     <>
-      <img
-        src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`} // we use hqdefault as its the best balance between quality and size
-        alt={`Thumbnail for ${title || "video"}`}
-        loading={shouldLazyLoad ? "lazy" : "eager"}
-        className={twMerge(
-          "absolute inset-0 h-full w-full bg-black object-cover",
-          activated && "pointer-events-none opacity-0",
-        )}
-      />
+      {thumbnailUrl && (
+        <ImageClient
+          src={thumbnailUrl}
+          alt={`Thumbnail for ${title || "video"}`}
+          width="100%"
+          lazyLoading={shouldLazyLoad}
+          onLoad={(e: SyntheticEvent<HTMLImageElement, Event>) => {
+            const { currentTarget } = e
+            // When sddefault.jpg is missing, YouTube returns HTTP 404 with a valid 120×90 JPEG
+            // (a placeholder). The browser then fires onLoad, not onError, so we detect the
+            // "missing thumbnail" case by dimensions and swap to hqdefault.jpg. Applies to both
+            // single-video and oEmbed (playlist) thumbnails.
+            if (
+              currentTarget.src.endsWith("/sddefault.jpg") &&
+              currentTarget.naturalWidth === 120 &&
+              currentTarget.naturalHeight === 90
+            ) {
+              currentTarget.src = currentTarget.src.replace(
+                "sddefault.jpg",
+                "hqdefault.jpg",
+              )
+            }
+          }}
+          className={twMerge(
+            "absolute inset-0 h-full w-full bg-black object-cover",
+            activated && "pointer-events-none opacity-0",
+          )}
+        />
+      )}
       {activated ? (
         <iframe
           height="100%"

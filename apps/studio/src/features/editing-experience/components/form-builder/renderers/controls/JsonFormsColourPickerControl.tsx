@@ -1,5 +1,4 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { useState } from "react"
 import {
   Box,
   Flex,
@@ -16,9 +15,9 @@ import {
   FormLabel,
   Input,
 } from "@opengovsg/design-system-react"
-import get from "lodash/get"
+import { get } from "lodash-es"
+import { useState } from "react"
 import { isHexadecimal } from "validator"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getPalette, normalizeHex } from "~/features/settings/utils"
 

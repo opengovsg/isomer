@@ -1,9 +1,9 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import { omit } from "lodash"
-
+import { omit } from "lodash-es"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { LINK_TYPES, LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
 import { BaseLinkControl } from "./BaseLinkControl"
 

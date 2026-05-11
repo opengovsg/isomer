@@ -23,4 +23,16 @@ export const folderHandlers = {
       })
     },
   },
+  listChildPages: {
+    default: () => {
+      return trpcMsw.folder.listChildPages.query(() => {
+        return {
+          childPages: [
+            { id: "5", title: "sibling1", type: "Page", permalink: "tsx" },
+            { id: "4", title: "sibling2", type: "Page", permalink: "tsc" },
+          ],
+        }
+      })
+    },
+  },
 }

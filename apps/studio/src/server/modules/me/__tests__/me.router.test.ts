@@ -1,6 +1,6 @@
 import type { User } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
-import pick from "lodash/pick"
+import { pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -9,8 +9,8 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import { setupUser } from "tests/integration/helpers/seed"
-
 import { createCallerFactory } from "~/server/trpc"
+
 import { meRouter } from "../me.router"
 
 const createCaller = createCallerFactory(meRouter)

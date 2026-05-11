@@ -1,16 +1,16 @@
 import type { Static } from "@sinclair/typebox"
-import { Type } from "@sinclair/typebox"
-
-import type { ImageClientProps } from "./Image"
-import type { LocalSearchProps } from "./LocalSearchInputBox"
-import type { NavbarSearchSGInputBoxProps } from "./SearchSGInputBox"
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
 import type { OmitFromUnion } from "~/types/helpers"
+import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+
+import type { ImageClientProps } from "./Image"
+import type { LocalSearchProps } from "./LocalSearchInputBox"
+import type { NavbarSearchSGInputBoxProps } from "./SearchSGInputBox"
 
 const NavbarItemSchema = Type.Object({
   name: Type.String({

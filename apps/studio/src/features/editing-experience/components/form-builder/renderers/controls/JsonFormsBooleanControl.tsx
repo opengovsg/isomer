@@ -7,8 +7,8 @@ import {
   FormLabel,
   Switch,
 } from "@opengovsg/design-system-react"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsBooleanControlTester: RankedTester = rankWith(
@@ -34,7 +34,7 @@ function JsonFormsBooleanControl({
   return (
     <Box>
       <FormControl>
-        <Flex justifyContent="space-between" alignItems="center">
+        <Flex justifyContent="space-between" alignItems="start">
           <FormLabel
             isRequired
             description={description}

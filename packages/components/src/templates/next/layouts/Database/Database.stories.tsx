@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { expect, userEvent, waitFor, within } from "storybook/test"
-
-import { withChromaticModes } from "@isomer/storybook-config"
-
 import type { DatabasePageSchemaType } from "~/types"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import {
   DGS_SMALL_DATASET_RESOURCE_ID,
   generateSiteConfig,
 } from "~/stories/helpers"
+
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import { DatabaseLayout } from "./Database"
 
 const meta: Meta<typeof DatabaseLayout> = {
@@ -963,6 +963,20 @@ export const DGSSearchableTableWithHeaders: Story = {
         { label: "Degree", key: "degree" },
         { label: "Monthly Median", key: "gross_monthly_median" },
       ],
+    },
+  }),
+}
+
+export const DGSSearchableTableWithFilters: Story = {
+  name: "DGS Searchable Table (with column filters)",
+  args: generateArgs({
+    database: {
+      title: "Graduate Employment by Year",
+      dataSource: {
+        type: "dgs",
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+        filters: [{ fieldKey: "year", fieldValue: "2022" }],
+      },
     },
   }),
 }

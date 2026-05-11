@@ -1,5 +1,4 @@
 import tracer from "dd-trace"
-
 import { env } from "~/env.mjs"
 
 // initialized in a different file to avoid hoisting.
@@ -9,5 +8,8 @@ tracer.init({
   version: env.NEXT_PUBLIC_APP_VERSION,
   runtimeMetrics: true,
   logInjection: true,
+  profiling:
+    env.NEXT_PUBLIC_APP_ENV !== "development" &&
+    env.NEXT_PUBLIC_APP_ENV !== "test",
 })
 export default tracer

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { DividerProps } from "~/interfaces"
+
 import { Divider } from "./Divider"
 
 // Template for stories

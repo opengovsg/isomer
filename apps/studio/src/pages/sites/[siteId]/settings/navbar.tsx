@@ -1,11 +1,8 @@
 import type { NavbarSchemaType } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
-import { useToast } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-import isEqual from "lodash/isEqual"
-
 import type { NextPageWithLayout } from "~/lib/types"
+import { useToast } from "@opengovsg/design-system-react"
+import { isEqual } from "lodash-es"
+import { useState } from "react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -22,15 +19,13 @@ import { siteSchema } from "~/features/editing-experience/schema"
 import { EditNavbarPreview } from "~/features/settings/EditNavbarPreview"
 import { NavbarEditor } from "~/features/settings/NavbarEditor"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
-import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const NavbarSettingsPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteSchema)
-  const router = useRouter()
-  const isEnabled = useNewSettingsPage()
 
   const utils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
@@ -69,12 +64,6 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
   }
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
-
-  useEffect(() => {
-    if (!isEnabled) {
-      void router.push(`/sites/${siteId}/settings`)
-    }
-  }, [isEnabled, router, siteId])
 
   return (
     <>

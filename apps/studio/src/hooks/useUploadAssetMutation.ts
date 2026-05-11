@@ -1,7 +1,6 @@
 import type { z } from "zod"
-import { useMutation } from "@tanstack/react-query"
-
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { useMutation } from "@tanstack/react-query"
 import { trpc } from "~/utils/trpc"
 
 type UploadAssetMutationParams = Pick<
@@ -20,17 +19,22 @@ export interface UploadAssetMutationOutput {
 interface HandleUploadParams {
   file: File
   presignedPutUrl: string
+  contentType: string
+  contentDisposition: string
 }
 
-const handleUpload = async ({ file, presignedPutUrl }: HandleUploadParams) => {
-  // Encode filename for Content-Disposition header (RFC 6266)
-  // Escape quotes and backslashes, then use filename* parameter for UTF-8 support
-  const encodedFilename = encodeURIComponent(file.name)
-
+const handleUpload = async ({
+  file,
+  presignedPutUrl,
+  contentType,
+  contentDisposition,
+}: HandleUploadParams) => {
+  // Use server-signed Content-Type and Content-Disposition so upload metadata
+  // cannot be overridden by the client (prevents stored XSS via type confusion).
   const response = await fetch(presignedPutUrl, {
     headers: {
-      "Content-Type": file.type,
-      "Content-Disposition": `inline; filename*=UTF-8''${encodedFilename}`,
+      "Content-Type": contentType,
+      "Content-Disposition": contentDisposition,
     },
     method: "PUT",
     body: file,
@@ -52,12 +56,18 @@ export const useUploadAssetMutation = ({
   return useMutation<UploadAssetMutationOutput, void, UploadAssetMutationInput>(
     {
       mutationFn: async ({ file }) => {
-        const { fileKey, presignedPutUrl } = await getPresignedPutUrl({
-          siteId,
-          resourceId,
-          fileName: file.name,
+        const { fileKey, presignedPutUrl, contentType, contentDisposition } =
+          await getPresignedPutUrl({
+            siteId,
+            resourceId,
+            fileName: file.name,
+          })
+        await handleUpload({
+          file,
+          presignedPutUrl,
+          contentType,
+          contentDisposition,
         })
-        await handleUpload({ file, presignedPutUrl })
 
         return {
           path: `/${fileKey}`,

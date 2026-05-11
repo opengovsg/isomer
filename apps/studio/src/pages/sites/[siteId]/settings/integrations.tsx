@@ -2,8 +2,7 @@ import type {
   ComplexIntegrationsSettings,
   SimpleIntegrationsSettings,
 } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
+import type { NextPageWithLayout } from "~/lib/types"
 import { Box, Text } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
@@ -11,11 +10,9 @@ import {
   SimpleIntegrationsSettingsSchema,
 } from "@opengovsg/isomer-components"
 import { Value } from "@sinclair/typebox/value"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-import { isEqual, pickBy } from "lodash"
+import { isEqual, pickBy } from "lodash-es"
+import { useState } from "react"
 import { BiWrench } from "react-icons/bi"
-
-import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
   SettingsEditorGridItem,
@@ -26,20 +23,20 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
-import { EditSettingsPreview } from "~/features/editing-experience/components/EditSettingsPreview"
 import { WidgetProvider } from "~/features/editing-experience/components/form-builder/contexts/WidgetContext"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
+import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
-import { useNewSettingsPage } from "~/hooks/useNewSettingsPage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 export const DEFAULT_SIMPLE_INTEGRATION_SETTINGS = Value.Parse(
   SimpleIntegrationsSettingsSchema,
@@ -59,8 +56,6 @@ const simpleIntegrationSettingsValidateFn =
 const IntegrationsSettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
-  const router = useRouter()
-  const isEnabled = useNewSettingsPage()
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const [
@@ -68,10 +63,6 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
   ] = trpc.site.getConfig.useSuspenseQuery({
     id: siteId,
   })
-
-  useEffect(() => {
-    if (!isEnabled) void router.replace(`/sites/${siteId}/settings`)
-  }, [isEnabled, router, siteId])
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl

@@ -1,6 +1,5 @@
-import { useContext } from "react"
 import { Text } from "@chakra-ui/react"
-
+import { useContext } from "react"
 import { UserManagementContext } from "~/features/users"
 
 export const CollaboratorsDescription = () => {

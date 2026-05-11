@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { IndexPageSchemaType } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { IndexPageSchemaType } from "~/types"
-import { generateSiteConfig } from "~/stories/helpers"
 import { IndexPageLayout } from "./IndexPage"
 
 const DEFAULT_INDEX_PAGE = {
@@ -95,6 +95,26 @@ const generateIndexPage = (
                 layout: "content",
                 summary: "",
               },
+              {
+                id: "9",
+                title: "Database page with thumbnail",
+                permalink: "/parent/database-page-with-thumbnail",
+                lastModified: "",
+                layout: "database",
+                summary: "Database page with thumbnail",
+                image: {
+                  src: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop",
+                  alt: "Thumbnail for Database page with thumbnail",
+                },
+              },
+              {
+                id: "10",
+                title: "Database page without thumbnail",
+                permalink: "/parent/database-page-without-thumbnail",
+                lastModified: "",
+                layout: "database",
+                summary: "Database page without thumbnail",
+              },
             ],
           },
           {
@@ -178,6 +198,38 @@ export const Custom: Story = {
   ),
 }
 
+export const WithTableOfContents: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        type: "prose",
+        content: [
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [{ type: "text", text: "First Section" }],
+          },
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Content for the first section." }],
+          },
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [{ type: "text", text: "Second Section" }],
+          },
+          {
+            type: "paragraph",
+            content: [
+              { type: "text", text: "Content for the second section." },
+            ],
+          },
+        ],
+      },
+    ],
+  }),
+}
+
 export const Rows: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
@@ -227,6 +279,20 @@ export const RowsWithImageAndDescription: Story = {
         childrenPagesOrdering: [],
         type: "childrenpages",
         variant: "rows",
+        showSummary: true,
+        showThumbnail: true,
+      },
+    ],
+  }),
+}
+export const RowsWithContainAndImageAndDescription: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        childrenPagesOrdering: [],
+        type: "childrenpages",
+        variant: "rows",
+        imageFit: "contain",
         showSummary: true,
         showThumbnail: true,
       },
@@ -310,6 +376,35 @@ export const BoxesWithImageAndDescription: Story = {
     content: [
       {
         childrenPagesOrdering: [],
+        type: "childrenpages",
+        variant: "boxes",
+        showSummary: true,
+        showThumbnail: true,
+      },
+    ],
+  }),
+}
+
+export const BoxesWithContainAndImageAndDescription: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        childrenPagesOrdering: [],
+        type: "childrenpages",
+        variant: "boxes",
+        imageFit: "contain",
+        showSummary: true,
+        showThumbnail: true,
+      },
+    ],
+  }),
+}
+
+export const BoxesWithCustomOrdering: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        childrenPagesOrdering: ["6", "3", "5"],
         type: "childrenpages",
         variant: "boxes",
         showSummary: true,

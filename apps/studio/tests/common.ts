@@ -1,7 +1,7 @@
-import { dirname, join } from "path"
-import { fileURLToPath } from "url"
 import type { StartedNetwork, StartedTestContainer } from "testcontainers"
+import { dirname, join } from "path"
 import { GenericContainer, Wait } from "testcontainers"
+import { fileURLToPath } from "url"
 import { z } from "zod"
 
 type ContainerType = "database" | "mockpass"
@@ -24,7 +24,7 @@ export const CONTAINER_CONFIGURATIONS: Record<
   mockpass: {
     name: "mockpass",
     image: "opengovsg/mockpass:4.5.1",
-    ports: [{ container: 5156, host: 5156 }],
+    ports: [5156],
     extraHosts: [{ host: "host.docker.internal", ipAddress: "host-gateway" }],
     environment: {
       MOCKPASS_NRIC: "S6005038D",

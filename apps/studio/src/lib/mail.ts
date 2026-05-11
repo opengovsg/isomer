@@ -1,5 +1,4 @@
 import wretch from "wretch"
-
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 import { isEmailWhitelisted } from "~/server/modules/whitelist/whitelist.service"
@@ -33,14 +32,29 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
           error: "Postman API error",
           status: response.status,
           recipient: params.recipient,
+          subject: params.subject,
         })
+        throw new PostmanApiStatusError(
+          `Postman API error with status ${response.status}`,
+          response.status,
+        )
       }
+
+      logger.info({
+        event: "email_send_succeeded",
+        status: response.status,
+        recipient: params.recipient,
+        subject: params.subject,
+      })
       return
     } catch (error) {
+      if (error instanceof PostmanApiStatusError) throw error
+
       logger.error({
         error: "Postman API call failed",
         originalError: error,
         recipient: params.recipient,
+        subject: params.subject,
       })
       throw error
     }
@@ -51,4 +65,14 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
     params,
   )
   return
+}
+
+class PostmanApiStatusError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message)
+    this.name = "PostmanApiStatusError"
+  }
 }

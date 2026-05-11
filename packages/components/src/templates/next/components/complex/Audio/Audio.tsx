@@ -1,5 +1,6 @@
 import type { AudioProps } from "~/interfaces"
 import { isApplePodcastUrl, isValidAudioEmbedUrl } from "~/utils/validation"
+
 import { ComponentContent } from "../../internal/customCssClass"
 
 export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {

@@ -1,7 +1,7 @@
 import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { CSSProperties } from "react"
 import { flatten } from "flat"
-import chunk from "lodash/chunk"
+import { chunk } from "lodash-es"
 import twColors from "tailwindcss/colors"
 
 // NOTE: refer to this article for conversion from gamma compressed rgb values

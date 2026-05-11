@@ -1,6 +1,6 @@
 import { createEmailSchema } from "@opengovsg/starter-kitty-validators/email"
-import { RoleType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
+import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import { offsetPaginationSchema } from "./pagination"
 
@@ -122,3 +122,9 @@ export const resendInviteInputSchema = z.object({
 export const resendInviteOutputSchema = z.object({
   email: z.string().email(),
 })
+
+export const isIsomerAdminInputSchema = z.object({
+  roles: z.array(z.nativeEnum(IsomerAdminRole)).min(1),
+})
+
+export const isIsomerAdminOutputSchema = z.boolean()

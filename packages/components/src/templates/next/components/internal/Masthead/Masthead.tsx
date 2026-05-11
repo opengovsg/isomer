@@ -1,202 +1,57 @@
-"use client"
-
-import type { PropsWithChildren } from "react"
-import { createContext, useContext, useRef, useState } from "react"
-import { useButton } from "@react-aria/button"
-import { useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
+import type { MastheadProps } from "~/interfaces"
 import { BiChevronDown } from "react-icons/bi"
 
-import type { MastheadProps } from "~/interfaces"
-import { tv } from "~/lib/tv"
-import { twMerge } from "~/lib/twMerge"
-import { focusVisibleHighlight } from "~/utils/rac"
 import { Link } from "../Link"
 
-const MASTHEAD_CONTROL_ID = "govt-masthead-expandable"
-
-const mastheadButtonStyle = tv({
-  extend: focusVisibleHighlight,
-  base: "",
-})
-
-type MastheadProviderProps = Omit<MastheadProps, "type">
-interface MastheadContextReturn extends MastheadProviderProps {
-  isMastheadContentVisible: boolean
-  toggleMastheadContent: () => void
-}
-
-const MastheadContext = createContext<MastheadContextReturn | null>(null)
-const MastheadProvider = ({
-  children,
-  LinkComponent,
-  isStaging,
-}: PropsWithChildren<MastheadProviderProps>) => {
-  const [isMastheadContentVisible, setIsMastheadContentVisible] =
-    useState(false)
-
-  const toggleMastheadContent = () => {
-    setIsMastheadContentVisible((prev) => !prev)
-  }
-
+const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
   return (
-    <MastheadContext.Provider
-      value={{
-        isMastheadContentVisible,
-        toggleMastheadContent,
-        LinkComponent,
-        isStaging,
-      }}
-    >
-      {children}
-    </MastheadContext.Provider>
-  )
-}
-
-const useMasthead = () => {
-  const context = useContext(MastheadContext)
-  if (context === null) {
-    throw new Error("useMasthead must be used within a MastheadProvider")
-  }
-  return context
-}
-
-const RestrictedHeaderBarContent = ({ children }: PropsWithChildren) => {
-  const { isStaging } = useMasthead()
-  return (
-    <>
-      <svg
-        version="1.1"
-        xmlns="http://www.w3.org/2000/svg"
-        width="32"
-        height="32"
-        viewBox="0 0 32 32"
-        className="h-7 w-5 flex-shrink-0 fill-[#ef3320]"
-      >
-        <path d="M5.896 11.185c0 0-0.949 1.341 0.294 3.075 0 0 0.196-0.883 2.159-0.883h2.356c2.225 0 3.893-2.126 2.846-4.319 0 0 1.57 0.164 2.095-0.818 0.523-0.981-0.033-1.374-0.818-1.374h-3.959c0 0.704-1.341 0.802-1.341 0h-2.225c0 0-1.669 0-1.701 1.407 0 0 0.377-0.229 0.752-0.261v0.375c0 0-0.458 0.082-0.671 0.197-0.212 0.114-0.523 0.425-0.228 1.227 0.294 0.801 0.409 1.079 0.409 1.079s0.475-0.41 1.244-0.41h0.9c1.602 0 1.308 1.554-0.295 1.554s-1.815-0.85-1.815-0.85z"></path>
-        <path d="M14.255 9.566c0 0 0.54 0.033 0.932-0.31 0 0 3.55 2.765-1.717 8.326-5.268 5.562-1.195 9.162-1.195 9.162s-0.948 0.915-0.409 2.699c0 0-2.191-1.237-3.867-3.338-2.422-3.036-3.902-7.681 2.749-11.386 0 0 4.389-2.208 3.506-5.153z"></path>
-        <path d="M8.829 6.343c0 0 0.709-1.265 2.355-1.265 1.298 0 1.594-0.666 1.594-0.666s0.566-1.079 3.424-1.079c2.619 0 4.384 0.873 5.812 2.039 0 0-3.85-2.388-7.645 0.971h-5.54z"></path>
-        <path d="M24.839 14.348c-0.109-3.948-3.163-8.179-9.728-7.939 6.413-5.431 17.537 6.695 8.375 13.066 0 0 1.533-2.186 1.353-5.126z"></path>
-        <path d="M16.093 6.845c8.005-0.24 10.863 9.357 5.693 13.676l-5.191 2.509c0 0-0.676-2.181 1.833-4.734 2.509-2.551 4.929-7.328-2.006-10.469 0 0 0.131-0.654-0.327-0.981z"></path>
-        <path d="M15.678 9.004c0 0 0.393-0.371 0.524-0.676 5.954 2.486 5.017 6.697 1.461 10.23-2.181 2.246-1.505 4.668-1.505 4.668s-2.66 1.657-3.577 3.097c0 0-3.852-3.28 1.483-8.724 5.235-5.344 1.614-8.594 1.614-8.594z"></path>
-      </svg>
-      <div className="prose-label-sm-regular flex flex-1 flex-wrap gap-1 py-1 text-base-content-medium lg:flex-row">
-        <span>
-          A Singapore Government Agency Website&nbsp;
-          {isStaging ? <b>[NOTE: THIS IS A STAGING WEBSITE]&nbsp;</b> : null}
-        </span>
-        {children}
-      </div>
-    </>
-  )
-}
-
-const MobileMastheadButton = ({ children }: PropsWithChildren) => {
-  const { isMastheadContentVisible, toggleMastheadContent } = useMasthead()
-  const buttonRef = useRef<HTMLButtonElement>(null)
-
-  const { buttonProps: ariaProps } = useButton(
-    {
-      "aria-controls": MASTHEAD_CONTROL_ID,
-      "aria-describedby": "masthead-aria",
-      "aria-expanded": isMastheadContentVisible,
-      onPress: toggleMastheadContent,
-    },
-    buttonRef,
-  )
-  const { focusProps, isFocusVisible } = useFocusRing()
-  const mergedProps = mergeProps(ariaProps, focusProps)
-
-  return (
-    <button
-      {...mergedProps}
-      ref={buttonRef}
-      className={twMerge(
-        "group flex w-full gap-1 text-start leading-5 outline-none lg:hidden",
-        mastheadButtonStyle({ isFocusVisible }),
-      )}
-    >
-      {children}
-      <span className="sr-only" id="masthead-aria">
-        {isMastheadContentVisible
-          ? "Click to collapse masthead"
-          : "Click to expand masthead to find out how to identify an official government website"}
-      </span>
-      <RestrictedHeaderBarContent>
-        <span className="not-sr-only text-link underline group-hover:text-link-hover">
-          How to identify
-          <BiChevronDown
-            aria-hidden
-            className={`inline h-4 w-4 shrink-0 transition-all duration-300 ease-in-out ${
-              isMastheadContentVisible ? "rotate-180" : "rotate-0"
-            }`}
-          />
-        </span>
-      </RestrictedHeaderBarContent>
-    </button>
-  )
-}
-
-const DesktopMastheadButton = () => {
-  const { isMastheadContentVisible, toggleMastheadContent } = useMasthead()
-  const buttonRef = useRef<HTMLButtonElement>(null)
-
-  const { buttonProps: ariaProps } = useButton(
-    {
-      onPress: toggleMastheadContent,
-    },
-    buttonRef,
-  )
-  const { focusProps, isFocusVisible } = useFocusRing()
-  const mergedProps = mergeProps(ariaProps, focusProps)
-
-  return (
-    <div className="hidden items-center gap-1 lg:flex">
-      <RestrictedHeaderBarContent>
-        <button
-          {...mergedProps}
-          ref={buttonRef}
-          className={twMerge(
-            "hidden flex-row items-center text-link underline underline-offset-4 outline-0 transition-colors hover:text-link-hover focus-visible:text-content-strong lg:flex",
-            mastheadButtonStyle({ isFocusVisible }),
-          )}
+    <summary className="group/summary flex w-full cursor-pointer list-none gap-1 text-start leading-5 outline-none lg:flex-row lg:items-center [&::-webkit-details-marker]:hidden">
+      <div className="mx-auto flex w-full max-w-screen-xl gap-1 px-6 text-start md:px-10 lg:flex-row lg:items-center">
+        <svg
+          aria-hidden
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          className="h-7 w-5 flex-shrink-0 fill-[#ef3320]"
         >
-          How to identify
-          <BiChevronDown
-            aria-hidden
-            className={`h-4 w-4 shrink-0 transition-transform ease-in-out ${
-              isMastheadContentVisible ? "rotate-180" : "rotate-0"
-            }`}
-          />
-        </button>
-      </RestrictedHeaderBarContent>
-    </div>
+          <path d="M5.896 11.185c0 0-0.949 1.341 0.294 3.075 0 0 0.196-0.883 2.159-0.883h2.356c2.225 0 3.893-2.126 2.846-4.319 0 0 1.57 0.164 2.095-0.818 0.523-0.981-0.033-1.374-0.818-1.374h-3.959c0 0 0.704-1.341 0.802-1.341 0h-2.225c0 0-1.669 0-1.701 1.407 0 0 0.377-0.229 0.752-0.261v0.375c0 0-0.458 0.082-0.671 0.197-0.212 0.114-0.523 0.425-0.228 1.227 0.294 0.801 0.409 1.079 0.409 1.079s0.475-0.41 1.244-0.41h0.9c1.602 0 1.308 1.554-0.295 1.554s-1.815-0.85-1.815-0.85z"></path>
+          <path d="M14.255 9.566c0 0 0.54 0.033 0.932-0.31 0 0 3.55 2.765-1.717 8.326-5.268 5.562-1.195 9.162-1.195 9.162s-0.948 0.915-0.409 2.699c0 0-2.191-1.237-3.867-3.338-2.422-3.036-3.902-7.681 2.749-11.386 0 0 4.389-2.208 3.506-5.153z"></path>
+          <path d="M8.829 6.343c0 0 0.709-1.265 2.355-1.265 1.298 0 1.594-0.666 1.594-0.666s0.566-1.079 3.424-1.079c2.619 0 4.384 0.873 5.812 2.039 0 0-3.85-2.388-7.645 0.971h-5.54z"></path>
+          <path d="M24.839 14.348c-0.109-3.948-3.163-8.179-9.728-7.939 6.413-5.431 17.537 6.695 8.375 13.066 0 0 1.533-2.186 1.353-5.126z"></path>
+          <path d="M16.093 6.845c8.005-0.24 10.863 9.357 5.693 13.676l-5.191 2.509c0 0-0.676-2.181 1.833-4.734 2.509-2.551 4.929-7.328-2.006-10.469 0 0 0.131-0.654-0.327-0.981z"></path>
+          <path d="M15.678 9.004c0 0 0.393-0.371 0.524-0.676 5.954 2.486 5.017 6.697 1.461 10.23-2.181 2.246-1.505 4.668-1.505 4.668s-2.66 1.657-3.577 3.097c0 0-3.852-3.28 1.483-8.724 5.235-5.344 1.614-8.594 1.614-8.594z"></path>
+        </svg>
+        <div className="prose-label-sm-regular flex flex-1 flex-wrap gap-1 py-1 text-base-content-medium lg:flex-row">
+          <span>
+            A Singapore Government Agency Website&nbsp;
+            {isStaging ? <b>[NOTE: THIS IS A STAGING WEBSITE]&nbsp;</b> : null}
+          </span>
+          {/* Focus-visible highlight scoped to the trigger (summary has group/summary) */}
+          <span className="not-sr-only text-link underline underline-offset-4 group-hover/summary:text-link-hover group-focus-visible/summary:bg-utility-highlight group-focus-visible/summary:text-base-content-strong group-focus-visible/summary:decoration-transparent group-focus-visible/summary:shadow-focus-visible group-focus-visible/summary:outline-0 group-focus-visible/summary:transition-none group-focus-visible/summary:hover:decoration-transparent">
+            How to identify
+            <BiChevronDown
+              aria-hidden
+              className="inline h-4 w-4 shrink-0 rotate-0 transition-transform duration-300 ease-in-out group-open:rotate-180"
+            />
+          </span>
+        </div>
+      </div>
+    </summary>
   )
 }
 
-const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
+const RestrictedContent = ({
+  LinkComponent,
+}: Pick<MastheadProps, "LinkComponent">) => {
   return (
-    <div className="mx-auto max-w-screen-xl px-6 md:px-10">
-      <MobileMastheadButton>{children}</MobileMastheadButton>
-      <DesktopMastheadButton />
-    </div>
-  )
-}
-
-const RestrictedContent = () => {
-  const { isMastheadContentVisible, LinkComponent } = useMasthead()
-
-  return (
-    <div
-      id={MASTHEAD_CONTROL_ID}
-      className={`mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10 ${
-        isMastheadContentVisible ? "block" : "hidden"
-      }`}
-    >
+    <div className="mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10">
       <div className="grid grid-cols-[1fr] gap-6 px-px lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] lg:gap-40">
         <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
           <div className="-mt-[0.1rem] lg:mt-[0.2rem]">
             <svg
+              aria-hidden
               xmlns="http://www.w3.org/2000/svg"
               width="17"
               height="17"
@@ -223,6 +78,7 @@ const RestrictedContent = () => {
               >
                 Trusted websites
                 <svg
+                  aria-hidden
                   version="1.1"
                   xmlns="http://www.w3.org/2000/svg"
                   width="18"
@@ -240,6 +96,7 @@ const RestrictedContent = () => {
         <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
           <div className="-mt-[0.1rem]">
             <svg
+              aria-hidden
               xmlns="http://www.w3.org/2000/svg"
               width="15"
               height="18"
@@ -257,6 +114,7 @@ const RestrictedContent = () => {
             <article>
               Look for a <b>lock</b> (
               <svg
+                aria-hidden
                 xmlns="http://www.w3.org/2000/svg"
                 width="15"
                 height="18"
@@ -276,13 +134,13 @@ const RestrictedContent = () => {
   )
 }
 
-export const Masthead = (props: Omit<MastheadProps, "type">) => {
+export const Masthead = ({ isStaging, LinkComponent }: MastheadProps) => {
   return (
-    <MastheadProvider {...props}>
-      <div className="bg-base-canvas-backdrop">
-        <RestrictedHeaderBar />
-        <RestrictedContent />
-      </div>
-    </MastheadProvider>
+    <div className="bg-base-canvas-backdrop">
+      <details className="group">
+        <MastheadSummary isStaging={isStaging} />
+        <RestrictedContent LinkComponent={LinkComponent} />
+      </details>
+    </div>
   )
 }

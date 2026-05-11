@@ -5,12 +5,12 @@ import type {
   QueryResult,
   UnknownRow,
 } from "kysely"
-import { type DB } from "~prisma/generated/generatedTypes"
 import ddTrace from "dd-trace"
 import { PostgresDialect, PostgresQueryCompiler } from "kysely"
 import pg from "pg"
-
 import { env } from "~/env.mjs"
+import { type DB } from "~prisma/generated/generatedTypes"
+
 import { Kysely } from "./types"
 
 const connectionString = `${env.DATABASE_URL}`
@@ -25,10 +25,10 @@ class TracingPlugin implements KyselyPlugin {
   transformQuery(args: PluginTransformQueryArgs) {
     const queryId = args.queryId
     // only create spans if dd-trace is properly initialized, which is NOT the case if running in a seed script
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (ddTrace?.tracer) {
       // this is VERY performant (microseconds) relative to actually executing the query, so we can afford to do this
-      const compiled = this.compiler.compileQuery(args.node)
+      const compiled = this.compiler.compileQuery(args.node, args.queryId)
       const span = ddTrace.tracer.startSpan(`kysely_${args.node.kind}`, {
         childOf: ddTrace.tracer.scope().active() ?? undefined,
         tags: {
@@ -68,7 +68,7 @@ const dialect = new PostgresDialect({
 })
 
 export const db: Kysely<DB> = new Kysely<DB>({
-  // eslint-disable-next-line no-restricted-properties
+  // oxlint-disable-next-line node/no-process-env
   log: process.env.NODE_ENV === "development" ? ["error"] : undefined,
   dialect,
   // add tracing plugin for dd-spans to intercept kysely queries

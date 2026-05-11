@@ -1,8 +1,9 @@
-import type { With4Cols } from "./types"
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
-import { getTailwindVariantLayout, isExternalUrl } from "~/utils"
-import { ImageClient } from "../../Image"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+
+import type { With4Cols } from "./types"
+import { ImageClient } from "../../../internal/ImageClient"
 import { compoundStyles } from "../common"
 
 export const InfoCardImage = ({
@@ -15,8 +16,10 @@ export const InfoCardImage = ({
   site,
   shouldLazyLoad,
   variant = INFOCARD_VARIANT.default,
+  isFallback,
 }: Pick<
   With4Cols<SingleCardWithImageProps>,
+  | "isFallback"
   | "imageUrl"
   | "imageAlt"
   | "maxColumns"
@@ -27,11 +30,6 @@ export const InfoCardImage = ({
   | "shouldLazyLoad"
   | "variant"
 >): JSX.Element => {
-  const imgSrc =
-    isExternalUrl(imageUrl) || site.assetsBaseUrl === undefined
-      ? imageUrl
-      : `${site.assetsBaseUrl}${imageUrl}`
-
   return (
     <div
       className={compoundStyles.cardImageContainer({
@@ -39,14 +37,16 @@ export const InfoCardImage = ({
         maxColumns,
         isClickableCard: !!url,
         variant,
+        isFallback,
       })}
     >
       <ImageClient
-        src={imgSrc}
+        src={imageUrl}
         alt={imageAlt}
         width="100%"
         className={compoundStyles.cardImage({
           imageFit,
+          isFallback,
         })}
         assetsBaseUrl={site.assetsBaseUrl}
         lazyLoading={shouldLazyLoad}
