@@ -40,7 +40,7 @@ const destinationSchema = z
   .string()
   .min(1, "Destination is required")
   .max(2000, "Destination is too long")
-  .refine((val) => /^(https?:\/\/|\/)/.test(val), {
+  .refine((val) => /^(https:\/\/|\/)/.test(val), {
     message: "Destination must start with / or https://",
   })
 

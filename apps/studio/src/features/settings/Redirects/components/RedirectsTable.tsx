@@ -77,7 +77,7 @@ function SortableHeader({
   )
 }
 
-const getColumns = (siteId: number, onDelete: (id: string) => void) => [
+const getColumns = (onDelete: (id: string) => void) => [
   columnsHelper.accessor("source", {
     minSize: 250,
     enableSorting: true,
@@ -263,11 +263,7 @@ export const RedirectsTable = ({
 
   const handleDelete = (id: string) => deleteRedirect({ siteId, id })
 
-  const columns = useMemo(
-    () => getColumns(siteId, handleDelete),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [siteId],
-  )
+  const columns = useMemo(() => getColumns(handleDelete), [handleDelete])
 
   const tableInstance = useReactTable<RedirectRow>({
     columns,
