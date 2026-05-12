@@ -1,4 +1,4 @@
-import merge from "lodash/merge"
+import { merge } from "lodash-es"
 
 import { colours as generatedColours } from "../generated/colours"
 

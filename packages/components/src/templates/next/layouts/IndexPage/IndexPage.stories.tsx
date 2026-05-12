@@ -400,6 +400,20 @@ export const BoxesWithContainAndImageAndDescription: Story = {
   }),
 }
 
+export const BoxesWithCustomOrdering: Story = {
+  args: generateIndexPage(DEFAULT_INDEX_PAGE, {
+    content: [
+      {
+        childrenPagesOrdering: ["6", "3", "5"],
+        type: "childrenpages",
+        variant: "boxes",
+        showSummary: true,
+        showThumbnail: true,
+      },
+    ],
+  }),
+}
+
 export const BoxesWithImageAndDescriptionAndContent: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [

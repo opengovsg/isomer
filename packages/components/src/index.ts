@@ -9,6 +9,7 @@ export {
   REFERENCE_LINK_REGEX,
   NON_EMPTY_STRING_REGEX,
   isSiteNotificationActive,
+  createChildrenPagesComparator,
 } from "./utils"
 export * from "./schemas"
 export * from "./types"

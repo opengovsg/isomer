@@ -1,5 +1,5 @@
 import { Box } from "@chakra-ui/react"
-import merge from "lodash/merge"
+import { merge } from "lodash-es"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"

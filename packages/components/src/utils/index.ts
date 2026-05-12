@@ -35,3 +35,4 @@ export {
   NON_EMPTY_STRING_REGEX,
 } from "./validation"
 export { isSiteNotificationActive } from "./isSiteNotificationActive"
+export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
