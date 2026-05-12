@@ -1,4 +1,9 @@
-import type { Control, FieldErrors, UseFormRegister } from "react-hook-form"
+import type {
+  Control,
+  FieldErrors,
+  UseFormRegister,
+  UseFormSetValue,
+} from "react-hook-form"
 import type { CreateGazetteInput } from "~/schemas/gazette"
 import { FormControl, HStack, Input, VStack } from "@chakra-ui/react"
 import {
@@ -7,11 +12,15 @@ import {
   FormErrorMessage,
   FormLabel,
   SingleSelect,
+  Textarea,
 } from "@opengovsg/design-system-react"
-import { Controller } from "react-hook-form"
+import { useState } from "react"
+import { Controller, useWatch } from "react-hook-form"
 import { TimeSelect } from "~/components/Select/TimeSelect"
 
-import { GAZETTE_CATEGORIES, GAZETTE_SUBCATEGORIES } from "../constants"
+import type { GazettesCategory } from "../../types"
+import { GAZETTE_CATEGORIES } from "../../constants"
+import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 
 type GazetteFormData = CreateGazetteInput
 
@@ -19,22 +28,51 @@ interface GazetteFormFieldsProps {
   register: UseFormRegister<GazetteFormData>
   control: Control<GazetteFormData>
   errors: FieldErrors<GazetteFormData>
-  initialFile?: File
+  setValue: UseFormSetValue<GazetteFormData>
+  // Display-only metadata for an already-uploaded file. Used by the modify
+  // modal so the Attachment renders "already attached" without us having to
+  // re-download the actual PDF.
+  initialFileName?: string
+  initialFileSize?: number
+  onFileChange?: (file: File | undefined) => void
+}
+
+// Build a synthetic File with the right name + size for display purposes.
+// `defineProperty` is used instead of a `Proxy` because it mutates the real
+// File rather than wrapping it, so any built-in method (e.g. `.slice()`) that
+// reads `this.size` still resolves correctly without proxy method-rebinding.
+const buildPlaceholderFile = (name: string, size?: number): File => {
+  const file = new File([], name, { type: "application/pdf" })
+  if (size !== undefined) {
+    Object.defineProperty(file, "size", { value: size, writable: false })
+  }
+  return file
 }
 
 export const GazetteFormFields = ({
   register,
   control,
   errors,
-  initialFile,
+  setValue,
+  initialFileName,
+  initialFileSize,
+  onFileChange,
 }: GazetteFormFieldsProps) => {
+  const [file, setFile] = useState<File | undefined>(() =>
+    initialFileName
+      ? buildPlaceholderFile(initialFileName, initialFileSize)
+      : undefined,
+  )
+  const { getSubcategoriesForCategory } = useGazetteSubcategoriesContext()
+  const category = useWatch({ control, name: "category" })
+
   return (
     <VStack alignItems="flex-start" spacing="0.75rem">
       <FormControl isRequired isInvalid={!!errors.title}>
         <FormLabel color="base.content.strong" mb="0.5rem">
           Title
         </FormLabel>
-        <Input placeholder="Enter a title" {...register("title")} />
+        <Textarea placeholder="Enter a title" {...register("title")} />
         {errors.title?.message && (
           <FormErrorMessage>{errors.title.message}</FormErrorMessage>
         )}
@@ -47,9 +85,13 @@ export const GazetteFormFields = ({
         <Controller
           name="category"
           control={control}
-          render={({ field }) => (
+          render={({ field: { onChange, ...rest } }) => (
             <SingleSelect
-              {...field}
+              {...rest}
+              onChange={(newValue) => {
+                onChange(newValue)
+                setValue("subcategory", "", { shouldValidate: true })
+              }}
               name="category"
               items={GAZETTE_CATEGORIES}
               isClearable={false}
@@ -72,7 +114,7 @@ export const GazetteFormFields = ({
             <SingleSelect
               value={value}
               name="subcategory"
-              items={GAZETTE_SUBCATEGORIES}
+              items={getSubcategoriesForCategory(category as GazettesCategory)}
               isClearable={false}
               onChange={onChange}
             />
@@ -122,7 +164,9 @@ export const GazetteFormFields = ({
           <Controller
             name="publishTime"
             control={control}
-            render={({ field }) => <TimeSelect size="md" {...field} />}
+            render={({ field }) => (
+              <TimeSelect minutesStep={5} size="md" {...field} />
+            )}
           />
           {errors.publishTime?.message && (
             <FormErrorMessage>{errors.publishTime.message}</FormErrorMessage>
@@ -130,18 +174,19 @@ export const GazetteFormFields = ({
         </FormControl>
       </HStack>
 
-      <FormControl>
+      <FormControl isRequired>
         <FormLabel color="base.content.strong" mb="0.5rem">
           File Upload
         </FormLabel>
         <Attachment
           name="file-upload"
           multiple={false}
-          value={initialFile}
-          onChange={() => {
-            // TODO: Handle file upload
-          }}
+          value={file}
           accept={["application/pdf", ".pdf"]}
+          onChange={(newFile) => {
+            setFile(newFile)
+            onFileChange?.(newFile)
+          }}
         />
       </FormControl>
 

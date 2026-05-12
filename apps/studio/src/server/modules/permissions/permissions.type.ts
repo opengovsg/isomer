@@ -47,5 +47,5 @@ export interface AssetPermissionsProps extends Pick<
   "siteId" | "userId"
 > {
   resourceId?: string
-  action: "create" | "delete"
+  action: "create" | "read" | "update" | "delete"
 }

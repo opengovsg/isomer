@@ -1,37 +1,39 @@
 import type { PropsWithChildren } from "react"
 import { useRouter } from "next/router"
 import { useEffect } from "react"
+import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { useMe } from "~/features/me/api"
 import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
 
 import { FullscreenSpinner } from "../FullscreenSpinner"
 
-const TOPPAN_EMAIL_DOMAIN = "@toppannext.com"
-
 export const ToppanRouteGuard = ({ children }: PropsWithChildren) => {
   const {
     me: { email },
   } = useMe()
-  const { siteId } = useEgazetteInfo()
+  const egazette = useEgazetteInfo()
   const router = useRouter()
 
-  // NOTE: If the user is from toppan, we wait on the redirect
-  // otherwise, just allow them to continue
   const isToppanUser = email.endsWith(TOPPAN_EMAIL_DOMAIN)
-  const gazettesPath = isToppanUser && siteId && `/sites/${siteId}/gazettes`
-
-  const isAllowedRoute = isToppanUser && router.asPath === gazettesPath
+  // Pin Toppan users to the gazettes section. `startsWith` (not exact match)
+  // so child paths and query strings under /sites/{siteId}/gazettes/* don't
+  // bounce. Non-Toppan users and Toppan users with no configured egazette
+  // flag are not pinned.
+  const shouldRestrictToGazettesPath = isToppanUser && egazette.isConfigured
+  const gazettesPath = egazette.isConfigured
+    ? `/sites/${egazette.siteId}/gazettes`
+    : null
+  const isGazettesOnlyRoute =
+    !shouldRestrictToGazettesPath ||
+    (gazettesPath !== null && router.asPath.startsWith(gazettesPath))
 
   useEffect(() => {
-    // NOTE: If the user is from Toppan and is not on the allowed
-    // `/gazettes` path, direct them to the `/gazettes` path
-    // as they should only have access there
-    if (isToppanUser && !isAllowedRoute && gazettesPath) {
+    if (shouldRestrictToGazettesPath && !isGazettesOnlyRoute && gazettesPath) {
       void router.replace(gazettesPath)
     }
-  }, [isAllowedRoute, router, isToppanUser, gazettesPath, siteId])
+  }, [shouldRestrictToGazettesPath, isGazettesOnlyRoute, router, gazettesPath])
 
-  if (!isToppanUser || (isToppanUser && isAllowedRoute)) {
+  if (isGazettesOnlyRoute) {
     return <>{children}</>
   }
 

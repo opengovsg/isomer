@@ -10,6 +10,7 @@ type UploadAssetMutationParams = Pick<
 
 export interface UploadAssetMutationInput {
   file: File
+  fileName?: string
 }
 
 export interface UploadAssetMutationOutput {
@@ -55,12 +56,12 @@ export const useUploadAssetMutation = ({
 
   return useMutation<UploadAssetMutationOutput, void, UploadAssetMutationInput>(
     {
-      mutationFn: async ({ file }) => {
+      mutationFn: async ({ file, fileName }) => {
         const { fileKey, presignedPutUrl, contentType, contentDisposition } =
           await getPresignedPutUrl({
             siteId,
             resourceId,
-            fileName: file.name,
+            fileName: fileName ?? file.name,
           })
         await handleUpload({
           file,

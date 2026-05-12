@@ -3,7 +3,10 @@ export {
   GazetteTable,
   type GazetteStatus,
   type GazetteTableData,
-  type GazetteTableSortOptions,
   ModifyGazetteModal,
   ViewGazetteModal,
 } from "./components"
+export {
+  GazetteSubcategoriesProvider,
+  useGazetteSubcategoriesContext,
+} from "./contexts/GazetteSubcategoriesContext"

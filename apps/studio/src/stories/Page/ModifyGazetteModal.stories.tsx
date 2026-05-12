@@ -20,6 +20,8 @@ const meta: Meta<typeof ModifyGazetteModal> = {
     isOpen: true,
     onClose: () => console.log("close"),
     gazetteId: "gazette-123",
+    siteId: 1,
+    collectionId: 30,
     initialData: {
       title: "Sample Gazette Title",
       category: "government-gazette",
