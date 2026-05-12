@@ -21,6 +21,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: getsentry/warden@v0
+      - uses: getsentry/warden@1063d97715da952332e15e8cd3d1bdcc77208b46 # v0.27
         with:
           anthropic-api-key: ${{ secrets.WARDEN_ANTHROPIC_API_KEY }}
