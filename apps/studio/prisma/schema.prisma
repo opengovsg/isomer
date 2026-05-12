@@ -179,8 +179,9 @@ model Redirect {
   site        Site     @relation(fields: [siteId], references: [id])
   source      String
   destination String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  deletedAt   DateTime?
 
   @@unique([siteId, source])
   @@index([siteId])

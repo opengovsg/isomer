@@ -95,6 +95,7 @@ export interface Redirect {
   destination: string
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
+  deletedAt: Timestamp | null
 }
 export interface Resource {
   id: GeneratedAlways<string>

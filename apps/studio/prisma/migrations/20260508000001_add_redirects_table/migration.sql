@@ -6,6 +6,7 @@ CREATE TABLE "Redirect" (
     "destination" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Redirect_pkey" PRIMARY KEY ("id")
 );
