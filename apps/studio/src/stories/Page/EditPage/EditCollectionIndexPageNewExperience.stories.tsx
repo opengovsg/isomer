@@ -240,7 +240,7 @@ export const FiltersDeleteOptionModalDisabledCta: Story = {
       pointerEventsCheck: 0,
     })
     await portals.findByText(/Delete option "Option A"\?/i)
-    await portals.findByText(/being used in 3 items/i)
+    await portals.findByText(/being used in 3 item\(s\)/i)
     await expect(
       await portals.findByRole("button", { name: /^Delete option$/i }),
     ).toBeDisabled()
@@ -317,7 +317,7 @@ export const FiltersDeleteFilterModalDisabledCta: Story = {
       await portals.findByRole("menuitem", { name: /Delete filter/i }),
     )
     await portals.findByText(/Delete filter "Test filter"\?/i)
-    await portals.findByText(/being used on 3 items/i)
+    await portals.findByText(/being used on 3 item\(s\)/i)
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/i }),
     ).toBeDisabled()
