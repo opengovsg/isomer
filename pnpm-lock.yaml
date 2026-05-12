@@ -339,8 +339,8 @@ catalogs:
       specifier: ^5.2.7
       version: 5.3.2
     react-hook-form:
-      specifier: ^7.52.1
-      version: 7.72.0
+      specifier: ^7.75.0
+      version: 7.75.0
     react-icons:
       specifier: ^5.2.0
       version: 5.6.0
@@ -714,7 +714,7 @@ importers:
         version: 17.0.0(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@hookform/resolvers':
         specifier: 'catalog:'
-        version: 3.10.0(react-hook-form@7.72.0(react@18.3.1))
+        version: 3.10.0(react-hook-form@7.75.0(react@18.3.1))
       '@intercom/messenger-js-sdk':
         specifier: 'catalog:'
         version: 0.0.14
@@ -942,7 +942,7 @@ importers:
         version: 5.3.2(prop-types@15.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-hook-form:
         specifier: 'catalog:'
-        version: 7.72.0(react@18.3.1)
+        version: 7.75.0(react@18.3.1)
       react-icons:
         specifier: 'catalog:'
         version: 5.6.0(react@18.3.1)
@@ -10088,8 +10088,8 @@ packages:
       react: '>= 16.8 || ^17.0.0 || ^18.0.0 || ^19.0.0'
       react-dom: '>= 16.8 || ^17.0.0 || ^18.0.0 || ^19.0.0'
 
-  react-hook-form@7.72.0:
-    resolution: {integrity: sha512-V4v6jubaf6JAurEaVnT9aUPKFbNtDgohj5CIgVGyPHvT9wRx5OZHVjz31GsxnPNI278XMu+ruFz+wGOscHaLKw==}
+  react-hook-form@7.75.0:
+    resolution: {integrity: sha512-Ovv94H+0p3sJ7B9B5QxPuCP1u8V/cHuVGyH55cSwodYDtoJwK+fqk3vjfIgSX59I2U/bU4z0nRJ9HMLpNiWEmw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -14325,9 +14325,9 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@hookform/resolvers@3.10.0(react-hook-form@7.72.0(react@18.3.1))':
+  '@hookform/resolvers@3.10.0(react-hook-form@7.75.0(react@18.3.1))':
     dependencies:
-      react-hook-form: 7.72.0(react@18.3.1)
+      react-hook-form: 7.75.0(react@18.3.1)
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -21551,7 +21551,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  react-hook-form@7.72.0(react@18.3.1):
+  react-hook-form@7.75.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 

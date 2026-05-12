@@ -138,7 +138,7 @@ catalog:
   rate-limiter-flexible: ^5.0.3
   react-error-boundary: ^5.0.0
   react-frame-component: ^5.2.7
-  react-hook-form: ^7.52.1
+  react-hook-form: ^7.75.0
   react-markdown: ^10.1.0
   rehype-external-links: ^3.0.0
   sass: ^1.83.4
