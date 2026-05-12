@@ -5,6 +5,7 @@ import { useRouter } from "next/router"
 import { BiDirections, BiPaint, BiWrench } from "react-icons/bi"
 import { CmsCollapsibleSidenav } from "~/components/CmsSidebar/CmsCollapsibleSidenav"
 import { siteSchema } from "~/features/editing-experience/schema"
+import { useIsRedirectionsEnabled } from "~/hooks/useIsRedirectionsEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 
 import { HeaderRow } from "./components"
@@ -28,6 +29,7 @@ interface SideNavItem {
 export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
   const { siteId } = useQueryParse(siteSchema)
   const router = useRouter()
+  const isRedirectionsEnabled = useIsRedirectionsEnabled()
 
   const SIDENAV_ITEMS: SideNavItem[] = [
     {
@@ -42,6 +44,14 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
           label: "Integrations",
           href: `/sites/${siteId}/settings/integrations`,
         },
+        ...(isRedirectionsEnabled
+          ? [
+              {
+                label: "Redirects",
+                href: `/sites/${siteId}/settings/redirects`,
+              },
+            ]
+          : []),
       ],
     },
     {

@@ -2,13 +2,14 @@ import type { Static, StringOptions } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 import {
   AltTextSchema,
+  ARRAY_RADIO_FORMAT,
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
   generateImageSrcSchema,
   SearchableTableSchema,
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
-import { REF_HREF_PATTERN } from "~/utils/validation"
+import { NON_EMPTY_STRING_REGEX, REF_HREF_PATTERN } from "~/utils/validation"
 
 // NOTE: a tag value is simply a uuid that maps to a given label;
 // essentially, it is just a pointer
@@ -28,7 +29,7 @@ export const TagCategoryUuidSchema = generateUuidSchema({
 // NOTE: single value for now but we might extend this in the future with additional metadata,
 // so we will leave it as is
 const DropdownItemSchema = Type.Object({
-  label: Type.String({ maxLength: 70 }),
+  label: Type.String({ pattern: NON_EMPTY_STRING_REGEX }),
   id: TagOptionUuidSchema,
 })
 const TagOptionSchema = DropdownItemSchema
@@ -216,6 +217,28 @@ export const CollectionPagePageSchema = Type.Intersect([
           format: "hidden",
           type: "string",
           default: COLLECTION_PAGE_SORT_DIRECTION.desc,
+        },
+      ),
+    ),
+    showThumbnail: Type.Optional(
+      Type.Object(
+        {
+          fallback: Type.Union(
+            [
+              Type.Literal("logo", { title: "Use site logo" }),
+              Type.Literal("first-image", {
+                title: "Use first image on page, if available",
+              }),
+            ],
+            {
+              title: "If an item doesn’t have a thumbnail",
+              format: ARRAY_RADIO_FORMAT,
+              default: "logo",
+            },
+          ),
+        },
+        {
+          title: "Display thumbnail on all items",
         },
       ),
     ),

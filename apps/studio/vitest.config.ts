@@ -8,7 +8,7 @@ export default defineConfig({
     retry: 0,
     globals: true,
     exclude: [...configDefaults.exclude, "**/tests/e2e/**", "tests/load/**"],
-    setupFiles: ["tests/mocks/db.ts"],
+    setupFiles: ["tests/mocks/db.ts", "tests/mocks/mockpass.ts"],
     globalSetup: ["tests/global-setup.ts"],
     coverage: {
       provider: "istanbul",

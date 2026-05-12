@@ -2,6 +2,7 @@ import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
   FileRefPageProps,
+  IsomerComponent,
   IsomerSitemap,
   LinkRefPageProps,
 } from "@opengovsg/isomer-components"
@@ -26,6 +27,7 @@ type ResourceDto = Omit<
   thumbnail?: string
   category?: string
   date?: string
+  content?: string
 }
 
 type CollectionItemResourceDto = Omit<ResourceDto, "type" | "parentId"> & {
@@ -71,6 +73,16 @@ const getSitemapTreeFromArray = (
   // TODO: Sort the children by the page ordering if the FolderMeta resource exists
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
+    const parsedContent =
+      typeof resource.content === "string" && resource.content !== ""
+        ? (JSON.parse(resource.content) as IsomerComponent[])
+        : undefined
+    const firstImageComponent = Array.isArray(parsedContent)
+      ? parsedContent.find(
+          (item): item is Extract<IsomerComponent, { type: "image" }> =>
+            item.type === "image",
+        )
+      : undefined
 
     if (resource.type === ResourceType.Page) {
       return {
@@ -85,6 +97,12 @@ const getSitemapTreeFromArray = (
           src: resource.thumbnail ?? "",
           alt: "",
         },
+        firstImage: firstImageComponent
+          ? {
+              src: firstImageComponent.src,
+              alt: firstImageComponent.alt,
+            }
+          : undefined,
       }
     } else if (resource.type === ResourceType.CollectionPage) {
       return {
@@ -101,6 +119,12 @@ const getSitemapTreeFromArray = (
           src: resource.thumbnail ?? "",
           alt: "",
         },
+        firstImage: firstImageComponent
+          ? {
+              src: firstImageComponent.src,
+              alt: firstImageComponent.alt,
+            }
+          : undefined,
       }
     } else if (resource.type === ResourceType.CollectionLink) {
       return {
@@ -117,6 +141,12 @@ const getSitemapTreeFromArray = (
           src: resource.thumbnail ?? "",
           alt: "",
         },
+        firstImage: firstImageComponent
+          ? {
+              src: firstImageComponent.src,
+              alt: firstImageComponent.alt,
+            }
+          : undefined,
         ref: "/",
       }
     }
@@ -145,6 +175,12 @@ const getSitemapTreeFromArray = (
       permalink,
       image: !!indexPage?.thumbnail
         ? { src: indexPage.thumbnail, alt: "" }
+        : undefined,
+      firstImage: firstImageComponent
+        ? {
+            src: firstImageComponent.src,
+            alt: firstImageComponent.alt,
+          }
         : undefined,
       children: getSitemapTreeFromArray(
         resources,

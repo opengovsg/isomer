@@ -55,3 +55,10 @@ export const deleteAssetsSchema = z.object({
     }),
   ),
 })
+
+export const getPresignedGetUrlSchema = z.object({
+  siteId: z.number().min(1),
+  fileKey: z.string({
+    required_error: "Missing file key",
+  }),
+})

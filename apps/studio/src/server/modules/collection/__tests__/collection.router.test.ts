@@ -1,6 +1,6 @@
 import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
-import _, { omit } from "lodash"
+import { omit } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -1346,12 +1346,12 @@ describe("collection.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(auditEntry.delta.before!).toMatchObject({
-        blob: _.omit(originalBlob, ["createdAt", "updatedAt"]),
-        resource: _.omit(page, ["createdAt", "updatedAt"]),
+        blob: omit(originalBlob, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
       expect(auditEntry.delta.after!).toMatchObject({
-        blob: _.omit(expected, ["createdAt", "updatedAt"]),
-        resource: _.omit(page, ["createdAt", "updatedAt"]),
+        blob: omit(expected, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
       expect(auditEntry.userId).toBe(session.userId)
       const actual = getCollectionItemByPermalink(page.permalink, page.parentId)
@@ -1385,12 +1385,12 @@ describe("collection.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(auditEntry.delta.before!).toMatchObject({
-        blob: _.omit(originalBlob, ["createdAt", "updatedAt"]),
-        resource: _.omit(page, ["createdAt", "updatedAt"]),
+        blob: omit(originalBlob, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
       expect(auditEntry.delta.after!).toMatchObject({
-        blob: _.omit(expected, ["createdAt", "updatedAt"]),
-        resource: _.omit(page, ["createdAt", "updatedAt"]),
+        blob: omit(expected, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
       expect(auditEntry.userId).toBe(session.userId)
       // NOTE: For collection links, they have no content.

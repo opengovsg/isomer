@@ -1,9 +1,15 @@
 import type {
+  CopyObjectCommandInput,
+  GetObjectCommandInput,
+  HeadObjectCommandInput,
   PutObjectCommandInput,
   PutObjectTaggingCommandInput,
 } from "@aws-sdk/client-s3"
 import {
+  CopyObjectCommand,
+  GetObjectCommand,
   GetObjectTaggingCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   PutObjectTaggingCommand,
   S3Client,
@@ -11,6 +17,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { env } from "~/env.mjs"
 
+const DELETE_TAG = "deletedAt"
 const { NEXT_PUBLIC_S3_REGION } = env
 
 const storage = new S3Client({
@@ -42,6 +49,22 @@ export const generateSignedPutUrl = async ({
   )
 }
 
+export const generateSignedGetUrl = async ({
+  Bucket,
+  Key,
+}: Pick<GetObjectCommandInput, "Bucket" | "Key">): Promise<string> => {
+  return getSignedUrl(
+    storage,
+    new GetObjectCommand({
+      Bucket,
+      Key,
+    }),
+    {
+      expiresIn: 60 * 5, // 5 minutes
+    },
+  )
+}
+
 export const deleteFile = async ({
   Key,
   Bucket,
@@ -63,13 +86,43 @@ export const deleteFile = async ({
       // until the page is published
       Tagging: {
         TagSet: [
-          ...originalTagSet.filter(({ Key }) => Key !== "ISOMER_STATUS"),
+          ...originalTagSet.filter(({ Key }) => Key !== DELETE_TAG),
           {
-            Key: "ISOMER_STATUS",
-            Value: "DELETED",
+            Key: DELETE_TAG,
+            // NOTE: milliseconds since epoch
+            Value: Date.now().toString(),
           },
         ],
       },
+    }),
+  )
+}
+
+export const getFileSize = async ({
+  Key,
+  Bucket,
+}: Pick<HeadObjectCommandInput, "Key" | "Bucket">): Promise<number | null> => {
+  try {
+    const response = await storage.send(new HeadObjectCommand({ Bucket, Key }))
+    return response.ContentLength ?? null
+  } catch {
+    return null
+  }
+}
+
+export const copyFile = async ({
+  SourceKey,
+  DestKey,
+  Bucket,
+}: Pick<CopyObjectCommandInput, "Bucket"> & {
+  SourceKey: string
+  DestKey: string
+}) => {
+  return storage.send(
+    new CopyObjectCommand({
+      Bucket,
+      CopySource: `${Bucket}/${SourceKey}`,
+      Key: DestKey,
     }),
   )
 }

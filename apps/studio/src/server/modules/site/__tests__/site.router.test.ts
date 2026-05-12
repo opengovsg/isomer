@@ -1,6 +1,6 @@
 import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
-import { pick } from "lodash"
+import { pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {

@@ -15,7 +15,7 @@ import {
 import { computeChildLabel } from "@jsonforms/core"
 import { JsonFormsDispatch, useJsonForms } from "@jsonforms/react"
 import { Button } from "@opengovsg/design-system-react"
-import get from "lodash/get"
+import { get } from "lodash-es"
 import { BiDirections, BiLeftArrowAlt, BiTrash } from "react-icons/bi"
 
 import type { NavbarItems } from "./types"

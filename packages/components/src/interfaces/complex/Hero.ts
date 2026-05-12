@@ -4,7 +4,7 @@ import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
-import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { generateImageSrcSchema } from "./Image"
@@ -23,6 +23,10 @@ const HeroBaseSchema = Type.Object({
     title: "Hero text",
     description: "The title of the hero banner",
     maxLength: 100,
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
   }),
   subtitle: Type.Optional(
     Type.String({
