@@ -54,6 +54,12 @@ We run releases via the `publish` event. Hence, in order to cut a release, we ha
 5. Next, run `npm run migrate:<env>` from within the `apps/studio` folder
 6. (Optional) If you need to run a seed, run `npm run db:seed`
 
+### Warden (automated PR reviews)
+
+We use [Warden](https://github.com/getsentry/warden) to perform automated code reviews on pull requests. It runs on every PR open, synchronize, and reopen event via the workflow at `.github/workflows/warden.yml`, and posts review comments directly on the PR.
+
+For configuration details, supported options, and more information, see the [Warden repository](https://github.com/getsentry/warden).
+
 ### Extra tools
 
 1. Vercel
