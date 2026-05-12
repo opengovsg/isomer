@@ -622,7 +622,7 @@ describe("resource.service", () => {
       )
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
   })
   describe("updateBlobById", () => {
@@ -648,7 +648,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
 
     it("should create a draft blob if the page is already published", async () => {
@@ -735,7 +735,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
   })
 
@@ -754,7 +754,7 @@ describe("resource.service", () => {
       // Act
       const result = getNavBar(db, 99999)
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
   })
 
@@ -773,7 +773,7 @@ describe("resource.service", () => {
       // Act
       const result = getNavBar(db, 99999)
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
   })
 
@@ -790,7 +790,7 @@ describe("resource.service", () => {
       const result = getLocalisedSitemap(9999, Number(page.id))
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
 
     it("should throw an error if the `resourceId` doesn't exist", async () => {
@@ -799,7 +799,7 @@ describe("resource.service", () => {
       // Act
       const result = getLocalisedSitemap(site.id, 99999)
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
 
     it("should return the path from ancestor to the page (DRAFT), together with its siblings", async () => {

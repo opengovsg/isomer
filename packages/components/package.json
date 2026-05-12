@@ -51,7 +51,7 @@
     "storybook": "storybook dev -p 6006",
     "supportedBrowsers": "echo \"export default $(browserslist-useragent-regexp --allowHigherVersions)\" > src/utils/supportedBrowsers.ts",
     "test": "run-s test:*",
-    "test-ci:unit": "dotenv -e .env.test vitest run -- --coverage",
+    "test-ci:unit": "dotenv -e .env.test vitest run --coverage",
     "test:unit": "dotenv -e .env.test vitest run",
     "test:watch": "pnpm exec vitest watch",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"

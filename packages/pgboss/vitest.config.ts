@@ -8,6 +8,7 @@ export default defineConfig({
     },
   },
   test: {
+    dir: "src",
     globals: true,
     exclude: [...configDefaults.exclude],
 

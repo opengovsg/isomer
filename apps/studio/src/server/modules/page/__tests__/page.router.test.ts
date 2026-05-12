@@ -69,7 +69,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.getPrefill({ siteId: 1, resourceId: "1" })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -87,7 +87,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -111,7 +111,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -675,7 +675,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.list({ siteId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -686,7 +686,7 @@ describe("page.router", async () => {
 
       const result = caller.list({ siteId: site.id })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -718,7 +718,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.getCategories({ siteId: 1, pageId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -736,7 +736,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -776,7 +776,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.readPage({ siteId: 1, pageId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -792,7 +792,7 @@ describe("page.router", async () => {
       const result = caller.readPage(mockSite)
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -878,7 +878,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -896,7 +896,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -913,7 +913,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.readPageAndBlob({ siteId: 1, pageId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -931,7 +931,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -952,7 +952,7 @@ describe("page.router", async () => {
       const result = caller.readPageAndBlob(mockSite)
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -1080,7 +1080,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -1105,7 +1105,7 @@ describe("page.router", async () => {
         blocks: pageToReorder.blob.content.content,
       })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await assertAuditLogRows()
@@ -1122,7 +1122,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1148,7 +1148,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message:
@@ -1191,7 +1191,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message:
@@ -1219,7 +1219,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNPROCESSABLE_CONTENT" }),
       )
       await assertAuditLogRows()
@@ -1241,7 +1241,7 @@ describe("page.router", async () => {
           to: 1,
           blocks: pageToReorder.blob.content.content,
         }),
-      ).rejects.toThrowError("Number must be greater than or equal to 0")
+      ).rejects.toThrow("Number must be greater than or equal to 0")
       await assertAuditLogRows()
     })
 
@@ -1263,7 +1263,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNPROCESSABLE_CONTENT" }),
       )
       await assertAuditLogRows()
@@ -1285,7 +1285,7 @@ describe("page.router", async () => {
           to: -1,
           blocks: pageToReorder.blob.content.content,
         }),
-      ).rejects.toThrowError("Number must be greater than or equal to 0")
+      ).rejects.toThrow("Number must be greater than or equal to 0")
       await assertAuditLogRows()
     })
 
@@ -1392,7 +1392,7 @@ describe("page.router", async () => {
       const result = unauthedCaller.updatePageBlob(pageUpdateArgs)
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await assertAuditLogRows()
@@ -1406,7 +1406,7 @@ describe("page.router", async () => {
       const result = caller.updatePageBlob(pageUpdateArgs)
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1430,7 +1430,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
       await assertAuditLogRows()
@@ -1451,7 +1451,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError("Schema validation failed")
+      await expect(result).rejects.toThrow("Schema validation failed")
       await assertAuditLogRows()
     })
 
@@ -1567,7 +1567,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await assertAuditLogRows()
@@ -1589,7 +1589,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1608,7 +1608,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1636,7 +1636,7 @@ describe("page.router", async () => {
 
       // Assert
       await assertAuditLogRows()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
@@ -1845,7 +1845,7 @@ describe("page.router", async () => {
       })
     })
 
-    it("should throw 400 if folderId does not exist", async () => {
+    it("should throw 404 if folderId does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
       const expectedPageArgs = {
@@ -1864,16 +1864,16 @@ describe("page.router", async () => {
 
       // Assert
       await assertAuditLogRows()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "BAD_REQUEST",
+          code: "NOT_FOUND",
           message:
             "Parent not found or parentId is not a valid collection or folder",
         }),
       )
     })
 
-    it("should throw 400 if folderId is not a Folder resource", async () => {
+    it("should throw 404 if folderId is not a Folder resource", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
       const expectedPageArgs = {
@@ -1892,9 +1892,9 @@ describe("page.router", async () => {
 
       // Assert
       await assertAuditLogRows()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "BAD_REQUEST",
+          code: "NOT_FOUND",
           message:
             "Parent not found or parentId is not a valid collection or folder",
         }),
@@ -1913,7 +1913,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.getRootPage({ siteId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1925,7 +1925,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1959,7 +1959,7 @@ describe("page.router", async () => {
       const result = caller.getRootPage({ siteId: site.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1980,7 +1980,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.publishPage({ siteId: 1, pageId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2002,7 +2002,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2065,7 +2065,7 @@ describe("page.router", async () => {
         meta: "Test Meta",
       })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2084,7 +2084,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2139,7 +2139,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2158,7 +2158,7 @@ describe("page.router", async () => {
 
       // Assert
       await assertAuditLogRows()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message:
@@ -2267,7 +2267,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
@@ -2292,7 +2292,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2311,7 +2311,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.getFullPermalink({ siteId: 1, pageId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2325,7 +2325,7 @@ describe("page.router", async () => {
       const result = caller.getFullPermalink({ siteId: site.id, pageId: 99999 })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "No permalink could be found for the given page",
@@ -2406,7 +2406,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2425,7 +2425,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.getPermalinkTree({ pageId: 1, siteId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2438,7 +2438,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2455,7 +2455,7 @@ describe("page.router", async () => {
       const result = caller.getPermalinkTree({ siteId: site.id, pageId: 99999 })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2516,7 +2516,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2538,7 +2538,7 @@ describe("page.router", async () => {
         parentId: "1",
       })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2554,7 +2554,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2608,7 +2608,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(scheduleCaller).rejects.toThrowError(
+      await expect(scheduleCaller).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2691,7 +2691,7 @@ describe("page.router", async () => {
           pageId: Number(expectedPage.id),
           scheduledAt: subDays(FIXED_NOW, 1),
         }),
-      ).rejects.toThrowError()
+      ).rejects.toThrow()
 
       // Assert
       // Since the request fails, expect scheduledAt to be null
@@ -2722,7 +2722,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(scheduleCaller).rejects.toThrowError(
+      await expect(scheduleCaller).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2745,16 +2745,15 @@ describe("page.router", async () => {
         scheduledAt: subDays(FIXED_NOW, 1),
       })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
-    it("should throw an error if the resource is not found", async () => {
+    it("should throw NOT_FOUND if the page resource does not exist", async () => {
       //  Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
       })
-      // The user is only an editor, not a publisher
       await setupPublisherPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
@@ -2767,8 +2766,8 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(scheduleCaller).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
+      await expect(scheduleCaller).rejects.toThrow(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
   })
@@ -2830,7 +2829,7 @@ describe("page.router", async () => {
           siteId: site.id,
           pageId: Number(expectedPage.id),
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Unable to cancel schedule for a page that is not scheduled",
@@ -2860,7 +2859,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(scheduleCaller).rejects.toThrowError(
+      await expect(scheduleCaller).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2888,11 +2887,11 @@ describe("page.router", async () => {
         pageId: Number(expectedPage.id),
       })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
-    it("should throw an error if the resource is not found", async () => {
+    it("should throw NOT_FOUND if the page resource does not exist", async () => {
       // Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
@@ -2915,8 +2914,8 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(cancelScheduleCaller).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
+      await expect(cancelScheduleCaller).rejects.toThrow(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
   })
