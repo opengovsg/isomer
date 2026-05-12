@@ -7,6 +7,7 @@ import {
   type IsomerSitemap,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import get from "lodash-es/get"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   getSitemapTree,
@@ -30,6 +31,7 @@ import type { SearchResultResource } from "./resource.types"
 import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
@@ -1101,4 +1103,75 @@ export const getSearchWithResourceIds = async ({
       lastUpdatedAt: null,
     })),
   })
+}
+
+interface CreatePageWithBlobProps {
+  db: SafeKysely
+  title: string
+  permalink: string
+  siteId: number
+  parentId: string | null
+  blobContent: UnwrapTagged<PrismaJson.BlobJsonContent>
+  type: keyof typeof ResourceType
+}
+
+export const createResourceWithBlob = async ({
+  db,
+  title,
+  permalink,
+  siteId,
+  parentId,
+  blobContent,
+  type,
+}: CreatePageWithBlobProps) => {
+  // Validate whether parent is a folder/collection
+  if (parentId) {
+    const parent = await db
+      .selectFrom("Resource")
+      .where("Resource.id", "=", parentId)
+      .where("Resource.siteId", "=", siteId)
+      .where("Resource.type", "in", [
+        ResourceType.Collection,
+        ResourceType.Folder,
+      ])
+      .select("Resource.id")
+      .executeTakeFirst()
+    if (!parent) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message:
+          "Parent not found or parentId is not a valid collection or folder",
+      })
+    }
+  }
+
+  const blob = await db
+    .insertInto("Blob")
+    .values({ content: jsonb(blobContent) })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  const resource = await db
+    .insertInto("Resource")
+    .values({
+      title,
+      permalink,
+      siteId,
+      parentId,
+      draftBlobId: blob.id,
+      type,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+    .catch((err) => {
+      if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "A resource with the same permalink already exists",
+        })
+      }
+      throw err
+    })
+
+  return { resource, blob }
 }

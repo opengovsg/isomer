@@ -80,10 +80,17 @@ export const createCollectionSchema = z.object({
   parentFolderId: z.number().optional(),
 })
 
-export const getCollectionTagsSchema = z.object({
-  resourceId: z.number().min(1),
-  siteId: z.number().min(1),
-})
+export const getCollectionTagsSchema = z
+  .object({
+    resourceId: z.number().min(1).optional(),
+    collectionId: z.number().min(1).optional(),
+    siteId: z.number().min(1),
+  })
+  .refine(
+    (data) =>
+      (data.resourceId !== undefined) !== (data.collectionId !== undefined),
+    { message: "Exactly one of resourceId or collectionId must be provided" },
+  )
 
 export const getCollectionsSchema = z.object({
   siteId: z.number().min(1),

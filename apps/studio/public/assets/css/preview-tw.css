@@ -1192,10 +1192,6 @@ video {
   top: 2rem;
 }
 
-.top-\[22px\] {
-  top: 22px;
-}
-
 .top-full {
   top: 100%;
 }
@@ -6015,14 +6011,6 @@ video {
     right: 1.75rem;
   }
 
-  .md\:top-3 {
-    top: 0.75rem;
-  }
-
-  .md\:top-3\.5 {
-    top: 0.875rem;
-  }
-
   .md\:col-span-1 {
     grid-column: span 1 / span 1;
   }
@@ -6301,11 +6289,6 @@ video {
   .md\:py-5 {
     padding-top: 1.25rem;
     padding-bottom: 1.25rem;
-  }
-
-  .md\:py-6 {
-    padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
   }
 
   .md\:pb-12 {

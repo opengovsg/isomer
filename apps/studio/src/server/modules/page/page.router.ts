@@ -51,6 +51,7 @@ import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
+  createResourceWithBlob,
   getBlobOfResource,
   getFooter,
   getFullPageById,
@@ -373,6 +374,7 @@ export const pageRouter = router({
         action: "publish",
         userId: ctx.user.id,
       })
+
       // check if the input.scheduledAt is after the current time
       if (isBefore(scheduledAt, new Date())) {
         throw new TRPCError({
@@ -458,6 +460,7 @@ export const pageRouter = router({
               "Unable to cancel schedule for a page that is not scheduled",
           })
         }
+
         // update the resource's scheduled field
         const updatedPage = await updatePageById(
           { id: pageId, siteId, scheduledAt: null, scheduledBy: null },
@@ -565,55 +568,18 @@ export const pageRouter = router({
               }),
           )
 
-        // TODO: Validate whether siteId is a valid site
-        // TODO: Validate user has write-access to the site
         const resource = await db
           .transaction()
           .execute(async (tx) => {
-            // Validate whether folderId is a folder
-            if (folderId) {
-              const folder = await tx
-                .selectFrom("Resource")
-                .where("Resource.id", "=", String(folderId))
-                .where("Resource.siteId", "=", siteId)
-                .where("Resource.type", "=", ResourceType.Folder)
-                .select("Resource.id")
-                .executeTakeFirst()
-              if (!folder) {
-                throw new TRPCError({
-                  code: "NOT_FOUND",
-                  message: "Folder not found or folderId is not a folder",
-                })
-              }
-            }
-
-            const blob = await tx
-              .insertInto("Blob")
-              .values({ content: jsonb(newPage) })
-              .returningAll()
-              .executeTakeFirstOrThrow()
-
-            const addedResource = await tx
-              .insertInto("Resource")
-              .values({
+            const { resource: addedResource, blob } =
+              await createResourceWithBlob({
+                db: tx,
                 title,
                 permalink,
                 siteId,
-                parentId: folderId ? String(folderId) : undefined,
-                draftBlobId: blob.id,
+                parentId: folderId ? String(folderId) : null,
+                blobContent: newPage,
                 type: ResourceType.Page,
-              })
-              .returningAll()
-              .executeTakeFirstOrThrow()
-              .catch((err) => {
-                if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-                  throw new TRPCError({
-                    code: "CONFLICT",
-                    message:
-                      "A resource with the same permalink already exists",
-                  })
-                }
-                throw err
               })
 
             await logResourceEvent(tx, {

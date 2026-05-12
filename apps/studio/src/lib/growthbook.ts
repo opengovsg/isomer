@@ -12,6 +12,8 @@ export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 export const IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY =
   "homepage-antiscam-banner-enabled"
+export const EGAZETTE_INFO_FEATURE_KEY = "egazette-info"
+export const IS_REDIRECTIONS_ENABLED_FEATURE_KEY = "is-redirections-enabled"
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 

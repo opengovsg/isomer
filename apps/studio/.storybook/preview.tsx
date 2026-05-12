@@ -3,7 +3,6 @@ import type { EnvContextReturn } from "~/components/AppProviders"
 import "inter-ui/inter.css"
 import type { AppRouter } from "~/server/modules/_app"
 import { Skeleton, Stack } from "@chakra-ui/react"
-import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { withThemeFromJSXProvider } from "@storybook/addon-themes"
@@ -29,6 +28,7 @@ import Suspense from "~/components/Suspense"
 import { env } from "~/env.mjs"
 import { LoginStateContext } from "~/features/auth"
 import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { createMockGrowthBook } from "~/stories/utils/growthbook"
 import { theme } from "~/theme"
 
 import { viewport, withChromaticModes } from "@isomer/storybook-config"
@@ -52,7 +52,6 @@ const StorybookEnvDecorator: Decorator = (story) => {
 }
 
 const SetupDecorator: Decorator = (Story, { parameters }) => {
-  const gb = new GrowthBook()
   const forcedGrowthbookFeatures = new Map<string, unknown>(
     // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
     parameters.growthbook ?? [],
@@ -61,8 +60,7 @@ const SetupDecorator: Decorator = (Story, { parameters }) => {
     IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
     true,
   )
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
-  gb.setForcedFeatures(forcedGrowthbookFeatures)
+  const gb = createMockGrowthBook(forcedGrowthbookFeatures)
 
   const [queryClient] = useState(
     new QueryClient({

@@ -1,0 +1,1 @@
+export { ModifyGazetteModal } from "./ModifyGazetteModal"
