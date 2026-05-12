@@ -7,8 +7,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsAntiScamDisclaimerBannerLayoutTester: RankedTester =
   rankWith(
-    // Must beat the default VerticalLayout renderer (rank 1)
-    JSON_FORMS_RANKING.VerticalLayoutRenderer + 1,
+    JSON_FORMS_RANKING.AntiScamDisclaimerBannerLayoutRenderer,
     (uischema, schema) => {
       if (uischema.type !== "VerticalLayout") return false
       const typeSchema = (
