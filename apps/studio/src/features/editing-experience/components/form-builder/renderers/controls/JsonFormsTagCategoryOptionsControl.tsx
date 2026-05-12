@@ -124,8 +124,8 @@ const DeleteOptionModal = ({
                     />
                   </Suspense>
                 </ErrorBoundary>{" "}
-                items. To undo this change, you will need to create and
-                re-assign this option to all items.
+                item(s). To undo this change, you will need to create and
+                re-assign this option to all item(s).
               </Text>
             </Infobox>
             <HStack align="start">
@@ -213,13 +213,13 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   }
 
   const closeDeleteModal = () => {
-    void utils.collection.countTagOptionsUsage.invalidate()
     setDeleteTarget(null)
   }
 
   const handleConfirmDelete = () => {
     if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
     removeItems(path, [deleteTarget.index])()
+    void utils.collection.countTagOptionsUsage.invalidate()
     closeDeleteModal()
   }
 

@@ -124,7 +124,7 @@ function DeleteFilterModal({
                       />
                     </Suspense>
                   </ErrorBoundary>{" "}
-                  items.
+                  item(s).
                 </Text>
                 <Text textStyle="body-1" color="base.content.strong">
                   To undo this change, you will need to recreate this filter and
@@ -217,13 +217,13 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   }
 
   const closeDeleteModal = () => {
-    void utils.collection.countTagOptionsUsage.invalidate()
     setDeleteTarget(null)
   }
 
   const handleConfirmDelete = () => {
     if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
     removeItems(path, [deleteTarget.index])()
+    void utils.collection.countTagOptionsUsage.invalidate()
     closeDeleteModal()
   }
 

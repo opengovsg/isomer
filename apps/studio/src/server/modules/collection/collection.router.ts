@@ -329,13 +329,19 @@ export const collectionRouter = router({
         .where("siteId", "=", siteId)
         .where("type", "=", ResourceType.IndexPage)
         .select(["parentId"])
-        .executeTakeFirst()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "Collection index page not found",
+            }),
+        )
 
-      const parentId = indexPage?.parentId
+      const parentId = indexPage.parentId
       if (!parentId) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Collection index page not found",
+          message: "Collection index page has no parent collection",
         })
       }
 
