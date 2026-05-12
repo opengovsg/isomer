@@ -245,10 +245,10 @@ catalogs:
     "@tiptap/pm": 2.22.3
     "@tiptap/react": 2.22.3
   trpc:
-    "@trpc/client": ^11.4.4
-    "@trpc/next": ^11.4.4
-    "@trpc/react-query": ^11.4.4
-    "@trpc/server": ^11.4.4
+    "@trpc/client": ^11.17.0
+    "@trpc/next": ^11.17.0
+    "@trpc/react-query": ^11.17.0
+    "@trpc/server": ^11.17.0
   vitest:
     "@vitejs/plugin-react": ^4.3.1
     "@vitest/coverage-istanbul": ^2.1.2
