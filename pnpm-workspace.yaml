@@ -185,8 +185,8 @@ catalogs:
     "@jsonforms/core": ^3.5.1
     "@jsonforms/react": ^3.5.1
   prisma:
-    "@prisma/client": 5.10.2
-    prisma: 5.10.2
+    "@prisma/client": 5.22.0
+    prisma: 5.22.0
     prisma-json-types-generator: 3.2.3
     prisma-kysely: ^1.8.0
   react:
