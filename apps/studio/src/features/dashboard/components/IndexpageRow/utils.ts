@@ -17,12 +17,18 @@ export const getIndexPageIcon = (
   }
 }
 
-export const getIndexPageSubtitle = (
-  type: ResourceTypesWithIndexPage,
-): string => {
+export const getIndexPageSubtitle = ({
+  type,
+  isNewCollectionEditingExperienceEnabled = false,
+}: {
+  type: ResourceTypesWithIndexPage
+  isNewCollectionEditingExperienceEnabled: boolean
+}) => {
   switch (type) {
     case "collection":
-      return "Manage how your Collection looks like and behaves"
+      return isNewCollectionEditingExperienceEnabled
+        ? "Manage the Collection’s layout, filters, and sorting."
+        : "Manage how your Collection looks like and behaves"
     case "folder":
       return "Customise the index page for this folder"
     default:
