@@ -18,6 +18,10 @@ import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
+import {
+  COLLECTION_DISPLAY_SAVED_MESSAGE,
+  FILTER_SAVED_MESSAGE,
+} from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
@@ -61,8 +65,8 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
         status: "success",
         title:
           drawerStateType === "filter"
-            ? "Filter saved. Remember to publish the changes so that other users can use the new filter options."
-            : "Collection display saved. Remember to publish the changes so that other users can see your updates.",
+            ? FILTER_SAVED_MESSAGE
+            : COLLECTION_DISPLAY_SAVED_MESSAGE,
         ...BRIEF_TOAST_SETTINGS,
       })
     },

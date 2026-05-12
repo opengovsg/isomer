@@ -5,6 +5,10 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
+import {
+  COLLECTION_DISPLAY_SAVED_MESSAGE,
+  FILTER_SAVED_MESSAGE,
+} from "~/features/editing-experience/components/constants"
 import { IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 
@@ -335,7 +339,7 @@ export const CollectionDisplaySaveToast: Story = {
       () => {
         void expect(
           withinPortals(canvasElement).getByText(
-            /Collection display saved\. Remember to publish the changes so that other users can see your updates\./,
+            COLLECTION_DISPLAY_SAVED_MESSAGE,
           ),
         ).toBeVisible()
       },
@@ -366,9 +370,7 @@ export const ManageFiltersSaveToast: Story = {
     await waitFor(
       () => {
         void expect(
-          withinPortals(canvasElement).getByText(
-            /Filter saved\. Remember to publish the changes so that other users can use the new filter options\./,
-          ),
+          withinPortals(canvasElement).getByText(FILTER_SAVED_MESSAGE),
         ).toBeVisible()
       },
       { timeout: 5000 },
