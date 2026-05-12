@@ -8,6 +8,7 @@ import { appendWithRedirect } from "~/utils/url"
 
 import { FullscreenSpinner } from "../FullscreenSpinner"
 import { Intercom } from "../Intercom"
+import { ToppanRouteGuard } from "../ToppanRouteGuard"
 
 interface EnforceLoginStatePageWrapperProps {
   /**
@@ -48,10 +49,10 @@ export const EnforceLoginStatePageWrapper = ({
 
   if (hasLoginStateFlag) {
     return (
-      <>
+      <ToppanRouteGuard>
         <Intercom />
         {children}
-      </>
+      </ToppanRouteGuard>
     )
   }
 

@@ -6,6 +6,7 @@
     "isomer-admin": "dotenv -e isomer-admin/.env -- tsx isomer-admin/index.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-codebuild": "catalog:aws-sdk",
     "@inquirer/prompts": "catalog:",
     "@paralleldrive/cuid2": "catalog:",
     "ajv": "catalog:",
