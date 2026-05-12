@@ -45,7 +45,7 @@ catalog:
   commander-ts: ^0.2.0
   dayjs: ^1.11.13
   date-fns: ^4.1.0
-  dotenv: ^16.4.5
+  dotenv: ^17.4.2
   dotenv-cli: ^8.0.0
   jsdom: ^24.1.0
   isomorphic-dompurify: ^3.6.0
