@@ -5,7 +5,10 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
-import { createBannerGbParameters } from "~/stories/utils/growthbook"
+import {
+  createAntiScamBannerEnabledGbParameters,
+  createBannerGbParameters,
+} from "~/stories/utils/growthbook"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
@@ -166,6 +169,9 @@ export const WithBanner: Story = {
 }
 
 export const AddAntiScamDisclaimerSaveBlockEnabled: Story = {
+  parameters: {
+    growthbook: [createAntiScamBannerEnabledGbParameters(true)],
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const addBlockButton = await canvas.findByRole("button", {
@@ -184,6 +190,9 @@ export const AddAntiScamDisclaimerSaveBlockEnabled: Story = {
 }
 
 export const ReopenAntiScamDisclaimerSaveBlockDisabled: Story = {
+  parameters: {
+    growthbook: [createAntiScamBannerEnabledGbParameters(true)],
+  },
   play: async ({ canvasElement, ...rest }) => {
     await AddAntiScamDisclaimerSaveBlockEnabled.play?.({
       canvasElement,

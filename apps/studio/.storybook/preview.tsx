@@ -27,7 +27,6 @@ import { DefaultFallback } from "~/components/ErrorBoundary"
 import Suspense from "~/components/Suspense"
 import { env } from "~/env.mjs"
 import { LoginStateContext } from "~/features/auth"
-import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { createMockGrowthBook } from "~/stories/utils/growthbook"
 import { theme } from "~/theme"
 
@@ -52,15 +51,8 @@ const StorybookEnvDecorator: Decorator = (story) => {
 }
 
 const SetupDecorator: Decorator = (Story, { parameters }) => {
-  const forcedGrowthbookFeatures = new Map<string, unknown>(
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
-    parameters.growthbook ?? [],
-  )
-  forcedGrowthbookFeatures.set(
-    IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
-    true,
-  )
-  const gb = createMockGrowthBook(forcedGrowthbookFeatures)
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
+  const gb = createMockGrowthBook(new Map(parameters.growthbook ?? []))
 
   const [queryClient] = useState(
     new QueryClient({
