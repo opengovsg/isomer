@@ -170,7 +170,7 @@ catalogs:
     "@babel/preset-typescript": ^7.27.1
   casl:
     "@casl/ability": ^6.7.1
-    "@casl/react": ^5.0.0
+    "@casl/react": ^6.0.0
   chakra:
     "@chakra-ui/anatomy": ^2.3.4
     "@chakra-ui/cli": ^2.5.8
