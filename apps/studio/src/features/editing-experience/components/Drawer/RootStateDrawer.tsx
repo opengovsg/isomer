@@ -118,7 +118,8 @@ const FixedBlock = () => {
     isNewEditingExperienceEnabled
   ) {
     const containerProps: StackProps = {
-      p: "1.25rem",
+      px: "1.25rem",
+      py: "1.25rem",
       flexDirection: "column",
       gap: "0.75rem",
       align: "flex-start",

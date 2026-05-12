@@ -21,6 +21,18 @@ const createIndexPageLayoutStyles = tv({
 
 const compoundStyles = createIndexPageLayoutStyles()
 
+export const ensureChildrenPagesBlock = (
+  content: IndexPageSchemaType["content"],
+): IndexPageSchemaType["content"] => {
+  const hasChildrenPagesBlock = content.some(
+    ({ type }) => type === "childrenpages",
+  )
+
+  return hasChildrenPagesBlock
+    ? content
+    : [...content, DEFAULT_CHILDREN_PAGES_BLOCK]
+}
+
 export const IndexPageLayout = ({
   site,
   page,
@@ -33,10 +45,7 @@ export const IndexPageLayout = ({
     page.permalink.split("/").slice(1),
   )
 
-  const hasChildpageBlock = content.some(({ type }) => type === "childrenpages")
-  const pageContent: IndexPageSchemaType["content"] = hasChildpageBlock
-    ? content
-    : [...content, DEFAULT_CHILDREN_PAGES_BLOCK]
+  const pageContent = ensureChildrenPagesBlock(content)
   // auto-inject ids for heading level 2 blocks if does not exist
   const transformedContent = getTransformedPageContent(pageContent)
   const tableOfContents = getTableOfContents(site, transformedContent)

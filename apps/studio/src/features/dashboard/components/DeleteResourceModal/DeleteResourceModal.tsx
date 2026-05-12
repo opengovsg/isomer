@@ -15,7 +15,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { useAtom } from "jotai"
-import upperFirst from "lodash/upperFirst"
+import { upperFirst } from "lodash-es"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { isAllowedToHaveChildren } from "~/utils/resources"
