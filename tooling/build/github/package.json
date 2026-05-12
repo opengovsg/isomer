@@ -10,7 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@octokit/rest": "^20.0.2",
-    "dotenv": "^16.3.1"
-  }
+    "@octokit/rest": "catalog:",
+    "dotenv": "catalog:"
+  },
+  "packageManager": "pnpm@10.33.0"
 }
