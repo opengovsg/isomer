@@ -51,7 +51,7 @@ export const editLinkSchema = z.object({
   image: z
     .object({
       src: z.string(),
-      alt: z.string().max(120),
+      alt: z.string(),
     })
     .optional(),
 })
