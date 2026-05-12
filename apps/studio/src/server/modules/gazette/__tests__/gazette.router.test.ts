@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { subDays } from "date-fns"
+import { addMinutes, subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -15,12 +15,19 @@ import {
   setupIsomerAdmin,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { v4 as uuidv4 } from "uuid"
+import { describe, expect, it } from "vitest"
+import * as assetService from "~/server/modules/asset/asset.service"
 import { createCallerFactory } from "~/server/trpc"
-import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  AuditLogEvent,
+  IsomerAdminRole,
+  ResourceType,
+} from "~prisma/generated/generatedEnums"
 
 import { db } from "../../database"
 import { gazetteRouter } from "../gazette.router"
+import * as gazetteService from "../gazette.service"
 
 const createCaller = createCallerFactory(gazetteRouter)
 
@@ -35,10 +42,11 @@ describe("gazette.router", async () => {
   beforeEach(async () => {
     MockDate.set(FIXED_NOW)
     await resetTables(
+      "PushDocumentJob",
       "AuditLog",
       "ResourcePermission",
-      "Blob",
       "Version",
+      "Blob",
       "Resource",
       "Site",
       "IsomerAdmin",
@@ -319,6 +327,282 @@ describe("gazette.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(after.scheduledAt).toEqual(PAST_DATE)
+    })
+  })
+
+  describe("delete", () => {
+    /**
+     * Helper to seed a published gazette with a Version that has a publishedAt timestamp.
+     */
+    const seedPublishedGazette = async ({
+      siteId,
+      collectionId,
+      publishedAt,
+      userId,
+    }: {
+      siteId: number
+      collectionId: string
+      publishedAt: Date
+      userId: string
+    }) => {
+      const { collectionLink, blob } = await setupCollectionLink({
+        siteId,
+        collectionId,
+        permalink: `gazette-${uuidv4()}`,
+      })
+
+      // Set the blob content to include a ref (S3 key)
+      await db
+        .updateTable("Blob")
+        .set({
+          content: {
+            page: {
+              ref: "/test-bucket/gazette.pdf",
+              category: "Government Gazette",
+              tagged: ["sub-1"],
+            },
+          } as never,
+        })
+        .where("id", "=", blob.id)
+        .execute()
+
+      // Create a Version with publishedAt
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: collectionLink.id,
+          blobId: blob.id,
+          publishedBy: userId,
+          publishedAt,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      // Link the resource to the published version
+      await db
+        .updateTable("Resource")
+        .set({ publishedVersionId: version.id })
+        .where("id", "=", collectionLink.id)
+        .execute()
+
+      return { gazetteId: Number(collectionLink.id), version, blob }
+    }
+
+    beforeEach(() => {
+      vi.restoreAllMocks()
+      // Mock external services
+      vi.spyOn(
+        gazetteService,
+        "removeGazetteFromSearchIndex",
+      ).mockResolvedValue(undefined)
+      vi.spyOn(assetService, "markFileAsDeleted").mockResolvedValue(undefined)
+    })
+
+    it("deletes a gazette within the 15-minute grace period", async () => {
+      const { site, collection, user } = await seedToppanWithCollection()
+      const publishedAt = subMinutes(FIXED_NOW, 10) // 10 minutes ago
+
+      const { gazetteId } = await seedPublishedGazette({
+        siteId: site.id,
+        collectionId: collection.id,
+        publishedAt,
+        userId: user.id,
+      })
+
+      await caller.delete({
+        siteId: site.id,
+        gazetteId,
+      })
+
+      // Resource should be deleted
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirst()
+      expect(resource).toBeUndefined()
+
+      // Audit log should be created
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.ResourceDelete)
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(1)
+
+      // External services should be called
+      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(assetService.markFileAsDeleted).toHaveBeenCalledTimes(1)
+    })
+
+    it("deletes a gazette published exactly 15 minutes ago", async () => {
+      const { site, collection, user } = await seedToppanWithCollection()
+      const publishedAt = subMinutes(FIXED_NOW, 15) // exactly 15 minutes ago
+
+      const { gazetteId } = await seedPublishedGazette({
+        siteId: site.id,
+        collectionId: collection.id,
+        publishedAt,
+        userId: user.id,
+      })
+
+      await caller.delete({
+        siteId: site.id,
+        gazetteId,
+      })
+
+      // Resource should be deleted
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirst()
+      expect(resource).toBeUndefined()
+    })
+
+    it("rejects deletion after the 15-minute grace period", async () => {
+      const { site, collection, user } = await seedToppanWithCollection()
+      const publishedAt = subMinutes(FIXED_NOW, 16) // 16 minutes ago
+
+      const { gazetteId } = await seedPublishedGazette({
+        siteId: site.id,
+        collectionId: collection.id,
+        publishedAt,
+        userId: user.id,
+      })
+
+      await expect(
+        caller.delete({
+          siteId: site.id,
+          gazetteId,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Gazettes are unable to be deleted after the given grace period of 15 minutes",
+        }),
+      )
+
+      // Resource should still exist
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirst()
+      expect(resource).toBeDefined()
+
+      // External services should not be called
+      expect(gazetteService.removeGazetteFromSearchIndex).not.toHaveBeenCalled()
+      expect(assetService.markFileAsDeleted).not.toHaveBeenCalled()
+    })
+
+    it("rejects deletion for non-Toppan, non-admin users", async () => {
+      const user = await setupUser({
+        userId: session.userId ?? undefined,
+        email: "user@example.com",
+      })
+      await auth(user)
+      const { site, collection } = await setupCollection({})
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const { gazetteId } = await seedPublishedGazette({
+        siteId: site.id,
+        collectionId: collection.id,
+        publishedAt: subMinutes(FIXED_NOW, 5),
+        userId: user.id,
+      })
+
+      await expect(
+        caller.delete({
+          siteId: site.id,
+          gazetteId,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have access to the gazette feature",
+        }),
+      )
+    })
+
+    it("returns NOT_FOUND when gazette does not exist", async () => {
+      const { site } = await seedToppanWithCollection()
+
+      await expect(
+        caller.delete({
+          siteId: site.id,
+          gazetteId: 999999,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        }),
+      )
+    })
+
+    it("returns NOT_FOUND when gazette exists but has no published version", async () => {
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Create a gazette without a published version
+      const { collectionLink } = await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+        permalink: `gazette-${uuidv4()}`,
+      })
+
+      await expect(
+        caller.delete({
+          siteId: site.id,
+          gazetteId: Number(collectionLink.id),
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "The gazette you are trying to delete could not be found",
+        }),
+      )
+    })
+
+    it("allows IsomerAdmin Core user to delete gazette", async () => {
+      const user = await setupUser({
+        userId: session.userId ?? undefined,
+        email: "admin@example.com",
+      })
+      await auth(user)
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      const { site, collection } = await setupCollection({})
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const { gazetteId } = await seedPublishedGazette({
+        siteId: site.id,
+        collectionId: collection.id,
+        publishedAt: subMinutes(FIXED_NOW, 5),
+        userId: user.id,
+      })
+
+      await caller.delete({
+        siteId: site.id,
+        gazetteId,
+      })
+
+      // Resource should be deleted
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirst()
+      expect(resource).toBeUndefined()
     })
   })
 })

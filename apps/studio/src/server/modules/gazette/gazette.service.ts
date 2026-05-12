@@ -1,5 +1,8 @@
 import { TRPCError } from "@trpc/server"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
+import { env } from "~/env.mjs"
+import { createBaseLogger } from "~/lib/logger"
+import { markFileAsDeleted } from "~/server/modules/asset/asset.service"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { db } from "../database"
@@ -9,6 +12,14 @@ import { env } from "~/env.mjs";
 import { copyFile, deleteFile, generateSignedGetUrl, generateSignedPutUrl } from "~/lib/s3";
 import { PdfReader } from "pdfreader";
 import filenamify from "filenamify";
+import {
+  EGAZETTE_DOCUMENT_INDEX,
+  generateDocumentId,
+  ISOMER_UA,
+  SEARCHSG_BASE_URL,
+} from "../searchsg/searchsg.service"
+
+const logger = createBaseLogger({ path: "gazette.service" })
 
 const { S3_GAZETTE_BUCKET_NAME } = env
 const pdfReader = new PdfReader({})
@@ -148,4 +159,46 @@ export const markFileAsDeleted = async ({ key }: { key: string }) => {
     Key: key,
     Bucket: S3_GAZETTE_BUCKET_NAME,
   })
+}
+
+/**
+ * Remove a gazette document from the SearchSG index.
+ */
+export const removeGazetteFromSearchIndex = async (
+  ref: string,
+  resourceId: string,
+): Promise<void> => {
+  const documentId = generateDocumentId(ref, resourceId)
+  const response = await fetch(
+    `${SEARCHSG_BASE_URL}/v2/indexes/${EGAZETTE_DOCUMENT_INDEX}/documents`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${env.SEARCHSG_API_KEY}`,
+        "Content-Type": "application/json",
+        "User-Agent": ISOMER_UA,
+      },
+      body: JSON.stringify({ documentsToDelete: [documentId] }),
+    },
+  )
+
+  if (!response.ok) {
+    logger.warn(
+      { status: response.status, documentId },
+      "Failed to remove gazette from search index",
+    )
+  }
+}
+
+/**
+ * Mark a gazette asset as deleted in S3.
+ */
+export const deleteGazetteAsset = async (ref: string): Promise<void> => {
+  try {
+    await markFileAsDeleted({
+      key: ref.slice(1), // Remove leading slash
+    })
+  } catch (err) {
+    logger.warn({ err, key: ref }, "Failed to mark deleted gazette file in S3")
+  }
 }

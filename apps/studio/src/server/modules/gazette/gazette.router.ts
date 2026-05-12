@@ -1,11 +1,12 @@
 import { TRPCError } from "@trpc/server"
-import { isBefore, subYears } from "date-fns"
+import { differenceInMinutes, isBefore, subYears } from "date-fns"
 import { env } from "~/env.mjs"
 import { sendScheduledPageEmail } from "~/features/mail/service"
 import { getFileSize, markScheduledAssetAsCancelled } from "~/lib/s3"
 import {
   cancelScheduledPublishSchema,
   createGazetteServerSchema,
+  deleteGazetteSchema,
   gazetteListSchema,
   getPresignedGetUrlSchema,
   getPresignedPutUrlSchema,
@@ -25,8 +26,9 @@ import {
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
-import { assertGazetteAccess, copyFileWithNewName, getPresignedGetUrl, getPresignedPutUrl, markFileAsDeleted } from "./gazette.service"
+import { assertGazetteAccess, copyFileWithNewName, markFileAsDeleted, getPresignedGetUrl, getPresignedPutUrl, deleteGazetteAsset, removeGazetteFromSearchIndex } from "./gazette.service"
 import filenamify from "filenamify";
+const ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES = 15
 
 interface GazetteBlobInputs {
   ref: string
@@ -610,7 +612,6 @@ export const gazetteRouter = router({
 
       return { resource: deletedResource }
     }),
-
   getPresignedPutUrl: protectedProcedure
     .input(getPresignedPutUrlSchema)
     .mutation(
@@ -671,5 +672,84 @@ export const gazetteRouter = router({
       )
 
       return { presignedGetUrl }
+    }),
+  delete: protectedProcedure
+    .input(deleteGazetteSchema)
+    .mutation(async ({ ctx, input: { siteId, gazetteId } }) => {
+      // First, make sure that the users are from Toppan and can actually delete gazettes
+      await assertGazetteAccess(ctx.user.id)
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "delete",
+        userId: ctx.user.id,
+        resourceIds: [String(gazetteId)],
+      })
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
+
+      // Next, fetch the gazettes that they are trying to delete and
+      // make sure that the time is within the allowed timeframe.
+      // This has to be on the version already cos otherwise they should be able to cancel the publish
+      const gazette = await db
+        .selectFrom("Resource")
+        .innerJoin("Version", "Version.id", "Resource.publishedVersionId")
+        .where("Resource.id", "=", String(gazetteId))
+        .select([...defaultResourceSelect, "Version.publishedAt"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              message:
+                "The gazette you are trying to delete could not be found",
+              code: "NOT_FOUND",
+            }),
+        )
+      const { publishedAt } = gazette
+      const isWithinGracePeriod =
+        publishedAt &&
+        differenceInMinutes(new Date(), publishedAt) <=
+        ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES
+
+      if (!isWithinGracePeriod) {
+        throw new TRPCError({
+          message: `Gazettes are unable to be deleted after the given grace period of ${ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES} minutes`,
+          code: "FORBIDDEN",
+        })
+      }
+
+      // Fetch the blob to get the S3 ref
+      const blob = await getBlobOfResource({ db, resourceId: gazette.id })
+      const ref = (blob.content as { page?: { ref?: string } } | null)?.page
+        ?.ref
+
+      // Always try to delete the asset and search record first
+      // before proceeding to remove the database resource.
+      // This is because the public uses those to access the gazette
+      // but the database resource is purely for internal view.
+      if (ref) {
+        await removeGazetteFromSearchIndex(ref, gazette.id)
+        await deleteGazetteAsset(ref)
+      }
+
+      // Delete the resource in a transaction
+      await db.transaction().execute(async (tx) => {
+        await logResourceEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.ResourceDelete,
+          by: user,
+          delta: {
+            before: { resource: gazette, blob },
+            after: null,
+          },
+        })
+
+        await tx
+          .deleteFrom("Resource")
+          .where("id", "=", String(gazetteId))
+          .execute()
+      })
     }),
 })

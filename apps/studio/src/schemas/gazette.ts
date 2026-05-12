@@ -71,57 +71,7 @@ export const cancelScheduledPublishSchema = z.object({
   gazetteId: z.number().min(1),
 })
 
-export const getPresignedGetUrlSchema = z.object({
+export const deleteGazetteSchema = z.object({
   siteId: z.number().min(1),
-  fileKey: z.string().min(1),
-})
-
-export const getPresignedPutUrlSchema = z.object({
-  siteId: z.number().min(1),
-  tags: z
-    .array(
-      z.object({
-        key: z.string(),
-        value: z.string(),
-      }),
-    )
-    .optional(),
-  resourceId: z.string().optional(),
-  year: z.number().min(1000).max(9999),
-  category: z.string().min(1),
-  subcategory: z.string().min(1),
-  fileName: z
-    .string({
-      required_error: "Missing file name",
-    })
-    .refine(
-      (s) => {
-        const allowedStartingChars = new RegExp(/^[a-zA-Z0-9-_]/)
-        return allowedStartingChars.test(s)
-      },
-      {
-        message:
-          "File name must start with a letter, number, hyphen, or underscore",
-      },
-    )
-    // Check if extension is in allowed list (whitelist approach)
-    // To ensure we don't allow any other file types that can have security implications
-    .refine(
-      (fileName) => {
-        // Must have an extension
-        if (!fileName.includes(".")) {
-          return false
-        }
-
-        // Check if extension is in allowed list (whitelist approach)
-        const extension = fileName
-          .toLowerCase()
-          .substring(fileName.lastIndexOf("."))
-        // NOTE: Gazettes should only be PDF files
-        return extension === ".pdf"
-      },
-      {
-        message: "File type not allowed. Please upload a supported file type.",
-      },
-    ),
+  gazetteId: z.number().min(1),
 })
