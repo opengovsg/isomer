@@ -1,5 +1,6 @@
 import type { NextPageWithLayout } from "~/lib/types"
 import { Center, Text } from "@chakra-ui/react"
+import { useGrowthBook } from "@growthbook/growthbook-react"
 import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -12,15 +13,16 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 const RedirectsSettingsPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteSchema)
   const router = useRouter()
+  const gb = useGrowthBook()
   const isRedirectionsEnabled = useIsRedirectionsEnabled()
 
   useEffect(() => {
-    if (!isRedirectionsEnabled) {
+    if (gb?.ready && !isRedirectionsEnabled) {
       void router.replace(`/sites/${siteId}/settings/agency`)
     }
-  }, [isRedirectionsEnabled, router, siteId])
+  }, [gb?.ready, isRedirectionsEnabled, router, siteId])
 
-  if (!isRedirectionsEnabled) return null
+  if (!gb?.ready || !isRedirectionsEnabled) return null
 
   return (
     <Center flex={1}>
