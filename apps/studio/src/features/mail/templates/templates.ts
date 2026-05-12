@@ -13,6 +13,7 @@ import type {
   CancelSchedulePageTemplateData,
   EmailTemplate,
   FailedPublishTemplateData,
+  GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
@@ -23,6 +24,21 @@ import type {
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${env.NEXT_PUBLIC_APP_URL}">${env.NEXT_PUBLIC_APP_URL?.replace("https://", "")}</a>`
+
+export const gazetteDeletionTemplate = (
+  data: GazetteDeletionEmailTemplateData,
+) => {
+  const { fileId, recipientEmail, gazetteTitle } = data
+
+  return {
+    subject: `[Isomer Studio] The gazette with file id: ${fileId} and title: ${gazetteTitle} has been deleted`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>The gazette ${gazetteTitle} has been deleted from your site and removed from the search results</p>
+<p>If you believe this was a mistake or need assistance, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
 
 export const invitationTemplate = (
   data: InvitationEmailTemplateData,
@@ -274,4 +290,6 @@ export const templates = {
     accountDeactivationWarningTemplate satisfies EmailTemplateFunction<AccountDeactivationWarningEmailTemplateData>,
   accountDeactivation:
     accountDeactivationTemplate satisfies EmailTemplateFunction<AccountDeactivationEmailTemplateData>,
+  gazetteDeletion:
+    gazetteDeletionTemplate satisfies EmailTemplateFunction<GazetteDeletionEmailTemplateData>,
 } as const

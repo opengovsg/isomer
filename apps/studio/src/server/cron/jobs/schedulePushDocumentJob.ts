@@ -1,15 +1,19 @@
+import type { PushDocument } from "~/server/modules/gazette/gazette.service"
 import { z } from "zod"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 import { getBlob, setAssetAsPublished } from "~/lib/s3"
 import { db } from "~/server/modules/database"
-import { parseFullTextFromPDF } from "~/server/modules/gazette/gazette.service"
+import {
+  parseFullTextFromPDF,
+  pushDocumentsForIngestion,
+} from "~/server/modules/gazette/gazette.service"
+import { generateDocumentId } from "~/server/modules/searchsg/searchsg.service"
 
 import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "schedule-push-document"
 const CRON_SCHEDULE = "* * * * *" // every minute
-const EGAZETTE_DOCUMENT_INDEX = env.EGAZETTE_DOCUMENT_INDEX
 const SEARCHSG_CONTENT_LENGTH = 50000
 
 const logger = createBaseLogger({ path: "cron:schedulePushDocumentJob" })
@@ -150,6 +154,10 @@ export const schedulePushDocumentJobHandler = async () => {
 
   await pushDocumentsForIngestion(documents)
   await deleteProcessedJobs(scheduledAtCutoff)
+  logger.info(
+    { count: documents.length, documents },
+    "Completed schedule push document job",
+  )
 }
 
 // Drop every job whose scheduledAt has passed, regardless of per-row push

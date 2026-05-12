@@ -2,6 +2,7 @@ import type { Kysely, Transaction } from "kysely"
 import { TRPCError } from "@trpc/server"
 import filenamify from "filenamify"
 import { PdfReader } from "pdfreader"
+import { logger } from "storybook/internal/client-logger"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { env } from "~/env.mjs"
 import {
@@ -20,6 +21,12 @@ import {
 } from "../asset/asset.service"
 import { db, ResourceType, sql } from "../database"
 import { isActiveIsomerAdmin } from "../permissions/permissions.service"
+import {
+  EGAZETTE_DOCUMENT_INDEX,
+  ISOMER_UA,
+  SEARCHSG_BASE_URL,
+  generateDocumentId,
+} from "../searchsg/searchsg.service"
 
 const { S3_GAZETTE_BUCKET_NAME } = env
 const pdfReader = new PdfReader({})
@@ -201,4 +208,120 @@ export const markFileAsDeleted = async ({ key }: { key: string }) => {
     Key: key,
     Bucket: S3_GAZETTE_BUCKET_NAME,
   })
+}
+
+/**
+ * Remove a gazette document from the SearchSG index.
+ */
+export const removeGazetteFromSearchIndex = async (
+  ref: string,
+  resourceId: string,
+): Promise<void> => {
+  const documentId = generateDocumentId(ref, resourceId)
+  const { accessToken, tokenType } = await getSearchSGAuthToken()
+  const response = await fetch(
+    `${SEARCHSG_BASE_URL}/v2/indexes/${EGAZETTE_DOCUMENT_INDEX}/documents`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `${tokenType} ${accessToken}`,
+        "Content-Type": "application/json",
+        "User-Agent": ISOMER_UA,
+      },
+      body: JSON.stringify({ documentsToDelete: [documentId] }),
+    },
+  )
+
+  if (!response.ok) {
+    const error = await response.json()
+    logger.warn(
+      { status: response.status, documentId, error },
+      "Failed to remove gazette from search index",
+    )
+    throw new TRPCError({
+      message: "Failed to remove gazette from search index",
+      code: "PRECONDITION_FAILED",
+    })
+  }
+}
+
+/**
+ * Mark a gazette asset as deleted in S3.
+ */
+export const deleteGazetteAsset = async (ref: string): Promise<void> => {
+  try {
+    await markFileAsDeleted({
+      key: ref.slice(1), // Remove leading slash
+    })
+  } catch (err) {
+    logger.warn({ err, key: ref }, "Failed to mark deleted gazette file in S3")
+  }
+}
+
+const getSearchSGAuthToken = async () => {
+  const response = await fetch(`${SEARCHSG_BASE_URL}/v1/auth/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${env.SEARCHSG_API_KEY}`,
+      "User-Agent": ISOMER_UA,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to get SearchSG auth token: ${response.statusText}`)
+  }
+
+  const { accessToken, tokenType } = (await response.json()) as {
+    accessToken: string
+    tokenType: string
+  }
+
+  return { accessToken, tokenType }
+}
+
+export interface PushDocument {
+  documentId: string
+  title: string
+  url: string
+  contentType: string
+  content: string
+  date: string
+  categories: string[]
+}
+
+export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
+  if (documents.length === 0) {
+    return
+  }
+
+  const { accessToken, tokenType } = await getSearchSGAuthToken()
+
+  const response = await fetch(
+    `${SEARCHSG_BASE_URL}/v2/indexes/${EGAZETTE_DOCUMENT_INDEX}/documents`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `${tokenType} ${accessToken}`,
+        "Content-Type": "application/json",
+        "User-Agent": ISOMER_UA,
+      },
+      body: JSON.stringify({ documentsToAdd: documents }),
+    },
+  )
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    logger.error(
+      { status: response.status, error: errorText, documents },
+      "Failed to push documents for ingestion",
+    )
+    throw new Error(
+      `Failed to push documents for ingestion: ${response.statusText} ${errorText}`,
+    )
+  }
+
+  logger.info(
+    { count: documents.length },
+    "Successfully pushed documents for ingestion",
+  )
 }

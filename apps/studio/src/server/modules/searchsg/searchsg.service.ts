@@ -4,9 +4,10 @@ import { createBaseLogger } from "~/lib/logger"
 
 const logger = createBaseLogger({ path: "searchsg.service" })
 
-const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin"
-
-const ISOMER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
+export const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin"
+export const EGAZETTE_DOCUMENT_INDEX = env.EGAZETTE_DOCUMENT_INDEX
+export const ISOMER_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
 const SearchSgApi = {
   Auth: `/v1/auth/token`,
   App: `/v1/bootstrap/applications`,
@@ -140,6 +141,10 @@ export const updateSearchSGConfig = async (
     })
 
   return res
+}
+
+export const generateDocumentId = (url: string, resourceId: string) => {
+  return `${url}-${resourceId}`
 }
 
 interface SearchSGConfig {
