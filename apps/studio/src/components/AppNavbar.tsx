@@ -11,7 +11,7 @@ import { AvatarMenu } from "./AvatarMenu"
 
 export function AppNavbar(): JSX.Element {
   const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core],
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
 
   return (

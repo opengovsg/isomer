@@ -39,6 +39,7 @@ function JsonFormsCollectionVariantControl({
             handleChange(path, value)
           }}
           value={data as string}
+          defaultValue={COLLECTION_VARIANT_OPTIONS.Collection}
         >
           <Radio
             value={COLLECTION_VARIANT_OPTIONS.Collection}

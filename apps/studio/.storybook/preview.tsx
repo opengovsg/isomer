@@ -3,7 +3,6 @@ import type { EnvContextReturn } from "~/components/AppProviders"
 import "inter-ui/inter.css"
 import type { AppRouter } from "~/server/modules/_app"
 import { Skeleton, Stack } from "@chakra-ui/react"
-import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { withThemeFromJSXProvider } from "@storybook/addon-themes"
@@ -16,7 +15,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
-import { merge } from "lodash"
+import { merge } from "lodash-es"
 import { initialize, mswLoader } from "msw-storybook-addon"
 import { useCallback, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
@@ -28,6 +27,7 @@ import { DefaultFallback } from "~/components/ErrorBoundary"
 import Suspense from "~/components/Suspense"
 import { env } from "~/env.mjs"
 import { LoginStateContext } from "~/features/auth"
+import { createMockGrowthBook } from "~/stories/utils/growthbook"
 import { theme } from "~/theme"
 
 import { viewport, withChromaticModes } from "@isomer/storybook-config"
@@ -51,9 +51,8 @@ const StorybookEnvDecorator: Decorator = (story) => {
 }
 
 const SetupDecorator: Decorator = (Story, { parameters }) => {
-  const gb = new GrowthBook()
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
-  gb.setForcedFeatures(new Map(parameters.growthbook ?? []))
+  const gb = createMockGrowthBook(new Map(parameters.growthbook ?? []))
 
   const [queryClient] = useState(
     new QueryClient({

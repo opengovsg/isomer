@@ -4,8 +4,7 @@
   "tasks": {
     "test:watch": {},
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": []
+      "outputs": ["dist/**"]
     },
     "test-ci:unit": {}
   }

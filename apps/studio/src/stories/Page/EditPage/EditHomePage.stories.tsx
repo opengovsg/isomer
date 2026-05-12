@@ -1,11 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { userEvent, within } from "storybook/test"
+import { expect, userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
-import { createBannerGbParameters } from "~/stories/utils/growthbook"
+import {
+  createAntiScamBannerEnabledGbParameters,
+  createBannerGbParameters,
+} from "~/stories/utils/growthbook"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
@@ -162,5 +165,51 @@ export const WithBanner: Story = {
         message: "This is a test banner",
       }),
     ],
+  },
+}
+
+export const AddAntiScamDisclaimerSaveBlockEnabled: Story = {
+  parameters: {
+    growthbook: [createAntiScamBannerEnabledGbParameters(true)],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const addBlockButton = await canvas.findByRole("button", {
+      name: /add block/i,
+    })
+    await userEvent.click(addBlockButton)
+    const antiScamBlockType = await canvas.findByRole("button", {
+      name: /anti-scam disclaimer/i,
+    })
+    await userEvent.click(antiScamBlockType)
+    const saveBlockButton = await canvas.findByRole("button", {
+      name: /save block/i,
+    })
+    await expect(saveBlockButton).not.toBeDisabled()
+  },
+}
+
+export const ReopenAntiScamDisclaimerSaveBlockDisabled: Story = {
+  parameters: {
+    growthbook: [createAntiScamBannerEnabledGbParameters(true)],
+  },
+  play: async ({ canvasElement, ...rest }) => {
+    await AddAntiScamDisclaimerSaveBlockEnabled.play?.({
+      canvasElement,
+      ...rest,
+    })
+    const canvas = within(canvasElement)
+    const saveAfterAdd = await canvas.findByRole("button", {
+      name: /save block/i,
+    })
+    await userEvent.click(saveAfterAdd)
+    const antiScamBlockRow = await canvas.findByRole("button", {
+      name: /anti-scam disclaimer/i,
+    })
+    await userEvent.click(antiScamBlockRow)
+    const saveAfterReopen = await canvas.findByRole("button", {
+      name: /save block/i,
+    })
+    await expect(saveAfterReopen).toBeDisabled()
   },
 }

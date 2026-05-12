@@ -1,6 +1,6 @@
 import { useJsonForms } from "@jsonforms/react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
-import get from "lodash/get"
+import { get } from "lodash-es"
 import { useEffect, useMemo, useState } from "react"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { siteSchema } from "~/features/editing-experience/schema"

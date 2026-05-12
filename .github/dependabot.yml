@@ -17,11 +17,16 @@ updates:
         applies-to: version-updates
         patterns:
           - "@babel/*"
-      lodash:
+      lodash-es:
         applies-to: version-updates
         patterns:
-          - "lodash"
-          - "@types/lodash"
+          - "lodash-es"
+          - "@types/lodash-es"
+      next:
+        applies-to: version-updates
+        patterns:
+          - "next"
+          - "@next/env"
       pg:
         applies-to: version-updates
         patterns:
@@ -38,6 +43,7 @@ updates:
           - "react"
           - "react-dom"
           - "@types/react"
+          - "@types/react-dom"
       react-query:
         applies-to: version-updates
         patterns:
@@ -61,6 +67,14 @@ updates:
         patterns:
           - "validator"
           - "@types/validator"
+      vitest:
+        applies-to: version-updates
+        patterns:
+          - "vite"
+          - "vite-tsconfig-paths"
+          - "vitest"
+          - "@vitest/*"
+          - "@vitejs/*"
       jsonforms:
         applies-to: version-updates
         patterns:
@@ -75,6 +89,8 @@ updates:
       - dependency-name: "react-dom"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react-dom"
         update-types: ["version-update:semver-major"]
       ### TRPC 11
       - dependency-name: "@trpc/client"
@@ -93,9 +109,11 @@ updates:
       ### Next 15
       - dependency-name: "next"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "@next/env"
+        update-types: ["version-update:semver-major"]
       # Ignore major version updates for Prisma 6 due to installation issues
       ### Could not resolve @prisma/client despite the installation that we just tried.
-      ### Please try to install it by hand with npm i @prisma/client and rerun npx "prisma generate" 🙏.
+      ### Please try to install it by hand with `pnpm add @prisma/client` and rerun `pnpm exec prisma generate` 🙏.
       - dependency-name: "prisma"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@prisma/client"

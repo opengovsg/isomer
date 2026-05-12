@@ -3,38 +3,49 @@
   "version": "0.0.0",
   "private": true,
   "files": [
-    "src"
+    "dist/cjs",
+    "dist/esm"
   ],
   "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/cjs/index.d.ts"
+    }
   },
   "scripts": {
-    "build": "tsc --noEmit",
+    "build": "run-p build:*",
+    "build:main": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build:module": "tsc -p tsconfig.module.build.json && tsc-alias -p tsconfig.module.build.json",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "db:sleep": "sleep 3",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
+    "prebuild": "rimraf dist",
     "services:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
     "setup:test": "run-s --print-label services:setup db:sleep",
-    "test": "dotenv -e .env.test npx vitest run",
-    "test:watch": "dotenv -e .env.test npx vitest watch",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "test": "run-s test:*",
+    "test:watch": "dotenv -e .env.test pnpm exec vitest watch"
   },
   "dependencies": {
-    "@isomer/logging": "*",
-    "pg-boss": "^12.3.0"
+    "@isomer/logging": "workspace:*",
+    "pg-boss": "catalog:",
+    "vitest": "catalog:vitest",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@isomer/oxlint-config": "*",
-    "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21",
-    "@vitest/coverage-istanbul": "^2.1.2",
-    "eslint": "^9.10.0",
-    "npm-run-all": "^4.1.5",
-    "typescript": "^5.9.2",
-    "vitest": "^2.1.1"
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitest/coverage-istanbul": "catalog:vitest",
+    "npm-run-all2": "catalog:",
+    "rimraf": "catalog:",
+    "tsc-alias": "catalog:",
+    "typescript": "catalog:"
   }
 }

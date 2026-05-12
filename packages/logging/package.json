@@ -3,37 +3,53 @@
   "version": "0.0.0",
   "private": true,
   "files": [
-    "src"
+    "dist/cjs",
+    "dist/esm"
   ],
   "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "exports": {
-    ".": "./src/index.ts",
-    "./tracer": "./src/tracer.ts"
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/cjs/index.d.ts"
+    },
+    "./tracer": {
+      "import": "./dist/esm/tracer.js",
+      "require": "./dist/cjs/tracer.js",
+      "types": "./dist/cjs/tracer.d.ts"
+    }
   },
   "scripts": {
-    "build": "tsc --noEmit",
+    "build": "run-p build:*",
+    "build:main": "tsc -p tsconfig.build.json",
+    "build:module": "tsc -p tsconfig.module.build.json",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
+    "prebuild": "rimraf dist",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "dd-trace": "^5.24.0",
-    "nanoid": "^5.0.9",
-    "pino": "^9.6.0",
-    "pino-pretty": "^13.0.0",
-    "zod": "^3.22.4"
+    "dd-trace": "catalog:",
+    "nanoid": "catalog:",
+    "pino": "catalog:",
+    "pino-pretty": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@isomer/oxlint-config": "*",
-    "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21",
-    "@vitest/coverage-istanbul": "^2.1.2",
-    "typescript": "^5.9.2",
-    "vitest": "^2.1.1"
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitest/coverage-istanbul": "catalog:vitest",
+    "npm-run-all2": "catalog:",
+    "rimraf": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:vitest"
   }
 }

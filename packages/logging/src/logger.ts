@@ -1,6 +1,6 @@
 import type { DestinationStream, Logger } from "pino"
 import { nanoid } from "nanoid"
-import { pino } from "pino"
+import pino from "pino"
 import pinoPretty from "pino-pretty"
 
 import { SYSLOG_LEVELS } from "./levels"

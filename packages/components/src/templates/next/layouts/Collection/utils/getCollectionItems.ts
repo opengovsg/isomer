@@ -9,9 +9,62 @@ import { sortCollectionItems } from "./sortCollectionItems"
 
 const CATEGORY_OTHERS = "Others"
 
+interface GetItemImageProps {
+  showThumbnail: CollectionPagePageProps["showThumbnail"]
+  item: IsomerSitemap
+  site: IsomerSiteProps
+}
+
+type GetItemImageResult =
+  | {
+      src: string
+      alt: string
+      isContainNeeded?: boolean
+    }
+  | undefined
+
+const getItemImage = ({
+  showThumbnail,
+  item,
+  site,
+}: GetItemImageProps): GetItemImageResult => {
+  // If showThumbnail is undefined, we will hide all the thumbnails of the
+  // collection, regardless of whether the individual items have images or not
+  if (!showThumbnail) {
+    return undefined
+  }
+
+  // If the item has an image, we will show the item's image
+  if (item.image?.src) {
+    return item.image
+  }
+
+  switch (showThumbnail.fallback) {
+    case "logo":
+      return {
+        src: site.logoUrl,
+        alt: `${site.siteName} site logo`,
+        isContainNeeded: true,
+      }
+    case "first-image":
+      if (item.firstImage?.src) {
+        return item.firstImage
+      }
+
+      return {
+        src: site.logoUrl,
+        alt: `${site.siteName} site logo`,
+        isContainNeeded: true,
+      }
+    default:
+      const _: never = showThumbnail.fallback
+      return undefined
+  }
+}
+
 export type GetCollectionItemsProps = Pick<
   CollectionPagePageProps,
-  "sortOrder" | "showDate" | "tagCategories"
+  "sortOrder" | "showDate" | "showThumbnail" | "tagCategories"
 > & {
   site: IsomerSiteProps
   permalink: string
@@ -26,6 +79,7 @@ export const getCollectionItems = ({
   sortDirection,
   sortOrder,
   showDate,
+  showThumbnail,
   tagCategories,
 }: GetCollectionItemsProps): AllCardProps[] => {
   let currSitemap: IsomerSitemap = site.siteMap
@@ -67,6 +121,7 @@ export const getCollectionItems = ({
       showDate !== false && item.date !== undefined && item.date !== ""
         ? getParsedDate(item.date)
         : undefined
+    const image = getItemImage({ showThumbnail, item, site })
 
     const baseItem = {
       type: "collectionCard" as const,
@@ -76,7 +131,8 @@ export const getCollectionItems = ({
       category: item.category || CATEGORY_OTHERS,
       title: item.title,
       description: item.summary,
-      image: item.image,
+      image,
+      isContainNeeded: image?.isContainNeeded || false,
       site,
       tags:
         tagCategories && item.tagged

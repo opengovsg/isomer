@@ -26,7 +26,7 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import get from "lodash/get"
+import { get } from "lodash-es"
 import { useCallback, useEffect, useState } from "react"
 import { BiPlusCircle } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
