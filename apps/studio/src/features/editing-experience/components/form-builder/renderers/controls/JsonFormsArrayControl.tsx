@@ -61,11 +61,6 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   getListItemHasError?: (index: number) => boolean
   /** When the row is in error, replaces the default “Fix issues before saving” caption. */
   renderListItemErrorCaption?: (index: number) => string | undefined
-  /**
-   * When true (default), invalid rows use a subtle critical background and border on the row
-   * (see `DraggableDrawerButton` / `DraggableLinkButton`). When false, only the left accent bar.
-   */
-  listItemErrorSurfaceHighlight?: boolean
   /** Rendered after the schema description and before the draggable list. */
   belowDescription?: ReactNode
   /**
@@ -199,7 +194,6 @@ export function JsonFormsArrayControlView({
   renderListItemSubtitle,
   getListItemHasError,
   renderListItemErrorCaption,
-  listItemErrorSurfaceHighlight = true,
   belowDescription,
   mapNewArrayItem,
 }: JsonFormsArrayControlProps) {
@@ -394,9 +388,6 @@ export function JsonFormsArrayControlView({
                           listItemErrorCaption={renderListItemErrorCaption?.(
                             index,
                           )}
-                          listItemErrorSurfaceHighlight={
-                            listItemErrorSurfaceHighlight
-                          }
                         />
                       )}
                     </Draggable>

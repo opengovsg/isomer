@@ -45,6 +45,8 @@ export const JSON_FORMS_RANKING = {
   RefControl: 3,
   GroupLayoutRenderer: 1,
   VerticalLayoutRenderer: 1,
+  // NOTE: needs to have higher priority than VerticalLayoutRenderer
+  AntiScamDisclaimerBannerLayoutRenderer: 2,
   UnionRootControl: 1,
   Catchall: -99999999999,
 }

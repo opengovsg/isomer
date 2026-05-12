@@ -1,4 +1,4 @@
-import { flatMap, groupBy } from "lodash"
+import { flatMap, groupBy } from "lodash-es"
 
 function normalizedLabelKey(label: string | undefined): string {
   return (label ?? "").trim().toLowerCase()

@@ -1,7 +1,7 @@
 import type { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
-import { get, pick } from "lodash"
+import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   countTagOptionsUsageSchema,
@@ -524,23 +524,33 @@ export const collectionRouter = router({
 
   getCollectionTags: protectedProcedure
     .input(getCollectionTagsSchema)
-    .query(async ({ ctx, input: { resourceId, siteId } }) => {
+    .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
+      const resourceIdToValidate = resourceId ?? collectionId
       await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
         userId: ctx.user.id,
-        resourceIds: [String(resourceId)],
+        resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
       })
 
+      // The schema enforces that exactly one of collectionId / resourceId is set.
+      // For collectionId: the IndexPage sits directly under this collection.
+      // For resourceId: the IndexPage sits under the resource's parent collection.
       const indexPage = await db
         .selectFrom("Resource")
         .where("type", "=", ResourceType.IndexPage)
-        .where("parentId", "=", (eb) =>
-          eb
-            .selectFrom("Resource")
-            .where("id", "=", String(resourceId))
-            .where("siteId", "=", siteId)
-            .select("parentId"),
+        .where("siteId", "=", siteId)
+        .$if(collectionId !== undefined, (qb) =>
+          qb.where("parentId", "=", String(collectionId)),
+        )
+        .$if(resourceId !== undefined, (qb) =>
+          qb.where("parentId", "=", (eb) =>
+            eb
+              .selectFrom("Resource")
+              .where("id", "=", String(resourceId))
+              .where("siteId", "=", siteId)
+              .select("parentId"),
+          ),
         )
         .select("id")
         .executeTakeFirst()

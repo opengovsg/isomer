@@ -3,9 +3,7 @@ import type { ModifiedAsset } from "~/types/assets"
 import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
-import cloneDeep from "lodash/cloneDeep"
-import isEmpty from "lodash/isEmpty"
-import isEqual from "lodash/isEqual"
+import { cloneDeep, isEmpty, isEqual } from "lodash-es"
 import { useCallback } from "react"
 import { BiTrash } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -339,7 +337,18 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
                 onClick={onDeleteBlockModalOpen}
               />
               <Box w="100%">
-                <SaveButton onClick={handleSave} isLoading={isLoading} />
+                <SaveButton
+                  onClick={handleSave}
+                  isLoading={isLoading}
+                  isNonEditableBlock={
+                    component.type === "antiscambanner" &&
+                    // Exclude the "just added this block" case so Save can persist the insert (discard would remove it).
+                    !(
+                      addedBlockIndex !== null &&
+                      addedBlockIndex === currActiveIdx
+                    )
+                  }
+                />
               </Box>
             </HStack>
           </Box>
@@ -352,9 +361,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 const SaveButton = ({
   onClick,
   isLoading,
+  isNonEditableBlock,
 }: {
   onClick: () => void
   isLoading: boolean
+  isNonEditableBlock: boolean
 }) => {
   const { errors } = useBuilderErrors()
 
@@ -362,7 +373,7 @@ const SaveButton = ({
     <Button
       w="100%"
       isLoading={isLoading}
-      isDisabled={!isEmpty(errors)}
+      isDisabled={isNonEditableBlock || !isEmpty(errors)}
       onClick={onClick}
     >
       Save block

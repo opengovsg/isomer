@@ -26,7 +26,7 @@ import {
   Menu,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import { compact, map, get } from "lodash"
+import { compact, map, get } from "lodash-es"
 import { useMemo, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import {

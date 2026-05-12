@@ -2,6 +2,7 @@ import type { Static, StringOptions } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 import {
   AltTextSchema,
+  ARRAY_RADIO_FORMAT,
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
   generateImageSrcSchema,
@@ -15,12 +16,12 @@ import { REF_HREF_PATTERN } from "~/utils/validation"
 const generateUuidSchema = (options: Omit<StringOptions, "format">) =>
   Type.String({ format: "uuid", ...options })
 
-export const TagOptionUuidSchema = generateUuidSchema({
+const TagOptionUuidSchema = generateUuidSchema({
   title: "Uuid of a single tag option",
   description:
     "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
 })
-export const TagCategoryUuidSchema = generateUuidSchema({
+const TagCategoryUuidSchema = generateUuidSchema({
   title: "Uuid of a single tag",
   description:
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
@@ -29,7 +30,7 @@ export const TagCategoryUuidSchema = generateUuidSchema({
 const TagCategorySchema = Type.Composite([
   Type.Object({
     label: Type.String({ maxLength: 70, title: "Filter name" }),
-    id: TagOptionUuidSchema,
+    id: TagCategoryUuidSchema,
   }),
   Type.Object({
     // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
@@ -254,6 +255,28 @@ export const CollectionPagePageSchema = Type.Intersect([
           format: "hidden",
           type: "string",
           default: COLLECTION_PAGE_SORT_DIRECTION.desc,
+        },
+      ),
+    ),
+    showThumbnail: Type.Optional(
+      Type.Object(
+        {
+          fallback: Type.Union(
+            [
+              Type.Literal("logo", { title: "Use site logo" }),
+              Type.Literal("first-image", {
+                title: "Use first image on page, if available",
+              }),
+            ],
+            {
+              title: "If an item doesn’t have a thumbnail",
+              format: ARRAY_RADIO_FORMAT,
+              default: "logo",
+            },
+          ),
+        },
+        {
+          title: "Display thumbnail on all items",
         },
       ),
     ),
