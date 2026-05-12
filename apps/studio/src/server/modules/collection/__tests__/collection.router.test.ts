@@ -1724,6 +1724,32 @@ describe("collection.router", async () => {
       )
     })
 
+    it("should throw 404 when index page has no parent collection", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await db
+        .updateTable("Resource")
+        .set({ parentId: null })
+        .where("id", "=", indexPage.id)
+        .execute()
+
+      // Act
+      const result = caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page has no parent collection",
+        }),
+      )
+    })
+
     it("should return 0 when there are no child items", async () => {
       // Arrange
       const { site, indexPage } = await setupCollectionWithIndexPage()
