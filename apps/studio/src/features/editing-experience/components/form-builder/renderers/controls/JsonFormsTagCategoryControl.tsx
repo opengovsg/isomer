@@ -170,7 +170,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               alignItems="center"
               justifyContent="center"
               isDisabled={isRemoveItemDisabled}
-              aria-label="Filter actions"
+              aria-label={`Filter ${index + 1} actions`}
               onClick={(e) => e.stopPropagation()}
             />
             <Portal>
