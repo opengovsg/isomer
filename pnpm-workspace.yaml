@@ -129,7 +129,7 @@ catalog:
   nanoid: ^5.0.9
   next: ^15.5.15
   openid-client: ^5.7.1
-  oxfmt: ^0.42.0
+  oxfmt: ^0.48.0
   oxlint: ^1.56.0
   oxlint-tsgolint: ^0.17.1
   papaparse: ^5.5.3
