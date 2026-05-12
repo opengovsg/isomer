@@ -21,7 +21,7 @@ export const jsonFormsAntiScamDisclaimerBannerLayoutTester: RankedTester =
 // NOTE: This is a Studio-only, display-only renderer.
 //
 // The anti-scam banner's copy is intentionally NOT configurable by end users (or per-site);
-// it is baked into the component itself. However, editors still need to see the some values
+// it is baked into the component itself. However, editors still need to see the values
 // in Studio to avoid confusion. So we hardcode the values here and render them via JSON Forms.
 //
 // We intentionally do NOT rely on schema `default` + `readOnly` fields for this, because
