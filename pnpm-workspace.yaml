@@ -215,35 +215,35 @@ catalogs:
     storybook-addon-pseudo-states: 9.1.20
     storybook-mock-date-decorator: ^3.0.0
   tiptap:
-    "@tiptap/core": ^2.22.3
-    "@tiptap/extension-bold": ^2.22.3
-    "@tiptap/extension-bullet-list": ^2.22.3
-    "@tiptap/extension-character-count": ^2.22.3
-    "@tiptap/extension-document": ^2.22.3
-    "@tiptap/extension-dropcursor": ^2.22.3
-    "@tiptap/extension-gapcursor": ^2.22.3
-    "@tiptap/extension-hard-break": ^2.22.3
-    "@tiptap/extension-heading": ^2.22.3
-    "@tiptap/extension-history": ^2.22.3
-    "@tiptap/extension-horizontal-rule": ^2.22.3
-    "@tiptap/extension-image": ^2.22.3
-    "@tiptap/extension-italic": ^2.22.3
-    "@tiptap/extension-link": 2.22.3
-    "@tiptap/extension-list-item": ^2.22.3
-    "@tiptap/extension-ordered-list": ^2.22.3
-    "@tiptap/extension-paragraph": ^2.22.3
-    "@tiptap/extension-strike": ^2.22.3
-    "@tiptap/extension-subscript": ^2.22.3
-    "@tiptap/extension-superscript": ^2.22.3
-    "@tiptap/extension-table": ^2.22.3
-    "@tiptap/extension-table-cell": ^2.22.3
-    "@tiptap/extension-table-header": ^2.22.3
-    "@tiptap/extension-table-row": ^2.22.3
-    "@tiptap/extension-text": ^2.22.3
-    "@tiptap/extension-underline": ^2.22.3
-    "@tiptap/html": ^2.22.3
-    "@tiptap/pm": 2.22.3
-    "@tiptap/react": 2.22.3
+    "@tiptap/core": ^3.22.5
+    "@tiptap/extension-bold": ^3.22.5
+    "@tiptap/extension-bullet-list": ^3.22.5
+    "@tiptap/extension-character-count": ^3.22.5
+    "@tiptap/extension-document": ^3.22.5
+    "@tiptap/extension-dropcursor": ^3.22.5
+    "@tiptap/extension-gapcursor": ^3.22.5
+    "@tiptap/extension-hard-break": ^3.22.5
+    "@tiptap/extension-heading": ^3.22.5
+    "@tiptap/extension-history": ^3.22.5
+    "@tiptap/extension-horizontal-rule": ^3.22.5
+    "@tiptap/extension-image": ^3.22.5
+    "@tiptap/extension-italic": ^3.22.5
+    "@tiptap/extension-link": 3.22.5
+    "@tiptap/extension-list-item": ^3.22.5
+    "@tiptap/extension-ordered-list": ^3.22.5
+    "@tiptap/extension-paragraph": ^3.22.5
+    "@tiptap/extension-strike": ^3.22.5
+    "@tiptap/extension-subscript": ^3.22.5
+    "@tiptap/extension-superscript": ^3.22.5
+    "@tiptap/extension-table": ^3.22.5
+    "@tiptap/extension-table-cell": ^3.22.5
+    "@tiptap/extension-table-header": ^3.22.5
+    "@tiptap/extension-table-row": ^3.22.5
+    "@tiptap/extension-text": ^3.22.5
+    "@tiptap/extension-underline": ^3.22.5
+    "@tiptap/html": ^3.22.5
+    "@tiptap/pm": 3.22.5
+    "@tiptap/react": 3.22.5
   trpc:
     "@trpc/client": ^11.4.4
     "@trpc/next": ^11.4.4
