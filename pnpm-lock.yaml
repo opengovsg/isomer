@@ -1351,12 +1351,6 @@ importers:
       '@vitest/coverage-istanbul':
         specifier: catalog:vitest
         version: 2.1.9(vitest@2.1.9(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@22.19.15)(typescript@5.9.3))(sass@1.98.0)(terser@5.46.1))
-      npm-run-all2:
-        specifier: 'catalog:'
-        version: 8.0.4
-      rimraf:
-        specifier: 'catalog:'
-        version: 5.0.10
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -1394,12 +1388,6 @@ importers:
       npm-run-all2:
         specifier: 'catalog:'
         version: 8.0.4
-      rimraf:
-        specifier: 'catalog:'
-        version: 5.0.10
-      tsc-alias:
-        specifier: 'catalog:'
-        version: 1.8.16
       typescript:
         specifier: 'catalog:'
         version: 5.9.3

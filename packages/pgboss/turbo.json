@@ -3,9 +3,6 @@
   "extends": ["//"],
   "tasks": {
     "test:watch": {},
-    "build": {
-      "outputs": ["dist/**"]
-    },
     "test-ci:unit": {}
   }
 }

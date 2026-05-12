@@ -2,35 +2,17 @@
   "name": "@isomer/logging",
   "version": "0.0.0",
   "private": true,
-  "files": [
-    "dist/cjs",
-    "dist/esm"
-  ],
-  "type": "module",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "main": "./src/index.ts",
   "exports": {
-    ".": {
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "types": "./dist/cjs/index.d.ts"
-    },
-    "./tracer": {
-      "import": "./dist/esm/tracer.js",
-      "require": "./dist/cjs/tracer.js",
-      "types": "./dist/cjs/tracer.d.ts"
-    }
+    ".": "./src/index.ts",
+    "./tracer": "./src/tracer.ts"
   },
   "scripts": {
-    "build": "run-p build:*",
-    "build:main": "tsc -p tsconfig.build.json",
-    "build:module": "tsc -p tsconfig.module.build.json",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "clean": "git clean -xdf .cache .turbo node_modules",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
-    "prebuild": "rimraf dist",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
@@ -47,8 +29,6 @@
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@vitest/coverage-istanbul": "catalog:vitest",
-    "npm-run-all2": "catalog:",
-    "rimraf": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:vitest"
   }
