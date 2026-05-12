@@ -265,7 +265,7 @@ export const FiltersOpenFilterRowMenu: Story = {
       await canvas.findByRole("button", { name: /Return to Filters/i }),
     )
     await userEvent.click(
-      await canvas.findByRole("button", { name: /Filter actions/i }),
+      await canvas.findByRole("button", { name: /Filter 1 actions/i }),
     )
     const portals = withinPortals(canvasElement)
     await expect(
@@ -285,7 +285,7 @@ export const FiltersDeleteFilterModalDisabledCta: Story = {
       await canvas.findByRole("button", { name: /Return to Filters/i }),
     )
     await userEvent.click(
-      await canvas.findByRole("button", { name: /Filter actions/i }),
+      await canvas.findByRole("button", { name: /Filter 1 actions/i }),
     )
     const portals = withinPortals(canvasElement)
     await userEvent.click(
