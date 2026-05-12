@@ -32,7 +32,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -42,7 +42,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Lint
-        run: npm run lint && npm run lint:ws
+        run: pnpm run lint && pnpm run lint:ws
 
       - name: Lint Dockerfile
         uses: hadolint/hadolint-action@d292784f8f3eacda47060b259a580467b0ba410c
@@ -59,7 +59,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Format
-        run: npm run format
+        run: pnpm run format
 
   typecheck:
     runs-on: ubuntu-latest
@@ -70,7 +70,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Typecheck
-        run: npm run typecheck
+        run: pnpm run typecheck
 
   unit-integration-tests:
     name: Unit & integration tests
@@ -83,7 +83,7 @@ jobs:
         uses: ./.github/actions/setup
       - name: Install dependencies
         # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
-        run: turbo run generate --filter=isomer-studio
+        run: pnpm exec turbo run generate --filter=isomer-studio
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v2
         with:
@@ -92,14 +92,14 @@ jobs:
           api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Studio
         # Loose env mode required for env vars to be passed to the run
-        run: turbo test-ci:unit --filter=isomer-studio --env-mode=loose
+        run: pnpm exec turbo test-ci:unit --filter=isomer-studio --env-mode=loose
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           # Set timezone to Singapore to ensure that the tests are run in the correct timezone
           TZ: Asia/Singapore
       - name: Test Components
-        run: turbo test-ci:unit --filter=@opengovsg/isomer-components --env-mode=loose
+        run: pnpm exec turbo test-ci:unit --filter=@opengovsg/isomer-components --env-mode=loose
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
@@ -116,7 +116,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Install Playwright (Chromium)
-        run: npx playwright install chromium
+        run: pnpm --filter isomer-studio exec playwright install chromium
       - name: Load .env file
         uses: opengovsg/dotenv@v2
         with:
@@ -125,20 +125,16 @@ jobs:
       - name: Next.js cache
         uses: actions/cache@v4
         with:
-          # See here for caching with `yarn` https://github.com/actions/cache/blob/main/examples.md#node---yarn or you can leverage caching with actions/setup-node https://github.com/actions/setup-node
           path: |
-            ~/.npm
             ${{ github.workspace }}/.next/cache
-          # Generate a new cache whenever packages or source files change.
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
-          # If source files changed but packages didn't, rebuild from a prior cache.
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
           restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+            ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-
       - name: Build Studio app
         # Loose env mode required for env vars to be passed to the run
-        run: turbo build --filter=isomer-studio --env-mode=loose
+        run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
       - name: Start test containers
-        run: npm run setup:test
+        run: pnpm run setup:test
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v2
         with:
@@ -146,15 +142,15 @@ jobs:
           service: isomer-studio
           api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Seed testing db
-        run: turbo db:seed
+        run: pnpm exec turbo db:seed
       - name: Run Playwright tests
-        run: turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
+        run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
         env:
           # Required to allow Datadog to trace Playwright tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
 
       - name: Stop test containers
-        run: npm run teardown
+        run: pnpm run teardown
 
       - name: Upload test results
         if: ${{ !cancelled() }}

@@ -4,16 +4,16 @@ Admin tooling scripts for managing Isomer sites, resources, and content.
 
 ## Prerequisites
 
-1. Run `npm install` from the repository root.
+1. Run `pnpm install` from the repository root.
 2. Copy `.env.example` to `.env` and fill in the required values.
-3. For scripts that access the database, run `npm run db:connect` before starting.
+3. For scripts that access the database, run `pnpm run db:connect` before starting.
 
 ## Usage
 
 From the `tooling/scripts` directory:
 
 ```sh
-npm run isomer-admin
+pnpm run isomer-admin
 ```
 
 Select a script from the interactive menu.

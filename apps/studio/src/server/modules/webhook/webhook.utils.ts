@@ -1,6 +1,6 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { BuildStatusType } from "@prisma/client"
-import type pino from "pino"
+import type { Logger } from "pino"
 import { compact } from "lodash-es"
 import {
   sendFailedPublishEmail,
@@ -42,7 +42,7 @@ const updateCurrentAndSupersededBuilds = async (
  * @returns An object containing the IDs of the CodeBuild jobs for which emails were sent.
  */
 export const updateCodebuildStatusAndSendEmails = async (
-  logger: pino.Logger<string>,
+  logger: Logger<string>,
   gb: GrowthBook,
   buildId: string,
   status: BuildStatusType,

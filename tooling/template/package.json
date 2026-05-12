@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && npm run build",
+    "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && pnpm run build",
     "build:template": "next build",
     "clean": "git clean -xdf .next .turbo node_modules out",
     "dev": "PORT=3001 next",
@@ -15,16 +15,22 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@opengovsg/isomer-components": "*",
-    "next": "^15.5.15",
-    "postcss": "^8.5.10",
-    "postcss-preset-env": "^10.0.8",
-    "tailwindcss": "^3.4.4",
-    "typescript": "^5.9.2"
+    "@opengovsg/isomer-components": "workspace:*",
+    "isomorphic-dompurify": "catalog:",
+    "jsdom": "catalog:",
+    "next": "catalog:",
+    "postcss": "catalog:",
+    "postcss-preset-env": "catalog:",
+    "react": "catalog:react",
+    "react-dom": "catalog:react",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
   },
   "devDependencies": {
-    "@isomer/oxlint-config": "*",
-    "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21"
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react",
+    "@types/react-dom": "catalog:react"
   }
 }

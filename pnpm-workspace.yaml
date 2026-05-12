@@ -1,0 +1,257 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "tooling/*"
+  # Standalone scripts under tooling/build (not covered by tooling/*)
+  - "tooling/build/github"
+  - "tooling/build/amplify"
+  - "tooling/build/1password"
+  - "tooling/build/scripts/publishing"
+
+linkWorkspacePackages: true
+
+minimumReleaseAge: 1440
+
+minimumReleaseAgeExclude:
+  # If there is a CVE, exclude it here so we can update it immediately without waiting for the minimum release age to pass.
+  - "@opengovsg/*"
+
+publicHoistPattern:
+  - "*eslint-plugin*"
+  - "*@opengovsg/oui*"
+  - "*prisma*"
+  - pg
+  - oxfmt
+  - oxlint
+  - oxlint-tsgolint
+  - rimraf
+  - tsc-alias
+
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - esbuild
+  - prisma
+
+catalog:
+  ajv: ^8.17.1
+  autoprefixer: ^10.4.21
+  axios: ^1.15.0
+  bootstrap-icons: ^1.13.1
+  browserslist-useragent-regexp: ^4.1.3
+  cheerio: ^1.0.0
+  chromatic: ^11.5.3
+  clean-webpack-plugin: ^4.0.0
+  commander-ts: ^0.2.0
+  dayjs: ^1.11.13
+  date-fns: ^4.1.0
+  dotenv: ^16.4.5
+  dotenv-cli: ^8.0.0
+  jsdom: ^24.1.0
+  isomorphic-dompurify: ^3.6.0
+  mockdate: ^3.0.5
+  msw: ^2.8.6
+  msw-storybook-addon: ^2.0.4
+  msw-trpc: ^2.0.1
+  node-mocks-http: ^1.16.2
+  npm-run-all2: ^8.0.4
+  "@octokit/rest": ^22.0.0
+  "@inquirer/prompts": ^7.6.0
+  "@opengovsg/design-system-react": ^1.31.0
+  "@opengovsg/starter-kitty-validators": ^1.2.13
+  "@paralleldrive/cuid2": ^2.2.2
+  "@sinclair/typebox": ^0.33.12
+  "@tanstack/query-devtools": ^5.85.3
+  "@tanstack/react-query": ^5.85.3
+  "@tanstack/react-query-devtools": ^5.85.3
+  "@tanstack/react-table": ^8.21.2
+  pg: ^8.16.2
+  pino: ^9.6.0
+  pino-pretty: ^13.0.0
+  postcss: ^8.4.39
+  postcss-preset-env: ^10.0.8
+  react-icons: ^5.2.0
+  rimraf: ^5.0.10
+  sherif: ^1.6.1
+  start-server-and-test: ^2.0.11
+  tailwindcss: ^3.4.4
+  testcontainers: ^10.13.1
+  tslib: ^2.6.3
+  tsc-alias: ^1.8.16
+  type-fest: ^4.23.0
+  tsx: ^4.20.4
+  turbo: ^2.9.6
+  typescript: ^5.9.2
+  usehooks-ts: ^3.1.1
+  webpack-cli: ^6.0.1
+  webpack-glob-entries: ^1.0.1
+  zod: ^3.22.4
+  "@types/jsdom": ^21.1.7
+  "@types/lodash-es": ^4.17.12
+  "@types/lunr": ^2.3.7
+  "@types/node": ^22.15.21
+  "@types/papaparse": ^5.5.0
+  "@types/pg": ^8.15.4
+  "@types/request": ^2.48.12
+  "@types/validator": ^13.15.2
+  globals: ^11.12.0
+  "@1password/sdk": ^0.3.1
+  "@datadog/browser-rum": ^5.29.1
+  "@fontsource/ibm-plex-mono": ^5.1.1
+  "@formkit/auto-animate": ^0.8.2
+  "@govtechsg/sgds-react": ^2.7.6
+  "@headlessui/react": ^2.1.2
+  "@hello-pangea/dnd": ^17.0.0
+  "@hookform/resolvers": ^3.8.0
+  "@intercom/messenger-js-sdk": ^0.0.14
+  "@playwright/test": ^1.40.1
+  "@uidotdev/usehooks": ^2.4.1
+  ajv-errors: ^3.0.0
+  chakra-react-select: ^5.0.5
+  commander: ^12.1.0
+  date-fns-tz: ^3.1.3
+  dd-trace: ^5.24.0
+  exponential-backoff: ^3.1.2
+  filenamify: ^6.0.0
+  flat: ^6.0.1
+  inter-ui: ^4.1.0
+  interweave: ^13.1.0
+  interweave-ssr: ^2.0.0
+  iron-session: ^8.0.4
+  jose: ^6.0.11
+  jotai: ^2.12.5
+  js-base64: ^3.7.7
+  js-md5: ^0.8.3
+  kysely: ^0.28.17
+  lodash-es: ^4.18.1
+  markdown-to-jsx: ^7.7.8
+  minisearch: ^7.1.2
+  nanoid: ^5.0.9
+  next: ^15.5.15
+  openid-client: ^5.7.1
+  oxfmt: ^0.42.0
+  oxlint: ^1.56.0
+  oxlint-tsgolint: ^0.17.1
+  papaparse: ^5.5.3
+  pg-boss: ^12.3.0
+  postcss-load-config: ^6.0.1
+  rate-limiter-flexible: ^5.0.3
+  react-error-boundary: ^5.0.0
+  react-frame-component: ^5.2.7
+  react-hook-form: ^7.52.1
+  react-markdown: ^10.1.0
+  rehype-external-links: ^3.0.0
+  sass: ^1.83.4
+  superjson: ^2.2.1
+  tailwind-merge: ^2.4.0
+  tailwind-variants: ^0.3.1
+  tailwindcss-react-aria-components: ^1.1.4
+  tiptap-text-direction: ^0.3.1
+  transliteration: ^2.6.1
+  validator: ^13.15.22
+  wretch: ^2.11.0
+
+catalogs:
+  atlaskitPragmaticDnd:
+    "@atlaskit/pragmatic-drag-and-drop": ^1.7.7
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.1.0
+  "aws-sdk":
+    "@aws-sdk/client-acm": ^3.840.0
+    "@aws-sdk/client-amplify": ^3.886.0
+    "@aws-sdk/client-cloudfront": ^3.840.0
+    "@aws-sdk/client-codebuild": ^3.835.0
+    "@aws-sdk/client-s3": ^3.837.0
+    "@aws-sdk/s3-request-presigner": ^3.837.0
+    "@aws-sdk/credential-providers": ^3.886.0
+  babel:
+    "@babel/plugin-transform-class-properties": ^7.27.1
+    "@babel/plugin-transform-object-rest-spread": ^7.27.3
+    "@babel/preset-env": ^7.27.2
+    "@babel/preset-typescript": ^7.27.1
+  casl:
+    "@casl/ability": ^6.7.1
+    "@casl/react": ^5.0.0
+  chakra:
+    "@chakra-ui/anatomy": ^2.3.4
+    "@chakra-ui/cli": ^2.5.8
+    "@chakra-ui/react": ^2.10.5
+    "@chakra-ui/styled-system": ^2.9.2
+    "@chakra-ui/theme-tools": ^2.2.6
+    "@chakra-ui/utils": ^2.2.2
+  growthbook:
+    "@growthbook/growthbook": ^1.2.0
+    "@growthbook/growthbook-react": ^1.2.0
+  jsonforms:
+    "@jsonforms/core": ^3.5.1
+    "@jsonforms/react": ^3.5.1
+  prisma:
+    "@prisma/client": 5.10.2
+    prisma: 5.10.2
+    prisma-json-types-generator: 3.2.3
+    prisma-kysely: ^1.8.0
+  react:
+    react: ^18.3.1
+    react-dom: ^18.3.1
+    "@types/react": ^18.3.26
+    "@types/react-dom": ^18.3.7
+  "react-aria":
+    "@react-aria/button": ^3.14.2
+    "@react-aria/checkbox": ^3.16.2
+    "@react-aria/focus": ^3.21.2
+    "@react-aria/interactions": ^3.25.6
+    "@react-aria/textfield": ^3.18.2
+    "@react-aria/utils": ^3.31.0
+    "@react-stately/checkbox": ^3.7.2
+    "@react-stately/toggle": ^3.9.2
+  storybook:
+    storybook: 9.1.20
+    "@storybook/addon-a11y": 9.1.20
+    "@storybook/addon-docs": 9.1.20
+    "@storybook/addon-links": 9.1.20
+    "@storybook/addon-themes": 9.1.20
+    "@storybook/nextjs": 9.1.20
+    "@storybook/react-vite": 9.1.20
+    eslint-plugin-storybook: 9.1.20
+    storybook-addon-pseudo-states: 9.1.20
+    storybook-mock-date-decorator: ^3.0.0
+  tiptap:
+    "@tiptap/core": ^2.22.3
+    "@tiptap/extension-bold": ^2.22.3
+    "@tiptap/extension-bullet-list": ^2.22.3
+    "@tiptap/extension-character-count": ^2.22.3
+    "@tiptap/extension-document": ^2.22.3
+    "@tiptap/extension-dropcursor": ^2.22.3
+    "@tiptap/extension-gapcursor": ^2.22.3
+    "@tiptap/extension-hard-break": ^2.22.3
+    "@tiptap/extension-heading": ^2.22.3
+    "@tiptap/extension-history": ^2.22.3
+    "@tiptap/extension-horizontal-rule": ^2.22.3
+    "@tiptap/extension-image": ^2.22.3
+    "@tiptap/extension-italic": ^2.22.3
+    "@tiptap/extension-link": 2.22.3
+    "@tiptap/extension-list-item": ^2.22.3
+    "@tiptap/extension-ordered-list": ^2.22.3
+    "@tiptap/extension-paragraph": ^2.22.3
+    "@tiptap/extension-strike": ^2.22.3
+    "@tiptap/extension-subscript": ^2.22.3
+    "@tiptap/extension-superscript": ^2.22.3
+    "@tiptap/extension-table": ^2.22.3
+    "@tiptap/extension-table-cell": ^2.22.3
+    "@tiptap/extension-table-header": ^2.22.3
+    "@tiptap/extension-table-row": ^2.22.3
+    "@tiptap/extension-text": ^2.22.3
+    "@tiptap/extension-underline": ^2.22.3
+    "@tiptap/html": ^2.22.3
+    "@tiptap/pm": 2.22.3
+    "@tiptap/react": 2.22.3
+  trpc:
+    "@trpc/client": ^11.4.4
+    "@trpc/next": ^11.4.4
+    "@trpc/react-query": ^11.4.4
+    "@trpc/server": ^11.4.4
+  vitest:
+    "@vitejs/plugin-react": ^5.2.0
+    "@vitest/coverage-istanbul": ^4.1.4
+    vite: ^6.4.2
+    vite-tsconfig-paths: ^6.1.1
+    vitest: ^4.1.4

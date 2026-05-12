@@ -30,19 +30,22 @@
     "services:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
     "setup:test": "run-s --print-label services:setup db:sleep",
     "test": "run-s test:*",
-    "test:watch": "dotenv -e .env.test npx vitest watch"
+    "test:watch": "dotenv -e .env.test pnpm exec vitest watch"
   },
   "dependencies": {
-    "pg-boss": "^12.3.0",
-    "pino": "^9.6.0",
-    "vitest": "^4.1.4"
+    "pg-boss": "catalog:",
+    "pino": "catalog:",
+    "vitest": "catalog:vitest",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@isomer/oxlint-config": "*",
-    "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21",
-    "@vitest/coverage-istanbul": "^4.1.4",
-    "eslint": "^9.10.0",
-    "typescript": "^5.9.2"
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitest/coverage-istanbul": "catalog:vitest",
+    "npm-run-all2": "catalog:",
+    "rimraf": "catalog:",
+    "tsc-alias": "catalog:",
+    "typescript": "catalog:"
   }
 }

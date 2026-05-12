@@ -228,6 +228,9 @@ export const DEFAULT_BLOCKS = {
       },
     ],
   },
+  antiscambanner: {
+    type: "antiscambanner",
+  },
   logocloud: {
     type: "logocloud",
     images: [
@@ -399,6 +402,13 @@ export const BLOCK_TO_META: Record<
     description: "Display a dynamic data banner.",
     usageText: "This block supports fetching data from an API endpoint.",
   },
+  antiscambanner: {
+    label: "Anti-scam disclaimer",
+    description: "Show a warning against scams.",
+    usageText:
+      "Comes with a pre-approved text that warns against Government Officials Impersonation Scams.",
+    imageSrc: "/assets/block-images/AntiScamDisclaimerBanner.png",
+  },
   logocloud: {
     label: "Logo cloud",
     description: "Display logos of partner organisations or accolades.",
@@ -497,7 +507,11 @@ export const INDEX_ALLOWED_BLOCKS: AllowedBlockSections = [
 export const DATABASE_ALLOWED_BLOCKS: AllowedBlockSections =
   CONTENT_ALLOWED_BLOCKS
 
-export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
+export const getHomepageAllowedBlocks = ({
+  includeAntiScamBanner,
+}: {
+  includeAntiScamBanner: boolean
+}): AllowedBlockSections => [
   {
     label: "Add a new section",
     // TODO(ISOM-1552): Add back iframe component when implemented
@@ -510,6 +524,7 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "blockquote",
       "collectionblock",
       "logocloud",
+      ...(includeAntiScamBanner ? (["antiscambanner"] as const) : []),
     ],
   },
 ]
