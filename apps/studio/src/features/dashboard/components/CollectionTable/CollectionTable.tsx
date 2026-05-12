@@ -117,7 +117,12 @@ export const CollectionTable = ({
 
   return (
     <>
-      <HStack px="0.75rem" mb="-0.25rem" w="full" justifyContent="space-between">
+      <HStack
+        px="0.75rem"
+        mb="-0.25rem"
+        w="full"
+        justifyContent="space-between"
+      >
         <Text textStyle="caption-1" color="base.content.default">
           {totalRowCount} {totalRowCount === 1 ? "item" : "items"}
         </Text>
@@ -137,7 +142,7 @@ export const CollectionTable = ({
             >
               {COLLECTION_TABLE_SORT_OPTIONS[sortOption]}
             </Menu.Button>
-            <Menu.List>
+            <Menu.List pt="0.75rem" pb="0.5rem">
               {Object.entries(COLLECTION_TABLE_SORT_OPTIONS).map(
                 ([option, label]) => (
                   <Menu.Item
