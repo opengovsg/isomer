@@ -7,6 +7,7 @@ export const IMAGE_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
   ".tiff": "image/tiff",
   ".bmp": "image/bmp",
   ".webp": "image/webp",
+  ".avif": "image/avif",
 }
 
 /** Subset of {@link IMAGE_ACCEPTED_MIME_TYPE_MAPPING};

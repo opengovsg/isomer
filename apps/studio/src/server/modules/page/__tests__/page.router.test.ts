@@ -1867,7 +1867,8 @@ describe("page.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
-          message: "Folder not found or folderId is not a folder",
+          message:
+            "Parent not found or parentId is not a valid collection or folder",
         }),
       )
     })
@@ -1894,7 +1895,8 @@ describe("page.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
-          message: "Folder not found or folderId is not a folder",
+          message:
+            "Parent not found or parentId is not a valid collection or folder",
         }),
       )
     })

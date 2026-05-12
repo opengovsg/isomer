@@ -3,7 +3,7 @@ import { Box, Grid, GridItem } from "@chakra-ui/react"
 
 interface CmsContainerProps {
   children: ReactNode
-  sidebar: ReactElement
+  sidebar?: ReactElement
   header: ReactElement
   sidenav?: ReactElement
   variant?: "gsib" | "basic"
@@ -46,32 +46,34 @@ export function CmsContainer({
         {header}
       </GridItem>
 
-      <GridItem area="sidebar" as="aside" w="full" p={0}>
-        <Box
-          pos="sticky"
-          top={0}
-          borderRight="1px solid"
-          borderTop="1px solid"
-          borderColor="base.divider.medium"
-          py={{ base: 0, md: "0.75rem" }}
-          px={{ base: 0, md: "0.5rem" }}
-          height={0}
-          minH="100%"
-          overflow="auto"
-          css={{
-            "&::-webkit-scrollbar": {
-              height: "var(--chakra-sizes-1)",
-              width: "var(--chakra-sizes-1)",
-            },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "var(--chakra-colors-gray-400)",
-            },
-          }}
-          bg="utility.ui"
-        >
-          {sidebar}
-        </Box>
-      </GridItem>
+      {!!sidebar && (
+        <GridItem area="sidebar" as="aside" w="full" p={0}>
+          <Box
+            pos="sticky"
+            top={0}
+            borderRight="1px solid"
+            borderTop="1px solid"
+            borderColor="base.divider.medium"
+            py={{ base: 0, md: "0.75rem" }}
+            px={{ base: 0, md: "0.5rem" }}
+            height={0}
+            minH="100%"
+            overflow="auto"
+            css={{
+              "&::-webkit-scrollbar": {
+                height: "var(--chakra-sizes-1)",
+                width: "var(--chakra-sizes-1)",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "var(--chakra-colors-gray-400)",
+              },
+            }}
+            bg="utility.ui"
+          >
+            {sidebar}
+          </Box>
+        </GridItem>
+      )}
 
       {!!sidenav && (
         <GridItem as="aside" area="sidenav" overflow="hidden">

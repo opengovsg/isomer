@@ -169,6 +169,21 @@ model Site {
   ResourcePermission ResourcePermission[]
   AuditLog           AuditLog[]
   CodeBuildJobs      CodeBuildJobs[]
+  Redirect           Redirect[]
+}
+
+model Redirect {
+  id          BigInt   @id @default(autoincrement())
+  siteId      Int
+  site        Site     @relation(fields: [siteId], references: [id])
+  source      String
+  destination String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  deletedAt   DateTime?
+
+  @@unique([siteId, source])
+  @@index([siteId])
 }
 
 model Navbar {
