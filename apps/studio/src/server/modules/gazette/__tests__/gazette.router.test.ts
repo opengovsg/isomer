@@ -15,7 +15,6 @@ import {
   setupIsomerAdmin,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { v4 as uuidv4 } from "uuid"
 import { describe, expect, it } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
@@ -155,7 +154,7 @@ describe("gazette.router", async () => {
         siteId: site.id,
         collectionId: Number(collection.id),
         title: "Notice 123",
-        permalink: uuidv4(),
+        permalink: crypto.randomUUID(),
         ref: "/1/abc/notice-123.pdf",
         category: "Government Gazette",
         date: "30/04/2026",
@@ -210,7 +209,7 @@ describe("gazette.router", async () => {
           siteId: site.id,
           collectionId: Number(collection.id),
           title: "Notice 123",
-          permalink: uuidv4(),
+          permalink: crypto.randomUUID(),
           ref: "/1/abc/notice.pdf",
           category: "Government Gazette",
           date: "30/04/2026",
@@ -237,7 +236,7 @@ describe("gazette.router", async () => {
         siteId: site.id,
         collectionId: Number(collection.id),
         title: "Original",
-        permalink: uuidv4(),
+        permalink: crypto.randomUUID(),
         ref: "/1/abc/notice.pdf",
         category: "Government Gazette",
         date: "30/04/2026",
