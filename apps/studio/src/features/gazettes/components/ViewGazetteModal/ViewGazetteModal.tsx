@@ -17,9 +17,15 @@ import {
   Button,
   Checkbox,
   ModalCloseButton,
+  useToast,
 } from "@opengovsg/design-system-react"
+import { differenceInMinutes, format } from "date-fns"
 import { useState } from "react"
 import { BiInfoCircle, BiTrash } from "react-icons/bi"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { trpc } from "~/utils/trpc"
+
+import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 
 interface ViewGazetteData {
   title: string
@@ -27,7 +33,7 @@ interface ViewGazetteData {
   subcategory: string
   notificationNumber?: string
   fileId: string
-  publishedAt: string
+  publishedAt: Date | null
 }
 
 type ModalView = "view" | "delete"
@@ -36,6 +42,7 @@ interface ViewGazetteModalProps extends Pick<
   UseDisclosureReturn,
   "isOpen" | "onClose"
 > {
+  siteId: number
   gazetteId: string | number
   data: ViewGazetteData
   initialView?: ModalView
@@ -44,13 +51,46 @@ interface ViewGazetteModalProps extends Pick<
 export const ViewGazetteModal = ({
   isOpen,
   onClose,
+  siteId,
   gazetteId,
   data,
   initialView = "view",
 }: ViewGazetteModalProps): JSX.Element => {
+  const { subcategoryMap } = useGazetteSubcategoriesContext()
+
+  const canDelete = data.publishedAt
+    ? differenceInMinutes(new Date(), data.publishedAt) <= 15
+    : false
+
+  const subcategoryLabel = subcategoryMap[data.subcategory] ?? data.subcategory
+
   const [view, setView] = useState<ModalView>(initialView)
   const [isConfirmed, setIsConfirmed] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+
+  const toast = useToast()
+  const utils = trpc.useUtils()
+
+  const { mutateAsync: deleteGazette, isPending: isDeleting } =
+    trpc.gazette.delete.useMutation({
+      onSuccess: () => {
+        toast({
+          status: "success",
+          title: "Gazette deleted",
+          description: "The gazette has been permanently deleted.",
+          ...BRIEF_TOAST_SETTINGS,
+        })
+        void utils.gazette.list.invalidate()
+        handleClose()
+      },
+      onError: (error) => {
+        toast({
+          status: "error",
+          title: "Failed to delete gazette",
+          description: error.message,
+          ...BRIEF_TOAST_SETTINGS,
+        })
+      },
+    })
 
   const handleClose = () => {
     setView("view")
@@ -58,15 +98,11 @@ export const ViewGazetteModal = ({
     onClose()
   }
 
-  const onDelete = () => {
-    setIsDeleting(true)
-    try {
-      // TODO: Implement API call to delete gazette
-      console.log("Deleting gazette:", gazetteId)
-      handleClose()
-    } finally {
-      setIsDeleting(false)
-    }
+  const onDelete = async () => {
+    await deleteGazette({
+      siteId,
+      gazetteId: Number(gazetteId),
+    })
   }
 
   return (
@@ -83,7 +119,7 @@ export const ViewGazetteModal = ({
 
                 <HStack spacing="2.5rem" w="100%" alignItems="flex-start">
                   <DataField label="Category" value={data.category} />
-                  <DataField label="Subcategory" value={data.subcategory} />
+                  <DataField label="Subcategory" value={subcategoryLabel} />
                 </HStack>
 
                 <DataField
@@ -95,19 +131,27 @@ export const ViewGazetteModal = ({
 
                 <DataField
                   label="Date of Publication"
-                  value={data.publishedAt}
+                  value={
+                    data.publishedAt
+                      ? format(data.publishedAt, "dd/MM/yyyy, hh:mma")
+                      : "-"
+                  }
                 />
 
-                <Divider borderColor="base.divider.medium" />
+                {canDelete && (
+                  <>
+                    <Divider borderColor="base.divider.medium" />
 
-                <Button
-                  variant="outline"
-                  colorScheme="critical"
-                  leftIcon={<BiTrash />}
-                  onClick={() => setView("delete")}
-                >
-                  Delete this Gazette permanently
-                </Button>
+                    <Button
+                      variant="outline"
+                      colorScheme="critical"
+                      leftIcon={<BiTrash />}
+                      onClick={() => setView("delete")}
+                    >
+                      Delete this Gazette permanently
+                    </Button>
+                  </>
+                )}
               </VStack>
             </ModalBody>
           </>
@@ -141,7 +185,7 @@ export const ViewGazetteModal = ({
                   <DeleteDataField label="Title" value={data.title} />
                   <DeleteDataField
                     label="Category / Subcategory"
-                    value={`${data.category} / ${data.subcategory}`}
+                    value={`${data.category} / ${subcategoryLabel}`}
                   />
                   {data.notificationNumber && (
                     <DeleteDataField
@@ -152,7 +196,11 @@ export const ViewGazetteModal = ({
                   <DeleteDataField label="File ID" value={data.fileId} />
                   <DeleteDataField
                     label="Date of Publication"
-                    value={data.publishedAt}
+                    value={
+                      data.publishedAt
+                        ? format(data.publishedAt, "dd/MM/yyyy, hh:mma")
+                        : "-"
+                    }
                   />
                 </VStack>
               </Box>

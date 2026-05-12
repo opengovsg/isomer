@@ -1,15 +1,19 @@
+import type { PushDocument } from "~/server/modules/gazette/gazette.service"
 import { z } from "zod"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 import { getBlob, setAssetAsPublished } from "~/lib/s3"
 import { db } from "~/server/modules/database"
-import { parseFullTextFromPDF } from "~/server/modules/gazette/gazette.service"
+import {
+  parseFullTextFromPDF,
+  pushDocumentsForIngestion,
+} from "~/server/modules/gazette/gazette.service"
+import { generateDocumentId } from "~/server/modules/searchsg/searchsg.service"
 
 import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "schedule-push-document"
 const CRON_SCHEDULE = "* * * * *" // every minute
-const EGAZETTE_DOCUMENT_INDEX = env.EGAZETTE_DOCUMENT_INDEX
 const SEARCHSG_CONTENT_LENGTH = 50000
 
 const logger = createBaseLogger({ path: "cron:schedulePushDocumentJob" })
@@ -150,6 +154,10 @@ export const schedulePushDocumentJobHandler = async () => {
 
   await pushDocumentsForIngestion(documents)
   await deleteProcessedJobs(scheduledAtCutoff)
+  logger.info(
+    { count: documents.length, documents },
+    "Completed schedule push document job",
+  )
 }
 
 // Drop every job whose scheduledAt has passed, regardless of per-row push
@@ -160,80 +168,4 @@ const deleteProcessedJobs = async (scheduledAtCutoff: Date) => {
     .deleteFrom("PushDocumentJob")
     .where("scheduledAt", "<=", scheduledAtCutoff)
     .execute()
-}
-
-const generateDocumentId = (url: string, resourceId: string) => {
-  return `${url}-${resourceId}`
-}
-
-interface PushDocument {
-  documentId: string
-  title: string
-  url: string
-  contentType: string
-  content: string
-  date: string
-  categories: string[]
-}
-
-const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin" as const
-const ISOMER_UA =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer" as const
-
-const getSearchSGAuthToken = async () => {
-  const response = await fetch(`${SEARCHSG_BASE_URL}/v1/auth/token`, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${env.SEARCHSG_API_KEY}`,
-      "User-Agent": ISOMER_UA,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Failed to get SearchSG auth token: ${response.statusText}`)
-  }
-
-  const { accessToken, tokenType } = (await response.json()) as {
-    accessToken: string
-    tokenType: string
-  }
-
-  return { accessToken, tokenType }
-}
-
-const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
-  if (documents.length === 0) {
-    return
-  }
-
-  const { accessToken, tokenType } = await getSearchSGAuthToken()
-
-  const response = await fetch(
-    `${SEARCHSG_BASE_URL}/v2/indexes/${EGAZETTE_DOCUMENT_INDEX}/documents`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `${tokenType} ${accessToken}`,
-        "Content-Type": "application/json",
-        "User-Agent": ISOMER_UA,
-      },
-      body: JSON.stringify({ documentsToAdd: documents }),
-    },
-  )
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    logger.error(
-      { status: response.status, error: errorText },
-      "Failed to push documents for ingestion",
-    )
-    throw new Error(
-      `Failed to push documents for ingestion: ${response.statusText}`,
-    )
-  }
-
-  logger.info(
-    { count: documents.length },
-    "Successfully pushed documents for ingestion",
-  )
 }
