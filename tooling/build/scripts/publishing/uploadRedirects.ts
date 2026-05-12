@@ -7,7 +7,10 @@ const SITE_NAME = process.env.SITE_NAME
 const BUILD_NUMBER = process.env.CODEBUILD_BUILD_NUMBER
 const CONCURRENCY = Number(process.env.UPLOAD_CONCURRENCY) || 20
 
-interface Redirect { source: string; destination: string }
+interface Redirect {
+  source: string
+  destination: string
+}
 
 // Returns the normalised S3 key segment, or null if the source is unsafe/empty.
 function normalizeSource(source: string): string | null {
