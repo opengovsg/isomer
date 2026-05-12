@@ -166,7 +166,7 @@ catalogs:
   babel:
     "@babel/plugin-transform-class-properties": ^7.27.1
     "@babel/plugin-transform-object-rest-spread": ^7.27.3
-    "@babel/preset-env": ^7.27.2
+    "@babel/preset-env": ^7.29.3
     "@babel/preset-typescript": ^7.27.1
   casl:
     "@casl/ability": ^6.7.1
