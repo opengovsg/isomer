@@ -3,6 +3,7 @@ import { GrowthBook } from "@growthbook/growthbook"
 import {
   BANNER_FEATURE_KEY,
   CATEGORY_DROPDOWN_FEATURE_KEY,
+  IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
   IS_REDIRECTIONS_ENABLED_FEATURE_KEY,
   IS_SINGPASS_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
@@ -40,4 +41,8 @@ export const createSingpassEnabledGbParameters = (isEnabled: boolean) => {
 
 export const createRedirectionsEnabledGbParameters = (isEnabled: boolean) => {
   return [IS_REDIRECTIONS_ENABLED_FEATURE_KEY, isEnabled]
+}
+
+export const createAntiScamBannerEnabledGbParameters = (isEnabled: boolean) => {
+  return [IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY, isEnabled]
 }
