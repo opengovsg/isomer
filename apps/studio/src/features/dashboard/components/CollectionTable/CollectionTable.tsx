@@ -132,31 +132,39 @@ export const CollectionTable = ({
             Sort by:
           </Text>
           <Menu size="sm" variant="clear">
-            <Menu.Button
-              variant="clear"
-              size="sm"
-              p="0"
-              minH="auto"
-              colorScheme="sub"
-              fontSize="0.75rem"
-            >
-              {COLLECTION_TABLE_SORT_OPTIONS[sortOption]}
-            </Menu.Button>
-            <Menu.List pt="0.75rem" pb="0.5rem">
-              {Object.entries(COLLECTION_TABLE_SORT_OPTIONS).map(
-                ([option, label]) => (
-                  <Menu.Item
-                    key={option}
-                    onClick={() => {
-                      setSortOption(option as CollectionTableSortOptions)
-                      onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
-                    }}
-                  >
-                    {label}
-                  </Menu.Item>
-                ),
-              )}
-            </Menu.List>
+            {({ isOpen }) => (
+              <>
+                <Menu.Button
+                  variant="clear"
+                  size="sm"
+                  p="0"
+                  minH="auto"
+                  colorScheme="sub"
+                  fontSize="0.75rem"
+                  isOpen={isOpen}
+                >
+                  {COLLECTION_TABLE_SORT_OPTIONS[sortOption]}
+                </Menu.Button>
+                <Menu.List pt="0.75rem" pb="0.5rem">
+                  {Object.entries(COLLECTION_TABLE_SORT_OPTIONS).map(
+                    ([option, label]) => (
+                      <Menu.Item
+                        key={option}
+                        onClick={() => {
+                          setSortOption(option as CollectionTableSortOptions)
+                          onPaginationChange((old) => ({
+                            ...old,
+                            pageIndex: 0,
+                          }))
+                        }}
+                      >
+                        {label}
+                      </Menu.Item>
+                    ),
+                  )}
+                </Menu.List>
+              </>
+            )}
           </Menu>
         </HStack>
       </HStack>
