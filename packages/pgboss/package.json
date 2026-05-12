@@ -2,6 +2,7 @@
   "name": "@isomer/pgboss",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts"
@@ -16,7 +17,8 @@
     "services:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
     "setup:test": "run-s --print-label services:setup db:sleep",
     "test": "run-s test:*",
-    "test:watch": "dotenv -e .env.test pnpm exec vitest watch"
+    "test:watch": "dotenv -e .env.test pnpm exec vitest watch",
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@isomer/logging": "workspace:*",

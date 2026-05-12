@@ -2,6 +2,7 @@
   "name": "@isomer/logging",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
@@ -15,7 +16,7 @@
     "lint:fix": "oxlint --type-aware --fix .",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc"
   },
   "dependencies": {
     "dd-trace": "catalog:",
