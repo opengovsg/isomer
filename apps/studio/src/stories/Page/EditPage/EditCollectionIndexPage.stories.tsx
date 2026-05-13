@@ -5,7 +5,7 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
-import { IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
 import { ResourceState } from "~prisma/generated/generatedEnums"
@@ -113,7 +113,7 @@ export const WithBanner: Story = {
 export const NewCollectionIndexEditingExperienceNonIsomerAdmin: Story = {
   parameters: {
     growthbook: [
-      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
     ],
   },
   play: async ({ canvasElement }) => {
@@ -126,7 +126,7 @@ export const NewCollectionIndexEditingExperienceNonIsomerAdmin: Story = {
 export const NewCollectionIndexEditingExperienceIsomerAdmin: Story = {
   parameters: {
     growthbook: [
-      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
     ],
     msw: {
       handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
@@ -141,7 +141,7 @@ export const NewCollectionIndexEditingExperienceIsomerAdmin: Story = {
 export const NewCollectionIndexEditingExperienceForDisplay: Story = {
   parameters: {
     growthbook: [
-      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
     ],
   },
   play: async ({ canvasElement }) => {
@@ -158,7 +158,7 @@ export const NewCollectionIndexEditingExperienceForDisplay: Story = {
 export const NewCollectionIndexEditingExperienceForFilters: Story = {
   parameters: {
     growthbook: [
-      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
     ],
     msw: {
       handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
