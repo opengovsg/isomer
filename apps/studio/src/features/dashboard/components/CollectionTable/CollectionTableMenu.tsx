@@ -22,43 +22,32 @@ interface CollectionTableMenuProps {
   resourceType: CollectionTableData["type"]
 }
 
-const SearchPageMenu = ({ title }: { title: string }) => {
+const SearchPageMenuItems = () => {
   return (
-    <Menu isLazy size="sm">
-      <MenuButton
-        aria-label={`Options for ${title}`}
-        as={IconButton}
-        colorScheme="neutral"
-        icon={<BiDotsHorizontalRounded />}
-        variant="clear"
-      />
-      <Portal>
-        <MenuList>
-          <MenuItem
-            isDisabled
-            icon={<BiCog fontSize="1rem" />}
-            tooltip="This is a default page and its settings cannot be edited."
-          >
-            Edit settings
-          </MenuItem>
-          <MenuItem
-            isDisabled
-            icon={<BiFolderOpen fontSize="1rem" />}
-            tooltip="This is a default page that cannot be moved."
-          >
-            Move to...
-          </MenuItem>
-          <MenuItem
-            isDisabled
-            colorScheme="critical"
-            icon={<BiTrash fontSize="1rem" />}
-            tooltip="This is a default page that cannot be removed."
-          >
-            Delete
-          </MenuItem>
-        </MenuList>
-      </Portal>
-    </Menu>
+    <>
+      <MenuItem
+        isDisabled
+        icon={<BiCog fontSize="1rem" />}
+        tooltip="This is a default page and its settings cannot be edited."
+      >
+        Edit settings
+      </MenuItem>
+      <MenuItem
+        isDisabled
+        icon={<BiFolderOpen fontSize="1rem" />}
+        tooltip="This is a default page that cannot be moved."
+      >
+        Move to...
+      </MenuItem>
+      <MenuItem
+        isDisabled
+        colorScheme="critical"
+        icon={<BiTrash fontSize="1rem" />}
+        tooltip="This is a default page that cannot be removed."
+      >
+        Delete
+      </MenuItem>
+    </>
   )
 }
 
@@ -83,10 +72,6 @@ export const CollectionTableMenu = ({
   }
   const isSearchPage = permalink === "search" && parentId === null
 
-  if (isSearchPage) {
-    return <SearchPageMenu title={title} />
-  }
-
   return (
     <Menu isLazy size="sm">
       <MenuButton
@@ -98,41 +83,47 @@ export const CollectionTableMenu = ({
       />
       <Portal>
         <MenuList>
-          {(resourceType === ResourceType.CollectionPage ||
-            resourceType === ResourceType.CollectionLink) && (
-            <MenuItem
-              icon={<BiCog fontSize="1rem" />}
-              onClick={() =>
-                setPageSettingsModalState({
-                  pageId: resourceId,
-                  type: resourceType,
-                })
-              }
-            >
-              Edit settings
-            </MenuItem>
-          )}
-          <MenuItem
-            as="button"
-            icon={<BiFolderOpen fontSize="1rem" />}
-            onClick={handleMoveResourceClick}
-          >
-            Move to...
-          </MenuItem>
-          {resourceType !== ResourceType.IndexPage && (
-            <MenuItem
-              onClick={() => {
-                setValue({
-                  title,
-                  resourceId,
-                  resourceType,
-                })
-              }}
-              colorScheme="critical"
-              icon={<BiTrash fontSize="1rem" />}
-            >
-              Delete
-            </MenuItem>
+          {isSearchPage ? (
+            <SearchPageMenuItems />
+          ) : (
+            <>
+              {(resourceType === ResourceType.CollectionPage ||
+                resourceType === ResourceType.CollectionLink) && (
+                <MenuItem
+                  icon={<BiCog fontSize="1rem" />}
+                  onClick={() =>
+                    setPageSettingsModalState({
+                      pageId: resourceId,
+                      type: resourceType,
+                    })
+                  }
+                >
+                  Edit settings
+                </MenuItem>
+              )}
+              <MenuItem
+                as="button"
+                icon={<BiFolderOpen fontSize="1rem" />}
+                onClick={handleMoveResourceClick}
+              >
+                Move to...
+              </MenuItem>
+              {resourceType !== ResourceType.IndexPage && (
+                <MenuItem
+                  onClick={() => {
+                    setValue({
+                      title,
+                      resourceId,
+                      resourceType,
+                    })
+                  }}
+                  colorScheme="critical"
+                  icon={<BiTrash fontSize="1rem" />}
+                >
+                  Delete
+                </MenuItem>
+              )}
+            </>
           )}
         </MenuList>
       </Portal>
