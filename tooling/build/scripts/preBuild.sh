@@ -21,7 +21,8 @@ if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   # awk '{print $2}': Prints the second column of the last line, which is the tag name.
   # sed -E 's|refs/tags/||; s/\^.*$//': Removes the 'refs/tags/' prefix from the tag name.
   # - If tag is annotated (maybe due to signing), the tag name will have a caret (^) and optional text after it.
-  ISOMER_BUILD_REPO_BRANCH=$(git ls-remote --tags --sort='v:refname' https://github.com/opengovsg/isomer.git | tail -n1 | awk '{print $2}' | sed -E 's|refs/tags/||; s/\^.*$//')
+  # ISOMER_BUILD_REPO_BRANCH=$(git ls-remote --tags --sort='v:refname' https://github.com/opengovsg/isomer.git | tail -n1 | awk '{print $2}' | sed -E 's|refs/tags/||; s/\^.*$//')
+  ISOMER_BUILD_REPO_BRANCH="main"
 fi
 
 # Store the current directory
