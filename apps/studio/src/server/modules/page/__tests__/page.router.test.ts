@@ -2302,6 +2302,62 @@ describe("page.router", async () => {
     })
 
     it.skip("should throw 403 if user does not have write access to page", async () => {})
+
+    it("should throw 400 if attempting to change the search page permalink", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+        permalink: "search",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        title: "New Title",
+        permalink: "not-search",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "The search page permalink cannot be changed",
+        }),
+      )
+    })
+
+    it("should allow updating the search page title without changing permalink", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+        permalink: "search",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        title: "New Search Title",
+        permalink: "search",
+      })
+
+      // Assert
+      expect(result).toMatchObject({
+        title: "New Search Title",
+        permalink: "search",
+      })
+    })
   })
 
   describe("getFullPermalink", () => {
