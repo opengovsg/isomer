@@ -36,6 +36,13 @@ const SearchPageMenu = ({ title }: { title: string }) => {
         <MenuList>
           <MenuItem
             isDisabled
+            icon={<BiCog fontSize="1rem" />}
+            tooltip="This is a default page and its settings cannot be edited."
+          >
+            Edit settings
+          </MenuItem>
+          <MenuItem
+            isDisabled
             icon={<BiFolderOpen fontSize="1rem" />}
             tooltip="This is a default page that cannot be moved."
           >
