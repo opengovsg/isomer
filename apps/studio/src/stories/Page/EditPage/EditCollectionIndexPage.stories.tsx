@@ -63,7 +63,7 @@ export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Page description and summary/i,
+      name: /Collection settings/i,
     })
     await userEvent.click(button)
   },
