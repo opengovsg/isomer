@@ -27,8 +27,7 @@ interface DatatableProps<D> extends TableProps {
   isFetching?: boolean
   emptyPlaceholder?: React.ReactElement
   overflow?: LayoutProps["overflow"]
-  onRowClick?: (row: Row<D>) => void
-  isRowClickable?: (row: Row<D>) => boolean
+  onRowClick: (row: Row<D>) => void
 }
 
 export const Datatable = <T extends object>({
@@ -39,7 +38,6 @@ export const Datatable = <T extends object>({
   emptyPlaceholder,
   overflow = "auto",
   onRowClick,
-  isRowClickable,
   ...tableProps
 }: DatatableProps<T>): JSX.Element => {
   const { rows } = instance.getRowModel()
@@ -113,14 +111,13 @@ export const Datatable = <T extends object>({
           <Tbody>
             {rows.length === 0 && emptyPlaceholder}
             {rows.map((row) => {
-              const clickable = isRowClickable?.(row) ?? false
               return (
                 <Tr
                   key={row.id}
                   borderBottomWidth="1px"
                   _hover={{ bgColor: "interaction.muted.main.hover" }}
-                  cursor={clickable ? "pointer" : undefined}
-                  onClick={clickable ? () => onRowClick?.(row) : undefined}
+                  cursor={"pointer"}
+                  onClick={() => onRowClick(row)}
                 >
                   {row.getVisibleCells().map((cell) => {
                     return (

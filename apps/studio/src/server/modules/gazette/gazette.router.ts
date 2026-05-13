@@ -170,6 +170,7 @@ export const gazetteRouter = router({
             ...result,
             fileSize,
             scheduledAt: result.scheduledAt ?? result.publishedAt,
+            publishedAt: result.publishedAt,
           }
         }),
       )
