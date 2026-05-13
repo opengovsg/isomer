@@ -113,7 +113,11 @@ const FixedBlock = () => {
     )
   }
 
-  if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
+  if (
+    pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
+    isNewCollectionTagsManagementEnabled
+  ) {
+    // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
     const containerProps: StackProps = {
       px: "1.25rem",
       py: "1.25rem",
@@ -137,7 +141,7 @@ const FixedBlock = () => {
           icon={BiCog}
           iconProps={iconProps}
         />
-        {isUserIsomerAdmin && isNewCollectionTagsManagementEnabled && (
+        {isUserIsomerAdmin && (
           <BaseBlock
             onClick={() => console.log("to implement")}
             label="Filters"
@@ -148,6 +152,20 @@ const FixedBlock = () => {
           />
         )}
       </>
+    )
+  }
+
+  if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
+    return (
+      <BaseBlock
+        onClick={() => {
+          setCurrActiveIdx(0)
+          setDrawerState({ state: "collectionEditor" })
+        }}
+        label="Collection settings"
+        description="Summary, style, categories and sorting"
+        icon={BiPin}
+      />
     )
   }
 
@@ -377,6 +395,8 @@ export default function RootStateDrawer() {
   // for collection index pages
   const canAddBlocks = pageLayout !== "collection"
 
+  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
+
   return (
     <Flex direction="column" h="full">
       <ConfirmConvertIndexPageModal
@@ -450,7 +470,9 @@ export default function RootStateDrawer() {
             </Infobox>
           )}
 
-          {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection ? (
+          {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
+          isNewCollectionTagsManagementEnabled ? (
+            // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
             <Disable when={disableBlocks}>
               <VStack gap="1rem" w="100%" align="start">
                 <VStack gap="0.25rem" align="start">
@@ -508,12 +530,17 @@ export default function RootStateDrawer() {
                 <VStack gap="1.5rem" w="100%">
                   <VStack w="100%" h="100%" gap="1rem">
                     <Flex flexDirection="row" w="100%">
-                      <VStack gap="0.25rem" align="start" flex={1}>
-                        <Text textStyle="subhead-1">Custom blocks</Text>
-                        <Text textStyle="caption-2" color="base.content.medium">
-                          Use blocks to display your content.
-                        </Text>
-                      </VStack>
+                      {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
+                        <VStack gap="0.25rem" align="start" flex={1}>
+                          <Text textStyle="subhead-1">Custom blocks</Text>
+                          <Text
+                            textStyle="caption-2"
+                            color="base.content.medium"
+                          >
+                            Use blocks to display your content.
+                          </Text>
+                        </VStack>
+                      )}
                       {/* TODO: we should swap over to using the `resource.type` */}
                       {/* rather than the `page.layout` but we are unable to do so due */}
                       {/* to the existence of custom index page that are `layout: */}
