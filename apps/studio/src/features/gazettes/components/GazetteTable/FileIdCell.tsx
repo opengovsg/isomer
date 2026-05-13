@@ -46,6 +46,7 @@ export const FileIdCell = ({
           aria-disabled={isPending}
           opacity={isPending ? 0.5 : 1}
           pointerEvents={isPending ? "none" : "auto"}
+          wordBreak="break-all"
         >
           {fileId}
         </Link>
@@ -54,7 +55,7 @@ export const FileIdCell = ({
   }
 
   return (
-    <Text textStyle="body-2" color="base.content.strong" noOfLines={1}>
+    <Text textStyle="body-2" color="base.content.strong" wordBreak="break-all">
       {fileId}
     </Text>
   )
