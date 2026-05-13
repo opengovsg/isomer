@@ -390,7 +390,7 @@ catalogs:
       specifier: ^1.8.16
       version: 1.8.16
     tslib:
-      specifier: ^2.6.3
+      specifier: ^2.8.1
       version: 2.8.1
     tsx:
       specifier: ^4.20.4
