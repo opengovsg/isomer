@@ -22,6 +22,10 @@ interface CollectionTableMenuProps {
   resourceType: CollectionTableData["type"]
 }
 
+// The default Search page (permalink /search, no parent) is a system-managed
+// page used to render SearchSG results. Its slug is hardcoded into the site
+// renderer, so users must not be able to edit its settings, move it, or
+// delete it — any of those would break search on the published site.
 const SearchPageMenuItems = () => {
   return (
     <>
