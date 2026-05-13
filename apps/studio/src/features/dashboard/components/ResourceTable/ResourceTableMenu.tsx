@@ -56,20 +56,27 @@ export const ResourceTableMenu = ({
       <Portal>
         <MenuList minWidth="8rem">
           {/* TODO: Open edit modal depending on resource  */}
-          {type === ResourceType.Page && (
-            <>
-              <MenuItem
-                onClick={() =>
-                  setPageSettingsModalState({
-                    pageId: resourceId,
-                    type,
-                  })
-                }
-                icon={<BiCog fontSize="1rem" />}
-              >
-                Edit settings
-              </MenuItem>
-            </>
+          {type === ResourceType.Page && isSearchPage && (
+            <MenuItem
+              isDisabled
+              icon={<BiCog fontSize="1rem" />}
+              tooltip="This is a default page and its settings cannot be edited."
+            >
+              Edit settings
+            </MenuItem>
+          )}
+          {type === ResourceType.Page && !isSearchPage && (
+            <MenuItem
+              onClick={() =>
+                setPageSettingsModalState({
+                  pageId: resourceId,
+                  type,
+                })
+              }
+              icon={<BiCog fontSize="1rem" />}
+            >
+              Edit settings
+            </MenuItem>
           )}
           {type === ResourceType.Folder && (
             <MenuItem
