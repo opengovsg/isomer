@@ -363,6 +363,15 @@ export const resourceRouter = router({
               throw new TRPCError({ code: "BAD_REQUEST" })
             }
 
+            // Prevent users from moving the search page (permalink /search, no parent)
+            // This is a special page that is used to display the SearchSG results
+            if (toMove.permalink === "search" && toMove.parentId === null) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "The search page cannot be moved",
+              })
+            }
+
             let query = tx.selectFrom("Resource")
             query = !!destinationResourceId
               ? query.where("id", "=", destinationResourceId)
