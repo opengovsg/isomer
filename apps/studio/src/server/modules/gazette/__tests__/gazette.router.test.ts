@@ -227,6 +227,43 @@ describe("gazette.router", async () => {
       // Only the collection itself exists — no link was created.
       expect(resources.map((r) => r.type)).toEqual([ResourceType.Collection])
     })
+
+    it("rejects creation when a gazette with the same file ID already exists", async () => {
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Create first gazette with a specific filename
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/duplicate-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Attempt to create second gazette with the same filename (different path prefix)
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Second Notice",
+          permalink: crypto.randomUUID(),
+          ref: "/sites/1/gazettes/uuid2/duplicate-file.pdf", // Same filename
+          category: "Government Gazette",
+          date: "30/04/2026",
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same file ID already exists",
+        }),
+      )
+    })
   })
 
   describe("update", () => {
@@ -319,6 +356,55 @@ describe("gazette.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(after.scheduledAt).toEqual(PAST_DATE)
+    })
+
+    it("rejects update when changing to a file ID that already exists", async () => {
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Create first gazette
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/existing-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Create second gazette with a different filename
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Second Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid2/different-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Attempt to update second gazette to use the same filename as first
+      await expect(
+        caller.update({
+          siteId: site.id,
+          gazetteId: Number(gazetteId),
+          title: "Second Notice",
+          newRef: "/sites/1/gazettes/uuid3/existing-file.pdf", // Same filename as first
+          category: "Government Gazette",
+          date: "30/04/2026",
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same file ID already exists",
+        }),
+      )
     })
   })
 })

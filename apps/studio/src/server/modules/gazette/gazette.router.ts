@@ -201,9 +201,17 @@ export const gazetteRouter = router({
         if (filename) {
           const duplicateRef = await db
             .selectFrom("Resource")
-            .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+            .leftJoin(
+              "Blob as DraftBlob",
+              "Resource.draftBlobId",
+              "DraftBlob.id",
+            )
             .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
-            .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+            .leftJoin(
+              "Blob as PublishedBlob",
+              "Version.blobId",
+              "PublishedBlob.id",
+            )
             .where("Resource.siteId", "=", siteId)
             .where("Resource.parentId", "=", String(collectionId))
             .where("Resource.type", "=", ResourceType.CollectionLink)
@@ -411,9 +419,17 @@ export const gazetteRouter = router({
         if (newFilename && newFilename !== oldFilename) {
           const duplicateRef = await db
             .selectFrom("Resource")
-            .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+            .leftJoin(
+              "Blob as DraftBlob",
+              "Resource.draftBlobId",
+              "DraftBlob.id",
+            )
             .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
-            .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+            .leftJoin(
+              "Blob as PublishedBlob",
+              "Version.blobId",
+              "PublishedBlob.id",
+            )
             .where("Resource.siteId", "=", siteId)
             .where("Resource.parentId", "=", existingResource.parentId)
             .where("Resource.type", "=", ResourceType.CollectionLink)
