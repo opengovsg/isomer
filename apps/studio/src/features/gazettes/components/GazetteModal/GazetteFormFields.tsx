@@ -186,6 +186,9 @@ export const GazetteFormFields = ({
           onChange={(newFile) => {
             setFile(newFile)
             onFileChange?.(newFile)
+            if (newFile) {
+              setValue("fileId", newFile.name)
+            }
           }}
         />
       </FormControl>
