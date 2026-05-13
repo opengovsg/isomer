@@ -9,6 +9,7 @@ import { exec } from "child_process";
 import { GET_ALL_RESOURCES_WITH_FULL_PERMALINKS } from "./constants";
 import type { Resource } from "./types";
 import { CONVERSION_OUTPUT_DIR } from "../constants";
+import { EXTRACTED_ASSETS_DIR } from "../converters/google-slides";
 import type { StudiofyRequest } from "../types";
 import { getSiteNameAndUrl } from "../utils";
 
@@ -129,6 +130,18 @@ export const prepareSite = async (
   await fs.promises.cp(tempImagesDir, publicImagesDir, { recursive: true });
   await fs.promises.cp(tempFilesDir, publicFilesDir, { recursive: true });
   await fs.promises.rm(tempDir, { recursive: true, force: true });
+
+  // Step 4b: Overlay assets downloaded during conversion (e.g. Google Slides
+  // PNGs) onto the public folder so they are picked up by getAssetsMapping.
+  const extractedAssetsDir = path.join(
+    __dirname,
+    "..",
+    EXTRACTED_ASSETS_DIR,
+    siteName,
+  );
+  if (fs.existsSync(extractedAssetsDir)) {
+    await fs.promises.cp(extractedAssetsDir, publicDir, { recursive: true });
+  }
 
   // Step 5: Copy over the converted schema files into the cloned repository
   const schemaDir = path.join(cloneDir, siteName, "schema");

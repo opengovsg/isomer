@@ -35,6 +35,7 @@ import {
   IsomerDetailsGroup,
   IsomerDetailsSummary,
 } from "../tiptap";
+import path from "path";
 import {
   PLACEHOLDER_ALT_TEXT,
   PLACEHOLDER_CARD_LINK_TEXT,
@@ -42,6 +43,39 @@ import {
   PLACEHOLDER_IMAGE_IN_TABLE_TEXT,
   PLACEHOLDER_INSTAGRAM_LINK_TEXT,
 } from "../constants";
+import { generateImageAltText } from "../ai";
+import { downloadGoogleSlides, type DownloadedSlide } from "./google-slides";
+
+const MAX_IMAGE_GALLERY_IMAGES = 30;
+
+// Splits the slides into image-gallery-sized chunks. The image gallery schema
+// requires minItems: 2, so when the final chunk would contain a single slide,
+// redistribute one from the previous chunk.
+const chunkSlidesForGalleries = (
+  slides: DownloadedSlide[],
+): DownloadedSlide[][] => {
+  if (slides.length === 0) return [];
+  const chunks: DownloadedSlide[][] = [];
+  for (let i = 0; i < slides.length; i += MAX_IMAGE_GALLERY_IMAGES) {
+    chunks.push(slides.slice(i, i + MAX_IMAGE_GALLERY_IMAGES));
+  }
+  const lastChunk = chunks[chunks.length - 1];
+  if (chunks.length >= 2 && lastChunk && lastChunk.length === 1) {
+    chunks.pop();
+    const prev = chunks[chunks.length - 1];
+    if (prev) {
+      const takenFromPrev = prev.pop();
+      if (takenFromPrev !== undefined) {
+        chunks.push([takenFromPrev, ...lastChunk]);
+      } else {
+        chunks.push(lastChunk);
+      }
+    } else {
+      chunks.push(lastChunk);
+    }
+  }
+  return chunks;
+};
 
 const { JSDOM } = jsdom;
 const dom = new JSDOM(
@@ -93,9 +127,17 @@ export const getIsHtmlContainingRedundantDivs = (html: string) => {
   });
 };
 
+interface ConvertFromTiptapOptions {
+  site?: string;
+  baseDir?: string;
+}
+
 // Converts a Tiptap-based schema to an Isomer Next schema
 // tiptapSchema: The schema object from Tiptap
-const convertFromTiptap = (schema: any) => {
+const convertFromTiptap = async (
+  schema: any,
+  { site, baseDir }: ConvertFromTiptapOptions = {},
+) => {
   // Iterate through all the items in the content key of the schema and group
   // them into a prose block. If a "type": "iframe" is found, do not add to the
   // current prose block, keep it separate and continue the process for the
@@ -166,7 +208,7 @@ const convertFromTiptap = (schema: any) => {
 
   const updatedSchema = schema.flatMap(expandAccordions);
 
-  updatedSchema.forEach((component: any) => {
+  for (const component of updatedSchema) {
     if (component.type === "iframe") {
       outputContent.push(proseBlock);
 
@@ -201,32 +243,83 @@ const convertFromTiptap = (schema: any) => {
             url: fixedSrc,
           });
         } else if (srcUrl.host.includes("docs.google.com")) {
-          outputContent.push({
-            type: "prose",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    marks: [
-                      {
-                        type: "link",
-                        attrs: {
-                          href: protocolUrl,
+          const isSlides = srcUrl.pathname.includes("/presentation/");
+
+          let slidesEmitted = false;
+          if (isSlides && site && baseDir && protocolUrl) {
+            const downloaded = await downloadGoogleSlides({
+              url: protocolUrl,
+              site,
+              baseDir,
+            });
+            if (downloaded) {
+              const altTexts = await Promise.all(
+                downloaded.slides.map(async (slide) => {
+                  const generated = await generateImageAltText(slide.sourceUrl);
+                  return generated && generated.trim().length > 0
+                    ? generated
+                    : PLACEHOLDER_ALT_TEXT;
+                }),
+              );
+
+              const chunks = chunkSlidesForGalleries(downloaded.slides);
+              let slideIndex = 0;
+              for (const chunk of chunks) {
+                if (chunk.length < 2) {
+                  const slide = chunk[0];
+                  if (slide) {
+                    outputContent.push({
+                      type: "image",
+                      src: slide.publicPath,
+                      alt: altTexts[slideIndex] ?? PLACEHOLDER_ALT_TEXT,
+                    });
+                    slideIndex += 1;
+                  }
+                } else {
+                  const startIndex = slideIndex;
+                  outputContent.push({
+                    type: "imagegallery",
+                    images: chunk.map((slide, idx) => ({
+                      src: slide.publicPath,
+                      alt:
+                        altTexts[startIndex + idx] ?? PLACEHOLDER_ALT_TEXT,
+                    })),
+                  });
+                  slideIndex += chunk.length;
+                }
+              }
+              slidesEmitted = true;
+            }
+          }
+
+          if (!slidesEmitted) {
+            outputContent.push({
+              type: "prose",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      marks: [
+                        {
+                          type: "link",
+                          attrs: {
+                            href: protocolUrl,
+                          },
                         },
-                      },
-                    ],
-                    text: PLACEHOLDER_GOOGLE_SLIDES_TEXT,
-                  },
-                  {
-                    type: "text",
-                    text: ".",
-                  },
-                ],
-              },
-            ],
-          });
+                      ],
+                      text: PLACEHOLDER_GOOGLE_SLIDES_TEXT,
+                    },
+                    {
+                      type: "text",
+                      text: ".",
+                    },
+                  ],
+                },
+              ],
+            });
+          }
         } else {
           // NOTE: We are not converting all types of iframe components, so this
           // will be flagged for manual review
@@ -609,7 +702,7 @@ const convertFromTiptap = (schema: any) => {
     } else {
       proseBlock.content.push(component);
     }
-  });
+  }
 
   if (proseBlock.content.length > 0) {
     outputContent.push(proseBlock);
@@ -988,7 +1081,11 @@ const fixTipTapContent = (html: string) => {
   return container.innerHTML;
 };
 
-export const convertHtmlToSchema = async (html: string, domain?: string) => {
+export const convertHtmlToSchema = async (
+  html: string,
+  domain?: string,
+  options: { site?: string; baseDir?: string } = {},
+) => {
   const output = generateJSON(fixTipTapContent(html), [
     Blockquote.extend({
       content: "paragraph+",
@@ -1181,6 +1278,6 @@ export const convertHtmlToSchema = async (html: string, domain?: string) => {
   // console.log(JSON.stringify(output.content));
   const schema = getCleanedSchema(output.content, domain);
   // console.log(JSON.stringify(schema));
-  const result = convertFromTiptap(schema);
+  const result = await convertFromTiptap(schema, options);
   return result;
 };
