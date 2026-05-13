@@ -118,8 +118,7 @@ export const ResourceTableMenu = ({
                   Edit folder settings
                 </MenuItem>
               )}
-              {(type === ResourceType.Page ||
-                type === ResourceType.Folder) && (
+              {(type === ResourceType.Page || type === ResourceType.Folder) && (
                 // TODO: we need to change the resourceid next time when we implement root level permissions
                 <Can do="move" on={{ parentId }}>
                   <MenuItem
