@@ -51,7 +51,7 @@ catalog:
   isomorphic-dompurify: ^3.9.0
   mockdate: ^3.0.5
   msw: ^2.8.6
-  msw-storybook-addon: ^2.0.4
+  msw-storybook-addon: ^2.0.7
   msw-trpc: ^2.0.1
   node-mocks-http: ^1.16.2
   npm-run-all2: ^8.0.4
@@ -68,7 +68,7 @@ catalog:
   pg: ^8.16.2
   pino: ^9.6.0
   pino-pretty: ^13.0.0
-  postcss: ^8.4.39
+  postcss: ^8.5.10
   postcss-preset-env: ^10.0.8
   react-icons: ^5.2.0
   rimraf: ^5.0.10
@@ -95,7 +95,7 @@ catalog:
   "@types/request": ^2.48.12
   "@types/validator": ^13.15.2
   globals: ^11.12.0
-  "@1password/sdk": ^0.3.1
+  "@1password/sdk": ^0.4.0
   "@datadog/browser-rum": ^5.29.1
   "@fontsource/ibm-plex-mono": ^5.1.1
   "@formkit/auto-animate": ^0.8.2
@@ -129,7 +129,7 @@ catalog:
   nanoid: ^5.0.9
   next: ^15.5.18
   openid-client: ^5.7.1
-  oxfmt: ^0.42.0
+  oxfmt: ^0.48.0
   oxlint: ^1.56.0
   oxlint-tsgolint: ^0.17.1
   papaparse: ^5.5.3
@@ -138,7 +138,7 @@ catalog:
   rate-limiter-flexible: ^5.0.3
   react-error-boundary: ^5.0.0
   react-frame-component: ^5.2.7
-  react-hook-form: ^7.52.1
+  react-hook-form: ^7.75.0
   react-markdown: ^10.1.0
   rehype-external-links: ^3.0.0
   sass: ^1.83.4
@@ -148,7 +148,7 @@ catalog:
   tailwindcss-react-aria-components: ^1.1.4
   tiptap-text-direction: ^0.3.1
   transliteration: ^2.6.1
-  validator: ^13.15.22
+  validator: ^13.15.35
   wretch: ^2.11.0
 
 catalogs:
@@ -169,7 +169,7 @@ catalogs:
     "@babel/preset-env": ^7.29.3
     "@babel/preset-typescript": ^7.27.1
   casl:
-    "@casl/ability": ^6.7.1
+    "@casl/ability": ^6.8.1
     "@casl/react": ^5.0.0
   chakra:
     "@chakra-ui/anatomy": ^2.3.4
@@ -197,7 +197,7 @@ catalogs:
   "react-aria":
     "@react-aria/button": ^3.14.2
     "@react-aria/checkbox": ^3.16.2
-    "@react-aria/focus": ^3.21.2
+    "@react-aria/focus": ^3.22.0
     "@react-aria/interactions": ^3.25.6
     "@react-aria/textfield": ^3.18.2
     "@react-aria/utils": ^3.31.0
@@ -245,10 +245,10 @@ catalogs:
     "@tiptap/pm": 2.22.3
     "@tiptap/react": 2.22.3
   trpc:
-    "@trpc/client": ^11.4.4
-    "@trpc/next": ^11.4.4
-    "@trpc/react-query": ^11.4.4
-    "@trpc/server": ^11.4.4
+    "@trpc/client": ^11.17.0
+    "@trpc/next": ^11.17.0
+    "@trpc/react-query": ^11.17.0
+    "@trpc/server": ^11.17.0
   vitest:
     "@vitejs/plugin-react": ^4.3.1
     "@vitest/coverage-istanbul": ^2.1.2
