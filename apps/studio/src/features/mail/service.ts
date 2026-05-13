@@ -1,4 +1,4 @@
-import { createLogger } from "~/lib/logger"
+import { createBaseLogger } from "~/lib/logger"
 import { isValidEmail } from "~/utils/email"
 
 import type {
@@ -18,7 +18,7 @@ import type {
 import { sendMail } from "../../lib/mail"
 import { templates } from "./templates"
 
-const logger = createLogger({ path: "features/mail/service" })
+const logger = createBaseLogger({ path: "features/mail/service" })
 
 interface SendEmailWithTemplateProps {
   data: BaseEmailTemplateData

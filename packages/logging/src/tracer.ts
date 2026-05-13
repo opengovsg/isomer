@@ -10,9 +10,10 @@ export const initTracer = ({ service }: { service?: string } = {}) => {
     service,
     env: env.NEXT_PUBLIC_APP_ENV,
     version: env.NEXT_PUBLIC_APP_VERSION,
-    logInjection: true,
     runtimeMetrics: true,
-    reportHostname: true,
-    profiling: process.env.NODE_ENV === "production",
+    logInjection: true,
+    profiling:
+      env.NEXT_PUBLIC_APP_ENV !== "development" &&
+      env.NEXT_PUBLIC_APP_ENV !== "test",
   })
 }

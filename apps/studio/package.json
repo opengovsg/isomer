@@ -138,8 +138,6 @@
     "openid-client": "catalog:",
     "papaparse": "catalog:",
     "pg": "catalog:",
-    "pino": "catalog:",
-    "pino-pretty": "catalog:",
     "prisma": "catalog:prisma",
     "prisma-json-types-generator": "catalog:prisma",
     "prisma-kysely": "catalog:prisma",

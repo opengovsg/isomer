@@ -1,29 +1,23 @@
 # @isomer/logging
 
-Shared Pino setup for Isomer: syslog-style custom levels, ISO timestamps, uppercase `level`, and a root binding `env` (deployment label). This package does **not** import application env modules or HTTP frameworks—callers pass plain configuration and optional request-derived fields.
-
-## Dependencies
-
-`pino`, `pino-pretty`, and `nanoid` are **direct dependencies** of this package (same pattern as `@isomer/pgboss` shipping `pino`). Apps that only need the `Logger` **type** can keep a matching `pino` version in their own `package.json` for TypeScript.
+Shared Pino setup for Isomer: syslog-style custom levels, ISO timestamps, uppercase `level`, and a root binding `env` (deployment label). This package does **not** import application env modules or HTTP frameworks — callers pass plain configuration and any request-derived fields.
 
 ## API
 
-- **`Logger`** — re-exported `pino` `Logger` type for parameters (e.g. `@isomer/pgboss` APIs).
-
-- **`createRootLogger(options)`** — build one root logger per process (typically behind a module-level singleton). Options:
-  - `nodeEnv` — used to choose the default transport: `development` / `test` → `pino-pretty`; otherwise stdout.
+- **`Logger`** — re-exported `pino` `Logger` type.
+- **`createBaseLogger(options)`** — returns a child logger off a process-wide singleton. Options:
+  - `nodeEnv` — picks transport: `development` / `test` → `pino-pretty`; otherwise stdout.
   - `appEnvLabel` — string stored on every line as `env`.
-  - `logLevel` — optional; defaults to `process.env.PINO_LOG_LEVEL` or `info`.
-  - `destination` — optional `DestinationStream` override (tests, custom sinks).
+  - `path` — bound on the child.
+  - `clientIp?` — bound on the child.
+  - `traceId?` — bound on the child as `trace_id`.
 
-- **`createChildLogger(parent, { path, clientIp?, traceId? })`** — returns a child with stable field names: `path`, `id` (nanoid), `clientIp`, `trace_id` (from `traceId`). Use this for per-request or per-job context.
-
-- **`SYSLOG_LEVELS`** — exported level map if you need to reference the same numeric scale elsewhere.
+The pino level is read from `process.env.PINO_LOG_LEVEL` (defaults to `info`).
 
 ## Usage in Studio (Next.js)
 
-Keep a thin adapter in the app: read validated env, map `NextApiRequest` to `clientIp` / `traceId`, then call `createRootLogger` / `createChildLogger`. See `apps/studio/src/lib/logger.ts`.
+Keep a thin adapter in the app: read validated env, map `NextApiRequest` to `clientIp` / `traceId`, then call `createBaseLogger`. See `apps/studio/src/lib/logger.ts`.
 
-## Observability / Datadog
+## Datadog tracer
 
-Trace correlation is a **caller concern**: read `x-datadog-trace-id` (or other headers) in your HTTP layer and pass the string as `traceId`. Keeping this out of the core package avoids pulling in framework-specific header types.
+`@isomer/logging/tracer` exposes `initTracer({ service })`. Call it from your runtime entrypoint (e.g. Next.js `instrumentation.ts`) when `DD_SERVICE` is set.

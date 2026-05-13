@@ -1,5 +1,5 @@
 import type { SelectExpression } from "kysely"
-import type { Logger } from "pino"
+import type { Logger } from "@isomer/logging"
 import type { UnwrapTagged } from "type-fest"
 import type { ResourceItemContent } from "~/schemas/resource"
 import {

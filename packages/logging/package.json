@@ -14,8 +14,6 @@
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
-    "test": "vitest run",
-    "test:watch": "vitest watch",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -29,8 +27,6 @@
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "@vitest/coverage-istanbul": "catalog:vitest",
-    "typescript": "catalog:",
-    "vitest": "catalog:vitest"
+    "typescript": "catalog:"
   }
 }

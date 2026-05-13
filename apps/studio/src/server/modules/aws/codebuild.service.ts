@@ -1,4 +1,4 @@
-import type { Logger } from "pino"
+import type { Logger } from "@isomer/logging"
 import { pick } from "lodash-es"
 
 import type { BuildChanges } from "./types"

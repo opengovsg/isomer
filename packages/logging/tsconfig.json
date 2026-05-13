@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["node", "vitest/globals"],
+    "types": ["node"],
     "noEmit": true,
     "moduleResolution": "node",
     "esModuleInterop": true,

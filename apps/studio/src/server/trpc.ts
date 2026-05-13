@@ -13,7 +13,7 @@ import superjson from "superjson"
 import { ZodError } from "zod"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
-import { createLogger } from "~/lib/logger"
+import { createBaseLogger } from "~/lib/logger"
 
 import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { type Context } from "./context"
@@ -56,7 +56,7 @@ const t = initTRPC
 const loggerMiddleware = t.middleware(
   async ({ path, next, ctx, type, getRawInput }) => {
     const start = Date.now()
-    const logger = createLogger({
+    const logger = createBaseLogger({
       path,
       req: ctx.req,
     })

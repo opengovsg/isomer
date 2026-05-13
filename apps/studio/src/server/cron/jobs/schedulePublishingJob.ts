@@ -5,7 +5,7 @@ import {
   ENABLE_CODEBUILD_JOBS,
   ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
 } from "~/lib/growthbook"
-import { createLogger } from "~/lib/logger"
+import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { publishSite } from "~/server/modules/aws/codebuild.service"
 import { db } from "~/server/modules/database"
@@ -19,7 +19,7 @@ import { registerPgbossJob } from "@isomer/pgboss"
 const JOB_NAME = "schedule-publishing"
 const CRON_SCHEDULE = "* * * * *" // every minute
 
-const logger = createLogger({ path: "cron:schedulePublishingJob" })
+const logger = createBaseLogger({ path: "cron:schedulePublishingJob" })
 
 /**
  * Registers the schedule publishing job with the specified cron schedule.

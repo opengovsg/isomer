@@ -5,7 +5,7 @@ import {
   sendAccountDeactivationEmail,
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
-import { createLogger } from "~/lib/logger"
+import { createBaseLogger } from "~/lib/logger"
 
 import type { ResourcePermission, Site, User } from "../database"
 import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
@@ -13,7 +13,7 @@ import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
 
-const logger = createLogger({
+const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
 })
 

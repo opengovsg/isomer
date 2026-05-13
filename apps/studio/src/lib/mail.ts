@@ -1,6 +1,6 @@
 import wretch from "wretch"
 import { env } from "~/env.mjs"
-import { createLogger } from "~/lib/logger"
+import { createBaseLogger } from "~/lib/logger"
 import { isEmailWhitelisted } from "~/server/modules/whitelist/whitelist.service"
 
 interface SendMailParams {
@@ -9,7 +9,7 @@ interface SendMailParams {
   subject: string
 }
 
-const logger = createLogger({ path: "lib/mail" })
+const logger = createBaseLogger({ path: "lib/mail" })
 
 export const sendMail = async (params: SendMailParams): Promise<void> => {
   // Safe guard to prevent sending emails to non-whitelisted emails

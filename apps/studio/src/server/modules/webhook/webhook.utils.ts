@@ -1,6 +1,6 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { BuildStatusType } from "@prisma/client"
-import type { Logger } from "pino"
+import type { Logger } from "@isomer/logging"
 import { compact } from "lodash-es"
 import {
   sendFailedPublishEmail,

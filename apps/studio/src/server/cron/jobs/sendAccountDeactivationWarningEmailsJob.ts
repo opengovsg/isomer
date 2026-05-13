@@ -3,11 +3,11 @@ import { bulkSendAccountDeactivationWarningEmails } from "~/server/modules/user/
 
 import { registerPgbossJob } from "@isomer/pgboss"
 
-import { createLogger } from "../../../lib/logger"
+import { createBaseLogger } from "../../../lib/logger"
 
 const CRON_SCHEDULE = "0 0 * * *" // every day at 00:00 (midnight)
 
-const logger = createLogger({
+const logger = createBaseLogger({
   path: "cron:sendAccountDeactivationWarningEmailsJob",
 })
 

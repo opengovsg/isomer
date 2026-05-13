@@ -1,4 +1,4 @@
-import type { Logger } from "@isomer/logging"
+import type { BaseLogger } from "@isomer/logging"
 
 export interface HeartbeatOptions {
   maxRetries?: number
@@ -13,7 +13,7 @@ export interface HeartbeatOptions {
  * @param options Configuration options for the heartbeat
  */
 export const sendHeartbeat = async (
-  logger: Logger<string>,
+  logger: BaseLogger,
   jobId: string,
   { maxRetries = 3, delayMs = 1000, heartbeatURL }: HeartbeatOptions,
 ) => {

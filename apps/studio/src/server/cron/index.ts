@@ -1,9 +1,9 @@
-import { createLogger } from "../../lib/logger"
+import { createBaseLogger } from "../../lib/logger"
 import { deactivateInactiveUsersJob } from "./jobs/deactivateInactiveUsersJob"
 import { schedulePublishingJob } from "./jobs/schedulePublishingJob"
 import { sendAccountDeactivationWarningEmailsJob } from "./jobs/sendAccountDeactivationWarningEmailsJob"
 
-const logger = createLogger({ path: "cron:index" })
+const logger = createBaseLogger({ path: "cron:index" })
 
 // Track cron job instances for proper cleanup
 const cronJobs: { stop: () => void }[] = []
