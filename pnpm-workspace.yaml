@@ -252,8 +252,8 @@ catalogs:
     "@trpc/react-query": ^11.17.0
     "@trpc/server": ^11.17.0
   vitest:
-    "@vitejs/plugin-react": ^4.3.1
-    "@vitest/coverage-istanbul": ^2.1.2
-    vite: ^5.4.21
-    vite-tsconfig-paths: ^5.1.4
-    vitest: ^2.1.1
+    "@vitejs/plugin-react": ^6.0.1
+    "@vitest/coverage-istanbul": ^4.1.5
+    vite: ^8.0.10
+    vite-tsconfig-paths: ^6.1.1
+    vitest: ^4.1.5
