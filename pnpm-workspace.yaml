@@ -110,7 +110,7 @@ catalog:
   "@uidotdev/usehooks": ^2.4.1
   ajv-errors: ^3.0.0
   chakra-react-select: ^5.0.5
-  commander: ^12.1.0
+  commander: ^14.0.3
   date-fns-tz: ^3.1.3
   dd-trace: ^5.24.0
   exponential-backoff: ^3.1.2
