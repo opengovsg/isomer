@@ -264,8 +264,8 @@ catalogs:
       specifier: ^4.18.1
       version: 4.18.1
     markdown-to-jsx:
-      specifier: ^7.7.8
-      version: 7.7.17
+      specifier: ^9.7.16
+      version: 9.8.0
     minisearch:
       specifier: ^7.1.2
       version: 7.2.0
@@ -1183,7 +1183,7 @@ importers:
         version: 4.18.1
       markdown-to-jsx:
         specifier: 'catalog:'
-        version: 7.7.17(react@18.3.1)
+        version: 9.8.0(react@18.3.1)
       minisearch:
         specifier: 'catalog:'
         version: 7.2.0
@@ -8764,13 +8764,22 @@ packages:
     resolution: {integrity: sha512-BuU2qnTti9YKgK5N+IeMubp14ZUKUUw7yeJbkjtosvHiP0AZ5c8IAgEMk79D0eC8F23r4Ac/q8cAIFdm2FtyoA==}
     hasBin: true
 
-  markdown-to-jsx@7.7.17:
-    resolution: {integrity: sha512-7mG/1feQ0TX5I7YyMZVDgCC/y2I3CiEhIRQIhyov9nGBP5eoVrOXXHuL5ZP8GRfxVZKRiXWJgwXkb9It+nQZfQ==}
-    engines: {node: '>= 10'}
+  markdown-to-jsx@9.8.0:
+    resolution: {integrity: sha512-NWL0vDt6BeQgCxc2kK6g2SEPJpQuacu+NJk5j4QT4wlNmbsHdudoAbTGLCIyoPhfMiEqD1OZVBsYK0hvCky/HQ==}
+    engines: {node: '>= 18'}
     peerDependencies:
-      react: '>= 0.14.0'
+      react: '>= 16.0.0'
+      react-native: '*'
+      solid-js: '>=1.0.0'
+      vue: '>=3.0.0'
     peerDependenciesMeta:
       react:
+        optional: true
+      react-native:
+        optional: true
+      solid-js:
+        optional: true
+      vue:
         optional: true
 
   math-intrinsics@1.1.0:
@@ -19884,7 +19893,7 @@ snapshots:
       punycode.js: 2.3.1
       uc.micro: 2.1.0
 
-  markdown-to-jsx@7.7.17(react@18.3.1):
+  markdown-to-jsx@9.8.0(react@18.3.1):
     optionalDependencies:
       react: 18.3.1
 
