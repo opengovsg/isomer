@@ -124,9 +124,7 @@ export const ExpandedProfileDropdown: Story = {
 
 export const NewCollectionTagsManagement: Story = {
   parameters: {
-    growthbook: [
-      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
-    ],
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

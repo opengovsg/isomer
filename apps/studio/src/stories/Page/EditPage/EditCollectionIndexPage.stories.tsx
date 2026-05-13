@@ -112,9 +112,7 @@ export const WithBanner: Story = {
 
 export const NewCollectionIndexEditingExperienceNonIsomerAdmin: Story = {
   parameters: {
-    growthbook: [
-      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
-    ],
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -125,9 +123,7 @@ export const NewCollectionIndexEditingExperienceNonIsomerAdmin: Story = {
 // "Filters" block is currently only accessible by Isomer Admin
 export const NewCollectionIndexEditingExperienceIsomerAdmin: Story = {
   parameters: {
-    growthbook: [
-      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
-    ],
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
       handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
     },
@@ -140,9 +136,7 @@ export const NewCollectionIndexEditingExperienceIsomerAdmin: Story = {
 
 export const NewCollectionIndexEditingExperienceForDisplay: Story = {
   parameters: {
-    growthbook: [
-      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
-    ],
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -157,9 +151,7 @@ export const NewCollectionIndexEditingExperienceForDisplay: Story = {
 // Currently only accessible by Isomer Admin
 export const NewCollectionIndexEditingExperienceForFilters: Story = {
   parameters: {
-    growthbook: [
-      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
-    ],
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
       handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
     },
