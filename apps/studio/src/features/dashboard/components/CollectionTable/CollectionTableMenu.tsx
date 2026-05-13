@@ -22,39 +22,6 @@ interface CollectionTableMenuProps {
   resourceType: CollectionTableData["type"]
 }
 
-// The default Search page (permalink /search, no parent) is a system-managed
-// page used to render SearchSG results. Its slug is hardcoded into the site
-// renderer, so users must not be able to edit its settings, move it, or
-// delete it — any of those would break search on the published site.
-const SearchPageMenuItems = () => {
-  return (
-    <>
-      <MenuItem
-        isDisabled
-        icon={<BiCog fontSize="1rem" />}
-        tooltip="This is a default page and its settings cannot be edited."
-      >
-        Edit settings
-      </MenuItem>
-      <MenuItem
-        isDisabled
-        icon={<BiFolderOpen fontSize="1rem" />}
-        tooltip="This is a default page that cannot be moved."
-      >
-        Move to...
-      </MenuItem>
-      <MenuItem
-        isDisabled
-        colorScheme="critical"
-        icon={<BiTrash fontSize="1rem" />}
-        tooltip="This is a default page that cannot be removed."
-      >
-        Delete
-      </MenuItem>
-    </>
-  )
-}
-
 export const CollectionTableMenu = ({
   title,
   resourceId,
@@ -74,7 +41,6 @@ export const CollectionTableMenu = ({
       type: resourceType,
     })
   }
-  const isSearchPage = permalink === "search" && parentId === null
 
   return (
     <Menu isLazy size="sm">
@@ -87,47 +53,41 @@ export const CollectionTableMenu = ({
       />
       <Portal>
         <MenuList>
-          {isSearchPage ? (
-            <SearchPageMenuItems />
-          ) : (
-            <>
-              {(resourceType === ResourceType.CollectionPage ||
-                resourceType === ResourceType.CollectionLink) && (
-                <MenuItem
-                  icon={<BiCog fontSize="1rem" />}
-                  onClick={() =>
-                    setPageSettingsModalState({
-                      pageId: resourceId,
-                      type: resourceType,
-                    })
-                  }
-                >
-                  Edit settings
-                </MenuItem>
-              )}
-              <MenuItem
-                as="button"
-                icon={<BiFolderOpen fontSize="1rem" />}
-                onClick={handleMoveResourceClick}
-              >
-                Move to...
-              </MenuItem>
-              {resourceType !== ResourceType.IndexPage && (
-                <MenuItem
-                  onClick={() => {
-                    setValue({
-                      title,
-                      resourceId,
-                      resourceType,
-                    })
-                  }}
-                  colorScheme="critical"
-                  icon={<BiTrash fontSize="1rem" />}
-                >
-                  Delete
-                </MenuItem>
-              )}
-            </>
+          {(resourceType === ResourceType.CollectionPage ||
+            resourceType === ResourceType.CollectionLink) && (
+            <MenuItem
+              icon={<BiCog fontSize="1rem" />}
+              onClick={() =>
+                setPageSettingsModalState({
+                  pageId: resourceId,
+                  type: resourceType,
+                })
+              }
+            >
+              Edit settings
+            </MenuItem>
+          )}
+          <MenuItem
+            as="button"
+            icon={<BiFolderOpen fontSize="1rem" />}
+            onClick={handleMoveResourceClick}
+          >
+            Move to...
+          </MenuItem>
+          {resourceType !== ResourceType.IndexPage && (
+            <MenuItem
+              onClick={() => {
+                setValue({
+                  title,
+                  resourceId,
+                  resourceType,
+                })
+              }}
+              colorScheme="critical"
+              icon={<BiTrash fontSize="1rem" />}
+            >
+              Delete
+            </MenuItem>
           )}
         </MenuList>
       </Portal>
