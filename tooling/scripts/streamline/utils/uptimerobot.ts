@@ -12,7 +12,7 @@ interface GetUptimeRobotMonitorsResponse {
     id: number;
     url: string;
   }[];
-  nextLink: string | null;
+  nextLink: string | null | undefined;
 }
 
 export const getUptimeRobotMonitors = async () => {
@@ -33,7 +33,7 @@ export const getUptimeRobotMonitors = async () => {
 
     monitors.push(...result.data);
 
-    if (result.nextLink === null) {
+    if (!result.nextLink) {
       break;
     }
 
