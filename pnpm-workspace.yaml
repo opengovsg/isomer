@@ -204,7 +204,7 @@ catalogs:
     "@react-aria/textfield": ^3.18.2
     "@react-aria/utils": ^3.31.0
     "@react-stately/checkbox": ^3.7.2
-    "@react-stately/toggle": ^3.9.2
+    "@react-stately/toggle": ^3.10.0
   storybook:
     storybook: 9.1.20
     "@storybook/addon-a11y": 9.1.20

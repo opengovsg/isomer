@@ -485,8 +485,8 @@ catalogs:
       specifier: ^3.7.2
       version: 3.7.5
     '@react-stately/toggle':
-      specifier: ^3.9.2
-      version: 3.9.5
+      specifier: ^3.10.0
+      version: 3.10.0
   storybook:
     '@storybook/addon-a11y':
       specifier: 9.1.20
@@ -1156,7 +1156,7 @@ importers:
         version: 3.7.5(react@18.3.1)
       '@react-stately/toggle':
         specifier: catalog:react-aria
-        version: 3.9.5(react@18.3.1)
+        version: 3.10.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sinclair/typebox':
         specifier: 'catalog:'
         version: 0.33.22
@@ -4039,23 +4039,14 @@ packages:
   '@intercom/messenger-js-sdk@0.0.14':
     resolution: {integrity: sha512-2dH4BDAh9EI90K7hUkAdZ76W79LM45Sd1OBX7t6Vzy8twpNiQ5X+7sH9G5hlJlkSGnf+vFWlFcy9TOYAyEs1hA==}
 
-  '@internationalized/date@3.12.0':
-    resolution: {integrity: sha512-/PyIMzK29jtXaGU23qTvNZxvBXRtKbNnGDFD+PY6CZw/Y8Ex8pFUzkuCJCG9aOqmShjqhS9mPqP6Dk5onQY8rQ==}
-
   '@internationalized/date@3.12.1':
     resolution: {integrity: sha512-6IedsVWXyq4P9Tj+TxuU8WGWM70hYLl12nbYU8jkikVpa6WXapFazPUcHUMDMoWftIDE2ILDkFFte6W2nFCkRQ==}
 
   '@internationalized/message@3.1.8':
     resolution: {integrity: sha512-Rwk3j/TlYZhn3HQ6PyXUV0XP9Uv42jqZGNegt0BXlxjE6G3+LwHjbQZAGHhCnCPdaA6Tvd3ma/7QzLlLkJxAWA==}
 
-  '@internationalized/number@3.6.5':
-    resolution: {integrity: sha512-6hY4Kl4HPBvtfS62asS/R22JzNNy8vi/Ssev7x6EobfCp+9QIB2hKvI2EtbdJ0VSQacxVNtqhE/NmF/NZ0gm6g==}
-
   '@internationalized/number@3.6.6':
     resolution: {integrity: sha512-iFgmQaXHE0vytNfpLZWOC2mEJCBRzcUxt53Xf/yCXG93lRvqas237i3r7X4RKMwO3txiyZD4mQjKAByFv6UGSQ==}
-
-  '@internationalized/string@3.2.7':
-    resolution: {integrity: sha512-D4OHBjrinH+PFZPvfCXvG28n2LSykWcJ7GIioQL+ok0LON15SdfoUssoHzzOUmVZLbRoREsQXVzA6r8JKsbP6A==}
 
   '@internationalized/string@3.2.8':
     resolution: {integrity: sha512-NdbMQUSfXLYIQol5VyMtinm9pZDciiMfN7RtmSuSB78io1hqwJ0naYfxyW6vgxWBkzWymQa/3uLDlbfmshtCaA==}
@@ -5005,10 +4996,11 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
-  '@react-stately/toggle@3.9.5':
-    resolution: {integrity: sha512-PVzXc788q3jH98Kvw1LYDL+wpVC14dCEKjOku8cSaqhEof6AJGaLR9yq+EF1yYSL2dxI6z8ghc0OozY8WrcFcA==}
+  '@react-stately/toggle@3.10.0':
+    resolution: {integrity: sha512-gb50aVW9y+8gW82KyDJNSCnGtTftUDMuoz0YYlaiUJktQQkZ4eNg+ANKqZiZiKj0dwr9NalLCR/3EuNnO6qYWA==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
   '@react-stately/utils@3.11.0':
     resolution: {integrity: sha512-8LZpYowJ9eZmmYLpudbo/eclIRnbhWIJZ994ncmlKlouNzKohtM8qTC6B1w1pwUbiwGdUoyzLuQbeaIor5Dvcw==}
@@ -14724,10 +14716,6 @@ snapshots:
 
   '@intercom/messenger-js-sdk@0.0.14': {}
 
-  '@internationalized/date@3.12.0':
-    dependencies:
-      '@swc/helpers': 0.5.20
-
   '@internationalized/date@3.12.1':
     dependencies:
       '@swc/helpers': 0.5.20
@@ -14737,15 +14725,7 @@ snapshots:
       '@swc/helpers': 0.5.20
       intl-messageformat: 10.7.18
 
-  '@internationalized/number@3.6.5':
-    dependencies:
-      '@swc/helpers': 0.5.20
-
   '@internationalized/number@3.6.6':
-    dependencies:
-      '@swc/helpers': 0.5.20
-
-  '@internationalized/string@3.2.7':
     dependencies:
       '@swc/helpers': 0.5.20
 
@@ -15478,7 +15458,7 @@ snapshots:
       '@react-aria/interactions': 3.27.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/toolbar': 3.0.0-beta.24(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/utils': 3.33.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@react-stately/toggle': 3.9.5(react@18.3.1)
+      '@react-stately/toggle': 3.10.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-types/button': 3.15.1(react@18.3.1)
       '@react-types/shared': 3.33.1(react@18.3.1)
       '@swc/helpers': 0.5.20
@@ -15494,7 +15474,7 @@ snapshots:
       '@react-aria/utils': 3.33.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-stately/checkbox': 3.7.5(react@18.3.1)
       '@react-stately/form': 3.2.4(react@18.3.1)
-      '@react-stately/toggle': 3.9.5(react@18.3.1)
+      '@react-stately/toggle': 3.10.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-types/checkbox': 3.10.4(react@18.3.1)
       '@react-types/shared': 3.33.1(react@18.3.1)
       '@swc/helpers': 0.5.20
@@ -15520,13 +15500,13 @@ snapshots:
 
   '@react-aria/i18n@3.12.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@internationalized/date': 3.12.0
+      '@internationalized/date': 3.12.1
       '@internationalized/message': 3.1.8
-      '@internationalized/number': 3.6.5
-      '@internationalized/string': 3.2.7
+      '@internationalized/number': 3.6.6
+      '@internationalized/string': 3.2.8
       '@react-aria/ssr': 3.9.10(react@18.3.1)
       '@react-aria/utils': 3.33.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@react-types/shared': 3.33.1(react@18.3.1)
+      '@react-types/shared': 3.34.0(react@18.3.1)
       '@swc/helpers': 0.5.20
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -15572,7 +15552,7 @@ snapshots:
     dependencies:
       '@react-aria/interactions': 3.27.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/utils': 3.33.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@react-stately/toggle': 3.9.5(react@18.3.1)
+      '@react-stately/toggle': 3.10.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-types/checkbox': 3.10.4(react@18.3.1)
       '@react-types/shared': 3.33.1(react@18.3.1)
       '@swc/helpers': 0.5.20
@@ -15619,13 +15599,12 @@ snapshots:
       '@swc/helpers': 0.5.20
       react: 18.3.1
 
-  '@react-stately/toggle@3.9.5(react@18.3.1)':
+  '@react-stately/toggle@3.10.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@react-stately/utils': 3.11.0(react@18.3.1)
-      '@react-types/checkbox': 3.10.4(react@18.3.1)
-      '@react-types/shared': 3.33.1(react@18.3.1)
       '@swc/helpers': 0.5.20
       react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      react-stately: 3.46.0(react@18.3.1)
 
   '@react-stately/utils@3.11.0(react@18.3.1)':
     dependencies:
