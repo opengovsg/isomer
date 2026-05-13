@@ -22,6 +22,39 @@ interface CollectionTableMenuProps {
   resourceType: CollectionTableData["type"]
 }
 
+const SearchPageMenu = ({ title }: { title: string }) => {
+  return (
+    <Menu isLazy size="sm">
+      <MenuButton
+        aria-label={`Options for ${title}`}
+        as={IconButton}
+        colorScheme="neutral"
+        icon={<BiDotsHorizontalRounded />}
+        variant="clear"
+      />
+      <Portal>
+        <MenuList>
+          <MenuItem
+            isDisabled
+            icon={<BiFolderOpen fontSize="1rem" />}
+            tooltip="This is a default page that cannot be moved."
+          >
+            Move to...
+          </MenuItem>
+          <MenuItem
+            isDisabled
+            colorScheme="critical"
+            icon={<BiTrash fontSize="1rem" />}
+            tooltip="This is a default page that cannot be removed."
+          >
+            Delete
+          </MenuItem>
+        </MenuList>
+      </Portal>
+    </Menu>
+  )
+}
+
 export const CollectionTableMenu = ({
   title,
   resourceId,
@@ -42,6 +75,10 @@ export const CollectionTableMenu = ({
     })
   }
   const isSearchPage = permalink === "search" && parentId === null
+
+  if (isSearchPage) {
+    return <SearchPageMenu title={title} />
+  }
 
   return (
     <Menu isLazy size="sm">
@@ -68,34 +105,14 @@ export const CollectionTableMenu = ({
               Edit settings
             </MenuItem>
           )}
-          {isSearchPage ? (
-            <MenuItem
-              isDisabled
-              icon={<BiFolderOpen fontSize="1rem" />}
-              tooltip="This is a default page that cannot be moved."
-            >
-              Move to...
-            </MenuItem>
-          ) : (
-            <MenuItem
-              as="button"
-              icon={<BiFolderOpen fontSize="1rem" />}
-              onClick={handleMoveResourceClick}
-            >
-              Move to...
-            </MenuItem>
-          )}
-          {resourceType !== ResourceType.IndexPage && isSearchPage && (
-            <MenuItem
-              isDisabled
-              colorScheme="critical"
-              icon={<BiTrash fontSize="1rem" />}
-              tooltip="This is a default page that cannot be removed."
-            >
-              Delete
-            </MenuItem>
-          )}
-          {resourceType !== ResourceType.IndexPage && !isSearchPage && (
+          <MenuItem
+            as="button"
+            icon={<BiFolderOpen fontSize="1rem" />}
+            onClick={handleMoveResourceClick}
+          >
+            Move to...
+          </MenuItem>
+          {resourceType !== ResourceType.IndexPage && (
             <MenuItem
               onClick={() => {
                 setValue({
