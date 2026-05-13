@@ -58,3 +58,4 @@ storybook-static/
 
 .claude/worktrees/*
 .worktrees/*
+.warden/
