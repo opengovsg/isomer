@@ -807,17 +807,12 @@ export const pageRouter = router({
             })
           }
 
-          // Prevent users from renaming the search page (permalink /search, no parent).
-          // Without this, the delete restriction could be bypassed by renaming first.
-          if (
-            resource.permalink === "search" &&
-            resource.parentId === null &&
-            "permalink" in settings &&
-            settings.permalink !== "search"
-          ) {
+          // The search page (permalink /search, no parent) is a default page
+          // whose settings cannot be edited.
+          if (resource.permalink === "search" && resource.parentId === null) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: "The search page permalink cannot be changed",
+              message: "The search page settings cannot be edited",
             })
           }
 
