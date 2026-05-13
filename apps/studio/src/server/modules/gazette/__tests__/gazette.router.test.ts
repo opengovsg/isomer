@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { addMinutes, subDays, subMinutes } from "date-fns"
+import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"

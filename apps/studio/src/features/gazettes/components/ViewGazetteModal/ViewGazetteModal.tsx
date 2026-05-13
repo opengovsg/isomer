@@ -131,7 +131,11 @@ export const ViewGazetteModal = ({
 
                 <DataField
                   label="Date of Publication"
-                  value={data.publishedAt ? format(data.publishedAt, "dd/MM/yyyy, hh:mma") : "-"}
+                  value={
+                    data.publishedAt
+                      ? format(data.publishedAt, "dd/MM/yyyy, hh:mma")
+                      : "-"
+                  }
                 />
 
                 {canDelete && (
@@ -192,7 +196,11 @@ export const ViewGazetteModal = ({
                   <DeleteDataField label="File ID" value={data.fileId} />
                   <DeleteDataField
                     label="Date of Publication"
-                    value={data.publishedAt ? format(data.publishedAt, "dd/MM/yyyy, hh:mma") : "-"}
+                    value={
+                      data.publishedAt
+                        ? format(data.publishedAt, "dd/MM/yyyy, hh:mma")
+                        : "-"
+                    }
                   />
                 </VStack>
               </Box>
