@@ -41,8 +41,12 @@ start_time=$(date +%s)
 git checkout $ISOMER_BUILD_REPO_BRANCH
 calculate_duration $start_time
 
-# Perform a clean of npm cache
-npm cache clean --force
+corepack enable
+corepack install -g pnpm@10.33.0
+
+# Use a project-local store only in this CodeBuild job so the S3 tarball is self-contained.
+# Do not set storeDir in pnpm-workspace.yaml: local dev keeps the default global store.
+pnpm config set store-dir .pnpm-store --location project
 
 ### Create a cache key for the current build ###
 # Assumption: All production related builds are using release tags e.g. v0.2.1
@@ -57,32 +61,66 @@ else
   UNIQUE_CACHE_KEY=$ISOMER_BUILD_REPO_BRANCH
 fi
 
-# Try to fetch cached node_modules from S3
-echo "Fetching cached node_modules..."
-NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/isomer/node_modules.tar.zst"
-aws s3 cp --only-show-errors $NODE_MODULES_CACHE_PATH node_modules.tar.zst || true
-if [ -f "node_modules.tar.zst" ]; then
-  echo "node_modules.tar.zst found in cache"
-
-  echo "Using cached node_modules"
+# Shared S3 dependency cache (same bucket/prefix pattern is used by multiple CodeBuild projects).
+# pnpm keeps package bytes in a content-addressable store; `store-dir` is set above for this run only.
+# We archive only `.pnpm-store`; `pnpm install` recreates node_modules from the store + lockfile.
+TEMPLATE_DEPS_TGZ="isomer-template-deps.tar.zst"
+TEMPLATE_DEPS_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$TEMPLATE_DEPS_TGZ"
+echo "Fetching cached pnpm store..."
+aws s3 cp --only-show-errors $TEMPLATE_DEPS_CACHE_PATH $TEMPLATE_DEPS_TGZ || true
+if [ -f "$TEMPLATE_DEPS_TGZ" ]; then
+  echo "$TEMPLATE_DEPS_TGZ found in cache"
   start_time=$(date +%s)
-  tar --use-compress-program=zstd -xf node_modules.tar.zst
-  rm node_modules.tar.zst
+  tar --use-compress-program=zstd -xf $TEMPLATE_DEPS_TGZ
+  rm $TEMPLATE_DEPS_TGZ
+  calculate_duration $start_time
+
+  echo "Re-linking workspace from cached store..."
+  start_time=$(date +%s)
+  pnpm install --frozen-lockfile
   calculate_duration $start_time
 else
-  echo "node_modules.tar.zst not found in cache"
-
-  echo "Installing dependencies..."
+  echo "$TEMPLATE_DEPS_TGZ not found in cache"
+  echo "Installing workspace dependencies..."
   start_time=$(date +%s)
-  npm ci
+  pnpm install --frozen-lockfile
   calculate_duration $start_time
 
-  echo "Caching node_modules..."
+  echo "Caching pnpm store to S3..."
   start_time=$(date +%s)
-  tar --use-compress-program="zstd -6" -cf node_modules.tar.zst node_modules/
-  aws s3 cp --only-show-errors node_modules.tar.zst $NODE_MODULES_CACHE_PATH
-  rm node_modules.tar.zst
-  echo "Cached node_modules"
+  tar --use-compress-program="zstd -6" -cf $TEMPLATE_DEPS_TGZ .pnpm-store
+  aws s3 cp --only-show-errors $TEMPLATE_DEPS_TGZ $TEMPLATE_DEPS_CACHE_PATH
+  rm $TEMPLATE_DEPS_TGZ
+  echo "Cached pnpm store"
+  calculate_duration $start_time
+fi
+
+# packages/components/dist is gitignored; Next resolves @opengovsg/isomer-components via workspace.
+# Cache dist separately from .pnpm-store: restoring plain files does not affect the content-addressable store or node_modules linking.
+COMPONENTS_DIST_TGZ="isomer-components-dist.tar.zst"
+COMPONENTS_DIST_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$COMPONENTS_DIST_TGZ"
+echo "Fetching cached isomer-components dist..."
+aws s3 cp --only-show-errors $COMPONENTS_DIST_CACHE_PATH $COMPONENTS_DIST_TGZ || true
+if [ -f "$COMPONENTS_DIST_TGZ" ]; then
+  echo "$COMPONENTS_DIST_TGZ found in cache"
+  start_time=$(date +%s)
+  mkdir -p packages/components
+  tar --use-compress-program=zstd -xf $COMPONENTS_DIST_TGZ -C packages/components
+  rm $COMPONENTS_DIST_TGZ
+  calculate_duration $start_time
+else
+  echo "$COMPONENTS_DIST_TGZ not found in cache"
+  echo "Building @opengovsg/isomer-components..."
+  start_time=$(date +%s)
+  pnpm --filter @opengovsg/isomer-components run build
+  calculate_duration $start_time
+
+  echo "Caching isomer-components dist to S3..."
+  start_time=$(date +%s)
+  tar --use-compress-program="zstd -6" -cf $COMPONENTS_DIST_TGZ -C packages/components dist
+  aws s3 cp --only-show-errors $COMPONENTS_DIST_TGZ $COMPONENTS_DIST_CACHE_PATH
+  rm $COMPONENTS_DIST_TGZ
+  echo "Cached isomer-components dist"
   calculate_duration $start_time
 fi
 
@@ -91,8 +129,8 @@ echo "Fetching from database..."
 start_time=$(date +%s)
 cd tooling/build/scripts/publishing
 echo $(pwd)
-npm ci
-npm run start
+pnpm install --frozen-lockfile
+pnpm run start
 calculate_duration $start_time
 
 # Prebuilding...
@@ -111,55 +149,11 @@ if [ ! -f "schema/not-found.json" ]; then
   cp schema/_index.json schema/not-found.json
 fi
 echo $(pwd)
-echo "Fetching cached tooling-template node_modules..."
-TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/isomer-tooling-template/node_modules.tar.zst"
-aws s3 cp --only-show-errors $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH node_modules.tar.zst || true
-if [ -f "node_modules.tar.zst" ]; then
-  echo "node_modules.tar.zst found in cache"
-
-  echo "Using cached node_modules"
-  start_time=$(date +%s)
-  tar --use-compress-program=zstd -xf node_modules.tar.zst
-  rm node_modules.tar.zst
-  calculate_duration $start_time
-else
-  echo "node_modules.tar.zst not found in cache"
-
-  # Build components
-  echo "Building components..."
-  start_time=$(date +%s)
-  cd ../../packages/components # from tooling/template
-  npm run build
-  mv opengovsg-isomer-components-0.0.13.tgz ../../tooling/template/
-  echo $(pwd)
-  cd ../.. # back to root
-  calculate_duration $start_time
-
-  echo "Installing dependencies..."
-  cd tooling/template
-  start_time=$(date +%s)
-  npm ci
-  calculate_duration $start_time
-
-  echo "Prebuilding..."
-  start_time=$(date +%s)
-  rm -rf node_modules && rm -rf .next
-  npm i opengovsg-isomer-components-0.0.13.tgz
-  calculate_duration $start_time
-
-  echo "Caching node_modules..."
-  start_time=$(date +%s)
-  tar --use-compress-program="zstd -6" -cf node_modules.tar.zst node_modules/
-  aws s3 cp --only-show-errors node_modules.tar.zst $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH
-  rm node_modules.tar.zst
-  echo "Cached node_modules"
-  calculate_duration $start_time
-fi
 
 # Build
 echo "Building..."
 start_time=$(date +%s)
-npm run build:template
+pnpm run build:template
 calculate_duration $start_time
 
 # Check if the 'out' folder exists

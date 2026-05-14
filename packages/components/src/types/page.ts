@@ -9,7 +9,10 @@ import {
   SearchableTableSchema,
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
-import { REF_HREF_PATTERN } from "~/utils/validation"
+import {
+  REF_HREF_PATTERN,
+  TRIMMED_NON_EMPTY_STRING_REGEX,
+} from "~/utils/validation"
 
 // NOTE: a tag value is simply a uuid that maps to a given label;
 // essentially, it is just a pointer
@@ -29,7 +32,14 @@ const TagCategoryUuidSchema = generateUuidSchema({
 
 const TagCategorySchema = Type.Composite([
   Type.Object({
-    label: Type.String({ maxLength: 70, title: "Filter name" }),
+    label: Type.String({
+      maxLength: 70,
+      title: "Filter name",
+      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+      errorMessage: {
+        pattern: "cannot be empty or have leading/trailing spaces",
+      },
+    }),
     id: TagCategoryUuidSchema,
   }),
   Type.Object({
@@ -48,7 +58,14 @@ const TagCategorySchema = Type.Composite([
   Type.Object({
     options: Type.Array(
       Type.Object({
-        label: Type.String({ maxLength: 70, title: "Option name" }),
+        label: Type.String({
+          maxLength: 70,
+          title: "Option name",
+          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or have leading/trailing spaces",
+          },
+        }),
         id: TagOptionUuidSchema,
       }),
       {
