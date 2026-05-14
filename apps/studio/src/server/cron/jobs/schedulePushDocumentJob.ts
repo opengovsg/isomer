@@ -162,6 +162,7 @@ export const schedulePushDocumentJobHandler = async () => {
 
   await pushDocumentsForIngestion(documents)
   await deleteProcessedJobs(scheduledAtCutoff)
+  logger.info({ count: documents.length, documents }, "Completed schedule push document job")
 }
 
 // Drop every job whose scheduledAt has passed, regardless of per-row push

@@ -60,6 +60,7 @@ const server = z
     STUDIO_SSM_WEBHOOK_API_KEY: z.string().optional(),
     S3_GAZETTE_BUCKET_NAME: z.string().optional(),
     S3_GAZETTE_DOMAIN_NAME: z.string().optional(),
+    EGAZETTE_DOCUMENT_INDEX: z.string(),
     SEARCHSG_API_KEY: z.string(),
   })
   .merge(s3Schema)
@@ -108,6 +109,7 @@ const processEnv = {
     process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   NEXT_PUBLIC_INTERCOM_APP_ID: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
   SEARCHSG_API_KEY: process.env.SEARCHSG_API_KEY,
+  EGAZETTE_DOCUMENT_INDEX: process.env.EGAZETTE_DOCUMENT_INDEX,
   SCHEDULED_PUBLISHING_HEARTBEAT_URL:
     process.env.SCHEDULED_PUBLISHING_HEARTBEAT_URL,
   DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL:
