@@ -94,7 +94,7 @@ export const getCollectionTagsSchema = z
 
 export const getCategoryOptionUsageCountSchema = z.object({
   siteId: z.number().min(1),
-  pageId: z.number().min(1),
+  pageId: z.number().int().min(1),
   categoryId: z.string().uuid(),
 })
 

@@ -1672,6 +1672,35 @@ describe("collection.router", async () => {
       )
     })
 
+    it("should throw 404 when the index page's parent is a folder, not a collection", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page: folderIndexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        pageId: Number(folderIndexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        }),
+      )
+    })
+
     it("should return count 0 when no item uses the category id", async () => {
       // Arrange
       const { collection, site } = await setupCollection()

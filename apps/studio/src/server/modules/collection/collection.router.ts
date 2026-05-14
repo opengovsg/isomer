@@ -575,11 +575,19 @@ export const collectionRouter = router({
           ResourceType.CollectionPage,
           ResourceType.CollectionLink,
         ])
-        .where(
-          sql<boolean>`(
-            nullif(trim("draftBlob"."content"->'page'->>'categoryId'), '') = ${categoryId}
-            OR nullif(trim("publishedBlob"."content"->'page'->>'categoryId'), '') = ${categoryId}
-          )`,
+        .where((eb) =>
+          eb.or([
+            eb(
+              sql`nullif(trim("draftBlob"."content"->'page'->>'categoryId'), '')`,
+              "=",
+              categoryId,
+            ),
+            eb(
+              sql`nullif(trim("publishedBlob"."content"->'page'->>'categoryId'), '')`,
+              "=",
+              categoryId,
+            ),
+          ]),
         )
         .select(sql<number>`cast(count(*) as int)`.as("count"))
         .executeTakeFirstOrThrow()
