@@ -25,6 +25,11 @@ interface LoggerOptions {
 
 class PinoLogger {
   private static instance?: pino.Logger<string>
+  // TODO: the singleton-with-args shape here is a footgun — `nodeEnv` and
+  // `appEnvLabel` are only honoured on the first call and silently ignored
+  // afterwards. Split into a one-shot `initRootLogger({ nodeEnv, appEnvLabel })`
+  // plus a `createChildLogger(bindings)` (or throw on conflicting args) in a
+  // follow-up. This PR focuses on pure porting rather than refactoring.
   private static getInstance(nodeEnv: string, appEnvLabel: string) {
     PinoLogger.instance ??= PinoLogger.createBaseLogger(nodeEnv, appEnvLabel)
     return PinoLogger.instance
