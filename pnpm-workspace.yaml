@@ -34,6 +34,10 @@ allowBuilds:
   "@prisma/engines": true
   esbuild: true
   prisma: true
+  # pnpm 11 made strictDepBuilds true by default — any transitive dep with an
+  # install script that isn't explicitly allowed/ignored fails the install with
+  # ERR_PNPM_IGNORED_BUILDS. The entries below preserve the pre-pnpm-11 behavior
+  # of skipping these scripts (none are needed for our build).
   "@datadog/native-appsec": false
   "@datadog/native-iast-taint-tracking": false
   "@datadog/native-metrics": false
