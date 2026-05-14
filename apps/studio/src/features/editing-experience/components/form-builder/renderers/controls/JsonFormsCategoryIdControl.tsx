@@ -25,12 +25,13 @@ function SuspendableJsonFormsCategoryIdSelect({
   handleChange,
   path,
   label,
-}: JsonFormsCategoryIdControlProps) {
-  const { siteId, pageId, linkId } = useQueryParse(collectionItemSchema)
+  resourceId,
+}: JsonFormsCategoryIdControlProps & { resourceId: number }) {
+  const { siteId } = useQueryParse(collectionItemSchema)
 
   const [{ categoryOptions }] = trpc.page.getCategoryOptions.useSuspenseQuery({
     siteId,
-    pageId: pageId || linkId || -1,
+    pageId: resourceId,
   })
 
   return (
@@ -55,7 +56,7 @@ export function JsonFormsCategoryIdControl({
   label,
   ...props
 }: ControlProps) {
-  const { siteId } = useQueryParse(collectionItemSchema)
+  const { siteId, pageId, linkId } = useQueryParse(collectionItemSchema)
 
   // we enable this after we migrated category to categoryId
   // currently feature flagged it for testing on staging
@@ -64,11 +65,21 @@ export function JsonFormsCategoryIdControl({
     { enabledSites: [] },
   )
 
+  // This control only renders inside a collection item, so one of `pageId`
+  // or `linkId` is always present. Bail out instead of issuing a query with
+  // an invalid id, which would throw inside Suspense and crash the form.
+  const resourceId = pageId ?? linkId
+  if (resourceId === undefined) return null
+
   return enabledSites.includes(siteId.toString()) ? (
     <FormControl isRequired={required} gap="0.5rem">
       <FormLabel description={description}>{label}</FormLabel>
       <Suspense fallback={<Skeleton />}>
-        <SuspendableJsonFormsCategoryIdSelect {...props} label={label} />
+        <SuspendableJsonFormsCategoryIdSelect
+          {...props}
+          label={label}
+          resourceId={resourceId}
+        />
       </Suspense>
     </FormControl>
   ) : null
