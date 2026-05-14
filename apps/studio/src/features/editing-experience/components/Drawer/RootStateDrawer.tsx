@@ -163,7 +163,7 @@ const FixedBlock = () => {
       <BaseBlock
         onClick={() => {
           setCurrActiveIdx(0)
-          setDrawerState({ state: "collectionEditor" })
+          setDrawerState({ state: "collectionEditor", type: "display" })
         }}
         label="Collection settings"
         description="Summary, style, categories and sorting"
