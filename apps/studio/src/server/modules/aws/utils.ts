@@ -1,4 +1,3 @@
-import type { Logger } from "@isomer/logging"
 import {
   BatchGetBuildsCommand,
   CodeBuildClient,
@@ -7,6 +6,8 @@ import {
   StopBuildCommand,
 } from "@aws-sdk/client-codebuild"
 import { TRPCError } from "@trpc/server"
+
+import type { Logger } from "@isomer/logging"
 
 import type {
   BuildChanges,

@@ -79,9 +79,7 @@ export const registerPgbossJob = async (
   return { stop: () => boss.offWork(jobName) }
 }
 
-export const stopAllPgbossJobs = async (
-  logger: BaseLogger,
-): Promise<void> => {
+export const stopAllPgbossJobs = async (logger: BaseLogger): Promise<void> => {
   const boss = await getPgbossClient(logger)
   try {
     await boss.stop({ graceful: true })

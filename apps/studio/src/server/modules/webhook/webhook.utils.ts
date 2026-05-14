@@ -1,6 +1,5 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { BuildStatusType } from "@prisma/client"
-import type { Logger } from "@isomer/logging"
 import { compact } from "lodash-es"
 import {
   sendFailedPublishEmail,
@@ -10,6 +9,8 @@ import {
   ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY,
   ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
 } from "~/lib/growthbook"
+
+import type { Logger } from "@isomer/logging"
 
 import { db } from "../database"
 

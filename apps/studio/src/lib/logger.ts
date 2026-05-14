@@ -12,10 +12,7 @@ interface LoggerOptions {
   req?: NextApiRequest
 }
 
-export function createBaseLogger({
-  path,
-  req,
-}: LoggerOptions): Logger<string> {
+export function createBaseLogger({ path, req }: LoggerOptions): Logger<string> {
   const traceId = req?.headers["x-datadog-trace-id"]
   return createBaseLoggerPkg({
     nodeEnv: env.NODE_ENV,
