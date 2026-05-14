@@ -48,9 +48,8 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   listItemIcon?: IconType
   /**
    * When the array is empty: replaces the default placeholder inside the empty-state container.
-   * Pass `null` to show no placeholder (no padded empty area).
    */
-  emptyState?: ReactNode | null
+  emptyState?: ReactNode
   /** Merged into row padding on the drag handle and label button (after defaults). */
   listItemContentProps?: BoxProps
   /** Per-row content after the label (e.g. actions menu), flush right in the row. */
@@ -331,28 +330,38 @@ export function JsonFormsArrayControlView({
                 spacing={0}
                 ref={innerRef}
               >
-                {data === 0 &&
-                  (emptyState === null ? null : (
-                    <Flex
-                      alignItems="center"
-                      flexDir="column"
-                      px="1.5rem"
-                      py="3.75rem"
-                      mt="0.25rem"
-                      justifyContent="center"
-                      w="100%"
+                {data === 0 && !emptyState && (
+                  <Flex
+                    alignItems="center"
+                    flexDir="column"
+                    px="1.5rem"
+                    py="3.75rem"
+                    mt="0.25rem"
+                    justifyContent="center"
+                    w="100%"
+                  >
+                    <Text
+                      textStyle="subhead-1"
+                      textColor="base.content.default"
+                      textAlign="center"
                     >
-                      {emptyState ?? (
-                        <Text
-                          textStyle="subhead-1"
-                          textColor="base.content.default"
-                          textAlign="center"
-                        >
-                          Items you add will appear here
-                        </Text>
-                      )}
-                    </Flex>
-                  ))}
+                      Items you add will appear here
+                    </Text>
+                  </Flex>
+                )}
+                {data === 0 && emptyState && (
+                  <Flex
+                    alignItems="center"
+                    flexDir="column"
+                    px="1.5rem"
+                    py="3.75rem"
+                    mt="0.25rem"
+                    justifyContent="center"
+                    w="100%"
+                  >
+                    {emptyState}
+                  </Flex>
+                )}
 
                 {[...Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, `${index}`)
