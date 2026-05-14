@@ -169,7 +169,7 @@ export function usePublishRedirects(): {
         deletes: Array.from(pendingDeletes),
       },
       {
-        onSuccess: async () => {
+        onSuccess: () => {
           setDraftsMap((prev) => {
             const next = new Map(prev)
             next.delete(siteId)
@@ -180,7 +180,7 @@ export function usePublishRedirects(): {
             next.delete(siteId)
             return next
           })
-          await utils.redirect.list.invalidate()
+          void utils.redirect.list.invalidate()
         },
       },
     )
