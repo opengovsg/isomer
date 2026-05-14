@@ -55,9 +55,7 @@ export default meta
 type Story = StoryObj<typeof EditPage>
 
 const newCollectionFiltersIsomerAdminParameters = {
-  growthbook: [
-    [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
-  ],
+  growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   msw: {
     handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
   },
@@ -117,9 +115,7 @@ function withinPortals(canvasElement: HTMLElement) {
 
 export const NonIsomerAdmin: Story = {
   parameters: {
-    growthbook: [
-      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
-    ],
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -130,9 +126,7 @@ export const NonIsomerAdmin: Story = {
 // "Filters" block is currently only accessible by Isomer Admin
 export const IsomerAdmin: Story = {
   parameters: {
-    growthbook: [
-      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
-    ],
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
       handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
     },
@@ -145,9 +139,7 @@ export const IsomerAdmin: Story = {
 
 export const CollectionDisplay: Story = {
   parameters: {
-    growthbook: [
-      [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
-    ],
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
