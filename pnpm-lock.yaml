@@ -389,9 +389,6 @@ catalogs:
     tsc-alias:
       specifier: ^1.8.16
       version: 1.8.16
-    tslib:
-      specifier: ^2.6.3
-      version: 2.8.1
     tsx:
       specifier: ^4.20.4
       version: 4.21.0
@@ -1302,9 +1299,6 @@ importers:
       tsc-alias:
         specifier: 'catalog:'
         version: 1.8.16
-      tslib:
-        specifier: 'catalog:'
-        version: 2.8.1
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
