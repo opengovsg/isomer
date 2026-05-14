@@ -47,7 +47,7 @@
     "test-dev": "start-server-and-test dev http://127.0.0.1:3000 test",
     "test-dev:unit": "dotenv -e .env.test vitest",
     "test:e2e": "dotenv -e .env.test pnpm exec playwright test",
-    "test:load:build": "webpack --config tests/load/webpack.config.js",
+    "test:load:build": "webpack-cli --config tests/load/webpack.config.cjs",
     "test:unit": "dotenv -e .env.test vitest run",
     "test:watch": "dotenv -e .env.test pnpm exec vitest watch",
     "typecheck": "tsc --noEmit"
