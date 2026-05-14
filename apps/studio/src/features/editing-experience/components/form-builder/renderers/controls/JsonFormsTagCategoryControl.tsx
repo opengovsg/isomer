@@ -68,7 +68,7 @@ const TagCategoryUsageCount = ({
     tagOptionIds,
   })
 
-  return <>{count ?? "—"}</>
+  return <>{count}</>
 }
 
 function DeleteFilterModal({
@@ -188,7 +188,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   }>(null)
 
   const { siteId, pageId } = useQueryParse(pageSchema)
-  const utils = trpc.useUtils()
 
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
@@ -223,7 +222,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const handleConfirmDelete = () => {
     if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
     removeItems(path, [deleteTarget.index])()
-    void utils.collection.countTagOptionsUsage.invalidate()
     closeDeleteModal()
   }
 

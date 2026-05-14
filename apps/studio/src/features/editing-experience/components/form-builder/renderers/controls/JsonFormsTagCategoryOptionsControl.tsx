@@ -69,7 +69,7 @@ const TagOptionUsageCount = ({
     tagOptionIds: [tagOptionId],
   })
 
-  return <>{count ?? "—"}</>
+  return <>{count}</>
 }
 
 const DeleteOptionModal = ({
@@ -187,7 +187,6 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   }>(null)
 
   const { siteId, pageId } = useQueryParse(pageSchema)
-  const utils = trpc.useUtils()
 
   const handleDeleteOptionMenuItemClick = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
@@ -219,7 +218,6 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const handleConfirmDelete = () => {
     if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
     removeItems(path, [deleteTarget.index])()
-    void utils.collection.countTagOptionsUsage.invalidate()
     closeDeleteModal()
   }
 
