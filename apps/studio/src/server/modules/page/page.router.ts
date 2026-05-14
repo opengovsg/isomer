@@ -807,6 +807,15 @@ export const pageRouter = router({
             })
           }
 
+          // The search page (permalink /search, no parent) is a default page
+          // whose settings cannot be edited.
+          if (resource.permalink === "search" && resource.parentId === null) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "The search page settings cannot be edited",
+            })
+          }
+
           try {
             const updatedResource = await tx
               .updateTable("Resource")

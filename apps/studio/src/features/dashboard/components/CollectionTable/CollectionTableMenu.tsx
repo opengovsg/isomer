@@ -41,7 +41,6 @@ export const CollectionTableMenu = ({
       type: resourceType,
     })
   }
-  const isSearchPage = permalink === "search" && parentId === null
 
   return (
     <Menu isLazy size="sm">
@@ -68,34 +67,14 @@ export const CollectionTableMenu = ({
               Edit settings
             </MenuItem>
           )}
-          {isSearchPage ? (
-            <MenuItem
-              isDisabled
-              icon={<BiFolderOpen fontSize="1rem" />}
-              tooltip="This is a default page that cannot be moved."
-            >
-              Move to...
-            </MenuItem>
-          ) : (
-            <MenuItem
-              as="button"
-              icon={<BiFolderOpen fontSize="1rem" />}
-              onClick={handleMoveResourceClick}
-            >
-              Move to...
-            </MenuItem>
-          )}
-          {resourceType !== ResourceType.IndexPage && isSearchPage && (
-            <MenuItem
-              isDisabled
-              colorScheme="critical"
-              icon={<BiTrash fontSize="1rem" />}
-              tooltip="This is a default page that cannot be removed."
-            >
-              Delete
-            </MenuItem>
-          )}
-          {resourceType !== ResourceType.IndexPage && !isSearchPage && (
+          <MenuItem
+            as="button"
+            icon={<BiFolderOpen fontSize="1rem" />}
+            onClick={handleMoveResourceClick}
+          >
+            Move to...
+          </MenuItem>
+          {resourceType !== ResourceType.IndexPage && (
             <MenuItem
               onClick={() => {
                 setValue({
