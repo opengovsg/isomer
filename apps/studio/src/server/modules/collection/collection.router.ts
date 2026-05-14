@@ -6,6 +6,7 @@ import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createCollectionSchema,
   editLinkSchema,
+  getCategoryOptionUsageCountSchema,
   getCollectionsSchema,
   getCollectionTagsSchema,
   readCollectionSchema,
@@ -22,6 +23,7 @@ import {
   jsonb,
   ResourceState,
   ResourceType,
+  sql,
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
@@ -519,6 +521,78 @@ export const collectionRouter = router({
       // }
       //
       // return []
+    }),
+
+  /**
+   * Counts collection pages/links whose draft **or** published blob has `page.categoryId` equal to the
+   * given id. `pageId` is the collection index page resource id (Studio URL `pageId`).
+   */
+  getCategoryOptionUsageCount: protectedProcedure
+    .input(getCategoryOptionUsageCountSchema)
+    .query(async ({ ctx, input: { siteId, pageId, categoryId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(pageId))
+        .where("siteId", "=", siteId)
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["parentId"])
+        .executeTakeFirst()
+
+      const parentId = indexPage?.parentId
+      if (!parentId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page not found",
+        })
+      }
+
+      const collection = await getSiteResourceById({
+        siteId,
+        resourceId: parentId,
+        type: ResourceType.Collection,
+      })
+      if (!collection) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        })
+      }
+
+      const row = await db
+        .selectFrom("Resource as r")
+        .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
+        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+        .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
+        .where("r.parentId", "=", parentId)
+        .where("r.siteId", "=", siteId)
+        .where("r.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+        ])
+        .where((eb) =>
+          eb.or([
+            eb(
+              sql`nullif(trim("draftBlob"."content"->'page'->>'categoryId'), '')`,
+              "=",
+              categoryId,
+            ),
+            eb(
+              sql`nullif(trim("publishedBlob"."content"->'page'->>'categoryId'), '')`,
+              "=",
+              categoryId,
+            ),
+          ]),
+        )
+        .select(sql<number>`cast(count(*) as int)`.as("count"))
+        .executeTakeFirstOrThrow()
+
+      return { count: row.count }
     }),
 
   getCollections: protectedProcedure

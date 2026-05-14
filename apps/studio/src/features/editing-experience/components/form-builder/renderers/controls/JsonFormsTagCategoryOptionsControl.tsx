@@ -12,6 +12,7 @@ import {
   ModalOverlay,
   Portal,
   Text,
+  VisuallyHidden,
   VStack,
 } from "@chakra-ui/react"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
@@ -59,7 +60,10 @@ const DeleteOptionModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader mr="3.5rem">
-          {label.length > 0 ? `Delete option "${label}"?` : "Delete option?"}
+          <VisuallyHidden>Delete filter option</VisuallyHidden>
+          <Text as="span" aria-hidden display="block">
+            {label.length > 0 ? `Delete option "${label}"?` : "Delete option?"}
+          </Text>
         </ModalHeader>
         <ModalCloseButton size="lg" />
 

@@ -22,7 +22,7 @@ import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
-import { db, ResourceState, ResourceType } from "../../database"
+import { db, jsonb, ResourceState, ResourceType } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
 import { collectionRouter } from "../collection.router"
 import {
@@ -1584,6 +1584,279 @@ describe("collection.router", async () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]?.id).toBe(collectionWithChildren.id)
+    })
+  })
+
+  describe("getCategoryOptionUsageCount", () => {
+    const CATEGORY_A = "aaaaaaaa-bbbb-4ccc-a222-aaaaaaaaaaaa"
+    const CATEGORY_B = "bbbbbbbb-bbbb-4ccc-b222-bbbbbbbbbbbb"
+
+    const articleBlobWithCategoryId = (categoryId: string) => ({
+      layout: "article" as const,
+      page: {
+        date: "01/01/2025",
+        category: "Label",
+        categoryId,
+        articlePageHeader: { summary: "Summary" },
+      },
+      content: [],
+      version: "0.1.0",
+    })
+
+    it("should throw 401 if not logged in", async () => {
+      // Act
+      const result = unauthedCaller.getCategoryOptionUsageCount({
+        siteId: 1,
+        pageId: 1,
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+
+      // Act
+      const result = caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw 404 when the page is not a collection index", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        pageId: Number(collectionPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page not found",
+        }),
+      )
+    })
+
+    it("should throw 404 when the index page's parent is a folder, not a collection", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page: folderIndexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        pageId: Number(folderIndexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        }),
+      )
+    })
+
+    it("should return count 0 when no item uses the category id", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      const { blob } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(articleBlobWithCategoryId(CATEGORY_B)) })
+        .where("id", "=", blob.id)
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 0 })
+    })
+
+    it("should return count 1 when one draft item matches page.categoryId", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      const { blob } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(articleBlobWithCategoryId(CATEGORY_A)) })
+        .where("id", "=", blob.id)
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 1 })
+    })
+
+    it("should return count 2 when two items share the same categoryId", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      const { blob: blob1 } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "item-one",
+      })
+      const { blob: blob2 } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "item-two",
+      })
+      const content = articleBlobWithCategoryId(CATEGORY_A)
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(content) })
+        .where("id", "=", blob1.id)
+        .execute()
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(content) })
+        .where("id", "=", blob2.id)
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 2 })
+    })
+
+    it("should count an item that only has categoryId on the published blob", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      const { blob, page } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "published-only",
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(articleBlobWithCategoryId(CATEGORY_A)) })
+        .where("id", "=", blob.id)
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .select(["draftBlobId", "publishedVersionId"])
+        .executeTakeFirstOrThrow()
+      expect(resource.draftBlobId).toBeNull()
+      expect(result).toEqual({ count: 1 })
     })
   })
 })

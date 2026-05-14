@@ -138,6 +138,10 @@ const CategoriesSchema = Type.Object({
     ),
   ),
 })
+
+export type CollectionPageCategoryOption = NonNullable<
+  Static<typeof CategoriesSchema>["categoryOptions"]
+>[number]
 const TaggedSchema = Type.Optional(
   // NOTE: This stores the `uuid` of the tag option
   Type.Array(TagOptionUuidSchema, {
