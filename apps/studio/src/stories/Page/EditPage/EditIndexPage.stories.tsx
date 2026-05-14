@@ -132,6 +132,19 @@ export const CustomIndexPage: Story = {
   },
 }
 
+export const ReorderSiderailState: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", {
+      name: /Reorder siderail for this folder/i,
+    })
+    await userEvent.click(button)
+
+    const helpButton = canvas.getByText("What's a siderail?")
+    await userEvent.hover(helpButton)
+  },
+}
+
 export const EditInfocardsLinkState: Story = {
   parameters: {
     msw: {

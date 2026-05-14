@@ -3,6 +3,7 @@ import type {
   IsomerSchema,
 } from "@opengovsg/isomer-components"
 import {
+  COLLECTION_VARIANT_OPTIONS,
   getLayoutMetadataSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
   renderPrefillText,
@@ -10,7 +11,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { format, isBefore } from "date-fns"
-import _, { cloneDeep, get, isEmpty, isEqual } from "lodash"
+import { cloneDeep, get, isEmpty, isEqual, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { env } from "~/env.mjs"
 import {
@@ -385,6 +386,7 @@ export const pageRouter = router({
         action: "publish",
         userId: ctx.user.id,
       })
+
       // check if the input.scheduledAt is after the current time
       if (isBefore(scheduledAt, new Date())) {
         throw new TRPCError({
@@ -470,6 +472,7 @@ export const pageRouter = router({
               "Unable to cancel schedule for a page that is not scheduled",
           })
         }
+
         // update the resource's scheduled field
         const updatedPage = await updatePageById(
           { id: pageId, siteId, scheduledAt: null, scheduledBy: null },
@@ -567,8 +570,6 @@ export const pageRouter = router({
 
         const by = await getUserForAuditLog(db, ctx.user.id)
 
-        // TODO: Validate whether siteId is a valid site
-        // TODO: Validate user has write-access to the site
         const resource = await db
           .transaction()
           .execute(async (tx) => {
@@ -933,7 +934,7 @@ export const pageRouter = router({
             // page settings immediately visible on the end site
             await publishResource(ctx.user.id, updatedResource, ctx.logger)
 
-            return _.pick(updatedResource, [
+            return pick(updatedResource, [
               "id",
               "type",
               "title",
@@ -1041,6 +1042,7 @@ export const pageRouter = router({
                 title: parent.title,
                 subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
                 sortOrder: "date-desc",
+                variant: COLLECTION_VARIANT_OPTIONS.Collection,
               } as CollectionPagePageProps,
               content: [],
               version: "0.1.0",
