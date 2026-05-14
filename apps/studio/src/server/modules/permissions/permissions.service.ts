@@ -1,8 +1,7 @@
 import type { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { TRPCError } from "@trpc/server"
-import get from "lodash/get"
-import partition from "lodash/partition"
+import { get, partition } from "lodash-es"
 import { AuditLogEvent, RoleType } from "~prisma/generated/generatedEnums"
 
 import type {

@@ -25,7 +25,7 @@ import {
   Menu,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import { get } from "lodash"
+import { get } from "lodash-es"
 import { useMemo, useState } from "react"
 import {
   BiDotsHorizontalRounded,
@@ -133,7 +133,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     <>
       <JsonFormsArrayControlView
         {...props}
-        emptyState={null}
         listItemIcon={BiPurchaseTag}
         listItemContentProps={{ py: "0.5rem" }}
         mapNewArrayItem={(item) => ({
@@ -171,7 +170,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               alignItems="center"
               justifyContent="center"
               isDisabled={isRemoveItemDisabled}
-              aria-label="Filter actions"
+              aria-label={`Filter ${index + 1} actions`}
               onClick={(e) => e.stopPropagation()}
             />
             <Portal>

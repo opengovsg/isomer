@@ -15,6 +15,7 @@ interface IsomerBaseSitemap {
   // so that the properties that are exclusive to, for example, `CollectionCard`
   // will only be available there
   image?: CollectionCardProps["image"]
+  firstImage?: CollectionCardProps["image"]
   date?: string
   children?: IsomerSitemap[]
   tags?: CollectionCardProps["tags"]
@@ -33,6 +34,7 @@ export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
     sortOrder?: CollectionPagePageProps["sortOrder"]
     defaultSortBy?: CollectionPagePageProps["defaultSortBy"]
     defaultSortDirection?: CollectionPagePageProps["defaultSortDirection"]
+    showThumbnail?: CollectionPagePageProps["showThumbnail"]
   }
 }
 

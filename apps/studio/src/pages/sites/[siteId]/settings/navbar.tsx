@@ -1,7 +1,7 @@
 import type { NavbarSchemaType } from "@opengovsg/isomer-components"
 import type { NextPageWithLayout } from "~/lib/types"
 import { useToast } from "@opengovsg/design-system-react"
-import isEqual from "lodash/isEqual"
+import { isEqual } from "lodash-es"
 import { useState } from "react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {

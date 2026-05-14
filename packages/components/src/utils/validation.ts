@@ -204,6 +204,17 @@ export const isApplePodcastUrl = (url: string) => {
 // ❌ " " (only whitespace)
 export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
 
+// Stricter variant: rejects leading/trailing whitespace in addition to empty/whitespace-only.
+// ✅ "hello"
+// ✅ "a"
+// ✅ "ab cd" (internal whitespace allowed)
+// ❌ "" (empty string)
+// ❌ " " (only whitespace)
+// ❌ " hello" (leading whitespace)
+// ❌ "hello " (trailing whitespace)
+// ❌ " a " (surrounded by spaces)
+export const TRIMMED_NON_EMPTY_STRING_REGEX = "^\\S(.*\\S)?$"
+
 // ✅ "d_a" (minimum 3 characters, starts with "d_")
 // ✅ "d_abc" (more than 3 characters, starts with "d_")
 // ❌ "d_" (only 2 characters)

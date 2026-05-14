@@ -40,8 +40,12 @@ RUN apk add --no-cache libc6-compat
 
 # Set working directory
 WORKDIR /app
-# Replace <your-major-version> with the major version installed in your repository. For example:
-RUN npm install -g turbo@^2
+# pnpm global bin is under PNPM_HOME (not on PATH by default); npm's -g used /usr/local/bin.
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack install -g pnpm@10.33.0
+# fixed version to prevent supply chain attacks (to ensure it's same version as pnpm-workspace.yaml)
+RUN pnpm add -g turbo@2.9.6
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
@@ -54,16 +58,26 @@ RUN apk update
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+RUN corepack enable && corepack install -g pnpm@10.33.0
+
 # First install the dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .
-RUN npm ci
+COPY --from=builder /app/out/pnpm-lock.yaml .
+COPY --from=builder /app/out/pnpm-workspace.yaml .
+RUN pnpm install --frozen-lockfile
 
 # Build the project
 COPY --from=builder /app/out/full/ .
-RUN npx turbo run build --filter=isomer-studio...
+RUN pnpm exec turbo run build --filter=isomer-studio...
 
 FROM base AS runner
 WORKDIR /app
+
+# Datadog source code integration
+ARG DD_GIT_REPOSITORY_URL
+ARG DD_GIT_COMMIT_SHA
+ENV DD_GIT_REPOSITORY_URL=${DD_GIT_REPOSITORY_URL}
+ENV DD_GIT_COMMIT_SHA=${DD_GIT_COMMIT_SHA}
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
@@ -75,5 +89,8 @@ USER nextjs
 COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/.next/static ./apps/studio/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/studio/public ./apps/studio/public
+
+# Remove sourcemaps from production image (they are uploaded to Datadog separately)
+RUN find . -name "*.map" -type f -delete
 
 CMD ["node", "apps/studio/server.js"]

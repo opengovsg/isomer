@@ -3,7 +3,7 @@ import type { z } from "zod"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import { TRPCError } from "@trpc/server"
 import { addDays, set, subDays } from "date-fns"
-import { omit, pick } from "lodash"
+import { omit, pick } from "lodash-es"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -2010,7 +2010,8 @@ describe("page.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
-          message: "Folder not found or folderId is not a folder",
+          message:
+            "Parent not found or parentId is not a valid collection or folder",
         }),
       )
     })
@@ -2037,7 +2038,8 @@ describe("page.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
-          message: "Folder not found or folderId is not a folder",
+          message:
+            "Parent not found or parentId is not a valid collection or folder",
         }),
       )
     })

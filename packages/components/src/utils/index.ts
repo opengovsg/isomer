@@ -33,6 +33,7 @@ export {
   MAPS_EMBED_URL_REGEXES,
   VIDEO_EMBED_URL_REGEXES,
   NON_EMPTY_STRING_REGEX,
+  TRIMMED_NON_EMPTY_STRING_REGEX,
 } from "./validation"
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"

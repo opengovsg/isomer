@@ -13,7 +13,7 @@ function jsonFormsPathToAjvInstancePath(path: string): string {
   return `/${path.replace(/\./g, "/")}`
 }
 
-/** Array-level duplicate label among items (`uniqueItemProperties` or `uniqueItemPropertiesIgnoreCase`). */
+/** Array-level duplicate label among items (`uniqueItemPropertiesIgnoreCase`). */
 export function hasUniqueItemPropertiesError({
   errors,
   jsonFormsPath,
@@ -23,9 +23,7 @@ export function hasUniqueItemPropertiesError({
 }): boolean {
   return (
     errors[jsonFormsPathToAjvInstancePath(jsonFormsPath)]?.some(
-      (e) =>
-        e.keyword === "uniqueItemProperties" ||
-        e.keyword === UNIQUE_ITEM_PROPERTIES_IGNORE_CASE_KEYWORD,
+      (e) => e.keyword === UNIQUE_ITEM_PROPERTIES_IGNORE_CASE_KEYWORD,
     ) ?? false
   )
 }

@@ -83,19 +83,30 @@ export const ResourceTableMenu = ({
               Edit folder settings
             </MenuItem>
           )}
-          {(type === ResourceType.Page || type === ResourceType.Folder) && (
-            // TODO: we need to change the resourceid next time when we implement root level permissions
-            <Can do="move" on={{ parentId }}>
+          {(type === ResourceType.Page || type === ResourceType.Folder) &&
+            isSearchPage && (
               <MenuItem
-                as="button"
-                onClick={handleMoveResourceClick}
+                isDisabled
                 icon={<BiFolderOpen fontSize="1rem" />}
-                aria-label={`Move resource to another location for ${title}`}
+                tooltip="This is a default page that cannot be moved."
               >
                 Move to...
               </MenuItem>
-            </Can>
-          )}
+            )}
+          {(type === ResourceType.Page || type === ResourceType.Folder) &&
+            !isSearchPage && (
+              // TODO: we need to change the resourceid next time when we implement root level permissions
+              <Can do="move" on={{ parentId }}>
+                <MenuItem
+                  as="button"
+                  onClick={handleMoveResourceClick}
+                  icon={<BiFolderOpen fontSize="1rem" />}
+                  aria-label={`Move resource to another location for ${title}`}
+                >
+                  Move to...
+                </MenuItem>
+              </Can>
+            )}
           {resourceType !== ResourceType.RootPage && isSearchPage && (
             <MenuItem
               isDisabled

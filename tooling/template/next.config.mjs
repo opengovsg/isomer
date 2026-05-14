@@ -9,6 +9,10 @@ const nextConfig = {
   turbo: {
     moduleIdStrategy: "deterministic",
   },
+  // isomer-components → isomorphic-dompurify → jsdom. Declare those deps in package.json too so
+  // Next resolves them the same from the app root as from the workspace package (pnpm); otherwise
+  // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
+  serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
 }
 
 export default nextConfig

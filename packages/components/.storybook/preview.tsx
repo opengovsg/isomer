@@ -5,6 +5,7 @@ import mockdate from "mockdate"
 import { initialize, mswLoader } from "msw-storybook-addon"
 import { MINIMAL_VIEWPORTS } from "storybook/viewport"
 import "bootstrap-icons/font/bootstrap-icons.css"
+
 import "../src/index.css"
 import { viewport } from "@isomer/storybook-config"
 
