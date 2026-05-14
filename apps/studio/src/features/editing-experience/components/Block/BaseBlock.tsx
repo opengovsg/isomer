@@ -1,11 +1,10 @@
-import type { ButtonProps, StackProps } from "@chakra-ui/react"
+import type { ButtonProps, StackProps, IconProps } from "@chakra-ui/react"
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd"
 import type { IconType } from "react-icons"
 import { chakra, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
 import { BiGridVertical, BiSolidErrorCircle } from "react-icons/bi"
 
-export interface BaseBlockProps {
-  icon?: IconType
+export type BaseBlockProps = {
   dragHandle?: React.ReactNode
   label: string
   description?: string
@@ -15,10 +14,21 @@ export interface BaseBlockProps {
   invalidProps?: {
     description: string
   }
-}
+  isHidden?: boolean
+} & (
+  | {
+      icon: IconType
+      iconProps?: IconProps
+    }
+  | {
+      icon?: undefined
+      iconProps?: never
+    }
+)
 
 export const BaseBlock = ({
   icon,
+  iconProps,
   dragHandle,
   label,
   description,
@@ -26,7 +36,8 @@ export const BaseBlock = ({
   containerProps,
   onClick,
   invalidProps,
-}: BaseBlockProps): JSX.Element => {
+  isHidden,
+}: BaseBlockProps): JSX.Element | null => {
   const actualDraggableProps = draggableProps ?? {}
 
   const Description = () => {
@@ -59,6 +70,10 @@ export const BaseBlock = ({
         </Text>
       )
     }
+  }
+
+  if (isHidden) {
+    return null
   }
 
   return (
@@ -103,10 +118,15 @@ export const BaseBlock = ({
         <Flex
           p="0.25rem"
           bg="interaction.main-subtle.default"
-          borderRadius="4px"
+          borderRadius="0.25rem"
           mr="0.25rem"
         >
-          <Icon as={icon} fontSize="0.75rem" color="base.content.default" />
+          <Icon
+            as={icon}
+            fontSize="0.75rem"
+            color="base.content.default"
+            {...iconProps}
+          />
         </Flex>
       )}
       <Stack align="start" gap="0.25rem" overflow="auto">

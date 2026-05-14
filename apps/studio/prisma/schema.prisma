@@ -134,6 +134,7 @@ model User {
   lastLoginAt DateTime?
 
   ResourcePermission ResourcePermission[]
+  IsomerAdmin        IsomerAdmin[]
   versions           Version[]
   AuditLog           AuditLog[]
   CodeBuildJobs      CodeBuildJobs[]
@@ -169,6 +170,21 @@ model Site {
   ResourcePermission ResourcePermission[]
   AuditLog           AuditLog[]
   CodeBuildJobs      CodeBuildJobs[]
+  Redirect           Redirect[]
+}
+
+model Redirect {
+  id          BigInt   @id @default(autoincrement())
+  siteId      Int
+  site        Site     @relation(fields: [siteId], references: [id])
+  source      String
+  destination String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  deletedAt   DateTime?
+
+  @@unique([siteId, source])
+  @@index([siteId])
 }
 
 model Navbar {
@@ -220,6 +236,23 @@ enum RoleType {
   Admin
   Editor
   Publisher
+}
+
+enum IsomerAdminRole {
+  Core
+  Migrator
+}
+
+model IsomerAdmin {
+  id        BigInt          @id @default(autoincrement())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id])
+  role      IsomerAdminRole
+  expiry    DateTime?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @default(now()) @updatedAt
+
+  @@unique([userId, role])
 }
 
 model RateLimiterFlexible {

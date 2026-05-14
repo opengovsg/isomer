@@ -1,12 +1,19 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
-import uniq from "lodash/uniq"
+import { uniq } from "lodash-es"
+import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
-import { ONE_MB_IN_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { RISKY_FILE_EXTENSIONS } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
+import { getFileExtension } from "~/utils/getFileExtension"
+
+const RiskyFileUploadModal = dynamic(() =>
+  import("./RiskyFileUploadModal").then((mod) => mod.RiskyFileUploadModal),
+)
 
 interface FileAttachmentProps {
   setHref: (href?: string) => void
@@ -17,6 +24,7 @@ interface FileAttachmentProps {
   acceptedFileTypes: Record<string, string>
   shouldFetchResource?: boolean
   onUploadedFile?: (file: File) => void
+  enableRiskyFileWarning?: boolean
 }
 
 type FileRejections = AttachmentProps<false>["rejections"]
@@ -29,8 +37,12 @@ export const FileAttachment = ({
   acceptedFileTypes,
   shouldFetchResource = true,
   onUploadedFile,
+  enableRiskyFileWarning = false,
 }: FileAttachmentProps) => {
   const [rejections, setRejections] = useState<FileRejections>([])
+  const [pendingAckRiskyFile, setPendingAckRiskyFile] = useState<File | null>(
+    null,
+  )
   // TODO: Add a mutation for deletion next time of s3 resources
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
@@ -43,58 +55,79 @@ export const FileAttachment = ({
     if (isLoading) setHref("")
   }, [isLoading, setHref])
 
+  const doUpload = (file: File) => {
+    uploadFile(
+      { file },
+      {
+        onSuccess: ({ path }) => {
+          onUploadedFile?.(file)
+          if (shouldFetchResource) {
+            void handleAssetUpload(path).then((src) => setHref(src))
+          } else setHref(path)
+        },
+      },
+    )
+  }
+
   return (
-    <FormControl>
-      <Skeleton isLoaded={!isLoading}>
-        <Attachment
-          isRequired
-          name="file-upload"
-          multiple={false}
-          value={undefined}
-          rejections={rejections}
-          onRejection={setRejections}
-          onChange={(file) => {
-            if (!file) {
-              setHref(undefined)
-              return
-            }
+    <>
+      <FormControl>
+        <Skeleton isLoaded={!isLoading}>
+          <Attachment
+            isRequired
+            name="file-upload"
+            multiple={false}
+            value={undefined}
+            rejections={rejections}
+            onRejection={setRejections}
+            onChange={(file) => {
+              if (!file) {
+                setHref(undefined)
+                return
+              }
 
-            uploadFile(
-              { file },
-              {
-                onSuccess: ({ path }) => {
-                  onUploadedFile?.(file)
-                  if (shouldFetchResource) {
-                    void handleAssetUpload(path).then((src) => setHref(src))
-                  } else setHref(path)
-                },
-              },
-            )
-          }}
-          maxSize={maxSizeInBytes}
-          accept={uniq([
-            ...Object.keys(acceptedFileTypes),
-            ...Object.values(acceptedFileTypes),
-          ])}
-          onFileValidation={(file) => {
-            const parseResult = getPresignedPutUrlSchema
-              .pick({ fileName: true })
-              .safeParse({ fileName: file.name })
+              const ext = getFileExtension(file.name)
+              if (enableRiskyFileWarning && RISKY_FILE_EXTENSIONS.has(ext)) {
+                setPendingAckRiskyFile(file)
+                return
+              }
 
-            if (parseResult.success) return null
-            // NOTE: safe assertion here because we're in error path and there's at least 1 error
-            return (
-              parseResult.error.errors[0]?.message ||
-              "Please ensure that your file begins with alphanumeric characters!"
-            )
-          }}
+              doUpload(file)
+            }}
+            maxSize={maxSizeInBytes}
+            accept={uniq([
+              ...Object.keys(acceptedFileTypes),
+              ...Object.values(acceptedFileTypes),
+            ])}
+            onFileValidation={(file) => {
+              const parseResult = getPresignedPutUrlSchema
+                .pick({ fileName: true })
+                .safeParse({ fileName: file.name })
+
+              if (parseResult.success) return null
+              // NOTE: safe assertion here because we're in error path and there's at least 1 error
+              return (
+                parseResult.error.errors[0]?.message ||
+                "Please ensure that your file begins with alphanumeric characters!"
+              )
+            }}
+          />
+        </Skeleton>
+        <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
+          {`Maximum file size: ${formatFileSizeLimit({ bytes: maxSizeInBytes })}`}
+          <br />
+          {`Accepted file types: ${Object.keys(acceptedFileTypes).join(", ")}`}
+        </Text>
+      </FormControl>
+
+      {enableRiskyFileWarning && pendingAckRiskyFile && (
+        <RiskyFileUploadModal
+          isOpen={!!pendingAckRiskyFile}
+          file={pendingAckRiskyFile}
+          onConfirm={() => doUpload(pendingAckRiskyFile)}
+          onClose={() => setPendingAckRiskyFile(null)}
         />
-      </Skeleton>
-      <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
-        {`Maximum file size: ${maxSizeInBytes / ONE_MB_IN_BYTES} MB`}
-        <br />
-        {`Accepted file types: ${Object.keys(acceptedFileTypes).join(", ")}`}
-      </Text>
-    </FormControl>
+      )}
+    </>
   )
 }

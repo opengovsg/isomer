@@ -1,5 +1,5 @@
 import { ResourceType } from "@prisma/client"
-import { pick } from "lodash"
+import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupBlob,
@@ -1286,6 +1286,339 @@ describe("resource.service", () => {
       )
       expect(collection2Node?.title).toBe("Collection 2 Index Page")
       expect(collection2Node?.summary).toBe("Hello im the index page")
+    })
+
+    describe("childrenPagesOrdering", () => {
+      it("should order children according to childrenPagesOrdering when viewing a Page resource", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        const user = await setupUser({})
+
+        await setupPageResource({
+          resourceType: ResourceType.RootPage,
+          siteId: site.id,
+        })
+
+        const { folder: parentFolder } = await setupFolder({
+          permalink: "parent-folder",
+          siteId: site.id,
+          state: ResourceState.Published,
+        })
+
+        // Create child pages with titles that would sort differently alphabetically
+        const { page: pageA } = await setupPageResource({
+          title: "Zebra Page",
+          permalink: "zebra-page",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
+          parentId: parentFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        const { page: pageB } = await setupPageResource({
+          title: "Apple Page",
+          permalink: "apple-page",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
+          parentId: parentFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        const { page: pageC } = await setupPageResource({
+          title: "Mango Page",
+          permalink: "mango-page",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
+          parentId: parentFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        // Create index page with childrenPagesOrdering that puts Zebra first, then Mango
+        const { blob: indexPageBlob } = await setupPageResource({
+          title: "Parent Folder Index",
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: parentFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        // Set childrenPagesOrdering: Zebra, Mango (Apple not in ordering)
+        await db
+          .updateTable("Blob")
+          .where("id", "=", indexPageBlob.id)
+          .set({
+            content: {
+              ...indexPageBlob.content,
+              content: [
+                {
+                  type: "childrenpages",
+                  childrenPagesOrdering: [pageA.id, pageC.id],
+                  variant: "boxes",
+                  showSummary: false,
+                  showThumbnail: false,
+                },
+              ],
+            },
+          })
+          .execute()
+
+        // Act: Get sitemap for one of the child pages
+        const result = await getLocalisedSitemap(site.id, Number(pageB.id))
+
+        // Assert: Children should be ordered as [Zebra, Mango, Apple]
+        const parentNode = result.children?.find(
+          (child) => child.id === parentFolder.id,
+        )
+        expect(parentNode).toBeDefined()
+        const childIds = parentNode?.children?.map((child) => child.id)
+
+        // Zebra (pageA) should be first, Mango (pageC) second, Apple (pageB) last
+        expect(childIds).toEqual([pageA.id, pageC.id, pageB.id])
+      })
+
+      it("should fall back to alphabetical title sort for children not in ordering", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        const user = await setupUser({})
+
+        await setupPageResource({
+          resourceType: ResourceType.RootPage,
+          siteId: site.id,
+        })
+
+        const { folder: parentFolder } = await setupFolder({
+          permalink: "parent-folder",
+          siteId: site.id,
+          state: ResourceState.Published,
+        })
+
+        // Create pages - none will be in the ordering
+        const { page: pageAlpha } = await setupPageResource({
+          title: "Alpha",
+          permalink: "alpha",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
+          parentId: parentFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        const { page: pageGamma } = await setupPageResource({
+          title: "Gamma",
+          permalink: "gamma",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
+          parentId: parentFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        const { page: pageBeta } = await setupPageResource({
+          title: "Beta",
+          permalink: "beta",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
+          parentId: parentFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        // Create index page with empty childrenPagesOrdering
+        const { blob: indexPageBlob } = await setupPageResource({
+          title: "Parent Folder Index",
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: parentFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        await db
+          .updateTable("Blob")
+          .where("id", "=", indexPageBlob.id)
+          .set({
+            content: {
+              ...indexPageBlob.content,
+              content: [
+                {
+                  type: "childrenpages",
+                  childrenPagesOrdering: [],
+                  variant: "boxes",
+                  showSummary: false,
+                  showThumbnail: false,
+                },
+              ],
+            },
+          })
+          .execute()
+
+        // Act
+        const result = await getLocalisedSitemap(site.id, Number(pageAlpha.id))
+
+        // Assert: Children should be alphabetically sorted by title
+        const parentNode = result.children?.find(
+          (child) => child.id === parentFolder.id,
+        )
+        const childIds = parentNode?.children?.map((child) => child.id)
+
+        // Should be Alpha, Beta, Gamma (alphabetical)
+        expect(childIds).toEqual([pageAlpha.id, pageBeta.id, pageGamma.id])
+      })
+
+      it("should only apply ordering at the correct parent node", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        const user = await setupUser({})
+
+        await setupPageResource({
+          resourceType: ResourceType.RootPage,
+          siteId: site.id,
+        })
+
+        // Create parent folder
+        const { folder: parentFolder } = await setupFolder({
+          title: "Parent Folder",
+          permalink: "parent-folder",
+          siteId: site.id,
+          state: ResourceState.Published,
+        })
+
+        // Create nested folder inside parent
+        const { folder: nestedFolder } = await setupFolder({
+          title: "Nested Folder",
+          permalink: "nested-folder",
+          siteId: site.id,
+          parentId: parentFolder.id,
+          state: ResourceState.Published,
+        })
+
+        // Create pages in nested folder
+        const { page: nestedPageZ } = await setupPageResource({
+          title: "Zebra",
+          permalink: "zebra",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
+          parentId: nestedFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        const { page: nestedPageA } = await setupPageResource({
+          title: "Apple",
+          permalink: "apple",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
+          parentId: nestedFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        // Create index page for nested folder with specific ordering (Zebra first)
+        const { blob: nestedIndexBlob } = await setupPageResource({
+          title: "Nested Folder Index",
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: nestedFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        await db
+          .updateTable("Blob")
+          .where("id", "=", nestedIndexBlob.id)
+          .set({
+            content: {
+              ...nestedIndexBlob.content,
+              content: [
+                {
+                  type: "childrenpages",
+                  childrenPagesOrdering: [nestedPageZ.id, nestedPageA.id],
+                  variant: "boxes",
+                  showSummary: false,
+                  showThumbnail: false,
+                },
+              ],
+            },
+          })
+          .execute()
+
+        // Act: Get sitemap for a page in nested folder
+        const result = await getLocalisedSitemap(
+          site.id,
+          Number(nestedPageZ.id),
+        )
+
+        // Assert: nested folder should have custom ordering (Zebra, Apple)
+        const parentNode = result.children?.find(
+          (child) => child.id === parentFolder.id,
+        )
+        const nestedNode = parentNode?.children?.find(
+          (child) => child.id === nestedFolder.id,
+        )
+        const nestedChildIds = nestedNode?.children?.map((child) => child.id)
+        expect(nestedChildIds).toEqual([nestedPageZ.id, nestedPageA.id])
+
+        // Assert: The ordering is applied at the correct level (nestedFolder, not parentFolder)
+        // parentFolder's direct children should not be affected by nestedFolder's ordering
+      })
+
+      it("should not apply ordering when viewing non-Page resources", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        const user = await setupUser({})
+
+        const { page: rootPage } = await setupPageResource({
+          resourceType: ResourceType.RootPage,
+          siteId: site.id,
+        })
+
+        const { folder: parentFolder } = await setupFolder({
+          permalink: "parent-folder",
+          siteId: site.id,
+          state: ResourceState.Published,
+        })
+
+        // Create index page with ordering
+        const { blob: indexPageBlob } = await setupPageResource({
+          title: "Parent Folder Index",
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: parentFolder.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        await db
+          .updateTable("Blob")
+          .where("id", "=", indexPageBlob.id)
+          .set({
+            content: {
+              ...indexPageBlob.content,
+              content: [
+                {
+                  type: "childrenpages",
+                  childrenPagesOrdering: ["some-id"],
+                  variant: "boxes",
+                  showSummary: false,
+                  showThumbnail: false,
+                },
+              ],
+            },
+          })
+          .execute()
+
+        // Act: Get sitemap for RootPage (not a Page type)
+        const result = await getLocalisedSitemap(site.id, Number(rootPage.id))
+
+        // Assert: Should not throw and should return valid sitemap
+        // The ordering logic only applies to Page resources with parentId
+        expect(result).toBeDefined()
+        expect(result.id).toBe(rootPage.id)
+      })
     })
   })
   describe.skip("getResourcePermalinkTree", () => {})

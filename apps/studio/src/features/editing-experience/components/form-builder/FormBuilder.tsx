@@ -3,7 +3,7 @@ import type { ValidateFunction } from "ajv"
 import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"
-import { groupBy } from "lodash"
+import { groupBy } from "lodash-es"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { ajv } from "~/utils/ajv"
 
@@ -61,6 +61,8 @@ import {
   jsonFormsObjectControlTester,
   JsonFormsOneOfControl,
   jsonFormsOneOfControlTester,
+  JsonFormsPrefillLinkControl,
+  jsonFormsPrefillLinkControlTester,
   JsonFormsProseControl,
   jsonFormsProseControlTester,
   JsonFormsRefControl,
@@ -81,6 +83,8 @@ import {
   jsonFormsUnionRootControlTester,
   JsonFormsUuidControl,
   jsonFormsUuidControlTester,
+  jsonFormsAntiScamDisclaimerBannerLayoutRenderer,
+  jsonFormsAntiScamDisclaimerBannerLayoutTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
   JsonFormsWidgetIntegrationControl,
@@ -159,6 +163,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: jsonFormsGroupLayoutRenderer,
   },
   {
+    tester: jsonFormsAntiScamDisclaimerBannerLayoutTester,
+    renderer: jsonFormsAntiScamDisclaimerBannerLayoutRenderer,
+  },
+  {
     tester: jsonFormsVerticalLayoutTester,
     renderer: jsonFormsVerticalLayoutRenderer,
   },
@@ -191,6 +199,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsCollectionDropdownControlTester,
     renderer: JsonFormsCollectionDropdownControl,
+  },
+  {
+    tester: jsonFormsPrefillLinkControlTester,
+    renderer: JsonFormsPrefillLinkControl,
   },
 ]
 

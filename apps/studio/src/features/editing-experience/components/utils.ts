@@ -15,7 +15,8 @@ import {
   VIDEO_EMBED_URL_REGEXES,
 } from "@opengovsg/isomer-components"
 import DOMPurify from "isomorphic-dompurify"
-import set from "lodash/set"
+import { set } from "lodash-es"
+import { transliterate } from "transliteration"
 
 import { PLACEHOLDER_IMAGE_FILENAME } from "./constants"
 
@@ -34,14 +35,10 @@ export const EMBED_NAME_MAPPING: Record<
   formsg: "FormSG",
 }
 
-export const generateResourceUrl = (value: string) => {
-  return (
-    value
-      .toLowerCase()
-      // Replace non-alphanum characters with hyphen for UX
-      .replace(/[^a-z0-9]/g, "-")
-  )
-}
+export const generateResourceUrl = (value: string): string =>
+  transliterate(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "-")
 
 interface UploadModifiedAssetsParams {
   block: IsomerComponent

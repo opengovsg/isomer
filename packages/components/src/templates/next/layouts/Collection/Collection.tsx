@@ -16,14 +16,25 @@ export const CollectionLayout = ({
   layout,
   LinkComponent,
 }: CollectionPageSchemaType) => {
-  const { permalink, defaultSortBy, defaultSortDirection, tagCategories } = page
+  const {
+    permalink,
+    sortOrder,
+    defaultSortBy,
+    defaultSortDirection,
+    tagCategories,
+    showDate,
+    showThumbnail,
+  } = page
 
   const items = getCollectionItems({
     site,
     permalink,
+    sortOrder,
     sortBy: defaultSortBy,
     sortDirection: defaultSortDirection,
     tagCategories,
+    showDate,
+    showThumbnail,
   })
   const processedItems = processCollectionItems(items)
   const breadcrumb = getBreadcrumbFromSiteMap(

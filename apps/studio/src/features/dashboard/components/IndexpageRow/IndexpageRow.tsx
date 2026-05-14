@@ -10,6 +10,7 @@ import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
 import Link from "next/link"
 import { useEffect } from "react"
 import { BiChevronRight, BiSolidCircle } from "react-icons/bi"
+import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { trpc } from "~/utils/trpc"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
@@ -33,7 +34,7 @@ export const IndexpageRow = ({
   useEffect(() => {
     if (isError) {
       if (error.data?.code === "NOT_FOUND") {
-        void createIndexPage({ siteId, parentId: resourceId })
+        createIndexPage({ siteId, parentId: resourceId })
         void trpcUtils.folder.getIndexpage.refetch()
         void trpcUtils.resource.getChildrenOf.invalidate()
       }
@@ -47,6 +48,8 @@ export const IndexpageRow = ({
     siteId,
     resourceId,
   ])
+
+  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
 
   return (
     <Skeleton w="full" isLoaded={!isPending && !!data}>
@@ -86,7 +89,10 @@ export const IndexpageRow = ({
           {/* as a relative time. */}
           {/* we also need to give the user who did the update */}
           <Text textStyle="caption-2" textColor="base.content.medium">
-            {getIndexPageSubtitle(type)}
+            {getIndexPageSubtitle({
+              type,
+              isNewCollectionTagsManagementEnabled,
+            })}
           </Text>
         </VStack>
         <Text

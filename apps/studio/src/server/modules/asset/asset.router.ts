@@ -1,10 +1,15 @@
 import { TRPCError } from "@trpc/server"
-import { deleteAssetsSchema, getPresignedPutUrlSchema } from "~/schemas/asset"
+import {
+  deleteAssetsSchema,
+  getPresignedGetUrlSchema,
+  getPresignedPutUrlSchema,
+} from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
 
 import {
   doAllFileKeysBelongToSite,
   getFileKey,
+  getPresignedGetUrl,
   getPresignedPutUrl,
   markFileAsDeleted,
   validateUserPermissionsForAsset,
@@ -44,6 +49,39 @@ export const assetRouter = router({
         contentType,
         contentDisposition,
       }
+    }),
+
+  // Modelled as a mutation rather than a query: it has user-visible side
+  // effects (logs, expiring URL) and is invoked imperatively per click.
+  getPresignedGetUrl: protectedProcedure
+    .input(getPresignedGetUrlSchema)
+    .mutation(async ({ ctx, input: { siteId, fileKey } }) => {
+      await validateUserPermissionsForAsset({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      if (!doAllFileKeysBelongToSite({ fileKeys: [fileKey], siteId })) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "The file key does not belong to the specified site. You may only access assets for the site you are authorized for.",
+        })
+      }
+
+      const presignedGetUrl = await getPresignedGetUrl({ key: fileKey })
+
+      ctx.logger.info(
+        {
+          userId: ctx.session?.userId,
+          siteId,
+          fileKey,
+        },
+        `Generated presigned GET URL for ${fileKey} for site ${siteId}`,
+      )
+
+      return { presignedGetUrl }
     }),
 
   deleteAssets: protectedProcedure

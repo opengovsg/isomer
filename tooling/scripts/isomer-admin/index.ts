@@ -1,23 +1,18 @@
-import { select } from "@inquirer/prompts";
-import type { IsomerAdminScriptType } from "./types";
-import { addIsomerCollaborators } from "./apps/add-isomer-collaborators";
-import { bulkUploadAssets } from "./apps/bulk-upload-assets";
-import { exportIndividualJsons } from "./apps/export-individual-jsons";
-import { exportSiteJsons } from "./apps/export-site-jsons";
-import { extractFolderJsons } from "./apps/extract-folder-jsons";
-import { findInvalidSchema } from "./apps/find-invalid-schema";
-import { importFolderJsons } from "./apps/import-folder-jsons";
+import { select } from "@inquirer/prompts"
+
+import type { IsomerAdminScriptType } from "./types"
+import { bulkUploadAssets } from "./apps/bulk-upload-assets"
+import { exportIndividualJsons } from "./apps/export-individual-jsons"
+import { exportSiteJsons } from "./apps/export-site-jsons"
+import { extractFolderJsons } from "./apps/extract-folder-jsons"
+import { findInvalidSchema } from "./apps/find-invalid-schema"
+import { importFolderJsons } from "./apps/import-folder-jsons"
+import { rebuildAllCodebuildProjects } from "./apps/rebuild-all-codebuild-projects"
 
 const main = async () => {
   const script = await select<IsomerAdminScriptType>({
     message: "Select an Isomer admin script to run",
     choices: [
-      {
-        name: "Add Isomer collaborators",
-        description:
-          "Add Isomer admins and migrators as collaborators to sites.",
-        value: "add-isomer-collaborators",
-      },
       {
         name: "Bulk upload assets",
         description:
@@ -53,35 +48,41 @@ const main = async () => {
           "Import JSON files from ./input to update existing resources in the database.",
         value: "import-folder-jsons",
       },
+      {
+        name: "Rebuild all CodeBuild projects",
+        description:
+          "List AWS CodeBuild projects and start builds for each project with resumable batching.",
+        value: "rebuild-all-codebuild-projects",
+      },
     ],
-  });
+  })
 
   switch (script) {
-    case "add-isomer-collaborators":
-      await addIsomerCollaborators();
-      break;
     case "bulk-upload-assets":
-      await bulkUploadAssets();
-      break;
+      await bulkUploadAssets()
+      break
     case "export-individual-jsons":
-      await exportIndividualJsons();
-      break;
+      await exportIndividualJsons()
+      break
     case "export-site-jsons":
-      await exportSiteJsons();
-      break;
+      await exportSiteJsons()
+      break
     case "extract-folder-jsons":
-      await extractFolderJsons();
-      break;
+      await extractFolderJsons()
+      break
     case "find-invalid-schema":
-      await findInvalidSchema();
-      break;
+      await findInvalidSchema()
+      break
     case "import-folder-jsons":
-      await importFolderJsons();
-      break;
+      await importFolderJsons()
+      break
+    case "rebuild-all-codebuild-projects":
+      await rebuildAllCodebuildProjects()
+      break
     default:
-      const _: never = script;
-      console.error("No valid script selected.");
+      const _: never = script
+      console.error("No valid script selected.")
   }
-};
+}
 
-main().catch((error) => console.error(error));
+main().catch((error) => console.error(error))

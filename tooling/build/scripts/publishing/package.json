@@ -11,11 +11,12 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
-    "pg": "^8.12.0",
-    "tsx": "^4.19.2"
+    "dotenv": "catalog:",
+    "pg": "catalog:",
+    "tsx": "catalog:"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.6"
-  }
+    "@types/pg": "catalog:"
+  },
+  "packageManager": "pnpm@10.33.0"
 }

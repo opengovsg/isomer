@@ -6,6 +6,7 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
+import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import CollectionPage from "~/pages/sites/[siteId]/collections/[collectionId]"
 
 import { createBannerGbParameters } from "../utils/growthbook"
@@ -118,5 +119,17 @@ export const ExpandedProfileDropdown: Story = {
     if (testUserSelectorButton) {
       await userEvent.click(testUserSelectorButton)
     }
+  },
+}
+
+export const NewCollectionTagsManagement: Story = {
+  parameters: {
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await canvas.findByText(
+      /Manage the Collection’s layout, filters, and sorting./i,
+    )
   },
 }

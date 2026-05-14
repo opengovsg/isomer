@@ -18,7 +18,7 @@ import {
   getCollectionIndexPageContents,
   getFolderIndexPageContents,
 } from "./utils/getIndexPageContent"
-import { getResourceImage } from "./utils/getResourceImage"
+import { getResourceFirstImage } from "./utils/getResourceFirstImage"
 
 dotenv.config()
 
@@ -139,12 +139,15 @@ async function main() {
           tags: resource.content.page.tags,
           tagged: resource.content.page.tagged,
           date: resource.content.page.date,
-          image: getResourceImage(resource),
+          image: resource.content.page.image,
+          firstImage: getResourceFirstImage(resource),
           ref: resource.content.page.ref, // For file and link layouts
           collectionPagePageProps: {
             tagCategories: resource.content.page?.tagCategories,
+            sortOrder: resource.content.page?.sortOrder,
             defaultSortBy: resource.content.page?.defaultSortBy,
             defaultSortDirection: resource.content.page?.defaultSortDirection,
+            showThumbnail: resource.content.page?.showThumbnail,
           },
         }
 

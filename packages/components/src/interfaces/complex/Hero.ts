@@ -2,9 +2,12 @@ import type { Static } from "@sinclair/typebox"
 import type { Simplify } from "type-fest"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
-import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { omit } from "lodash-es"
+import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
+import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
+import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
   gradient: "gradient",
@@ -20,6 +23,10 @@ const HeroBaseSchema = Type.Object({
     title: "Hero text",
     description: "The title of the hero banner",
     maxLength: 100,
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
   }),
   subtitle: Type.Optional(
     Type.String({
@@ -64,9 +71,14 @@ const CallToActionsSchema = Type.Object({
   ),
 })
 
-const BackgroundUrlSchema = Type.String({
+const BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING = omit(
+  IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+  ".gif",
+)
+
+const BackgroundUrlSchema = generateImageSrcSchema({
   title: "Hero image",
-  format: "image",
+  allowedMimeTypeMappings: BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 })
 
 const GROUPINGS = {

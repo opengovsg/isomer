@@ -27,6 +27,7 @@ type TagCategory = Tagged & {
 interface CollectionPagePageProps {
   defaultSortBy?: string
   defaultSortDirection?: string
+  sortOrder?: string
   tagCategories?: TagCategory[]
 }
 
@@ -40,6 +41,10 @@ export type SitemapEntry = Pick<
   category?: string
   date?: string
   image?: {
+    src?: string
+    alt?: string
+  }
+  firstImage?: {
     src?: string
     alt?: string
   }

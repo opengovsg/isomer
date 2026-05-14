@@ -4,16 +4,16 @@ Admin tooling scripts for managing Isomer sites, resources, and content.
 
 ## Prerequisites
 
-1. Run `npm install` from the repository root.
+1. Run `pnpm install` from the repository root.
 2. Copy `.env.example` to `.env` and fill in the required values.
-3. For scripts that access the database, run `npm run db:connect` before starting.
+3. For scripts that access the database, run `pnpm run db:connect` before starting.
 
 ## Usage
 
 From the `tooling/scripts` directory:
 
 ```sh
-npm run isomer-admin
+pnpm run isomer-admin
 ```
 
 Select a script from the interactive menu.
@@ -57,3 +57,7 @@ Validates JSON blobs against the Isomer Next page schema. Supports two modes: ch
 Imports JSON files from `./input` to update existing resources in the database. Matches resources by ID extracted from the filename (`{id}.json`). Optionally publishes the updated resources. Looks up the publisher by email address.
 
 **NOTE:** This requires you to place the files inside `./input` first before running.
+
+### Rebuild All CodeBuild Projects
+
+Lists all AWS CodeBuild projects in a selected region, sorts them alphabetically, and starts a build for each project. The script can be run as a dry run to show project indexes first, then resumed from a specific index if a previous run stops midway.

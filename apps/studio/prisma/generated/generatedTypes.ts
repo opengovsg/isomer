@@ -9,6 +9,7 @@ import type {
   ResourceState,
   ResourceType,
   RoleType,
+  IsomerAdminRole,
   AuditLogEvent,
   BuildStatusType,
 } from "./generatedEnums"
@@ -63,6 +64,14 @@ export interface Footer {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
+export interface IsomerAdmin {
+  id: GeneratedAlways<string>
+  userId: string
+  role: IsomerAdminRole
+  expiry: Timestamp | null
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
 export interface Navbar {
   id: GeneratedAlways<number>
   siteId: number
@@ -78,6 +87,15 @@ export interface RateLimiterFlexible {
   key: string
   points: number
   expire: Timestamp | null
+}
+export interface Redirect {
+  id: GeneratedAlways<string>
+  siteId: number
+  source: string
+  destination: string
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+  deletedAt: Timestamp | null
 }
 export interface Resource {
   id: GeneratedAlways<string>
@@ -159,8 +177,10 @@ export interface DB {
   Blob: Blob
   CodeBuildJobs: CodeBuildJobs
   Footer: Footer
+  IsomerAdmin: IsomerAdmin
   Navbar: Navbar
   RateLimiterFlexible: RateLimiterFlexible
+  Redirect: Redirect
   Resource: Resource
   ResourcePermission: ResourcePermission
   Site: Site

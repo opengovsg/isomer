@@ -19,6 +19,7 @@ jobs:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
       SLACK_NOTIFY_TEAM_ID: ${{ secrets.SLACK_NOTIFY_TEAM_ID }}
+      DD_API_KEY: ${{ secrets.DD_API_KEY }}
     with:
       aws-region: "ap-southeast-1"
       aws-account-id: "058264420411"
@@ -43,4 +44,3 @@ jobs:
       app-s3-assets-bucket-name: "isomer-next-infra-stg-assets-private-61710b8"
       app-s3-assets-domain-name: "isomer-user-content-stg.by.gov.sg"
       app-growthbook-client-key: "sdk-x4jkIJGr4TizR8qK"
-      app-intercom-app-id: "jv2tjc3g"

@@ -1,10 +1,9 @@
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
-import cuid2 from "@paralleldrive/cuid2"
+import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import isEmail from "validator/lib/isEmail"
 import { isGovEmail } from "~/utils/email"
-import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { DB, Transaction } from "../database"
@@ -86,7 +85,7 @@ export const createUserWithPermission = async ({
     const user = await tx
       .insertInto("User")
       .values({
-        id: cuid2.createId(),
+        id: createId(),
         email,
         name: name || email.split("@")[0] || "",
         phone,
@@ -163,24 +162,47 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
         .selectFrom("ResourcePermission")
         .where("deletedAt", "is", null)
         .where("siteId", "=", siteId)
+        // Site-wide permissions only; resource-level rows would cause duplicate
+        // users in the join once resource-level permissions are introduced.
+        .where("resourceId", "is", null)
         .selectAll(),
     )
-    .with("ActiveUser", (qb) =>
+    .with("ActiveIsomerAdmin", (qb) =>
       qb
+        .selectFrom("IsomerAdmin")
+        .where((eb) =>
+          eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
+        )
+        .select("userId")
+        .distinct(),
+    )
+    .with("ActiveUser", (qb) => {
+      let query = qb
         .selectFrom("User")
         .selectAll()
         .where("deletedAt", "is", null)
-        .where(
-          "email",
-          adminType === "isomer" ? "in" : "not in",
-          PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
-        ),
-    )
+
+      if (adminType === "isomer") {
+        query = query.where("id", "in", (sb) =>
+          sb.selectFrom("ActiveIsomerAdmin").select("userId"),
+        )
+      } else {
+        query = query.where("id", "not in", (sb) =>
+          sb.selectFrom("ActiveIsomerAdmin").select("userId"),
+        )
+      }
+
+      return query
+    })
     .selectFrom("ActiveUser")
-    .innerJoin(
+    .leftJoin(
       "ActiveResourcePermission",
       "ActiveUser.id",
       "ActiveResourcePermission.userId",
+    )
+    .$if(adminType !== "isomer", (qb) =>
+      // For agency users, only show those with an explicit ResourcePermission for this site
+      qb.where("ActiveResourcePermission.userId", "is not", null),
     )
 }
 

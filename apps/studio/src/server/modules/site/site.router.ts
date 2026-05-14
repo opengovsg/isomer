@@ -4,7 +4,6 @@ import type {
   IsomerSiteWideComponentsProps,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { ADMIN_ROLE } from "~/lib/growthbook"
 import {
   createSiteSchema,
   getConfigSchema,
@@ -22,11 +21,15 @@ import {
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { logConfigEvent, logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db, jsonb } from "../database"
-import { validateUserIsIsomerCoreAdmin } from "../permissions/permissions.service"
+import {
+  isActiveIsomerAdmin,
+  validateUserIsIsomerAdmin,
+} from "../permissions/permissions.service"
 import {
   getFooter,
   getLocalisedSitemap,
@@ -45,6 +48,16 @@ import {
 
 export const siteRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
+    // Isomer admins can see all sites
+    const isIsomerAdmin = await isActiveIsomerAdmin(ctx.user.id)
+    if (isIsomerAdmin) {
+      return db
+        .selectFrom("Site")
+        .select(["Site.id", "Site.config"])
+        .orderBy("Site.id", "asc")
+        .execute()
+    }
+
     // NOTE: Any role should be able to read site
     return db
       .selectFrom("Site")
@@ -56,10 +69,9 @@ export const siteRouter = router({
       .execute()
   }),
   listAllSites: protectedProcedure.query(async ({ ctx }) => {
-    await validateUserIsIsomerCoreAdmin({
+    await validateUserIsIsomerAdmin({
       userId: ctx.user.id,
-      gb: ctx.gb,
-      roles: [ADMIN_ROLE.CORE],
+      roles: [IsomerAdminRole.Core],
     })
 
     return db
@@ -534,10 +546,9 @@ export const siteRouter = router({
       // validate the input JSON before parsing. Also ensure that existing site
       // configs in the database meets the schema requirements
       async ({ ctx, input: { siteId, config, theme, navbar, footer } }) => {
-        await validateUserIsIsomerCoreAdmin({
+        await validateUserIsIsomerAdmin({
           userId: ctx.user.id,
-          gb: ctx.gb,
-          roles: [ADMIN_ROLE.CORE, ADMIN_ROLE.MIGRATORS],
+          roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
         })
 
         await db.transaction().execute(async (tx) => {
@@ -686,10 +697,9 @@ export const siteRouter = router({
   create: protectedProcedure
     .input(createSiteSchema)
     .mutation(async ({ ctx, input: { siteName } }) => {
-      await validateUserIsIsomerCoreAdmin({
+      await validateUserIsIsomerAdmin({
         userId: ctx.user.id,
-        gb: ctx.gb,
-        roles: [ADMIN_ROLE.CORE],
+        roles: [IsomerAdminRole.Core],
       })
 
       return createSite({ siteName, userId: ctx.user.id })
@@ -697,10 +707,9 @@ export const siteRouter = router({
   publish: protectedProcedure
     .input(publishSiteSchema)
     .mutation(async ({ ctx, input: { siteId } }) => {
-      await validateUserIsIsomerCoreAdmin({
+      await validateUserIsIsomerAdmin({
         userId: ctx.user.id,
-        gb: ctx.gb,
-        roles: [ADMIN_ROLE.CORE],
+        roles: [IsomerAdminRole.Core],
       })
 
       const byUser = await db
