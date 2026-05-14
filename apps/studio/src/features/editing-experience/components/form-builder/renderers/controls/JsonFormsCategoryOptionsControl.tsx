@@ -27,7 +27,7 @@ import {
   Menu,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import { get } from "lodash"
+import { get } from "lodash-es"
 import { useMemo, useState } from "react"
 import {
   BiDotsHorizontalRounded,
