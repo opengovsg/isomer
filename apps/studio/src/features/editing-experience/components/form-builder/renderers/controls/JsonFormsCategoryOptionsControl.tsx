@@ -43,12 +43,15 @@ import {
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
+import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
@@ -236,7 +239,7 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
           borderColor="utility.feedback.warning"
         >
           <Text textStyle="body-2" color="base.content.strong">
-            This is the default filter, so you can’t change its name or make it
+            This is the default filter, so you can't change its name or make it
             optional.
           </Text>
         </Infobox>
@@ -357,16 +360,15 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
     jsonFormsPath: path,
   })
 
-  const hasBlankOptionLabel = useMemo(() => {
+  const cannotLeaveExpandedCategoryOptions = useMemo(() => {
     const items = get(core?.data, path) as { label?: string }[] | undefined
-    return items?.some((item) => !(item?.label?.trim() ?? "")) ?? false
-  }, [core?.data, path])
-
-  const cannotLeaveExpandedCategoryOptions =
-    hasBlankOptionLabel ||
-    duplicateOptionIndices.size > 0 ||
-    hasDuplicateOptionNameError ||
-    hasErrorAt(path)
+    return (
+      hasBlankOptionLabel(items) ||
+      indicesWithDuplicateLabels(items).size > 0 ||
+      hasDuplicateOptionNameError ||
+      hasErrorAt(path)
+    )
+  }, [core?.data, path, hasDuplicateOptionNameError, hasErrorAt])
 
   const handleCloseExpandedCategoryOptions = () => {
     if (cannotLeaveExpandedCategoryOptions) return
@@ -552,7 +554,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                       </HStack>
                       <Text textStyle="caption-2" color="base.content.medium">
                         {data === 0
-                          ? "No option"
+                          ? "No options"
                           : `${data} ${data > 1 ? "options" : "option"}`}
                       </Text>
                       {(duplicateOptionIndices.size > 0 ||
@@ -610,11 +612,25 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   )
 }
 
+const JsonFormsCategoryOptionsArrayLayout = withJsonFormsArrayLayoutProps(
+  JsonFormsCategoryOptionsArrayLayoutInner,
+)
+
 export const jsonFormsCategoryOptionsControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.CategoryOptionsControl,
   schemaMatches((schema) => schema.format === "category-options"),
 )
 
-export default withJsonFormsArrayLayoutProps(
-  JsonFormsCategoryOptionsArrayLayoutInner,
-)
+const JsonFormsCategoryOptionsControl = (props: ArrayLayoutProps) => {
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
+  })
+
+  if (!isUserIsomerAdmin) {
+    return null
+  }
+
+  return <JsonFormsCategoryOptionsArrayLayout {...props} />
+}
+
+export default JsonFormsCategoryOptionsControl
