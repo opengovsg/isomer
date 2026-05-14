@@ -204,7 +204,6 @@ const SaveButton = ({
       w="100%"
       isLoading={isLoading}
       isDisabled={!isEmpty(errors)}
-      aria-label="Save collection drawer"
       onClick={() => {
         if (!isEmpty(errors)) return
         onClick()
