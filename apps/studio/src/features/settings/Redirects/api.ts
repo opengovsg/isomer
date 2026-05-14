@@ -1,63 +1,40 @@
-import { atom, useAtom, useAtomValue } from "jotai"
-import { useState } from "react"
+import { atom, useAtom } from "jotai"
+import { useMemo } from "react"
+import { trpc } from "~/utils/trpc"
 
 import type { RedirectRow } from "./types"
 
-const SEED_ROWS: RedirectRow[] = [
-  {
-    id: "1",
-    source: "/test-url-9/very-long-url-that-truncates-hello",
-    destination: "https://www.google.com",
-    publishedAt: null,
-    status: "draft",
-    hasUnpublishedChanges: true,
-  },
-  {
-    id: "2",
-    source: "/resources/media-room/*",
-    destination: "/newsroom",
-    publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    status: "deleted",
-    hasUnpublishedChanges: true,
-  },
-  {
-    id: "3",
-    source: "/resources/media-room/*",
-    destination: "/newsroom",
-    publishedAt: new Date(),
-    status: "active",
-    hasUnpublishedChanges: false,
-  },
-  {
-    id: "4",
-    source: "/resources/media-room/events/",
-    destination: "/newsroom/announcements",
-    publishedAt: new Date(),
-    status: "active",
-    hasUnpublishedChanges: false,
-  },
-  {
-    id: "5",
-    source: "/resources/media-room/2023/",
-    destination: "/newsroom/updates",
-    publishedAt: new Date(),
-    status: "active",
-    hasUnpublishedChanges: false,
-  },
-]
+const localDraftsAtom = atom<RedirectRow[]>([])
+const pendingDeletesAtom = atom<Set<string>>(new Set<string>())
 
-const redirectsAtom = atom<RedirectRow[]>(SEED_ROWS)
-
-// TODO: Replace with trpc.redirect.list.useQuery when backend is ready (server/modules/redirect/redirect.router.ts)
-export function useListRedirects(_siteId: number): {
+export function useListRedirects(siteId: number): {
   data: RedirectRow[]
   isLoading: boolean
 } {
-  const data = useAtomValue(redirectsAtom)
-  return { data, isLoading: false }
+  const { data: serverData, isLoading } = trpc.redirect.list.useQuery({
+    siteId,
+    pageSize: 100,
+  })
+  const [localDrafts] = useAtom(localDraftsAtom)
+  const [pendingDeletes] = useAtom(pendingDeletesAtom)
+
+  const merged = useMemo(() => {
+    const serverRows: RedirectRow[] = (serverData?.items ?? []).map((row) => {
+      if (pendingDeletes.has(row.id)) {
+        return {
+          ...row,
+          status: "deleted" as const,
+          hasUnpublishedChanges: true,
+        }
+      }
+      return row
+    })
+    return [...localDrafts, ...serverRows]
+  }, [serverData, localDrafts, pendingDeletes])
+
+  return { data: merged, isLoading }
 }
 
-// TODO: Replace with trpc.redirect.create.useMutation when backend is ready
 export function useCreateRedirect(): {
   mutate: (input: {
     siteId: number
@@ -66,7 +43,7 @@ export function useCreateRedirect(): {
   }) => void
   isPending: boolean
 } {
-  const [, setRows] = useAtom(redirectsAtom)
+  const [, setDrafts] = useAtom(localDraftsAtom)
   const mutate = ({
     source,
     destination,
@@ -76,60 +53,62 @@ export function useCreateRedirect(): {
     destination: string
   }) => {
     const newRow: RedirectRow = {
-      id: String(Date.now()),
+      id: `draft-${Date.now()}`,
       source,
       destination,
       publishedAt: null,
       status: "draft",
       hasUnpublishedChanges: true,
     }
-    setRows((prev) => [newRow, ...prev])
+    setDrafts((prev) => [newRow, ...prev])
   }
   return { mutate, isPending: false }
 }
 
-// TODO: Replace with trpc.redirect.delete.useMutation when backend is ready
 export function useDeleteRedirect(): {
   mutate: (input: { siteId: number; id: string }) => void
   isPending: boolean
 } {
-  const [, setRows] = useAtom(redirectsAtom)
+  const [, setDrafts] = useAtom(localDraftsAtom)
+  const [, setPendingDeletes] = useAtom(pendingDeletesAtom)
+
   const mutate = ({ id }: { siteId: number; id: string }) => {
-    setRows((prev) =>
-      prev.flatMap((row) => {
-        if (row.id !== id) return [row]
-        if (row.status === "draft") return []
-        return [
-          { ...row, status: "deleted" as const, hasUnpublishedChanges: true },
-        ]
-      }),
-    )
+    if (id.startsWith("draft-")) {
+      setDrafts((prev) => prev.filter((row) => row.id !== id))
+    } else {
+      setPendingDeletes((prev: Set<string>) => new Set([...prev, id]))
+    }
   }
   return { mutate, isPending: false }
 }
 
-// TODO: Replace with trpc.redirect.publish.useMutation when backend is ready
 export function usePublishRedirects(): {
   mutate: (siteId: number) => void
   isPending: boolean
 } {
-  const [isPending, setIsPending] = useState(false)
-  const [, setRows] = useAtom(redirectsAtom)
-  const mutate = (_siteId: number) => {
-    setIsPending(true)
-    setTimeout(() => {
-      setRows((prev) =>
-        prev
-          .filter((row) => row.status !== "deleted")
-          .map((row) => ({
-            ...row,
-            status: "active" as const,
-            hasUnpublishedChanges: false,
-            publishedAt: row.publishedAt ?? new Date(),
-          })),
-      )
-      setIsPending(false)
-    }, 500)
+  const [localDrafts, setDrafts] = useAtom(localDraftsAtom)
+  const [pendingDeletes, setPendingDeletes] = useAtom(pendingDeletesAtom)
+  const utils = trpc.useUtils()
+
+  const { mutate: serverPublish, isPending } =
+    trpc.redirect.publish.useMutation({
+      onSuccess: async () => {
+        setDrafts([])
+        setPendingDeletes(new Set())
+        await utils.redirect.list.invalidate()
+      },
+    })
+
+  const mutate = (siteId: number) => {
+    serverPublish({
+      siteId,
+      creates: localDrafts.map(({ source, destination }) => ({
+        source,
+        destination,
+      })),
+      deletes: Array.from(pendingDeletes),
+    })
   }
+
   return { mutate, isPending }
 }
