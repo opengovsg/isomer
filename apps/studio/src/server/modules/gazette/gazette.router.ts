@@ -716,7 +716,7 @@ export const gazetteRouter = router({
       const isWithinGracePeriod =
         publishedAt &&
         differenceInMinutes(new Date(), publishedAt) <=
-        ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES
+          ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES
 
       if (!isWithinGracePeriod) {
         throw new TRPCError({
