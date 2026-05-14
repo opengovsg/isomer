@@ -29,7 +29,7 @@ import {
   Menu,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import { get } from "lodash"
+import { get } from "lodash-es"
 import { Suspense, useMemo, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import {
