@@ -1,7 +1,11 @@
 import { TRPCError } from "@trpc/server"
 import { differenceInMinutes, isBefore, subYears } from "date-fns"
 import { env } from "~/env.mjs"
-import { sendScheduledPageEmail } from "~/features/mail/service"
+import {
+  sendGazetteDeletionEmail,
+  sendScheduledPageEmail,
+} from "~/features/mail/service"
+import { EGAZETTE_INFO_FEATURE_KEY } from "~/lib/growthbook"
 import { getFileSize, markScheduledAssetAsCancelled } from "~/lib/s3"
 import {
   cancelScheduledPublishSchema,
@@ -726,14 +730,19 @@ export const gazetteRouter = router({
       const ref = (blob.content as { page?: { ref?: string } } | null)?.page
         ?.ref
 
+      if (!ref) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Gazette does not have a valid S3 reference",
+        })
+      }
+
       // Always try to delete the asset and search record first
       // before proceeding to remove the database resource.
       // This is because the public uses those to access the gazette
       // but the database resource is purely for internal view.
-      if (ref) {
-        await removeGazetteFromSearchIndex(ref, gazette.id)
-        await deleteGazetteAsset(ref)
-      }
+      await removeGazetteFromSearchIndex(ref, gazette.id)
+      await deleteGazetteAsset(ref)
 
       // Delete the resource in a transaction
       await db.transaction().execute(async (tx) => {
@@ -752,5 +761,32 @@ export const gazetteRouter = router({
           .where("id", "=", String(gazetteId))
           .execute()
       })
+      // NOTE: Send email out to IMDA so that they get visibility on what gazettes are deleted
+      const gb = ctx.gb
+      const { siteId: gazetteSiteId } = gb.getFeatureValue(
+        EGAZETTE_INFO_FEATURE_KEY,
+        {
+          siteId: "",
+          gazettesCollectionId: "",
+        },
+      )
+      const admins = await db
+        .selectFrom("Site")
+        .where("Site.id", "=", Number(gazetteSiteId))
+        .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
+        .innerJoin("User", "ResourcePermission.userId", "User.id")
+        .where("ResourcePermission.role", "=", "Admin")
+        .select("User.email")
+        .execute()
+
+      await Promise.all(
+        admins.map(async ({ email }) => {
+          await sendGazetteDeletionEmail({
+            fileId: ref,
+            gazetteTitle: gazette.title,
+            recipientEmail: email,
+          })
+        }),
+      )
     }),
 })
