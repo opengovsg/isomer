@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
+  countTagOptionsUsageSchema,
   createCollectionSchema,
   editLinkSchema,
   getCollectionsSchema,
@@ -22,6 +23,7 @@ import {
   jsonb,
   ResourceState,
   ResourceType,
+  sql,
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
@@ -311,6 +313,103 @@ export const collectionRouter = router({
           .execute()
       },
     ),
+
+  countTagOptionsUsage: protectedProcedure
+    .input(countTagOptionsUsageSchema)
+    .query(async ({ ctx, input: { siteId, pageId, tagOptionIds } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(pageId))
+        .where("siteId", "=", siteId)
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["parentId"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "Collection index page not found",
+            }),
+        )
+
+      const parentId = indexPage.parentId
+      if (!parentId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page has no parent collection",
+        })
+      }
+
+      const collection = await getSiteResourceById({
+        siteId,
+        resourceId: parentId,
+        type: ResourceType.Collection,
+      })
+      if (!collection) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        })
+      }
+
+      const uniqueTagOptionIds = [...new Set(tagOptionIds)]
+      if (uniqueTagOptionIds.length === 0) {
+        return { count: 0 }
+      }
+
+      // Bound parameters as a Postgres text[] for use with = ANY(...).
+      // Compare as text: `tagged` is stored inside jsonb (no native uuid type),
+      // and jsonb_array_elements_text returns text. The z.string().uuid() validator
+      // is a request-boundary check, not a storage-type contract.
+      const optionIdsAsSqlArray = sql.join(
+        uniqueTagOptionIds.map((id) => sql`${id}::text`),
+        sql`, `,
+      )
+      const tagOptionIdArray = sql`ARRAY[${optionIdsAsSqlArray}]::text[]`
+
+      const row = await db
+        .selectFrom("Resource as r")
+        .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
+        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+        .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
+        .where("r.parentId", "=", parentId)
+        .where("r.siteId", "=", siteId)
+        .where("r.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+        ])
+        // Match child resources whose page.tagged JSON array overlaps the queried
+        // option ids. Postgres has no jsonb && jsonb overlap; unnest to text and use ANY.
+        // Draft or published blob alone is enough; one row per resource still counts once.
+        .where(
+          sql<boolean>`(
+            EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements_text(
+                COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb)
+              ) AS tag
+              WHERE tag = ANY(${tagOptionIdArray})
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements_text(
+                COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb)
+              ) AS tag
+              WHERE tag = ANY(${tagOptionIdArray})
+            )
+          )`,
+        )
+        .select(sql<number>`cast(count(*) as int)`.as("count"))
+        .executeTakeFirstOrThrow()
+
+      return { count: row.count }
+    }),
+
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
     .query(async ({ ctx, input: { linkId, siteId } }) => {
