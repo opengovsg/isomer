@@ -21,7 +21,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { formatDistanceToNow } from "date-fns"
 import { useMemo, useState } from "react"
 import {
   BiDownArrowAlt,
@@ -30,6 +29,7 @@ import {
   BiUpArrowAlt,
 } from "react-icons/bi"
 import { TableHeader } from "~/components/Datatable"
+import { formatDate } from "~/utils/formatDate"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 
@@ -171,9 +171,7 @@ const getColumns = (onDelete: (id: string) => void) => [
       const val = getValue()
       return (
         <Text textStyle="body-2" color="base.content.medium">
-          {val
-            ? formatDistanceToNow(val, { addSuffix: true })
-            : "not published yet"}
+          {val ? formatDate(val) : "not published yet"}
         </Text>
       )
     },
