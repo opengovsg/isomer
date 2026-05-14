@@ -7,7 +7,7 @@ import {
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
 
-import { useListRedirects, usePublishRedirects } from "../api"
+import { useHasDirtyRedirects, usePublishRedirects } from "../api"
 
 interface RedirectsHeaderProps {
   siteId: number
@@ -17,21 +17,19 @@ export const RedirectsHeader = ({
   siteId,
 }: RedirectsHeaderProps): JSX.Element => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const { data: redirects } = useListRedirects(siteId)
-  const { mutate: publishRedirects, isPending } = usePublishRedirects()
-
-  const hasDirtyRows = redirects.some((r) => r.hasUnpublishedChanges)
+  const hasDirtyRows = useHasDirtyRedirects(siteId)
+  const { mutate: publishRedirects, isPending, isError } = usePublishRedirects()
 
   const prevIsPending = useRef(false)
   useEffect(() => {
-    if (prevIsPending.current && !isPending) {
+    if (prevIsPending.current && !isPending && !isError) {
       toast({
         ...SETTINGS_TOAST_MESSAGES.success,
         status: "success",
       })
     }
     prevIsPending.current = isPending
-  }, [isPending, toast])
+  }, [isPending, isError, toast])
 
   return (
     <Flex justifyContent="space-between" align="center" w="full">

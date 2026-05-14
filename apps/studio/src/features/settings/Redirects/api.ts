@@ -1,22 +1,53 @@
 import { atom, useAtom } from "jotai"
 import { useMemo } from "react"
+import { keepPreviousData } from "@tanstack/react-query"
 import { trpc } from "~/utils/trpc"
 
 import type { RedirectRow } from "./types"
 
-const localDraftsAtom = atom<RedirectRow[]>([])
-const pendingDeletesAtom = atom<Set<string>>(new Set<string>())
+const localDraftsAtom = atom<Map<number, RedirectRow[]>>(new Map())
+const pendingDeletesAtom = atom<Map<number, Set<string>>>(new Map())
 
-export function useListRedirects(siteId: number): {
+export function useHasDirtyRedirects(siteId: number): boolean {
+  const [localDraftsMap] = useAtom(localDraftsAtom)
+  const [pendingDeletesMap] = useAtom(pendingDeletesAtom)
+  const localDrafts = localDraftsMap.get(siteId) ?? []
+  const pendingDeletes = pendingDeletesMap.get(siteId) ?? new Set<string>()
+  return localDrafts.length > 0 || pendingDeletes.size > 0
+}
+
+export function useListRedirects(
+  siteId: number,
+  options?: {
+    page?: number
+    pageSize?: number
+    sortBy?: "source" | "destination" | "createdAt"
+    sortDirection?: "asc" | "desc"
+  },
+): {
   data: RedirectRow[]
+  totalCount: number
   isLoading: boolean
+  isFetching: boolean
 } {
-  const { data: serverData, isLoading } = trpc.redirect.list.useQuery({
-    siteId,
-    pageSize: 100,
-  })
-  const [localDrafts] = useAtom(localDraftsAtom)
-  const [pendingDeletes] = useAtom(pendingDeletesAtom)
+  const page = options?.page ?? 1
+  const pageSize = options?.pageSize ?? 25
+  const sortBy = options?.sortBy ?? "createdAt"
+  const sortDirection = options?.sortDirection ?? "desc"
+
+  const {
+    data: serverData,
+    isLoading,
+    isFetching,
+  } = trpc.redirect.list.useQuery(
+    { siteId, page, pageSize, sortBy, sortDirection },
+    { placeholderData: keepPreviousData },
+  )
+  const [localDraftsMap] = useAtom(localDraftsAtom)
+  const [pendingDeletesMap] = useAtom(pendingDeletesAtom)
+
+  const localDrafts = localDraftsMap.get(siteId) ?? []
+  const pendingDeletes = pendingDeletesMap.get(siteId) ?? new Set<string>()
 
   const merged = useMemo(() => {
     const serverRows: RedirectRow[] = (serverData?.items ?? []).map((row) => {
@@ -29,10 +60,18 @@ export function useListRedirects(siteId: number): {
       }
       return row
     })
-    return [...localDrafts, ...serverRows]
-  }, [serverData, localDrafts, pendingDeletes])
+    if (page === 1) {
+      return [...localDrafts, ...serverRows]
+    }
+    return serverRows
+  }, [serverData, localDrafts, pendingDeletes, page])
 
-  return { data: merged, isLoading }
+  return {
+    data: merged,
+    totalCount: serverData?.totalCount ?? 0,
+    isLoading,
+    isFetching,
+  }
 }
 
 export function useCreateRedirect(): {
@@ -43,8 +82,9 @@ export function useCreateRedirect(): {
   }) => void
   isPending: boolean
 } {
-  const [, setDrafts] = useAtom(localDraftsAtom)
+  const [, setDraftsMap] = useAtom(localDraftsAtom)
   const mutate = ({
+    siteId,
     source,
     destination,
   }: {
@@ -60,7 +100,15 @@ export function useCreateRedirect(): {
       status: "draft",
       hasUnpublishedChanges: true,
     }
-    setDrafts((prev) => [newRow, ...prev])
+    setDraftsMap((prev) => {
+      const next = new Map(prev)
+      const drafts = next.get(siteId) ?? []
+      next.set(siteId, [
+        newRow,
+        ...drafts.filter((d) => d.source !== source),
+      ])
+      return next
+    })
   }
   return { mutate, isPending: false }
 }
@@ -69,14 +117,24 @@ export function useDeleteRedirect(): {
   mutate: (input: { siteId: number; id: string }) => void
   isPending: boolean
 } {
-  const [, setDrafts] = useAtom(localDraftsAtom)
-  const [, setPendingDeletes] = useAtom(pendingDeletesAtom)
+  const [, setDraftsMap] = useAtom(localDraftsAtom)
+  const [, setPendingDeletesMap] = useAtom(pendingDeletesAtom)
 
-  const mutate = ({ id }: { siteId: number; id: string }) => {
+  const mutate = ({ siteId, id }: { siteId: number; id: string }) => {
     if (id.startsWith("draft-")) {
-      setDrafts((prev) => prev.filter((row) => row.id !== id))
+      setDraftsMap((prev) => {
+        const next = new Map(prev)
+        const drafts = next.get(siteId) ?? []
+        next.set(siteId, drafts.filter((row) => row.id !== id))
+        return next
+      })
     } else {
-      setPendingDeletes((prev: Set<string>) => new Set([...prev, id]))
+      setPendingDeletesMap((prev) => {
+        const next = new Map(prev)
+        const deletes = next.get(siteId) ?? new Set<string>()
+        next.set(siteId, new Set([...deletes, id]))
+        return next
+      })
     }
   }
   return { mutate, isPending: false }
@@ -85,30 +143,48 @@ export function useDeleteRedirect(): {
 export function usePublishRedirects(): {
   mutate: (siteId: number) => void
   isPending: boolean
+  isError: boolean
 } {
-  const [localDrafts, setDrafts] = useAtom(localDraftsAtom)
-  const [pendingDeletes, setPendingDeletes] = useAtom(pendingDeletesAtom)
+  const [localDraftsMap, setDraftsMap] = useAtom(localDraftsAtom)
+  const [pendingDeletesMap, setPendingDeletesMap] = useAtom(pendingDeletesAtom)
   const utils = trpc.useUtils()
 
-  const { mutate: serverPublish, isPending } =
-    trpc.redirect.publish.useMutation({
-      onSuccess: async () => {
-        setDrafts([])
-        setPendingDeletes(new Set())
-        await utils.redirect.list.invalidate()
-      },
-    })
+  const {
+    mutate: serverPublish,
+    isPending,
+    isError,
+  } = trpc.redirect.publish.useMutation()
 
   const mutate = (siteId: number) => {
-    serverPublish({
-      siteId,
-      creates: localDrafts.map(({ source, destination }) => ({
-        source,
-        destination,
-      })),
-      deletes: Array.from(pendingDeletes),
-    })
+    const localDrafts = localDraftsMap.get(siteId) ?? []
+    const pendingDeletes = pendingDeletesMap.get(siteId) ?? new Set<string>()
+
+    serverPublish(
+      {
+        siteId,
+        creates: localDrafts.map(({ source, destination }) => ({
+          source,
+          destination,
+        })),
+        deletes: Array.from(pendingDeletes),
+      },
+      {
+        onSuccess: async () => {
+          setDraftsMap((prev) => {
+            const next = new Map(prev)
+            next.delete(siteId)
+            return next
+          })
+          setPendingDeletesMap((prev) => {
+            const next = new Map(prev)
+            next.delete(siteId)
+            return next
+          })
+          await utils.redirect.list.invalidate()
+        },
+      },
+    )
   }
 
-  return { mutate, isPending }
+  return { mutate, isPending, isError }
 }
