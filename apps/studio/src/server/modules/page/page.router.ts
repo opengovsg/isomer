@@ -216,26 +216,37 @@ export const pageRouter = router({
       })
 
       const page = await db
-        .selectFrom("Resource")
-        .where("siteId", "=", siteId)
-        .where("id", "=", String(pageId))
-        .select("parentId")
+        .selectFrom("Resource as r")
+        .innerJoin("Resource as parent", "parent.id", "r.parentId")
+        .where("r.siteId", "=", siteId)
+        .where("r.id", "=", String(pageId))
+        .select(["r.parentId", "parent.type as parentType"])
         .executeTakeFirst()
 
-      const parentId = page?.parentId
-      if (!parentId) {
+      if (!page?.parentId) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Collection page not found",
+          message: "Page not found",
         })
       }
 
+      if (page.parentType !== ResourceType.Collection) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Page is not a child of a Collection",
+        })
+      }
+
+      // Intentionally reads only from the published index blob: child pages/links
+      // may only choose from category options that have been published on the
+      // collection index. Newly-added or edited options are not selectable until
+      // the index is published.
       const row = await db
         .selectFrom("Resource as r")
         .innerJoin("Version as v", "r.publishedVersionId", "v.id")
         .innerJoin("Blob as vb", "v.blobId", "vb.id")
         .where("r.siteId", "=", siteId)
-        .where("r.parentId", "=", parentId)
+        .where("r.parentId", "=", page.parentId)
         .where("r.type", "=", ResourceType.IndexPage)
         .select(
           sql<

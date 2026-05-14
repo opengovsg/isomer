@@ -850,7 +850,35 @@ describe("page.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "Collection page not found",
+          message: "Page not found",
+        }),
+      )
+    })
+
+    it("should throw 400 when the resource's parent is not a Collection", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Page is not a child of a Collection",
         }),
       )
     })
