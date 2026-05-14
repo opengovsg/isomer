@@ -20,4 +20,4 @@ Keep a thin adapter in the app: read validated env, map `NextApiRequest` to `cli
 
 ## Datadog tracer
 
-`@isomer/logging/tracer` exposes `initTracer({ service })`. Call it from your runtime entrypoint (e.g. Next.js `instrumentation.ts`) when `DD_SERVICE` is set.
+`@isomer/logging/tracer` exposes `initTracer({ service })`. Call it from your runtime entrypoint (e.g. Next.js `instrumentation.ts`), passing the service name to register with Datadog.
