@@ -19,6 +19,8 @@ import {
   jsonFormsBooleanControlTester,
   JsonFormsCategoryControl,
   jsonFormsCategoryControlTester,
+  JsonFormsCategoryIdControl,
+  jsonFormsCategoryIdControlTester,
   JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
   JsonFormsChildrenPagesOrderingControl,
@@ -73,6 +75,8 @@ import {
   jsonFormsSocialMediaControlTester,
   JsonFormsTagCategoriesControl,
   jsonFormsTagCategoriesControlTester,
+  JsonFormsCategoryOptionsControl,
+  jsonFormsCategoryOptionsControlTester,
   JsonFormsTagCategoryOptionsControl,
   jsonFormsTagCategoryOptionsControlTester,
   JsonFormsTaggedControl,
@@ -109,6 +113,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,
+  },
+  {
+    tester: jsonFormsCategoryOptionsControlTester,
+    renderer: JsonFormsCategoryOptionsControl,
   },
   {
     tester: jsonFormsTagCategoryOptionsControlTester,
@@ -201,6 +209,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsCategoryControlTester,
     renderer: JsonFormsCategoryControl,
+  },
+  {
+    tester: jsonFormsCategoryIdControlTester,
+    renderer: JsonFormsCategoryIdControl,
   },
   {
     tester: jsonFormsCollectionDropdownControlTester,
