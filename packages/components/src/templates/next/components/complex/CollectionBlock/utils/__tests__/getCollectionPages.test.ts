@@ -208,6 +208,7 @@ describe("getCollectionPages", () => {
     let collectionParent: IsomerSitemap
 
     it("should use the item's own image when present, regardless of showThumbnail setting", () => {
+      // Arrange
       collectionParent = {
         id: collectionId,
         title: "Collection 1",
@@ -220,7 +221,11 @@ describe("getCollectionPages", () => {
           showThumbnail: { fallback: "first-image" },
         },
       }
+
+      // Act
       const result = getCollectionPages({ site: buildSite(), collectionParent })
+
+      // Assert
       expect(result[0]?.image).toEqual({
         src: "/item-image.jpg",
         alt: "Item image",
@@ -229,6 +234,7 @@ describe("getCollectionPages", () => {
     })
 
     it("should fall back to the site logo when showThumbnail is undefined on the referenced Collection", () => {
+      // Arrange
       collectionParent = {
         id: collectionId,
         title: "Collection 1",
@@ -238,7 +244,11 @@ describe("getCollectionPages", () => {
         lastModified: new Date("2021-01-01").toISOString(),
         children: [itemWithoutImageButWithFirstImage, itemWithNoImages],
       }
+
+      // Act
       const result = getCollectionPages({ site: buildSite(), collectionParent })
+
+      // Assert
       // Both items should resolve to the site logo since showThumbnail is undefined
       result.forEach((item) => {
         expect(item.image).toEqual({
@@ -251,6 +261,7 @@ describe("getCollectionPages", () => {
     })
 
     it("should fall back to the site logo when showThumbnail.fallback is 'logo'", () => {
+      // Arrange
       collectionParent = {
         id: collectionId,
         title: "Collection 1",
@@ -263,7 +274,11 @@ describe("getCollectionPages", () => {
           showThumbnail: { fallback: "logo" },
         },
       }
+
+      // Act
       const result = getCollectionPages({ site: buildSite(), collectionParent })
+
+      // Assert
       expect(result[0]?.image).toEqual({
         src: site.logoUrl,
         alt: `${site.siteName} site logo`,
@@ -272,6 +287,7 @@ describe("getCollectionPages", () => {
     })
 
     it("should fall back to the first image on the page when showThumbnail.fallback is 'first-image'", () => {
+      // Arrange
       collectionParent = {
         id: collectionId,
         title: "Collection 1",
@@ -284,7 +300,11 @@ describe("getCollectionPages", () => {
           showThumbnail: { fallback: "first-image" },
         },
       }
+
+      // Act
       const result = getCollectionPages({ site: buildSite(), collectionParent })
+
+      // Assert
       const first = result.find(
         (r) => r.id === itemWithoutImageButWithFirstImage.permalink,
       )
