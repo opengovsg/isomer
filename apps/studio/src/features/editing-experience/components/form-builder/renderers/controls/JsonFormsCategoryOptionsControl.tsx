@@ -39,6 +39,8 @@ import {
 } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
@@ -533,11 +535,25 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   )
 }
 
+const JsonFormsCategoryOptionsArrayLayout = withJsonFormsArrayLayoutProps(
+  JsonFormsCategoryOptionsArrayLayoutInner,
+)
+
 export const jsonFormsCategoryOptionsControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.CategoryOptionsControl,
   schemaMatches((schema) => schema.format === "category-options"),
 )
 
-export default withJsonFormsArrayLayoutProps(
-  JsonFormsCategoryOptionsArrayLayoutInner,
-)
+const JsonFormsCategoryOptionsControl = (props: ArrayLayoutProps) => {
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
+  })
+
+  if (!isUserIsomerAdmin) {
+    return null
+  }
+
+  return <JsonFormsCategoryOptionsArrayLayout {...props} />
+}
+
+export default JsonFormsCategoryOptionsControl
