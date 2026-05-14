@@ -3,7 +3,6 @@ import { z } from "zod"
 const sourceSchema = z
   .string()
   .min(1, { message: "Source path is required" })
-  .max(1999, { message: "Source path must be at most 1999 characters" })
   .refine((val) => !/[\x00-\x1f\x7f\\]/.test(val), {
     message: "Source must not contain control characters or backslashes",
   })
@@ -22,7 +21,6 @@ const sourceSchema = z
 const destinationSchema = z
   .string()
   .min(1, { message: "Destination is required" })
-  .max(2000, { message: "Destination must be at most 2000 characters" })
   .refine((val) => val.startsWith("/") || val.startsWith("https://"), {
     message: "Destination must start with '/' or 'https://'",
   })
