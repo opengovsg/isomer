@@ -1,6 +1,5 @@
 import { CollectionPagePageSchema } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
-
 import { ajv } from "~/utils/ajv"
 
 const uuid1 = "00000000-0000-4000-8000-000000000001"
