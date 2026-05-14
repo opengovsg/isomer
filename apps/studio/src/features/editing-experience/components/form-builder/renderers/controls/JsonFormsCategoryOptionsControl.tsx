@@ -43,6 +43,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
+import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
@@ -162,7 +163,7 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
           borderColor="utility.feedback.warning"
         >
           <Text textStyle="body-2" color="base.content.strong">
-            This is the default filter, so you can’t change its name or make it
+            This is the default filter, so you can't change its name or make it
             optional.
           </Text>
         </Infobox>
@@ -280,16 +281,15 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
     jsonFormsPath: path,
   })
 
-  const hasBlankOptionLabel = useMemo(() => {
+  const cannotLeaveExpandedCategoryOptions = useMemo(() => {
     const items = get(core?.data, path) as { label?: string }[] | undefined
-    return items?.some((item) => !(item?.label?.trim() ?? "")) ?? false
-  }, [core?.data, path])
-
-  const cannotLeaveExpandedCategoryOptions =
-    hasBlankOptionLabel ||
-    duplicateOptionIndices.size > 0 ||
-    hasDuplicateOptionNameError ||
-    hasErrorAt(path)
+    return (
+      hasBlankOptionLabel(items) ||
+      indicesWithDuplicateLabels(items).size > 0 ||
+      hasDuplicateOptionNameError ||
+      hasErrorAt(path)
+    )
+  }, [core?.data, path, hasDuplicateOptionNameError, hasErrorAt])
 
   const handleCloseExpandedCategoryOptions = () => {
     if (cannotLeaveExpandedCategoryOptions) return
@@ -475,7 +475,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                       </HStack>
                       <Text textStyle="caption-2" color="base.content.medium">
                         {data === 0
-                          ? "No option"
+                          ? "No options"
                           : `${data} ${data > 1 ? "options" : "option"}`}
                       </Text>
                       {(duplicateOptionIndices.size > 0 ||
