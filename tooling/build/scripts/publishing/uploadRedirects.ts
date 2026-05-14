@@ -1,5 +1,7 @@
 import { spawn } from "child_process"
 import * as fs from "fs"
+import * as os from "os"
+import * as path from "path"
 
 const REDIRECTS_JSON = process.env.REDIRECTS_JSON
 const S3_BUCKET = process.env.S3_BUCKET_NAME
@@ -27,13 +29,15 @@ function normalizeSource(source: string): string | null {
   return trimmed
 }
 
+const EMPTY_FILE = path.join(os.tmpdir(), "isomer-redirect-empty")
+
 function uploadOne(source: string, destination: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const proc = spawn("aws", [
       "s3",
       "cp",
       "--only-show-errors",
-      "/dev/null",
+      EMPTY_FILE,
       `s3://${S3_BUCKET}/${SITE_NAME}/${BUILD_NUMBER}/latest/${source}/index.html`,
       "--content-type",
       "text/html",
@@ -120,6 +124,8 @@ async function main(): Promise<void> {
     console.log("No valid redirects to upload.")
     return
   }
+
+  fs.writeFileSync(EMPTY_FILE, "")
 
   console.log(
     `Uploading ${valid.length} redirect(s) with concurrency ${CONCURRENCY}...`,
