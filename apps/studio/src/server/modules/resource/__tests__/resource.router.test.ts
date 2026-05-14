@@ -1386,6 +1386,40 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should return 400 if resource to move is the search page (permalink /search, no parent)", async () => {
+      // Arrange
+      const { page: searchPage, site } = await setupPageResource({
+        resourceType: "Page",
+        permalink: "search",
+        parentId: null,
+      })
+      const { folder: destinationFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "destination-folder",
+      })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: searchPage.id,
+        destinationResourceId: destinationFolder.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "The search page cannot be moved",
+        }),
+      )
+    })
+
     it("should return 403 if source and destination resources belong to different sites", async () => {
       // Arrange
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
