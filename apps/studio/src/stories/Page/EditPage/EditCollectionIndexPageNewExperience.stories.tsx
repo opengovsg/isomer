@@ -1,10 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
+import {
+  COLLECTION_DISPLAY_SAVED_MESSAGE,
+  FILTER_SAVED_MESSAGE,
+} from "~/features/editing-experience/components/constants"
 import { IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 
@@ -311,5 +315,65 @@ export const FiltersDeleteFilterModalEnabledCta: Story = {
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/i }),
     ).not.toBeDisabled()
+  },
+}
+
+export const CollectionDisplaySaveToast: Story = {
+  parameters: {
+    growthbook: [
+      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+    ],
+    msw: {
+      handlers: [pageHandlers.getCategories.default(), ...COMMON_HANDLERS],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Collection display/i }),
+    )
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Save changes/i }),
+    )
+    await waitFor(
+      () => {
+        void expect(
+          withinPortals(canvasElement).getByText(
+            COLLECTION_DISPLAY_SAVED_MESSAGE,
+          ),
+        ).toBeVisible()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+export const ManageFiltersSaveToast: Story = {
+  parameters: {
+    growthbook: [
+      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
+    ],
+    msw: {
+      handlers: [
+        userHandlers.isIsomerAdmin.admin(),
+        pageHandlers.getCategories.default(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    await playOpenManageFilters(canvasElement)
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Save changes/i }),
+    )
+    await waitFor(
+      () => {
+        void expect(
+          withinPortals(canvasElement).getByText(FILTER_SAVED_MESSAGE),
+        ).toBeVisible()
+      },
+      { timeout: 5000 },
+    )
   },
 }
