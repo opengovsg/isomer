@@ -61,7 +61,7 @@ fi
 echo "Building site..."
 start_time=$(date +%s)
 corepack enable
-corepack install -g pnpm@10.33.0
+corepack install -g pnpm@11.1.2
 pnpm add ./opengovsg-isomer-components-0.0.13.tgz
 pnpm run build:template
 calculate_duration $start_time
