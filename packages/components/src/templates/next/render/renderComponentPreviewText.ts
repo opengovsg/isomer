@@ -110,6 +110,8 @@ export function renderComponentPreviewText({
       return "Child pages"
     case "dynamicdatabanner":
       return component.apiEndpoint
+    case "antiscambanner":
+      return "Anti-scam disclaimer"
     case "collectionblock":
       return (
         component.customTitle ||

@@ -6,7 +6,6 @@ import { FormLabel, Radio } from "@opengovsg/design-system-react"
 import { COLLECTION_VARIANT_OPTIONS } from "@opengovsg/isomer-components"
 import { IconOneColumnLayout, IconTwoColumnLayout } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useNewCollectionEditingExperience } from "~/hooks/useNewCollectionEditingExperience"
 
 export const jsonFormsCollectionVariantControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.CollectionVariantControl,
@@ -20,13 +19,6 @@ function JsonFormsCollectionVariantControl({
   path,
   description,
 }: ControlProps): JSX.Element {
-  const isNewCollectionEditingExperienceEnabled =
-    useNewCollectionEditingExperience()
-
-  if (!isNewCollectionEditingExperienceEnabled) {
-    return <></>
-  }
-
   return (
     <Box>
       <FormControl isRequired gap="0.5rem">
@@ -39,6 +31,7 @@ function JsonFormsCollectionVariantControl({
             handleChange(path, value)
           }}
           value={data as string}
+          defaultValue={COLLECTION_VARIANT_OPTIONS.Collection}
         >
           <Radio
             value={COLLECTION_VARIANT_OPTIONS.Collection}

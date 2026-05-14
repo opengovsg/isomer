@@ -1,5 +1,5 @@
 import type { TSchema } from "@sinclair/typebox"
-import type { IsomerComponentTypes, IsomerPageLayoutType } from "~/types"
+import type { IsomerPageLayoutType, IsomerComponentTypes } from "~/types"
 import { Type } from "@sinclair/typebox"
 import {
   AccordionSchema,
@@ -13,6 +13,7 @@ import {
   DividerSchema,
   DynamicComponentListSchema,
   DynamicDataBannerSchema,
+  AntiScamDisclaimerBannerSchema,
   FormSGSchema,
   HeadingSchema,
   HeroSchema,
@@ -54,6 +55,7 @@ export const IsomerComplexComponentsMap = {
   video: VideoSchema,
   childrenpages: ChildrenPagesSchema,
   dynamicdatabanner: DynamicDataBannerSchema,
+  antiscambanner: AntiScamDisclaimerBannerSchema,
   logocloud: LogoCloudSchema,
   collectionblock: CollectionBlockSchema,
   imagegallery: ImageGallerySchema,
