@@ -35,7 +35,7 @@ import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { useNewCollectionEditingExperience } from "~/hooks/useNewCollectionEditingExperience"
+import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -91,7 +91,7 @@ const FixedBlock = () => {
     useEditorDrawerContext()
   const pageLayout = previewPageState.layout
   const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, previewPageState)
-  const isNewEditingExperienceEnabled = useNewCollectionEditingExperience()
+  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
 
   if (isHeroFixedBlock) {
     // Assuming only one fixedBlock can exist at a time for now
@@ -115,8 +115,9 @@ const FixedBlock = () => {
 
   if (
     pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
-    isNewEditingExperienceEnabled
+    isNewCollectionTagsManagementEnabled
   ) {
+    // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
     const containerProps: StackProps = {
       px: "1.25rem",
       py: "1.25rem",
@@ -154,6 +155,20 @@ const FixedBlock = () => {
           />
         )}
       </>
+    )
+  }
+
+  if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
+    return (
+      <BaseBlock
+        onClick={() => {
+          setCurrActiveIdx(0)
+          setDrawerState({ state: "collectionEditor" })
+        }}
+        label="Collection settings"
+        description="Summary, style, categories and sorting"
+        icon={BiPin}
+      />
     )
   }
 
@@ -383,7 +398,7 @@ export default function RootStateDrawer() {
   // for collection index pages
   const canAddBlocks = pageLayout !== "collection"
 
-  const isNewEditingExperienceEnabled = useNewCollectionEditingExperience()
+  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
 
   return (
     <Flex direction="column" h="full">
@@ -459,7 +474,8 @@ export default function RootStateDrawer() {
           )}
 
           {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
-          isNewEditingExperienceEnabled ? (
+          isNewCollectionTagsManagementEnabled ? (
+            // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
             <Disable when={disableBlocks}>
               <VStack gap="1rem" w="100%" align="start">
                 <VStack gap="0.25rem" align="start">

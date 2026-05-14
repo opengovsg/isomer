@@ -1,6 +1,6 @@
 import type { SetOptional } from "type-fest"
 import type { User } from "~server/db"
-import cuid2 from "@paralleldrive/cuid2"
+import { createId } from "@paralleldrive/cuid2"
 import { normalizeEmail } from "~/utils/email"
 import { db } from "~server/db"
 
@@ -25,7 +25,7 @@ export const auth = async ({ id, ...user }: SetOptional<User, "id">) => {
   }
   return db
     .insertInto("User")
-    .values({ ...normalizedUser, id: cuid2.createId() })
+    .values({ ...normalizedUser, id: createId() })
     .returningAll()
     .executeTakeFirstOrThrow()
 }
