@@ -120,7 +120,7 @@ catalog:
   interweave-ssr: ^2.0.0
   iron-session: ^8.0.4
   jose: ^6.0.11
-  jotai: ^2.12.5
+  jotai: ^2.20.0
   js-base64: ^3.7.7
   js-md5: ^0.8.3
   kysely: ^0.28.17
