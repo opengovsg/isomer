@@ -1,37 +1,32 @@
 {
-  "name": "@isomer/pgboss",
+  "name": "@isomer/logging",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./tracer": "./src/tracer.ts"
   },
   "scripts": {
     "clean": "git clean -xdf .cache .turbo node_modules",
-    "db:sleep": "sleep 3",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
-    "services:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
-    "setup:test": "run-s --print-label services:setup db:sleep",
-    "test": "run-s test:*",
-    "test:watch": "dotenv -e .env.test pnpm exec vitest watch",
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@isomer/logging": "workspace:*",
-    "pg-boss": "catalog:",
-    "vitest": "catalog:vitest",
+    "dd-trace": "catalog:",
+    "nanoid": "catalog:",
+    "pino": "catalog:",
+    "pino-pretty": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "@vitest/coverage-istanbul": "catalog:vitest",
-    "npm-run-all2": "catalog:",
     "typescript": "catalog:"
   }
 }

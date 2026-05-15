@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["node", "vitest/globals"],
+    "types": ["node"],
     "noEmit": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
@@ -9,9 +9,6 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "~/*": ["./src/*"]
-    },
     "lib": ["es2021"]
   },
   "include": ["src/**/*.ts"],

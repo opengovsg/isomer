@@ -1,8 +1,8 @@
-import type { BaseLogger } from "pino"
 import type { Mock } from "vitest"
 import type { HeartbeatOptions } from "~/utils"
-import pino from "pino"
 import { sendHeartbeat } from "~/utils"
+
+import { type BaseLogger, pino } from "@isomer/logging"
 
 import type { GlobalWithPgBoss } from ".."
 import { registerPgbossJob } from ".."

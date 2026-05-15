@@ -1,4 +1,4 @@
-import type { BaseLogger } from "pino"
+import type { BaseLogger } from "@isomer/logging"
 
 export interface HeartbeatOptions {
   maxRetries?: number
