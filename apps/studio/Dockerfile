@@ -43,7 +43,7 @@ WORKDIR /app
 # pnpm global bin is under PNPM_HOME (not on PATH by default); npm's -g used /usr/local/bin.
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack install -g pnpm@10.33.0
+RUN corepack enable && corepack install -g pnpm@11.1.2
 # fixed version to prevent supply chain attacks (to ensure it's same version as pnpm-workspace.yaml)
 RUN pnpm add -g turbo@2.9.6
 COPY . .
@@ -58,7 +58,7 @@ RUN apk update
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-RUN corepack enable && corepack install -g pnpm@10.33.0
+RUN corepack enable && corepack install -g pnpm@11.1.2
 
 # First install the dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .

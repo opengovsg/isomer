@@ -29,11 +29,27 @@ publicHoistPattern:
   - rimraf
   - tsc-alias
 
-onlyBuiltDependencies:
-  - "@prisma/client"
-  - "@prisma/engines"
-  - esbuild
-  - prisma
+allowBuilds:
+  "@prisma/client": true
+  "@prisma/engines": true
+  esbuild: true
+  prisma: true
+  # pnpm 11 made strictDepBuilds true by default — any transitive dep with an
+  # install script that isn't explicitly allowed/ignored fails the install with
+  # ERR_PNPM_IGNORED_BUILDS. The entries below preserve the pre-pnpm-11 behavior
+  # of skipping these scripts (none are needed for our build).
+  "@datadog/native-appsec": false
+  "@datadog/native-iast-taint-tracking": false
+  "@datadog/native-metrics": false
+  "@datadog/pprof": false
+  "@parcel/watcher": false
+  core-js-pure: false
+  cpu-features: false
+  dd-trace: false
+  msw: false
+  protobufjs: false
+  sharp: false
+  ssh2: false
 
 catalog:
   ajv: ^8.17.1
