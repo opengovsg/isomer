@@ -195,6 +195,42 @@ export const gazetteRouter = router({
           resourceIds: [String(collectionId)],
         })
 
+        // Check for duplicate file ID (filename portion of ref) in the same collection
+        // ref format: /sites/{siteId}/gazettes/{uuid}/filename.pdf
+        const filename = ref.split("/").pop()
+        if (filename) {
+          const duplicateRef = await db
+            .selectFrom("Resource")
+            .leftJoin(
+              "Blob as DraftBlob",
+              "Resource.draftBlobId",
+              "DraftBlob.id",
+            )
+            .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+            .leftJoin(
+              "Blob as PublishedBlob",
+              "Version.blobId",
+              "PublishedBlob.id",
+            )
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.parentId", "=", String(collectionId))
+            .where("Resource.type", "=", ResourceType.CollectionLink)
+            .where(
+              sql`split_part(COALESCE("PublishedBlob"."content", "DraftBlob"."content")->'page'->>'ref', '/', -1)`,
+              "=",
+              filename,
+            )
+            .select("Resource.id")
+            .executeTakeFirst()
+
+          if (duplicateRef) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A gazette with the same file ID already exists",
+            })
+          }
+        }
+
         const user = await db
           .selectFrom("User")
           .where("id", "=", ctx.user.id)
@@ -374,6 +410,43 @@ export const gazetteRouter = router({
             })
             finalRef = `/${newKey}`
             oldRefToCleanUp = sourceKey
+          }
+        }
+
+        // Check for duplicate file ID if ref is changing
+        const newFilename = finalRef.split("/").pop()
+        const oldFilename = existingRef.split("/").pop()
+        if (newFilename && newFilename !== oldFilename) {
+          const duplicateRef = await db
+            .selectFrom("Resource")
+            .leftJoin(
+              "Blob as DraftBlob",
+              "Resource.draftBlobId",
+              "DraftBlob.id",
+            )
+            .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+            .leftJoin(
+              "Blob as PublishedBlob",
+              "Version.blobId",
+              "PublishedBlob.id",
+            )
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.parentId", "=", existingResource.parentId)
+            .where("Resource.type", "=", ResourceType.CollectionLink)
+            .where("Resource.id", "!=", String(gazetteId)) // Exclude self
+            .where(
+              sql`split_part(COALESCE("PublishedBlob"."content", "DraftBlob"."content")->'page'->>'ref', '/', -1)`,
+              "=",
+              newFilename,
+            )
+            .select("Resource.id")
+            .executeTakeFirst()
+
+          if (duplicateRef) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A gazette with the same file ID already exists",
+            })
           }
         }
 
