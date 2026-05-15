@@ -16,6 +16,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { useState } from "react"
 import { BiPlus, BiRightArrowAlt } from "react-icons/bi"
+import { transliterate } from "transliteration"
 
 import { useCreateRedirect } from "../api"
 import { addRedirectSchema } from "../types"
@@ -91,7 +92,13 @@ export const AddRedirectCard = ({
             <Input
               placeholder="redirect-from"
               value={source}
-              onChange={(e) => setSource(e.target.value)}
+              onChange={(e) =>
+                setSource(
+                  transliterate(e.target.value)
+                    .toLowerCase()
+                    .replace(/[^a-z0-9/-]/g, "-"),
+                )
+              }
               onBlur={validate}
             />
           </InputGroup>

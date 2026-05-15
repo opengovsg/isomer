@@ -1,4 +1,8 @@
-import type { SortingState } from "@tanstack/react-table"
+import type {
+  OnChangeFn,
+  PaginationState,
+  SortingState,
+} from "@tanstack/react-table"
 import {
   Box,
   HStack,
@@ -18,10 +22,9 @@ import { Button } from "@opengovsg/design-system-react"
 import {
   createColumnHelper,
   getCoreRowModel,
-  getSortedRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { formatDistanceToNow } from "date-fns"
 import { useMemo, useState } from "react"
 import {
   BiDownArrowAlt,
@@ -32,6 +35,7 @@ import {
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
+import { formatDate } from "~/utils/formatDate"
 
 import type { RedirectRow } from "../types"
 import { useDeleteRedirect, useListRedirects } from "../api"
@@ -171,9 +175,7 @@ const getColumns = (onDelete: (id: string) => void) => [
       const val = getValue()
       return (
         <Text textStyle="body-2" color="base.content.medium">
-          {val
-            ? formatDistanceToNow(val, { addSuffix: true })
-            : "not published yet"}
+          {val ? formatDate(val) : "not published yet"}
         </Text>
       )
     },
@@ -250,6 +252,15 @@ function DeleteCell({
   )
 }
 
+const SORT_COLUMN_MAP: Record<string, "source" | "destination" | "createdAt"> =
+  {
+    source: "source",
+    destination: "destination",
+    publishedAt: "createdAt",
+  }
+
+const PAGE_SIZE = 25
+
 interface RedirectsTableProps {
   siteId: number
 }
@@ -257,27 +268,56 @@ interface RedirectsTableProps {
 export const RedirectsTable = ({
   siteId,
 }: RedirectsTableProps): JSX.Element => {
-  const { data: redirects, isLoading } = useListRedirects(siteId)
-  const { mutate: deleteRedirect } = useDeleteRedirect()
   const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: PAGE_SIZE,
+  })
 
+  const sortBy = SORT_COLUMN_MAP[sorting[0]?.id ?? ""] ?? "createdAt"
+  const sortDirection =
+    sorting[0]?.desc === false ? ("asc" as const) : ("desc" as const)
+
+  const {
+    data: redirects,
+    totalCount,
+    isFetching,
+  } = useListRedirects(siteId, {
+    page: pagination.pageIndex + 1,
+    pageSize: PAGE_SIZE,
+    sortBy,
+    sortDirection,
+  })
+
+  const { mutate: deleteRedirect } = useDeleteRedirect()
   const handleDelete = (id: string) => deleteRedirect({ siteId, id })
-
   const columns = useMemo(() => getColumns(handleDelete), [handleDelete])
+
+  const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
+    setSorting(updater)
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+  }
+
+  const pageCount = Math.ceil(totalCount / PAGE_SIZE)
 
   const tableInstance = useReactTable<RedirectRow>({
     columns,
     data: redirects,
-    state: { sorting },
-    onSortingChange: setSorting,
+    state: { sorting, pagination },
+    onSortingChange: handleSortingChange,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    manualSorting: true,
+    manualPagination: true,
+    autoResetPageIndex: false,
+    pageCount,
   })
 
   return (
     <Stack spacing="0.5rem">
       <Datatable
-        isFetching={isLoading}
+        isFetching={isFetching}
         emptyPlaceholder={
           <EmptyTablePlaceholder
             groupLabel="redirects"
@@ -287,6 +327,8 @@ export const RedirectsTable = ({
         }
         instance={tableInstance}
         sx={{ tableLayout: "fixed" }}
+        pagination
+        totalRowCount={totalCount}
       />
     </Stack>
   )
