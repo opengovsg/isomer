@@ -96,8 +96,8 @@ catalogs:
       specifier: ^17.0.0
       version: 17.0.0
     '@hookform/resolvers':
-      specifier: ^3.8.0
-      version: 3.10.0
+      specifier: ^5.2.2
+      version: 5.2.2
     '@inquirer/prompts':
       specifier: ^7.6.0
       version: 7.10.1
@@ -711,7 +711,7 @@ importers:
         version: 17.0.0(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@hookform/resolvers':
         specifier: 'catalog:'
-        version: 3.10.0(react-hook-form@7.75.0(react@18.3.1))
+        version: 5.2.2(react-hook-form@7.75.0(react@18.3.1))
       '@intercom/messenger-js-sdk':
         specifier: 'catalog:'
         version: 0.0.19
@@ -3718,10 +3718,10 @@ packages:
       react: ^18.0.0
       react-dom: ^18.0.0
 
-  '@hookform/resolvers@3.10.0':
-    resolution: {integrity: sha512-79Dv+3mDF7i+2ajj7SkypSKHhl1cbln1OGavqrsF7p6mbUv11xpqpacPsGDCTRvCSjEEIez2ef1NveSVL3b0Ag==}
+  '@hookform/resolvers@5.2.2':
+    resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
     peerDependencies:
-      react-hook-form: ^7.0.0
+      react-hook-form: ^7.55.0
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -5375,6 +5375,9 @@ packages:
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
+  '@standard-schema/utils@0.3.0':
+    resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
 
   '@storybook/addon-a11y@9.1.20':
     resolution: {integrity: sha512-VFZ34y4ApmFwIzPRs2OJrG6jtYhM5y91eCZLTlR/HMGQciKF4TdOJHjj+5vf91SOER5UDcLizXetpiUowiZSgw==}
@@ -14288,8 +14291,9 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@hookform/resolvers@3.10.0(react-hook-form@7.75.0(react@18.3.1))':
+  '@hookform/resolvers@5.2.2(react-hook-form@7.75.0(react@18.3.1))':
     dependencies:
+      '@standard-schema/utils': 0.3.0
       react-hook-form: 7.75.0(react@18.3.1)
 
   '@humanfs/core@0.19.2':
@@ -15888,6 +15892,8 @@ snapshots:
       tslib: 2.8.1
 
   '@standard-schema/spec@1.1.0': {}
+
+  '@standard-schema/utils@0.3.0': {}
 
   '@storybook/addon-a11y@9.1.20(storybook@9.1.20(@testing-library/dom@10.4.1)(msw@2.12.14(@types/node@22.19.15)(typescript@5.9.3))(prettier@3.8.1)(vite@5.4.21(@types/node@22.19.15)(sass@1.98.0)(terser@5.46.1)))':
     dependencies:
