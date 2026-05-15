@@ -2,13 +2,11 @@ import { TRPCError } from "@trpc/server"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
-import { markFileAsDeleted } from "~/server/modules/asset/asset.service"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { db } from "../database"
 import { isActiveIsomerAdmin } from "../permissions/permissions.service"
 import { generateTagsQueryString, getContentDispositionForKey, getContentTypeFromKey } from "../asset/asset.service";
-import { env } from "~/env.mjs";
 import { copyFile, deleteFile, generateSignedGetUrl, generateSignedPutUrl } from "~/lib/s3";
 import { PdfReader } from "pdfreader";
 import filenamify from "filenamify";
