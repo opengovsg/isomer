@@ -60,3 +60,7 @@ SELECT content FROM public."Footer" WHERE "siteId" = $1;
 export const GET_CONFIG = `
 SELECT name, config, theme FROM public."Site" WHERE "id" = $1;
 `
+
+export const GET_REDIRECTS = `
+SELECT source, destination FROM public."Redirect" WHERE "siteId" = $1;
+`
