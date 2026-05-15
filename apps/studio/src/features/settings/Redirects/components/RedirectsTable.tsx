@@ -1,4 +1,8 @@
-import type { OnChangeFn, PaginationState, SortingState } from "@tanstack/react-table"
+import type {
+  OnChangeFn,
+  PaginationState,
+  SortingState,
+} from "@tanstack/react-table"
 import {
   Box,
   HStack,
@@ -29,9 +33,9 @@ import {
   BiUpArrowAlt,
 } from "react-icons/bi"
 import { TableHeader } from "~/components/Datatable"
-import { formatDate } from "~/utils/formatDate"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
+import { formatDate } from "~/utils/formatDate"
 
 import type { RedirectRow } from "../types"
 import { useDeleteRedirect, useListRedirects } from "../api"
@@ -248,14 +252,12 @@ function DeleteCell({
   )
 }
 
-const SORT_COLUMN_MAP: Record<
-  string,
-  "source" | "destination" | "createdAt"
-> = {
-  source: "source",
-  destination: "destination",
-  publishedAt: "createdAt",
-}
+const SORT_COLUMN_MAP: Record<string, "source" | "destination" | "createdAt"> =
+  {
+    source: "source",
+    destination: "destination",
+    publishedAt: "createdAt",
+  }
 
 const PAGE_SIZE = 25
 

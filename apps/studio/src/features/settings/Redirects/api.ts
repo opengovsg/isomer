@@ -1,6 +1,6 @@
+import { keepPreviousData } from "@tanstack/react-query"
 import { atom, useAtom } from "jotai"
 import { useMemo } from "react"
-import { keepPreviousData } from "@tanstack/react-query"
 import { trpc } from "~/utils/trpc"
 
 import type { RedirectRow } from "./types"
@@ -103,10 +103,7 @@ export function useCreateRedirect(): {
     setDraftsMap((prev) => {
       const next = new Map(prev)
       const drafts = next.get(siteId) ?? []
-      next.set(siteId, [
-        newRow,
-        ...drafts.filter((d) => d.source !== source),
-      ])
+      next.set(siteId, [newRow, ...drafts.filter((d) => d.source !== source)])
       return next
     })
   }
@@ -125,7 +122,10 @@ export function useDeleteRedirect(): {
       setDraftsMap((prev) => {
         const next = new Map(prev)
         const drafts = next.get(siteId) ?? []
-        next.set(siteId, drafts.filter((row) => row.id !== id))
+        next.set(
+          siteId,
+          drafts.filter((row) => row.id !== id),
+        )
         return next
       })
     } else {
