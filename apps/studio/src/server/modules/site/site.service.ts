@@ -93,21 +93,26 @@ export const getNotification = async (
   // NOTE: Handle no notification case
   // We need to return an object because the json result
   // will default to `null` if the key doesn't exist
-  if (!result.notification) {
+  const { notification } = result
+
+  if (!notification) {
     return {}
   }
 
-  // NOTE: Handle old array format
-  // Add in the `prose` wrapper
-  if (Array.isArray(result.notification.content)) {
+  if (notification.type === "antiscam") {
+    return result
+  }
+
+  // NOTE: Handle old array format — add in the `prose` wrapper
+  if (Array.isArray(notification.content)) {
     return {
       notification: {
-        ...result.notification,
+        ...notification,
         content: {
           type: "prose",
           content: [
             {
-              content: result.notification.content,
+              content: notification.content,
               type: "paragraph",
               attrs: {
                 dir: "ltr",

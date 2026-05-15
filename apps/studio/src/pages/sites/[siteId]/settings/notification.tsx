@@ -3,6 +3,7 @@ import type { Notification } from "~/schemas/site"
 import { Box } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
+  isSiteNotificationActive,
   NotificationSettingsSchema,
   useIsNotificationDismissed,
 } from "@opengovsg/isomer-components"
@@ -69,7 +70,10 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   })
 
   const [state, setState] = useState<Notification>(
-    previousNotification.notification?.title ? previousNotification : {},
+    previousNotification.notification &&
+      isSiteNotificationActive(previousNotification.notification)
+      ? previousNotification
+      : {},
   )
 
   const [nextUrl, setNextUrl] = useState("")
