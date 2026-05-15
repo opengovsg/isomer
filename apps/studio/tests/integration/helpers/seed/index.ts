@@ -90,9 +90,10 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
   return await db.transaction().execute(async (tx) => {
     const site = await tx
       .insertInto("Site")
+      // @ts-ignore not using the specific config for tests, no need to populate
       .values({
         name,
-        // @ts-expect-error not using the specific config for tests, no need to populate
+        // @ts-ignore not using the specific config for tests, no need to populate
         config: {
           theme: "isomer-next",
           logoUrl: "",
