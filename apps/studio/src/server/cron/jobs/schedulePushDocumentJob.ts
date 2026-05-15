@@ -4,12 +4,17 @@ import { createBaseLogger } from "~/lib/logger"
 import { getBlob, setAssetAsPublished } from "~/lib/s3"
 import { parseFullTextFromPDF } from "~/server/modules/asset/asset.service"
 import { db } from "~/server/modules/database"
+import {
+  EGAZETTE_DOCUMENT_INDEX,
+  generateDocumentId,
+  ISOMER_UA,
+  SEARCHSG_BASE_URL,
+} from "~/server/modules/searchsg/searchsg.service"
 
 import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "schedule-push-document"
 const CRON_SCHEDULE = "* * * * *" // every minute
-const EGAZETTE_DOCUMENT_INDEX = "0ea348e0-8276-4b93-95dd-3c6f62e017d6"
 const SEARCHSG_CONTENT_LENGTH = 50000
 
 const logger = createBaseLogger({ path: "cron:schedulePushDocumentJob" })
@@ -157,6 +162,10 @@ export const schedulePushDocumentJobHandler = async () => {
 
   await pushDocumentsForIngestion(documents)
   await deleteProcessedJobs(scheduledAtCutoff)
+  logger.info(
+    { count: documents.length, documents },
+    "Completed schedule push document job",
+  )
 }
 
 // Drop every job whose scheduledAt has passed, regardless of per-row push
@@ -169,10 +178,6 @@ const deleteProcessedJobs = async (scheduledAtCutoff: Date) => {
     .execute()
 }
 
-const generateDocumentId = (url: string, resourceId: string) => {
-  return `${url}-${resourceId}`
-}
-
 interface PushDocument {
   documentId: string
   title: string
@@ -183,10 +188,6 @@ interface PushDocument {
   customFilter1: string[]
   categories: string[]
 }
-
-const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin" as const
-const ISOMER_UA =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer" as const
 
 const getSearchSGAuthToken = async () => {
   const response = await fetch(`${SEARCHSG_BASE_URL}/v1/auth/token`, {

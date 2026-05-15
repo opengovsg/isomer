@@ -71,6 +71,11 @@ export const cancelScheduledPublishSchema = z.object({
   gazetteId: z.number().min(1),
 })
 
+export const deleteGazetteSchema = z.object({
+  siteId: z.number().min(1),
+  gazetteId: z.number().min(1),
+})
+
 export const getPresignedGetUrlSchema = z.object({
   siteId: z.number().min(1),
   fileKey: z.string().min(1),

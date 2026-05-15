@@ -2,6 +2,9 @@ import type { Meta, StoryObj } from "@storybook/nextjs"
 import { Box } from "@chakra-ui/react"
 import { ViewGazetteModal } from "~/features/gazettes"
 
+// Use a recent date (within 15 minutes) so the delete button is visible
+const recentPublishedAt = new Date()
+
 const meta: Meta<typeof ViewGazetteModal> = {
   title: "Pages/eGazette/Delete Gazette Modal",
   component: ViewGazetteModal,
@@ -19,6 +22,7 @@ const meta: Meta<typeof ViewGazetteModal> = {
   args: {
     isOpen: true,
     onClose: () => console.log("close"),
+    siteId: 1,
     gazetteId: "gazette-123",
     initialView: "delete",
     data: {
@@ -27,7 +31,7 @@ const meta: Meta<typeof ViewGazetteModal> = {
       subcategory: "Notices under other Acts",
       notificationNumber: "2145",
       fileId: "26gg5734.pdf",
-      publishedAt: "17/04/2026, 05:55PM",
+      publishedAt: recentPublishedAt,
     },
   },
 }
@@ -48,7 +52,7 @@ export const WithoutNotificationNumber: Story = {
       category: "Government Gazette",
       subcategory: "Advertisements",
       fileId: "abc123.pdf",
-      publishedAt: "01/01/2026, 09:00AM",
+      publishedAt: recentPublishedAt,
     },
   },
 }
