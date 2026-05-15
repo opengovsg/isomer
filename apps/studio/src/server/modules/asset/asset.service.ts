@@ -7,7 +7,6 @@ import filenamify from "filenamify"
 import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import {
-  copyFile,
   deleteFile,
   generateSignedGetUrl,
   generateSignedPutUrl,
@@ -23,6 +22,13 @@ const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 const EXTENSION_TO_MIME: Record<string, string> = {
   ...IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
   ...FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+}
+
+// NOTE: The format that s3 expects is in this format:
+// Tagging: "key1=value1&key2=value2"
+export const generateTagsQueryString = (tags: { key: string; value: string }[]) => {
+  const entries = tags.map(({ key, value }) => `${key}=${value}`)
+  return entries.join("&")
 }
 
 /**
@@ -111,8 +117,10 @@ export const doAllFileKeysBelongToSite = ({
 
 export const getPresignedPutUrl = async ({
   key,
+  tags,
 }: {
   key: string
+  tags?: { key: string; value: string }[]
 }): Promise<{
   presignedPutUrl: string
   contentType: string
@@ -120,11 +128,13 @@ export const getPresignedPutUrl = async ({
 }> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
+  const stringifiedTags = tags && generateTagsQueryString(tags)
   const presignedPutUrl = await generateSignedPutUrl({
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
     Key: key,
     ContentType: contentType,
     ContentDisposition: contentDisposition,
+    Tagging: tags && stringifiedTags,
   })
   return { presignedPutUrl, contentType, contentDisposition }
 }
@@ -147,42 +157,3 @@ export const getPresignedGetUrl = async ({
   })
 }
 
-/**
- * Copy `sourceKey` to a new key derived by replacing the filename segment with
- * `newFileName`. Does NOT delete the source — the caller is responsible for
- * scheduling the soft-delete *after* whatever DB write references the new key
- * has committed, so a tx rollback never leaves a resource pointing at a
- * tombstoned object.
- */
-export const copyFileWithNewName = async ({
-  sourceKey,
-  newFileName,
-}: {
-  sourceKey: string
-  newFileName: string
-}): Promise<string> => {
-  // Extract siteId/uuid prefix from source key (format: siteId/uuid/filename)
-  const parts = sourceKey.split("/")
-  if (parts.length < 3) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Invalid source key format",
-    })
-  }
-  const prefix = parts.slice(0, 2).join("/")
-
-  // Build new key with sanitized new filename
-  const sanitizedFileName = filenamify(newFileName, { replacement: "-" })
-  const newKey = `${prefix}/${sanitizedFileName}`
-
-  // Copy to new location. The aws-sdk v3 CopyObjectCommand defaults
-  // `TaggingDirective` to `COPY`, so the ISOMER_STATUS tag (and any other
-  // object tags) carry over without us having to set them explicitly.
-  await copyFile({
-    SourceKey: sourceKey,
-    DestKey: newKey,
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-  })
-
-  return newKey
-}

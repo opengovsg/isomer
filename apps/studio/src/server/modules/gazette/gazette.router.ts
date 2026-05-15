@@ -2,15 +2,18 @@ import { TRPCError } from "@trpc/server"
 import { isBefore, subYears } from "date-fns"
 import { env } from "~/env.mjs"
 import { sendScheduledPageEmail } from "~/features/mail/service"
-import { getFileSize } from "~/lib/s3"
+import { getFileSize, markScheduledAssetAsCancelled } from "~/lib/s3"
 import {
+  cancelScheduledPublishSchema,
   createGazetteServerSchema,
   gazetteListSchema,
+  getPresignedGetUrlSchema,
+  getPresignedPutUrlSchema,
   updateGazetteServerSchema,
 } from "~/schemas/gazette"
 import { protectedProcedure, router } from "~/server/trpc"
 
-import { copyFileWithNewName, markFileAsDeleted } from "../asset/asset.service"
+import { validateUserPermissionsForAsset } from "../asset/asset.service"
 import { logResourceEvent } from "../audit/audit.service"
 import { createCollectionLinkJson } from "../collection/collection.service"
 import { AuditLogEvent, db, jsonb, ResourceType, sql } from "../database"
@@ -22,7 +25,8 @@ import {
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
-import { assertGazetteAccess } from "./gazette.service"
+import { assertGazetteAccess, copyFileWithNewName, getPresignedGetUrl, getPresignedPutUrl, markFileAsDeleted } from "./gazette.service"
+import filenamify from "filenamify";
 
 interface GazetteBlobInputs {
   ref: string
@@ -154,7 +158,7 @@ export const gazetteRouter = router({
             }
           }
           const fileSize = await getFileSize({
-            Bucket: env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+            Bucket: env.S3_GAZETTE_BUCKET_NAME,
             // NOTE: s3 keys don't have a leading /
             // so we trim the first key since our `ref`
             // begins with one internally
@@ -257,6 +261,16 @@ export const gazetteRouter = router({
               }
               throw err
             })
+
+          // NOTE: Schedule the document to be ingested into searchsg later
+          await tx
+            .insertInto("PushDocumentJob")
+            .values({
+              resourceId: resource.id,
+              scheduledAt,
+              scheduledBy: user.id,
+            })
+            .executeTakeFirstOrThrow()
 
           await logResourceEvent(tx, {
             siteId,
@@ -431,6 +445,22 @@ export const gazetteRouter = router({
             })
 
             if (scheduledAtChanged) {
+              // NOTE: Need to update the associated PushDocumentJob
+              await tx
+                .updateTable("PushDocumentJob")
+                .set({
+                  scheduledAt,
+                  scheduledBy: user.id,
+                })
+                .where("resourceId", "=", String(gazetteId))
+                .executeTakeFirstOrThrow(
+                  () =>
+                    new TRPCError({
+                      code: "INTERNAL_SERVER_ERROR",
+                      message: "Failed to update push document job",
+                    }),
+                )
+
               await logResourceEvent(tx, {
                 siteId,
                 eventType: AuditLogEvent.SchedulePublish,
@@ -471,4 +501,175 @@ export const gazetteRouter = router({
         return { gazetteId: updatedResource.id }
       },
     ),
+
+  cancelScheduledPublish: protectedProcedure
+    .input(cancelScheduledPublishSchema)
+    .mutation(async ({ ctx, input: { siteId, gazetteId } }) => {
+      await assertGazetteAccess(ctx.user.id)
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "delete",
+        userId: ctx.user.id,
+        resourceIds: [String(gazetteId)],
+      })
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
+
+      // Pre-fetch the resource and blob for audit delta
+      const existingResource = await db
+        .selectFrom("Resource")
+        .where("Resource.id", "=", String(gazetteId))
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "=", ResourceType.CollectionLink)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({ code: "NOT_FOUND", message: "Gazette not found" }),
+        )
+
+      if (!existingResource.scheduledAt) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot cancel a gazette that is not scheduled",
+        })
+      }
+
+      const existingBlob = await getBlobOfResource({
+        db,
+        resourceId: existingResource.id,
+      })
+      const ref = (existingBlob.content as { page?: { ref?: string } } | null)
+        ?.page?.ref
+
+      // Atomic transaction: delete PushDocumentJob, log audit, delete Resource + Blob
+      const deletedResource = await db.transaction().execute(async (tx) => {
+        // 1. Delete the PushDocumentJob
+        await tx
+          .deleteFrom("PushDocumentJob")
+          .where("resourceId", "=", String(gazetteId))
+          .execute()
+
+        // 2. Log the cancellation audit event
+        await logResourceEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.CancelSchedulePublish,
+          by: user,
+          delta: {
+            before: { resource: existingResource, blob: existingBlob },
+            after: { resource: existingResource, blob: existingBlob },
+          },
+        })
+
+        // 3. Log the resource deletion audit event
+        await logResourceEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.ResourceDelete,
+          by: user,
+          delta: {
+            before: { resource: existingResource, blob: existingBlob },
+            after: null,
+          },
+        })
+
+        // 4. Delete the Blob first (foreign key constraint)
+        if (existingResource.draftBlobId) {
+          await tx
+            .deleteFrom("Blob")
+            .where("id", "=", existingResource.draftBlobId)
+            .execute()
+        }
+
+        // 5. Delete the Resource
+        return await tx
+          .deleteFrom("Resource")
+          .where("id", "=", String(gazetteId))
+          .returningAll()
+          .execute()
+      })
+
+      // After DB transaction commits, update S3 tags (best-effort)
+      // No need to guarantee this because we already set a `scheduledAt` tag
+      // which prevents the gazette from being seen by MOP anyway
+      if (ref) {
+        try {
+          await markScheduledAssetAsCancelled({
+            Key: ref.slice(1), // Remove leading slash
+            Bucket: env.S3_GAZETTE_BUCKET_NAME,
+          })
+        } catch (err) {
+          ctx.logger.warn(
+            { err, key: ref },
+            "Failed to mark cancelled gazette file in S3",
+          )
+        }
+      }
+
+      return { resource: deletedResource }
+    }),
+
+  getPresignedPutUrl: protectedProcedure
+    .input(getPresignedPutUrlSchema)
+    .mutation(
+      async ({ ctx, input: { year, category, subcategory, tags, siteId, fileName, resourceId } }) => {
+        await assertGazetteAccess(ctx.user.id)
+        await validateUserPermissionsForAsset({
+          siteId,
+          resourceId,
+          action: "create",
+          userId: ctx.user.id,
+        })
+
+
+        const sanitizedFileName = filenamify(fileName, { replacement: "-" })
+        const fileKey = `${year}/${category}/${subcategory}/${sanitizedFileName}`
+
+        const { presignedPutUrl, contentType, contentDisposition } =
+          await getPresignedPutUrl({
+            key: fileKey,
+            tags,
+          })
+
+        ctx.logger.info(
+          {
+            userId: ctx.session?.userId,
+            siteId,
+            fileName,
+            fileKey,
+          },
+          `Generated presigned PUT URL for ${fileKey} for site ${siteId}`,
+        )
+
+        return {
+          fileKey,
+          presignedPutUrl,
+          contentType,
+          contentDisposition,
+        }
+      },
+    ),
+
+  getPresignedGetUrl: protectedProcedure
+    .input(getPresignedGetUrlSchema)
+    .mutation(async ({ ctx, input: { siteId, fileKey } }) => {
+      await assertGazetteAccess(ctx.user.id)
+
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const presignedGetUrl = await getPresignedGetUrl({ key: fileKey })
+
+      ctx.logger.info(
+        { userId: ctx.session?.userId, siteId, fileKey },
+        `Generated presigned GET URL for gazette ${fileKey}`,
+      )
+
+      return { presignedGetUrl }
+    }),
 })

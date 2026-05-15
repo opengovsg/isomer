@@ -14,7 +14,7 @@ export const FileIdCell = ({
   siteId,
 }: FileIdCellProps): JSX.Element => {
   const { mutateAsync: getPresignedGetUrl, isPending } =
-    trpc.asset.getPresignedGetUrl.useMutation()
+    trpc.gazette.getPresignedGetUrl.useMutation()
 
   const handleClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     // NOTE: prevent this from reaching the row

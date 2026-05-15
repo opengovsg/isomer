@@ -18,38 +18,41 @@ import {
 export const assetRouter = router({
   getPresignedPutUrl: protectedProcedure
     .input(getPresignedPutUrlSchema)
-    .mutation(async ({ ctx, input: { siteId, fileName, resourceId } }) => {
-      await validateUserPermissionsForAsset({
-        siteId,
-        resourceId,
-        action: "create",
-        userId: ctx.user.id,
-      })
-
-      const fileKey = getFileKey({ siteId, fileName })
-
-      const { presignedPutUrl, contentType, contentDisposition } =
-        await getPresignedPutUrl({
-          key: fileKey,
+    .mutation(
+      async ({ ctx, input: { tags, siteId, fileName, resourceId } }) => {
+        await validateUserPermissionsForAsset({
+          siteId,
+          resourceId,
+          action: "create",
+          userId: ctx.user.id,
         })
 
-      ctx.logger.info(
-        {
-          userId: ctx.session?.userId,
-          siteId,
-          fileName,
-          fileKey,
-        },
-        `Generated presigned PUT URL for ${fileKey} for site ${siteId}`,
-      )
+        const fileKey = getFileKey({ siteId, fileName })
 
-      return {
-        fileKey,
-        presignedPutUrl,
-        contentType,
-        contentDisposition,
-      }
-    }),
+        const { presignedPutUrl, contentType, contentDisposition } =
+          await getPresignedPutUrl({
+            key: fileKey,
+            tags,
+          })
+
+        ctx.logger.info(
+          {
+            userId: ctx.session?.userId,
+            siteId,
+            fileName,
+            fileKey,
+          },
+          `Generated presigned PUT URL for ${fileKey} for site ${siteId}`,
+        )
+
+        return {
+          fileKey,
+          presignedPutUrl,
+          contentType,
+          contentDisposition,
+        }
+      },
+    ),
 
   // Modelled as a mutation rather than a query: it has user-visible side
   // effects (logs, expiring URL) and is invoked imperatively per click.
