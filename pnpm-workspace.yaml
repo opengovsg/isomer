@@ -104,7 +104,7 @@ catalog:
   "@headlessui/react": ^2.1.2
   "@hello-pangea/dnd": ^17.0.0
   "@hookform/resolvers": ^3.8.0
-  "@intercom/messenger-js-sdk": ^0.0.14
+  "@intercom/messenger-js-sdk": ^0.0.19
   "@playwright/test": ^1.40.1
   "@uidotdev/usehooks": ^2.4.1
   ajv-errors: ^3.0.0

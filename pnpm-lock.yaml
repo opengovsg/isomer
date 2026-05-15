@@ -102,8 +102,8 @@ catalogs:
       specifier: ^7.6.0
       version: 7.10.1
     '@intercom/messenger-js-sdk':
-      specifier: ^0.0.14
-      version: 0.0.14
+      specifier: ^0.0.19
+      version: 0.0.19
     '@octokit/rest':
       specifier: ^22.0.0
       version: 22.0.1
@@ -714,7 +714,7 @@ importers:
         version: 3.10.0(react-hook-form@7.75.0(react@18.3.1))
       '@intercom/messenger-js-sdk':
         specifier: 'catalog:'
-        version: 0.0.14
+        version: 0.0.19
       '@jsonforms/core':
         specifier: catalog:jsonforms
         version: 3.7.0
@@ -4030,8 +4030,8 @@ packages:
       '@types/node':
         optional: true
 
-  '@intercom/messenger-js-sdk@0.0.14':
-    resolution: {integrity: sha512-2dH4BDAh9EI90K7hUkAdZ76W79LM45Sd1OBX7t6Vzy8twpNiQ5X+7sH9G5hlJlkSGnf+vFWlFcy9TOYAyEs1hA==}
+  '@intercom/messenger-js-sdk@0.0.19':
+    resolution: {integrity: sha512-ZpzJXLyo4VReQoOW/OOCYZqylhg2uwj0RGU6pcYazFDuk/S1Xsqi0GChLQMDviBQ/SuKB1Mv50uFsY7KzHljGw==}
 
   '@internationalized/date@3.12.1':
     resolution: {integrity: sha512-6IedsVWXyq4P9Tj+TxuU8WGWM70hYLl12nbYU8jkikVpa6WXapFazPUcHUMDMoWftIDE2ILDkFFte6W2nFCkRQ==}
@@ -14651,7 +14651,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 25.5.0
 
-  '@intercom/messenger-js-sdk@0.0.14': {}
+  '@intercom/messenger-js-sdk@0.0.19': {}
 
   '@internationalized/date@3.12.1':
     dependencies:
