@@ -136,15 +136,15 @@ jobs:
             text: "<!subteam^${{ secrets.SLACK_NOTIFY_TEAM_ID }}> Starting deployment of *${{ inputs.app-name }}* to *${{ inputs.environment }}* environment :rocket: \n> Version: *${{ inputs.app-version }}*\n> Initiated by: ${{ github.actor }}\n> Workflow URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v4
         with:
           driver-opts: network=host
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ inputs.cicd-role }}
           role-session-name: github-action-application-deploy
@@ -152,15 +152,15 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: "true"
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Build installer stage for sourcemap extraction
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: "./apps/studio/Dockerfile"
@@ -185,7 +185,7 @@ jobs:
           docker rm $CONTAINER_ID
 
       - name: Build and load image to Docker
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v7
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
@@ -233,7 +233,7 @@ jobs:
       # from the GitHub actions job summary page.
       - name: Upload Scan Results
         id: upload-scan-results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           path: |
             ${{ steps.inspector.outputs.inspector_scan_results }}
@@ -285,10 +285,10 @@ jobs:
 
     steps:
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ inputs.cicd-role }}
           role-session-name: github-action-application-deploy
@@ -296,12 +296,12 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: "true"
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Replace variables in task definition file
         id: replace-variables
