@@ -158,7 +158,7 @@ export const gazetteRouter = router({
             }
           }
           const fileSize = await getFileSize({
-            Bucket: env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+            Bucket: env.S3_GAZETTE_BUCKET_NAME,
             // NOTE: s3 keys don't have a leading /
             // so we trim the first key since our `ref`
             // begins with one internally
@@ -598,7 +598,7 @@ export const gazetteRouter = router({
         try {
           await markScheduledAssetAsCancelled({
             Key: ref.slice(1), // Remove leading slash
-            Bucket: env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+            Bucket: env.S3_GAZETTE_BUCKET_NAME,
           })
         } catch (err) {
           ctx.logger.warn(
