@@ -4,11 +4,9 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
-import { PdfReader } from "pdfreader"
 import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import {
-  copyFile,
   deleteFile,
   generateSignedGetUrl,
   generateSignedPutUrl,
@@ -19,7 +17,6 @@ import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
-const pdfReader = new PdfReader({})
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
 const EXTENSION_TO_MIME: Record<string, string> = {
@@ -160,60 +157,3 @@ export const getPresignedGetUrl = async ({
   })
 }
 
-/**
- * Copy `sourceKey` to a new key derived by replacing the filename segment with
- * `newFileName`. Does NOT delete the source — the caller is responsible for
- * scheduling the soft-delete *after* whatever DB write references the new key
- * has committed, so a tx rollback never leaves a resource pointing at a
- * tombstoned object.
- */
-export const copyFileWithNewName = async ({
-  sourceKey,
-  newFileName,
-}: {
-  sourceKey: string
-  newFileName: string
-}): Promise<string> => {
-  // Extract siteId/uuid prefix from source key (format: siteId/uuid/filename)
-  const parts = sourceKey.split("/")
-  if (parts.length < 3) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Invalid source key format",
-    })
-  }
-  const prefix = parts.slice(0, 2).join("/")
-
-  // Build new key with sanitized new filename
-  const sanitizedFileName = filenamify(newFileName, { replacement: "-" })
-  const newKey = `${prefix}/${sanitizedFileName}`
-
-  // Copy to new location. The aws-sdk v3 CopyObjectCommand defaults
-  // `TaggingDirective` to `COPY`, so the ISOMER_STATUS tag (and any other
-  // object tags) carry over without us having to set them explicitly.
-  await copyFile({
-    SourceKey: sourceKey,
-    DestKey: newKey,
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-  })
-
-  return newKey
-}
-
-// Taken as is from egazette codebase.
-export const parseFullTextFromPDF = async (pdfBuffer: Uint8Array) => {
-  const data: string[] = await new Promise((resolve, reject) => {
-    const parsedData: string[] = []
-    pdfReader.parseBuffer(Buffer.from(pdfBuffer), (err, item) => {
-      if (err) {
-        reject(new Error(err))
-      } else if (!item) {
-        resolve(parsedData)
-      } else if (item.text) {
-        parsedData.push(item.text)
-      }
-    })
-  })
-
-  return data.join(" ")
-}

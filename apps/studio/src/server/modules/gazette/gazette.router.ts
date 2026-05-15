@@ -13,7 +13,7 @@ import {
 } from "~/schemas/gazette"
 import { protectedProcedure, router } from "~/server/trpc"
 
-import { copyFileWithNewName, markFileAsDeleted, validateUserPermissionsForAsset } from "../asset/asset.service"
+import { validateUserPermissionsForAsset } from "../asset/asset.service"
 import { logResourceEvent } from "../audit/audit.service"
 import { createCollectionLinkJson } from "../collection/collection.service"
 import { AuditLogEvent, db, jsonb, ResourceType, sql } from "../database"
@@ -25,7 +25,7 @@ import {
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
-import { assertGazetteAccess, getPresignedGetUrl, getPresignedPutUrl } from "./gazette.service"
+import { assertGazetteAccess, copyFileWithNewName, getPresignedGetUrl, getPresignedPutUrl, markFileAsDeleted } from "./gazette.service"
 import filenamify from "filenamify";
 
 interface GazetteBlobInputs {
