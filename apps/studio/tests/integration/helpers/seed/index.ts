@@ -90,16 +90,16 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
   return await db.transaction().execute(async (tx) => {
     const site = await tx
       .insertInto("Site")
-      // @ts-ignore not using the specific config for tests, no need to populate
       .values({
         name,
-        // @ts-ignore not using the specific config for tests, no need to populate
-        config: {
+        config: jsonb({
           theme: "isomer-next",
           logoUrl: "",
           siteName: name,
           isGovernment: true,
-        },
+          url: "",
+        }),
+        // @ts-expect-error id is GeneratedAlways but we override it for tests
         id: siteId,
         codeBuildId: null,
         theme: null,
