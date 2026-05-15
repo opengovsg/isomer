@@ -3,6 +3,7 @@ import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
 import {
   BiCog,
+  BiCopy,
   BiDotsHorizontalRounded,
   BiFolderOpen,
   BiTrash,
@@ -15,11 +16,14 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import type { ResourceTableData } from "./types"
 import {
   deleteResourceModalAtom,
+  duplicatePageModalAtom,
   folderSettingsModalAtom,
   pageSettingsModalAtom,
 } from "../../atoms"
 
 interface ResourceTableMenuProps {
+  siteId: number
+  tableScopeResourceId?: number
   title: ResourceTableData["title"]
   resourceId: ResourceTableData["id"]
   type: ResourceTableData["type"]
@@ -29,6 +33,8 @@ interface ResourceTableMenuProps {
 }
 
 export const ResourceTableMenu = ({
+  siteId,
+  tableScopeResourceId,
   resourceId,
   title,
   type,
@@ -37,6 +43,7 @@ export const ResourceTableMenu = ({
   parentId,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
+  const setDuplicatePageModal = useSetAtom(duplicatePageModalAtom)
   const handleMoveResourceClick = () =>
     setMoveResource({ id: resourceId, title, permalink, parentId, type })
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
@@ -70,6 +77,27 @@ export const ResourceTableMenu = ({
                 Edit settings
               </MenuItem>
             </>
+          )}
+          {type === ResourceType.Page && (
+            <Can do="create" on={{ parentId }}>
+              <MenuItem
+                as="button"
+                onClick={() =>
+                  setDuplicatePageModal({
+                    siteId,
+                    pageId: resourceId,
+                    sourceTitle: title,
+                    sourcePermalink: permalink,
+                    parentId,
+                    tableScopeResourceId,
+                  })
+                }
+                icon={<BiCopy fontSize="1rem" />}
+                aria-label={`Duplicate page ${title}`}
+              >
+                Duplicate page
+              </MenuItem>
+            </Can>
           )}
           {type === ResourceType.Folder && (
             <MenuItem

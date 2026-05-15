@@ -49,6 +49,25 @@ export const generateSignedPutUrl = async ({
   )
 }
 
+export const copyObjectInBucket = async ({
+  sourceKey,
+  destinationKey,
+  Bucket,
+}: {
+  sourceKey: string
+  destinationKey: string
+  Bucket: string
+}) => {
+  await storage.send(
+    new CopyObjectCommand({
+      Bucket,
+      Key: destinationKey,
+      CopySource: `${Bucket}/${sourceKey}`,
+    }),
+  )
+  // TODO: Check if after copying the object we need to remove object tagging like soft-deletion tag
+}
+
 export const generateSignedGetUrl = async ({
   Bucket,
   Key,
