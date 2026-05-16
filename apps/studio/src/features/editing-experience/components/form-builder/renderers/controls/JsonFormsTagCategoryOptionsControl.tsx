@@ -1,5 +1,4 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
-import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import {
   HStack,
   Icon,
@@ -15,7 +14,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { rankWith, schemaMatches } from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import {
   Button,
@@ -29,19 +28,20 @@ import { get } from "lodash-es"
 import { useMemo, useState } from "react"
 import {
   BiDotsHorizontalRounded,
-  BiPurchaseTag,
   BiSolidErrorCircle,
   BiTrash,
 } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
-function DeleteFilterModal({
+const DeleteOptionModal = ({
   isOpen,
   label,
   onClose,
@@ -51,7 +51,7 @@ function DeleteFilterModal({
   label: string
   onClose: () => void
   onConfirm: () => void
-}) {
+}) => {
   const [isChecked, setIsChecked] = useState(false)
 
   return (
@@ -59,17 +59,17 @@ function DeleteFilterModal({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader mr="3.5rem">
-          {label.length > 0 ? `Delete filter "${label}"?` : "Delete filter?"}
+          {label.length > 0 ? `Delete option "${label}"?` : "Delete option?"}
         </ModalHeader>
         <ModalCloseButton size="lg" />
 
         <ModalBody>
           <VStack align="stretch" spacing="1.5rem">
             <Infobox width="100%" size="md" variant="warning">
-              <Text textStyle="body-1" color="base.content.strong">
-                This removes the filter and its options from the collection.
-                Collection items that use these options may need to be updated
-                manually.
+              <Text textStyle="body-2">
+                {/* TODO: replace XX with usage count from backend */}
+                This option is being used in XX items. To undo this change, you
+                will need to create and re-assign this option to all items.
               </Text>
             </Infobox>
             <HStack align="start">
@@ -78,7 +78,7 @@ function DeleteFilterModal({
                 onChange={(e) => setIsChecked(e.target.checked)}
               >
                 <Text textStyle="body-2">
-                  Yes, delete this filter permanently
+                  Yes, delete this option permanently
                 </Text>
               </Checkbox>
             </HStack>
@@ -88,7 +88,7 @@ function DeleteFilterModal({
         <ModalFooter>
           <HStack spacing="1rem">
             <Button variant="clear" colorScheme="neutral" onClick={onClose}>
-              No, keep filter
+              No, keep option
             </Button>
             <Button
               isDisabled={!isChecked}
@@ -96,7 +96,7 @@ function DeleteFilterModal({
               colorScheme="critical"
               onClick={onConfirm}
             >
-              Delete filter
+              Delete option
             </Button>
           </HStack>
         </ModalFooter>
@@ -105,55 +105,53 @@ function DeleteFilterModal({
   )
 }
 
-function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
+const JsonFormsTagCategoryOptionsArrayLayoutInner = (
+  props: ArrayLayoutProps,
+) => {
   const { path, removeItems, data, arraySchema } = props
   const { core } = useJsonForms()
   const { errors } = useBuilderErrors()
-  const page = core?.data as CollectionPagePageProps | undefined
-
-  const duplicateFilterIndices = useMemo(() => {
+  const duplicateOptionIndices = useMemo(() => {
     const items = get(core?.data, path) as { label?: string }[] | undefined
     return indicesWithDuplicateLabels(items)
   }, [core?.data, path])
 
-  const hasDuplicateFilterNameError = hasUniqueItemPropertiesError({
+  const hasDuplicateOptionNameError = hasUniqueItemPropertiesError({
     errors,
     jsonFormsPath: path,
   })
 
+  const isRemoveItemDisabled =
+    arraySchema.minItems !== undefined && data <= arraySchema.minItems
+
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
     label: string
+    tagId?: string
   }>(null)
 
-  const isRemoveItemDisabled =
-    arraySchema.minItems !== undefined && data <= arraySchema.minItems
+  const openDeleteModal = (index: number) => {
+    const item = get(core?.data, composePaths(path, `${index}`)) as
+      | { label?: string; id?: string }
+      | undefined
+    setDeleteTarget({
+      index,
+      label: item?.label?.trim() ?? "",
+      tagId: item?.id,
+    })
+  }
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
+    removeItems(path, [deleteTarget.index])()
+    setDeleteTarget(null)
+  }
 
   return (
     <>
       <JsonFormsArrayControlView
         {...props}
-        listItemIcon={BiPurchaseTag}
         listItemContentProps={{ py: "0.5rem" }}
-        mapNewArrayItem={(item) => ({
-          ...(item as Record<string, unknown>),
-          // we set this to true by default for new filters
-          // we don't set this on JSON Schema because Studio AJV runs with useDefaults, which would apply the
-          // same default to legacy rows that omit this key.
-          isRequired: true,
-        })}
-        renderListItemSubtitle={(index) => {
-          const count = page?.tagCategories?.[index]?.options?.length ?? 0
-          const subtitle =
-            count === 0
-              ? "No option"
-              : `${count} ${count > 1 ? "options" : "option"}`
-          return (
-            <Text textStyle="caption-2" color="base.content.medium">
-              {subtitle}
-            </Text>
-          )
-        }}
         renderListItemTrailing={(index) => (
           <Menu isLazy>
             <MenuButton
@@ -170,7 +168,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               alignItems="center"
               justifyContent="center"
               isDisabled={isRemoveItemDisabled}
-              aria-label={`Filter ${index + 1} actions`}
+              aria-label={`Option ${index + 1} actions`}
               onClick={(e) => e.stopPropagation()}
             />
             <Portal>
@@ -181,20 +179,17 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                   isDisabled={isRemoveItemDisabled}
                   onClick={(e) => {
                     e.stopPropagation()
-                    setDeleteTarget({
-                      index,
-                      label: page?.tagCategories?.[index]?.label?.trim() ?? "",
-                    })
+                    openDeleteModal(index)
                   }}
                 >
-                  Delete filter
+                  Delete option
                 </MenuItem>
               </MenuList>
             </Portal>
           </Menu>
         )}
         belowDescription={
-          hasDuplicateFilterNameError ? (
+          hasDuplicateOptionNameError ? (
             <HStack align="start" gap="0.5rem" mt="0.5rem" w="100%">
               <Icon
                 as={BiSolidErrorCircle}
@@ -205,43 +200,71 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               />
               <VStack align="start" spacing={0}>
                 <Text textStyle="subhead-2" color="utility.feedback.critical">
-                  Remove duplicate filters before saving.
+                  Remove duplicate options before saving.
                 </Text>
                 <Text textStyle="body-2" color="utility.feedback.critical">
-                  Filter names are not case-sensitive.
+                  Option names are not case-sensitive.
                 </Text>
               </VStack>
             </HStack>
           ) : undefined
         }
-        getListItemHasError={(index) => duplicateFilterIndices.has(index)}
+        getListItemHasError={(index) => duplicateOptionIndices.has(index)}
         renderListItemErrorCaption={(index) =>
-          duplicateFilterIndices.has(index)
-            ? "A filter with this name already exists."
+          duplicateOptionIndices.has(index)
+            ? "An option with this name already exists."
             : undefined
+        }
+        emptyState={
+          <VStack spacing="0.25rem" align="center">
+            <Text
+              textStyle="subhead-2"
+              textColor="base.content.default"
+              textAlign="center"
+            >
+              Add an option to save this filter
+            </Text>
+            <Text
+              textStyle="caption-2"
+              textColor="base.content.default"
+              textAlign="center"
+            >
+              Users will choose from this list when creating new items.
+            </Text>
+          </VStack>
         }
       />
       {deleteTarget && (
-        <DeleteFilterModal
+        <DeleteOptionModal
           isOpen
           label={deleteTarget.label}
           onClose={() => setDeleteTarget(null)}
-          onConfirm={() => {
-            if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
-            removeItems(path, [deleteTarget.index])()
-            setDeleteTarget(null)
-          }}
+          onConfirm={handleConfirmDelete}
         />
       )}
     </>
   )
 }
 
-export const jsonFormsTagCategoriesControlTester: RankedTester = rankWith(
-  JSON_FORMS_RANKING.TagCategoryControl,
-  schemaMatches((schema) => schema.format === "tag-categories"),
+const JsonFormsTagCategoryOptionsArrayLayout = withJsonFormsArrayLayoutProps(
+  JsonFormsTagCategoryOptionsArrayLayoutInner,
 )
 
-export default withJsonFormsArrayLayoutProps(
-  JsonFormsTagCategoriesArrayLayoutInner,
+export const jsonFormsTagCategoryOptionsControlTester: RankedTester = rankWith(
+  JSON_FORMS_RANKING.TagCategoryOptionsControl,
+  schemaMatches((schema) => schema.format === "tag-category-options"),
 )
+
+const JsonFormsTagCategoryOptionsControl = (props: ArrayLayoutProps) => {
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
+  })
+
+  if (!isUserIsomerAdmin) {
+    return null
+  }
+
+  return <JsonFormsTagCategoryOptionsArrayLayout {...props} />
+}
+
+export default JsonFormsTagCategoryOptionsControl

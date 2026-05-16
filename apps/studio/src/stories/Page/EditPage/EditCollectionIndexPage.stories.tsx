@@ -144,7 +144,7 @@ export const NewCollectionIndexEditingExperienceForDisplay: Story = {
       name: /Collection display/i,
     })
     await userEvent.click(button)
-    await canvas.findByText(/Edit collection settings/i)
+    await canvas.findByText(/Collection display/i)
   },
 }
 
@@ -162,5 +162,6 @@ export const NewCollectionIndexEditingExperienceForFilters: Story = {
       name: /Filters/i,
     })
     await userEvent.click(button)
+    await canvas.findByText(/Manage filters/i)
   },
 }
