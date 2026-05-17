@@ -1,4 +1,3 @@
-import type { CharacterCountStorage } from "@tiptap/extension-character-count"
 import type { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
 import { Text } from "@chakra-ui/react"
 import { SimpleProseMenuBar } from "~/components/PageEditor/MenuBar"
@@ -19,9 +18,7 @@ export function TiptapSimpleProseEditor({
       <Editor isNested menubar={SimpleProseMenuBar} editor={editor} />
       <Text textStyle="body-2" mt="0.5rem" color="base.content.medium">
         {BANNER_MAX_CHARACTERS -
-          (
-            editor.storage.characterCount as CharacterCountStorage
-          ).characters()}{" "}
+          editor.storage.characterCount.characters()}{" "}
         characters left
       </Text>
     </>
