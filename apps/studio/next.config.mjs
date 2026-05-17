@@ -150,34 +150,16 @@ const config = {
   // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
   productionBrowserSourceMaps: true,
-  /**
-   * Dynamic configuration available for the browser and server.
-   * Note: requires `ssr: true` or a `getInitialProps` in `_app.tsx`
-   * @link https://nextjs.org/docs/api-reference/next.config.js/runtime-configuration
-   */
-  publicRuntimeConfig: {
-    NODE_ENV: env.NODE_ENV,
-  },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.externals = config.externals || []
-      config.externals.push({
-        // don't bundle `dd-trace` on the client side
-        "dd-trace": "dd-trace",
-      })
-      // Use 'hidden-source-map' to include sourcesContent but not expose sourcemap URLs
-      config.devtool = "hidden-source-map"
-    }
-    return config
-  },
+  /** We already do typechecking as a separate task in CI */
+  typescript: { ignoreBuildErrors: true },
   transpilePackages: [
     "@sinclair/typebox",
     "@opengovsg/starter-kitty-validators",
   ],
-  /** We run oxlint as a separate task in CI */
-  eslint: { ignoreDuringBuilds: true },
   images: {
-    domains: [env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME ?? ""].filter((d) => d),
+    remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+      ? [{ protocol: "https", hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME }]
+      : [],
   },
   async headers() {
     return [

@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && pnpm run build",
-    "build:template": "next build",
+    "build:template": "next build --webpack",
     "clean": "git clean -xdf .next .turbo node_modules out",
-    "dev": "PORT=3001 next",
+    "dev": "PORT=3001 next dev --webpack",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
