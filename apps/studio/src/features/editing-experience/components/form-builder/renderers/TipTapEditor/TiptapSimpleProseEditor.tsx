@@ -17,8 +17,7 @@ export function TiptapSimpleProseEditor({
     <>
       <Editor isNested menubar={SimpleProseMenuBar} editor={editor} />
       <Text textStyle="body-2" mt="0.5rem" color="base.content.medium">
-        {BANNER_MAX_CHARACTERS -
-          editor.storage.characterCount.characters()}{" "}
+        {BANNER_MAX_CHARACTERS - editor.storage.characterCount.characters()}{" "}
         characters left
       </Text>
     </>
