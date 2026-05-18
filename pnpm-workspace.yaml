@@ -70,7 +70,7 @@ catalog:
   pg: ^8.16.2
   pino: ^9.6.0
   pino-pretty: ^13.0.0
-  postcss: ^8.5.10
+  postcss: ^8.5.14
   postcss-preset-env: ^10.0.8
   react-icons: ^5.2.0
   rimraf: ^5.0.10
@@ -103,8 +103,8 @@ catalog:
   "@govtechsg/sgds-react": ^2.7.6
   "@headlessui/react": ^2.1.2
   "@hello-pangea/dnd": ^17.0.0
-  "@hookform/resolvers": ^3.8.0
-  "@intercom/messenger-js-sdk": ^0.0.14
+  "@hookform/resolvers": ^5.2.2
+  "@intercom/messenger-js-sdk": ^0.0.19
   "@playwright/test": ^1.40.1
   "@uidotdev/usehooks": ^2.4.1
   ajv-errors: ^3.0.0
@@ -120,7 +120,7 @@ catalog:
   interweave-ssr: ^2.0.0
   iron-session: ^8.0.4
   jose: ^6.0.11
-  jotai: ^2.12.5
+  jotai: ^2.20.0
   js-base64: ^3.7.7
   js-md5: ^0.8.3
   kysely: ^0.28.17
