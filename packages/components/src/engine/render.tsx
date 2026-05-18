@@ -4,7 +4,6 @@ import { renderLayout as renderNextLayout } from "~/templates/next"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
 export { renderPrefillText, renderComponentPreviewText } from "~/templates/next"
-export { LinkComponentProvider } from "~/templates/next/context/LinkComponentContext"
 
 export const RenderEngine = (
   props: DistributedOmit<IsomerPageSchemaType, "site"> & {

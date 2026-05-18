@@ -2,8 +2,8 @@ export {
   RenderEngine,
   renderComponentPreviewText,
   renderPrefillText,
-  LinkComponentProvider,
 } from "./render"
+export { LinkComponentProvider } from "~/templates/next/context/LinkComponentContext"
 export { RenderApplicationScripts } from "./renderApplicationScripts"
 export { RenderApplicationHeadScripts } from "./renderApplicationHeadScripts"
 export {
