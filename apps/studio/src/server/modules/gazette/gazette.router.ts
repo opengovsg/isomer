@@ -391,32 +391,21 @@ export const gazetteRouter = router({
 
         // Resolve the final ref. Preference order:
         //   1. newRef (a fresh upload) — caller has already PUT to S3
-        //   2. desiredFileName + existing ref → S3 copy now, soft-delete old
-        //      AFTER the DB commit so a tx rollback never strands the
-        //      resource pointing at a tombstoned key
+        //   2. desiredFileName + existing ref → S3 copy after duplicate check
         //   3. unchanged
-        // Any S3 failure here aborts before the DB transaction starts.
-        let finalRef = existingRef
-        let oldRefToCleanUp: string | null = null
+        // The duplicate check runs BEFORE any S3 copy to avoid orphaning
+        // objects if the check fails.
+        const oldFilename = existingRef.split("/").pop()
+
+        // Determine the target filename for duplicate checking before S3 ops
+        let newFilename: string | undefined
         if (newRef) {
-          finalRef = newRef
-          if (existingRef) oldRefToCleanUp = existingRef.replace(/^\//, "")
-        } else if (desiredFileName && existingRef) {
-          const currentFileName = existingRef.split("/").pop()
-          if (currentFileName !== desiredFileName) {
-            const sourceKey = existingRef.replace(/^\//, "")
-            const newKey = await copyFileWithNewName({
-              sourceKey,
-              newFileName: desiredFileName,
-            })
-            finalRef = `/${newKey}`
-            oldRefToCleanUp = sourceKey
-          }
+          newFilename = newRef.split("/").pop()
+        } else if (desiredFileName && existingRef && desiredFileName !== oldFilename) {
+          newFilename = desiredFileName
         }
 
-        // Check for duplicate file ID if ref is changing
-        const newFilename = finalRef.split("/").pop()
-        const oldFilename = existingRef.split("/").pop()
+        // Check for duplicate file ID if filename is changing
         if (newFilename && newFilename !== oldFilename) {
           const duplicateRef = await db
             .selectFrom("Resource")
@@ -450,6 +439,24 @@ export const gazetteRouter = router({
               message: "A gazette with the same file ID already exists",
             })
           }
+        }
+
+        // Now perform S3 operations after duplicate check passes.
+        // Soft-delete of old key happens AFTER DB commit so a tx rollback
+        // never strands the resource pointing at a tombstoned key.
+        let finalRef = existingRef
+        let oldRefToCleanUp: string | null = null
+        if (newRef) {
+          finalRef = newRef
+          if (existingRef) oldRefToCleanUp = existingRef.replace(/^\//, "")
+        } else if (desiredFileName && existingRef && desiredFileName !== oldFilename) {
+          const sourceKey = existingRef.replace(/^\//, "")
+          const newKey = await copyFileWithNewName({
+            sourceKey,
+            newFileName: desiredFileName,
+          })
+          finalRef = `/${newKey}`
+          oldRefToCleanUp = sourceKey
         }
 
         const newBlobContent = buildGazetteBlobContent({
@@ -518,8 +525,7 @@ export const gazetteRouter = router({
           })
 
         // After the DB has committed the new ref, soft-delete the file the
-        // gazette no longer points at. Best-effort: if S3 fails the lifecycle
-        // policy will reap orphans.
+        // gazette no longer points at. 
         if (oldRefToCleanUp) {
           try {
             await markFileAsDeleted({ key: oldRefToCleanUp })
