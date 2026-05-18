@@ -19,6 +19,10 @@ export {
   jsonFormsObjectControlTester,
 } from "./JsonFormsObjectControl"
 export {
+  default as JsonFormsOptionalCombinatorControl,
+  jsonFormsOptionalCombinatorControlTester,
+} from "./JsonFormsOptionalCombinatorControl"
+export {
   JsonFormsAnyOfControl,
   jsonFormsAnyOfControlTester,
   JsonFormsOneOfControl,

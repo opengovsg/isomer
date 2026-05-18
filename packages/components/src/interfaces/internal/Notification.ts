@@ -3,11 +3,17 @@ import type { PropsWithChildren } from "react"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
+import { ARRAY_RADIO_FORMAT } from "../format"
 import { TextSchema } from "../native"
 import { SimpleProseSchema } from "../native/Prose"
 
-export const NotificationSchema = Type.Object(
+const NotificationCustomSchema = Type.Object(
   {
+    type: Type.Optional(
+      Type.Literal("custom", {
+        default: "custom",
+      }),
+    ),
     title: Type.String({
       title: "Notification title",
       maxLength: 150,
@@ -20,21 +26,52 @@ export const NotificationSchema = Type.Object(
     ),
   },
   {
-    title: "Display a banner",
-    description:
-      "The site notification will always be visible on the site until it is dismissed by the user.",
+    title: "Custom notification",
   },
 )
 
-export type NotificationProps = Static<typeof NotificationSchema> & {
+const NotificationAntiScamSchema = Type.Object(
+  {
+    type: Type.Literal("antiscam", {
+      default: "antiscam",
+    }),
+  },
+  {
+    title: "Anti-scam disclaimer",
+  },
+)
+
+export const NotificationSchema = Type.Union(
+  [NotificationCustomSchema, NotificationAntiScamSchema],
+  {
+    title: "Type",
+    format: ARRAY_RADIO_FORMAT,
+  },
+)
+
+export type SiteNotificationConfig = Static<typeof NotificationSchema>
+
+export type NotificationTitleContentConfig = Pick<
+  Static<typeof NotificationCustomSchema>,
+  "title" | "content"
+>
+
+export type NotificationProps = SiteNotificationConfig & {
   LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
 
 export type NotificationClientProps = PropsWithChildren<
-  Pick<Static<typeof NotificationSchema>, "title">
+  Pick<Static<typeof NotificationCustomSchema>, "title">
 >
 
-export const NotificationSettingsSchema = Type.Object({
-  notification: Type.Optional(NotificationSchema),
-})
+export const NotificationSettingsSchema = Type.Object(
+  {
+    notification: Type.Optional(NotificationSchema),
+  },
+  {
+    title: "Display a banner",
+    description:
+      "The site notification will always be visible on the site until it is dismissed by the user.",
+  },
+)

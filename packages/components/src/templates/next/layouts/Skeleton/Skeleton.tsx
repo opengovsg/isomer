@@ -1,5 +1,6 @@
 import type { IsomerPageSchemaType } from "~/types"
 
+import { isSiteNotificationActive } from "../../../../utils/isSiteNotificationActive"
 import { Footer } from "../../components/internal/Footer"
 import { Masthead } from "../../components/internal/Masthead"
 import { Navbar } from "../../components/internal/Navbar"
@@ -28,7 +29,7 @@ export const Skeleton = ({
 
         {site.isGovernment && <Masthead isStaging={isStaging} />}
 
-        {site.notification?.title && (
+        {site.notification && isSiteNotificationActive(site.notification) && (
           <Notification
             {...site.notification}
             LinkComponent={LinkComponent}
