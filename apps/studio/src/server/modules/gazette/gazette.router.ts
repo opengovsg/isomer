@@ -198,23 +198,6 @@ export const gazetteRouter = router({
           resourceIds: [String(collectionId)],
         })
 
-        // Check for duplicate file ID (filename portion of ref) in the same collection
-        // ref format: /sites/{siteId}/gazettes/{uuid}/filename.pdf
-        const filename = ref.split("/").pop()
-        if (filename) {
-          const duplicate = await findCollectionLinkWithFilename({
-            siteId,
-            parentId: String(collectionId),
-            filename,
-          })
-          if (duplicate) {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A gazette with the same file ID already exists",
-            })
-          }
-        }
-
         const user = await db
           .selectFrom("User")
           .where("id", "=", ctx.user.id)
@@ -230,6 +213,22 @@ export const gazetteRouter = router({
         })
 
         const created = await db.transaction().execute(async (tx) => {
+          // Check for duplicate file ID (filename portion of ref) in the same collection
+          // ref format: /sites/{siteId}/gazettes/{uuid}/filename.pdf
+          const filename = ref.split("/").pop()
+          if (filename) {
+            const duplicate = await findCollectionLinkWithFilename({
+              siteId,
+              parentId: String(collectionId),
+              filename,
+            })
+            if (duplicate) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A gazette with the same file ID already exists",
+              })
+            }
+          }
           const parentCollection = await tx
             .selectFrom("Resource")
             .where("Resource.id", "=", String(collectionId))
@@ -388,22 +387,6 @@ export const gazetteRouter = router({
           newFilename = desiredFileName
         }
 
-        // Check for duplicate file ID if filename is changing
-        if (newFilename && newFilename !== oldFilename) {
-          const duplicate = await findCollectionLinkWithFilename({
-            siteId,
-            parentId: existingResource.parentId,
-            filename: newFilename,
-            excludeId: String(gazetteId),
-          })
-          if (duplicate) {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A gazette with the same file ID already exists",
-            })
-          }
-        }
-
         // Now perform S3 operations after duplicate check passes.
         // Soft-delete of old key happens AFTER DB commit so a tx rollback
         // never strands the resource pointing at a tombstoned key.
@@ -433,6 +416,22 @@ export const gazetteRouter = router({
         const { resource: updatedResource, scheduledAtChanged } = await db
           .transaction()
           .execute(async (tx) => {
+            // Check for duplicate file ID if filename is changing
+            if (newFilename && newFilename !== oldFilename) {
+              const duplicate = await findCollectionLinkWithFilename({
+                siteId,
+                parentId: existingResource.parentId,
+                filename: newFilename,
+                excludeId: String(gazetteId),
+              })
+              if (duplicate) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A gazette with the same file ID already exists",
+                })
+              }
+            }
+
             const updatedBlob = await updateBlobById(tx, {
               content: newBlobContent,
               pageId: gazetteId,
