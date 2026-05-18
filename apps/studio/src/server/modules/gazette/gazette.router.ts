@@ -216,9 +216,10 @@ export const gazetteRouter = router({
             .where("Resource.parentId", "=", String(collectionId))
             .where("Resource.type", "=", ResourceType.CollectionLink)
             .where(
-              sql`split_part(COALESCE("PublishedBlob"."content", "DraftBlob"."content")->'page'->>'ref', '/', -1)`,
-              "=",
-              filename,
+              sql<boolean>`(
+                split_part("DraftBlob"."content"->'page'->>'ref', '/', -1) = ${filename}
+                OR split_part("PublishedBlob"."content"->'page'->>'ref', '/', -1) = ${filename}
+              )`,
             )
             .select("Resource.id")
             .executeTakeFirst()
@@ -435,9 +436,10 @@ export const gazetteRouter = router({
             .where("Resource.type", "=", ResourceType.CollectionLink)
             .where("Resource.id", "!=", String(gazetteId)) // Exclude self
             .where(
-              sql`split_part(COALESCE("PublishedBlob"."content", "DraftBlob"."content")->'page'->>'ref', '/', -1)`,
-              "=",
-              newFilename,
+              sql<boolean>`(
+                split_part("DraftBlob"."content"->'page'->>'ref', '/', -1) = ${newFilename}
+                OR split_part("PublishedBlob"."content"->'page'->>'ref', '/', -1) = ${newFilename}
+              )`,
             )
             .select("Resource.id")
             .executeTakeFirst()
