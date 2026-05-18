@@ -107,6 +107,9 @@ export const TableSchema = Type.Object(
         title: "Table caption",
         description: "The caption of the table",
         pattern: NON_EMPTY_STRING_REGEX,
+        errorMessage: {
+          pattern: "cannot be empty or contain only spaces",
+        },
       }),
     }),
     content: Type.Array(
