@@ -187,7 +187,18 @@ export const GazetteFormFields = ({
             setFile(newFile)
             onFileChange?.(newFile)
             if (newFile) {
-              setValue("fileId", newFile.name)
+              // Sanitize filename to match fileId regex: ^[_\-a-zA-Z0-9]+\.pdf$
+              // 1. Remove .pdf extension (we'll add it back)
+              // 2. Replace spaces with hyphens
+              // 3. Strip any characters not in [_\-a-zA-Z0-9]
+              const baseName = newFile.name.replace(/\.pdf$/i, "")
+              const sanitized =
+                baseName.replace(/\s+/g, "-").replace(/[^_\-a-zA-Z0-9]/g, "") ||
+                "file"
+              setValue("fileId", `${sanitized}.pdf`, {
+                shouldValidate: true,
+                shouldDirty: true,
+              })
             }
           }}
         />
