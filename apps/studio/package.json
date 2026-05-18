@@ -200,7 +200,6 @@
     "postcss-load-config": "catalog:",
     "start-server-and-test": "catalog:",
     "storybook": "catalog:storybook",
-    "storybook-mock-date-decorator": "catalog:storybook",
     "tailwindcss": "catalog:",
     "testcontainers": "catalog:",
     "tsx": "catalog:",
