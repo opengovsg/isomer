@@ -22,7 +22,10 @@ import {
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
-import { assertGazetteAccess } from "./gazette.service"
+import {
+  assertGazetteAccess,
+  findCollectionLinkWithFilename,
+} from "./gazette.service"
 
 interface GazetteBlobInputs {
   ref: string
@@ -199,32 +202,12 @@ export const gazetteRouter = router({
         // ref format: /sites/{siteId}/gazettes/{uuid}/filename.pdf
         const filename = ref.split("/").pop()
         if (filename) {
-          const duplicateRef = await db
-            .selectFrom("Resource")
-            .leftJoin(
-              "Blob as DraftBlob",
-              "Resource.draftBlobId",
-              "DraftBlob.id",
-            )
-            .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
-            .leftJoin(
-              "Blob as PublishedBlob",
-              "Version.blobId",
-              "PublishedBlob.id",
-            )
-            .where("Resource.siteId", "=", siteId)
-            .where("Resource.parentId", "=", String(collectionId))
-            .where("Resource.type", "=", ResourceType.CollectionLink)
-            .where(
-              sql<boolean>`(
-                split_part("DraftBlob"."content"->'page'->>'ref', '/', -1) = ${filename}
-                OR split_part("PublishedBlob"."content"->'page'->>'ref', '/', -1) = ${filename}
-              )`,
-            )
-            .select("Resource.id")
-            .executeTakeFirst()
-
-          if (duplicateRef) {
+          const duplicate = await findCollectionLinkWithFilename({
+            siteId,
+            parentId: String(collectionId),
+            filename,
+          })
+          if (duplicate) {
             throw new TRPCError({
               code: "CONFLICT",
               message: "A gazette with the same file ID already exists",
@@ -407,33 +390,13 @@ export const gazetteRouter = router({
 
         // Check for duplicate file ID if filename is changing
         if (newFilename && newFilename !== oldFilename) {
-          const duplicateRef = await db
-            .selectFrom("Resource")
-            .leftJoin(
-              "Blob as DraftBlob",
-              "Resource.draftBlobId",
-              "DraftBlob.id",
-            )
-            .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
-            .leftJoin(
-              "Blob as PublishedBlob",
-              "Version.blobId",
-              "PublishedBlob.id",
-            )
-            .where("Resource.siteId", "=", siteId)
-            .where("Resource.parentId", "=", existingResource.parentId)
-            .where("Resource.type", "=", ResourceType.CollectionLink)
-            .where("Resource.id", "!=", String(gazetteId)) // Exclude self
-            .where(
-              sql<boolean>`(
-                split_part("DraftBlob"."content"->'page'->>'ref', '/', -1) = ${newFilename}
-                OR split_part("PublishedBlob"."content"->'page'->>'ref', '/', -1) = ${newFilename}
-              )`,
-            )
-            .select("Resource.id")
-            .executeTakeFirst()
-
-          if (duplicateRef) {
+          const duplicate = await findCollectionLinkWithFilename({
+            siteId,
+            parentId: existingResource.parentId,
+            filename: newFilename,
+            excludeId: String(gazetteId),
+          })
+          if (duplicate) {
             throw new TRPCError({
               code: "CONFLICT",
               message: "A gazette with the same file ID already exists",

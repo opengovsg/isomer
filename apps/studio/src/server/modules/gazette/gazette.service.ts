@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import { db } from "../database"
+import { db, ResourceType, sql } from "../database"
 import { isActiveIsomerAdmin } from "../permissions/permissions.service"
 
 /**
@@ -36,4 +36,44 @@ export const assertGazetteAccess = async (userId: string): Promise<void> => {
       message: "You do not have access to the gazette feature",
     })
   }
+}
+
+/**
+ * Finds a CollectionLink resource in the given collection whose draft or
+ * published blob has a matching filename (last segment of page.ref).
+ *
+ * Used to detect duplicate file IDs before create/update.
+ */
+export const findCollectionLinkWithFilename = async ({
+  siteId,
+  parentId,
+  filename,
+  excludeId,
+}: {
+  siteId: number
+  parentId: string | null
+  filename: string
+  excludeId?: string
+}) => {
+  let query = db
+    .selectFrom("Resource")
+    .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+    .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+    .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.parentId", "=", parentId)
+    .where("Resource.type", "=", ResourceType.CollectionLink)
+    .where(
+      sql<boolean>`(
+        split_part("DraftBlob"."content"->'page'->>'ref', '/', -1) = ${filename}
+        OR split_part("PublishedBlob"."content"->'page'->>'ref', '/', -1) = ${filename}
+      )`,
+    )
+    .select("Resource.id")
+
+  if (excludeId) {
+    query = query.where("Resource.id", "!=", excludeId)
+  }
+
+  return query.executeTakeFirst()
 }
