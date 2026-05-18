@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
@@ -35,9 +35,9 @@ type TableCellProps = {
   attrs?: Static<typeof TableBaseCellSchema>
   content: (
     | DividerProps
-    | Omit<ParagraphProps, "LinkComponent" | "site">
-    | Omit<OrderedListProps, "LinkComponent" | "site">
-    | Omit<UnorderedListProps, "LinkComponent" | "site">
+    | Omit<ParagraphProps, "site">
+    | Omit<OrderedListProps, "site">
+    | Omit<UnorderedListProps, "site">
   )[]
 }
 
@@ -127,6 +127,5 @@ export const TableSchema = Type.Object(
 )
 
 export type TableProps = Static<typeof TableSchema> & {
-  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }

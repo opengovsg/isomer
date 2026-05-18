@@ -15,16 +15,13 @@ export const SearchableTable = (props: SearchableTableProps) => {
   }
 
   const { type } = props.dataSource
-  const { LinkComponent: _linkComponent, ...clientProps } = props
   switch (type) {
     case DATA_SOURCE_TYPE.native:
       return (
-        <NativeSearchableTable {...(clientProps as NativeSearchableTableProps)} />
+        <NativeSearchableTable {...(props as NativeSearchableTableProps)} />
       )
     case DATA_SOURCE_TYPE.dgs:
-      return (
-        <DGSSearchableTable {...(clientProps as DGSSearchableTableProps)} />
-      )
+      return <DGSSearchableTable {...(props as DGSSearchableTableProps)} />
     default:
       const _exhaustiveCheck: never = type
       return _exhaustiveCheck

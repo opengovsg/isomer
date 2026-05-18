@@ -12,7 +12,7 @@ export const DGSSearchableTable = ({
   dataSource,
   title,
   headers,
-}: Omit<DGSSearchableTableProps, "LinkComponent">) => {
+}: DGSSearchableTableProps) => {
   const {
     metadata,
     isLoading: isMetadataLoading,

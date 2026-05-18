@@ -7,7 +7,6 @@ import type {
 import type { CollectionPagePageProps } from "~/types"
 import { useRef } from "react"
 import { tv } from "~/lib/tv"
-import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"
 
 import type { Filter as FilterType } from "../../types/Filter"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
@@ -54,7 +53,6 @@ export const CollectionClient = ({
   siteAssetsBaseUrl,
   breadcrumb,
 }: CollectionClientProps) => {
-  const LinkComponent = useLinkComponent()
   const {
     paginatedItems,
     filteredCount,
@@ -84,7 +82,6 @@ export const CollectionClient = ({
         title={page.title}
         subtitle={page.subtitle}
         breadcrumb={breadcrumb}
-        LinkComponent={LinkComponent}
       >
         <CollectionSearch
           placeholder="Start typing to search"
@@ -124,7 +121,6 @@ export const CollectionClient = ({
               totalCount={totalCount}
               shouldShowDate={shouldShowDate}
               siteAssetsBaseUrl={siteAssetsBaseUrl}
-              LinkComponent={LinkComponent}
             />
           </div>
           {paginatedItems.length > 0 && (

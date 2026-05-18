@@ -10,7 +10,6 @@ export const NotFoundLayout = ({
   site,
   page,
   layout,
-  LinkComponent,
 }: NotFoundPageSchemaType) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const infobarStyles = createInfobarStyles({
@@ -22,12 +21,7 @@ export const NotFoundLayout = ({
     // However, we duplicated it here so that we can set the
     // search button as a client component and avoid streaming over a
     // huge payload to our end user
-    <Skeleton
-      site={site}
-      page={page}
-      layout={layout}
-      LinkComponent={LinkComponent}
-    >
+    <Skeleton site={site} page={page} layout={layout}>
       <div
         // ComponentContent = "component-content" (customCssClass.ts) is imported by all Homepage components,
         // but cannot be used here as tailwind does not support dynamic class names
@@ -44,12 +38,11 @@ export const NotFoundLayout = ({
                 </p>
               </div>
               <div className={infobarStyles.buttonContainer()}>
-                <NotFoundSearchButton LinkComponent={LinkComponent} />
+                <NotFoundSearchButton />
                 <LinkButton
                   href="/"
                   size="lg"
                   variant="outline"
-                  LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
                 >
                   Go to homepage

@@ -25,7 +25,6 @@ export const Contentpic = ({
   imageSrc,
   content,
   imageAlt,
-  LinkComponent,
   site,
   shouldLazyLoad = true,
 }: ContentpicProps): JSX.Element => {
@@ -41,7 +40,7 @@ export const Contentpic = ({
       />
 
       <div className={compoundStyles.content()}>
-        <Prose {...content} LinkComponent={LinkComponent} site={site} />
+        <Prose {...content} site={site} />
       </div>
     </div>
   )

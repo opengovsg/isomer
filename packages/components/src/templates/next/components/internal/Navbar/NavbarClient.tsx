@@ -2,7 +2,6 @@
 
 import type { NavbarClientProps } from "~/interfaces"
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
-import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
 import { tv } from "~/lib/tv"
@@ -69,7 +68,6 @@ export const NavbarClient = ({
   callToAction,
   utility,
 }: NavbarClientProps) => {
-  const LinkComponent = useLinkComponent()
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -127,11 +125,7 @@ export const NavbarClient = ({
       <div className={navbarStyles.navbarContainer()} ref={siteHeaderRef}>
         <div className={navbarStyles.navbarItems()}>
           {/* Logo */}
-          <Link
-            LinkComponent={LinkComponent}
-            className={navbarStyles.logo()}
-            href="/"
-          >
+          <Link className={navbarStyles.logo()} href="/">
             <ImageClient {...imageClientProps} />
           </Link>
 
@@ -147,7 +141,6 @@ export const NavbarClient = ({
                   {utility.items.map((item, index) => (
                     <li key={`${item.name}-${index}`}>
                       <Link
-                        LinkComponent={LinkComponent}
                         className={navbarStyles.utilityItem()}
                         href={item.url}
                         isExternal={isExternalUrl(item.url)}
@@ -180,8 +173,6 @@ export const NavbarClient = ({
                       )
                     }}
                     isOpen={openNavItemIdx === index && !isHamburgerOpen}
-                    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    LinkComponent={LinkComponent}
                   />
                 ))}
               </ul>
@@ -194,7 +185,6 @@ export const NavbarClient = ({
                   size="sm"
                   className={navbarStyles.callToAction()}
                   isWithFocusVisibleHighlight
-                  LinkComponent={LinkComponent}
                 >
                   {callToAction.label}
                 </LinkButton>

@@ -24,7 +24,7 @@ export const StaticDGSSearchableTable = ({
   labels,
   isMetadataLoading,
   isMetadataError,
-}: Omit<StaticDGSSearchableTableProps, "LinkComponent">) => {
+}: StaticDGSSearchableTableProps) => {
   const params = useMemo(
     () => ({
       resourceId,

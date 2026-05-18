@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
@@ -113,7 +113,6 @@ export type FooterSchemaType = Static<typeof FooterSchema>
 
 export interface FooterProps extends FooterSchemaType {
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
   isGovernment?: boolean
   siteName: string
   agencyName: string

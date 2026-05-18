@@ -6,7 +6,10 @@ import type {
 import type { PropsWithChildren } from "react"
 import type { PartialDeep } from "type-fest"
 import { Skeleton } from "@chakra-ui/react"
-import { LinkComponentProvider, RenderEngine } from "@opengovsg/isomer-components"
+import {
+  LinkComponentProvider,
+  RenderEngine,
+} from "@opengovsg/isomer-components"
 import { merge } from "lodash-es"
 import Script from "next/script"
 import { forwardRef } from "react"

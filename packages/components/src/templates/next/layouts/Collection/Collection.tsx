@@ -14,7 +14,6 @@ export const CollectionLayout = ({
   site,
   page,
   layout,
-  LinkComponent,
 }: CollectionPageSchemaType) => {
   const {
     permalink,
@@ -43,12 +42,7 @@ export const CollectionLayout = ({
   )
 
   return (
-    <Skeleton
-      site={site}
-      page={page}
-      layout={layout}
-      LinkComponent={LinkComponent}
-    >
+    <Skeleton site={site} page={page} layout={layout}>
       <CollectionClient
         page={page}
         breadcrumb={breadcrumb}

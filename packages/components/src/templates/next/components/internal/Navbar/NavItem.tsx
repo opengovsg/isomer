@@ -15,12 +15,11 @@ import {
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 
-type NavbarItemProps = NavbarProps["items"][number] &
-  Pick<NavbarProps, "LinkComponent"> & {
-    isOpen: boolean
-    onClick: () => void
-    onCloseMegamenu: () => void
-  }
+type NavbarItemProps = NavbarProps["items"][number] & {
+  isOpen: boolean
+  onClick: () => void
+  onCloseMegamenu: () => void
+}
 
 const navbarItemStyles = tv({
   slots: {
@@ -43,23 +42,13 @@ const { item, chevron, megamenu } = navbarItemStyles()
 
 export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
   (
-    {
-      items,
-      LinkComponent,
-      name,
-      url,
-      description,
-      isOpen,
-      onClick,
-      onCloseMegamenu,
-    },
+    { items, name, url, description, isOpen, onClick, onCloseMegamenu },
     ref,
   ): JSX.Element => {
     if (!items || items.length === 0) {
       return (
         <li className={item({ isOpen })}>
           <Link
-            LinkComponent={LinkComponent}
             isExternal={isExternalUrl(url)}
             showExternalIcon={isExternalUrl(url)}
             href={url}
@@ -88,7 +77,6 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
             description={description}
             url={url}
             items={items}
-            LinkComponent={LinkComponent}
             onCloseMegamenu={onCloseMegamenu}
           />
         )}
@@ -103,12 +91,10 @@ const Megamenu = ({
   url,
   onCloseMegamenu,
   items,
-  LinkComponent,
 }: Pick<
   NavbarProps["items"][number],
   "name" | "description" | "url" | "items"
 > & {
-  LinkComponent: NavbarProps["LinkComponent"]
   onCloseMegamenu: () => void
 }) => {
   useScrollLock()
@@ -121,7 +107,6 @@ const Megamenu = ({
     const isExternal = isExternalUrl(url)
     return (
       <Link
-        LinkComponent={LinkComponent}
         isExternal={isExternal}
         showExternalIcon={isExternal}
         isWithFocusVisibleHighlight
@@ -175,7 +160,6 @@ const Megamenu = ({
                   <li key={subItem.name}>
                     <div className="flex flex-col gap-1.5">
                       <Link
-                        LinkComponent={LinkComponent}
                         isExternal={isExternal}
                         showExternalIcon={isExternal}
                         isWithFocusVisibleHighlight

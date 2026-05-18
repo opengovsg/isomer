@@ -8,6 +8,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { Inter } from "next/font/google"
 import Script from "next/script"
+
 import { IsomerProviders } from "./providers"
 
 const inter = Inter({

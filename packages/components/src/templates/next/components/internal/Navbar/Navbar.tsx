@@ -29,7 +29,6 @@ export const Navbar = ({
   callToAction,
   utility,
   site,
-  LinkComponent,
 }: NavbarProps) => {
   // recursive function to process each navbar item
   const processNavItem = (

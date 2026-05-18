@@ -3,7 +3,6 @@
 import type { SearchableTableClientProps } from "~/interfaces"
 import { useId, useRef } from "react"
 import { tv } from "~/lib/tv"
-import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"
 
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
@@ -40,7 +39,7 @@ const compoundStyles = createSearchableTableStyles()
 
 interface SearchableTableClientUIProps extends Omit<
   SearchableTableClientProps,
-  "items" | "LinkComponent"
+  "items"
 > {
   search: {
     input: string
@@ -73,7 +72,6 @@ export const SearchableTableClientUI = ({
   filteredItemsLength,
   searchMatchType,
 }: SearchableTableClientUIProps) => {
-  const LinkComponent = useLinkComponent()
   const titleId = useId()
 
   const sectionTopRef = useRef<HTMLDivElement>(null)
@@ -115,10 +113,7 @@ export const SearchableTableClientUI = ({
                     key={index}
                     className={compoundStyles.tableCell({ isHeader: true })}
                   >
-                    <BaseParagraph
-                      content={String(header)}
-                      LinkComponent={LinkComponent}
-                    />
+                    <BaseParagraph content={String(header)} />
                   </th>
                 ))}
               </tr>
@@ -135,10 +130,7 @@ export const SearchableTableClientUI = ({
                       >
                         {/* NOTE: Reference links are NOT supported within
                             SearchableTable cell contents */}
-                        <BaseParagraph
-                          content={String(cell)}
-                          LinkComponent={LinkComponent}
-                        />
+                        <BaseParagraph content={String(cell)} />
                       </td>
                     ))}
                   </tr>

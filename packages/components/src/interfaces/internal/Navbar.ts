@@ -1,9 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type {
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
+import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import type { OmitFromUnion } from "~/types/helpers"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
@@ -145,7 +141,6 @@ export type NavbarProps = BaseNavbarProps & {
   logoUrl: string
   logoAlt: string
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
 }
 
 export type NavbarClientProps = OmitFromUnion<BaseNavbarProps, "type"> & {
