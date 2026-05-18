@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
+import { NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import type { DividerProps } from "./Divider"
 import type { OrderedListProps } from "./OrderedList"
@@ -105,6 +106,7 @@ export const TableSchema = Type.Object(
       caption: Type.String({
         title: "Table caption",
         description: "The caption of the table",
+        pattern: NON_EMPTY_STRING_REGEX,
       }),
     }),
     content: Type.Array(
