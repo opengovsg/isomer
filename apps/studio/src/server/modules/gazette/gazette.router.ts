@@ -383,7 +383,11 @@ export const gazetteRouter = router({
         let newFilename: string | undefined
         if (newRef) {
           newFilename = newRef.split("/").pop()
-        } else if (desiredFileName && existingRef && desiredFileName !== oldFilename) {
+        } else if (
+          desiredFileName &&
+          existingRef &&
+          desiredFileName !== oldFilename
+        ) {
           newFilename = desiredFileName
         }
 
@@ -395,7 +399,11 @@ export const gazetteRouter = router({
         if (newRef) {
           finalRef = newRef
           if (existingRef) oldRefToCleanUp = existingRef.replace(/^\//, "")
-        } else if (desiredFileName && existingRef && desiredFileName !== oldFilename) {
+        } else if (
+          desiredFileName &&
+          existingRef &&
+          desiredFileName !== oldFilename
+        ) {
           const sourceKey = existingRef.replace(/^\//, "")
           const newKey = await copyFileWithNewName({
             sourceKey,
@@ -487,7 +495,7 @@ export const gazetteRouter = router({
           })
 
         // After the DB has committed the new ref, soft-delete the file the
-        // gazette no longer points at. 
+        // gazette no longer points at.
         if (oldRefToCleanUp) {
           try {
             await markFileAsDeleted({ key: oldRefToCleanUp })
