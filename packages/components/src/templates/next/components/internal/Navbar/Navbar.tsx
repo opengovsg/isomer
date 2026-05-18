@@ -47,7 +47,6 @@ export const Navbar = ({
       layout={layout}
       search={search}
       items={items.map(processNavItem)}
-      LinkComponent={LinkComponent}
       imageClientProps={{
         src: logoUrl,
         alt: logoAlt,

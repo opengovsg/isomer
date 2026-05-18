@@ -26,11 +26,10 @@ export const DynamicDGSSearchableTable = ({
   dataSource: { resourceId, filters, sort },
   title,
   headers,
-  LinkComponent,
   isMetadataLoading,
   isMetadataError,
   maxNoOfColumns, // not using MAX_NUMBER_OF_COLUMNS as we should not arbitrarily slice the columns
-}: DynamicSearchableTableClientProps) => {
+}: Omit<DynamicSearchableTableClientProps, "LinkComponent">) => {
   const [_search, setSearch] = useState("")
   const search = useDebounce({ value: _search, delay: 300 })
   const [currPage, setCurrPage] = useState(1)
@@ -76,7 +75,6 @@ export const DynamicDGSSearchableTable = ({
     <SearchableTableClientUI
       title={title}
       headers={headers}
-      LinkComponent={LinkComponent}
       isLoading={isMetadataLoading || isDataLoading}
       isError={isMetadataError || isDataError}
       search={{ input: _search, deferred: search, setSearch }}

@@ -4,9 +4,10 @@ import type {
   BreadcrumbProps,
   ProcessedCollectionCardProps,
 } from "~/interfaces"
-import type { CollectionPagePageProps, CollectionPageSchemaType } from "~/types"
+import type { CollectionPagePageProps } from "~/types"
 import { useRef } from "react"
 import { tv } from "~/lib/tv"
+import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"
 
 import type { Filter as FilterType } from "../../types/Filter"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
@@ -24,7 +25,6 @@ interface CollectionClientProps {
   shouldShowDate: boolean
   siteAssetsBaseUrl: string | undefined
   breadcrumb: BreadcrumbProps
-  LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }
 
 const createCollectionLayoutStyles = tv({
@@ -53,8 +53,8 @@ export const CollectionClient = ({
   shouldShowDate,
   siteAssetsBaseUrl,
   breadcrumb,
-  LinkComponent,
 }: CollectionClientProps) => {
+  const LinkComponent = useLinkComponent()
   const {
     paginatedItems,
     filteredCount,

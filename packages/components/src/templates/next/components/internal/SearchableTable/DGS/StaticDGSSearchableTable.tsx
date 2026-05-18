@@ -21,11 +21,10 @@ export const StaticDGSSearchableTable = ({
   dataSource: { resourceId, filters, sort },
   title,
   headers,
-  LinkComponent,
   labels,
   isMetadataLoading,
   isMetadataError,
-}: StaticDGSSearchableTableProps) => {
+}: Omit<StaticDGSSearchableTableProps, "LinkComponent">) => {
   const params = useMemo(
     () => ({
       resourceId,
@@ -67,7 +66,6 @@ export const StaticDGSSearchableTable = ({
       title={title}
       headers={labels}
       items={items}
-      LinkComponent={LinkComponent}
       isLoading={isMetadataLoading || isDataLoading}
       isError={isMetadataError || isDataError}
     />

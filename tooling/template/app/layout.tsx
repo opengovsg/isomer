@@ -8,6 +8,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { Inter } from "next/font/google"
 import Script from "next/script"
+import { IsomerProviders } from "./providers"
 
 const inter = Inter({
   // while we support other languages, we should only preload the latin subset
@@ -50,7 +51,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         />
       </head>
       <body className="antialiased">
-        {children}
+        <IsomerProviders>{children}</IsomerProviders>
         <RenderApplicationScripts
           site={{
             ...config.site,

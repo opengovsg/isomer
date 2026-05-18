@@ -139,13 +139,13 @@ export type NavbarSchemaType = Static<typeof NavbarSchema>
 type BaseNavbarProps = NavbarSchemaType & {
   layout: IsomerPageLayoutType
   search?: LocalSearchProps | NavbarSearchSGInputBoxProps
-  LinkComponent?: LinkComponentType
 }
 
 export type NavbarProps = BaseNavbarProps & {
   logoUrl: string
   logoAlt: string
   site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
 }
 
 export type NavbarClientProps = OmitFromUnion<BaseNavbarProps, "type"> & {

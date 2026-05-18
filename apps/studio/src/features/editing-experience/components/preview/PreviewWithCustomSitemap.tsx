@@ -6,7 +6,7 @@ import type {
 import type { PropsWithChildren } from "react"
 import type { PartialDeep } from "type-fest"
 import { Skeleton } from "@chakra-ui/react"
-import { RenderEngine } from "@opengovsg/isomer-components"
+import { LinkComponentProvider, RenderEngine } from "@opengovsg/isomer-components"
 import { merge } from "lodash-es"
 import Script from "next/script"
 import { forwardRef } from "react"
@@ -64,23 +64,24 @@ function SuspendablePreviewWithCustomSitemap({
   }
 
   return (
-    <RenderEngine
-      {...renderProps}
-      // TODO: fixup all the typing errors
-      // @ts-expect-error to fix when types are proper
-      site={{
-        ...siteConfig,
-        siteMap,
-        environment: "production",
-        search: {
-          type: "localSearch",
-          searchUrl: "/search",
-        },
-        assetsBaseUrl: ASSETS_BASE_URL,
-      }}
-      LinkComponent={FakeLink}
-      ScriptComponent={Script}
-    />
+    <LinkComponentProvider value={FakeLink}>
+      <RenderEngine
+        {...renderProps}
+        // TODO: fixup all the typing errors
+        // @ts-expect-error to fix when types are proper
+        site={{
+          ...siteConfig,
+          siteMap,
+          environment: "production",
+          search: {
+            type: "localSearch",
+            searchUrl: "/search",
+          },
+          assetsBaseUrl: ASSETS_BASE_URL,
+        }}
+        ScriptComponent={Script}
+      />
+    </LinkComponentProvider>
   )
 }
 

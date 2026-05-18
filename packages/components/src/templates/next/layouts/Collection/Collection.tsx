@@ -56,7 +56,6 @@ export const CollectionLayout = ({
         filters={getAvailableFilters(processedItems, tagCategories)}
         shouldShowDate={shouldShowDate(processedItems)}
         siteAssetsBaseUrl={site.assetsBaseUrl}
-        LinkComponent={LinkComponent}
       />
     </Skeleton>
   )

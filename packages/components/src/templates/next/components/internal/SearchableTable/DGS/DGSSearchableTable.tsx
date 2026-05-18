@@ -12,8 +12,7 @@ export const DGSSearchableTable = ({
   dataSource,
   title,
   headers,
-  LinkComponent,
-}: DGSSearchableTableProps) => {
+}: Omit<DGSSearchableTableProps, "LinkComponent">) => {
   const {
     metadata,
     isLoading: isMetadataLoading,
@@ -51,7 +50,6 @@ export const DGSSearchableTable = ({
         dataSource={dataSource}
         title={resolvedTitle}
         headers={resolvedHeaders}
-        LinkComponent={LinkComponent}
         labels={labels}
         isMetadataLoading={isMetadataLoading}
         isMetadataError={isMetadataError}
@@ -65,7 +63,6 @@ export const DGSSearchableTable = ({
         dataSource={dataSource}
         title={resolvedTitle}
         headers={labels}
-        LinkComponent={LinkComponent}
         isMetadataLoading={isMetadataLoading}
         isMetadataError={isMetadataError}
         maxNoOfColumns={labels.length}

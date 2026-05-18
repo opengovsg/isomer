@@ -7,6 +7,7 @@ import { FocusScope, useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
 import { forwardRef, useRef } from "react"
 import { useScrollLock } from "usehooks-ts"
+import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
 
@@ -29,7 +30,6 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     {
       top,
       items,
-      LinkComponent,
       openNavItemIdx,
       setOpenNavItemIdx,
       onCloseMenu,
@@ -38,6 +38,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     },
     mobileMenuRef,
   ) => {
+    const LinkComponent = useLinkComponent()
     useScrollLock()
     const buttonRef = useRef<HTMLButtonElement>(null)
     const { buttonProps } = useButton({ onPress: onCloseMenu }, buttonRef)

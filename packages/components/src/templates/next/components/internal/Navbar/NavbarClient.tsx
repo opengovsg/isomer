@@ -2,6 +2,7 @@
 
 import type { NavbarClientProps } from "~/interfaces"
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
+import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
 import { tv } from "~/lib/tv"
@@ -67,8 +68,8 @@ export const NavbarClient = ({
   imageClientProps,
   callToAction,
   utility,
-  LinkComponent,
 }: NavbarClientProps) => {
+  const LinkComponent = useLinkComponent()
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -272,8 +273,6 @@ export const NavbarClient = ({
           setOpenNavItemIdx={setOpenNavItemIdx}
           callToAction={callToAction}
           utility={utility}
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          LinkComponent={LinkComponent}
           onCloseMenu={onCloseMenu}
         />
       )}

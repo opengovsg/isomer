@@ -12,10 +12,9 @@ export const SearchableTableClient = ({
   title,
   headers,
   items,
-  LinkComponent,
   isLoading = false,
   isError = false,
-}: SearchableTableClientProps) => {
+}: Omit<SearchableTableClientProps, "LinkComponent">) => {
   const [_search, setSearch] = useState("")
   const search = useDeferredValue(_search)
 
@@ -49,7 +48,6 @@ export const SearchableTableClient = ({
     <SearchableTableClientUI
       title={title}
       headers={headers}
-      LinkComponent={LinkComponent}
       isLoading={isLoading}
       isError={isError}
       search={{ input: _search, deferred: search, setSearch }}
