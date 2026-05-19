@@ -25,7 +25,7 @@ const MAX_CAPTION_LENGTH = 200
 const tableSettingsSchema = z.object({
   caption: z
     .string({
-      required_error: "Enter a caption for this table",
+      error: "Enter a caption for this table",
     })
     .max(MAX_CAPTION_LENGTH, {
       message: `Table caption should be shorter than ${MAX_CAPTION_LENGTH} characters.`,
