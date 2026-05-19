@@ -122,3 +122,5 @@ updates:
       # Upgrading the CLI without a full Chakra UI v3 migration would break the build:theme script.
       - dependency-name: "@chakra-ui/cli"
         update-types: ["version-update:semver-major"]
+      # markdown-to-jsx is only used in the unmaintained classic template; skip all updates
+      - dependency-name: "markdown-to-jsx"
