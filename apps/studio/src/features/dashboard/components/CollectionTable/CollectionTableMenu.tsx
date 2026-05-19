@@ -68,13 +68,23 @@ export const CollectionTableMenu = ({
               Edit settings
             </MenuItem>
           )}
-          <MenuItem
-            as="button"
-            icon={<BiFolderOpen fontSize="1rem" />}
-            onClick={handleMoveResourceClick}
-          >
-            Move to...
-          </MenuItem>
+          {isSearchPage ? (
+            <MenuItem
+              isDisabled
+              icon={<BiFolderOpen fontSize="1rem" />}
+              tooltip="This is a default page that cannot be moved."
+            >
+              Move to...
+            </MenuItem>
+          ) : (
+            <MenuItem
+              as="button"
+              icon={<BiFolderOpen fontSize="1rem" />}
+              onClick={handleMoveResourceClick}
+            >
+              Move to...
+            </MenuItem>
+          )}
           {resourceType !== ResourceType.IndexPage && isSearchPage && (
             <MenuItem
               isDisabled

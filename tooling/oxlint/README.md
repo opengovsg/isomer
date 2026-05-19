@@ -23,7 +23,7 @@ Lint scripts should invoke the hoisted CLI (same as with ESLint):
 }
 ```
 
-`oxlint` is provided transitively via this package and appears under the root `node_modules/.bin` after `npm install`.
+`oxlint` is provided transitively via this package and appears under the root `node_modules/.bin` after `pnpm install`.
 
 ## Extend shared presets in `.oxlintrc.json`
 

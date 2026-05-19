@@ -77,6 +77,7 @@ const compoundStyles = createInfoCardsStyles()
 const SingleCard = ({
   title,
   image,
+  isContainNeeded,
   category,
   referenceLinkHref,
   displayThumbnail,
@@ -90,20 +91,18 @@ const SingleCard = ({
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
   const renderImage = () => {
-    const hasImage = image?.src !== undefined
-
-    // Fallback to site logo if user want to display thumbnail but no image is provided
-    const imageSrc = hasImage ? image.src : site.logoUrl
-    const imageAlt = hasImage ? image.alt : `Site logo for ${site.siteName}`
+    if (!image?.src) {
+      return null
+    }
 
     return (
       <div className={compoundStyles.cardImageContainer({ numberOfCards })}>
         <ImageClient
-          src={imageSrc}
-          alt={imageAlt}
+          src={image.src}
+          alt={image.alt}
           width="100%"
           className={compoundStyles.cardImage({
-            imageFit: hasImage ? "cover" : "contain",
+            imageFit: isContainNeeded ? "contain" : "cover",
           })}
           lazyLoading={shouldLazyLoad}
           assetsBaseUrl={site.assetsBaseUrl}

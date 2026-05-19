@@ -56,7 +56,12 @@ export type CollectionBlockProps = Static<typeof CollectionBlockSchema> & {
 
 export type CollectionBlockSingleCardProps = Pick<
   ProcessedCollectionCardProps,
-  "title" | "image" | "category" | "referenceLinkHref" | "formattedDate"
+  | "title"
+  | "image"
+  | "isContainNeeded"
+  | "category"
+  | "referenceLinkHref"
+  | "formattedDate"
 > &
   Pick<CollectionBlockProps, "displayThumbnail" | "displayCategory"> &
   CollectionBlockNumberOfCards & {
