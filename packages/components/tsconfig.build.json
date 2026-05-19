@@ -1,8 +1,11 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    // CJS emit pinned to node resolution; base uses bundler for typecheck against Storybook 10's package exports.
     "module": "commonjs",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "rootDir": "src"
   },
   "exclude": [
     ".storybook",
