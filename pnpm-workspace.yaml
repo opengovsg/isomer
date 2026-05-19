@@ -198,7 +198,7 @@ catalogs:
     "@react-aria/focus": ^3.22.0
     "@react-aria/interactions": ^3.28.0
     "@react-aria/textfield": ^3.18.2
-    "@react-aria/utils": ^3.31.0
+    "@react-aria/utils": ^3.34.0
     "@react-stately/checkbox": ^3.8.0
     "@react-stately/toggle": ^3.10.0
   storybook:
