@@ -470,8 +470,8 @@ catalogs:
       specifier: ^3.31.0
       version: 3.33.1
     '@react-stately/checkbox':
-      specifier: ^3.7.2
-      version: 3.7.5
+      specifier: ^3.8.0
+      version: 3.8.0
     '@react-stately/toggle':
       specifier: ^3.10.0
       version: 3.10.0
@@ -1145,7 +1145,7 @@ importers:
         version: 3.33.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-stately/checkbox':
         specifier: catalog:react-aria
-        version: 3.7.5(react@18.3.1)
+        version: 3.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-stately/toggle':
         specifier: catalog:react-aria
         version: 3.10.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -4974,10 +4974,11 @@ packages:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
-  '@react-stately/checkbox@3.7.5':
-    resolution: {integrity: sha512-K5R5ted7AxLB3sDkuVAazUdyRMraFT1imVqij2GuAiOUFvsZvbuocnDuFkBVKojyV3GpqLBvViV8IaCMc4hNIw==}
+  '@react-stately/checkbox@3.8.0':
+    resolution: {integrity: sha512-cH5Pod6lky2TToMwiwDoHAUXkUMMe9wzfoDJpWDW1+fcAnFgSEm2ztavVTDBCuaURv2m3b4UK9cNYiY9pq4img==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
   '@react-stately/flags@3.1.2':
     resolution: {integrity: sha512-2HjFcZx1MyQXoPqcBGALwWWmgFVUk2TuKVIQxCbRq7fPyWXIl6VHcakCLurdtYC2Iks7zizvz0Idv48MQ38DWg==}
@@ -4995,11 +4996,6 @@ packages:
 
   '@react-stately/utils@3.11.0':
     resolution: {integrity: sha512-8LZpYowJ9eZmmYLpudbo/eclIRnbhWIJZ994ncmlKlouNzKohtM8qTC6B1w1pwUbiwGdUoyzLuQbeaIor5Dvcw==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-
-  '@react-types/checkbox@3.10.4':
-    resolution: {integrity: sha512-tYCG0Pd1usEz5hjvBEYcqcA0youx930Rss1QBIse9TgMekA1c2WmPDNupYV8phpO8Zuej3DL1WfBeXcgavK8aw==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
@@ -15561,14 +15557,12 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@react-stately/checkbox@3.7.5(react@18.3.1)':
+  '@react-stately/checkbox@3.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@react-stately/form': 3.2.4(react@18.3.1)
-      '@react-stately/utils': 3.11.0(react@18.3.1)
-      '@react-types/checkbox': 3.10.4(react@18.3.1)
-      '@react-types/shared': 3.34.0(react@18.3.1)
       '@swc/helpers': 0.5.20
       react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      react-stately: 3.46.0(react@18.3.1)
 
   '@react-stately/flags@3.1.2':
     dependencies:
@@ -15590,11 +15584,6 @@ snapshots:
   '@react-stately/utils@3.11.0(react@18.3.1)':
     dependencies:
       '@swc/helpers': 0.5.20
-      react: 18.3.1
-
-  '@react-types/checkbox@3.10.4(react@18.3.1)':
-    dependencies:
-      '@react-types/shared': 3.34.0(react@18.3.1)
       react: 18.3.1
 
   '@react-types/shared@3.34.0(react@18.3.1)':
