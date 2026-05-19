@@ -36,7 +36,7 @@ onlyBuiltDependencies:
   - prisma
 
 catalog:
-  ajv: ^8.17.1
+  ajv: ^8.20.0
   autoprefixer: ^10.4.21
   axios: ^1.15.2
   bootstrap-icons: ^1.13.1
