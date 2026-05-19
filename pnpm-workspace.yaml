@@ -61,7 +61,7 @@ catalog:
   node-mocks-http: ^1.16.2
   npm-run-all2: ^8.0.4
   "@octokit/rest": ^22.0.0
-  "@inquirer/prompts": ^7.6.0
+  "@inquirer/prompts": ^8.4.3
   "@opengovsg/design-system-react": ^1.31.0
   "@opengovsg/starter-kitty-validators": ^1.2.13
   "@paralleldrive/cuid2": ^3.3.0
