@@ -197,7 +197,10 @@ const getColumns = (onDelete: (id: string) => void) => [
         Delete
       </TableHeader>
     ),
-    cell: ({ row }) => <DeleteCell id={row.original.id} onDelete={onDelete} />,
+    cell: ({ row }) => {
+      if (row.original.status === "deleted") return null
+      return <DeleteCell id={row.original.id} onDelete={onDelete} />
+    },
   }),
 ]
 
