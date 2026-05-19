@@ -123,8 +123,8 @@ catalogs:
       specifier: ^0.33.12
       version: 0.33.22
     '@tanstack/query-devtools':
-      specifier: ^5.100.9
-      version: 5.100.9
+      specifier: ^5.100.10
+      version: 5.100.10
     '@tanstack/react-query':
       specifier: ^5.100.10
       version: 5.100.10
@@ -738,7 +738,7 @@ importers:
         version: 0.33.22
       '@tanstack/query-devtools':
         specifier: 'catalog:'
-        version: 5.100.9
+        version: 5.100.10
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.100.10(react@18.3.1)
@@ -5558,9 +5558,6 @@ packages:
 
   '@tanstack/query-devtools@5.100.10':
     resolution: {integrity: sha512-3DmJf25hDPus5IpVvp6ujXv6bKV2zPzI9vpbAmpJigsL/H6DPvPjmf7/Q9yVKEke//8fgeQ45abjgnLuyYxAiw==}
-
-  '@tanstack/query-devtools@5.100.9':
-    resolution: {integrity: sha512-gqiptrTIhbK2PuCaPRHmWXfJG1NGYVFpAr0HqogEqiSBNB5xDz6fmesQt7w4WgMOqOQPnPHJ3ZDMuhDaXvNO8g==}
 
   '@tanstack/react-query-devtools@5.100.10':
     resolution: {integrity: sha512-zes0+o9ef5rAZXJ9f/SeaLs2nufJaeVkZkl/Or9NGrWVF41kL9Od9ED9nCwtQlgiF2VGtrzhEw5AU/igAO+aAg==}
@@ -16326,8 +16323,6 @@ snapshots:
   '@tanstack/query-core@5.100.10': {}
 
   '@tanstack/query-devtools@5.100.10': {}
-
-  '@tanstack/query-devtools@5.100.9': {}
 
   '@tanstack/react-query-devtools@5.100.10(@tanstack/react-query@5.100.10(react@18.3.1))(react@18.3.1)':
     dependencies:
