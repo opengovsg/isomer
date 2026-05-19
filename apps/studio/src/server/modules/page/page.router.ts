@@ -11,8 +11,9 @@ import {
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { format, isBefore } from "date-fns"
-import { get, isEmpty, isEqual, pick } from "lodash-es"
+import { cloneDeep, get, isEmpty, isEqual, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { env } from "~/env.mjs"
 import {
   sendCancelSchedulePageEmail,
   sendScheduledPageEmail,
@@ -21,10 +22,12 @@ import {
   ENABLE_CODEBUILD_JOBS,
   IS_SINGPASS_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
+import { copyObjectInBucket } from "~/lib/s3"
 import {
   basePageSchema,
   createIndexPageSchema,
   createPageSchema,
+  duplicatePageSchema,
   getPrefillSchema,
   getRootPageSchema,
   listPagesSchema,
@@ -51,7 +54,6 @@ import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
-  createResourceWithBlob,
   getBlobOfResource,
   getFooter,
   getFullPageById,
@@ -65,6 +67,16 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
+import {
+  buildNewAssetFileKeyForSite,
+  collectUniqueAssetFileKeys,
+  rewriteAssetFileKeysInValue,
+} from "./helpers/duplicatePageContent"
+import { assertDuplicatePagePreconditions } from "./helpers/duplicatePagePreconditions"
+import {
+  getUserForAuditLog,
+  insertPageBlobResourceAndAudit,
+} from "./helpers/insertPageWithBlob"
 import { createDefaultPage, createFolderIndexPage } from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
@@ -556,40 +568,40 @@ export const pageRouter = router({
 
         const newPage = createDefaultPage({ layout })
 
-        const by = await db
-          .selectFrom("User")
-          .where("id", "=", ctx.user.id)
-          .selectAll()
-          .executeTakeFirstOrThrow(
-            () =>
-              new TRPCError({
-                code: "BAD_REQUEST",
-                message: "Please ensure that you are authenticated",
-              }),
-          )
+        const by = await getUserForAuditLog(db, ctx.user.id)
 
         const resource = await db
           .transaction()
           .execute(async (tx) => {
-            const { resource: addedResource, blob } =
-              await createResourceWithBlob({
-                db: tx,
+            // Validate whether folderId is a folder
+            if (folderId) {
+              const folder = await tx
+                .selectFrom("Resource")
+                .where("Resource.id", "=", String(folderId))
+                .where("Resource.siteId", "=", siteId)
+                .where("Resource.type", "=", ResourceType.Folder)
+                .select("Resource.id")
+                .executeTakeFirst()
+              if (!folder) {
+                throw new TRPCError({
+                  code: "NOT_FOUND",
+                  message: "Folder not found or folderId is not a folder",
+                })
+              }
+            }
+
+            return insertPageBlobResourceAndAudit(tx, {
+              siteId,
+              by,
+              blobContent: newPage as unknown as PrismaJson.BlobJsonContent,
+              resource: {
                 title,
                 permalink,
                 siteId,
-                parentId: folderId ? String(folderId) : null,
-                blobContent: newPage,
+                parentId: folderId ? String(folderId) : undefined,
                 type: ResourceType.Page,
-              })
-
-            await logResourceEvent(tx, {
-              siteId,
-              by,
-              delta: { before: null, after: { blob, resource: addedResource } },
-              eventType: AuditLogEvent.ResourceCreate,
+              },
             })
-
-            return addedResource
           })
           .catch((err) => {
             if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
@@ -611,6 +623,85 @@ export const pageRouter = router({
         return { pageId: resource.id }
       },
     ),
+
+  duplicatePage: protectedProcedure
+    .input(duplicatePageSchema)
+    .mutation(async ({ ctx, input: { siteId, pageId, title, permalink } }) => {
+      const { parentKey } = await assertDuplicatePagePreconditions({
+        siteId,
+        pageId,
+        permalink,
+        userId: ctx.user.id,
+      })
+
+      const fullPage = await getFullPageById(db, {
+        resourceId: pageId,
+        siteId,
+      })
+
+      if (!fullPage?.content) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "Unable to load content for the requested page, please contact Isomer Support",
+        })
+      }
+
+      const newContent = cloneDeep(fullPage.content) as IsomerSchema
+      const assetKeys = collectUniqueAssetFileKeys(newContent, siteId)
+      const oldToNew = new Map<string, string>()
+      const copyTasks = assetKeys.map((oldKey) => {
+        const newKey = buildNewAssetFileKeyForSite(siteId, oldKey)
+        oldToNew.set(oldKey, newKey)
+        return copyObjectInBucket({
+          Bucket: env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+          sourceKey: oldKey,
+          destinationKey: newKey,
+        }).catch((cause) => {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message:
+              "Could not copy one or more files for this page. Try again later.",
+            cause,
+          })
+        })
+      })
+      await Promise.all(copyTasks)
+
+      rewriteAssetFileKeysInValue(newContent, siteId, oldToNew)
+
+      if (!schemaValidator(newContent)) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "Duplicated content failed validation. Please contact Isomer Support.",
+          cause: schemaValidator.errors,
+        })
+      }
+
+      const by = await getUserForAuditLog(db, ctx.user.id)
+
+      const resource = await db.transaction().execute(async (tx) => {
+        return insertPageBlobResourceAndAudit(tx, {
+          siteId,
+          by,
+          blobContent: newContent as unknown as PrismaJson.BlobJsonContent,
+          resource: {
+            title,
+            permalink,
+            siteId,
+            parentId: parentKey ?? undefined,
+            type: ResourceType.Page,
+            state: ResourceState.Draft,
+            publishedVersionId: null,
+            scheduledAt: null,
+            scheduledBy: null,
+          },
+        })
+      })
+
+      return { pageId: resource.id }
+    }),
 
   getRootPage: protectedProcedure
     .input(getRootPageSchema)

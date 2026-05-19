@@ -3,6 +3,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type {
   DeleteResourceModalState,
+  DuplicatePageModalState,
   FolderSettingsModalState,
 } from "./types"
 
@@ -31,3 +32,7 @@ export interface PageSettingsState {
     | typeof ResourceType.CollectionLink
 }
 export const pageSettingsModalAtom = atom<null | PageSettingsState>(null)
+
+export const duplicatePageModalAtom = atom<DuplicatePageModalState | null>(
+  null,
+)

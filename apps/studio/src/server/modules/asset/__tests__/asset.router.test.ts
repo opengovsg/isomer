@@ -29,6 +29,7 @@ vi.mock("~/lib/s3", () => ({
   generateSignedPutUrl: vi
     .fn()
     .mockResolvedValue("https://example.com/signed-url"),
+  copyObjectInBucket: vi.fn().mockResolvedValue(undefined),
   markFileAsDeleted: vi.fn().mockResolvedValue(undefined),
   deleteFile: vi.fn().mockResolvedValue(undefined),
 }))

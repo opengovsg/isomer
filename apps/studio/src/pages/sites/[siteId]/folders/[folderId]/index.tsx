@@ -10,6 +10,7 @@ import {
   getBreadcrumbsFromRoot,
 } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal"
+import { DuplicatePageModal } from "~/features/dashboard/components/DuplicatePageModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { IndexpageRow } from "~/features/dashboard/components/IndexpageRow/IndexpageRow"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
@@ -152,6 +153,7 @@ const FolderPage: NextPageWithLayout = () => {
       <MoveResourceModal />
       <PageSettingsModal />
       <DeleteResourceModal siteId={parseInt(siteId)} />
+      <DuplicatePageModal siteId={parseInt(siteId)} />
     </>
   )
 }
