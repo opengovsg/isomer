@@ -417,8 +417,8 @@ catalogs:
       specifier: ^2.11.0
       version: 2.11.1
     zod:
-      specifier: ^3.22.4
-      version: 3.25.76
+      specifier: ^4.4.3
+      version: 4.4.3
   growthbook:
     '@growthbook/growthbook':
       specifier: ^1.2.0
@@ -972,7 +972,7 @@ importers:
         version: 2.11.1
       zod:
         specifier: 'catalog:'
-        version: 3.25.76
+        version: 4.4.3
     devDependencies:
       '@babel/plugin-transform-class-properties':
         specifier: catalog:babel
@@ -1198,7 +1198,7 @@ importers:
         version: 3.1.1(react@18.3.1)
       zod:
         specifier: 'catalog:'
-        version: 3.25.76
+        version: 4.4.3
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -1319,7 +1319,7 @@ importers:
         version: 2.1.9(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.2.0))(msw@2.14.6(@types/node@22.19.15)(typescript@6.0.3))(sass@1.98.0)(terser@5.46.1)
       zod:
         specifier: 'catalog:'
-        version: 3.25.76
+        version: 4.4.3
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -1676,7 +1676,7 @@ importers:
         version: 4.21.0
       zod:
         specifier: 'catalog:'
-        version: 3.25.76
+        version: 4.4.3
     devDependencies:
       '@isomer/migrate-tags':
         specifier: workspace:*
@@ -11807,6 +11807,9 @@ packages:
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -23569,5 +23572,7 @@ snapshots:
       zod: 3.25.76
 
   zod@3.25.76: {}
+
+  zod@4.4.3: {}
 
   zwitch@2.0.4: {}
