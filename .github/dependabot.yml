@@ -82,7 +82,7 @@ updates:
           - "@jsonforms/react"
     ignore:
       # Currently dependabot doesn't support ignoring by group so we have to ignore each dependency individually
-      # Ignore major version updates for react, react-query, trpc, next as they rely on React 19
+      # Ignore major version updates for react, react-query, trpc as they rely on React 19
       ### React 19
       - dependency-name: "react"
         update-types: ["version-update:semver-major"]
@@ -105,11 +105,6 @@ updates:
       - dependency-name: "@tanstack/react-query"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@tanstack/react-query-devtools"
-        update-types: ["version-update:semver-major"]
-      ### Next 15
-      - dependency-name: "next"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@next/env"
         update-types: ["version-update:semver-major"]
       # Ignore major version updates for Prisma 6 due to installation issues
       ### Could not resolve @prisma/client despite the installation that we just tried.
