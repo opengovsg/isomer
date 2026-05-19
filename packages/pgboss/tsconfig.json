@@ -4,6 +4,7 @@
     "declaration": true,
     "rootDir": "src",
     "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strict": true,
