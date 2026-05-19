@@ -1,6 +1,7 @@
 import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 
 import { AskgovWidget } from "../templates/next/components/internal/Askgov"
+import { ZendeskWidget } from "../templates/next/components/internal/Zendesk"
 import {
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
@@ -49,6 +50,7 @@ export const RenderApplicationScripts = ({
       {site.askgov && (
         <AskgovWidget environment={site.environment} {...site.askgov} />
       )}
+      {site.zendesk && <ZendeskWidget {...site.zendesk} />}
     </>
   )
 }

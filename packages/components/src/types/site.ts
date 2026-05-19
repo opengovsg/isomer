@@ -8,6 +8,7 @@ import {
   LocalSearchSchema,
   SearchSGSearchSchema,
   VicaSchema,
+  ZendeskSchema,
 } from "~/interfaces"
 import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
 
@@ -51,6 +52,7 @@ export const SimpleIntegrationsSettingsSchema = Type.Object({
 export const ComplexIntegrationsSettingsSchema = Type.Object({
   askgov: Type.Optional(AskgovSchema),
   vica: Type.Optional(VicaSchema),
+  zendesk: Type.Optional(ZendeskSchema),
 })
 
 export const IntegrationsSettingsSchema = Type.Intersect([

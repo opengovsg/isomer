@@ -19,7 +19,8 @@ export const WIDGET_CONFIG: Record<WidgetType, Widget> = {
   },
 }
 
-export type WidgetType = ComplexIntegrations
+// zendesk is excluded as it is not user-editable in studio
+export type WidgetType = Exclude<ComplexIntegrations, "zendesk">
 
 interface UseWidgetContextReturn {
   activeWidget: WidgetType | null
