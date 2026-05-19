@@ -112,7 +112,7 @@ catalog:
   exponential-backoff: ^3.1.2
   filenamify: ^6.0.0
   flat: ^6.0.1
-  inter-ui: ^4.1.0
+  inter-ui: ^4.1.1
   interweave: ^13.1.0
   interweave-ssr: ^2.0.0
   iron-session: ^8.0.4

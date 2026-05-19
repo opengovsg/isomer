@@ -219,7 +219,7 @@ catalogs:
       specifier: ^11.12.0
       version: 11.12.0
     inter-ui:
-      specifier: ^4.1.0
+      specifier: ^4.1.1
       version: 4.1.1
     interweave:
       specifier: ^13.1.0
