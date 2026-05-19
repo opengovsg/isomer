@@ -42,9 +42,7 @@ const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
   )
 }
 
-const RestrictedContent = ({
-  LinkComponent,
-}: Pick<MastheadProps, "LinkComponent">) => {
+const RestrictedContent = () => {
   return (
     <div className="mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10">
       <div className="grid grid-cols-[1fr] gap-6 px-px lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] lg:gap-40">
@@ -70,7 +68,6 @@ const RestrictedContent = ({
               Government agencies communicate via .gov.sg websites (e.g.
               go.gov.sg/open).&nbsp;
               <Link
-                LinkComponent={LinkComponent}
                 href="https://www.gov.sg/trusted-sites#govsites"
                 className="inline-flex items-center text-link underline underline-offset-4 outline-none visited:text-link-visited hover:text-link-hover"
                 isExternal
@@ -134,12 +131,12 @@ const RestrictedContent = ({
   )
 }
 
-export const Masthead = ({ isStaging, LinkComponent }: MastheadProps) => {
+export const Masthead = ({ isStaging }: MastheadProps) => {
   return (
     <div className="bg-base-canvas-backdrop">
       <details className="group">
         <MastheadSummary isStaging={isStaging} />
-        <RestrictedContent LinkComponent={LinkComponent} />
+        <RestrictedContent />
       </details>
     </div>
   )

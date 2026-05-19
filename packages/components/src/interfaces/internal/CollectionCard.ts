@@ -3,7 +3,6 @@ import type {
   ArticlePagePageProps,
   FormattedDate,
   IsomerSiteProps,
-  LinkComponentType,
 } from "~/types"
 
 interface FileDetails {
@@ -22,7 +21,6 @@ interface BaseCardProps {
   description: string
   image?: Pick<ImageProps, "src" | "alt">
   isContainNeeded?: boolean
-  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
 

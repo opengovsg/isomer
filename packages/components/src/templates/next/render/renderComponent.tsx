@@ -2,7 +2,6 @@ import type {
   IsomerComponent,
   IsomerPageLayoutType,
   IsomerSiteProps,
-  LinkComponentType,
 } from "~/types"
 
 import { Accordion } from "../components/complex/Accordion"
@@ -36,7 +35,6 @@ interface RenderComponentProps {
   component: IsomerComponent
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
   shouldLazyLoad?: boolean
   permalink: string
 }

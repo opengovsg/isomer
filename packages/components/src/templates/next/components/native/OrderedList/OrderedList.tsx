@@ -17,7 +17,6 @@ export const OrderedList = ({
   attrs,
   content,
   level,
-  LinkComponent,
   site,
 }: OrderedListProps) => {
   return (
@@ -26,13 +25,7 @@ export const OrderedList = ({
       start={attrs?.start}
     >
       {content.map((item, index) => (
-        <ListItem
-          key={index}
-          {...item}
-          level={level}
-          LinkComponent={LinkComponent}
-          site={site}
-        />
+        <ListItem key={index} {...item} level={level} site={site} />
       ))}
     </ol>
   )

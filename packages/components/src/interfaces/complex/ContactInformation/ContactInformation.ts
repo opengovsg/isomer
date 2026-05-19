@@ -1,11 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import type { Except, SimplifyDeep } from "type-fest"
 import type { DgsApiDatasetSearchResponseSuccess } from "~/hooks/useDgsData/types"
-import type {
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
+import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
@@ -142,7 +138,6 @@ export const ContactInformationSchema = Type.Intersect([
 
 interface AdditionalContactInformationTypeProps {
   layout: IsomerPageLayoutType
-  LinkComponent?: LinkComponentType
 }
 
 type BaseContactInformationType = SimplifyDeep<

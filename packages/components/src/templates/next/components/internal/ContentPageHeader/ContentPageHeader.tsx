@@ -55,7 +55,6 @@ export const ContentPageHeader = ({
   site,
   image,
   showThumbnail,
-  LinkComponent,
   colorScheme = "default",
 }: ContentPageHeaderProps) => {
   const hasImage = !!image?.src
@@ -70,11 +69,7 @@ export const ContentPageHeader = ({
               hasImage: showThumbnail && hasImage,
             })}
           >
-            <Breadcrumb
-              colorScheme={colorScheme}
-              links={breadcrumb.links}
-              LinkComponent={LinkComponent}
-            />
+            <Breadcrumb colorScheme={colorScheme} links={breadcrumb.links} />
             <div className="mt-8 md:mt-6">
               <h1 className={styles.title()}>{title}</h1>
               <p className={styles.summary()}>{summary}</p>
@@ -87,7 +82,6 @@ export const ContentPageHeader = ({
                     site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
-                  LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
                   colorScheme={colorScheme}
                 >

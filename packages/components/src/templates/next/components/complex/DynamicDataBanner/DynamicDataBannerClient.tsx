@@ -53,10 +53,9 @@ const DynamicDataBannerUI = ({
   url,
   label,
   errorMessageBaseParagraph,
-  LinkComponent,
 }: Pick<
   DynamicDataBannerClientProps,
-  "title" | "label" | "url" | "LinkComponent" | "errorMessageBaseParagraph"
+  "title" | "label" | "url" | "errorMessageBaseParagraph"
 > & {
   data: { label: string; value?: string }[]
 }) => {
@@ -67,11 +66,7 @@ const DynamicDataBannerUI = ({
     className?: string
   }): React.ReactNode => {
     return (
-      <Link
-        LinkComponent={LinkComponent}
-        href={url}
-        className={twMerge(compoundStyles.url(), className)}
-      >
+      <Link href={url} className={twMerge(compoundStyles.url(), className)}>
         {label}
       </Link>
     )
@@ -135,7 +130,6 @@ export const DynamicDataBannerClient = ({
   url,
   label,
   errorMessageBaseParagraph,
-  LinkComponent,
 }: DynamicDataBannerClientProps) => {
   const [isLoading, setLoading] = useState(true)
   const [isError, setError] = useState(false)
@@ -187,7 +181,6 @@ export const DynamicDataBannerClient = ({
       }))}
       url={url}
       label={label}
-      LinkComponent={LinkComponent}
     />
   )
 }

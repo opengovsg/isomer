@@ -1,9 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type {
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
+import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Omit, Type } from "@sinclair/typebox"
 
 import { DgsDataSourceFieldsSchema } from "../integration"
@@ -29,5 +25,4 @@ export type DynamicComponentListProps = Static<
 > & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
 }
