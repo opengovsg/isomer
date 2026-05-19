@@ -1408,6 +1408,23 @@ export const Default: Story = {
         imageAlt: "This is the alt text",
       },
       {
+        type: "relatedlinks",
+        links: [
+          {
+            title: "Find out more about application requirements",
+            url: "/requirements",
+          },
+          {
+            title: "Read the detailed guide for applicants",
+            url: "/guide-for-applicants",
+          },
+          {
+            title: "Frequently asked questions",
+            url: "/faq",
+          },
+        ],
+      },
+      {
         type: "imagegallery",
         images: [
           {

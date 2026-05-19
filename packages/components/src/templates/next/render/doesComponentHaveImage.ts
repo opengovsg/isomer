@@ -19,6 +19,7 @@ export const doesComponentHaveImage = ({
     case "antiscambanner":
     case "contactinformation":
     case "dynamiccomponentlist": // The content are fetched, so they eager load has no impact
+    case "relatedlinks":
       return false
     case "image":
     case "infopic":
