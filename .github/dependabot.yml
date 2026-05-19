@@ -83,7 +83,8 @@ updates:
           - "@jsonforms/react"
     ignore:
       # Currently dependabot doesn't support ignoring by group so we have to ignore each dependency individually
-      # Ignore major version updates for react, trpc as they rely on React 19
+      # Ignore major version updates for react — we cannot upgrade to React 19 yet because some dependencies
+      # like @chakra-ui/react v2 (from the OGP design system) don't support React 19
       ### React 19
       - dependency-name: "react"
         update-types: ["version-update:semver-major"]
@@ -92,15 +93,6 @@ updates:
       - dependency-name: "@types/react"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@types/react-dom"
-        update-types: ["version-update:semver-major"]
-      ### TRPC 11
-      - dependency-name: "@trpc/client"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@trpc/next"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@trpc/react-query"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@trpc/server"
         update-types: ["version-update:semver-major"]
       # Ignore major version updates for Prisma 6 due to installation issues
       ### Could not resolve @prisma/client despite the installation that we just tried.
