@@ -372,8 +372,8 @@ catalogs:
       specifier: ^11.14.0
       version: 11.14.0
     tiptap-text-direction:
-      specifier: ^0.3.1
-      version: 0.3.3
+      specifier: ^0.4.0
+      version: 0.4.0
     transliteration:
       specifier: ^2.6.1
       version: 2.6.1
@@ -960,7 +960,7 @@ importers:
         version: 2.2.6
       tiptap-text-direction:
         specifier: 'catalog:'
-        version: 0.3.3(@tiptap/core@2.27.2(@tiptap/pm@2.22.3))(@tiptap/pm@2.22.3)
+        version: 0.4.0(@tiptap/core@2.27.2(@tiptap/pm@2.22.3))(@tiptap/pm@2.22.3)
       transliteration:
         specifier: 'catalog:'
         version: 2.6.1
@@ -11022,8 +11022,8 @@ packages:
   tippy.js@6.3.7:
     resolution: {integrity: sha512-E1d3oP2emgJ9dRQZdf3Kkn0qJgI6ZLpyS5z6ZkY1DF3kaQaBsGZsndEpHwx+eC+tYM41HaSNvNtLx8tU57FzTQ==}
 
-  tiptap-text-direction@0.3.3:
-    resolution: {integrity: sha512-CnD0bmJiI/LlizURig9plc49Jyy1rg2rrNVnRyUfwJsy5T8tCKykoCzFT0jPOgbgnWd+/FxOr7vwVuHFDhT3Qg==}
+  tiptap-text-direction@0.4.0:
+    resolution: {integrity: sha512-Hm3s8CSdGqmTwF6/ypJ7K95OaIg24+3easuSyzGODDkANfLz1jWdpnlxnhpnKtQB/KL3pYLQipDdzJp09gyErg==}
     peerDependencies:
       '@tiptap/core': ^2.0.0 || ^3.0.0
       '@tiptap/pm': ^2.0.0 || ^3.0.0
@@ -22538,7 +22538,7 @@ snapshots:
     dependencies:
       '@popperjs/core': 2.11.8
 
-  tiptap-text-direction@0.3.3(@tiptap/core@2.27.2(@tiptap/pm@2.22.3))(@tiptap/pm@2.22.3):
+  tiptap-text-direction@0.4.0(@tiptap/core@2.27.2(@tiptap/pm@2.22.3))(@tiptap/pm@2.22.3):
     dependencies:
       '@tiptap/core': 2.27.2(@tiptap/pm@2.22.3)
       '@tiptap/pm': 2.22.3

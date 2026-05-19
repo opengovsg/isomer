@@ -147,7 +147,7 @@ catalog:
   tailwind-merge: ^2.4.0
   tailwind-variants: ^0.3.1
   tailwindcss-react-aria-components: ^1.1.4
-  tiptap-text-direction: ^0.3.1
+  tiptap-text-direction: ^0.4.0
   transliteration: ^2.6.1
   validator: ^13.15.35
   wretch: ^3.0.7
