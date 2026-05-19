@@ -111,9 +111,12 @@ updates:
         update-types: ["version-update:semver-major"]
       # @chakra-ui/react and @chakra-ui/cli v3 require a full Chakra UI v3 migration.
       # @chakra-ui/react v2 is pinned to the OGP design system version.
+      # chakra-react-select v6 requires Chakra UI v3 (imports Separator, Span, useChakraContext etc. not present in v2).
       - dependency-name: "@chakra-ui/react"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@chakra-ui/cli"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "chakra-react-select"
         update-types: ["version-update:semver-major"]
       # markdown-to-jsx is only used in the unmaintained classic template; skip all updates
       - dependency-name: "markdown-to-jsx"
