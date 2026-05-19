@@ -2,7 +2,7 @@
   "compilerOptions": {
     "types": ["node"],
     "noEmit": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strict": true,
