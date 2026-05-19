@@ -1357,7 +1357,8 @@ describe("collection.router", async () => {
         page.permalink,
         page.parentId,
       )
-      expect(expected).toMatchObject(actual)
+      expect(actual.draftBlobId).toEqual(expected.id)
+      expect(expected.content.content).toEqual([])
     })
 
     it("should update the collection link successfully", async () => {
