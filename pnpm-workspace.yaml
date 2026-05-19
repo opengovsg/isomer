@@ -175,7 +175,7 @@ catalogs:
   chakra:
     "@chakra-ui/anatomy": ^2.3.4
     "@chakra-ui/cli": ^2.5.8
-    "@chakra-ui/react": ^3.35.0
+    "@chakra-ui/react": ^2.10.5
     "@chakra-ui/styled-system": ^2.9.2
     "@chakra-ui/theme-tools": ^2.2.6
     "@chakra-ui/utils": ^2.2.2
