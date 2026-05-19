@@ -118,7 +118,9 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@prisma/client"
         update-types: ["version-update:semver-major"]
-      # @chakra-ui/cli v3 requires Chakra UI v3, but the project uses @chakra-ui/react v2.
-      # Upgrading the CLI without a full Chakra UI v3 migration would break the build:theme script.
+      # @chakra-ui/react and @chakra-ui/cli v3 require a full Chakra UI v3 migration.
+      # @chakra-ui/react v2 is pinned to the OGP design system version.
+      - dependency-name: "@chakra-ui/react"
+        update-types: ["version-update:semver-major"]
       - dependency-name: "@chakra-ui/cli"
         update-types: ["version-update:semver-major"]
