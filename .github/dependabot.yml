@@ -44,9 +44,10 @@ updates:
           - "react-dom"
           - "@types/react"
           - "@types/react-dom"
-      react-query:
+      tanstack-query:
         applies-to: version-updates
         patterns:
+          - "@tanstack/query-devtools"
           - "@tanstack/react-query"
           - "@tanstack/react-query-devtools"
       storybook:
@@ -100,11 +101,6 @@ updates:
       - dependency-name: "@trpc/react-query"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@trpc/server"
-        update-types: ["version-update:semver-major"]
-      ### Tanstack React Query 5
-      - dependency-name: "@tanstack/react-query"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@tanstack/react-query-devtools"
         update-types: ["version-update:semver-major"]
       ### Next 15
       - dependency-name: "next"
