@@ -1,10 +1,9 @@
 import type { RelatedLinksProps } from "~/interfaces"
 import { BiChevronRight } from "react-icons/bi"
+import { RELATED_LINKS_MAX_ITEMS } from "~/interfaces/complex/RelatedLinks"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
-
-const MAX_RELATED_LINKS = 7
 
 export const RelatedLinks = ({ heading = "Related links", links }: RelatedLinksProps) => {
   return (
@@ -15,8 +14,8 @@ export const RelatedLinks = ({ heading = "Related links", links }: RelatedLinksP
         </h2>
 
         <ul className="mt-3 flex flex-col gap-3">
-          {links.slice(0, MAX_RELATED_LINKS).map(({ title, url }, index) => (
-            <li key={`${title}-${index}`}>
+          {links.slice(0, RELATED_LINKS_MAX_ITEMS).map(({ title, url }, index) => (
+            <li key={index}>
               <Link
                 href={url}
                 isWithFocusVisibleHighlight

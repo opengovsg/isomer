@@ -2,6 +2,8 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
+export const RELATED_LINKS_MAX_ITEMS = 7
+
 const RelatedLinkSchema = Type.Object({
   title: Type.String({
     title: "Title",
@@ -26,8 +28,7 @@ export const RelatedLinksSchema = Type.Object(
     links: Type.Array(RelatedLinkSchema, {
       title: "Links",
       minItems: 1,
-      maxItems: 7,
-      default: [],
+      maxItems: RELATED_LINKS_MAX_ITEMS,
     }),
   },
   {
