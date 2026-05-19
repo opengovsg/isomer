@@ -1,7 +1,6 @@
 import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 
 import { AskgovWidget } from "../templates/next/components/internal/Askgov"
-import { ZendeskWidget } from "../templates/next/components/internal/Zendesk"
 import {
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
@@ -12,6 +11,7 @@ import {
   VicaStylesheet,
   VicaWidget,
 } from "../templates/next/components/internal/Vica"
+import { ZendeskWidget } from "../templates/next/components/internal/Zendesk"
 
 interface RenderApplicationScriptsProps {
   site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
