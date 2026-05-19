@@ -1,8 +1,9 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useEventListener, useScript, useTimeout } from "usehooks-ts"
 
 interface UseInteractionScriptLoaderOptions {
   src: string
+  id?: string
   timeout?: number
 }
 
@@ -12,6 +13,7 @@ interface UseInteractionScriptLoaderOptions {
 // Thus we use a custom loader hook to delay loading until after Wogaa has stopped measuring TBT.
 export const useInteractionScriptLoader = ({
   src,
+  id,
   timeout = 3000, // 3 seconds from manual testing
 }: UseInteractionScriptLoaderOptions) => {
   const documentRef = useRef<Document | null>(
@@ -31,5 +33,18 @@ export const useInteractionScriptLoader = ({
   // Load script after timeout if user doesn't interact
   useTimeout(triggerLoad, timeout)
 
-  useScript(shouldLoad ? src : null)
+  // When an id is required (e.g. Zendesk's ze-snippet), inject manually so the
+  // id attribute can be set — useScript from usehooks-ts does not support this.
+  useScript(id ? null : shouldLoad ? src : null)
+
+  useEffect(() => {
+    if (!id || !shouldLoad) return
+    if (document.getElementById(id)) return
+
+    const script = document.createElement("script")
+    script.src = src
+    script.async = true
+    script.id = id
+    document.body.appendChild(script)
+  }, [shouldLoad, src, id])
 }
