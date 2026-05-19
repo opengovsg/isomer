@@ -1241,7 +1241,7 @@ describe("page.router", async () => {
           to: 1,
           blocks: pageToReorder.blob.content.content,
         }),
-      ).rejects.toThrowError("Number must be greater than or equal to 0")
+      ).rejects.toThrowError("Too small: expected number to be >=0")
       await assertAuditLogRows()
     })
 
@@ -1285,7 +1285,7 @@ describe("page.router", async () => {
           to: -1,
           blocks: pageToReorder.blob.content.content,
         }),
-      ).rejects.toThrowError("Number must be greater than or equal to 0")
+      ).rejects.toThrowError("Too small: expected number to be >=0")
       await assertAuditLogRows()
     })
 

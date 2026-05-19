@@ -10,10 +10,7 @@ const linkStyle = tv({
   base: "w-fit text-link underline-offset-4 visited:text-link-visited hover:text-link-hover hover:underline",
 })
 
-export const TableOfContents = ({
-  items,
-  LinkComponent,
-}: TableOfContentsProps) => {
+export const TableOfContents = ({ items }: TableOfContentsProps) => {
   return (
     <nav
       aria-label="Table of Contents"
@@ -26,11 +23,7 @@ export const TableOfContents = ({
         {items.map(({ anchorLink, content }) => (
           <li className="flex flex-row items-start gap-2" key={anchorLink}>
             <BiMinus className="size-5 shrink-0 self-center fill-base-content-strong" />
-            <Link
-              href={anchorLink}
-              LinkComponent={LinkComponent}
-              className={linkStyle()}
-            >
+            <Link href={anchorLink} className={linkStyle()}>
               {content}
             </Link>
           </li>

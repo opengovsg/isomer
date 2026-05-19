@@ -94,7 +94,6 @@ export const Infobar = ({
   secondaryButtonUrl,
   layout,
   site,
-  LinkComponent,
 }: InfobarProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const hasPrimaryCTA = !!buttonLabel && !!buttonUrl
@@ -133,7 +132,6 @@ export const Infobar = ({
                   )}
                   size={simplifiedLayout === "homepage" ? "lg" : "base"}
                   colorScheme={buttonColorScheme}
-                  LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
                 >
                   {buttonLabel}
@@ -150,7 +148,6 @@ export const Infobar = ({
                   size={simplifiedLayout === "homepage" ? "lg" : "base"}
                   variant="outline"
                   colorScheme={buttonColorScheme}
-                  LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
                 >
                   {secondaryButtonLabel}

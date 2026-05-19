@@ -1,4 +1,4 @@
-import cuid2 from "@paralleldrive/cuid2"
+import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import {
   sendPublishAlertContentPublisherEmail,
@@ -36,7 +36,7 @@ export const upsertUser = async ({
   const newUser = await tx
     .insertInto("User")
     .values({
-      id: cuid2.createId(),
+      id: createId(),
       email,
       phone: "", // NOTE: The phone number is added in a later step by the user
       name: emailName,

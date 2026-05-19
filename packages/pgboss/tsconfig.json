@@ -2,7 +2,9 @@
   "compilerOptions": {
     "types": ["node", "vitest/globals"],
     "noEmit": true,
-    "moduleResolution": "node",
+    "declaration": true,
+    "rootDir": "src",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strict": true,

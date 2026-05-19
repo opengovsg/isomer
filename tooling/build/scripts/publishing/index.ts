@@ -147,6 +147,7 @@ async function main() {
             sortOrder: resource.content.page?.sortOrder,
             defaultSortBy: resource.content.page?.defaultSortBy,
             defaultSortDirection: resource.content.page?.defaultSortDirection,
+            showThumbnail: resource.content.page?.showThumbnail,
           },
         }
 

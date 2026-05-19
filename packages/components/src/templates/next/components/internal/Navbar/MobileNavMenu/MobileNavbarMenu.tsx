@@ -29,7 +29,6 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     {
       top,
       items,
-      LinkComponent,
       openNavItemIdx,
       setOpenNavItemIdx,
       onCloseMenu,
@@ -62,7 +61,6 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                   className="h-fit w-full justify-center"
                   isWithFocusVisibleHighlight
                   onClick={onCloseMenu}
-                  LinkComponent={LinkComponent}
                 >
                   {callToAction.label}
                 </LinkButton>
@@ -72,8 +70,6 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={`${item.name}-${index}`}
-                // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                LinkComponent={LinkComponent}
                 index={index}
                 isOpen={index === openNavItemIdx}
                 onClick={() =>
@@ -98,7 +94,6 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                   {utility.items.map((item, index) => (
                     <li key={`${item.name}-${index}`}>
                       <Link
-                        LinkComponent={LinkComponent}
                         className={focusVisibleHighlight({
                           className:
                             "prose-label-sm-medium py-1 text-base-content-subtle",

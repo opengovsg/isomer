@@ -13,7 +13,6 @@ export const ArticleLayout = ({
   page,
   layout,
   content,
-  LinkComponent,
 }: ArticlePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
@@ -32,12 +31,7 @@ export const ArticleLayout = ({
       : tags
 
   return (
-    <Skeleton
-      site={site}
-      page={page}
-      layout={layout}
-      LinkComponent={LinkComponent}
-    >
+    <Skeleton site={site} page={page} layout={layout}>
       <div className="mx-auto flex max-w-[47.8rem] flex-col gap-7 px-6 md:px-10">
         <ArticlePageHeader
           {...page.articlePageHeader}
@@ -45,7 +39,6 @@ export const ArticleLayout = ({
           category={page.category}
           title={page.title}
           date={page.date}
-          LinkComponent={LinkComponent}
           tags={resolvedTags}
         />
 
@@ -55,7 +48,6 @@ export const ArticleLayout = ({
               site,
               layout,
               content,
-              LinkComponent,
               permalink: page.permalink,
             })}
           </div>

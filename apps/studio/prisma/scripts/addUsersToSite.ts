@@ -1,4 +1,4 @@
-import cuid2 from "@paralleldrive/cuid2"
+import { createId } from "@paralleldrive/cuid2"
 import { db, RoleType } from "~/server/modules/database"
 
 interface User {
@@ -29,7 +29,7 @@ export const addUsersToSite = async ({
         const user = await tx
           .insertInto("User")
           .values({
-            id: cuid2.createId(),
+            id: createId(),
             ...props,
           })
           .onConflict((oc) =>

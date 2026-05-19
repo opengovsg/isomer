@@ -44,9 +44,10 @@ updates:
           - "react-dom"
           - "@types/react"
           - "@types/react-dom"
-      react-query:
+      tanstack-query:
         applies-to: version-updates
         patterns:
+          - "@tanstack/query-devtools"
           - "@tanstack/react-query"
           - "@tanstack/react-query-devtools"
       storybook:
@@ -82,7 +83,7 @@ updates:
           - "@jsonforms/react"
     ignore:
       # Currently dependabot doesn't support ignoring by group so we have to ignore each dependency individually
-      # Ignore major version updates for react, react-query, trpc, next as they rely on React 19
+      # Ignore major version updates for react, trpc as they rely on React 19
       ### React 19
       - dependency-name: "react"
         update-types: ["version-update:semver-major"]
@@ -101,16 +102,6 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@trpc/server"
         update-types: ["version-update:semver-major"]
-      ### Tanstack React Query 5
-      - dependency-name: "@tanstack/react-query"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@tanstack/react-query-devtools"
-        update-types: ["version-update:semver-major"]
-      ### Next 15
-      - dependency-name: "next"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@next/env"
-        update-types: ["version-update:semver-major"]
       # Ignore major version updates for Prisma 6 due to installation issues
       ### Could not resolve @prisma/client despite the installation that we just tried.
       ### Please try to install it by hand with `pnpm add @prisma/client` and rerun `pnpm exec prisma generate` 🙏.
@@ -118,3 +109,14 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@prisma/client"
         update-types: ["version-update:semver-major"]
+      # @chakra-ui/react and @chakra-ui/cli v3 require a full Chakra UI v3 migration.
+      # @chakra-ui/react v2 is pinned to the OGP design system version.
+      # chakra-react-select v6 requires Chakra UI v3 (imports Separator, Span, useChakraContext etc. not present in v2).
+      - dependency-name: "@chakra-ui/react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@chakra-ui/cli"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "chakra-react-select"
+        update-types: ["version-update:semver-major"]
+      # markdown-to-jsx is only used in the unmaintained classic template; skip all updates
+      - dependency-name: "markdown-to-jsx"

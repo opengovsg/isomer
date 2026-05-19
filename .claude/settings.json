@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm format:fix"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm lint",
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "pnpm typecheck",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
