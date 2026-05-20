@@ -90,7 +90,7 @@ catalog:
   "@types/jsdom": ^21.1.7
   "@types/lodash-es": ^4.17.12
   "@types/lunr": ^2.3.7
-  "@types/node": ^22.15.21
+  "@types/node": ^25.7.0
   "@types/papaparse": ^5.5.0
   "@types/pg": ^8.15.4
   "@types/request": ^2.48.12
