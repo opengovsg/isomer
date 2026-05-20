@@ -35,6 +35,14 @@ export const SpotifyShow: Story = {
   },
 }
 
+export const SpotifyPlaylist: Story = {
+  name: "Spotify playlist",
+  args: {
+    title: "NDP playlist",
+    url: "https://open.spotify.com/embed/playlist/1apUfsI3NR7LqzFOlGieBT",
+  },
+}
+
 export const ApplePodcastShow: Story = {
   name: "Apple Podcast show",
   args: {
