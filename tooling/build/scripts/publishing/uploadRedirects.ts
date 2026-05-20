@@ -7,7 +7,7 @@ const REDIRECTS_JSON = process.env.REDIRECTS_JSON
 const S3_BUCKET = process.env.S3_BUCKET_NAME
 const SITE_NAME = process.env.SITE_NAME
 const BUILD_NUMBER = process.env.CODEBUILD_BUILD_NUMBER
-const CONCURRENCY = Number(process.env.UPLOAD_CONCURRENCY) || 20
+const CONCURRENCY = 20
 
 interface Redirect {
   source: string
