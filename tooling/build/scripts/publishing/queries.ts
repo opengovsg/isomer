@@ -62,5 +62,5 @@ SELECT name, config, theme FROM public."Site" WHERE "id" = $1;
 `
 
 export const GET_REDIRECTS = `
-SELECT source, destination FROM public."Redirect" WHERE "siteId" = $1;
+SELECT source, destination FROM public."Redirect" WHERE "siteId" = $1 AND "deletedAt" IS NULL;
 `
