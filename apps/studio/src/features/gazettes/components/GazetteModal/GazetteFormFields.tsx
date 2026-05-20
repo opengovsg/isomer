@@ -21,6 +21,7 @@ import { TimeSelect } from "~/components/Select/TimeSelect"
 import type { GazettesCategory } from "../../types"
 import { GAZETTE_CATEGORIES } from "../../constants"
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
+import { toFileId } from "../../utils/toFileId"
 
 type GazetteFormData = CreateGazetteInput
 
@@ -187,15 +188,7 @@ export const GazetteFormFields = ({
             setFile(newFile)
             onFileChange?.(newFile)
             if (newFile) {
-              // Sanitize filename to match fileId regex: ^[_\-a-zA-Z0-9]+\.pdf$
-              // 1. Remove .pdf extension (we'll add it back)
-              // 2. Replace spaces with hyphens
-              // 3. Strip any characters not in [_\-a-zA-Z0-9]
-              const baseName = newFile.name.replace(/\.pdf$/i, "")
-              const sanitized =
-                baseName.replace(/\s+/g, "-").replace(/[^_\-a-zA-Z0-9]/g, "") ||
-                "file"
-              setValue("fileId", `${sanitized}.pdf`, {
+              setValue("fileId", toFileId(newFile.name), {
                 shouldValidate: true,
                 shouldDirty: true,
               })
