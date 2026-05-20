@@ -1,5 +1,7 @@
+import type { Kysely, Transaction } from "kysely"
 import { TRPCError } from "@trpc/server"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
+import { type DB } from "~prisma/generated/generatedTypes"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { db, ResourceType, sql } from "../database"
@@ -45,17 +47,19 @@ export const assertGazetteAccess = async (userId: string): Promise<void> => {
  * Used to detect duplicate file IDs before create/update.
  */
 export const findCollectionLinkWithFilename = async ({
+  trx = db,
   siteId,
   parentId,
   filename,
   excludeId,
 }: {
+  trx?: Kysely<DB> | Transaction<DB>
   siteId: number
   parentId: string | null
   filename: string
   excludeId?: string
 }) => {
-  let query = db
+  let query = trx
     .selectFrom("Resource")
     .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
     .leftJoin("Version", "Resource.publishedVersionId", "Version.id")

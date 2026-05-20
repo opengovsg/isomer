@@ -218,6 +218,7 @@ export const gazetteRouter = router({
           const filename = ref.split("/").pop()
           if (filename) {
             const duplicate = await findCollectionLinkWithFilename({
+              trx: tx,
               siteId,
               parentId: String(collectionId),
               filename,
@@ -373,30 +374,20 @@ export const gazetteRouter = router({
 
         // Resolve the final ref. Preference order:
         //   1. newRef (a fresh upload) — caller has already PUT to S3
-        //   2. desiredFileName + existing ref → S3 copy after duplicate check
+        //   2. desiredFileName + existing ref → S3 copy
         //   3. unchanged
-        // The duplicate check runs BEFORE any S3 copy to avoid orphaning
-        // objects if the check fails.
+        // For the rename case we pre-check for a duplicate file ID BEFORE the
+        // S3 copy so a conflict never orphans a freshly copied object; the
+        // authoritative atomic check still runs inside the transaction below.
+        // Soft-delete of the old key happens AFTER DB commit so a tx rollback
+        // never strands the resource pointing at a tombstoned key.
         const oldFilename = existingRef.split("/").pop()
 
-        // Determine the target filename for duplicate checking before S3 ops
         let newFilename: string | undefined
-        if (newRef) {
-          newFilename = newRef.split("/").pop()
-        } else if (
-          desiredFileName &&
-          existingRef &&
-          desiredFileName !== oldFilename
-        ) {
-          newFilename = desiredFileName
-        }
-
-        // Now perform S3 operations after duplicate check passes.
-        // Soft-delete of old key happens AFTER DB commit so a tx rollback
-        // never strands the resource pointing at a tombstoned key.
         let finalRef = existingRef
         let oldRefToCleanUp: string | null = null
         if (newRef) {
+          newFilename = newRef.split("/").pop()
           finalRef = newRef
           if (existingRef) oldRefToCleanUp = existingRef.replace(/^\//, "")
         } else if (
@@ -404,6 +395,21 @@ export const gazetteRouter = router({
           existingRef &&
           desiredFileName !== oldFilename
         ) {
+          newFilename = desiredFileName
+
+          const duplicate = await findCollectionLinkWithFilename({
+            siteId,
+            parentId: existingResource.parentId,
+            filename: newFilename,
+            excludeId: String(gazetteId),
+          })
+          if (duplicate) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A gazette with the same file ID already exists",
+            })
+          }
+
           const sourceKey = existingRef.replace(/^\//, "")
           const newKey = await copyFileWithNewName({
             sourceKey,
@@ -424,9 +430,10 @@ export const gazetteRouter = router({
         const { resource: updatedResource, scheduledAtChanged } = await db
           .transaction()
           .execute(async (tx) => {
-            // Check for duplicate file ID if filename is changing
+            // Authoritative duplicate check inside the tx for atomicity.
             if (newFilename && newFilename !== oldFilename) {
               const duplicate = await findCollectionLinkWithFilename({
+                trx: tx,
                 siteId,
                 parentId: existingResource.parentId,
                 filename: newFilename,
