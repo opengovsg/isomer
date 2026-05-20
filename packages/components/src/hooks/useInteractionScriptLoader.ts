@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { useEventListener, useScript, useTimeout } from "usehooks-ts"
 
 interface UseInteractionScriptLoaderOptions {
@@ -33,18 +33,5 @@ export const useInteractionScriptLoader = ({
   // Load script after timeout if user doesn't interact
   useTimeout(triggerLoad, timeout)
 
-  // When an id is required (e.g. Zendesk's ze-snippet), inject manually so the
-  // id attribute can be set — useScript from usehooks-ts does not support this.
-  useScript(id ? null : shouldLoad ? src : null)
-
-  useEffect(() => {
-    if (!id || !shouldLoad) return
-    if (document.getElementById(id)) return
-
-    const script = document.createElement("script")
-    script.src = src
-    script.async = true
-    script.id = id
-    document.body.appendChild(script)
-  }, [shouldLoad, src, id])
+  useScript(shouldLoad ? src : null, { id })
 }
