@@ -1,0 +1,22 @@
+{
+  "name": "@isomer/egazette-search-migration",
+  "type": "module",
+  "scripts": {
+    "export": "dotenv -- pnpm exec tsx ./index.ts export",
+    "ingest": "dotenv -- pnpm exec tsx ./index.ts ingest",
+    "verify": "dotenv -- pnpm exec tsx ./index.ts verify"
+  },
+  "dependencies": {
+    "axios": "catalog:",
+    "commander": "catalog:",
+    "dotenv-cli": "catalog:",
+    "exponential-backoff": "catalog:",
+    "tsx": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "extends": "@isomer/tsconfig/base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts"],
+  "exclude": ["node_modules", "data"]
+}

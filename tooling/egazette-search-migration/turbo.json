@@ -1,0 +1,9 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "export": { "cache": false, "persistent": true },
+    "ingest": { "cache": false, "persistent": true },
+    "verify": { "cache": false }
+  }
+}
