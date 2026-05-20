@@ -1,8 +1,8 @@
 import type { Kysely, Transaction } from "kysely"
 import { TRPCError } from "@trpc/server"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
-import { type DB } from "~prisma/generated/generatedTypes"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+import { type DB } from "~prisma/generated/generatedTypes"
 
 import { db, ResourceType, sql } from "../database"
 import { isActiveIsomerAdmin } from "../permissions/permissions.service"
