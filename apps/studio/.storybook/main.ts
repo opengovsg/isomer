@@ -1,3 +1,4 @@
+import webpack from "webpack"
 import type { StorybookConfig } from "@storybook/nextjs"
 
 const config: StorybookConfig = {
@@ -55,27 +56,16 @@ const config: StorybookConfig = {
       }
     }
 
-    // Webpack 5 doesn't handle the node: URI scheme used by some packages.
-    // Map node:-prefixed builtins to their unprefixed equivalents so webpack
-    // can resolve them via its existing node polyfill / externals handling.
-    config.resolve = config.resolve ?? {}
-    config.resolve.alias = {
-      ...(config.resolve.alias as Record<string, string>),
-      "node:assert": "assert",
-      "node:buffer": "buffer",
-      "node:crypto": "crypto",
-      "node:events": "events",
-      "node:fs": "fs",
-      "node:http": "http",
-      "node:https": "https",
-      "node:os": "os",
-      "node:path": "path",
-      "node:querystring": "querystring",
-      "node:stream": "stream",
-      "node:url": "url",
-      "node:util": "util",
-      "node:zlib": "zlib",
-    }
+    // Webpack 5 throws UnhandledSchemeError for node:-prefixed imports (e.g.
+    // node:path) because scheme detection happens before alias resolution.
+    // NormalModuleReplacementPlugin intercepts the request before the resolver
+    // runs and strips the prefix so webpack sees a plain built-in module name.
+    config.plugins = config.plugins ?? []
+    config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
+        resource.request = resource.request.replace(/^node:/, "")
+      }),
+    )
 
     return config
   },
