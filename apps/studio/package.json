@@ -108,7 +108,7 @@
     "@tiptap/extension-text": "^2.22.3",
     "@tiptap/extension-underline": "^2.22.3",
     "@tiptap/pm": "2.22.3",
-    "@tiptap/react": "2.22.3",
+    "@tiptap/react": "^2.22.3",
     "@trpc/client": "^11.4.4",
     "@trpc/next": "^11.4.4",
     "@trpc/react-query": "^11.4.4",
