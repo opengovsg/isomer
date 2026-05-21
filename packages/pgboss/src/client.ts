@@ -1,5 +1,5 @@
 import type { Job, ScheduleOptions } from "pg-boss"
-import type { pino } from "pino"
+import type { BaseLogger } from "pino"
 import { PgBoss } from "pg-boss"
 
 import { env } from "./env"
@@ -13,26 +13,22 @@ export interface GlobalWithPgBoss {
 /* Singleton pattern using global for dev hot reload */
 const globalForPgboss = global as unknown as GlobalWithPgBoss
 
-const createPgbossClient = async (
-  logger: pino.Logger<string>,
-): Promise<PgBoss> => {
+const createPgbossClient = async (logger: BaseLogger): Promise<PgBoss> => {
   const boss = new PgBoss({ connectionString: env.DATABASE_URL })
-  boss.on("error", (err) => logger.error("Pgboss client error", err))
+  boss.on("error", (err) => logger.error(err, "Pgboss client error"))
   await boss.start()
   logger.info("PgBoss client started")
   return boss
 }
 
-const getPgbossClient = async (
-  logger: pino.Logger<string>,
-): Promise<PgBoss> => {
+const getPgbossClient = async (logger: BaseLogger): Promise<PgBoss> => {
   const boss = globalForPgboss.pgBoss ?? (await createPgbossClient(logger))
   globalForPgboss.pgBoss = boss
   return boss
 }
 
 export const registerPgbossJob = async (
-  logger: pino.Logger<string>,
+  logger: BaseLogger,
   jobName: string,
   cronExpression: string,
   handler: (job: Job) => Promise<void>,
@@ -61,7 +57,7 @@ export const registerPgbossJob = async (
       if (heartbeatOptions)
         await sendHeartbeat(logger, job.id, heartbeatOptions)
     } catch (error) {
-      logger.error(`Error processing job ${job.id}:`, error)
+      logger.error(error, `Error processing job ${job.id}:`)
       throw error
     }
   })
@@ -82,15 +78,13 @@ export const registerPgbossJob = async (
   return { stop: () => boss.offWork(jobName) }
 }
 
-export const stopAllPgbossJobs = async (
-  logger: pino.Logger<string>,
-): Promise<void> => {
+export const stopAllPgbossJobs = async (logger: BaseLogger): Promise<void> => {
   const boss = await getPgbossClient(logger)
   try {
     await boss.stop({ graceful: true })
     logger.info("PgBoss client stopped")
   } catch (error) {
-    logger.error("Error stopping PgBoss client:", error)
+    logger.error(error, "Error stopping PgBoss client:")
     throw error
   } finally {
     globalForPgboss.pgBoss = undefined

@@ -67,7 +67,6 @@ export const NavbarClient = ({
   imageClientProps,
   callToAction,
   utility,
-  LinkComponent,
 }: NavbarClientProps) => {
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
@@ -126,11 +125,7 @@ export const NavbarClient = ({
       <div className={navbarStyles.navbarContainer()} ref={siteHeaderRef}>
         <div className={navbarStyles.navbarItems()}>
           {/* Logo */}
-          <Link
-            LinkComponent={LinkComponent}
-            className={navbarStyles.logo()}
-            href="/"
-          >
+          <Link className={navbarStyles.logo()} href="/">
             <ImageClient {...imageClientProps} />
           </Link>
 
@@ -146,7 +141,6 @@ export const NavbarClient = ({
                   {utility.items.map((item, index) => (
                     <li key={`${item.name}-${index}`}>
                       <Link
-                        LinkComponent={LinkComponent}
                         className={navbarStyles.utilityItem()}
                         href={item.url}
                         isExternal={isExternalUrl(item.url)}
@@ -179,8 +173,6 @@ export const NavbarClient = ({
                       )
                     }}
                     isOpen={openNavItemIdx === index && !isHamburgerOpen}
-                    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    LinkComponent={LinkComponent}
                   />
                 ))}
               </ul>
@@ -193,7 +185,6 @@ export const NavbarClient = ({
                   size="sm"
                   className={navbarStyles.callToAction()}
                   isWithFocusVisibleHighlight
-                  LinkComponent={LinkComponent}
                 >
                   {callToAction.label}
                 </LinkButton>
@@ -272,8 +263,6 @@ export const NavbarClient = ({
           setOpenNavItemIdx={setOpenNavItemIdx}
           callToAction={callToAction}
           utility={utility}
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          LinkComponent={LinkComponent}
           onCloseMenu={onCloseMenu}
         />
       )}

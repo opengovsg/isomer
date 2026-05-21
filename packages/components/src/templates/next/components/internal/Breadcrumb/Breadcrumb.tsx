@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react"
+import type { ComponentPropsWithoutRef, ReactNode } from "react"
 import type { BreadcrumbProps, LinkProps } from "~/interfaces"
 import { BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
@@ -55,12 +55,10 @@ function BaseBreadcrumbs({
 }
 
 type BaseBreadcrumbProps = LinkProps & {
-  LinkComponent?: ElementType
   colorScheme?: "default" | "inverse"
 }
 
 function BaseBreadcrumb({
-  LinkComponent,
   colorScheme,
   children,
   label,
@@ -79,7 +77,6 @@ function BaseBreadcrumb({
         label={label}
         className={mergedLinkClassName}
         isWithFocusVisibleHighlight
-        LinkComponent={LinkComponent}
       >
         {children}
       </Link>
@@ -90,7 +87,6 @@ function BaseBreadcrumb({
 
 export const Breadcrumb = ({
   links,
-  LinkComponent,
   colorScheme = "default",
 }: BreadcrumbProps) => {
   return (
@@ -98,7 +94,6 @@ export const Breadcrumb = ({
       {links.map(({ title, url }, index) => (
         <BaseBreadcrumb
           colorScheme={colorScheme}
-          LinkComponent={LinkComponent}
           key={index}
           current={index === links.length - 1 ? "page" : undefined}
           href={index === links.length - 1 ? undefined : url}

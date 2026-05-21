@@ -14,7 +14,6 @@ import {
 } from "@opengovsg/design-system-react"
 import { format, parse } from "date-fns"
 import { useState } from "react"
-import { v4 as uuidv4 } from "uuid"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { useZodForm } from "~/lib/form"
@@ -110,7 +109,7 @@ const CreateGazetteModalContent = ({
         siteId,
         collectionId,
         title: data.title,
-        permalink: uuidv4(),
+        permalink: crypto.randomUUID(),
         ref,
         category: data.category,
         date: format(data.publishDate, "dd/MM/yyyy"),

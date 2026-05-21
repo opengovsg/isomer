@@ -1,0 +1,6 @@
+{
+  "name": "@isomer/tooling-s3",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Ad-hoc S3 utilities; see remove/ for scripts"
+}

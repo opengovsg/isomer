@@ -4,7 +4,7 @@
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
 
-import cuid2 from "@paralleldrive/cuid2"
+import { createId } from "@paralleldrive/cuid2"
 
 import { db, RoleType } from "../src/server/modules/database"
 import { createSite } from "../src/server/modules/site/site.service"
@@ -19,7 +19,7 @@ async function main() {
       return await db
         .insertInto("User")
         .values({
-          id: cuid2.createId(),
+          id: createId(),
           email: `${email}@open.gov.sg`,
           name: "",
           phone: "",

@@ -15,8 +15,7 @@ import {
   setupIsomerAdmin,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { v4 as uuidv4 } from "uuid"
-import { describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -72,6 +71,7 @@ describe("gazette.router", async () => {
 
   describe("assertGazetteAccess (via gazette.list)", () => {
     it("rejects an ordinary site member with no Toppan email and no admin role", async () => {
+      // Arrange
       const user = await setupUser({
         userId: session.userId ?? undefined,
         email: "user@example.com",
@@ -83,6 +83,7 @@ describe("gazette.router", async () => {
         siteId: site.id,
       })
 
+      // Act & Assert
       await expect(
         caller.list({
           siteId: site.id,
@@ -99,6 +100,7 @@ describe("gazette.router", async () => {
     })
 
     it("allows an IsomerAdmin Core user even without a Toppan email", async () => {
+      // Arrange
       const user = await setupUser({
         userId: session.userId ?? undefined,
         email: "admin@example.com",
@@ -111,31 +113,40 @@ describe("gazette.router", async () => {
         siteId: site.id,
       })
 
+      // Act
       const result = await caller.list({
         siteId: site.id,
         collectionId: Number(collection.id),
         limit: 10,
         offset: 0,
       })
+
+      // Assert
       expect(result).toEqual([])
     })
 
     it("allows a Toppan-email user", async () => {
+      // Arrange
       const { site, collection } = await seedToppanWithCollection()
 
+      // Act
       const result = await caller.list({
         siteId: site.id,
         collectionId: Number(collection.id),
         limit: 10,
         offset: 0,
       })
+
+      // Assert
       expect(result).toEqual([])
     })
 
     it("rejects an unauthenticated caller before access is even evaluated", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act & Assert
       await expect(
         unauthedCaller.list({
           siteId: 1,
@@ -149,13 +160,15 @@ describe("gazette.router", async () => {
 
   describe("create", () => {
     it("creates a gazette resource + blob + audit entries in one transaction", async () => {
+      // Arrange
       const { site, collection, user } = await seedToppanWithCollection()
 
+      // Act
       const { gazetteId } = await caller.create({
         siteId: site.id,
         collectionId: Number(collection.id),
         title: "Notice 123",
-        permalink: uuidv4(),
+        permalink: crypto.randomUUID(),
         ref: "/1/abc/notice-123.pdf",
         category: "Government Gazette",
         date: "30/04/2026",
@@ -164,6 +177,7 @@ describe("gazette.router", async () => {
         scheduledAt: PAST_DATE,
       })
 
+      // Assert
       // Resource was inserted with the past scheduledAt straight from the
       // input — no future-only validation, no rewrite to null.
       const resource = await db
@@ -194,6 +208,7 @@ describe("gazette.router", async () => {
     })
 
     it("rejects a non-Toppan, non-admin caller before any DB writes", async () => {
+      // Arrange
       const user = await setupUser({
         userId: session.userId ?? undefined,
         email: "user@example.com",
@@ -205,12 +220,13 @@ describe("gazette.router", async () => {
         siteId: site.id,
       })
 
+      // Act & Assert
       await expect(
         caller.create({
           siteId: site.id,
           collectionId: Number(collection.id),
           title: "Notice 123",
-          permalink: uuidv4(),
+          permalink: crypto.randomUUID(),
           ref: "/1/abc/notice.pdf",
           category: "Government Gazette",
           date: "30/04/2026",
@@ -228,16 +244,55 @@ describe("gazette.router", async () => {
       // Only the collection itself exists — no link was created.
       expect(resources.map((r) => r.type)).toEqual([ResourceType.Collection])
     })
+
+    it("rejects creation when a gazette with the same file ID already exists", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Create first gazette with a specific filename
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/duplicate-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert: creating a second gazette with the same filename is rejected
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Second Notice",
+          permalink: crypto.randomUUID(),
+          ref: "/sites/1/gazettes/uuid2/duplicate-file.pdf", // Same filename
+          category: "Government Gazette",
+          date: "30/04/2026",
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same file ID already exists",
+        }),
+      )
+    })
   })
 
   describe("update", () => {
     it("rewrites the blob metadata and the resource title", async () => {
+      // Arrange
       const { site, collection, user } = await seedToppanWithCollection()
       const { gazetteId } = await caller.create({
         siteId: site.id,
         collectionId: Number(collection.id),
         title: "Original",
-        permalink: uuidv4(),
+        permalink: crypto.randomUUID(),
         ref: "/1/abc/notice.pdf",
         category: "Government Gazette",
         date: "30/04/2026",
@@ -246,6 +301,7 @@ describe("gazette.router", async () => {
         scheduledAt: PAST_DATE,
       })
 
+      // Act
       await caller.update({
         siteId: site.id,
         gazetteId: Number(gazetteId),
@@ -258,6 +314,7 @@ describe("gazette.router", async () => {
         scheduledAt: PAST_DATE,
       })
 
+      // Assert
       const resource = await db
         .selectFrom("Resource")
         .where("id", "=", String(gazetteId))
@@ -288,6 +345,7 @@ describe("gazette.router", async () => {
     })
 
     it("accepts a past scheduledAt on update (mirrors create's contract)", async () => {
+      // Arrange
       const { site, collection } = await seedToppanWithCollection()
       const futureScheduledAt = new Date(FIXED_NOW.getTime() + 60 * 60 * 1000)
 
@@ -304,6 +362,7 @@ describe("gazette.router", async () => {
         .set({ scheduledAt: futureScheduledAt })
         .execute()
 
+      // Act
       await caller.update({
         siteId: site.id,
         gazetteId: Number(collectionLink.id),
@@ -314,12 +373,63 @@ describe("gazette.router", async () => {
         scheduledAt: PAST_DATE,
       })
 
+      // Assert
       const after = await db
         .selectFrom("Resource")
         .where("id", "=", collectionLink.id)
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(after.scheduledAt).toEqual(PAST_DATE)
+    })
+
+    it("rejects update when changing to a file ID that already exists", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Create first gazette
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/existing-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Create second gazette with a different filename
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Second Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid2/different-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert: updating to a filename already used by another gazette is rejected
+      await expect(
+        caller.update({
+          siteId: site.id,
+          gazetteId: Number(gazetteId),
+          title: "Second Notice",
+          newRef: "/sites/1/gazettes/uuid3/existing-file.pdf", // Same filename as first
+          category: "Government Gazette",
+          date: "30/04/2026",
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same file ID already exists",
+        }),
+      )
     })
   })
 })

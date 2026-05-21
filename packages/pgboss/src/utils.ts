@@ -1,4 +1,4 @@
-import type { pino } from "pino"
+import type { BaseLogger } from "pino"
 
 export interface HeartbeatOptions {
   maxRetries?: number
@@ -13,7 +13,7 @@ export interface HeartbeatOptions {
  * @param options Configuration options for the heartbeat
  */
 export const sendHeartbeat = async (
-  logger: pino.Logger<string>,
+  logger: BaseLogger,
   jobId: string,
   { maxRetries = 3, delayMs = 1000, heartbeatURL }: HeartbeatOptions,
 ) => {

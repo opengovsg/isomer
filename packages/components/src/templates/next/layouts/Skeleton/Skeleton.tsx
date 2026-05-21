@@ -12,10 +12,9 @@ import { SKIP_TO_CONTENT_ANCHOR_ID } from "../../constants"
 export const Skeleton = ({
   site,
   layout,
-  LinkComponent,
   children,
 }: React.PropsWithChildren<
-  Pick<IsomerPageSchemaType, "site" | "page" | "layout" | "LinkComponent">
+  Pick<IsomerPageSchemaType, "site" | "page" | "layout">
 >) => {
   const isStaging = site.environment === "staging"
 
@@ -24,16 +23,12 @@ export const Skeleton = ({
       <ScrollToTop />
 
       <header>
-        <SkipToContent LinkComponent={LinkComponent} />
+        <SkipToContent />
 
         {site.isGovernment && <Masthead isStaging={isStaging} />}
 
         {site.notification?.title && (
-          <Notification
-            {...site.notification}
-            LinkComponent={LinkComponent}
-            site={site}
-          />
+          <Notification {...site.notification} site={site} />
         )}
 
         <UnsupportedBrowserBanner />
@@ -45,7 +40,6 @@ export const Skeleton = ({
           search={site.search}
           {...site.navbar}
           site={site}
-          LinkComponent={LinkComponent}
         />
       </header>
 
@@ -63,7 +57,6 @@ export const Skeleton = ({
         agencyName={site.agencyName || site.siteName}
         lastUpdated={site.lastUpdated}
         site={site}
-        LinkComponent={LinkComponent}
         {...site.footerItems}
       />
     </>

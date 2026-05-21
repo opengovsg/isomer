@@ -6,15 +6,17 @@
     "isomer-admin": "dotenv -e isomer-admin/.env -- tsx isomer-admin/index.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-codebuild": "^3.835.0",
-    "@inquirer/prompts": "^7.6.0",
-    "@paralleldrive/cuid2": "^2.2.2",
-    "ajv": "^8.17.1",
-    "dotenv": "^16.4.5",
-    "pg": "^8.16.2"
+    "@aws-sdk/client-codebuild": "catalog:aws-sdk",
+    "@inquirer/prompts": "catalog:",
+    "@paralleldrive/cuid2": "catalog:",
+    "ajv": "catalog:",
+    "dotenv": "catalog:",
+    "dotenv-cli": "catalog:",
+    "pg": "catalog:",
+    "tsx": "catalog:"
   },
   "devDependencies": {
-    "@isomer/tsconfig": "*",
-    "@types/pg": "^8.15.4"
+    "@isomer/tsconfig": "workspace:*",
+    "@types/pg": "catalog:"
   }
 }

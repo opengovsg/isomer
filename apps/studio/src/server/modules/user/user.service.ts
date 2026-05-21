@@ -1,6 +1,6 @@
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
-import cuid2 from "@paralleldrive/cuid2"
+import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import isEmail from "validator/lib/isEmail"
 import { isGovEmail } from "~/utils/email"
@@ -85,7 +85,7 @@ export const createUserWithPermission = async ({
     const user = await tx
       .insertInto("User")
       .values({
-        id: cuid2.createId(),
+        id: createId(),
         email,
         name: name || email.split("@")[0] || "",
         phone,

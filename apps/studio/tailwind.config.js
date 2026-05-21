@@ -4,8 +4,10 @@ import { NextPreset } from "@opengovsg/isomer-components"
 export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@opengovsg/isomer-components/**/*.{js,ts,jsx,tsx}",
-    "../../node_modules/@opengovsg/isomer-components/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@opengovsg/isomer-components/dist/**/*.{js,mjs,cjs}",
+    "./node_modules/@opengovsg/isomer-components/src/**/*.{js,ts,jsx,tsx}",
+    "../../node_modules/@opengovsg/isomer-components/dist/**/*.{js,mjs,cjs}",
+    "../../node_modules/@opengovsg/isomer-components/src/**/*.{js,ts,jsx,tsx}",
   ],
   presets: [
     //   // Note: This is here temporarily until we can figure out how to load the

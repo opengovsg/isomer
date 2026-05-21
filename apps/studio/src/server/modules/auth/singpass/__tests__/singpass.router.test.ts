@@ -35,7 +35,7 @@ describe("auth.singpass", () => {
   describe("login", () => {
     it("should throw if email verification has not been completed", async () => {
       // Act
-      const result = caller.login({ landingUrl: new URL("http://localhost") })
+      const result = caller.login({ landingUrl: "http://localhost" })
 
       // Assert
       await expect(result).rejects.toThrowError(
@@ -72,7 +72,7 @@ describe("auth.singpass", () => {
 
       // Act
       const result = await caller.login({
-        landingUrl: new URL("http://localhost"),
+        landingUrl: "http://localhost",
       })
 
       // Assert

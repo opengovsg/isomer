@@ -9,9 +9,9 @@
     "lint:fix": "oxlint --type-aware --fix ."
   },
   "dependencies": {
-    "globals": "^11.12.0"
+    "globals": "catalog:"
   },
   "devDependencies": {
-    "@isomer/oxlint-config": "*"
+    "@isomer/oxlint-config": "workspace:*"
   }
 }
