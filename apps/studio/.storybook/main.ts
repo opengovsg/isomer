@@ -54,18 +54,6 @@ const config: StorybookConfig = {
         delete config.resolve.alias[unalias]
       }
     }
-    // sass 1.99.0+ uses node: protocol imports which webpack 5 doesn't support natively
-    const alias = (config.resolve?.alias ?? {}) as Record<string, string>
-    const nodeBuiltins = [
-      "assert", "buffer", "child_process", "crypto", "events", "fs",
-      "http", "https", "module", "net", "os", "path", "process",
-      "querystring", "stream", "string_decoder", "tls", "url", "util",
-      "v8", "vm", "zlib",
-    ]
-    for (const mod of nodeBuiltins) {
-      alias[`node:${mod}`] = mod
-    }
-    config.resolve = { ...config.resolve, alias }
     return config
   },
 }
