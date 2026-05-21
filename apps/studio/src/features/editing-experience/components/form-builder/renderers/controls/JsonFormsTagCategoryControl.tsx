@@ -19,8 +19,7 @@ import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesErr
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
-  const { path, removeItems, addItem, data, arraySchema, schema, rootSchema } =
-    props
+  const { path, removeItems, addItem, data, arraySchema, rootSchema } = props
   const { core } = useJsonForms()
   const { errors } = useBuilderErrors()
   const page = core?.data as CollectionPagePageProps | undefined
