@@ -1,7 +1,7 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import { MenuButton, MenuList, Portal, Text } from "@chakra-ui/react"
-import { createDefaultValue, rankWith, schemaMatches } from "@jsonforms/core"
+import { rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
