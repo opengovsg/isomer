@@ -1,4 +1,5 @@
 import type { StorybookConfig } from "@storybook/nextjs"
+import webpack from "webpack"
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
@@ -54,6 +55,18 @@ const config: StorybookConfig = {
         delete config.resolve.alias[unalias]
       }
     }
+    // unplugin@2.x (used by @storybook/csf-plugin) uses node: scheme imports
+    // which webpack 5 can't read by default. NormalModuleReplacementPlugin rewrites
+    // them before webpack's scheme handler runs, unlike resolve.alias which is bypassed.
+    config.plugins = [
+      ...(config.plugins ?? []),
+      new webpack.NormalModuleReplacementPlugin(
+        /^node:/,
+        (resource: { request: string }) => {
+          resource.request = resource.request.replace(/^node:/, "")
+        },
+      ),
+    ]
     return config
   },
 }
