@@ -1,11 +1,11 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import { MenuButton, MenuList, Portal, Text } from "@chakra-ui/react"
-import { rankWith, schemaMatches } from "@jsonforms/core"
+import { createDefaultValue, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -19,7 +19,8 @@ import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesErr
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
-  const { path, removeItems, data, arraySchema } = props
+  const { path, removeItems, addItem, data, arraySchema, schema, rootSchema } =
+    props
   const { core } = useJsonForms()
   const { errors } = useBuilderErrors()
   const page = core?.data as CollectionPagePageProps | undefined
@@ -42,18 +43,25 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
 
+  // New filters default isRequired to true. Can't set this via JSON Schema default
+  // because Studio AJV runs with useDefaults, which would apply it to legacy rows too.
+  const addItemWithDefaults = useCallback(
+    (itemPath: string, value: unknown) =>
+      addItem(itemPath, {
+        ...(value as Record<string, unknown>),
+        isRequired: true,
+      }),
+    [addItem],
+  )
+
   return (
     <>
+      {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
       <JsonFormsArrayControlView
         {...props}
-        mapNewArrayItem={(item) => ({
-          ...(item as Record<string, unknown>),
-          // we set this to true by default for new filters
-          // we don't set this on JSON Schema because Studio AJV runs with useDefaults, which would apply the
-          // same default to legacy rows that omit this key.
-          isRequired: true,
-        })}
+        addItem={addItemWithDefaults}
         renderListItem={(rowProps) => {
+          const isDuplicate = duplicateFilterIndices.has(rowProps.index)
           const count =
             page?.tagCategories?.[rowProps.index]?.options?.length ?? 0
           const subtitle =
@@ -63,6 +71,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
           return (
             <DraggableTagButton
               {...rowProps}
+              isError={rowProps.isError || isDuplicate}
               listItemIcon={BiPurchaseTag}
               listItemContentProps={{ py: "0.5rem" }}
               listItemSubtitle={
@@ -113,19 +122,13 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                 </Menu>
               }
               listItemErrorCaption={
-                duplicateFilterIndices.has(rowProps.index)
+                isDuplicate
                   ? "A filter with this name already exists."
                   : undefined
               }
             />
           )
         }}
-        belowDescription={
-          hasDuplicateFilterNameError ? (
-            <DuplicateLabelError noun="filter" />
-          ) : undefined
-        }
-        getListItemHasError={(index) => duplicateFilterIndices.has(index)}
       />
       {deleteTarget && (
         <DeleteConfirmModal

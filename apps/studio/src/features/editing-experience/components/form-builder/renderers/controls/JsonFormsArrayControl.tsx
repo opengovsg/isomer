@@ -48,18 +48,6 @@ export const jsonFormsArrayControlTester: RankedTester = rankWith(
 export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   /** When the array is empty, replaces the default placeholder inside the empty-state container. */
   emptyState?: ReactNode
-  /**
-   * Extra row error state (e.g. array-level `uniqueItemPropertiesIgnoreCase` where AJV’s path
-   * is the array, not each item). Merged with `hasErrorAt` for the row.
-   */
-  getListItemHasError?: (index: number) => boolean
-  /** Rendered after the schema description and before the draggable list. */
-  belowDescription?: ReactNode
-  /**
-   * Applied to the value from `createDefaultValue` when adding an array item.
-   * Use when schema `default` would be wrong under AJV `useDefaults` (e.g. legacy rows).
-   */
-  mapNewArrayItem?: (item: unknown) => unknown
   /** Custom row renderer. Receives per-row draggable wiring and metadata; must render and forward the ref. */
   renderListItem?: (props: DraggableArrayItemRenderProps) => ReactNode
 }
@@ -182,9 +170,6 @@ export function JsonFormsArrayControlView({
   uischema,
   description,
   emptyState,
-  getListItemHasError,
-  belowDescription,
-  mapNewArrayItem,
   renderListItem,
 }: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
@@ -279,12 +264,7 @@ export function JsonFormsArrayControlView({
             {label}
           </Text>
           <Button
-            onClick={addItem(
-              path,
-              mapNewArrayItem
-                ? mapNewArrayItem(createDefaultValue(schema, rootSchema))
-                : createDefaultValue(schema, rootSchema),
-            )}
+            onClick={addItem(path, createDefaultValue(schema, rootSchema))}
             variant="clear"
             size="xs"
             leftIcon={<BiPlusCircle fontSize="1.25rem" />}
@@ -301,12 +281,8 @@ export function JsonFormsArrayControlView({
             {description}
           </Text>
         )}
-        {belowDescription}
       </VStack>
-      <Box
-        w="full"
-        mt={description || belowDescription ? "0.75rem" : "0.25rem"}
-      >
+      <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="blocks">
             {({ droppableProps, innerRef, placeholder }) => (
@@ -342,9 +318,7 @@ export function JsonFormsArrayControlView({
 
                 {[...Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, `${index}`)
-                  const hasError =
-                    hasErrorAt(childPath) ||
-                    (getListItemHasError?.(index) ?? false)
+                  const hasError = hasErrorAt(childPath)
 
                   return (
                     <Draggable

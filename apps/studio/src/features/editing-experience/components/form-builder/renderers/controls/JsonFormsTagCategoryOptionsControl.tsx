@@ -63,61 +63,60 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
 
   return (
     <>
+      {hasDuplicateOptionNameError && <DuplicateLabelError noun="option" />}
       <JsonFormsArrayControlView
         {...props}
-        renderListItem={(rowProps) => (
-          <DraggableTagButton
-            {...rowProps}
-            listItemContentProps={{ py: "0.5rem" }}
-            listItemTrailing={
-              <Menu isLazy>
-                <MenuButton
-                  as={IconButton}
-                  colorScheme="neutral"
-                  icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
-                  variant="clear"
-                  h="2.125rem"
-                  w="2.125rem"
-                  minH="2.125rem"
-                  minW="2.125rem"
-                  p="0.25rem"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  isDisabled={isRemoveItemDisabled}
-                  aria-label={`Option ${rowProps.index + 1} actions`}
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <Portal>
-                  <MenuList>
-                    <MenuItem
-                      colorScheme="critical"
-                      icon={<BiTrash fontSize="1rem" />}
-                      isDisabled={isRemoveItemDisabled}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        openDeleteModal(rowProps.index)
-                      }}
-                    >
-                      Delete option
-                    </MenuItem>
-                  </MenuList>
-                </Portal>
-              </Menu>
-            }
-            listItemErrorCaption={
-              duplicateOptionIndices.has(rowProps.index)
-                ? "An option with this name already exists."
-                : undefined
-            }
-          />
-        )}
-        belowDescription={
-          hasDuplicateOptionNameError ? (
-            <DuplicateLabelError noun="option" />
-          ) : undefined
-        }
-        getListItemHasError={(index) => duplicateOptionIndices.has(index)}
+        renderListItem={(rowProps) => {
+          const isDuplicate = duplicateOptionIndices.has(rowProps.index)
+          return (
+            <DraggableTagButton
+              {...rowProps}
+              isError={rowProps.isError || isDuplicate}
+              listItemContentProps={{ py: "0.5rem" }}
+              listItemTrailing={
+                <Menu isLazy>
+                  <MenuButton
+                    as={IconButton}
+                    colorScheme="neutral"
+                    icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
+                    variant="clear"
+                    h="2.125rem"
+                    w="2.125rem"
+                    minH="2.125rem"
+                    minW="2.125rem"
+                    p="0.25rem"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    isDisabled={isRemoveItemDisabled}
+                    aria-label={`Option ${rowProps.index + 1} actions`}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <Portal>
+                    <MenuList>
+                      <MenuItem
+                        colorScheme="critical"
+                        icon={<BiTrash fontSize="1rem" />}
+                        isDisabled={isRemoveItemDisabled}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openDeleteModal(rowProps.index)
+                        }}
+                      >
+                        Delete option
+                      </MenuItem>
+                    </MenuList>
+                  </Portal>
+                </Menu>
+              }
+              listItemErrorCaption={
+                isDuplicate
+                  ? "An option with this name already exists."
+                  : undefined
+              }
+            />
+          )
+        }}
         emptyState={
           <VStack spacing="0.25rem" align="center">
             <Text
