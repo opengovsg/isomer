@@ -1,4 +1,5 @@
 import type { StorybookConfig } from "@storybook/nextjs"
+import webpack from "webpack"
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
@@ -54,6 +55,13 @@ const config: StorybookConfig = {
         delete config.resolve.alias[unalias]
       }
     }
+    // sass 1.99.0+ uses node: protocol imports which webpack 5 doesn't handle by default
+    config.plugins = [
+      ...(config.plugins ?? []),
+      new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
+        resource.request = resource.request.replace(/^node:/, "")
+      }),
+    ]
     return config
   },
 }
