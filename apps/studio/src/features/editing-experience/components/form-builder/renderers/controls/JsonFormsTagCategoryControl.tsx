@@ -1,21 +1,12 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import {
-  MenuButton,
-  MenuList,
-  Portal,
-  Text,
-} from "@chakra-ui/react"
+import { MenuButton, MenuList, Portal, Text } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
 import { useMemo, useState } from "react"
-import {
-  BiDotsHorizontalRounded,
-  BiPurchaseTag,
-  BiTrash,
-} from "react-icons/bi"
+import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 

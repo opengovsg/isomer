@@ -1,11 +1,5 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
-import {
-  MenuButton,
-  MenuList,
-  Portal,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { MenuButton, MenuList, Portal, Text, VStack } from "@chakra-ui/react"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
