@@ -54,11 +54,10 @@ const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
   )
 }
 
-interface DraggableLinkButtonProps
-  extends Omit<
-    DraggableArrayItemRenderProps,
-    "selected" | "enabled" | "handleSelect" | "removeItem" | "translations"
-  > {
+interface DraggableLinkButtonProps extends Omit<
+  DraggableArrayItemRenderProps,
+  "selected" | "enabled" | "handleSelect" | "removeItem" | "translations"
+> {
   onDeleteItem: () => void
   resetLink: () => void
 }
