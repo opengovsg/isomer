@@ -35,9 +35,8 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
-import DraggableTagButton, {
-  type DraggableArrayItemRenderProps,
-} from "./DraggableTagButton"
+import type { DraggableArrayItemRenderProps } from "./types"
+import DraggableTagButton from "./DraggableTagButton"
 
 export type { DraggableArrayItemRenderProps }
 

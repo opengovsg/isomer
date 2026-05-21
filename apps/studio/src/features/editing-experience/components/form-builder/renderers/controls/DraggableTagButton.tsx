@@ -1,14 +1,8 @@
 import type { BoxProps } from "@chakra-ui/react"
-import type {
-  DraggableProvidedDraggableProps,
-  DraggableProvidedDragHandleProps,
-} from "@hello-pangea/dnd"
-import type {
-  OwnPropsOfMasterListItem,
-  StatePropsOfMasterItem,
-} from "@jsonforms/core"
-import type { ReactNode, Ref } from "react"
+import type { StatePropsOfMasterItem } from "@jsonforms/core"
+import type { ReactNode } from "react"
 import type { IconType } from "react-icons"
+import type { DraggableArrayItemRenderProps } from "./types"
 import {
   Box,
   Flex,
@@ -20,14 +14,6 @@ import {
 } from "@chakra-ui/react"
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
 import { BiGridVertical, BiInfoCircle } from "react-icons/bi"
-
-export type DraggableArrayItemRenderProps = OwnPropsOfMasterListItem & {
-  ref: Ref<HTMLDivElement>
-  draggableProps: DraggableProvidedDraggableProps
-  dragHandleProps: DraggableProvidedDragHandleProps | null
-  setSelectedIndex: (selectedIndex?: number) => void
-  isError: boolean
-}
 
 interface DraggableTagButtonProps extends DraggableArrayItemRenderProps {
   listItemIcon?: IconType

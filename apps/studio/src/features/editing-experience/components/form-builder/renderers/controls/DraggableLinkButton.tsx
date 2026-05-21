@@ -1,4 +1,4 @@
-import type { DraggableArrayItemRenderProps } from "./DraggableTagButton"
+import type { DraggableArrayItemRenderProps } from "./types"
 import {
   Box,
   Flex,
