@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
+import { NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import type { DividerProps } from "./Divider"
 import type { OrderedListProps } from "./OrderedList"
@@ -34,9 +35,9 @@ type TableCellProps = {
   attrs?: Static<typeof TableBaseCellSchema>
   content: (
     | DividerProps
-    | Omit<ParagraphProps, "LinkComponent" | "site">
-    | Omit<OrderedListProps, "LinkComponent" | "site">
-    | Omit<UnorderedListProps, "LinkComponent" | "site">
+    | Omit<ParagraphProps, "site">
+    | Omit<OrderedListProps, "site">
+    | Omit<UnorderedListProps, "site">
   )[]
 }
 
@@ -105,6 +106,10 @@ export const TableSchema = Type.Object(
       caption: Type.String({
         title: "Table caption",
         description: "The caption of the table",
+        pattern: NON_EMPTY_STRING_REGEX,
+        errorMessage: {
+          pattern: "cannot be empty or contain only spaces",
+        },
       }),
     }),
     content: Type.Array(
@@ -122,6 +127,5 @@ export const TableSchema = Type.Object(
 )
 
 export type TableProps = Static<typeof TableSchema> & {
-  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }

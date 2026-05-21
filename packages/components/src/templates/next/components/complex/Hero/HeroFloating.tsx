@@ -33,7 +33,6 @@ export const HeroFloating = ({
   secondaryButtonUrl,
   backgroundUrl,
   site,
-  LinkComponent,
   theme = "default",
 }: HeroFloatingProps) => {
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
@@ -84,7 +83,6 @@ export const HeroFloating = ({
                 size="lg"
                 variant="solid"
                 colorScheme={heroButton}
-                LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
               >
                 {buttonLabel}
@@ -99,7 +97,6 @@ export const HeroFloating = ({
                   variant="outline"
                   size="lg"
                   colorScheme={heroButton}
-                  LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
                 >
                   {secondaryButtonLabel}
