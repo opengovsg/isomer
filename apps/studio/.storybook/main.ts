@@ -1,5 +1,4 @@
 import type { StorybookConfig } from "@storybook/nextjs"
-import webpack from "webpack"
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
@@ -55,17 +54,40 @@ const config: StorybookConfig = {
         delete config.resolve.alias[unalias]
       }
     }
-    // unplugin@2.x (used by @storybook/csf-plugin) uses node: scheme imports
-    // which webpack 5 can't read by default. NormalModuleReplacementPlugin rewrites
-    // them before webpack's scheme handler runs, unlike resolve.alias which is bypassed.
+    // filenamify@6 (and other packages) use node: scheme imports which webpack 5
+    // can't handle by default. resolve.alias is bypassed for node: URIs — only
+    // hooking normalModuleFactory.beforeResolve rewrites them in time.
     config.plugins = [
       ...(config.plugins ?? []),
-      new webpack.NormalModuleReplacementPlugin(
-        /^node:/,
-        (resource: { request: string }) => {
-          resource.request = resource.request.replace(/^node:/, "")
+      {
+        apply(compiler: {
+          hooks: {
+            normalModuleFactory: {
+              tap: (
+                name: string,
+                fn: (nmf: {
+                  hooks: {
+                    beforeResolve: {
+                      tap: (
+                        name: string,
+                        fn: (data: { request: string }) => void,
+                      ) => void
+                    }
+                  }
+                }) => void,
+              ) => void
+            }
+          }
+        }) {
+          compiler.hooks.normalModuleFactory.tap("NodeSchemePlugin", (nmf) => {
+            nmf.hooks.beforeResolve.tap("NodeSchemePlugin", (data) => {
+              if (data.request.startsWith("node:")) {
+                data.request = data.request.replace(/^node:/, "")
+              }
+            })
+          })
         },
-      ),
+      },
     ]
     return config
   },

@@ -395,9 +395,6 @@ catalogs:
     validator:
       specifier: ^13.15.35
       version: 13.15.35
-    webpack:
-      specifier: ^5.0.0
-      version: 5.105.4
     webpack-cli:
       specifier: ^7.0.2
       version: 7.0.2
@@ -1115,9 +1112,6 @@ importers:
       vitest:
         specifier: catalog:vitest
         version: 2.1.9(@types/node@25.9.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.14.6(@types/node@25.9.0)(typescript@6.0.3))(sass@1.99.0)(terser@5.46.1)
-      webpack:
-        specifier: 'catalog:'
-        version: 5.105.4(esbuild@0.27.7)(webpack-cli@7.0.2)
       webpack-cli:
         specifier: 'catalog:'
         version: 7.0.2(webpack@5.105.4)
