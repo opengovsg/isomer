@@ -1,4 +1,3 @@
-import type { DraggableArrayItemRenderProps } from "./types"
 import {
   Box,
   Flex,
@@ -29,6 +28,7 @@ import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
 
 import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
+import type { DraggableArrayItemRenderProps } from "./types"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
 import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"

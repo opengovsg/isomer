@@ -33,9 +33,9 @@ import {
 } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
+import type { DraggableArrayItemRenderProps } from "./types"
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
-import type { DraggableArrayItemRenderProps } from "./types"
 import DraggableTagButton from "./DraggableTagButton"
 
 export type { DraggableArrayItemRenderProps }
