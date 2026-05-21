@@ -21,7 +21,7 @@ import {
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
 import { BiGridVertical, BiInfoCircle } from "react-icons/bi"
 
-interface DraggableDrawerButtonProps extends OwnPropsOfMasterListItem {
+interface DraggableTagButtonProps extends OwnPropsOfMasterListItem {
   ref: React.Ref<HTMLDivElement>
   draggableProps: DraggableProvidedDraggableProps
   dragHandleProps: DraggableProvidedDragHandleProps | null
@@ -34,11 +34,11 @@ interface DraggableDrawerButtonProps extends OwnPropsOfMasterListItem {
   listItemTrailing?: ReactNode
   /** Caption under the row title (stacked with 0.25rem gap). */
   listItemSubtitle?: ReactNode
-  /** When `isError` is true, replaces the default “Fix issues before saving” line. */
+  /** When `isError` is true, replaces the default "Fix issues before saving" line. */
   listItemErrorCaption?: string
 }
 
-const DraggableDrawerButtonText = withJsonFormsMasterListItemProps(
+const DraggableTagButtonText = withJsonFormsMasterListItemProps(
   ({ childLabel, index }: StatePropsOfMasterItem) => (
     <Text textStyle="subhead-2" textAlign="start">
       {childLabel || `Item ${index + 1}`}
@@ -46,7 +46,7 @@ const DraggableDrawerButtonText = withJsonFormsMasterListItemProps(
   ),
 )
 
-const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
+const DraggableTagButton = forwardRef<DraggableTagButtonProps, "div">(
   (
     {
       draggableProps,
@@ -159,7 +159,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
                   </Flex>
                 )}
                 <Stack align="start" gap="0.25rem" flex={1} minW={0}>
-                  <DraggableDrawerButtonText {...rest} index={index} />
+                  <DraggableTagButtonText {...rest} index={index} />
                   {listItemSubtitle}
                   {isError && (
                     <Text
@@ -198,4 +198,4 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
   },
 )
 
-export default DraggableDrawerButton
+export default DraggableTagButton
