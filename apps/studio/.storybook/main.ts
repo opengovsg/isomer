@@ -54,41 +54,6 @@ const config: StorybookConfig = {
         delete config.resolve.alias[unalias]
       }
     }
-    // filenamify@6 (and other packages) use node: scheme imports which webpack 5
-    // can't handle by default. resolve.alias is bypassed for node: URIs — only
-    // hooking normalModuleFactory.beforeResolve rewrites them in time.
-    config.plugins = [
-      ...(config.plugins ?? []),
-      {
-        apply(compiler: {
-          hooks: {
-            normalModuleFactory: {
-              tap: (
-                name: string,
-                fn: (nmf: {
-                  hooks: {
-                    beforeResolve: {
-                      tap: (
-                        name: string,
-                        fn: (data: { request: string }) => void,
-                      ) => void
-                    }
-                  }
-                }) => void,
-              ) => void
-            }
-          }
-        }) {
-          compiler.hooks.normalModuleFactory.tap("NodeSchemePlugin", (nmf) => {
-            nmf.hooks.beforeResolve.tap("NodeSchemePlugin", (data) => {
-              if (data.request.startsWith("node:")) {
-                data.request = data.request.replace(/^node:/, "")
-              }
-            })
-          })
-        },
-      },
-    ]
     return config
   },
 }
