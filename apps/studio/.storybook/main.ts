@@ -54,6 +54,29 @@ const config: StorybookConfig = {
         delete config.resolve.alias[unalias]
       }
     }
+
+    // Webpack 5 doesn't handle the node: URI scheme used by some packages.
+    // Map node:-prefixed builtins to their unprefixed equivalents so webpack
+    // can resolve them via its existing node polyfill / externals handling.
+    config.resolve = config.resolve ?? {}
+    config.resolve.alias = {
+      ...(config.resolve.alias as Record<string, string>),
+      "node:assert": "assert",
+      "node:buffer": "buffer",
+      "node:crypto": "crypto",
+      "node:events": "events",
+      "node:fs": "fs",
+      "node:http": "http",
+      "node:https": "https",
+      "node:os": "os",
+      "node:path": "path",
+      "node:querystring": "querystring",
+      "node:stream": "stream",
+      "node:url": "url",
+      "node:util": "util",
+      "node:zlib": "zlib",
+    }
+
     return config
   },
 }
