@@ -7,7 +7,7 @@ import type {
   OwnPropsOfMasterListItem,
   StatePropsOfMasterItem,
 } from "@jsonforms/core"
-import type { ReactNode } from "react"
+import type { ReactNode, Ref } from "react"
 import type { IconType } from "react-icons"
 import {
   Box,
@@ -21,12 +21,15 @@ import {
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
 import { BiGridVertical, BiInfoCircle } from "react-icons/bi"
 
-interface DraggableTagButtonProps extends OwnPropsOfMasterListItem {
-  ref: React.Ref<HTMLDivElement>
+export type DraggableArrayItemRenderProps = OwnPropsOfMasterListItem & {
+  ref: Ref<HTMLDivElement>
   draggableProps: DraggableProvidedDraggableProps
   dragHandleProps: DraggableProvidedDragHandleProps | null
   setSelectedIndex: (selectedIndex?: number) => void
   isError: boolean
+}
+
+interface DraggableTagButtonProps extends DraggableArrayItemRenderProps {
   listItemIcon?: IconType
   /** Merged into padding on the drag handle and label button (e.g. tighter `py`). */
   listItemContentProps?: BoxProps

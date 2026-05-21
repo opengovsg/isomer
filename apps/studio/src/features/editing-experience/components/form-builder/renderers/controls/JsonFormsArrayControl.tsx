@@ -1,18 +1,13 @@
-import type {
-  DraggableProvidedDraggableProps,
-  DraggableProvidedDragHandleProps,
-  DropResult,
-} from "@hello-pangea/dnd"
+import type { DropResult } from "@hello-pangea/dnd"
 import type {
   ArrayLayoutProps,
   JsonFormsCellRendererRegistryEntry,
   JsonFormsRendererRegistryEntry,
   JsonSchema,
-  OwnPropsOfMasterListItem,
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
-import type { ReactNode, Ref } from "react"
+import type { ReactNode } from "react"
 import { Box, Flex, HStack, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
@@ -40,20 +35,16 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
-import DraggableTagButton from "./DraggableTagButton"
+import DraggableTagButton, {
+  type DraggableArrayItemRenderProps,
+} from "./DraggableTagButton"
+
+export type { DraggableArrayItemRenderProps }
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
   or(isObjectArrayControl, isPrimitiveArrayControl),
 )
-
-export type DraggableArrayItemRenderProps = OwnPropsOfMasterListItem & {
-  ref: Ref<HTMLDivElement>
-  draggableProps: DraggableProvidedDraggableProps
-  dragHandleProps: DraggableProvidedDragHandleProps | null
-  setSelectedIndex: (selectedIndex?: number) => void
-  isError: boolean
-}
 
 export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   /** When the array is empty, replaces the default placeholder inside the empty-state container. */
