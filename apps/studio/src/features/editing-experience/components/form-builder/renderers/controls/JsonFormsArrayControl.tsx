@@ -38,8 +38,6 @@ import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
 import DraggableTagButton from "./DraggableTagButton"
 
-export type { DraggableArrayItemRenderProps }
-
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
   or(isObjectArrayControl, isPrimitiveArrayControl),
