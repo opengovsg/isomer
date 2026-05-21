@@ -129,6 +129,12 @@ export const pageRouter = router({
   list: protectedProcedure
     .input(listPagesSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
       let query = db
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
