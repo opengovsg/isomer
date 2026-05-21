@@ -1,8 +1,4 @@
-import type {
-  DraggableProvidedDraggableProps,
-  DraggableProvidedDragHandleProps,
-} from "@hello-pangea/dnd"
-import type { JsonSchema, UISchemaElement } from "@jsonforms/core"
+import type { DraggableArrayItemRenderProps } from "./DraggableTagButton"
 import {
   Box,
   Flex,
@@ -58,16 +54,8 @@ const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
   )
 }
 
-interface DraggableLinkButtonProps {
-  draggableProps: DraggableProvidedDraggableProps
-  dragHandleProps: DraggableProvidedDragHandleProps | null
-  setSelectedIndex: (selectedIndex?: number) => void
+interface DraggableLinkButtonProps extends DraggableArrayItemRenderProps {
   onDeleteItem: () => void
-  isError: boolean
-  index: number
-  path: string
-  schema: JsonSchema
-  uischema: UISchemaElement
   resetLink: () => void
 }
 
