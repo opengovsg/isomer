@@ -1,8 +1,6 @@
 import Ajv from "ajv"
 import addErrors from "ajv-errors"
 
-import addUniqueItemPropertiesIgnoreCaseKeyword from "./ajvKeywords/uniqueItemPropertiesIgnoreCase"
-
 export const ajv = new Ajv({
   useDefaults: true,
   allErrors: true,
@@ -11,4 +9,3 @@ export const ajv = new Ajv({
   discriminator: true,
 })
 addErrors(ajv)
-addUniqueItemPropertiesIgnoreCaseKeyword(ajv)

@@ -10,18 +10,15 @@ import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { useBuilderErrors } from "../../ErrorProvider"
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
 import DraggableTagButton from "./DraggableTagButton"
 import { DuplicateLabelError } from "./DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
-import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { path, removeItems, addItem, data, arraySchema } = props
   const { core } = useJsonForms()
-  const { errors } = useBuilderErrors()
   const page = core?.data as CollectionPagePageProps | undefined
 
   const duplicateFilterIndices = useMemo(() => {
@@ -29,10 +26,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     return indicesWithDuplicateLabels(items)
   }, [core?.data, path])
 
-  const hasDuplicateFilterNameError = hasUniqueItemPropertiesError({
-    errors,
-    jsonFormsPath: path,
-  })
+  const hasDuplicateFilterNameError = duplicateFilterIndices.size > 0
 
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
@@ -59,6 +53,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
       <JsonFormsArrayControlView
         {...props}
         addItem={addItemWithDefaults}
+        addItemLabel="Add a filter"
         renderListItem={(rowProps) => {
           const isDuplicate = duplicateFilterIndices.has(rowProps.index)
           const count =
