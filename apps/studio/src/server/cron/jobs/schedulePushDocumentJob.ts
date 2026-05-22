@@ -133,7 +133,7 @@ export const schedulePushDocumentJobHandler = async () => {
           title,
           url: encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${url}`),
           date: scheduledAt.toISOString(),
-          categories: [subcategory?.label],
+          categories: subcategory?.label ? [subcategory.label] : [],
           contentType: parsed.data.page.category,
         }
       } catch (error) {
@@ -172,7 +172,7 @@ interface PushDocument {
   url: string
   contentType: string
   content: string
-  date: Date
+  date: string
   categories: string[]
 }
 
