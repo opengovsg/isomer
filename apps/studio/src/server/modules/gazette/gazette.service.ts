@@ -2,9 +2,9 @@ import type { Kysely, Transaction } from "kysely"
 import { TRPCError } from "@trpc/server"
 import filenamify from "filenamify"
 import { PdfReader } from "pdfreader"
-import { logger } from "storybook/internal/client-logger"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { env } from "~/env.mjs"
+import { createBaseLogger } from "~/lib/logger"
 import {
   copyFile,
   deleteFile,
@@ -30,6 +30,7 @@ import {
 
 const { S3_GAZETTE_BUCKET_NAME } = env
 const pdfReader = new PdfReader({})
+const logger = createBaseLogger({ path: "gazette.service" })
 /**
  * Throws FORBIDDEN unless the user is from Toppan or a Core IsomerAdmin.
  *
