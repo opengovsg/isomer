@@ -73,7 +73,15 @@ export const cancelScheduledPublishSchema = z.object({
 
 export const getPresignedGetUrlSchema = z.object({
   siteId: z.number().min(1),
-  fileKey: z.string().min(1),
+  fileKey: z
+    .string()
+    .min(1)
+    // Defence-in-depth against path-traversal-style fileKeys (e.g.
+    // "/SITE_ID/x.pdf" or "../y.pdf"). S3 keys for gazettes are always relative
+    // and have no path traversal segments.
+    .refine((s) => !s.startsWith("/") && !s.split("/").includes(".."), {
+      message: "Invalid fileKey",
+    }),
 })
 
 export const getPresignedPutUrlSchema = z.object({
@@ -88,40 +96,17 @@ export const getPresignedPutUrlSchema = z.object({
     .optional(),
   resourceId: z.string().optional(),
   year: z.number().min(1000).max(9999),
-  category: z.string().min(1),
-  subcategory: z.string().min(1),
+  category: z.string().trim().min(1),
+  subcategory: z.string().trim().min(1),
   fileName: z
     .string({
-      required_error: "Missing file name",
+      error: "Missing file name",
     })
-    .refine(
-      (s) => {
-        const allowedStartingChars = new RegExp(/^[a-zA-Z0-9-_]/)
-        return allowedStartingChars.test(s)
-      },
-      {
-        message:
-          "File name must start with a letter, number, hyphen, or underscore",
-      },
-    )
-    // Check if extension is in allowed list (whitelist approach)
-    // To ensure we don't allow any other file types that can have security implications
-    .refine(
-      (fileName) => {
-        // Must have an extension
-        if (!fileName.includes(".")) {
-          return false
-        }
-
-        // Check if extension is in allowed list (whitelist approach)
-        const extension = fileName
-          .toLowerCase()
-          .substring(fileName.lastIndexOf("."))
-        // NOTE: Gazettes should only be PDF files
-        return extension === ".pdf"
-      },
-      {
-        message: "File type not allowed. Please upload a supported file type.",
-      },
-    ),
+    .refine((s) => /^[a-zA-Z0-9-_]/.test(s), {
+      message:
+        "File name must start with a letter, number, hyphen, or underscore",
+    })
+    .refine((fileName) => fileName.trim().toLowerCase().endsWith(".pdf"), {
+      message: "Only PDF files are allowed.",
+    }),
 })

@@ -6,7 +6,7 @@ import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
 import * as s3Lib from "~/lib/s3"
-import * as assetService from "~/server/modules/asset/asset.service"
+import * as gazetteService from "~/server/modules/gazette/gazette.service"
 import { db } from "~server/db"
 
 import { schedulePushDocumentJobHandler } from "../schedulePushDocumentJob"
@@ -42,6 +42,7 @@ const setBlobContentForPushDocument = async (
 const seedDocumentReadyForIngestion = async ({
   parentTitle,
   ref,
+  category,
   publishedBy,
 }: {
   parentTitle: string
@@ -49,8 +50,6 @@ const seedDocumentReadyForIngestion = async ({
   category: string
   publishedBy: string
 }) => {
-  // Parent (a folder/collection-like resource) — its title becomes the
-  // SearchSG `categories[0]`.
   const { page: parent, site } = await setupPageResource({
     resourceType: ResourceType.Folder,
     title: parentTitle,
@@ -104,9 +103,7 @@ const seedDocumentReadyForIngestion = async ({
     permalink: "document-title",
   })
 
-  // Use parentTitle for page.category since the handler derives `categories`
-  // from page.category (not from the parent resource's title).
-  await setBlobContentForPushDocument(blob.id, ref, parentTitle, ["tag-1"])
+  await setBlobContentForPushDocument(blob.id, ref, category, ["tag-1"])
 
   // A published Version pointing at the same blob — the dispatcher reads
   // the latest Version per resource.
@@ -150,7 +147,7 @@ describe("schedulePushDocumentJobHandler", async () => {
     // SearchSG endpoint.
     vi.spyOn(s3Lib, "getBlob").mockResolvedValue(new Uint8Array([1, 2, 3]))
     vi.spyOn(s3Lib, "setAssetAsPublished").mockResolvedValue(undefined)
-    vi.spyOn(assetService, "parseFullTextFromPDF").mockResolvedValue(
+    vi.spyOn(gazetteService, "parseFullTextFromPDF").mockResolvedValue(
       "parsed pdf text",
     )
 
@@ -181,7 +178,7 @@ describe("schedulePushDocumentJobHandler", async () => {
     const { resourceId } = await seedDocumentReadyForIngestion({
       parentTitle: "Notices",
       ref: "/some-bucket-key/file.pdf",
-      category: "Public",
+      category: "Government Gazettes",
       publishedBy: user.id,
     })
     await db
@@ -208,8 +205,8 @@ describe("schedulePushDocumentJobHandler", async () => {
     expect(body.documentsToAdd[0]).toMatchObject({
       title: "Document Title",
       content: "parsed pdf text",
-      contentType: "Informational",
-      categories: ["Notices"],
+      contentType: "Government Gazettes",
+      categories: ["Public"],
     })
 
     // Row was cleaned up.
@@ -221,7 +218,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
     // S3 + PDF parser were each invoked exactly once.
     expect(s3Lib.getBlob).toHaveBeenCalledTimes(1)
-    expect(assetService.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
+    expect(gazetteService.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
   })
 
   it("skips rows scheduled for the future", async () => {

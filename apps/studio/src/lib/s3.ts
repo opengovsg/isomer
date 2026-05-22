@@ -120,8 +120,6 @@ export const setAssetAsPublished = async ({
   )
 
   const originalTagSet = objectTag.TagSet ?? []
-  // NOTE: set the lock to be 10000 days from time of publish
-  const retainUntilDate = addDays(new Date(), EGAZETTE_COMPLIANCE_HOLD_IN_DAYS)
 
   // NOTE: All published gazettes are immutable so we need to retain this guarantee
   // without risk of malware being hosted.
@@ -148,7 +146,8 @@ export const setAssetAsPublished = async ({
           env.NEXT_PUBLIC_APP_ENV === "production"
             ? "COMPLIANCE"
             : "GOVERNANCE",
-        RetainUntilDate: retainUntilDate,
+        // 10000 days from time of publish
+        RetainUntilDate: addDays(new Date(), EGAZETTE_COMPLIANCE_HOLD_IN_DAYS),
       },
     }),
   )
@@ -209,6 +208,12 @@ export const markScheduledAssetAsCancelled = async ({
   )
 
   const originalTagSet = objectTag.TagSet ?? []
+  // Preserve an existing deletedAt timestamp — the file may have been
+  // soft-deleted before, and the original deletion time is more meaningful
+  // than the cancellation moment.
+  const existingDeletedAt = originalTagSet.find(
+    ({ Key }) => Key === DELETE_TAG,
+  )?.Value
 
   return storage.send(
     new PutObjectTaggingCommand({
@@ -218,11 +223,11 @@ export const markScheduledAssetAsCancelled = async ({
       Tagging: {
         TagSet: [
           ...originalTagSet.filter(
-            ({ Key }) => Key !== "scheduledAt" && Key !== "deletedAt",
+            ({ Key }) => Key !== "scheduledAt" && Key !== DELETE_TAG,
           ),
           {
-            Key: "deletedAt",
-            Value: Date.now().toString(),
+            Key: DELETE_TAG,
+            Value: existingDeletedAt ?? Date.now().toString(),
           },
         ],
       },
