@@ -992,6 +992,9 @@ importers:
       '@chakra-ui/cli':
         specifier: catalog:chakra
         version: 2.5.8(react@18.3.1)(ws@8.20.0)
+      '@inquirer/prompts':
+        specifier: 'catalog:'
+        version: 7.10.1(@types/node@22.19.15)
       '@isomer/oxlint-config':
         specifier: workspace:*
         version: link:../../tooling/oxlint
