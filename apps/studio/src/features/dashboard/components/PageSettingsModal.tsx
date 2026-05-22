@@ -112,7 +112,8 @@ const PageSettingsModalContent = ({
   const utils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
 
-  const { mutate: updatePageSettings } = trpc.page.updateSettings.useMutation({
+  const { mutate: updatePageSettings, isPending } =
+    trpc.page.updateSettings.useMutation({
     onSuccess: async () => {
       // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
       await utils.page.invalidate()
@@ -232,7 +233,9 @@ const PageSettingsModalContent = ({
         <Button mr={3} variant="clear" onClick={onClose}>
           Close
         </Button>
-        <Button onClick={onSubmit}>Publish immediately</Button>
+        <Button onClick={onSubmit} isLoading={isPending}>
+          Publish immediately
+        </Button>
       </ModalFooter>
     </ModalContent>
   )
