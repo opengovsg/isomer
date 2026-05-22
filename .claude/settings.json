@@ -31,7 +31,6 @@
   "permissions": {
     "allow": [
       "Bash(gh pr list:*)",
-      "WebFetch(domain:github.com)",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
       "Bash(docker start:*)",
@@ -41,6 +40,7 @@
       "Bash(pnpm run build:*)",
       "Bash(pnpx tsc:*)",
       "Bash(git stash:*)",
+      "WebFetch(domain:github.com)",
       "WebFetch(domain:docs.datadoghq.com)",
       "mcp__figma__get_design_context",
       "mcp__figma__get_code_connect_suggestions",
