@@ -833,25 +833,24 @@ describe("folder.router", async () => {
       )
     })
 
-    it("should return an empty array if `siteId` does not exist", async () => {
+    it("should return an empty array if there are no published child resources", async () => {
       // Arrange
-      const invalidSiteId = 999
       const { site, folder } = await setupFolder()
       await setupEditorPermissions({
         userId: session.userId,
         siteId: site.id,
       })
-      expect(site.id).not.toEqual(invalidSiteId)
       const { page: indexPage } = await setupPageResource({
         parentId: folder.id,
         siteId: site.id,
         resourceType: "IndexPage",
       })
+      // NOTE: Only draft pages - not published, so should not be returned
       await createChildPages({
         parentId: folder.id,
         siteId: site.id,
         numPages: 3,
-        numFolders: 5,
+        numFolders: 0,
       })
 
       // Act
@@ -940,7 +939,7 @@ describe("folder.router", async () => {
       ).resolves.toHaveLength(0)
     })
 
-    it("should return only the published pages of the parent folder", async () => {
+    it("should return published pages and all published folders of the parent folder", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       await setupEditorPermissions({ siteId: site.id, userId: session.userId })
@@ -949,17 +948,19 @@ describe("folder.router", async () => {
         siteId: site.id,
         resourceType: "IndexPage",
       })
-      const { pages, folders } = await createChildPages({
-        parentId: folder.id,
-        siteId: site.id,
-        numPages: 3,
-        numFolders: 4,
-        state: "Published",
-        userId: session.userId,
-      })
+      const { pages, folders: foldersWithPublishedIndex } =
+        await createChildPages({
+          parentId: folder.id,
+          siteId: site.id,
+          numPages: 3,
+          numFolders: 4,
+          state: "Published",
+          userId: session.userId,
+        })
 
-      // NOTE: Not `published`
-      await createChildPages({
+      // NOTE: Draft pages should be excluded, but published folders with draft
+      // IndexPages should still be included (consistent with getLocalisedSitemap)
+      const { folders: foldersWithDraftIndex } = await createChildPages({
         parentId: folder.id,
         siteId: site.id,
         numPages: 3,
@@ -972,12 +973,45 @@ describe("folder.router", async () => {
         indexPageId: indexPage.id,
       })
 
-      // Assert
-      expect(result.childPages).toHaveLength(7)
-      const folderPagesId = folders.map(({ id }) => id)
-      const pagesId = pages.map(({ id }) => id)
+      // Assert: 3 published pages + 4 folders with published index + 4 folders with draft index
+      expect(result.childPages).toHaveLength(11)
+      const expectedIds = [
+        ...pages.map(({ id }) => id),
+        ...foldersWithPublishedIndex.map(({ id }) => id),
+        ...foldersWithDraftIndex.map(({ id }) => id),
+      ]
       expect(result.childPages.map(({ id }) => id).toSorted()).toStrictEqual(
-        [...pagesId, ...folderPagesId].toSorted(),
+        expectedIds.toSorted(),
+      )
+    })
+
+    it("should include published folders even if their IndexPage is not published", async () => {
+      // Arrange: this is the bug scenario - folders created but IndexPage not yet published
+      const { site, folder } = await setupFolder()
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+      const { page: indexPage } = await setupPageResource({
+        parentId: folder.id,
+        siteId: site.id,
+        resourceType: "IndexPage",
+      })
+      // Create folders without publishing their IndexPages (default Draft state)
+      const { folders } = await createChildPages({
+        parentId: folder.id,
+        siteId: site.id,
+        numPages: 0,
+        numFolders: 3,
+      })
+
+      // Act
+      const result = await caller.listChildPages({
+        siteId: String(site.id),
+        indexPageId: indexPage.id,
+      })
+
+      // Assert: All 3 published folders should be included
+      expect(result.childPages).toHaveLength(3)
+      expect(result.childPages.map(({ id }) => id).toSorted()).toStrictEqual(
+        folders.map(({ id }) => id).toSorted(),
       )
     })
   })

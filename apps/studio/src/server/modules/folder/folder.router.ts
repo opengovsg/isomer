@@ -369,7 +369,10 @@ export const folderRouter = router({
       }
 
       // NOTE: This is not a general `resource.list`
-      // but reimplemented here because it makes certain assumptions about what should be shown
+      // but reimplemented here because it makes certain assumptions about what should be shown.
+      // We include all published Folders/Collections/Pages regardless of whether they have
+      // a published IndexPage, to stay consistent with getLocalisedSitemap which also shows
+      // all published folders in the sitemap used for the ChildrenPages block preview.
       const childPages = await db
         .with("directChildren", (eb) => {
           return eb
@@ -384,57 +387,8 @@ export const folderRouter = router({
             ])
             .select(["Resource.id", "title", "type", "permalink"])
         })
-        // NOTE: we need to select the `Folder/Collection`.`id`
-        // rather than the `IndexPage` as our publishing script
-        // uses the actual `id` of the containing `Folder/Collection`.
-        // However, we will use the `IndexPage` as a filter as we should only
-        // show the preview for published `IndexPages` (draft pages won't show on end site)
-        .with("publishedCousinIndexPages", (eb) => {
-          return (
-            eb
-              .selectFrom("Resource")
-              .where("parentId", "in", (qb) =>
-                qb
-                  .selectFrom("directChildren")
-                  .where("type", "in", [
-                    ResourceType.Folder,
-                    ResourceType.Collection,
-                  ])
-                  .select("id"),
-              )
-              // NOTE: Keeping in line with how we select resources for sitemap,
-              // we will only select published index pages here
-              .where("state", "=", ResourceState.Published)
-              .where("type", "=", ResourceType.IndexPage)
-              .select([
-                "Resource.parentId",
-                (eb) =>
-                  eb
-                    .selectFrom("Resource as Parent")
-                    .whereRef("Parent.id", "=", "Resource.parentId")
-                    .select("Parent.type")
-                    .as("parentType"),
-              ])
-          )
-        })
-        .selectFrom("Resource")
-        .where("siteId", "=", Number(siteId))
-        .where("id", "in", (qb) =>
-          qb
-            .selectFrom("publishedCousinIndexPages")
-            .where("parentType", "in", [
-              ResourceType.Collection,
-              ResourceType.Folder,
-            ])
-            .select("parentId"),
-        )
+        .selectFrom("directChildren")
         .select(["id", "title", "type", "permalink"])
-        .unionAll((qb) => {
-          return qb
-            .selectFrom("directChildren")
-            .where("type", "=", ResourceType.Page)
-            .select(["id", "title", "type", "permalink"])
-        })
         .execute()
 
       // TODO: Think about how to handle cases where 2 people are editing the order
