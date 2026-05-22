@@ -69,7 +69,6 @@ const PageSettingsModalContent = ({
     formState: { isDirty, errors },
   } = useZodForm({
     schema: basePageSettingsSchema.omit({ pageId: true, siteId: true }).extend({
-      meta: z.unknown(),
       permalink: generateBasePermalinkSchema("page")
         .min(1, {
           message: "Enter a URL for this page",
