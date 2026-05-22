@@ -451,7 +451,10 @@ export const gazetteRouter = router({
             })
 
             if (scheduledAtChanged) {
-              // NOTE: Need to update the associated PushDocumentJob
+              // NOTE: Need to update the associated PushDocumentJob.
+              // Defence-in-depth: scope to a PushDocumentJob whose Resource
+              // belongs to this siteId (PushDocumentJob has no direct siteId
+              // column, so we constrain via the Resource subquery).
               await tx
                 .updateTable("PushDocumentJob")
                 .set({
@@ -459,6 +462,12 @@ export const gazetteRouter = router({
                   scheduledBy: user.id,
                 })
                 .where("resourceId", "=", String(gazetteId))
+                .where("resourceId", "in", (eb) =>
+                  eb
+                    .selectFrom("Resource")
+                    .select("Resource.id")
+                    .where("Resource.siteId", "=", siteId),
+                )
                 .executeTakeFirstOrThrow(
                   () =>
                     new TRPCError({
@@ -553,20 +562,37 @@ export const gazetteRouter = router({
 
       // Atomic transaction: delete PushDocumentJob, log audit, delete Resource + Blob
       const deletedResource = await db.transaction().execute(async (tx) => {
-        // 1. Delete the PushDocumentJob
+        // 1. Delete the PushDocumentJob. Defence-in-depth: scope via Resource
+        // subquery on siteId (PushDocumentJob has no direct siteId column).
         await tx
           .deleteFrom("PushDocumentJob")
           .where("resourceId", "=", String(gazetteId))
+          .where("resourceId", "in", (eb) =>
+            eb
+              .selectFrom("Resource")
+              .select("Resource.id")
+              .where("Resource.siteId", "=", siteId),
+          )
           .execute()
 
-        // 2. Log the cancellation audit event
+        // 2. Log the cancellation audit event. The `after` carries a
+        // resource snapshot with scheduledAt/scheduledBy cleared so the delta
+        // is the inverse of SchedulePublish — `before === after` would be
+        // meaningless given the subsequent ResourceDelete event.
         await logResourceEvent(tx, {
           siteId,
           eventType: AuditLogEvent.CancelSchedulePublish,
           by: user,
           delta: {
             before: { resource: existingResource, blob: existingBlob },
-            after: { resource: existingResource, blob: existingBlob },
+            after: {
+              resource: {
+                ...existingResource,
+                scheduledAt: null,
+                scheduledBy: null,
+              },
+              blob: existingBlob,
+            },
           },
         })
 
@@ -589,10 +615,11 @@ export const gazetteRouter = router({
             .execute()
         }
 
-        // 5. Delete the Resource
+        // 5. Delete the Resource — scoped to siteId defence-in-depth.
         return await tx
           .deleteFrom("Resource")
           .where("id", "=", String(gazetteId))
+          .where("siteId", "=", siteId)
           .returningAll()
           .execute()
       })

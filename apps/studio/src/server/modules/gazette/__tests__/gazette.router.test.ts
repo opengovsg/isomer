@@ -15,11 +15,13 @@ import {
   setupIsomerAdmin,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { db } from "../../database"
+import { AuditLogEvent } from "../../database"
 import { gazetteRouter } from "../gazette.router"
 
 const createCaller = createCallerFactory(gazetteRouter)
@@ -319,6 +321,251 @@ describe("gazette.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(after.scheduledAt).toEqual(PAST_DATE)
+    })
+  })
+
+  describe("cancelScheduledPublish", () => {
+    it("deletes the resource, blob, and push job atomically and emits both audit events", async () => {
+      const { site, collection, user } = await seedToppanWithCollection()
+      // S3 tagging is best-effort post-tx — stub so the test stays offline.
+      const markCancelled = vi
+        .spyOn(s3Lib, "markScheduledAssetAsCancelled")
+        .mockResolvedValue({} as never)
+
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "About to cancel",
+        permalink: crypto.randomUUID(),
+        ref: "/1/abc/about-to-cancel.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      const beforeBlob = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .select("draftBlobId")
+        .executeTakeFirstOrThrow()
+
+      // Seed the PushDocumentJob row that create() inserts.
+      const pushJobBefore = await db
+        .selectFrom("PushDocumentJob")
+        .where("resourceId", "=", String(gazetteId))
+        .selectAll()
+        .execute()
+      expect(pushJobBefore).toHaveLength(1)
+
+      // AuditLog is append-only at the DB level (no DELETE permission), so
+      // capture the current high-water-mark id and assert on rows after it.
+      const lastIdBeforeCancel = await db
+        .selectFrom("AuditLog")
+        .select(({ fn }) => fn.max("id").as("maxId"))
+        .executeTakeFirstOrThrow()
+
+      await caller.cancelScheduledPublish({
+        siteId: site.id,
+        gazetteId: Number(gazetteId),
+      })
+
+      const resourceAfter = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .execute()
+      expect(resourceAfter).toHaveLength(0)
+
+      const blobAfter = beforeBlob.draftBlobId
+        ? await db
+            .selectFrom("Blob")
+            .where("id", "=", beforeBlob.draftBlobId)
+            .selectAll()
+            .execute()
+        : []
+      expect(blobAfter).toHaveLength(0)
+
+      const pushJobAfter = await db
+        .selectFrom("PushDocumentJob")
+        .where("resourceId", "=", String(gazetteId))
+        .selectAll()
+        .execute()
+      expect(pushJobAfter).toHaveLength(0)
+
+      const newAuditLogsQuery = db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .orderBy("id", "asc")
+      const newAuditLogs = lastIdBeforeCancel.maxId
+        ? await newAuditLogsQuery
+            .where("id", ">", lastIdBeforeCancel.maxId)
+            .execute()
+        : await newAuditLogsQuery.execute()
+      const eventTypes = newAuditLogs.map((l) => l.eventType)
+      expect(eventTypes).toContain(AuditLogEvent.CancelSchedulePublish)
+      expect(eventTypes).toContain(AuditLogEvent.ResourceDelete)
+
+      // The CancelSchedulePublish delta carries a meaningful diff —
+      // scheduledAt/scheduledBy are cleared on `after`.
+      const cancelLog = newAuditLogs.find(
+        (l) => l.eventType === AuditLogEvent.CancelSchedulePublish,
+      )
+      const delta = cancelLog?.delta as {
+        before: { resource: { scheduledAt: unknown; scheduledBy: unknown } }
+        after: { resource: { scheduledAt: unknown; scheduledBy: unknown } }
+      }
+      expect(delta.before.resource.scheduledAt).not.toBeNull()
+      expect(delta.before.resource.scheduledBy).toBe(user.id)
+      expect(delta.after.resource.scheduledAt).toBeNull()
+      expect(delta.after.resource.scheduledBy).toBeNull()
+
+      // S3 was instructed to tag the asset as cancelled.
+      expect(markCancelled).toHaveBeenCalledTimes(1)
+    })
+
+    it("rejects a gazette that is not currently scheduled", async () => {
+      const { site, collection } = await seedToppanWithCollection()
+      const { collectionLink } = await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+        permalink: "not-scheduled",
+      })
+
+      await expect(
+        caller.cancelScheduledPublish({
+          siteId: site.id,
+          gazetteId: Number(collectionLink.id),
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot cancel a gazette that is not scheduled",
+        }),
+      )
+    })
+
+    it("tolerates S3 tagging failure (best-effort post-commit)", async () => {
+      const { site, collection } = await seedToppanWithCollection()
+      vi.spyOn(s3Lib, "markScheduledAssetAsCancelled").mockRejectedValue(
+        new Error("S3 unavailable"),
+      )
+
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "S3 will fail",
+        permalink: crypto.randomUUID(),
+        ref: "/1/abc/s3-fail.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Should NOT throw — DB tx commits first, S3 is best-effort.
+      await expect(
+        caller.cancelScheduledPublish({
+          siteId: site.id,
+          gazetteId: Number(gazetteId),
+        }),
+      ).resolves.toBeDefined()
+
+      const resourceAfter = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .execute()
+      expect(resourceAfter).toHaveLength(0)
+    })
+  })
+
+  describe("getPresignedPutUrl", () => {
+    it("passes the supplied tags through to the underlying signer", async () => {
+      const { site, collection } = await seedToppanWithCollection()
+      const signedPutSpy = vi
+        .spyOn(s3Lib, "generateSignedPutUrl")
+        .mockResolvedValue("https://signed.example/put")
+
+      const result = await caller.getPresignedPutUrl({
+        siteId: site.id,
+        resourceId: collection.id,
+        year: 2026,
+        category: "Government Gazette",
+        subcategory: "Public",
+        fileName: "notice-1.pdf",
+        tags: [{ key: "scheduledAt", value: "1700000000000" }],
+      })
+
+      expect(result.presignedPutUrl).toBe("https://signed.example/put")
+      expect(result.fileKey).toMatch(
+        /^2026\/Government Gazette\/Public\/notice-1\.pdf$/,
+      )
+      expect(signedPutSpy).toHaveBeenCalledTimes(1)
+      const signerArgs = signedPutSpy.mock.calls[0]![0]
+      // Tags must reach the signer so S3's PutObject persists them; this is
+      // the gazette-only deviation from the asset bucket signer.
+      expect(signerArgs.Tagging).toContain("scheduledAt=1700000000000")
+    })
+
+    it("omits Tagging when no tags supplied", async () => {
+      const { site, collection } = await seedToppanWithCollection()
+      const signedPutSpy = vi
+        .spyOn(s3Lib, "generateSignedPutUrl")
+        .mockResolvedValue("https://signed.example/put")
+
+      await caller.getPresignedPutUrl({
+        siteId: site.id,
+        resourceId: collection.id,
+        year: 2026,
+        category: "Government Gazette",
+        subcategory: "Public",
+        fileName: "notice-2.pdf",
+      })
+
+      const signerArgs = signedPutSpy.mock.calls[0]![0]
+      expect(signerArgs.Tagging).toBeUndefined()
+    })
+  })
+
+  describe("getPresignedGetUrl", () => {
+    it("returns the signed URL for the gazette bucket", async () => {
+      const { site } = await seedToppanWithCollection()
+      const signedGetSpy = vi
+        .spyOn(s3Lib, "generateSignedGetUrl")
+        .mockResolvedValue("https://signed.example/get")
+
+      const result = await caller.getPresignedGetUrl({
+        siteId: site.id,
+        fileKey: "2026/Government Gazette/Public/notice-1.pdf",
+      })
+
+      expect(result.presignedGetUrl).toBe("https://signed.example/get")
+      expect(signedGetSpy).toHaveBeenCalledTimes(1)
+      const args = signedGetSpy.mock.calls[0]![0]
+      expect(args.Key).toBe("2026/Government Gazette/Public/notice-1.pdf")
+    })
+
+    it("rejects a fileKey starting with a leading slash (path traversal guard)", async () => {
+      const { site } = await seedToppanWithCollection()
+
+      await expect(
+        caller.getPresignedGetUrl({
+          siteId: site.id,
+          fileKey: "/2026/Government Gazette/Public/notice-1.pdf",
+        }),
+      ).rejects.toThrow()
+    })
+
+    it("rejects a fileKey containing a `..` segment", async () => {
+      const { site } = await seedToppanWithCollection()
+
+      await expect(
+        caller.getPresignedGetUrl({
+          siteId: site.id,
+          fileKey: "2026/../etc/passwd",
+        }),
+      ).rejects.toThrow()
     })
   })
 })
