@@ -18,6 +18,18 @@ import {
   type IndexBlob,
 } from "./helpers"
 
+// Shape used purely for asserting on builder output without TypeScript
+// narrowing on the `IsomerSchema` union for every property access.
+interface BuilderResult {
+  version: string
+  layout: string
+  page: Record<string, unknown>
+  content: unknown[]
+}
+
+const asResult = (s: IsomerSchema): BuilderResult =>
+  s as unknown as BuilderResult
+
 const proseBlock: IsomerComponent = {
   type: "prose",
   content: [{ type: "paragraph", content: [{ type: "text", text: "hi" }] }],
@@ -215,7 +227,7 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "Summary text" })
 
     // Act
-    const result = buildCollectionIndexBlob(current, "Folder Title") as any
+    const result = asResult(buildCollectionIndexBlob(current, "Folder Title"))
 
     // Assert
     expect(result.layout).toBe("collection")
@@ -232,7 +244,7 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "x", image })
 
     // Act
-    const result = buildCollectionIndexBlob(current, "Folder") as any
+    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
     expect(result.page.image).toEqual(image)
@@ -243,7 +255,7 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "x" })
 
     // Act
-    const result = buildCollectionIndexBlob(current, "Folder") as any
+    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
     expect("image" in result.page).toBe(false)
@@ -257,7 +269,7 @@ describe("buildCollectionIndexBlob", () => {
     } as unknown as IndexBlob
 
     // Act
-    const result = buildCollectionIndexBlob(current, "Folder") as any
+    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
     expect(result.content).toEqual([])
@@ -268,7 +280,7 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "x" })
 
     // Act
-    const result = buildCollectionIndexBlob(current, "Folder") as any
+    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
     expect(result.version).toBe("0.1.0")
@@ -279,7 +291,7 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "x" })
 
     // Act
-    const result = buildCollectionIndexBlob(current, "Folder") as any
+    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
     expect("contentPageHeader" in result.page).toBe(false)
@@ -290,7 +302,7 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "x" })
 
     // Act
-    const result = buildCollectionIndexBlob(current, "Folder Title") as any
+    const result = asResult(buildCollectionIndexBlob(current, "Folder Title"))
 
     // Assert
     expect(result.page.title).toBe("Folder Title")
@@ -307,7 +319,7 @@ describe("buildCollectionIndexBlob", () => {
     } as unknown as IndexBlob
 
     // Act
-    const result = buildCollectionIndexBlob(current, "Folder") as any
+    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
     expect(result.page.sortOrder).toBe("date-desc")
@@ -335,7 +347,7 @@ describe("buildArticleBlob", () => {
     const current = makeContentBlob({ summary: "Article summary" })
 
     // Act
-    const result = buildArticleBlob(current, "News") as any
+    const result = asResult(buildArticleBlob(current, "News"))
 
     // Assert
     expect(result.layout).toBe("article")
@@ -349,7 +361,7 @@ describe("buildArticleBlob", () => {
     const current = makeContentBlob()
 
     // Act
-    const result = buildArticleBlob(current, "Feature Articles") as any
+    const result = asResult(buildArticleBlob(current, "Feature Articles"))
 
     // Assert
     expect(result.page.category).toBe("Feature Articles")
@@ -361,7 +373,7 @@ describe("buildArticleBlob", () => {
     const current = makeContentBlob({ summary: "x", image })
 
     // Act
-    const result = buildArticleBlob(current, "cat") as any
+    const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
     expect(result.page.image).toEqual(image)
@@ -372,7 +384,7 @@ describe("buildArticleBlob", () => {
     const current = makeContentBlob({ summary: "x" })
 
     // Act
-    const result = buildArticleBlob(current, "cat") as any
+    const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
     expect("image" in result.page).toBe(false)
@@ -387,7 +399,7 @@ describe("buildArticleBlob", () => {
     ])
 
     // Act
-    const result = buildArticleBlob(current, "cat") as any
+    const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
     expect(result.content).toEqual([proseBlock, infobarBlock, infocardsBlock])
@@ -398,7 +410,7 @@ describe("buildArticleBlob", () => {
     const current = makeContentBlob()
 
     // Act
-    const result = buildArticleBlob(current, "cat") as any
+    const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
     expect(result.version).toBe("0.1.0")
@@ -409,7 +421,7 @@ describe("buildArticleBlob", () => {
     const current = makeContentBlob({ summary: "x" })
 
     // Act
-    const result = buildArticleBlob(current, "cat") as any
+    const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
     expect("contentPageHeader" in result.page).toBe(false)

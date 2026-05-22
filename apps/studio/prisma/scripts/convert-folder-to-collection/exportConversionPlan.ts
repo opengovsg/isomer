@@ -16,9 +16,9 @@
  */
 
 import { input } from "@inquirer/prompts"
-
 import { db, ResourceType } from "~/server/modules/database"
 import { getBlobOfResource } from "~/server/modules/resource/resource.service"
+
 import {
   asContentBlob,
   asIndexBlob,

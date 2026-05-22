@@ -1,7 +1,6 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs"
 import { dirname, join } from "path"
 import { fileURLToPath } from "url"
-
 import { db, ResourceType } from "~/server/modules/database"
 
 import type { ConversionPlan } from "./helpers"
@@ -78,8 +77,7 @@ export const findLatestPlanForFolder = (
   }
   const matches = files
     .filter(
-      (f) =>
-        f.startsWith(`convert-folder-${folderId}-`) && f.endsWith(".json"),
+      (f) => f.startsWith(`convert-folder-${folderId}-`) && f.endsWith(".json"),
     )
     .sort()
   const latest = matches[matches.length - 1]

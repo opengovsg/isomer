@@ -1,11 +1,10 @@
-import type { Static } from "@sinclair/typebox"
 import type {
   ContentPageSchema,
   IndexPageSchema,
   IsomerComponent,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
-
+import type { Static } from "@sinclair/typebox"
 import {
   ARTICLE_ALLOWED_BLOCKS,
   CONTENT_ALLOWED_BLOCKS,
