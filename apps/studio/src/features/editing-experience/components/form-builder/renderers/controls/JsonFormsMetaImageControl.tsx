@@ -70,7 +70,7 @@ function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
             if (parseResult.success) return null
             // NOTE: safe assertion here because we're in error path and there's at least 1 error
             return (
-              parseResult.error.errors[0]?.message ||
+              parseResult.error.issues[0]?.message ||
               "Please ensure that your file begins with alphanumeric characters!"
             )
           }}

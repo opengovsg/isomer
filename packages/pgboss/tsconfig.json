@@ -3,7 +3,7 @@
     "types": ["node", "vitest/globals"],
     "declaration": true,
     "rootDir": "src",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strict": true,

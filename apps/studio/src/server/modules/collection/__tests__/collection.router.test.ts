@@ -1353,8 +1353,12 @@ describe("collection.router", async () => {
         resource: omit(page, ["createdAt", "updatedAt"]),
       })
       expect(auditEntry.userId).toBe(session.userId)
-      const actual = getCollectionItemByPermalink(page.permalink, page.parentId)
-      expect(expected).toMatchObject(actual)
+      const actual = await getCollectionItemByPermalink(
+        page.permalink,
+        page.parentId,
+      )
+      expect(actual.draftBlobId).toEqual(expected.id)
+      expect(expected.content.content).toEqual([])
     })
 
     it("should update the collection link successfully", async () => {

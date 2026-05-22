@@ -6,24 +6,16 @@ import { hasContent } from "../../native/Prose/utils"
 import { BaseParagraph } from "../BaseParagraph"
 import { NotificationClient } from "./NotificationClient"
 
-export const Notification = ({
-  content,
-  title,
-  LinkComponent,
-  site,
-}: NotificationProps) => {
+export const Notification = ({ content, title, site }: NotificationProps) => {
   const Paragraph = () =>
     content instanceof Array ? (
       <BaseParagraph
         content={getTextAsHtml({ site, content })}
         className="prose-body-base"
-        LinkComponent={LinkComponent}
       />
     ) : (
       !!content &&
-      hasContent(content.content) && (
-        <Prose {...content} site={site} LinkComponent={LinkComponent} />
-      )
+      hasContent(content.content) && <Prose {...content} site={site} />
     )
 
   return (

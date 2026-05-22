@@ -1,9 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type {
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
+import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import type { OmitFromUnion } from "~/types/helpers"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
@@ -139,7 +135,6 @@ export type NavbarSchemaType = Static<typeof NavbarSchema>
 type BaseNavbarProps = NavbarSchemaType & {
   layout: IsomerPageLayoutType
   search?: LocalSearchProps | NavbarSearchSGInputBoxProps
-  LinkComponent?: LinkComponentType
 }
 
 export type NavbarProps = BaseNavbarProps & {

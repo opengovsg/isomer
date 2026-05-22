@@ -4,6 +4,7 @@ export const GoogleTagManagerHeader = ({
   siteGtmId,
   ScriptComponent,
 }: GoogleTagManagerHeaderProps) => {
+  if (!ScriptComponent) return null
   return (
     <ScriptComponent
       id={`_next-gtm-init-${siteGtmId}`}
