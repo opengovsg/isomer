@@ -6,7 +6,7 @@ import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
 import * as s3Lib from "~/lib/s3"
-import * as assetService from "~/server/modules/asset/asset.service"
+import * as gazetteService from "~/server/modules/gazette/gazette.service"
 import { db } from "~server/db"
 
 import { schedulePushDocumentJobHandler } from "../schedulePushDocumentJob"
@@ -150,7 +150,7 @@ describe("schedulePushDocumentJobHandler", async () => {
     // SearchSG endpoint.
     vi.spyOn(s3Lib, "getBlob").mockResolvedValue(new Uint8Array([1, 2, 3]))
     vi.spyOn(s3Lib, "setAssetAsPublished").mockResolvedValue(undefined)
-    vi.spyOn(assetService, "parseFullTextFromPDF").mockResolvedValue(
+    vi.spyOn(gazetteService, "parseFullTextFromPDF").mockResolvedValue(
       "parsed pdf text",
     )
 
@@ -221,7 +221,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
     // S3 + PDF parser were each invoked exactly once.
     expect(s3Lib.getBlob).toHaveBeenCalledTimes(1)
-    expect(assetService.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
+    expect(gazetteService.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
   })
 
   it("skips rows scheduled for the future", async () => {
