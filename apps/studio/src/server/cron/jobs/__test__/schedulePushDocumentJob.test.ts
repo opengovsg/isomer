@@ -42,6 +42,7 @@ const setBlobContentForPushDocument = async (
 const seedDocumentReadyForIngestion = async ({
   parentTitle,
   ref,
+  category,
   publishedBy,
 }: {
   parentTitle: string
@@ -49,8 +50,6 @@ const seedDocumentReadyForIngestion = async ({
   category: string
   publishedBy: string
 }) => {
-  // Parent (a folder/collection-like resource) — its title becomes the
-  // SearchSG `categories[0]`.
   const { page: parent, site } = await setupPageResource({
     resourceType: ResourceType.Folder,
     title: parentTitle,
@@ -104,9 +103,7 @@ const seedDocumentReadyForIngestion = async ({
     permalink: "document-title",
   })
 
-  // Use parentTitle for page.category since the handler derives `categories`
-  // from page.category (not from the parent resource's title).
-  await setBlobContentForPushDocument(blob.id, ref, parentTitle, ["tag-1"])
+  await setBlobContentForPushDocument(blob.id, ref, category, ["tag-1"])
 
   // A published Version pointing at the same blob — the dispatcher reads
   // the latest Version per resource.
@@ -181,7 +178,7 @@ describe("schedulePushDocumentJobHandler", async () => {
     const { resourceId } = await seedDocumentReadyForIngestion({
       parentTitle: "Notices",
       ref: "/some-bucket-key/file.pdf",
-      category: "Public",
+      category: "Government Gazettes",
       publishedBy: user.id,
     })
     await db
@@ -208,8 +205,8 @@ describe("schedulePushDocumentJobHandler", async () => {
     expect(body.documentsToAdd[0]).toMatchObject({
       title: "Document Title",
       content: "parsed pdf text",
-      contentType: "Informational",
-      categories: ["Notices"],
+      contentType: "Government Gazettes",
+      categories: ["Public"],
     })
 
     // Row was cleaned up.
