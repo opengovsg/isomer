@@ -235,12 +235,11 @@ export const markScheduledAssetAsCancelled = async ({
   )
 }
 
-export const getBlob = async ({
-  Bucket,
-  Key,
-}: Pick<GetObjectCommandInput, "Bucket" | "Key">) => {
+export const getBlob = async (bucketName: string, key: string) => {
   try {
-    const data = await storage.send(new GetObjectCommand({ Bucket, Key }))
+    const data = await storage.send(
+      new GetObjectCommand({ Bucket: bucketName, Key: key }),
+    )
     const byteArr = await data.Body?.transformToByteArray()
     if (!byteArr) {
       throw new Error("Error when transforming blob to byte array")
@@ -250,7 +249,7 @@ export const getBlob = async ({
     console.error({
       message: "Error when getting blob",
       error: err,
-      merged: { Bucket, Key },
+      merged: { bucketName, key },
     })
     throw err
   }
