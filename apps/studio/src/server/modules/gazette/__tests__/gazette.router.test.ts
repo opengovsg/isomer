@@ -25,7 +25,6 @@ import {
 } from "~prisma/generated/generatedEnums"
 
 import { db } from "../../database"
-import { AuditLogEvent } from "../../database"
 import { gazetteRouter } from "../gazette.router"
 import * as gazetteService from "../gazette.service"
 
