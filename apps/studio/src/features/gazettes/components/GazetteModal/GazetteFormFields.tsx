@@ -21,6 +21,7 @@ import { TimeSelect } from "~/components/Select/TimeSelect"
 import type { GazettesCategory } from "../../types"
 import { GAZETTE_CATEGORIES } from "../../constants"
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
+import { toFileId } from "../../utils/toFileId"
 
 type GazetteFormData = CreateGazetteInput
 
@@ -186,6 +187,12 @@ export const GazetteFormFields = ({
           onChange={(newFile) => {
             setFile(newFile)
             onFileChange?.(newFile)
+            if (newFile) {
+              setValue("fileId", toFileId(newFile.name), {
+                shouldValidate: true,
+                shouldDirty: true,
+              })
+            }
           }}
         />
       </FormControl>
