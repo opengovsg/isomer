@@ -155,14 +155,15 @@ export const VIDEO_EMBED_URL_PATTERN = Object.values(VIDEO_EMBED_URL_REGEXES)
   .join("|")
 
 // Validation for audio embed URLs (Spotify or Apple Podcast) for the "audio" component
-// Only these variants are supported: Spotify episode or show; Apple Podcast show or episode
+// Only these variants are supported: Spotify episode, show, or playlist; Apple Podcast show or episode
 const VALID_AUDIO_EMBED_DOMAINS = {
   spotify: "open.spotify.com",
   applepodcast: "embed.podcasts.apple.com",
 }
 
 export const AUDIO_EMBED_URL_REGEXES = {
-  spotify: "^https://open\\.spotify\\.com/embed/(episode|show)/[a-zA-Z0-9]+.*$",
+  spotify:
+    "^https://open\\.spotify\\.com/embed/(episode|show|playlist)/[a-zA-Z0-9]+.*$",
   applepodcast: "^https://embed\\.podcasts\\.apple\\.com/[a-z]{2}/[a-z-]+/.*$",
 } as const
 
