@@ -1,21 +1,36 @@
 import type {
-  ContentPageSchema,
-  IndexPageSchema,
+  ArticlePageSchemaType,
+  ContentPageSchemaType,
+  IndexPageSchemaType,
   IsomerComponent,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
-import type { Static } from "@sinclair/typebox"
-import {
-  ARTICLE_ALLOWED_BLOCKS,
-  CONTENT_ALLOWED_BLOCKS,
-} from "~/components/PageEditor/constants"
 
-export const flattenAllowedTypes = (
-  sections: { types: IsomerComponent["type"][] }[],
-): Set<string> => new Set(sections.flatMap((s) => s.types))
+// Mirrors PageEditor/constants — kept local so tsx does not load the full
+// @opengovsg/isomer-components bundle (its dist still has unresolved `~` paths).
+const ARTICLE_BLOCK_TYPES = [
+  "prose",
+  "image",
+  "accordion",
+  "callout",
+  "blockquote",
+  "imagegallery",
+  "map",
+  "video",
+] as const
 
-export const ARTICLE_TYPES = flattenAllowedTypes(ARTICLE_ALLOWED_BLOCKS)
-export const CONTENT_TYPES = flattenAllowedTypes(CONTENT_ALLOWED_BLOCKS)
+const CONTENT_BLOCK_TYPES = [
+  ...ARTICLE_BLOCK_TYPES,
+  "contentpic",
+  "infobar",
+  "infocards",
+  "infocols",
+  "keystatistics",
+  "formsg",
+] as const
+
+export const ARTICLE_TYPES = new Set<string>(ARTICLE_BLOCK_TYPES)
+export const CONTENT_TYPES = new Set<string>(CONTENT_BLOCK_TYPES)
 
 export const CONTENT_ONLY_TYPES = new Set(
   [...CONTENT_TYPES].filter((t) => !ARTICLE_TYPES.has(t)),
@@ -31,6 +46,16 @@ export interface PagePlan {
   disallowedBlocks: { index: number; type: IsomerComponent["type"] }[]
 }
 
+export interface FolderPlan {
+  id: string
+  siteId: number
+  title: string
+  permalink: string
+  defaultCategory: string
+  indexPageId: string
+  pageIds: string[]
+}
+
 export interface ConversionPlan {
   folder: {
     id: string
@@ -43,13 +68,57 @@ export interface ConversionPlan {
   defaultCategory: string
 }
 
+export interface ConversionReportEntry {
+  id: string
+  reason: string
+}
+
+export const buildConversionReport = (
+  plan: ConversionPlan,
+): ConversionReportEntry[] =>
+  plan.pages.flatMap((p) =>
+    p.disallowedBlocks.length === 0
+      ? []
+      : [
+          {
+            id: p.resourceId,
+            reason: `disallowed-in-article blocks: ${p.disallowedBlocks
+              .map((b) => `${b.type}@${b.index}`)
+              .join(", ")}`,
+          },
+        ],
+  )
+
+export const toFolderPlan = (plan: ConversionPlan): FolderPlan => ({
+  id: plan.folder.id,
+  siteId: plan.folder.siteId,
+  title: plan.folder.title,
+  permalink: plan.folder.permalink,
+  defaultCategory: plan.defaultCategory,
+  indexPageId: plan.indexPage.resourceId,
+  pageIds: plan.pages.map((p) => p.resourceId),
+})
+
 export const findDisallowedBlocks = (content: IsomerComponent[]) =>
   content.flatMap((block, index) =>
     CONTENT_ONLY_TYPES.has(block.type) ? [{ index, type: block.type }] : [],
   )
 
-export type IndexBlob = Static<typeof IndexPageSchema> & { version: string }
-export type ContentBlob = Static<typeof ContentPageSchema> & { version: string }
+/** Blob JSON omits render-time `site`; use layout-specific schema types for narrowing. */
+type BlobOf<T> = Omit<T, "site">
+
+export type IndexBlob = BlobOf<IndexPageSchemaType>
+export type ContentBlob = BlobOf<ContentPageSchemaType>
+export type ArticleBlob = BlobOf<ArticlePageSchemaType>
+export type PageBlob = ContentBlob | ArticleBlob
+
+interface PageWithContentHeader {
+  contentPageHeader: { summary: string }
+  image?: { src: string; alt: string }
+}
+
+const optionalPageImage = (page: PageWithContentHeader) =>
+  page.image ? { image: page.image } : {}
 
 export const asIndexBlob = (s: IsomerSchema): IndexBlob => {
   if (s.layout !== "index") {
@@ -65,6 +134,16 @@ export const asContentBlob = (s: IsomerSchema): ContentBlob => {
   return s as unknown as ContentBlob
 }
 
+export const asPageBlob = (s: IsomerSchema): PageBlob => {
+  if (s.layout === "content") {
+    return s as unknown as ContentBlob
+  }
+  if (s.layout === "article") {
+    return s as unknown as ArticleBlob
+  }
+  throw new Error(`Expected layout="content" or "article", got "${s.layout}"`)
+}
+
 export const buildCollectionIndexBlob = (
   current: IndexBlob,
   folderTitle: string,
@@ -76,16 +155,28 @@ export const buildCollectionIndexBlob = (
       title: folderTitle,
       subtitle: current.page.contentPageHeader.summary,
       sortOrder: "date-desc",
-      ...(current.page.image ? { image: current.page.image } : {}),
+      ...optionalPageImage(current.page as PageWithContentHeader),
     },
     content: [],
-  }) as IsomerSchema
+  }) as unknown as IsomerSchema
 
 export const buildArticleBlob = (
-  current: ContentBlob,
+  current: PageBlob,
   defaultCategory: string,
-): IsomerSchema =>
-  ({
+): IsomerSchema => {
+  if (current.layout === "article") {
+    return {
+      ...current,
+      layout: "article",
+      page: {
+        ...current.page,
+        category: defaultCategory,
+      },
+      content: current.content,
+    } as unknown as IsomerSchema
+  }
+
+  return {
     ...current,
     layout: "article",
     page: {
@@ -93,7 +184,8 @@ export const buildArticleBlob = (
       articlePageHeader: {
         summary: current.page.contentPageHeader.summary,
       },
-      ...(current.page.image ? { image: current.page.image } : {}),
+      ...optionalPageImage(current.page as PageWithContentHeader),
     },
     content: current.content,
-  }) as IsomerSchema
+  } as unknown as IsomerSchema
+}

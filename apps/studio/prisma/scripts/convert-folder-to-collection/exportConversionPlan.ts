@@ -3,9 +3,9 @@
  *
  * Does NOT mutate the database. Pulls the folder + all direct children,
  * computes new blobs in memory, writes:
- *   - .out/convert-folder-<id>-<ts>.json        (full plan, machine-readable)
- *   - .out/convert-folder-<id>-<ts>.report.md   (human-readable report,
- *                                                lists incompatible blocks)
+ *   - .out/convert-folder-<id>.json              (folder metadata + resource IDs)
+ *   - .out/convert-resource-<id>.json            (one per index page + child page)
+ *   - .out/convert-folder-<id>.report.json       ([{ id, reason }] for flagged pages)
  *
  * Usage:
  *   cd apps/studio
@@ -17,11 +17,10 @@
 
 import { input } from "@inquirer/prompts"
 import { db, ResourceType } from "~/server/modules/database"
-import { getBlobOfResource } from "~/server/modules/resource/resource.service"
 
 import {
-  asContentBlob,
   asIndexBlob,
+  asPageBlob,
   buildArticleBlob,
   buildCollectionIndexBlob,
   findDisallowedBlocks,
@@ -29,11 +28,12 @@ import {
   type PagePlan,
 } from "./helpers"
 import {
+  getBlobOfResource,
   printPlan,
   validateNumericId,
   verifyFolder,
   verifySite,
-  writePlanFile,
+  writePlanFiles,
   writeReportFile,
 } from "./shared"
 
@@ -90,7 +90,7 @@ const buildConversionPlan = async (
   const pagePlans: PagePlan[] = []
   for (const child of pages) {
     const blob = await getBlobOfResource({ db, resourceId: child.id })
-    const current = asContentBlob(blob.content)
+    const current = asPageBlob(blob.content)
     pagePlans.push({
       resourceId: child.id,
       title: child.title,
@@ -143,10 +143,11 @@ const main = async () => {
 
   printPlan(plan)
 
-  const jsonPath = writePlanFile(plan)
-  const reportPath = writeReportFile(plan, jsonPath)
-  console.log(`\nPlan written to:   ${jsonPath}`)
-  console.log(`Report written to: ${reportPath}`)
+  const jsonPaths = writePlanFiles(plan)
+  const reportPath = writeReportFile(plan)
+  console.log(`\nPlans written (${jsonPaths.length} files):`)
+  for (const p of jsonPaths) console.log(`  ${p}`)
+  console.log(`\nReport written to: ${reportPath}`)
   console.log(
     `\nNext step: review the report, then run applyConversionPlan.ts to write back to DB.`,
   )

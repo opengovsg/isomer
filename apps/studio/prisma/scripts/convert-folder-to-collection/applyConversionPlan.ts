@@ -2,12 +2,13 @@
  * Workflow 2 of 2 — Apply a previously-exported conversion plan to the DB.
  *
  * Prerequisites: run exportConversionPlan.ts first to produce a .out/*.json
- * plan, then review the accompanying .report.md.
+ * plan, then review the accompanying .report.json.
  *
  * This script:
  *   1. Prompts for site ID + folder ID and verifies both exist in the DB.
- *   2. Prompts for the plan file path (defaulting to the most recent export
- *      for this folder).
+ *   2. Prompts for the folder plan JSON path (defaulting to the export for
+ *      this folder, if one exists). Loads the companion resource JSON files
+ *      from .out/.
  *   3. Cross-checks that the plan's folder.id and folder.siteId match the
  *      values just verified.
  *   4. Writes the converted blobs as draft blobs (overwriting any existing
@@ -25,14 +26,14 @@ import { confirm, input } from "@inquirer/prompts"
 import { createBaseLogger } from "~/lib/logger"
 import { publishSite } from "~/server/modules/aws/codebuild.service"
 import { db, ResourceState, ResourceType } from "~/server/modules/database"
-import { updateBlobById } from "~/server/modules/resource/resource.service"
-import { incrementVersion } from "~/server/modules/version/version.service"
 
 import type { ConversionPlan } from "./helpers"
 import {
-  findLatestPlanForFolder,
+  findPlanForFolder,
+  incrementVersion,
   printPlan,
-  readPlanFile,
+  loadConversionPlanFromPath,
+  updateBlobById,
   validateNumericId,
   verifyFolder,
   verifySite,
@@ -128,14 +129,14 @@ const main = async () => {
   })
   await verifyFolder(folderId.trim(), siteId)
 
-  const suggestedPath = findLatestPlanForFolder(folderId.trim())
+  const suggestedPath = findPlanForFolder(folderId.trim())
   const planPath = await input({
-    message: "Path to the conversion plan JSON",
+    message: "Path to the folder conversion plan JSON",
     default: suggestedPath,
     validate: (v) => v.trim().length > 0 || "Plan path is required",
   })
 
-  const plan = readPlanFile(planPath.trim())
+  const plan = loadConversionPlanFromPath(planPath.trim())
 
   if (plan.folder.id !== folderId.trim()) {
     throw new Error(

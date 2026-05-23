@@ -8,12 +8,13 @@ import {
   ARTICLE_TYPES,
   asContentBlob,
   asIndexBlob,
+  asPageBlob,
   buildArticleBlob,
   buildCollectionIndexBlob,
   CONTENT_ONLY_TYPES,
   CONTENT_TYPES,
   findDisallowedBlocks,
-  flattenAllowedTypes,
+  type ArticleBlob,
   type ContentBlob,
   type IndexBlob,
 } from "./helpers"
@@ -95,26 +96,24 @@ const makeContentBlob = (
     content,
   }) as unknown as ContentBlob
 
-describe("flattenAllowedTypes", () => {
-  it("returns a flat set of all types across sections", () => {
-    // Arrange
-    const sections = [
-      { types: ["prose", "image"] as IsomerComponent["type"][] },
-      { types: ["callout", "image"] as IsomerComponent["type"][] },
-    ]
-
-    // Act
-    const result = flattenAllowedTypes(sections)
-
-    // Assert
-    expect(result).toEqual(new Set(["prose", "image", "callout"]))
-  })
-
-  it("returns an empty set when given no sections", () => {
-    // Act + Assert
-    expect(flattenAllowedTypes([])).toEqual(new Set())
-  })
-})
+const makeArticleBlob = (
+  overrides?: PageOverrides & { category?: string; date?: string },
+  content: IsomerComponent[] = [],
+): ArticleBlob =>
+  ({
+    version: "0.1.0",
+    layout: "article",
+    page: {
+      title: "Article",
+      category: overrides?.category ?? "News",
+      date: overrides?.date ?? "1 Jan 2024",
+      articlePageHeader: {
+        summary: overrides?.summary ?? "Article summary",
+      },
+      ...(overrides?.image ? { image: overrides.image } : {}),
+    },
+    content,
+  }) as unknown as ArticleBlob
 
 describe("ARTICLE_TYPES / CONTENT_TYPES / CONTENT_ONLY_TYPES", () => {
   it("ARTICLE_TYPES is a subset of CONTENT_TYPES (article blocks all live in content)", () => {
@@ -194,6 +193,40 @@ describe("asIndexBlob", () => {
     // Act + Assert
     expect(() => asIndexBlob(blob)).toThrow(
       `Expected layout="index", got "content"`,
+    )
+  })
+})
+
+describe("asPageBlob", () => {
+  it("returns content blobs unchanged", () => {
+    // Arrange
+    const blob = makeContentBlob() as unknown as IsomerSchema
+
+    // Act
+    const result = asPageBlob(blob)
+
+    // Assert
+    expect(result).toBe(blob)
+  })
+
+  it("returns article blobs unchanged", () => {
+    // Arrange
+    const blob = makeArticleBlob() as unknown as IsomerSchema
+
+    // Act
+    const result = asPageBlob(blob)
+
+    // Assert
+    expect(result).toBe(blob)
+  })
+
+  it("throws when layout is neither content nor article", () => {
+    // Arrange
+    const blob = makeIndexBlob() as unknown as IsomerSchema
+
+    // Act + Assert
+    expect(() => asPageBlob(blob)).toThrow(
+      `Expected layout="content" or "article", got "index"`,
     )
   })
 })
@@ -440,5 +473,26 @@ describe("buildArticleBlob", () => {
 
     // Assert
     expect(current).toEqual(snapshot)
+  })
+
+  it("updates category on an already-article blob while preserving article fields", () => {
+    // Arrange
+    const current = makeArticleBlob({
+      summary: "Existing summary",
+      category: "Old Category",
+      date: "15 May 2024",
+    })
+
+    // Act
+    const result = asResult(buildArticleBlob(current, "Feature Articles"))
+
+    // Assert
+    expect(result.layout).toBe("article")
+    expect(result.page).toMatchObject({
+      category: "Feature Articles",
+      date: "15 May 2024",
+      articlePageHeader: { summary: "Existing summary" },
+    })
+    expect("contentPageHeader" in result.page).toBe(false)
   })
 })

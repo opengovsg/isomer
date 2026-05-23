@@ -1,9 +1,181 @@
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs"
+import type { UnwrapTagged } from "type-fest"
+import { mkdirSync, readFileSync, writeFileSync } from "fs"
 import { dirname, join } from "path"
 import { fileURLToPath } from "url"
-import { db, ResourceType } from "~/server/modules/database"
+import {
+  db,
+  jsonb,
+  ResourceState,
+  ResourceType,
+  type DB,
+  type Transaction,
+} from "~/server/modules/database"
 
-import type { ConversionPlan } from "./helpers"
+import {
+  buildConversionReport,
+  toFolderPlan,
+  type ConversionPlan,
+  type FolderPlan,
+  type PagePlan,
+} from "./helpers"
+
+// ---------------------------------------------------------------------------
+// Blob helpers (local copies — avoid resource.service, which imports
+// @opengovsg/isomer-components at runtime and breaks under tsx)
+// ---------------------------------------------------------------------------
+
+type ScriptDb = Pick<typeof db, "selectFrom">
+
+export const getBlobOfResource = async ({
+  db: database,
+  resourceId,
+}: {
+  db: ScriptDb
+  resourceId: string
+}) => {
+  const { draftBlobId, publishedVersionId } = await database
+    .selectFrom("Resource")
+    .where("id", "=", resourceId)
+    .select(["draftBlobId", "publishedVersionId"])
+    .executeTakeFirstOrThrow(
+      () => new Error(`Resource ${resourceId} not found`),
+    )
+
+  if (draftBlobId) {
+    return database
+      .selectFrom("Blob")
+      .where("id", "=", draftBlobId)
+      .selectAll()
+      .executeTakeFirstOrThrow()
+  }
+
+  return database
+    .selectFrom("Blob")
+    .selectAll()
+    .where("Blob.id", "=", (eb) =>
+      eb
+        .selectFrom("Version")
+        .where("id", "=", publishedVersionId)
+        .select("blobId"),
+    )
+    .executeTakeFirstOrThrow()
+}
+
+export const updateBlobById = async (
+  tx: Transaction<DB>,
+  {
+    pageId,
+    content,
+    siteId,
+  }: {
+    pageId: number
+    content: UnwrapTagged<PrismaJson.BlobJsonContent>
+    siteId: number
+  },
+) => {
+  const page = await tx
+    .selectFrom("Resource")
+    .where("Resource.id", "=", String(pageId))
+    .where("siteId", "=", siteId)
+    .select("draftBlobId")
+    .executeTakeFirst()
+
+  if (!page) {
+    throw new Error(`Resource ${pageId} not found`)
+  }
+
+  let blobIdToUpdate = page.draftBlobId
+
+  if (!page.draftBlobId) {
+    const newBlob = await tx
+      .insertInto("Blob")
+      .values({ content: jsonb(content) })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+    blobIdToUpdate = newBlob.id
+    await tx
+      .updateTable("Resource")
+      .where("id", "=", String(pageId))
+      .set({ draftBlobId: newBlob.id })
+      .execute()
+  }
+
+  return tx
+    .updateTable("Blob")
+    .set({ content: jsonb(content) })
+    .where("Blob.id", "=", blobIdToUpdate)
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+interface ScriptVersion {
+  id: string
+  versionNum: number
+}
+
+/** Local copy — version.service imports resource.service (→ isomer-components). */
+export const incrementVersion = async ({
+  siteId,
+  resourceId,
+  userId,
+  tx,
+}: {
+  siteId: number
+  tx: Transaction<DB>
+  resourceId: string
+  userId: string
+}): Promise<{
+  previousVersion: ScriptVersion | null
+  newVersion: ScriptVersion
+} | null> => {
+  const page = await tx
+    .selectFrom("Resource")
+    .where("id", "=", resourceId)
+    .where("siteId", "=", siteId)
+    .select(["draftBlobId", "publishedVersionId"])
+    .executeTakeFirst()
+
+  if (!page) {
+    throw new Error(`Resource ${resourceId} not found`)
+  }
+  if (!page.draftBlobId) return null
+
+  let newVersionNum = 1
+  let previousVersion: ScriptVersion | null = null
+  if (page.publishedVersionId) {
+    previousVersion = await tx
+      .selectFrom("Version")
+      .where("id", "=", page.publishedVersionId)
+      .select(["id", "versionNum"])
+      .executeTakeFirstOrThrow()
+    newVersionNum = previousVersion.versionNum + 1
+  }
+
+  const newVersion = await tx
+    .insertInto("Version")
+    .values({
+      versionNum: newVersionNum,
+      resourceId,
+      blobId: page.draftBlobId,
+      publishedAt: new Date(),
+      publishedBy: userId,
+    })
+    .returning(["id", "versionNum"])
+    .executeTakeFirstOrThrow()
+
+  await tx
+    .updateTable("Resource")
+    .set({
+      publishedVersionId: newVersion.id,
+      draftBlobId: null,
+      state: ResourceState.Published,
+    })
+    .where("id", "=", resourceId)
+    .where("siteId", "=", siteId)
+    .execute()
+
+  return { newVersion, previousVersion }
+}
 
 // ---------------------------------------------------------------------------
 // DB verification
@@ -53,101 +225,79 @@ export const verifyUser = async (userId: string) => {
 
 const outDir = () => join(dirname(fileURLToPath(import.meta.url)), ".out")
 
-export const writePlanFile = (plan: ConversionPlan): string => {
+export const folderPlanFileName = (folderId: string) =>
+  `convert-folder-${folderId}.json`
+
+export const resourcePlanFileName = (resourceId: string) =>
+  `convert-resource-${resourceId}.json`
+
+const writeJson = (fileName: string, data: unknown) => {
   const dir = outDir()
   mkdirSync(dir, { recursive: true })
-  const file = join(dir, `convert-folder-${plan.folder.id}-${Date.now()}.json`)
-  writeFileSync(file, JSON.stringify(plan, null, 2))
+  const file = join(dir, fileName)
+  writeFileSync(file, JSON.stringify(data, null, 2))
   return file
 }
 
-export const readPlanFile = (path: string): ConversionPlan => {
-  return JSON.parse(readFileSync(path, "utf-8")) as ConversionPlan
+export const writePlanFiles = (plan: ConversionPlan): string[] => {
+  const paths = [
+    writeJson(folderPlanFileName(plan.folder.id), toFolderPlan(plan)),
+    writeJson(resourcePlanFileName(plan.indexPage.resourceId), plan.indexPage),
+    ...plan.pages.map((p) => writeJson(resourcePlanFileName(p.resourceId), p)),
+  ]
+  return paths
 }
 
-export const findLatestPlanForFolder = (
-  folderId: string,
-): string | undefined => {
-  const dir = outDir()
-  let files: string[]
+export const loadConversionPlan = (folderId: string): ConversionPlan => {
+  const folderPath = join(outDir(), folderPlanFileName(folderId))
+  const folderPlan = JSON.parse(readFileSync(folderPath, "utf-8")) as FolderPlan
+
+  const readResource = (resourceId: string): PagePlan =>
+    JSON.parse(
+      readFileSync(join(outDir(), resourcePlanFileName(resourceId)), "utf-8"),
+    ) as PagePlan
+
+  return {
+    folder: {
+      id: folderPlan.id,
+      siteId: folderPlan.siteId,
+      title: folderPlan.title,
+      permalink: folderPlan.permalink,
+    },
+    defaultCategory: folderPlan.defaultCategory,
+    indexPage: readResource(folderPlan.indexPageId),
+    pages: folderPlan.pageIds.map(readResource),
+  }
+}
+
+export const loadConversionPlanFromPath = (path: string): ConversionPlan => {
+  const folderPlan = JSON.parse(readFileSync(path, "utf-8")) as FolderPlan
+  return loadConversionPlan(folderPlan.id)
+}
+
+export const findPlanForFolder = (folderId: string): string | undefined => {
+  const file = join(outDir(), folderPlanFileName(folderId))
   try {
-    files = readdirSync(dir)
+    readFileSync(file)
+    return file
   } catch {
     return undefined
   }
-  const matches = files
-    .filter(
-      (f) => f.startsWith(`convert-folder-${folderId}-`) && f.endsWith(".json"),
-    )
-    .sort()
-  const latest = matches[matches.length - 1]
-  return latest ? join(dir, latest) : undefined
 }
 
-export const writeReportFile = (
-  plan: ConversionPlan,
-  jsonPath: string,
-): string => {
-  const reportPath = jsonPath.replace(/\.json$/, ".report.md")
-  writeFileSync(reportPath, renderReport(plan))
-  return reportPath
-}
-
-const renderReport = (plan: ConversionPlan): string => {
-  const lines: string[] = []
-  lines.push(`# Folder → Collection conversion report`)
-  lines.push(``)
-  lines.push(`- **Folder**: ${plan.folder.title} (id=${plan.folder.id})`)
-  lines.push(`- **Site**: ${plan.folder.siteId}`)
-  lines.push(`- **Permalink**: ${plan.folder.permalink}`)
-  lines.push(`- **Default category**: ${plan.defaultCategory}`)
-  lines.push(`- **Total pages**: ${plan.pages.length}`)
-  lines.push(``)
-  lines.push(`## Index page`)
-  lines.push(
-    `- "${plan.indexPage.title}" (id=${plan.indexPage.resourceId}) → layout=collection`,
+export const writeReportFile = (plan: ConversionPlan): string => {
+  const fileName = folderPlanFileName(plan.folder.id).replace(
+    /\.json$/,
+    ".report.json",
   )
-  lines.push(``)
-
-  lines.push(`## Pages`)
-  lines.push(``)
-  lines.push(`| Title | ID | Blocks | Disallowed-in-article |`)
-  lines.push(`| --- | --- | ---: | --- |`)
-  for (const p of plan.pages) {
-    const flagged =
-      p.disallowedBlocks.length > 0
-        ? p.disallowedBlocks.map((b) => `${b.type}@${b.index}`).join(", ")
-        : "—"
-    lines.push(
-      `| ${p.title} | ${p.resourceId} | ${p.currentBlob.content.length} | ${flagged} |`,
-    )
-  }
-  lines.push(``)
-
-  const flaggedTypes = new Map<string, number>()
-  for (const p of plan.pages) {
-    for (const b of p.disallowedBlocks) {
-      flaggedTypes.set(b.type, (flaggedTypes.get(b.type) ?? 0) + 1)
-    }
-  }
-  if (flaggedTypes.size > 0) {
-    lines.push(`## Disallowed block types (summary)`)
-    lines.push(``)
-    for (const [t, n] of flaggedTypes) lines.push(`- \`${t}\`: ${n}`)
-    lines.push(``)
-    lines.push(
-      `> These blocks are preserved in the blob and continue to render,`,
-    )
-    lines.push(
-      `> but editors will not be able to add new blocks of these types via the Studio UI.`,
-    )
-  } else {
-    lines.push(`## Disallowed block types (summary)`)
-    lines.push(``)
-    lines.push(`None — all pages are fully article-layout compatible.`)
-  }
-  lines.push(``)
-  return lines.join("\n")
+  const dir = outDir()
+  mkdirSync(dir, { recursive: true })
+  const reportPath = join(dir, fileName)
+  writeFileSync(
+    reportPath,
+    JSON.stringify(buildConversionReport(plan), null, 2),
+  )
+  return reportPath
 }
 
 // ---------------------------------------------------------------------------
